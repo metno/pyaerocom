@@ -12,7 +12,6 @@ from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   DimensionOrderError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
-                               TS_TYPE_TO_NUMPY_FREQ,
                                PANDAS_RESAMPLE_OFFSETS,
                                to_datestring_YYYYMMDD)
 
@@ -21,9 +20,10 @@ from pyaerocom.colocateddata import ColocatedData
         
 def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              start=None, stop=None, filter_name=None, 
-                             regrid_scheme='areaweighted',
-                             regrid_res_deg=None,
-                             vert_scheme=None, **kwargs):
+                             regrid_res_deg=None, remove_outliers=True,
+                             vert_scheme=None, harmonise_units=True,
+                             regrid_scheme='areaweighted', var_outlier_ranges=None,
+                             **kwargs):
     """Colocate 2 gridded data objects
     
     Todo
@@ -31,12 +31,17 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     - Complete docstring
     - think about vertical dimension (vert_scheme input not used at the moment)
     """
+    if vert_scheme is not None:
+        raise NotImplementedError('Input vert_scheme cannot yet be handled '
+                                  'for gridded / gridded colocation...')
     if ts_type is None:
         ts_type = 'monthly'
+    if var_outlier_ranges is None:
+        var_outlier_ranges = {}
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
     if gridded_data.var_info.has_unit:
-        if not gridded_data.unit == gridded_data_ref.unit:
+        if harmonise_units and not gridded_data.unit == gridded_data_ref.unit:
             try:
                 gridded_data_ref.convert_unit(gridded_data.unit)
             except:
@@ -45,6 +50,14 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                     'of gridded data object ({})'
                                     .format(gridded_data.unit, 
                                             gridded_data_ref.unit))
+    var, var_ref = gridded_data.var_name, gridded_data_ref.var_name
+    if remove_outliers:
+        low, high, low_ref, high_ref = None, None, None, None    
+        if var in var_outlier_ranges:
+            low, high = var_outlier_ranges[var]
+        if var_ref in var_outlier_ranges:
+            low_ref, high_ref = var_outlier_ranges[var_ref]
+            
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
@@ -104,8 +117,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     
     meta = {'data_source'       :   [gridded_data_ref.data_id,
                                      gridded_data.data_id],
-            'var_name'          :   [gridded_data_ref.var_name,
-                                     gridded_data.var_name],
+            'var_name'          :   [var_ref, var],
             'ts_type'           :   ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [gridded_data_ref.ts_type, grid_ts_type],
@@ -117,12 +129,18 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'revision_ref'      :   gridded_data_ref.data_revision}
     
     meta.update(regfilter.to_dict())
+    if remove_outliers:
+        gridded_data.remove_outliers(low, high)
+        gridded_data_ref.remove_outliers(low_ref, high_ref)
+    data = gridded_data.grid.data
+    if isinstance(data, np.ma.core.MaskedArray):
+        data = data.filled(np.nan)
     data_ref = gridded_data_ref.grid.data
     if isinstance(data_ref, np.ma.core.MaskedArray):
         data_ref = data_ref.filled(np.nan)
 
     arr = np.asarray((data_ref,
-                      gridded_data.grid.data))
+                      data))
     time = gridded_data.time_stamps().astype('datetime64[ns]')
     lats = gridded_data.latitude.points
     lons = gridded_data.longitude.points
@@ -143,11 +161,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     return ColocatedData(data=arr, coords=coords, dims=dims,
                           name=gridded_data.var_name, attrs=meta)
 
-def colocate_gridded_ungridded(gridded_data, ungridded_data, 
-                               ts_type=None, start=None, stop=None, 
-                               filter_name='WORLD-wMOUNTAINS',
-                               var_ref=None, vert_scheme=None,
-                               harmonise_units=True,
+def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None, 
+                               start=None, stop=None, filter_name=None,
+                               regrid_res_deg=None, remove_outliers=True,
+                               vert_scheme=None, harmonise_units=True, 
+                               var_ref=None, var_outlier_ranges=None, 
                                **kwargs):
     """Colocate gridded with ungridded data of 2D data
     
@@ -183,6 +201,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
         details). Default is 'WORLD-wMOUNTAINS', which corresponds to no 
         filtering (world with mountains). Use WORLD-noMOUNTAINS to exclude
         stations at altitudes exceeding 1000 m.
+    regrid_res_deg : :obj:`int`, optional
+        if specified, the gridded data object to be analysed will be regridded
+        in lon / lat dimension to the input resolution. (BETA feature)
+    remove_outliers : bool
+        if True
     var_ref : :obj:`str`, optional
         variable against which data in :attr:`gridded_data` is supposed to be
         compared. If None, then the same variable is used 
@@ -214,10 +237,22 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
         if none of the data points in input :class:`UngriddedData` matches 
         the input colocation constraints
     """
+    if var_outlier_ranges is None:
+        var_outlier_ranges = {}
+    if filter_name is None:
+        filter_name = 'WORLD-wMOUNTAINS'
     var = gridded_data.var_info.var_name
+    
     if var_ref is None:
         var_ref = var
         
+    if remove_outliers:
+        low, high, low_ref, high_ref = None, None, None, None    
+        if var in var_outlier_ranges:
+            low, high = var_outlier_ranges[var]
+        if var_ref in var_outlier_ranges:
+            low_ref, high_ref = var_outlier_ranges[var_ref]
+            
     if not var_ref in ungridded_data.contains_vars:
         raise VarNotAvailableError('Variable {} is not available in ungridded '
                                    'data (which contains {})'
@@ -276,15 +311,28 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
     #crop time
     gridded_data = gridded_data.crop(time_range=(start, stop))
     
+    if regrid_res_deg is not None:
+        
+        lons = gridded_data.longitude.points
+        lats = gridded_data.latitude.points
+        
+        lons_new = np.arange(lons.min(), lons.max(), regrid_res_deg)
+        lats_new = np.arange(lats.min(), lats.max(), regrid_res_deg) 
+        
+        gridded_data = gridded_data.interpolate(latitude=lats_new, 
+                                                longitude=lons_new)
     # downscale time (if applicable)
-    grid_data = gridded_data.downscale_time(to_ts_type=ts_type)
+    gridded_data = gridded_data.downscale_time(to_ts_type=ts_type)
 
     # pandas frequency string for TS type
     freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
-    freq_np = TS_TYPE_TO_NUMPY_FREQ[ts_type]
+    #freq_np = TS_TYPE_TO_NUMPY_FREQ[ts_type]
     
-    start = pd.Timestamp(start.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
-    
+    #start = pd.Timestamp(start.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
+    if remove_outliers:
+        ungridded_data = ungridded_data.remove_outliers(var_ref, inplace=False,
+                                                        low=low_ref, 
+                                                        high=high_ref)
     all_stats = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
                                                    start=start, 
                                                    stop=stop, 
@@ -301,19 +349,19 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
                                    .format(var_ref, start, stop))
     # make sure the gridded data is in the right dimension
     try:
-        grid_data.check_dimcoords_tseries()
+        gridded_data.check_dimcoords_tseries()
     except DimensionOrderError:
-        grid_data.reorder_dimensions_tseries()
+        gridded_data.reorder_dimensions_tseries()
     
-    if grid_data.ndim > 3:
+    if gridded_data.ndim > 3:
         if vert_scheme is None:
             vert_scheme = 'mean'
-        if not vert_scheme in grid_data.SUPPORTED_VERT_SCHEMES:
+        if not vert_scheme in gridded_data.SUPPORTED_VERT_SCHEMES:
             raise ValueError('Vertical scheme {} is not supported'.format(vert_scheme))
             
-    grid_stat_data = grid_data.to_time_series(longitude=ungridded_lons,
-                                              latitude=ungridded_lats,
-                                              vert_scheme=vert_scheme)
+    grid_stat_data = gridded_data.to_time_series(longitude=ungridded_lons,
+                                                 latitude=ungridded_lats,
+                                                 vert_scheme=vert_scheme)
     
     
     obs_vals = []
@@ -361,7 +409,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data,
             
             # get model data corresponding to station
             grid_stat = grid_stat_data[i]
-            
+            if remove_outliers:
+                grid_stat.remove_outliers(var, low=low, high=high)
             
             if harmonise_units:
                 grid_unit = grid_stat.get_unit(var)

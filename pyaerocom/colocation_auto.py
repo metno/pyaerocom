@@ -24,13 +24,6 @@ from pyaerocom import ColocatedData, print_log
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.exceptions import (DataCoverageError,
                                   TemporalResolutionError)
-         
-class _ColocationOptions(BrowseDict):
-    """This class contains options for Aerocom analysis
-    """
-    def __init__(self, REANALYSE_EXISTING=False, RAISE_EXCEPTIONS=False):
-        self.REANALYSE_EXISTING = REANALYSE_EXISTING,
-        self.RAISE_EXCEPTIONS = RAISE_EXCEPTIONS
                    
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
@@ -76,16 +69,23 @@ class ColocationSetup(BrowseDict):
     
     """ 
     
-    
+    REANALYSE_EXISTING = False
+    RAISE_EXCEPTIONS = False
     def __init__(self, model_id=None, obs_id=None, obs_vars=None, 
                  start=None, stop=None, ts_type='daily',
                  filter_name='WORLD-noMOUNTAINS', 
-                 model_use_vars=None, basedir_coldata=None, read_opts=None,
-                 colocation_opts=None):
+                 model_use_vars=None, model_read_aux=None, 
+                 remove_outliers=True, regrid_res_deg=None,
+                 basedir_coldata=None, read_opts=None,
+                 obs_vert_type=None, obs_vert_type_alt=None, 
+                 var_outlier_ranges=None, harmonise_units=False, 
+                 vert_scheme=None):
         if read_opts is None:
             read_opts = {}
-        if colocation_opts is None:
-            colocation_opts = {}
+        if model_read_aux is None:
+            model_read_aux = {}
+        if var_outlier_ranges is None:
+            var_outlier_ranges = {}
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
         if model_use_vars is None: 
@@ -105,14 +105,13 @@ class ColocationSetup(BrowseDict):
         const.print_log.info('Output directory for logfiles:\n '
                              '{}'.format(basedir_coldata))
         self.obs_vars = obs_vars
+        self.obs_vert_type = obs_vert_type
+        self.obs_vert_type_alt = obs_vert_type_alt
         
         self.model_use_vars = model_use_vars
         
         self.model_id = model_id
         self.obs_id = obs_id
-    
-        self.options = _ColocationOptions()
-
         
         self.start = start
         self.stop = stop
@@ -121,10 +120,16 @@ class ColocationSetup(BrowseDict):
         
         self.filter_name = filter_name
         
-        self.basedir_coldata = basedir_coldata
+        self.remove_outliers = remove_outliers
+        self.var_outlier_ranges = var_outlier_ranges
+        self.harmonise_units = harmonise_units
+        self.vert_scheme = vert_scheme
+        self.regrid_res_deg = regrid_res_deg
         
-        self.colocation_opts = colocation_opts
+        self.basedir_coldata = basedir_coldata
+    
         self.read_opts = read_opts
+        self.model_read_aux = model_read_aux
         #self.read_opts.update(**read_opts)
      
     @property
@@ -142,10 +147,7 @@ class ColocationSetup(BrowseDict):
     
     def update(self, **kwargs):
         for key, val in kwargs.items():
-            if key in self.options:
-                self.options[key] = val
-            else:
-                self[key] = val
+            self[key] = val
 
 
 class Colocator(object):
@@ -167,29 +169,16 @@ class Colocator(object):
         
     def _init_log(self):
         logdir = chk_make_subdir(self._setup.basedir_logfiles, 
-                                 datetime.today().strftime('%Y%m%d'))
-        if self.start is None:
-            start_str = 'ModelStart'
-        else:
-            start_str = to_datestring_YYYYMMDD(self.start)
-    
-        if self.stop is None:
-            if isinstance(self.start, int): #is year
-                stop_str = to_datestring_YYYYMMDD(self.start + 1)
-            else:
-                stop_str = 'None'
-        else:
-            stop_str = to_datestring_YYYYMMDD(self.stop)
+                                 self.model_id)
+                                 
         
-        fname = ('result_log_{}_{}_{}.txt'
-                 .format(self.obs_id, start_str, stop_str))
-        self._log = log = open(os.path.join(logdir, fname), 'w+')
+        fname = ('{}_{}.log'.format(self.obs_id, datetime.today().strftime('%Y%m%d')))
+        self._log = log = open(os.path.join(logdir, fname), 'a+')
+        log.write('\n------------------ NEW ----------------\n')
+        log.write('Timestamp: {}\n\n'.format(datetime.today().strftime('%d-%m-%Y %H:%M')))
         log.write('Analysis configuration\n')
         for k, v in self._setup.items():
-            if k == 'model_id':
-                continue
-            else:
-                log.write('{}: {}\n'.format(k, v))
+            log.write('{}: {}\n'.format(k, v))
         
     def _close_log(self):
         if self._log is not None:
@@ -239,39 +228,31 @@ class Colocator(object):
             return True
         return False
     
-    def run(self, model_ids=None):
+    def run(self, model_id=None):
         """Run current analysis
-        
-        For analysis parameters, see :class:`ColocationSetup`, for analysis tasks
-        see :class:`_AnalysisTasks`, for analysis options see 
-        :class:`_ColocationOptions`
         """
-        if model_ids is None:
-            if self.model_id is None:
-                raise AttributeError('Model ID is not set')
-            model_ids = [self.model_id]
-        elif isinstance(model_ids, str):
-            model_ids = [model_ids]
-            
-        self._init_log()
-        for model_id in model_ids:
-            self._log.write('\n\nModel: {}\n'.format(model_id))
+        if model_id is not None:
             self.model_id = model_id
-            try:
-                if self.obs_id in self._setup.UNGRIDDED_IDS:
-                    self.data[self.model_id] = self._run_gridded_ungridded()
-                        
-                else:
-                    self.data[self.model_id] = self._run_gridded_gridded()
-            except:
-                msg = ('Failed to perform analysis: {}\n'
-                       .format(traceback.format_exc()))
-                const.print_log.warning(msg)
-                self._log.write(msg)
-                if self.options.RAISE_EXCEPTIONS:
-                    self._close_log()
-                    raise Exception(traceback.format_exc())
-        self._close_log()
+        else:
+            model_id = self.model_id
+        self._init_log()
+        
+        self._log.write('\n\nModel: {}\n'.format(model_id))
+        try:
+            if self.obs_id in self._setup.UNGRIDDED_IDS:
+                self.data[self.model_id] = self._run_gridded_ungridded()
+            else:
+                self.data[self.model_id] = self._run_gridded_gridded()
+        except:
+            msg = ('Failed to perform analysis: {}\n'
+                   .format(traceback.format_exc()))
+            const.print_log.warning(msg)
+            self._log.write(msg)
+            if self.RAISE_EXCEPTIONS:
+                self._close_log()
+                raise Exception(traceback.format_exc())
+        finally:
+            self._close_log()
         
     def _run_gridded_ungridded(self):
         """Analysis method for gridded vs. ungridded data"""
@@ -288,7 +269,11 @@ class Colocator(object):
             if not obs_var in obs_vars_avail:
                 raise DataCoverageError('Variable {} is not supported by {}'
                                         .format(obs_var, self.obs_id))
-            
+
+        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                                   vars_to_retrieve=obs_vars,
+                                   **self.read_opts)
+        
         var_matches = {}
         
         for obs_var in obs_vars:
@@ -296,7 +281,10 @@ class Colocator(object):
                 model_var = self.model_use_vars[obs_var]
             else:
                 model_var = obs_var
-            
+            if model_var in self.model_read_aux:
+                model_reader.add_aux_compute(var_name=model_var,
+                                             **self.model_read_aux[model_var])
+                
             if not model_var in model_reader.vars_provided:
                 continue
             var_matches[obs_var] = model_var
@@ -310,19 +298,11 @@ class Colocator(object):
                                             self.obs_vars))
             
         all_ts_types = const.GRID_IO.TS_TYPES
-        
-        read_opts = self.read_opts
-        rmo = False
-        if 'remove_outliers' in read_opts:
-            rmo = read_opts.pop('remove_outliers')
 # =============================================================================
 #         datalevel = None
 #         if 'datalevel' in read_opts:
 #             datalevel = read_opts.pop('datalevel')
 # =============================================================================
-        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                   vars_to_retrieve=list(var_matches),
-                                   **read_opts)
         
         ts_type = self.ts_type
         
@@ -332,17 +312,28 @@ class Colocator(object):
         data_objs = {}
         
         for obs_var, model_var in var_matches.items():
-            if rmo is True:
-                obs_data.remove_outliers(obs_var, inplace=True,
-                                         move_to_trash=False)
                 
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
                                                              self.obs_id, 
                                                              model_var, 
                                                              obs_var))
-            model_data = model_reader.read_var(model_var, start=start,
-                                               stop=stop, ts_type=ts_type,
-                                               flex_ts_type=True)
+            try:
+                model_data = model_reader.read_var(model_var, start=start,
+                                                   stop=stop, ts_type=ts_type,
+                                                   flex_ts_type=True,
+                                                   vert_which=self.obs_vert_type)
+            except DataCoverageError:
+                msg = ('No data files available for model {} ({}) and vertical '
+                       'resolution code {}'.format(self.model_id, model_var, 
+                                                   self.obs_vert_type))
+                if not self.obs_vert_type_alt:
+                    raise DataCoverageError(msg)
+                    
+                model_data = model_reader.read_var(model_var, start=start,
+                                                   stop=stop, ts_type=ts_type,
+                                                   flex_ts_type=True,
+                                                   vert_which=self.obs_vert_type_alt)
+            
             if not model_data.ts_type in all_ts_types:
                 raise TemporalResolutionError('Invalid temporal resolution {} '
                                               'in model {}'.format(model_data.ts_type,
@@ -367,7 +358,7 @@ class Colocator(object):
             file_exists = self._check_coldata_exists(model_data.data_id, 
                                                      savename)
             if file_exists:
-                if not self.options.REANALYSE_EXISTING:
+                if not self.REANALYSE_EXISTING:
                     if self._log:
                         self._log.write('SKIP: {}\n'
                                         .format(savename))
@@ -375,6 +366,9 @@ class Colocator(object):
                                        'exists)'.format(savename))
                     continue
                 else:
+                    print_log.info('Deleting and recomputing existing '
+                                   'colocated data file {}'.format(savename))
+                    print_log.info('REMOVE: {}\n'.format(savename))
                     os.remove(os.path.join(out_dir, savename))
             
             coldata = colocate_gridded_ungridded(gridded_data=model_data, 
@@ -383,7 +377,11 @@ class Colocator(object):
                                                  start=start, stop=stop,
                                                  var_ref=obs_var,
                                                  filter_name=self.filter_name,
-                                                 **self.colocation_opts)
+                                                 regrid_res_deg=self.regrid_res_deg,
+                                                 remove_outliers=self.remove_outliers,
+                                                 vert_scheme=self.vert_scheme,
+                                                 harmonise_units=self.harmonise_units,
+                                                 var_outlier_ranges=self.var_outlier_ranges)
             coldata.to_netcdf(out_dir)
             if self._log:
                 self._log.write('WRITE: {}\n'.format(savename))
@@ -399,7 +397,8 @@ class Colocator(object):
             if all_ts_types.index(lowest) < all_ts_types.index(freq):
                 lowest = freq
         return lowest
-            
+    
+         
     def _run_gridded_gridded(self):
         start, stop = self.start, self.stop
         model_reader = ReadGridded(self.model_id, start, stop)
@@ -420,12 +419,14 @@ class Colocator(object):
                 model_var = self.model_use_vars[obs_var]
             else:
                 model_var = obs_var
+            if model_var in self.model_read_aux:
+                model_reader.add_aux_compute(var_name=model_var,
+                                             **self.model_read_aux[model_var])
             
             if not model_var in model_reader.vars_provided:
-                raise DataCoverageError('Variable {} not found in model data {}'
-                                        .format(model_var, self.model_id))
+                continue
             var_matches[obs_var] = model_var
-                
+            
         if len(var_matches) == 0:
             raise DataCoverageError('No variable matches between '
                                     '{} and {} for input vars: {}'
@@ -488,7 +489,7 @@ class Colocator(object):
             file_exists = self._check_coldata_exists(self.model_id,
                                                       savename)
             if file_exists:
-                if not self.options.REANALYSE_EXISTING:
+                if not self.REANALYSE_EXISTING:
                     if self._log:
                         self._log.write('SKIP: {}\n'.format(savename))
                         print_log.info('Skip {} (file already '
@@ -502,7 +503,11 @@ class Colocator(object):
                                                ts_type=ts_type, 
                                                start=start, stop=stop, 
                                                filter_name=self.filter_name,
-                                               **self.colocation_opts)
+                                               regrid_res_deg=self.regrid_res_deg,
+                                               remove_outliers=self.remove_outliers,
+                                               vert_scheme=self.vert_scheme,
+                                               harmonise_units=self.harmonise_units,
+                                               var_outlier_ranges=self.var_outlier_ranges)
             coldata.to_netcdf(out_dir)
             if self._log:
                 self._log.write('WRITE: {}\n'.format(savename))
@@ -554,8 +559,8 @@ if __name__ == '__main__':
                                                         'Zeppel*',
                                                         'Cape*Point*']))
     
-    stp.options.RAISE_EXCEPTIONS = True
-    stp.options.REANALYSE_EXISTING = True
+    stp.RAISE_EXCEPTIONS = True
+    stp.REANALYSE_EXISTING = True
     col = Colocator(stp)
     
     run = True
