@@ -434,8 +434,11 @@ class ReadEbas(ReadUngriddedBase):
                     constraints['station_names'] = stats
             if not 'datalevel' in constraints:
                 constraints['datalevel'] = self.opts.datalevel
+
             req = info.make_sql_request(**constraints)
             
+            const.logger.info('Retrieving EBAS file list for request:\n{}'
+                              .format(req))
             filenames = db.get_file_names(req)
             self.sql_requests.append(req)
             
@@ -665,6 +668,11 @@ class ReadEbas(ReadUngriddedBase):
             try:
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
+                const.logger.warning('Variable {} (EBAS name(s): {}) is '
+                                     'missing in file {} ({}, start: {})'
+                                     .format(var, ebas_var_info.component, 
+                                             os.path.basename(filename),
+                                             name, file.base_date))
                 continue
             # init helper variable for finding closest wavelength (if 
             # no exact wavelength match can be found)
@@ -785,13 +793,23 @@ class ReadEbas(ReadUngriddedBase):
             
             notnan_invalid, invalid = None, None
             if self.remove_invalid_flags:
+                
                 # get rows that are marked as invalid
                 invalid = ~file.flag_col_info[_col.flag_col].valid
                 
                 # now get all invalid rows where data is not already set NaN
                 notnan_invalid = ~np.isnan(data) * invalid
-                
-                data[notnan_invalid] = np.nan
+                # TODO: consider removing this check and applying mask without
+                # retrieving information about how many are set to NaN
+                _tot = np.sum(notnan_invalid)
+                if _tot > 0:
+                    data[notnan_invalid] = np.nan
+                    const.logger.warning('Found {} (of {}) invalid flags (flag '
+                                         'col {}) for var {} in file {}. '
+                                         'Remaining no. of valid data points: {}'
+                                         .format(_tot, len(data), _col.flag_col, 
+                                                 var, os.path.basename(filename),
+                                                 np.sum(~np.isnan(data))))
             
             # REMOVE OUTLIERS
             if self.remove_outliers:
@@ -1089,12 +1107,12 @@ if __name__=="__main__":
     
     from pyaerocom import change_verbosity
     import pyaerocom as pya
-    change_verbosity('critical')
+    change_verbosity('warning')
 
     r = ReadEbas()
-    #absc = r.read(['absc550aer', 'scatc550dryaer'])
-    
-    varlist = ['scatc550dryaer', 'absc550aer']
-    data = r.read(varlist)
+    r.opts.keep_aux_vars = True
+    data =  r.read('scatc550dryaer', station_names='Barrow',
+                   start_date='2018-01-01', stop_date='2018-12-31')
+    data
     
     
