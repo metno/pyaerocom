@@ -166,7 +166,46 @@ class Colocator(object):
         self._log = None
         self.data = {}
         self._ungridded_reader = ReadUngridded()
+     
+    def run(self, model_id=None):
+        """Run current analysis
+        """
+        if model_id is not None:
+            self.model_id = model_id
+        else:
+            model_id = self.model_id
+        self._init_log()
         
+        self._log.write('\n\nModel: {}\n'.format(model_id))
+        try:
+            if self.obs_id in self._setup.UNGRIDDED_IDS:
+                self.data[self.model_id] = self._run_gridded_ungridded()
+            else:
+                self.data[self.model_id] = self._run_gridded_gridded()
+        except:
+            msg = ('Failed to perform analysis: {}\n'
+                   .format(traceback.format_exc()))
+            const.print_log.warning(msg)
+            self._log.write(msg)
+            if self.RAISE_EXCEPTIONS:
+                self._close_log()
+                raise Exception(traceback.format_exc())
+        finally:
+            self._close_log()
+            
+    @staticmethod 
+    def get_lowest_resolution(ts_type, *ts_types):
+        all_ts_types = const.GRID_IO.TS_TYPES
+        lowest = ts_type
+        for freq in ts_types:
+            if all_ts_types.index(lowest) < all_ts_types.index(freq):
+                lowest = freq
+        return lowest
+    
+    def output_dir(self, task_name):
+        """Output directory for colocated data"""
+        return self._output_dirs[task_name]
+    
     def _init_log(self):
         logdir = chk_make_subdir(self._setup.basedir_logfiles, 
                                  self.model_id)
@@ -213,9 +252,7 @@ class Colocator(object):
                                                          filter_name=self.filter_name)
         return coll_data_name + '.nc'
     
-    def output_dir(self, task_name):
-        """Output directory for colocated data"""
-        return self._output_dirs[task_name]
+    
     
     def _check_coldata_exists(self, model_id, coldata_savename):
         """Check if colocated data file exists"""
@@ -228,31 +265,19 @@ class Colocator(object):
             return True
         return False
     
-    def run(self, model_id=None):
-        """Run current analysis
-        """
-        if model_id is not None:
-            self.model_id = model_id
-        else:
-            model_id = self.model_id
-        self._init_log()
-        
-        self._log.write('\n\nModel: {}\n'.format(model_id))
-        try:
-            if self.obs_id in self._setup.UNGRIDDED_IDS:
-                self.data[self.model_id] = self._run_gridded_ungridded()
-            else:
-                self.data[self.model_id] = self._run_gridded_gridded()
-        except:
-            msg = ('Failed to perform analysis: {}\n'
-                   .format(traceback.format_exc()))
-            const.print_log.warning(msg)
-            self._log.write(msg)
-            if self.RAISE_EXCEPTIONS:
-                self._close_log()
-                raise Exception(traceback.format_exc())
-        finally:
-            self._close_log()
+    def _update_var_outlier_ranges(self, var_matches):
+        for ovar, mvar in var_matches.items():
+            oname = const.VAR_PARAM[ovar].var_name
+            if oname != ovar:
+                if ovar in self.var_outlier_ranges:
+                    if not oname in self.var_outlier_ranges:
+                        self.var_outlier_ranges[oname] = self.var_outlier_ranges[ovar]
+                    
+            mname = const.VAR_PARAM[mvar].var_name
+            if mname != mvar:
+                if mvar in self.var_outlier_ranges:
+                    if not mname in self.var_outlier_ranges:
+                        self.var_outlier_ranges[mname] = self.var_outlier_ranges[mvar]
         
     def _run_gridded_ungridded(self):
         """Analysis method for gridded vs. ungridded data"""
@@ -296,7 +321,9 @@ class Colocator(object):
                                     .format(self.model_id, 
                                             self.obs_id, 
                                             self.obs_vars))
-            
+        if self.remove_outliers:
+            self._update_var_outlier_ranges(var_matches)
+                            
         all_ts_types = const.GRID_IO.TS_TYPES
 # =============================================================================
 #         datalevel = None
@@ -388,16 +415,6 @@ class Colocator(object):
                 print_log.info('Writing file {}'.format(savename))
             data_objs[model_var] = coldata
         return data_objs
-    
-    @staticmethod 
-    def get_lowest_resolution(ts_type, *ts_types):
-        all_ts_types = const.GRID_IO.TS_TYPES
-        lowest = ts_type
-        for freq in ts_types:
-            if all_ts_types.index(lowest) < all_ts_types.index(freq):
-                lowest = freq
-        return lowest
-    
          
     def _run_gridded_gridded(self):
         start, stop = self.start, self.stop
@@ -433,6 +450,8 @@ class Colocator(object):
                                     .format(self.model_id, 
                                             self.obs_id, 
                                             self.obs_vars))
+        if self.remove_outliers:
+            self._update_var_outlier_ranges(var_matches)
             
         all_ts_types = const.GRID_IO.TS_TYPES
         
