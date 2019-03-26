@@ -385,8 +385,12 @@ def unit_conversion_fac(from_unit, to_unit):
     """
     if isinstance(from_unit, str):
         from_unit = Unit(from_unit)
-   
-    return from_unit.convert(1, to_unit)
+    try:
+        return from_unit.convert(1, to_unit)    
+    except ValueError:
+        from pyaerocom.exceptions import UnitConversionError
+        raise UnitConversionError('Failed to convert unit from {} to {}'
+                                  .format(from_unit, to_unit))
     
 def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
                    num_keys=NUM_KEYS_META, num_rtol=1e-2):
