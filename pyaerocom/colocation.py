@@ -330,9 +330,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     #start = pd.Timestamp(start.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
     if remove_outliers:
-        ungridded_data = ungridded_data.remove_outliers(var_ref, inplace=False,
-                                                        low=low_ref, 
-                                                        high=high_ref)
+        ungridded_data.remove_outliers(var_ref, inplace=True,
+                                       low=low_ref, 
+                                       high=high_ref)
     all_stats = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
                                                    start=start, 
                                                    stop=stop, 
@@ -409,8 +409,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             
             # get model data corresponding to station
             grid_stat = grid_stat_data[i]
-            if remove_outliers:
-                grid_stat.remove_outliers(var, low=low, high=high)
             
             if harmonise_units:
                 grid_unit = grid_stat.get_unit(var)
@@ -419,6 +417,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                     grid_stat.convert_unit(var, obs_unit)
                 if gridded_unit is None:
                     gridded_unit = obs_unit
+            if remove_outliers:
+                grid_stat.remove_outliers(var, low=low, high=high)
+                
             grid_tseries = grid_stat[var]  
             obs_tseries = obs_data[var_ref]
             
