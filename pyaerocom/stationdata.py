@@ -7,7 +7,7 @@ from pyaerocom import VerticalProfile, logger, const
 
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   DataExtractionError, DataDimensionError,
-                                  UnitConversionError)
+                                  UnitConversionError, DataUnitError)
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
@@ -88,8 +88,37 @@ class StationData(StationMetaData):
         try: 
             return str(self.var_info[var_name]['unit'])
         except KeyError:
-            raise MetaDataError('Failed to access unit for variable {}'.format(var_name))
+            raise MetaDataError('Failed to access unit for variable {}'
+                                .format(var_name))
+    
+    def check_unit(self, var_name, unit=None):
+        """Check if variable unit corresponds to a certain unit
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name for which unit is to be checked
+        unit : :obj:`str`, optional
+            unit to be checked, if None, AeroCom default unit is used
             
+        Raises
+        ------
+        MetaDataError
+            if unit information is not accessible for input variable name
+        UnitConversionError
+            if current unit cannot be converted into specified unit 
+            (e.g. 1 vs m-1)
+        DataUnitError
+            if current unit is not equal to input unit but can be converted 
+            (e.g. 1/Mm vs 1/m)
+        """
+        if unit is None:
+            unit = const.VAR_PARAM[var_name].unit
+        if not unit_conversion_fac(self.get_unit(var_name), unit) == 1:
+            raise DataUnitError('Invalid unit {} (expected {})'
+                                .format())
+        
+      
     def convert_unit(self, var_name, to_unit):
         """Try to convert unit of data
         
@@ -115,19 +144,15 @@ class StationData(StationMetaData):
         """
         unit = self.get_unit(var_name)
         
-        try:
-            conv_fac = unit_conversion_fac(unit, to_unit)
-            data = self[var_name]
-            data *= conv_fac
-            self[var_name] = data
-            self.var_info[var_name]['unit'] = to_unit
-            const.logger.info('Successfully converted unit of variable {} in {} '
-                              'from {} to {}'.format(var_name, self.station_name,
-                                                     unit, to_unit))
-        except Exception as e:
-            raise UnitConversionError('Failed to convert unit of variable {} in {} '
-                              'from {} to {}. Error: {}'.format(var_name, self.station_name,
-                                                         unit, to_unit, repr(e)))
+        conv_fac = unit_conversion_fac(unit, to_unit)
+        data = self[var_name]
+        data *= conv_fac
+        self[var_name] = data
+        self.var_info[var_name]['unit'] = to_unit
+        const.logger.info('Successfully converted unit of variable {} in {} '
+                          'from {} to {}'.format(var_name, self.station_name,
+                                                 unit, to_unit))
+    
         
     def dist_other(self, other):
         """Distance to other station in km
@@ -714,7 +739,7 @@ class StationData(StationMetaData):
             raise MetaDataError('Invalid ts_type {}: need AEROCOM default {}'
                                 .format(tp, const.GRID_IO.TS_TYPES))
         return tp
-      
+        
     def remove_outliers(self, var_name, low=None, high=None):
         """Remove outliers from one of the variable timeseries
         
@@ -733,18 +758,24 @@ class StationData(StationMetaData):
             are used (cf. maximum attribute of `available variables 
             <https://pyaerocom.met.no/config_files.html#variables>`__)
         """
-        if low is None:
-            low = const.VAR_PARAM[var_name].minimum
-            logger.info('Setting {} outlier lower lim: {:.2f}'
-                        .format(var_name, low))
-        if high is None:
-            high = const.VAR_PARAM[var_name].maximum
-            logger.info('Setting {} outlier upper lim: {:.2f}'
-                        .format(var_name, high))
+        if any([x is None for x in (low, high)]):
+            info = const.VAR_PARAM[var_name]
+            try: 
+                self.check_unit(var_name)
+            except DataUnitError:
+                self.convert_unit(var_name, to_unit=info.unit)
+            if low is None:
+                low = info.minimum
+                logger.info('Setting {} outlier lower lim: {:.2f}'
+                            .format(var_name, low))
+            if high is None:
+                high = info.maximum
+                logger.info('Setting {} outlier upper lim: {:.2f}'
+                            .format(var_name, high))
+            
+            
         d = self[var_name]
         invalid_mask = np.logical_or(d<low, d>high)
-        if invalid_mask.sum() > 0:
-            print('BLAAAAAAAAAAA', self.station_name)
         d[invalid_mask] = np.nan
         self[var_name] = d
         
