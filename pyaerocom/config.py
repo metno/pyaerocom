@@ -945,6 +945,12 @@ class GridIO(object):
     INCLUDE_SUBDIRS : bool
         if True, search for files is expanded to all subdirecories included in
         data directory. Aerocom default is False.
+    INFER_SURFACE_LEVEL : bool
+        if True then surface level for 4D gridded data is inferred automatically
+        when necessary (e.g. when extracting surface time series from 4D 
+        gridded data object that does not contain sufficient information about
+        vertical dimension)
+        
     """
     _AEROCOM = {'FILE_TYPE': '.nc',
                'TS_TYPES': ['hourly', '3hourly', 'daily', 'monthly', 'yearly'],
@@ -988,6 +994,8 @@ class GridIO(object):
         self.USE_RENAMED_DIR = True
         
         self.INCLUDE_SUBDIRS = False
+        
+        self.INFER_SURFACE_LEVEL = True
         
     def load_aerocom_default(self):
         self.from_dict(self._AEROCOM)
