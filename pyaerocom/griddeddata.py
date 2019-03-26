@@ -10,7 +10,6 @@ import iris
 from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
 from pandas import Timestamp, Series
-from warnings import warn
 import numpy as np
 import pandas as pd
 from pyaerocom import const, logger, print_log
@@ -104,7 +103,7 @@ class GriddedData(object):
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
     _MAX_SIZE_GB = 30 #maximum file size for in-memory operations
     
-    SUPPORTED_VERT_SCHEMES = ['mean', 'surface', 'altitude', 'profile']
+    SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude', 'profile']
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
         self.suppl_info = od(from_files         = [],
@@ -562,22 +561,6 @@ class GriddedData(object):
         """
         self.grid.transpose(new_order)
         
-    def _check_altitude_access(self):
-        coord_name = self.coord_names[-1]
-        if coord_name == 'altitude':
-            return True
-        from pyaerocom.vert_coords import _VertCoordConverter as conv
-        if not coord_name in conv.supported:
-            return False
-        arg_info = conv.VARS[coord_name]
-        for arg, possible_vals in arg_info.items():
-            pass
-            
-    
-    def get_altitude(self, coords):
-        """Extract (or try to compute) altitude values at input coordinates"""
-        raise NotImplementedError('Coming soon...')
-        
     def to_time_series(self, sample_points=None, scheme="nearest", 
                        collapse_scalar=True, vert_scheme=None, **coords):
 
@@ -644,6 +627,7 @@ class GriddedData(object):
         return self._to_timeseries_3D(sample_points, scheme, 
                                       collapse_scalar, vert_scheme)
     
+        
     def _to_timeseries_2D(self, sample_points, scheme, collapse_scalar):
         """Extract time-series for provided input coordinates (lon, lat)
         
@@ -691,61 +675,94 @@ class GriddedData(object):
             result.append(data)
         return result
 
-    def _check_vert_scheme(self, sample_points, vert_scheme):
+    def _apply_vert_scheme(self, sample_points, vert_scheme=None):
         """Helper method that checks and infers vertical scheme for time
-        series computation from 3D data (used in :func:`_to_timeseries_3D`)"""
-        from pyaerocom import vert_coords as vc
-        if 'altitude' in [sp[0] for sp in sample_points]:
+        series computation from 3D data (used in :func:`_to_timeseries_3D`)"""        
+        if vert_scheme is None:
+            const.print_log.info('Setting vert_scheme in GriddedData to mean')
+            vert_scheme ='mean'        
+        try:
+            self.check_dimcoords_tseries()
+        except DimensionOrderError:
+            self.reorder_dimensions_tseries()
+        
+        cname = self.dimcoord_names[-1]
+        
+        if not vert_scheme in self.SUPPORTED_VERT_SCHEMES:
+            raise ValueError('Invalid input for vert_scheme: {}. Supported '
+                             'schemes are: {}'.format(self.SUPPORTED_VERT_SCHEMES))
+        if vert_scheme == 'surface':
+            vert_index = self._infer_index_surface_level()
+            return self[:,:,:,vert_index]
+        elif vert_scheme == 'altitude':
+            if not 'altitude' in [sp[0] for sp in sample_points]:
+                raise ValueError('Require altitude specification in sample '
+                                 'points for vert_scheme altitude')
             if not self._check_altitude_access():
                 raise DataDimensionError('Cannot access altitude '
                                          'information')
-            if vert_scheme is not None and not vert_scheme=='altitude':
-                    raise ValueError('Conflict: Input sample points include ' 
-                                     'altitude information but input for '
-                                     'vert_scheme is {}'.format(vert_scheme))
-            vert_scheme = 'altitude'
-        elif vert_scheme == 'surface':
-            #presume data dimensions have been sorted
-            cname = self.dimcoord_names[-1]        
-            if not vc.supported(cname):
-                #: work in progress
-                from pyaerocom.vert_coords import AltitudeAccess
-                self._altitude_access = acc = AltitudeAccess(self)
-                
-                acc.find_and_import_auxvars()
-                
-                raise DataDimensionError('Vertical dimension coordinate {} is '
-                                         'not supported. Cannot infer surface '
-                                         'level'.format(cname))
-        if vert_scheme is None:
-            vert_scheme ='mean'
-        return vert_scheme
+            raise NotImplementedError('Cannot yet retrieve timeseries at '
+                                      'altitude levels. Coming soon...')
+        else:
+            try:
+                # check if vertical scheme can be converted into valid iris 
+                # aggregator (in which case vertical dimension is collapsed)
+                aggr = str_to_iris(vert_scheme)
+            except KeyError:
+                pass
+            else:
+                return self.collapsed(cname, aggr)
+            
+        raise NotImplementedError('Cannot yet retrieve timeseries '
+                                          'from 4D data for vert_scheme {} '
+                                          .format(vert_scheme))
     
+    def _check_altitude_access(self):
+        coord_name = self.coord_names[-1]
+        if coord_name == 'altitude':
+            return True
+        from pyaerocom.vert_coords import AltitudeAccess
+        self._altitude_access = acc = AltitudeAccess(self)
+                
+        acc.find_and_import_auxvars()
+        raise NotImplementedError('Coming soon...')
+            
+    
+    def get_altitude(self, coords):
+        """Extract (or try to compute) altitude values at input coordinates"""
+        raise NotImplementedError('Coming soon...')
+        
+    def _infer_index_surface_level(self):
+        if not self.ndim == 4:
+            raise DataDimensionError('Can only infer surface level for 4D '
+                                     'gridded data object')
+        try:
+            self.check_dimcoords_tseries()
+        except DimensionOrderError:
+            self.reorder_dimensions_tseries()
+        cname = self.dimcoord_names[-1]
+        from pyaerocom import vert_coords as vc
+        try:
+            coord = vc.VerticalCoordinate(cname)
+            if coord.lev_increases_with_alt:
+                return np.argmin(self.grid.dim_coords[3].points)
+            else:
+                return np.argmax(self.grid.dim_coords[3].points)
+        except:
+            if not const.GRID_IO.INFER_SURFACE_LEVEL:
+                raise DataExtractionError('Cannot infer surface level sinces '
+                                          'global option INFER_SURFACE_LEVEL in'
+                                          'pyaerocom.const.GRID_IO is deactivated')
+            last_lev_idx = self.shape[-1] - 1
+            if np.nanmean(self[0, :, :, 0]) > np.nanmean(self[0, :, :, last_lev_idx]):
+                return 0
+            return last_lev_idx
+        
     def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
-                          vert_scheme='profile'):
+                          vert_scheme='surface'):
 
         # data contains vertical dimension
-        vert_scheme = self._check_vert_scheme(sample_points, vert_scheme)
-        if vert_scheme in ('altitude', 'profile'):
-            raise NotImplementedError('Coming soon...')
-        cname = self.dimcoord_names[-1]
-        
-        try:
-            # check if vertical scheme can be converted into valid iris 
-            # aggregator (in which case vertical dimension is collapsed)
-            aggr = str_to_iris(vert_scheme)
-            data = self.collapsed(cname, aggr)
-        except KeyError:
-            from pyaerocom import vert_coords as vc
-            if vert_scheme == 'surface':
-                cname = self.dimcoord_names[-1]
-                coord = vc.VerticalCoordinate(cname)
-                if coord.lev_increases_with_alt:
-                    vert_index = np.argmin(self.grid.dim_coords[3].points)
-                else:
-                    vert_index = np.argmax(self.grid.dim_coords[3].points)
-                data = self[:,:,:,vert_index]
-        
+        data = self._apply_vert_scheme(sample_points, vert_scheme)
                     
         return data.to_time_series(sample_points, scheme, 
                                    collapse_scalar)
@@ -1585,66 +1602,11 @@ if __name__=='__main__':
     
     plt.close("all")
     
-    r = pya.io.ReadGridded('SPRINTARS-T213_AP3-CTRL2016-PD')
-    d = r.read_var('ec550aer')
-    RUN_OLD_STUFF = False
-    
     reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    data = reader.read_var('od550aer', 2010)
+    data = reader.read_var('ec532aer3D', 2010)
     
-    t1 = data.to_time_series(longitude=[30], latitude=[40])
-    ts = data.to_time_series_single_coord(longitude=30, latitude=40)
+    t1 = data.to_time_series(longitude=[30], latitude=[40],
+                             vert_scheme='max')
     
-    if RUN_OLD_STUFF:
-        from pyaerocom.io.testfiles import get
-        from matplotlib.pyplot import figure
-        files = get()
-        data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
-                         name='aatsr_su_v4.3')
-        print(data.var_name)
-        print(type(data.longitude))
-        print(data.longitude.points.min(), data.longitude.points.max())
-        print(data.latitude.points.min(), data.latitude.points.max())
-        print(data.time.points.min(), data.time.points.max())
-        tstamps = data.time_stamps()
-        print(tstamps[0], tstamps[-1])
-        
-        data.longitude.circular = True
-        cropped = data.crop(lon_range=(100, 170), lat_range=(-60, 60))
-        print(cropped.shape)
-        cropped.quickplot_map()
-        
-        other = GriddedData(files["models"]["ecmwf_osuite"],
-                          var_name="od550aer", name="ECMWF_OSUITE")
-        other.quickplot_map()
-        #crop randomly
-        ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))
-        ocropped.quickplot_map()
-        # some plot options
-        ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
-        ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
-        
-        # crop india
-        cropped_india = other.crop(region="INDIA")[:60]
-        cropped_india.quickplot_map(time_idx=0)
-        
-        if np.any(np.isnan(cropped_india.grid.data)):
-            raise Exception
-        
-        mean = cropped_india.area_weighted_mean()
-        
-        s = Series(data=mean, index=cropped_india.time_stamps())
-        
-        fig = figure()
-        s.plot()
-        fig.tight_layout()
-        try:
-            GriddedData(files["models"]["ecmwf_osuite"])
-        except ValueError as e:
-            warn(repr(e))
-        
-# =============================================================================
-#     import doctest
-#     doctest.testmod()
-# 
-# =============================================================================
+    t2 = data.to_time_series(longitude=[30], latitude=[40],
+                             vert_scheme='surface')
