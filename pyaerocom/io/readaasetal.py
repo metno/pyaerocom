@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
-import od
+#import od
+from collections import OrderedDict
 
 from pyaerocom import const, print_log
 
@@ -180,8 +181,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         idx = 0
 
         #assign metadata object
-        metadata = data_obj.metadata
-        meta_idx = data_obj.meta_idx
+        metadata = data_obj.metadata # OrderedDict
+        meta_idx = data_obj.meta_idx # OrderedDict
         nr_which_are_already_there = 0
 
         for file in self.files:
@@ -194,7 +195,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
             for station_data in station_data_list:
                 #self.counter += 1
-                metadata[meta_key] = od()
+                metadata[meta_key] = OrderedDict()
                 metadata[meta_key].update(station_data.get_meta())
                 metadata[meta_key].update(station_data.get_station_coords())
                 metadata[meta_key]['data_id'] = self.DATA_ID
@@ -209,9 +210,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
                 metadata[meta_key]['instrument_name'] = instr
 
+                #print(metadata[meta_key])
+
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
-                meta_idx[meta_key] = od()
+                meta_idx[meta_key] = OrderedDict()
 
                 num_times = len(station_data['dtime'])
                 num_vars = len(station_data["variables"])
@@ -241,10 +244,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
 
                     meta_idx[meta_key][var] = np.arange(start, stop)
-                    
+
                     if not var in data_obj.var_idx:
                         data_obj.var_idx[var] = var_idx
 
+                #print(metadata.keys())
                 meta_key += 1
                 #nr_which_are_already_there += stop
                 idx += totnum
@@ -261,8 +265,8 @@ if __name__ == "__main__":
      change_verbosity('warning')
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
      ungridded = aa.read()
-     print(np.shape(ungridded._data))
-     print(np.shape(ungridded.metadata[0.0]))
+     #print(np.shape(ungridded._data))
+     #print(ungridded.metadata[0.0])
 
      #print(ungridded.contains_vars)
      #ax = ungridded.plot_station_coordinates(color='lime')
@@ -271,10 +275,7 @@ if __name__ == "__main__":
      #print(ungridded.unique_station_names)
      #print(ungridded.metadata[0])
 
-     #stat = ungridded.to_station_data('Abington')
-
+     stat = ungridded.to_station_data('Abington')
      #print(stat)
-     #
-     #ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
-
-     #ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
+     ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
+     ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
