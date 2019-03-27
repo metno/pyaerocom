@@ -183,15 +183,15 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         #assign metadata object
         metadata = data_obj.metadata # OrderedDict
         meta_idx = data_obj.meta_idx # OrderedDict
-        nr_which_are_already_there = 0
 
-        for file in self.files:
+        for file in [self.files[0]]:
             station_data_list = self.read_file(file, vars_to_retrieve=None)
 
             # Fill the metatdata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
+            varindex = 0
 
             for station_data in station_data_list:
                 #self.counter += 1
@@ -227,7 +227,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     data_obj.add_chunk(totnum)
 
                 for var_idx, var in enumerate(vars_to_retrieve):
-
+                    var_idx += varindex
                     values = station_data[var]
 
                     start = idx + var_idx * num_times
@@ -244,7 +244,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
 
                     meta_idx[meta_key][var] = np.arange(start, stop)
-
+                    print(meta_idx[meta_key][var])
+                    # Adds the variables to the ungriddeddata object.
                     if not var in data_obj.var_idx:
                         data_obj.var_idx[var] = var_idx
 
@@ -252,30 +253,31 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 meta_key += 1
                 #nr_which_are_already_there += stop
                 idx += totnum
+            varindex+=1
         # When we finish reading crop the dataobject to the last index.
         data_obj._data = data_obj._data[:idx]
         data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj
+        print(data_obj.contains_vars)
         return data_obj
 
 
 if __name__ == "__main__":
      from pyaerocom import change_verbosity
 
-     change_verbosity('warning')
+     #change_verbosity('warning')
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
      ungridded = aa.read()
-     #print(np.shape(ungridded._data))
      #print(ungridded.metadata[0.0])
 
      #print(ungridded.contains_vars)
      #ax = ungridded.plot_station_coordinates(color='lime')
      #ax.figure.savefig('/home/hannas/Desktop/test_stations_aasetal.png')
 
-     #print(ungridded.unique_station_names)
+     print(ungridded.unique_station_names)
      #print(ungridded.metadata[0])
 
-     stat = ungridded.to_station_data('Abington')
-     #print(stat)
-     ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
-     ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
+     stat = ungridded.to_station_data('Algoma')
+
+     #ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
+     #ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
