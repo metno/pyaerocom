@@ -14,9 +14,9 @@ from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
-    
+
     ToDo: write more detailed introduction
-    
+
     Attributes
     ----------
     dtime : list
@@ -27,15 +27,15 @@ class StationData(StationMetaData):
         dictionary that may be used to store uncertainty timeseries or data
         arrays associated with the different variable data.
     overlap : dict
-        dictionary that may be filled to store overlapping timeseries data 
-        associated with one variable. This is, for instance, used in 
+        dictionary that may be filled to store overlapping timeseries data
+        associated with one variable. This is, for instance, used in
         :func:`merge_vardata` to store overlapping data from another station.
-    
+
     """
-    #: List of keys that specify standard metadata attribute names. This 
+    #: List of keys that specify standard metadata attribute names. This
     #: is used e.g. in :func:`get_meta`
     STANDARD_COORD_KEYS = const.STANDARD_COORD_NAMES
-    
+
     #: maximum numerical distance between coordinates associated with this
     #: station
     _COORD_MAX_VAR = 0.1 #km
@@ -43,95 +43,95 @@ class StationData(StationMetaData):
     def __init__(self, **meta_info):
 
         self.dtime = []
-    
+
         self.var_info = BrowseDict()
-        
+
         self.station_coords = dict.fromkeys(self.STANDARD_COORD_KEYS)
-        
-        self.data_err = BrowseDict()        
+
+        self.data_err = BrowseDict()
         self.overlap = BrowseDict()
         super(StationData, self).__init__(**meta_info)
-    
+
     @property
     def default_vert_grid(self):
         """AeroCom default grid for vertical regridding
-        
+
         For details, see :attr:`DEFAULT_VERT_GRID_DEF` in :class:`Config`
-        
+
         Returns
         -------
         ndarray
             numpy array specifying default coordinates
         """
         return const.make_default_vert_grid()
-    
+
     def dist_other(self, other):
         """Distance to other station in km
-        
+
         Parameters
         ----------
         other : StationData
             other data object
-            
+
         Returns
         -------
         float
             distance between this and other station in km
         """
         from pyaerocom.geodesy import calc_distance
-        
+
         cthis = self.get_station_coords()
         cother = other.get_station_coords()
-        
+
         return calc_distance(cthis['latitude'], cthis['longitude'],
                              cother['latitude'], cother['longitude'],
                              cthis['altitude'], cother['altitude'])
-        
+
     def same_coords(self, other, tol_km=None):
         """Compare station coordinates of other station with this station
-        
+
         Paremeters
         ----------
         other : StationData
             other data object
         tol_km : float
             distance tolerance in km
-            
+
         Returns
         -------
         bool
-            if True, then the two object are located within the specified 
+            if True, then the two object are located within the specified
             tolerance range
         """
         if tol_km is None:
             tol_km = self._COORD_MAX_VAR
         return True if self.dist_other(other) < tol_km else False
-    
+
     def get_station_coords(self, force_single_value=True, quality_check=True):
         """Return coordinates as dictionary
-        
-        This method uses the standard coordinate names defined in 
+
+        This method uses the standard coordinate names defined in
         :attr:`STANDARD_COORD_KEYS` (latitude, longitude and altitude) to get
-        the station coordinates. For each of these parameters tt first looks 
-        in :attr:`station_coords` if the parameter is defined (i.e. it is not 
-        None) and if not it checks if this object has an attribute that has 
-        this name and uses that one. 
-        
+        the station coordinates. For each of these parameters tt first looks
+        in :attr:`station_coords` if the parameter is defined (i.e. it is not
+        None) and if not it checks if this object has an attribute that has
+        this name and uses that one.
+
         Parameters
         ----------
         force_single_value : bool
-            if True and coordinate values are lists or arrays, then they are 
+            if True and coordinate values are lists or arrays, then they are
             collapsed to single value using mean
         quality_check : bool
-            if True, and coordinate values are lists or arrays, then the 
+            if True, and coordinate values are lists or arrays, then the
             standarad deviation in the values is compared to the upper limits
-            allowed in the local variation. 
-        
+            allowed in the local variation.
+
         Returns
         -------
         dict
             dictionary containing the retrieved coordinates
-            
+
         Raises
         ------
         AttributeError
@@ -188,7 +188,7 @@ class StationData(StationMetaData):
 #                                       "exceeding upper limit of {} m".format(
 #                                       self.COORD_MAX_VAR['latitude']))
 #             elif self.COORD_MAX_VAR['longitude'] < (lat_len *
-#                                                     np.cos(np.deg2rad(lat)) * 
+#                                                     np.cos(np.deg2rad(lat)) *
 #                                                     dlon):
 #                 raise CoordinateError("Variation in station longitude is "
 #                                       "exceeding upper limit of {} m".format(
@@ -199,26 +199,26 @@ class StationData(StationMetaData):
 #                                       self.COORD_MAX_VAR['latitude']))
 # =============================================================================
         return vals
-    
+
     def get_meta(self, force_single_value=True, quality_check=True):
         """Return meta-data as dictionary
-        
+
         Parameters
         ----------
         force_single_value : bool
-            if True, then each meta value that is list or array,is converted 
-            to a single value. 
+            if True, then each meta value that is list or array,is converted
+            to a single value.
         quality_check : bool
-            if True, and coordinate values are lists or arrays, then the 
+            if True, and coordinate values are lists or arrays, then the
             standarad deviation in the values is compared to the upper limits
             allowed in the local variation. The upper limits are specified
-            in attr. ``COORD_MAX_VAR``. 
-        
+            in attr. ``COORD_MAX_VAR``.
+
         Returns
         -------
         dict
             dictionary containing the retrieved meta-data
-            
+
         Raises
         ------
         AttributeError
@@ -232,9 +232,9 @@ class StationData(StationMetaData):
             if key in self.STANDARD_COORD_KEYS: # this has been handled above
                 continue
             if self[key] is None:
-                logger.warning('No metadata available for key {}'.format(key))
+                #logger.warning('No metadata available for key {}'.format(key))
                 continue
-            
+
             val = self[key]
             if force_single_value and isinstance(val, (list, tuple, np.ndarray)):
                 if quality_check and not all([x == val[0] for x in val]):
@@ -244,9 +244,9 @@ class StationData(StationMetaData):
                                         key))
                 val = val[0]
             meta[key] = val
-    
+
         return meta
-    
+
     def _append_meta_item(self, key, val):
         """Add a metadata item"""
         if not key in self or self[key] == None:
@@ -258,7 +258,7 @@ class StationData(StationMetaData):
                                      'mismatch'.format(key))
                 vals = [x.strip() for x in self[key].split(';')]
                 vals_in = [x.strip() for x in val.split(';')]
-                
+
                 for _val in vals_in:
                     if not _val in vals:
                         self[key] = self[key] + '; {}'.format(_val)
@@ -274,82 +274,82 @@ class StationData(StationMetaData):
                     if not self[key] == val:
                         self[key] = [self[key], val]
         return self
-                        
-    def merge_meta_same_station(self, other, coord_tol_km=None, 
+
+    def merge_meta_same_station(self, other, coord_tol_km=None,
                                 check_coords=True, inplace=True,
                                 **add_meta_keys):
         """Merge meta information from other object
-        
+
         Note
         ----
-        Coordinate attributes (latitude, longitude and altitude) are not 
+        Coordinate attributes (latitude, longitude and altitude) are not
         copied as they are required to be the same in both stations. The
         latter can be checked and ensured using input argument ``check_coords``
-        
+
         Parameters
         ----------
         other : StationData
             other data object
         coord_tol_km : float
-            maximum distance in km between coordinates of input StationData 
+            maximum distance in km between coordinates of input StationData
             object and self. Only relevant if :attr:`check_coords` is True. If
             None, then :attr:`_COORD_MAX_VAR` is used which is defined in the
-            class header. 
+            class header.
         check_coords : bool
             if True, the coordinates are compared and checked if they are lying
             within a certain distance to each other (cf. :attr:`coord_tol_km`).
         inplace : bool
-            if True, the metadata from the other station is added to the 
+            if True, the metadata from the other station is added to the
             metadata of this station, else, a new station is returned with the
             merged attributes.
         **add_meta_keys
             additional non-standard metadata keys that are supposed to be
             considered for merging.
 
-                    
+
         """
         if not other.station_name == self.station_name:
             raise ValueError('Can only merged metadata from same station')
-        
+
         if not inplace:
             from copy import deepcopy
             obj = deepcopy(self)
         else:
             obj = self
-            
+
         if check_coords:
             if coord_tol_km is None:
                 coord_tol_km = self._COORD_MAX_VAR
             try:
                 self.same_coords(other, coord_tol_km)
-            except MetaDataError: # 
+            except MetaDataError: #
                 pass
-                    
+
         keys = self.STANDARD_META_KEYS
         keys.extend(add_meta_keys)
         # remove station name from key list to be merged
-        
-        
-        
+
+
+
         for key in keys:
             if key == 'station_name':
                 continue
             if key in self.STANDARD_COORD_KEYS:
                 if self[key] is None and other[key] is not None:
                     self[key] = other[key]
-            
+
             elif key in other and other[key] is not None:
                 obj._append_meta_item(key, other[key])
-        
+
         return obj
-        
+
     def merge_varinfo(self, other, var_name):
         """Merge variable specific meta information from other object
-        
+
         Parameters
         ----------
         other : StationData
-            other data object 
+            other data object
         var_name : str
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
@@ -357,7 +357,7 @@ class StationData(StationMetaData):
         if not var_name in self.var_info:
             raise KeyError('No variable meta information available for {}'
                            .format(var_name))
-            
+
         info_this = self.var_info[var_name]
         info_other = other.var_info[var_name]
         for key, val in info_other.items():
@@ -370,7 +370,7 @@ class StationData(StationMetaData):
                                          'mismatch'.format(key))
                     vals = [x.strip() for x in info_this[key].split(';')]
                     vals_in = [x.strip() for x in val.split(';')]
-                    
+
                     for _val in vals_in:
                         if not _val in vals:
                             info_this[key] = info_this[key] + ';{}'.format(_val)
@@ -399,13 +399,13 @@ class StationData(StationMetaData):
 #             else:
 #                 if not isinstance(info_this[k], list):
 #                     info_this[k] = [info_this[k]]
-#                     
+#
 #                 info_this[k].append(v)
 # =============================================================================
-        
+
     def check_if_3d(self, var_name):
         """Checks if altitude data is available in this object"""
-        if 'altitude' in self: 
+        if 'altitude' in self:
             val = self['altitude']
             if isnumeric(val): # is numerical value
                 return False
@@ -417,7 +417,7 @@ class StationData(StationMetaData):
                 return False
             return True
         return False
-        
+
     def _merge_vardata_3d(self, other, var_name):
         """Merge 3D variable data (for details see :func:`merge_vardata`)"""
         raise NotImplementedError
@@ -427,33 +427,33 @@ class StationData(StationMetaData):
         removed = None
         if info['overlap']:
             raise NotImplementedError('Coming soon...')
-        
+
         if len(s1) > 0: #there is data
             overlap = s0.index.intersection(s1.index)
             if len(overlap) > 0:
                 removed = s1[overlap]
                 s1 = s1.drop(index=overlap, inplace=True)
-            
+
             #compute merged time series
             s0 = pd.concat([s0, s1], verify_integrity=True)
-            
+
             # sort the concatenated series based on timestamps
             s0.sort_index(inplace=True)
             self.merge_varinfo(other, var_name)
-        
+
         # assign merged time series (overwrites previous one)
         self[var_name] = s0
-        
+
         if removed is not None:
             if var_name in self.overlap:
-                self.overlap[var_name] = pd.concat([self.overlap[var_name], 
+                self.overlap[var_name] = pd.concat([self.overlap[var_name],
                                                    removed])
                 self.overlap[var_name].sort_index(inplace=True)
             else:
                 self.overlap[var_name] = removed
-                
+
         return self
-    
+
     def _merge_vardata_2d(self, other, var_name):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
         s0 = self[var_name].dropna()
@@ -462,7 +462,7 @@ class StationData(StationMetaData):
         removed = None
         if info['overlap']:
             raise NotImplementedError('Coming soon...')
-        
+
         if len(s1) > 0: #there is data
             overlap = s0.index.intersection(s1.index)
             if len(overlap) > 0:
@@ -470,48 +470,48 @@ class StationData(StationMetaData):
                 s1 = s1.drop(index=overlap, inplace=True)
             #compute merged time series
             s0 = pd.concat([s0, s1], verify_integrity=True)
-            
+
             # sort the concatenated series based on timestamps
             s0.sort_index(inplace=True)
             self.merge_varinfo(other, var_name)
-        
+
         # assign merged time series (overwrites previous one)
         self[var_name] = s0
         self.dtime = s0.index.values
-        
+
         if removed is not None:
             if var_name in self.overlap:
-                self.overlap[var_name] = pd.concat([self.overlap[var_name], 
+                self.overlap[var_name] = pd.concat([self.overlap[var_name],
                                                    removed])
                 self.overlap[var_name].sort_index(inplace=True)
             else:
                 self.overlap[var_name] = removed
-                
+
         return self
-    
+
     def merge_vardata(self, other, var_name):
         """Merge variable data from other object into this object
-        
+
         Note
         ----
         This merges also the information about this variable in the dict
-        :attr:`var_info`. It is required, that variable meta-info is 
+        :attr:`var_info`. It is required, that variable meta-info is
         specified in both StationData objects.
-        
+
         Note
         ----
         This method removes NaN's from the existing time series in the data
-        objects. In order to fill up the time-series with NaNs again after 
+        objects. In order to fill up the time-series with NaNs again after
         merging, call :func:`insert_nans_timeseries`
-        
+
         Parameters
         ----------
         other : StationData
-            other data object 
+            other data object
         var_name : str
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
-            
+
         Returns
         -------
         StationData
@@ -535,30 +535,30 @@ class StationData(StationMetaData):
             raise MetaDataError('For merging of {} data, variable specific meta '
                                 'data needs to be available in var_info dict '
                                 .format(var_name))
-            
+
         if self.check_if_3d(var_name):
             raise NotImplementedError
             #return self._merge_vardata_3d(other, var_name)
         else:
             return self._merge_vardata_2d(other, var_name)
-         
+
     def merge_other(self, other, var_name, **add_meta_keys):
         """Merge other station data object
-        
+
         Todo
         ----
         Should be independent of variable, i.e. it should be able to merge all
         data that is in the other object into this, even if this object does
         not contain that variable yet.
-        
+
         Parameters
         ----------
         other : StationData
-            other data object 
+            other data object
         var_name : str
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
-            
+
         Returns
         -------
         StationData
@@ -567,19 +567,19 @@ class StationData(StationMetaData):
         self.merge_meta_same_station(other, **add_meta_keys)
         self.merge_vardata(other, var_name)
         return self
-        
+
     def get_data_columns(self):
         """List containing all data columns
-        
-        Iterates over all key / value pairs and finds all values that are 
-        lists or numpy arrays that match the length of the time-stamp array 
+
+        Iterates over all key / value pairs and finds all values that are
+        lists or numpy arrays that match the length of the time-stamp array
         (attr. ``time``)
-        
+
         Returns
         -------
         list
-            list containing N arrays, where N is the total number of 
-            datacolumns found. 
+            list containing N arrays, where N is the total number of
+            datacolumns found.
         """
         #self.check_dtime()
         #num = len(self.dtime)
@@ -598,48 +598,48 @@ class StationData(StationMetaData):
         if not cols:
             raise AttributeError("No datacolumns could be found")
         return cols
-    
+
     def check_dtime(self):
         """Checks if dtime attribute is array or list"""
         if not any([isinstance(self.dtime, x) for x in [list, np.ndarray]]):
             raise TypeError("dtime attribute is not iterable: {}".format(self.dtime))
         elif not len(self.dtime) > 0:
-            raise AttributeError("No timestamps available")         
-    
+            raise AttributeError("No timestamps available")
+
     def to_dataframe(self):
         """Convert this object to pandas dataframe
-        
+
         Find all key/value pairs that contain observation data (i.e. values
-        must be list or array and must have the same length as attribute 
+        must be list or array and must have the same length as attribute
         ``time``)
-        
+
         """
         return pd.DataFrame(data=self.get_data_columns(), index=self.dtime)
-    
+
     def get_var_ts_type(self, var_name):
         """Get ts_type for a certain variable
-        
+
         Parameters
         ----------
         var_name : str
             data variable name for which the ts_type is supposed to be
             retrieved
-        
+
         Returns
         -------
         str
             the corresponding data time resolution
-        
+
         Raises
         ------
         MetaDataError
             if no metadata is available for this variable (e.g. if ``var_name``
-            cannot be found in :attr:`var_info`) or if the 
+            cannot be found in :attr:`var_info`) or if the
         """
         if not var_name in self.var_info:
             raise MetaDataError('No variable specific metadata available '
                                 'for {}'.format(var_name))
-        
+
         if 'ts_type' in self.var_info[var_name]:
             tp = self.var_info[var_name]['ts_type']
         else:
@@ -650,14 +650,14 @@ class StationData(StationMetaData):
             raise MetaDataError('Invalid ts_type {}: need AEROCOM default {}'
                                 .format(tp, const.GRID_IO.TS_TYPES))
         return tp
-       
+
     def interpolate_timeseries(self, var_name, freq, min_coverage_interp=0.3,
                                resample_how='mean', inplace=False):
         """Interpolate one variable timeseries to a certain frequency
-        
+
         ToDo: complete docstring
         """
-        new = self.to_timeseries(var_name, freq=freq, 
+        new = self.to_timeseries(var_name, freq=freq,
                                   resample_how='mean')
         coverage = 1 - new.isnull().sum() / len(new)
         if coverage < min_coverage_interp:
@@ -676,18 +676,18 @@ class StationData(StationMetaData):
             from pyaerocom.helpers import PANDAS_FREQ_TO_TS_TYPE
             ts_type = PANDAS_FREQ_TO_TS_TYPE[new.index.freqstr]
             self[var_name] = new
-            
-            self.var_info[var_name]['ts_type'] = ts_type        
-            if len(self.var_info) > 1:     
+
+            self.var_info[var_name]['ts_type'] = ts_type
+            if len(self.var_info) > 1:
                 self.ts_type = None
             else:
                 self.ts_type = ts_type
         return new
-    
+
     def resample_timeseries(self, var_name, ts_type, how='mean',
                             inplace=False, min_num_obs=None):
         """Resample one of the time-series in this object
-        
+
         Parameters
         ----------
         var_name : str
@@ -698,14 +698,14 @@ class StationData(StationMetaData):
         how : str
             how should the resampled data be averaged (e.g. mean, median)
         inplace : bool
-            if True, then the current data object stored in self, will be 
+            if True, then the current data object stored in self, will be
             overwritten with the resampled time-series
         min_num_obs : :obj:`int`, optional
             minimum number of observations required per period (when downsampling).
-            E.g. if input is in daily resolution and freq is monthly and 
+            E.g. if input is in daily resolution and freq is monthly and
             min_num_obs is 10, then all months that have less than 10 days of data
             are set to nan.
-            
+
         Returns
         -------
         pandas.Series
@@ -714,7 +714,7 @@ class StationData(StationMetaData):
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
         data = self[var_name]
-    
+
         if not isinstance(data, (pd.Series, xray.DataArray)):
             try:
                 data = self.to_timeseries(var_name, inplace=inplace)
@@ -723,65 +723,65 @@ class StationData(StationMetaData):
                                  'instance or as xarray.DataArray. Failed to '
                                  'convert to pandas Series.'
                                  'Error: {}'.format(repr(e)))
-        
+
         if isinstance(data, pd.Series):
             new = resample_timeseries(data, freq=ts_type, how=how,
                                       min_num_obs=min_num_obs)
         elif isinstance(data, xray.DataArray):
-            
-            new = resample_time_dataarray(data, freq=ts_type, how=how, 
+
+            new = resample_time_dataarray(data, freq=ts_type, how=how,
                                           min_num_obs=min_num_obs)
-            
-        
+
+
         if inplace:
             self[var_name] = new
-            self.var_info[var_name]['ts_type'] = ts_type        
-            if len(self.var_info) > 1:     
+            self.var_info[var_name]['ts_type'] = ts_type
+            if len(self.var_info) > 1:
                 self.ts_type = None
                 self.dtime = None
             else:
                 self.ts_type = ts_type
                 self.dtime = new.index.values
         return new
-    
+
     def insert_nans_timeseries(self, var_name):
         """Fill up missing values with NaNs in an existing time series
-        
+
         Note
         ----
         This method does a resample of the data onto a regular grid. Thus, if
-        the input ``ts_type`` is different from the actual current ``ts_type`` 
+        the input ``ts_type`` is different from the actual current ``ts_type``
         of the data, this method will not only insert NaNs but at the same.
-        
+
         Parameters
         ---------
         var_name : str
             variable name
         inplace : bool
-            if True, the actual data in this object will be overwritten with 
+            if True, the actual data in this object will be overwritten with
             the new data that contains NaNs
-        
+
         Returns
         -------
         StationData
             the modified station data object
-        
+
         """
         ts_type = self.get_var_ts_type(var_name)
-        
+
         self.resample_timeseries(var_name, ts_type, inplace=True)
-        
+
         return self
 
-    
+
     def _to_ts_helper(self, var_name):
         """Convert data internally to pandas.Series if it is not stored as such
-        
+
         Parameters
         ----------
         var_name : str
             variable name of data
-        
+
         Returns
         -------
         pandas.Series
@@ -795,29 +795,29 @@ class StationData(StationMetaData):
         if not len(data) == len(self.dtime):
             raise ValueError("Mismatch between length of data array for "
                              "variable {} (length: {}) and time array  "
-                             "(length: {}).".format(var_name, len(data), 
-                               len(self.dtime)))    
+                             "(length: {}).".format(var_name, len(data),
+                               len(self.dtime)))
         self[var_name] = s = pd.Series(data, index=self.dtime)
         return s
-    
+
     def select_altitude(self, var_name, altitudes):
-        
+
         data = self[var_name]
-        
+
         if not isrange(altitudes):
             raise NotImplementedError('So far only a range (low, high) is '
                                       'supported for altitude extraction.')
-            
+
         if isinstance(data, xray.DataArray):
             if not sorted(data.dims) == ['altitude', 'time']:
                 raise NotImplementedError('Can only handle dataarrays that '
                                           'contain 2 dimensions altitude and '
                                           'time')
             if isrange(altitudes):
-                                
-                return data.sel(altitude=slice(altitudes[0], 
+
+                return data.sel(altitude=slice(altitudes[0],
                                                altitudes[1]))
-            
+
             raise DataExtractionError('Cannot intepret input for '
                                           'altitude...')
         elif isinstance(data, pd.Series) and isinstance(data.index, pd.DatetimeIndex):
@@ -828,23 +828,23 @@ class StationData(StationMetaData):
             elif not len(self.altitude) == len(data):
                 raise DataDimensionError('Altitude data and {} data have '
                                          'different lengths'.format(var_name))
-            
+
             alts = self['altitude']
             mask = np.logical_and(alts>=altitudes[0],
                                   alts<=altitudes[1])
             return data[mask]
-            
-                    
-        
+
+
+
         raise DataExtractionError('Cannot extract altitudes: type of '
                                   '{} ({}) is not supported'
                                   .format(var_name, type(data)))
-        
-        
-    def to_timeseries(self, var_name, freq=None, resample_how='mean', 
+
+
+    def to_timeseries(self, var_name, freq=None, resample_how='mean',
                       **kwargs):
         """Get pandas.Series object for one of the data columns
-        
+
         Parameters
         ----------
         var_name : str
@@ -853,17 +853,17 @@ class StationData(StationMetaData):
             new temporal resolution (can be pandas freq. string, or pyaerocom
             ts_type)
         resample_how : str
-            choose from mean or median (only relevant if input parameter freq 
+            choose from mean or median (only relevant if input parameter freq
             is provided, i.e. if resampling is applied)
         **kwargs
             optional keyword args passed to :func:`resample_timeseries`
-            
+
         Returns
         -------
         Series
             time series object
-        
-        Raises 
+
+        Raises
         ------
         KeyError
             if variable key does not exist in this dictionary
@@ -880,7 +880,7 @@ class StationData(StationMetaData):
             data = self.select_altitude(var_name, alt_info)
         else:
             data = self[var_name]
-            
+
         if isinstance(data, xray.DataArray):
             if not 'time' in data.dims:
                 raise NotImplementedError('Can only handle dataarrays that '
@@ -890,7 +890,7 @@ class StationData(StationMetaData):
             if not data.ndim == 1:
                 raise Exception('please debug')
             data = data.to_series()
-        
+
         if not isinstance(data, pd.Series):
             data = self._to_ts_helper(var_name)
 
@@ -899,45 +899,45 @@ class StationData(StationMetaData):
                                            **kwargs)
 
         return data
-    
-    def plot_timeseries(self, var_name, freq=None, resample_how='mean', 
-                        add_overlaps=False, legend=True, tit=None, 
+
+    def plot_timeseries(self, var_name, freq=None, resample_how='mean',
+                        add_overlaps=False, legend=True, tit=None,
                         **kwargs):
         """Plot timeseries for variable
-        
+
         Note
         ----
         If you set input arg ``add_overlaps = True`` the overlapping timeseries
         data - if it exists - will be plotted on top of the actual timeseries
-        using red colour and dashed line. As the overlapping data may be 
-        identical with the actual data, you might want to increase the line 
-        width of the actual timeseries using an additional input argumend 
+        using red colour and dashed line. As the overlapping data may be
+        identical with the actual data, you might want to increase the line
+        width of the actual timeseries using an additional input argumend
         ``lw=4``, or similar.
-        
+
         Parameters
         ----------
         var_name : str
             name of variable (e.g. "od550aer")
         freq : :obj:`str`, optional
-            sampling resolution of data (can be pandas freq. string, or 
+            sampling resolution of data (can be pandas freq. string, or
             pyaerocom ts_type).
         resample_how : :obj:`str`, optional
-            choose from mean or median (only relevant if input parameter freq 
+            choose from mean or median (only relevant if input parameter freq
             is provided, i.e. if resampling is applied)
         add_overlaps : bool
-            if True and if overlapping data exists for this variable, it will 
+            if True and if overlapping data exists for this variable, it will
             be added to the plot.
         tit : :obj:`str`, optional
             title of plot, if None, default title is used
         **kwargs
             additional keyword args passed to matplotlib ``plot`` method
-            
+
         Returns
         -------
         axes
             matplotlib.axes instance of plot
-        
-        Raises 
+
+        Raises
         ------
         KeyError
             if variable key does not exist in this dictionary
@@ -963,21 +963,21 @@ class StationData(StationMetaData):
             else:
                 fs = (16, 8)
             _, ax = plt.subplots(1, 1, figsize=fs)
-        else: 
+        else:
             ax = kwargs.pop('ax')
             # keep existing title if it exists
             _tit = ax.get_title()
             if not _tit == '':
                 tit = _tit
-        
+
         if tit is None:
             try:
-                tit = self.get_meta(force_single_value=True, 
-                                      quality_check=False)['station_name']    
+                tit = self.get_meta(force_single_value=True,
+                                      quality_check=False)['station_name']
             except:
                 tit = 'Failed to retrieve station_name'
         s = self.to_timeseries(var_name, freq, resample_how)
-        
+
         ax.plot(s, label=lbl, **kwargs)
         if add_overlaps:
             so = self.overlap[var_name]
@@ -986,11 +986,11 @@ class StationData(StationMetaData):
             except:
                 pass
             if var_name in self.overlap:
-                ax.plot(so, '--', lw=1, c='r', 
-                        label='{} (overlap)'.format(var_name)) 
-            else: 
+                ax.plot(so, '--', lw=1, c='r',
+                        label='{} (overlap)'.format(var_name))
+            else:
                 tit += ' (No overlapping data found)'
-                
+
         ylabel = var_name
         try:
             if 'unit' in self.var_info[var_name]:
@@ -1005,14 +1005,14 @@ class StationData(StationMetaData):
         if legend:
             ax.legend()
         return ax
-            
+
     def __str__(self):
         """String representation"""
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
         arrays = ''
         series = ''
-    
+
         for k, v in self.items():
             if k[0] == '_':
                 continue
@@ -1038,17 +1038,16 @@ class StationData(StationMetaData):
         if series:
             s += '\nPandas Series\n.................'
             s += series
-    
+
         return s
-    
+
 if __name__=="__main__":
-    
+
     s = StationData(station_name='Bla', revision_date='20, 21')
     s2 = StationData(station_name='Bla', revision_date='21, 22, 23',
                      latitude=30, longitude=10, altitude=400)
-    
+
     print(s)
     s.merge_meta_same_station(s2)
     print(s2)
     print(s)
-    

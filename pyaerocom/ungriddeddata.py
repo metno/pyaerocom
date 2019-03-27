@@ -333,7 +333,7 @@ class UngriddedData(object):
         chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += size
-        logger.info("adding chunk, new array size ({})".format(self._data.shape))
+        logger.debug("adding chunk, new array size ({})".format(self._data.shape))
 
     def _find_station_indices(self, station_pattern):
         """Find indices of all metadata blocks matching input station name
@@ -601,10 +601,6 @@ class UngriddedData(object):
             dtime = self._data[var_idx,
                                self._TIMEINDEX].astype('datetime64[s]')
 
-            #print(var_idx)
-            print("dtime : ")
-            print(type(dtime[0]))
-            print('---------')
             # get subset
             subset = self._data[var_idx]
 
@@ -2019,7 +2015,6 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
 if __name__ == "__main__":
 
     import pyaerocom as pya
-
 
 
     data = pya.io.ReadUngridded().read('EBASMC',

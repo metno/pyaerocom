@@ -51,7 +51,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     mapping = {}
     mapping['concentration_mgS/L'] = 'sconcSO4precip'
     mapping['precip_amount_mm'] = 'pr'
-    mapping['deposition_kgS/ha'] = 'wetSO4'
+    mapping['deposition_kgS/ha'] = 'wetso4'
     mapping['concentration_ugS/m3'] = ['sconcso2', 'sconcso4'] # fix denne
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
@@ -117,16 +117,23 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 # if key is a variable
                 if key in self.mapping.keys():
                     # Todo this needs to be improved
+
                     if isinstance(self.mapping[key], str):
                         var = self.mapping[key]
                         temp_vars.append(var)
+
                     elif "so2" in filename:
                         var = self.mapping[key][0]
                         temp_vars.append(var)
+
                     else:
                         var = self.mapping[key][1]
                         temp_vars.append(var)
-                    s[var] = pd.to_numeric(group[key], errors='coerce').values
+                    if var == "wetso4":
+                        # Need to convert units from Kg S/ha to kg S/ m^2
+                        s[var] = pd.to_numeric(group[key], errors='coerce').values*10000
+                    else:
+                        s[var] = pd.to_numeric(group[key], errors='coerce').values
                     # the above line makes sure that both integers and nan values are considered numeric
                 else:
                     if key == 'dtime':
@@ -184,7 +191,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         metadata = data_obj.metadata # OrderedDict
         meta_idx = data_obj.meta_idx # OrderedDict
 
-        for file in [self.files[0]]:
+        for file in self.files:
             station_data_list = self.read_file(file, vars_to_retrieve=None)
 
             # Fill the metatdata dict
@@ -220,7 +227,10 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 num_vars = len(station_data["variables"])
                 vars_to_retrieve = station_data["variables"]
 
-                times = np.float64(station_data['dtime'].astype('datetime64[us]'))
+                tconv = station_data['dtime'].astype('datetime64[s]')
+
+                times = np.float64(tconv)
+
                 totnum = num_times * num_vars
 
                 if (idx + totnum) >= data_obj._ROWNO:
@@ -244,10 +254,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
 
                     meta_idx[meta_key][var] = np.arange(start, stop)
-                    print(meta_idx[meta_key][var])
+
                     # Adds the variables to the ungriddeddata object.
                     if not var in data_obj.var_idx:
                         data_obj.var_idx[var] = var_idx
+                        print(var_idx)
 
                 #print(metadata.keys())
                 meta_key += 1
@@ -257,27 +268,31 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         # When we finish reading crop the dataobject to the last index.
         data_obj._data = data_obj._data[:idx]
         data_obj.data_revision[self.DATA_ID] = self.data_revision
-        self.data = data_obj
-        print(data_obj.contains_vars)
+        self.data = data_obj # why this
         return data_obj
 
 
 if __name__ == "__main__":
      from pyaerocom import change_verbosity
 
-     #change_verbosity('warning')
+     change_verbosity('info')
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
      ungridded = aa.read()
-     #print(ungridded.metadata[0.0])
+     #sprint(ungridded.metadata[2.0])
+     when = ungridded.meta_idx[2.0]['sconcso2']
+     print(ungridded._data[when[0]:when[-1], ungridded._DATAINDEX])
 
      #print(ungridded.contains_vars)
      #ax = ungridded.plot_station_coordinates(color='lime')
      #ax.figure.savefig('/home/hannas/Desktop/test_stations_aasetal.png')
-
-     print(ungridded.unique_station_names)
+     #print(ungridded._data[0, :]) #:250
+     #print(ungridded.unique_station_names)
      #print(ungridded.metadata[0])
 
-     stat = ungridded.to_station_data('Algoma')
+     stat = ungridded.to_station_data('Algoma', 'sconcso2', start=1995, stop=2014)
 
+     stat.plot_timeseries('sconcso2')
+     import matplotlib.pyplot as plt
+     plt.show()
      #ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
      #ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
