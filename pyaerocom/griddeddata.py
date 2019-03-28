@@ -101,14 +101,15 @@ class GriddedData(object):
     _GRID_IO = const.GRID_IO
     #: Req. order of dimension coordinates for time-series computation
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
-    _MAX_SIZE_GB = 30 #maximum file size for in-memory operations
+    _MAX_SIZE_GB = 64 #maximum file size for in-memory operations
     
     SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude', 'profile']
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
         self.suppl_info = od(from_files         = [],
-                             data_id            = "Unknown",
-                             ts_type            = "Unknown",
+                             data_id            = "n/d",
+                             var_name_read      = "n/d",
+                             ts_type            = "n/d",
                              regridded          = False,
                              outliers_removed   = False,
                              computed           = False,
@@ -460,6 +461,8 @@ class GriddedData(object):
         else:
             raise IOError('Failed to load input: {}'.format(input))
         try:
+            # try to convert variable name to AeroCom default
+            self.suppl_info['var_name_read'] = self.var_name
             self.grid.var_name = self.var_info.var_name
         except:
             logger.warning('Failed to convert variable name {}'
@@ -690,7 +693,8 @@ class GriddedData(object):
         
         if not vert_scheme in self.SUPPORTED_VERT_SCHEMES:
             raise ValueError('Invalid input for vert_scheme: {}. Supported '
-                             'schemes are: {}'.format(self.SUPPORTED_VERT_SCHEMES))
+                             'schemes are: {}'
+                             .format(vert_scheme, self.SUPPORTED_VERT_SCHEMES))
         if vert_scheme == 'surface':
             vert_index = self._infer_index_surface_level()
             return self[:,:,:,vert_index]
@@ -703,6 +707,8 @@ class GriddedData(object):
                                          'information')
             raise NotImplementedError('Cannot yet retrieve timeseries at '
                                       'altitude levels. Coming soon...')
+        elif vert_scheme == 'profile':
+            raise NotImplementedError('Cannot yet retrieve profile timeseries')
         else:
             try:
                 # check if vertical scheme can be converted into valid iris 
@@ -714,8 +720,8 @@ class GriddedData(object):
                 return self.collapsed(cname, aggr)
             
         raise NotImplementedError('Cannot yet retrieve timeseries '
-                                          'from 4D data for vert_scheme {} '
-                                          .format(vert_scheme))
+                                  'from 4D data for vert_scheme {} '
+                                  .format(vert_scheme))
     
     def _check_altitude_access(self):
         coord_name = self.coord_names[-1]
@@ -754,7 +760,9 @@ class GriddedData(object):
                                           'global option INFER_SURFACE_LEVEL in'
                                           'pyaerocom.const.GRID_IO is deactivated')
             last_lev_idx = self.shape[-1] - 1
-            if np.nanmean(self[0, :, :, 0]) > np.nanmean(self[0, :, :, last_lev_idx]):
+            first_lowest_idx = self[0, :, :, 0].data
+            first_highest_idx = self[0, :, :, last_lev_idx].data
+            if np.nanmean(first_lowest_idx) > np.nanmean(first_highest_idx):
                 return 0
             return last_lev_idx
         
@@ -909,8 +917,8 @@ class GriddedData(object):
             high = self.var_info.maximum
             print_log.info('Setting {} outlier upper lim: {:.2f}'
                            .format(self.var_name, high))
-        mask = np.logical_and(self.grid.data < low, 
-                              self.grid.data > high)
+        mask = np.logical_or(self.grid.data < low, 
+                             self.grid.data > high)
         self.grid.data[mask] = np.nan
         self.suppl_info['outliers_removed'] = True
         
@@ -1376,6 +1384,7 @@ class GriddedData(object):
         fig
             matplotlib figure instance containing plot
         """
+        #if not 'latitude' in self.dim
         if not isinstance(time_idx, int):
             try:
                 t = to_pandas_timestamp(time_idx).to_datetime64()
@@ -1603,10 +1612,18 @@ if __name__=='__main__':
     plt.close("all")
     
     reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    data = reader.read_var('ec532aer3D', 2010)
+    
+    print(reader)
+    data = reader.read_var('ec532aer', start=2007, stop=2016)
+    data.downscale_time('monthly')
     
     t1 = data.to_time_series(longitude=[30], latitude=[40],
                              vert_scheme='max')
     
     t2 = data.to_time_series(longitude=[30], latitude=[40],
                              vert_scheme='surface')
+    
+    t3 = data.to_time_series(longitude=[30], latitude=[40],
+                             vert_scheme='mean')
+    
+    ax = t1.plot_timeseries('ec532aer')
