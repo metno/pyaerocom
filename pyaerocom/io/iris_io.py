@@ -71,8 +71,7 @@ def load_cube_custom(file, var_name=None, grid_io=None,
                               .format(file))
         else:
             logger.warning('File {} contains more than one data '
-                           'field: {}'.format(file, 
-                                              cube_list))
+                           'field: {}'.format(file, cube_list))
     cube = None
     if var_name is None:
         if not len(cube_list) == 1:

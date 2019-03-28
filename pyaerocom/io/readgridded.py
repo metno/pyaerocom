@@ -1340,9 +1340,9 @@ class ReadGridded(object):
         if len(cube_list) > 1:
             try:
                 cube = self.concatenate_cubes(cube_list)
-            except iris.exceptions.ConcatenateError:
-                raise NotImplementedError('Can not yet handle partial '
-                                          'concatenation in pyaerocom')
+            except iris.exceptions.ConcatenateError as e:
+                raise NotImplementedError('Failed to concatenate cubes: {}\n'
+                                          'Error: {}'.format(cube_list, repr(e)))
         else:
             cube = cube_list[0]
         
