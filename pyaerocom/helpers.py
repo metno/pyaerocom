@@ -11,7 +11,7 @@ import numpy as np
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
-from pyaerocom import logger
+from pyaerocom import logger, const
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
 
@@ -79,6 +79,36 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'yearly'   : '%Y'}
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
+
+def get_lowest_resolution(ts_type, *ts_types):
+    """Get the lowest resolution from several ts_type codes
+    
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+    
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the lowest resolution
+        
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    all_ts_types = const.GRID_IO.TS_TYPES
+    lowest = ts_type
+    for freq in ts_types:
+        if not freq in all_ts_types:
+            raise ValueError('Invalid input, only valid ts_type codes are '
+                             'supported: {}'.format(all_ts_types))
+        elif all_ts_types.index(lowest) < all_ts_types.index(freq):
+            lowest = freq
+    return lowest
 
 def isnumeric(val):
     """Check if input value is numeric
