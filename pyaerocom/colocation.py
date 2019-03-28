@@ -3,8 +3,9 @@
 """
 Methods and / or classes to perform colocation
 """
-import pandas as pd
 import numpy as np
+import os
+import pandas as pd
 from pyaerocom import logger
 from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
                                   ColocationError, 
@@ -114,6 +115,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if not gridded_data.shape == gridded_data_ref.shape:
         raise ColocationError('Shape mismatch between two colocated data '
                                'arrays, please debug')
+    files_ref = [os.path.basename(x) for x in gridded_data_ref.from_files]
+    files = [os.path.basename(x) for x in gridded_data.from_files]
+    
     
     meta = {'data_source'       :   [gridded_data_ref.data_id,
                                      gridded_data.data_id],
@@ -126,7 +130,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'unit'              :   [str(gridded_data_ref.unit),
                                      str(gridded_data.unit)],
             'data_level'        :   3,
-            'revision_ref'      :   gridded_data_ref.data_revision}
+            'revision_ref'      :   gridded_data_ref.data_revision,
+            'from_files'        :   files,
+            'from_files_ref'    :   files_ref}
     
     meta.update(regfilter.to_dict())
     if remove_outliers:
@@ -138,7 +144,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     data_ref = gridded_data_ref.grid.data
     if isinstance(data_ref, np.ma.core.MaskedArray):
         data_ref = data_ref.filled(np.nan)
-
     arr = np.asarray((data_ref,
                       data))
     time = gridded_data.time_stamps().astype('datetime64[ns]')
@@ -467,6 +472,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         revision = ungridded_data.data_revision[dataset_ref]
     except: 
         revision = 'n/a'
+    files = [os.path.basename(x) for x in gridded_data.from_files]
+    
     meta = {'data_source'       :   [dataset_ref,
                                      gridded_data.name],
             'var_name'          :   [var_ref, var],
@@ -479,7 +486,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                      gridded_unit],
             'vert_scheme'       :   vert_scheme,
             'data_level'        :   3,
-            'revision_ref'      :   revision}
+            'revision_ref'      :   revision,
+            'from_files'        :   files,
+            'from_files_ref'    :   None}
 
     
     meta.update(regfilter.to_dict())
