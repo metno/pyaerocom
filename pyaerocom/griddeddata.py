@@ -922,8 +922,7 @@ class GriddedData(object):
         self.grid.data[mask] = np.nan
         self.suppl_info['outliers_removed'] = True
         
-        
-    def downscale_time(self, to_ts_type='monthly'):
+    def resample_time(self, to_ts_type='monthly'):
         """Downscale in time to predefined resolution resolution
         
         Note
@@ -977,6 +976,12 @@ class GriddedData(object):
         data.suppl_info['ts_type'] = to_ts_type
         data.check_dimcoords_tseries()
         return data     
+    
+    def downscale_time(self, to_ts_type='monthly'):
+        msg = DeprecationWarning('This method is deprecated. Please use new '
+                                 'name resample_time')
+        print_log.warning(msg)
+        return self.resample_time(to_ts_type)
     
     def add_aggregator(self, aggr_name):
         raise NotImplementedError
@@ -1384,17 +1389,29 @@ class GriddedData(object):
         fig
             matplotlib figure instance containing plot
         """
-        #if not 'latitude' in self.dim
-        if not isinstance(time_idx, int):
-            try:
-                t = to_pandas_timestamp(time_idx).to_datetime64()
-                time_idx = np.argmin(abs(self.time_stamps() - t))
-            except:
-                raise ValueError('Failed to interpret input time stamp')
+        if not 'latitude' in self.dimcoord_names:
+            raise DataDimensionError('Missing latitude dimension...')
+        elif not 'longitude' in self.dimcoord_names:
+            raise DataDimensionError('Missing longitude dimension...')
+        if 'time' in self.dimcoord_names:
+            if not self.ndim == 3:
+                raise DataDimensionError('Invalid number of dimensions: {}. '
+                                         'Expected 3.'.format(self.ndim))
+            if not isinstance(time_idx, int):
+                try:
+                    t = to_pandas_timestamp(time_idx).to_datetime64()
+                    time_idx = np.argmin(abs(self.time_stamps() - t))
+                except:
+                    raise ValueError('Failed to interpret input time stamp')
+            
+            data = self[time_idx].grid.data
+        else:
+            if not self.ndim == 2:
+                raise DataDimensionError('Invalid number of dimensions: {}. '
+                                         'Expected 2.'.format(self.ndim))
+            data = self.grid.data
         
         from pyaerocom.plot.mapping import plot_griddeddata_on_map 
-        
-        data = self[time_idx].grid.data
         
         lons = self.longitude.points
         lats = self.latitude.points
