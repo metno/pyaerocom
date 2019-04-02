@@ -287,6 +287,14 @@ class Colocator(object):
                                                    ts_type=self.model_ts_type_read,
                                                    flex_ts_type=True,
                                                    vert_which=self.obs_vert_type_alt)
+            except Exception as e:
+                msg = ('Failed to load model data: {} / {}. Reason {}'
+                       .format(self.model_id, model_var, repr(e)))
+                const.print_log.warning(msg)
+                self._log.write(msg)
+                if self.RAISE_EXCEPTIONS:
+                    self._close_log()
+                    raise Exception(msg)
             
             if not model_data.ts_type in all_ts_types:
                 raise TemporalResolutionError('Invalid temporal resolution {} '
@@ -324,23 +332,35 @@ class Colocator(object):
                                    'colocated data file {}'.format(savename))
                     print_log.info('REMOVE: {}\n'.format(savename))
                     os.remove(os.path.join(out_dir, savename))
-            
-            coldata = colocate_gridded_ungridded(gridded_data=model_data, 
-                                                 ungridded_data=obs_data, 
-                                                 ts_type=ts_type, 
-                                                 start=start, stop=stop,
-                                                 var_ref=obs_var,
-                                                 filter_name=self.filter_name,
-                                                 regrid_res_deg=self.regrid_res_deg,
-                                                 remove_outliers=self.remove_outliers,
-                                                 vert_scheme=self.vert_scheme,
-                                                 harmonise_units=self.harmonise_units,
-                                                 var_outlier_ranges=self.var_outlier_ranges)
-            coldata.to_netcdf(out_dir)
-            if self._log:
-                self._log.write('WRITE: {}\n'.format(savename))
-                print_log.info('Writing file {}'.format(savename))
-            data_objs[model_var] = coldata
+            try:
+                coldata = colocate_gridded_ungridded(gridded_data=model_data, 
+                                                     ungridded_data=obs_data, 
+                                                     ts_type=ts_type, 
+                                                     start=start, stop=stop,
+                                                     var_ref=obs_var,
+                                                     filter_name=self.filter_name,
+                                                     regrid_res_deg=self.regrid_res_deg,
+                                                     remove_outliers=self.remove_outliers,
+                                                     vert_scheme=self.vert_scheme,
+                                                     harmonise_units=self.harmonise_units,
+                                                     var_outlier_ranges=self.var_outlier_ranges)
+                coldata.to_netcdf(out_dir)
+                if self._log:
+                    self._log.write('WRITE: {}\n'.format(savename))
+                    print_log.info('Writing file {}'.format(savename))
+                data_objs[model_var] = coldata
+            except Exception as e:
+                msg = ('Colocation between model {} / {} and obs {} / {} '
+                       'failed: Reason {}'.format(self.model_id,
+                                                  model_var, 
+                                                  self.obs_id,
+                                                  obs_var,
+                                                  repr(e)))
+                const.print_log.warning(msg)
+                self._log.write(msg)
+                if self.RAISE_EXCEPTIONS:
+                    self._close_log()
+                    raise Exception(msg)
         return data_objs
          
     def _run_gridded_gridded(self):
@@ -440,22 +460,34 @@ class Colocator(object):
                     continue
                 else:
                     os.remove(os.path.join(out_dir, savename))
-                
-            coldata = colocate_gridded_gridded(gridded_data=model_data,
-                                               gridded_data_ref=obs_data, 
-                                               ts_type=ts_type, 
-                                               start=start, stop=stop, 
-                                               filter_name=self.filter_name,
-                                               regrid_res_deg=self.regrid_res_deg,
-                                               remove_outliers=self.remove_outliers,
-                                               vert_scheme=self.vert_scheme,
-                                               harmonise_units=self.harmonise_units,
-                                               var_outlier_ranges=self.var_outlier_ranges)
-            coldata.to_netcdf(out_dir)
-            if self._log:
-                self._log.write('WRITE: {}\n'.format(savename))
-                print_log.info('Writing file {}'.format(savename))
-            data_objs[model_var] = coldata
+            try:  
+                coldata = colocate_gridded_gridded(gridded_data=model_data,
+                                                   gridded_data_ref=obs_data, 
+                                                   ts_type=ts_type, 
+                                                   start=start, stop=stop, 
+                                                   filter_name=self.filter_name,
+                                                   regrid_res_deg=self.regrid_res_deg,
+                                                   remove_outliers=self.remove_outliers,
+                                                   vert_scheme=self.vert_scheme,
+                                                   harmonise_units=self.harmonise_units,
+                                                   var_outlier_ranges=self.var_outlier_ranges)
+                coldata.to_netcdf(out_dir)
+                if self._log:
+                    self._log.write('WRITE: {}\n'.format(savename))
+                    print_log.info('Writing file {}'.format(savename))
+                data_objs[model_var] = coldata
+            except Exception as e:
+                msg = ('Colocation between model {} / {} and obs {} / {} '
+                       'failed: Reason {}'.format(self.model_id,
+                                                  model_var, 
+                                                  self.obs_id,
+                                                  obs_var,
+                                                  repr(e)))
+                const.print_log.warning(msg)
+                self._log.write(msg)
+                if self.RAISE_EXCEPTIONS:
+                    self._close_log()
+                    raise Exception(msg)
         return data_objs
     
     def _init_log(self):

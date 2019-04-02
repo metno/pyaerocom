@@ -10,11 +10,11 @@ from pyaerocom.variable import VarNameInfo
 import iris
 from cf_units import Unit
 from scipy.stats import pearsonr, spearmanr, kendalltau
+
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
 ### OTHER FUNCTIONS
-
 def calc_statistics(data, ref_data, lowlim=None, highlim=None,
                     min_num_valid=5):
     """Calc statistical properties from two data arrays
@@ -93,8 +93,6 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
             data = data[valid]
             ref_data = ref_data[valid]
         
-        difference = data - ref_data
-        
         result['rms'] = np.nan
         result['nmb'] = np.nan
         result['mnmb'] = np.nan
@@ -113,8 +111,6 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
             ref_data = ref_data[valid]
         
         difference = data - ref_data
-        
-        
         
         result['rms'] = np.sqrt(np.sum(np.power(difference, 2)) / num_points)
         result['nmb'] = np.sum(difference) / np.sum(ref_data) #*100.
