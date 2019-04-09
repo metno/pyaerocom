@@ -144,7 +144,6 @@ class Config(object):
     #: timeout to check if one of the supported server locations can be 
     #: accessed
     SERVER_CHECK_TIMEOUT = 0.1 #s
-    SERVER_CHECK_TIMEOUT = 10 #s
     
     from pyaerocom import __dir__
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
@@ -155,43 +154,53 @@ class Config(object):
                      'aerocom-users-database' : _config_ini_user_server,
                      'pyaerocom-testdata'     : _config_ini_testdata}
     
-    _outhomename = 'pyaerocom'
+    _outhomename = 'MyPyaerocom'
+    
+    DONOTCACHEFILE = None
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  output_dir=None, config_file=None, 
                  cache_dir=None, colocateddata_dir=None,
                  write_fileio_err_log=True, 
                  activate_caching=True):
         
+        # Loggers
         from pyaerocom import print_log, logger
-        #: Settings for reading and writing of gridded data
-        self.GRID_IO = GridIO()
-        print_log.info('Initating pyaerocom configuration')
         self.print_log = print_log
         self.logger = logger
         
-        if not isinstance(config_file, str) or not os.path.exists(config_file):
-            from time import time
-            print_log.info('Checking server configuration ...')
-            t0 = time()
-            config_file = self._infer_config_file()
-            print_log.info('Expired time: {:.3f} s'.format(time() - t0))
         # Directories
         self._modelbasedir = model_base_dir
         self._obsbasedir = obs_base_dir
         self._cachedir = cache_dir
         self._outputdir = output_dir
+        self._testdatadir = os.path.join(self.HOMEDIR, 'pyaerocom-testdata')
         self._colocateddatadir = colocateddata_dir
+        
+        # Options
         self._caching_active = activate_caching
+        
+        #: Settings for reading and writing of gridded data
+        self.GRID_IO = GridIO()
+        print_log.info('Initating pyaerocom configuration')
+        
+        
+        if not isinstance(config_file, str) or not os.path.exists(config_file):
+            from time import time
+            print_log.info('Checking database access...')
+            t0 = time()
+            config_file = self._infer_config_file()
+            print_log.info('Expired time: {:.3f} s'.format(time() - t0))
+        
         
         self._var_param = None
         
-        # Attributes that are used to store import results
+        # Attributes that are used to store search directories
         self.OBSCONFIG = od()
         self.SUPPLDIRS = od()
         self.MODELDIRS = []
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
-        self.DONOTCACHEFILE = None
+        
         
         self._ebas_flag_info = None
         
@@ -208,6 +217,8 @@ class Config(object):
                 self.init_outputdirs()
                 self.print_log.warning(format_exc())
                 self.print_log.warning("Failed to init config. Error: %s" %repr(e))
+        else:
+            self.init_outputdirs()
     
     def _check_access(self, loc):
         """Uses multiprocessing approach to check if location can be accessed
@@ -264,9 +275,7 @@ class Config(object):
     def has_access_testdata(self):
         """Boolean specifying whether the testdataset can be accessed"""
         ok = False
-        p = os.path.join(self.HOMEDIR, 'pyaerocom-testdata')
-        
-        if os.path.exists(p):
+        if self.dir_exists(self._testdatadir) and 'modeldata' in os.listdir(self.TESTDATADIR):
             ok = True
             
         self.print_log.info("Access to pyaerocom-testdata: {}".format(ok))
@@ -300,6 +309,23 @@ class Config(object):
     def HOMEDIR(self):
         """Home directory of user"""
         return os.path.expanduser("~") + '/'
+    
+    @property
+    def TESTDATADIR(self):
+        return self._testdatadir
+    
+    @TESTDATADIR.setter
+    def TESTDATADIR(self, val):
+        if not self.dir_exists(val):
+            raise ValueError('Cannot set pyaerocom-testdata directory {}.'
+                             'Directory does not exist')
+        self._testdatadir = val
+        if not self.has_access_testdata:
+            self._testdatadir = None
+            raise IOError('Input path {} could not be identified as official '
+                          'pyaerocom testdata directory (requires that a sub '
+                          'directory modeldata exists)'.format(val))
+        self.read_config(self._config_files['pyaerocom-testdata'], keep_basedirs=False)
     
     @property
     def OUTPUTDIR(self):
@@ -571,10 +597,10 @@ class Config(object):
         
         # if this file exists no cache file is read
         # used to ease debugging
-        if self.CACHEDIR is not None and os.path.exists(self.CACHEDIR):
+        if self.dir_exists(self.CACHEDIR):
             self.DONOTCACHEFILE = os.path.join(self.CACHEDIR, 'DONOTCACHE')
             if os.path.exists(self.DONOTCACHEFILE):
-                self._caching_active=False
+                self._caching_active = False
         
         if not self._write_access(self._cachedir):
             self.logger.info('Cannot establish write access to cache '
@@ -893,9 +919,9 @@ class Config(object):
         return s
 
 class GridIO(object):
-    """Settings class for managing IO settings
+    """Global I/O settings for gridded data
     
-    This class includes options related to the import of grid data. This 
+    This class includes options related to the import of gridded data. This 
     includes both options related to file search as well as preprocessing 
     options.
     
