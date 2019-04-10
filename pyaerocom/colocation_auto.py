@@ -202,7 +202,7 @@ class Colocator(object):
         finally:
             self._close_log()
             
-    
+    @staticmethod
     def get_lowest_resolution(self, ts_type, *ts_types):
         return get_lowest_resolution(ts_type, *ts_types)
         

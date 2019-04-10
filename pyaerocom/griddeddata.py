@@ -929,7 +929,7 @@ class GriddedData(object):
         ----
         Beta version
         
-        Patameters
+        Parameters
         ----------
         to_ts_type : str
             either of the supported temporal resolutions (cf. 

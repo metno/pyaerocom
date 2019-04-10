@@ -112,10 +112,12 @@ def pressure2altitude(p, *args, **kwargs):
     ----------
     p : float
         pressure in Pa
-    *args, **kwargs:
-        additional arguments supported by :func:`geonum.atmosphere.
-        pressure2altitude` (cf. `geonum docs <https://geonum.readthedocs.io/
-        en/latest/api.html#geonum.atmosphere.pressure2altitude>`__)
+    *args 
+        additional non-keyword args passed to 
+        :func:`geonum.atmosphere.pressure2altitude` 
+    **kwargs
+        additional keyword args passed to
+        :func:`geonum.atmosphere.pressure2altitude` 
         
     Returns
     -------
