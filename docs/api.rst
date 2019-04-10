@@ -3,26 +3,16 @@ API
 
 Documentation of the pyaerocom programming interface.
 
-.. note::
 
-	1. The code documentation is far from complete 
-	2. For developers: please use the `NumPy docstring standard <http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html>`__. 
+Data classes
+------------
 
-Data types and data representation
-----------------------------------
-
-.. todo::
-
-	Introduce for main data classes :class:`UngriddedData`, :class:`GriddedData`, :class:`StationData` and :class:`ColocatedData`
-	
 Gridded data
 ^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.griddeddata
    :members:
    :undoc-members:
-
-.. _ungriddeddata:
 
 Ungridded data 
 ^^^^^^^^^^^^^^^^
@@ -34,21 +24,20 @@ Ungridded data
 Colocated data
 ^^^^^^^^^^^^^^^
 
-.. note::
-
-	This module is a beta version and currently more a draft for handling of merged and temorally regularised data objects. It may undergo significant changes in the near future.
-	
 .. automodule:: pyaerocom.colocateddata
    :members:
    :undoc-members:
-   
-Other data classes
-^^^^^^^^^^^^^^^^^^^^
+
+Station data
+^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.stationdata
    :members:
    :undoc-members:
-   
+
+Other data classes
+^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.vertical_profile
    :members:
    :undoc-members:
@@ -63,47 +52,66 @@ Metadata and vocabulary standards
 Colocation of data
 -------------------
 
-This module contains colocation methods (cf. :class:`ColocatedData`)
+This module contains high and low-level methods and engines to perform colocation.
+
+Automatic colocation engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.colocation_auto
+   :members:
+   :undoc-members:
+   
+Low-level colocation methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocation
    :members:
    :undoc-members:
-   
-.. _reading: 
 
-Data import (io module)
-------------------------
+.. _reading: 
 
 .. note::
 
 	All reading routines are part of the :mod:`pyaerocom.io` sub-package (cf. :ref:`io`)
 
 Reading of gridded data
-^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 .. automodule:: pyaerocom.io.readgridded
    :members:
    :undoc-members:
    
 Reading of ungridded data
-^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
-Factory class (high level)
-""""""""""""""""""""""""""
+The following flowchart illustrates the architecture of ungridded reading in pyaerocom. Below are information about the individual reading classes for each dataset (blue in flowchart), the abstract template base classes the reading classes are based on (dark green) and the factory class :class:`ReadUngridded` (orange) which has registered all individual reading classes. The data classes that are returned by the reading class are indicated in light green. 
+
+.. image:: ../suppl/pyaerocom_ungridded_io_flowchart.png
+  :width: 800px
+  :align: center
+  
+ReadUngridded factory class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Factory class that has all reading class for the individual datasets registered.
 
 .. automodule:: pyaerocom.io.readungridded
    :members:
    :undoc-members:
 
-Aeronet
-"""""""
+ReadUngriddedBase template class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note::
+All ungridded reading routines are based on this template class.
 
-	The following includes only reading routines that were already shipped to the new API for ungridded data, that is, which are based on the abstract base class :class:`ReadUngriddedBase` (for details see :ref:`ungriddedbase`) and that use the new ungridded data class :class:`UngriddedData` (cf. :ref:`ungriddeddata`).
+.. automodule:: pyaerocom.io.readungriddedbase
+   :members:
+   :undoc-members:
 
-Aeronet (base template)
-++++++++++++++++++++++++
+AERONET
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All AERONET reading classes are based on the template :class:`ReadAeronetBase` class which, in turn inherits from :class:`ReadUngriddedBase`.
 
 .. automodule:: pyaerocom.io.readaeronetbase
    :members:
@@ -111,8 +119,33 @@ Aeronet (base template)
    :inherited-members:
    :show-inheritance:
 
-Aeronet Version 2
-++++++++++++++++++
+AERONET Sun (V3)
+""""""""""""""""
+
+.. automodule:: pyaerocom.io.read_aeronet_sunv3
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
+AERONET SDA (V3)
+""""""""""""""""
+.. automodule:: pyaerocom.io.read_aeronet_sdav3
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
+AERONET Inversion (V3)
+""""""""""""""""""""""
+.. automodule:: pyaerocom.io.read_aeronet_invv3
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+   
+AERONET (older versions)
+""""""""""""""""""""""""
 
 .. automodule:: pyaerocom.io.read_aeronet_sunv2
    :members:
@@ -132,53 +165,26 @@ Aeronet Version 2
    :inherited-members:
    :show-inheritance:
 
-Aeronet Version 3
-++++++++++++++++++
-
-.. automodule:: pyaerocom.io.read_aeronet_sunv3
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-.. automodule:: pyaerocom.io.read_aeronet_sdav3
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-.. automodule:: pyaerocom.io.read_aeronet_invv3
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-   
-Further networks
-""""""""""""""""
+EARLINET
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.read_earlinet
    :members:
    :undoc-members:
    :inherited-members:
    :show-inheritance:
-   
+
+EBAS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.io.read_ebas
    :members:
    :undoc-members:
    :inherited-members:
    :show-inheritance:
-   
-.. _ungriddedbase:
 
-Low level
-"""""""""
-
-.. automodule:: pyaerocom.io.readungriddedbase
-   :members:
-   :undoc-members:
-   
-EBAS I/O (low level)
-"""""""""""""""""""""
+EBAS (low level)
+""""""""""""""""
 
 .. automodule:: pyaerocom.io.ebas_nasa_ames
    :members:
