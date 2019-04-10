@@ -120,7 +120,6 @@ class ReadGAW(ReadUngriddedBase):
         # Select the metadata that I want and reformat
         # and replace whitespaces in strings with underscore  
         #data_out = {}
-        
         data_out['station_name'] = meta[6].strip().replace(' ', '_')
         data_out['longitude'] = float(meta[12].strip())
         data_out['latitude'] = float(meta[11].strip())
@@ -129,7 +128,9 @@ class ReadGAW(ReadUngriddedBase):
         data_out['data_version'] = int(meta[5].strip())
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
+        data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
         data_out['variables'] = vars_to_retrieve 
+        
         #data_out['data_id'] = 'DMS_AMS_CVO'
         # number of sampling heights
         # sampling heights
@@ -139,7 +140,7 @@ class ReadGAW(ReadUngriddedBase):
         data_out['dtime'] = []
         data_out['vmrdms'] = []
         data_out['vmrdms_nd'] = []
-        #data_out['vmrdms_std'] = []
+        data_out['vmrdms_std'] = []
         data_out['vmrdms_flag'] = []
         # CS, REM?
         for i in range(1, len(x)):
@@ -147,13 +148,14 @@ class ReadGAW(ReadUngriddedBase):
             data_out['dtime'].append(np.datetime64(datestring))
             data_out['vmrdms'].append(np.float(x[i][4]))
             data_out['vmrdms_nd'].append(np.float(x[i][5]))
-            #data_out['vmrdms_std'].append(np.float(x[i][6]))
+            data_out['vmrdms_std'].append(np.float(x[i][6]))
             data_out['vmrdms_flag'].append(np.int(x[i][7]))
             
             
         # Only the data should be converted to arrays
         data_out['vmrdms'] = np.asarray(data_out['vmrdms'])
         data_out['vmrdms_nd'] = np.asarray(data_out['vmrdms_nd'])
+        data_out['vmrdms_std'] = np.asarray(data_out['vmrdms_std'])
         data_out['vmrdms_flag'] = np.asarray(data_out['vmrdms_flag'])
         data_out['dtime'] = np.asarray(data_out['dtime'])
                         
@@ -275,6 +277,12 @@ class ReadGAW(ReadUngriddedBase):
                                data_obj._ALTITUDEINDEX] = station_data['altitude']
                 data_obj._data[start:stop, 
                                data_obj._METADATAKEYINDEX] = meta_key
+                data_obj._data[start:stop, 
+                              data_obj._DATAHEIGHTINDEX] = station_data['dataaltitude']
+                data_obj._data[start:stop, 
+                               data_obj._DATAERRINDEX] = station_data['vmrdms_std']
+                data_obj._data[start:stop, 
+                               data_obj._DATAFLAGINDEX] = station_data['vmrdms_flag']
                                
                 # write data to data object
                 data_obj._data[start:stop, data_obj._TIMEINDEX] = times
