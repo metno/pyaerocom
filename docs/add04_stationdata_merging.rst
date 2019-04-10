@@ -22,11 +22,11 @@ Germany.
 .. parsed-literal::
 
     Initating pyaerocom configuration
-    Checking server configuration ...
+    Checking database access...
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.020 s
+    Expired time: 0.018 s
 
 
 Get list of all files containing scattering data for EBAS station Jungfraujoch
@@ -63,7 +63,12 @@ Get list of all files containing scattering data for EBAS station Jungfraujoch
     Contains instruments: ['IN3563', 'TSI_3563_JFJ_dry', 'Ecotech_Aurora3000_JFJ_dry']
     Total no. of meta-blocks: 26
     Filters that were applied:
-     Filter time log: 20190306152244
+     Filter time log: 20190410170348
+    	prefer_statistics: ['arithmetic mean', 'median']
+    	wavelength_tol_nm: 50
+    	remove_invalid_flags: True
+    	remove_outliers: False
+    	keep_aux_vars: False
     	datalevel: 2
     	station_names: Jungfraujoch
 
@@ -91,6 +96,7 @@ dictionary assigned. Let’s look at the metadata from the first file:
                  ('ts_type', 'hourly'),
                  ('data_id', 'EBASMC'),
                  ('revision_date', numpy.datetime64('2018-10-31T00:00:00')),
+                 ('datalevel', '2'),
                  ('filename',
                   'CH0001G.19950101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas'),
                  ('var_info',
@@ -125,6 +131,7 @@ And the last one:
                  ('ts_type', 'hourly'),
                  ('data_id', 'EBASMC'),
                  ('revision_date', numpy.datetime64('2018-03-20T00:00:00')),
+                 ('datalevel', '2'),
                  ('filename',
                   'CH0001G.20170101000000.20180320151536.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas'),
                  ('var_info',
@@ -196,6 +203,7 @@ First, convert into instance of ``StationData`` class and then plot.
     revision_date: 2018-10-31T00:00:00
     ts_type_src: hourly
     stat_merge_pref_attr: None
+    data_revision: 20190319
     
     Data arrays
     .................
@@ -261,6 +269,7 @@ First, convert into instance of ``StationData`` class and then plot.
     revision_date: 2018-03-20T00:00:00
     ts_type_src: hourly
     stat_merge_pref_attr: None
+    data_revision: 20190319
     
     Data arrays
     .................
@@ -333,11 +342,11 @@ This is actually very easy:
         nan]
     
     overlap: 
-    filename: CH0001G.19950101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas;CH0001G.20170101000000.20180320151536.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas
+    filename: CH0001G.19950101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas; CH0001G.20170101000000.20180320151536.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas
     station_id: None
     station_name: Jungfraujoch
-    instrument_name: IN3563;Ecotech_Aurora3000_JFJ_dry
-    PI: Baltensperger, Urs; Weingartner, Ernest;Bukowiecki, Nicolas
+    instrument_name: IN3563; Ecotech_Aurora3000_JFJ_dry
+    PI: Baltensperger, Urs; Weingartner, Ernest; Bukowiecki, Nicolas
     country: None
     ts_type: hourly
     latitude: 46.5475
@@ -354,6 +363,7 @@ This is actually very easy:
     
     ts_type_src: hourly
     stat_merge_pref_attr: None
+    data_revision: 20190319
     
     Data arrays
     .................
@@ -559,11 +569,11 @@ Now merge them into one long time series:
     2017-12-24 19:29:59    0.194889
     2017-12-31 23:29:59    0.750785
     Length: 17466, dtype: float64
-    filename: CH0001G.20010101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20100101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20060101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20040101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20080101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20050101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20070101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20110101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20030101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20150101000000.20180321103020.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas;CH0001G.20170101000000.20180320151431.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20160101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20000101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas;CH0001G.20140101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20020101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20090101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20120101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20130101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.19980101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas;CH0001G.19960101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas;CH0001G.20170101000000.20180320151536.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas;CH0001G.19990101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas;CH0001G.20150101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas;CH0001G.20160101000000.20180321103020.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas;CH0001G.19970101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas;CH0001G.19950101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas
+    filename: CH0001G.20010101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20060101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20040101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20080101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20050101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20070101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20030101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20150101000000.20180321103020.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas; CH0001G.20170101000000.20180320151431.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20160101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20000101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas; CH0001G.20140101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20020101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.19980101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas; CH0001G.20090101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20130101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20120101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.19960101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas; CH0001G.20170101000000.20180320151536.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas; CH0001G.19990101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas; CH0001G.20150101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20110101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.20160101000000.20180321103020.nephelometer..aerosol.1y.1h.CH02L_Ecotech_Aurora3000_JFJ_dry.CH02L_Neph_Aurora3000.lev2.nas; CH0001G.20100101000000.20180321102615.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas; CH0001G.19970101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas; CH0001G.19950101000000.20181031145000.nephelometer..aerosol.1y.1h.CH02L_IN3563.CH02L_backscat_coef.lev2.nas
     station_id: None
     station_name: Jungfraujoch
-    instrument_name: TSI_3563_JFJ_dry;Ecotech_Aurora3000_JFJ_dry;IN3563
-    PI: Baltensperger, Urs; Weingartner, Ernest;Bukowiecki, Nicolas
+    instrument_name: TSI_3563_JFJ_dry; Ecotech_Aurora3000_JFJ_dry; IN3563
+    PI: Baltensperger, Urs; Weingartner, Ernest; Bukowiecki, Nicolas
     country: None
     ts_type: hourly
     latitude: 46.5475
@@ -580,6 +590,7 @@ Now merge them into one long time series:
     
     ts_type_src: hourly
     stat_merge_pref_attr: None
+    data_revision: 20190319
     
     Data arrays
     .................
@@ -628,7 +639,7 @@ The default here is ``True``, so you can just go ahead and do:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fbc9c209e48>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f4374e29be0>
 
 
 
@@ -837,7 +848,7 @@ instead:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7fbc9c0e1978>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f43750c69e8>
 
 
 

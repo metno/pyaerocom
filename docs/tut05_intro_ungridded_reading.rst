@@ -78,11 +78,11 @@ Reading of and investigating Aeronet Sun AODs (version 3, level 2 data)
 .. parsed-literal::
 
     Initating pyaerocom configuration
-    Checking server configuration ...
+    Checking database access...
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.017 s
+    Expired time: 0.021 s
 
 
 Check version of pyaerocom:
@@ -96,7 +96,7 @@ Check version of pyaerocom:
 
 .. parsed-literal::
 
-    '0.8.0.dev7'
+    '0.8.0.dev19'
 
 
 
@@ -117,17 +117,17 @@ datasets.
     Dataset name: AeronetSunV3Lev1.5.daily
     Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.daily/renamed
     Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
-    Last revision: 20190128
+    Last revision: 20190311
     
     Dataset name: AeronetSunV3Lev1.5.AP
     Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev1.5.AP/renamed
     Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
-    Last revision: 20180628
+    Last revision: 20190402
     
     Dataset name: AeronetSunV3Lev2.daily
     Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed
     Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
-    Last revision: 20181212
+    Last revision: 20190311
     Reading failed for AeronetSunV3Lev2.AP. Error: OSError('Data directory /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed of observation network AeronetSunV3Lev2.AP does not exists',)
 
 
@@ -226,7 +226,7 @@ Create instance of ReadUngridded class
     Dataset name: AeronetSunV3Lev2.daily
     Data directory: /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.daily/renamed
     Supported variables: ['od340aer', 'od440aer', 'od500aer', 'od870aer', 'ang4487aer', 'ang4487aer_calc', 'od550aer']
-    Last revision: 20181212
+    Last revision: 20190311
 
 
 You may also check, which other datasets are supported by the
@@ -287,7 +287,7 @@ dataset.
     Contains networks: ['AeronetSunV3Lev2.daily']
     Contains variables: ['od550aer']
     Contains instruments: ['sun_photometer']
-    Total no. of meta-blocks: 1199
+    Total no. of meta-blocks: 1206
 
 
 That’s it! That is all that is required to import an ungridded dataset.

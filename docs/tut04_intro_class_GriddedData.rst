@@ -24,11 +24,11 @@ Starting with some imports…
 .. parsed-literal::
 
     Initating pyaerocom configuration
-    Checking server configuration ...
+    Checking database access...
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.016 s
+    Expired time: 0.017 s
 
 
 Let’s get a test file to load
@@ -69,7 +69,7 @@ object.
 
 .. parsed-literal::
 
-    pyaerocom.GriddedData: Unknown
+    pyaerocom.GriddedData: n/d
     Grid data: Dust Aerosol Optical Depth at 550nm / (unknown) (time: 365; latitude: 451; longitude: 900)
          Dimension coordinates:
               time                                       x              -               -
@@ -158,7 +158,7 @@ file (if the file is readable using the ``iris.load`` method).
 
 .. parsed-literal::
 
-    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550oa', 'od550dust', 'od550so4', 'od550bc', 'od550aer']",)
+    This did not work...error message: NetcdfError("Could not load single cube from /lustre/storeA/project/aerocom/aerocom1/ECMWF_OSUITE_NRT_test/renamed/aerocom.ECMWF_OSUITE_NRT_test.daily.od550aer.2018.nc. Please specify var_name. Input file contains the following variables: ['od550aer', 'od550so4', 'od550bc', 'od550dust', 'od550oa']",)
 
 
 Also, if you parse an invalid variable name, you will get some hint.
@@ -268,7 +268,7 @@ Retrieve area weighted mean from data
 
 .. parsed-literal::
 
-    <matplotlib.legend.Legend at 0x7fcfdd922470>
+    <matplotlib.legend.Legend at 0x7f2e054424a8>
 
 
 
