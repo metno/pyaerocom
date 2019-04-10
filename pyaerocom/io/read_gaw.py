@@ -11,18 +11,12 @@ import numpy as np
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom import const, print_log
-
+from pyaerocom import const
 from pyaerocom.stationdata import StationData
 import pandas as pd
 
 
-# from os import glob
-
-
 class ReadGAW(ReadUngriddedBase):
-    
-    
     """Interface for reading DMS data
 
     .. seealso::
@@ -66,11 +60,6 @@ class ReadGAW(ReadUngriddedBase):
 
     INSTRUMENT_NAME = 'unknown'
 
-    
-    #def get_file_list(self):
-     #   all_files = glob.glob(self.DATASET_PATH)
-      #  return all_files
-    
 # =============================================================================
 #     DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/'
 #     DATASET_NAME = 'DMS_AMS_CVO'
@@ -101,33 +90,16 @@ class ReadGAW(ReadUngriddedBase):
         """
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
-        
-        
-        # implemented in base class
-        # comment this because we don't need to compute any variables
-        #vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
        
         #create empty data object (a dictionary with extended functionality)
         data_out = StationData()
         data_out.data_id = self.DATA_ID
         data_out.dataset_name = self.DATASET_NAME
-        
-        # Commented because I don't define META_NAMES_FILE
-        # create empty arrays for meta information+
-        #for item in self.META_NAMES_FILE:
-        #    data_out[item] = []
-            
-        # create empty arrays for all variables that are supposed to be read
-        # from file
-        #for var in vars_to_read:
-         #   data_out[var] = []
-         
          
         
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
-        
-        
+         
         #with open(path2dir+'ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat', 'r') as f: 
         with open(filename, 'r') as f:         
             
@@ -144,8 +116,7 @@ class ReadGAW(ReadUngriddedBase):
             for line in f:
                 columns = line.split()
                 x.append(columns)
-        
-         
+                
         # Select the metadata that I want and reformat
         # and replace whitespaces in strings with underscore  
         #data_out = {}
@@ -163,8 +134,7 @@ class ReadGAW(ReadUngriddedBase):
         # number of sampling heights
         # sampling heights
         # PI?
-        
-        
+            
         # Add date and time and the rest of the data to a dictionary
         data_out['dtime'] = []
         data_out['vmrdms'] = []
@@ -181,76 +151,22 @@ class ReadGAW(ReadUngriddedBase):
             data_out['vmrdms_flag'].append(np.int(x[i][7]))
             
             
-            
-
-
-        # Comment this because we hace all the variables in the file? 
-        
-        # dependent on the station, some of the required input variables
-        # may not be provided in the data file. These will be ignored
-        # in the following list that iterates over all data rows and will
-        # be filled below, with vectors containing NaNs after the file 
-        # reading loop
-        #vars_available = {}
-        #for var in vars_to_read:
-        #    if var in data_out.keys():
-        #        vars_available[var] = data_out.keys[var]
-        #    else:
-        #        self.logger.warning("Variable {} not available in file {}"
-        #                            .format(var, os.path.basename(filename)))
-
-
-
         # Only the data should be converted to arrays
         data_out['vmrdms'] = np.asarray(data_out['vmrdms'])
         data_out['vmrdms_nd'] = np.asarray(data_out['vmrdms_nd'])
         data_out['vmrdms_flag'] = np.asarray(data_out['vmrdms_flag'])
         data_out['dtime'] = np.asarray(data_out['dtime'])
-            
-            
-        #for var in vars_to_read:
-        #    if var not in data_out.keys():
-        #        array = np.zeros(len(data_out['dtime'])) * np.nan
-        #    data_out[var] = array
-            
-            
-        ## Can be commented; we don't need to compute any vars
-        # compute additional variables (if applicable)
-        # data_out = self.compute_additional_vars(data_out, vars_to_compute)
-        
+                        
         # convert data vectors to pandas.Series (if applicable)
         if vars_as_series:        
-            #for var in (vars_to_read + vars_to_compute):
-            #    if var in vars_to_retrieve:
-            #        data_out[var] = pd.Series(data_out[var], 
-            #                                  index=data_out['dtime'])
-            #    else:
-            #        del data_out[var]
             for key in data_out:
                 if key in vars_to_retrieve:
                     data_out[key] = pd.Series(data_out[key], 
                                               index=data_out['dtime'])
                 else:
                     del data_out[key]
-                    
-            
-            
-            
-            
-        #self.logger.debug('The following lines were ignored: {}'.format(
-         #       _lines_ignored))   # ???
-         
          
         return data_out
-
-
-
-    
-    
-    
-    
-    
-
     
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
              last_file=None):
@@ -292,11 +208,6 @@ class ReadGAW(ReadUngriddedBase):
             last_file = len(files)
             
         files = files[first_file:last_file]
-        
-    
-    
-
-    
            
         data_obj = UngriddedData() 
         meta_key = 0.0  # Why 0.0 ??? 
@@ -313,18 +224,9 @@ class ReadGAW(ReadUngriddedBase):
             disp_each = 1
     
         for i, _file in enumerate(files):
-            
-            #if i%disp_each == 0:
-              #  print_log.info("Reading file {} of {} ({})".format(i, 
-               #                  num_files, type(self).__name__))
-               
-            
-            
             station_data = self.read_file(_file, 
                                           vars_to_retrieve=vars_to_retrieve)
-            
-            
-            
+              
             # Fill the metadata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
@@ -346,12 +248,9 @@ class ReadGAW(ReadUngriddedBase):
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = od()
             
-            
             num_times = len(station_data['dtime'])
             
             #access array containing time stamps
-            # TODO: check using index instead (even though not a problem here 
-            # since all Aerocom data files are of type timeseries)
             times = np.float64(station_data['dtime'])
 
             totnum = num_times * num_vars
@@ -360,13 +259,11 @@ class ReadGAW(ReadUngriddedBase):
             if (idx + totnum) >= data_obj._ROWNO:
                 #if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(totnum)
-            
-            
+                     
             for var_idx, var in enumerate(vars_to_retrieve):
                 values = station_data[var]
                 start = idx + var_idx * num_times
                 stop = start + num_times
-                
                 
                 #write common meta info for this station (data lon, lat and 
                 #altitude are set to station locations)
@@ -383,16 +280,12 @@ class ReadGAW(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._TIMEINDEX] = times
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-                
 
-
-                    
                 meta_idx[meta_key][var] = np.arange(start, stop)
                 
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
-                
-                
+                       
             idx += totnum  
             meta_key = meta_key + 1.
         
@@ -405,14 +298,14 @@ class ReadGAW(ReadUngriddedBase):
 if __name__ == "__main__":
      
     r = ReadGAW()
-    data = r.read('vmrdms')
+    data = r.read(vars_to_retrieve = ['vmrdms', 'vmrdms_flag'])
     
     print(data.station_name)
+      
+    data.plot_station_coordinates()
     
-    
-    # data.plot_station_coordinates()
-    
-    data.plot_station_timeseries(station_name='Amsterdam_Island')
+    data.plot_station_timeseries(station_name='Amsterdam_Island', var_name = 'vmrdms')
+    data.plot_station_timeseries(station_name='Cape_Verde_Observatory', var_name = 'vmrdms_flag')
     
     print(data.metadata[0])
     
