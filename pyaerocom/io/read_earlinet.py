@@ -422,7 +422,7 @@ class ReadEarlinet(ReadUngriddedBase):
             in the list is used
         read_err : bool
             if True, uncertainty data is also read (where available). If 
-            unspecified (None), then the default is used (cf. :att:`READ_ERR`)
+            unspecified (None), then the default is used (cf. :attr:`READ_ERR`)
             
         Returns
         -------

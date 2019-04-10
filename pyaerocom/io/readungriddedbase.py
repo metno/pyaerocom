@@ -523,6 +523,7 @@ class ReadUngriddedBase(abc.ABC):
             list containing retrieved file locations
         
         Raises
+        ------
         IOError
             if no files can be found
         """
@@ -571,7 +572,9 @@ class ReadUngriddedBase(abc.ABC):
     def read_first_file(self, **kwargs):
         """Read first file returned from :func:`get_file_list`
         
-        This method may be used for test purposes. It calls :func:`get
+        Note
+        ----
+        This method may be used for test purposes. 
         
         Parameters
         ----------

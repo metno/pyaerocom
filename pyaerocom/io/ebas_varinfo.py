@@ -15,8 +15,6 @@ from pyaerocom import __dir__, logger
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io import EbasSQLRequest
 
-
-
 class EbasVarInfo(BrowseDict):
     """EBAS I/O variable information for Aerocom
     
@@ -139,10 +137,6 @@ class EbasVarInfo(BrowseDict):
     
     def to_dict(self):
         """Convert into dictionary"""
-# =============================================================================
-#         use_keys = ['var_name', 'component', 'matrix', 'instrument', 
-#                     'statistics', 'requires']
-# =============================================================================
         d = {}
         for k, v in self.items():
             if v is not None:
@@ -240,8 +234,6 @@ def check_all_variables():
                         
     return errors
             
-            
-    
 if __name__=="__main__":
     from pyaerocom.io import EbasFileIndex, EbasNasaAmesFile
     from pyaerocom import const

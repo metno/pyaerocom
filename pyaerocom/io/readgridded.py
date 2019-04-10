@@ -96,7 +96,9 @@ class ReadGridded(object):
     vars : list
         list containing all variable names (e.g. od550aer) that were inferred 
         from filenames based on Aerocom model file naming convention
-    years :
+    years : list
+        list of available years as inferred from the filenames in the data 
+        directory.
         
     Parameters
     ----------
@@ -116,15 +118,7 @@ class ReadGridded(object):
         if True, the model directory is searched (:func:`search_data_dir`) on
         instantiation and if it is found, all valid files for this model are 
         searched using :func:`search_all_files`.
-        
-    Examples
-    --------
-    
-        >>> read = ReadGridded(data_id="ECMWF_OSUITE")
-        >>> read.read_var("od550aer")
-        >>> read.read_var("od550so4")
-        >>> read.read_var("od550bc")
-        >>> print(data.short_str()) for data in read.data
+
         
     """
     AUX_REQUIRES = {'ang4487aer': ['od440aer', 'od870aer']}
@@ -1758,6 +1752,6 @@ class ReadGriddedMulti(object):
 if __name__=="__main__":
     
     r = ReadGridded('GEOS-Chem-v10-01_INSITU')
-    print(r.vars)
+    #print(r.vars)
     
     data = r.read_var('abs550aer', vert_which='Surface')
