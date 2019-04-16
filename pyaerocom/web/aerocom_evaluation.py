@@ -28,28 +28,49 @@ class AerocomEvaluation(object):
     High level interface for computation of colocated netcdf files and json
     files for `Aerocom Evaluation interface 
     <https://aerocom-trends.met.no/evaluation/web/>`__. The processing is 
-    done *per experiment* and the easiest way to get started 
+    done *per experiment*. See class attributes for setup options.
+    An *experiment* denotes a setup comprising one or more observation 
+    networks (specified in :attr:`obs_config`) and the specification of one 
+    or more model runs via :attr:`model_config`. These two configuration 
+    attributes are dictionaries, where keys correspond to the name of the
+    obs / model (as it should appear online) and values specify relevant 
+    information for importing the data (see also classes 
+    :class:`ModelConfigEval` and :class:`ObsConfigEval`).
     
-    Note
-    ----
-        
-    - General options for creation of colocated data files can be specified in 
-    dictionary attribute colocation_settings
-    - The colocation routine uses the variables specified in the obs_config entry 
-    of the observation network that is supposed to be colocated. If these variables
-    are not provided in a model run or are named differently, then the corresponding
-    model variable for an observation variable can be specified in the corresponding
-    model entry in model_config via model_use_vars (mapping). Note that this may lead
-    to unit conversion errors if the mapped model variable has a different AeroCom 
-    default unit and if outlier ranges are not specified explicitely (see info below).
-    - If remove_outliers is True, then outlier ranges for variables can be specified
-    in corresponding entry of model in model_config, or, for observation variables
-    in obs_config, respecively. NOTE: for each variable that has not specified 
-    an outlier range here, the AeroCom default is used, which is specified in 
-    pyaerocom data file variables.ini. In the latter case, a unit check is performed
-    in order to make sure the retrieved default outlier ranges are valid. This can
-    cause errors in the colocation if, for instance, a model variable name is used
-    that has a different AerocCom default unit than the used observation variable.
+    In addition to :attrs:`model_config, obs_config`, there are more setup 
+    settings and options, some of which NEED to be specified (e.g. 
+    :attrs:`proj_id, exp_id, out_basedir`) and others that may be explicitly 
+    specified if desired (e.g. :attrs:`harmonise_units, remove_outliers, 
+    clear_existing_json`).
+    
+    The analysis (which can be run via :func:`run_evaluation`) can be summarised
+    as follows: for each combination of *variable / obs / model* create one 
+    colocated NetCDF file and based on this colocated (single variable) NetCDF 
+    file compute all relevant json files for the interface. 
+    
+    General settings for the colocation (e.g. colocation frequency, start / 
+    stop time) can be specified in :attr:`colocation_settings` (for details 
+    see :class:`pyaerocom.ColocationSetup`). The colocation routine uses the 
+    variables specified in the obs_config entry of the observation network that 
+    is supposed to be colocated. If these variables are not provided in a 
+    model run or are named differently, then the corresponding model variable 
+    that is supposed to be colocated with the observation variable can be 
+    specified in the corresponding model entry in :attr:`model_config` via 
+    model_use_vars (mapping). Note that this may lead to unit conversion errors 
+    if the mapped model variable has a different AeroCom default unit and if 
+    outlier ranges are not specified explicitely (see info below).
+    
+    If :attr:`remove_outliers` is True, then custom outlier ranges for 
+    individual variables may be specified in corresponding entry of model in 
+    :attr:`model_config`, or, for observation variables
+    in :attr:`obs_config`, respectively. 
+    NOTE: for each variable that has not specified an outlier range here, the 
+    AeroCom default is used, which is specified in pyaerocom data file 
+    variables.ini. In the latter case, a unit check is performed in order to 
+    make sure the retrieved default outlier ranges are valid. This can cause 
+    errors in the colocation if, for instance, a model variable name is used
+    that has a different AerocCom default unit than the used observation 
+    variable.
     
     Attributes
     ----------
