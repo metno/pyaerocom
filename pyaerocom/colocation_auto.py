@@ -482,7 +482,7 @@ class Colocator(ColocationSetup):
                 raise DataCoverageError('Variable {} is not supported by {}'
                                         .format(obs_var, self.obs_id))
         
-        var_matches = self._find_var_matches()
+        var_matches = self._find_var_matches(obs_vars, model_reader)
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
             
