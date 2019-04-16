@@ -23,14 +23,67 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              start=None, stop=None, filter_name=None, 
                              regrid_res_deg=None, remove_outliers=True,
                              vert_scheme=None, harmonise_units=True,
-                             regrid_scheme='areaweighted', var_outlier_ranges=None,
+                             regrid_scheme='areaweighted', 
+                             var_outlier_ranges=None,
                              **kwargs):
     """Colocate 2 gridded data objects
     
     Todo
     ----
-    - Complete docstring
     - think about vertical dimension (vert_scheme input not used at the moment)
+    
+    Parameters
+    ----------
+    gridded_data : GriddedData
+        gridded data (e.g. model results)
+    gridded_data_ref : GriddedData
+        reference (ground-truth) dataset that is used to evaluate 
+        :attr:`gridded_data` (e.g. gridded observation data)
+    ts_type : str
+        desired temporal resolution of colocated data (must be valid AeroCom
+        ts_type str such as daily, monthly, yearly..)
+    start : :obj:`str` or :obj:`datetime64` or similar, optional
+        start time for colocation, if None, the start time of the input
+        :class:`GriddedData` object is used
+    stop : :obj:`str` or :obj:`datetime64` or similar, optional
+        stop time for colocation, if None, the stop time of the input
+        :class:`GriddedData` object is used
+    filter_name : str
+        string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
+        details). If None, then it is set to 'WORLD-wMOUNTAINS', which 
+        corresponds to no filtering (world with mountains). 
+        Use WORLD-noMOUNTAINS to exclude mountain sites.
+    regrid_res_deg : :obj:`int`, optional
+        regrid resolution in degrees. If specified, the input gridded data 
+        objects will be regridded in lon / lat dimension to the input 
+        resolution. (BETA feature)
+    remove_outliers : bool
+        if True, outliers are removed from model and obs data before colocation, 
+        else not.
+    vert_scheme : str
+        string specifying scheme used to reduce the dimensionality in case 
+        input grid data contains vertical dimension. Example schemes are 
+        `mean, surface, altitude`, for details see 
+        :func:`GriddedData.to_time_series`.
+    harmonise_units : bool
+        if True, units are attempted to be harmonised (note: raises Exception
+        if True and units cannot be harmonised).
+    var_ref : :obj:`str`, optional
+        variable against which data in :attr:`gridded_data` is supposed to be
+        compared. If None, then the same variable is used 
+        (i.e. `gridded_data.var_name`).
+    var_outlier_ranges : :obj:`dict`, optional
+        dictionary specifying outlier ranges for individual variables. 
+        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
+    **kwargs
+        additional keyword args (not used here, but included such that factory 
+        class can handle different methods with different inputs)
+        
+    Returns
+    -------
+    ColocatedData
+        instance of colocated data
+        
     """
     if vert_scheme is not None:
         raise NotImplementedError('Input vert_scheme cannot yet be handled '
@@ -173,12 +226,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                vert_scheme=None, harmonise_units=True, 
                                var_ref=None, var_outlier_ranges=None, 
                                **kwargs):
-    """Colocate gridded with ungridded data of 2D data
-    
-    2D means, that the vertical direction is only sampled at one altitude or
-    the variable is of integrated nature (or averaged) so that the dimensionality
-    of the grid data is (or can be -> cf. input parameter `vert_scheme`) 
-    reduced to dimensionality time, lat, lon.
+    """Colocate gridded with ungridded data 
     
     Note
     ----
@@ -204,23 +252,31 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         :class:`GriddedData` object is used
     filter_name : str
         string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
-        details). Default is 'WORLD-wMOUNTAINS', which corresponds to no 
-        filtering (world with mountains). Use WORLD-noMOUNTAINS to exclude
-        stations at altitudes exceeding 1000 m.
+        details). If None, then it is set to 'WORLD-wMOUNTAINS', which 
+        corresponds to no filtering (world with mountains). 
+        Use WORLD-noMOUNTAINS to exclude mountain sites.
     regrid_res_deg : :obj:`int`, optional
-        if specified, the gridded data object to be analysed will be regridded
-        in lon / lat dimension to the input resolution. (BETA feature)
+        regrid resolution in degrees. If specified, the input gridded data 
+        object will be regridded in lon / lat dimension to the input 
+        resolution. (BETA feature)
     remove_outliers : bool
-        if True
-    var_ref : :obj:`str`, optional
-        variable against which data in :attr:`gridded_data` is supposed to be
-        compared. If None, then the same variable is used 
-        (i.e. `gridded_data.var_name`).
+        if True, outliers are removed from model and obs data before colocation, 
+        else not.
     vert_scheme : str
         string specifying scheme used to reduce the dimensionality in case 
         input grid data contains vertical dimension. Example schemes are 
         `mean, surface, altitude`, for details see 
         :func:`GriddedData.to_time_series`.
+    harmonise_units : bool
+        if True, units are attempted to be harmonised (note: raises Exception
+        if True and units cannot be harmonised).
+    var_ref : :obj:`str`, optional
+        variable against which data in :attr:`gridded_data` is supposed to be
+        compared. If None, then the same variable is used 
+        (i.e. `gridded_data.var_name`).
+    var_outlier_ranges : :obj:`dict`, optional
+        dictionary specifying outlier ranges for individual variables. 
+        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
@@ -519,51 +575,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     return data
 
-def colocate_gridded_ungridded_2D(*args, **kwargs):
-    print(DeprecationWarning('Old name of function colocate_gridded_ungridded'
-                             '(still works)'))
-    return colocate_gridded_ungridded(*args, **kwargs)
-
-# =============================================================================
-# class Colocator(object):
-#     """Helper / factory class for performing colocation of data
-#     
-#     Note
-#     ----
-#     
-#     This class is not functional yet
-#     
-#     """
-#     SUPPORTED = (GriddedData, UngriddedData)
-#     
-#     def __init__(self, data_ref):
-#         raise NotImplementedError('Coming soon...')
-#         if not isinstance(data_ref, self.SUPPORTED):
-#             raise ValueError('Cannot instantiate colocation class. Need '
-#                              'either of the supported data types {} as '
-#                              'reference dataset'.format(self.SUPPORTED))
-#         self.data_ref = data_ref
-#         
-#     def run(self, data, ts_type=None, start=None, stop=None, filter_name=None,
-#             **add_args):
-#         if not isinstance(data, self.SUPPORTED):
-#             raise ValueError('Cannot instantiate colocation class. Need '
-#                              'either of the supported data types {} as '
-#                              'reference dataset'.format(self.SUPPORTED))
-#         if isinstance(self.data_ref, UngriddedData):
-#             if isinstance(data, GriddedData):
-#                 return colocate_gridded_ungridded_2D(data, self.data_ref,
-#                                                       ts_type=ts_type,
-#                                                       start=start,
-#                                                       stop=stop,
-#                                                       filter_name=filter_name,
-#                                                       **add_args)
-#         elif isinstance(self.data_ref, GriddedData):
-#             if isinstance(data, GriddedData):
-#                 pass
-#         raise NotImplementedError
-# =============================================================================
-    
 if __name__=='__main__':
     import pyaerocom as pya
     import matplotlib.pyplot as plt
@@ -580,26 +591,3 @@ if __name__=='__main__':
                                                                ts_type='monthly')
     
     colocated_data.plot_scatter()
-# =============================================================================
-#     r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-#     model = r.read_var('od550aer', start=2010)
-#     
-#     obs_r1 = pya.io.ReadGridded('MODIS6.terra')
-#     obs1 = obs_r1.read_var('od550aer', start=2010)
-#     
-#     obs_r2 = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
-#     obs2 = obs_r2.read(vars_to_retrieve='od550aer')
-#     
-#     coll_data1 = colocate_gridded_gridded(model, obs1, ts_type='monthly')
-#     
-#     coll_data1.plot_scatter()
-#     
-#     coll_data2 = colocate_gridded_ungridded_2D(model, obs2, ts_type='monthly')
-#     coll_data2.plot_scatter()
-#     
-#     print(model)
-#     print(obs1)
-#     print(obs2)
-#     print(coll_data1)
-#     print(coll_data2)
-# =============================================================================
