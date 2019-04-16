@@ -173,6 +173,21 @@ def get_obsnetwork_dir(obs_id):
                       "exists".format(data_dir, obs_id))
     return data_dir
 
+def save_dict_json(d, fp, ignore_nan=True, indent=None):
+    """Save a dictionary as json file using :func:`simplejson.dump`
+    
+    Parameters
+    ----------
+    d : dict
+        input dictionary
+    fp : str
+        filepath of json file
+        
+    """
+    import simplejson
+    with open(fp, 'w') as f:
+        simplejson.dump(d, f, ignore_nan=ignore_nan, indent=indent)
+        
 def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database
     
