@@ -1144,22 +1144,26 @@ class StationData(StationMetaData):
         for k, v in self.items():
             if k[0] == '_':
                 continue
-            if isinstance(v, dict) and v:
-                s += "\n{} ({})".format(k, repr(v))
-                s = dict_to_str(v, s)
+            if isinstance(v, dict):
+                s += "\n{} ({}):".format(k, type(v).__name__)
+                if v:
+                    s = dict_to_str(v, s, indent=2)
+                else:
+                    s += ' <empty_dict>'
             elif isinstance(v, list):
-                s += "\n{} (list, {} items)".format(k, len(v))
-                s += list_to_shortstr(v)
-            elif isinstance(v, np.ndarray) and v.ndim==1:
-                arrays += "\n{} (array, {} items)".format(k, len(v))
-                arrays += list_to_shortstr(v)
+                s += list_to_shortstr(v, name=k)
             elif isinstance(v, np.ndarray):
-                arrays += "\n{} (array, shape {})".format(k, v.shape)
-                arrays += "\n{}".format(v)
+                if v.ndim==1:
+                    arrays += list_to_shortstr(v, name=k)
+                else:
+                    arrays += "\n{} (ndarray, shape {})".format(k, v.shape)
+                    arrays += "\n{}".format(v)
             elif isinstance(v, pd.Series):
                 series += "\n{} (Series, {} items)".format(k, len(v))
             else:
-                s += "\n%s: %s" %(k,v)
+                if v == '':
+                    v = '<empty_str>'
+                s += "\n{}: {}".format(k,v)
         if arrays:
             s += '\n\nData arrays\n.................'
             s += arrays
