@@ -1013,9 +1013,10 @@ class ReadGridded(object):
             if True and if applicable,start=None, stop=None,
                  ts_type=None, flex_ts_type=True then another ts_type is used in case 
             the input ts_type is not available for this variable
-        vert_which : str
+        vert_which : :obj:`str` or :obj:`dict`, optional
             valid AeroCom vertical info string encoded in name (e.g. Column,
-            ModelLevel)
+            ModelLevel) or dictionary containing var_name as key and vertical
+            coded string as value, accordingly
         aux_vars : list
             only relevant if `var_name` is not available for reading but needs
             to be computed: list of variables that are required to compute 
@@ -1041,6 +1042,16 @@ class ReadGridded(object):
             self.add_aux_compute(var_name, aux_vars, aux_fun)
         #aux_compute = self._add_aux_compute(aux_compute)
         
+        if isinstance(ts_type, dict):
+            try:
+                ts_type = ts_type[var_name]
+            except:
+                CONST.print_log.info('Setting ts_type to None, since input '
+                                     'dict {} does not contain specification '
+                                     'variable to read {}'.format(ts_type, 
+                                                                  var_name))
+                ts_type = None
+                
         ts_type = self._check_ts_type(ts_type)
         
         var_to_read = None
@@ -1053,6 +1064,15 @@ class ReadGridded(object):
                     if Variable(var).var_name == var_name:
                         var_to_read = var
         
+        if isinstance(vert_which, dict):
+            try:
+                vert_which = vert_which[var_name]
+            except:
+                CONST.print_log.info('Setting vert_which to None, since input '
+                                     'dict {} does not contain specification '
+                                     'variable to read {}'.format(vert_which, 
+                                                                  var_name))
+                vert_which = None
         if var_to_read is not None: # variable can be read directly
             data = self._load_var(var_to_read, ts_type, start, stop,
                                   flex_ts_type, vert_which)
@@ -1153,112 +1173,6 @@ class ReadGridded(object):
             except (VarNotAvailableError, DataCoverageError) as e:
                 self.logger.warning(repr(e))
         return tuple(data)
-# =============================================================================
-#             except Exception as e:
-#                 self.logger.exception('Failed to read variable {} ({})\n'
-#                                       'Error message: {}'.format(var,
-#                                                       self.data_id, 
-#                                                       repr(e)))
-# =============================================================================
-        
-    
-# =============================================================================
-#     def read_individual_years(self, var_names, years_to_load, 
-#                               ts_type=None, 
-#                               require_all_years_avail=False,
-#                               require_all_vars_avail=False,
-#                               flex_ts_type=True):
-#         """Read individual years into instances of :class:`GriddedData`
-#         
-#         Note
-#         ----
-#         Other than methods :func:`read_var` and :func:`read`, this method does
-#         not write into :attr:`data` but into :attr:`data_yearly`. Since for 
-#         each provided variable, multiple years are loaded, the structure of
-#         :attr:`data_yearly` is a nested dictionary and the yearly data may
-#         be accessed as shown in the below example.
-#         
-#         Parameters
-#         ----------
-#         var_names : :obj:`list` or :obj:`str`
-#             variables that are supposed to be read
-#         years_to_load : list
-#             list specifying the years to be loaded
-#         ts_type : str
-#             string specifying temporal resolution (choose from 
-#             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
-#             of the available resolutions is used
-#         require_all_years_avail : bool
-#             if True, it is strictly required that all input years are 
-#             available. 
-#         require_all_vars_avail : bool
-#             if True, it is strictly required that all input variables are 
-#             available. 
-#         
-#         Returns
-#         -------
-#         dict
-#             nested dictionary dictionary containing the results for each 
-#             variable and for each year
-#             
-#         Raises 
-#         ------
-#         YearNotAvailableError
-#             1. if ``require_all_years_avail=True`` and one or more of the provided 
-#             years is not available in this class
-#             2. if none of the required years is available in this object
-#         VarNotAvailableError
-#             1. if ``require_all_vars_avail=True`` and one or more of the 
-#             desired variables is not available in this class
-#             2. if ``require_all_vars_avail=True`` and if none of the input 
-#             variables is available in this object
-#         """
-#         ts_type = self._check_ts_type(ts_type)
-#         if not isinstance(years_to_load, (list, np.ndarray)):
-#             year = int(years_to_load)
-#             if not CONST.MIN_YEAR <= year <= CONST.MAX_YEAR:
-#                 raise IOError('Invalid input for years_to_load')
-#             years_to_load = [year]
-#         if require_all_years_avail:
-#             if not all([year in self.years for year in years_to_load]):
-#                 raise YearNotAvailableError('One or more of the specified years '
-#                                         '({}) is not available in {} database. '
-#                                         'Available years: {}'.format(
-#                                         years_to_load, self.data_id, 
-#                                         self.years))
-#         years_to_load = np.intersect1d(self.years, years_to_load)
-#         if len(years_to_load) == 0:
-#             raise YearNotAvailableError('None of the provided years is '
-#                                         'available in {}'.format(self.data_id))
-#         
-#         if require_all_vars_avail:
-#             if not all([var in self.vars for var in var_names]):
-#                 raise VarNotAvailableError('One or more of the specified vars '
-#                                         '({}) is not available in {} database. '
-#                                         'Available vars: {}'.format(
-#                                         var_names, self.data_id, 
-#                                         self.vars))
-#         var_names = np.intersect1d(self.vars, var_names)
-#         if len(var_names) == 0:
-#             raise VarNotAvailableError('None of the desired variables is '
-#                                         'available in {}'.format(self.name))
-#             
-#         for var in var_names:
-#             if not var in self.data_yearly:
-#                 self.data_yearly[var] = od()
-#                 
-#             for year in years_to_load:
-#                 try:
-#                     data = self._load_var(var, ts_type, year, flex_ts_type)
-#                     if year in self.data_yearly[var]:
-#                         self.logger.warning('Individual data of year {} and var {} '
-#                                             'already exists and will be '
-#                                             'overwritten'.format(year, var))
-#                     self.data_yearly[var][year] = data
-#                 except Exception as e:
-#                     self.logger.exception(repr(e))
-#         return self.data_yearly
-# =============================================================================
     
     def _load_files(self, files, var_name, quality_check=True):
         """Load list of files containing variable to read into Cube instances
@@ -1510,7 +1424,10 @@ class ReadGriddedMulti(object):
     _start = None
     _stop = None
     def __init__(self, names, start=None, stop=None):
-        
+        CONST.print_log.warning(DeprecationWarning('ReadGriddedMulti class is '
+                                                   'deprecated and will not '
+                                                   'be further developed. '
+                                                   'Please use ReadGridded.'))
         if isinstance(names, str):
             names = [names]
         if not isinstance(names, list) or not all([isinstance(x, str) for x in names]):
