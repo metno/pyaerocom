@@ -10,7 +10,8 @@ For details see here:
 
 from pyaerocom import GEONUM_AVAILABLE, const
 from pyaerocom.exceptions import (CoordinateNameError, CoordinateError,
-                                  VariableNotFoundError)
+                                  VariableNotFoundError,
+                                  AltitudeAccessError)
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
@@ -224,21 +225,25 @@ class AltitudeAccess(object):
     #: Additional variable names (in AEROCOM convention) that are used
     #: to search for additional files that can be used to access or compute 
     #: the altitude levels at each grid point
-    ADD_FILE_VARS = ['z3d', 'deltaz3d', 'pres']
+    ADD_FILE_VARS = ['z', 'z3d', 'deltaz3d', 'pres']
     
     #: Additional variables that are required to compute altitude levels
     ADD_FILE_REQ = {'deltaz3d' : ['ps']}
     
     ADD_FILE_OPT = {'pres'  :   ['temp']}
 
-    ALT_CONV_FUNS = {'z3d'  : NotImplementedError('Coming soon...'),
-                     }
+    ALT_CONV_FUNS = {'z3d'  : NotImplementedError('Coming soon...')}
     
     def __init__(self, gridded_data):
         from pyaerocom import GriddedData, logger
         if not isinstance(gridded_data, GriddedData):
             raise ValueError('Invalid input: require instance of GriddedData '
                              'class')
+        if not gridded_data.has_latlon_dims:
+            raise NotImplementedError('Altitude access requires latitude and '
+                                      'longitude dimensions to be available '
+                                      'in  input GriddedData: {}'
+                                      .format(gridded_data.short_str()))
         self.data_obj = gridded_data
         self.add_data = BrowseDict()
         
@@ -271,9 +276,12 @@ class AltitudeAccess(object):
                                   ts_type=d.ts_type, flex_ts_type=False)
         raise VariableNotFoundError('Auxiliary variable {} could not be found'
                                     .format(add_var_name))
-        
+       
+    def _check_altitude_access(self, access_dict):
+        print(access_dict)
+                
     def find_and_import_auxvars(self):
-        """Data directory of original data input file
+        """Find and read auxiliary variables for altitude access
         
         This directory (if available) is used to check if potential files with
         altitude information are available
@@ -293,17 +301,22 @@ class AltitudeAccess(object):
                             result[aux_opt] = self._find_and_read_add_var(aux_opt)
                         except:
                             pass
+                
+                self._check_altitude_access(result)
                 self.add_data = result
                 return result
-            except VariableNotFoundError as e:
+            except (VariableNotFoundError, AltitudeAccessError) as e:
                 self.logger.warning(repr(e))
         raise CoordinateError('Could not find required additional coordinate '
                               'information for the computation of altitude '
                               'levels')
     
+    
     def get_altitude(latitude, longitude):
         raise NotImplementedError('Coming soon...')
-        
+    
+
+
 if __name__ == '__main__':
     import numpy as np
     import pyaerocom as pya
