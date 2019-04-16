@@ -335,3 +335,29 @@ Mathematical helpers
 .. automodule:: pyaerocom.mathutils
    :members:
    :undoc-members:
+   
+Web processing (sub-package: web)
+---------------------------------
+
+This sub-package contains high level processing routines that can be used to process AeroCom data for individual web-interfaces, such as the `AeroCom Evaluation <https://aerocom-trends.met.no/evaluation/web/>`__ interface or the `Aerosol trends <https://aerocom-trends.met.no/>`__ interface.
+
+Aerocom Evaluation interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.web.aerocom_evaluation
+   :members:
+   :undoc-members:
+
+Aerosol Trends interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.web.aerosol_trends
+   :members:
+   :undoc-members:
+
+Helpers of web-subpackage
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.web.helpers
+   :members:
+   :undoc-members:
