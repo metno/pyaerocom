@@ -23,6 +23,9 @@ Module containing pyaerocom custom exceptions
 class AerocomConnectionError(IOError):
     pass
 
+class AltitudeAccessError(ValueError):
+    pass
+
 class ColocationError(ValueError):
     pass
 
