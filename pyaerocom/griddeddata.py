@@ -409,13 +409,17 @@ class GriddedData(object):
     @area_weights.setter
     def area_weights(self, val):
         raise AttributeError("Area weights cannot be set manually yet...")
-        
-    
-      
-    def check_dim_coords(self):
-        """Check dimension coordinates of grid data"""
-        raise NotImplementedError
      
+    @property
+    def has_latlon_dims(self):
+        """Boolean specifying whether data has latitude and longitude dimensions"""
+        return all([dim in self.dimcoord_names for dim in ['latitude', 
+                                                           'longitude']])
+    @property
+    def has_time_dim(self):
+        """Boolean specifying whether data has latitude and longitude dimensions"""
+        return 'time' in self.dimcoord_names
+    
     def init_reader(self, print_info=True):
         """Initiate reader class"""
         if self.reader is not None:
@@ -724,17 +728,16 @@ class GriddedData(object):
                                   .format(vert_scheme))
     
     def _check_altitude_access(self):
+        """Check if altitude levels can be accessed"""
         coord_name = self.coord_names[-1]
         if coord_name == 'altitude':
             return True
         from pyaerocom.vert_coords import AltitudeAccess
         self._altitude_access = acc = AltitudeAccess(self)
-                
-        acc.find_and_import_auxvars()
-        raise NotImplementedError('Coming soon...')
-            
+        # the following function will 
+        return acc.find_and_import_auxvars()
     
-    def get_altitude(self, coords):
+    def get_altitude(self, **coords):
         """Extract (or try to compute) altitude values at input coordinates"""
         raise NotImplementedError('Coming soon...')
         
@@ -946,6 +949,10 @@ class GriddedData(object):
             if input resolution is not provided, or if it is higher temporal 
             resolution than this object
         """
+        if not self.has_time_dim:
+            raise DataDimensionError('Require time dimension in GriddedData: '
+                                     '{}'.format(self.short_str()))
+            
         ts_types_avail = const.GRID_IO.TS_TYPES
         idx_ts_type = ts_types_avail.index(to_ts_type)
         if self.ts_type == to_ts_type:
@@ -985,9 +992,15 @@ class GriddedData(object):
     
     def add_aggregator(self, aggr_name):
         raise NotImplementedError
-        
+    
+    
+
     def calc_area_weights(self):
         """Calculate area weights for grid"""
+        if not self.has_latlon_dims:
+            raise DataDimensionError('Data does not have latitude and longitude '
+                                     'dimensions. This is required for '
+                                     'computation of area weights.')
         self._check_lonlat_bounds()
         self._area_weights = area_weights(self.grid)
         return self.area_weights
@@ -1472,17 +1485,7 @@ class GriddedData(object):
     
     def short_str(self):
         """Short string representation"""
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = ("\n{}\n{}\n"
-             "Variable: {}\n"
-             "Temporal resolution: {}\n"
-             "Start / Stop: {} - {}".format(head,
-                                            len(head)*"-",
-                                            self.var_name, 
-                                            self.suppl_info["ts_type"],
-                                            self.start,
-                                            self.stop))
-        return s
+        return "ID: {}, Var: {}".format(self.data_id, self.var_name)
     
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
@@ -1631,16 +1634,23 @@ if __name__=='__main__':
     reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
     
     print(reader)
-    data = reader.read_var('ec532aer', start=2007, stop=2016)
-    data.downscale_time('monthly')
+    c1 = reader.read_var('ec532aer', start=2009).cube
+    c2 = reader.read_var('ec532aer', start=2010).cube
     
-    t1 = data.to_time_series(longitude=[30], latitude=[40],
-                             vert_scheme='max')
-    
-    t2 = data.to_time_series(longitude=[30], latitude=[40],
-                             vert_scheme='surface')
-    
-    t3 = data.to_time_series(longitude=[30], latitude=[40],
-                             vert_scheme='mean')
-    
-    ax = t1.plot_timeseries('ec532aer')
+    import iris
+    c3 = c1 + c1
+# =============================================================================
+#     data.downscale_time('monthly')
+#     
+#     t1 = data.to_time_series(longitude=[30], latitude=[40],
+#                              vert_scheme='max')
+#     
+#     t2 = data.to_time_series(longitude=[30], latitude=[40],
+#                              vert_scheme='surface')
+#     
+#     t3 = data.to_time_series(longitude=[30], latitude=[40],
+#                              vert_scheme='mean')
+#     
+#     ax = t1.plot_timeseries('ec532aer')
+# 
+# =============================================================================
