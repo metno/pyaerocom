@@ -1,28 +1,53 @@
-import os
-
 import numpy as np
+import os
 import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 #import od
 from collections import OrderedDict
 
-from pyaerocom import const, print_log
-
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 
-# PATH ON LUSTRE /lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data
-# Note to self: NUMBERS_OF_WIERD_STATIONS = np.array([8, 69,127,134,145,169,181,188,189,202,203,237,240,286,315,613,247,312,387,535])
-
-
 class ReadSulphurAasEtAl(ReadUngriddedBase):
     """Interface for reading subset of GOL TAT data related to the nature paper.
 
-    .. seealso::
-
+    See Also
+    ---------
         :class:`ReadUngriddedBase`
+
+    Attributes
+    ----------
+    _FILEMASK : str
+        Determines which files are serched for.
+    
+    __version__ : str
+        Version of this interface  
+        
+    COL_DELIM : str
+
+
+    TS_TYPE : 
+    
+    DATA_ID
+    
+    DATASET_PATH : :obj: `str`
+    
+    
+    SUPPORTED_DATASETS :  :obj:`list` of `str`:
+        
+    VAR_TO_KEY : 
+    
+    FILES_CONTAIN :  :obj:`dict`:
+    
+    VARS_TO_FILES :  :obj:`list` or `str`:
+    
+    PROVIDES_VARIABLES :  :obj:`list` of `str`:
+        
+    num_vars : int 
+        Number of variables available for this dataset.
+    
 	"""
     # name of files in GawTadSubsetAasEtAl
     _FILEMASK = '*.csv' # fix
@@ -39,7 +64,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     DATA_ID = 'GAWTADsubsetAasEtAl'
 
     #: Path were data is located (hard coded for now)
-    DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data' # fix
+    DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data' 
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -51,42 +76,76 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     # This contains the mapping between the requested variables and what it is called in the files.
-    VAR_NAMES_FILE = {}
-    VAR_NAMES_FILE["sconcSO4precip"] = "concentration_mgS/L"
-    VAR_NAMES_FILE["pr"] = 'precip_amount_mm'
-    VAR_NAMES_FILE["wetso4"] = "deposition_kgS/ha"
-    VAR_NAMES_FILE["sconcso2"] = 'concentration_ugS/m3'
-    VAR_NAMES_FILE["sconcso4"] = 'concentration_ugS/m3'
+    
+    #: Dictionary mapping variable name to the keys present in the files. 
+    VAR_TO_KEY = {}
+    VAR_TO_KEY["sconcSO4precip"] = "concentration_mgS/L"
+    VAR_TO_KEY["pr"] = 'precip_amount_mm'
+    VAR_TO_KEY["wetso4"] = "deposition_kgS/ha"
+    VAR_TO_KEY["sconcso2"] = 'concentration_ugS/m3'
+    VAR_TO_KEY["sconcso4"] = 'concentration_ugS/m3'
 
-    PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
+
+    #: Dictionary mapping filenames to available variables in the respective files. 
+    FILES_CONTAIN = {}
+    FILES_CONTAIN['monthly_so2.csv'] = ['sconcso2']
+    FILES_CONTAIN['monthly_so4_aero.csv'] = ['sconcso4']
+    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4',
+                                               'pr',
+                                               'sconcSO4precip']
+    
+    #: Dictionary mapping variable name to hard coded filenames. 
+    VARS_TO_FILES = {}
+    VARS_TO_FILES['sconcso2'] = ['monthly_so2.csv']
+    VARS_TO_FILES['sconcso4'] = ['monthly_so4_aero.csv']
+    VARS_TO_FILES['pr'] = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['wetso4'] = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['sconcSO4precip'] = ['monthly_so4_precip.csv']
+
+
+    #: :obj: `list` of :obj: `str` 
+    #: List containing all the variables available in this data set.
+    PROVIDES_VARIABLES = list(VAR_TO_KEY.keys())
+    
+    
+    #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
-
 
     @property
     def DEFAULT_VARS(self):
         return self.PROVIDES_VARIABLES
 
-    def read_file(self, filename, vars_to_retrieve=None): #  -> List[StationData]:
-        """Read GawTadSubsetAasEtAl files
+    def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
+        """Read one GawTadSubsetAasEtAl file
 
         Parameters
         ----------
         filename : str
-        absolute path to filename to read
+            absolute path to filename to read
 
-        vars_to_retrieve : str or list of string?
-
+        vars_to_retrieve : :obj:`list` of `str`, :obj: `str`:, optional,
+            list containing variable IDs that are supposed to be read. 
+            
         Returns
         -------
         station_list : List[StationData]
-        List of dictionary-like object containing data
+            List of dictionary-like object containing data
         """
 
         station_list = []
-
+        print(vars_to_retrieve)
         df = pd.read_csv(filename,sep=",", low_memory=False)
-        df["day"] = np.ones((len(df["year"]))).astype('int')
-        df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) # array av numpy.datetime64
+        days = np.ones((len(df["year"]))).astype('int')
+        
+        df['day'] = days
+        df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
+        
+        days = np.ones((len(df["year"]))).astype('int').astype('str')
+        month = df['month'].values.astype("str")
+        year = df['year'].values.astype("str")
+        dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
+        print(np.array(dates, dtype = "datetime64[s]") )
+        # array av numpy.datetime64
         df.rename(columns= {"Sampler":"instrument_name"}, inplace = True)
         df.pop("year")
         df.pop("month")
@@ -94,119 +153,93 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         grouped = df.groupby(by = "station_name")
 
         # Looping over every station:
-        for name, group in grouped:
+        for name, station_group in grouped:
 
             s = StationData()
+            # Meta data
             s['station_name'] = name
             s["altitude"] = np.nan
             s["filename"] = filename
-
-            # Needs a update
-            s["PI"] = None
-            s["PI_email"] = None
             s["data_id"] = self.DATA_ID
             s["ts_type"] = self.TS_TYPE
             s['variables'] = []
+            
+            # The variables present in this file is the intersection between the keys in the file and the variables name available, 
+            # here expressed in terms of their keynames in order to retrieve them.
+            variables_present = list(set(station_group.keys()).intersection(self.VAR_TO_KEY.values()))
 
-            # Looping over all the keys in one station
-            for key in group.keys():
-                # it the key is a variable
-                if key in self.VAR_NAMES_FILE.values():
+            # Looping over all keys in the grouped data frame.
+            for key in station_group:
+                # Enters if the the key is a variable
+                if key in variables_present:
                     # Looping over all varibales to retrieve
                     for var in vars_to_retrieve:
-                        # Makes sure the variable maches the key.
-                        if self.VAR_NAMES_FILE[var] == key:
-                        # Todo this needs to be improved
-                            if var == "wetso4":
-                                # Need to convert units from Kg S/ha to kg S/ m^2
-                                s[var] = pd.to_numeric(group[key], errors='coerce').values*10000
-                            else:
-                                s[var] = pd.to_numeric(group[key], errors='coerce').values
-                            # the above line makes sure that both integers and nan values are considered numeric
-                            s['variables'].append(var)
+                        if var == "wetso4":
+                            # If variable is wet deposition of sulphor we need to convert the unit from Kg S/ha to kg S/ m^2
+                            s[var] = pd.to_numeric(station_group[key], errors='coerce').values*10000
+                        else:
+                            # Other variable have the correct unit.
+                            s[var] = pd.to_numeric(station_group[key], 
+                                                   errors='coerce').values
+                        # Adds the variable
+                        s['variables'].append(var)
                 else:
                     if key == 'dtime':
-                        s[key] = group[key].values
+                        s[key] = station_group[key].values
                     else:
-                        s[key] = group[key].values[0]
+                        # Store the meta data. 
+                        s[key] = station_group[key].values[0]
+            # Added the created station to the station list.
             station_list.append(s)
         return station_list
 
-    def read(self, vars_to_retrieve = None, files=None, first_file=None,last_file=None):
+    def read(self, vars_to_retrieve=None):
         """
         Method that reads list of files as instance of :class:`UngriddedData`
 
-        Parameters COPY from AeronetSunV3Lev2
+        Parameters 
         ----------
-        vars_to_retrieve : :obj:`list` or similar, optional,
-        list containing variable IDs that are supposed to be read. If None,
-        all variables in :attr:`PROVIDES_VARIABLES` are loaded
+        vars_to_retrieve : :obj:`list` or `str`:, optional,
+            list containing variable IDs that are supposed to be read. If None,
+            all variables in :attr:`PROVIDES_VARIABLES` are loaded
+
         files : :obj:`list`, optional
-        list of files to be read. If None, then the file list is used that
-        is returned on :func:`get_file_list`.
-        first_file : :obj:`int`, optional
-        index of first file in file list to read. If None, the very first
-        file in the list is used
-        last_file : :obj:`int`, optional
-        index of last file in list to read. If None, the very last file
-        in the list is used
+            list of files to be read. If None, then the file list is used that
+            is returned on :func:`get_file_list`.
 
         Returns
         -------
         UngriddedData
-        data object
-
+            data object
+            
         """
-
-        if files is None:
-            if len(self.files) == 0:
-                self.get_file_list()
-            files = self.files
-
-        if first_file is None:
-            first_file = 0
-        if last_file is None:
-            last_file = len(files)
-
-        files = files[first_file:last_file]
-
+        files = self.get_file_list()
+                
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
         data_obj = UngriddedData()
 
         meta_key = 0.0
         idx = 0
-
-        mapping = {}
-        mapping['sconcso2'] = files[0]
-        mapping['sconcso4'] = files[1]
-        mapping['wetso4'] = mapping['pr'] = mapping['sconcSO4precip'] = files[2]
-
+        varindex = -1 # might cause trouble
+        
         #assign metadata object
         metadata = data_obj.metadata # OrderedDict
         meta_idx = data_obj.meta_idx # OrderedDict
 
-        if vars_to_retrieve == None:
-            files = self.files
-            vars_to_retrieve = self.VAR_NAMES_FILE.keys()
-        elif type(vars_to_retrieve) == type(''):
-            files = [mapping[vars_to_retrieve]]
-            vars_to_retrieve = [vars_to_retrieve]
-        else:
-            # The case where you request several variables.
-            temp_files = []
-            for var in vars_to_retrieve:
-                temp_files.append( mapping[var] )
-            files = temp_files
-            # VARS to retrieve is already a list of strings.
-
         for file in files:
-            # if file contains requested variable:
-            station_data_list = self.read_file(file, vars_to_retrieve=vars_to_retrieve)
-            # Fill the metatdata dict
-            # the location in the data set is time step dependant!
-            # use the lat location here since we have to choose one location
-            # in the time series plot
-            varindex = 0
-
+            filename = os.path.basename(file)
+            if not filename in self.FILES_CONTAIN:
+                raise IOError('Invalid file name {}, this should not happen'
+                              .format(filename))
+            var_matches = [var for var in vars_to_retrieve if var in
+                            self.FILES_CONTAIN[filename]]
+            if len(var_matches) == 0:
+                continue
+            station_data_list = self.read_file(file, 
+                                               vars_to_retrieve=var_matches)
             for station_data in station_data_list:
                 #self.counter += 1
                 metadata[meta_key] = OrderedDict()
@@ -229,22 +262,28 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
                 num_times = len(station_data['dtime'])
                 num_vars = len(station_data["variables"])
-                vars_to_retrieve = station_data["variables"]
-
+                temp_vars = station_data["variables"]
                 tconv = station_data['dtime'].astype('datetime64[s]')
-
                 times = np.float64(tconv)
-
                 totnum = num_times * num_vars
 
                 if (idx + totnum) >= data_obj._ROWNO:
+                    # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
 
-                for var_idx, var in enumerate(vars_to_retrieve):
-                    var_idx += varindex
+                for var_count, var in enumerate(temp_vars):
+                    #var_count += varindex
                     values = station_data[var]
-                    start = idx + var_idx * num_times
+                    start = idx + var_count * num_times
                     stop = start + num_times
+
+                    if not var in data_obj.var_idx:
+                        varindex += 1
+                        data_obj.var_idx[var] = varindex
+                        var_idx = varindex
+                        print("adding var {} (assigned index: {})".format(var, varindex))
+                    else:
+                        var_idx = data_obj.var_idx[var]
 
                     data_obj._data[start:stop, data_obj._LATINDEX] = station_data['latitude']
                     data_obj._data[start:stop, data_obj._LONINDEX] = station_data['longitude']
@@ -258,21 +297,13 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
                     meta_idx[meta_key][var] = np.arange(start, stop)
 
-                    # Adds the variables to the ungriddeddata object.
-                    if not var in data_obj.var_idx:
-                        data_obj.var_idx[var] = var_idx
-
-                #print(metadata.keys())
                 meta_key += 1
-                #nr_which_are_already_there += stop
                 idx += totnum
-            varindex+=1
-        # When we finish reading crop the dataobject to the last index.
+                
         data_obj._data = data_obj._data[:idx]
         data_obj.data_revision[self.DATA_ID] = self.data_revision
-        self.data = data_obj # why this
+        self.data = data_obj # initalizing a pointer to it selves
         return data_obj
-
 
 if __name__ == "__main__":
      from pyaerocom import change_verbosity
@@ -280,33 +311,36 @@ if __name__ == "__main__":
      change_verbosity('info')
      V = "sconcso2"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-     data = ungridded = aa.read(V)
-     print(data.contains_vars)
-     ax = data.plot_station_coordinates(markersize=12, color='lime')
-     plt.show()
+     dataNone = aa.read(None)
+     dataNone.plot_station_coordinates(markersize=12, color='lime')
+
+     dataString = aa.read("sconcso4")
+     dataString.plot_station_coordinates(markersize=12, color='lime')
+    
+     
+     dataList =  aa.read(["sconcso2","sconcso4"])
+     dataList.plot_station_coordinates(markersize=12, color='red')
+     #plt.show()
 
      #sprint(ungridded.metadata[2.0])
      #when = ungridded.meta_idx[2.0]['sconcso2']
      #print(ungridded._data[when[0]:when[-1], ungridded._DATAINDEX])
 
-     #ax = ungridded.plot_station_coordinates('wetso4', color='lime')
+     dataNone.plot_station_coordinates('wetso4', color='lime')
      #plt.show()
      #ax.figure.savefig('/home/hannas/Desktop/test_stations_aasetal.png')
      #print(ungridded._data[0, :]) #:250
      #print(ungridded.unique_station_names)
      #print(ungridded.metadata[0])
 
-     algoma = data.to_station_data('Algoma', 'sconcso2')
-     abington = data.to_station_data('Abington', 'sconcso2')
-     alhambra = data.to_station_data('Alhambra', 'sconcso2')
 
-     stat = ungridded.to_station_data('Abington', V)
-     ax = stat.plot_timeseries(V)
-     aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-
-     data = ungridded = aa.read("sconcso4")
-     stat = ungridded.to_station_data('Abington', "sconcso4")
-     stat.plot_timeseries("sconcso4", ax = ax)
-     plt.show()
+     #stat = ungridded.to_station_data('Abington', "sconcso4")
+     #stat.plot_timeseries("sconcso4", ax = ax)
+     #plt.show()
      #ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
      #ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
+     """
+     For none blir de lagt til som lister, for andre blir de lagt inn som strings 
+     1. Legg alle inn som lister 
+     2. Legg in if flere variabler i samme fil, da kan disse sendes in som liste i read_file. """
+
