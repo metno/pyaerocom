@@ -44,14 +44,19 @@ class ReadGAW(ReadUngriddedBase):
     DEFAULT_VARS = ['vmrdms']
     
     #: value corresponding to invalid measurement
-    NAN_VAL = -999999999999.99
+    NAN_VAL ={}
+    NAN_VAL['vmrdms'] = -999999999999.99
+    NAN_VAL['vmrdms_nd'] = -9999
+    NAN_VAL['vmrdms_std'] = -99999.
+    NAN_VAL['vmrdms_flag'] = -9999
+    
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmrdms'] = 'dimethylsulfide'
-    VAR_NAMES_FILE['vmrdms_nd'] = 'ND'
-    VAR_NAMES_FILE['vmrdms_flag'] = 'F'
+    #VAR_NAMES_FILE['vmrdms_nd'] = 'ND'
+    #VAR_NAMES_FILE['vmrdms_flag'] = 'F'
 
     #: List of variables that are provided by this dataset (will be extended 
     #: by auxiliary variables on class init, for details see __init__ method of
@@ -145,7 +150,7 @@ class ReadGAW(ReadUngriddedBase):
         # CS, REM?
         for i in range(1, len(x)):
             datestring = x[i][0]  + 'T' + x[i][1]
-            data_out['dtime'].append(np.datetime64(datestring))
+            data_out['dtime'].append(np.datetime64(datestring, 's'))
             data_out['vmrdms'].append(np.float(x[i][4]))
             data_out['vmrdms_nd'].append(np.float(x[i][5]))
             data_out['vmrdms_std'].append(np.float(x[i][6]))
@@ -158,6 +163,12 @@ class ReadGAW(ReadUngriddedBase):
         data_out['vmrdms_std'] = np.asarray(data_out['vmrdms_std'])
         data_out['vmrdms_flag'] = np.asarray(data_out['vmrdms_flag'])
         data_out['dtime'] = np.asarray(data_out['dtime'])
+        
+        # Replace missing data with nan values
+        for key, value in self.NAN_VAL.items():
+            if data_out[key].dtype != 'float64':
+                data_out[key] = data_out[key].astype('float64')
+            data_out[key][data_out[key]==value]=np.nan
                         
         # convert data vectors to pandas.Series (if applicable)
         if vars_as_series:        
@@ -285,14 +296,22 @@ class ReadGAW(ReadUngriddedBase):
                                data_obj._DATAFLAGINDEX] = station_data['vmrdms_flag']
                                
                 # write data to data object
-                data_obj._data[start:stop, data_obj._TIMEINDEX] = times
+                #data_obj._data[start:stop, data_obj._TIMEINDEX] = times
+                data_obj._data[start:stop, data_obj._TIMEINDEX] = station_data['dtime']
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
-
+                
                 meta_idx[meta_key][var] = np.arange(start, stop)
+                
+            
                 
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
+                
+                
+                # slette tes_time og test_time2
+                test_time = times
+                test_time2 = station_data['dtime']
                        
             idx += totnum  
             meta_key = meta_key + 1.
@@ -301,6 +320,8 @@ class ReadGAW(ReadUngriddedBase):
         data_obj._data = data_obj._data[:idx]
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
+        
+        
         return data_obj
     
 if __name__ == "__main__":
@@ -308,17 +329,36 @@ if __name__ == "__main__":
     r = ReadGAW()
     data = r.read(vars_to_retrieve = ['vmrdms', 'vmrdms_flag'])
     
-    print(data.station_name)
+    #print('Station name:', data.station_name)
+    #print('Data error:', data._data[:, data._DATAERRINDEX])
+    stat = data['Amsterdam_Island']
+    print('Amsterdam Island:', stat)
+    
+    print('time ungridded', data._data[:,data._TIMEINDEX])
+    
+    ax = stat.plot_timeseries('vmrdms')
+    
+    
+    #data2 = r.read_file('/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat')
+    #data2.plot_timeseries('vmrdms')
+    #print('time station d', data2.dtime)
+    
+    
+    #print('Amsterdam Island:', data.to_station_data('Amsterdam_Island'))
       
-    data.plot_station_coordinates()
-    
-    data.plot_station_timeseries(station_name='Amsterdam_Island', var_name = 'vmrdms')
-    data.plot_station_timeseries(station_name='Cape_Verde_Observatory', var_name = 'vmrdms_flag')
-    
-    print(data.metadata[0])
-    
-    
+    #   data.plot_station_coordinates()
     
 
+    #   ax = data.plot_station_timeseries(station_name='Amsterdam_Island', 
+    #                                         var_name = 'vmrdms', 
+    #                                     label='Amsterdam Island')
+    # data.plot_station_timeseries(station_name='Cape_Verde_Observatory',
+    #                                var_name = 'vmrdms', 
+    #                                ax=ax, 
+    #                                label='Cape Verde Observatory')
+    #   ax.set_title("vmrdms")
     
+    #   data.plot_station_timeseries(station_name='Cape_Verde_Observatory', 
+    #                                var_name = 'vmrdms_flag')
     
+    #   print(data.metadata[0])
