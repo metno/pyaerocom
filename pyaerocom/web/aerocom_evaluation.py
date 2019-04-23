@@ -7,8 +7,7 @@ import numpy as np
 import simplejson
 
 # internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str, 
-                                         sort_dict_by_name)
+from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
 from pyaerocom import __version__ as pyaerocom_version
 from pyaerocom.helpers import resample_time_dataarray
@@ -18,7 +17,8 @@ from pyaerocom.region import (get_all_default_region_ids,
                               Region)
 from pyaerocom.io.helpers import save_dict_json
 
-from pyaerocom.web.helpers import ObsConfigEval, ModelConfigEval
+from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
+                                   update_menu, make_info_table)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
 from pyaerocom.exceptions import DataDimensionError
  
@@ -136,7 +136,8 @@ class AerocomEvaluation(object):
             'raise_exceptions'    : 'Raise exceptions if they occur'
     }
                           
-    def __init__(self, proj_id=None, exp_id=None, **settings):
+    def __init__(self, proj_id=None, exp_id=None, config_dir=None,
+                 **settings):
         
         self._log = const.print_log
         
@@ -151,6 +152,9 @@ class AerocomEvaluation(object):
         
         #: Base directory for output
         self.out_basedir = None
+        
+        #: Directory that contains configuration files
+        self.config_dir = config_dir
         
         #: Output directories for different types of json files (will be filled
         #: in :func:`init_dirs`)
@@ -173,8 +177,12 @@ class AerocomEvaluation(object):
         self.var_mapping = {}
         self.var_order_menu = []
         
-        
-        
+        try:
+            self.load_config(self.proj_id, self.exp_id, config_dir)
+            print('Found and imported config file for {} / {}'.format(self.proj_id,
+                  self.exp_id))
+        except:
+            pass
         self.update(**settings)
         
         self.check_config()
@@ -322,6 +330,8 @@ class AerocomEvaluation(object):
             self._set_obsconfig(val)
         elif key == 'model_config':
             self._set_modelconfig(val)
+        elif key == 'colocation_settings':
+            self.colocation_settings.update(**val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 if key in self.obs_config:
@@ -854,7 +864,8 @@ class AerocomEvaluation(object):
             that are supposed to be used.
         update_menu : bool
             if true, the menu.json file will be automatically updated after the
-            run.
+            run and also, the model info table (minfo.json) file is created and
+            saved in :attr:`exp_dir`.
         """
         
         if reanalyse_existing is not None:
@@ -897,6 +908,7 @@ class AerocomEvaluation(object):
         
         if update_menu:
             self.update_menu()
+            self.make_info_table_web()
         return res            
         
     def info_string_evalrun(self, obs_list, model_list):
@@ -965,84 +977,21 @@ class AerocomEvaluation(object):
                               'Using variable name'.format(obs_var))
         return (name, tp)
     
-    def update_menu(self):
+    def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
+        update_menu(self, **opts)
         
-        def var_dummy():
-            """Helper that creates empty dict for variable info"""
-            return {'type'      :   '',
-                    'name'      :   '',
-                    'longname'  :   '',
-                    'obs'       :   {}}
-            
-        new = {}
+    def make_info_table_web(self):
+        """Make and safe table with detailed infos about processed data files
         
-        tab = self.get_web_overview_table()
-        
-        for index, info in tab.iterrows():
-            obs_var, obs_name, vert_code, mod_name, mod_var = info
-            if not obs_var in new:
-                const.print_log.info('Adding new observation variable: {}'
-                                     .format(obs_var))
-                new[obs_var] = d = var_dummy()
-                name, tp = self.get_obsvar_name_and_type(obs_var)
-        
-                d['name'] = name
-                d['type'] = tp
-                d['longname'] = const.VAR_PARAM[obs_var].description
-            else:
-                d = new[obs_var]
-            
-            if not obs_name in d['obs']:
-                d['obs'][obs_name] = dobs = {}
-            else:
-                dobs = d['obs'][obs_name]
-            
-            if not vert_code in dobs:
-                dobs[vert_code] = dobs_vert = {}
-            else:
-                dobs_vert = dobs[vert_code]
-            if mod_name in dobs_vert:
-                raise Exception
-            dobs_vert[mod_name] = {'dir' : mod_name,
-                                   'id'  : self.model_config[mod_name]['model_id'],
-                                   'var' : mod_var}
-            
-        _new = {}
-        for var in self.var_order_menu:
-            try:
-                _new[var] = new[var]
-            except:
-                const.print_log.info('No variable {} found'.format(var))
-        for var, info in new.items():
-            if not var in _new:
-                _new[var] = info
-        new = _new
-        new_sorted = {}
-        for var, info in new.items():
-            new_sorted[var] = info
-            sorted_obs = sort_dict_by_name(info['obs'])
-            new_sorted[var]['obs'] = sorted_obs
-            for obs_name, models in sorted_obs.items():
-                models_sorted = sort_dict_by_name(models)
-                new_sorted[var]['obs'][obs_name] = models_sorted
-        
-        if os.path.exists(self.menu_file):
-            with open(self.menu_file, 'r') as f:
-                current = simplejson.load(f)
-        else:
-            current = {}
-        
-        if self.exp_id in current:
-            const.print_log.warning('Sub menu for experiment {} already exists in '
-                                    'menu.json and will be overwritten'
-                                    .format(self.exp_id))
-            
-        current[self.exp_id] = new_sorted
-        
-        with open(self.menu_file, 'w+') as f:
-            f.write(simplejson.dumps(current, indent=4))
-     
+        The table is stored in as file minfo.json in directory :attr:`exp_dir`.
+        """
+        table = make_info_table(self)
+        outname = os.path.join(self.exp_dir, 'minfo.json')       
+        with open(outname, 'w+') as f:
+            f.write(simplejson.dumps(table, indent=2))
+        return table
+    
     def _obs_config_asdict(self):
         d = {}
         for k, cfg in self.obs_config.items():
@@ -1088,9 +1037,27 @@ class AerocomEvaluation(object):
         save_dict_json(d, os.path.join(output_dir, out_name), indent=3)
         return d
         
+    def load_config(self, proj_id, exp_id, config_dir=None):
+        """Load configuration json file"""
+        if config_dir is None:
+            if self.config_dir is not None:
+                config_dir = self.config_dir
+            else:
+                config_dir = '.'
+        files = glob.glob('{}/cfg_{}_{}.json'.format(config_dir, proj_id, 
+                          exp_id))
+        if len(files) == 0:
+            raise ValueError('No config file could be found in {} for '
+                             'project {} and experiment {}'.format(config_dir, 
+                              proj_id, exp_id))
+        self.from_json(files[0])
+        print(self)
+        
     def from_json(self, config_file):
         """Load configuration from json config file"""
-        raise NotImplementedError('Coming soon ...')
+        with open(config_file, 'r') as f:
+            current = simplejson.load(f)
+        self.update(**current)
         
     def __str__(self):
         indent = 2
@@ -1116,31 +1083,6 @@ class AerocomEvaluation(object):
         return s
     
 if __name__ == '__main__':    
-    
-    amf = '/home/jonasg/github/aerocom_evaluation/data_new/eval_py/cube_read_methods.py'
-    
-    stp = AerocomEvaluation('bla', 'blub', add_methods_file = amf)
-    stp.to_json('.')
-# =============================================================================
-#     stp = EvaluationSuite(proj_id=PROJ_ID, exp_id=EXP_ID, 
-#                           out_basedir=OUT_BASEDIR, 
-#                           reanalyse_existing=True,
-#                           var_mapping=VAR_MAPPING,
-#                           var_order_menu=VAR_ORDER_MENU,
-#                           harmonise_units=True)
-#     
-#     stp['obs_config'] = obs_config
-#     stp['model_config'] = model_config
-#     print(stp)
-#     
-#     TESTMOD = 'ECMWF-REAN-2010'
-#     TESTOBS = 'AeronetSun'
-#     #stp.delete_all_colocateddata_files(TESTMOD, TESTOBS)
-#     
-#     #stp.run_single(model_name='ECMWF-REAN-2010', obs_name='AeronetSun')
-#     stp.run_single(model_name='CAM5.3-Oslo-2010', obs_name='AeronetSun')
-#     stp.run_single(model_name='CAM5.3-Oslo-2010', obs_name='EBAS-Lev3')
-#     
-#     print(stp.get_web_overview_table())
-#     stp.update_menu()
-# =============================================================================
+    cfg_dir = '/home/jonasg/github/aerocom_evaluation/data_new/config_files/'
+    stp = AerocomEvaluation('aerocom', 'PIII-optics', config_dir=cfg_dir)
+    stp.make_info_table_web()
