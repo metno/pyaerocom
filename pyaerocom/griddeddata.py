@@ -178,6 +178,10 @@ class GriddedData(object):
         """Unit of data"""
         return self.grid.units
     
+    @unit.setter
+    def unit(self, val):
+        self.grid.units = val
+    
     @property
     def data(self):
         """Data array (n-dimensional numpy array)
