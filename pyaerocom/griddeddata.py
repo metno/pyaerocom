@@ -9,6 +9,7 @@ from collections import OrderedDict as od
 import iris
 from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
+from iris.exceptions import UnitConversionError
 from pandas import Timestamp, Series
 import numpy as np
 import pandas as pd
@@ -131,12 +132,15 @@ class GriddedData(object):
         try:
             var = self.var_info
             if var.has_unit and var.unit != self.unit:
-                logger.info('Converting unit of data')
                 self.flags['unit_ok'] = False
                 if convert_unit_on_init:
+                    logger.info('Attempting unit conversion from {} to {}'
+                                .format(self.unit, var.unit))
                     self.convert_unit(var.unit)
                     self.flags['unit_ok'] = True
-        except (VariableDefinitionError, MemoryError, ValueError):
+        except (VariableDefinitionError, UnitConversionError, 
+                MemoryError, ValueError) as e:
+            logger.info('Failed to convert unit. Reason: {}'.format(repr(e)))
             self.flags['unit_ok'] = False
 
     @property
