@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import pandas as pd
-from datetime import datetime
+#from datetime import datetime
 import matplotlib.pyplot as plt
 #import od
 from collections import OrderedDict
@@ -132,19 +132,31 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             List of dictionary-like object containing data
         """
 
+        def pad_zeros(array):
+            """ Try to do this vectorized,
+            Problem with the only one digit in front of numbers smaller than xero.            
+            """
+            
+            str_array = array.astype("str")
+            
+            for i, val in enumerate(array):
+                if val < 10: 
+                # Add zeros 
+                    str_array[i] = "0"+str(val)
+            return str_array
+
         station_list = []
         print(vars_to_retrieve)
         df = pd.read_csv(filename,sep=",", low_memory=False)
-        days = np.ones((len(df["year"]))).astype('int')
-        
-        df['day'] = days
-        df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
-        
-        days = np.ones((len(df["year"]))).astype('int').astype('str')
-        month = df['month'].values.astype("str")
-        year = df['year'].values.astype("str")
+        #days = np.ones((len(df["year"]))).astype('int')
+        #df['day'] = days
+        #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
+        month = pad_zero( df['month'])
+        print(month)
+        year = df['year'].values.astype("str")        
+        days = np.array([ "01" for i in range(year) ])
         dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
-        print(np.array(dates, dtype = "datetime64[s]") )
+        df['dtime'] = np.array( dates, dtype = "datetime64[s]")  
         # array av numpy.datetime64
         df.rename(columns= {"Sampler":"instrument_name"}, inplace = True)
         df.pop("year")
