@@ -362,6 +362,11 @@ class Variable(BrowseDict):
             return [a.strip() for a in info[self.var_name].split(',')]
         return []
     
+    @property
+    def long_name(self):
+        """Wrapper for :attr:`description`"""
+        return self.description
+    
     def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
         """Import information about default region
         
@@ -453,10 +458,9 @@ class Variable(BrowseDict):
         return s
 
 class VarCollection(object):
-    """Container class that handles access to all available variables"""
+    """Variable access class based on variables config file"""
     _var_ini = None
-    _alias_ini = None
-    def __init__(self, var_ini=None):
+    def __init__(self, var_ini):
         
         self.var_ini = var_ini
         
@@ -475,11 +479,9 @@ class VarCollection(object):
     
     @var_ini.setter
     def var_ini(self, var_ini):
-        if var_ini is None:
-            var_ini = os.path.join(__dir__, "data", "variables.ini")
+        
         if not os.path.exists(var_ini):
-            raise IOError("Variable ini file could not be found: %s"
-                          %var_ini)
+            raise IOError("File {} does not exist".format(var_ini))
         self._var_ini = var_ini
         
     def _read_ini(self):
