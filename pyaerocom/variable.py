@@ -452,7 +452,7 @@ class Variable(BrowseDict):
         s += arrays
         return s
 
-class AllVariables(object):
+class VarCollection(object):
     """Container class that handles access to all available variables"""
     _var_ini = None
     _alias_ini = None
@@ -496,7 +496,7 @@ class AllVariables(object):
         
         Example
         -------
-        >>> all_vars = AllVariables()
+        >>> all_vars = VarCollection()
         >>> 'od550aer' in all_vars
         True
         >>> 'blaa' in all_vars
@@ -511,7 +511,7 @@ class AllVariables(object):
         
         Example
         -------
-        >>> all_vars = AllVariables()
+        >>> all_vars = VarCollection()
         >>> all_vars.od550aer
         Variable od550aer
         """
@@ -522,7 +522,7 @@ class AllVariables(object):
         
         Example
         -------
-        >>> all_vars = AllVariables()
+        >>> all_vars = VarCollection()
         >>> all_vars['od550aer']
         Variable od550aer
         """
@@ -567,13 +567,13 @@ def all_var_names():
 
 if __name__=="__main__":
     
-    all_vars = AllVariables()
+    all_vars = VarCollection()
     
     v = Variable('DEFAULT')
     
     print(v)
     
-    a = AllVariables()
+    a = VarCollection()
     a['DEFAULT']
     #print(v.aliases)
     

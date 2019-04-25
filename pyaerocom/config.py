@@ -43,7 +43,7 @@ import pyaerocom.obs_io as obs_io
 from pyaerocom._lowlevel_helpers import (list_to_shortstr, dict_to_str,
                                          chk_make_subdir,
                                          check_fun_timeout_multiproc)
-from pyaerocom.variable import AllVariables
+from pyaerocom.variable import VarCollection
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -390,9 +390,9 @@ class Config(object):
     
     @property
     def VARS(self):
-        """Instance of class AllVariables (for default variable information)"""
+        """Instance of class VarCollection (for default variable information)"""
         if self._var_param is None: #has not been accessed before
-            self._var_param = AllVariables()
+            self._var_param = VarCollection()
         return self._var_param
     
     @property
