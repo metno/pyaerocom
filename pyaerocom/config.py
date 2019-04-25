@@ -383,6 +383,13 @@ class Config(object):
         
     @property
     def VAR_PARAM(self):
+        """Deprecated name, please use :attr:`VARS` instead"""
+        self.print_log.warning('Deprecated (but still functional) name '
+                               'VAR_PARAM. Please use VARS')
+        return self.VARS
+    
+    @property
+    def VARS(self):
         """Instance of class AllVariables (for default variable information)"""
         if self._var_param is None: #has not been accessed before
             self._var_param = AllVariables()
