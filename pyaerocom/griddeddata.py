@@ -29,10 +29,11 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                to_pandas_timestamp,
                                TS_TYPE_TO_NUMPY_FREQ,
                                datetime2str,
-                               isrange)
+                               isrange, isnumeric)
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
+from pyaerocom.vert_coords import AltitudeAccess
 
 
 class GriddedData(object):
@@ -123,6 +124,10 @@ class GriddedData(object):
         #area_weights)
         self._area_weights = None
         self._altitude_access = None
+        
+        self._coord_var_names = None
+        self._coord_standard_names = None
+        self._coord_long_names = None
         if input:
             self.load_input(input, var_name)
         for k, v in suppl_info.items():
@@ -142,7 +147,7 @@ class GriddedData(object):
                 MemoryError, ValueError) as e:
             logger.info('Failed to convert unit. Reason: {}'.format(repr(e)))
             self.flags['unit_ok'] = False
-
+    
     @property
     def data_revision(self):
         """Revision string from file Revision.txt in the main data directory
@@ -161,16 +166,19 @@ class GriddedData(object):
     @property
     def reader(self):
         """Instance of reader class from which this object was created"""
-        return self.suppl_info['reader']
+        r = self.suppl_info['reader']
+        from pyaerocom.io import ReadGridded
+        if not isinstance(r, ReadGridded):
+            try:
+                self.reader = ReadGridded(self.data_id)
+            except Exception as e:
+                from pyaerocom import print_log
+                print_log.exception('Failed to initiate reader class: {}'
+                                    .format(repr(e)))
+        return r
     
     @reader.setter
     def reader(self, val):
-# =============================================================================
-#         from pyaerocom.io import ReadGridded
-#         if not isinstance(val, ReadGridded):
-#             raise ValueError('Input reader {} is not a support reader class for '
-#                              'gridded data...'.format(type(val)))
-# =============================================================================
         self.suppl_info['reader'] = val
         
     @property
@@ -203,7 +211,13 @@ class GriddedData(object):
                                      'Got: {}, Need: {}'
                                      .format(array.shape,self.grid.shape))
         self.grid.data = array
-        
+    
+    @property
+    def altitude_access(self):
+        if not isinstance(self._altitude_access, AltitudeAccess):
+            self._altitude_access = AltitudeAccess(self)    
+        return self._altitude_access
+    
     @property
     def cube(self):
         return self.grid
@@ -292,10 +306,24 @@ class GriddedData(object):
     
     @property
     def var_name(self):
-        """Name of variable in grid"""
+        """Name of variable"""
         if not self.is_cube:
             return 'n/a'
         return self.grid.var_name
+    
+    @property
+    def standard_name(self):
+        """Standard name of variable"""
+        return self.grid.standard_name
+    
+    @property
+    def long_name(self):
+        """Long name of variable"""
+        return self.grid.long_name
+    
+    @long_name.setter
+    def long_name(self, val):
+        self.grid.long_name = val
     
     @property
     def plot_settings(self):
@@ -428,21 +456,6 @@ class GriddedData(object):
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return 'time' in self.dimcoord_names
     
-    def init_reader(self, print_info=True):
-        """Initiate reader class"""
-        if self.reader is not None:
-            logger.warning('Existing reader class will be overwritten')
-        from pyaerocom.io import ReadGridded
-        try:
-            self.reader = ReadGridded(self.data_id)
-            if print_info:
-                print('\n----Initiated reader class----\n\n')
-                print(self.reader)
-        except Exception as e:
-            from pyaerocom import print_log
-            print_log.exception('Failed to initiate reader class: {}'
-                                .format(repr(e)))
-            
     def load_input(self, input, var_name):
         """Import input as cube
         
@@ -714,7 +727,7 @@ class GriddedData(object):
             if not 'altitude' in [sp[0] for sp in sample_points]:
                 raise ValueError('Require altitude specification in sample '
                                  'points for vert_scheme altitude')
-            if not self._check_altitude_access():
+            if not self.check_altitude_access():
                 raise DataDimensionError('Cannot access altitude '
                                          'information')
             raise NotImplementedError('Cannot yet retrieve timeseries at '
@@ -735,18 +748,22 @@ class GriddedData(object):
                                   'from 4D data for vert_scheme {} '
                                   .format(vert_scheme))
     
-    def _check_altitude_access(self):
-        """Check if altitude levels can be accessed"""
-        coord_name = self.coord_names[-1]
-        if coord_name == 'altitude':
-            return True
-        from pyaerocom.vert_coords import AltitudeAccess
-        self._altitude_access = acc = AltitudeAccess(self)
-        # the following function will 
-        return acc.find_and_import_auxvars()
+    def check_altitude_access(self):
+        """Checks if altitude levels can be accessed
+        
+        Returns
+        -------
+        bool
+            True, if altitude access is provided, else False
+         
+        """
+        return self.altitude_access.check_altitude_access()
     
     def get_altitude(self, **coords):
         """Extract (or try to compute) altitude values at input coordinates"""
+        if not isinstance(self._altitude_access, AltitudeAccess):
+            self.check_altitude_access()
+        self._altitude_access.get_altitude(**coords)
         raise NotImplementedError('Coming soon...')
         
     def _infer_index_surface_level(self):
@@ -871,8 +888,12 @@ class GriddedData(object):
                 constraints.append(c)
             else:
                 if dim == 'time':
-                    _idx = self._closest_time_idx(val)
-                    _cval = self.time.units.num2date(self.time[_idx].points[0])
+                    if isnumeric(val) and val in self['time'].points: 
+                        _tval = val
+                    else:
+                        _idx = self._closest_time_idx(val)
+                        _tval = self.time[_idx].points[0]
+                    _cval = self['time'].units.num2date(_tval)
                     if not use_neirest and _cval != val:
                         raise DataExtractionError('No such value {} in dim {}. '
                                                   'Use option use_neirest to '
@@ -1352,6 +1373,7 @@ class GriddedData(object):
         if not self.is_cube:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
+        print(constraint)
         data_crop = self.grid.extract(constraint)
         if not data_crop:
             raise DataExtractionError("Failed to extract subset")
@@ -1527,10 +1549,13 @@ class GriddedData(object):
         if isinstance(indices_or_attr, str):
             if indices_or_attr in self.__dict__:
                 return self.__dict__[indices_or_attr]
-            if not indices_or_attr in self.coord_names:
-                raise AttributeError("'pyaerocom.GriddedData' object has no "
-                                     "attribute '{}'".format(indices_or_attr))
-            return self.grid.coord(indices_or_attr)
+            try:
+                return self.grid.coord(indices_or_attr)
+            except:
+                raise AttributeError("GriddedData object has no "
+                                     "attribute {}"
+                                     .format(indices_or_attr))
+            
         sub = self.grid.__getitem__(indices_or_attr)
         return GriddedData(sub, **self.suppl_info)
     
