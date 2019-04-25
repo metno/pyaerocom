@@ -80,6 +80,42 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
+def get_standard_name(var_name):
+    """Converts AeroCom variable name to CF standard name
+    
+    Also handles alias names for variables, etc. or strings corresponding to
+    older conventions (e.g. names containing 3D).
+    
+    Parameters
+    ----------
+    var_name : str
+        AeroCom variable name
+        
+    Returns
+    -------
+    str
+        corresponding standard name
+    """
+    return const.VAR_PARAM[var_name].standard_name
+
+def get_standard_unit(var_name):
+    """Gets standard unit of AeroCom variable
+    
+    Also handles alias names for variables, etc. or strings corresponding to
+    older conventions (e.g. names containing 3D).
+    
+    Parameters
+    ----------
+    var_name : str
+        AeroCom variable name
+        
+    Returns
+    -------
+    str
+        corresponding standard unit
+    """
+    return const.VAR_PARAM[var_name].unit
+
 def get_lowest_resolution(ts_type, *ts_types):
     """Get the lowest resolution from several ts_type codes
     
