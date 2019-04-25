@@ -901,7 +901,7 @@ class UngriddedData(object):
         """
         from pyaerocom.helpers import unit_conversion_fac
         if unit is None:
-            unit = const.VAR_PARAM[var_name].unit
+            unit = const.VARS[var_name].unit
             
         units =  []
         for i, meta in self.metadata.items():
@@ -979,10 +979,10 @@ class UngriddedData(object):
                                 .format(var_name, repr(e)))
             
         if low is None:
-            low = const.VAR_PARAM[var_name].minimum
+            low = const.VARS[var_name].minimum
             print_log.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
         if high is None:
-            high = const.VAR_PARAM[var_name].maximum
+            high = const.VARS[var_name].maximum
             print_log.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
         var_mask = self._data[:, new._VARINDEX] == var_idx

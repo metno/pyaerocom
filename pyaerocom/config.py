@@ -385,7 +385,7 @@ class Config(object):
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
         self.print_log.warning('Deprecated (but still functional) name '
-                               'VAR_PARAM. Please use VARS')
+                               'VARS. Please use VARS')
         return self.VARS
     
     @property
@@ -914,7 +914,7 @@ class Config(object):
         for k, v in self.__dict__.items():
             if k.startswith('_'):
                 pass
-            if k=='VAR_PARAM':
+            if k=='VARS':
                 s += '\n{}\n{}'.format(k, list_to_shortstr(v.all_vars))
             elif isinstance(v, dict):
                 s += "\n%s (dict)" %k

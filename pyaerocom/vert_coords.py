@@ -172,15 +172,15 @@ class VerticalCoordinate(object):
     'atmosphere_sigma_coordinate'                   : 'asc', 
     'atmosphere_hybrid_sigma_pressure_coordinate'   : 'ahspc',
     }
-    
+
     CONVERSION_METHODS = {
     'asc'   :   atmosphere_sigma_coordinate_to_pressure,
     'ahspc' :   atmosphere_hybrid_sigma_pressure_coordinate_to_pressure,
     'gph'   :   geopotentialheight2altitude
     }
-    
+
     CONVERSION_REQUIRES = {
-    
+
     'asc'   :   ['sigma', 'ps', 'ptop'],
     'ahspc' :   ['a', 'b', 'ps', 'p0'],
     'gph'   :   []
@@ -346,7 +346,7 @@ class AltitudeAccess(object):
             additional data file
         """
         _search = [add_var_name]
-        _search.extend(const.VAR_PARAM[add_var_name].aliases)
+        _search.extend(const.VARS[add_var_name].aliases)
         r = self.data_obj.reader
         d = self.data_obj
         for _var in _search:

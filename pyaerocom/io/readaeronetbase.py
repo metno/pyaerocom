@@ -190,7 +190,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     
     def _search_var_wavelength_tol(self, var, cols):
         """Find alternative variable within acceptance range"""
-        var_info = const.VAR_PARAM[var]
+        var_info = const.VARS[var]
         colname = self.VAR_NAMES_FILE[var]
         
         wvl = var_info.wavelength_nm

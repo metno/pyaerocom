@@ -546,7 +546,7 @@ class AllVariables(object):
   
 def get_variable(var_name):
     from pyaerocom import const
-    return const.VAR_PARAM[var_name]
+    return const.VARS[var_name]
 
 def all_vars_to_dataframe():
     """Make an overview table for all variables"""

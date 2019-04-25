@@ -644,13 +644,13 @@ class Colocator(ColocationSetup):
         if not isinstance(self.var_outlier_ranges, dict):
             return
         for ovar, mvar in var_matches.items():
-            oname = const.VAR_PARAM[ovar].var_name
+            oname = const.VARS[ovar].var_name
             if oname != ovar:
                 if ovar in self.var_outlier_ranges:
                     if not oname in self.var_outlier_ranges:
                         self.var_outlier_ranges[oname] = self.var_outlier_ranges[ovar]
                     
-            mname = const.VAR_PARAM[mvar].var_name
+            mname = const.VARS[mvar].var_name
             if mname != mvar:
                 if mvar in self.var_outlier_ranges:
                     if not mname in self.var_outlier_ranges:

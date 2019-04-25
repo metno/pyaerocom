@@ -113,7 +113,7 @@ class StationData(StationMetaData):
             (e.g. 1/Mm vs 1/m)
         """
         if unit is None:
-            unit = const.VAR_PARAM[var_name].unit
+            unit = const.VARS[var_name].unit
         if not unit_conversion_fac(self.get_unit(var_name), unit) == 1:
             raise DataUnitError('Invalid unit {} (expected {})'
                                 .format())
@@ -759,7 +759,7 @@ class StationData(StationMetaData):
             <https://pyaerocom.met.no/config_files.html#variables>`__)
         """
         if any([x is None for x in (low, high)]):
-            info = const.VAR_PARAM[var_name]
+            info = const.VARS[var_name]
             try: 
                 self.check_unit(var_name)
             except DataUnitError:

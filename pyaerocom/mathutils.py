@@ -449,7 +449,7 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     
     try:
         # now replace all values with NaNs that are below the global lower threshold
-        below_thresh = result < const.VAR_PARAM[var_name]['minimum']
+        below_thresh = result < const.VARS[var_name]['minimum']
         result[below_thresh] = np.nan
     except:
         logger.warning("Could not access lower limit from global settings for "
@@ -473,7 +473,7 @@ def compute_scatc550dryaer(data):
         modified data object containing new column scatc550dryaer
     
     """
-    rh_max= const.VAR_PARAM['scatc550dryaer'].dry_rh_max
+    rh_max= const.VARS['scatc550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='scatc550aer', 
                                rh_colname='scatcrh', 
                                rh_max_percent=rh_max)
@@ -494,7 +494,7 @@ def compute_absc550dryaer(data):
         modified data object containing new column scatc550dryaer
     
     """
-    rh_max= const.VAR_PARAM['absc550dryaer'].dry_rh_max
+    rh_max= const.VARS['absc550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='absc550aer', 
                                rh_colname='abscrh', 
                                rh_max_percent=rh_max)

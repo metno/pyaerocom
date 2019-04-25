@@ -180,7 +180,7 @@ class ReadEarlinet(ReadUngriddedBase):
         remove_outliers : bool
             if True, outliers are removed for each variable using the
             `minimum` and `maximum` attributes for that variable (accessed 
-            via pyaerocom.const.VAR_PARAM[var_name]).
+            via pyaerocom.const.VARS[var_name]).
         
         Returns
         -------
@@ -358,7 +358,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 
                 alt_vals = np.float64(alt_data)
                 alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
-                to_alt_unit = const.VAR_PARAM['alt'].unit
+                to_alt_unit = const.VARS['alt'].unit
                 if not alt_unit == to_alt_unit:
                     try:
                         alt_unit_fac = unit_conversion_fac(alt_unit, 

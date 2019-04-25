@@ -120,9 +120,9 @@ def get_standard_name(var_name):
     VariableDefinitionError
         if standarad name is not set for variable in *variables.ini* file
     """
-    if not var_name in const.VAR_PARAM:
+    if not var_name in const.VARS:
         raise VarNotAvailableError('No such variable {}. Check variables.ini'.format(var_name))
-    name = const.VAR_PARAM[var_name].standard_name
+    name = const.VARS[var_name].standard_name
     if name is None:
         raise VariableDefinitionError('standard_name not defined for variable')
     return name

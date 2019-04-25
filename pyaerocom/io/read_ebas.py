@@ -656,7 +656,7 @@ class ReadEbas(ReadUngriddedBase):
         for var in vars_to_read:
             ebas_var_info = self.loaded_ebas_vars[var]
             if not var in self.loaded_aerocom_vars:
-                self.loaded_aerocom_vars[var] = var_info = const.VAR_PARAM[var]
+                self.loaded_aerocom_vars[var] = var_info = const.VARS[var]
             else:
                 var_info = self.loaded_aerocom_vars[var]
 # =============================================================================

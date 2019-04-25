@@ -337,7 +337,7 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
                         extend=cbar_extend, cax=ax_cbar)#, format=fmt)
     
     if var_name is not None:
-        var_str = var_name# + VAR_PARAM.unit_str
+        var_str = var_name# + VARS.unit_str
         if unit is not None:
             if not str(unit) in ['1', 'no_unit']:
                 var_str += ' [{}]'.format(unit)

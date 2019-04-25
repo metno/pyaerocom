@@ -225,7 +225,7 @@ class GriddedData(object):
     @property
     def var_info(self):
         """Print information about variable"""
-        return const.VAR_PARAM[self.var_name]
+        return const.VARS[self.var_name]
     
     @property
     def ts_type(self):
@@ -337,7 +337,7 @@ class GriddedData(object):
         will be initiated with ``None``, in which case the Aerocom plot method
         uses
         """
-        return const.VAR_PARAM[self.var_name]
+        return const.VARS[self.var_name]
             
     @property 
     def name(self):

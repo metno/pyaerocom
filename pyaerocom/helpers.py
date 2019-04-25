@@ -96,7 +96,7 @@ def get_standard_name(var_name):
     str
         corresponding standard name
     """
-    return const.VAR_PARAM[var_name].standard_name
+    return const.VARS[var_name].standard_name
 
 def get_standard_unit(var_name):
     """Gets standard unit of AeroCom variable
@@ -114,7 +114,7 @@ def get_standard_unit(var_name):
     str
         corresponding standard unit
     """
-    return const.VAR_PARAM[var_name].unit
+    return const.VARS[var_name].unit
 
 def get_lowest_resolution(ts_type, *ts_types):
     """Get the lowest resolution from several ts_type codes

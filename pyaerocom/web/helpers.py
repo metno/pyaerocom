@@ -170,7 +170,7 @@ def update_menu(config, ignore_experiments=None):
     
             d['name'] = name
             d['type'] = tp
-            d['longname'] = const.VAR_PARAM[obs_var].description
+            d['longname'] = const.VARS[obs_var].description
         else:
             d = new[obs_var]
         
