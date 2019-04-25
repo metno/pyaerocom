@@ -154,6 +154,8 @@ class Config(object):
                      'aerocom-users-database' : _config_ini_user_server,
                      'pyaerocom-testdata'     : _config_ini_testdata}
     
+    _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
+    _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
     _outhomename = 'MyPyaerocom'
     
     DONOTCACHEFILE = None
@@ -193,6 +195,7 @@ class Config(object):
         
         
         self._var_param = None
+        self._coords = None
         
         # Attributes that are used to store search directories
         self.OBSCONFIG = od()
@@ -392,8 +395,14 @@ class Config(object):
     def VARS(self):
         """Instance of class VarCollection (for default variable information)"""
         if self._var_param is None: #has not been accessed before
-            self._var_param = VarCollection()
+            self._var_param = VarCollection(self._var_info_file)
         return self._var_param
+    
+    @property
+    def COORDINFO(self):
+        if self._coords is None:
+            self._coords = VarCollection(self._coords_info_file)
+        return self._coords
     
     @property
     def LOGFILESDIR(self):
@@ -1087,6 +1096,8 @@ class GridIO(object):
         
 if __name__=="__main__":
     import pyaerocom as pya
+    
+    pya.const.COORDINFO.a
 # =============================================================================
 #     pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
 #     
