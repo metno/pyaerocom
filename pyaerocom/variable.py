@@ -456,10 +456,9 @@ class AllVariables(object):
     """Container class that handles access to all available variables"""
     _var_ini = None
     _alias_ini = None
-    def __init__(self, var_ini=None, var_csv=None):
+    def __init__(self, var_ini=None):
         
         self.var_ini = var_ini
-        self.var_csv = var_csv
         
         self._cfg = self._read_ini()
         
@@ -529,13 +528,6 @@ class AllVariables(object):
         """
         #make sure to be in the right namespace
         low = var_name.lower()
-        if not low == var_name:
-            from pyaerocom import const
-            w = DeprecationWarning('Variable input contains capital letters. '
-                                   'This is deprecated and the input name ({}) '
-                                   'will automatically be converted to :{}'
-                                   .format(var_name, low))
-            #const.print_log.warning()
         check = low.replace('3d','').replace('dry', '')
         
         if not check in self:
