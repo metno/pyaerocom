@@ -21,7 +21,8 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    update_menu, make_info_table)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
 from pyaerocom.exceptions import DataDimensionError
- 
+
+# ToDo: complete docstring
 class AerocomEvaluation(object):
     """Class for creating json files for Aerocom Evaluation interface
     
@@ -37,10 +38,10 @@ class AerocomEvaluation(object):
     information for importing the data (see also classes 
     :class:`ModelConfigEval` and :class:`ObsConfigEval`).
     
-    In addition to :attrs:`model_config, obs_config`, there are more setup 
+    In addition to :attr:`model_config, obs_config`, there are more setup 
     settings and options, some of which NEED to be specified (e.g. 
-    :attrs:`proj_id, exp_id, out_basedir`) and others that may be explicitly 
-    specified if desired (e.g. :attrs:`harmonise_units, remove_outliers, 
+    :attr:`proj_id, exp_id, out_basedir`) and others that may be explicitly 
+    specified if desired (e.g. :attr:`harmonise_units, remove_outliers, 
     clear_existing_json`).
     
     The analysis (which can be run via :func:`run_evaluation`) can be summarised
@@ -89,7 +90,7 @@ class AerocomEvaluation(object):
     out_dirs : dict
         dictionary that specifies the output paths for the different types of
         json files (e.g. map, ts, etc.). Is filled automatically using 
-        :attrs:`out_basedir, proj_id, exp_id`. Non existing paths are 
+        :attr:`out_basedir, proj_id, exp_id`. Non existing paths are 
         automatically created.
     colocation_settings : dict
         dictionary specifying settings and options for the colocation routine
