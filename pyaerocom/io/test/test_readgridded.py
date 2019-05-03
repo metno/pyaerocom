@@ -71,9 +71,7 @@ def test_read_var(dataset):
 @lustre_unavail
 def test_read_vars(dataset):
     d = dataset.read(['od440aer', 'od550aer', 'od865aer'], 
-                           ts_type="daily")
-    
-    
+                     ts_type="daily")
     vals = [len(d),
             sum(d[0].shape),
             sum(d[1].shape),
@@ -90,3 +88,4 @@ if __name__=="__main__":
     ds = make_dataset()
     test_meta(ds)
     test_variables(ds)
+    test_read_vars(ds)
