@@ -322,7 +322,7 @@ class Colocator(ColocationSetup):
             vert_which = None
             ts_type_read = self.obs_ts_type_read
         try:
-            data = reader.read_var(var_name, 
+            return reader.read_var(var_name, 
                                    start=start,
                                    stop=stop, 
                                    ts_type=ts_type_read,
@@ -337,7 +337,7 @@ class Colocator(ColocationSetup):
             # if request refers to model data, try to read alternative dataset
             # that may be used to extract the data
             obs_vert_type_alt = self.OBS_VERT_TYPES_ALT[self.obs_vert_type]
-            data = reader.read_var(var_name, 
+            return reader.read_var(var_name, 
                                    start=start,
                                    stop=stop, 
                                    ts_type=ts_type_read,
@@ -348,10 +348,10 @@ class Colocator(ColocationSetup):
                    .format(reader.data_id, var_name, repr(e)))
             const.print_log.warning(msg)
             self._log.write(msg)
+            
             if self.raise_exceptions:
                 self._close_log()
                 raise Exception(msg)
-        return data
     
     def _run_gridded_ungridded(self):
         """Analysis method for gridded vs. ungridded data"""
