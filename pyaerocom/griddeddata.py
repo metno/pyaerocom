@@ -15,11 +15,13 @@ import numpy as np
 import pandas as pd
 from pyaerocom import const, logger, print_log
 
-from pyaerocom.exceptions import (DataExtractionError,
-                                  TemporalResolutionError,
-                                  DimensionOrderError,
+from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
-                                  VariableDefinitionError)
+                                  DataExtractionError,
+                                  DimensionOrderError,
+                                  TemporalResolutionError,
+                                  VariableDefinitionError,
+                                  VariableNotFoundError)
 from pyaerocom.helpers import (get_time_rng_constraint,
                                get_lon_rng_constraint,
                                get_lat_rng_constraint,
@@ -105,7 +107,8 @@ class GriddedData(object):
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
     _MAX_SIZE_GB = 64 #maximum file size for in-memory operations
     
-    SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude', 'profile']
+    SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude', 
+                              'profile']
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
         self.suppl_info = od(from_files         = [],
@@ -115,6 +118,7 @@ class GriddedData(object):
                              regridded          = False,
                              outliers_removed   = False,
                              computed           = False,
+                             concatenated       = False,
                              region             = None,
                              reader             = None)
         
@@ -125,6 +129,10 @@ class GriddedData(object):
         self._area_weights = None
         self._altitude_access = None
         
+        # list of coordinate names as returned by name() method of iris coordinate
+        # will be filled upon access of coord_names
+        self._coord_names = None 
+        # list of containing var_name attributes of all coordinates
         self._coord_var_names = None
         self._coord_standard_names = None
         self._coord_long_names = None
@@ -169,13 +177,36 @@ class GriddedData(object):
         r = self.suppl_info['reader']
         from pyaerocom.io import ReadGridded
         if not isinstance(r, ReadGridded):
-            try:
-                self.reader = ReadGridded(self.data_id)
-            except Exception as e:
-                from pyaerocom import print_log
-                print_log.exception('Failed to initiate reader class: {}'
-                                    .format(repr(e)))
+            self.reader = r = ReadGridded(self.data_id)
         return r
+    
+    def search_other(self, var_name, require_same_shape=True):
+        """Searches data for another variable"""
+        if require_same_shape and self.concatenated or self.computed:
+            raise NotImplementedError('Coming soon...')
+        for file in self.from_files:
+            try:
+                from pyaerocom.io.iris_io import load_cube_custom
+                cube = load_cube_custom(file, var_name=var_name,
+                                        perform_checks=False)
+                return GriddedData(cube, from_files=file)
+            except:
+                pass
+        if var_name in self.reader.vars_provided:
+            return self.reader.read_var(var_name, 
+                                        start=self.start,
+                                        stop=self.stop,
+                                        ts_type=self.ts_type,
+                                        flex_ts_type=True)
+        raise VariableNotFoundError('Could not find variable {}'.format(var_name))
+    
+    @property
+    def concatenated(self):
+        return self.suppl_info['concatenated']
+    
+    @property
+    def computed(self):
+        return self.suppl_info['computed']
     
     @reader.setter
     def reader(self, val):
@@ -242,7 +273,7 @@ class GriddedData(object):
     def from_files(self):
         """List of file paths from which this data object was created"""
         return self.suppl_info['from_files']
-        
+    
     @property
     def is_masked(self):
         """Flag specifying whether data is masked or not
@@ -426,7 +457,9 @@ class GriddedData(object):
         """List containing coordinate names"""
         if not self.has_data:
             return []
-        return [c.name() for c in self.grid.coords()]
+        elif self._coord_names is None:
+            self._update_coord_info()
+        return self._coord_names
     
     @property
     def dimcoord_names(self):
@@ -435,6 +468,18 @@ class GriddedData(object):
             return []
         return [c.name() for c in self.grid.dim_coords]
     
+    def _update_coord_info(self):
+        n, vn, sn, ln = [], [], [], []
+        for c in self.grid.coords():
+            n.append(c.name())
+            vn.append(c.var_name)
+            sn.append(c.standard_name)
+            ln.append(c.long_name)
+        self._coord_names = n
+        self._coord_var_names = vn
+        self._coord_standard_names = sn
+        self._coord_long_names = ln
+        
     @property
     def area_weights(self):
         """Area weights of lat / lon grid"""
@@ -1542,7 +1587,18 @@ class GriddedData(object):
     def __getattr__(self, attr):
         return self[attr]
         
-    
+    def _check_coordinate_access(self, val):
+        if self._coord_standard_names is None:
+            self._update_coord_info()
+        if val in self._coord_standard_names:
+            return {'standard_name' : val}
+        elif val in self._coord_var_names:
+            return {'var_name' : val}
+        elif val in self._coord_long_names:
+            return {'long_name' : val}
+        raise CoordinateError('Could not associate one of the coordinates with '
+                              'input string {}'.format(val))
+        
     def __getitem__(self, indices_or_attr):
         """x.__getitem__(y) <==> x[y]"""
    
@@ -1550,7 +1606,8 @@ class GriddedData(object):
             if indices_or_attr in self.__dict__:
                 return self.__dict__[indices_or_attr]
             try:
-                return self.grid.coord(indices_or_attr)
+                which = self._check_coordinate_access(indices_or_attr)
+                return self.grid.coord(**which)
             except:
                 raise AttributeError("GriddedData object has no "
                                      "attribute {}"
