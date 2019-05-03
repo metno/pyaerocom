@@ -134,7 +134,7 @@ def sort_dict_by_name(d):
         s[k] = d[k]
     return s
 
-def dict_to_str(dictionary, s="", indent=0):
+def dict_to_str(dictionary, s="", indent=0, ignore_null=False):
     """Custom function to convert dictionary into string (e.g. for print)
     
     Parameters
@@ -145,6 +145,8 @@ def dict_to_str(dictionary, s="", indent=0):
         the input string
     indent : int
         indent of dictionary content
+    ignore_null : bool
+        if True, None entries in dictionary are ignored
     
     Returns
     -------
@@ -164,7 +166,9 @@ def dict_to_str(dictionary, s="", indent=0):
     
     """
     for k, v in dictionary.items():
-        if isinstance(v, dict):
+        if ignore_null and v is None:
+            continue
+        elif isinstance(v, dict):
             s += "\n{}{} ({}):".format(indent*' ', k, type(v).__name__)
             s = dict_to_str(v, s, indent+2)
         elif isinstance(v, list):
