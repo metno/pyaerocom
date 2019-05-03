@@ -152,7 +152,7 @@ def _read_alias_ini():
             aliases[alias] = var_name
     return aliases
 
-class Variable(BrowseDict):
+class Variable(object):
     """Interface that specifies default settings for a variable
     
     See `variables.ini <https://github.com/metno/pyaerocom/blob/master/
@@ -243,6 +243,7 @@ class Variable(BrowseDict):
                 'map_cbar_ticks': literal_eval_list}
     
     RH_MAX_DRY = 0.4
+    
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         #save orig. input for whatever reasons
         self._var_name_input = var_name 
@@ -275,26 +276,24 @@ class Variable(BrowseDict):
 
         self.description = None
         self.comments_and_purpose = None
-        
-        # parameters for reading of obsdata
-        
+
         #wavelength tolerance in nm
         self.obs_wavelength_tol_nm = None
         
-        # settings for scatter plots
-        self.scat_xlim = None
-        self.scat_ylim = None
-        self.scat_loglog = None
-        self.scat_scale_factor = 1.0
-        
-        # settings for map plotting
-        self.map_vmin = None
-        self.map_vmax = None
-        self.map_c_under = None
-        self.map_c_over = None
-        self.map_cbar_levels = None
-        self.map_cbar_ticks = None
-        
+        self.plot_info = dict(
+            scat_xlim = None,
+            scat_ylim = None,
+            scat_loglog = None,
+            scat_scale_factor = 1.0,
+            
+            # settings for map plotting
+            map_vmin = None,
+            map_vmax = None,
+            map_c_under = None,
+            map_c_over = None,
+            map_cbar_levels = None,
+            map_cbar_ticks = None
+        )
         # imports default information and, on top, variable information (if 
         # applicable)
         if init:
@@ -306,6 +305,10 @@ class Variable(BrowseDict):
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
     
+    def update(self, **kwargs):
+        for key, val in kwargs.items():
+            self[key] = val
+        
     @property
     def has_unit(self):
         """Boolean specifying whether variable has unit"""
@@ -325,6 +328,7 @@ class Variable(BrowseDict):
     
     @property
     def unit_str(self):
+        """string representation of unit"""
         if self.unit is None:
             return ''
         else:
@@ -366,6 +370,9 @@ class Variable(BrowseDict):
     def long_name(self):
         """Wrapper for :attr:`description`"""
         return self.description
+    
+    def keys(self):
+        return list(self.__dict__.keys()) + list(self.plot_info.keys())
     
     def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
         """Import information about default region
@@ -435,6 +442,18 @@ class Variable(BrowseDict):
                 self[key] = val
         self.var_name = var_name
         
+    def __setitem__(self, key, val):
+        if key in self.plot_info:
+            self.plot_info[key] = val
+        else:
+            self.__dict__[key] = val
+    
+    def __getitem__(self, key):
+        if key in self.plot_info:
+            return self.plot_info[key]
+        
+        return self.__dict__[key]
+    
     def __repr__(self):
        return ("Variable {}\nUnit: {}\ndescriptions: {}\nstandard_name: {}\n"
                .format(self.var_name, self.unit, self.description,
@@ -444,10 +463,10 @@ class Variable(BrowseDict):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
         arrays = ''
-        for k, v in self.items():
+        for k, v in self.__dict__.items():
             if isinstance(v, dict):
                 s += "\n{} (dict)".format(k)
-                s = dict_to_str(v, s)
+                s = dict_to_str(v, s, indent=3, ignore_null=True)
             elif isinstance(v, list):
                 s += "\n{} (list, {} items)".format(k, len(v))
                 s += list_to_shortstr(v)
@@ -483,7 +502,14 @@ class VarCollection(object):
         if not os.path.exists(var_ini):
             raise IOError("File {} does not exist".format(var_ini))
         self._var_ini = var_ini
-        
+    
+    def get_coord_var_and_standard_names(self):
+        """Get dictionary with coord and standard names"""
+        d = {}
+        for k in self.all_vars:
+            d[k] = self[k]['standard_name']
+        return d
+    
     def _read_ini(self):
         parser = ConfigParser()
         parser.read(self.var_ini)
@@ -568,14 +594,8 @@ def all_var_names():
     return [k for k in Variable.read_config().keys()]
 
 if __name__=="__main__":
+    from pyaerocom import const
+    all_vars = VarCollection(const._coords_info_file)
     
-    all_vars = VarCollection()
-    
-    v = Variable('DEFAULT')
-    
-    print(v)
-    
-    a = VarCollection()
-    a['DEFAULT']
-    #print(v.aliases)
+    print(all_vars.asc)
     
