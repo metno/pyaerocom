@@ -13,7 +13,7 @@ except:
 from pyaerocom import __dir__, logger
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
-from pyaerocom._lowlevel_helpers import BrowseDict, list_to_shortstr, dict_to_str
+from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
 
 is_3d =  lambda var_name: True if '3d' in var_name.lower() else False
 str2bool = lambda val: val.lower() in ('true', '1', 't', 'yes')
@@ -244,6 +244,17 @@ class Variable(object):
     
     RH_MAX_DRY = 0.4
     
+    plot_info_keys = ['scat_xlim',
+                      'scat_ylim',
+                      'scat_loglog',
+                      'scat_scale_factor',
+                      'map_vmin',
+                      'map_vmax',
+                      'map_c_under',
+                      'map_c_over',
+                      'map_cbar_levels',
+                      'map_cbar_ticks']
+    
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         #save orig. input for whatever reasons
         self._var_name_input = var_name 
@@ -280,20 +291,18 @@ class Variable(object):
         #wavelength tolerance in nm
         self.obs_wavelength_tol_nm = None
         
-        self.plot_info = dict(
-            scat_xlim = None,
-            scat_ylim = None,
-            scat_loglog = None,
-            scat_scale_factor = 1.0,
+        self.scat_xlim = None
+        self.scat_ylim = None
+        self.scat_loglog = None
+        self.scat_scale_factor = 1.0
             
-            # settings for map plotting
-            map_vmin = None,
-            map_vmax = None,
-            map_c_under = None,
-            map_c_over = None,
-            map_cbar_levels = None,
-            map_cbar_ticks = None
-        )
+        # settings for map plotting
+        self.map_vmin = None
+        self.map_vmax = None
+        self.map_c_under = None
+        self.map_c_over = None
+        self.map_cbar_levels = None
+        self.map_cbar_ticks = None
         # imports default information and, on top, variable information (if 
         # applicable)
         if init:
@@ -304,6 +313,14 @@ class Variable(object):
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
+    
+    @property
+    def plot_info(self):
+        """Dictionary containing plot information"""
+        d = {}
+        for k in self.plot_info_keys:
+            d[k] = self[k]
+        return d
     
     def update(self, **kwargs):
         for key, val in kwargs.items():
@@ -372,7 +389,7 @@ class Variable(object):
         return self.description
     
     def keys(self):
-        return list(self.__dict__.keys()) + list(self.plot_info.keys())
+        return list(self.__dict__.keys())
     
     def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
         """Import information about default region
@@ -443,15 +460,9 @@ class Variable(object):
         self.var_name = var_name
         
     def __setitem__(self, key, val):
-        if key in self.plot_info:
-            self.plot_info[key] = val
-        else:
-            self.__dict__[key] = val
+        self.__dict__[key] = val
     
     def __getitem__(self, key):
-        if key in self.plot_info:
-            return self.plot_info[key]
-        
         return self.__dict__[key]
     
     def __repr__(self):
@@ -462,18 +473,33 @@ class Variable(object):
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
-        arrays = ''
+        
+        plot_s = '\nPlotting settings\n......................'
+        
         for k, v in self.__dict__.items():
-            if isinstance(v, dict):
-                s += "\n{} (dict)".format(k)
-                s = dict_to_str(v, s, indent=3, ignore_null=True)
-            elif isinstance(v, list):
-                s += "\n{} (list, {} items)".format(k, len(v))
-                s += list_to_shortstr(v)
+            if k in self.plot_info_keys:
+                if v is None:
+                    continue
+                if isinstance(v, dict):
+                    plot_s += "\n{} (dict)".format(k)
+                    plot_s = dict_to_str(v, plot_s, indent=3, 
+                                         ignore_null=True)
+                elif isinstance(v, list):
+                    plot_s += "\n{} (list, {} items)".format(k, len(v))
+                    plot_s += list_to_shortstr(v)
+                else:
+                    plot_s += "\n%s: %s" %(k,v)
             else:
-                s += "\n%s: %s" %(k,v)
-         
-        s += arrays
+                if isinstance(v, dict):
+                    s += "\n{} (dict)".format(k)
+                    s = dict_to_str(v, s, indent=3, ignore_null=True)
+                elif isinstance(v, list):
+                    s += "\n{} (list, {} items)".format(k, len(v))
+                    s += list_to_shortstr(v)
+                else:
+                    s += "\n%s: %s" %(k,v)
+        
+        s += plot_s
         return s
 
 class VarCollection(object):
