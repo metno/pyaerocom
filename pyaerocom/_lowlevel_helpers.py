@@ -176,8 +176,6 @@ def dict_to_str(dictionary, s="", indent=0, ignore_null=False):
         elif isinstance(v, np.ndarray) and v.ndim==1:
             s += list_to_shortstr(v, indent=indent, name=k)
         else:
-            if v == '':
-                v = '<empty_str>'
             s += "\n{}{}: {}".format(indent*" ", k, v)
     return s
 
