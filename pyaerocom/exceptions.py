@@ -32,6 +32,9 @@ class ColocationError(ValueError):
 class CoordinateError(ValueError):
     pass
 
+class CoordinateNotFoundError(CoordinateError):
+    pass
+
 class CoordinateNameError(CoordinateError):
     pass
 
