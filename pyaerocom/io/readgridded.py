@@ -1143,7 +1143,7 @@ class ReadGridded(object):
         
                 
     def read(self, var_names=None, start=None, stop=None,
-             ts_type=None, flex_ts_type=True, 
+             ts_type=None, experiment=None, flex_ts_type=True, 
              require_all_vars_avail=False):
         """Read all variables that could be found 
         
@@ -1163,6 +1163,9 @@ class ReadGridded(object):
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
+        experiment : str
+            name of experiment (only relevant if this dataset contains more 
+            than one experiment)
         flex_ts_type : bool
             if True and if applicable, then another ts_type is used in case 
             the input ts_type is not available for this variable
@@ -1210,6 +1213,7 @@ class ReadGridded(object):
         for var in var_names:
             try:
                 data.append(self.read_var(var, start, stop, ts_type,
+                                          experiment,
                                           flex_ts_type))
             except (VarNotAvailableError, DataCoverageError) as e:
                 self.logger.warning(repr(e))
