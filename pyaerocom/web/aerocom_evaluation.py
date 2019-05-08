@@ -20,6 +20,8 @@ from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
                                    update_menu, make_info_table)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
+
+from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
 from pyaerocom.exceptions import DataDimensionError
 
 # ToDo: complete docstring
