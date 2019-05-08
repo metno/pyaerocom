@@ -16,38 +16,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     See Also
     ---------
         :class:`ReadUngriddedBase`
-
-    Attributes
-    ----------
-    _FILEMASK : str
-        Determines which files are serched for.
-    
-    __version__ : str
-        Version of this interface  
-        
-    COL_DELIM : str
-
-
-    TS_TYPE : 
-    
-    DATA_ID :
-    
-    DATASET_PATH : :obj: `str`
-    
-    
-    SUPPORTED_DATASETS :  :obj:`list` of `str`:
-        
-    VAR_TO_KEY : 
-    
-    FILES_CONTAIN :  :obj:`dict`:
-    
-    VARS_TO_FILES :  :obj:`list` or `str`:
-    
-    PROVIDES_VARIABLES :  :obj:`list` of `str`:
-        
-    num_vars : int 
-        Number of variables available for this dataset.
-    
+ 
 	"""
     # name of files in GawTadSubsetAasEtAl
     _FILEMASK = '*.csv' # fix
@@ -64,7 +33,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     DATA_ID = 'GAWTADsubsetAasEtAl'
 
     #: Path were data is located (hard coded for now)
-    DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data' 
+    DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/'\
+                        'PYAEROCOM/GAWTADSulphurSubset/data' 
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -85,14 +55,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     VAR_TO_KEY["sconcso2"] = 'concentration_ugS/m3'
     VAR_TO_KEY["sconcso4"] = 'concentration_ugS/m3'
 
-
     #: Dictionary mapping filenames to available variables in the respective files. 
     FILES_CONTAIN = {}
     FILES_CONTAIN['monthly_so2.csv'] = ['sconcso2']
     FILES_CONTAIN['monthly_so4_aero.csv'] = ['sconcso4']
-    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4',
-                                               'pr',
-                                               'sconcSO4precip']
+    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'sconcSO4precip']
     
     #: Dictionary mapping variable name to hard coded filenames. 
     VARS_TO_FILES = {}
@@ -102,11 +69,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     VARS_TO_FILES['wetso4'] = ['monthly_so4_precip.csv']
     VARS_TO_FILES['sconcSO4precip'] = ['monthly_so4_precip.csv']
 
-
     #: :obj: `list` of :obj: `str` 
     #: List containing all the variables available in this data set.
     PROVIDES_VARIABLES = list(VAR_TO_KEY.keys())
-    
     
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
@@ -116,7 +81,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         return self.PROVIDES_VARIABLES
 
     def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
-        """Read one GawTadSubsetAasEtAl file
+        """ Read one GawTadSubsetAasEtAl file
 
         Parameters
         ----------
@@ -146,22 +111,22 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             return str_array
 
         station_list = []
-        print(vars_to_retrieve)
+        #print(vars_to_retrieve)
         df = pd.read_csv(filename,sep=",", low_memory=False)
         #days = np.ones((len(df["year"]))).astype('int')
         #df['day'] = days
         #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
         month = pad_zeros( df['month'])
-        print(month)
+        #print(month)
         year = df['year'].values.astype("str")        
-        days = np.array([ "01" for i in range(year) ])
+        days = np.array([ "01" for i in range(len(year)) ])
         dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
         df['dtime'] = np.array( dates, dtype = "datetime64[s]")  
         # array av numpy.datetime64
         df.rename(columns= {"Sampler":"instrument_name"}, inplace = True)
         df.pop("year")
         df.pop("month")
-        df.pop("day")
+        #df.pop("day")
         grouped = df.groupby(by = "station_name")
 
         # Looping over every station:
@@ -187,8 +152,19 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     # Looping over all varibales to retrieve
                     for var in vars_to_retrieve:
                         if var == "wetso4":
-                            # If variable is wet deposition of sulphor we need to convert the unit from Kg S/ha to kg S/ m^2
-                            s[var] = pd.to_numeric(station_group[key], errors='coerce').values*10000
+                            # input unit is kg S/m2
+                            mass_sulhpor = pd.to_numeric(station_group[key], errors='coerce').values
+                            print(np.max(mass_sulhpor))
+                            nr_molecules = mass_sulhpor/ (0.001*32.065) * (6.022*10**23) # in the order of 10**27 
+                            #¤ print(nr_molecules)
+                            # kg/(kg/mol)  *the number of molecules in one kilo.
+                           
+                            added_weight_oksygen = nr_molecules*4*15.9999*0.001
+                            mass = mass_sulhpor + added_weight_oksygen
+                            # TODO: vary nr days
+                            monthly_to_seconds = 30*24*60*60 # 30days, 24 hours, 60min, 60sek
+                            s[var] = mass*10000/monthly_to_seconds
+                            # output variable is ks so4 m-2s-1
                         else:
                             # Other variable have the correct unit.
                             s[var] = pd.to_numeric(station_group[key], 
@@ -320,8 +296,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 if __name__ == "__main__":
      from pyaerocom import change_verbosity
      import matplotlib.pyplot as plt
-     change_verbosity('info')
-     V = "sconcso2"
+     #change_verbosity('info')
+     V = "wetso4"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
      dataNone = aa.read(None)
      dataNone.plot_station_coordinates(markersize=12, color='lime')
