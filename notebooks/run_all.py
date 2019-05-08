@@ -88,6 +88,10 @@ if __name__=="__main__":
                         help=("Boolean: execute all notebooks before conversion " 
                               "to rst format"))
     
+    parser.add_argument('--convert_rst', '-conv', type=bool, default=False,
+                        help=("Boolean: convert all notebooks to rst and save" 
+                              "in docs folder"))
+    
     parser.add_argument('--output_dir', default="../docs/", type=str,
                         help="Output directory for converted notebooks")
     
@@ -140,23 +144,24 @@ if __name__=="__main__":
                     success.append(f)
                 else:
                     failed.append(f)
-                    
-        converter = nbconvert.RSTExporter()
         
-        writer = nbconvert.writers.FilesWriter()
-        writer.build_directory = out_dir
-        
-        for file in success:
-            name = os.path.basename(file)
-            try:
-                resources = init_single_notebook_resources(file)
-                (body, resources) = converter.from_file(file, resources=resources)
-        
-                writer.write(body, resources, os.path.splitext(file)[0])
-                conv_success.append(name)
-            except Exception as e:
-                conv_fail.append(name)
-                print("Failed to convert {} (Error: {})".format(name, repr(e)))
+        if args.convert_rst:                
+            converter = nbconvert.RSTExporter()
+            
+            writer = nbconvert.writers.FilesWriter()
+            writer.build_directory = out_dir
+            
+            for file in success:
+                name = os.path.basename(file)
+                try:
+                    resources = init_single_notebook_resources(file)
+                    (body, resources) = converter.from_file(file, resources=resources)
+            
+                    writer.write(body, resources, os.path.splitext(file)[0])
+                    conv_success.append(name)
+                except Exception as e:
+                    conv_fail.append(name)
+                    print("Failed to convert {} (Error: {})".format(name, repr(e)))
          
     print('\n\n')
     print('\n--------------\nSKIPPED NOTEBOOK\n--------------\n')
@@ -169,20 +174,19 @@ if __name__=="__main__":
         print(f)
     print()
     
-    print('\n--------------\nCONVERSION RST SUCCESSFUL\n--------------\n')
-    for f in conv_success:
-        print(f)
-    print()
-    
     print('\n--------------\nEXECUTION FAILED\n--------------\n')
     for f in failed:
         print(f)
     print()
-    
-    print('--------------\nCONVERSION RST FAILED\n--------------\n')
-    for f in conv_fail:
-        print(f)
-    print()
+    if args.convert_rst:
+        print('\n--------------\nCONVERSION RST SUCCESSFUL\n--------------\n')
+        for f in conv_success:
+            print(f)
+        print()
+        print('--------------\nCONVERSION RST FAILED\n--------------\n')
+        for f in conv_fail:
+            print(f)
+        print()
         
         
         
