@@ -144,7 +144,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.14_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.15_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -649,8 +649,7 @@ class ReadEbas(ReadUngriddedBase):
             
         file = EbasNasaAmesFile(filename)
         meta = file.meta
-        name = meta['station_name']
-        
+        name = meta['station_name'].replace('/', ';')
         
         var_cols = {}
         for var in vars_to_read:
