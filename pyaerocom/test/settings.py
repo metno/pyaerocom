@@ -14,7 +14,7 @@ if 'etopo1' in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS['etopo1']):
 else:
     ETOPO1_AVAIL = False
 
-TEST_RTOL = 1e-5
+TEST_RTOL = 1e-4
 
 ### GLOBAL MARKERS THAT CAN BE IMPORTED AND USED THROUGHOUT THE TEST SESSION
 # custom skipif marker that is used below for test functions that 
