@@ -47,7 +47,10 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     stop : :obj:`str` or :obj`datetime` or similar
         stop time of data
     
-    
+    Returns 
+    -------
+    axes
+        instance of :class:`matplotlib.axes`
     """
     
     if isinstance(y_vals, list):
@@ -55,14 +58,14 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     if isinstance(x_vals, list):
         x_vals = np.asarray(x_vals)
     try:
-        VAR_PARAM = const.VAR_PARAM[var_name]
+        VARS = const.VARS[var_name]
     except:
-        VAR_PARAM = const.VAR_PARAM.DEFAULT
+        VARS = const.VARS.DEFAULT
     if loglog is None:
-        loglog = VAR_PARAM.scat_loglog
+        loglog = VARS.scat_loglog
         
-    xlim = VAR_PARAM['scat_xlim']
-    ylim = VAR_PARAM['scat_ylim'] 
+    xlim = VARS['scat_xlim']
+    ylim = VARS['scat_ylim']
     if ax is None:
         if figsize is None:
             figsize = (10,8)
@@ -103,7 +106,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     
     ax.tick_params(labelsize=fontsize_base)
     
-    ax.plot(VAR_PARAM['scat_xlim'], VAR_PARAM['scat_ylim'], '-', 
+    ax.plot(VARS['scat_xlim'], VARS['scat_ylim'], '-',
              color='grey')
     
     xypos =   {'var_info'       :   (0.01, .95),
@@ -118,15 +121,15 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                'ts_type'        :   (0.8, 0.1),
                'filter_name'    :   (0.8, 0.06)}
     
-    var_str = var_name# + VAR_PARAM.unit_str
+    var_str = var_name# + VARS.unit_str
 
     if unit is None:
         unit = 'N/D'
-    if str(unit) != '1':
+    if not str(unit) in ['1', 'no_unit']:
         var_str += ' [{}]'.format(unit)
 
     ax.annotate("{} #: {} # st: {}".format(var_str, 
-                        statistics['success'], stations_ok),
+                        statistics['num_valid'], stations_ok),
                         xy=xypos['var_info'], xycoords='axes fraction', 
                         fontsize=fontsize_base+4, color='red')
 
@@ -140,11 +143,11 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                         fontsize=fontsize_base, 
                         color='red')
     
-    ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']),
+    ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']*100),
                         xy=xypos['nmb'], xycoords='axes fraction', 
                         fontsize=fontsize_base, color='red')
     
-    ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']),
+    ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']*100),
                         xy=xypos['mnmb'], xycoords='axes fraction', 
                         fontsize=fontsize_base, color='red')
     

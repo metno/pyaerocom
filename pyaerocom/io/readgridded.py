@@ -49,7 +49,8 @@ from pyaerocom.mathutils import compute_angstrom_coeff_cubes
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (IllegalArgumentError, 
                                   DataCoverageError,
-                                  VarNotAvailableError)
+                                  VarNotAvailableError,
+                                  FileConventionError)
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.iris_io import load_cube_custom, concatenate_iris_cubes
@@ -95,7 +96,9 @@ class ReadGridded(object):
     vars : list
         list containing all variable names (e.g. od550aer) that were inferred 
         from filenames based on Aerocom model file naming convention
-    years :
+    years : list
+        list of available years as inferred from the filenames in the data 
+        directory.
         
     Parameters
     ----------
@@ -115,15 +118,7 @@ class ReadGridded(object):
         if True, the model directory is searched (:func:`search_data_dir`) on
         instantiation and if it is found, all valid files for this model are 
         searched using :func:`search_all_files`.
-        
-    Examples
-    --------
-    
-        >>> read = ReadGridded(data_id="ECMWF_OSUITE")
-        >>> read.read_var("od550aer")
-        >>> read.read_var("od550so4")
-        >>> read.read_var("od550bc")
-        >>> print(data.short_str()) for data in read.data
+
         
     """
     AUX_REQUIRES = {'ang4487aer': ['od440aer', 'od870aer']}
@@ -152,6 +147,7 @@ class ReadGridded(object):
         
         #: data_id of gridded dataset        
         self.data_id = data_id
+        
         
         self.logger = logging.getLogger(__name__)
         # only overwrite if there is input, note that the attributes
@@ -188,6 +184,10 @@ class ReadGridded(object):
         self._vars_2d = []
         self._vars_3d = []
         
+        
+        #: List of experiments in data directory
+        self.experiments = []
+        
         #: List of unique years that were 
         #: identified from the filenames in the data directory
         self.years = []
@@ -207,6 +207,11 @@ class ReadGridded(object):
         self.read_errors = {}
         
         self._aux_avail = None
+        
+        # these can be filled using method add_aux_compute and they will not 
+        # affect global settings of the reader class
+        self._aux_requires = {}
+        self._aux_funs = {}
         if init and data_id:
             self.search_data_dir()
             self.search_all_files()
@@ -220,17 +225,22 @@ class ReadGridded(object):
         """Variables provided by this interface"""
         v = []
         v.extend(self.vars)
-        if self._aux_avail is not None:
-            v.extend(self._aux_avail)
-        else:
-            self._aux_avail = []
-            for aux_var in self.AUX_REQUIRES.keys():
-                try:
-                    self._get_aux_vars(aux_var)
-                    v.append(aux_var)
-                    self._aux_avail.append(aux_var)
-                except: #this auxiliary variable cannot be computed
-                    pass
+        
+        self._aux_avail = []
+        for aux_var in self.AUX_REQUIRES.keys():
+            try:
+                self._get_aux_vars(aux_var)
+                v.append(aux_var)
+                self._aux_avail.append(aux_var)
+            except: #this auxiliary variable cannot be computed
+                pass
+        for aux_var in self._aux_requires.keys():
+            try:
+                self._get_aux_vars(aux_var)
+                v.append(aux_var)
+                self._aux_avail.append(aux_var)
+            except: #this auxiliary variable cannot be computed
+                pass
         #v.extend(self.AUX_REQUIRES.keys())
         #also add standard names of 3D variables if not already in list
         for var in self._vars_3d:
@@ -416,6 +426,7 @@ class ReadGridded(object):
                               "from files in model directory for model "
                               "%s\ndata_dir: %s"
                               %(self.data_id, self.data_dir))
+        _experiments_temp = []
         _vars_temp = []
         _vars_temp_3d = []
         _years_temp = []
@@ -428,11 +439,11 @@ class ReadGridded(object):
             if _stop == 20000:
                _stop = _start + 1
         
-        
-            
-            
-        
         for _file in nc_files:
+            # TODO: resolve this in a more general way...
+            if 'ModelLevelAtStations' in _file:
+                CONST.logger.info('Ignoring file {}'.format(_file))
+                continue
             try:
                 info = self.file_convention.get_info_from_file(_file)
                 if _start <= info['year'] <= _stop:
@@ -444,6 +455,7 @@ class ReadGridded(object):
                     
                     _years_temp.append(info["year"])
                     _ts_types_temp.append(info["ts_type"])
+                    _experiments_temp.append(info['name'])
                     self.files.append(_file)
                     self.logger.debug('Read file {}'.format(_file))
             except Exception as e:
@@ -465,6 +477,7 @@ class ReadGridded(object):
         self._vars_2d = sorted(od.fromkeys(_vars_temp))
         self._vars_3d = sorted(od.fromkeys(_vars_temp_3d))
         self.years = sorted(od.fromkeys(_years_temp))
+        self.experiments = sorted(od.fromkeys(_experiments_temp))
         
         _ts_types = od.fromkeys(_ts_types_temp)
         # write detected sampling frequencies in the preferred order
@@ -544,7 +557,8 @@ class ReadGridded(object):
                 self.logger.info("Ignoring key %s in ModelImportResult.update()" %k)
     
     def find_var_files_flex_ts_type(self, var_name, ts_type_init,
-                                    start=None, stop=None):
+                                    start=None, stop=None, experiment=None,
+                                    vert_which=None):
         """Find available files for a variable in a time period 
         
         Like :func:`find_var_files_in_timeperiod` but this method also checks
@@ -557,12 +571,17 @@ class ReadGridded(object):
             variable name
         ts_type_init : str
             desired temporal resolution of data
-        start : :obj:`Timestamp` or :obj:`str`, optional
+        start : Timestamp or str, optional
             start time of data. If None, then the first available time stamp 
             in this data object is used (i.e. :attr:`start`)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
+        stop : Timestamp or str, optional
             stop time of data. If None, then the last available time stamp 
             in this data object is used (i.e. :attr:`stop`)
+        experiment : str, optional
+            name of experiment
+        vert_which : str
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel)
             
         Returns
         --------
@@ -576,11 +595,12 @@ class ReadGridded(object):
         Raises
         ------
         IOError 
-            if not files could be found
+            if no files could be found
         """
         try:
             files = self.find_var_files_in_timeperiod(var_name, ts_type_init,
-                                                      start, stop)
+                                                      start, stop, 
+                                                      experiment, vert_which)
             return (files, ts_type_init)
         except DataCoverageError as e:
             self.logger.warning('No file match for ts_type {}. Error: {}\n\n '
@@ -592,7 +612,9 @@ class ReadGridded(object):
                         files = self.find_var_files_in_timeperiod(var_name, 
                                                                   ts_type,
                                                                   start,
-                                                                  stop)
+                                                                  stop,
+                                                                  experiment,
+                                                                  vert_which)
                         return (files, ts_type)
                     
                     except DataCoverageError as e:
@@ -602,9 +624,10 @@ class ReadGridded(object):
                                 "variable {}, ts_types {}".format(self.data_id, 
                                                                   var_name, 
                                                                   self.ts_types))
-                        
-    def find_var_files_in_timeperiod(self, var_name, ts_type,
-                                     start=None, stop=None):
+    # TODO: review and check vert_which directly from files
+    def find_var_files_in_timeperiod(self, var_name, ts_type, start=None, 
+                                     stop=None, experiment=None,
+                                     vert_which=None):
         """Find all files that match variable, time period and temporal res.
         
         Parameters
@@ -619,6 +642,11 @@ class ReadGridded(object):
         stop : :obj:`Timestamp` or :obj:`str`, optional
             stop time of data. If None, then the last available time stamp 
             in this data object is used (i.e. :attr:`stop`)
+        experiment : str, optional
+            name of experiment for which file are to be searched.
+        vert_which : str
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel)
             
         Returns
         --------
@@ -628,22 +656,46 @@ class ReadGridded(object):
             
         Raises
         ------
-        IOError 
+        DataCoverageError 
             if no files could be found
         """
-        
+        #aux_compute = self._add_aux_compute(aux_compute)
+        if experiment is None:
+            if len(self.experiments) > 1:
+                raise ValueError('This dataset contains more than one experiment. '
+                                 'Please specify from which experiment you wish '
+                                 'the data to be read. Available expreriments: {}'
+                                 .format(self.experiments))
+            experiment = self.experiments[0]
+        elif not experiment in self.experiments:
+            raise DataCoverageError('No such experiment available: {}. Please '
+                                    'choose from: {}'.format(experiment, 
+                                    self.experiments))
         match_files = []
     
         years_to_load = self.get_years_to_load(start, stop)
         for year in years_to_load:
             if CONST.MIN_YEAR <= year <= CONST.MAX_YEAR:
+                try:
+                    match_mask = self.file_convention.string_mask(experiment,
+                                                                  var_name,
+                                                                  year, 
+                                                                  ts_type,
+                                                                  vert_which)
+                except FileConventionError as e:
+                    match_mask = self.file_convention.string_mask(experiment,
+                                                                  var_name,
+                                                                  year, 
+                                                                  ts_type,
+                                                                  None)
+                    CONST.print_log.warning('Ignoring input vert_which {} for file '
+                                            'retrieval of dataset {} and variable {}. '
+                                            'Reason: {}'.format(vert_which,
+                                                              self.data_id,
+                                                              var_name,
+                                                              repr(e)))
                 # search for filename in self.files using ts_type as default ts size
                 for _file in self.files:
-                    #new file naming convention (aerocom3)
-                    match_mask = self.file_convention.string_mask(var_name,
-                                                                  year, 
-                                                                  ts_type)
-                    
                     if re.match(match_mask, _file):
                         match_files.append(_file)
                         self.logger.debug("FOUND MATCH: {}".format(basename(_file)))
@@ -660,8 +712,8 @@ class ReadGridded(object):
                                             var_name, ts_type, 
                                             min(years_to_load),
                                             max(years_to_load)))
-                
-        self.match_files = match_files
+        
+        self.match_files = match_files    
         return match_files
     
     def concatenate_cubes(self, cubes):
@@ -744,7 +796,10 @@ class ReadGridded(object):
             if one of the required variables for computation is not available 
             in the data
         """
-        vars_req = self.AUX_REQUIRES[var_to_compute]
+        if var_to_compute in self._aux_requires:
+            vars_req = self._aux_requires[var_to_compute]
+        else:
+            vars_req = self.AUX_REQUIRES[var_to_compute]
         
         vars_to_read = []
         for var in vars_req:
@@ -766,8 +821,9 @@ class ReadGridded(object):
                                                    var))
         return vars_to_read
                 
-    def compute_var(self, var_name, start=None, stop=None,
-                 ts_type=None, flex_ts_type=True):
+    def compute_var(self, var_name, start=None, stop=None, ts_type=None, 
+                    experiment=None, flex_ts_type=True, vars_to_read=None, 
+                    aux_fun=None, vert_which=None):
         """Compute auxiliary variable
         
         Like :func:`read_var` but for auxiliary variables 
@@ -787,10 +843,16 @@ class ReadGridded(object):
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
+        experiment : str
+            name of experiment (only relevant if this dataset contains more 
+            than one experiment)
         flex_ts_type : bool
             if True and if applicable,start=None, stop=None,
                  ts_type=None, flex_ts_type=True then another ts_type is used in case 
             the input ts_type is not available for this variable
+        vert_which : str
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel)
             
         Returns
         -------
@@ -802,26 +864,154 @@ class ReadGridded(object):
         AttributeError
             if none of the ts_types identified from file names is valid
         VarNotAvailableError
-            if specified ts_type is not supported
+            if specifiedcommon_ts_types = []
+        for i, var in enumerate(vars_to_read):
+            for ts_type in CONST.GRID_IO.TS_TYPES:
+                # check if ts_type is available
+                try:
+                    self.find_var_files_in_timeperiod(var, ts_type, start, 
+                                                      stop, vert_which)
+                    if i == 0:
+                        common_ts_types.append(ts_type)
+                except DataCoverageError:
+                    if i != 0 and ts_type in common_ts_types:
+                        common_ts_types.pop(common_ts_types.index(ts_type))
+                    pass
+        if len(common_ts_types) == 0:
+            raise DataCoverageError('Could not find any common ts_type for '
+                                    'required variables {} for computation '
+                                    'of {}'.format(ts_type, vars_to_read,
+                                    var_name))
+        elif not ts_type in common_ts_types:
+            if not flex_ts_type:
+                raise DataCoverageError('Could not find common ts_type={} for '
+                                        'required variables {} for computation '
+                                        'of {}'.format(ts_type, vars_to_read,
+                                         var_name))
+            elif not ts_type in common_ts_types:
+                ts_type =  common_ts_types[0] ts_type is not supported
             
         """
-        vars_to_read = self._get_aux_vars(var_name)
+        if vars_to_read is None:
+            vars_to_read = self._get_aux_vars(var_name)
+        if aux_fun is None:
+            aux_fun = self.AUX_FUNS[var_name]
         data = []
+        # all variables that are required need to be in the same temporal
+        # resolution
+        ts_type = self.find_common_ts_type(vars_to_read, start, stop, ts_type, 
+                                           experiment, flex_ts_type, vert_which)  
         for var in vars_to_read:
-            data.append(self._load_var(var, ts_type, start,
-                                       stop, flex_ts_type))
-        cube = self.AUX_FUNS[var_name](*data)
+            aux_data = self._load_var(var, ts_type, start, stop,
+                                      experiment=experiment)
+            data.append(aux_data)
+
+        cube = aux_fun(*data)
         cube.var_name = var_name
         
         data = GriddedData(cube, data_id=self.data_id, 
                            ts_type=data[0].ts_type,
                            computed=True)
         return data
+    
+    def find_common_ts_type(self, vars_to_read, start=None, stop=None,
+                            ts_type=None, experiment=None,
+                            flex_ts_type=True, vert_which=None):
+        """Find common ts_type for list of variables to be read
+        
+        Parameters
+        ----------
+        vars_to_read : list
+            list of variables that is supposed to be read
+        start : :obj:`Timestamp` or :obj:`str`, optional
+            start time of data import (if valid input, then the current 
+            :attr:`start` will be overwritten)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
+            stop time of data import (if valid input, then the current 
+            :attr:`start` will be overwritten)
+        ts_type : str
+            string specifying temporal resolution (choose from 
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            of the available resolutions is used
+        experiment : str
+            name of experiment (only relevant if this dataset contains more 
+            than one experiment)
+        flex_ts_type : bool
+            if True and if applicable,start=None, stop=None,
+                 ts_type=None, flex_ts_type=True then another ts_type is used in case 
+            the input ts_type is not available for this variable
+        vert_which : str
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel)
             
-        #raise NotImplementedError
+        Returns
+        -------
+        str 
+            common ts_type for input variable
             
+        Raises
+        ------
+        DataCoverageError
+            if no match can be found
+            
+        """
+        if isinstance(vars_to_read, str):
+            vars_to_read = [vars_to_read]
+            
+        common_ts_types = []
+        for i, var in enumerate(vars_to_read):
+            for ts_type in CONST.GRID_IO.TS_TYPES:
+                # check if ts_type is available
+                try:
+                    self.find_var_files_in_timeperiod(var, ts_type, start, 
+                                                      stop, experiment,
+                                                      vert_which)
+                    if i == 0:
+                        common_ts_types.append(ts_type)
+                except DataCoverageError:
+                    if i != 0 and ts_type in common_ts_types:
+                        common_ts_types.pop(common_ts_types.index(ts_type))
+                    pass
+        if len(common_ts_types) == 0:
+            raise DataCoverageError('Could not find any common ts_type for '
+                                    'variables {}'.format(vars_to_read))
+        elif not ts_type in common_ts_types:
+            if not flex_ts_type:
+                raise DataCoverageError('Could not find common ts_type={} for '
+                                        'variables {}'
+                                        .format(ts_type, vars_to_read))
+            else:
+                ts_type =  common_ts_types[0] #highest resolution
+        return ts_type
+    
+    def add_aux_compute(self, var_name, vars_required, fun):
+        """Register new variable to be computed
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name to be computed
+        vars_required : list
+            list of variables to read, that are required to compute `var_name`
+        fun : callable
+            function that takes a list of `GriddedData` objects as input and 
+            that are read using variable names specified by `vars_required`.
+        """
+        if isinstance(vars_required, str):
+            vars_required = [vars_required]
+        if not isinstance(vars_required, list):
+            raise ValueError('Invalid input for vars_required. Need str or list. '
+                             'Got: {}'.format(vars_required))
+        elif not callable(fun):
+            raise ValueError('Invalid input for fun. Input is not a callable '
+                             'object')
+        self._aux_requires[var_name] = vars_required
+        self._aux_funs[var_name] = fun
+        
+    # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None, flex_ts_type=True):
+                 ts_type=None, experiment=None, flex_ts_type=True, 
+                 vert_which=None, aux_vars=None, aux_fun=None):
         """Read model data for a specific variable
         
         This method searches all valid files for a given variable and for a 
@@ -857,10 +1047,25 @@ class ReadGridded(object):
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
+        experiment : str
+            name of experiment (only relevant if this dataset contains more 
+            than one experiment)
         flex_ts_type : bool
             if True and if applicable,start=None, stop=None,
                  ts_type=None, flex_ts_type=True then another ts_type is used in case 
             the input ts_type is not available for this variable
+        vert_which : :obj:`str` or :obj:`dict`, optional
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel) or dictionary containing var_name as key and vertical
+            coded string as value, accordingly
+        aux_vars : list
+            only relevant if `var_name` is not available for reading but needs
+            to be computed: list of variables that are required to compute 
+            `var_name`
+        aux_fun : callable
+            only relevant if `var_name` is not available for reading but needs
+            to be computed: custom method for computation (cf. 
+            :func:`add_aux_compute` for details)
             
         Returns
         -------
@@ -874,6 +1079,19 @@ class ReadGridded(object):
         VarNotAvailableError
             if specified ts_type is not supported
         """
+        if aux_vars is not None:
+            self.add_aux_compute(var_name, aux_vars, aux_fun)
+        
+        if isinstance(ts_type, dict):
+            try:
+                ts_type = ts_type[var_name]
+            except:
+                CONST.print_log.info('Setting ts_type to None, since input '
+                                     'dict {} does not contain specification '
+                                     'variable to read {}'.format(ts_type, 
+                                                                  var_name))
+                ts_type = None
+                
         ts_type = self._check_ts_type(ts_type)
         
         var_to_read = None
@@ -886,12 +1104,29 @@ class ReadGridded(object):
                     if Variable(var).var_name == var_name:
                         var_to_read = var
         
+        if isinstance(vert_which, dict):
+            try:
+                vert_which = vert_which[var_name]
+            except:
+                CONST.print_log.info('Setting vert_which to None, since input '
+                                     'dict {} does not contain specification '
+                                     'variable to read {}'.format(vert_which, 
+                                                                  var_name))
+                vert_which = None
         if var_to_read is not None: # variable can be read directly
             data = self._load_var(var_to_read, ts_type, start, stop,
-                                  flex_ts_type)
+                                  experiment, flex_ts_type, vert_which)
+        elif var_name in self._aux_requires:
+            data = self.compute_var(var_name, start, stop, ts_type, 
+                                    experiment, flex_ts_type, 
+                                    vars_to_read=self._aux_requires[var_name],
+                                    aux_fun=self._aux_funs[var_name],
+                                    vert_which=vert_which)
+            
         elif var_name in self.AUX_REQUIRES: #variable can be computed 
-            data = self.compute_var(var_name, start, stop,
-                                    ts_type, flex_ts_type)
+            data = self.compute_var(var_name, start, stop, ts_type, 
+                                    experiment, flex_ts_type, 
+                                    vert_which=vert_which)
         else:
             raise VarNotAvailableError("Error: variable {} not available in "
                                        "files and can also not be computed."
@@ -908,7 +1143,7 @@ class ReadGridded(object):
         
                 
     def read(self, var_names=None, start=None, stop=None,
-             ts_type=None, flex_ts_type=True, 
+             ts_type=None, experiment=None, flex_ts_type=True, 
              require_all_vars_avail=False):
         """Read all variables that could be found 
         
@@ -928,6 +1163,9 @@ class ReadGridded(object):
             string specifying temporal resolution (choose from 
             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
             of the available resolutions is used
+        experiment : str
+            name of experiment (only relevant if this dataset contains more 
+            than one experiment)
         flex_ts_type : bool
             if True and if applicable, then another ts_type is used in case 
             the input ts_type is not available for this variable
@@ -975,116 +1213,11 @@ class ReadGridded(object):
         for var in var_names:
             try:
                 data.append(self.read_var(var, start, stop, ts_type,
+                                          experiment,
                                           flex_ts_type))
             except (VarNotAvailableError, DataCoverageError) as e:
                 self.logger.warning(repr(e))
         return tuple(data)
-# =============================================================================
-#             except Exception as e:
-#                 self.logger.exception('Failed to read variable {} ({})\n'
-#                                       'Error message: {}'.format(var,
-#                                                       self.data_id, 
-#                                                       repr(e)))
-# =============================================================================
-        
-    
-# =============================================================================
-#     def read_individual_years(self, var_names, years_to_load, 
-#                               ts_type=None, 
-#                               require_all_years_avail=False,
-#                               require_all_vars_avail=False,
-#                               flex_ts_type=True):
-#         """Read individual years into instances of :class:`GriddedData`
-#         
-#         Note
-#         ----
-#         Other than methods :func:`read_var` and :func:`read`, this method does
-#         not write into :attr:`data` but into :attr:`data_yearly`. Since for 
-#         each provided variable, multiple years are loaded, the structure of
-#         :attr:`data_yearly` is a nested dictionary and the yearly data may
-#         be accessed as shown in the below example.
-#         
-#         Parameters
-#         ----------
-#         var_names : :obj:`list` or :obj:`str`
-#             variables that are supposed to be read
-#         years_to_load : list
-#             list specifying the years to be loaded
-#         ts_type : str
-#             string specifying temporal resolution (choose from 
-#             "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
-#             of the available resolutions is used
-#         require_all_years_avail : bool
-#             if True, it is strictly required that all input years are 
-#             available. 
-#         require_all_vars_avail : bool
-#             if True, it is strictly required that all input variables are 
-#             available. 
-#         
-#         Returns
-#         -------
-#         dict
-#             nested dictionary dictionary containing the results for each 
-#             variable and for each year
-#             
-#         Raises 
-#         ------
-#         YearNotAvailableError
-#             1. if ``require_all_years_avail=True`` and one or more of the provided 
-#             years is not available in this class
-#             2. if none of the required years is available in this object
-#         VarNotAvailableError
-#             1. if ``require_all_vars_avail=True`` and one or more of the 
-#             desired variables is not available in this class
-#             2. if ``require_all_vars_avail=True`` and if none of the input 
-#             variables is available in this object
-#         """
-#         ts_type = self._check_ts_type(ts_type)
-#         if not isinstance(years_to_load, (list, np.ndarray)):
-#             year = int(years_to_load)
-#             if not CONST.MIN_YEAR <= year <= CONST.MAX_YEAR:
-#                 raise IOError('Invalid input for years_to_load')
-#             years_to_load = [year]
-#         if require_all_years_avail:
-#             if not all([year in self.years for year in years_to_load]):
-#                 raise YearNotAvailableError('One or more of the specified years '
-#                                         '({}) is not available in {} database. '
-#                                         'Available years: {}'.format(
-#                                         years_to_load, self.data_id, 
-#                                         self.years))
-#         years_to_load = np.intersect1d(self.years, years_to_load)
-#         if len(years_to_load) == 0:
-#             raise YearNotAvailableError('None of the provided years is '
-#                                         'available in {}'.format(self.data_id))
-#         
-#         if require_all_vars_avail:
-#             if not all([var in self.vars for var in var_names]):
-#                 raise VarNotAvailableError('One or more of the specified vars '
-#                                         '({}) is not available in {} database. '
-#                                         'Available vars: {}'.format(
-#                                         var_names, self.data_id, 
-#                                         self.vars))
-#         var_names = np.intersect1d(self.vars, var_names)
-#         if len(var_names) == 0:
-#             raise VarNotAvailableError('None of the desired variables is '
-#                                         'available in {}'.format(self.name))
-#             
-#         for var in var_names:
-#             if not var in self.data_yearly:
-#                 self.data_yearly[var] = od()
-#                 
-#             for year in years_to_load:
-#                 try:
-#                     data = self._load_var(var, ts_type, year, flex_ts_type)
-#                     if year in self.data_yearly[var]:
-#                         self.logger.warning('Individual data of year {} and var {} '
-#                                             'already exists and will be '
-#                                             'overwritten'.format(year, var))
-#                     self.data_yearly[var][year] = data
-#                 except Exception as e:
-#                     self.logger.exception(repr(e))
-#         return self.data_yearly
-# =============================================================================
     
     def _load_files(self, files, var_name, quality_check=True):
         """Load list of files containing variable to read into Cube instances
@@ -1133,34 +1266,39 @@ class ReadGridded(object):
         return cubes
     
     def _load_var(self, var_name, ts_type, start=None, stop=None,
-                  flex_ts_type=True):
+                  experiment=None, flex_ts_type=True, vert_which=None):
         """Find files corresponding to input specs and load into GriddedData
         
-        Parameters
-        ----------
-        var_name : str
-            variable to load
+        Note 
+        ----
+        See :func:`read_var` for I/O info.
         """
         
         if flex_ts_type:
-            match_files, ts_type = self.find_var_files_flex_ts_type(var_name, 
-                                                                    ts_type,
-                                                                    start,
-                                                                    stop)
+            (match_files, 
+             ts_type) = self.find_var_files_flex_ts_type(var_name, 
+                                                         ts_type,
+                                                         start,
+                                                         stop, 
+                                                         experiment,
+                                                         vert_which)
         else:
             match_files = self.find_var_files_in_timeperiod(var_name, 
                                                             ts_type, 
                                                             start,
-                                                            stop)
+                                                            stop,
+                                                            experiment,
+                                                            vert_which)
         
         cube_list = self._load_files(match_files, var_name)
-    
+        is_concat = False
         if len(cube_list) > 1:
             try:
                 cube = self.concatenate_cubes(cube_list)
-            except iris.exceptions.ConcatenateError:
-                raise NotImplementedError('Can not yet handle partial '
-                                          'concatenation in pyaerocom')
+                is_concat = True
+            except iris.exceptions.ConcatenateError as e:
+                raise NotImplementedError('Failed to concatenate cubes: {}\n'
+                                          'Error: {}'.format(cube_list, repr(e)))
         else:
             cube = cube_list[0]
         
@@ -1168,7 +1306,8 @@ class ReadGridded(object):
         data = GriddedData(input=cube, 
                            from_files=from_files,
                            data_id=self.data_id, 
-                           ts_type=ts_type)
+                           ts_type=ts_type,
+                           concatenated=is_concat)
         
         # crop cube in time (if applicable)
         data = self._check_crop_time(data, start, stop)
@@ -1239,7 +1378,7 @@ class ReadGridded(object):
             if results for ``var_name`` are not available
         """
         if not var_name in self.data:
-            raise ValueError("No data found for variable %s" %var_name)
+            self.read_var(var_name)
         return self.data[var_name]
     
     def __str__(self):
@@ -1247,15 +1386,17 @@ class ReadGridded(object):
         s = ("\n{}\n{}\n"
              "Model ID: {}\n"
              "Data directory: {}\n"
-             "Available variables: {}\n"
+             "Available experiments: {}\n"
              "Available years: {}\n"
-             "Available time resolutions {}\n".format(head, 
-                                                      len(head)*"-",
-                                                      self.data_id,
-                                                      self.data_dir,
-                                                      self.vars, 
-                                                      self.years,
-                                                      self.ts_types))
+             "Available frequencies {}\n"
+             "Available variables: {}\n".format(head, 
+                                                len(head)*"-",
+                                                self.data_id,
+                                                self.data_dir,
+                                                self.experiments,
+                                                self.years,
+                                                self.ts_types,
+                                                self.vars))
         if self.data:
             s += "\nLoaded GriddedData objects:\n"
             for var_name, data in self.data.items():
@@ -1334,7 +1475,10 @@ class ReadGriddedMulti(object):
     _start = None
     _stop = None
     def __init__(self, names, start=None, stop=None):
-        
+        CONST.print_log.warning(DeprecationWarning('ReadGriddedMulti class is '
+                                                   'deprecated and will not '
+                                                   'be further developed. '
+                                                   'Please use ReadGridded.'))
         if isinstance(names, str):
             names = [names]
         if not isinstance(names, list) or not all([isinstance(x, str) for x in names]):
@@ -1574,26 +1718,21 @@ class ReadGriddedMulti(object):
         return s
     
 if __name__=="__main__":
-    r = ReadGridded('ECHAM6.3-HAM2.3_AP3-CTRL2016-PD')
-    var_info = r.get_var_info_from_files()
+    # Aerocom 2 convention
+    r0 = ReadGridded('GISS-MATRIX.A2.CTRL')
+    print(r0)
     
-    for var, info in var_info.items():
-        print('{}\n{}\n\n'.format(var, info))
+    d = r0['od550aer']
+    print(d)
     
-    CONT = False
-    if CONT:
-        r = ReadGridded('ECMWF_CAMS_REAN')
-    
-        var_info1 = r.get_var_info_from_files()
-        data = r.read_var('od550aer')
-        read = ReadGridded("ECHAM6-SALSA_AP3-CTRL2015")
-        
-        
-        data = read.read_var("od550aer", "2009", "2011", ts_type="monthly")
-        
-        read_caliop = ReadGridded('CALIOP3')
-        alt = read_caliop.read_var('z3d', ts_type='monthly')
-        ec532aer = read_caliop.read_var('ec5323Daer', ts_type='monthly')
-    
-        
-    
+# =============================================================================
+#     d0 = r0.read_var('od550aer', start=2006)
+#     
+#     r1 = ReadGridded('OsloCTM3v1.01')
+#     print(r1)
+#     
+#     d1 = r1.read_var('ec550aer', start=2010, ts_type='monthly',
+#                      vert_which='ModelLevel')
+#     
+#     
+# =============================================================================

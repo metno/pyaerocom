@@ -8,7 +8,8 @@ import pandas as pd
 from pyaerocom import logger, const, print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
-                                  MetaDataError, StationNotFoundError)
+                                  MetaDataError, StationNotFoundError,
+                                  DataUnitError)
 from pyaerocom import StationData
 
 from pyaerocom.mathutils import in_range
@@ -473,7 +474,6 @@ class UngriddedData(object):
         start, stop = np.datetime64(start), np.datetime64(stop)
 
         for idx in meta_idx:
-            print(idx, vars_to_convert, start, stop)
             try:
                 stat = self._metablock_to_stationdata(idx,
                                                       vars_to_convert,
@@ -883,11 +883,49 @@ class UngriddedData(object):
                                       'value range of {} into floating point '
                                       'numbers'.format(list(val), key))
         return (str_f, list_f, range_f)
+    
+    def check_unit(self, var_name, unit=None):
+        """Check if variable unit corresponds to AeroCom unit
+
+        Parameters
+        ----------
+        var_name : str
+            variable name for which unit is to be checked
+        unit : :obj:`str`, optional
+            unit to be checked, if None, AeroCom default unit is used
+
+        Raises
+        ------
+        MetaDataError
+            if unit information is not accessible for input variable name
+        """
+        from pyaerocom.helpers import unit_conversion_fac
+        if unit is None:
+            unit = const.VARS[var_name].unit
+
+        units =  []
+        for i, meta in self.metadata.items():
+            if var_name in meta['var_info']:
+                try:
+                    u = meta['var_info'][var_name]['unit']
+                    if not u in units:
+                        units.append(u)
+                except KeyError:
+                    raise MetaDataError('Failed to access unit information for '
+                                        'variable {} in metadata block {}'
+                                        .format(var_name, i))
+        if len(units) == 0 and str(unit) != '1':
+            raise MetaDataError('Failed to access unit information for '
+                                'variable {}. Expected unit {}'
+                                .format(var_name, unit))
+        for u in units:
+            if not unit_conversion_fac(u, unit) == 1:
+                raise MetaDataError('Invalid unit {} detected (expected {})'
+                                    .format(u, unit))
 
     # TODO: check, confirm and remove Beta version note in docstring
-
     def remove_outliers(self, var_name, inplace=False, low=None, high=None,
-                        move_to_trash=True):
+                        unit_ref=None, move_to_trash=True):
         """Method that can be used to remove outliers from data
 
         Parameters
@@ -923,23 +961,33 @@ class UngriddedData(object):
         ValueError
             if input :attr:`move_to_trash` is True and in case for some of the
             measurements there is already data in the trash.
+        Uni
 
         """
-        if not inplace:
-            new = self.copy()
-        else:
+        if inplace:
             new = self
+        else:
+            new = self.copy()
+        try:
+            self.check_unit(var_name, unit=unit_ref)
+        except MetaDataError as e:
+            raise MetaDataError('Cannot remove outliers for variable {}. Found '
+                                'invalid units. Error: {}'
+                                .format(var_name, repr(e)))
+
         if low is None:
-            low = const.VAR_PARAM[var_name].minimum
+            low = const.VARS[var_name].minimum
             print_log.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
         if high is None:
-            high = const.VAR_PARAM[var_name].maximum
+            high = const.VARS[var_name].maximum
             print_log.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
         var_mask = self._data[:, new._VARINDEX] == var_idx
 
         all_data =  self._data[:, self._DATAINDEX]
         invalid_mask = np.logical_or(all_data < low, all_data > high)
+
+        invalid_mask = np.logical_or(all_data<low, all_data>high)
 
         mask = invalid_mask * var_mask
         invalid_vals = new._data[mask, new._DATAINDEX]
@@ -1014,7 +1062,24 @@ class UngriddedData(object):
                 d[k].append(meta[k])
         return d
 
+    def _find_meta_matches(self, *filters):
+        """Find meta matches for input attributes
 
+        Returns
+        -------
+        list
+            list of metadata indices that match input filter
+        """
+        meta_matches = []
+        totnum = 0
+        for meta_idx, meta in self.metadata.items():
+            if self._check_filter_match(meta, *filters):
+                meta_matches.append(meta_idx)
+                for var in meta['variables']:
+                    totnum += len(self.meta_idx[meta_idx][var])
+
+        return (meta_matches, totnum)
+                    
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
 
@@ -1049,7 +1114,7 @@ class UngriddedData(object):
         ...                                     latitude=[20, 70],
         ...                                     altitude=[0, 1000])
         """
-        new = UngriddedData()
+
         meta_idx_new = 0.0
         data_idx_new = 0
 
@@ -1058,32 +1123,31 @@ class UngriddedData(object):
             raise NotImplementedError('Cannot yet filter by variables')
 
         filters = self._init_meta_filters(**filter_attributes)
-        for meta_idx, meta in self.metadata.items():
-            if self._check_filter_match(meta, *filters):
-                new.metadata[meta_idx_new] = meta
-                new.meta_idx[meta_idx_new] = od()
-                for var in meta['variables']:
-                    indices = self.meta_idx[meta_idx][var]
 
-                    totnum = len(indices)
-                    if (data_idx_new + totnum) >= new._ROWNO:
-                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                        new.add_chunk(totnum)
-                    stop = data_idx_new + totnum
+        meta_matches, totnum_new = self._find_meta_matches(*filters)
+        new = UngriddedData(num_points=totnum_new)
+        for meta_idx in meta_matches:
+            meta = self.metadata[meta_idx]
+            new.metadata[meta_idx_new] = meta
+            new.meta_idx[meta_idx_new] = od()
+            for var in meta['variables']:
+                indices = self.meta_idx[meta_idx][var]
+                totnum = len(indices)
 
-                    new._data[data_idx_new:stop, :] = self._data[indices, :]
-                    new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
-                                                                stop)
-                    new.var_idx[var] = self.var_idx[var]
-                    data_idx_new += totnum
+                stop = data_idx_new + totnum
 
-                meta_idx_new += 1
-            else:
-                logger.debug('{} does not match filter and will be ignored'
-                             .format(meta))
+                new._data[data_idx_new:stop, :] = self._data[indices, :]
+                new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
+                                                            stop)
+                new.var_idx[var] = self.var_idx[var]
+                data_idx_new += totnum
+
+            meta_idx_new += 1
+
         if meta_idx_new == 0 or data_idx_new == 0:
             raise DataExtractionError('Filtering results in empty data object')
         new._data = new._data[:data_idx_new]
+
         # write history of filtering applied
         new.filter_hist.update(self.filter_hist)
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -1768,7 +1832,7 @@ class UngriddedData(object):
                 raise ValueError('Input variable is not available in dataset '
                                  .format(var_name))
             info_str = var_name
-
+    
         info_str += '_{}'.format(f.name)
         try:
             info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
@@ -1994,7 +2058,7 @@ class UngriddedData(object):
                 out_data = []
                 for meta_idx in indices:
                     try:
-                        out_data.append(self.to_station_data(start=start_date,
+                        out_data.append(self.to_station_data(start=start_date, 
                                                              stop=end_date,
                                                              freq=freq))
                     except (VarNotAvailableError, TimeMatchError,
@@ -2028,3 +2092,10 @@ if __name__ == "__main__":
                                   merge_pref_attr='revision_date')
 
     stat.plot_timeseries('scatc550aer', add_overlaps=True)
+    data = pya.io.ReadUngridded().read('EBASMC', ['scatc550dryaer',
+                               'absc550aer'])
+
+    f = pya.Filter(altitude_filter='noMOUNTAINS')
+
+    subset = f(data)
+

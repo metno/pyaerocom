@@ -23,7 +23,7 @@ def data_scat_jungfraujoch():
 def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
     data = data_scat_jungfraujoch
     assert 'EBASMC' in data.data_revision
-    assert data.data_revision['EBASMC'] == '20190115'
+    assert data.data_revision['EBASMC'] == '20190319'
     assert data.shape == (227928, 12)
     assert len(data.metadata) == 26
     

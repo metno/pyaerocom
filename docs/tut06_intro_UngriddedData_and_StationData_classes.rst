@@ -5,8 +5,7 @@ Introduction into the UngriddedData class and the StationData class
 This notebook introduces 2 of the most relevant data objects that exist
 in pyaerocom:
 
-`pyaerocom.UngriddedData <https://pyaerocom.met.no/api.html?highlight=ungriddeddata#pyaerocom.ungriddeddata.UngriddedData>`__
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+**``UngriddedData``**
 
 -  Designed to hold a whole database of observations, that is,
    timeseries data for multiple variables from multiple stations around
@@ -15,15 +14,14 @@ in pyaerocom:
 -  Usually, one instance of this data object contains a single network,
    but it can also contain more than one network.
 
-`pyaerocom.StationData <https://pyaerocom.met.no/api.html?highlight=ungriddeddata#pyaerocom.stationdata.StationData>`__
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+**``StationData``**
 
 -  Data object that contains data **from a single station**.
 -  Includes metadata and variable timeseries data.
 -  Arbitrary number of variables supported.
 
-**NOTE**
-^^^^^^^^
+NOTE
+^^^^
 
 This notebook is currently under development and gives only a brief and
 incomplete introduction into the two data objects.
@@ -49,18 +47,18 @@ Import the ``UngriddedData`` object that was created in the previous tutorial
 .. parsed-literal::
 
     Initating pyaerocom configuration
-    Checking server configuration ...
+    Checking database access...
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.038 s
+    Expired time: 0.020 s
 
 
 
 
 .. parsed-literal::
 
-    UngriddedData <networks: ['AeronetSunV3Lev2.daily']; vars: ['od550aer']; instruments: ['sun_photometer'];No. of stations: 1199
+    UngriddedData <networks: ['AeronetSunV3Lev2.daily']; vars: ['od550aer']; instruments: ['sun_photometer'];No. of stations: 1206
 
 
 
@@ -171,7 +169,7 @@ each file that was read:
 
 .. parsed-literal::
 
-    1199
+    1206
 
 
 
@@ -220,9 +218,9 @@ attributes. For instance:
     Contains networks: ['AeronetSunV3Lev2.daily']
     Contains variables: ['od550aer']
     Contains instruments: ['sun_photometer']
-    Total no. of meta-blocks: 160
+    Total no. of meta-blocks: 162
     Filters that were applied:
-     Filter time log: 20190306152009
+     Filter time log: 20190410170216
     	latitude: (30, 60)
     	longitude: (0, 45)
     	altitude: (0, 1000)
@@ -270,7 +268,7 @@ metadata-blocks / files that are stored in the data object:
 
 .. parsed-literal::
 
-    1199
+    1206
 
 
 
@@ -410,7 +408,7 @@ Find index (or indices) that match the station name:
 
 .. parsed-literal::
 
-    [488.0]
+    [491.0]
 
 
 
@@ -562,7 +560,7 @@ Let’s have a look if the data objects are really the same (by plotting the AOD
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c798bdba8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fc2e8cbe0>
 
 
 
@@ -597,7 +595,7 @@ can print it and it will get you a nice overview):
        longitude: -3.605
        altitude: 680.0
     data_err (BrowseDict([('od550aer', array([nan, nan, nan, ..., nan, nan, nan]))]))
-       od550aer (array, 2758 items)
+       od550aer (array, 2980 items)
        [nan
         nan
         ...
@@ -623,19 +621,20 @@ can print it and it will get you a nice overview):
     revision_date: None
     ts_type_src: daily
     stat_merge_pref_attr: None
+    data_revision: 20190311
     
     Data arrays
     .................
-    dtime (array, 4774 items)
+    dtime (array, 5088 items)
        [numpy.datetime64('2004-12-29T00:00:00.000000000')
         numpy.datetime64('2004-12-30T00:00:00.000000000')
         ...
-        numpy.datetime64('2018-01-22T00:00:00.000000000')
-        numpy.datetime64('2018-01-23T00:00:00.000000000')]
+        numpy.datetime64('2018-12-02T00:00:00.000000000')
+        numpy.datetime64('2018-12-03T00:00:00.000000000')]
     
     Pandas Series
     .................
-    od550aer (Series, 4774 items)
+    od550aer (Series, 5088 items)
 
 
 You can see that the ``StationData`` object contains both metadata (e.g.
@@ -773,13 +772,13 @@ method:
 
 .. parsed-literal::
 
-    count    2758.000000
-    mean        0.138543
-    std         0.104699
+    count    2980.000000
+    mean        0.138233
+    std         0.103543
     min         0.015534
-    25%         0.072014
-    50%         0.108543
-    75%         0.170734
+    25%         0.071486
+    50%         0.108491
+    75%         0.171623
     max         1.278507
     dtype: float64
 
@@ -808,7 +807,7 @@ Third, you may extract subsets using *fancy indexing*:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c76fd5da0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fcb55d828>
 
 
 
@@ -828,7 +827,7 @@ Or fourth, resample to another frequency:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c76ee02b0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fcb4cd550>
 
 
 
@@ -963,16 +962,16 @@ You may also be intersted in a climatology:
 
     1     0.090553
     2     0.130528
-    3     0.118712
-    4     0.134921
-    5     0.148511
-    6     0.166422
-    7     0.177145
-    8     0.191789
-    9     0.142857
-    10    0.117423
-    11    0.092444
-    12    0.083954
+    3     0.114070
+    4     0.132565
+    5     0.146914
+    6     0.164997
+    7     0.174380
+    8     0.192138
+    9     0.146022
+    10    0.115004
+    11    0.091344
+    12    0.080672
     dtype: float64
 
 
@@ -993,14 +992,14 @@ we created above:
     1     0.091438
     2     0.137147
     3     0.119908
-    4     0.140677
-    5     0.147466
-    6     0.166284
-    7     0.188155
-    8     0.182201
-    9     0.137702
-    10    0.113832
-    11    0.071302
+    4     0.136718
+    5     0.145819
+    6     0.164751
+    7     0.184243
+    8     0.183453
+    9     0.141699
+    10    0.111529
+    11    0.072294
     12    0.089056
     Name: mean, dtype: float64
 
@@ -1016,7 +1015,7 @@ we created above:
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f8c70ebf3c8>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f1fc2e35630>
 
 
 

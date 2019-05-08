@@ -673,7 +673,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
     
     
     def _set_invalid_flags_nan_col(self, colnum):
-        
+        raise NotImplementedError
         info = self.var_defs[colnum]
         flag_col = info.flag_col
         if flag_col is None:

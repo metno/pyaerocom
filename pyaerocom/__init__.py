@@ -91,12 +91,14 @@ from .griddeddata import GriddedData
 from .ungriddeddata import UngriddedData
 from .filter import Filter
 from .colocateddata import ColocatedData
+from .colocation_auto import ColocationSetup, Colocator
 from . import colocation
-from . import analysis
+#from . import analysis
 
 from . import io
 from . import plot
 from . import interactive
+from . import web
 
 
 #from .ungriddeddata import UngriddedData

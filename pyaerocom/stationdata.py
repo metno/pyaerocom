@@ -6,11 +6,13 @@ import xarray as xray
 from pyaerocom import VerticalProfile, logger, const
 
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
-                                  DataExtractionError, DataDimensionError)
+                                  DataExtractionError, DataDimensionError,
+                                  UnitConversionError, DataUnitError)
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
-                               resample_time_dataarray)
+                               resample_time_dataarray,
+                               unit_conversion_fac)
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -64,6 +66,93 @@ class StationData(StationMetaData):
             numpy array specifying default coordinates
         """
         return const.make_default_vert_grid()
+
+    def get_unit(self, var_name):
+        """Get unit of variable data
+
+        Parameters
+        ----------
+        var_name : str
+            name of variable
+
+        Returns
+        -------
+        str
+            unit of variable
+
+        Raises
+        ------
+        MetaDataError
+            if unit cannot be accessed for variable
+        """
+        try:
+            return str(self.var_info[var_name]['unit'])
+        except KeyError:
+            raise MetaDataError('Failed to access unit for variable {}'
+                                .format(var_name))
+
+    def check_unit(self, var_name, unit=None):
+        """Check if variable unit corresponds to a certain unit
+
+        Parameters
+        ----------
+        var_name : str
+            variable name for which unit is to be checked
+        unit : :obj:`str`, optional
+            unit to be checked, if None, AeroCom default unit is used
+
+        Raises
+        ------
+        MetaDataError
+            if unit information is not accessible for input variable name
+        UnitConversionError
+            if current unit cannot be converted into specified unit
+            (e.g. 1 vs m-1)
+        DataUnitError
+            if current unit is not equal to input unit but can be converted
+            (e.g. 1/Mm vs 1/m)
+        """
+        if unit is None:
+            unit = const.VARS[var_name].unit
+        if not unit_conversion_fac(self.get_unit(var_name), unit) == 1:
+            raise DataUnitError('Invalid unit {} (expected {})'
+                                .format())
+
+
+    def convert_unit(self, var_name, to_unit):
+        """Try to convert unit of data
+
+        Requires that unit of input variable is available in :attr:`var_info`
+
+        Note
+        ----
+        BETA version
+
+        Parameters
+        ----------
+        var_name : str
+            name of variable
+        to_unit : str
+            new unit
+
+        Raises
+        ------
+        MetaDataError
+            if variable unit cannot be accessed
+        UnitConversionError
+            if conversion failed
+        """
+        unit = self.get_unit(var_name)
+
+        conv_fac = unit_conversion_fac(unit, to_unit)
+        data = self[var_name]
+        data *= conv_fac
+        self[var_name] = data
+        self.var_info[var_name]['unit'] = to_unit
+        const.logger.info('Successfully converted unit of variable {} in {} '
+                          'from {} to {}'.format(var_name, self.station_name,
+                                                 unit, to_unit))
+
 
     def dist_other(self, other):
         """Distance to other station in km
@@ -232,7 +321,7 @@ class StationData(StationMetaData):
             if key in self.STANDARD_COORD_KEYS: # this has been handled above
                 continue
             if self[key] is None:
-                #logger.warning('No metadata available for key {}'.format(key))
+                logger.info('No metadata available for key {}'.format(key))
                 continue
 
             val = self[key]
@@ -651,6 +740,45 @@ class StationData(StationMetaData):
                                 .format(tp, const.GRID_IO.TS_TYPES))
         return tp
 
+    def remove_outliers(self, var_name, low=None, high=None):
+        """Remove outliers from one of the variable timeseries
+
+        Parameters
+        ----------
+        var_name : str
+            variable name
+        low : float
+            lower end of valid range for input variable. If None, then the
+            corresponding value from the default settings for this variable
+            are used (cf. minimum attribute of `available variables
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        high : float
+            upper end of valid range for input variable. If None, then the
+            corresponding value from the default settings for this variable
+            are used (cf. maximum attribute of `available variables
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        """
+        if any([x is None for x in (low, high)]):
+            info = const.VARS[var_name]
+            try:
+                self.check_unit(var_name)
+            except DataUnitError:
+                self.convert_unit(var_name, to_unit=info.unit)
+            if low is None:
+                low = info.minimum
+                logger.info('Setting {} outlier lower lim: {:.2f}'
+                            .format(var_name, low))
+            if high is None:
+                high = info.maximum
+                logger.info('Setting {} outlier upper lim: {:.2f}'
+                            .format(var_name, high))
+
+
+        d = self[var_name]
+        invalid_mask = np.logical_or(d<low, d>high)
+        d[invalid_mask] = np.nan
+        self[var_name] = d
+
     def interpolate_timeseries(self, var_name, freq, min_coverage_interp=0.3,
                                resample_how='mean', inplace=False):
         """Interpolate one variable timeseries to a certain frequency
@@ -979,7 +1107,7 @@ class StationData(StationMetaData):
         s = self.to_timeseries(var_name, freq, resample_how)
 
         ax.plot(s, label=lbl, **kwargs)
-        if add_overlaps:
+        if add_overlaps and var_name in self.overlap:
             so = self.overlap[var_name]
             try:
                 so = resample_timeseries(so, freq, how=resample_how)
@@ -1012,26 +1140,30 @@ class StationData(StationMetaData):
         s = "\n{}\n{}".format(head, len(head)*"-")
         arrays = ''
         series = ''
-
+    
         for k, v in self.items():
             if k[0] == '_':
                 continue
-            if isinstance(v, dict) and v:
-                s += "\n{} ({})".format(k, repr(v))
-                s = dict_to_str(v, s)
+            if isinstance(v, dict):
+                s += "\n{} ({}):".format(k, type(v).__name__)
+                if v:
+                    s = dict_to_str(v, s, indent=2)
+                else:
+                    s += ' <empty_dict>'
             elif isinstance(v, list):
-                s += "\n{} (list, {} items)".format(k, len(v))
-                s += list_to_shortstr(v)
-            elif isinstance(v, np.ndarray) and v.ndim==1:
-                arrays += "\n{} (array, {} items)".format(k, len(v))
-                arrays += list_to_shortstr(v)
+                s += list_to_shortstr(v, name=k)
             elif isinstance(v, np.ndarray):
-                arrays += "\n{} (array, shape {})".format(k, v.shape)
-                arrays += "\n{}".format(v)
+                if v.ndim==1:
+                    arrays += list_to_shortstr(v, name=k)
+                else:
+                    arrays += "\n{} (ndarray, shape {})".format(k, v.shape)
+                    arrays += "\n{}".format(v)
             elif isinstance(v, pd.Series):
                 series += "\n{} (Series, {} items)".format(k, len(v))
             else:
-                s += "\n%s: %s" %(k,v)
+                if v == '':
+                    v = '<empty_str>'
+                s += "\n{}: {}".format(k,v)
         if arrays:
             s += '\n\nData arrays\n.................'
             s += arrays

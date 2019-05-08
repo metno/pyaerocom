@@ -23,10 +23,16 @@ Module containing pyaerocom custom exceptions
 class AerocomConnectionError(IOError):
     pass
 
+class AltitudeAccessError(ValueError):
+    pass
+
 class ColocationError(ValueError):
     pass
 
 class CoordinateError(ValueError):
+    pass
+
+class CoordinateNotFoundError(CoordinateError):
     pass
 
 class CoordinateNameError(CoordinateError):
@@ -90,6 +96,9 @@ class TimeMatchError(AttributeError):
     pass
 
 class TemporalResolutionError(ValueError):
+    pass
+
+class UnitConversionError(ValueError):
     pass
 
 class VarNotAvailableError(DataCoverageError):

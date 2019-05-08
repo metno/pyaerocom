@@ -40,7 +40,7 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "monthly" :  "days"}
 
 def load_cube_custom(file, var_name=None, grid_io=None,
-                     file_convention=None):
+                     file_convention=None, perform_checks=True):
     """Load netcdf file as iris.Cube
     
     Parameters
@@ -54,7 +54,10 @@ def load_cube_custom(file, var_name=None, grid_io=None,
         information provided in the filename
     file_convention : :obj:`FileConventionRead`, optional
         Aerocom file convention. If provided, then the data content (e.g. 
-        dimension definitions) is tested against definition in file name.
+        dimension definitions) is tested against definition in file name
+    perform_checks : bool
+        if True, additional quality checks (and corrections) are (attempted to
+        be) performed.
     
     Returns
     -------
@@ -64,6 +67,7 @@ def load_cube_custom(file, var_name=None, grid_io=None,
     if grid_io is None:
         grid_io = const.GRID_IO
     cube_list = iris.load(file)
+    
     _num = len(cube_list)
     if _num != 1:
         if _num == 0:
@@ -71,8 +75,7 @@ def load_cube_custom(file, var_name=None, grid_io=None,
                               .format(file))
         else:
             logger.warning('File {} contains more than one data '
-                           'field: {}'.format(file, 
-                                              cube_list))
+                           'field: {}'.format(file, cube_list))
     cube = None
     if var_name is None:
         if not len(cube_list) == 1:
@@ -87,49 +90,54 @@ def load_cube_custom(file, var_name=None, grid_io=None,
         for c in cube_list:
             if c.var_name == var_name:
                 cube = c
+                break
     if cube is None:
         raise NetcdfError('Variable {} not available in file {}'.format(var_name, 
                                                                         file))
-    if file_convention is None:
-        try:
-            file_convention = FileConventionRead(from_file=file)
-        except:
-            pass
-    
-    if isinstance(file_convention, FileConventionRead):
-        finfo = file_convention.get_info_from_file(file)
-        if grid_io.CHECK_TIME_FILENAME:
-            if not check_time_coord(cube, ts_type=finfo["ts_type"], 
-                                    year=finfo["year"]):
-            
-                msg = ("Invalid time dimension coordinate in file {}. " 
-                       .format(os.path.basename(file)))
-                logger.warning(msg)
-                if grid_io.CORRECT_TIME_FILENAME:
-                    logger.warning("Attempting to correct time coordinate "
-                                   "using information in file name")
-                    cube = correct_time_coord(cube, 
-                                              ts_type=finfo["ts_type"],
-                                              year=finfo["year"]) 
-                if const.WRITE_FILEIO_ERR_LOG:
-                    add_file_to_log(file, 'Invalid time dimension')
-        else:
-            logger.warning("WARNING: Automatic check of time "
-                           "array in netCDF files is deactivated. "
-                           "This may cause problems in case "
-                           "the time dimension is not CF conform.")
-    
-    if grid_io.CHECK_DIM_COORDS:
-        cube = check_dim_coords_cube(cube)
-    
-    try:
-        if grid_io.DEL_TIME_BOUNDS:
-            cube.coord("time").bounds = None
-    except:
-        logger.warning("Failed to access time coordinate in GriddedData")
+    if perform_checks:
+        if file_convention is None:
+            try:
+                file_convention = FileConventionRead(from_file=file)
+            except:
+                pass
         
-    if grid_io.SHIFT_LONS:
-        cube = check_and_regrid_lons_cube(cube)
+        if isinstance(file_convention, FileConventionRead):
+            finfo = file_convention.get_info_from_file(file)
+            if grid_io.CHECK_TIME_FILENAME:
+                if not check_time_coord(cube, ts_type=finfo["ts_type"], 
+                                        year=finfo["year"]):
+                
+                    msg = ("Invalid time dimension coordinate in file {}. " 
+                           .format(os.path.basename(file)))
+                    logger.warning(msg)
+                    if grid_io.CORRECT_TIME_FILENAME:
+                        logger.warning("Attempting to correct time coordinate "
+                                       "using information in file name")
+                        try:
+                            cube = correct_time_coord(cube, 
+                                                      ts_type=finfo["ts_type"],
+                                                      year=finfo["year"]) 
+                        except:
+                            pass
+                    if const.WRITE_FILEIO_ERR_LOG:
+                        add_file_to_log(file, 'Invalid time dimension')
+            else:
+                logger.warning("WARNING: Automatic check of time "
+                               "array in netCDF files is deactivated. "
+                               "This may cause problems in case "
+                               "the time dimension is not CF conform.")
+        
+        if grid_io.CHECK_DIM_COORDS:
+            cube = check_dim_coords_cube(cube)
+        
+        try:
+            if grid_io.DEL_TIME_BOUNDS:
+                cube.coord("time").bounds = None
+        except:
+            logger.warning("Failed to access time coordinate in GriddedData")
+            
+        if grid_io.SHIFT_LONS:
+            cube = check_and_regrid_lons_cube(cube)
     return cube
 
 def check_and_regrid_lons_cube(cube):

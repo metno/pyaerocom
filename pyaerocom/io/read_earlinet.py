@@ -180,7 +180,7 @@ class ReadEarlinet(ReadUngriddedBase):
         remove_outliers : bool
             if True, outliers are removed for each variable using the
             `minimum` and `maximum` attributes for that variable (accessed 
-            via pyaerocom.const.VAR_PARAM[var_name]).
+            via pyaerocom.const.VARS[var_name]).
         
         Returns
         -------
@@ -358,7 +358,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 
                 alt_vals = np.float64(alt_data)
                 alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
-                to_alt_unit = const.VAR_PARAM['alt'].unit
+                to_alt_unit = const.VARS['alt'].unit
                 if not alt_unit == to_alt_unit:
                     try:
                         alt_unit_fac = unit_conversion_fac(alt_unit, 
@@ -389,7 +389,7 @@ class ReadEarlinet(ReadUngriddedBase):
                                           var_name=var,
                                           data_err=err,
                                           var_unit=unit,
-                                          altitude_unit=unit)   
+                                          altitude_unit=alt_unit)   
                 # Write everything into profile
                 data_out[var] = profile
                 
@@ -422,7 +422,7 @@ class ReadEarlinet(ReadUngriddedBase):
             in the list is used
         read_err : bool
             if True, uncertainty data is also read (where available). If 
-            unspecified (None), then the default is used (cf. :att:`READ_ERR`)
+            unspecified (None), then the default is used (cf. :attr:`READ_ERR`)
             
         Returns
         -------
@@ -649,7 +649,7 @@ class ReadEarlinet(ReadUngriddedBase):
     
 if __name__=="__main__":
     import matplotlib.pyplot as plt
-    import pyaerocom as pya
+
     
     plt.close('all')
     read = ReadEarlinet()

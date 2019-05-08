@@ -40,11 +40,11 @@ def browse_database(model_or_obs, verbose=False):
         change_verbosity('debug')
     browser = AerocomBrowser()
     matches = browser.find_matches(model_or_obs)
-    if len(matches) is 0:
+    if len(matches) == 0:
         print('No match could be found for {}'.format(model_or_obs))
         return
     elif len(matches) > 20:
-        print('Found more than 20 matches for based on input string {}:\n\n'
+        print('Found more than 20 matches for input pattern {}:\n\n'
               'Matches: {}\n\n'
               'To receive more detailed information, please specify search ID '
               'more accurately'.format(model_or_obs, matches))

@@ -69,7 +69,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
                 const.AERONET_SUN_V3L2_AOD_DAILY_NAME  :    'daily'}
     
     #: default variables for read method
-    DEFAULT_VARS = ['od550aer']
+    DEFAULT_VARS = ['od550aer', 'ang4487aer']
     
     #: value corresponding to invalid measurement
     #NAN_VAL = -9999.
@@ -261,44 +261,18 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
-    import os
     plt.close('all')
     
+    from pyaerocom.io import ReadUngridded
+    d1 = ReadUngridded().read('AeronetSunV3Lev2.daily',
+                              ['ang4487aer', 'od550aer'])
+    s1 = d1.to_station_data('Palgrunden')
+    print(s1)
+    
+    s1.od550aer.plot()
+    
     read = ReadAeronetSunV3()
-    read.get_file_list()
-    #read.verbosity_level = 'debug'
+    read.read_station('Palgrunden')
+    #data = read.read(['od550aer', 'ang4487aer'])
     
-    #data = read.read()
-    
-# =============================================================================
-#     first_ten = read.read(last_file=10)
-#     
-#     files_berlin = read.find_in_file_list('*Berlin*')
-#     berlin = read.read_file(files_berlin[0],
-#                             vars_to_retrieve=['ang4487aer_calc',
-#                                               'ang4487aer'])
-#     print(berlin)    
-#     
-# =============================================================================
-    
-    files = []
-    all_data = []
-    
-    for file in read.files:
-        if 'cart_site' in file.lower():
-            files.append(file)
-            data = read.read_file(file, 'od550aer')
-            all_data.append(data)
-            fig, ax = plt.subplots(1,1, figsize=(18, 8))
-            data.plot_variable('od550aer', ax=ax)
-            ax.set_title(os.path.basename(file), fontsize=12)
-            ax.set_title(data.get_meta()['station_name'])
-    print(files)
-    
-    #ud = read.read('od550aer')
-    
-
-            
-    
-    
-    
+    #stat = data.to_station_data('Palgrunden')

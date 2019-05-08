@@ -147,6 +147,9 @@ class Filter(BrowseDict):
                        'class. Note that this does not yet include potential '
                        'cropping in the altitude dimension. Coming soon...')
         return data_obj.crop(region=self._region)
+    
+    def _apply_colocated(self, data_obj):
+        raise NotImplementedError
         
     def apply(self, data_obj):
         """Apply filter to data object

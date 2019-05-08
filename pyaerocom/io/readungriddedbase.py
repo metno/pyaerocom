@@ -468,7 +468,7 @@ class ReadUngriddedBase(abc.ABC):
             min / max interval (list or tuple) that specifies valid range 
             for the variable. For each variable that is not explicitely defined
             here, the default minimum / maximum value is used (accessed via
-            ``pyaerocom.const.VAR_PARAM[var_name]``)
+            ``pyaerocom.const.VARS[var_name]``)
         """
         for var in vars_to_retrieve:
             if var in data:
@@ -476,7 +476,7 @@ class ReadUngriddedBase(abc.ABC):
                     rng = valid_rng_vars[var]
                     low, high =  rng[0], rng[1]
                 else:
-                    var_info = const.VAR_PARAM[var]
+                    var_info = const.VARS[var]
                     low, high = var_info['minimum'], var_info['maximum']
                 vals = data[var]
                 mask = np.logical_or(vals < low, vals > high)
@@ -523,6 +523,7 @@ class ReadUngriddedBase(abc.ABC):
             list containing retrieved file locations
         
         Raises
+        ------
         IOError
             if no files can be found
         """
@@ -571,7 +572,9 @@ class ReadUngriddedBase(abc.ABC):
     def read_first_file(self, **kwargs):
         """Read first file returned from :func:`get_file_list`
         
-        This method may be used for test purposes. It calls :func:`get
+        Note
+        ----
+        This method may be used for test purposes. 
         
         Parameters
         ----------

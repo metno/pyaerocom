@@ -10,12 +10,13 @@ from pyaerocom.variable import VarNameInfo
 import iris
 from cf_units import Unit
 from scipy.stats import pearsonr, spearmanr, kendalltau
+
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
 ### OTHER FUNCTIONS
-
-def calc_statistics(data, ref_data, lowlim=None, highlim=None):
+def calc_statistics(data, ref_data, lowlim=None, highlim=None,
+                    min_num_valid=5):
     """Calc statistical properties from two data arrays
     
     Calculates the following statistical properties based on the two provided
@@ -23,17 +24,18 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None):
     provided after the arrows):
         
         - Mean value of both arrays -> refdata_mean, data_mean
+        - Standard deviation of both arrays -> refdata_std, data_std
         - RMS (Root mean square) -> rms
-        - NMB (Normalised mean bias), in percent-> nmb
-        - MNMB (Modified normalised mean bias), in percent -> mnmb
-        - FGE (Fractional gross error), in percent -> fge
+        - NMB (Normalised mean bias) -> nmb
+        - MNMB (Modified normalised mean bias) -> mnmb
+        - FGE (Fractional gross error) -> fge
         - R (Pearson correlation coefficient) -> R
         - R_spearman (Spearman corr. coeff) -> R_spearman
         
     Note
     ----
     Nans are removed from the input arrays, information about no. of removed
-    points can be inferred from keys `totnum` and `success` in return dict.
+    points can be inferred from keys `totnum` and `num_valid` in return dict.
     
     Parameters
     ----------
@@ -47,6 +49,9 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None):
         where either ``data`` or ``ref_data`` is smaller than 0 are removed)
     highlim : float
         upper end of considered value range
+    min_num_valid : int
+        minimum number of valid measurements required to compute statistical
+        parameters.
         
     Returns
     -------
@@ -66,37 +71,59 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None):
         raise ValueError('Invalid input. Data arrays must be one dimensional')
         
     result = {}
+    
     mask = ~np.isnan(ref_data) * ~np.isnan(data)
-    
-    data, ref_data = data[mask], ref_data[mask]
-    if lowlim is not None:
-        valid = np.logical_and(data>lowlim, ref_data>lowlim)
-        data = data[valid]
-        ref_data = ref_data[valid]
-    if highlim is not None:
-        valid = np.logical_and(data<highlim, ref_data<highlim)
-        data = data[valid]
-        ref_data = ref_data[valid]
-    
-    difference = data - ref_data
     num_points = sum(mask)
     
-    result['refdata_mean'] = np.mean(ref_data)
-    result['data_mean'] = np.mean(data)
-    result['rms'] = np.sqrt(np.sum(np.power(difference, 2)) / num_points)
-    result['nmb'] = np.sum(difference) / np.sum(ref_data)*100.
-    tmp = difference / (data + ref_data)
-    
-    result['mnmb'] = 2. / num_points * np.sum(tmp) * 100.
-    result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) #* 100.
-    #result['fge'] = 2. / np.sum(np.abs(tmp)) * 100.
-    
-    result['R'] = pearsonr(data, ref_data)[0]
-    result['R_spearman'] = spearmanr(data, ref_data)[0]
-    result['R_kendall'] = kendalltau(data, ref_data)[0]
     result['totnum'] = len(mask)
-    result['success'] = num_points
+    result['num_valid'] = num_points
+    result['refdata_mean'] = np.nanmean(ref_data)
+    result['refdata_std'] = np.nanstd(ref_data)
+    result['data_mean'] = np.nanmean(data)
+    result['data_std'] = np.nanstd(data)
     
+    if not num_points > min_num_valid:
+        data, ref_data = data[mask], ref_data[mask]
+        if lowlim is not None:
+            valid = np.logical_and(data>lowlim, ref_data>lowlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
+        if highlim is not None:
+            valid = np.logical_and(data<highlim, ref_data<highlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
+        
+        result['rms'] = np.nan
+        result['nmb'] = np.nan
+        result['mnmb'] = np.nan
+        result['fge'] = np.nan
+        result['R'] = np.nan
+        result['R_spearman'] = np.nan
+    else:
+        data, ref_data = data[mask], ref_data[mask]
+        if lowlim is not None:
+            valid = np.logical_and(data>lowlim, ref_data>lowlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
+        if highlim is not None:
+            valid = np.logical_and(data<highlim, ref_data<highlim)
+            data = data[valid]
+            ref_data = ref_data[valid]
+        
+        difference = data - ref_data
+        
+        result['rms'] = np.sqrt(np.sum(np.power(difference, 2)) / num_points)
+        result['nmb'] = np.sum(difference) / np.sum(ref_data) #*100.
+        tmp = difference / (data + ref_data)
+        
+        result['mnmb'] = 2. / num_points * np.sum(tmp)# * 100.
+        result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) #* 100.
+        #result['fge'] = 2. / np.sum(np.abs(tmp)) * 100.
+        
+        result['R'] = pearsonr(data, ref_data)[0]
+        result['R_spearman'] = spearmanr(data, ref_data)[0]
+        result['R_kendall'] = kendalltau(data, ref_data)[0]
+     
     return result
 
 def closest_index(num_array, value):
@@ -422,7 +449,7 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     
     try:
         # now replace all values with NaNs that are below the global lower threshold
-        below_thresh = result < const.VAR_PARAM[var_name]['minimum']
+        below_thresh = result < const.VARS[var_name]['minimum']
         result[below_thresh] = np.nan
     except:
         logger.warning("Could not access lower limit from global settings for "
@@ -446,7 +473,7 @@ def compute_scatc550dryaer(data):
         modified data object containing new column scatc550dryaer
     
     """
-    rh_max= const.VAR_PARAM['scatc550dryaer'].dry_rh_max
+    rh_max= const.VARS['scatc550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='scatc550aer', 
                                rh_colname='scatcrh', 
                                rh_max_percent=rh_max)
@@ -467,7 +494,7 @@ def compute_absc550dryaer(data):
         modified data object containing new column scatc550dryaer
     
     """
-    rh_max= const.VAR_PARAM['absc550dryaer'].dry_rh_max
+    rh_max= const.VARS['absc550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='absc550aer', 
                                rh_colname='abscrh', 
                                rh_max_percent=rh_max)

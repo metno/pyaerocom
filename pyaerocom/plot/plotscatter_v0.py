@@ -40,7 +40,7 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
     var_to_run = opts['VariablesToRun'][0]
     
     # global settings (including plot settings) for variable
-    VAR_PARAM = const.VAR_PARAM[var_to_run]
+    VARS = const.VARS[var_to_run]
     
     obs_network_name = opts['ObsNetworkName'][0]
     obs_data_as_series = obs_data.to_timeseries(start_date=opts['StartDate'], 
@@ -81,7 +81,7 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
         df_points = df_points.append(df_time_temp)
         # df_time_temp[model_name] = model_data_as_series[i][var_to_run]*1.E3
         df_time_temp[model_name] = (model_data_as_series[i][var_to_run] *
-                                    VAR_PARAM['scat_scale_factor'])
+                                    VARS['scat_scale_factor'])
         # df_time has now all time steps where either one of the obs or model data have data
         #
         # df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))
@@ -136,18 +136,18 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
     fge = 2./np.sum(np.abs(tmp)) * 100.
 
     df_time.plot.scatter(obs_network_name, model_name,
-                         loglog=VAR_PARAM['scat_loglog'],
+                         loglog=VARS['scat_loglog'],
                          marker='+',
                          color='black')
     # plot the 1 by 1 line
-    plt.plot(VAR_PARAM['scat_xlim'], 
-             VAR_PARAM['scat_ylim'], '-', color='grey')
+    plt.plot(VARS['scat_xlim'], 
+             VARS['scat_ylim'], '-', color='grey')
     plt.axes().set_aspect('equal')
 
-    plt.xlim(VAR_PARAM['scat_xlim'])
-    plt.ylim(VAR_PARAM['scat_ylim'])
+    plt.xlim(VARS['scat_xlim'])
+    plt.ylim(VARS['scat_ylim'])
     xypos_index = 0
-    var_str = var_to_run + VAR_PARAM.unit_str
+    var_str = var_to_run + VARS.unit_str
     plt.axes().annotate("{} #: {} # st: {}".format(var_str, 
                         len(df_time), station_no),
                         xy=xypos[xypos_index], xycoords='axes fraction', 

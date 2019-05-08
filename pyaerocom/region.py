@@ -138,6 +138,63 @@ class Region(BrowseDict):
         if self.lat_range_plot is None:
             self.lat_range_plot = self.lat_range
     
+    @property
+    def center_coordinate(self) -> tuple:
+        """Center coordinate of this region"""
+        latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0])/2
+        lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0])/2
+        return (latc, lonc)
+    
+    def distance_to_center(self, lat, lon):
+        """Compute distance of input coordinate to center of this region
+        
+        Parameters
+        ----------
+        lat : float
+            latitude of coordinate
+        lon : float
+            longitude of coordinate
+        
+        Returns
+        -------
+        float
+            distance in km
+        """
+        from pyaerocom.geodesy import calc_distance
+        cc = self.center_coordinate
+        return calc_distance(lat0=cc[0], 
+                             lon0=cc[1], 
+                             lat1=lat, 
+                             lon1=lon)
+        
+    def contains_coordinate(self, lat, lon):
+        """Check if input lat/lon coordinate is contained in region
+        
+        Parameters
+        ----------
+        lat : float
+            latitude of coordinate
+        lon : float
+            longitude of coordinate
+        
+        
+        Returns
+        -------
+        bool
+            True if coordinate is contained in this region, False if not
+        """
+        lat_ok = self.lat_range[0] <= lat <= self.lat_range[1]
+        lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
+        return lat_ok * lon_ok
+    
+    def __contains__(self, val: tuple) ->  bool:
+        if not isinstance(val, tuple):
+            raise TypeError('Invalid input, need tuple')
+        if not len(val) == 2:
+            raise ValueError('Invalid input: coordinate must contain 2 '
+                             'elements (lat, lon)')
+        return self.contains_coordinate(lat=val[0], lon=val[1])
+        
     def __repr__(self):
        return ("Region %s %s" %(self.name, super(Region, self).__repr__()))
    
@@ -206,14 +263,69 @@ def get_all_default_regions():
         
     return all_regions
    
+def get_regions_coord(lat, lon) -> list:
+    """Get all regions that contain input coordinate
+    
+    Parameters
+    ----------
+    lat : float
+        latitude of coordinate
+    lon : float
+        longitude of coordinate
+    
+    Returns
+    -------
+    list
+        list of regions that contain this coordinate
+    """
+    regs = []
+    for rname, reg in get_all_default_regions().items():
+        if rname == 'WORLD':
+            continue
+        if reg.contains_coordinate(lat, lon):
+            regs.append(rname)
+    if len(regs) == 0:
+        regs.append('WORLD')
+    return regs
+
+def find_closest_region_coord(lat, lon):
+    """Find region that has it's center closest to input coordinate
+    
+    Parameters
+    ----------
+    lat : float
+        latitude of coordinate
+    lon : float
+        longitude of coordinate
+    
+    Returns
+    -------
+    str
+        name of region
+    """
+    regs = get_regions_coord(lat, lon)
+    
+    if len(regs) == 1:
+        return regs[0]
+    else:
+        min_dist = 1e6
+        best = None
+        for rname in regs:
+            r = Region(rname)
+            d = r.distance_to_center(lat, lon)
+            if d < min_dist:
+                min_dist = d
+                best=rname
+        return best
+                
 if __name__=="__main__":
 
     r = Region()
     r.import_default("EUROPE")
-    
-    regions = get_all_default_regions()
-    for region_id, region in regions.items():
-        print(region)
         
     all_ids = get_all_default_region_ids()
     
+    lat, lon = 89, 30
+    reg = find_closest_region_coord(lat, lon)
+    print(reg)
+        

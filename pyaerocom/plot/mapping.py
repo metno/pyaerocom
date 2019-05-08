@@ -4,11 +4,10 @@
 This module contains plot routines for Aerocom data. So far, this includes a
 low level, very flexible plot method
 """
-from copy import copy
-from matplotlib.pyplot import figure
+from matplotlib.pyplot import figure, get_cmap
 from pandas import to_datetime
 import numpy as np
-from matplotlib.colors import BoundaryNorm, LogNorm
+from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -25,6 +24,36 @@ from pyaerocom.mathutils import exponent
 from pyaerocom.region import Region
 
 MPL_PARAMS = custom_mpl()
+
+def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
+    """Get colormap using pyAeroCom color scheme
+    
+    Parameters
+    ----------
+    color_theme : :obj:`ColorTheme`, optional
+        instance of pyaerocom color theme. If None, the default schems is used
+    vmin : :obj:`float`, optional
+        lower end of value range
+    vmax : :obj:`float`, optional
+        upper end of value range
+    
+    Returns
+    -------
+    colormap
+    """
+    if color_theme is None:
+        color_theme=COLOR_THEME
+    if vmin is not None and vmax is not None and vmin < 0 and vmax > 0:
+        cmap = get_cmap(color_theme.cmap_map_div)
+        if color_theme.cmap_map_div_shifted:
+            try:
+                from geonum.helpers import shifted_color_map
+                cmap = shifted_color_map(vmin, vmax, cmap)
+            except:
+                logger.warning('cannot shift colormap, need geonum installation')
+        return cmap
+    return get_cmap(color_theme.cmap_map)
+    
 
 def set_map_ticks(ax, xticks=None, yticks=None):
     """Set or update ticks in instance of GeoAxes object (cartopy)
@@ -159,12 +188,12 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
     
     return ax
 
-def plot_griddeddata_on_map(data, lons, lats, var_name=None, 
+def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
                             xlim=(-180, 180), ylim=(-90, 90), vmin=None, 
                             vmax=None, add_zero=False, c_under=None, 
                             c_over=None, log_scale=True, discrete_norm=True, 
                             cbar_levels=None, cbar_ticks=None, 
-                            color_theme=COLOR_THEME, **kwargs):
+                            cmap=None, color_theme=COLOR_THEME, **kwargs):
     """Make a plot of gridded data onto a map
     
     Note
@@ -208,7 +237,6 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None,
         ticks of colorbar levels. Will be computed automatically, if None 
         (and applicable)
     
-    
     Returns
     -------
     fig
@@ -219,7 +247,6 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None,
     kwargs['contains_cbar'] = True
     ax = init_map(xlim, ylim, color_theme=color_theme, **kwargs)
     fig = ax.figure
-    
     
     if not isinstance(data, np.ndarray) or not data.ndim == 2:
         raise IOError("Need 2D numpy array")
@@ -236,28 +263,50 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None,
         ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
         print(repr(e))
     X, Y = meshgrid(lons, lats)
-    cmap = copy(color_theme.cmap_map)
+    dmin = data.min()
+    dmax = data.max()
     if vmin is None:
-        vmin = data.min()
+        vmin = dmin
+    else:
+        if vmin < 0 and log_scale:
+            log_scale=False
     if vmax is None:
-        vmax = data.max()
-            
+        vmax = dmax
+    
     bounds = None
     if cbar_levels: #user provided levels of colorbar explicitely
-        bounds = cbar_levels
+        if vmin is not None or vmax is not None:
+            raise ValueError('Please provide either vmin/vmax OR cbar_levels')
+        bounds = list(cbar_levels)
+        low, high = bounds[0], bounds[-1]
+        if add_zero and low > 0:
+            bounds.insert(0, 0) # insert zero bound
+        if cmap is None or isinstance(cmap, str):
+            cmap = get_cmap_maps_aerocom(color_theme, low, high)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
     else:
-        if log_scale and discrete_norm:
-            #to compute upper range of colour range, round up vmax
-            exp = float(exponent(vmax) - 1)
-            vmax_colors = ceil(vmax / 10**exp)*10**exp
-            bounds = calc_pseudolog_cmaplevels(vmin=vmin, vmax=vmax_colors,
-                                               add_zero=add_zero)
-            norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
-        elif log_scale:
-            norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
+        if log_scale: # no negative values allowed
+            if vmin < 0:
+                vmin = data[data>0].min()
+                if c_under is None: #special case, set c_under to indicate that there is values below 0
+                    c_under = 'r'
+            if cmap is None or isinstance(cmap, str):
+                cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
+            if discrete_norm:
+                #to compute upper range of colour range, round up vmax
+                exp = float(exponent(vmax) - 1)
+                vmax_colors = ceil(vmax / 10**exp)*10**exp
+                bounds = calc_pseudolog_cmaplevels(vmin=vmin, vmax=vmax_colors,
+                                                   add_zero=add_zero)
+                norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
+        
+            else:
+                print(vmin, vmax)
+                norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
         else: 
-            norm = None
+            if cmap is None or isinstance(cmap, str):
+                cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
+            norm = Normalize(vmin=vmin, vmax=vmax)
     cbar_extend = "neither"
     if c_under is not None:
         cmap.set_under(c_under)
@@ -274,16 +323,26 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None,
             cbar_extend = "max"
       
     disp = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm)
-    
-    min_mag = -exponent(bounds[1])
-    min_mag = 0 if min_mag < 0 else min_mag
+# =============================================================================
+#     fmt = None
+#     if bounds is not None:
+#         print(bounds)
+#         min_mag = -exponent(bounds[1])
+#         min_mag = 0 if min_mag < 0 else min_mag
+#         print(min_mag)
+#         #fmt = "%." + str(min_mag) + "f"
+# =============================================================================
 
     cbar = fig.colorbar(disp, cmap=cmap, norm=norm, boundaries=bounds, 
-                        extend=cbar_extend, cax=ax_cbar,
-                        format="%." + str(min_mag) + "f")
-
+                        extend=cbar_extend, cax=ax_cbar)#, format=fmt)
+    
     if var_name is not None:
-        cbar.set_label(var_name)
+        var_str = var_name# + VARS.unit_str
+        if unit is not None:
+            if not str(unit) in ['1', 'no_unit']:
+                var_str += ' [{}]'.format(unit)
+        
+        cbar.set_label(var_str)
     
     if cbar_ticks:
         cbar.set_ticks(cbar_ticks)
@@ -408,23 +467,5 @@ if __name__ == "__main__":
     read = pyaerocom.io.ReadGridded('MODIS6.aqua')
 
     data = read.read_var("od550aer")
-    data.quickplot_map(800)
-    
-    fig1 = plot_map(data[800])
-
-    run_old=False
-    if run_old:
-        read = pyaerocom.io.ReadGridded("ECMWF_OSUITE", start="2010",
-                                          stop="2019")
-        
-        data = read.read_var("od550aer")
-        fig0 = data.quickplot_map(fix_aspect=False)
-        fig1 = data.quickplot_map(fix_aspect=True, color_theme="light")
-        
-        figs = []
-        for region in pyaerocom.region.get_all_default_regions():
-            crp = data.crop(region=region)
-            figs.append(plot_map_aerocom(crp[0]))
-        
-        
+    data.quickplot_map(800, cbar_levels=[0.1,1,3,10], add_zero=True)
     

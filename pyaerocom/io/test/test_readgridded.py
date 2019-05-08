@@ -22,11 +22,12 @@ def dataset():
     
 @lustre_unavail    
 def test_variables(dataset):
-    assert len(dataset.vars) == 12, 'Mismatch in number of available variables'
+    assert len(dataset.vars) == 15, 'Mismatch in number of available variables'
     npt.assert_array_equal(dataset.vars,
-                           ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 
-                            'od550bc', 'od550dust', 'od550oa', 'od550so4', 
-                            'od550ss', 'od865aer', 'sconcpm10', 'sconcpm25'])
+                           ['ang4487aer', 'bscatc532aerboa', 'bscatc532aertoa', 
+                            'ec532aer', 'od440aer', 'od550aer', 'od550bc', 
+                            'od550dust', 'od550oa', 'od550so4', 'od550ss', 
+                            'od865aer', 'sconcpm10', 'sconcpm25', 'z'])
 @lustre_unavail    
 def test_years_available(dataset):
     npt.assert_array_equal(dataset.years,
@@ -44,7 +45,7 @@ def test_meta(dataset):
                             dataset._start, 
                             dataset._stop,
                             list(dataset.get_years_to_load())],
-                            [116,
+                            [124,
                              '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed',
                              Timestamp("1-1-2003"), 
                              Timestamp("31-12-2007"),
@@ -70,9 +71,7 @@ def test_read_var(dataset):
 @lustre_unavail
 def test_read_vars(dataset):
     d = dataset.read(['od440aer', 'od550aer', 'od865aer'], 
-                           ts_type="daily")
-    
-    
+                     ts_type="daily")
     vals = [len(d),
             sum(d[0].shape),
             sum(d[1].shape),
@@ -89,3 +88,4 @@ if __name__=="__main__":
     ds = make_dataset()
     test_meta(ds)
     test_variables(ds)
+    test_read_vars(ds)

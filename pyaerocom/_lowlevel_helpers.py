@@ -63,6 +63,7 @@ def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):
         p.join()  
     
     return OK   
+
 def _is_interactive():
     import __main__ as main
     return not hasattr(main, '__file__')
@@ -73,25 +74,67 @@ def chk_make_subdir(base, name):
     if not os.path.exists(d):
         os.mkdir(d)
     return d
+
+def check_dirs_exist(*dirs, **add_dirs):
+    for d in dirs:
+        if not os.path.exists(d):
+            print('Creating dir: {}'.format(d))
+            os.mkdir(d)
+    for k, d in add_dirs.items():
+        if not os.path.exists(d):
+            os.mkdir(d)
+            print('Creating dir: {} ({})'.format(d, k))
         
-def list_to_shortstr(lst, indent=3):
+
+def list_to_shortstr(lst, indent=0, name=None):
     """Custom function to convert a list into a short string representation"""
+    def _short_lst_fmt(lin):
+        lout = []
+        for val in lin:
+            try:
+                ndigits = -1*np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
+                lout.append('{:.{}f}'.format(val, ndigits))
+            except:
+                lout.append(val)
+        return lout
+    if name is None:
+        name_str = '{} ({} items): '.format(type(lst).__name__, len(lst))
+    else:
+        name_str = '{} ({}, {} items): '.format(name, type(lst).__name__, len(lst))
+    indentstr = indent*" "
     if len(lst) == 0:
-        return "\n" + indent*" " + "[]\n"
-    elif len(lst) == 1:
-        return "\n" + indent*" " + "[%s]\n" %repr(lst[0])
-    s = "\n" + indent*" " + "[%s\n" %repr(lst[0])
-    if len(lst) > 4:
-        s += (indent+1)*" " + "%s\n" %repr(lst[1])
-        s += (indent+1)*" " + "...\n"
-        s += (indent+1)*" " + "%s\n" %repr(lst[-2])
-    else: 
-        for item in lst[1:-1]:
-            s += (indent+1)*" " + "%s" %repr(item)
-    s += (indent+1)*" " + "%s]\n" %repr(lst[-1])
+        return "\n{}{}[]".format(indentstr, name_str)
+    elif len(lst) < 6:
+        lfmt = _short_lst_fmt(lst)
+        return "\n{}{}{}".format(indentstr, name_str, lfmt)
+    else: #first 2 and last 2 items
+        lfmt= _short_lst_fmt([lst[0], lst[1], lst[-2], lst[-1]])
+        s = ("\n{}{}[{}, {}, ..., {}, {}]"
+             .format(indentstr, name_str, lfmt[0], lfmt[1], lfmt[2], lfmt[3]))
+    
     return s
-        
-def dict_to_str(dictionary, s="", indent=3):
+
+def sort_dict_by_name(d):
+    """Sort entries of input dictionary by their names and return ordered
+    
+    Parameters
+    ----------
+    d : dict
+        input dictionary
+    
+    Returns
+    -------
+    OrderedDict
+        sorted and ordered dictionary
+    """
+    from collections import OrderedDict as od
+    s = od()
+    sorted_keys = sorted(d)
+    for k in sorted_keys:
+        s[k] = d[k]
+    return s
+
+def dict_to_str(dictionary, s="", indent=0, ignore_null=False):
     """Custom function to convert dictionary into string (e.g. for print)
     
     Parameters
@@ -102,6 +145,8 @@ def dict_to_str(dictionary, s="", indent=3):
         the input string
     indent : int
         indent of dictionary content
+    ignore_null : bool
+        if True, None entries in dictionary are ignored
     
     Returns
     -------
@@ -121,17 +166,17 @@ def dict_to_str(dictionary, s="", indent=3):
     
     """
     for k, v in dictionary.items():
-        if isinstance(v, dict):
-            s += "\n" + indent*" " + "{} ({})".format(k, type(v))
-            s = dict_to_str(v, s, indent+1)
+        if ignore_null and v is None:
+            continue
+        elif isinstance(v, dict):
+            s += "\n{}{} ({}):".format(indent*' ', k, type(v).__name__)
+            s = dict_to_str(v, s, indent+2)
         elif isinstance(v, list):
-            s += "\n" + indent*" " + "{} (list, {} items)".format(k, len(v))
-            s += list_to_shortstr(v)
+            s += list_to_shortstr(v, indent=indent, name=k)
         elif isinstance(v, np.ndarray) and v.ndim==1:
-            s += "\n" + indent*" " + "{} (array, {} items)".format(k, len(v))
-            s += list_to_shortstr(v)
+            s += list_to_shortstr(v, indent=indent, name=k)
         else:
-            s += "\n" + indent*" " + "{}: {}".format(k, v)
+            s += "\n{}{}: {}".format(indent*" ", k, v)
     return s
 
 def str_underline(s, indent=0):

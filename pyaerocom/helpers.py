@@ -11,7 +11,7 @@ import numpy as np
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
-from pyaerocom import logger
+from pyaerocom import logger, const
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
 
@@ -79,6 +79,72 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'yearly'   : '%Y'}
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
+
+def get_standard_name(var_name):
+    """Converts AeroCom variable name to CF standard name
+    
+    Also handles alias names for variables, etc. or strings corresponding to
+    older conventions (e.g. names containing 3D).
+    
+    Parameters
+    ----------
+    var_name : str
+        AeroCom variable name
+        
+    Returns
+    -------
+    str
+        corresponding standard name
+    """
+    return const.VARS[var_name].standard_name
+
+def get_standard_unit(var_name):
+    """Gets standard unit of AeroCom variable
+    
+    Also handles alias names for variables, etc. or strings corresponding to
+    older conventions (e.g. names containing 3D).
+    
+    Parameters
+    ----------
+    var_name : str
+        AeroCom variable name
+        
+    Returns
+    -------
+    str
+        corresponding standard unit
+    """
+    return const.VARS[var_name].unit
+
+def get_lowest_resolution(ts_type, *ts_types):
+    """Get the lowest resolution from several ts_type codes
+    
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+    
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the lowest resolution
+        
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    all_ts_types = const.GRID_IO.TS_TYPES
+    lowest = ts_type
+    for freq in ts_types:
+        if not freq in all_ts_types:
+            raise ValueError('Invalid input, only valid ts_type codes are '
+                             'supported: {}'.format(all_ts_types))
+        elif all_ts_types.index(lowest) < all_ts_types.index(freq):
+            lowest = freq
+    return lowest
 
 def isnumeric(val):
     """Check if input value is numeric
@@ -385,8 +451,12 @@ def unit_conversion_fac(from_unit, to_unit):
     """
     if isinstance(from_unit, str):
         from_unit = Unit(from_unit)
-   
-    return from_unit.convert(1, to_unit)
+    try:
+        return from_unit.convert(1, to_unit)    
+    except ValueError:
+        from pyaerocom.exceptions import UnitConversionError
+        raise UnitConversionError('Failed to convert unit from {} to {}'
+                                  .format(from_unit, to_unit))
     
 def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
                    num_keys=NUM_KEYS_META, num_rtol=1e-2):

@@ -113,13 +113,13 @@ class ReadEbasOptions(BrowseDict):
         
         self.remove_outliers = False
         
-        self.keep_aux_vars = True
+        self.keep_aux_vars = False
         
         self.log_read_stats = False
         
         self.merge_meta = False
         
-        self.datalevel = 2
+        self.datalevel = None
     
     @property
     def filter_dict(self):
@@ -144,7 +144,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.13_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.14_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -189,8 +189,6 @@ class ReadEbas(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     def __init__(self, dataset_to_read=None):
-        #: EBAS I/O variable information
-        self._ebas_vars = EbasVarInfo.PROVIDES_VARIABLES()
     
         super(ReadEbas, self).__init__(dataset_to_read)
         
@@ -261,7 +259,7 @@ class ReadEbas(ReadUngriddedBase):
     @property
     def PROVIDES_VARIABLES(self):
         """List of variables provided by the interface"""
-        return list(self._ebas_vars) + list(self.AUX_REQUIRES.keys())
+        return EbasVarInfo.PROVIDES_VARIABLES()
     
     @property
     def prefer_statistics(self):
@@ -436,8 +434,11 @@ class ReadEbas(ReadUngriddedBase):
                     constraints['station_names'] = stats
             if not 'datalevel' in constraints:
                 constraints['datalevel'] = self.opts.datalevel
+
             req = info.make_sql_request(**constraints)
             
+            const.logger.info('Retrieving EBAS file list for request:\n{}'
+                              .format(req))
             filenames = db.get_file_names(req)
             self.sql_requests.append(req)
             
@@ -650,11 +651,12 @@ class ReadEbas(ReadUngriddedBase):
         meta = file.meta
         name = meta['station_name']
         
+        
         var_cols = {}
         for var in vars_to_read:
             ebas_var_info = self.loaded_ebas_vars[var]
             if not var in self.loaded_aerocom_vars:
-                self.loaded_aerocom_vars[var] = var_info = const.VAR_PARAM[var]
+                self.loaded_aerocom_vars[var] = var_info = const.VARS[var]
             else:
                 var_info = self.loaded_aerocom_vars[var]
 # =============================================================================
@@ -666,6 +668,11 @@ class ReadEbas(ReadUngriddedBase):
             try:
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
+                const.logger.warning('Variable {} (EBAS name(s): {}) is '
+                                     'missing in file {} ({}, start: {})'
+                                     .format(var, ebas_var_info.component, 
+                                             os.path.basename(filename),
+                                             name, file.base_date))
                 continue
             # init helper variable for finding closest wavelength (if 
             # no exact wavelength match can be found)
@@ -734,11 +741,19 @@ class ReadEbas(ReadUngriddedBase):
             ts_type = 'undefined'
         data_out['ts_type'] = ts_type
         # altitude of station
-        altitude = float(meta['station_altitude'].split(' ')[0])
+        try:
+            altitude = float(meta['station_altitude'].split(' ')[0])
+        except:
+            altitude = np.nan
         try:
             meas_height = float(meta['measurement_height'].split(' ')[0])
         except KeyError:
             meas_height = 0.0
+        try:
+            lev = float(meta['data_level'])
+        except:
+            lev = None
+        data_out['datalevel'] = lev
         data_alt = altitude + meas_height
             
         # file specific meta information
@@ -778,13 +793,23 @@ class ReadEbas(ReadUngriddedBase):
             
             notnan_invalid, invalid = None, None
             if self.remove_invalid_flags:
+                
                 # get rows that are marked as invalid
                 invalid = ~file.flag_col_info[_col.flag_col].valid
                 
                 # now get all invalid rows where data is not already set NaN
                 notnan_invalid = ~np.isnan(data) * invalid
-                
-                data[notnan_invalid] = np.nan
+                # TODO: consider removing this check and applying mask without
+                # retrieving information about how many are set to NaN
+                _tot = np.sum(notnan_invalid)
+                if _tot > 0:
+                    data[notnan_invalid] = np.nan
+                    const.logger.warning('Found {} (of {}) invalid flags (flag '
+                                         'col {}) for var {} in file {}. '
+                                         'Remaining no. of valid data points: {}'
+                                         .format(_tot, len(data), _col.flag_col, 
+                                                 var, os.path.basename(filename),
+                                                 np.sum(~np.isnan(data))))
             
             # REMOVE OUTLIERS
             if self.remove_outliers:
@@ -949,9 +974,14 @@ class ReadEbas(ReadUngriddedBase):
                 
             except (NotInFileError, EbasFileError) as e:
                 self.files_failed.append(_file)
-                self.logger.warning('Failed to read file {}. '
-                                    'Error: {}'.format(os.path.basename(_file),
-                                                       repr(e)))
+                self.logger.warning('Skipping reading of EBAS NASA Ames '
+                                    'file: {}. Reason: {}'
+                                    .format(_file, repr(e)))
+                continue
+            except Exception as e:
+                const.print_log.warning('Skipping reading of EBAS NASA Ames '
+                                        'file: {}. Reason: {}'
+                                        .format(_file, repr(e)))
                 continue
             
             # Fill the metatdata dict
@@ -965,6 +995,7 @@ class ReadEbas(ReadUngriddedBase):
             metadata[meta_key]['ts_type'] = station_data['ts_type']
             metadata[meta_key]['instrument_name'] = station_data['instrument_name']
             metadata[meta_key]['revision_date'] = station_data['revision_date'] 
+            metadata[meta_key]['datalevel'] = station_data['datalevel'] 
             metadata[meta_key]['filename'] = os.path.basename(_file)
             if 'station_name_orig' in station_data:
                 metadata[meta_key]['station_name_orig'] = station_data['station_name_orig']     
@@ -1075,13 +1106,13 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     
     from pyaerocom import change_verbosity
-    change_verbosity('critical')
+    import pyaerocom as pya
+    change_verbosity('warning')
 
     r = ReadEbas()
-    #absc = r.read(['absc550aer', 'scatc550dryaer'])
-    
-    data = r.read(['scatc550dryaer'], 
-                  station_names=['Pallas*'],
-                  remove_outliers=True)
+    r.opts.keep_aux_vars = True
+    data =  r.read('scatc550dryaer', station_names='Barrow',
+                   start_date='2018-01-01', stop_date='2018-12-31')
+    data
     
     
