@@ -40,7 +40,6 @@ from os.path import isdir, basename
 from collections import OrderedDict as od
 import numpy as np
 import pandas as pd
-from datetime import datetime
 import iris
 
 from pyaerocom import const as CONST
@@ -53,7 +52,7 @@ from pyaerocom.exceptions import (IllegalArgumentError,
                                   FileConventionError)
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
-from pyaerocom.io.iris_io import load_cube_custom, concatenate_iris_cubes
+from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
 
@@ -732,47 +731,47 @@ class ReadGridded(object):
         Raises 
         ------
         iris.exceptions.ConcatenateError
-            if concatenation of all cubes failed (catch this error using 
-            :func:`concatenate_possible_cubes` which returns an instance 
-            of :class:`CubeList` with results)
+            if concatenation of all cubes failed 
         """        
         return concatenate_iris_cubes(cubes, error_on_mismatch=True)
     
-    def concatenate_possible_cubes(self, cubes):
-        """Concatenate list of cubes into one cube
-        
-        Note
-        ----
-        Warns, if all input cubes could be merged into single cube (because
-        in this case, :func:`concatenate_cubes` should be used)
-        
-        Parameters
-        ----------
-        CubeList
-            list of individual cubes
-        
-        Returns
-        -------
-        CubeList
-            list of cubes that could be concatenated
-        
-        Raises
-        ------
-        iris.exceptions.ConcatenateError
-            if call or :func:`iris._concatenate.concatenate` did not return
-            instance of :class:`iris.cube.CubeList` or of 
-            :class:`iris.cube.Cube`
-        """
-        cubes_concat = concatenate_iris_cubes(cubes, error_on_mismatch=False)
-        if isinstance(cubes_concat, iris.cube.Cube):
-            self.logger.warning('Successfully concatenated all input cubes into '
-                           'single Cube, returning single cube as CubeList. '
-                           'Please use method concatenate_cubes')
-            cubes_concat = iris.cube.CubeList(cubes_concat)
-        if not isinstance(cubes_concat, iris.cube.CubeList):
-            raise iris.exceptions.ConcatenateError('Unexpected error please '
-                                                   'debug')
-        return cubes_concat
+# =============================================================================
+#     def concatenate_possible_cubes(self, cubes):
+#         """Concatenate list of cubes into one cube
+#         
+#         Note
+#         ----
+#         Warns, if all input cubes could be merged into single cube (because
+#         in this case, :func:`concatenate_cubes` should be used)
+#         
+#         Parameters
+#         ----------
+#         CubeList
+#             list of individual cubes
+#         
+#         Returns
+#         -------
+#         CubeList
+#             list of cubes that could be concatenated
+#         
+#         Raises
+#         ------
+#         iris.exceptions.ConcatenateError
+#             if call or :func:`iris._concatenate.concatenate` did not return
+#             instance of :class:`iris.cube.CubeList` or of 
+#             :class:`iris.cube.Cube`
+#         """
+#         cubes_concat = concatenate_iris_cubes(cubes, error_on_mismatch=False)
+#         if isinstance(cubes_concat, iris.cube.Cube):
+#             self.logger.warning('Successfully concatenated all input cubes into '
+#                            'single Cube, returning single cube as CubeList. '
+#                            'Please use method concatenate_cubes')
+#             cubes_concat = iris.cube.CubeList(cubes_concat)
+#         if not isinstance(cubes_concat, iris.cube.CubeList):
+#             raise iris.exceptions.ConcatenateError('Unexpected error please '
+#                                                    'debug')
+#         return cubes_concat
+# =============================================================================
     
     
     def _get_aux_vars(self, var_to_compute):
@@ -823,7 +822,8 @@ class ReadGridded(object):
                 
     def compute_var(self, var_name, start=None, stop=None, ts_type=None, 
                     experiment=None, flex_ts_type=True, vars_to_read=None, 
-                    aux_fun=None, vert_which=None):
+                    aux_fun=None, vert_which=None,
+                    **kwargs):
         """Compute auxiliary variable
         
         Like :func:`read_var` but for auxiliary variables 
@@ -853,6 +853,8 @@ class ReadGridded(object):
         vert_which : str
             valid AeroCom vertical info string encoded in name (e.g. Column,
             ModelLevel)
+        **kwargs
+            additional keyword args passed to :func:`_load_var`
             
         Returns
         -------
@@ -903,7 +905,8 @@ class ReadGridded(object):
                                            experiment, flex_ts_type, vert_which)  
         for var in vars_to_read:
             aux_data = self._load_var(var, ts_type, start, stop,
-                                      experiment=experiment)
+                                      experiment=experiment,
+                                      **kwargs)
             data.append(aux_data)
 
         cube = aux_fun(*data)
@@ -1011,7 +1014,8 @@ class ReadGridded(object):
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, flex_ts_type=True, 
-                 vert_which=None, aux_vars=None, aux_fun=None):
+                 vert_which=None, aux_vars=None, aux_fun=None,
+                 **kwargs):
         """Read model data for a specific variable
         
         This method searches all valid files for a given variable and for a 
@@ -1066,6 +1070,8 @@ class ReadGridded(object):
             only relevant if `var_name` is not available for reading but needs
             to be computed: custom method for computation (cf. 
             :func:`add_aux_compute` for details)
+        **kwargs
+            additional keyword args parsed to :func:`_load_var`
             
         Returns
         -------
@@ -1115,7 +1121,8 @@ class ReadGridded(object):
                 vert_which = None
         if var_to_read is not None: # variable can be read directly
             data = self._load_var(var_to_read, ts_type, start, stop,
-                                  experiment, flex_ts_type, vert_which)
+                                  experiment, flex_ts_type, vert_which,
+                                  **kwargs)
         elif var_name in self._aux_requires:
             data = self.compute_var(var_name, start, stop, ts_type, 
                                     experiment, flex_ts_type, 
@@ -1218,55 +1225,42 @@ class ReadGridded(object):
             except (VarNotAvailableError, DataCoverageError) as e:
                 self.logger.warning(repr(e))
         return tuple(data)
-    
-    def _load_files(self, files, var_name, quality_check=True):
+        
+    def _load_files(self, files, var_name, perform_checks=True,
+                    **kwargs):
         """Load list of files containing variable to read into Cube instances
         
         Parameters
         ----------
+        files : list
+            list of netcdf file
         var_name : str
             name of variable to read
-        files : list
-            list of netcdf files that contain this variable
+        perform_checks : bool
+            if True, the loaded data is checked for consistency with 
+            AeroCom default requirements.
+        **kwargs
+            additional keyword args parsed to :func:`load_cubes_custom`.
         
         Returns
         -------
         CubeList
             list of loaded Cube instances
         """
-        # read files using iris
-        cubes = iris.cube.CubeList()
-        loaded_files = []
-        for _file in files:
-            try:
-                cube = load_cube_custom(_file, var_name,
-                                        file_convention=self.file_convention)
-                cubes.append(cube)
-                loaded_files.append(_file)
-            except Exception as e:
-                msg = ("Failed to load {} as Iris cube. Error: {}"
-                       .format(_file, repr(e)))
-                self.logger.warning(msg)
-                self.read_errors[datetime.now()] = msg
-                if CONST.WRITE_FILEIO_ERR_LOG:
-                    add_file_to_log(_file, msg)
-                    
-                    
-        
+        cubes, loaded_files = load_cubes_custom(files, var_name,
+                                                perform_checks=perform_checks,
+                                                **kwargs)
         if len(loaded_files) == 0:
-            err_str = ''
-            for error in self.read_errors.values():
-                err_str += '\n{}'.format(msg)
-            raise IOError("None of the files found for variable {} "
-                          "could be loaded. Errors: {}".format(self.data_id,
-                                                               err_str))
+            raise IOError("None of the input files could be loaded in {}"
+                          .format(self.data_id))
     
         self.cubes[var_name] = cubes
         self.loaded_files[var_name] = loaded_files
         return cubes
     
     def _load_var(self, var_name, ts_type, start=None, stop=None,
-                  experiment=None, flex_ts_type=True, vert_which=None):
+                  experiment=None, flex_ts_type=True, vert_which=None,
+                  **kwargs):
         """Find files corresponding to input specs and load into GriddedData
         
         Note 
@@ -1290,7 +1284,7 @@ class ReadGridded(object):
                                                             experiment,
                                                             vert_which)
         
-        cube_list = self._load_files(match_files, var_name)
+        cube_list = self._load_files(match_files, var_name, **kwargs)
         is_concat = False
         if len(cube_list) > 1:
             try:
