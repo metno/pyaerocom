@@ -686,9 +686,13 @@ class GriddedData(object):
         # and the first 3 dimensions are time, latitude, longitude.
         
         # init input for sample points
-        if not sample_points:
+        if sample_points is None:
             sample_points = []
-        sample_points.extend(list(coords.items()))
+            for c, v in coords.items():
+                if isnumeric(v):
+                    v= [v]
+                sample_points.append((c, v))
+
         lens = [len(x[1]) for x in sample_points]
         if not all([lens[0]==x for x in lens]):
             raise ValueError("Arrays for sample coordinates must have the "
@@ -867,20 +871,24 @@ class GriddedData(object):
         dict
             dictionary containing results
         """
-        self.check_dimcoords_tseries()
-        if not self.ndim == 3:
-            raise DataDimensionError('So far, timeseries can only be extracted '
-                                     'from 3 dimensional data...')
-        lons = self.longitude.points
-        lats = self.latitude.points
-        lon_idx = np.argmin(np.abs(lons - longitude))
-        lat_idx = np.argmin(np.abs(lats - latitude))
-        times = self.time_stamps()
-        data = self.grid.data[:, lat_idx, lon_idx]
-        return {'latitude'      : latitude, 
-                'longitude'     : longitude,
-                'name'          : self.name,
-                self.var_name   : Series(data, times)}
+        raise NameError(DeprecationWarning('This method is deprecated since '
+                                           'version 0.8.0'))
+# =============================================================================
+#         self.check_dimcoords_tseries()
+#         if not self.ndim == 3:
+#             raise DataDimensionError('So far, timeseries can only be extracted '
+#                                      'from 3 dimensional data...')
+#         lons = self.longitude.points
+#         lats = self.latitude.points
+#         lon_idx = np.argmin(np.abs(lons - longitude))
+#         lat_idx = np.argmin(np.abs(lats - latitude))
+#         times = self.time_stamps()
+#         data = self.grid.data[:, lat_idx, lon_idx]
+#         return {'latitude'      : latitude, 
+#                 'longitude'     : longitude,
+#                 'name'          : self.name,
+#                 self.var_name   : Series(data, times)}
+# =============================================================================
         
     def _closest_time_idx(self, t):
         """Find closest index to input in time dimension"""
