@@ -30,7 +30,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
     TS_TYPE : 
     
-    DATA_ID
+    DATA_ID :
     
     DATASET_PATH : :obj: `str`
     
@@ -151,7 +151,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         #days = np.ones((len(df["year"]))).astype('int')
         #df['day'] = days
         #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
-        month = pad_zero( df['month'])
+        month = pad_zeros( df['month'])
         print(month)
         year = df['year'].values.astype("str")        
         days = np.array([ "01" for i in range(year) ])
