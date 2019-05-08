@@ -227,10 +227,11 @@ class Variable(object):
         colorbar ticks
     """
     literal_eval_list = lambda val: list(literal_eval(val))
-        
+    str2list = lambda val: [x.strip() for x in val.split(',')]
     _TYPE_CONV={'wavelength_nm': float,
                 'minimum': float,
                 'maximum': float,
+                'dimensions' : str2list,
                 'obs_wavelength_tol_nm': float,
                 'scat_xlim': literal_eval_list,
                 'scat_ylim': literal_eval_list,
