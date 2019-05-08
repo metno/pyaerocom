@@ -62,6 +62,9 @@ class ReadGAW(ReadUngriddedBase):
     # variable (keys)
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmrdms'] = 'dimethylsulfide'
+    VAR_NAMES_FILE['vmrdms_nd'] = 'number_of_observations'
+    VAR_NAMES_FILE['vmrdms_std'] = 'standard_deviation'
+    VAR_NAMES_FILE['vmrdms_flag'] = 'flag'
 
     # List of variables that are provided by this dataset (will be extended 
     # by auxiliary variables on class init, for details see __init__ method of
@@ -313,37 +316,25 @@ if __name__ == "__main__":
      
     r = ReadGAW()
     data = r.read(vars_to_retrieve = ['vmrdms', 'vmrdms_flag'])
+    print('vars to retrieve:', data.vars_to_retrieve)
     
-    #print('Station name:', data.station_name)
-    #print('Data error:', data._data[:, data._DATAERRINDEX])
     stat = data['Amsterdam_Island']
+    
+    # Print the station data object
     print('Amsterdam Island:', stat)
     
-    print('time ungridded', data._data[:,data._TIMEINDEX])
-    
-    ax = stat.plot_timeseries('vmrdms')
-    
-    
-    #data2 = r.read_file('/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat')
-    #data2.plot_timeseries('vmrdms')
-    #print('time station d', data2.dtime)
+    # plot flag at Amsterdam Island
+    ax = stat.plot_timeseries('vmrdms_flag')
     
     
-    #print('Amsterdam Island:', data.to_station_data('Amsterdam_Island'))
-      
-    #   data.plot_station_coordinates()
-    
+    # Plot vmrdms at Amsterdam Island and Cape Verde Observatory in the same figure
+    ax = data.plot_station_timeseries(station_name='Amsterdam_Island', 
+                                      var_name = 'vmrdms', 
+                                      label='Amsterdam Island')
+    data.plot_station_timeseries(station_name='Cape_Verde_Observatory',
+                                 var_name = 'vmrdms', 
+                                 ax=ax, 
+                                 label='Cape Verde Observatory')
+    ax.set_title("vmrdms")
 
-    #   ax = data.plot_station_timeseries(station_name='Amsterdam_Island', 
-    #                                         var_name = 'vmrdms', 
-    #                                     label='Amsterdam Island')
-    # data.plot_station_timeseries(station_name='Cape_Verde_Observatory',
-    #                                var_name = 'vmrdms', 
-    #                                ax=ax, 
-    #                                label='Cape Verde Observatory')
-    #   ax.set_title("vmrdms")
-    
-    data.plot_station_timeseries(station_name='Cape_Verde_Observatory', 
-                                 var_name = 'vmrdms_flag')
-    
-    #   print(data.metadata[0])
+ 
