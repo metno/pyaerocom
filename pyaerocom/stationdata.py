@@ -740,7 +740,8 @@ class StationData(StationMetaData):
                                 .format(tp, const.GRID_IO.TS_TYPES))
         return tp
         
-    def remove_outliers(self, var_name, low=None, high=None):
+    def remove_outliers(self, var_name, low=None, high=None,
+                        check_unit=True):
         """Remove outliers from one of the variable timeseries
         
         Parameters
@@ -757,13 +758,16 @@ class StationData(StationMetaData):
             corresponding value from the default settings for this variable 
             are used (cf. maximum attribute of `available variables 
             <https://pyaerocom.met.no/config_files.html#variables>`__)
+        check_unit : bool
+            if True, the unit of the data is checked against AeroCom default
         """
         if any([x is None for x in (low, high)]):
             info = const.VARS[var_name]
-            try: 
-                self.check_unit(var_name)
-            except DataUnitError:
-                self.convert_unit(var_name, to_unit=info.unit)
+            if check_unit:
+                try: 
+                    self.check_unit(var_name)
+                except DataUnitError:
+                    self.convert_unit(var_name, to_unit=info.unit)
             if low is None:
                 low = info.minimum
                 logger.info('Setting {} outlier lower lim: {:.2f}'
