@@ -480,7 +480,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                 if gridded_unit is None:
                     gridded_unit = obs_unit
             if remove_outliers:
-                grid_stat.remove_outliers(var, low=low, high=high)
+                grid_stat.remove_outliers(var, low=low, high=high,
+                                          check_unit=-1*harmonise_units)
                 
             grid_tseries = grid_stat[var]  
             obs_tseries = obs_data[var_ref]
