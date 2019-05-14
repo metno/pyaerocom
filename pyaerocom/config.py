@@ -143,7 +143,7 @@ class Config(object):
     
     #: timeout to check if one of the supported server locations can be 
     #: accessed
-    SERVER_CHECK_TIMEOUT = 0.1 #s
+    SERVER_CHECK_TIMEOUT = 5 #0.1 #s
     
     from pyaerocom import __dir__
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
@@ -1019,7 +1019,8 @@ class GridIO(object):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest
         # resolution
-        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'monthly', 'yearly']
+        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'weekly', 
+                         'monthly', 'yearly']
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
         #shift longitudes to -180 -> 180 repr (if applicable)
