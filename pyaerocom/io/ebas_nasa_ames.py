@@ -24,6 +24,11 @@ class NasaAmesVariableError(AttributeError):
 class EbasColDef(dict):
     """Dict-like object for EBAS NASA Ames column definitions
     
+    Note
+    ----
+    The meta attribute name 'unit' can also be accessed using the CF attr name
+    'units'
+    
     Attributes
     ----------
     name : str
@@ -72,10 +77,18 @@ class EbasColDef(dict):
                                    'wavelength_nm']):
         d = {}
         for k, v in self.items():
-            if not k in ignore_keys:
-                d[k] = v
+            if k in ignore_keys:
+                continue
+            elif k == 'unit':
+                k ='units'
+            d[k] = v
         return d
-            
+          
+    def __getitem__(self, key): # add support for units attr (CF standard name)
+        if key == 'units':
+            key = 'unit'
+        return super(EbasColDef, self).__getitem__(key)
+    
     def __getattr__(self, key):
         return self[key]
     

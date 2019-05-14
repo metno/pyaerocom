@@ -14,7 +14,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    __baseversion__ = '0.06_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.07_' + ReadUngriddedBase.__baseversion__
     
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -27,6 +27,10 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
     VAR_NAMES_FILE = {}
+    
+    #: Mappings for identifying variables in file (may be specified in addition
+    #: to explicit variable names specified in VAR_NAMES_FILE)
+    VAR_PATTERNS_FILE = {}
     
     #: OPTIONAL: dictionary specifying alternative column names for variables
     #: defined in :attr:`VAR_NAMES_FILE`
@@ -128,10 +132,11 @@ class ReadAeronetBase(ReadUngriddedBase):
                 self.logger.debug('Succesfully extracted wavelength {} nm '
                                  'from column name {}'.format(nums[0], colname))
                 return nums[0]
-        raise ValueError('Failed to extract wavelength from colname {}'.format(colname))
+        raise ValueError('Failed to extract wavelength from colname {}'
+                         .format(colname))
         
-    def _update_col_index(self, col_index_str):
-        """Update column information for fast access during read_file
+    def _update_col_index(self, col_index_str, use_all_possible=False):
+        """Update file column information for fast access during read_file
         
         Note
         ----
@@ -142,6 +147,10 @@ class ReadAeronetBase(ReadUngriddedBase):
         ----------
         col_index_str : str
             header string of data table in files
+        use_all_possible : bool
+            if True, than all available variables belonging to either of the 
+            variable families that are specified in :attr:`VAR_PATTERNS_FILE` 
+            are identified from the file header. 
             
         Returns
         -------
@@ -158,6 +167,45 @@ class ReadAeronetBase(ReadUngriddedBase):
         mapping = od()
         for idx, info_str in enumerate(cols):
             mapping[info_str] = idx
+        
+        if use_all_possible:
+            col_index = self._find_vars_pattern_based(mapping)
+        else:
+            col_index = self._find_vars_name_based(mapping, cols)
+        self._col_index = col_index
+        self._last_col_index_str = col_index_str
+        self._last_col_order = cols
+        return col_index
+    
+    def _find_vars_pattern_based(self, mapping):
+        col_index = od()
+        # find meta indices
+        for key, val in self.META_NAMES_FILE.items():
+            if not val in mapping:
+                raise MetaDataError("Required meta-information string {} could "
+                                    "not be found in file header".format(val))
+            col_index[key] = mapping[val]
+        p = self.VAR_PATTERNS_FILE
+        
+        for pattern, aerocom_name in self.VAR_PATTERNS_FILE.items():
+            if not '*' in aerocom_name:
+                raise ValueError('Invalid entry in search pattern for Aerocom '
+                                 'var pattern {} (search key {}): Aerocom var '
+                                 'pattern must require * (which is used to '
+                                 'replace identified value from search group '
+                                 'in file header'
+                                 .format(aerocom_name, pattern))
+            if '*' in pattern:
+                import fnmatch
+                
+            for col_name, idx in mapping.items():
+                result = re.match(pattern, col_name)
+                if result is not None:
+                    if len(result.groups()) != 1:
+                        raise Exception('Found more than one match')
+        return col_index
+        
+    def _find_vars_name_based(self, mapping, cols):
         col_index = od()
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
@@ -183,9 +231,6 @@ class ReadAeronetBase(ReadUngriddedBase):
                         self.logger.info('Failed to infer data column of '
                                          'variable {} within wavelength tolerance '
                                          'range.Error:\n{}'.format(var, repr(e)))
-        self._col_index = col_index
-        self._last_col_index_str = col_index_str
-        self._last_col_order = cols
         return col_index
     
     def _search_var_wavelength_tol(self, var, cols):
@@ -237,14 +282,14 @@ class ReadAeronetBase(ReadUngriddedBase):
                             return i
         raise VariableNotFoundError('Did not find an alternative data column '
                                     'for variable {} within allowed wavelength '
-                                    'tolerance range of +/- {} nm.'.format(
-                                            var, tol))
+                                    'tolerance range of +/- {} nm.'
+                                    .format(var, tol))
     def print_all_columns(self):
         for col in self._last_col_order:
             print(col)
                 
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
-             last_file=None):
+             last_file=None, file_pattern=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -257,10 +302,14 @@ class ReadAeronetBase(ReadUngriddedBase):
             is returned on :func:`get_file_list`.
         first_file : :obj:`int`, optional
             index of first file in file list to read. If None, the very first
-            file in the list is used
+            file in the list is used. Note: is ignored if input parameter
+            `file_pattern` is specified.
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file 
-            in the list is used
+            in the list is used. Note: is ignored if input parameter
+            `file_pattern` is specified.
+        file_pattern : str, optional
+            string pattern for file search (cf :func:`get_file_list`)
             
         Returns
         -------
@@ -275,15 +324,16 @@ class ReadAeronetBase(ReadUngriddedBase):
             
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list()
+                self.get_file_list(pattern=file_pattern)
             files = self.files
-    
-        if first_file is None:
-            first_file = 0
-        if last_file is None:
-            last_file = len(files)
         
-        files = files[first_file:last_file]
+        if file_pattern is None:
+            if first_file is None:
+                first_file = 0
+            if last_file is None:
+                last_file = len(files)
+            
+            files = files[first_file:last_file]
         
         self.read_failed = []
         
