@@ -43,8 +43,6 @@ def test_check_var_unit_aerocom(stat1):
     stat1.check_var_unit_aerocom('ec550aer')
     assert stat1.get_unit('ec550aer') == Unit('1/Mm')
     
-def test_check_var_unit_aerocom_again(stat1):
-    assert stat1.get_unit('ec550aer') == Unit('m-1')    
 
     
 if __name__=="__main__":
