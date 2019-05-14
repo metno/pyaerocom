@@ -144,12 +144,12 @@ class GriddedData(object):
                 
         try:
             var = self.var_info
-            if var.has_unit and var.unit != self.unit:
+            if var.has_unit and var.units != self.units:
                 self.flags['unit_ok'] = False
                 if convert_unit_on_init:
                     logger.info('Attempting unit conversion from {} to {}'
-                                .format(self.unit, var.unit))
-                    self.convert_unit(var.unit)
+                                .format(self.units, var.units))
+                    self.convert_unit(var.units)
                     self.flags['unit_ok'] = True
         except (VariableDefinitionError, UnitConversionError, 
                 MemoryError, ValueError) as e:
@@ -211,14 +211,14 @@ class GriddedData(object):
     @reader.setter
     def reader(self, val):
         self.suppl_info['reader'] = val
-        
+    
     @property
-    def unit(self):
+    def units(self):
         """Unit of data"""
         return self.grid.units
     
-    @unit.setter
-    def unit(self, val):
+    @units.setter
+    def units(self, val):
         self.grid.units = val
     
     @property
@@ -747,7 +747,7 @@ class GriddedData(object):
             data = StationData(latitude=lat, 
                                longitude=lon,
                                data_id=self.name)
-            data.var_info[var] = dict(unit=self.unit)
+            data.var_info[var] = dict(unit=self.units)
             data[var] = Series(arr[:, i, j], index=times)
             result.append(data)
         return result
@@ -1514,7 +1514,7 @@ class GriddedData(object):
         
         fig = plot_griddeddata_on_map(data=data, lons=lons, lats=lats, 
                                       var_name=self.var_name, 
-                                      unit=self.unit,
+                                      unit=self.units,
                                       xlim=xlim, ylim=ylim, 
                                       **kwargs)
         
@@ -1722,7 +1722,20 @@ class GriddedData(object):
                             var         :   data})
         return result
 
-                
+    ### Deprecated (but still supported) stuff
+    @property
+    def unit(self):
+        """Unit of data"""
+        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+                                                'please use units instead'))
+        return self.grid.units
+    
+    @unit.setter
+    def unit(self, val):
+        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+                                                'please use units instead'))
+        self.grid.units = val
+        
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya

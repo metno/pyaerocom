@@ -901,19 +901,24 @@ class UngriddedData(object):
         """
         from pyaerocom.helpers import unit_conversion_fac
         if unit is None:
-            unit = const.VARS[var_name].unit
+            unit = const.VARS[var_name].units
             
         units =  []
         for i, meta in self.metadata.items():
             if var_name in meta['var_info']:
                 try:
-                    u = meta['var_info'][var_name]['unit']
+                    u = meta['var_info'][var_name]['units']
                     if not u in units:
                         units.append(u)
                 except KeyError:
+                    add_str = ''
+                    if 'unit' in meta['var_info'][var_name]:
+                        add_str = ('Corresponding var_info dict contains '
+                                   'attr. "unit", which is deprecated, please '
+                                   'check corresponding reading routine. ')
                     raise MetaDataError('Failed to access unit information for '
-                                        'variable {} in metadata block {}'
-                                        .format(var_name, i))
+                                        'variable {} in metadata block {}. {}'
+                                        .format(var_name, i, add_str))
         if len(units) == 0 and str(unit) != '1':
             raise MetaDataError('Failed to access unit information for '
                                 'variable {}. Expected unit {}'
@@ -1368,17 +1373,7 @@ class UngriddedData(object):
             # get offset in metadata index
             meta_offset = max([x for x in obj.metadata.keys()]) + 1
             data_offset = obj.shape[0]
-# =============================================================================
-#             for var, unit in other.unit:
-#                 if var in obj.unit.items():
-#                     if not unit == obj.unit[var]:
-#                         raise DataUnitError('Cannot merge other instance of '
-#                                         'UngriddedData since units for variable '
-#                                         '{} do not match.'.format(var))
-#                 else:
-#                     obj.unit[var]=unit
-# =============================================================================
-                    
+ 
             # add this offset to indices of meta dictionary in input data object
             for meta_idx_other, meta_other in other.metadata.items():
                 meta_idx = meta_offset + meta_idx_other
