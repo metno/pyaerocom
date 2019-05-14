@@ -245,7 +245,6 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     return earth_radius * c
 
 if __name__ == '__main__':
-    import geonum
     lat = 50.7
     lon = 8.2
     
