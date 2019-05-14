@@ -22,7 +22,7 @@ def test_revision_dates():
     npt.assert_array_equal(ids, ['AeronetInvV3Lev2.daily', 
                                  'AeronetInvV2Lev2.daily',
                                  'AeronetSDAV2Lev2.daily', 
-                                 'AeronetSDAV3Lev1.5.daily',
+                                 'AeronetSDAV3Lev2.daily',
                                  'AeronetSunV2Lev2.daily', 
                                  'AeronetSunV3Lev2.daily', 
                                  'EARLINET',

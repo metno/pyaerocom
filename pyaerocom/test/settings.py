@@ -7,6 +7,7 @@ Created on Fri Apr 27 09:29:23 2018
 """
 import pytest
 import os
+from .synthetic_data import DataAccess
 from pyaerocom import const, GEONUM_AVAILABLE
 
 if 'etopo1' in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS['etopo1']):
@@ -16,6 +17,7 @@ else:
 
 TEST_RTOL = 1e-4
 
+DATA_ACCESS = DataAccess()
 ### GLOBAL MARKERS THAT CAN BE IMPORTED AND USED THROUGHOUT THE TEST SESSION
 # custom skipif marker that is used below for test functions that 
 # require geonum to be installed
@@ -33,6 +35,8 @@ etopo1_unavail = pytest.mark.skipif(not ETOPO1_AVAIL,
                    'not installed')
 
 always_skipped = pytest.mark.skipif(True==True, reason='Seek the answer')
+
+
 
 @always_skipped
 def test_that_fails_but_should_be_skipped():
