@@ -975,9 +975,9 @@ class ReadEbas(ReadUngriddedBase):
         const.print_log.info("Reading file {} of {} ({}) | "
                              "{} (delta = {} s')"
                              .format(i+1, tot_num, 
-                                     type(self).__name__),
+                                     type(self).__name__,
                                      t.strftime('%H:%M:%S'),
-                                     (t-last_t))
+                                     (t-last_t).seconds))
         return t
     
     def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
@@ -1150,10 +1150,6 @@ class ReadEbas(ReadUngriddedBase):
 # =============================================================================
     
 if __name__=="__main__":
-    
-    from pyaerocom import change_verbosity
-    import pyaerocom as pya
-    #change_verbosity('warning')
 
     r = ReadEbas()
     r.opts.keep_aux_vars = True
@@ -1163,9 +1159,6 @@ if __name__=="__main__":
     data0 =  r.read('scatc550dryaer', station_names='Barrow')
     t1 =time()
     
-    data1 =  r.read('scatc550dryaer', station_names='Barrow',
-                   multiproc=True)
-    t2 =time()
-    
+
     
     
