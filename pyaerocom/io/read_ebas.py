@@ -1,16 +1,3 @@
-################################################################
-# read_aeronet_invv2.py
-#
-# read Aeronet inversion V2 data
-#
-# this file is part of the pyaerocom package
-#
-#################################################################
-# Created 20180629 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
 # Copyright (C) 2018 met.no
 # Contact information:
 # Norwegian Meteorological Institute
@@ -146,7 +133,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.16_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.16T_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -740,8 +727,9 @@ class ReadEbas(ReadUngriddedBase):
             ts_type = self.TS_TYPE_CODES[tres_code]
         except KeyError:
             self.logger.info('Unkown temporal resolution {}'.format(tres_code))
-            
-            ts_type = 'undefined'
+            ts_type = tres_code
+            raise Exception(tres_code)
+
         data_out['ts_type'] = ts_type
         # altitude of station
         try:
