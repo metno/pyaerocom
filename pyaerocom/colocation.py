@@ -95,15 +95,15 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
     if gridded_data.var_info.has_unit:
-        if harmonise_units and not gridded_data.unit == gridded_data_ref.unit:
+        if harmonise_units and not gridded_data.units == gridded_data_ref.units:
             try:
-                gridded_data_ref.convert_unit(gridded_data.unit)
+                gridded_data_ref.convert_unit(gridded_data.units)
             except:
                 raise DataUnitError('Failed to merge data unit of reference '
                                     'gridded data object ({}) to data unit '
                                     'of gridded data object ({})'
-                                    .format(gridded_data.unit, 
-                                            gridded_data_ref.unit))
+                                    .format(gridded_data.units, 
+                                            gridded_data_ref.units))
     var, var_ref = gridded_data.var_name, gridded_data_ref.var_name
     if remove_outliers:
         low, high, low_ref, high_ref = None, None, None, None    
@@ -180,8 +180,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'ts_type_src'       :   [gridded_data_ref.ts_type, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'unit'              :   [str(gridded_data_ref.unit),
-                                     str(gridded_data.unit)],
+            'units'             :   [str(gridded_data_ref.units),
+                                     str(gridded_data.units)],
             'vert_scheme'       :   vert_scheme,
             'data_level'        :   3,
             'revision_ref'      :   gridded_data_ref.data_revision,
@@ -208,7 +208,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
-              'unit'        : ('data_source', meta['unit']),
+              'units'       : ('data_source', meta['units']),
               'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time,
               'latitude'    : lats,
@@ -442,7 +442,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     ungridded_unit = None
     ts_type_src_ref = None
     if not harmonise_units:
-        gridded_unit = str(gridded_data.unit)
+        gridded_unit = str(gridded_data.units)
     else:
         gridded_unit = None
     for i, obs_data in enumerate(obs_stat_data):
@@ -480,7 +480,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                 if gridded_unit is None:
                     gridded_unit = obs_unit
             if remove_outliers:
-                grid_stat.remove_outliers(var, low=low, high=high)
+                grid_stat.remove_outliers(var, low=low, high=high,
+                                          check_unit=-1*harmonise_units)
                 
             grid_tseries = grid_stat[var]  
             obs_tseries = obs_data[var_ref]

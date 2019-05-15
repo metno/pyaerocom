@@ -31,7 +31,7 @@ class ReadUngriddedBase(abc.ABC):
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.05'
+    __baseversion__ = '0.06'
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -512,10 +512,16 @@ class ReadUngriddedBase(abc.ABC):
                           "pattern".format(pattern))
         return files
     
-    def get_file_list(self):
+    def get_file_list(self, pattern=None):
         """Search all files to be read
         
+        Uses :attr:`_FILEMASK` (+ optional input search pattern, e.g. 
+        station_name) to find valid files for query.
         
+        Parameters
+        ----------
+        pattern : str, optional
+            file name pattern applied to search
             
         Returns
         -------
@@ -527,9 +533,14 @@ class ReadUngriddedBase(abc.ABC):
         IOError
             if no files can be found
         """
+        if isinstance(pattern, str):
+            pattern = (pattern + self._FILEMASK).replace('**', '*')
+        else:
+            pattern = self._FILEMASK
+            
         self.logger.info('Fetching data files. This might take a while...')
         files = sorted(glob.glob(os.path.join(self.DATASET_PATH, 
-                                              self._FILEMASK)))
+                                              pattern)))
         if not len(files) > 0:
             all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
             raise IOError("No files could be detected matching file mask {} "

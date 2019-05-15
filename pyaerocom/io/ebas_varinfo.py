@@ -59,7 +59,7 @@ class EbasVarInfo(BrowseDict):
         # applicable)
         if init:
             self.parse_from_ini(var_name) 
-        
+    
     @staticmethod
     def PROVIDES_VARIABLES():
         data = EbasVarInfo.open_config()
@@ -139,6 +139,8 @@ class EbasVarInfo(BrowseDict):
         """Convert into dictionary"""
         d = {}
         for k, v in self.items():
+            if k == 'unit':
+                k = 'units'
             if v is not None:
                 d[k] = v
         return d

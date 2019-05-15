@@ -91,10 +91,10 @@ class Config(object):
     #: Aeront V3 inversions
     AERONET_INV_V3L15_DAILY_NAME = 'AeronetInvV3Lev1.5.daily'
     AERONET_INV_V3L2_DAILY_NAME = 'AeronetInvV3Lev2.daily'
-
+    
     #: EBAS name
     EBAS_MULTICOLUMN_NAME = 'EBASMC'
-
+    
     #: EEA nmea
     EEA_NAME = 'EEAAQeRep'
 
@@ -145,9 +145,8 @@ class Config(object):
     
     #: timeout to check if one of the supported server locations can be 
     #: accessed
-    SERVER_CHECK_TIMEOUT = 0.1 #s
-    SERVER_CHECK_TIMEOUT = 10 #s
-
+    SERVER_CHECK_TIMEOUT = 5 #0.1 #s
+    
     from pyaerocom import __dir__
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
@@ -160,14 +159,14 @@ class Config(object):
     _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
     _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
     _outhomename = 'MyPyaerocom'
-
+    
     DONOTCACHEFILE = None
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  output_dir=None, config_file=None, 
                  cache_dir=None, colocateddata_dir=None,
-                 write_fileio_err_log=True,
+                 write_fileio_err_log=True, 
                  activate_caching=True):
-
+        
         # Loggers
         from pyaerocom import print_log, logger
         #: Settings for reading and writing of gridded data
@@ -175,7 +174,7 @@ class Config(object):
         print_log.info('Initating pyaerocom configuration')
         self.print_log = print_log
         self.logger = logger
-
+        
         # Directories
         self._modelbasedir = model_base_dir
         self._obsbasedir = obs_base_dir
@@ -183,33 +182,33 @@ class Config(object):
         self._outputdir = output_dir
         self._testdatadir = os.path.join(self.HOMEDIR, 'pyaerocom-testdata')
         self._colocateddatadir = colocateddata_dir
-
+        
         # Options
         self._caching_active = activate_caching
-
+        
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
         print_log.info('Initating pyaerocom configuration')
-
-
+        
+        
         if not isinstance(config_file, str) or not os.path.exists(config_file):
             from time import time
             print_log.info('Checking database access...')
             t0 = time()
             config_file = self._infer_config_file()
             print_log.info('Expired time: {:.3f} s'.format(time() - t0))
-
-
+        
+        
         self._var_param = None
         self._coords = None
-
+        
         # Attributes that are used to store search directories
         self.OBSCONFIG = od()
         self.SUPPLDIRS = od()
         self.MODELDIRS = []
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
-
+        
         
         self.DONOTCACHEFILE = None
 
@@ -230,7 +229,7 @@ class Config(object):
                 self.print_log.warning("Failed to init config. Error: %s" %repr(e))
         else:
             self.init_outputdirs()
-
+    
     def _check_access(self, loc):
         """Uses multiprocessing approach to check if location can be accessed
         
@@ -320,11 +319,11 @@ class Config(object):
     def HOMEDIR(self):
         """Home directory of user"""
         return os.path.expanduser("~") + '/'
-
+    
     @property
     def TESTDATADIR(self):
         return self._testdatadir
-
+    
     @TESTDATADIR.setter
     def TESTDATADIR(self, val):
         if not self.dir_exists(val):
@@ -337,39 +336,39 @@ class Config(object):
                           'pyaerocom testdata directory (requires that a sub '
                           'directory modeldata exists)'.format(val))
         self.read_config(self._config_files['pyaerocom-testdata'], keep_basedirs=False)
-
+    
     @property
     def OUTPUTDIR(self):
         """Default output directory"""
         return self._outputdir
-
+    
     @property
     def COLOCATEDDATADIR(self):
         """Directory for accessing and saving colocated data objects"""
         return self._colocateddatadir
-
+    
     @property
     def OUT_BASEDIR(self):
         msg = 'Attribute OUT_BASEDIR is deprecated. Please use OUTPUTDIR instead'
         self.print_log.warning(DeprecationWarning(msg))
         return self.OUTPUTDIR
-
+    
     @property
     def CACHING(self):
         """Activate writing of and reading from cache files"""
         return self._caching_active
-
+    
     @CACHING.setter
     def CACHING(self, val):
         self._caching_active = bool(val)
-
+        
     @property
     def OBSDATACACHEDIR(self):
         """Cache directory for UngriddedData objects (deprecated)"""
         msg=('Attr. was renamed (but still works). Please us CACHEDIR instead')
         self.print_log.warning(DeprecationWarning(msg))
         return self.CACHEDIR
-
+    
     @property
     def CACHEDIR(self):
         """Cache directory for UngriddedData objects"""
@@ -398,20 +397,20 @@ class Config(object):
         self.print_log.warning('Deprecated (but still functional) name '
                                'VARS. Please use VARS')
         return self.VARS
-
+    
     @property
     def VARS(self):
         """Instance of class VarCollection (for default variable information)"""
         if self._var_param is None: #has not been accessed before
             self._var_param = VarCollection(self._var_info_file)
         return self._var_param
-
+    
     @property
     def COORDINFO(self):
         if self._coords is None:
             self._coords = VarCollection(self._coords_info_file)
         return self._coords
-
+    
     @property
     def LOGFILESDIR(self):
         """Directory where logfiles are stored"""
@@ -957,39 +956,39 @@ class GridIO(object):
         list of strings specifying temporal resolution options encrypted in
         file names.
     DEL_TIME_BOUNDS : bool
-        if True, preexisting bounds on time are deleted when grid data is
+        if True, preexisting bounds on time are deleted when grid data is 
         loaded. Else, nothing is done. Aerocom default is True
     SHIFT_LONS : bool
-        if True, longitudes are shifted to
-        -180 <= lon <= 180 when data is loaded (in case they are defined
+        if True, longitudes are shifted to 
+        -180 <= lon <= 180 when data is loaded (in case they are defined 
         0 <= lon <= 360. Aerocom default is True.
     CHECK_TIME_FILENAME : bool
         the times stored in NetCDF files may be wrong or not stored according
-        to the CF conventions. If True, the times are checked and if
+        to the CF conventions. If True, the times are checked and if 
         :attr:`CORRECT_TIME_FILENAME`, corrected for on data import based what
-        is encrypted in the
-        file name. In case of Aerocom models, it is ensured that the filename
-        contains both the year and the temporal resolution in the filenames
+        is encrypted in the 
+        file name. In case of Aerocom models, it is ensured that the filename 
+        contains both the year and the temporal resolution in the filenames 
         (for details see :class:`pyaerocom.io.FileConventionRead`).
         Aerocom default is True
     CORRECT_TIME_FILENAME : bool
-        if True and time dimension in data is found to be different from
+        if True and time dimension in data is found to be different from 
         filename, it is attempted to be corrected
     EQUALISE_METADATA : bool
         if True (and if metadata varies between different NetCDF files that are
-        supposed to be merged in time), the metadata in all loaded objects is
-        unified based on the metadata of the first grid (otherwise,
+        supposed to be merged in time), the metadata in all loaded objects is 
+        unified based on the metadata of the first grid (otherwise, 
         concatenating them in time might not work using the Iris interface).
-        This might need to be reviewed and should be used with care if
+        This might need to be reviewed and should be used with care if 
         specific metadata aspects of individual files need to be accessed.
         Aerocom default is True
     USE_RENAMED_DIR : bool
-        if True, data files are searched within a subdirectory named "renamed"
+        if True, data files are searched within a subdirectory named "renamed" 
         that needs to exist withing the data directory of a certain model or
         obs data type. Aerocom default is True.
     USE_FILECONVENTION : bool
         if True, file names are strictly required to follow one of the file
-        naming conventions that can be specified in the file
+        naming conventions that can be specified in the file 
         `file_conventions.ini <https://github.com/metno/pyaerocom/tree/master/
         pyaerocom/data>`__. Aerocom default is True.
     INCLUDE_SUBDIRS : bool
@@ -997,10 +996,10 @@ class GridIO(object):
         data directory. Aerocom default is False.
     INFER_SURFACE_LEVEL : bool
         if True then surface level for 4D gridded data is inferred automatically
-        when necessary (e.g. when extracting surface time series from 4D
+        when necessary (e.g. when extracting surface time series from 4D 
         gridded data object that does not contain sufficient information about
         vertical dimension)
-
+        
     """
     _AEROCOM = {'FILE_TYPE': '.nc',
                'TS_TYPES': ['hourly', '3hourly', 'daily', 'monthly', 'yearly'],
@@ -1022,47 +1021,48 @@ class GridIO(object):
              'EQUALISE_METADATA': False,
              'USE_RENAMED_DIR': False,
              'INCLUDE_SUBDIRS': True}
-
+    
     def __init__(self, **kwargs):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest
         # resolution
-        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'monthly', 'yearly']
+        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'weekly',
+                         'monthly', 'yearly']
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
         #shift longitudes to -180 -> 180 repr (if applicable)
-        self.SHIFT_LONS = True
-
+        self.SHIFT_LONS = True 
+        
         self.CHECK_TIME_FILENAME = True
         self.CORRECT_TIME_FILENAME = True
-
+        
         self.CHECK_DIM_COORDS = False
-         # check and update metadata dictionary on Cube load since
+         # check and update metadata dictionary on Cube load since 
          # iris concatenate of Cubes only works if metadata is equal
         self.EQUALISE_METADATA = True
-
+        
         self.USE_RENAMED_DIR = True
-
+        
         self.INCLUDE_SUBDIRS = False
-
+        
         self.INFER_SURFACE_LEVEL = True
-
+        
     def load_aerocom_default(self):
         self.from_dict(self._AEROCOM)
-
+    
     def load_default(self):
         self.from_dict(self._DEFAULT)
-
+        
     def to_dict(self):
         """Convert object to dictionary
-
+        
         Returns
         -------
         dict
             settings dictionary
         """
         return self.__dict__
-
+    
     def from_dict(self, dictionary=None, **settings):
         """Import settings from dictionary"""
         if not dictionary:
@@ -1073,41 +1073,41 @@ class GridIO(object):
 
     def __setitem__(self, key, value):
         """Set item
-
+        
         GridIO["<key>"] = value <=> GridIO.<key> = value
         <=> GridIO.__setitem__(<key>, value)
-
+        
         Raises
         ------
-        IOError
+        IOError 
             if key is not a valid setting
         """
         if not key in self.__dict__.keys():
             raise IOError("Could not update IO setting: Invalid key")
         self.__dict__[key] = value
-
+        
     def __getitem__(self, key):
         """Get item using curly brackets
-
+        
         GridIO["<key>"] => value
-
+        
         """
         if not key in self.__dict__.keys():
             raise IOError("Invalid attribute")
         return self.__dict__[key]
-
+    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
-        return ("\n{}\n{}\n{}".format(head,
+        return ("\n{}\n{}\n{}".format(head, 
                                       len(head)*"-",
                                       dict_to_str(self.to_dict())))
-
+        
 if __name__=="__main__":
     import pyaerocom as pya
-
+    
     pya.const.COORDINFO.a
 # =============================================================================
 #     pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
-#
+#     
 #     pya.browse_database('Aeronet*')
 # =============================================================================

@@ -122,8 +122,8 @@ class ModelConfigEval(BrowseDict):
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
         self.model_ts_type_read = None
-        self.model_use_vars = None
-        self.model_read_aux = None
+        self.model_use_vars = {}
+        self.model_read_aux = {}
         
         self.update(**kwargs)
         self.check_cfg()

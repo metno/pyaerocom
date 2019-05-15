@@ -109,7 +109,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
     META_NAMES_FILE['date'] = 'Date(dd:mm:yyyy)'
     META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
     META_NAMES_FILE['day_of_year'] = 'Day_of_Year(fraction)'
-    META_NAMES_FILE['station_name'] = 'Site'
+    META_NAMES_FILE['station_name'] = 'AERONET_Site'
     META_NAMES_FILE['latitude'] = 'Latitude(Degrees)'
     META_NAMES_FILE['longitude'] = 'Longitude(Degrees)'
     META_NAMES_FILE['altitude'] = 'Elevation(m)'

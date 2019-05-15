@@ -188,7 +188,7 @@ class Variable(object):
     is_dry : bool
         flag that is set based on filename that indicates if variable data
         corresponds to dry conditions.
-    unit : str
+    units : str
         unit of variable (None if no unit)
     aliases : list
         list of alternative names for this variable
@@ -227,10 +227,11 @@ class Variable(object):
         colorbar ticks
     """
     literal_eval_list = lambda val: list(literal_eval(val))
-        
+    str2list = lambda val: [x.strip() for x in val.split(',')]
     _TYPE_CONV={'wavelength_nm': float,
                 'minimum': float,
                 'maximum': float,
+                'dimensions' : str2list,
                 'obs_wavelength_tol_nm': float,
                 'scat_xlim': literal_eval_list,
                 'scat_ylim': literal_eval_list,
@@ -241,6 +242,8 @@ class Variable(object):
                 'map_vmax': float,
                 'map_cbar_levels': literal_eval_list,
                 'map_cbar_ticks': literal_eval_list}
+    
+    ALT_NAMES = {'units' : 'unit'}  
     
     RH_MAX_DRY = 0.4
     
@@ -277,7 +280,7 @@ class Variable(object):
         self.var_name = var_name
         self.var_name_alt = var_name_alt #alternative var_name
         self.standard_name = None
-        self.unit = 1
+        self.units = '1'
         #self.aliases = []
         self.wavelength_nm = None
         self.dry_rh_max = None
@@ -314,6 +317,15 @@ class Variable(object):
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
     
+    @property
+    def unit(self):
+        """Unit of variable (old name, deprecated)"""
+        from warnings import warn
+        warn(DeprecationWarning('Attr. name unit in Variable '
+                                'class is deprecated. Please '
+                                'use units instead'))
+        return self.units
+        
     @property
     def plot_info(self):
         """Dictionary containing plot information"""
@@ -438,26 +450,28 @@ class Variable(object):
         default = cfg['DEFAULT']
         
         for key in self.keys():
-            ok = True
-            if key in var_info:
-                val = var_info[key]
+            if key in self.ALT_NAMES:
+                if self.ALT_NAMES[key] in var_info:
+                    self._add(key, var_info[self.ALT_NAMES[key]])
+            elif key in var_info:
+                self._add(key, var_info[key])
             elif key in default:
-                val = default[key]
-            else:
-                ok = False
-            if ok:
-                if key in self._TYPE_CONV:
-                    try:
-                        val = self._TYPE_CONV[key](val)
-                    except:
-                        pass
-                elif key == 'unit':
-                    if val == 'None' or val=='1':
-                        val=1
-                if val == 'None':
-                    val = None
-                self[key] = val
+                self._add(key, default[key])
+             
         self.var_name = var_name
+    
+    def _add(self, key, val):
+        if key in self._TYPE_CONV:
+            try:
+                val = self._TYPE_CONV[key](val)
+            except:
+                pass
+        elif key == 'units':
+            if val == 'None':
+                val = '1'
+        if val == 'None':
+            val = None
+        self[key] = val
         
     def __setitem__(self, key, val):
         self.__dict__[key] = val
@@ -620,8 +634,11 @@ def all_var_names():
     return [k for k in Variable.read_config().keys()]
 
 if __name__=="__main__":
+    
     from pyaerocom import const
     all_vars = VarCollection(const._coords_info_file)
     
-    print(all_vars.asc)
+    var1 = Variable('ec550aer')
+    
+    print(var1.units)
     

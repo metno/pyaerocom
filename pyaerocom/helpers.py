@@ -52,6 +52,7 @@ IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
 TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
                           '3hourly' :   '3H',
                           'daily'   :   'D',
+                          'weekly'  :   'W',
                           'monthly' :   'MS', #Month start !
                           'yearly'  :   'AS'}
 
@@ -64,6 +65,7 @@ PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
                           '3hourly' :   '3h',
                           'daily'   :   'D',
+                          'weekly'  :   'W',
                           'monthly' :   'M', #Month start !
                           'yearly'  :   'Y'}
 
@@ -75,6 +77,7 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'hourly'   : '%d.%m.%Y',
                          '3hourly'  : '%d.%m.%Y',
                          'daily'    : '%d.%m.%Y',
+                         'weekly'   : '%d.%m.%Y',
                          'monthly'  : '%b %Y',
                          'yearly'   : '%Y'}
 
@@ -194,7 +197,7 @@ def isrange(val):
             return False
         return True
     return False
-        
+       
 def merge_station_data(stats, var_name, pref_attr=None, 
                        sort_by_largest=True, fill_missing_nan=True,
                        **add_meta_keys):
@@ -239,6 +242,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
         if len(var_name) > 1:
             raise NotImplementedError('Merging of multivar data not yet possible')
         var_name = var_name[0]
+        
     # make sure the data is provided as pandas.Series object
     is_3d, has_errs = False, False
     for stat in stats:
@@ -283,14 +287,13 @@ def merge_station_data(stats, var_name, pref_attr=None,
         
         if sort_by_largest:
             stats = stats[::-1]
-        
+
         # remove first station from the list
         merged = stats.pop(0)
             
-        for i, stat in enumerate(stats):    
+        for i, stat in enumerate(stats): 
             merged.merge_other(stat, var_name, **add_meta_keys)
     else:
-        from pyaerocom import const
         from xarray import DataArray
         dtime = []
         for stat in stats:
@@ -333,7 +336,13 @@ def merge_station_data(stats, var_name, pref_attr=None,
         merged.altitude = d.altitude
     
     if fill_missing_nan:
-        merged.insert_nans_timeseries(var_name)
+        try:
+            merged.insert_nans_timeseries(var_name)
+        except Exception as e:
+            const.print_log.warning('Could not insert NaNs into timeseries of '
+                                    'variable {} after merging stations. '
+                                    'Reason: {}'.format(var_name, repr(e)))
+            
     merged['stat_merge_pref_attr'] = pref_attr
     return merged
 
@@ -905,91 +914,6 @@ def get_time_rng_constraint(start, stop):
                                         day=stop.day)
     
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
-
-def to_time_series_griesie(data, lats, lons, times, var_name=['zdust'],**kwargs):
-    """small helper routine to convert data from the object
-    pyaerocom.io.ReadGridded.interpolate to the obs data dictionary
-    containing the pandas timeseries
-
-    FOR TESTING ONLY!"""
-
-    import pandas as pd
-
-    result = []
-    for i in range(len(lats)):
-        _dict = {}
-        _dict['latitude']=lats[i]
-        _dict['longitude']=lons[i]
-        for var in var_name:
-            _dict[var] = pd.Series(data[:, i, i],index=times)
-        result.append(_dict)
-    return result
-
-# TODO: Review and move into test-suite
-def griesie_dataframe_testing(model_data, obs_data, startdate, enddate):
-    """testing routine to create a scatterplot using a pandas data frame"""
-
-    import pyaerocom.io as pio
-    import pyaerocom as pa
-    import matplotlib.pyplot as plt
-    import pandas as pd
-
-    obs_data_as_series = obs_data.to_timeseries(start_date=startdate, 
-                                                end_date=enddate, 
-                                                freq='D')
-    obs_lats = obs_data.latitude
-    obs_lons = obs_data.longitude
-    obs_lats=[obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
-    obs_lons=[obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
-    obs_names=[obs_data_as_series[i]['station_name'] for i in range(len(obs_data_as_series))]
-    model_station_data = model_data.interpolate([("latitude", obs_lats),("longitude", obs_lons)])
-    times_as_dt64 = pa.helpers.cftime_to_datetime64(model_station_data.time)
-    model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons, times_as_dt64)
-    print(obs_lats)
-    # # single station
-    # df = pd.DataFrame(obs_data_as_series[1]['zdust'], columns=['obs'])
-    # df['model'] = model_data_as_series[1]['zdust']
-    # # remove points where any of the df is NaN
-    # #df = df.dropna(axis=0, how='any')
-    # correlation = df.corr(method='pearson')
-    # plot = df.plot.scatter('obs','model')
-    # df.show()
-
-# TODO: review and move into test-suite
-def griesie_xarray_to_timeseries(xarray_obj, obs_lats, obs_lons, 
-                                 vars_to_retrieve=['od550_aer'], 
-                                 debug_mode=False):
-    """test routine to colocate xarray object"""
-
-    import pandas as pd
-    import numpy as np
-    result=[]
-    if not debug_mode:
-        max_index = len(obs_lats)
-    else:
-        max_index = 20
-
-    for index in range(max_index):
-        print(index)
-        xarray_col = xarray_obj.sel(latitude=obs_lats[index], 
-                                    longitude=obs_lons[index], 
-                                    method='nearest')
-        _dict = {}
-        # _dict['latitude'] = obs_lats[index]
-        # _dict['longitude'] = obs_lons[index]
-        _dict['latitude'] = np.float_(xarray_col['latitude'])
-        _dict['longitude'] = np.float_(xarray_col['longitude'])
-
-        #data_frame = xarray_col.to_dataframe()
-        for var in vars_to_retrieve:
-            # _dict[var] = pd.Series(data_frame[var])
-            # _dict[var] = xarray_col[var].to_series()
-            _dict[var] = pd.Series(xarray_col[var], index=xarray_col['time'], 
-                                   dtype=np.float_)
-
-        result.append(_dict)
-    return result
-
 
 if __name__=="__main__":
     print(TS_TYPE_TO_PANDAS_FREQ)

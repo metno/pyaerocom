@@ -20,6 +20,8 @@ from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
                                    update_menu, make_info_table)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
+
+from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
 from pyaerocom.exceptions import DataDimensionError
 
 # ToDo: complete docstring
@@ -235,7 +237,9 @@ class AerocomEvaluation(object):
             if not 'model_read_aux' in mcfg:
                 continue
             maux = mcfg['model_read_aux']
-            if not isinstance(maux, dict):
+            if maux is None:
+                continue
+            elif not isinstance(maux, dict):
                 raise ValueError('Require dict, got {}'.format(maux))
             for varcfg in maux.values():
                 err_msg_base = ('Invalid definition of model_read_aux')

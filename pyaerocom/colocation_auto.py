@@ -117,6 +117,10 @@ class ColocationSetup(BrowseDict):
         Not to be confused with :attr:`ts_type`, which specifies the
         frequency used for colocation. Can be specified variable specific in
         form of dictionary.
+    flex_ts_type_gridded : bool
+        boolean specifying whether reading frequency of gridded data is 
+        allowed to be flexible. This includes all gridded data, whether it is
+        model or gridded observation (e.g. satellites). Defaults to True.
     basedir_coldata : str
         base directory for storing of colocated data files
     save_coldata : bool
@@ -139,8 +143,8 @@ class ColocationSetup(BrowseDict):
                  model_use_vars=None, model_read_aux=None, 
                  read_opts_ungridded=None, obs_vert_type=None, 
                  var_outlier_ranges=None, model_ts_type_read=None, 
-                 obs_ts_type_read=None, basedir_coldata=None, 
-                 save_coldata=True):
+                 obs_ts_type_read=None, flex_ts_type_gridded=True,
+                 basedir_coldata=None, save_coldata=True):
         
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
@@ -184,6 +188,7 @@ class ColocationSetup(BrowseDict):
         self.model_ts_type_read = model_ts_type_read
         self.model_read_aux = model_read_aux
         
+        self.flex_ts_type_gridded = True
         #: If True, existing colocated data files will be re-computed and overwritten
         self.reanalyse_existing = False
         #: If True, the colocation routine will raise any Exception that may occur, 
@@ -326,7 +331,7 @@ class Colocator(ColocationSetup):
                                    start=start,
                                    stop=stop, 
                                    ts_type=ts_type_read,
-                                   flex_ts_type=True,
+                                   flex_ts_type=self.flex_ts_type_gridded,
                                    vert_which=vert_which)
         except DataCoverageError:
             msg = ('No data files available for dataset {} ({})'
@@ -341,17 +346,8 @@ class Colocator(ColocationSetup):
                                    start=start,
                                    stop=stop, 
                                    ts_type=ts_type_read,
-                                   flex_ts_type=True,
+                                   flex_ts_type=self.flex_ts_type_gridded,
                                    vert_which=obs_vert_type_alt)
-        except Exception as e:
-            msg = ('Failed to load gridded data: {} / {}. Reason {}'
-                   .format(reader.data_id, var_name, repr(e)))
-            const.print_log.warning(msg)
-            self._log.write(msg)
-            
-            if self.raise_exceptions:
-                self._close_log()
-                raise Exception(msg)
     
     def _run_gridded_ungridded(self):
         """Analysis method for gridded vs. ungridded data"""
@@ -393,12 +389,24 @@ class Colocator(ColocationSetup):
                                                              self.obs_id, 
                                                              model_var, 
                                                              obs_var))
-            
-            model_data = self._read_gridded(reader=model_reader, 
-                                            var_name=model_var, 
-                                            start=start, 
-                                            stop=stop, 
-                                            is_model=True)
+            try:
+                model_data = self._read_gridded(reader=model_reader, 
+                                                var_name=model_var, 
+                                                start=start, 
+                                                stop=stop, 
+                                                is_model=True)
+            except Exception as e:
+                
+                msg = ('Failed to load gridded data: {} / {}. Reason {}'
+                       .format(self.model_id, model_var, repr(e)))
+                const.print_log.warning(msg)
+                self._log.write(msg)
+                
+                if self.raise_exceptions:
+                    self._close_log()
+                    raise Exception(msg)
+                else:
+                    continue
             
             if not model_data.ts_type in all_ts_types:
                 raise TemporalResolutionError('Invalid temporal resolution {} '
@@ -497,23 +505,48 @@ class Colocator(ColocationSetup):
                                                              self.obs_id, 
                                                              model_var, 
                                                              obs_var))
-            
-            model_data = self._read_gridded(reader=model_reader, 
-                                            var_name=model_var, 
-                                            start=start, 
-                                            stop=stop, 
-                                            is_model=True)
+            try:
+                model_data = self._read_gridded(reader=model_reader, 
+                                                var_name=model_var, 
+                                                start=start, 
+                                                stop=stop, 
+                                                is_model=True)
+            except Exception as e:
+                
+                msg = ('Failed to load gridded data: {} / {}. Reason {}'
+                       .format(self.model_id, model_var, repr(e)))
+                const.print_log.warning(msg)
+                self._log.write(msg)
+                
+                if self.raise_exceptions:
+                    self._close_log()
+                    raise Exception(msg)
+                else:
+                    continue
             
             if not model_data.ts_type in all_ts_types:
                 raise TemporalResolutionError('Invalid temporal resolution {} '
                                               'in model {}'.format(model_data.ts_type,
                                                                    self.model_id))
-            obs_data  = self._read_gridded(reader=obs_reader, 
-                                           var_name=obs_var, 
-                                           start=start,
-                                           stop=stop,
-                                           is_model=False)
-            
+            try:
+                obs_data  = self._read_gridded(reader=obs_reader, 
+                                               var_name=obs_var, 
+                                               start=start,
+                                               stop=stop,
+                                               is_model=False)
+            except Exception as e:
+                
+                msg = ('Failed to load gridded data: {} / {}. Reason {}'
+                       .format(self.model_id, model_var, repr(e)))
+                const.print_log.warning(msg)
+                self._log.write(msg)
+                
+                if self.raise_exceptions:
+                    self._close_log()
+                    raise Exception(msg)
+                else:
+                    continue
+                
             if not obs_data.ts_type in all_ts_types:
                 raise TemporalResolutionError('Invalid temporal resolution {} '
                                               'in obs {}'.format(obs_data.ts_type,

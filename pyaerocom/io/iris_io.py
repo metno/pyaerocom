@@ -39,13 +39,114 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
-def load_cube_custom(file, var_name=None, grid_io=None,
-                     file_convention=None, perform_checks=True):
-    """Load netcdf file as iris.Cube
+def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None, 
+                                 perform_checks=True, num_proc=None):
+    """Like :func:`load_cubes_custom` but faster
+    
+    Uses multiprocessing module to distribute loading of multiple NetCDF files
+    into iris cube.
+    
+    Parameters
+    ----------
+    file : list
+        netcdf file
+    var_name : str
+        name of variable to read
+    quality_check : bool
+        if True, then a quality check of data is performed against the
+        information provided in the filename
+    file_convention : :obj:`FileConventionRead`, optional
+        Aerocom file convention. If provided, then the data content (e.g. 
+        dimension definitions) is tested against definition in file name
+    perform_checks : bool
+        if True, additional quality checks (and corrections) are (attempted to
+        be) performed.
+    num_proc : int
+        number of jobs 
+    
+    Returns
+    -------
+    iris.cube.CubeList
+        loaded data as Cube
+    """    
+    import multiprocessing
+    from functools import partial
+    if num_proc is None:
+        num_proc = multiprocessing.cpu_count() * 2
+    func = partial(load_cube_custom, 
+                   var_name=var_name, file_convention=file_convention, 
+                   perform_checks=perform_checks)
+    p = multiprocessing.Pool(processes=num_proc)
+    return p.map(func, files)
+
+def load_cubes_custom(files, var_name=None, file_convention=None, 
+                      perform_checks=True, **kwargs):
+    """Load multiple NetCDF files into CubeList
     
     Parameters
     ----------
     files : list
+        netcdf file
+    var_name : str
+        name of variable to read
+    quality_check : bool
+        if True, then a quality check of data is performed against the
+        information provided in the filename
+    file_convention : :obj:`FileConventionRead`, optional
+        Aerocom file convention. If provided, then the data content (e.g. 
+        dimension definitions) is tested against definition in file name
+    perform_checks : bool
+        if True, additional quality checks (and corrections) are (attempted to
+        be) performed.
+    **kwargs 
+        additional keyword args that are parsed to 
+        :func:`_load_cubes_custom_multiproc` in case number of input files 
+        is larger than 4.
+        
+    Returns
+    -------
+    tuple
+        2-element tuple containing:
+            
+            - CubeList, containing loaded cubes
+            - list, list of filenames that were successfully loaded 
+    """
+    from pyaerocom import const
+    if len(files) >= 4:
+        try:
+            cubes =  _load_cubes_custom_multiproc(files, var_name, 
+                                                  file_convention, 
+                                                  perform_checks,
+                                                  **kwargs)
+            # if this worked, all input files were successfully loaded and the 
+            # function terminates, else, the retrieval is done file by file.
+            return (cubes, files)
+        except:
+            pass
+    cubes = []
+    loaded_files = []
+    for _file in files:
+        try:
+            cube = load_cube_custom(_file, var_name,
+                                    file_convention=file_convention)
+            cubes.append(cube)
+            loaded_files.append(_file)
+        except Exception as e:
+            msg = ("Failed to load {} as Iris cube. Error: {}"
+                   .format(_file, repr(e)))
+            const.logger.warning(msg)
+            
+            if const.WRITE_FILEIO_ERR_LOG:
+                add_file_to_log(_file, msg)
+    return (cubes, loaded_files)
+
+def load_cube_custom(file, var_name=None, file_convention=None, 
+                     perform_checks=True):
+    """Load netcdf file as iris.Cube
+    
+    Parameters
+    ----------
+    file : str
         netcdf file
     var_name : str
         name of variable to read
@@ -64,8 +165,6 @@ def load_cube_custom(file, var_name=None, grid_io=None,
     iris.cube.Cube
         loaded data as Cube
     """
-    if grid_io is None:
-        grid_io = const.GRID_IO
     cube_list = iris.load(file)
     
     _num = len(cube_list)
@@ -74,8 +173,8 @@ def load_cube_custom(file, var_name=None, grid_io=None,
             raise NetcdfError('Data from file {} could not be loaded using iris'
                               .format(file))
         else:
-            logger.warning('File {} contains more than one data '
-                           'field: {}'.format(file, cube_list))
+            logger.warning('File {} contains more than one variable'
+                           .format(file))
     cube = None
     if var_name is None:
         if not len(cube_list) == 1:
@@ -95,6 +194,7 @@ def load_cube_custom(file, var_name=None, grid_io=None,
         raise NetcdfError('Variable {} not available in file {}'.format(var_name, 
                                                                         file))
     if perform_checks:
+        grid_io = const.GRID_IO
         if file_convention is None:
             try:
                 file_convention = FileConventionRead(from_file=file)

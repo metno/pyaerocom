@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from pyaerocom import logger
+from pyaerocom import logger, const
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import DataDimensionError, NetcdfError
@@ -47,7 +47,7 @@ class ColocatedData(object):
     IOError
         if init fails
     """
-    __version__ = '0.05'
+    __version__ = '0.06'
     def __init__(self, data=None, **kwargs):
         self._data = None
         if data is not None:
@@ -157,10 +157,10 @@ class ColocatedData(object):
         return self.meta['ts_type']
     
     @property
-    def unit(self):
+    def units(self):
         """Unit of data"""
         try:
-            return self.data.attrs['unit']
+            return self.data.attrs['units']
         except KeyError:
             logger.warning('Failed to access unit ColocatedData class (may be an '
                         'old version of data)')
@@ -534,6 +534,14 @@ class ColocatedData(object):
         except:
             pass
         return s
+    
+    ### Deprecated (but still supported) stuff
+    @property
+    def unit(self):
+        """Unit of data"""
+        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+                                                'please use units instead'))
+        return self.units
 
 
     
