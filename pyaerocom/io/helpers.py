@@ -3,6 +3,7 @@
 """
 I/O helper methods of the pyaerocom package
 """
+from datetime import datetime
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
 from pyaerocom import __dir__
@@ -27,6 +28,18 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "3hourly" :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
+
+def _print_read_info(i, mod, tot_num, last_t, name, logger):
+    """Helper for displaying standardised output in reading classes
+    
+    Not to be used directly
+    """
+    t = datetime.now()
+    logger.info("Reading files {}-{} of {} ({}) | {} (delta = {} s')"
+                .format(i+1,i+1+mod, tot_num, name,
+                        t.strftime('%H:%M:%S'),
+                        (t-last_t).seconds))
+    return t
 
 def read_ebas_flags_file(ebas_flags_csv):
     """Reads file ebas_flags.csv
