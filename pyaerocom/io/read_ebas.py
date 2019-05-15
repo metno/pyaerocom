@@ -39,6 +39,7 @@ from collections import OrderedDict as od
 from pyaerocom import const
 from pyaerocom.mathutils import compute_scatc550dryaer, compute_absc550dryaer
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.io.helpers import _print_read_info
 from pyaerocom import StationData
 from pyaerocom import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
@@ -969,16 +970,6 @@ class ReadEbas(ReadUngriddedBase):
 #             data = result
 # =============================================================================
         return data
-       
-    def _print_read_info(self, last_t, i, tot_num):
-        t = datetime.now()
-        const.print_log.info("Reading file {} of {} ({}) | "
-                             "{} (delta = {} s')"
-                             .format(i+1, tot_num, 
-                                     type(self).__name__,
-                                     t.strftime('%H:%M:%S'),
-                                     (t-last_t).seconds))
-        return t
     
     def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
         """Helper that reads list of files into UngriddedData
@@ -1013,7 +1004,9 @@ class ReadEbas(ReadUngriddedBase):
         last_t = datetime.now()
         for i, _file in enumerate(files):
             if i%disp_each == 0:
-                last_t = self._print_read_info(last_t, i, num_files)
+                last_t = _print_read_info(i, disp_each, num_files, 
+                                          last_t, type(self).__name__,
+                                          const.print_log)
             try:
                 station_data = self.read_file(_file, 
                                               vars_to_retrieve=files_contain[i])
