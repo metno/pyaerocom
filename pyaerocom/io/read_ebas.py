@@ -33,6 +33,7 @@
 
 import os
 from copy import deepcopy
+from datetime import datetime
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
@@ -968,7 +969,17 @@ class ReadEbas(ReadUngriddedBase):
 #             data = result
 # =============================================================================
         return data
-                    
+       
+    def _print_read_info(self, last_t, i, tot_num):
+        t = datetime.now()
+        const.print_log.info("Reading file {} of {} ({}) | "
+                             "{} (delta = {} s')"
+                             .format(i+1, tot_num, 
+                                     type(self).__name__),
+                                     t.strftime('%H:%M:%S'),
+                                     (t-last_t))
+        return t
+    
     def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
         """Helper that reads list of files into UngriddedData
         
@@ -999,11 +1010,10 @@ class ReadEbas(ReadUngriddedBase):
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
+        last_t = datetime.now()
         for i, _file in enumerate(files):
             if i%disp_each == 0:
-                const.print_log.info("Reading file {} of {} ({})"
-                                     .format(i+1, num_files, 
-                                             type(self).__name__))
+                last_t = self._print_read_info(last_t, i, num_files)
             try:
                 station_data = self.read_file(_file, 
                                               vars_to_retrieve=files_contain[i])
