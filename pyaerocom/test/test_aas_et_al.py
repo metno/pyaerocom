@@ -12,56 +12,74 @@ import numpy as np
 from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
 from pyaerocom.io import ReadSulphurAasEtAl
 
-def _make_data():
-    r = ReadSulphurAasEtAl()
-    vars_to_retrieve = ["wetso4", "sconcso2", "sconcso4"]
-    # IDEA TO DO THIS FOR seperate data. 
-    return r.read( vars_to_retrieve = vars_to_retrieve)
-
-"""
-OBS OBS: STD for wetso4 is in a different unit, its in the original one. 
-
-"""
-
-
 
 def _true_std():
-        regions = {
-        'N-America': {"sconcso4": {'1990–2000': , 
-                                  '1990–2015': , 
-                                  '2000-2010': , 
-                                  '2000–2015': },
-                         
-                        "wetso4":{ '1980-1990': ,
-                                '1990–2015' : ,
-                                '2000–2010': , 
-                                }
-                        
-                     'sconcso4':{ '1990–2000': ,
-                                  '1990–2015': ,
-                                  '2000–2010': ,
-                                  '2000–2015': 
-                                 }
-    
-    }
-        'Europe':    {'1980–1990': 3.10, 
-                      '1990–2000': 2.11, 
-                      '1990–2015': 0.69, 
-                      '2000–2015': 2.03},
-                   
-        'East-Asia': {#'1980–1990': 3.10, 
-                      #'1990–2000': 2.11, 
-                      '2000-2010': 4.25, 
-                      '2000–2015': 9.41},
-        #'Africa': ,
-        'India': ,
-        #'East-US': ,
-        #'Central-Europe': ,
-        #'Most-East-Asia': ,
-        #'World': ,
-        #'': 0,
-    }
-
+        # Mesuring this: Absolute annual trend (STD) μgS/m3 year
+        regions_std = {'N-America': {"sconcso4": {'1990–2000': 0.025, 
+                                              '1990–2015': 0.024, 
+                                              '2000-2010': 0.029, 
+                                              '2000–2015': 0.029},
+                                     
+                                    "wetso4":{'1980-1990': 0.18,
+                                              '1990–2000': 0.13,
+                                              '1990–2015': 0.10,
+                                              '2000–2010': 0.13, 
+                                              '2000–2015': 0.13 
+                                            },
+                                    
+                                 'sconcso2':{ '1990–2000': 0.115,
+                                              '1990–2015': 0.109,
+                                              '2000–2010': 0.113,
+                                              '2000–2015': 0.123 
+                                             }},
+                                        
+                                        
+                          'Europe': { 'sconcso4':  {'1980–1990': 0.094, 
+                                                      '1990–2000': 0.052, 
+                                                      '1990–2015': 0.015,
+                                                      '2000–2010': 0.041,
+                                                      '2000–2015': 0.028},
+                                    'wetso4':{'1980–1990': 0.36,
+                                              '1990–2000': 0.29, 
+                                              '1990–2015': 0.12,
+                                              '2000–2010': 0.13,
+                                              '2000–2015': 0.10
+                                            
+                                            },
+                                    'sconcso2':{ '1980–1990': 0.168, 
+                                                '1990–2000': 0.275,
+                                                  '1990–2015': 0.085,
+                                                  '2000–2010': 0.054,
+                                                  '2000–2015': 0.036 
+                                                   },
+                                    },
+                             'India':{ 'sconcso4':  {'1980–1990': 3.10, 
+                                                      '1990–2000': 2.11, 
+                                                      '1990–2015': 0.69, 
+                                                      '2000–2015': 2.03},
+                                    'wetso4':{'1980–1990': 0.18,
+                                              '1990–2000': 0.37, 
+                                              '2000–2010': 0.37,
+                                            },
+                                    },
+                                     
+                    'East-Asia': {'sconcso4':  {'2000–2010': 0.034, 
+                                                '2000–2015': 0.037},
+                                            'wetso4':{'1990–2000': 0.32, 
+                                                      '1990–2015': 0.05,
+                                                      '2000-2010': 0.37,
+                                                      '2000-2015': 0.24 
+                                                    },
+                                            'sconcso2':{'2000–2010': 0.119,
+                                                        '2000–2015': 0.186}},
+                 
+                    'Africa':{ 'wetso4':{'2000-2010':0 },
+                                                    
+                                'sconcso2':{  '2000–2010': 0.121,
+                                              '2000–2015': 0.068
+                                               }}
+                }
+        return regions_std
 
 def def_regions(region):
     regions = {
@@ -101,119 +119,19 @@ def _find_area(lat,lon,typ):
     return area
 
 
-def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
-    data = data_scat_jungfraujoch
-    assert 'EBASMC' in data.data_revision
-    assert data.data_revision['EBASMC'] == '20190319'
-    assert data.shape == (227928, 12)
-    assert len(data.metadata) == 26
-    
-    unique_coords = []
-    unique_coords.extend(np.unique(data.latitude))
-    unique_coords.extend(np.unique(data.longitude))
-    unique_coords.extend(np.unique(data.altitude))
-    assert len(unique_coords) == 4
-    npt.assert_allclose(unique_coords, [46.5475, 7.985, 3578.0, 3580.0],
-                        rtol=TEST_RTOL)
-    
-    vals = data._data[:, data.index['data']]
-    check = [np.nanmean(vals), 
-             np.nanstd(vals),
-             np.nanmax(vals),
-             np.nanmin(vals)]
-    print(check)
-    npt.assert_allclose(check, 
-                        [4.433951143197965, 
-                         7.398103000409265, 182.7, -5.574], rtol=TEST_RTOL)
+def test_ungriddeddata_surface_cons_so2():
+    reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
+    data = reader.read() # read all variables
+    assert len(data.station_name) == 629
+    assert 'n/a' in data.data_revision
+    assert data.shape == (1008552, 12)
 
-@lustre_unavail   
-def test_scat_jungfraujoch(data_scat_jungfraujoch):
-    stat = data_scat_jungfraujoch.to_station_data('Jung*')
-    
-    keys = list(stat.keys())
-    
-    assert 'scatc550aer' in stat.overlap
-    assert len(stat.overlap['scatc550aer']) == 17466
-    assert stat['stat_merge_pref_attr'] == 'revision_date'
-    npt.assert_array_equal(keys, 
-                           ['dtime', 
-                            'var_info',
-                            'station_coords',
-                            'data_err', 
-                            'overlap', 
-                            'filename', 
-                            'station_id', 
-                            'station_name', 
-                            'instrument_name', 
-                            'PI', 'country', 
-                            'ts_type', 
-                            'latitude', 
-                            'longitude', 
-                            'altitude', 
-                            'data_id', 
-                            'dataset_name', 
-                            'data_product', 
-                            'data_version', 
-                            'data_level', 
-                            'revision_date', 
-                            'ts_type_src', 
-                            'stat_merge_pref_attr',
-                            'data_revision',
-                            'scatc550aer'])
-   
-    npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
-                            [np.datetime64('1995-07-08T23:29:59'), 
-                             np.datetime64('2017-12-31T23:29:59')])
-    
-    vals = [stat['instrument_name'], stat['ts_type'], stat['PI'],
-            len(stat.filename.split(';'))]
-    print(vals)
-    
-    npt.assert_array_equal(vals,
-                           ['IN3563; Ecotech_Aurora3000_JFJ_dry; TSI_3563_JFJ_dry', 
-                            'hourly', 
-                            'Baltensperger, Urs; Weingartner, Ernest; Bukowiecki, Nicolas', 
-                            26])
-    
-    d = stat.scatc550aer
-    vals = [d.mean(), d.std(), d.min(), d.max()]
-    npt.assert_allclose(vals,
-                         [4.7192396520408515, 7.702181266525312, -5.574, 182.7],
-                         rtol=TEST_RTOL)
-    
-    d = stat.overlap['scatc550aer']
-    vals = [d.mean(), d.std(), d.min(), d.max()]
-    npt.assert_allclose(vals,
-                         [2.662519,  4.303533, -3.468499, 54.971412], rtol=TEST_RTOL)
+    # TODO : FILTER THIS REGION AND CALCULATE STDs.    
 
-@lustre_unavail   
-def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
-    
-    stat = data_scat_jungfraujoch.to_station_data('Jung*', 
-                                                  start=2008, stop=2011, 
-                                                  freq='monthly')
-    
-    npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
-                            [np.datetime64('2008-01-15'),
-                             np.datetime64('2010-12-15') ])
-    assert stat.ts_type == 'monthly'
-    assert stat.ts_type_src == 'hourly'
-    
-    d = stat['scatc550aer']
-    vals = [d.mean(), d.std(), d.min(), d.max()]
-
-    npt.assert_allclose(vals, 
-                        [4.267739428649354, 3.535263046555806, 
-                         0.12036760000000003, 11.898275310344818],
-                         rtol=TEST_RTOL)
-    
 if __name__=="__main__":
    # pya.change_verbosity('info')
     #import sys
-    d = _make_data()
-    test_ungriddeddata_jungfraujoch(d)
-    test_scat_jungfraujoch(d)
-    test_scat_jungfraujoch_subset(d)
+    test_ungriddeddata_surface_cons_so2()
 # =============================================================================
 #     
 #     d = _make_data()

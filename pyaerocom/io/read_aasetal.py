@@ -96,6 +96,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         station_list : List[StationData]
             List of dictionary-like object containing data
         """
+       
 
         def pad_zeros(array):
             """ Try to do this vectorized,
@@ -113,20 +114,21 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         station_list = []
         #print(vars_to_retrieve)
         df = pd.read_csv(filename,sep=",", low_memory=False)
-        monthly_to_sec = days_in_month(df['year'], df['month'])*24*60*60
+        
         #days = np.ones((len(df["year"]))).astype('int')
         #df['day'] = days
         #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
         month = pad_zeros( df['month'])
         #print(month)
+               
         year = df['year'].values.astype("str")        
         days = np.array([ "01" for i in range(len(year)) ])
         dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
         df['dtime'] = np.array( dates, dtype = "datetime64[s]")  
         # array av numpy.datetime64
         df.rename(columns= {"Sampler":"instrument_name"}, inplace = True)
-        df.pop("year")
-        df.pop("month")
+        #df.pop("year")
+        #df.pop("month")
         #df.pop("day")
         grouped = df.groupby(by = "station_name")
 
@@ -149,28 +151,22 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                                                     self.VAR_TO_KEY.values()))
 
             # Looping over all keys in the grouped data frame.
-            for key in station_group:
+            for key in station_group: # NOT YEAR OR MONTH, BUT WOULD LIKE TO KEEP THOSE.
                 # Enters if the the key is a variable
                 if key in variables_present:
                     # Looping over all varibales to retrieve
                     for var in vars_to_retrieve:
                         if var == "wetso4":
                             # input unit is kg S/ha
+                            y = station_group['year'].values
+                            m = station_group['month'].values
+                            
+                            monthly_to_sec = days_in_month(y, m)*24*60*60             
                             mass_sulhpor = pd.to_numeric(station_group[key], 
                                                          errors='coerce').values
-                                                         
                             s[var] = unitconversion_wet_deposition(mass_sulhpor, 
-                             "monthly")/monthly_to_sec
-                            print(monthly_to_sec)
-                            print(unitconversion_wet_deposition(mass_sulhpor, 
-                             "monthly"))
+                             "monthly")/monthly_to_sec#monthly_to_sec[:156]
                             # output variable is ks so4 m-2s-1
-                        elif var == "sconcso4":
-                             s[var] = unitconversion_surface_consentrations(data = pd.to_numeric(station_group[key], 
-                                                   errors='coerce').values, nr_of_O=4)
-                        elif var == "sconcso2":
-                            s[var] = unitconversion_surface_consentrations(data = pd.to_numeric(station_group[key], 
-                                                   errors='coerce').values, nr_of_O=2)
                         else:
                             # Other variable have the correct unit.
                             s[var] = pd.to_numeric(station_group[key], 
@@ -300,6 +296,76 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         self.data = data_obj # initalizing a pointer to it selves
         return data_obj
     
+def is_leap_year(year):
+    """
+    Returns boolean:
+        True : its a leap year.
+        False : its not.
+    """
+    return (year % 4 == 0) and (year % 100 != 0) or (year % 400 == 0)
+
+def days_in_month(years, months):
+    """
+    Returns one array of values containing the number of values in a specific 
+    month. 
+    """
+    days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    index_feb = np.where(months==2)[0]
+    nr_of_days = []
+    if len(index_feb) == 0:
+        nr_of_days = np.array([days[m-1] for m in months])
+        print(nr_of_days)
+        return nr_of_days
+    else:
+        for counter, m in enumerate(months):
+            if is_leap_year(years[counter]) and m == 2:
+                nr_of_days.append(29)
+            else:
+                nr_of_days.append(days[m-1])
+        return np.array(nr_of_days)
+
+def unitconversion_wet_deposition(data, ts_type = "monthly"):
+    """
+    Converting:  ug S/ ha to ug SOx/m2 
+    Adding mass of oksygen.
+    
+    Parameters:
+    ------------------
+    data: array-like
+    
+    ts_type: Default monthly
+    The timeseries type.
+    
+    Return:
+    ------------
+    data in units of ug sox/m3
+    """
+    # TODO : add for a different number of days in one year.
+    mm_s = 0.001*32.065 # in kilos pr mol
+    mm_o = 4*15.9999*0.001 # molar mass of four okygen atom ins 
+    
+    nr_molecules = mass_to_nr_molecules(data, mm_s) # in the order of 10**27 
+    added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o)
+    mass = data + added_weight_oksygen
+    return mass*10000
+
+def mass_to_nr_molecules(mass, Mm):
+    """
+    Mass, Molar mass need to be in the same unit, either both g and g/mol 
+    or kg and kg/mol.
+    """
+    A = 6.022*10**23
+    #TODO: this assumes you have one 
+    return mass/Mm*A    
+
+def nr_molecules_to_mass(nr_molecules, Mm):
+    """
+    Molar mass in the unit you want mass returned in
+    Molar mass in grams pr kilo
+    """
+    A = 6.022*10**23
+    return Mm*nr_molecules/A
+    
 def unitconversion_surface_consentrations(data, nr_of_O = 2):
     """
     Converting:  ugS/ m3 to ug sox/m3
@@ -317,89 +383,39 @@ def unitconversion_surface_consentrations(data, nr_of_O = 2):
     data in units of ug SOx/m3
     
     """
-    nr_molecules = data/ (32.065*10**6) * (6.022*10**23) # 32.065*10**6) [ug/mol]
-    added_weight_oksygen = nr_molecules*nr_of_O*15.9999*10**(6) # ug
+    mm_s = 32.065*10**6 # in units of ug/mol
+    mm_o = nr_of_O*15.9999*10**6 ## in units of ug/mol
+    nr_molecules = mass_to_nr_molecules(data, mm_s) # 32.065*10**6) [ug/mol]
+    added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o) # ug
     # added weights in micrograms 
     mass = data + added_weight_oksygen # in micrograms
     return mass
-
-def is_leap_year(year):
-    """
-    Returns boolean:
-        True : its a leap year.
-        False : its not.
-    """
-    return (year % 4 == 0) and (year % 100 != 0) or (year % 400 == 0)
-
-def days_in_month(years, months):
-    """
-    Returns one array of values containing the number of values in a specific 
-    month. 
-    """
-    days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    nr_of_days = []
-    for year in years:
-        for month in months:
-            if is_leap_year(year) and month == 2:
-                nr_of_days.append(29)
-            else:
-                try: 
-                    #attempt to get value from dictionary 
-                   nr_of_days.append(days[month-1])
-                except KeyError:
-                    #key does not exist, so we caught the error
-                    return None
-    return np.array(nr_of_days)
-
-
-def unitconversion_wet_deposition(data, ts_type = "monthly"):
-    """
-    Converting:  u g S/ ha to ug sox/m2 
-    Adding mass of oksygen.
     
-    Parameters:
-    ------------------
-    data: array-like
-    
-    
-    ts_type: Default monthly
-    The timeseries type.
-    
-    Return:
-    ------------
-    data in units of ug sox/m3
-    """
-    # TODO : add for a different number of days in one year.
-    nr_molecules = data/ (0.001*32.065) * (6.022*10**23) # in the order of 10**27 
-    added_weight_oksygen = nr_molecules*4*15.9999*0.001
-    mass = data + added_weight_oksygen
-    return mass*10000
-
-  
 def unitconversion_wet_deposition_back(data, ts_type = "monthly"):
     """
-    Converting:  ug sox/m3 to ugS/ m3. 
+    Converting:  ug SOx/m3 to ugS/ m3. 
     Removing mass of oxygen. 
     
     Parameters:
     ------------------
     data: array-like
     
-    
     ts_type: Default monthly
     The timeseries type.
     
     Return:
-    ------------
-    data in units of ug sox/m3
-
-    
+    ------------------
+    data in units of ug SOx/m3
     """
+    mm_compund = 0.001*32.065 + 0.001*15.999*4
+    mm_s = 0.001*32.065
+    #A = 6.022*10**23
     # TODO : add for a different number of days in one year.
-    nr_molecules = data/ (0.001*32.065 + 0.001*15.999*4) * (6.022*10**23) # in the order of 10**27 
-    added_weight_oksygen = nr_molecules*4*15.9999*0.001
-    mass = data - added_weight_oksygen
-    return mass*10000
+    nr_molecules = nr_molecules_to_mass(data, mm_compund) # in the order of 10**27 
+    #added_weight_oksygen = nr_molecules*4*15.9999*0.001/
+    #mass = data - added_weight_oksygen
+    mass_S = nr_molecules_to_mass(nr_molecules, mm_s)
+    return mass_S/10000 # to be multiplied by the numebers of days in a month
 
 def unitconversion_surface_consentrations_back(data, nr_of_O = 2):
     """
@@ -418,7 +434,7 @@ def unitconversion_surface_consentrations_back(data, nr_of_O = 2):
     data in units of ugS/ m3.
     """
 
-    mmO = 15.9999
+    mmO = nr_of_O*15.9999*10**6
     mmS = 32.065
     
     nr_molecules = data/ (nr_of_O*mmO*10**6) * (6.022*10**23)
@@ -432,22 +448,32 @@ if __name__ == "__main__":
      #change_verbosity('info')
      V = "wetso4"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-     dataNone = aa.read(V)
-     dataNone.plot_station_coordinates(markersize=12, color='lime')
-
-     dataString = aa.read("sconcso4")
-     dataString.plot_station_coordinates(markersize=12, color='lime')
+     dataNone = aa.read(V)#['sconcso4', 'sconcso2']
+     name = 'Abington'
+     abington = dataNone.to_station_data("Oulanka", V)
+     abington.plot_timeseries(V)
      
-     dataList =  aa.read(["sconcso2","sconcso4"])
-     dataList.plot_station_coordinates(markersize=12, color='red')
+     #abington2 = dataNone.to_station_data("Oulanka", 'sconcso2')
+     #abington2.plot_timeseries('sconcso2')
+     
      plt.show()
+    #dataString = aa.read("sconcso4")
+     #dataString.plot_station_coordinates(markersize=12, color='lime')
+     #print(dataString.station_name)
+     #abington = dataString.to_station_data("Abington", 'sconcso4')
+     #abington.plot_timeseries('sconcso4')
+     #plt.show()
+     
+     #dataList =  aa.read(["sconcso2","sconcso4"])
+     #dataList.plot_station_coordinates(markersize=12, color='red')
+     #plt.show()
 
      #sprint(ungridded.metadata[2.0])
      #when = ungridded.meta_idx[2.0]['sconcso2']
      #print(ungridded._data[when[0]:when[-1], ungridded._DATAINDEX])
 
-     dataNone.plot_station_coordinates('wetso4', color='lime')
-     plt.show()
+     #dataNone.plot_station_coordinates('wetso4', color='lime')
+     #plt.show()
      #ax.figure.savefig('/home/hannas/Desktop/test_stations_aasetal.png')
      #print(ungridded._data[0, :]) #:250
      #print(ungridded.unique_station_names)
