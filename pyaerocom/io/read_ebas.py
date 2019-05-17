@@ -1,16 +1,3 @@
-################################################################
-# read_aeronet_invv2.py
-#
-# read Aeronet inversion V2 data
-#
-# this file is part of the pyaerocom package
-#
-#################################################################
-# Created 20180629 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
 # Copyright (C) 2018 met.no
 # Contact information:
 # Norwegian Meteorological Institute
@@ -33,11 +20,13 @@
 
 import os
 from copy import deepcopy
+from datetime import datetime
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
 from pyaerocom.mathutils import compute_scatc550dryaer, compute_absc550dryaer
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.io.helpers import _print_read_info
 from pyaerocom import StationData
 from pyaerocom import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
@@ -144,7 +133,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.16_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.16T_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -738,8 +727,9 @@ class ReadEbas(ReadUngriddedBase):
             ts_type = self.TS_TYPE_CODES[tres_code]
         except KeyError:
             self.logger.info('Unkown temporal resolution {}'.format(tres_code))
-            
-            ts_type = 'undefined'
+            ts_type = tres_code
+            raise Exception(tres_code)
+
         data_out['ts_type'] = ts_type
         # altitude of station
         try:
@@ -968,7 +958,7 @@ class ReadEbas(ReadUngriddedBase):
 #             data = result
 # =============================================================================
         return data
-                    
+    
     def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
         """Helper that reads list of files into UngriddedData
         
@@ -999,11 +989,12 @@ class ReadEbas(ReadUngriddedBase):
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
+        last_t = datetime.now()
         for i, _file in enumerate(files):
             if i%disp_each == 0:
-                const.print_log.info("Reading file {} of {} ({})"
-                                     .format(i+1, num_files, 
-                                             type(self).__name__))
+                last_t = _print_read_info(i, disp_each, num_files, 
+                                          last_t, type(self).__name__,
+                                          const.print_log)
             try:
                 station_data = self.read_file(_file, 
                                               vars_to_retrieve=files_contain[i])
@@ -1140,10 +1131,6 @@ class ReadEbas(ReadUngriddedBase):
 # =============================================================================
     
 if __name__=="__main__":
-    
-    from pyaerocom import change_verbosity
-    import pyaerocom as pya
-    #change_verbosity('warning')
 
     r = ReadEbas()
     r.opts.keep_aux_vars = True
@@ -1153,9 +1140,6 @@ if __name__=="__main__":
     data0 =  r.read('scatc550dryaer', station_names='Barrow')
     t1 =time()
     
-    data1 =  r.read('scatc550dryaer', station_names='Barrow',
-                   multiproc=True)
-    t2 =time()
-    
+
     
     

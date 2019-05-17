@@ -923,3 +923,31 @@ if __name__=="__main__":
     print(NUMPY_FREQ_TO_TS_TYPE)
 
     isrange(slice(1,2))
+
+    import matplotlib.pyplot as plt
+    plt.close('all')
+    NUM = 1000 #days 
+    LAMBDA = 40 
+    dates = pd.date_range(start='2010', freq='h', periods=NUM)
+    
+    x = np.arange(NUM)
+    trend_slope = 3 / NUM
+    yoffset = 8
+    signal = np.sin(np.pi*2*x / LAMBDA) + trend_slope*x + yoffset
+    noise = np.random.random(NUM) -.5
+    vals = signal + noise
+    
+    s0 = pd.Series(vals, dates)
+    ax = s0.plot(label='original (daily)',figsize=(16,8))
+    
+    def remove_datapoints_random(series, rest_coverage_percent=40):
+        import random
+        num = len(series)
+        num_samples = int(rest_coverage_percent / 100 * num)
+        indices = sorted(random.sample(range(num), num_samples))
+        return series[indices]
+    
+    def to_monthly_augustin(series):
+        pass
+    
+    ax.legend()
