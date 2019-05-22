@@ -24,6 +24,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom import const
 from pyaerocom.stationdata import StationData
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class ReadGAW(ReadUngriddedBase):
@@ -134,12 +135,11 @@ class ReadGAW(ReadUngriddedBase):
         data_out['longitude'] = float(meta[12].strip())
         data_out['latitude'] = float(meta[11].strip())
         data_out['altitude'] = float(meta[13].strip())
-        data_out['filename'] = meta[1].strip().replace(' ', '_')  # is this meant to be the filename?
+        data_out['filename'] = meta[1].strip().replace(' ', '_')
         data_out['data_version'] = int(meta[5].strip())
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
-        data_out['PI_email'] = meta[16].strip().replace(' ', '_')  # don't have the PI, just the contributor: LSCE
-        data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')  # should this be more generic, a list with all the heights? 
-        # Should we add the number of sampling heights?
+        data_out['PI_email'] = meta[16].strip().replace(' ', '_')
+        data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
         data_out['variables'] = vars_to_retrieve 
 
         # Add date and time and the rest of the data to a dictionary
@@ -148,7 +148,6 @@ class ReadGAW(ReadUngriddedBase):
         data_out['vmrdms_nd'] = []
         data_out['vmrdms_std'] = []
         data_out['vmrdms_flag'] = []
-        # What do CS and REM mean? Should we include this variables in the dict?
     
         for i in range(1, len(data)):
             datestring = data[i][0]  + 'T' + data[i][1]
@@ -313,19 +312,24 @@ class ReadGAW(ReadUngriddedBase):
         return data_obj
     
 if __name__ == "__main__":
+    
+    # References: 
+    # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2000JD900236
+    # https://aerocom.met.no/DATA/AEROCOM_WORK/oxford10/pdf_pap/suntharalingam_sulfate_2010.pdf
      
     r = ReadGAW()
     data = r.read(vars_to_retrieve = ['vmrdms', 'vmrdms_flag'])
     print('vars to retrieve:', data.vars_to_retrieve)
     
-    stat = data['Amsterdam_Island']
+    stat = data['Cape_Verde_Observatory']
     
     # Print the station data object
-    print('Amsterdam Island:', stat)
+    print('Cape Verde Observatory:', stat)
     
     # plot flag at Amsterdam Island
     ax = stat.plot_timeseries('vmrdms_flag')
-    
+    plt.show()
+
     
     # Plot vmrdms at Amsterdam Island and Cape Verde Observatory in the same figure
     ax = data.plot_station_timeseries(station_name='Amsterdam_Island', 
@@ -336,5 +340,55 @@ if __name__ == "__main__":
                                  ax=ax, 
                                  label='Cape Verde Observatory')
     ax.set_title("vmrdms")
+    plt.show()
+    
+    # 2004-2008
+    # plot monthly mean
+    dms_ai = data['Amsterdam_Island'].vmrdms
+    dms_ai_0408 = dms_ai['2004-1-1':'2008-12-31']
+    dms_ai_monthly_0408 = dms_ai_0408.resample('M', 'mean')
+    plt.figure()
+    ax = dms_ai_monthly_0408.plot()
+    ax.set_title('Monthlty mean of vmrdms at Amsterdam Island (2004-2008)')
+    plt.show()
+    
+    # plot climatology
+    dms_climat_0408 = dms_ai_monthly_0408.groupby(
+            dms_ai_monthly_0408.index.month).mean()
+    #dms_climat_0408 = dms_ai_0408.groupby(dms_ai_0808.index.month).mean()
+    print('DMS climatology at Amsterdam Island (2004-2008):', dms_climat_0408)
+    plt.figure()
+    ax = dms_climat_0408.plot(label='mean')
+    ax.set_title('Monthly climatology of vmrdms at Amsterdam Island (2004-2008)')
+    plt.show()
+    
+    
+    # 1990-1999
+    dms_ai_9099 = dms_ai['1990-1-1':'1999-12-31']
+    
+    print('count:', dms_ai_9099.count())  # Should be 2820 
+    dms_ai_monthly_mean_9099 = dms_ai_9099.resample('M').mean()
+
+    dms_climat_9099 = dms_ai_monthly_mean_9099.groupby(
+            dms_ai_monthly_mean_9099.index.month).mean()
+
+    print('DMS climatology at Amsterdam Island (1990-1999):', dms_climat_9099)
+    plt.figure()
+    ax = dms_climat_9099.plot(label='mean')
+    ax.set_title('Climatology of vmrdms at Amsterdam Island (1990-1999)')
+    
+    dms_ai_monthly_median_9099 = dms_ai_9099.resample('M').median()
+
+    dms_median_9099 = dms_ai_monthly_median_9099.groupby(
+            dms_ai_monthly_median_9099.index.month).median()
+
+
+    print('DMS monthly median at Amsterdam Island (1990-1999):', dms_median_9099)
+    dms_median_9099.plot(label='median', ax=ax)
+    plt.legend(loc='best')
+    plt.show()
+  
+
+
 
  
