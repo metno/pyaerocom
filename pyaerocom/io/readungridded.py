@@ -71,9 +71,10 @@ class ReadUngridded(object):
     if isinstance(const._cachedir, str) and os.path.exists(const._cachedir):
         _DONOTCACHEFILE = os.path.join(const._cachedir, 'DONOTCACHE')
 
-    def __init__(self, datasets_to_read=const.AERONET_SUN_V3L2_AOD_DAILY_NAME,
+    def __init__(self, datasets_to_read=None,
                  vars_to_retrieve=None, ignore_cache=False):
-        
+        if datasets_to_read is None:
+            datasets_to_read = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
         #will be assigned in setter method of dataset_to_read
         self._datasets_to_read = []
         #: dictionary containing reading classes for each dataset to read (will
@@ -107,6 +108,31 @@ class ReadUngridded(object):
         return False
     
     @property
+    def dataset_to_read(self):
+        """Helper that returns the dataset to be read
+        
+        Note
+        ----
+        Only works if a single dataset is assigned in :attr:`datasets_to_read`,
+        else throws an ValueError.
+        
+        Raises
+        ------
+        ValueError
+            if :attr:`datasets_to_read` contains no or more than one entry.
+        """
+        dsr = self.datasets_to_read
+        if len(dsr) == 0:
+            raise ValueError('Could not fetch reader class. No dataset '
+                             'assigned in attr. datasets_to_read')
+        elif len(dsr) > 1:
+            raise ValueError('Could not fetch reader class. More than one '
+                             'dataset is assigned in attr. '
+                             'datasets_to_read')
+        
+        return dsr[0]
+    
+    @property
     def datasets_to_read(self):
         """List of datasets supposed to be read"""
         return self._datasets_to_read
@@ -122,13 +148,15 @@ class ReadUngridded(object):
             
         self._datasets_to_read = datasets    
     
-    def dataset_provides_variables(self, dataset_to_read):
+    def dataset_provides_variables(self, dataset_to_read=None):
         """List of variables provided by a certain dataset"""
+        if dataset_to_read is None:
+            dataset_to_read = self.dataset_to_read
         if dataset_to_read in self._readers:
             return self._readers[dataset_to_read].PROVIDES_VARIABLES
         return self.find_read_class(dataset_to_read).PROVIDES_VARIABLES
       
-    def get_reader(self, dataset_to_read):
+    def get_reader(self, dataset_to_read=None):
         """Helper method that returns loaded reader class
         
         Parameters
@@ -149,6 +177,12 @@ class ReadUngridded(object):
         NetworkNotImplemented
             if network is supported but no reading routine is implemented yet
         """
+        if dataset_to_read is None:
+            dataset_to_read = self.dataset_to_read
+        elif not dataset_to_read in self.supported_datasets:
+            raise NetworkNotSupported('Could not fetch reader class: Input '
+                                      'network {} is not supported by '
+                                      'ReadUngridded'.format(dataset_to_read))
         if not dataset_to_read in self._readers:
             self.find_read_class(dataset_to_read)
         return self._readers[dataset_to_read]
