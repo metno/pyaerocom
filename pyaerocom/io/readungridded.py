@@ -43,6 +43,7 @@ from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
+from pyaerocom.io.read_gaw import ReadGAW
 
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
@@ -60,7 +61,8 @@ class ReadUngridded(object):
                  ReadAeronetSunV2,
                  ReadAeronetSunV3,
                  ReadEarlinet,
-                 ReadEbas]
+                 ReadEbas,
+                 ReadGAW]
     
     # when this file exists, an existing cache file is not read
     _DONOTCACHEFILE = None

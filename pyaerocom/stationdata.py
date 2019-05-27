@@ -979,9 +979,13 @@ class StationData(StationMetaData):
         if inplace:
             self[var_name] = new
             self.var_info[var_name]['ts_type'] = ts_type        
-            if len(self.var_info) > 1:     
+            if len(self.var_info) > 1 and self.ts_type is not None:     
+                _tt = self.ts_type
                 self.ts_type = None
                 self.dtime = None
+                for var, info in self.var_info.items():
+                    if not var == var_name:
+                        info['ts_type'] = _tt
             else:
                 self.ts_type = ts_type
                 self.dtime = new.index.values

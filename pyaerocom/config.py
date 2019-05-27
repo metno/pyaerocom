@@ -101,6 +101,9 @@ class Config(object):
     #: Earlinet access name;
     EARLINET_NAME = 'EARLINET'
     
+    #: DMS
+    DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
+    
     #: Lowest possible year in data
     MIN_YEAR = 0
     #: Highest possible year in data

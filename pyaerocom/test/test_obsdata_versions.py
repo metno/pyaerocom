@@ -26,12 +26,13 @@ def test_revision_dates():
                                  'AeronetSunV2Lev2.daily', 
                                  'AeronetSunV3Lev2.daily', 
                                  'EARLINET',
-                                 'EBASMC'])
+                                 'EBASMC',
+                                 'DMS_AMS_CVO'])
 
     print(revs)
     npt.assert_array_equal(revs, ['20190330', '20171216', '20180519', 
                                   '20190425', '20180519', '20190425', 
-                                  '20190129', '20190319'])
+                                  '20190129', '20190319', '20190522'])
     
 if __name__=="__main__":
     import sys
