@@ -219,7 +219,8 @@ class CacheHandlerUngridded(object):
             if not use_cache_file:
                 # TODO: Should we delete the cache file if it is outdated ???
                 logger.info('Aborting reading cache file {}. Aerocom database '
-                            'has changed compared to cached version'
+                            'or pyaerocom version has changed compared to '
+                            'cached version'
                             .format(self.file_name))
                 in_handle.close()
                 if delete_existing: #something was wrong
