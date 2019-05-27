@@ -124,6 +124,8 @@ class UngriddedData(object):
         self.meta_idx = od()
         self.var_idx = od()
         
+        self._idx = -1
+        
         self.filter_hist = od()
     
     @property
@@ -495,6 +497,8 @@ class UngriddedData(object):
             stats = [merged]
         for stat in stats:
             for var in vars_to_convert:
+                if not var in stat:
+                    continue
                 if freq is not None:
                     stat.resample_timeseries(var, freq, inplace=True) # this does also insert NaNs, thus elif in next
                 elif insert_nans:
@@ -1901,6 +1905,16 @@ class UngriddedData(object):
             return True
         return False
         
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        self._idx += 1
+        if self._idx == len(self.metadata):
+            self._idx = -1
+            raise StopIteration
+        return self[self._idx]
+    
     def __repr__(self):
         return ('{} <networks: {}; vars: {}; instruments: {};'
                 'No. of stations: {}'
