@@ -907,7 +907,7 @@ class UngriddedData(object):
         for i, meta in self.metadata.items():
             if var_name in meta['var_info']:
                 try:
-                    u = meta['var_info'][var_name]['units']
+                    u = meta['var_info'][var_name]['unit']
                     if not u in units:
                         units.append(u)
                 except KeyError:
@@ -917,8 +917,8 @@ class UngriddedData(object):
                                    'attr. "unit", which is deprecated, please '
                                    'check corresponding reading routine. ')
                     raise MetaDataError('Failed to access unit information for '
-                                        'variable {} in metadata block {}. {}'
-                                        .format(var_name, i, add_str))
+                                        'variable {} in metadata block {}'
+                                        .format(var_name, i))
         if len(units) == 0 and str(unit) != '1':
             raise MetaDataError('Failed to access unit information for '
                                 'variable {}. Expected unit {}'
@@ -1373,7 +1373,7 @@ class UngriddedData(object):
             # get offset in metadata index
             meta_offset = max([x for x in obj.metadata.keys()]) + 1
             data_offset = obj.shape[0]
- 
+
             # add this offset to indices of meta dictionary in input data object
             for meta_idx_other, meta_other in other.metadata.items():
                 meta_idx = meta_offset + meta_idx_other
@@ -2075,17 +2075,23 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
 if __name__ == "__main__":
     
     import pyaerocom as pya
-    data = pya.io.ReadUngridded().read('EBASMC', ['scatc550dryaer', 
+
+
+    data = pya.io.ReadUngridded().read('EBASMC',
+                                       ['scatc550aer', 'absc550aer'],
+                                       station_names='Puy*')
+
+    data1 =  data.remove_outliers('scatc550aer')
+
+    stat = data1.to_station_data('P*', 'scatc550aer',
+                                  merge_if_multi=True,
+                                  merge_pref_attr='revision_date')
+
+    stat.plot_timeseries('scatc550aer', add_overlaps=True)
+    data = pya.io.ReadUngridded().read('EBASMC', ['scatc550dryaer',
                                'absc550aer'])
     
     f = pya.Filter(altitude_filter='noMOUNTAINS')
     
     subset = f(data)
-    
-
-    
-    
-    
-    
-    
     

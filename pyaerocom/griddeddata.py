@@ -106,8 +106,8 @@ class GriddedData(object):
     #: Req. order of dimension coordinates for time-series computation
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
     _MAX_SIZE_GB = 64 #maximum file size for in-memory operations
-    
-    SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude', 
+
+    SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude',
                               'profile']
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
@@ -151,11 +151,11 @@ class GriddedData(object):
                                 .format(self.units, var.units))
                     self.convert_unit(var.units)
                     self.flags['unit_ok'] = True
-        except (VariableDefinitionError, UnitConversionError, 
+        except (VariableDefinitionError, UnitConversionError,
                 MemoryError, ValueError) as e:
             logger.info('Failed to convert unit. Reason: {}'.format(repr(e)))
             self.flags['unit_ok'] = False
-    
+
     @property
     def data_revision(self):
         """Revision string from file Revision.txt in the main data directory
@@ -179,7 +179,7 @@ class GriddedData(object):
         if not isinstance(r, ReadGridded):
             self.reader = r = ReadGridded(self.data_id)
         return r
-    
+
     def search_other(self, var_name, require_same_shape=True):
         """Searches data for another variable"""
         if require_same_shape and self.concatenated or self.computed:
@@ -193,17 +193,17 @@ class GriddedData(object):
             except:
                 pass
         if var_name in self.reader.vars_provided:
-            return self.reader.read_var(var_name, 
+            return self.reader.read_var(var_name,
                                         start=self.start,
                                         stop=self.stop,
                                         ts_type=self.ts_type,
                                         flex_ts_type=True)
         raise VariableNotFoundError('Could not find variable {}'.format(var_name))
-    
+
     @property
     def concatenated(self):
         return self.suppl_info['concatenated']
-    
+
     @property
     def computed(self):
         return self.suppl_info['computed']
@@ -211,7 +211,7 @@ class GriddedData(object):
     @reader.setter
     def reader(self, val):
         self.suppl_info['reader'] = val
-    
+
     @property
     def units(self):
         """Unit of data"""
@@ -227,8 +227,8 @@ class GriddedData(object):
         
         Note
         ----
-        This is a pointer to the data object of the underlying iris.Cube 
-        instance and will load the data into memory. Thus, in case of large 
+        This is a pointer to the data object of the underlying iris.Cube
+        instance and will load the data into memory. Thus, in case of large
         datasets, this may lead to a memory error
         """
         return self.grid.data
@@ -494,7 +494,7 @@ class GriddedData(object):
     @property
     def has_latlon_dims(self):
         """Boolean specifying whether data has latitude and longitude dimensions"""
-        return all([dim in self.dimcoord_names for dim in ['latitude', 
+        return all([dim in self.dimcoord_names for dim in ['latitude',
                                                            'longitude']])
     @property
     def has_time_dim(self):
@@ -884,7 +884,7 @@ class GriddedData(object):
 #         lat_idx = np.argmin(np.abs(lats - latitude))
 #         times = self.time_stamps()
 #         data = self.grid.data[:, lat_idx, lon_idx]
-#         return {'latitude'      : latitude, 
+#         return {'latitude'      : latitude,
 #                 'longitude'     : longitude,
 #                 'name'          : self.name,
 #                 self.var_name   : Series(data, times)}
@@ -941,7 +941,7 @@ class GriddedData(object):
                 constraints.append(c)
             else:
                 if dim == 'time':
-                    if isnumeric(val) and val in self['time'].points: 
+                    if isnumeric(val) and val in self['time'].points:
                         _tval = val
                     else:
                         _idx = self._closest_time_idx(val)
@@ -980,18 +980,18 @@ class GriddedData(object):
     # TODO: Test, confirm and remove beta flag in docstring
     def remove_outliers(self, low=None, high=None):
         """Remove outliers from data
-        
+
         Parameters
         ----------
         low : float
-            lower end of valid range for input variable. If None, then the 
-            corresponding value from the default settings for this variable 
-            are used (cf. minimum attribute of `available variables 
+            lower end of valid range for input variable. If None, then the
+            corresponding value from the default settings for this variable
+            are used (cf. minimum attribute of `available variables
             <https://pyaerocom.met.no/config_files.html#variables>`__)
         high : float
-            upper end of valid range for input variable. If None, then the 
-            corresponding value from the default settings for this variable 
-            are used (cf. maximum attribute of `available variables 
+            upper end of valid range for input variable. If None, then the
+            corresponding value from the default settings for this variable
+            are used (cf. maximum attribute of `available variables
             <https://pyaerocom.met.no/config_files.html#variables>`__)
         """
         if low is None:
@@ -1002,7 +1002,7 @@ class GriddedData(object):
             high = self.var_info.maximum
             print_log.info('Setting {} outlier upper lim: {:.2f}'
                            .format(self.var_name, high))
-        mask = np.logical_or(self.grid.data < low, 
+        mask = np.logical_or(self.grid.data < low,
                              self.grid.data > high)
         self.grid.data[mask] = np.nan
         self.suppl_info['outliers_removed'] = True
@@ -1729,13 +1729,13 @@ class GriddedData(object):
         const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         return self.grid.units
-    
+
     @unit.setter
     def unit(self, val):
         const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         self.grid.units = val
-        
+
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya

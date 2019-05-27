@@ -18,15 +18,15 @@ class StationData(StationMetaData):
     """Dict-like base class for single station data
     
     ToDo: write more detailed introduction
-    
+
     Note
     ----
-    Variable data (e.g. numpy array or pandas Series) can be directly 
-    assigned to the object. When  assigning variable data it is 
-    recommended to add variable metadata (e.g. unit, ts_type) 
+    Variable data (e.g. numpy array or pandas Series) can be directly
+    assigned to the object. When  assigning variable data it is
+    recommended to add variable metadata (e.g. unit, ts_type)
     in :attr:`var_info`, where key is variable name and value is dict with
     metadata entries.
-    
+
     Attributes
     ----------
     dtime : list
@@ -74,18 +74,18 @@ class StationData(StationMetaData):
             numpy array specifying default coordinates
         """
         return const.make_default_vert_grid()
-    
+
     def has_var(self, var_name):
         """Checks if input variable is available in data object
-            
+
         Parameters
         ----------
         var_name : str
             name of variable
-            
+
         Returns
         -------
-        bool 
+        bool
             True, if variable data is available, else False
         """
         if not var_name in self:
@@ -95,7 +95,7 @@ class StationData(StationMetaData):
                                     'metadata assigned in :attr:`var_info`'
                                     .format(var_name))
         return True
-    
+
     def get_unit(self, var_name):
         """Get unit of variable data
         
@@ -117,7 +117,7 @@ class StationData(StationMetaData):
         if not var_name in self.var_info:
             raise MetaDataError('Could not access variable metadata dict '
                                 'for {}.'.format(var_name))
-        try: 
+        try:
             return str(self.var_info[var_name]['units'])
         except KeyError:
             add_str = ''
@@ -127,7 +127,7 @@ class StationData(StationMetaData):
                            'check corresponding reading routine. ')
             raise MetaDataError('Failed to access units attribute for variable '
                                 '{}. {}'.format(var_name, add_str))
-    
+
     @property
     def units(self):
         """Dictionary containing units of all variables in this object"""
@@ -135,25 +135,25 @@ class StationData(StationMetaData):
         for var in self.var_info:
             ud[var] = self.get_unit(var)
         return ud
-    
-    
+
+
     def check_var_unit_aerocom(self, var_name):
         """Check if unit of input variable is AeroCom default, if not, convert
-        
+
         Parameters
         ----------
         var_name : str
             name of variable
-            
+
         Raises
         ------
         MetaDataError
             if unit information is not accessible for input variable name
         UnitConversionError
-            if current unit cannot be converted into specified unit 
+            if current unit cannot be converted into specified unit
             (e.g. 1 vs m-1)
         DataUnitError
-            if current unit is not equal to AeroCom default and cannot 
+            if current unit is not equal to AeroCom default and cannot
             be converted.
         """
         to_unit = const.VARS[var_name].units
@@ -166,7 +166,7 @@ class StationData(StationMetaData):
                 raise UnitConversionError('Failed to convert unit of variable '
                                           '{}. Reason: {}'
                                           .format(var_name, repr(e)))
-            
+
     def check_unit(self, var_name, unit=None):
         """Check if variable unit corresponds to a certain unit
         
@@ -493,7 +493,7 @@ class StationData(StationMetaData):
                     
         keys = self.STANDARD_META_KEYS
         keys.extend(add_meta_keys)
-        # remove station name from key list to be merged        
+        # remove station name from key list to be merged
         for key in keys:
             if key == 'station_name':
                 continue
@@ -616,23 +616,23 @@ class StationData(StationMetaData):
                 self.overlap[var_name] = removed
                 
         return self
-    
+
     def _ensure_same_var_ts_type_other(self, other, var_name):
         ts_type = self.get_var_ts_type(var_name)
         ts_type1 = other.get_var_ts_type(var_name)
         if ts_type != ts_type1:
-            # make sure each variable in the object has explicitely ts_type 
+            # make sure each variable in the object has explicitely ts_type
             # assigned (rather than global specification)
-            
+
             self._update_var_timeinfo()
             other._update_var_timeinfo()
-                
+
             from pyaerocom.helpers import get_lowest_resolution
             ts_type = get_lowest_resolution(ts_type, ts_type1)
         return ts_type
-    
+
     def _update_var_timeinfo(self):
-        
+
         for var, info in self.var_info.items():
             data = self[var]
             if not isinstance(data, pd.Series):
@@ -647,16 +647,16 @@ class StationData(StationMetaData):
                                      'in {}'.format(var, self))
                 info['ts_type'] = self.ts_type
         self.ts_type = None
-        
+
     def _merge_vardata_2d(self, other, var_name):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
-        ts_type = self._ensure_same_var_ts_type_other(other, var_name)    
-        
+        ts_type = self._ensure_same_var_ts_type_other(other, var_name)
+
         s0 = self.resample_timeseries(var_name, ts_type=ts_type,
                                       inplace=True).dropna()
         s1 = other.resample_timeseries(var_name, inplace=True,
                                        ts_type=ts_type).dropna()
-        
+
         info = other.var_info[var_name]
         removed = None
         if 'overlap' in info and info['overlap']:
@@ -730,10 +730,10 @@ class StationData(StationMetaData):
             raise MetaDataError('For merging of {} data, variable specific meta '
                                 'data needs to be available in var_info dict '
                                 .format(var_name))
-        
+
         self.check_var_unit_aerocom(var_name)
         other.check_var_unit_aerocom(var_name)
-        
+
         if self.check_if_3d(var_name):
             raise NotImplementedError('Coming soon...')
             #return self._merge_vardata_3d(other, var_name)
@@ -762,9 +762,10 @@ class StationData(StationMetaData):
         StationData
             this object that has merged the other station
         """
+        self.merge_meta_same_station(other, **add_meta_keys)
         self.merge_vardata(other, var_name)
         self.merge_meta_same_station(other, **add_meta_keys)
-        
+
         return self
         
     def get_data_columns(self):
@@ -854,20 +855,20 @@ class StationData(StationMetaData):
     def remove_outliers(self, var_name, low=None, high=None,
                         check_unit=True):
         """Remove outliers from one of the variable timeseries
-        
+
         Parameters
         ----------
         var_name : str
             variable name
         low : float
-            lower end of valid range for input variable. If None, then the 
-            corresponding value from the default settings for this variable 
-            are used (cf. minimum attribute of `available variables 
+            lower end of valid range for input variable. If None, then the
+            corresponding value from the default settings for this variable
+            are used (cf. minimum attribute of `available variables
             <https://pyaerocom.met.no/config_files.html#variables>`__)
         high : float
-            upper end of valid range for input variable. If None, then the 
-            corresponding value from the default settings for this variable 
-            are used (cf. maximum attribute of `available variables 
+            upper end of valid range for input variable. If None, then the
+            corresponding value from the default settings for this variable
+            are used (cf. maximum attribute of `available variables
             <https://pyaerocom.met.no/config_files.html#variables>`__)
         check_unit : bool
             if True, the unit of the data is checked against AeroCom default
@@ -875,7 +876,7 @@ class StationData(StationMetaData):
         if any([x is None for x in (low, high)]):
             info = const.VARS[var_name]
             if check_unit:
-                try: 
+                try:
                     self.check_unit(var_name)
                 except DataUnitError:
                     self.convert_unit(var_name, to_unit=info.units)
@@ -1252,7 +1253,7 @@ class StationData(StationMetaData):
         if legend:
             ax.legend()
         return ax
-       
+
     def __str__(self):
         """String representation"""
         head = "Pyaerocom {}".format(type(self).__name__)
@@ -1280,6 +1281,8 @@ class StationData(StationMetaData):
             elif isinstance(v, pd.Series):
                 series += "\n{} (Series, {} items)".format(k, len(v))
             else:
+                if v == '':
+                    v = '<empty_str>'
                 s += "\n{}: {}".format(k,v)
         if arrays:
             s += '\n\nData arrays\n.................'
@@ -1289,7 +1292,7 @@ class StationData(StationMetaData):
             s += series
     
         return s
-
+    
 if __name__=="__main__":
     
     s = StationData(station_name='Bla', revision_date='20, 21')

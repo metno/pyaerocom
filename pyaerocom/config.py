@@ -100,20 +100,23 @@ class Config(object):
 
     #: Earlinet access name;
     EARLINET_NAME = 'EARLINET'
-    
+
+    #: GAW TAD subset aas et al paper
+    GAWTADSUBSETAASETAL_NAME = 'GAWTADsubsetAasEtAl'
+
     #: DMS
     DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
-    
+
     #: Lowest possible year in data
     MIN_YEAR = 0
     #: Highest possible year in data
     MAX_YEAR = 20000
-    
+
     #: standard names for coordinates
-    STANDARD_COORD_NAMES = ['latitude', 
+    STANDARD_COORD_NAMES = ['latitude',
                             'longitude',
-                            'altitude']    
-    #: Information specifying default vertical grid for post processing of 
+                            'altitude']
+    #: Information specifying default vertical grid for post processing of
     #: profile data. The values are in units of m.
     DEFAULT_VERT_GRID_DEF = od(lower = 0,
                                upper = 15000,
