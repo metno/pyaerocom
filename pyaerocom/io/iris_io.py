@@ -39,9 +39,49 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
 
-def load_cube_custom(file, var_name=None, grid_io=None,
-                     file_convention=None):
-    """Load netcdf file as iris.Cube
+def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None, 
+                                 perform_checks=True, num_proc=None):
+    """Like :func:`load_cubes_custom` but faster
+    
+    Uses multiprocessing module to distribute loading of multiple NetCDF files
+    into iris cube.
+    
+    Parameters
+    ----------
+    file : list
+        netcdf file
+    var_name : str
+        name of variable to read
+    quality_check : bool
+        if True, then a quality check of data is performed against the
+        information provided in the filename
+    file_convention : :obj:`FileConventionRead`, optional
+        Aerocom file convention. If provided, then the data content (e.g. 
+        dimension definitions) is tested against definition in file name
+    perform_checks : bool
+        if True, additional quality checks (and corrections) are (attempted to
+        be) performed.
+    num_proc : int
+        number of jobs 
+    
+    Returns
+    -------
+    iris.cube.CubeList
+        loaded data as Cube
+    """    
+    import multiprocessing
+    from functools import partial
+    if num_proc is None:
+        num_proc = multiprocessing.cpu_count() * 2
+    func = partial(load_cube_custom, 
+                   var_name=var_name, file_convention=file_convention, 
+                   perform_checks=perform_checks)
+    p = multiprocessing.Pool(processes=num_proc)
+    return p.map(func, files)
+
+def load_cubes_custom(files, var_name=None, file_convention=None, 
+                      perform_checks=True, **kwargs):
+    """Load multiple NetCDF files into CubeList
     
     Parameters
     ----------
@@ -54,25 +94,87 @@ def load_cube_custom(file, var_name=None, grid_io=None,
         information provided in the filename
     file_convention : :obj:`FileConventionRead`, optional
         Aerocom file convention. If provided, then the data content (e.g. 
-        dimension definitions) is tested against definition in file name.
+        dimension definitions) is tested against definition in file name
+    perform_checks : bool
+        if True, additional quality checks (and corrections) are (attempted to
+        be) performed.
+    **kwargs 
+        additional keyword args that are parsed to 
+        :func:`_load_cubes_custom_multiproc` in case number of input files 
+        is larger than 4.
+        
+    Returns
+    -------
+    tuple
+        2-element tuple containing:
+            
+            - CubeList, containing loaded cubes
+            - list, list of filenames that were successfully loaded 
+    """
+    from pyaerocom import const
+    if len(files) >= 4:
+        try:
+            cubes =  _load_cubes_custom_multiproc(files, var_name, 
+                                                  file_convention, 
+                                                  perform_checks,
+                                                  **kwargs)
+            # if this worked, all input files were successfully loaded and the 
+            # function terminates, else, the retrieval is done file by file.
+            return (cubes, files)
+        except:
+            pass
+    cubes = []
+    loaded_files = []
+    for _file in files:
+        try:
+            cube = load_cube_custom(_file, var_name,
+                                    file_convention=file_convention)
+            cubes.append(cube)
+            loaded_files.append(_file)
+        except Exception as e:
+            msg = ("Failed to load {} as Iris cube. Error: {}"
+                   .format(_file, repr(e)))
+            const.logger.warning(msg)
+            
+            if const.WRITE_FILEIO_ERR_LOG:
+                add_file_to_log(_file, msg)
+    return (cubes, loaded_files)
+
+def load_cube_custom(file, var_name=None, file_convention=None, 
+                     perform_checks=True):
+    """Load netcdf file as iris.Cube
+    
+    Parameters
+    ----------
+    file : str
+        netcdf file
+    var_name : str
+        name of variable to read
+    quality_check : bool
+        if True, then a quality check of data is performed against the
+        information provided in the filename
+    file_convention : :obj:`FileConventionRead`, optional
+        Aerocom file convention. If provided, then the data content (e.g. 
+        dimension definitions) is tested against definition in file name
+    perform_checks : bool
+        if True, additional quality checks (and corrections) are (attempted to
+        be) performed.
     
     Returns
     -------
     iris.cube.Cube
         loaded data as Cube
     """
-    if grid_io is None:
-        grid_io = const.GRID_IO
     cube_list = iris.load(file)
+    
     _num = len(cube_list)
     if _num != 1:
         if _num == 0:
             raise NetcdfError('Data from file {} could not be loaded using iris'
                               .format(file))
         else:
-            logger.warning('File {} contains more than one data '
-                           'field: {}'.format(file, 
-                                              cube_list))
+            logger.warning('File {} contains more than one variable'
+                           .format(file))
     cube = None
     if var_name is None:
         if not len(cube_list) == 1:
@@ -87,49 +189,55 @@ def load_cube_custom(file, var_name=None, grid_io=None,
         for c in cube_list:
             if c.var_name == var_name:
                 cube = c
+                break
     if cube is None:
         raise NetcdfError('Variable {} not available in file {}'.format(var_name, 
                                                                         file))
-    if file_convention is None:
-        try:
-            file_convention = FileConventionRead(from_file=file)
-        except:
-            pass
-    
-    if isinstance(file_convention, FileConventionRead):
-        finfo = file_convention.get_info_from_file(file)
-        if grid_io.CHECK_TIME_FILENAME:
-            if not check_time_coord(cube, ts_type=finfo["ts_type"], 
-                                    year=finfo["year"]):
-            
-                msg = ("Invalid time dimension coordinate in file {}. " 
-                       .format(os.path.basename(file)))
-                logger.warning(msg)
-                if grid_io.CORRECT_TIME_FILENAME:
-                    logger.warning("Attempting to correct time coordinate "
-                                   "using information in file name")
-                    cube = correct_time_coord(cube, 
-                                              ts_type=finfo["ts_type"],
-                                              year=finfo["year"]) 
-                if const.WRITE_FILEIO_ERR_LOG:
-                    add_file_to_log(file, 'Invalid time dimension')
-        else:
-            logger.warning("WARNING: Automatic check of time "
-                           "array in netCDF files is deactivated. "
-                           "This may cause problems in case "
-                           "the time dimension is not CF conform.")
-    
-    if grid_io.CHECK_DIM_COORDS:
-        cube = check_dim_coords_cube(cube)
-    
-    try:
-        if grid_io.DEL_TIME_BOUNDS:
-            cube.coord("time").bounds = None
-    except:
-        logger.warning("Failed to access time coordinate in GriddedData")
+    if perform_checks:
+        grid_io = const.GRID_IO
+        if file_convention is None:
+            try:
+                file_convention = FileConventionRead(from_file=file)
+            except:
+                pass
         
-    if grid_io.SHIFT_LONS:
-        cube = check_and_regrid_lons_cube(cube)
+        if isinstance(file_convention, FileConventionRead):
+            finfo = file_convention.get_info_from_file(file)
+            if grid_io.CHECK_TIME_FILENAME:
+                if not check_time_coord(cube, ts_type=finfo["ts_type"], 
+                                        year=finfo["year"]):
+                
+                    msg = ("Invalid time dimension coordinate in file {}. " 
+                           .format(os.path.basename(file)))
+                    logger.warning(msg)
+                    if grid_io.CORRECT_TIME_FILENAME:
+                        logger.warning("Attempting to correct time coordinate "
+                                       "using information in file name")
+                        try:
+                            cube = correct_time_coord(cube, 
+                                                      ts_type=finfo["ts_type"],
+                                                      year=finfo["year"]) 
+                        except:
+                            pass
+                    if const.WRITE_FILEIO_ERR_LOG:
+                        add_file_to_log(file, 'Invalid time dimension')
+            else:
+                logger.warning("WARNING: Automatic check of time "
+                               "array in netCDF files is deactivated. "
+                               "This may cause problems in case "
+                               "the time dimension is not CF conform.")
+        
+        if grid_io.CHECK_DIM_COORDS:
+            cube = check_dim_coords_cube(cube)
+        
+        try:
+            if grid_io.DEL_TIME_BOUNDS:
+                cube.coord("time").bounds = None
+        except:
+            logger.warning("Failed to access time coordinate in GriddedData")
+            
+        if grid_io.SHIFT_LONS:
+            cube = check_and_regrid_lons_cube(cube)
     return cube
 
 def check_and_regrid_lons_cube(cube):

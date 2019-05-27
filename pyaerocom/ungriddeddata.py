@@ -8,7 +8,8 @@ import pandas as pd
 from pyaerocom import logger, const, print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
-                                  MetaDataError, StationNotFoundError)
+                                  MetaDataError, StationNotFoundError,
+                                  DataUnitError)
 from pyaerocom import StationData
 
 from pyaerocom.mathutils import in_range
@@ -883,10 +884,53 @@ class UngriddedData(object):
                                       'numbers'.format(list(val), key))
         return (str_f, list_f, range_f)
     
+    def check_unit(self, var_name, unit=None):
+        """Check if variable unit corresponds to AeroCom unit
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name for which unit is to be checked
+        unit : :obj:`str`, optional
+            unit to be checked, if None, AeroCom default unit is used
+        
+        Raises
+        ------
+        MetaDataError
+            if unit information is not accessible for input variable name
+        """
+        from pyaerocom.helpers import unit_conversion_fac
+        if unit is None:
+            unit = const.VARS[var_name].units
+            
+        units =  []
+        for i, meta in self.metadata.items():
+            if var_name in meta['var_info']:
+                try:
+                    u = meta['var_info'][var_name]['units']
+                    if not u in units:
+                        units.append(u)
+                except KeyError:
+                    add_str = ''
+                    if 'unit' in meta['var_info'][var_name]:
+                        add_str = ('Corresponding var_info dict contains '
+                                   'attr. "unit", which is deprecated, please '
+                                   'check corresponding reading routine. ')
+                    raise MetaDataError('Failed to access unit information for '
+                                        'variable {} in metadata block {}. {}'
+                                        .format(var_name, i, add_str))
+        if len(units) == 0 and str(unit) != '1':
+            raise MetaDataError('Failed to access unit information for '
+                                'variable {}. Expected unit {}'
+                                .format(var_name, unit))
+        for u in units:
+            if not unit_conversion_fac(u, unit) == 1:
+                raise MetaDataError('Invalid unit {} detected (expected {})'
+                                    .format(u, unit))
+    
     # TODO: check, confirm and remove Beta version note in docstring   
-
     def remove_outliers(self, var_name, inplace=False, low=None, high=None,
-                        move_to_trash=True):
+                        unit_ref=None, move_to_trash=True):
         """Method that can be used to remove outliers from data
         
         Parameters
@@ -906,6 +950,9 @@ class UngriddedData(object):
             corresponding value from the default settings for this variable 
             are used (cf. maximum attribute of `available variables 
             <https://pyaerocom.met.no/config_files.html#variables>`__)
+        unit_ref : str
+            reference unit for assessment of input outlier ranges: all data 
+            needs to be in that unit, else an Exception will be raised
         move_to_trash : bool
             if True, then all detected outliers will be moved to the trash 
             column of this data object (i.e. column no. specified at
@@ -922,23 +969,31 @@ class UngriddedData(object):
         ValueError
             if input :attr:`move_to_trash` is True and in case for some of the
             measurements there is already data in the trash.
+        Uni
             
         """
         if inplace:
             new = self
         else:
             new = self.copy()
+        try:
+            self.check_unit(var_name, unit=unit_ref)
+        except MetaDataError as e:
+            raise MetaDataError('Cannot remove outliers for variable {}. Found '
+                                'invalid units. Error: {}'
+                                .format(var_name, repr(e)))
+            
         if low is None:
-            low = const.VAR_PARAM[var_name].minimum
+            low = const.VARS[var_name].minimum
             print_log.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
         if high is None:
-            high = const.VAR_PARAM[var_name].maximum
+            high = const.VARS[var_name].maximum
             print_log.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
         var_mask = self._data[:, new._VARINDEX] == var_idx
         
         all_data =  self._data[:, self._DATAINDEX]
-        invalid_mask = np.logical_or(all_data < low, all_data > high)
+        invalid_mask = np.logical_or(all_data<low, all_data>high)
         
         mask = invalid_mask * var_mask
         invalid_vals = new._data[mask, new._DATAINDEX]
@@ -1318,17 +1373,7 @@ class UngriddedData(object):
             # get offset in metadata index
             meta_offset = max([x for x in obj.metadata.keys()]) + 1
             data_offset = obj.shape[0]
-# =============================================================================
-#             for var, unit in other.unit:
-#                 if var in obj.unit.items():
-#                     if not unit == obj.unit[var]:
-#                         raise DataUnitError('Cannot merge other instance of '
-#                                         'UngriddedData since units for variable '
-#                                         '{} do not match.'.format(var))
-#                 else:
-#                     obj.unit[var]=unit
-# =============================================================================
-                    
+ 
             # add this offset to indices of meta dictionary in input data object
             for meta_idx_other, meta_other in other.metadata.items():
                 meta_idx = meta_offset + meta_idx_other

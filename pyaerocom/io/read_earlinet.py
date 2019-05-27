@@ -46,7 +46,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.*'
     
     #: version log of this class (for caching)
-    __version__ = "0.13_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.14_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -66,7 +66,7 @@ class ReadEarlinet(ReadUngriddedBase):
     ALTITUDE_ID = 'Altitude'
     
     #: temporal resolution
-    TS_TYPE = 'daily'
+    TS_TYPE = 'n/d'
     
     #: dictionary specifying the file search patterns for each variable
     VAR_PATTERNS_FILE = {'ec532aer'     : '*/*.e532', 
@@ -180,7 +180,7 @@ class ReadEarlinet(ReadUngriddedBase):
         remove_outliers : bool
             if True, outliers are removed for each variable using the
             `minimum` and `maximum` attributes for that variable (accessed 
-            via pyaerocom.const.VAR_PARAM[var_name]).
+            via pyaerocom.const.VARS[var_name]).
         
         Returns
         -------
@@ -296,7 +296,7 @@ class ReadEarlinet(ReadUngriddedBase):
                                     '{}'.format(var, filename))
             unit_fac = None
             try:
-                to_unit = self._var_info[var].unit
+                to_unit = self._var_info[var].units
                 unit_fac = unit_conversion_fac(unit, to_unit)
                 val *= unit_fac
                 unit = to_unit
@@ -358,7 +358,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 
                 alt_vals = np.float64(alt_data)
                 alt_unit = alt_data.attrs[self.VAR_UNIT_NAMES[alt_id]]
-                to_alt_unit = const.VAR_PARAM['alt'].unit
+                to_alt_unit = const.VARS['alt'].units
                 if not alt_unit == to_alt_unit:
                     try:
                         alt_unit_fac = unit_conversion_fac(alt_unit, 
@@ -422,7 +422,7 @@ class ReadEarlinet(ReadUngriddedBase):
             in the list is used
         read_err : bool
             if True, uncertainty data is also read (where available). If 
-            unspecified (None), then the default is used (cf. :att:`READ_ERR`)
+            unspecified (None), then the default is used (cf. :attr:`READ_ERR`)
             
         Returns
         -------
@@ -687,25 +687,28 @@ if __name__=="__main__":
     
     stat = read.read_file(lst[0], 'ec532aer')
     
+    print(stat.var_info)
     ax = stat.ec532aer.plot()
     
     
-    data = read.read('ec532aer')
-    print(data)
-    
-    stat = data.to_station_data(0)
-    
-    
-    merged0 = data.to_station_data('Evora')
-    merged = data.to_station_data('Evora', freq='monthly')
-    
-    print(merged)
-    
-    merged.ec532aer.plot()
-    
-    arr0 = merged0.ec532aer
-    arr = merged.ec532aer
-    
+# =============================================================================
+#     data = read.read('ec532aer')
+#     print(data)
+#     
+#     stat = data.to_station_data(0)
+#     
+#     
+#     merged0 = data.to_station_data('Evora')
+#     merged = data.to_station_data('Evora', freq='monthly')
+#     
+#     print(merged)
+#     
+#     merged.ec532aer.plot()
+#     
+#     arr0 = merged0.ec532aer
+#     arr = merged.ec532aer
+#     
+# =============================================================================
     
     
     

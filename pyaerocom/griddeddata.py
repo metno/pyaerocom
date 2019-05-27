@@ -9,17 +9,19 @@ from collections import OrderedDict as od
 import iris
 from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
+from iris.exceptions import UnitConversionError
 from pandas import Timestamp, Series
-from warnings import warn
 import numpy as np
 import pandas as pd
 from pyaerocom import const, logger, print_log
 
-from pyaerocom.exceptions import (DataExtractionError,
-                                  TemporalResolutionError,
-                                  DimensionOrderError,
+from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
-                                  VariableDefinitionError)
+                                  DataExtractionError,
+                                  DimensionOrderError,
+                                  TemporalResolutionError,
+                                  VariableDefinitionError,
+                                  VariableNotFoundError)
 from pyaerocom.helpers import (get_time_rng_constraint,
                                get_lon_rng_constraint,
                                get_lat_rng_constraint,
@@ -29,10 +31,11 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                to_pandas_timestamp,
                                TS_TYPE_TO_NUMPY_FREQ,
                                datetime2str,
-                               isrange)
+                               isrange, isnumeric)
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
+from pyaerocom.vert_coords import AltitudeAccess
 
 
 class GriddedData(object):
@@ -102,24 +105,37 @@ class GriddedData(object):
     _GRID_IO = const.GRID_IO
     #: Req. order of dimension coordinates for time-series computation
     COORDS_ORDER_TSERIES = ['time', 'latitude', 'longitude']
-    _MAX_SIZE_GB = 30 #maximum file size for in-memory operations
+    _MAX_SIZE_GB = 64 #maximum file size for in-memory operations
     
-    SUPPORTED_VERT_SCHEMES = ['mean', 'surface', 'altitude', 'profile']
+    SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude', 
+                              'profile']
     def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
                  **suppl_info):
-        self.suppl_info = od(from_files     = [],
-                             data_id        = "Unknown",
-                             ts_type        = "Unknown",
-                             regridded      = False,
-                             computed       = False,
-                             region         = None,
-                             reader         = None)
+        self.suppl_info = od(from_files         = [],
+                             data_id            = "n/d",
+                             var_name_read      = "n/d",
+                             ts_type            = "n/d",
+                             regridded          = False,
+                             outliers_removed   = False,
+                             computed           = False,
+                             concatenated       = False,
+                             region             = None,
+                             reader             = None)
         
         
         self.flags = od(unit_ok=True)
         #attribute used to store area weights (if applicable, see method
         #area_weights)
         self._area_weights = None
+        self._altitude_access = None
+        
+        # list of coordinate names as returned by name() method of iris coordinate
+        # will be filled upon access of coord_names
+        self._coord_names = None 
+        # list of containing var_name attributes of all coordinates
+        self._coord_var_names = None
+        self._coord_standard_names = None
+        self._coord_long_names = None
         if input:
             self.load_input(input, var_name)
         for k, v in suppl_info.items():
@@ -128,15 +144,18 @@ class GriddedData(object):
                 
         try:
             var = self.var_info
-            if var.has_unit and var.unit != self.unit:
-                logger.info('Converting unit of data')
+            if var.has_unit and var.units != self.units:
                 self.flags['unit_ok'] = False
                 if convert_unit_on_init:
-                    self.convert_unit(var.unit)
+                    logger.info('Attempting unit conversion from {} to {}'
+                                .format(self.units, var.units))
+                    self.convert_unit(var.units)
                     self.flags['unit_ok'] = True
-        except (VariableDefinitionError, MemoryError, ValueError):
+        except (VariableDefinitionError, UnitConversionError, 
+                MemoryError, ValueError) as e:
+            logger.info('Failed to convert unit. Reason: {}'.format(repr(e)))
             self.flags['unit_ok'] = False
-
+    
     @property
     def data_revision(self):
         """Revision string from file Revision.txt in the main data directory
@@ -155,27 +174,89 @@ class GriddedData(object):
     @property
     def reader(self):
         """Instance of reader class from which this object was created"""
-        return self.suppl_info['reader']
+        r = self.suppl_info['reader']
+        from pyaerocom.io import ReadGridded
+        if not isinstance(r, ReadGridded):
+            self.reader = r = ReadGridded(self.data_id)
+        return r
+    
+    def search_other(self, var_name, require_same_shape=True):
+        """Searches data for another variable"""
+        if require_same_shape and self.concatenated or self.computed:
+            raise NotImplementedError('Coming soon...')
+        for file in self.from_files:
+            try:
+                from pyaerocom.io.iris_io import load_cube_custom
+                cube = load_cube_custom(file, var_name=var_name,
+                                        perform_checks=False)
+                return GriddedData(cube, from_files=file)
+            except:
+                pass
+        if var_name in self.reader.vars_provided:
+            return self.reader.read_var(var_name, 
+                                        start=self.start,
+                                        stop=self.stop,
+                                        ts_type=self.ts_type,
+                                        flex_ts_type=True)
+        raise VariableNotFoundError('Could not find variable {}'.format(var_name))
+    
+    @property
+    def concatenated(self):
+        return self.suppl_info['concatenated']
+    
+    @property
+    def computed(self):
+        return self.suppl_info['computed']
     
     @reader.setter
     def reader(self, val):
-# =============================================================================
-#         from pyaerocom.io import ReadGridded
-#         if not isinstance(val, ReadGridded):
-#             raise ValueError('Input reader {} is not a support reader class for '
-#                              'gridded data...'.format(type(val)))
-# =============================================================================
         self.suppl_info['reader'] = val
-        
+    
     @property
-    def unit(self):
+    def units(self):
         """Unit of data"""
         return self.grid.units
+    
+    @units.setter
+    def units(self, val):
+        self.grid.units = val
+    
+    @property
+    def data(self):
+        """Data array (n-dimensional numpy array)
+        
+        Note
+        ----
+        This is a pointer to the data object of the underlying iris.Cube 
+        instance and will load the data into memory. Thus, in case of large 
+        datasets, this may lead to a memory error
+        """
+        return self.grid.data
+    
+    @data.setter
+    def data(self, array):
+        if not isinstance(array, np.ndarray):
+            raise ValueError('Cannot set data array: need numpy.ndarray')
+        elif not array.shape == self.grid.data.shape:
+            raise DataDimensionError('Cannot assign dataarray: shape mismatch. '
+                                     'Got: {}, Need: {}'
+                                     .format(array.shape,self.grid.shape))
+        self.grid.data = array
+    
+    @property
+    def altitude_access(self):
+        if not isinstance(self._altitude_access, AltitudeAccess):
+            self._altitude_access = AltitudeAccess(self)    
+        return self._altitude_access
+    
+    @property
+    def cube(self):
+        return self.grid
     
     @property
     def var_info(self):
         """Print information about variable"""
-        return const.VAR_PARAM[self.var_name]
+        return const.VARS[self.var_name]
     
     @property
     def ts_type(self):
@@ -192,7 +273,7 @@ class GriddedData(object):
     def from_files(self):
         """List of file paths from which this data object was created"""
         return self.suppl_info['from_files']
-        
+    
     @property
     def is_masked(self):
         """Flag specifying whether data is masked or not
@@ -256,10 +337,24 @@ class GriddedData(object):
     
     @property
     def var_name(self):
-        """Name of variable in grid"""
+        """Name of variable"""
         if not self.is_cube:
             return 'n/a'
         return self.grid.var_name
+    
+    @property
+    def standard_name(self):
+        """Standard name of variable"""
+        return self.grid.standard_name
+    
+    @property
+    def long_name(self):
+        """Long name of variable"""
+        return self.grid.long_name
+    
+    @long_name.setter
+    def long_name(self, val):
+        self.grid.long_name = val
     
     @property
     def plot_settings(self):
@@ -273,7 +368,7 @@ class GriddedData(object):
         will be initiated with ``None``, in which case the Aerocom plot method
         uses
         """
-        return const.VAR_PARAM[self.var_name]
+        return const.VARS[self.var_name]
             
     @property 
     def name(self):
@@ -362,7 +457,9 @@ class GriddedData(object):
         """List containing coordinate names"""
         if not self.has_data:
             return []
-        return [c.name() for c in self.grid.coords()]
+        elif self._coord_names is None:
+            self._update_coord_info()
+        return self._coord_names
     
     @property
     def dimcoord_names(self):
@@ -371,6 +468,18 @@ class GriddedData(object):
             return []
         return [c.name() for c in self.grid.dim_coords]
     
+    def _update_coord_info(self):
+        n, vn, sn, ln = [], [], [], []
+        for c in self.grid.coords():
+            n.append(c.name())
+            vn.append(c.var_name)
+            sn.append(c.standard_name)
+            ln.append(c.long_name)
+        self._coord_names = n
+        self._coord_var_names = vn
+        self._coord_standard_names = sn
+        self._coord_long_names = ln
+        
     @property
     def area_weights(self):
         """Area weights of lat / lon grid"""
@@ -381,26 +490,17 @@ class GriddedData(object):
     @area_weights.setter
     def area_weights(self, val):
         raise AttributeError("Area weights cannot be set manually yet...")
-      
-    def check_dim_coords(self):
-        """Check dimension coordinates of grid data"""
-        raise NotImplementedError
      
-    def init_reader(self, print_info=True):
-        """Initiate reader class"""
-        if self.reader is not None:
-            logger.warning('Existing reader class will be overwritten')
-        from pyaerocom.io import ReadGridded
-        try:
-            self.reader = ReadGridded(self.data_id)
-            if print_info:
-                print('\n----Initiated reader class----\n\n')
-                print(self.reader)
-        except Exception as e:
-            from pyaerocom import print_log
-            print_log.exception('Failed to initiate reader class: {}'
-                                .format(repr(e)))
-            
+    @property
+    def has_latlon_dims(self):
+        """Boolean specifying whether data has latitude and longitude dimensions"""
+        return all([dim in self.dimcoord_names for dim in ['latitude', 
+                                                           'longitude']])
+    @property
+    def has_time_dim(self):
+        """Boolean specifying whether data has latitude and longitude dimensions"""
+        return 'time' in self.dimcoord_names
+    
     def load_input(self, input, var_name):
         """Import input as cube
         
@@ -431,6 +531,8 @@ class GriddedData(object):
         else:
             raise IOError('Failed to load input: {}'.format(input))
         try:
+            # try to convert variable name to AeroCom default
+            self.suppl_info['var_name_read'] = self.var_name
             self.grid.var_name = self.var_info.var_name
         except:
             logger.warning('Failed to convert variable name {}'
@@ -532,22 +634,6 @@ class GriddedData(object):
         """
         self.grid.transpose(new_order)
         
-    def _check_altitude_access(self):
-        coord_name = self.coord_names[-1]
-        if coord_name == 'altitude':
-            return True
-        from pyaerocom.vert_coords import _VertCoordConverter as conv
-        if not coord_name in conv.supported:
-            return False
-        arg_info = conv.VARS[coord_name]
-        for arg, possible_vals in arg_info.items():
-            pass
-            
-    
-    def get_altitude(self, coords):
-        """Extract (or try to compute) altitude values at input coordinates"""
-        raise NotImplementedError('Coming soon...')
-        
     def to_time_series(self, sample_points=None, scheme="nearest", 
                        collapse_scalar=True, vert_scheme=None, **coords):
 
@@ -600,9 +686,13 @@ class GriddedData(object):
         # and the first 3 dimensions are time, latitude, longitude.
         
         # init input for sample points
-        if not sample_points:
+        if sample_points is None:
             sample_points = []
-        sample_points.extend(list(coords.items()))
+            for c, v in coords.items():
+                if isnumeric(v):
+                    v= [v]
+                sample_points.append((c, v))
+
         lens = [len(x[1]) for x in sample_points]
         if not all([lens[0]==x for x in lens]):
             raise ValueError("Arrays for sample coordinates must have the "
@@ -614,6 +704,7 @@ class GriddedData(object):
         return self._to_timeseries_3D(sample_points, scheme, 
                                       collapse_scalar, vert_scheme)
     
+        
     def _to_timeseries_2D(self, sample_points, scheme, collapse_scalar):
         """Extract time-series for provided input coordinates (lon, lat)
         
@@ -656,64 +747,111 @@ class GriddedData(object):
             data = StationData(latitude=lat, 
                                longitude=lon,
                                data_id=self.name)
-            data.var_info[var] = dict(unit=self.unit)
+            data.var_info[var] = dict(unit=self.units)
             data[var] = Series(arr[:, i, j], index=times)
             result.append(data)
         return result
 
-    def _check_vert_scheme(self, sample_points, vert_scheme):
+    def _apply_vert_scheme(self, sample_points, vert_scheme=None):
         """Helper method that checks and infers vertical scheme for time
-        series computation from 3D data (used in :func:`_to_timeseries_3D`)"""
-        from pyaerocom import vert_coords as vc
-        if 'altitude' in [sp[0] for sp in sample_points]:
-            if not self._check_altitude_access():
-                raise DataDimensionError('Cannot access altitude '
-                                         'information')
-            if vert_scheme is not None and not vert_scheme=='altitude':
-                    raise ValueError('Conflict: Input sample points include ' 
-                                     'altitude information but input for '
-                                     'vert_scheme is {}'.format(vert_scheme))
-            vert_scheme = 'altitude'
-        elif vert_scheme == 'surface':
-            #presume data dimensions have been sorted
-            cname = self.dimcoord_names[-1]        
-            if not vc.supported(cname):
-                raise DataDimensionError('Vertical dimension coordinate {} is '
-                                         'not supported. Cannot infer surface '
-                                         'level'.format(cname))
+        series computation from 3D data (used in :func:`_to_timeseries_3D`)"""        
         if vert_scheme is None:
-            vert_scheme ='mean'
-        return vert_scheme
-    
-    def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
-                          vert_scheme='profile'):
-
-        # data contains vertical dimension
-        vert_scheme = self._check_vert_scheme(sample_points, vert_scheme)
-        if vert_scheme in ('altitude', 'profile'):
-            raise NotImplementedError('Coming soon...')
+            const.print_log.info('Setting vert_scheme in GriddedData to mean')
+            vert_scheme ='mean'        
+        try:
+            self.check_dimcoords_tseries()
+        except DimensionOrderError:
+            self.reorder_dimensions_tseries()
+        
         cname = self.dimcoord_names[-1]
         
-        try:
-            # check if vertical scheme can be converted into valid iris 
-            # aggregator (in which case vertical dimension is collapsed)
-            aggr = str_to_iris(vert_scheme)
-            data = self.collapsed(cname, aggr)
-        except KeyError:
-            from pyaerocom import vert_coords as vc
-            if vert_scheme == 'surface':
-                cname = self.dimcoord_names[-1]
-                coord = vc.VerticalCoordinate(cname)
-                if coord.lev_increases_with_alt:
-                    vert_index = np.argmin(self.grid.coord(cname).points)
-                else:
-                    vert_index = np.argmax(self.grid.coord(cname).points)
-                data = self[:,:,:,vert_index]
+        if not vert_scheme in self.SUPPORTED_VERT_SCHEMES:
+            raise ValueError('Invalid input for vert_scheme: {}. Supported '
+                             'schemes are: {}'
+                             .format(vert_scheme, self.SUPPORTED_VERT_SCHEMES))
+        if vert_scheme == 'surface':
+            vert_index = self._infer_index_surface_level()
+            return self[:,:,:,vert_index]
+        elif vert_scheme == 'altitude':
+            if not 'altitude' in [sp[0] for sp in sample_points]:
+                raise ValueError('Require altitude specification in sample '
+                                 'points for vert_scheme altitude')
+            if not self.check_altitude_access():
+                raise DataDimensionError('Cannot access altitude '
+                                         'information')
+            raise NotImplementedError('Cannot yet retrieve timeseries at '
+                                      'altitude levels. Coming soon...')
+        elif vert_scheme == 'profile':
+            raise NotImplementedError('Cannot yet retrieve profile timeseries')
+        else:
+            try:
+                # check if vertical scheme can be converted into valid iris 
+                # aggregator (in which case vertical dimension is collapsed)
+                aggr = str_to_iris(vert_scheme)
+            except KeyError:
+                pass
+            else:
+                return self.collapsed(cname, aggr)
+            
+        raise NotImplementedError('Cannot yet retrieve timeseries '
+                                  'from 4D data for vert_scheme {} '
+                                  .format(vert_scheme))
+    
+    def check_altitude_access(self):
+        """Checks if altitude levels can be accessed
         
+        Returns
+        -------
+        bool
+            True, if altitude access is provided, else False
+         
+        """
+        return self.altitude_access.check_altitude_access()
+    
+    def get_altitude(self, **coords):
+        """Extract (or try to compute) altitude values at input coordinates"""
+        if not isinstance(self._altitude_access, AltitudeAccess):
+            self.check_altitude_access()
+        self._altitude_access.get_altitude(**coords)
+        raise NotImplementedError('Coming soon...')
+        
+    def _infer_index_surface_level(self):
+        if not self.ndim == 4:
+            raise DataDimensionError('Can only infer surface level for 4D '
+                                     'gridded data object')
+        try:
+            self.check_dimcoords_tseries()
+        except DimensionOrderError:
+            self.reorder_dimensions_tseries()
+        cname = self.dimcoord_names[-1]
+        from pyaerocom import vert_coords as vc
+        try:
+            coord = vc.VerticalCoordinate(cname)
+            if coord.lev_increases_with_alt:
+                return np.argmin(self.grid.dim_coords[3].points)
+            else:
+                return np.argmax(self.grid.dim_coords[3].points)
+        except:
+            if not const.GRID_IO.INFER_SURFACE_LEVEL:
+                raise DataExtractionError('Cannot infer surface level sinces '
+                                          'global option INFER_SURFACE_LEVEL in'
+                                          'pyaerocom.const.GRID_IO is deactivated')
+            last_lev_idx = self.shape[-1] - 1
+            first_lowest_idx = self[0, :, :, 0].data
+            first_highest_idx = self[0, :, :, last_lev_idx].data
+            if np.nanmean(first_lowest_idx) > np.nanmean(first_highest_idx):
+                return 0
+            return last_lev_idx
+        
+    def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
+                          vert_scheme='surface'):
+
+        # data contains vertical dimension
+        data = self._apply_vert_scheme(sample_points, vert_scheme)
                     
         return data.to_time_series(sample_points, scheme, 
                                    collapse_scalar)
-        
+    
     def to_time_series_single_coord(self, latitude, longitude):
         """Make time series dictionary of single location using neirest coordinate
         
@@ -733,20 +871,24 @@ class GriddedData(object):
         dict
             dictionary containing results
         """
-        self.check_dimcoords_tseries()
-        if not self.ndim == 3:
-            raise DataDimensionError('So far, timeseries can only be extracted '
-                                     'from 3 dimensional data...')
-        lons = self.longitude.points
-        lats = self.latitude.points
-        lon_idx = np.argmin(np.abs(lons - longitude))
-        lat_idx = np.argmin(np.abs(lats - latitude))
-        times = self.time_stamps()
-        data = self.grid.data[:, lat_idx, lon_idx]
-        return {'latitude'      : latitude, 
-                'longitude'     : longitude,
-                'name'          : self.name,
-                self.var_name   : Series(data, times)}
+        raise NameError(DeprecationWarning('This method is deprecated since '
+                                           'version 0.8.0'))
+# =============================================================================
+#         self.check_dimcoords_tseries()
+#         if not self.ndim == 3:
+#             raise DataDimensionError('So far, timeseries can only be extracted '
+#                                      'from 3 dimensional data...')
+#         lons = self.longitude.points
+#         lats = self.latitude.points
+#         lon_idx = np.argmin(np.abs(lons - longitude))
+#         lat_idx = np.argmin(np.abs(lats - latitude))
+#         times = self.time_stamps()
+#         data = self.grid.data[:, lat_idx, lon_idx]
+#         return {'latitude'      : latitude, 
+#                 'longitude'     : longitude,
+#                 'name'          : self.name,
+#                 self.var_name   : Series(data, times)}
+# =============================================================================
         
     def _closest_time_idx(self, t):
         """Find closest index to input in time dimension"""
@@ -799,8 +941,12 @@ class GriddedData(object):
                 constraints.append(c)
             else:
                 if dim == 'time':
-                    _idx = self._closest_time_idx(val)
-                    _cval = self.time.units.num2date(self.time[_idx].points[0])
+                    if isnumeric(val) and val in self['time'].points: 
+                        _tval = val
+                    else:
+                        _idx = self._closest_time_idx(val)
+                        _tval = self.time[_idx].points[0]
+                    _cval = self['time'].units.num2date(_tval)
                     if not use_neirest and _cval != val:
                         raise DataExtractionError('No such value {} in dim {}. '
                                                   'Use option use_neirest to '
@@ -832,14 +978,43 @@ class GriddedData(object):
         return subset
                     
     # TODO: Test, confirm and remove beta flag in docstring
-    def downscale_time(self, to_ts_type='monthly'):
+    def remove_outliers(self, low=None, high=None):
+        """Remove outliers from data
+        
+        Parameters
+        ----------
+        low : float
+            lower end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. minimum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        high : float
+            upper end of valid range for input variable. If None, then the 
+            corresponding value from the default settings for this variable 
+            are used (cf. maximum attribute of `available variables 
+            <https://pyaerocom.met.no/config_files.html#variables>`__)
+        """
+        if low is None:
+            low = self.var_info.minimum
+            print_log.info('Setting {} outlier lower lim: {:.2f}'
+                           .format(self.var_name, low))
+        if high is None:
+            high = self.var_info.maximum
+            print_log.info('Setting {} outlier upper lim: {:.2f}'
+                           .format(self.var_name, high))
+        mask = np.logical_or(self.grid.data < low, 
+                             self.grid.data > high)
+        self.grid.data[mask] = np.nan
+        self.suppl_info['outliers_removed'] = True
+        
+    def resample_time(self, to_ts_type='monthly'):
         """Downscale in time to predefined resolution resolution
         
         Note
         ----
         Beta version
         
-        Patameters
+        Parameters
         ----------
         to_ts_type : str
             either of the supported temporal resolutions (cf. 
@@ -856,6 +1031,10 @@ class GriddedData(object):
             if input resolution is not provided, or if it is higher temporal 
             resolution than this object
         """
+        if not self.has_time_dim:
+            raise DataDimensionError('Require time dimension in GriddedData: '
+                                     '{}'.format(self.short_str()))
+            
         ts_types_avail = const.GRID_IO.TS_TYPES
         idx_ts_type = ts_types_avail.index(to_ts_type)
         if self.ts_type == to_ts_type:
@@ -887,11 +1066,23 @@ class GriddedData(object):
         data.check_dimcoords_tseries()
         return data     
     
+    def downscale_time(self, to_ts_type='monthly'):
+        msg = DeprecationWarning('This method is deprecated. Please use new '
+                                 'name resample_time')
+        print_log.warning(msg)
+        return self.resample_time(to_ts_type)
+    
     def add_aggregator(self, aggr_name):
         raise NotImplementedError
-        
+    
+    
+
     def calc_area_weights(self):
         """Calculate area weights for grid"""
+        if not self.has_latlon_dims:
+            raise DataDimensionError('Data does not have latitude and longitude '
+                                     'dimensions. This is required for '
+                                     'computation of area weights.')
         self._check_lonlat_bounds()
         self._area_weights = area_weights(self.grid)
         return self.area_weights
@@ -1235,6 +1426,7 @@ class GriddedData(object):
         if not self.is_cube:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
+        print(constraint)
         data_crop = self.grid.extract(constraint)
         if not data_crop:
             raise DataExtractionError("Failed to extract subset")
@@ -1293,21 +1485,38 @@ class GriddedData(object):
         fig
             matplotlib figure instance containing plot
         """
-        if not isinstance(time_idx, int):
-            try:
-                t = to_pandas_timestamp(time_idx).to_datetime64()
-                time_idx = np.argmin(abs(self.time_stamps() - t))
-            except:
-                raise ValueError('Failed to interpret input time stamp')
+        if not 'latitude' in self.dimcoord_names:
+            raise DataDimensionError('Missing latitude dimension...')
+        elif not 'longitude' in self.dimcoord_names:
+            raise DataDimensionError('Missing longitude dimension...')
+        if 'time' in self.dimcoord_names:
+            if not self.ndim == 3:
+                raise DataDimensionError('Invalid number of dimensions: {}. '
+                                         'Expected 3.'.format(self.ndim))
+            if not isinstance(time_idx, int):
+                try:
+                    t = to_pandas_timestamp(time_idx).to_datetime64()
+                    time_idx = np.argmin(abs(self.time_stamps() - t))
+                except:
+                    raise ValueError('Failed to interpret input time stamp')
+            
+            data = self[time_idx].grid.data
+        else:
+            if not self.ndim == 2:
+                raise DataDimensionError('Invalid number of dimensions: {}. '
+                                         'Expected 2.'.format(self.ndim))
+            data = self.grid.data
         
         from pyaerocom.plot.mapping import plot_griddeddata_on_map 
         
-        data = self[time_idx].grid.data
         lons = self.longitude.points
         lats = self.latitude.points
         
-        fig = plot_griddeddata_on_map(data, lons, lats, self.var_name, 
-                                      xlim=xlim, ylim=ylim, **kwargs)
+        fig = plot_griddeddata_on_map(data=data, lons=lons, lats=lats, 
+                                      var_name=self.var_name, 
+                                      unit=self.units,
+                                      xlim=xlim, ylim=ylim, 
+                                      **kwargs)
         
         try:
             t = cftime_to_datetime64(self.time[time_idx])[0]
@@ -1359,17 +1568,7 @@ class GriddedData(object):
     
     def short_str(self):
         """Short string representation"""
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = ("\n{}\n{}\n"
-             "Variable: {}\n"
-             "Temporal resolution: {}\n"
-             "Start / Stop: {} - {}".format(head,
-                                            len(head)*"-",
-                                            self.var_name, 
-                                            self.suppl_info["ts_type"],
-                                            self.start,
-                                            self.stop))
-        return s
+        return "ID: {}, Var: {}".format(self.data_id, self.var_name)
     
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
@@ -1396,17 +1595,32 @@ class GriddedData(object):
     def __getattr__(self, attr):
         return self[attr]
         
-    
+    def _check_coordinate_access(self, val):
+        if self._coord_standard_names is None:
+            self._update_coord_info()
+        if val in self._coord_standard_names:
+            return {'standard_name' : val}
+        elif val in self._coord_var_names:
+            return {'var_name' : val}
+        elif val in self._coord_long_names:
+            return {'long_name' : val}
+        raise CoordinateError('Could not associate one of the coordinates with '
+                              'input string {}'.format(val))
+        
     def __getitem__(self, indices_or_attr):
         """x.__getitem__(y) <==> x[y]"""
    
         if isinstance(indices_or_attr, str):
             if indices_or_attr in self.__dict__:
                 return self.__dict__[indices_or_attr]
-            if not indices_or_attr in self.coord_names:
-                raise AttributeError("'pyaerocom.GriddedData' object has no "
-                                     "attribute '{}'".format(indices_or_attr))
-            return self.grid.coord(indices_or_attr)
+            try:
+                which = self._check_coordinate_access(indices_or_attr)
+                return self.grid.coord(**which)
+            except:
+                raise AttributeError("GriddedData object has no "
+                                     "attribute {}"
+                                     .format(indices_or_attr))
+            
         sub = self.grid.__getitem__(indices_or_attr)
         return GriddedData(sub, **self.suppl_info)
     
@@ -1425,6 +1639,9 @@ class GriddedData(object):
     def __repr__(self):
         """For now, use representation of underlying data"""
         return "pyaerocom.GriddedData\nGrid data: %s" %self.grid.__repr__()
+    
+    def __add__(self, other):
+        raise NotImplementedError('Coming soon')
     
     #sorted out
     def _to_timeseries_iter_coords_2D(self, sample_points, scheme, 
@@ -1505,73 +1722,46 @@ class GriddedData(object):
                             var         :   data})
         return result
 
-                
+    ### Deprecated (but still supported) stuff
+    @property
+    def unit(self):
+        """Unit of data"""
+        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+                                                'please use units instead'))
+        return self.grid.units
+    
+    @unit.setter
+    def unit(self, val):
+        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+                                                'please use units instead'))
+        self.grid.units = val
+        
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     
     plt.close("all")
     
-    r = pya.io.ReadGridded('SPRINTARS-T213_AP3-CTRL2016-PD')
-    d = r.read_var('ec550aer')
-    RUN_OLD_STUFF = False
-    
     reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    data = reader.read_var('od550aer', 2010)
     
-    t1 = data.to_time_series(longitude=[30], latitude=[40])
-    ts = data.to_time_series_single_coord(longitude=30, latitude=40)
+    print(reader)
+    c1 = reader.read_var('ec532aer', start=2009).cube
+    c2 = reader.read_var('ec532aer', start=2010).cube
     
-    if RUN_OLD_STUFF:
-        from pyaerocom.io.testfiles import get
-        from matplotlib.pyplot import figure
-        files = get()
-        data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer",
-                         name='aatsr_su_v4.3')
-        print(data.var_name)
-        print(type(data.longitude))
-        print(data.longitude.points.min(), data.longitude.points.max())
-        print(data.latitude.points.min(), data.latitude.points.max())
-        print(data.time.points.min(), data.time.points.max())
-        tstamps = data.time_stamps()
-        print(tstamps[0], tstamps[-1])
-        
-        data.longitude.circular = True
-        cropped = data.crop(lon_range=(100, 170), lat_range=(-60, 60))
-        print(cropped.shape)
-        cropped.quickplot_map()
-        
-        other = GriddedData(files["models"]["ecmwf_osuite"],
-                          var_name="od550aer", name="ECMWF_OSUITE")
-        other.quickplot_map()
-        #crop randomly
-        ocropped = other.crop(lon_range=(100, 170), lat_range=(-60, 60))
-        ocropped.quickplot_map()
-        # some plot options
-        ocropped.quickplot_map(fix_aspect=2, vmin=.4, vmax=1.)
-        ocropped.quickplot_map(vmin=0, vmax=1., c_over="r")
-        
-        # crop india
-        cropped_india = other.crop(region="INDIA")[:60]
-        cropped_india.quickplot_map(time_idx=0)
-        
-        if np.any(np.isnan(cropped_india.grid.data)):
-            raise Exception
-        
-        mean = cropped_india.area_weighted_mean()
-        
-        s = Series(data=mean, index=cropped_india.time_stamps())
-        
-        fig = figure()
-        s.plot()
-        fig.tight_layout()
-        try:
-            GriddedData(files["models"]["ecmwf_osuite"])
-        except ValueError as e:
-            warn(repr(e))
-        
+    import iris
+    c3 = c1 + c1
 # =============================================================================
-#     import doctest
-#     doctest.testmod()
+#     data.downscale_time('monthly')
+#     
+#     t1 = data.to_time_series(longitude=[30], latitude=[40],
+#                              vert_scheme='max')
+#     
+#     t2 = data.to_time_series(longitude=[30], latitude=[40],
+#                              vert_scheme='surface')
+#     
+#     t3 = data.to_time_series(longitude=[30], latitude=[40],
+#                              vert_scheme='mean')
+#     
+#     ax = t1.plot_timeseries('ec532aer')
 # 
 # =============================================================================

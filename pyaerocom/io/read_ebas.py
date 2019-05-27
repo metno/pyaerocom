@@ -1,16 +1,3 @@
-################################################################
-# read_aeronet_invv2.py
-#
-# read Aeronet inversion V2 data
-#
-# this file is part of the pyaerocom package
-#
-#################################################################
-# Created 20180629 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
 # Copyright (C) 2018 met.no
 # Contact information:
 # Norwegian Meteorological Institute
@@ -33,11 +20,13 @@
 
 import os
 from copy import deepcopy
+from datetime import datetime
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
 from pyaerocom.mathutils import compute_scatc550dryaer, compute_absc550dryaer
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.io.helpers import _print_read_info
 from pyaerocom import StationData
 from pyaerocom import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
@@ -144,7 +133,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.14_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.16T_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -165,6 +154,7 @@ class ReadEbas(ReadUngriddedBase):
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1h'   :   'hourly',
                      '1d'   :   'daily',
+                     '1w'   :   'weekly',
                      '1mo'  :   'monthly'}
     
     
@@ -434,8 +424,11 @@ class ReadEbas(ReadUngriddedBase):
                     constraints['station_names'] = stats
             if not 'datalevel' in constraints:
                 constraints['datalevel'] = self.opts.datalevel
+
             req = info.make_sql_request(**constraints)
             
+            const.logger.info('Retrieving EBAS file list for request:\n{}'
+                              .format(req))
             filenames = db.get_file_names(req)
             self.sql_requests.append(req)
             
@@ -646,14 +639,13 @@ class ReadEbas(ReadUngriddedBase):
             
         file = EbasNasaAmesFile(filename)
         meta = file.meta
-        name = meta['station_name']
-        
+        name = meta['station_name'].replace('/', ';')
         
         var_cols = {}
         for var in vars_to_read:
             ebas_var_info = self.loaded_ebas_vars[var]
             if not var in self.loaded_aerocom_vars:
-                self.loaded_aerocom_vars[var] = var_info = const.VAR_PARAM[var]
+                self.loaded_aerocom_vars[var] = var_info = const.VARS[var]
             else:
                 var_info = self.loaded_aerocom_vars[var]
 # =============================================================================
@@ -665,6 +657,11 @@ class ReadEbas(ReadUngriddedBase):
             try:
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
+                const.logger.warning('Variable {} (EBAS name(s): {}) is '
+                                     'missing in file {} ({}, start: {})'
+                                     .format(var, ebas_var_info.component, 
+                                             os.path.basename(filename),
+                                             name, file.base_date))
                 continue
             # init helper variable for finding closest wavelength (if 
             # no exact wavelength match can be found)
@@ -726,11 +723,13 @@ class ReadEbas(ReadUngriddedBase):
         
         # write meta information
         tres_code = meta['resolution_code']
-        try:
+        try: # this works in almost all cases
             ts_type = self.TS_TYPE_CODES[tres_code]
         except KeyError:
             self.logger.info('Unkown temporal resolution {}'.format(tres_code))
-            ts_type = 'undefined'
+            ts_type = tres_code
+            raise Exception(tres_code)
+
         data_out['ts_type'] = ts_type
         # altitude of station
         try:
@@ -785,13 +784,23 @@ class ReadEbas(ReadUngriddedBase):
             
             notnan_invalid, invalid = None, None
             if self.remove_invalid_flags:
+                
                 # get rows that are marked as invalid
                 invalid = ~file.flag_col_info[_col.flag_col].valid
                 
                 # now get all invalid rows where data is not already set NaN
                 notnan_invalid = ~np.isnan(data) * invalid
-                
-                data[notnan_invalid] = np.nan
+                # TODO: consider removing this check and applying mask without
+                # retrieving information about how many are set to NaN
+                _tot = np.sum(notnan_invalid)
+                if _tot > 0:
+                    data[notnan_invalid] = np.nan
+                    const.logger.warning('Found {} (of {}) invalid flags (flag '
+                                         'col {}) for var {} in file {}. '
+                                         'Remaining no. of valid data points: {}'
+                                         .format(_tot, len(data), _col.flag_col, 
+                                                 var, os.path.basename(filename),
+                                                 np.sum(~np.isnan(data))))
             
             # REMOVE OUTLIERS
             if self.remove_outliers:
@@ -861,9 +870,8 @@ class ReadEbas(ReadUngriddedBase):
         
         return data_out
     
-        
     def read(self, vars_to_retrieve=None, first_file=None, 
-             last_file=None, **constraints):
+             last_file=None, multiproc=False, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -890,7 +898,7 @@ class ReadEbas(ReadUngriddedBase):
         UngriddedData
             data object
         """    
-        data_obj = UngriddedData()
+        
         
         #data_obj.filter_hist.update(constraints)
         for k in list(constraints):
@@ -902,12 +910,6 @@ class ReadEbas(ReadUngriddedBase):
                 self.opts[k.lower()] = constraints.pop(k)
             elif k in self.opts:
                 self.opts[k] = constraints.pop(k)
-        
-        # Add reading options
-        filters = self.opts.filter_dict
-        filters.update(constraints)
-        data_obj._add_to_filter_history(filters)
-        #data_obj._add_to_filter_history(constraints)
         
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -930,7 +932,48 @@ class ReadEbas(ReadUngriddedBase):
         
         files = files[first_file:last_file]
         files_contain = self.files_contain[first_file:last_file]
-
+        
+        if not multiproc:
+            data = self._read_files(files, vars_to_retrieve,
+                                    files_contain, constraints)
+        else:
+            raise NotImplementedError('Coming soon...')
+# =============================================================================
+#             from multiprocessing import Pool, Manager, cpu_count
+#             from functools import partial
+#             num_proc = cpu_count()
+#             func = partial(self._append_read_files, 
+#                            vars_to_retrieve=vars_to_retrieve,
+#                            files_contain=files_contain,
+#                            constraints=constraints)
+#             lists = np.array_split(files, num_proc)
+#             with Manager() as manager:
+#                 result = manager.list()
+#                 p = Pool(processes=num_proc)
+#                 for sub in lists:
+#                     p.apply_async(func, (sub, result))
+#                 p.close()
+#                 p.join()
+#             
+#             data = result
+# =============================================================================
+        return data
+    
+    def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
+        """Helper that reads list of files into UngriddedData
+        
+        Note
+        ----
+        This method is not supposed to be called directly but is used in 
+        :func:`read` and serves the purpose of parallel loading of data
+        """
+        data_obj = UngriddedData()
+        
+        # Add reading options
+        filters = self.opts.filter_dict
+        filters.update(constraints)
+        data_obj._add_to_filter_history(filters)
+        
         meta_key = 0.0
         idx = 0
         
@@ -946,10 +989,12 @@ class ReadEbas(ReadUngriddedBase):
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
+        last_t = datetime.now()
         for i, _file in enumerate(files):
             if i%disp_each == 0:
-                print("Reading file {} of {} ({})".format(i+1, 
-                                 num_files, type(self).__name__))
+                last_t = _print_read_info(i, disp_each, num_files, 
+                                          last_t, type(self).__name__,
+                                          const.print_log)
             try:
                 station_data = self.read_file(_file, 
                                               vars_to_retrieve=files_contain[i])
@@ -1086,15 +1131,15 @@ class ReadEbas(ReadUngriddedBase):
 # =============================================================================
     
 if __name__=="__main__":
-    
-    from pyaerocom import change_verbosity
-    import pyaerocom as pya
-    change_verbosity('critical')
 
     r = ReadEbas()
-    #absc = r.read(['absc550aer', 'scatc550dryaer'])
+    r.opts.keep_aux_vars = True
+    from time import time
     
-    varlist = ['scatc550dryaer', 'absc550aer']
-    data = r.read(varlist)
+    t0 = time()
+    data0 =  r.read('scatc550dryaer', station_names='Barrow')
+    t1 =time()
+    
+
     
     

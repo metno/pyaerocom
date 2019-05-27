@@ -18,10 +18,8 @@ class AerocomBrowser(BrowseDict):
     
     Note
     ----
-    You can use :func:`browse` to find directories matching a 
-    certain search pattern and without creating an instance of this class.
-    Since it is a static method you may use it without creating an instance 
-    of this class. 
+    Use :func:`browse` to find directories matching a 
+    certain search pattern.
     The class methods :func:`find_matches` and :func:`find_dir` both use 
     :func:`browse`, the only difference is, that the :func:`find_matches` adds
     the search result (a list with strings) to 

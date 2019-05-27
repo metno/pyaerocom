@@ -185,7 +185,7 @@ class VerticalProfile(object):
         
         if whole_alt_range:
             ax.set_ylim([np.min([0, self.altitude.min()]), self.altitude.max()])
-        if plot_errs:
+        if plot_errs and len(self.data_err) == len(self.data):
                 
             lower = self.data - self.data_err
             upper = self.data + self.data_err

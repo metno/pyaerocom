@@ -43,6 +43,7 @@ class FileConventionRead(object):
        
         self.name = name
         self.file_sep = file_sep
+
         self.year_pos = year_pos
         self.var_pos = var_pos
         self.ts_pos = ts_pos
@@ -205,7 +206,7 @@ class FileConventionRead(object):
             dictionary containing infos that were extracted from filename
         """
         info = self.info_init
-        if self.file_sep is ".":
+        if self.file_sep == ".":
             spl = basename(file).split(self.file_sep)
         else:
             spl = splitext(basename(file))[0].split(self.file_sep)
@@ -231,7 +232,13 @@ class FileConventionRead(object):
                                       'convention {}' 
                                       .format(basename(file), self.name))
 
-        
+        try:
+            info['name'] = '.'.join(spl[1:self.ts_pos])
+        except:
+            raise FileConventionError('Failed to extract name '
+                                      'from file {} using file '
+                                      'convention {}' 
+                                      .format(basename(file), self.name))
         if 'atstations' in file.lower():
             raise Exception('Developers: please debug (file convention '
                             'Aerocom 2 should not have atstations '
@@ -278,11 +285,13 @@ class FileConventionRead(object):
         
     
     
-    def string_mask(self, var, year, ts_type):
+    def string_mask(self, experiment, var, year, ts_type, vert_which=None):
         """Returns mask that can be used to identify files of this convention
         
         Parameters
         ----------
+        experiment : str
+            experiment ID (e.g. GISS-MATRIX.A2.CTRL)
         var : str
             variable string ID (e.g. "od550aer")
         year : int
@@ -306,10 +315,19 @@ class FileConventionRead(object):
         match_str_aero3 = conf_aero3.string_mask(var, year, ts_type)
             
         """
+        
         if self.name == "aerocom2":
-            return ".".join(['.*',ts_type, var, str(year), 'nc'])
+            if vert_which is not None:
+                raise FileConventionError('Specification of vert_which ({}) is '
+                                          'not supported for '
+                                          'aerocom2 naming convention'
+                                          .format(vert_which))
+                
+            return ".".join(['.*', experiment, ts_type, var, str(year), 'nc'])
         elif self.name == "aerocom3":
-            return "_".join(['.*',var, '.*',str(year), ts_type])+'.nc'
+            if vert_which is None:
+                vert_which = '.*'
+            return "_".join(['.*',  experiment, var, vert_which, str(year), ts_type]) + '.nc'
         else:
             raise NotImplementedError("File matching mask for convention %s "
                                       "not yet defined..." %self.name)

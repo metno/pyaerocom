@@ -29,11 +29,11 @@ Import setup and imports
 .. parsed-literal::
 
     Initating pyaerocom configuration
-    Checking server configuration ...
+    Checking database access...
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.021 s
+    Expired time: 0.023 s
 
 
 Import of model data
@@ -55,7 +55,7 @@ there.
     ---------------------
     Model ID: ECMWF_CAMS_REAN
     Data directory: /lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed
-    Available variables: ['ang4487aer', 'ec532aer3D', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer', 'sconcpm10', 'sconcpm25']
+    Available variables: ['ang4487aer', 'bscatc532aerboa', 'bscatc532aertoa', 'ec532aer', 'ec532dryaer', 'od440aer', 'od550aer', 'od550bc', 'od550dust', 'od550oa', 'od550so4', 'od550ss', 'od865aer', 'sconcpm10', 'sconcpm25', 'time', 'z']
     Available years: [2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 9999]
     Available time resolutions ['daily', 'monthly']
 
@@ -122,9 +122,9 @@ located at altitudes between 0 and 1000 m.
     Contains networks: ['AeronetSunV3Lev2.daily']
     Contains variables: ['ang4487aer', 'od550aer']
     Contains instruments: ['sun_photometer']
-    Total no. of meta-blocks: 1013
+    Total no. of meta-blocks: 1020
     Filters that were applied:
-     Filter time log: 20190306152047
+     Filter time log: 20190410170224
     	altitude: [0, 1000]
 
 
@@ -168,7 +168,7 @@ station plot above).
 
 .. parsed-literal::
 
-    UngriddedData <networks: ['AeronetSunV3Lev2.daily']; vars: ['ang4487aer', 'od550aer']; instruments: ['sun_photometer'];No. of stations: 1013
+    UngriddedData <networks: ['AeronetSunV3Lev2.daily']; vars: ['ang4487aer', 'od550aer']; instruments: ['sun_photometer'];No. of stations: 1020
 
 
 
@@ -181,6 +181,9 @@ station plot above).
 
 .. parsed-literal::
 
+    This method is deprecated. Please use new name resample_time
+    Setting od550aer outlier lower lim: -1.00
+    Setting od550aer outlier upper lim: 10.00
     Interpolating data of shape (12, 161, 320). This may take a while.
     Successfully interpolated cube
 
@@ -204,27 +207,31 @@ station plot above).
     Coordinates:
       * data_source   (data_source) <U22 'AeronetSunV3Lev2.daily' 'ECMWF_CAMS_REAN'
         var_name      (data_source) <U8 'od550aer' 'od550aer'
+        unit          (data_source) <U1 '1' '1'
+        ts_type_src   (data_source) <U5 'daily' 'daily'
       * time          (time) datetime64[ns] 2010-01-15 2010-02-15 ... 2010-12-15
       * station_name  (station_name) <U19 'ARM_Darwin' ... 'Zinder_Airport'
         latitude      (station_name) float64 -12.43 37.97 15.35 ... 32.64 13.78
         longitude     (station_name) float64 130.9 23.72 -1.479 ... -114.6 8.99
         altitude      (station_name) float64 29.9 130.0 305.0 ... 20.0 63.0 456.0
     Attributes:
-        data_source:      ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
-        var_name:         ['od550aer', 'od550aer']
-        ts_type:          monthly
-        filter_name:      WORLD-noMOUNTAINS
-        ts_type_src:      daily
-        ts_type_src_ref:  daily
-        start_str:        20100101
-        stop_str:         20101231
-        unit:             ['1', '1']
-        data_level:       colocated
-        revision_ref:     20181212
-        region:           WORLD
-        lon_range:        [-180, 180]
-        lat_range:        [-90, 90]
-        alt_range:        [-1000000.0, 1000.0]
+        data_source:     ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
+        var_name:        ['od550aer', 'od550aer']
+        ts_type:         monthly
+        filter_name:     WORLD-noMOUNTAINS
+        ts_type_src:     ['daily', 'daily']
+        start_str:       20100101
+        stop_str:        20101231
+        unit:            ['1', '1']
+        vert_scheme:     None
+        data_level:      3
+        revision_ref:    20190311
+        from_files:      ['ECMWF_CAMS_REAN.daily.od550aer.2010.nc']
+        from_files_ref:  None
+        region:          WORLD
+        lon_range:       [-180, 180]
+        lat_range:       [-90, 90]
+        alt_range:       [-1000000.0, 1000.0]
 
 
 
@@ -237,7 +244,7 @@ station plot above).
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f07e84d7b70>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f09fa8c1400>
 
 
 
@@ -262,7 +269,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <cartopy.mpl.geoaxes.GeoAxes at 0x7f07e81b5d68>
+    <cartopy.mpl.geoaxes.GeoAxes at 0x7f09faa11550>
 
 
 
@@ -279,6 +286,9 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
+    This method is deprecated. Please use new name resample_time
+    Setting od550aer outlier lower lim: -1.00
+    Setting od550aer outlier upper lim: 10.00
     Interpolating data of shape (365, 161, 320). This may take a while.
     Successfully interpolated cube
 
@@ -302,27 +312,31 @@ Now perform colocation only over Europe. Starting with a station plot.
     Coordinates:
       * data_source   (data_source) <U22 'AeronetSunV3Lev2.daily' 'ECMWF_CAMS_REAN'
         var_name      (data_source) <U8 'od550aer' 'od550aer'
+        unit          (data_source) <U1 '1' '1'
+        ts_type_src   (data_source) <U5 'daily' 'daily'
       * time          (time) datetime64[ns] 2010-01-01 2010-01-02 ... 2010-12-31
       * station_name  (station_name) <U19 'ATHENS-NOA' 'Andenes' ... 'Yekaterinburg'
         latitude      (station_name) float64 37.97 69.28 44.66 ... 51.77 41.15 57.04
         longitude     (station_name) float64 23.72 16.01 -1.163 ... 24.92 59.54
         altitude      (station_name) float64 130.0 379.0 11.0 ... 160.0 54.0 300.0
     Attributes:
-        data_source:      ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
-        var_name:         ['od550aer', 'od550aer']
-        ts_type:          daily
-        filter_name:      EUROPE-noMOUNTAINS
-        ts_type_src:      daily
-        ts_type_src_ref:  daily
-        start_str:        20100101
-        stop_str:         20101231
-        unit:             ['1', '1']
-        data_level:       colocated
-        revision_ref:     20181212
-        region:           EUROPE
-        lon_range:        [-20, 70]
-        lat_range:        [30, 80]
-        alt_range:        [-1000000.0, 1000.0]
+        data_source:     ['AeronetSunV3Lev2.daily', 'ECMWF_CAMS_REAN']
+        var_name:        ['od550aer', 'od550aer']
+        ts_type:         daily
+        filter_name:     EUROPE-noMOUNTAINS
+        ts_type_src:     ['daily', 'daily']
+        start_str:       20100101
+        stop_str:        20101231
+        unit:            ['1', '1']
+        vert_scheme:     None
+        data_level:      3
+        revision_ref:    20190311
+        from_files:      ['ECMWF_CAMS_REAN.daily.od550aer.2010.nc']
+        from_files_ref:  None
+        region:          EUROPE
+        lon_range:       [-20, 70]
+        lat_range:       [30, 80]
+        alt_range:       [-1000000.0, 1000.0]
 
 
 
@@ -335,7 +349,7 @@ Now perform colocation only over Europe. Starting with a station plot.
 
 .. parsed-literal::
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f07e86a1a58>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f09fab505c0>
 
 
 

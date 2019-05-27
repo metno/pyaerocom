@@ -69,11 +69,14 @@ class ReadAeronetSunV3(ReadAeronetBase):
                 const.AERONET_SUN_V3L2_AOD_DAILY_NAME  :    'daily'}
     
     #: default variables for read method
-    DEFAULT_VARS = ['od550aer']
+    DEFAULT_VARS = ['od550aer', 'ang4487aer']
     
     #: value corresponding to invalid measurement
     #NAN_VAL = -9999.
     NAN_VAL = -999.
+    
+    #: Mappings for identifying variables in file
+    VAR_PATTERNS_FILE = {'AOD_([0-9]*)nm' : 'od*aer'}
     
     #: dictionary specifying the file column names (values) for each Aerocom 
     #: variable (keys)
@@ -119,7 +122,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
     def read_file(self, filename, vars_to_retrieve=None, 
-                  vars_as_series=False):
+                  vars_as_series=False, read_all_possible=False):
         """Read Aeronet Sun V3 level 1.5 or 2 file 
 
         Parameters
@@ -132,6 +135,11 @@ class ReadAeronetSunV3(ReadAeronetBase):
         vars_as_series : bool
             if True, the data columns of all variables in the result dictionary
             are converted into pandas Series objects
+        read_all_possible : bool
+            if True, than all available variables belonging to either of the 
+            variable families that are specified in :attr:`VAR_PATTERNS_FILE` 
+            are read from the file (in addition to the ones that are specified
+            via vars_to_retrieve).  
             
         Returns
         -------
@@ -149,11 +157,6 @@ class ReadAeronetSunV3(ReadAeronetBase):
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []
-            
-        # create empty arrays for all variables that are supposed to be read
-        # from file
-        for var in vars_to_read:
-            data_out[var] = []
         
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
@@ -179,9 +182,14 @@ class ReadAeronetSunV3(ReadAeronetBase):
             col_index_str = in_file.readline()
             if col_index_str != self._last_col_index_str:
                 self.logger.info("Header has changed, reloading col_index map")
-                self._update_col_index(col_index_str)
+                self._update_col_index(col_index_str, 
+                                       use_all_possible=read_all_possible)
             col_index = self.col_index
             
+            # create empty arrays for all variables that are supposed to be read
+            # from file
+            for var in vars_to_read:
+                data_out[var] = []
             # dependent on the station, some of the required input variables
             # may not be provided in the data file. These will be ignored
             # in the following list that iterates over all data rows and will
@@ -256,49 +264,16 @@ class ReadAeronetSunV3(ReadAeronetBase):
                 else:
                     del data_out[var]
         self.logger.debug('The following lines were ignored: {}'.format(
-                _lines_ignored))
+                          _lines_ignored))
         return data_out
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
-    import os
     plt.close('all')
     
     read = ReadAeronetSunV3()
-    read.get_file_list()
-    #read.verbosity_level = 'debug'
+    files = read.get_file_list(pattern='*Berlin*')
+    data = read.read_file(files[0])#, read_all_possible=True)
+    #data = read.read(['od550aer', 'ang4487aer'])
     
-    #data = read.read()
-    
-# =============================================================================
-#     first_ten = read.read(last_file=10)
-#     
-#     files_berlin = read.find_in_file_list('*Berlin*')
-#     berlin = read.read_file(files_berlin[0],
-#                             vars_to_retrieve=['ang4487aer_calc',
-#                                               'ang4487aer'])
-#     print(berlin)    
-#     
-# =============================================================================
-    
-    files = []
-    all_data = []
-    
-    for file in read.files:
-        if 'cart_site' in file.lower():
-            files.append(file)
-            data = read.read_file(file, 'od550aer')
-            all_data.append(data)
-            fig, ax = plt.subplots(1,1, figsize=(18, 8))
-            data.plot_variable('od550aer', ax=ax)
-            ax.set_title(os.path.basename(file), fontsize=12)
-            ax.set_title(data.get_meta()['station_name'])
-    print(files)
-    
-    #ud = read.read('od550aer')
-    
-
-            
-    
-    
-    
+    #stat = data.to_station_data('Palgrunden')

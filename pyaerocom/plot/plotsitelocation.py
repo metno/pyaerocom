@@ -76,7 +76,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
         df_points = df_points.append(df_time_temp)
         # df_time_temp[model_name] = model_data_as_series[i][var_to_run]*1.E3
         df_time_temp[model_name] = ( model_data_as_series[i][var_to_run] *
-                                const.VAR_PARAM[var_to_run]['scat_scale_factor'])
+                                const.VARS[var_to_run]['scat_scale_factor'])
         # df_time has now all time steps where either one of the obs or model data have data
         #
         # df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))

@@ -22,16 +22,16 @@ def test_revision_dates():
     npt.assert_array_equal(ids, ['AeronetInvV3Lev2.daily', 
                                  'AeronetInvV2Lev2.daily',
                                  'AeronetSDAV2Lev2.daily', 
-                                 'AeronetSDAV3Lev1.5.daily',
+                                 'AeronetSDAV3Lev2.daily',
                                  'AeronetSunV2Lev2.daily', 
                                  'AeronetSunV3Lev2.daily', 
                                  'EARLINET',
                                  'EBASMC'])
 
     print(revs)
-    npt.assert_array_equal(revs, ['20180728', '20171216', '20180519', 
-                                  '20180629', '20180519', '20190311', 
-                                  '20190129', '20190115'])
+    npt.assert_array_equal(revs, ['20190330', '20171216', '20180519', 
+                                  '20190425', '20180519', '20190425', 
+                                  '20190129', '20190319'])
     
 if __name__=="__main__":
     import sys

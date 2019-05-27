@@ -43,7 +43,7 @@ import pyaerocom.obs_io as obs_io
 from pyaerocom._lowlevel_helpers import (list_to_shortstr, dict_to_str,
                                          chk_make_subdir,
                                          check_fun_timeout_multiproc)
-from pyaerocom.variable import AllVariables
+from pyaerocom.variable import VarCollection
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -146,8 +146,7 @@ class Config(object):
     
     #: timeout to check if one of the supported server locations can be 
     #: accessed
-    SERVER_CHECK_TIMEOUT = 0.1 #s
-    SERVER_CHECK_TIMEOUT = 10 #s
+    SERVER_CHECK_TIMEOUT = 5 #0.1 #s
     
     from pyaerocom import __dir__
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
@@ -158,43 +157,56 @@ class Config(object):
                      'aerocom-users-database' : _config_ini_user_server,
                      'pyaerocom-testdata'     : _config_ini_testdata}
     
-    _outhomename = 'pyaerocom'
+    _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
+    _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
+    _outhomename = 'MyPyaerocom'
+    
+    DONOTCACHEFILE = None
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  output_dir=None, config_file=None, 
                  cache_dir=None, colocateddata_dir=None,
                  write_fileio_err_log=True, 
                  activate_caching=True):
         
+        # Loggers
         from pyaerocom import print_log, logger
-        #: Settings for reading and writing of gridded data
-        self.GRID_IO = GridIO()
-        print_log.info('Initating pyaerocom configuration')
         self.print_log = print_log
         self.logger = logger
         
-        if not isinstance(config_file, str) or not os.path.exists(config_file):
-            from time import time
-            print_log.info('Checking server configuration ...')
-            t0 = time()
-            config_file = self._infer_config_file()
-            print_log.info('Expired time: {:.3f} s'.format(time() - t0))
         # Directories
         self._modelbasedir = model_base_dir
         self._obsbasedir = obs_base_dir
         self._cachedir = cache_dir
         self._outputdir = output_dir
+        self._testdatadir = os.path.join(self.HOMEDIR, 'pyaerocom-testdata')
         self._colocateddatadir = colocateddata_dir
+        
+        # Options
         self._caching_active = activate_caching
         
-        self._var_param = None
+        #: Settings for reading and writing of gridded data
+        self.GRID_IO = GridIO()
+        print_log.info('Initating pyaerocom configuration')
         
-        # Attributes that are used to store import results
+        
+        if not isinstance(config_file, str) or not os.path.exists(config_file):
+            from time import time
+            print_log.info('Checking database access...')
+            t0 = time()
+            config_file = self._infer_config_file()
+            print_log.info('Expired time: {:.3f} s'.format(time() - t0))
+        
+        
+        self._var_param = None
+        self._coords = None
+        
+        # Attributes that are used to store search directories
         self.OBSCONFIG = od()
         self.SUPPLDIRS = od()
         self.MODELDIRS = []
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
-        self.DONOTCACHEFILE = None
+        
         
         self._ebas_flag_info = None
         
@@ -211,6 +223,8 @@ class Config(object):
                 self.init_outputdirs()
                 self.print_log.warning(format_exc())
                 self.print_log.warning("Failed to init config. Error: %s" %repr(e))
+        else:
+            self.init_outputdirs()
     
     def _check_access(self, loc):
         """Uses multiprocessing approach to check if location can be accessed
@@ -267,9 +281,7 @@ class Config(object):
     def has_access_testdata(self):
         """Boolean specifying whether the testdataset can be accessed"""
         ok = False
-        p = os.path.join(self.HOMEDIR, 'pyaerocom-testdata')
-        
-        if os.path.exists(p):
+        if self.dir_exists(self._testdatadir) and 'modeldata' in os.listdir(self.TESTDATADIR):
             ok = True
             
         self.print_log.info("Access to pyaerocom-testdata: {}".format(ok))
@@ -303,6 +315,23 @@ class Config(object):
     def HOMEDIR(self):
         """Home directory of user"""
         return os.path.expanduser("~") + '/'
+    
+    @property
+    def TESTDATADIR(self):
+        return self._testdatadir
+    
+    @TESTDATADIR.setter
+    def TESTDATADIR(self, val):
+        if not self.dir_exists(val):
+            raise ValueError('Cannot set pyaerocom-testdata directory {}.'
+                             'Directory does not exist')
+        self._testdatadir = val
+        if not self.has_access_testdata:
+            self._testdatadir = None
+            raise IOError('Input path {} could not be identified as official '
+                          'pyaerocom testdata directory (requires that a sub '
+                          'directory modeldata exists)'.format(val))
+        self.read_config(self._config_files['pyaerocom-testdata'], keep_basedirs=False)
     
     @property
     def OUTPUTDIR(self):
@@ -360,10 +389,23 @@ class Config(object):
         
     @property
     def VAR_PARAM(self):
-        """Instance of class AllVariables (for default variable information)"""
+        """Deprecated name, please use :attr:`VARS` instead"""
+        self.print_log.warning('Deprecated (but still functional) name '
+                               'VARS. Please use VARS')
+        return self.VARS
+    
+    @property
+    def VARS(self):
+        """Instance of class VarCollection (for default variable information)"""
         if self._var_param is None: #has not been accessed before
-            self._var_param = AllVariables()
+            self._var_param = VarCollection(self._var_info_file)
         return self._var_param
+    
+    @property
+    def COORDINFO(self):
+        if self._coords is None:
+            self._coords = VarCollection(self._coords_info_file)
+        return self._coords
     
     @property
     def LOGFILESDIR(self):
@@ -574,10 +616,10 @@ class Config(object):
         
         # if this file exists no cache file is read
         # used to ease debugging
-        if self.CACHEDIR is not None and os.path.exists(self.CACHEDIR):
+        if self.dir_exists(self.CACHEDIR):
             self.DONOTCACHEFILE = os.path.join(self.CACHEDIR, 'DONOTCACHE')
             if os.path.exists(self.DONOTCACHEFILE):
-                self._caching_active=False
+                self._caching_active = False
         
         if not self._write_access(self._cachedir):
             self.logger.info('Cannot establish write access to cache '
@@ -884,7 +926,7 @@ class Config(object):
         for k, v in self.__dict__.items():
             if k.startswith('_'):
                 pass
-            if k=='VAR_PARAM':
+            if k=='VARS':
                 s += '\n{}\n{}'.format(k, list_to_shortstr(v.all_vars))
             elif isinstance(v, dict):
                 s += "\n%s (dict)" %k
@@ -896,9 +938,9 @@ class Config(object):
         return s
 
 class GridIO(object):
-    """Settings class for managing IO settings
+    """Global I/O settings for gridded data
     
-    This class includes options related to the import of grid data. This 
+    This class includes options related to the import of gridded data. This 
     includes both options related to file search as well as preprocessing 
     options.
     
@@ -948,6 +990,12 @@ class GridIO(object):
     INCLUDE_SUBDIRS : bool
         if True, search for files is expanded to all subdirecories included in
         data directory. Aerocom default is False.
+    INFER_SURFACE_LEVEL : bool
+        if True then surface level for 4D gridded data is inferred automatically
+        when necessary (e.g. when extracting surface time series from 4D 
+        gridded data object that does not contain sufficient information about
+        vertical dimension)
+        
     """
     _AEROCOM = {'FILE_TYPE': '.nc',
                'TS_TYPES': ['hourly', '3hourly', 'daily', 'monthly', 'yearly'],
@@ -974,7 +1022,8 @@ class GridIO(object):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest
         # resolution
-        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'monthly', 'yearly']
+        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'weekly', 
+                         'monthly', 'yearly']
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
         #shift longitudes to -180 -> 180 repr (if applicable)
@@ -991,6 +1040,8 @@ class GridIO(object):
         self.USE_RENAMED_DIR = True
         
         self.INCLUDE_SUBDIRS = False
+        
+        self.INFER_SURFACE_LEVEL = True
         
     def load_aerocom_default(self):
         self.from_dict(self._AEROCOM)
@@ -1049,6 +1100,8 @@ class GridIO(object):
         
 if __name__=="__main__":
     import pyaerocom as pya
+    
+    pya.const.COORDINFO.a
 # =============================================================================
 #     pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
 #     

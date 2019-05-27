@@ -61,7 +61,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     __version__ = "0.08_" + ReadAeronetBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
-    DATA_ID = const.AERONET_SUN_V3L15_SDA_DAILY_NAME
+    DATA_ID = const.AERONET_SUN_V3L2_SDA_DAILY_NAME
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V3L15_SDA_DAILY_NAME,
@@ -70,7 +70,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
     #: dictionary assigning temporal resolution flags for supported datasets
     #: that are provided in a defined temporal resolution
     TS_TYPES = {const.AERONET_SUN_V3L15_SDA_DAILY_NAME :   'daily',
-                const.AERONET_SUN_V3L2_SDA_DAILY_NAME   :   'daily'}
+                const.AERONET_SUN_V3L2_SDA_DAILY_NAME  :   'daily'}
     
     #: default variables for read method
     DEFAULT_VARS = ['od550aer', 'od550gt1aer', 'od550lt1aer']

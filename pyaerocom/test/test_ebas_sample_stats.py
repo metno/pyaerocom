@@ -20,10 +20,11 @@ def _make_data():
 def data_scat_jungfraujoch():
     return _make_data()
 
+@lustre_unavail
 def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
     data = data_scat_jungfraujoch
     assert 'EBASMC' in data.data_revision
-    assert data.data_revision['EBASMC'] == '20190115'
+    assert data.data_revision['EBASMC'] == '20190319'
     assert data.shape == (227928, 12)
     assert len(data.metadata) == 26
     
@@ -83,8 +84,8 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
                             'scatc550aer'])
    
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
-                            [np.datetime64('1995-07-08T23:29:59'), 
-                             np.datetime64('2017-12-31T23:29:59')])
+                            [np.datetime64('1995-07-08T23:00:00'), 
+                             np.datetime64('2017-12-31T23:00:00')])
     
     vals = [stat['instrument_name'], stat['ts_type'], stat['PI'],
             len(stat.filename.split(';'))]

@@ -23,11 +23,11 @@ read multiple models at once.
 .. parsed-literal::
 
     Initating pyaerocom configuration
-    Checking server configuration ...
+    Checking database access...
     Checking access to: /lustre/storeA
     Access to lustre database: True
     Init data paths for lustre
-    Expired time: 0.018 s
+    Expired time: 0.017 s
 
 
 Define two models (this list can contain as many models as you like)

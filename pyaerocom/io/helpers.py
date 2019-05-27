@@ -3,6 +3,7 @@
 """
 I/O helper methods of the pyaerocom package
 """
+from datetime import datetime
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
 from pyaerocom import __dir__
@@ -27,6 +28,18 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "3hourly" :  "hours",
               "daily"   :  "days",
               "monthly" :  "days"}
+
+def _print_read_info(i, mod, tot_num, last_t, name, logger):
+    """Helper for displaying standardised output in reading classes
+    
+    Not to be used directly
+    """
+    t = datetime.now()
+    logger.info("Reading files {}-{} of {} ({}) | {} (delta = {} s')"
+                .format(i+1,i+1+mod, tot_num, name,
+                        t.strftime('%H:%M:%S'),
+                        (t-last_t).seconds))
+    return t
 
 def read_ebas_flags_file(ebas_flags_csv):
     """Reads file ebas_flags.csv
@@ -120,9 +133,9 @@ def get_standard_name(var_name):
     VariableDefinitionError
         if standarad name is not set for variable in *variables.ini* file
     """
-    if not var_name in const.VAR_PARAM:
+    if not var_name in const.VARS:
         raise VarNotAvailableError('No such variable {}. Check variables.ini'.format(var_name))
-    name = const.VAR_PARAM[var_name].standard_name
+    name = const.VARS[var_name].standard_name
     if name is None:
         raise VariableDefinitionError('standard_name not defined for variable')
     return name
@@ -173,6 +186,21 @@ def get_obsnetwork_dir(obs_id):
                       "exists".format(data_dir, obs_id))
     return data_dir
 
+def save_dict_json(d, fp, ignore_nan=True, indent=None):
+    """Save a dictionary as json file using :func:`simplejson.dump`
+    
+    Parameters
+    ----------
+    d : dict
+        input dictionary
+    fp : str
+        filepath of json file
+        
+    """
+    import simplejson
+    with open(fp, 'w') as f:
+        simplejson.dump(d, f, ignore_nan=ignore_nan, indent=indent)
+        
 def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database
     

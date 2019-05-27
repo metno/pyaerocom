@@ -7,7 +7,7 @@ This module contains low-level methods to perform geographical calculations,
 (e.g. distance between two coordinates)
 """
 from pyaerocom import GEONUM_AVAILABLE
-from pyaerocom import print_log
+from pyaerocom import print_log, logger
 import numpy as np
 import os
 
@@ -161,7 +161,7 @@ def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None,
                                  '{} using SRTM topographic database'.format(p1))
         return (p0 - p1).magnitude
     else:
-        print_log.warning('geonum is not installed, computing approximate '
+        logger.warning('geonum is not installed, computing approximate '
                        'distance using haversine formula')
         hordist = haversine(lat0, lon0, lat1, lon1)
         if alt0 == None:
@@ -245,7 +245,6 @@ def haversine(lat0, lon0, lat1, lon1, earth_radius=6371.0):
     return earth_radius * c
 
 if __name__ == '__main__':
-    import geonum
     lat = 50.7
     lon = 8.2
     

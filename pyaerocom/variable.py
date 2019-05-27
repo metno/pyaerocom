@@ -13,7 +13,7 @@ except:
 from pyaerocom import __dir__, logger
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
-from pyaerocom._lowlevel_helpers import BrowseDict, list_to_shortstr, dict_to_str
+from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
 
 is_3d =  lambda var_name: True if '3d' in var_name.lower() else False
 str2bool = lambda val: val.lower() in ('true', '1', 't', 'yes')
@@ -152,7 +152,7 @@ def _read_alias_ini():
             aliases[alias] = var_name
     return aliases
 
-class Variable(BrowseDict):
+class Variable(object):
     """Interface that specifies default settings for a variable
     
     See `variables.ini <https://github.com/metno/pyaerocom/blob/master/
@@ -188,7 +188,7 @@ class Variable(BrowseDict):
     is_dry : bool
         flag that is set based on filename that indicates if variable data
         corresponds to dry conditions.
-    unit : str
+    units : str
         unit of variable (None if no unit)
     aliases : list
         list of alternative names for this variable
@@ -227,10 +227,11 @@ class Variable(BrowseDict):
         colorbar ticks
     """
     literal_eval_list = lambda val: list(literal_eval(val))
-        
+    str2list = lambda val: [x.strip() for x in val.split(',')]
     _TYPE_CONV={'wavelength_nm': float,
                 'minimum': float,
                 'maximum': float,
+                'dimensions' : str2list,
                 'obs_wavelength_tol_nm': float,
                 'scat_xlim': literal_eval_list,
                 'scat_ylim': literal_eval_list,
@@ -242,7 +243,21 @@ class Variable(BrowseDict):
                 'map_cbar_levels': literal_eval_list,
                 'map_cbar_ticks': literal_eval_list}
     
+    ALT_NAMES = {'units' : 'unit'}  
+    
     RH_MAX_DRY = 0.4
+    
+    plot_info_keys = ['scat_xlim',
+                      'scat_ylim',
+                      'scat_loglog',
+                      'scat_scale_factor',
+                      'map_vmin',
+                      'map_vmax',
+                      'map_c_under',
+                      'map_c_over',
+                      'map_cbar_levels',
+                      'map_cbar_ticks']
+    
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         #save orig. input for whatever reasons
         self._var_name_input = var_name 
@@ -265,7 +280,7 @@ class Variable(BrowseDict):
         self.var_name = var_name
         self.var_name_alt = var_name_alt #alternative var_name
         self.standard_name = None
-        self.unit = 1
+        self.units = '1'
         #self.aliases = []
         self.wavelength_nm = None
         self.dry_rh_max = None
@@ -275,18 +290,15 @@ class Variable(BrowseDict):
 
         self.description = None
         self.comments_and_purpose = None
-        
-        # parameters for reading of obsdata
-        
+
         #wavelength tolerance in nm
         self.obs_wavelength_tol_nm = None
         
-        # settings for scatter plots
         self.scat_xlim = None
         self.scat_ylim = None
         self.scat_loglog = None
         self.scat_scale_factor = 1.0
-        
+            
         # settings for map plotting
         self.map_vmin = None
         self.map_vmax = None
@@ -294,7 +306,6 @@ class Variable(BrowseDict):
         self.map_c_over = None
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
-        
         # imports default information and, on top, variable information (if 
         # applicable)
         if init:
@@ -306,6 +317,27 @@ class Variable(BrowseDict):
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
     
+    @property
+    def unit(self):
+        """Unit of variable (old name, deprecated)"""
+        from warnings import warn
+        warn(DeprecationWarning('Attr. name unit in Variable '
+                                'class is deprecated. Please '
+                                'use units instead'))
+        return self.units
+        
+    @property
+    def plot_info(self):
+        """Dictionary containing plot information"""
+        d = {}
+        for k in self.plot_info_keys:
+            d[k] = self[k]
+        return d
+    
+    def update(self, **kwargs):
+        for key, val in kwargs.items():
+            self[key] = val
+        
     @property
     def has_unit(self):
         """Boolean specifying whether variable has unit"""
@@ -325,6 +357,7 @@ class Variable(BrowseDict):
     
     @property
     def unit_str(self):
+        """string representation of unit"""
         if self.unit is None:
             return ''
         else:
@@ -361,6 +394,14 @@ class Variable(BrowseDict):
         if self.var_name in info:
             return [a.strip() for a in info[self.var_name].split(',')]
         return []
+    
+    @property
+    def long_name(self):
+        """Wrapper for :attr:`description`"""
+        return self.description
+    
+    def keys(self):
+        return list(self.__dict__.keys())
     
     def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
         """Import information about default region
@@ -409,27 +450,35 @@ class Variable(BrowseDict):
         default = cfg['DEFAULT']
         
         for key in self.keys():
-            ok = True
-            if key in var_info:
-                val = var_info[key]
+            if key in self.ALT_NAMES:
+                if self.ALT_NAMES[key] in var_info:
+                    self._add(key, var_info[self.ALT_NAMES[key]])
+            elif key in var_info:
+                self._add(key, var_info[key])
             elif key in default:
-                val = default[key]
-            else:
-                ok = False
-            if ok:
-                if key in self._TYPE_CONV:
-                    try:
-                        val = self._TYPE_CONV[key](val)
-                    except:
-                        pass
-                elif key == 'unit':
-                    if val == 'None' or val=='1':
-                        val=1
-                if val == 'None':
-                    val = None
-                self[key] = val
+                self._add(key, default[key])
+             
         self.var_name = var_name
+    
+    def _add(self, key, val):
+        if key in self._TYPE_CONV:
+            try:
+                val = self._TYPE_CONV[key](val)
+            except:
+                pass
+        elif key == 'units':
+            if val == 'None':
+                val = '1'
+        if val == 'None':
+            val = None
+        self[key] = val
         
+    def __setitem__(self, key, val):
+        self.__dict__[key] = val
+    
+    def __getitem__(self, key):
+        return self.__dict__[key]
+    
     def __repr__(self):
        return ("Variable {}\nUnit: {}\ndescriptions: {}\nstandard_name: {}\n"
                .format(self.var_name, self.unit, self.description,
@@ -438,28 +487,41 @@ class Variable(BrowseDict):
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
-        arrays = ''
-        for k, v in self.items():
-            if isinstance(v, dict):
-                s += "\n{} (dict)".format(k)
-                s = dict_to_str(v, s)
-            elif isinstance(v, list):
-                s += "\n{} (list, {} items)".format(k, len(v))
-                s += list_to_shortstr(v)
+        
+        plot_s = '\nPlotting settings\n......................'
+        
+        for k, v in self.__dict__.items():
+            if k in self.plot_info_keys:
+                if v is None:
+                    continue
+                if isinstance(v, dict):
+                    plot_s += "\n{} (dict)".format(k)
+                    plot_s = dict_to_str(v, plot_s, indent=3, 
+                                         ignore_null=True)
+                elif isinstance(v, list):
+                    plot_s += "\n{} (list, {} items)".format(k, len(v))
+                    plot_s += list_to_shortstr(v)
+                else:
+                    plot_s += "\n%s: %s" %(k,v)
             else:
-                s += "\n%s: %s" %(k,v)
-         
-        s += arrays
+                if isinstance(v, dict):
+                    s += "\n{} (dict)".format(k)
+                    s = dict_to_str(v, s, indent=3, ignore_null=True)
+                elif isinstance(v, list):
+                    s += "\n{} (list, {} items)".format(k, len(v))
+                    s += list_to_shortstr(v)
+                else:
+                    s += "\n%s: %s" %(k,v)
+        
+        s += plot_s
         return s
 
-class AllVariables(object):
-    """Container class that handles access to all available variables"""
+class VarCollection(object):
+    """Variable access class based on variables config file"""
     _var_ini = None
-    _alias_ini = None
-    def __init__(self, var_ini=None, var_csv=None):
+    def __init__(self, var_ini):
         
         self.var_ini = var_ini
-        self.var_csv = var_csv
         
         self._cfg = self._read_ini()
         
@@ -476,13 +538,18 @@ class AllVariables(object):
     
     @var_ini.setter
     def var_ini(self, var_ini):
-        if var_ini is None:
-            var_ini = os.path.join(__dir__, "data", "variables.ini")
-        if not os.path.exists(var_ini):
-            raise IOError("Variable ini file could not be found: %s"
-                          %var_ini)
-        self._var_ini = var_ini
         
+        if not os.path.exists(var_ini):
+            raise IOError("File {} does not exist".format(var_ini))
+        self._var_ini = var_ini
+    
+    def get_coord_var_and_standard_names(self):
+        """Get dictionary with coord and standard names"""
+        d = {}
+        for k in self.all_vars:
+            d[k] = self[k]['standard_name']
+        return d
+    
     def _read_ini(self):
         parser = ConfigParser()
         parser.read(self.var_ini)
@@ -497,7 +564,7 @@ class AllVariables(object):
         
         Example
         -------
-        >>> all_vars = AllVariables()
+        >>> all_vars = VarCollection()
         >>> 'od550aer' in all_vars
         True
         >>> 'blaa' in all_vars
@@ -512,7 +579,7 @@ class AllVariables(object):
         
         Example
         -------
-        >>> all_vars = AllVariables()
+        >>> all_vars = VarCollection()
         >>> all_vars.od550aer
         Variable od550aer
         """
@@ -523,19 +590,12 @@ class AllVariables(object):
         
         Example
         -------
-        >>> all_vars = AllVariables()
+        >>> all_vars = VarCollection()
         >>> all_vars['od550aer']
         Variable od550aer
         """
         #make sure to be in the right namespace
         low = var_name.lower()
-        if not low == var_name:
-            from pyaerocom import const
-            w = DeprecationWarning('Variable input contains capital letters. '
-                                   'This is deprecated and the input name ({}) '
-                                   'will automatically be converted to :{}'
-                                   .format(var_name, low))
-            #const.print_log.warning()
         check = low.replace('3d','').replace('dry', '')
         
         if not check in self:
@@ -554,7 +614,7 @@ class AllVariables(object):
   
 def get_variable(var_name):
     from pyaerocom import const
-    return const.VAR_PARAM[var_name]
+    return const.VARS[var_name]
 
 def all_vars_to_dataframe():
     """Make an overview table for all variables"""
@@ -575,13 +635,10 @@ def all_var_names():
 
 if __name__=="__main__":
     
-    all_vars = AllVariables()
+    from pyaerocom import const
+    all_vars = VarCollection(const._coords_info_file)
     
-    v = Variable('DEFAULT')
+    var1 = Variable('ec550aer')
     
-    print(v)
-    
-    a = AllVariables()
-    a['DEFAULT']
-    #print(v.aliases)
+    print(var1.units)
     
