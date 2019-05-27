@@ -69,6 +69,7 @@ from .read_aeronet_sunv2 import ReadAeronetSunV2
 from .read_aeronet_sunv3 import ReadAeronetSunV3
 from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
+from .read_gaw import ReadGAW
 
 from .readgridded import ReadGridded, ReadGriddedMulti
 from .readungridded import ReadUngridded

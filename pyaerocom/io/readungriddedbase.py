@@ -257,7 +257,8 @@ class ReadUngriddedBase(abc.ABC):
                 return revision
             raise Exception
         except:
-            return 'n/a'
+            return 'n/d'
+        
     @property
     def verbosity_level(self):
         """Current level of verbosity of logger"""

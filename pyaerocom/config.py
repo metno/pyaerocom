@@ -103,6 +103,10 @@ class Config(object):
 
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = 'GAWTADsubsetAasEtAl'
+
+    #: DMS
+    DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
+
     #: Lowest possible year in data
     MIN_YEAR = 0
     #: Highest possible year in data
@@ -169,9 +173,6 @@ class Config(object):
         
         # Loggers
         from pyaerocom import print_log, logger
-        #: Settings for reading and writing of gridded data
-        self.GRID_IO = GridIO()
-        print_log.info('Initating pyaerocom configuration')
         self.print_log = print_log
         self.logger = logger
         
@@ -210,8 +211,6 @@ class Config(object):
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
         
         
-        self.DONOTCACHEFILE = None
-
         self._ebas_flag_info = None
         
         if config_file is not None:
@@ -490,9 +489,9 @@ class Config(object):
             self.read_config(self._config_ini_user_server, 
                              keep_basedirs=True)
         else:
-            self.reload()
-
-
+            self.reload()    
+        
+         
     @property
     def READY(self):
         """Checks if relevant directories exist, returns True or False"""
@@ -620,7 +619,7 @@ class Config(object):
         
         # if this file exists no cache file is read
         # used to ease debugging
-        if self.CACHEDIR is not None and os.path.exists(self.CACHEDIR):
+        if self.dir_exists(self.CACHEDIR):
             self.DONOTCACHEFILE = os.path.join(self.CACHEDIR, 'DONOTCACHE')
             if os.path.exists(self.DONOTCACHEFILE):
                 self._caching_active = False
@@ -655,7 +654,7 @@ class Config(object):
                              '{}'.format(database_name, self.ALL_DATABASE_IDS))
         self.read_config(self._config_files[database_name], 
                          keep_basedirs=keep_root)
-
+        
     def reload(self, keep_basedirs=True):
         """Reload config file (for details see :func:`read_config`)"""
         self.read_config(self._config_ini, keep_basedirs)
@@ -923,7 +922,7 @@ class Config(object):
     
     def __setitem__(self, key, val):
         self.__dict__[key] = val
-
+        
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}\n".format(head, len(head)*"-")
@@ -943,11 +942,11 @@ class Config(object):
 
 class GridIO(object):
     """Global I/O settings for gridded data
-
-    This class includes options related to the import of gridded data. This
+    
+    This class includes options related to the import of gridded data. This 
     includes both options related to file search as well as preprocessing 
     options.
-
+    
     Attributes
     ----------
     FILE_TYPE : str
@@ -1026,7 +1025,7 @@ class GridIO(object):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest
         # resolution
-        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'weekly',
+        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'weekly', 
                          'monthly', 'yearly']
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
