@@ -427,7 +427,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                     u = self.UNITS[var]
                 else:
                     u = self.DEFAULT_UNIT
-                meta['var_info'][var] = od(unit=u)
+                meta['var_info'][var] = od(units=u)
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
             

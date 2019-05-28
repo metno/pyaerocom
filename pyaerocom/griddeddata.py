@@ -747,7 +747,7 @@ class GriddedData(object):
             data = StationData(latitude=lat, 
                                longitude=lon,
                                data_id=self.name)
-            data.var_info[var] = dict(unit=self.units)
+            data.var_info[var] = {'units':self.units}
             data[var] = Series(arr[:, i, j], index=times)
             result.append(data)
         return result
