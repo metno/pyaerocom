@@ -1241,8 +1241,8 @@ class StationData(StationMetaData):
                 
         ylabel = var_name
         try:
-            if 'unit' in self.var_info[var_name]:
-                u = self.var_info[var_name]['unit']
+            if 'units' in self.var_info[var_name]:
+                u = self.var_info[var_name]['units']
                 if u is not None and not u in [1, '1']:
                     ylabel += ' [{}]'.format(u)
         except:

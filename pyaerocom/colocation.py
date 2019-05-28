@@ -454,11 +454,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                  'object contains different source frequencies')
             if ungridded_unit is None:
                 try:
-                    ungridded_unit = obs_data['var_info'][var_ref]['unit']
+                    ungridded_unit = obs_data['var_info'][var_ref]['units']
                 except KeyError as e: #variable information or unit is not defined
                     logger.exception(repr(e))
             try:
-                unit = obs_data['var_info'][var_ref]['unit']
+                unit = obs_data['var_info'][var_ref]['units']
             except:
                 unit = None
             if not unit == ungridded_unit:
@@ -540,7 +540,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'ts_type_src'       :   [ts_type_src_ref, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'unit'              :   [ungridded_unit,
+            'units'             :  [ungridded_unit,
                                      gridded_unit],
             'vert_scheme'       :   vert_scheme,
             'data_level'        :   3,
@@ -562,7 +562,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
-              'unit'        : ('data_source', meta['unit']),
+              'units'       : ('data_source', meta['units']),
               'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time_idx,
               'station_name': station_names,

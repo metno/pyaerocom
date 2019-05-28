@@ -905,13 +905,13 @@ class UngriddedData(object):
         """
         from pyaerocom.helpers import unit_conversion_fac
         if unit is None:
-            unit = const.VARS[var_name].units
+            unit = const.VARS[var_name]['units']
             
         units =  []
         for i, meta in self.metadata.items():
             if var_name in meta['var_info']:
                 try:
-                    u = meta['var_info'][var_name]['unit']
+                    u = meta['var_info'][var_name]['units']
                     if not u in units:
                         units.append(u)
                 except KeyError:
@@ -921,8 +921,8 @@ class UngriddedData(object):
                                    'attr. "unit", which is deprecated, please '
                                    'check corresponding reading routine. ')
                     raise MetaDataError('Failed to access unit information for '
-                                        'variable {} in metadata block {}'
-                                        .format(var_name, i))
+                                        'variable {} in metadata block {}. {}'
+                                        .format(var_name, i, add_str))
         if len(units) == 0 and str(unit) != '1':
             raise MetaDataError('Failed to access unit information for '
                                 'variable {}. Expected unit {}'

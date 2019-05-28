@@ -114,24 +114,28 @@ class VerticalProfile(object):
     @property
     def var_unit(self):
         """Unit of variable (requires var_name to be available)"""
-        if not 'unit' in self.var_info[self.var_name]:
-            raise ValueError('Unit is not defined')
-        return self.var_info[self.var_name]['unit']
+        if not 'units' in self.var_info[self.var_name]:
+            add_str=''
+            if 'unit' in self.var_info[self.var_name]:
+                add_str = 'Note: attribute name "unit" is deprecated. Please ' \
+                          'use "units"'
+            raise ValueError('Unit is not defined. {}'.format(add_str))
+        return self.var_info[self.var_name]['units']
             
     @var_unit.setter
     def var_unit(self, val):
-        self.var_info[self.var_name]['unit'] = val
+        self.var_info[self.var_name]['units'] = val
     
     @property
     def altitude_unit(self):
         """Unit of altitude"""
-        if not 'unit' in self.var_info['altitude']:
+        if not 'units' in self.var_info['altitude']:
             raise ValueError('Altitude unit is not defined')
-        return self.var_info['altitude']['unit']
+        return self.var_info['altitude']['units']
             
     @altitude_unit.setter
     def altitude_unit(self, val):
-        self.var_info['altitude']['unit'] = val
+        self.var_info['altitude']['units'] = val
         
     def compute_altitude(self):
         """Compute altitude based on vertical coorinate information"""
@@ -172,12 +176,12 @@ class VerticalProfile(object):
         xlab = self.var_name
         ylab = 'Altitude'
         try:
-            xlab += ' [{}]'.format(self.var_info[self.var_name]['unit'])
+            xlab += ' [{}]'.format(self.var_info[self.var_name]['units'])
         except:
             pass
         
         try:
-            ylab += ' [{}]'.format(self.var_info['altitude']['unit'])
+            ylab += ' [{}]'.format(self.var_info['altitude']['units'])
         except:
             pass
         ax.set_xlabel(xlab)

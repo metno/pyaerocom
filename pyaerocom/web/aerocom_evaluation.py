@@ -550,13 +550,13 @@ class AerocomEvaluation(object):
             ts_data['obs_name'] = obs_name
             ts_data['model_name'] = model_name
             ts_data['obs_var'] = d.meta['var_name'][0]
-            ts_data['obs_unit'] = d.meta['unit'][0]
+            ts_data['obs_unit'] = d.meta['units'][0]
             ts_data['vert_code'] = vert_code
             ts_data['obs_freq_src'] = d.meta['ts_type_src'][0]
             ts_data['obs_revision'] = d.meta['revision_ref']
             
             ts_data['mod_var'] = d.meta['var_name'][1]
-            ts_data['mod_unit'] = d.meta['unit'][1]
+            ts_data['mod_unit'] = d.meta['units'][1]
             ts_data['mod_freq_src'] = d.meta['ts_type_src'][1]
             
             stat_lat = np.float64(arr.latitude[i])

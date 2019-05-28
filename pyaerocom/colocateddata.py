@@ -167,7 +167,7 @@ class ColocatedData(object):
     @property
     def unitstr(self):
         unique = []
-        u = self.unit
+        u = self.units
         for val in u:
             if val is None:
                 val = 'N/D'
