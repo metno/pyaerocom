@@ -50,6 +50,9 @@ setup(
     dependency_links    =   [],
     description = ('Python tools for the Aerocom project'),
     long_description = readme,
-    entry_points = {'console_scripts' : ['pyaerocom=pyaerocom.scripts.main:cli']},
+    entry_points = {'console_scripts' : [
+            'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main'
+            
+            ]},
     zip_safe = False
 )
