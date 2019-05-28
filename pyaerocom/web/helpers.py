@@ -5,11 +5,46 @@ Created on Mon Apr 15 14:00:44 2019
 
 @author: jonasg
 """
-import os
+import os, glob
 import simplejson
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, sort_dict_by_name
 
+def get_all_config_files(config_dir):
+    """
+    
+    Note
+    ----
+    This code only checks json configuration files, not .py module files
+    containing configuration.
+    
+    Parameters
+    ----------
+    config_dir : str
+        directory containing config json files for AerocomEvaluation interface
+        
+    Returns
+    -------
+    dict
+        nested dictionary containing file paths of all config files that were
+        detected, where first level of dict id `proj_id` and second level 
+        is `exp_id`.
+    """
+    
+    results = {}
+    
+    for file in glob.glob('{}/*.json'.format(config_dir)):
+        spl = os.path.basename(file).split('_')
+        if not len(spl) == 3 or not spl[0] =='cfg':
+            raise NameError('Invalid config file name ', file)
+        print(spl)
+        proj, exp = spl[1], spl[2].split('.')[0]
+        if not proj in results:
+            results[proj] = {}
+        results[proj][exp] = file
+    return results
+        
+        
 class ObsConfigEval(BrowseDict):
     """Observation configuration for evaluation (dictionary)
     
@@ -298,3 +333,13 @@ def make_info_table(config):
                                 else:
                                     motab[k] = str(v)
     return table
+
+if __name__ == '__main__':
+    cfg_dir = '/home/jonasg/github/aerocom_evaluation/data_new/config_files/'
+    
+    results = get_all_config_files(cfg_dir)
+    
+    for proj, exps in results.items():
+        print('Project:', proj)
+        for exp, path in exps.items():
+            print('Exp.', exp, ':', path)

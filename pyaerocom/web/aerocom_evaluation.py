@@ -1056,7 +1056,6 @@ class AerocomEvaluation(object):
                              'project {} and experiment {}'.format(config_dir, 
                               proj_id, exp_id))
         self.from_json(files[0])
-        print(self)
         
     def from_json(self, config_file):
         """Load configuration from json config file"""
