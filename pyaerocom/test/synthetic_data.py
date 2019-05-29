@@ -8,7 +8,7 @@ Created on Mon May 13 11:24:39 2019
 @author: jonasg
 """
 import numpy as np
-from pyaerocom import StationData
+from pyaerocom import StationData, UngriddedData
 
 def _make_station_data1():
     stat = StationData()
@@ -76,6 +76,11 @@ def _make_station_data2():
     stat.var_info['sconco3']  = {'units' : 'ug m-3'}
     
     return stat
+
+def _make_ungridded_data():
+    data = UngriddedData()
+    # Add some random data and metadata blocks
+    return data
 
 class DataAccess:
     """Factory for loading and accessing of data objects"""
