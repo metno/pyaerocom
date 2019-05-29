@@ -12,10 +12,11 @@ import pyaerocom as pya
 from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
 from pyaerocom.io.read_aasetal import ReadSulphurAasEtAl
 import matplotlib.pyplot as plt
+from scipy import stats
 
 VARS = ['sconcso4', 'sconcso2']
 
-# TODO add test or remove unoitconversion to inclkude 'wetso4',
+# TODO add test or remove unoitconversion to inclkude 'wetso4'
 
 regions_std = {'N-America': {"sconcso4": {'1990–2000': 0.025,
                                           '1990–2015': 0.024,
@@ -40,6 +41,7 @@ regions_std = {'N-America': {"sconcso4": {'1990–2000': 0.025,
                                        '1990–2015': 0.015,
                                        '2000–2010': 0.041,
                                        '2000–2015': 0.028},
+
                           'wetso4': {'1980–1990': 0.36,
                                      '1990–2000': 0.29,
                                      '1990–2015': 0.12,
@@ -140,48 +142,21 @@ regions_nr_stations = {'N-America': {"sconcso4": {'1990–2000': 101,
                }
 
 
-def calc_yearly_average(one_station):
-    """ Only do this is you have values from all seasons
-        1) calc sesonal average
-        2) calc yearly average from seasonal avergaes
-        return: list containing the yearly averages for one station < less than 7 averages remove station.
-    """
-    pass
-
-def calc_trend(list_yearly_average):
-    """
-    Only calc trends for a period if 7 years of this contain yearly averages
-
-    remember to use numpy functionality that doesn't included nans when taking the average
-
-    :param list_yearly_average:
-        contains yearly averages, if not all seasons present --> np.nan
-    :return: a
-        the slope of the trend using Theil-Sen regression (more robust against outliers).
-        READ; https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator
-    """
-    pass
-
-
-def std(list_of_a):
-    """ The standard deviation of the slopes. One per station in the period?.
-    Double check the last things. 
-    """
-    pass
-
-def check_nr_stations():
-    """
-    Check if the number of stations present is only counting the ones with more than 7 years of averges.
-    :return: Boolean
-    """
-    pass
 
 def create_region(region):
     """
     Function to create regions
 
-    :param region:
-    :return:
+    Parameters:
+    -----------------------
+    region : str
+        Name of existing region.
+
+    Returns:
+    -----------------------------
+        minLon, maxLon, minLat, maxLat : array[int]
+
+
     """
     regions = {
         # 'US': {'minLat': 22.5, 'maxLat': 71.0, 'minLon': -167, 'maxLon': -59.6},
@@ -200,12 +175,33 @@ def create_region(region):
     return regions[region]['minLon'], regions[region]['maxLon'], regions[region]['minLat'], regions[region]['maxLat']
 
 
-def crop_data_to_region(ungridded, region = "N-America"):
-    """ Function which crops the data into correct regions."""
-    valid_names = ['N-America', 'S-America', 'Europe', 'East-Asia', 'Africa', 'India', 'East-US', 'Central-Europe', 'Most-East-Asia']
+def crop_data_to_region(ungridded, region = "Europe"):
+    """ Function which filter out the stations in the correct region.
+
+    Parameters:
+    -------------
+    ungridded : UngriddedData-object
+        Ungridded data object which contain data from one variable (filter by meta is not implemented for several variables yet.)
+
+    region : str
+        Name of region, default is N-America.
+
+    Returns
+    -------
+    croppped_ungridded : UngriddedData
+        Ungridded data object which only contain stations from the correct data.
+
+    """
+
+    # TODO ask Jonas 1) python functions split into seasons. 2) MAybee for augustin but if they have implemented the theil slope or if they use a python package.
+
+    # TODO check that it contains only one variable --> else raise not implemented yet. This will happen anyways.
+
+    valid_names = ['N-America', 'S-America', 'Europe', 'East-Asia', 'Africa', 'India', 'East-US', 'Central-Europe', 'Most-East-Asia']2
     if region in valid_names:
         minLon, maxLon, minLat, maxLat = create_region(region = region)
-        return ungridded.filter_by_meta(latitude=(minLat, maxLat), longitude=(minLon, maxLon))
+        croppped_ungridded = ungridded.filter_by_meta(latitude=(minLat, maxLat), longitude=(minLon, maxLon))
+        return croppped_ungridded
     else:
         raise ValueError("{} is not a valid region. "
                          "Try 'N-America', 'S-America', 'Europe', 'East-Asia', 'Africa', 'India', 'East-US', "
@@ -217,12 +213,115 @@ def crop_data_to_region(ungridded, region = "N-America"):
     #return data_dict
 
 
-def test_trends():
+def test_trends_slope(variable = "sconcso2", start, stop, region):
     # TODO fill in content from aas et al notebook
+
+
+
+
+    pass
+
+def years_to_string(start, stop):
+    """Function to make it simpler to retrieve testdata from dictionary."""
+    return "{}-{}".format(start, stop)
+
+def calc_yearly_average(one_station):
+    """ Calculated yearly averages based on the below conditions.
+
+        Conditions for calculting the averages:
+            1. Need five daily measurments per season to calculate a seasonal average
+            2. Require four seasons to calculate yearly average.
+                2.2 Yearly average is the mean of the seasonal averages.
+            3. Require at least 7 years to calculate a trend. (Sould be a condition in the theil inst4eds????
+
+        Definition of seasons:
+        Spring: March, April, May
+        Summer: June, July, August
+        Autumn: September, October, November
+        Winter: December (Year-1), January, February
+
+        Parameters:
+        -------------------
+        ungridded : UngriddedData
+            TODO should this be stations instead.
+
+
+        Returns:
+        ---------------
+        yearly_averages : array-like
+            List contaning
+        return: list containing the yearly averages for one station < less than 7 averages remove station.
+    """
     pass
 
 
+def theil_sen_estimator(y):
+    """
+    Calculates one slope for one station. This is the median lsope of all combinations for that station
 
+    Calc all possible slopes (a in y = ax+b) and use the median.
+    For futher reading check out; https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator
+
+    Conditions:
+        1. Exit yearly averages for at lest 7/10 years in the periode.
+            1.1 Sesonal averages need to exit for all four seasons in order to calc the yearly mean.
+            Which is the average og the seasonal means.
+        2. Only calc trends for a period if 7 years of this contain yearly averages
+
+    remember to use numpy functionality that doesn't included nans when taking the average
+
+    :param
+
+    y array-like
+    list_yearly_average
+
+
+    x = None --> set to be the np.arange(len(y))
+
+    :return: a
+        the slope of the trend using Theil-Sen regression (more robust against outliers).
+        READ;
+    """
+
+    if len(y) >= 7:
+        medslope, medintercept, lo_slope, up_slope = stats.theilslopes(y=y, x=None, 0.90)
+    else:
+        raise SomethingError
+    # Compute the slope, intercept and 90% confidence interval (this is the same as a confidence level of p=0.010).
+
+    # TODO : only check the slope not the std' currently I don't find python functionality which will give me all slopes.
+
+    # TODO compute the std's from this here.
+
+    pass
+
+
+def test_std(list_of_a):
+    """ The standard deviation of the slopes. One per station in the period
+
+    Parameters:
+    -------------
+    list_of_a : array-like
+        List containing the slopes for the different stations.
+
+        TODO : calc std compare to the correct region for the correct timeperiod.
+
+
+    Return:
+    -----------------
+    std : float
+        The standard deviation for all stations on the chosen area.
+
+    """
+    pass
+
+
+def test_nr_stations():
+    """
+    Check if the number of stations present is only counting the ones with more than 7 years of averges.
+    :return: Boolean
+    """
+    pass
 
 
 def test_ungriddeddata_surface_cons_so2():
@@ -231,20 +330,6 @@ def test_ungriddeddata_surface_cons_so2():
     assert len(data.station_name) == 629
     #assert 'n/a' in data.data_revision not woriking
     assert data.shape == (1008552, 12)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
