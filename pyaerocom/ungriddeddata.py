@@ -78,7 +78,7 @@ class UngriddedData(object):
         
     """
     #: version of class (for caching)
-    __version__ = '0.19'
+    __version__ = '0.20'
     
     #: inital total number of rows in dataarray
     _ROWNO = 10000
