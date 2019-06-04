@@ -454,7 +454,7 @@ class ReadGridded(object):
                     
                     _years_temp.append(info["year"])
                     _ts_types_temp.append(info["ts_type"])
-                    _experiments_temp.append(info['name'])
+                    _experiments_temp.append(info['data_id'])
                     self.files.append(_file)
                     self.logger.debug('Read file {}'.format(_file))
             except Exception as e:
