@@ -762,7 +762,7 @@ class StationData(StationMetaData):
         StationData
             this object that has merged the other station
         """
-        self.merge_meta_same_station(other, **add_meta_keys)
+        #self.merge_meta_same_station(other, **add_meta_keys)
         self.merge_vardata(other, var_name)
         self.merge_meta_same_station(other, **add_meta_keys)
 
