@@ -24,9 +24,9 @@ def data_scat_jungfraujoch():
 def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
     data = data_scat_jungfraujoch
     assert 'EBASMC' in data.data_revision
-    assert data.data_revision['EBASMC'] == '20190319'
-    assert data.shape == (227928, 12)
-    assert len(data.metadata) == 26
+    assert data.data_revision['EBASMC'] == '20190530'
+    assert data.shape == (245448, 12)# (227928, 12)
+    assert len(data.metadata) == 28
     
     unique_coords = []
     unique_coords.extend(np.unique(data.latitude))
@@ -43,8 +43,9 @@ def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
              np.nanmin(vals)]
     print(check)
     npt.assert_allclose(check, 
-                        [4.433951143197965, 
-                         7.398103000409265, 182.7, -5.574], rtol=TEST_RTOL)
+                        [4.353838117790618, 
+                         7.237093265552969, 
+                         182.7, -5.574], rtol=TEST_RTOL)
     
     
 
@@ -55,7 +56,7 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
     keys = list(stat.keys())
     
     assert 'scatc550aer' in stat.overlap
-    assert len(stat.overlap['scatc550aer']) == 17466
+    assert len(stat.overlap['scatc550aer']) == 25789 #17466
     assert stat['stat_merge_pref_attr'] == 'revision_date'
     npt.assert_array_equal(keys, 
                            ['dtime', 
@@ -85,28 +86,28 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
    
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('1995-07-08T23:00:00'), 
-                             np.datetime64('2017-12-31T23:00:00')])
+                             np.datetime64('2018-12-31T23:00:00')])
     
     vals = [stat['instrument_name'], stat['ts_type'], stat['PI'],
             len(stat.filename.split(';'))]
-    print(vals)
     
     npt.assert_array_equal(vals,
-                           ['IN3563; Ecotech_Aurora3000_JFJ_dry; TSI_3563_JFJ_dry', 
-                            'hourly', 
-                            'Baltensperger, Urs; Weingartner, Ernest; Bukowiecki, Nicolas', 
-                            26])
+                           ['Ecotech_Aurora3000_JFJ_dry; TSI_3563_JFJ_dry; IN3563',
+                            'hourly',
+                            'Bukowiecki, Nicolas; Baltensperger, Urs; Weingartner, Ernest',
+                            28])
     
     d = stat.scatc550aer
     vals = [d.mean(), d.std(), d.min(), d.max()]
     npt.assert_allclose(vals,
-                         [4.7192396520408515, 7.702181266525312, -5.574, 182.7],
+                         [4.659552504388328, 7.596292289084959, -5.574, 182.7],
                          rtol=TEST_RTOL)
     
     d = stat.overlap['scatc550aer']
     vals = [d.mean(), d.std(), d.min(), d.max()]
     npt.assert_allclose(vals,
-                         [2.662519,  4.303533, -3.468499, 54.971412], rtol=TEST_RTOL)
+                        [2.9088404352506987, 4.582342743386248, 
+                         -3.4684991, 97.65403338], rtol=TEST_RTOL)
 
 @lustre_unavail   
 def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
