@@ -1,15 +1,35 @@
-Tutorials (Jupyter Notebooks)
-=============================
+Tutorials
+=========
 
-In this section you can find example tutorial notebooks for Pyaerocom.
+In this section you can find example tutorial notebooks for pyaerocom.
+
+.. note::
+
+  The tutorials are jupyter notebooks that were converted to restructured text.
+  You can find in all notebooks in the `pyaerocom-tutorials repository
+  <https://github.com/metno/pyaerocom-tutorials/tree/master/notebooks>`__.
+
+Pyaerocom API flowchart
+-----------------------
+
+The following flowchart illustrates the minimal workflow to create standard output in pyaerocom based on a user query (that typically comprises a model ID and observation ID as well as one (or more) variable(s) of interest.
+
+.. image:: pyaerocom_basic_flowchart.png
+  :width: 800px
+  :align: center
+
+A user query typically comprises a model (+ experiment -> model run) and an observation network, which are supposed to be compared.
+
+**Note**: the flowchart depicts a situation, where the data from the observation network is *ungridded*, that is, the data is not available in a gridded format such as NetCDF, but, for instance, in the form of column separated text files (as is the case for AERONET data, which is used as an example here and included in the test dataset).
+For `gridded` observations (e.g. satellite data), the flowchart is equivalent but with :class:`ReadGridded` class and :class:`GriddedData` for the observation branch.
+
+The following "Getting started" tutorial introduces the individual features displayed in the flowchart.
 
 .. include:: tut00_get_started.rst
 
 .. include:: tut01_intro_regions.rst
 
 .. include:: tut02_intro_class_ReadGridded.rst
-
-.. include:: tut03_intro_class_ReadGriddedMulti.rst
 
 .. include:: tut04_intro_class_GriddedData.rst
 
@@ -20,10 +40,8 @@ In this section you can find example tutorial notebooks for Pyaerocom.
 .. include:: tut07_intro_colocation.rst
 
 
-Further tutorials (in-depth)
-============================
-
-.. include:: tut001_setup_userserver.rst
+Further tutorials
+-----------------
 
 .. include:: add01_intro_time_handling.rst
 
@@ -32,3 +50,5 @@ Further tutorials (in-depth)
 .. include:: add03_ebas_database_browser.rst
 
 .. include:: add04_stationdata_merging.rst
+
+.. include:: add05_variables.rst
