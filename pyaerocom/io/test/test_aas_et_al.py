@@ -12,139 +12,191 @@ import pyaerocom as pya
 from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
 from pyaerocom.io.read_aasetal import ReadSulphurAasEtAl
 import matplotlib.pyplot as plt
-from scipy import stats
+import datetime
+from scipy.stats import kendalltau
+from scipy.stats.mstats import theilslopes
+import pandas as pd
+
 
 VARS = ['sconcso4', 'sconcso2']
-
 # TODO add test or remove unoitconversion to inclkude 'wetso4'
 
-regions_std = {'N-America': {"sconcso4": {'1990–2000': 0.025,
-                                          '1990–2015': 0.024,
-                                          '2000-2010': 0.029,
-                                          '2000–2015': 0.029},
 
-                             "wetso4": {'1980-1990': 0.18,
-                                        '1990–2000': 0.13,
-                                        '1990–2015': 0.10,
-                                        '2000–2010': 0.13,
-                                        '2000–2015': 0.13
-                                        },
+def _get_season_current(mm,yyyy):
+    if mm in [3,4,5]:
+        s = 'spring-'+str(int(yyyy))
+    if mm in [6,7,8]:
+        s = 'summer-'+str(int(yyyy))
+    if mm in [9,10,11]:
+        s = 'autumn-'+str(int(yyyy))
+    if mm in [12]:
+        s = 'winter-'+str(int(yyyy))
+    if mm in [1,2]:
+        s = 'winter-'+str(int(yyyy-1))
+    return s
 
-                             'sconcso2': {'1990–2000': 0.115,
-                                          '1990–2015': 0.109,
-                                          '2000–2010': 0.113,
-                                          '2000–2015': 0.123
+def _mid_season_current(seas, yr):
+    if seas=='spring':
+        date = datetime.datetime(yr,4,15)
+    if seas=='summer':
+        date = datetime.datetime(yr,7,15)
+    if seas=='autumn':
+        date = datetime.datetime(yr,10,15)
+    if seas=='winter':
+        date = datetime.datetime(yr-1,1,15)
+    if seas=='all':
+        date = datetime.datetime(yr,6,15)
+    return date
+
+def compute_trends_current(s_monthly, periods, only_yearly=True):
+    """ Compute trends for station. Used in the trends inte3rface to compute the trends before. 05.06.19.
+
+    Slightly modified code from original trends interface developed by
+    A. Mortier.
+
+    s_monthly : pandas dataframe
+    periods : list of periods???
+
+
+    Main changes applied:
+        - Keep NaNs
+
+    """
+    # sm = to_monthly_current_trends_interface(s0, MIN_DIM)
+    d = dict(month=s_monthly.index.month,
+             year=s_monthly.index.year,
+             value=s_monthly.values)
+
+    mobs = pd.DataFrame(d)
+
+    mobs['season'] = mobs.apply(lambda row: _get_season_current(row['month'],
+                                                                row['year']), axis=1)
+    mobs = mobs.dropna(subset=['value'])
+
+    # trends with yearly and seasonal averages
+    seasons = ['spring', 'summer', 'autumn', 'winter', 'all']
+    yrs = np.unique(mobs['year'])
+
+    data = {}
+
+    for i, seas in enumerate(seasons):
+        if only_yearly and not seas == 'all':
+            continue
+        # initialize seasonal object
+        data[seas] = {'date': [], 'jsdate': [], 'val': []}
+        # filter the months
+        for yr in yrs:
+            if seas != 'all':
+                catch = mobs[mobs['season'].str.contains(seas + '-' + str(yr))]
+            else:
+                catch = mobs[mobs['season'].str.contains('-' + str(yr))]
+            date = _mid_season_current(seas, yr)
+
+            data[seas]['date'].append(date)
+            epoch = datetime.datetime(1970, 1, 1)
+            data[seas]['jsdate'] = [(dat - epoch).total_seconds() * 1000 for dat in data[seas]['date']]
+            # needs 4 seasons to compute seasonal average to avoid biases
+            if (seas == 'all') & (len(np.unique(catch['season'].values)) < 4):
+                data[seas]['val'].append(np.nan)
+            else:
+                data[seas]['val'].append(np.nanmean(catch['value']))
+
+        # trends for this season
+        data[seas]['trends'] = {}
+
+        # filter period
+        for period in periods:
+            p0 = int(period[:4])
+            p1 = int(period[5:])
+            data[seas]['trends'][period] = {}
+
+            # Mann-Kendall test
+            x = np.array(data[seas]['jsdate'])
+            y = np.array(data[seas]['val'])
+            # works only on not nan values
+            x = x[~np.isnan(y)]
+            y = y[~np.isnan(y)]
+            # filtering to the period limit
+            jsp0 = (datetime.datetime(p0, 1, 1) - epoch).total_seconds() * 1000
+            jsp1 = (datetime.datetime(p1, 12, 31) - epoch).total_seconds() * 1000
+            y = y[(x >= jsp0) & (x <= jsp1)]
+            x = x[(x >= jsp0) & (x <= jsp1)]
+
+            if len(x) > 2:
+                # kendall
+                [tau, pval] = kendalltau(x, y)
+                data[seas]['trends'][period]['pval'] = pval
+
+                # theil slope
+                res = theilslopes(y, x, 0.9)
+                reg = res[0] * np.asarray(x) + res[1] * np.ones(len(x))
+                slp = res[0] * 1000 * 60 * 60 * 24 * 365 / reg[0]  # slp per milliseconds to slp per year
+                data[seas]['trends'][period]['slp'] = slp * 100  # in percent
+                # TODO its only the above one which is interresting.
+
+                data[seas]['trends'][period]['reg0'] = reg[0]
+                data[seas]['trends'][period]['t0'] = x[0]
+                data[seas]['trends'][period]['n'] = len(y)
+            else:
+                data[seas]['trends'][period]['pval'] = None
+                data[seas]['trends'][period]['slp'] = None
+                data[seas]['trends'][period]['reg0'] = None
+                data[seas]['trends'][period]['t0'] = None
+                data[seas]['trends'][period]['n'] = len(y)
+    return data
+
+
+
+# TODO: now it contains the values from slope not the std which is displayed now. Test one region and all variables.
+regions_slope = {'N-America': {"sconcso4": {'2000–2010': -3.03,
+                                          '2000–2015':  -3.15},
+
+                             "wetso4": {'2000–2010': -2.30,
+                                        '2000–2015': -2.78},
+
+                             'sconcso2': {'2000–2010': -4.23,
+                                          '2000–2015':-4.67
                                           }},
 
-               'Europe': {'sconcso4': {'1980–1990': 0.094,
-                                       '1990–2000': 0.052,
-                                       '1990–2015': 0.015,
-                                       '2000–2010': 0.041,
-                                       '2000–2015': 0.028},
+                   'Europe': {'sconcso4': {'2000–2010':  -2.86,
+                                           '2000–2015':  -2.67},
 
-                          'wetso4': {'1980–1990': 0.36,
-                                     '1990–2000': 0.29,
-                                     '1990–2015': 0.12,
-                                     '2000–2010': 0.13,
-                                     '2000–2015': 0.10
-
-                                     },
-                          'sconcso2': {'1980–1990': 0.168,
-                                       '1990–2000': 0.275,
-                                       '1990–2015': 0.085,
-                                       '2000–2010': 0.054,
-                                       '2000–2015': 0.036
-                                       },
-                          },
-               'India': {
-                             'wetso4': {'1980–1990': 0.18,
-                                        '1990–2000': 0.37,
-                                         '2000–2010': 0.37,
+                              'wetso4': {'2000–2010': -3.85,
+                                         '2000–2015': -3.40,
                                          },
+                              'sconcso2': {'2000–2010': -4.23,
+                                           '2000–2015':-3.89
+                                           },
                               },
 
-               'East-Asia': {'sconcso4': {'2000–2010': 0.034,
-                                          '2000–2015': 0.037},
-                             'wetso4': {'1990–2000': 0.32,
-                                        '1990–2015': 0.05,
-                                        '2000-2010': 0.37,
-                                        '2000-2015': 0.24
-                                        },
-                             'sconcso2': {'2000–2010': 0.119,
-                                          '2000–2015': 0.186}},
-
-               'Africa': {'wetso4': {'2000-2010': 0},
-
-                          'sconcso2': {'2000–2010': 0.121,
-                                       '2000–2015': 0.068
-                                       }}
-               }
-
-regions_nr_stations = {'N-America': {"sconcso4": {'1990–2000': 101,
-                                          '1990–2015': 124,
-                                          '2000-2010': 227,
-                                          '2000–2015': 218},
-
-                             "wetso4": {'1980-1990': 78,
-                                        '1990–2000': 186,
-                                        '1990–2015': 189,
-                                        '2000–2010': 226,
-                                        '2000–2015': 215
-                                        },
-
-                             'sconcso2': {'1990–2000': 53,
-                                          '1990–2015': 71,
-                                          '2000–2010': 78,
-                                          '2000–2015': 77
-                                          }},
-
-               'Europe': {'sconcso4': {'1980–1990': 16,
-                                       '1990–2000': 41,
-                                       '1990–2015': 33,
-                                       '2000–2010': 227,
-                                       '2000–2015': 36},
-
-                          'wetso4': {'1980–1990': 23,
-                                     '1990–2000': 60,
-                                     '1990–2015': 55,
-                                     '2000–2010': 73,
-                                     '2000–2015': 67
-
-                                     },
-                          'sconcso2': {'1980–1990': 20,
-                                       '1990–2000': 43,
-                                       '1990–2015': 40,
-                                       '2000–2010': 51,
-                                       '2000–2015': 47
-                                       },
-                          },
-               'India': {'wetso4': {'1980–1990': 10,
-                                    '1990–2000': 10,
-                                    '2000–2010': 10,
-                                    },
-                         },
-                # TODO fill out the rest of the stations.
-               'East-Asia': {'sconcso4': {'2000–2010': 0.034,
-                                          '2000–2015': 0.037},
-                             'wetso4': {'1990–2000': 0.32,
-                                        '1990–2015': 0.05,
-                                        '2000-2010': 0.37,
-                                        '2000-2015': 0.24
-                                        },
-                             'sconcso2': {'2000–2010': 0.119,
-                                          '2000–2015': 0.186}},
-
-               'Africa': {'wetso4': {'2000-2010': 0},
-
-                          'sconcso2': {'2000–2010': 0.121,
-                                       '2000–2015': 0.068
-                                       }}
-               }
+                   }
 
 
+regions_nr_stations = {'N-America': {"sconcso4": {'2000–2010': 227,
+                                                    '2000–2015': 218},
+                                     "wetso4": {'2000–2010': 226,
+                                                '2000–2015': 215
+                                                },
+        
+                                     'sconcso2': {'2000–2010': 78,
+                                                  '2000–2015': 77
+                                                  }},
+
+                       'Europe': {'sconcso4': {'2000–2010': 227,
+                                               '2000–2015': 36},
+
+                                  'wetso4': {'2000–2010': 73,
+                                             '2000–2015': 67
+                                             },
+                                  'sconcso2': {'2000–2010': 51,
+                                               '2000–2015': 47
+                                               },
+                                  },
+                       }
 
 def create_region(region):
-    """
+    """ Small modifications to the one in the trends interface.
+
     Function to create regions
 
     Parameters:
@@ -155,9 +207,8 @@ def create_region(region):
     Returns:
     -----------------------------
         minLon, maxLon, minLat, maxLat : array[int]
-
-
     """
+
     regions = {
         # 'US': {'minLat': 22.5, 'maxLat': 71.0, 'minLon': -167, 'maxLon': -59.6},
         'N-America': {'minLat': 15.0, 'maxLat': 72.0, 'minLon': -170.0, 'maxLon': -50.0},
@@ -192,12 +243,7 @@ def crop_data_to_region(ungridded, region = "Europe"):
         Ungridded data object which only contain stations from the correct data.
 
     """
-
-    # TODO ask Jonas 1) python functions split into seasons. 2) MAybee for augustin but if they have implemented the theil slope or if they use a python package.
-
-    # TODO check that it contains only one variable --> else raise not implemented yet. This will happen anyways.
-
-    valid_names = ['N-America', 'S-America', 'Europe', 'East-Asia', 'Africa', 'India', 'East-US', 'Central-Europe', 'Most-East-Asia']2
+    valid_names = ['N-America', 'S-America', 'Europe', 'East-Asia', 'Africa', 'India', 'East-US', 'Central-Europe', 'Most-East-Asia']
     if region in valid_names:
         minLon, maxLon, minLat, maxLat = create_region(region = region)
         croppped_ungridded = ungridded.filter_by_meta(latitude=(minLat, maxLat), longitude=(minLon, maxLon))
@@ -207,95 +253,14 @@ def crop_data_to_region(ungridded, region = "Europe"):
                          "Try 'N-America', 'S-America', 'Europe', 'East-Asia', 'Africa', 'India', 'East-US', "
                          "'Central-Europe', 'Most-East-Asia' ".format(region))
 
-#def filter_by_time(data_cropped_by_region, start, stop):
-    #station_list = data_dict.stats
-    #print(data_dict.keys())
-    #return data_dict
-
-
-def test_trends_slope(variable = "sconcso2", start, stop, region):
-    # TODO fill in content from aas et al notebook
-
-
-
-
-    pass
-
 def years_to_string(start, stop):
     """Function to make it simpler to retrieve testdata from dictionary."""
-    return "{}-{}".format(start, stop)
+    return "{}–{}".format(start, stop)
 
-def calc_yearly_average(one_station):
-    """ Calculated yearly averages based on the below conditions.
+def years_from_periodstr(period):
+    return [int(x) for x in period.split('–')]
 
-        Conditions for calculting the averages:
-            1. Need five daily measurments per season to calculate a seasonal average
-            2. Require four seasons to calculate yearly average.
-                2.2 Yearly average is the mean of the seasonal averages.
-            3. Require at least 7 years to calculate a trend. (Sould be a condition in the theil inst4eds????
-
-        Definition of seasons:
-        Spring: March, April, May
-        Summer: June, July, August
-        Autumn: September, October, November
-        Winter: December (Year-1), January, February
-
-        Parameters:
-        -------------------
-        ungridded : UngriddedData
-            TODO should this be stations instead.
-
-
-        Returns:
-        ---------------
-        yearly_averages : array-like
-            List contaning
-        return: list containing the yearly averages for one station < less than 7 averages remove station.
-    """
-    pass
-
-
-def theil_sen_estimator(y):
-    """
-    Calculates one slope for one station. This is the median lsope of all combinations for that station
-
-    Calc all possible slopes (a in y = ax+b) and use the median.
-    For futher reading check out; https://en.wikipedia.org/wiki/Theil%E2%80%93Sen_estimator
-
-    Conditions:
-        1. Exit yearly averages for at lest 7/10 years in the periode.
-            1.1 Sesonal averages need to exit for all four seasons in order to calc the yearly mean.
-            Which is the average og the seasonal means.
-        2. Only calc trends for a period if 7 years of this contain yearly averages
-
-    remember to use numpy functionality that doesn't included nans when taking the average
-
-    :param
-
-    y array-like
-    list_yearly_average
-
-
-    x = None --> set to be the np.arange(len(y))
-
-    :return: a
-        the slope of the trend using Theil-Sen regression (more robust against outliers).
-        READ;
-    """
-
-    if len(y) >= 7:
-        medslope, medintercept, lo_slope, up_slope = stats.theilslopes(y=y, x=None, 0.90)
-    else:
-        raise SomethingError
-    # Compute the slope, intercept and 90% confidence interval (this is the same as a confidence level of p=0.010).
-
-    # TODO : only check the slope not the std' currently I don't find python functionality which will give me all slopes.
-
-    # TODO compute the std's from this here.
-
-    pass
-
-
+@lustre_unavail
 def test_std(list_of_a):
     """ The standard deviation of the slopes. One per station in the period
 
@@ -315,21 +280,80 @@ def test_std(list_of_a):
     """
     pass
 
-
-def test_nr_stations():
+@lustre_unavail
+def test_slope(ungridded, region, period, var):
     """
-    Check if the number of stations present is only counting the ones with more than 7 years of averges.
+    Check if the number of stations present is only counting the ones with more than 7 years of averages.
     :return: Boolean
     """
-    pass
+    start, stop = years_from_periodstr(period[0])
+    # crop data to region
+    regional = crop_data_to_region(ungridded, region = region)
 
+    # crop to timeseries
+    stations =  regional.to_station_data_all(var, start, stop, 'monthly')['stats']
+    slp_stations = []
 
+    for station in stations:
+        #date = station['dtime']
+        ts = station[var]
+        s_monthly = ts # is a pandas series
+        # input to compute_trends_current period is supposed to be a list.
+        data = compute_trends_current(s_monthly, period, only_yearly=True)
+        seas = 'all'
+        slp = data[seas]['trends'][period[0]]['slp']
+        if not slp is None:
+            slp_stations.append( data[seas]['trends'][period[0]]['slp'])
+    # crop to months?
+     # this will check what we do
+    nr_stations = len(slp_stations)
+    return nr_stations, np.mean(slp_stations)
+
+@lustre_unavail
 def test_ungriddeddata_surface_cons_so2():
     reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
     data = reader.read()  # read all variables
     assert len(data.station_name) == 629
     #assert 'n/a' in data.data_revision not woriking
     assert data.shape == (1008552, 12)
+
+    regions = ['Europe', 'N-America']
+    # TODO Add wetso4,k in fact add oxygen to all of them
+    VARS = ['sconcso4', 'sconcso2']
+    periods = ['2000–2010', '2000–2015'] #
+
+    # todo LOOP OVER PERIODS
+
+    for v in VARS:
+        for r in regions:
+            ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve=v)
+
+            true_mean_slope1 = regions_slope[r][v]['2000–2010']
+            true_mean_slope2 = regions_slope[r][v]['2000–2015']
+
+            ns1 = regions_nr_stations[r][v]['2000–2010']
+            ns2 = regions_nr_stations[r][v]['2000–2015']
+
+            nr_stations, predicted_mean_slope1 = test_slope(ungridded, r, ['2000–2010'],v)
+            nr_stations2, predicted_mean_slope2 = test_slope(ungridded, r, ['2000–2015'], v)
+
+            assert nr_stations == ns1
+            assert nr_stations2 == ns2
+            assert predicted_mean_slope1 == true_mean_slope1
+            assert predicted_mean_slope2 == true_mean_slope2
+
+"""
+TODO:
+
+(*) The units needs to be converted to including weight of oxygen.
+
+(**)  Test shold convert units back before they test anything. 
+BUT Look into the model files and double check that these don't contain only the mass of S. 
+
+"""
+
+
+
 
 
 if __name__ == "__main__":

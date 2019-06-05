@@ -314,7 +314,6 @@ def days_in_month(years, months):
     nr_of_days = []
     if len(index_feb) == 0:
         nr_of_days = np.array([days[m-1] for m in months])
-        print(nr_of_days)
         return nr_of_days
     else:
         for counter, m in enumerate(months):
