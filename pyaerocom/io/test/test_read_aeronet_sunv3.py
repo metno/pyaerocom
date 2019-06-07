@@ -17,6 +17,7 @@ def make_dataset():
     r = ReadAeronetSunV3()
     return r.read(file_pattern='G*', 
                   vars_to_retrieve=TEST_VARS)
+
 @lustre_unavail
 @pytest.fixture(scope='session')
 def aeronetsunv3lev2_subset():

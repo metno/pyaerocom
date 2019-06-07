@@ -37,20 +37,19 @@ def test_basic_attributes():
                                             'od500aer', 'od870aer',
                                             'ang4487aer', 'ang4487aer_calc',
                                             'od550aer']
-
+    
+@lustre_unavail
+def test_read_aeronet_sunv3():
+    r = ReadUngridded()
+    data = r.read('AeronetSunV3Lev2.daily',
+                   vars_to_retrieve=['od550aer', 'ang4487aer'],
+                   file_pattern='Bo*')
+    data._check_index()
 
 if __name__=="__main__":
 
     test_supported()
-    r = ReadUngridded()
-    print(type(r.get_reader()).__name__)
+    test_read_aeronet_sunv3()
+
+
     
-# =============================================================================
-#     d = make_dataset()
-#     
-#     for stat in d:
-#         print(stat.station_name)
-#         
-#     
-#     
-# =============================================================================

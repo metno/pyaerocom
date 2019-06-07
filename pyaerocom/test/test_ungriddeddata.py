@@ -8,6 +8,8 @@ Created on Thu Apr 12 14:45:43 2018
 import numpy as np
 import numpy.testing as npt
 from pyaerocom import UngriddedData
+from pyaerocom.test.settings import lustre_unavail
+from pyaerocom.io.test.test_read_aeronet_sunv3 import aeronetsunv3lev2_subset
 from pyaerocom.exceptions import DataCoverageError
 
 def test_init_shape():
@@ -20,6 +22,7 @@ def test_init_shape():
     
     npt.assert_array_equal(d1.shape, (1114, 14))
     
+
 def test_coordinate_access():
     import string
     d = UngriddedData()
@@ -36,8 +39,6 @@ def test_coordinate_access():
                              longitude = lons[i],
                              altitude = alts[i])
         
-    print(d)
-    
     import numpy.testing as npt
     
     npt.assert_array_equal(d.station_name, stat_names)
@@ -58,6 +59,10 @@ def test_coordinate_access():
     npt.assert_array_equal(c['latitude'], lats)
     npt.assert_array_equal(c['longitude'], lons)
     npt.assert_array_equal(c['altitude'], alts)
+    
+@lustre_unavail
+def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
+    aeronetsunv3lev2_subset._check_index()
     
 if __name__=="__main__":
     test_init_shape()
