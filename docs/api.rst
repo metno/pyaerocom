@@ -206,7 +206,7 @@ Further I/O features
 .. note::
 
 	The	:mod:`pyaerocom.io` package also includes all relevant data import and reading routines. These are introduced
-	above, in Section :ref:`reading`.
+	above, in Section Reading.
 	
 AeroCom database browser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
