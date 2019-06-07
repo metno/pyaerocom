@@ -22,7 +22,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.01'
+    __version__ = '0.02'
 
     COL_DELIM = ','
 
@@ -31,10 +31,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
     #: Name of dataset (OBS_ID)
     DATA_ID = 'GAWTADsubsetAasEtAl'
-
-    #: Path were data is located (hard coded for now)
-    DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/'\
-                        'PYAEROCOM/GAWTADSulphurSubset/data' 
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -98,35 +94,48 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         """
        
 
-        def pad_zeros(array):
-            """ Try to do this vectorized,
-            Problem with the only one digit in front of numbers smaller than xero.            
-            """
-            
-            str_array = array.astype("str")
-            
-            for i, val in enumerate(array):
-                if val < 10: 
-                # Add zeros 
-                    str_array[i] = "0"+str(val)
-            return str_array
+# =============================================================================
+#         def pad_zeros(array):
+#             """ Try to do this vectorized,
+#             Problem with the only one digit in front of numbers smaller than xero.            
+#             """
+#             
+#             str_array = array.astype("str")
+#             
+#             for i, val in enumerate(array):
+#                 if val < 10: 
+#                 # Add zeros 
+#                     str_array[i] = "0"+str(val)
+#             return str_array
+# =============================================================================
 
         station_list = []
         #print(vars_to_retrieve)
-        df = pd.read_csv(filename,sep=",", low_memory=False)
+        df = pd.read_csv(filename, sep=",", low_memory=False)
         
-        #days = np.ones((len(df["year"]))).astype('int')
-        #df['day'] = days
-        #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
-        month = pad_zeros( df['month'])
-        #print(month)
-               
-        year = df['year'].values.astype("str")        
-        days = np.array([ "01" for i in range(len(year)) ])
-        dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
-        df['dtime'] = np.array( dates, dtype = "datetime64[s]")  
+        # 
+        tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
+        
+        dates_alt = [tconv(yr, m) for yr, m in 
+                     zip(df.year.values, df.month.values)]
+        
+# =============================================================================
+#         #days = np.ones((len(df["year"]))).astype('int')
+#         #df['day'] = days
+#         #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
+#         month = pad_zeros(df['month'].astype(int))
+#         #print(month)
+#                
+#         year = df['year'].values.astype(int).astype("str")        
+#         days = np.array(["01" for i in range(len(year)) ])
+#         
+#         dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
+# =============================================================================
+        
+        df['dtime'] = np.array(dates_alt)  
+
         # array av numpy.datetime64
-        df.rename(columns= {"Sampler":"instrument_name"}, inplace = True)
+        df.rename(columns= {"Sampler":"instrument_name"}, inplace=True)
         #df.pop("year")
         #df.pop("month")
         #df.pop("day")
@@ -324,7 +333,7 @@ def days_in_month(years, months):
                 nr_of_days.append(days[m-1])
         return np.array(nr_of_days)
 
-def unitconversion_wet_deposition(data, ts_type = "monthly"):
+def unitconversion_wet_deposition(data, ts_type="monthly"):
     """
     Converting:  ug S/ ha to ug SOx/m2 
     Adding mass of oksygen.
@@ -442,12 +451,35 @@ def unitconversion_surface_consentrations_back(data, nr_of_O = 2):
     # added weights in micrograms 
     return weight_sox
 
+def _check_line_endings(filename):
+    ll = None
+    wrong_endings = {}
+    with open(filename, 'r') as f:
+        prev = None
+        for i, line in enumerate(f.readlines()):
+            spl = line.split(',')
+            if not spl[-1] == '\n':
+                wrong_endings[i+1] = line
+            if ll is None:
+                ll = len(spl)
+            elif not len(spl) == ll:
+                print(i)
+                print(prev)
+                print(spl)
+                raise Exception
+            prev = spl
+    return wrong_endings
+
 if __name__ == "__main__":
-     from pyaerocom import change_verbosity
-     import matplotlib.pyplot as plt
+
      #change_verbosity('info')
      V = "wetso4"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
+     
+     #so2 = aa.read('sconcso2')
+     #so4_aero = aa.read('sconcso4')
+     
+     
      dataNone = aa.read(V)#['sconcso4', 'sconcso2']
      name = 'Abington'
      abington = dataNone.to_station_data("Oulanka", V)
