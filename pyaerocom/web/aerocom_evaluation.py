@@ -112,10 +112,29 @@ class AerocomEvaluation(object):
             `obs_name` (defines `var_name`)
             3. Update `dict` with settings from :attr:`model_config` for \
             `model_name`
-            
-    
-            
-        
+     
+    add_methods_file : str, optional
+        file specifying custom reading methods
+    add_methods : dict
+        dictionary containing additional reading method
+    obs_config : dict
+        dictionary containing configuration details for individual observations
+        (i.e. instances of :class:`ObsConfigEval` for each observation) used 
+        for the analysis.
+    obs_ignore : list, optional
+        list of observations that are supposed to be ignored in analysis 
+        (keys from :attr:`obs_config`)
+    model_config : dict
+        dictionary containing configuration details for individual models
+        (i.e. instances of :class:`ModelConfigEval` for each model) used 
+        for the analysis.
+    model_ignore : list, optional
+        list of models that are supposed to be ignored in analysis 
+        (keys from :attr:`model_config`)
+    var_mapping : dict
+        mapping of variable names for menu in interface
+    var_order_menu : list, optional
+        order of variables in menu
     """
     OUT_DIR_NAMES = ['map', 'ts', 'scat', 'hm', 'profiles']
     
@@ -968,11 +987,10 @@ class AerocomEvaluation(object):
         
         Returns
         -------
-        tuple
-            2-element tuple, containing:
-                
-                - :obj:`str`: menu name of this variable
-                - :obj:`str`: menu category of this variable
+        str
+            menu name of this variable
+        str
+            menu category of this variable
         """
         try:
             name, tp = self.var_mapping[obs_var]
