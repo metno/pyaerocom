@@ -82,7 +82,7 @@ class Region(BrowseDict):
         self.lon_ticks = None
         self.lat_ticks = None
         
-        if isinstance(name, str):
+        if isinstance(name, str) and any([x == None for x in [lon_range, lat_range]]):
            self.import_default(name) 
         
         for k, v in kwargs.items():
@@ -263,7 +263,7 @@ def get_all_default_regions():
         
     return all_regions
    
-def get_regions_coord(lat, lon) -> list:
+def get_regions_coord(lat, lon, **add_regions) -> list:
     """Get all regions that contain input coordinate
     
     Parameters
@@ -272,14 +272,22 @@ def get_regions_coord(lat, lon) -> list:
         latitude of coordinate
     lon : float
         longitude of coordinate
-    
+    **add_regions
+        additional regions other than default regions, that are supposed to 
+        be considered
+        
     Returns
     -------
     list
         list of regions that contain this coordinate
     """
     regs = []
-    for rname, reg in get_all_default_regions().items():
+    all_regs = get_all_default_regions()
+    for an, ar in add_regions.items():
+        if isinstance(ar, Region):
+            all_regs[an] = ar
+
+    for rname, reg in all_regs.items():
         if rname == 'WORLD':
             continue
         if reg.contains_coordinate(lat, lon):
@@ -288,7 +296,7 @@ def get_regions_coord(lat, lon) -> list:
         regs.append('WORLD')
     return regs
 
-def find_closest_region_coord(lat, lon):
+def find_closest_region_coord(lat, lon, **add_regions):
     """Find region that has it's center closest to input coordinate
     
     Parameters
@@ -297,21 +305,28 @@ def find_closest_region_coord(lat, lon):
         latitude of coordinate
     lon : float
         longitude of coordinate
-    
+    **add_regions
+        additional regions other than default regions, that are supposed to 
+        be considered
+        
     Returns
     -------
     str
         name of region
     """
-    regs = get_regions_coord(lat, lon)
+    regs = get_regions_coord(lat, lon, **add_regions)
     
     if len(regs) == 1:
         return regs[0]
     else:
+        default_ids = get_all_default_region_ids()
         min_dist = 1e6
         best = None
         for rname in regs:
-            r = Region(rname)
+            if rname in default_ids:
+                r = Region(rname)
+            else:
+                r = add_regions[rname]
             d = r.distance_to_center(lat, lon)
             if d < min_dist:
                 min_dist = d
