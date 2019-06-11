@@ -3,7 +3,10 @@
 """
 Created on Mon Apr 15 14:00:44 2019
 
-@author: jonasg
+ToDo
+----
+- the configuration classes could inherit from a base class or could be more unified
+
 """
 import os, glob
 import simplejson
@@ -44,7 +47,6 @@ def get_all_config_files(config_dir):
         results[proj][exp] = file
     return results
         
-        
 class ObsConfigEval(BrowseDict):
     """Observation configuration for evaluation (dictionary)
     
@@ -81,7 +83,8 @@ class ObsConfigEval(BrowseDict):
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
     """
-    SUPPORTED_VERT_CODES = ['Column', 'ModelLevel', 'Surface']
+    SUPPORTED_VERT_CODES = ['Column', 'Profile', 'Surface']
+    ALT_NAMES_VERT_CODES = dict(ModelLevel = 'Profile')
     def __init__(self, **kwargs):
         
         self.obs_id = None
@@ -104,28 +107,52 @@ class ObsConfigEval(BrowseDict):
         elif not isinstance(self.obs_vars, list):
             raise ValueError('Invalid input for obs_vars. Need list or str, '
                              'got: {}'.format(self.obs_vars))
-        if self.obs_vert_type is None:
+        ovt = self.obs_vert_type
+        if ovt is None:
             raise ValueError('obs_vert_type is not defined. Please specify '
                              'using either of the available codes: {}. '
                              'It may be specified for all variables (as string) '
                              'or per variable using a dict'
                              .format(self.SUPPORTED_VERT_CODES))
-            if (isinstance(self.obs_vert_type, str) and 
-                not self.obs_vert_type in self.SUPPORTED_VERT_CODES):
-                    raise ValueError('Invalid value for obs_vert_type: {}. '
-                                     'Supported codes are {}.'
+        elif (isinstance(ovt, str) and not ovt in self.SUPPORTED_VERT_CODES):
+            self.obs_vert_type = self._check_ovt(ovt)
+        elif isinstance(self.obs_vert_type, dict):
+            for var_name, val in self.obs_vert_type.items():
+                if not val in self.SUPPORTED_VERT_CODES:
+                    raise ValueError('Invalid value for obs_vert_type: {} '
+                                     '(variable {}). Supported codes are {}.'
                                      .format(self.obs_vert_type,
+                                             var_name,
                                              self.SUPPORTED_VERT_CODES))
-            elif isinstance(self.obs_vert_type, dict):
-                for var_name, val in self.obs_vert_type.items():
-                    if not val in self.SUPPORTED_VERT_CODES:
-                        raise ValueError('Invalid value for obs_vert_type: {} '
-                                         '(variable {}). Supported codes are {}.'
-                                         .format(self.obs_vert_type,
-                                                 var_name,
-                                                 self.SUPPORTED_VERT_CODES))
-                        
-                
+    def _check_ovt(self, ovt):
+        """Check if obs_vert_type string is valid alias
+        
+        Parameters
+        ----------
+        ovt : str
+            obs_vert_type string
+        
+        Returns
+        -------
+        str
+            valid obs_vert_type
+        
+        Raises
+        ------
+        ValueError
+            if `ovt` is invalid
+        """
+        if ovt in self.ALT_NAMES_VERT_CODES:
+            _ovt = self.ALT_NAMES_VERT_CODES[ovt]
+            const.print_log.warning('Please use {} for obs_vert_code '
+                                        'and not {}'.format(_ovt, ovt))
+            return _ovt
+        valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES.keys())
+        raise ValueError('Invalid value for obs_vert_type: {}. '
+                         'Supported codes are {}.'
+                         .format(self.obs_vert_type,
+                                 valid))
+            
         
 class ModelConfigEval(BrowseDict):
     """Modeln configuration for evaluation (dictionary)
