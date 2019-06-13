@@ -146,12 +146,12 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                             s[var] = unitconversion_wet_deposition(mass,
                              "monthly")/monthly_to_sec#monthly_to_sec[:156]
                             # output variable is ks so4 m-2s-1
-                        elif '4' in var:
+                        elif 'so4' in var:
                             print("enters sconcs 4")
                             mass = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
                             s[var] = unitconversion_surface_concentrations(mass, 4)
-                        elif '2' in var:
+                        elif 'so22' in var:
                             print("enters sconcs 2")
                             mass = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
@@ -459,7 +459,6 @@ if __name__ == "__main__":
      #so2 = aa.read('sconcso2')
      #so4_aero = aa.read('sconcso4')
      ungridded = aa.read(V)#['sconcso4', 'sconcso2']
-     name = 'Abington'
      abington = ungridded.to_station_data("Oulanka", V)
      abington.plot_timeseries(V)
      

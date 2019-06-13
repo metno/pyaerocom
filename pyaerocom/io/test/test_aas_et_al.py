@@ -68,7 +68,7 @@ TRUE_NR_STATIONS = {'N-America': {"sconcso4": {'2000–2010': 227,
                        }
 
 
-def mass_to_nr_molecules(mass, Mm):
+def mass_to_nr_molecules(mass, mm):
     """ Calculating the number of molecules form mass and molarmass.
 
     Mass, Molar mass need to be in the same unit, either both g and g/mol 
@@ -88,7 +88,7 @@ def mass_to_nr_molecules(mass, Mm):
         number of molecules     
     """
     A = 6.022*10**23
-    nr_molecules = mass/Mm*A
+    nr_molecules = mass/mm*A
     return nr_molecules
 
 def nr_molecules_to_mass(nr_molecules, mm):
@@ -111,33 +111,7 @@ def nr_molecules_to_mass(nr_molecules, mm):
     mass = mm*nr_molecules/A
     return mass
 
-    
-def unitconversion_wet_deposition_back(data, ts_type = "monthly"):
-    """ The unitconversion ugSOx/m3 to ugS/m3.
-
-    Removing the weight of oxygen.
-
-    Parameters
-    ------------------
-    data: ndarray
-        Sulphur data you wish to convert.
-        
-    ts_type: str    
-       The timeseries type. Default monthly.
-    
-    Returns
-    ------------------
-    data : ndarray
-       Sulphur data in units of ugSOx/m3.
-    """
-    mm_compund = 0.001*32.065 + 0.001*15.999*4
-    mm_s = 0.001*32.065   
-    nr_molecules = mass_to_nr_molecules(data, mm_compund) # in the order of 10**27 
-    mass_S = nr_molecules_to_mass(nr_molecules, mm_s)
-    #TODO : to be mulitplied with the number of days in one year.
-    return 10000*mass_S # to be divid by days in month
-
-def unitconversion_surface_consentrations_back(data, x = 2):
+def unitconversion_surface_concentrations_back(data, x = 2):
     """ Converting: ugSOx/m3 to  ugS/ m3.
     
     Parameters
@@ -152,14 +126,19 @@ def unitconversion_surface_consentrations_back(data, x = 2):
     ------------
     data : ndarray  
         in units of ugS/ m3.
-    
+        
+    Notes
+    -----------
+    micro grams to kilos is 10**6
     """
 
-    mmO = 15.9999*10**6 # molar mass oxygen
+    mmO = 15.9999 # molar mass oxygen
     mmS = 32.065 # molar mass sulphur
+    mm_compound =  (mmS + x*mmO)*10**3 
+    # since data is in micrograms we should have the 
     
-    nr_molecules = data/ (  (mmS+x*mmO)*10**6) * (6.022*10**23)
-    weight_s = nr_molecules*mmS*10**6 
+    nr_molecules = mass_to_nr_molecules(data, mm_compound)
+    weight_s = nr_molecules_to_mass(nr_molecules, mmS*10**3) # weight in kilos
     return weight_s
 
 def _get_season_current(mm,yyyy):
@@ -320,6 +299,103 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
                 data[seas]['trends'][period]['n'] = len(y)
     return data
 
+def unitconversion_surface_concentrations(data, nr_of_O = 2):
+    """ Unitconverting:  ugS/m3 to ugSOx/m3
+    
+    Parameters
+    ------------------
+    data : array_like
+        Contains the data in units of ugS/m3.
+    
+    nr_of_O: int
+        The number of O's in you desired SOx compound.
+    
+    Returns
+    ------------
+    data : ndarray
+        data in units of ug SOx/m3
+    
+    """
+    mm_s = 32.065*10**6 # in units of ug/mol
+    mm_o = nr_of_O*15.9999*10**6 ## in units of ug/mol
+    nr_molecules = mass_to_nr_molecules(data, mm_s) # 32.065*10**6) [ug/mol]
+    added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o) # ug
+    # added weights in micrograms 
+    mass = data + added_weight_oksygen # in micrograms
+    return mass
+
+    
+def unitconversion_wet_deposition_back(data, ts_type = "monthly"):
+    """ The unitconversion kgS/ha to kg S/m-2 s-1.
+    
+    NOT INCLUDED THE SECONDS PART YET.
+
+    Removing the weight of oxygen.
+
+    Parameters
+    ------------------
+    data: ndarray
+        Sulphur data you wish to convert.
+        
+    ts_type: str    
+       The timeseries type. Default monthly.
+    
+    Returns
+    ------------------
+    data : ndarray
+       Sulphur data in units of ugSOx/m3.
+    """
+    mm_compund = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
+    mm_s = 32.065   # g/mol
+    nr_molecules = mass_to_nr_molecules(data, mm_compund) # in the order of 10**27 
+    mass_S = nr_molecules_to_mass(nr_molecules, mm_s)*0.001
+    return mass_S/10000 # to be divid by days in month
+
+def unitconversion_wet_deposition(data, ts_type = "monthly"):
+    """ Unitconversion kg S/ha to kg SOx/m2.
+
+    Adding mass of oksygen.
+    
+    Parameters
+    ------------------
+    data: ndarray
+        data in unit kg S/ha = kg S/(1000 m2)
+
+    ts_type : str
+        The timeseries type. Default "monthly".
+
+
+    Returns
+    ------------------
+    data : ndarray
+        data in units of ugSOx/m3
+
+    """
+
+    mm_s = 0.001*32.065 # in kilos pr mol
+    mm_o = 4*15.9999 # molar mass of four okygen atom in kilo
+    #mm_compound = mm_s + mm_o
+    
+    nr_molecules = mass_to_nr_molecules(data, mm_s) # in the order of 10**27 
+    added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o)*0.001 
+    # added_weight_oksygen [ mass in kg ]
+    
+    mass = data + added_weight_oksygen
+    return mass*10000
+
+def test_unitconversion_surface_conc():
+    a = 10
+    temp = unitconversion_surface_concentrations(a, 2)
+    A = unitconversion_surface_concentrations_back(temp, 2)
+    print("a {}, temp {} , A{}".format(a, temp,  A))
+    assert np.abs(a - A) < 0.001
+
+def test_unitconversion_wetdep():
+    a = 10
+    temp = unitconversion_wet_deposition(a)
+    A = unitconversion_wet_deposition_back(temp)
+    print("a {}, temp {} , A{}".format(a, temp,  A))
+    assert np.abs(a - A) < 0.001
 
 
 def create_region(region):
@@ -393,9 +469,9 @@ def years_from_periodstr(period):
 
 def covert_data(data, var):
     if var == "sconcso4":
-        return unitconversion_surface_consentrations_back(data, x=4)
+        return unitconversion_surface_concentrations_back(data, x=4)
     elif var == "sconcso2":
-        unitconversion_surface_consentrations_back(data, x=4)
+        unitconversion_surface_concentrations_back(data, x=2)
     elif var == "wetso4":
         unitconversion_wet_deposition_back(data)
     else:
@@ -456,48 +532,37 @@ def test_article():
         ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve=v)
         for r in regions:
             for p in periods:
-                #true_mean_slope1 = true_slope[r][v]['2000–2010']
-                #true_mean_slope2 = true_slope[r][v]['2000–2015']
+                
+                # true values
                 true_mean_slope = TRUE_SLOPE[r][v][p]
-                #ns1 = true_nr_stations[r][v]['2000–2010']
-                #ns2 = true_nr_stations[r][v]['2000–2015']
                 ns = TRUE_NR_STATIONS[r][v][p]
                 print("  ")
+                # computed values              
                 nr_stations, predicted_mean_slope = calc_slope(ungridded, r, [p], v)
                 print(" REGION {}, variable {}, period {} ".format(r, v, p))
                 print("calc {} ,  true [nr stations] {}".format(nr_stations, ns))
                 print("calc_slope {}, true_slope   {}".format(
                                         predicted_mean_slope, true_mean_slope))
                 
+                # Test similarity
+                
+                # TODO 1) check slope (calc_slope - true_slope) / true_slope x 100
+                # TODO 2) check that the number of stations are the same.
+                
                 #assert nr_stations == ns1
                 #assert nr_stations2 == ns2
                 #assert predicted_mean_slope1 == true_mean_slope1
                 #assert predicted_mean_slope2 == true_mean_slope2
-
-#   Montly means are calculated for months with 70% or better data converage.
-
-"""
-TODO:
-
-(*) The units needs to be converted to including weight of oxygen.
-
-(**)  Test shold convert units back before they test anything. 
-BUT Look into the model files and double check that these don't contain only the mass of S. 
-
-1. Make the test pass without unitconverision 
-2. Apply unitconversion make sure all test pass.
-OBS! Ask Jonas about the units available on the trends interface.
-
-
-"""
-
-
 
 
 
 if __name__ == "__main__":
     # pya.change_verbosity('info')
     # import sys
-    test_ungriddeddata()
-    test_article()
+    
+    
+    #test_ungriddeddata()
+    #test_article()
+    test_unitconversion_surface_conc()
+    test_unitconversion_wetdep()
 # =============================================================================
