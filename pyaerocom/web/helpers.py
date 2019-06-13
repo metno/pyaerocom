@@ -13,7 +13,7 @@ import simplejson
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, sort_dict_by_name
 
-def get_all_config_files(config_dir):
+def get_all_config_files_evaluation_iface(config_dir):
     """
     
     Note
@@ -46,7 +46,27 @@ def get_all_config_files(config_dir):
             results[proj] = {}
         results[proj][exp] = file
     return results
+
+def get_all_config_files_trends_iface(config_dir):
+    """
+    
+    Note
+    ----
+    This code only checks json configuration files, not .py module files
+    containing configuration.
+    
+    Parameters
+    ----------
+    config_dir : str
+        directory containing config json files for AerosolTrends interface
         
+    Returns
+    -------
+    list
+        list of configuration files that were found
+    """
+    return glob.glob('{}/*.json'.format(config_dir))
+      
 class ObsConfigEval(BrowseDict):
     """Observation configuration for evaluation (dictionary)
     
@@ -196,8 +216,8 @@ class ModelConfigEval(BrowseDict):
             raise ValueError('Invalid input for model_id {}. Need str.'
                              .format(self.model_id))
             
-def update_menu(config, ignore_experiments=None):
-    """Include experiment into menu.json file for web menu
+def update_menu_evaluation_iface(config, ignore_experiments=None):
+    """Update menu for Aerocom Evaluation interface
     
     The menu.json file is created based on the available json map files in the
     map directory of an experiment.
@@ -290,8 +310,91 @@ def update_menu(config, ignore_experiments=None):
     
     with open(config.menu_file, 'w+') as f:
         f.write(simplejson.dumps(new_menu, indent=4))
+   
+def update_menu_trends_iface(config):
+    """Update menu for Aerosol trends interface
+    
+    The menu.json file is created based on the available json map files in the
+    map directory of an experiment.
+    
+    Parameters
+    ----------
+    config : AerocomEvaluation
+        instance of config class that has all relevant paths specified
+    """
+    def var_dummy():
+        """Helper that creates empty dict for variable info"""
+        return {'type'      :   '',
+                'name'      :   '',
+                'longname'  :   '',
+                'obs'       :   {}}
         
-def make_info_table(config):
+    new = {}
+    
+    tab = config.get_web_overview_table()
+    
+    for index, info in tab.iterrows():
+        (obs_name, obs_id, obs_var, 
+         vert_code, 
+         mod_name, mod_id, mod_var, mod_type, 
+         periods) = info
+        if not obs_var in new:
+            const.print_log.info('Adding new observation variable: {}'
+                                 .format(obs_var))
+            new[obs_var] = d = var_dummy()
+            name, tp = config.get_obsvar_name_and_type(obs_var)
+    
+            d['name'] = name
+            d['type'] = tp
+            d['longname'] = const.VARS[obs_var].description
+        else:
+            d = new[obs_var]
+        
+        if not obs_name in d['obs']:
+            d['obs'][obs_name] = dobs = {}
+        else:
+            dobs = d['obs'][obs_name]
+        
+        if not vert_code in dobs:
+            dobs[vert_code] = dobs_vert = dict(obs_id=obs_id,
+                                               period=periods,
+                                               modsat= {})
+        else:
+            dobs_vert = dobs[vert_code]
+        if mod_name is not None:
+            if mod_name in dobs_vert['modsat']:
+                raise KeyError('Model {} already exists in {}. This should '
+                               'not occur. please debug...'.format(mod_name, dobs))
+            dobs_vert['modsat'][mod_name] = dict(var= mod_var,
+                                                 mtype=mod_type,
+                                                 mid=mod_id)
+        
+    _new = {}
+    for var in config.var_order_menu:
+        try:
+            _new[var] = new[var]
+        except:
+            const.print_log.info('No variable {} found'.format(var))
+    for var, info in new.items():
+        if not var in _new:
+            _new[var] = info
+    new = _new
+    new_sorted = {}
+    for var, info in new.items():
+        new_sorted[var] = info
+        sorted_obs = sort_dict_by_name(info['obs'])
+        new_sorted[var]['obs'] = sorted_obs
+        for obs_name, vert_codes in sorted_obs.items():
+            vert_codes_sorted = sort_dict_by_name(vert_codes)
+            new_sorted[var]['obs'][obs_name] = vert_codes_sorted
+            for vert_code, models in vert_codes_sorted.items():
+                models_sorted = sort_dict_by_name(models)
+                new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
+    
+    with open(config.menu_file, 'w+') as f:
+        f.write(simplejson.dumps(new_sorted, indent=4))
+        
+def make_info_table_evaluation_iface(config):
     from pyaerocom import ColocatedData
     import glob
     menu = config.menu_file
@@ -362,11 +465,5 @@ def make_info_table(config):
     return table
 
 if __name__ == '__main__':
-    cfg_dir = '/home/jonasg/github/aerocom_evaluation/data_new/config_files/'
+    print()
     
-    results = get_all_config_files(cfg_dir)
-    
-    for proj, exps in results.items():
-        print('Project:', proj)
-        for exp, path in exps.items():
-            print('Exp.', exp, ':', path)
