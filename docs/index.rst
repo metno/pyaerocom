@@ -17,7 +17,7 @@ Official website of Pyaerocom, a Python package containing reading, post analysi
    :maxdepth: 6
    :caption: Contents:
 
-   readme      
+   readme
    tutorials
    api
    api_testsuite

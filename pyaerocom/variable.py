@@ -5,7 +5,7 @@ This module contains functionality related to regions in pyaerocom
 """
 import os
 from ast import literal_eval
-import re
+import re, fnmatch
 try:
     from ConfigParser import ConfigParser
 except: 
@@ -480,9 +480,9 @@ class Variable(object):
         return self.__dict__[key]
     
     def __repr__(self):
-       return ("Variable {}\nUnit: {}\ndescriptions: {}\nstandard_name: {}\n"
-               .format(self.var_name, self.unit, self.description,
-                       self.standard_name))
+       return ("{}\nstandard_name: {}; Unit: {}"
+               .format(self.var_name, self.standard_name, 
+                       self.unit))
    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
@@ -524,6 +524,7 @@ class VarCollection(object):
         self.var_ini = var_ini
         
         self._cfg = self._read_ini()
+        self._idx = -1
         
         self.all_vars = [k.lower() for k in self._cfg.keys()]
     
@@ -543,6 +544,33 @@ class VarCollection(object):
             raise IOError("File {} does not exist".format(var_ini))
         self._var_ini = var_ini
     
+    def find(self, search_pattern):
+        """Find all variables that match input search pattern
+        
+        Note
+        ----
+        Searches for matches in variable names (:attr:`Variable.var_name`) and 
+        standard name (:attr:`Variable.standard_name`).
+        
+        Parameters
+        ----------
+        search_pattern : str
+            variable search pattern
+        
+        Returns
+        -------
+        list
+            AeroCom variable names that match the search pattern
+        """
+        matches = []
+        for var in self:
+            if fnmatch.fnmatch(var.var_name, search_pattern):
+                matches.append(var.var_name)
+            elif (isinstance(var.standard_name, str) and 
+                  fnmatch.fnmatch(var.standard_name, search_pattern)):
+                matches.append(var.var_name)
+        return matches
+        
     def get_coord_var_and_standard_names(self):
         """Get dictionary with coord and standard names"""
         d = {}
@@ -558,6 +586,17 @@ class VarCollection(object):
     def __dir__(self):
         """Activates auto tab-completion for all variables"""
         return self.all_vars
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        self._idx += 1
+        if self._idx == len(self.all_vars):
+            self._idx = -1
+            raise StopIteration
+        var_name = self.all_vars[self._idx]
+        return self[var_name]
     
     def __contains__(self, var_name):
         """Enables using ``in`` method
@@ -595,6 +634,9 @@ class VarCollection(object):
         Variable od550aer
         """
         #make sure to be in the right namespace
+        if var_name in self:
+            return Variable(var_name, cfg=self._cfg)
+    
         low = var_name.lower()
         check = low.replace('3d','').replace('dry', '')
         
@@ -642,3 +684,5 @@ if __name__=="__main__":
     
     print(var1.units)
     
+    
+    v = const.VARS.dryhno3

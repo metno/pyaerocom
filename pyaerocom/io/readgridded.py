@@ -229,14 +229,16 @@ class ReadGridded(object):
         for aux_var in self.AUX_REQUIRES.keys():
             try:
                 self._get_aux_vars(aux_var)
-                v.append(aux_var)
+                if not aux_var in v:
+                    v.append(aux_var)
                 self._aux_avail.append(aux_var)
             except: #this auxiliary variable cannot be computed
                 pass
         for aux_var in self._aux_requires.keys():
             try:
                 self._get_aux_vars(aux_var)
-                v.append(aux_var)
+                if not aux_var in v:
+                    v.append(aux_var)
                 self._aux_avail.append(aux_var)
             except: #this auxiliary variable cannot be computed
                 pass
@@ -454,7 +456,7 @@ class ReadGridded(object):
                     
                     _years_temp.append(info["year"])
                     _ts_types_temp.append(info["ts_type"])
-                    _experiments_temp.append(info['name'])
+                    _experiments_temp.append(info['data_id'])
                     self.files.append(_file)
                     self.logger.debug('Read file {}'.format(_file))
             except Exception as e:
@@ -1713,11 +1715,9 @@ class ReadGriddedMulti(object):
     
 if __name__=="__main__":
     # Aerocom 2 convention
-    r0 = ReadGridded('GISS-MATRIX.A2.CTRL')
-    print(r0)
+    r = ReadGridded('ECMWF_CAMS_REAN')
     
-    d = r0['od550aer']
-    print(d)
+    data = r.read_var('od550aer')
     
 # =============================================================================
 #     d0 = r0.read_var('od550aer', start=2006)

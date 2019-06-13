@@ -112,10 +112,29 @@ class AerocomEvaluation(object):
             `obs_name` (defines `var_name`)
             3. Update `dict` with settings from :attr:`model_config` for \
             `model_name`
-            
-    
-            
-        
+     
+    add_methods_file : str, optional
+        file specifying custom reading methods
+    add_methods : dict
+        dictionary containing additional reading method
+    obs_config : dict
+        dictionary containing configuration details for individual observations
+        (i.e. instances of :class:`ObsConfigEval` for each observation) used 
+        for the analysis.
+    obs_ignore : list, optional
+        list of observations that are supposed to be ignored in analysis 
+        (keys from :attr:`obs_config`)
+    model_config : dict
+        dictionary containing configuration details for individual models
+        (i.e. instances of :class:`ModelConfigEval` for each model) used 
+        for the analysis.
+    model_ignore : list, optional
+        list of models that are supposed to be ignored in analysis 
+        (keys from :attr:`model_config`)
+    var_mapping : dict
+        mapping of variable names for menu in interface
+    var_order_menu : list, optional
+        order of variables in menu
     """
     OUT_DIR_NAMES = ['map', 'ts', 'scat', 'hm', 'profiles']
     
@@ -550,13 +569,13 @@ class AerocomEvaluation(object):
             ts_data['obs_name'] = obs_name
             ts_data['model_name'] = model_name
             ts_data['obs_var'] = d.meta['var_name'][0]
-            ts_data['obs_unit'] = d.meta['units'][0]
+            ts_data['obs_unit'] = d.meta['var_units'][0]
             ts_data['vert_code'] = vert_code
             ts_data['obs_freq_src'] = d.meta['ts_type_src'][0]
             ts_data['obs_revision'] = d.meta['revision_ref']
             
             ts_data['mod_var'] = d.meta['var_name'][1]
-            ts_data['mod_unit'] = d.meta['units'][1]
+            ts_data['mod_unit'] = d.meta['var_units'][1]
             ts_data['mod_freq_src'] = d.meta['ts_type_src'][1]
             
             stat_lat = np.float64(arr.latitude[i])
@@ -968,11 +987,10 @@ class AerocomEvaluation(object):
         
         Returns
         -------
-        tuple
-            2-element tuple, containing:
-                
-                - :obj:`str`: menu name of this variable
-                - :obj:`str`: menu category of this variable
+        str
+            menu name of this variable
+        str
+            menu category of this variable
         """
         try:
             name, tp = self.var_mapping[obs_var]

@@ -180,7 +180,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'ts_type_src'       :   [gridded_data_ref.ts_type, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'units'             :   [str(gridded_data_ref.units),
+            'var_units'         :   [str(gridded_data_ref.units),
                                      str(gridded_data.units)],
             'vert_scheme'       :   vert_scheme,
             'data_level'        :   3,
@@ -208,7 +208,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
-              'units'       : ('data_source', meta['units']),
+              'var_units'   : ('data_source', meta['var_units']),
               'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time,
               'latitude'    : lats,
@@ -218,7 +218,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     dims = ['data_source', 'time', 'latitude', 'longitude']
 
     return ColocatedData(data=arr, coords=coords, dims=dims,
-                          name=gridded_data.var_name, attrs=meta)
+                         name=gridded_data.var_name, attrs=meta)
 
 def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None, 
                                start=None, stop=None, filter_name=None,
@@ -480,8 +480,16 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                 if gridded_unit is None:
                     gridded_unit = obs_unit
             if remove_outliers:
+                # don't check if harmonise_units is active, because the 
+                # remove_outliers method checks units based AeroCom default 
+                # variables, and a variable mapping might be active, i.e. 
+                # sometimes models use abs550aer for absorption coefficients 
+                # with units [m-1] and not for AAOD (which is the AeroCom default
+                # and unitless. Hence, unit check in remove_outliers works only
+                # if the variable name (and unit) corresonds to AeroCom default)
+                chk_unit = not harmonise_units 
                 grid_stat.remove_outliers(var, low=low, high=high,
-                                          check_unit=-1*harmonise_units)
+                                          check_unit=chk_unit)
                 
             grid_tseries = grid_stat[var]  
             obs_tseries = obs_data[var_ref]
@@ -540,7 +548,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'ts_type_src'       :   [ts_type_src_ref, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'units'             :  [ungridded_unit,
+            'var_units'         :   [ungridded_unit,
                                      gridded_unit],
             'vert_scheme'       :   vert_scheme,
             'data_level'        :   3,
@@ -562,7 +570,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
-              'units'       : ('data_source', meta['units']),
+              'var_units'   : ('data_source', meta['var_units']),
               'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time_idx,
               'station_name': station_names,

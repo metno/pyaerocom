@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import numpy as np
+from datetime import datetime
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.io.helpers import _print_read_info
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.exceptions import MetaDataError, VariableNotFoundError
@@ -351,10 +353,13 @@ class ReadAeronetBase(ReadUngriddedBase):
         disp_each = int(num_files*0.1)
         if disp_each < 1:
             disp_each = 1
-            
+        last_t = datetime.now()   
         for i, _file in enumerate(files):
             
             if i%disp_each == 0:
+                last_t = _print_read_info(i, disp_each, num_files, 
+                                          last_t, type(self).__name__,
+                                          print_log)
                 print_log.info("Reading file {} of {} ({})".format(i, 
                                  num_files, type(self).__name__))
             station_data = self.read_file(_file, 

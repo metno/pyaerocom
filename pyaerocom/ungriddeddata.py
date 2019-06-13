@@ -8,8 +8,7 @@ import pandas as pd
 from pyaerocom import logger, const, print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
-                                  MetaDataError, StationNotFoundError,
-                                  DataUnitError)
+                                  MetaDataError, StationNotFoundError)
 from pyaerocom import StationData
 
 from pyaerocom.mathutils import in_range
@@ -78,7 +77,7 @@ class UngriddedData(object):
         
     """
     #: version of class (for caching)
-    __version__ = '0.19'
+    __version__ = '0.20'
     
     #: inital total number of rows in dataarray
     _ROWNO = 10000
@@ -127,6 +126,47 @@ class UngriddedData(object):
         self._idx = -1
         
         self.filter_hist = od()
+    
+    def _check_index(self):
+        """Checks if all indices are assigned correctly"""
+        assert len(self.meta_idx) == len(self.metadata), \
+            'Mismatch len(meta_idx) and len(metadata)'
+        
+        assert sum(self.meta_idx.keys()) == sum(self.metadata.keys()), \
+            'Mismatch between keys of metadata dict and meta_idx dict'
+        
+        var_indices = np.unique(self._data[:, self._VARINDEX])
+        
+        assert len(var_indices) == len(self.var_idx), \
+            'Mismatch between number of variables in data array and var_idx attr.'
+        
+        assert sum(var_indices) == sum(self.var_idx.values()), \
+            'Mismatch between variable indices in data array and var_idx attr.'
+        
+        vars_avail = self.var_idx
+        
+        for idx, meta in self.metadata.items():
+            var_idx = self.meta_idx[idx]
+            for var, indices in var_idx.items():
+                assert var in meta['variables'] or var in meta['var_info'], \
+                    ('Var {} is indexed in meta_idx[{}] but not in metadata[{}]'
+                     .format(var, idx, idx))
+                var_idx_data = np.unique(self._data[indices, self._VARINDEX])
+                assert len(var_idx_data) == 1, ('Found multiple variable indices for '
+                          'var {}: {}'.format(var, var_idx_data))
+                assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
+                          'index assigned in data and var_idx for {} in meta-block'
+                          .format(var, idx))
+            
+    def split_vars(self):
+        """Split this object into N single-var UngriddedData objects
+        
+        """
+        for var, var_idx in self.var_idx.items():
+            # fetch data array
+            mask = self.data[:, self.index['varidx']] == var_idx
+            subset = self._data[mask, :]
+            self.data[:, self.index['varidx']]
     
     @property
     def index(self):

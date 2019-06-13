@@ -22,7 +22,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.01'
+    __version__ = '0.02'
 
     COL_DELIM = ','
 
@@ -31,10 +31,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
     #: Name of dataset (OBS_ID)
     DATA_ID = 'GAWTADsubsetAasEtAl'
-
-    #: Path were data is located (hard coded for now)
-    DATASET_PATH = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/'\
-                        'PYAEROCOM/GAWTADSulphurSubset/data' 
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -98,35 +94,48 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         """
        
 
-        def pad_zeros(array):
-            """ Try to do this vectorized,
-            Problem with the only one digit in front of numbers smaller than xero.            
-            """
-            
-            str_array = array.astype("str")
-            
-            for i, val in enumerate(array):
-                if val < 10: 
-                # Add zeros 
-                    str_array[i] = "0"+str(val)
-            return str_array
+# =============================================================================
+#         def pad_zeros(array):
+#             """ Try to do this vectorized,
+#             Problem with the only one digit in front of numbers smaller than xero.
+#             """
+#
+#             str_array = array.astype("str")
+#
+#             for i, val in enumerate(array):
+#                 if val < 10:
+#                 # Add zeros
+#                     str_array[i] = "0"+str(val)
+#             return str_array
+# =============================================================================
 
         station_list = []
         #print(vars_to_retrieve)
-        df = pd.read_csv(filename,sep=",", low_memory=False)
+        df = pd.read_csv(filename, sep=",", low_memory=False)
         
-        #days = np.ones((len(df["year"]))).astype('int')
-        #df['day'] = days
-        #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1) 
-        month = pad_zeros( df['month'])
-        #print(month)
-               
-        year = df['year'].values.astype("str")        
-        days = np.array([ "01" for i in range(len(year)) ])
-        dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
-        df['dtime'] = np.array( dates, dtype = "datetime64[s]")  
+        #
+        tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
+
+        dates_alt = [tconv(yr, m) for yr, m in
+                     zip(df.year.values, df.month.values)]
+
+# =============================================================================
+#         #days = np.ones((len(df["year"]))).astype('int')
+#         #df['day'] = days
+#         #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1)
+#         month = pad_zeros(df['month'].astype(int))
+#         #print(month)
+#
+#         year = df['year'].values.astype(int).astype("str")
+#         days = np.array(["01" for i in range(len(year)) ])
+#
+#         dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
+# =============================================================================
+
+        df['dtime'] = np.array(dates_alt)
+
         # array av numpy.datetime64
-        df.rename(columns= {"Sampler":"instrument_name"}, inplace = True)
+        df.rename(columns= {"Sampler":"instrument_name"}, inplace=True)
         #df.pop("year")
         #df.pop("month")
         #df.pop("day")
@@ -158,25 +167,25 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     for var in vars_to_retrieve:
                         if var == "wetso4":
                             # input unit is kg S/ha
-                            
+
                             # TODO : update this with pandas
                             y = station_group['year'].values
                             m = station_group['month'].values
                             
                             monthly_to_sec = days_in_month(y, m)*24*60*60             
-                            
-                            mass_sulhpor = pd.to_numeric(station_group[key], 
+
+                            mass_sulhpor = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
-                                                         
-                            s[var] = unitconversion_wet_deposition(mass_sulhpor, 
+
+                            s[var] = unitconversion_wet_deposition(mass_sulhpor,
                              "monthly")/monthly_to_sec#monthly_to_sec[:156]
                             # output variable is ks so4 m-2s-1
                         elif '4' in var:
-                            mass = pd.to_numeric(station_group[key], 
+                            mass = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
                             s[var] = unitconversion_surface_consentrations(mass, 4)
                         elif '2' in var:
-                            mass_sulhpor = pd.to_numeric(station_group[key], 
+                            mass_sulhpor = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
                             s[var] = unitconversion_surface_consentrations(mass, 2)
                         else:
@@ -215,18 +224,18 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             data object
             
         """
-        
+
         #TODO : check if this should be retrieved from variables ini file.
-        
-        #TODO need to add weight of oxygen t all variables except 
+
+        #TODO need to add weight of oxygen t all variables except
         unit={}
         unit['sconcso2'] = 'ug m-3'
         unit['sconcso4'] = 'ug m-3'
         unit['pr'] = 'mm'
         unit['wetso4'] = 'kg m-2 s-1'
-        unit['sconcso4pr'] = 'g m-3' # removed sulphur from unit mgS/L 
+        unit['sconcso4pr'] = 'g m-3' # removed sulphur from unit mgS/L
         # one liter -- is 0.001m3 since it was mg /L milli and the constant cancels
-                        
+
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -240,9 +249,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         #assign metadata object
         metadata = data_obj.metadata # OrderedDict
         meta_idx = data_obj.meta_idx # OrderedDict
-        
-        files = self.get_file_list()
-        
+
         for file in files:
             filename = os.path.basename(file)
             if not filename in self.FILES_CONTAIN:
@@ -270,7 +277,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     instr = self.INSTRUMENT_NAME
 
                 metadata[meta_key]['instrument_name'] = instr
-               
+
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
                 meta_idx[meta_key] = OrderedDict()
@@ -299,9 +306,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         #print("adding var {} (assigned index: {})".format(var, varindex))
                     else:
                         var_idx = data_obj.var_idx[var]
-                        
+
                     metadata[meta_key]['var_info'][var]['units'] = unit[var]
-                    
+
                     data_obj._data[start:stop, data_obj._LATINDEX] = station_data['latitude']
                     data_obj._data[start:stop, data_obj._LONINDEX] = station_data['longitude']
                     data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = station_data['altitude']
@@ -324,9 +331,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     
 def is_leap_year(year):
     """
-    Returns 
+    Returns
     -----------------
-    
+
     boolean :
         True : its a leap year.
         False : its not.
@@ -335,13 +342,13 @@ def is_leap_year(year):
 
 def days_in_month(years, months):
     """ Returns arrays containing the numbers of days in the respective month.
-    
+
     Parameters
     ---------------------
     years : ndarray
-    
-    months : ndarray    
-    
+
+    months : ndarray
+
     OBS! This might exist in pd.Period('2018-02-03').days_in_month
     """
     days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -360,25 +367,25 @@ def days_in_month(years, months):
 
 def unitconversion_wet_deposition(data, ts_type = "monthly"):
     """ Unitconversion ugS/ha to ugSOx/m2.
-    
+
     Adding mass of oksygen.
     
     Parameters
     ------------------
     data: ndarray
         data in unit ugS/ha = ugS/(1000 m2)
-        
+
     ts_type : str
         The timeseries type. Default "monthly".
 
-    
+
     Returns
     ------------------
-    data : ndarray 
+    data : ndarray
         data in units of ugSOx/m3
-    
+
     """
-    
+
     mm_s = 0.001*32.065 # in kilos pr mol
     mm_o = 4*15.9999*0.001 # molar mass of four okygen atom ins 
     
@@ -392,19 +399,19 @@ def mass_to_nr_molecules(mass, Mm):
 
     Mass, Molar mass need to be in the same unit, either both g and g/mol 
     or kg and kg/mol.
-    
+
     Parameters
     ---------------------------
     mass : float
         mass of all compounds.
-        
+
     mm : float
         molar mass of compound.
-    
-    Returns 
+
+    Returns
     -----------------
     nr_molecules : float
-        number of molecules     
+        number of molecules
     """
     A = 6.022*10**23
 
@@ -412,16 +419,16 @@ def mass_to_nr_molecules(mass, Mm):
 
 def nr_molecules_to_mass(nr_molecules, Mm):
     """ Calculates the mass from the number of molecules and molar mass.
-    
+
     Parameters
     ---------------
     nr_molecules : int
         Number of molecules
-        
+
     mm : float
         Molar mass [g/mol]
-    
-    Returns 
+
+    Returns
     ---------------------
     mass : float
         mass in grams
@@ -435,7 +442,7 @@ def unitconversion_surface_consentrations(data, nr_of_O = 2):
     
     Parameters
     ------------------
-    data: ndarray
+    data : array_like
         Contains the data in units of ugS/m3.
     
     nr_of_O: int
@@ -455,12 +462,36 @@ def unitconversion_surface_consentrations(data, nr_of_O = 2):
     mass = data + added_weight_oksygen # in micrograms
     return mass
 
+def _check_line_endings(filename):
+    ll = None
+    wrong_endings = {}
+    with open(filename, 'r') as f:
+        prev = None
+        for i, line in enumerate(f.readlines()):
+            spl = line.split(',')
+            if not spl[-1] == '\n':
+                wrong_endings[i+1] = line
+            if ll is None:
+                ll = len(spl)
+            elif not len(spl) == ll:
+                print(i)
+                print(prev)
+                print(spl)
+                raise Exception
+            prev = spl
+    return wrong_endings
+
 if __name__ == "__main__":
      from pyaerocom import change_verbosity
      import matplotlib.pyplot as plt
      #change_verbosity('info')
      V = "wetso4"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
+
+     #so2 = aa.read('sconcso2')
+     #so4_aero = aa.read('sconcso4')
+
+
      dataNone = aa.read(V)#['sconcso4', 'sconcso2']
      name = 'Abington'
      abington = dataNone.to_station_data("Oulanka", V)

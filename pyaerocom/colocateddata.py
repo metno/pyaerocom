@@ -160,7 +160,7 @@ class ColocatedData(object):
     def units(self):
         """Unit of data"""
         try:
-            return self.data.attrs['units']
+            return self.data.attrs['var_units']
         except KeyError:
             logger.warning('Failed to access unit ColocatedData class (may be an '
                         'old version of data)')
@@ -547,8 +547,8 @@ class ColocatedData(object):
     
 if __name__=="__main__":
     
-    testdir = '~/pyaerocom/colocated_data/CAM5.3-Oslo_AP3-CTRL2016-PD/'
-    testfile = 'od550aer_REF-AeronetSunV3Lev2.daily_MOD-CAM5.3-Oslo_AP3-CTRL2016-PD-monthly_20100101_20101231_monthly_WORLD-noMOUNTAINS_COLL.nc'
+    testdir = '~/github/aerocom_evaluation/coldata/OsloCTM3v1.01/'
+    testfile = 'abs550aer_REF-EBASMC_MOD-OsloCTM3v1.01-daily_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
     d = ColocatedData()
     
     d.read_netcdf(testdir + testfile)

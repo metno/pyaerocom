@@ -32,13 +32,15 @@ class FileConventionRead(object):
         splitting using delimiter :attr:`file_sep` 
     vert_pos : int
         position of information about vertical resolution of data
+    data_id_pos : int
+        position of data ID 
     """
     _io_opts = const
     AEROCOM3_VERT_INFO = {'2d'  : ['surface', 'column', 'modellevel'],
                           '3d'  : ['modellevelatstations']}
     
-    def __init__(self, name="aerocom3", file_sep="", year_pos=None,
-                 var_pos=None, ts_pos=None, vert_pos=None, name_pos=None,
+    def __init__(self, name="aerocom3", file_sep="_", year_pos=None,
+                 var_pos=None, ts_pos=None, vert_pos=None, data_id_pos=None,
                  from_file=None):
        
         self.name = name
@@ -48,7 +50,7 @@ class FileConventionRead(object):
         self.var_pos = var_pos
         self.ts_pos = ts_pos
         self.vert_pos = vert_pos
-        self.name_pos = name_pos
+        self.data_id_pos = data_id_pos
         
         if from_file is not None:
             self.from_file(from_file)
@@ -64,7 +66,7 @@ class FileConventionRead(object):
         extracted from filenames
         """
         return od(year=None, var_name=None, ts_type=None, vert_pos=None,
-                  is_at_stations=False, name=None)
+                  is_at_stations=False, data_id=None)
         
     def from_file(self, file):
         """Identify convention from a file
@@ -183,7 +185,7 @@ class FileConventionRead(object):
                                       .format(basename(file), self.name))
             
         try:
-            info["name"] = self.file_sep.join(spl[self.name_pos:self.var_pos])
+            info["data_id"] = self.file_sep.join(spl[self.data_id_pos:self.var_pos])
         except:
             raise FileConventionError('Failed to extract model name from '
                                       'file {} using file convention {}' 
@@ -233,7 +235,7 @@ class FileConventionRead(object):
                                       .format(basename(file), self.name))
 
         try:
-            info['name'] = '.'.join(spl[1:self.ts_pos])
+            info['data_id'] = '.'.join(spl[self.data_id_pos:self.ts_pos])
         except:
             raise FileConventionError('Failed to extract name '
                                       'from file {} using file '
@@ -378,7 +380,7 @@ class FileConventionRead(object):
                   var_pos = self.var_pos,
                   ts_pos = self.ts_pos,
                   vert_pos = self.vert_pos,
-                  name_pos = self.name_pos)
+                  data_id_pos = self.data_id_pos)
       
     def __repr__(self):
        return ("%s %s" %(self.name, super(FileConventionRead, self).__repr__()))

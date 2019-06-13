@@ -141,6 +141,8 @@ class GriddedData(object):
         for k, v in suppl_info.items():
             if k in self.suppl_info:
                 self.suppl_info[k] = v
+            else:
+                print_log.warning('Ignoring input {}={}'.format(k, v))
                 
         try:
             var = self.var_info
@@ -261,8 +263,42 @@ class GriddedData(object):
     @property
     def ts_type(self):
         """Temporal resolution"""
+        if self.suppl_info['ts_type'] == 'n/d':
+            self.infer_ts_type()
         return self.suppl_info['ts_type']
     
+    @property
+    def delta_t(self):
+        """Array containing timedelta values for each time stamp"""
+        ts = self.time_stamps()
+        if len(ts) < 2:
+            raise AttributeError('Need at least 2 timestamps in GriddedData in '
+                                 'order to compute delta-t')
+        return (ts[1:] - ts[0:-1])
+    
+    def check_frequency(self):
+        """Check if all datapoints are sampled at the same time frequency"""
+        dt = np.unique(self.delta_t)
+        if len(dt) > 1:
+            raise AttributeError('Irregular time-frequency')
+        freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
+        if not int(dt.astype('timedelta64[{}]'.format(freq))) == 1:
+            raise AttributeError('Mismatch between sampling freq and '
+                                 'actual frequency of values in time dimension ')
+            
+    def infer_ts_type(self):
+        dt = np.unique(self.delta_t)
+        if len(dt) > 1:
+            raise ValueError('Could not identify unique frequency')
+        dt = dt[0]
+        for ts_type, freq in TS_TYPE_TO_NUMPY_FREQ.items():
+            val = dt.astype('timedelta64[{}]'.format(freq)).astype(int)
+            if val == 1:
+                self.suppl_info['ts_type'] = ts_type
+                return ts_type
+        raise AttributeError('Failed to infer ts_type from data')
+        
+        
     @property
     def TS_TYPES(self):
         """List with valid filename encryptions specifying temporal resolution
@@ -517,15 +553,7 @@ class GriddedData(object):
             self.grid = input #instance of Cube
         elif isinstance(input, str) and os.path.exists(input):
             from pyaerocom.io.iris_io import load_cube_custom
-            from pyaerocom.io import FileConventionRead
             self.grid = load_cube_custom(input, var_name)
-            
-            try:
-                f = FileConventionRead()
-                f.from_file(input)
-                self.suppl_info.update(**f.get_info_from_file(input))
-            except:
-                pass
             self.suppl_info["from_files"].append(input)
             
         else:
@@ -539,6 +567,16 @@ class GriddedData(object):
                            .format(self.var_name))
         
      
+    def _get_info_from_filenames(self):
+        """Try access AeroCom meta info from filenames assigned to this object
+        """
+        from pyaerocom.io import FileConventionRead
+        c = FileConventionRead(from_file=self.from_files[0])
+        info = c.get_info_from_file(self.from_files[0])
+        for f in self.from_files[1:]:
+            add_info = f.from_file(f)
+            
+        
     def convert_unit(self, new_unit):
         """Convert unit of data to new unit"""
         if self._size_GB > self._MAX_SIZE_GB:
@@ -1183,11 +1221,44 @@ class GriddedData(object):
                               aggregator=MEAN, 
                               weights=ws).grid.data
         
+    def get_area_weighted_timeseries(self, region=None):
+        """Helper method to extract area weighted mean timeseries
+        
+        Parameters
+        ----------
+        region
+            optional, name of AeroCom default region for which the mean is to 
+            be calculated (e.g. EUROPE)
+        
+        Returns
+        -------
+        StationData
+            station data containing area weighted mean
+        """
+        try:
+            self.check_dimcoords_tseries()
+        except DimensionOrderError:
+            self.reorder_dimensions_tseries()
+        if self.ndim != 3:
+            raise NotImplementedError('Area weighted mean can only computed '
+                                      'for data containing latitude and '
+                                      'longitude data')
+        stat = StationData()
+        stat.station_name = self.data_id
+        if region is not None:
+            d = self.crop(region=region)
+            stat['region'] = region
+        else:
+            d = self
+        vals = d.area_weighted_mean()
+         
+        stat[self.var_name] = Series(vals, d.time_stamps())
+        return stat
+        
     # redefined methods from iris.Cube class. This includes all Cube 
     # processing methods that exist in the Cube class and that work on the 
     # Cube and return a Cube instance. These may be expanded (e.g. for 
     # instance what they accept as input
-    
     def aerocom_filename(self, at_stations=False):
         """Filename of data following Aerocom 3 conventions
         
@@ -1426,7 +1497,6 @@ class GriddedData(object):
         if not self.is_cube:
             raise NotImplementedError("This feature is only available if the"
                                       "underlying data is of type iris.Cube")
-        print(constraint)
         data_crop = self.grid.extract(constraint)
         if not data_crop:
             raise DataExtractionError("Failed to extract subset")
@@ -1524,7 +1594,7 @@ class GriddedData(object):
         except:
             tstr = datetime2str(self.time_stamps()[time_idx], 
                                 self.ts_type)
-        fig.axes[0].set_title("{} ({}, {})".format(self.name, 
+        fig.axes[0].set_title("{} ({}, {})".format(self.data_id, 
                               self.var_name, tstr))
         return fig
     
@@ -1744,12 +1814,7 @@ if __name__=='__main__':
     
     reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
     
-    print(reader)
-    c1 = reader.read_var('ec532aer', start=2009).cube
-    c2 = reader.read_var('ec532aer', start=2010).cube
-    
-    import iris
-    c3 = c1 + c1
+    d = reader.read_var('od550aer', start=2010)    
 # =============================================================================
 #     data.downscale_time('monthly')
 #     

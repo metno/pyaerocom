@@ -1,7 +1,7 @@
 NEWS
 ====
 
-- **April 2019**: AeroCom has a new (inter)face: We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments. The new online interface can be found `here <https://aerocom-trends.met.no/evaluation/web/>`__.
+- **April 2019**: AeroCom has a new (inter)face: We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments. The new online interface can be found `here <https://aerocom-evaluation.met.no/>`__.
 
 About
 =====
@@ -38,7 +38,7 @@ Main features
 Usage examples
 ^^^^^^^^^^^^^^
 
-- Processing of data for the new AeroCom `Model Evaluation interface <https://aerocom-trends.met.no/evaluation/web/>`__
+- Processing of data for the new AeroCom `Model Evaluation interface <https://aerocom-evaluation.met.no/>`__
 - Processing and harmonisation of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__.
 
 
