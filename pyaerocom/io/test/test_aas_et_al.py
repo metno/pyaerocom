@@ -4,25 +4,21 @@
 High level test methods that check AasEtAl time series data for selected stations
 Created on June 12 2019.
 
-@author: hannas
+@author: hannas@met.no
 """
 import pytest
 import numpy.testing as npt
 import numpy as np
+import pandas as pd
+
+import datetime
+import matplotlib.pyplot as plt
+from scipy.stats import kendalltau
+from scipy.stats.mstats import theilslopes
+
 import pyaerocom as pya
 from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
 from pyaerocom.io.read_aasetal import ReadSulphurAasEtAl
-import matplotlib.pyplot as plt
-import datetime
-from scipy.stats import kendalltau
-from scipy.stats.mstats import theilslopes
-import pandas as pd
-
-VARS = ['sconcso4', 'sconcso2']
-# TODO add test or remove unoitconversion to inclkude 'wetso4'
-
-# TODO Now you need to convert back the units before you write the tests
-
 
 TRUE_SLOPE = {'N-America': {"sconcso4": {'2000–2010': -3.03,
                                           '2000–2015':  -3.15},
@@ -136,18 +132,18 @@ def unitconversion_wet_deposition_back(data, ts_type = "monthly"):
     """
     mm_compund = 0.001*32.065 + 0.001*15.999*4
     mm_s = 0.001*32.065   
-    nr_molecules = nr_molecules_to_mass(data, mm_compund) # in the order of 10**27 
+    nr_molecules = mass_to_nr_molecules(data, mm_compund) # in the order of 10**27 
     mass_S = nr_molecules_to_mass(nr_molecules, mm_s)
     #TODO : to be mulitplied with the number of days in one year.
-    return mass_S/10000 # to be multiplied by the numebers of days in a month
+    return 10000*mass_S # to be divid by days in month
 
 def unitconversion_surface_consentrations_back(data, x = 2):
-    """ Converting: ug SOx/m3 to  ugS/ m3.
+    """ Converting: ugSOx/m3 to  ugS/ m3.
     
     Parameters
     ------------------
     data: ndarray
-        Contains the data in units of ug ugS/m3.
+        Contains the data in units of ugSoX/m3.
     
     x: int
         The number of oxygen atoms, O in you desired SOx compound.
@@ -159,12 +155,12 @@ def unitconversion_surface_consentrations_back(data, x = 2):
     
     """
 
-    mmO = x*15.9999*10**6 # molar mass oxygen
+    mmO = 15.9999*10**6 # molar mass oxygen
     mmS = 32.065 # molar mass sulphur
     
-    nr_molecules = data/ (x*mmO*10**6) * (6.022*10**23)
-    weight_sox = nr_molecules*mmS*10**6 
-    return weight_sox
+    nr_molecules = data/ (  (mmS+x*mmO)*10**6) * (6.022*10**23)
+    weight_s = nr_molecules*mmS*10**6 
+    return weight_s
 
 def _get_season_current(mm,yyyy):
     if mm in [3,4,5]:
@@ -212,7 +208,7 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
     Slightly modified code from original trends interface developed by
     A. Mortier.
 
-    Parameters:
+    Parameters
     ------------------------
 
     s_monthly : pd.DataFrame
@@ -232,7 +228,7 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
         - Keep NaNs
 
     """
-    # sm = to_monthly_current_trends_interface(s0, MIN_DIM)
+    
     d = dict(month=s_monthly.index.month,
              year=s_monthly.index.year,
              value=s_monthly.values)
@@ -361,7 +357,7 @@ def create_region(region):
 def crop_data_to_region(ungridded, region = "Europe"):
     """ Function which filter out the stations in the correct region.
 
-    Parameters:
+    Parameters
     -------------
     ungridded : :class:`UngriddedData`
         Ungridded data object which contain data from one variable (filter by meta is not implemented for several variables yet.)
@@ -395,11 +391,21 @@ def years_to_string(start, stop):
 def years_from_periodstr(period):
     return [int(x) for x in period.split('–')]
 
+def covert_data(data, var):
+    if var == "sconcso4":
+        return unitconversion_surface_consentrations_back(data, x=4)
+    elif var == "sconcso2":
+        unitconversion_surface_consentrations_back(data, x=4)
+    elif var == "wetso4":
+        unitconversion_wet_deposition_back(data)
+    else:
+        raise ValueError("{} is not a valid variable.".format(var))
 
-@lustre_unavail
-def test_slope(ungridded, region, period, var):
+
+def calc_slope(ungridded, region, period, var):
     """
-    Check if the number of stations present is only counting the ones with more than 7 years of averages.
+    Check if the number of stations present is only counting the ones with more 
+    than 7 years of averages.
     
     :return: Boolean
     """
@@ -411,13 +417,14 @@ def test_slope(ungridded, region, period, var):
     stations =  regional.to_station_data_all(var, start, stop, 'monthly')
     slp_stations = []
     station_names = []
-    # Since the true value have two decimals. We allow a error, diff < 0.01
-    # this would be attributed to all other decimals.
 
     for station in stations['stats']:
         #date = station['dtime']
         ts = station[var]
-        s_monthly = ts # is a pandas series
+        s_monthly = covert_data(ts.values, var)
+        # not pandas series now may need to convert it back to that
+               
+        s_monthly = ts
         # input to compute_trends_current period is supposed to be a list.
         data = compute_trends_current(s_monthly, period, only_yearly=True)
         slp = data['all']['trends'][period[0]]['slp']
@@ -426,25 +433,23 @@ def test_slope(ungridded, region, period, var):
             slp_stations.append(slp)
         else:     
             station_names.append( station.station_name )
-            
-    print(station_names)
+
     nr_stations = len(slp_stations)
     return nr_stations, np.mean(slp_stations)
 
 @lustre_unavail
-def test_ungriddeddata_surface_cons_so2():
+def test_ungriddeddata():
     reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
     data = reader.read()  # read all variables
     
     assert len(data.station_name) == 890
     assert data.shape == (1063631, 12)
 
+@lustre_unavail
+def test_article():
     regions = ['Europe', 'N-America']
-    # TODO Add wetso4,k in fact add oxygen to all of them
-    VARS = ['sconcso4', 'sconcso2']
+    VARS = ['sconcso4', 'sconcso2', 'wetso4']
     periods = ['2000–2010', '2000–2015'] # not useed yet bcause of problems with the heigfen. 
-
-    # todo LOOP OVER PERIODS
 
     for v in VARS:
         # can reuse the ungridded data object for all regions and periods.
@@ -458,7 +463,7 @@ def test_ungriddeddata_surface_cons_so2():
                 #ns2 = true_nr_stations[r][v]['2000–2015']
                 ns = TRUE_NR_STATIONS[r][v][p]
                 print("  ")
-                nr_stations, predicted_mean_slope = test_slope(ungridded, r, [p], v)
+                nr_stations, predicted_mean_slope = calc_slope(ungridded, r, [p], v)
                 print(" REGION {}, variable {}, period {} ".format(r, v, p))
                 print("calc {} ,  true [nr stations] {}".format(nr_stations, ns))
                 print("calc_slope {}, true_slope   {}".format(
@@ -493,12 +498,6 @@ OBS! Ask Jonas about the units available on the trends interface.
 if __name__ == "__main__":
     # pya.change_verbosity('info')
     # import sys
-    test_ungriddeddata_surface_cons_so2()
+    test_ungriddeddata()
+    test_article()
 # =============================================================================
-#
-#     d = _make_data()
-#     stat = d.to_station_data('Jung*', start=2008, stop=2011, freq='monthly')
-#     stat.plot_timeseries('scatc550aer')
-#
-# =============================================================================
-# pytest.main(sys.argv)

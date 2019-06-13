@@ -1,9 +1,8 @@
-import numpy as np
 import os
+import numpy as np
 import pandas as pd
-#from datetime import datetime
+
 import matplotlib.pyplot as plt
-#import od
 from collections import OrderedDict
 
 from pyaerocom.stationdata import StationData
@@ -11,7 +10,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 
 class ReadSulphurAasEtAl(ReadUngriddedBase):
-    """Interface for reading subset of GOL TAT data related to the nature paper.
+    """Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
 
     See Also
     ---------
@@ -93,52 +92,19 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             List of dictionary-like object containing data
         """
        
-
-# =============================================================================
-#         def pad_zeros(array):
-#             """ Try to do this vectorized,
-#             Problem with the only one digit in front of numbers smaller than xero.
-#             """
-#
-#             str_array = array.astype("str")
-#
-#             for i, val in enumerate(array):
-#                 if val < 10:
-#                 # Add zeros
-#                     str_array[i] = "0"+str(val)
-#             return str_array
-# =============================================================================
-
         station_list = []
-        #print(vars_to_retrieve)
         df = pd.read_csv(filename, sep=",", low_memory=False)
         
-        #
+        # 
         tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
 
         dates_alt = [tconv(yr, m) for yr, m in
                      zip(df.year.values, df.month.values)]
 
-# =============================================================================
-#         #days = np.ones((len(df["year"]))).astype('int')
-#         #df['day'] = days
-#         #df['dtime'] = df.apply(lambda row: datetime(row['year'], row['month'], row["day"]), axis=1)
-#         month = pad_zeros(df['month'].astype(int))
-#         #print(month)
-#
-#         year = df['year'].values.astype(int).astype("str")
-#         days = np.array(["01" for i in range(len(year)) ])
-#
-#         dates = [y + "-" + m + "-" + d for y, m, d in zip(year, month, days)]
-# =============================================================================
-
         df['dtime'] = np.array(dates_alt)
 
         # array av numpy.datetime64
         df.rename(columns= {"Sampler":"instrument_name"}, inplace=True)
-        #df.pop("year")
-        #df.pop("month")
-        #df.pop("day")
         grouped = df.groupby(by = "station_name")
 
         # Looping over every station:
@@ -167,27 +133,29 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     for var in vars_to_retrieve:
                         if var == "wetso4":
                             # input unit is kg S/ha
-
+                            print("enters wetso4")
                             # TODO : update this with pandas
                             y = station_group['year'].values
                             m = station_group['month'].values
                             
                             monthly_to_sec = days_in_month(y, m)*24*60*60             
 
-                            mass_sulhpor = pd.to_numeric(station_group[key],
+                            mass = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
 
-                            s[var] = unitconversion_wet_deposition(mass_sulhpor,
+                            s[var] = unitconversion_wet_deposition(mass,
                              "monthly")/monthly_to_sec#monthly_to_sec[:156]
                             # output variable is ks so4 m-2s-1
                         elif '4' in var:
+                            print("enters sconcs 4")
                             mass = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
-                            s[var] = unitconversion_surface_consentrations(mass, 4)
+                            s[var] = unitconversion_surface_concentrations(mass, 4)
                         elif '2' in var:
-                            mass_sulhpor = pd.to_numeric(station_group[key],
+                            print("enters sconcs 2")
+                            mass = pd.to_numeric(station_group[key],
                                                          errors='coerce').values
-                            s[var] = unitconversion_surface_consentrations(mass, 2)
+                            s[var] = unitconversion_surface_concentrations(mass, 2)
                         else:
                             # Other variable have the correct unit.
                             s[var] = pd.to_numeric(station_group[key], 
@@ -225,16 +193,14 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             
         """
 
-        #TODO : check if this should be retrieved from variables ini file.
+        files = self.get_file_list()
 
-        #TODO need to add weight of oxygen t all variables except
         unit={}
         unit['sconcso2'] = 'ug m-3'
         unit['sconcso4'] = 'ug m-3'
-        unit['pr'] = 'mm'
-        unit['wetso4'] = 'kg m-2 s-1'
+        unit['pr']       = 'mm'
+        unit['wetso4']   = 'kg m-2 s-1'
         unit['sconcso4pr'] = 'g m-3' # removed sulphur from unit mgS/L
-        # one liter -- is 0.001m3 since it was mg /L milli and the constant cancels
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -244,7 +210,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         meta_key = 0.0
         idx = 0
-        varindex = -1 # might cause trouble
+        varindex = -1 
         
         #assign metadata object
         metadata = data_obj.metadata # OrderedDict
@@ -262,14 +228,13 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             station_data_list = self.read_file(file, 
                                                vars_to_retrieve=var_matches)
             for station_data in station_data_list:
-                #self.counter += 1
                 metadata[meta_key] = OrderedDict()
                 metadata[meta_key].update(station_data.get_meta())
                 metadata[meta_key].update(station_data.get_station_coords())
                 metadata[meta_key]['data_id'] = self.DATA_ID
                 metadata[meta_key]['ts_type'] = self.TS_TYPE
                 metadata[meta_key]['variables'] = station_data["variables"]
-                #metadata[metakey].var_info['sconcso2']['units'] =
+
                 # Is instrumentname
                 if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
                     instr = station_data['instrument_name']
@@ -294,7 +259,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     data_obj.add_chunk(totnum)
 
                 for var_count, var in enumerate(temp_vars):
-                    #var_count += varindex
+
                     values = station_data[var]
                     start = idx + var_count * num_times
                     stop = start + num_times
@@ -306,9 +271,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         #print("adding var {} (assigned index: {})".format(var, varindex))
                     else:
                         var_idx = data_obj.var_idx[var]
-
+                        
+                    metadata[meta_key]['var_info'] = OrderedDict()
+                    metadata[meta_key]['var_info'][var] = OrderedDict()
                     metadata[meta_key]['var_info'][var]['units'] = unit[var]
-
+                    
                     data_obj._data[start:stop, data_obj._LATINDEX] = station_data['latitude']
                     data_obj._data[start:stop, data_obj._LONINDEX] = station_data['longitude']
                     data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = station_data['altitude']
@@ -387,7 +354,7 @@ def unitconversion_wet_deposition(data, ts_type = "monthly"):
     """
 
     mm_s = 0.001*32.065 # in kilos pr mol
-    mm_o = 4*15.9999*0.001 # molar mass of four okygen atom ins 
+    mm_o = 4*15.9999*0.001 # molar mass of four okygen atom in kilo
     
     nr_molecules = mass_to_nr_molecules(data, mm_s) # in the order of 10**27 
     added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o)
@@ -411,7 +378,7 @@ def mass_to_nr_molecules(mass, Mm):
     Returns
     -----------------
     nr_molecules : float
-        number of molecules
+        number of molecules     
     """
     A = 6.022*10**23
 
@@ -437,7 +404,7 @@ def nr_molecules_to_mass(nr_molecules, Mm):
     mass = Mm*nr_molecules/A
     return mass
     
-def unitconversion_surface_consentrations(data, nr_of_O = 2):
+def unitconversion_surface_concentrations(data, nr_of_O = 2):
     """ Unitconverting:  ugS/m3 to ugSOx/m3
     
     Parameters
@@ -486,15 +453,14 @@ if __name__ == "__main__":
      import matplotlib.pyplot as plt
      #change_verbosity('info')
      V = "wetso4"
+     V = "sconcso4"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
 
      #so2 = aa.read('sconcso2')
      #so4_aero = aa.read('sconcso4')
-
-
-     dataNone = aa.read(V)#['sconcso4', 'sconcso2']
+     ungridded = aa.read(V)#['sconcso4', 'sconcso2']
      name = 'Abington'
-     abington = dataNone.to_station_data("Oulanka", V)
+     abington = ungridded.to_station_data("Oulanka", V)
      abington.plot_timeseries(V)
      
      #abington2 = dataNone.to_station_data("Oulanka", 'sconcso2')
