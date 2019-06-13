@@ -158,15 +158,27 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     for var in vars_to_retrieve:
                         if var == "wetso4":
                             # input unit is kg S/ha
+                            
+                            # TODO : update this with pandas
                             y = station_group['year'].values
                             m = station_group['month'].values
                             
                             monthly_to_sec = days_in_month(y, m)*24*60*60             
+                            
                             mass_sulhpor = pd.to_numeric(station_group[key], 
                                                          errors='coerce').values
+                                                         
                             s[var] = unitconversion_wet_deposition(mass_sulhpor, 
                              "monthly")/monthly_to_sec#monthly_to_sec[:156]
                             # output variable is ks so4 m-2s-1
+                        elif '4' in var:
+                            mass = pd.to_numeric(station_group[key], 
+                                                         errors='coerce').values
+                            s[var] = unitconversion_surface_consentrations(mass, 4)
+                        elif '2' in var:
+                            mass_sulhpor = pd.to_numeric(station_group[key], 
+                                                         errors='coerce').values
+                            s[var] = unitconversion_surface_consentrations(mass, 2)
                         else:
                             # Other variable have the correct unit.
                             s[var] = pd.to_numeric(station_group[key], 
@@ -185,8 +197,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     
 
     def read(self, vars_to_retrieve=None):
-        """
-        Method that reads list of files as instance of :class:`UngriddedData`
+        """ Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters 
         ----------
@@ -200,12 +211,22 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         Returns
         -------
-        UngriddedData
+        UngriddedData : :class:`UngriddedData`
             data object
             
         """
-        files = self.get_file_list()
-                
+        
+        #TODO : check if this should be retrieved from variables ini file.
+        
+        #TODO need to add weight of oxygen t all variables except 
+        unit={}
+        unit['sconcso2'] = 'ug m-3'
+        unit['sconcso4'] = 'ug m-3'
+        unit['pr'] = 'mm'
+        unit['wetso4'] = 'kg m-2 s-1'
+        unit['sconcso4pr'] = 'g m-3' # removed sulphur from unit mgS/L 
+        # one liter -- is 0.001m3 since it was mg /L milli and the constant cancels
+                        
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -219,7 +240,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         #assign metadata object
         metadata = data_obj.metadata # OrderedDict
         meta_idx = data_obj.meta_idx # OrderedDict
-
+        
+        files = self.get_file_list()
+        
         for file in files:
             filename = os.path.basename(file)
             if not filename in self.FILES_CONTAIN:
@@ -239,6 +262,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 metadata[meta_key]['data_id'] = self.DATA_ID
                 metadata[meta_key]['ts_type'] = self.TS_TYPE
                 metadata[meta_key]['variables'] = station_data["variables"]
+                #metadata[metakey].var_info['sconcso2']['units'] =
                 # Is instrumentname
                 if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
                     instr = station_data['instrument_name']
@@ -246,7 +270,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     instr = self.INSTRUMENT_NAME
 
                 metadata[meta_key]['instrument_name'] = instr
-
+               
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
                 meta_idx[meta_key] = OrderedDict()
@@ -272,10 +296,12 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         varindex += 1
                         data_obj.var_idx[var] = varindex
                         var_idx = varindex
-                        print("adding var {} (assigned index: {})".format(var, varindex))
+                        #print("adding var {} (assigned index: {})".format(var, varindex))
                     else:
                         var_idx = data_obj.var_idx[var]
-
+                        
+                    metadata[meta_key]['var_info'][var]['units'] = unit[var]
+                    
                     data_obj._data[start:stop, data_obj._LATINDEX] = station_data['latitude']
                     data_obj._data[start:stop, data_obj._LONINDEX] = station_data['longitude']
                     data_obj._data[start:stop, data_obj._ALTITUDEINDEX] = station_data['altitude']
@@ -298,16 +324,25 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     
 def is_leap_year(year):
     """
-    Returns boolean:
+    Returns 
+    -----------------
+    
+    boolean :
         True : its a leap year.
         False : its not.
     """
     return (year % 4 == 0) and (year % 100 != 0) or (year % 400 == 0)
 
 def days_in_month(years, months):
-    """
-    Returns one array of values containing the number of values in a specific 
-    month. 
+    """ Returns arrays containing the numbers of days in the respective month.
+    
+    Parameters
+    ---------------------
+    years : ndarray
+    
+    months : ndarray    
+    
+    OBS! This might exist in pd.Period('2018-02-03').days_in_month
     """
     days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     index_feb = np.where(months==2)[0]
@@ -324,22 +359,26 @@ def days_in_month(years, months):
         return np.array(nr_of_days)
 
 def unitconversion_wet_deposition(data, ts_type = "monthly"):
-    """
-    Converting:  ug S/ ha to ug SOx/m2 
+    """ Unitconversion ugS/ha to ugSOx/m2.
+    
     Adding mass of oksygen.
     
-    Parameters:
+    Parameters
     ------------------
-    data: array-like
+    data: ndarray
+        data in unit ugS/ha = ugS/(1000 m2)
+        
+    ts_type : str
+        The timeseries type. Default "monthly".
+
     
-    ts_type: Default monthly
-    The timeseries type.
+    Returns
+    ------------------
+    data : ndarray 
+        data in units of ugSOx/m3
     
-    Return:
-    ------------
-    data in units of ug sox/m3
     """
-    # TODO : add for a different number of days in one year.
+    
     mm_s = 0.001*32.065 # in kilos pr mol
     mm_o = 4*15.9999*0.001 # molar mass of four okygen atom ins 
     
@@ -349,37 +388,63 @@ def unitconversion_wet_deposition(data, ts_type = "monthly"):
     return mass*10000
 
 def mass_to_nr_molecules(mass, Mm):
-    """
+    """ Calculating the number of molecules from mass and molarmass.
+
     Mass, Molar mass need to be in the same unit, either both g and g/mol 
     or kg and kg/mol.
+    
+    Parameters
+    ---------------------------
+    mass : float
+        mass of all compounds.
+        
+    mm : float
+        molar mass of compound.
+    
+    Returns 
+    -----------------
+    nr_molecules : float
+        number of molecules     
     """
     A = 6.022*10**23
-    #TODO: this assumes you have one 
+
     return mass/Mm*A    
 
 def nr_molecules_to_mass(nr_molecules, Mm):
-    """
-    Molar mass in the unit you want mass returned in
-    Molar mass in grams pr kilo
+    """ Calculates the mass from the number of molecules and molar mass.
+    
+    Parameters
+    ---------------
+    nr_molecules : int
+        Number of molecules
+        
+    mm : float
+        Molar mass [g/mol]
+    
+    Returns 
+    ---------------------
+    mass : float
+        mass in grams
     """
     A = 6.022*10**23
-    return Mm*nr_molecules/A
+    mass = Mm*nr_molecules/A
+    return mass
     
 def unitconversion_surface_consentrations(data, nr_of_O = 2):
-    """
-    Converting:  ugS/ m3 to ug sox/m3
+    """ Unitconverting:  ugS/m3 to ugSOx/m3
     
-    Parameters:
+    Parameters
     ------------------
-    data: array-like
-    Contains the data in units of ugS/m3.
+    data: ndarray
+        Contains the data in units of ugS/m3.
     
     nr_of_O: int
-    The number of O's in you desired SOx compound.
+        The number of O's in you desired SOx compound.
     
-    Return:
+    Returns
     ------------
-    data in units of ug SOx/m3
+    data : ndarray
+        data in units of ug SOx/m3
     
     """
     mm_s = 32.065*10**6 # in units of ug/mol
@@ -389,57 +454,6 @@ def unitconversion_surface_consentrations(data, nr_of_O = 2):
     # added weights in micrograms 
     mass = data + added_weight_oksygen # in micrograms
     return mass
-    
-def unitconversion_wet_deposition_back(data, ts_type = "monthly"):
-    """
-    Converting:  ug SOx/m3 to ugS/ m3. 
-    Removing mass of oxygen. 
-    
-    Parameters:
-    ------------------
-    data: array-like
-    
-    ts_type: Default monthly
-    The timeseries type.
-    
-    Return:
-    ------------------
-    data in units of ug SOx/m3
-    """
-    mm_compund = 0.001*32.065 + 0.001*15.999*4
-    mm_s = 0.001*32.065
-    #A = 6.022*10**23
-    # TODO : add for a different number of days in one year.
-    nr_molecules = nr_molecules_to_mass(data, mm_compund) # in the order of 10**27 
-    #added_weight_oksygen = nr_molecules*4*15.9999*0.001/
-    #mass = data - added_weight_oksygen
-    mass_S = nr_molecules_to_mass(nr_molecules, mm_s)
-    return mass_S/10000 # to be multiplied by the numebers of days in a month
-
-def unitconversion_surface_consentrations_back(data, nr_of_O = 2):
-    """
-    Converting: ug SOx/m3 to  ugS/ m3.
-    
-    Parameters:
-    ------------------
-    data: array-like
-    Contains the data in units of ug ugS/m3.
-    
-    nr_of_O: int
-    The number of O's in you desired SOx compound.
-    
-    Return:
-    ------------
-    data in units of ugS/ m3.
-    """
-
-    mmO = nr_of_O*15.9999*10**6
-    mmS = 32.065
-    
-    nr_molecules = data/ (nr_of_O*mmO*10**6) * (6.022*10**23)
-    weight_sox = nr_molecules*mmS*10**6 # in micrograms
-    # added weights in micrograms 
-    return weight_sox
 
 if __name__ == "__main__":
      from pyaerocom import change_verbosity
@@ -456,7 +470,7 @@ if __name__ == "__main__":
      #abington2.plot_timeseries('sconcso2')
      
      plt.show()
-    #dataString = aa.read("sconcso4")
+     #dataString = aa.read("sconcso4")
      #dataString.plot_station_coordinates(markersize=12, color='lime')
      #print(dataString.station_name)
      #abington = dataString.to_station_data("Abington", 'sconcso4')
