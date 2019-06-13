@@ -18,7 +18,8 @@ from pyaerocom.region import (get_all_default_region_ids,
 from pyaerocom.io.helpers import save_dict_json
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
-                                   update_menu, make_info_table)
+                                   update_menu_evaluation_iface, 
+                                   make_info_table)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
 
 from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
@@ -206,10 +207,6 @@ class AerocomEvaluation(object):
         except:
             pass
         self.update(**settings)
-        
-        self.check_config()
-        self.init_dirs()
-        self._update_custom_read_methods()
     
     @property
     def proj_dir(self):
@@ -332,7 +329,10 @@ class AerocomEvaluation(object):
         """Update current setup"""
         for k, v in settings.items():
             self[k] = v
-    
+        self.check_config()
+        self.init_dirs()
+        self._update_custom_read_methods()
+        
     def _set_obsconfig(self, val):
         cfg = {}
         for k, v in val.items():
@@ -469,6 +469,7 @@ class AerocomEvaluation(object):
         raise ValueError('Could not identify unique model name')
             
     def make_regions_json(self):
+        """Creates file regions.ini for web interface"""
         regs = {}
         for regname in get_all_default_region_ids():
             reg = Region(regname)
@@ -479,7 +480,7 @@ class AerocomEvaluation(object):
             lonr = reg.lon_range
             r['minLon'] = lonr[0]
             r['maxLon'] = lonr[1]
-        save_dict_json(regs, self.REGIONS_FILE)
+        save_dict_json(regs, self.regions_file)
         return regs
                 
     def compute_json_files_from_colocateddata(self, coldata):
@@ -1002,7 +1003,7 @@ class AerocomEvaluation(object):
     
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
-        update_menu(self, **opts)
+        update_menu_evaluation_iface(self, **opts)
         
     def make_info_table_web(self):
         """Make and safe table with detailed infos about processed data files
@@ -1107,4 +1108,6 @@ class AerocomEvaluation(object):
 if __name__ == '__main__':    
     cfg_dir = '/home/jonasg/github/aerocom_evaluation/data_new/config_files/'
     stp = AerocomEvaluation('aerocom', 'PIII-optics', config_dir=cfg_dir)
-    stp.make_info_table_web()
+    #stp.make_info_table_web()
+    
+    stp.make_regions_json()
