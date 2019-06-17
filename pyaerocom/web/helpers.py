@@ -40,7 +40,6 @@ def get_all_config_files_evaluation_iface(config_dir):
         spl = os.path.basename(file).split('_')
         if not len(spl) == 3 or not spl[0] =='cfg':
             raise NameError('Invalid config file name ', file)
-        print(spl)
         proj, exp = spl[1], spl[2].split('.')[0]
         if not proj in results:
             results[proj] = {}
@@ -48,7 +47,7 @@ def get_all_config_files_evaluation_iface(config_dir):
     return results
 
 def get_all_config_files_trends_iface(config_dir):
-    """
+    """Get all configuration files of trends interface
     
     Note
     ----
@@ -62,10 +61,16 @@ def get_all_config_files_trends_iface(config_dir):
         
     Returns
     -------
-    list
-        list of configuration files that were found
+   dictionary
+        keys are configuration names, values are corresponding file paths
     """
-    return glob.glob('{}/*.json'.format(config_dir))
+    results = {}
+    for file in  glob.glob('{}/cfg_*.json'.format(config_dir)):
+        spl = os.path.basename(file).split('_')
+        if not len(spl) == 2 or not spl[0] =='cfg':
+            raise NameError('Invalid config file name ', file)
+        results[spl[1].split('.')[0]] = file
+    return results
       
 class ObsConfigEval(BrowseDict):
     """Observation configuration for evaluation (dictionary)

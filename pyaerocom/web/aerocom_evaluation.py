@@ -19,7 +19,7 @@ from pyaerocom.io.helpers import save_dict_json
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
                                    update_menu_evaluation_iface, 
-                                   make_info_table)
+                                   make_info_table_evaluation_iface)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
 
 from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
@@ -1010,7 +1010,7 @@ class AerocomEvaluation(object):
         
         The table is stored in as file minfo.json in directory :attr:`exp_dir`.
         """
-        table = make_info_table(self)
+        table = make_info_table_evaluation_iface(self)
         outname = os.path.join(self.exp_dir, 'minfo.json')       
         with open(outname, 'w+') as f:
             f.write(simplejson.dumps(table, indent=2))

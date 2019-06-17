@@ -10,7 +10,7 @@ from collections import OrderedDict as od
 import datetime
 from fnmatch import fnmatch
 import numpy as np
-import os
+import os, glob
 import pandas as pd
 from pyaerocom import const, __version__
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
@@ -18,7 +18,8 @@ from pyaerocom.helpers import isnumeric
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.io import ReadGridded
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
-                                   update_menu_trends_iface)
+                                   update_menu_trends_iface,
+                                   get_all_config_files_trends_iface)
 from pyaerocom.exceptions import DataCoverageError
 from pyaerocom.region import Region, find_closest_region_coord
 from scipy.stats import kendalltau
@@ -33,6 +34,10 @@ class TrendsEvaluation(object):
     Attributes
     ----------
     
+    name : str
+        name of this configuration setup
+    config_dir : str, optional
+        directory containing available configuration files
     out_basedir : str
         basic output directory
     out_dirs : dict
@@ -78,6 +83,13 @@ class TrendsEvaluation(object):
         analysis (per entry in :attr:`obs_config`).
     logdir : str
         directory where logfiles are stored.
+        
+    Parameters
+    ----------
+    config_file : str, optional
+        if provided and valid, then configuration is loaded from this file
+    **settings
+        configuration settings
     """
     #: Vertical layer ranges
     VERT_LAYERS = {'0-2km'  :   [0, 2000],
@@ -97,13 +109,18 @@ class TrendsEvaluation(object):
                 latitude        = 'lat',
                 longitude       = 'lon',
                 altitude        = 'alt',
+                data_id         = 'data_id',
                 dataset_name    = 'dataset',
+                data_product    = 'product',
+                data_version    = 'data_version',
+                data_level      = 'data_level',
+                website         = 'website',
                 instrument_name = 'instrument',
                 ts_type_src     = 'freq_src',
                 ts_type         = 'freq',
                 PI              = 'PI',
                 wavelength      = 'wavelength',
-                unit            = 'unit',
+                units           = 'unit',
                 statistics      = 'statistics',
                 matrix          = 'size_info',
                 overlap_info    = 'data_overlap')
@@ -118,20 +135,24 @@ class TrendsEvaluation(object):
             'SAMERICA': 'S-America',
             'EUROPE': 'Europe',
             'ASIA': 'Asia',
-            'CHINA': 'China',
+            #'CHINA': 'China',
             'AUSTRALIA': 'Australia',
             'NAFRICA': 'N-Africa',
             'SAFRICA': 'S-Africa',
-            'INDIA': 'India',
+            #'INDIA': 'India',
             'WORLD': 'World'
     }
     SEASONS = ['spring','summer','autumn','winter','all']
     
     JSON_CFG_IGNORE = ['regions', '_log', 'out_dirs']
-    def __init__(self, **settings):
+    
+    GRIDDED_TS_TYPE = 'monthly'
+    def __init__(self, config_file=None, **settings):
+        
         self.name = None
         self._log = const.print_log
         
+        self.config_dir = None
         self.out_basedir = None
         self.out_dirs = {}
         
@@ -151,12 +172,17 @@ class TrendsEvaluation(object):
         self.min_dim = 5
         self.avg_how = 'mean'
         
+        self.delete_outdated = True
         self.clear_existing_json = True
         self.write_logfiles = True
         self.logdir = None
-        # initialise
-        self.update(**settings)
         
+        # initialise
+        if config_file is not None: # user provided configuration file
+            self.from_json(config_file)
+        else: # user maybe provided full config via dict, or only name
+            self.update(**settings)
+    
     def __setitem__(self, key, val):
         
         if key == 'obs_config':
@@ -196,7 +222,6 @@ class TrendsEvaluation(object):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
         obs_cfg = ''
-        
         for key, val in self.__dict__.items():
             if key[0] == '_':
                 continue
@@ -207,12 +232,36 @@ class TrendsEvaluation(object):
                                           indent=indent+2)
             elif isinstance(val, dict):
                 s += '\n{}:'.format(key)
-                s+= dict_to_str(val, s)
+                s = dict_to_str(val, s)
             else:
                 s += '\n{}: {}'.format(key, val)
         s += obs_cfg
         return s
     
+    
+    def get_config_files(self, config_dir):
+        """Get all available configuration files
+        
+        Parameters
+        ----------
+        config_dir : str
+            directory containing configuration files
+        
+        Returns
+        -------
+        dict
+            dictionary containing all available configuration files
+        
+        Raises
+        ------
+        FileNotFoundError
+            if no config files could be found in input directory
+        """
+        files = get_all_config_files_trends_iface(config_dir)
+        if len(files) > 0:
+            return files
+        raise FileNotFoundError('Could not find any configuration files')
+            
     @property
     def menu_file(self):
         """json file containing region specifications"""
@@ -227,10 +276,29 @@ class TrendsEvaluation(object):
     def all_map_files(self):
         """List of all existing map files"""
         return sorted([f for f in os.listdir(self.out_dirs['map']) 
-                       if f.endswith('.json')])
+                       if f.endswith('.json') and f.startswith('OBS-')])
     
     def check_config(self):
-        """Check if there are any problems in the configuration"""
+        """Check if there are any problems in the configuration
+        
+        Returns
+        -------
+        bool
+            True if all is good, False, if configuration settings are missing
+        
+        Raises
+        ------
+        ValueError
+            if one of the provided period strings is invalid
+        AttributeError
+            if model configuration is missing
+        AssertionError
+            if there is a problem with EBAS default configuration
+        """
+        if len(self.periods) == 0:
+            return False
+        elif len(self.obs_config) == 0:
+            return False
         for p in self.periods:
             try:
                 start, stop = self._years_from_periodstr(p)
@@ -250,6 +318,8 @@ class TrendsEvaluation(object):
                         raise AttributeError('No such model with name {} '
                                              'available in model_config...'
                                              .format(model))
+        return True
+        
         
     
     def find_obs_matches(self, name_or_pattern):
@@ -286,14 +356,13 @@ class TrendsEvaluation(object):
                            .format(name_or_pattern))
         return matches
     
-    def check_model_access(self, model_ids, vars_to_retrieve):
+    def check_model_access(self, models, vars_to_retrieve):
         """Check availability of input variables in input model IDs
         
         Parameters
         ----------
-        model_ids : list
-            list of model IDs that can be accessed via class
-            :class:`pyaerocom.io.ReadGridded`
+        models : list
+            list of model names that available in :attr:`model_config`.
         vars_to_retrieve : list
             list of variable names that are supposed to be checked in models
             
@@ -304,12 +373,30 @@ class TrendsEvaluation(object):
             available in each of these models
         """
         maccess = {}
-        for model_id in model_ids:
-            maccess[model_id] = []
-            r = ReadGridded(model_id)
-            for var in vars_to_retrieve:
-                if var in r.vars_provided:
-                    maccess[model_id].append(var)
+        for model_name in models:
+            if not model_name in self.model_config:
+                raise AttributeError('No model {} available in model_config'
+                                     .format(model_name))
+            mcfg = self.model_config[model_name]
+            model_id = mcfg['model_id']
+            try:
+                r = ReadGridded(model_id)
+                vars_avail = {}
+                for obs_var in vars_to_retrieve:
+                    try:
+                        mod_var = mcfg['model_use_vars'][obs_var]
+                    except KeyError:
+                        mod_var = obs_var
+                    if mod_var in r.vars_provided:
+                        vars_avail[obs_var] = mod_var
+                if len(vars_avail) > 0:
+                    maccess[model_name] = dict(model_id=model_id,
+                                               vars_avail=vars_avail)
+            except:
+                self._log.warning('Model {} does not provide any of the req. '
+                                  'variables {}'.format(model_name, 
+                                                        vars_to_retrieve))
+            
                     
         return maccess
     
@@ -369,6 +456,9 @@ class TrendsEvaluation(object):
             (keys), that is, the output from :func:`run_single` for each of the 
             runs.
         """
+        if self.delete_outdated:
+            self.delete_outdated_json_files()
+            
         if write_logfiles is not None:
             self.write_logfiles = write_logfiles
         if clear_existing_json is not None:
@@ -513,31 +603,48 @@ class TrendsEvaluation(object):
         """Update current setup"""
         for k, v in settings.items():
             self[k] = v
-        self._init_dirs()
+        if self.out_basedir is not None:
+            self._init_dirs()
         self._init_regions()
-        self.check_config()
-    
+        if not self.check_config():
+            self._log.info('Setup is incomplete')
+            
+    def search_config_file(self, autoload=True):
+        """Try to find valid configuration file"""
+        if self.name is None:
+            raise AttributeError('Attr. name needs to be specified')
+        name = self.name
+        file = None
+        if self.config_dir is not None:
+            try:
+                files = self.get_config_files(self.config_dir)
+                if not name in files:
+                    raise FileNotFoundError('No config {} in {}'.format(name, 
+                                            self.config_dir))
+                file = files[name]
+            except:
+                pass
+        else:
+            try:
+                files = self.get_config_files('.')
+                if not name in files:
+                    raise FileNotFoundError('No config {} in current '
+                                            'directory'.format(name))
+                file = files[name]
+            except:
+                pass
+        if file is None:
+            raise FileNotFoundError('Could not find a valid configuration file')
+        if autoload:
+            self._log.info('Importing configuration from {}'.format(file))
+            self.from_json(file)
+        return file
+                
     def from_json(self, config_file):
         """Load configuration from json config file"""
         with open(config_file, 'r') as f:
             current = simplejson.load(f)
         self.update(**current)  
-    
-    def _obs_config_asdict(self):
-        d = {}
-        for k, cfg in self.obs_config.items():
-            as_dict = {}
-            as_dict.update(**cfg)
-            d[k] = as_dict
-        return d
-    
-    def _model_config_asdict(self):
-        d = {}
-        for k, cfg in self.model_config.items():
-            as_dict = {}
-            as_dict.update(**cfg)
-            d[k] = as_dict
-        return d
     
     def to_dict(self):
         """Convert configuration to dictionary"""
@@ -607,34 +714,92 @@ class TrendsEvaluation(object):
                 except:
                     print('Failed to check for existing runs for ID {}'.format(run))
             print()
+            
+    def _get_meta_from_json(self, f):
+        """Extract meta information from json file
+        
+        Parameters
+        ----------
+        f : str
+            map or ts json file
+        
+        Returns
+        -------
+        str
+            obs_name
+        str
+            obs_var
+        str
+            vert_code
+        str
+            mod_name
+        str
+            mod_var
+        """
+        
+        obs_info = f.split('OBS-')[1].split('_MOD')[0].split('_')
+        obs_name, obs_var = obs_info[0].split(':')
+        vert_code = obs_info[1]
+        mod_name, mod_var =  f.split('MOD-')[1].split('.json')[0].split(':')
+        
+        return (obs_name, obs_var, vert_code, mod_name, mod_var)
     
     def get_web_overview_table(self):
-        """Computes overview table based on existing map files"""
+        """Computes overview table based on existing map files
+        
+        Note
+        ----
+        Ignores map files that belong to runs which are not specified in this
+        configuration.
+        """
         tab = []
         header = ['obs_name' , 'obs_id', 'obs_var', 
                   'vert', 'mod_name', 'mod_id', 'mod_var', 'mod_type',
                   'periods']
         periods = self.get_periods_from_map_files()
         for f in self.all_map_files:
-            if f.endswith('.json') and f.startswith('OBS'):
-                obs_info = f.split('OBS-')[1].split('_MOD')[0].split('_')
-                obs_name, obs_var = obs_info[0].split(':')
-                vert_code = obs_info[1]
-                mod_name, mod_var =  f.split('MOD-')[1].split('.json')[0].split(':')
+            (obs_name, obs_var, 
+             vert_code, 
+             mod_name, mod_var) = self._get_meta_from_json(f)
                 
-                obs_id = self.obs_config[obs_name]['obs_id']
-                mod_id, mod_type = None, None
-                if mod_name != 'None':
-                    mod_id = self.model_config[mod_name]['model_id']
-                    mod_type = self.model_config[mod_name]['mtype']
-                else:
-                    mod_var = None
-                    
-                #os.path.exists(t.out_dirs['map'] + '/' + t.all_map_files[0])
-                tab.append([obs_name, obs_id, obs_var, vert_code, 
-                            mod_name, mod_id, mod_var, mod_type, periods[f]])
+            if not obs_name in self.obs_config:
+                continue
+            
+            obs_id = self.obs_config[obs_name]['obs_id']
+            
+            mod_id, mod_type = None, None
+            if mod_name != 'None':
+                mod_id = self.model_config[mod_name]['model_id']
+                mod_type = self.model_config[mod_name]['mtype']
+            else:
+                mod_var = None
+                
+            #os.path.exists(t.out_dirs['map'] + '/' + t.all_map_files[0])
+            tab.append([obs_name, obs_id, obs_var, vert_code, 
+                        mod_name, mod_id, mod_var, mod_type, periods[f]])
+            
         return pd.DataFrame(tab, columns=header)
     
+    def delete_outdated_json_files(self):
+        """Delete all json files that are not part of this configuration"""
+        for f in self.all_map_files:
+            (obs_name, obs_var, 
+             vert_code, 
+             mod_name, mod_var) = self._get_meta_from_json(f)
+                
+            if not obs_name in self.obs_config:
+                ts_files = glob.glob('{}/OBS-{}:{}_{}_MOD-{}:{}*.json'
+                                     .format(self.out_dirs['ts'],
+                                             obs_name, obs_var, vert_code,
+                                             mod_name, mod_var))
+                self._log.info('REMOVING {} files in ts directory for {} ({})'
+                               .format(len(ts_files), obs_name, obs_var))
+                for file in ts_files:
+                    os.remove(file)
+                
+                self._log.info('REMOVING map file {}'.format(f))
+                os.remove(os.path.join(self.out_dirs['map'], f))
+        
     def get_periods_from_map_files(self):
         """Get data periods covered for each of the map files
         
@@ -735,7 +900,23 @@ class TrendsEvaluation(object):
                 raise IOError('Directory does not exist: {}'.format(d))
             elif not os.access(d, os.W_OK):
                 raise PermissionError('Cannot write to {}'.format(d))
-
+    
+    def _obs_config_asdict(self):
+        d = {}
+        for k, cfg in self.obs_config.items():
+            as_dict = {}
+            as_dict.update(**cfg)
+            d[k] = as_dict
+        return d
+    
+    def _model_config_asdict(self):
+        d = {}
+        for k, cfg in self.model_config.items():
+            as_dict = {}
+            as_dict.update(**cfg)
+            d[k] = as_dict
+        return d
+    
     def _set_obsconfig(self, val):
         cfg = {}
         for k, v in val.items():
@@ -877,7 +1058,8 @@ class TrendsEvaluation(object):
         return stat
     
     def _station_to_timeseries(self, station, var_name, **alt_range):
-        
+        # load additional information about data source (if applicable)
+        station.load_dataset_info()
         keymap = self.KEYMAP
         vardata = {}
         try:
@@ -886,6 +1068,7 @@ class TrendsEvaluation(object):
             vardata['data_revision'] = None
         vardata['pyaerocom_version'] = __version__
         vardata['data_overlap'] = False
+        vardata['var_name'] = var_name
         
         if var_name in station.overlap:
             vardata['data_overlap'] = True
@@ -894,8 +1077,11 @@ class TrendsEvaluation(object):
         else:
             var_info = {}
         for k, v in keymap.items():
-            if v in vardata and not v == 'data_overlap':
-                raise Exception('Please debug...')
+            if v in ['var_name', 'data_overlap']:
+                continue
+            elif v in vardata:
+                raise Exception('Key {} already exists... please debug...'
+                                .format(k))
             try: # longitude, latitude and altitude are @property decorators in StationData
                 vardata[v] = station[k]
             except:   
@@ -915,7 +1101,12 @@ class TrendsEvaluation(object):
             vardata[keymap[cname]] = np.float64(cval)
         # the actual sampling frequency
         freq = vardata['freq']
-        
+        if vardata['wavelength'] is None:
+            try:
+                wvl = '{} nm'.format(const.VARS[var_name].wavelength_nm)
+                vardata['wavelength'] = wvl
+            except:
+                pass
         ts_types = self.TS_TYPES
         if freq in ts_types:
             #raise AttributeError('Invalid temporal resolution code {}'.format(freq))
@@ -931,7 +1122,7 @@ class TrendsEvaluation(object):
             to_freq = 'daily'
             freq_name = 'dobs'
         else:
-            raise AttributeError('Invalid ts_type {} in data...')
+            raise AttributeError('Invalid ts_type {} in data...'.format())
         
         s = station.to_timeseries(var_name, freq=to_freq,
                                   resample_how=self.avg_how, 
@@ -1389,13 +1580,6 @@ class TrendsEvaluation(object):
     def _run_single_2d(self, ungridded_data, vars_to_retrieve, min_max,
                        min_dim, models, name, vert_which, files_created, 
                        err_log):
-        if models is not None and len(models) > 0:
-            model_ids = [self.model_config[x]['model_id'] for x in models]
-            model_access = self.check_model_access(model_ids,
-                                                   vars_to_retrieve)
-              
-            for model_id, vars_avail in model_access.items():
-                self._log.warning('Model colocation is not ready yet...')
     
         files_created = self._run_single_helper(ungridded_data=ungridded_data, 
                                                 vars_to_retrieve=vars_to_retrieve, 
@@ -1404,6 +1588,7 @@ class TrendsEvaluation(object):
                                                 vert_which=vert_which,
                                                 files_created=files_created,
                                                 min_dim=min_dim, 
+                                                models=models,
                                                 err_log=err_log)
         return files_created
     
@@ -1416,7 +1601,8 @@ class TrendsEvaluation(object):
             files_created = self._run_single_helper(ungridded_data=ungridded_data, 
                                                     vars_to_retrieve=vars_to_retrieve, 
                                                     min_max=min_max, 
-                                                    min_dim=min_dim,     
+                                                    min_dim=min_dim,  
+                                                    models=models,
                                                     name=name, 
                                                     vert_which=add_name,
                                                     files_created=files_created,
@@ -1424,17 +1610,24 @@ class TrendsEvaluation(object):
                                                     altitude=alt_range)
         return files_created
     
+    
     def _run_single_helper(self, ungridded_data, vars_to_retrieve, min_max,
-                           name, vert_which, files_created, min_dim, err_log=None, 
-                           **alt_range):
+                           name, vert_which, files_created, min_dim, 
+                           models, err_log=None, **alt_range):
         from pyaerocom.exceptions import DataCoverageError
         
+        model_access = {}
+        if models is not None and len(models) > 0:
+            model_access = self.check_model_access(models,
+                                                   vars_to_retrieve)
+              
         for var in vars_to_retrieve:
             
-            stations = ungridded_data.to_station_data_all(vars_to_convert=var,
-                                                          merge_if_multi=True,
-                                                          by_station_name=True)['stats']
-    
+            all_stats = ungridded_data.to_station_data_all(vars_to_convert=var,
+                                                           merge_if_multi=True,
+                                                           by_station_name=True)
+            stations = all_stats['stats']
+            
             var_out = var
             stats_processed = []
             map_data = []
@@ -1442,7 +1635,10 @@ class TrendsEvaluation(object):
             if var in min_max:
                 rng = min_max[var]
             
-            got_one = False
+            stats_ok = []
+            lats_ok = []
+            lons_ok = []
+            
             for stat in stations:
                 stat_name = stat['station_name']
                 print(var, stat['station_name'], name)
@@ -1466,8 +1662,10 @@ class TrendsEvaluation(object):
                                                  obs_name=name,
                                                  vert_which=vert_which)
                     files_created['ts'].append(fname)
-                    got_one = True        
-                        
+                           
+                    stats_ok.append(stat_name)
+                    lats_ok.append(stat['latitude'])
+                    lons_ok.append(stat['longitude'])
                     if map_stat:
                         map_data.append(map_stat)
                         
@@ -1480,11 +1678,104 @@ class TrendsEvaluation(object):
                 
          
             # Add to map only if at least one station is available
-            if got_one:
+            if len(stats_ok) > 0:
                 map_outname = self._save_map_json(map_data, obs_name=name, 
                                                   obs_var=var_out,
                                                   vert_which=vert_which)
                 files_created['map'].append(map_outname)
+                
+            for mod_name, mod_info in model_access.items():
+                mod_var=mod_info['vars_avail'][var]
+                self._run_gridded(obs_name=name, obs_var=var, 
+                                  mod_name=mod_name, mod_var=mod_var,
+                                  stat_lats=lats_ok,
+                                  stat_lons=lons_ok,
+                                  stat_names=stats_ok, 
+                                  min_dim=min_dim,
+                                  vert_which=vert_which,
+                                  files_created=files_created, 
+                                  err_log=err_log,
+                                  **alt_range)
+        return files_created
+    
+    def freq_gridded(self):
+        """Frequency used for any colocated gridded data"""
+        return self.GRIDDED_TS_TYPE
+    
+    def _run_gridded(self, obs_name, obs_var, mod_name, mod_var, stat_lats, 
+                     stat_lons, stat_names, min_dim, vert_which, files_created, 
+                     err_log=None, **alt_range):
+        mcfg = self.model_config[mod_name]
+        data_id = mcfg['model_id']
+        
+        reader = ReadGridded(data_id=data_id)
+        
+        rf = mcfg['model_ts_type_read']
+        
+        read_freq = self.freq_gridded()
+        if rf is not None:
+            if isinstance(rf, str):
+                read_freq = rf
+            elif isinstance(rf, dict) and mod_var in rf:
+                    read_freq = read_freq[mod_var]
+        
+        data = reader.read_var(mod_var, ts_type=read_freq,
+                               ts_type_flex=True)
+        
+        data = data.resample_time(to_ts_type=self.freq_gridded())
+        stations = data.to_time_series(longitude=stat_lons,
+                                       latitude=stat_lats,
+                                       add_meta=dict(station_name = stat_names))
+        
+        stats_processed = []
+        map_data = []
+        
+        got_one = False
+        for stat in stations:
+            stat_name = stat['station_name']
+            print(mod_var, stat['station_name'], obs_name, mod_name)
+            if stat_name in stats_processed:
+                raise Exception('Unexpected Error, please check')
+            
+            try:
+    
+                data_dict = self._station_to_timeseries(stat, 
+                                                        var_name=mod_var, 
+                                                        **alt_range)
+                (trends_stat, 
+                 map_stat) = self._compute_trends_station(data_dict,
+                                                          min_dim=min_dim)
+    
+                fname = self._save_stat_json(trends_stat, 
+                                             obs_var=obs_var, 
+                                             obs_name=obs_name,
+                                             vert_which=vert_which,
+                                             mod_name=mod_name, 
+                                             mod_var=mod_var)
+                files_created['ts'].append(fname)
+                got_one = True        
+                    
+                if map_stat:
+                    map_data.append(map_stat)
+                    
+            except DataCoverageError as e:
+                msg = ('Error: {} {}, {}'.format(mod_var, stat.station_name,
+                                                 repr(e)))
+                print(msg)
+                if err_log:
+                    err_log.write(msg + '\n')
+                
+                
+         
+        # Add to map only if at least one station is available
+        if got_one:
+            map_outname = self._save_map_json(map_data, 
+                                              obs_name=obs_name, 
+                                              obs_var=obs_var,
+                                              vert_which=vert_which,
+                                              mod_name=mod_name, 
+                                              mod_var=mod_var)
+            files_created['map'].append(map_outname)
         
         return files_created
     
