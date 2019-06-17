@@ -65,8 +65,8 @@ class FileConventionRead(object):
         """Empty dictionary containing init values of infos to be 
         extracted from filenames
         """
-        return od(year=None, var_name=None, ts_type=None, vert_pos=None,
-                  is_at_stations=False, data_id=None)
+        return od(year=None, var_name=None, ts_type=None, vert_code='',
+                  is_at_stations=False, data_id='', experiment='')
         
     def from_file(self, file):
         """Identify convention from a file
@@ -178,9 +178,9 @@ class FileConventionRead(object):
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
         try:
-            info["vert_pos"] = spl[self.vert_pos]
+            info["vert_code"] = spl[self.vert_pos]
         except:
-            raise FileConventionError('Failed to extract vert_pos from '
+            raise FileConventionError('Failed to extract vert_code from '
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
             
@@ -317,7 +317,8 @@ class FileConventionRead(object):
         match_str_aero3 = conf_aero3.string_mask(var, year, ts_type)
             
         """
-        
+        if ts_type is None:
+            ts_type = '*'
         if self.name == "aerocom2":
             if vert_which is not None:
                 raise FileConventionError('Specification of vert_which ({}) is '
