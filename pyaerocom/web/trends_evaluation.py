@@ -1685,6 +1685,8 @@ class TrendsEvaluation(object):
                 files_created['map'].append(map_outname)
                 
             for mod_name, mod_info in model_access.items():
+                if not var in mod_info['vars_avail']:
+                    continue
                 mod_var=mod_info['vars_avail'][var]
                 self._run_gridded(obs_name=name, obs_var=var, 
                                   mod_name=mod_name, mod_var=mod_var,
