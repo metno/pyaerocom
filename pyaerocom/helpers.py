@@ -149,6 +149,36 @@ def get_lowest_resolution(ts_type, *ts_types):
             lowest = freq
     return lowest
 
+def get_highest_resolution(ts_type, *ts_types):
+    """Get the highest resolution from several ts_type codes
+    
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+    
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the highest resolution
+        
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    all_ts_types = const.GRID_IO.TS_TYPES
+    highest = ts_type
+    for freq in ts_types:
+        if not freq in all_ts_types:
+            raise ValueError('Invalid input, only valid ts_type codes are '
+                             'supported: {}'.format(all_ts_types))
+        elif all_ts_types.index(highest) > all_ts_types.index(freq):
+            highest = freq
+    return highest
+
 def isnumeric(val):
     """Check if input value is numeric
     
@@ -916,38 +946,5 @@ def get_time_rng_constraint(start, stop):
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 
 if __name__=="__main__":
-    print(TS_TYPE_TO_PANDAS_FREQ)
-    print(PANDAS_FREQ_TO_TS_TYPE)
-    
-    print(TS_TYPE_TO_NUMPY_FREQ)
-    print(NUMPY_FREQ_TO_TS_TYPE)
-
-    isrange(slice(1,2))
-
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    NUM = 1000 #days 
-    LAMBDA = 40 
-    dates = pd.date_range(start='2010', freq='h', periods=NUM)
-    
-    x = np.arange(NUM)
-    trend_slope = 3 / NUM
-    yoffset = 8
-    signal = np.sin(np.pi*2*x / LAMBDA) + trend_slope*x + yoffset
-    noise = np.random.random(NUM) -.5
-    vals = signal + noise
-    
-    s0 = pd.Series(vals, dates)
-    ax = s0.plot(label='original (daily)',figsize=(16,8))
-    
-    def remove_datapoints_random(series, rest_coverage_percent=40):
-        import random
-        num = len(series)
-        num_samples = int(rest_coverage_percent / 100 * num)
-        indices = sorted(random.sample(range(num), num_samples))
-        return series[indices]
-    
-    def to_monthly_augustin(series):
-        pass
-    
-    ax.legend()
+    print(get_lowest_resolution('yearly', 'daily', 'monthly'))
+    print(get_highest_resolution('yearly', 'daily', 'monthly'))
