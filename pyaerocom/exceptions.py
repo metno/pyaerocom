@@ -44,6 +44,12 @@ class DataCoverageError(ValueError):
 class DataDimensionError(ValueError):
     pass
 
+class DataQueryError(ValueError):
+    pass
+
+class DataSourceError(ValueError):
+    pass
+
 class DataUnitError(ValueError):
     pass
 
