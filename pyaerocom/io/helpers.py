@@ -46,11 +46,13 @@ def read_ebas_flags_file(ebas_flags_csv):
     
     Parameters
     ----------
-    
+    ebas_flags_csv : str
+        file containing flag info
+        
     Returns
     -------
     dict
-        dict 
+        dict with loaded flag info
     """
     from pyaerocom._lowlevel_helpers import BrowseDict
     valid = BrowseDict()
@@ -63,12 +65,16 @@ def read_ebas_flags_file(ebas_flags_csv):
             try:
                 val_str = spl[-1][1:-1]
             except:
-                raise IOError('Failed to read flag information in row {} (Check if entries in ebas_flags.csv are quoted)'.format(line))
+                raise IOError('Failed to read flag information in row {} '
+                              '(Check if entries in ebas_flags.csv are quoted)'
+                              .format(line))
             info_str = ','.join(spl[1:-1])
             try:
                 info_str = info_str[1:-1]
             except:
-                raise IOError('Failed to read flag information in row {} (Check if entries in ebas_flags.csv are quoted)'.format(line))
+                raise IOError('Failed to read flag information in row {} '
+                              '(Check if entries in ebas_flags.csv are quoted)'
+                              .format(line))
             isvalid = True if val_str == 'V' else False
             valid[num] = isvalid
             values[num] = val_str
