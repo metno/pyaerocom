@@ -228,9 +228,9 @@ def test_trends():
 def test_ungriddeddata_surface_cons_so2():
     reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
     data = reader.read()  # read all variables
-    assert len(data.station_name) == 629
+    assert len(data.station_name) == 890
     #assert 'n/a' in data.data_revision not woriking
-    assert data.shape == (1008552, 12)
+    assert data.shape == (1063631, 12)
 
 
 
