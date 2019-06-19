@@ -101,6 +101,12 @@ class ReadGAW(ReadUngriddedBase):
         """
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS   
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        
+        for var in vars_to_retrieve:
+            if not var in self.PROVIDES_VARIABLES:
+                raise ValueError('Invalid input variable {}'.format(var))
         
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
@@ -108,7 +114,7 @@ class ReadGAW(ReadUngriddedBase):
         # Open the file, store the metadata in the first lines of the file, 
         # skip empty lines and headers, and store the data.
         with open(filename, 'r') as f:         
-            
+        
             # metadata (first rows in the file)
             meta = [next(f).split(':', 1)[1] for data in range(26)]
 
@@ -136,7 +142,7 @@ class ReadGAW(ReadUngriddedBase):
         data_out['latitude'] = float(meta[11].strip())
         data_out['altitude'] = float(meta[13].strip())
         data_out['filename'] = meta[1].strip().replace(' ', '_')
-        data_out['data_version'] = int(meta[5].strip())
+        data_out['data_version'] = (meta[5].strip())  # int(meta[5].strip())
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
         data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
@@ -152,7 +158,8 @@ class ReadGAW(ReadUngriddedBase):
         for i in range(1, len(data)):
             datestring = data[i][0]  + 'T' + data[i][1]
             data_out['dtime'].append(np.datetime64(datestring, 's'))
-            data_out['vmrdms'].append(np.float(data[i][4]))
+            #data_out['vmrdms'].append(np.float(data[i][4]))
+            data_out['vmrdms'].append((data[i][4]))
             data_out['vmrdms_nd'].append(np.float(data[i][5]))
             data_out['vmrdms_std'].append(np.float(data[i][6]))
             data_out['vmrdms_flag'].append(np.int(data[i][7]))
