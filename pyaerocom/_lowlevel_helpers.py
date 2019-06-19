@@ -114,7 +114,7 @@ def list_to_shortstr(lst, indent=0, name=None):
     
     return s
 
-def sort_dict_by_name(d):
+def sort_dict_by_name(d, pref_list=None):
     """Sort entries of input dictionary by their names and return ordered
     
     Parameters
@@ -128,10 +128,16 @@ def sort_dict_by_name(d):
         sorted and ordered dictionary
     """
     from collections import OrderedDict as od
+    if pref_list is None:
+        pref_list = []
     s = od()
     sorted_keys = sorted(d)
+    for k in pref_list:
+        if k in d:
+            s[k] = d[k]
     for k in sorted_keys:
-        s[k] = d[k]
+        if not k in pref_list:
+            s[k] = d[k]
     return s
 
 def dict_to_str(dictionary, s="", indent=0, ignore_null=False):
