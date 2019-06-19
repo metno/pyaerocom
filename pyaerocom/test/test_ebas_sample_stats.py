@@ -79,6 +79,7 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
                             'data_version', 
                             'data_level', 
                             'revision_date', 
+                            'website',
                             'ts_type_src', 
                             'stat_merge_pref_attr',
                             'data_revision',
