@@ -238,6 +238,7 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
     def var_dummy():
         """Helper that creates empty dict for variable info"""
         return {'type'      :   '',
+                'cat'       :   '',
                 'name'      :   '',
                 'longname'  :   '',
                 'obs'       :   {}}
@@ -253,10 +254,11 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
             const.print_log.info('Adding new observation variable: {}'
                                  .format(obs_var))
             new[obs_var] = d = var_dummy()
-            name, tp = config.get_obsvar_name_and_type(obs_var)
+            name, tp, cat = config.get_obsvar_name_and_type(obs_var)
     
             d['name'] = name
             d['type'] = tp
+            d['cat']  =cat
             d['longname'] = const.VARS[obs_var].description
         else:
             d = new[obs_var]
@@ -330,6 +332,7 @@ def update_menu_trends_iface(config):
     def var_dummy():
         """Helper that creates empty dict for variable info"""
         return {'type'      :   '',
+                'cat'       :   '',
                 'name'      :   '',
                 'longname'  :   '',
                 'obs'       :   {}}
@@ -347,10 +350,11 @@ def update_menu_trends_iface(config):
             const.print_log.info('Adding new observation variable: {}'
                                  .format(obs_var))
             new[obs_var] = d = var_dummy()
-            name, tp = config.get_obsvar_name_and_type(obs_var)
+            name, tp, cat = config.get_obsvar_name_and_type(obs_var)
     
             d['name'] = name
             d['type'] = tp
+            d['cat'] = cat
             d['longname'] = const.VARS[obs_var].description
         else:
             d = new[obs_var]
@@ -384,10 +388,15 @@ def update_menu_trends_iface(config):
         if not var in _new:
             _new[var] = info
     new = _new
+    if config.obs_order_menu_cfg:
+        pref_obs_order = list(config.obs_config)
+    else:
+        pref_obs_order = []
     new_sorted = {}
     for var, info in new.items():
         new_sorted[var] = info
-        sorted_obs = sort_dict_by_name(info['obs'])
+        sorted_obs = sort_dict_by_name(info['obs'],
+                                       pref_list=pref_obs_order)
         new_sorted[var]['obs'] = sorted_obs
         for obs_name, vert_codes in sorted_obs.items():
             vert_codes_sorted = sort_dict_by_name(vert_codes)
