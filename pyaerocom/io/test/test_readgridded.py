@@ -11,10 +11,12 @@ from pandas import Timestamp
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.readgridded import ReadGridded
 
+START = "1-1-2003"
+STOP = "31-12-2007"
+
 def make_dataset():
-    return ReadGridded(data_id="ECMWF_CAMS_REAN",
-                       start="1-1-2003",
-                       stop="31-12-2007")
+    return ReadGridded(data_id="ECMWF_CAMS_REAN")
+
 @lustre_unavail
 @pytest.fixture(scope='session')
 def dataset():
@@ -22,39 +24,43 @@ def dataset():
     
 @lustre_unavail    
 def test_variables(dataset):
-    assert len(dataset.vars) == 15, 'Mismatch in number of available variables'
+    assert len(dataset.vars) == 17, 'Mismatch in number of available variables'
     npt.assert_array_equal(dataset.vars,
-                           ['ang4487aer', 'bscatc532aerboa', 'bscatc532aertoa', 
-                            'ec532aer', 'od440aer', 'od550aer', 'od550bc', 
-                            'od550dust', 'od550oa', 'od550so4', 'od550ss', 
-                            'od865aer', 'sconcpm10', 'sconcpm25', 'z'])
+                           ['ang4487aer',
+                             'bscatc532aerboa',
+                             'bscatc532aertoa',
+                             'ec532aer',
+                             'ec532dryaer',
+                             'od440aer',
+                             'od550aer',
+                             'od550bc',
+                             'od550dust',
+                             'od550oa',
+                             'od550so4',
+                             'od550ss',
+                             'od865aer',
+                             'sconcpm10',
+                             'sconcpm25',
+                             'time',
+                             'z'])
 @lustre_unavail    
 def test_years_available(dataset):
-    npt.assert_array_equal(dataset.years,
-                           [ 2003,
-                             2004,
-                             2005,
-                             2006,
-                             2007,
-                             2008])    
+    years = list(range(2003, 2019)) + [9999]
+    npt.assert_array_equal(dataset.years_avail, years)    
 
 @lustre_unavail    
-def test_meta(dataset):
-    npt.assert_array_equal([len(dataset.files),
-                            dataset.data_dir,
-                            dataset._start, 
-                            dataset._stop,
-                            list(dataset.get_years_to_load())],
-                            [124,
-                             '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed',
-                             Timestamp("1-1-2003"), 
-                             Timestamp("31-12-2007"),
-                             [2003, 2004, 2005, 2006, 2007]])
+def test_no_of_files(dataset):
+    assert len(dataset.files) == 269
+
+@lustre_unavail
+def test_data_dir(dataset):
+    assert dataset.data_dir == '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed'
     
 @lustre_unavail    
 def test_read_var(dataset):
     from numpy import datetime64
-    d = dataset.read_var(var_name="od550aer", ts_type="daily")
+    d = dataset.read_var(var_name="od550aer", ts_type="daily",
+                         start=START, stop=STOP)
     npt.assert_array_equal([d.var_name, sum(d.shape), d.start, d.stop],
                            ["od550aer", 1826 + 161 + 320,
                             datetime64('2003-01-01T00:00:00.000000'),
@@ -69,9 +75,16 @@ def test_read_var(dataset):
     return d
 
 @lustre_unavail
+def test_prefer_longer(dataset):
+    daily = dataset.read_var('od550aer', ts_type='monthly', 
+                             flex_ts_type=True,
+                             prefer_longer=True)
+    assert daily.ts_type == 'daily'
+    
+@lustre_unavail
 def test_read_vars(dataset):
     d = dataset.read(['od440aer', 'od550aer', 'od865aer'], 
-                     ts_type="daily")
+                     ts_type="daily", start=START, stop=STOP)
     vals = [len(d),
             sum(d[0].shape),
             sum(d[1].shape),
@@ -86,6 +99,8 @@ def test_read_vars(dataset):
     
 if __name__=="__main__":
     ds = make_dataset()
-    test_meta(ds)
+
     test_variables(ds)
     test_read_vars(ds)
+    
+    
