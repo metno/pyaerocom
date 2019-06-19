@@ -46,6 +46,7 @@ from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_aasetal import ReadSulphurAasEtAl
 from pyaerocom.io.read_gaw import ReadGAW
 
+
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -258,6 +259,8 @@ class ReadUngridded(object):
             # Note: self.vars_to_retrieve may be None as well, then
             # default variables of each network are read
             vars_to_retrieve = self.vars_to_retrieve 
+        
+        
             
         reader = self.get_reader(dataset_to_read)
         
@@ -320,8 +323,7 @@ class ReadUngridded(object):
             const.CACHING = _caching
         return data
     
-    def read(self, datasets_to_read=None, vars_to_retrieve=None,
-             **kwargs):
+    def read(self, datasets_to_read=None, vars_to_retrieve=None, **kwargs):
         """Read observations
 
         Iter over all datasets in :attr:`datasets_to_read`, call 
@@ -381,6 +383,3 @@ if __name__=="__main__":
 #                     last_file=10)
 #     
 # =============================================================================
-    
-    
-    
