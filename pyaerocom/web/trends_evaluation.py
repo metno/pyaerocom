@@ -17,6 +17,7 @@ from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom.helpers import isnumeric
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.io import ReadGridded
+from pyaerocom.web.var_groups import var_groups
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    update_menu_trends_iface,
                                    get_all_config_files_trends_iface)
@@ -63,6 +64,10 @@ class TrendsEvaluation(object):
         mapping of variable names for menu in interface
     var_order_menu : list, optional
         order of variables in menu.
+    obs_order_menu_cfg : bool
+        where applicable and if True, then order observations with common 
+        variables in the menu in the same order as they appear in 
+        :attr:`obs_config`. If False, order alphabetically.
     slope_alpha : float
         desired confidence of trends slope retrieval (`alpha` parameter 
         in :func:`scipy.stats.theilslopes`), e.g. .68 corresponds to 1sigma
@@ -159,6 +164,8 @@ class TrendsEvaluation(object):
         self.obs_config = {}
         self.obs_ignore = []
         
+        self.model_config = {}
+        
         self.periods = []
         self.regions = {}
         self._add_regions = {}
@@ -166,7 +173,8 @@ class TrendsEvaluation(object):
         self.var_mapping = {}
         self.var_order_menu = []
         
-        self.model_config = {}
+        self.obs_order_menu_cfg = True
+        
         # options
         self.slope_alpha = 0.68 
         self.min_dim = 5
@@ -485,6 +493,40 @@ class TrendsEvaluation(object):
             
         return result
     
+    def get_var_groups(self, obs_name):
+        """Split list of variables of obs into variable sublists 
+        
+        Splitting is done based on predefined var groups, defined in 
+        :mod:`var_groups`, where available.
+        
+        Parameters
+        ----------
+        obs_id : str
+            Name of obsdata source (key of :attr:`obs_config`)
+        
+        Returns
+        -------
+        list
+            list containing sublists for different variable groups
+        """
+        obs_id = self.obs_config[obs_name]['obs_id']
+        vars_to_retrieve = self.obs_config[obs_name]['obs_vars']
+        if not obs_id in var_groups:
+            return [vars_to_retrieve]
+        result = []
+        groups =  var_groups[obs_id]
+        added = []
+        for group in groups:
+            subset = list(np.intersect1d(vars_to_retrieve, group))
+            if any([x in added for x in subset]):
+                raise ValueError('Fatal: one variable appears to exist in 2 groups')
+            added.extend(subset)
+            result.append(subset)
+        rest = [x for x in vars_to_retrieve if not x in added]
+        if len(rest) > 0:
+            result.append(rest)
+        return result
+        
     def run_single(self, obs_name, write_logfiles):
         """Run one of the config entries in :attr:`obs_config`
         
@@ -508,7 +550,7 @@ class TrendsEvaluation(object):
             print('Deleting existing files for run {}'.format(obs_name))
             self.clear_existing(obs_name)
             
-        vars_to_retrieve = config['obs_vars']
+        
         obs_id = config['obs_id']
         
         self._log.info('Running {} (NETWORK {})'.format(obs_name, obs_id))
@@ -537,28 +579,30 @@ class TrendsEvaluation(object):
         files_created = {'ts'  : [],
                          'map' : []}
         
-        ungridded_data = self.load_ungridded(obs_id, vars_to_retrieve, 
-                                             **constraints)
-        
-        if config['obs_vert_type']=='Profile':
-            files_created = self._run_single_3d(ungridded_data=ungridded_data, 
-                                                vars_to_retrieve=vars_to_retrieve,
-                                                min_max=min_max, 
-                                                min_dim=min_dim,
-                                                models=models, 
-                                                name=obs_name, 
-                                                files_created=files_created, 
-                                                err_log=err_log)
-        else:
-            files_created = self._run_single_2d(ungridded_data=ungridded_data, 
-                                                vars_to_retrieve=vars_to_retrieve,
-                                                min_max=min_max, 
-                                                min_dim=min_dim,
-                                                models=models, 
-                                                name=obs_name,
-                                                vert_which=config['obs_vert_type'],
-                                                files_created=files_created, 
-                                                err_log=err_log)
+        var_lists = self.get_var_groups(obs_name)
+        for vars_to_retrieve in var_lists:
+            ungridded_data = self.load_ungridded(obs_id, vars_to_retrieve, 
+                                                 **constraints)
+            
+            if config['obs_vert_type']=='Profile':
+                files_created = self._run_single_3d(ungridded_data=ungridded_data, 
+                                                    vars_to_retrieve=vars_to_retrieve,
+                                                    min_max=min_max, 
+                                                    min_dim=min_dim,
+                                                    models=models, 
+                                                    name=obs_name, 
+                                                    files_created=files_created, 
+                                                    err_log=err_log)
+            else:
+                files_created = self._run_single_2d(ungridded_data=ungridded_data, 
+                                                    vars_to_retrieve=vars_to_retrieve,
+                                                    min_max=min_max, 
+                                                    min_dim=min_dim,
+                                                    models=models, 
+                                                    name=obs_name,
+                                                    vert_which=config['obs_vert_type'],
+                                                    files_created=files_created, 
+                                                    err_log=err_log)
         
         if write_logfiles:
             files_log.write('MAP files\n---------------------------\n')
@@ -574,6 +618,8 @@ class TrendsEvaluation(object):
             files_log.close()
         return files_created
     
+    
+        
     def update_menu(self):
         """Update menu.json based on available runs"""
         update_menu_trends_iface(self)
@@ -832,12 +878,12 @@ class TrendsEvaluation(object):
             menu category of this variable
         """
         try:
-            name, tp = self.var_mapping[obs_var]
+            name, tp, cat = self.var_mapping[obs_var]
         except:
-            name, tp = obs_var, 'UNDEFINED'
+            name, tp, cat = obs_var, 'UNDEFINED', 'UNDEFINED'
             self._log.warning('Missing menu name definition for var {}. '
                               'Using variable name'.format(obs_var))
-        return (name, tp)
+        return (name, tp, cat)
     
     def clear_existing(self, obs_name):
         """Delete existing json files for a certain run
@@ -1616,6 +1662,9 @@ class TrendsEvaluation(object):
                            models, err_log=None, **alt_range):
         from pyaerocom.exceptions import DataCoverageError
         
+        if isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+            
         model_access = {}
         if models is not None and len(models) > 0:
             model_access = self.check_model_access(models,
