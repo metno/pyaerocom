@@ -158,15 +158,60 @@ class UngriddedData(object):
                           'index assigned in data and var_idx for {} in meta-block'
                           .format(var, idx))
             
-    def split_vars(self):
-        """Split this object into N single-var UngriddedData objects
+    def extract_var(self, var_name):
+        """Split this object into single-var UngriddedData objects
         
         """
-        for var, var_idx in self.var_idx.items():
-            # fetch data array
-            mask = self.data[:, self.index['varidx']] == var_idx
-            subset = self._data[mask, :]
-            self.data[:, self.index['varidx']]
+        self._check_index()
+
+        VAR = var_name
+        var_idx = data.var_idx[VAR]
+        
+        totnum = np.sum(data._data[:, data._VARINDEX] == var_idx)
+        
+        colnum, rownum = data.shape
+        
+        if rownum != len(data._init_index()):
+            raise NotImplementedError('Cannot split UngriddedData objects that have '
+                                      'additional columns other than default columns')
+            
+        subset = pya.UngriddedData(totnum)
+        
+        subset.var_idx[VAR] = 0
+        subset._index = data.index
+        
+        meta_idx = -1
+        arr_idx = 0
+        
+        for midx, didx in data.meta_idx.items():
+            if VAR in didx and len(didx[VAR]) > 0:
+                meta_idx += 1
+                meta =  {}
+                _meta = data.metadata[midx]
+                meta.update(_meta)
+                meta['var_info'] = od()
+                meta['var_info'][VAR] = _meta['var_info'][VAR]
+                meta['variables'] = [VAR]
+                subset.metadata[meta_idx] = meta
+                
+                idx = didx[VAR]
+            
+                subset.meta_idx[meta_idx] = {}
+                
+                num_add = len(idx)
+                start = arr_idx
+                stop = arr_idx + num_add
+                subset.meta_idx[meta_idx][VAR] = np.arange(start, stop)
+                
+                
+                subset._data[start:stop] = data._data[idx]
+                subset._data[start:stop, subset._METADATAKEYINDEX] = meta_idx
+                subset._data[start:stop, subset._VARINDEX] = 0
+                
+                arr_idx += num_add
+        
+        subset._check_index()
+        return subset
     
     @property
     def index(self):
