@@ -42,7 +42,8 @@ import iris
 
 from pyaerocom import const, print_log, logger
 from pyaerocom.variable import Variable, is_3d
-from pyaerocom.mathutils import compute_angstrom_coeff_cubes
+from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
+                                         add_cubes)
 from pyaerocom.helpers import to_pandas_timestamp, get_highest_resolution
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
@@ -122,12 +123,14 @@ class ReadGridded(object):
 
         
     """
-    AUX_REQUIRES = {'ang4487aer': ['od440aer', 'od870aer']}
+    AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
+                    'od550gt1aer'   : ['od550dust', 'od550ss']}
     
     AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
                     'od870aer'  :   ['od865aer']}
     
-    AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes}
+    AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
+                'od550gt1aer'  :    add_cubes}
     
     _data_dir = ""
 
@@ -1001,8 +1004,8 @@ class ReadGridded(object):
         return vars_to_read
                 
     def compute_var(self, var_name, start=None, stop=None, ts_type=None, 
-                    experiment=None, flex_ts_type=True, vars_to_read=None, 
-                    aux_fun=None, vert_which=None,
+                    experiment=None, vert_which=None, flex_ts_type=True, 
+                    prefer_longer=False, vars_to_read=None, aux_fun=None, 
                     **kwargs):
         """Compute auxiliary variable
         
@@ -1026,13 +1029,17 @@ class ReadGridded(object):
         experiment : str
             name of experiment (only relevant if this dataset contains more 
             than one experiment)
+        vert_which : str
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel)
         flex_ts_type : bool
             if True and if applicable,start=None, stop=None,
                  ts_type=None, flex_ts_type=True then another ts_type is used in case 
             the input ts_type is not available for this variable
-        vert_which : str
-            valid AeroCom vertical info string encoded in name (e.g. Column,
-            ModelLevel)
+        prefer_longer : bool
+            if True and applicable, the ts_type resulting in the longer time
+            coverage will be preferred over other possible frequencies that 
+            match the query.
         **kwargs
             additional keyword args passed to :func:`_load_var`
             
@@ -1040,39 +1047,6 @@ class ReadGridded(object):
         -------
         GriddedData
             loaded data object
-            
-        Raises
-        ------
-        AttributeError
-            if none of the ts_types identified from file names is valid
-        VarNotAvailableError
-            if specifiedcommon_ts_types = []
-        for i, var in enumerate(vars_to_read):
-            for ts_type in const.GRID_IO.TS_TYPES:
-                # check if ts_type is available
-                try:
-                    self.find_var_files_in_timeperiod(var, ts_type, start, 
-                                                      stop, vert_which)
-                    if i == 0:
-                        common_ts_types.append(ts_type)
-                except DataCoverageError:
-                    if i != 0 and ts_type in common_ts_types:
-                        common_ts_types.pop(common_ts_types.index(ts_type))
-                    pass
-        if len(common_ts_types) == 0:
-            raise DataCoverageError('Could not find any common ts_type for '
-                                    'required variables {} for computation '
-                                    'of {}'.format(ts_type, vars_to_read,
-                                    var_name))
-        elif not ts_type in common_ts_types:
-            if not flex_ts_type:
-                raise DataCoverageError('Could not find common ts_type={} for '
-                                        'required variables {} for computation '
-                                        'of {}'.format(ts_type, vars_to_read,
-                                         var_name))
-            elif not ts_type in common_ts_types:
-                ts_type =  common_ts_types[0] ts_type is not supported
-            
         """
         if vars_to_read is None:
             vars_to_read = self._get_aux_vars(var_name)
@@ -1082,10 +1056,17 @@ class ReadGridded(object):
         # all variables that are required need to be in the same temporal
         # resolution
         ts_type = self.find_common_ts_type(vars_to_read, start, stop, ts_type, 
-                                           experiment, flex_ts_type, vert_which)  
+                                           experiment, 
+                                           vert_which=vert_which,
+                                           flex_ts_type=flex_ts_type)  
         for var in vars_to_read:
-            aux_data = self._load_var(var, ts_type, start, stop,
+            aux_data = self._load_var(var_name=var, 
+                                      ts_type=ts_type, 
+                                      start=start, stop=stop,
                                       experiment=experiment,
+                                      vert_which=vert_which,
+                                      flex_ts_type=flex_ts_type,
+                                      prefer_longer=prefer_longer,
                                       **kwargs)
             data.append(aux_data)
 
@@ -1097,7 +1078,7 @@ class ReadGridded(object):
                            computed=True)
         return data
     
-    def find_common_ts_type(self, vars_to_read, start=None, stop=None,
+    def find_common_ts_typeOLD(self, vars_to_read, start=None, stop=None,
                             ts_type=None, experiment=None,
                             flex_ts_type=True, vert_which=None):
         """Find common ts_type for list of variables to be read
@@ -1166,6 +1147,89 @@ class ReadGridded(object):
             else:
                 ts_type =  common_ts_types[0] #highest resolution
         return ts_type
+    
+    def find_common_ts_type(self, vars_to_read, start=None, stop=None,
+                            ts_type=None, experiment=None, vert_which=None, 
+                            flex_ts_type=True):
+        """Find common ts_type for list of variables to be read
+        
+        Parameters
+        ----------
+        vars_to_read : list
+            list of variables that is supposed to be read
+        start : :obj:`Timestamp` or :obj:`str`, optional
+            start time of data import (if valid input, then the current 
+            :attr:`start` will be overwritten)
+        stop : :obj:`Timestamp` or :obj:`str`, optional
+            stop time of data import (if valid input, then the current 
+            :attr:`start` will be overwritten)
+        ts_type : str
+            string specifying temporal resolution (choose from 
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            of the available resolutions is used
+        experiment : str
+            name of experiment (only relevant if this dataset contains more 
+            than one experiment)
+        vert_which : str
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel)
+        flex_ts_type : bool
+            if True and if applicable,start=None, stop=None,
+                 ts_type=None, flex_ts_type=True then another ts_type is used in case 
+            the input ts_type is not available for this variable
+        
+        Returns
+        -------
+        str 
+            common ts_type for input variable
+            
+        Raises
+        ------
+        DataCoverageError
+            if no match can be found
+            
+        """
+        if isinstance(vars_to_read, str):
+            vars_to_read = [vars_to_read]
+        
+        common = self.filter_files(var_name=vars_to_read[0], 
+                                   start=start,
+                                   stop=stop,
+                                   experiment=experiment,
+                                   vert_which=vert_which).ts_type.unique()
+        if len(common) == 0:
+            raise DataCoverageError('Could not find any file matches for query '
+                                    'and variable {}'.format(vars_to_read[0]))
+        for var in vars_to_read[1:]:
+            _tt = self.filter_files(var_name=var, 
+                                    start=start,
+                                    stop=stop,
+                                    experiment=experiment,
+                                    vert_which=vert_which)
+            common = np.intersect1d(common, _tt.ts_type.unique())
+            
+        if len(common) == 0:
+            raise DataCoverageError('Could not find common ts_type for '
+                                    'variables {}'.format(vars_to_read))
+        elif len(common) == 1:
+            if ts_type is None or flex_ts_type:
+                return common[0]
+            elif ts_type == common[0]:
+                return ts_type
+            raise DataCoverageError('Could not find files with ts_type={} for '
+                                    'all input variables: {}'
+                                    .format(ts_type, vars_to_read))
+        if ts_type is not None:
+            if ts_type in common:
+                return ts_type
+            
+        if not flex_ts_type:
+            raise DataCoverageError('Could not find files with ts_type={} for '
+                                    'all input variables: {}'
+                                    .format(ts_type, vars_to_read))
+        
+        common_sorted = [x for x in const.GRID_IO.TS_TYPES if x in common]
+        return common_sorted[0]
     
     def add_aux_compute(self, var_name, vars_required, fun):
         """Register new variable to be computed
@@ -1321,9 +1385,13 @@ class ReadGridded(object):
                                     aux_fun=self._aux_funs[var_name])
             
         elif var_name in self.AUX_REQUIRES: #variable can be computed 
-            data = self.compute_var(var_name, start, stop, ts_type, 
-                                    experiment, flex_ts_type, 
-                                    vert_which=vert_which)
+            data = self.compute_var(var_name=var_name, 
+                                    start=start, stop=stop, 
+                                    ts_type=ts_type, 
+                                    experiment=experiment, 
+                                    vert_which=vert_which,
+                                    flex_ts_type=flex_ts_type, 
+                                    prefer_longer=prefer_longer)
         else:
             raise VarNotAvailableError("Error: variable {} not available in "
                                        "files and can also not be computed."
@@ -1461,7 +1529,7 @@ class ReadGridded(object):
         return (cubes, loaded_files)
     
     def _load_var(self, var_name, ts_type, start, stop,
-                  experiment, flex_ts_type, vert_which,
+                  experiment, vert_which, flex_ts_type, 
                   prefer_longer, **kwargs):
         """Find files corresponding to input specs and load into GriddedData
         
@@ -1903,12 +1971,15 @@ class ReadGriddedMulti(object):
         return s
     
 if __name__=="__main__":
-    # Aerocom 2 convention
+    
+    import matplotlib.pyplot as plt
+    plt.close('all')
     import pyaerocom as pya
     
     r = pya.io.ReadGridded('BCC-CUACE_HIST')
     
-    d = r.read_var('od550aer', start=2010)
-    print(d)
+    for var in ['od550ss', 'od550dust', 'od550gt1aer']:
+        d = r.read_var(var, start=2010)
+        d.quickplot_map()
     
-    d.quickplot_map()
+    
