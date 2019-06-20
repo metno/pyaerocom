@@ -27,22 +27,22 @@ def test_variables(dataset):
     assert len(dataset.vars) == 17, 'Mismatch in number of available variables'
     npt.assert_array_equal(dataset.vars,
                            ['ang4487aer',
-                             'bscatc532aerboa',
-                             'bscatc532aertoa',
-                             'ec532aer',
-                             'ec532dryaer',
-                             'od440aer',
-                             'od550aer',
-                             'od550bc',
-                             'od550dust',
-                             'od550oa',
-                             'od550so4',
-                             'od550ss',
-                             'od865aer',
-                             'sconcpm10',
-                             'sconcpm25',
-                             'time',
-                             'z'])
+                            'bscatc532aerboa',
+                            'bscatc532aertoa',
+                            'ec532aer',
+                            'ec532dryaer',
+                            'od440aer',
+                            'od550aer',
+                            'od550bc',
+                            'od550dust',
+                            'od550oa',
+                            'od550so4',
+                            'od550ss',
+                            'od865aer',
+                            'sconcpm10',
+                            'sconcpm25',
+                            'time',
+                            'z'])
 @lustre_unavail    
 def test_years_available(dataset):
     years = list(range(2003, 2019)) + [9999]
