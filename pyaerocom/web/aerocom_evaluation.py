@@ -993,13 +993,14 @@ class AerocomEvaluation(object):
         str
             menu category of this variable
         """
+        
         try:
-            name, tp = self.var_mapping[obs_var]
+            name, tp, cat = self.var_mapping[obs_var]
         except:
-            name, tp = obs_var, 'n/a'
+            name, tp, cat = obs_var, 'UNDEFINED', 'UNDEFINED'
             self._log.warning('Missing menu name definition for var {}. '
                               'Using variable name'.format(obs_var))
-        return (name, tp)
+        return (name, tp, cat)
     
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
