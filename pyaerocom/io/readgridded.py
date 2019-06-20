@@ -34,7 +34,7 @@
 #MA 02110-1301, USA
 
 from glob import glob
-import re, os
+import os
 from collections import OrderedDict as od
 import numpy as np
 import pandas as pd
@@ -451,9 +451,10 @@ class ReadGridded(object):
                     raise DataSourceError('Detected invalid data ID {} '
                                           'in dataset {}'.format())
                 
+                experiment = info['data_id'].split('_')[-1]
                 result.append([var_name, info['year'], info['ts_type'], 
                                info['vert_code'], info['data_id'], 
-                               info['experiment'], info['is_at_stations'],
+                               experiment, info['is_at_stations'],
                                _is_3d, os.path.basename(_file)])
                     
             except (FileConventionError, DataSourceError, 
@@ -730,168 +731,170 @@ class ReadGridded(object):
             else:
                 self.logger.info("Ignoring key %s in ModelImportResult.update()" %k)
         
-    def find_var_files_flex_ts_type(self, var_name, ts_type_init,
-                                    start=None, stop=None, experiment=None,
-                                    vert_which=None):
-        """Find available files for a variable in a time period 
-        
-        Like :func:`find_var_files_in_timeperiod` but this method also checks
-        other available ts_types in case, no files can be found for the 
-        desired temporal resolution
-        
-        Parameters
-        -----------
-        var_name : str
-            variable name
-        ts_type_init : str
-            desired temporal resolution of data
-        start : Timestamp or str, optional
-            start time of data. If None, then the first available time stamp 
-            in this data object is used (i.e. :attr:`start`)
-        stop : Timestamp or str, optional
-            stop time of data. If None, then the last available time stamp 
-            in this data object is used (i.e. :attr:`stop`)
-        experiment : str, optional
-            name of experiment
-        vert_which : str
-            valid AeroCom vertical info string encoded in name (e.g. Column,
-            ModelLevel)
-            
-        Returns
-        --------
-        tuple
-            2-element tuple, containing
-            
-            -list of filepaths matching variable name, ts_type and either of \
-            the years specified by years_to_load
-            - str specifying ts_type of files
-            
-        Raises
-        ------
-        IOError 
-            if no files could be found
-        """
-        try:
-            files = self.find_var_files_in_timeperiod(var_name, ts_type_init,
-                                                      start, stop, 
-                                                      experiment, vert_which)
-            return (files, ts_type_init)
-        except DataCoverageError as e:
-            self.logger.warning('No file match for ts_type {}. Error: {}\n\n '
-                                'Trying other available ts_types {}'
-                                .format(ts_type_init, repr(e), self.ts_types))
-            for ts_type in self.ts_types:
-                if not ts_type == ts_type_init: #this already did not work
-                    try:
-                        files = self.find_var_files_in_timeperiod(var_name, 
-                                                                  ts_type,
-                                                                  start,
-                                                                  stop,
-                                                                  experiment,
-                                                                  vert_which)
-                        return (files, ts_type)
-                    
-                    except DataCoverageError as e:
-                        self.logger.warning(repr(e))
-    
-        raise DataCoverageError("No files could be found for dataset {}, "
-                                "variable {}, ts_types {}".format(self.data_id, 
-                                                                  var_name, 
-                                                                  self.ts_types))
-    # TODO: review and check vert_which directly from files
-    def find_var_files_in_timeperiod(self, var_name, ts_type, start=None, 
-                                     stop=None, experiment=None,
-                                     vert_which=None):
-        """Find all files that match variable, time period and temporal res.
-        
-        Parameters
-        ----------
-        var_name : str
-            variable name
-        ts_type : str
-            temporal resolution of data
-        start : :obj:`Timestamp` or :obj:`str`, optional
-            start time of data. If None, then the first available time stamp 
-            in this data object is used (i.e. :attr:`start`)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
-            stop time of data. If None, then the last available time stamp 
-            in this data object is used (i.e. :attr:`stop`)
-        experiment : str, optional
-            name of experiment for which file are to be searched.
-        vert_which : str
-            valid AeroCom vertical info string encoded in name (e.g. Column,
-            ModelLevel)
-            
-        Returns
-        --------
-        list
-            list of filepaths matching variable name, ts_type and either of the
-            years specified by years_to_load
-            
-        Raises
-        ------
-        DataCoverageError 
-            if no files could be found
-        """
-        #aux_compute = self._add_aux_compute(aux_compute)
-        if experiment is None:
-            if len(self.experiments) > 1:
-                self.logger.warning('Searching files from more than one experiment.')
 # =============================================================================
-#                 raise ValueError('This dataset contains more than one experiment. '
-#                                  'Please specify from which experiment you wish '
-#                                  'the data to be read. Available expreriments: {}'
-#                                  .format(self.experiments))
+#     def find_var_files_flex_ts_type(self, var_name, ts_type_init,
+#                                     start=None, stop=None, experiment=None,
+#                                     vert_which=None):
+#         """Find available files for a variable in a time period 
+#         
+#         Like :func:`find_var_files_in_timeperiod` but this method also checks
+#         other available ts_types in case, no files can be found for the 
+#         desired temporal resolution
+#         
+#         Parameters
+#         -----------
+#         var_name : str
+#             variable name
+#         ts_type_init : str
+#             desired temporal resolution of data
+#         start : Timestamp or str, optional
+#             start time of data. If None, then the first available time stamp 
+#             in this data object is used (i.e. :attr:`start`)
+#         stop : Timestamp or str, optional
+#             stop time of data. If None, then the last available time stamp 
+#             in this data object is used (i.e. :attr:`stop`)
+#         experiment : str, optional
+#             name of experiment
+#         vert_which : str
+#             valid AeroCom vertical info string encoded in name (e.g. Column,
+#             ModelLevel)
+#             
+#         Returns
+#         --------
+#         tuple
+#             2-element tuple, containing
+#             
+#             -list of filepaths matching variable name, ts_type and either of \
+#             the years specified by years_to_load
+#             - str specifying ts_type of files
+#             
+#         Raises
+#         ------
+#         IOError 
+#             if no files could be found
+#         """
+#         try:
+#             files = self.find_var_files_in_timeperiod(var_name, ts_type_init,
+#                                                       start, stop, 
+#                                                       experiment, vert_which)
+#             return (files, ts_type_init)
+#         except DataCoverageError as e:
+#             self.logger.warning('No file match for ts_type {}. Error: {}\n\n '
+#                                 'Trying other available ts_types {}'
+#                                 .format(ts_type_init, repr(e), self.ts_types))
+#             for ts_type in self.ts_types:
+#                 if not ts_type == ts_type_init: #this already did not work
+#                     try:
+#                         files = self.find_var_files_in_timeperiod(var_name, 
+#                                                                   ts_type,
+#                                                                   start,
+#                                                                   stop,
+#                                                                   experiment,
+#                                                                   vert_which)
+#                         return (files, ts_type)
+#                     
+#                     except DataCoverageError as e:
+#                         self.logger.warning(repr(e))
+#     
+#         raise DataCoverageError("No files could be found for dataset {}, "
+#                                 "variable {}, ts_types {}".format(self.data_id, 
+#                                                                   var_name, 
+#                                                                   self.ts_types))
+#     # TODO: review and check vert_which directly from files
+#     def find_var_files_in_timeperiod(self, var_name, ts_type, start=None, 
+#                                      stop=None, experiment=None,
+#                                      vert_which=None):
+#         """Find all files that match variable, time period and temporal res.
+#         
+#         Parameters
+#         ----------
+#         var_name : str
+#             variable name
+#         ts_type : str
+#             temporal resolution of data
+#         start : :obj:`Timestamp` or :obj:`str`, optional
+#             start time of data. If None, then the first available time stamp 
+#             in this data object is used (i.e. :attr:`start`)
+#         stop : :obj:`Timestamp` or :obj:`str`, optional
+#             stop time of data. If None, then the last available time stamp 
+#             in this data object is used (i.e. :attr:`stop`)
+#         experiment : str, optional
+#             name of experiment for which file are to be searched.
+#         vert_which : str
+#             valid AeroCom vertical info string encoded in name (e.g. Column,
+#             ModelLevel)
+#             
+#         Returns
+#         --------
+#         list
+#             list of filepaths matching variable name, ts_type and either of the
+#             years specified by years_to_load
+#             
+#         Raises
+#         ------
+#         DataCoverageError 
+#             if no files could be found
+#         """
+#         #aux_compute = self._add_aux_compute(aux_compute)
+#         if experiment is None:
+#             if len(self.experiments) > 1:
+#                 self.logger.warning('Searching files from more than one experiment.')
+# # =============================================================================
+# #                 raise ValueError('This dataset contains more than one experiment. '
+# #                                  'Please specify from which experiment you wish '
+# #                                  'the data to be read. Available expreriments: {}'
+# #                                  .format(self.experiments))
+# # =============================================================================
+#             experiment = self.experiments[0]
+#         elif not experiment in self.experiments:
+#             raise DataCoverageError('No such experiment available: {}. Please '
+#                                     'choose from: {}'.format(experiment, 
+#                                     self.experiments))
+#         match_files = []
+#     
+#         years_to_load = self._get_years_to_load(start, stop)
+#         for year in years_to_load:
+#             if const.MIN_YEAR <= year <= const.MAX_YEAR:
+#                 try:
+#                     match_mask = self.file_convention.string_mask(experiment,
+#                                                                   var_name,
+#                                                                   year, 
+#                                                                   ts_type,
+#                                                                   vert_which)
+#                 except FileConventionError as e:
+#                     match_mask = self.file_convention.string_mask(experiment,
+#                                                                   var_name,
+#                                                                   year, 
+#                                                                   ts_type,
+#                                                                   None)
+#                     const.print_log.warning('Ignoring input vert_which {} for file '
+#                                             'retrieval of dataset {} and variable {}. '
+#                                             'Reason: {}'.format(vert_which,
+#                                                               self.data_id,
+#                                                               var_name,
+#                                                               repr(e)))
+#                 # search for filename in self.files using ts_type as default ts size
+#                 for _file in self.files:
+#                     if re.match(match_mask, _file):
+#                         match_files.append(_file)
+#                         self.logger.debug("FOUND MATCH: {}".format(os.path.basename(_file)))
+# 
+#             else:
+#                 self.logger.warning('Ignoring data from year {}. Year is out of '
+#                                     'allowed bounds ({:d} - {:d})'
+#                                     .format(year, const.MIN_YEAR, const.MAX_YEAR))
+#            
+#         if len(match_files) == 0:
+#             raise DataCoverageError("No files could be found for dataset {}, "
+#                                     "variable {}, ts_type {} between {} - {}."
+#                                     .format(self.data_id, 
+#                                             var_name, ts_type, 
+#                                             min(years_to_load),
+#                                             max(years_to_load)))
+#         
+#         self.match_files = match_files    
+#         return match_files
 # =============================================================================
-            experiment = self.experiments[0]
-        elif not experiment in self.experiments:
-            raise DataCoverageError('No such experiment available: {}. Please '
-                                    'choose from: {}'.format(experiment, 
-                                    self.experiments))
-        match_files = []
-    
-        years_to_load = self._get_years_to_load(start, stop)
-        for year in years_to_load:
-            if const.MIN_YEAR <= year <= const.MAX_YEAR:
-                try:
-                    match_mask = self.file_convention.string_mask(experiment,
-                                                                  var_name,
-                                                                  year, 
-                                                                  ts_type,
-                                                                  vert_which)
-                except FileConventionError as e:
-                    match_mask = self.file_convention.string_mask(experiment,
-                                                                  var_name,
-                                                                  year, 
-                                                                  ts_type,
-                                                                  None)
-                    const.print_log.warning('Ignoring input vert_which {} for file '
-                                            'retrieval of dataset {} and variable {}. '
-                                            'Reason: {}'.format(vert_which,
-                                                              self.data_id,
-                                                              var_name,
-                                                              repr(e)))
-                # search for filename in self.files using ts_type as default ts size
-                for _file in self.files:
-                    if re.match(match_mask, _file):
-                        match_files.append(_file)
-                        self.logger.debug("FOUND MATCH: {}".format(os.path.basename(_file)))
-
-            else:
-                self.logger.warning('Ignoring data from year {}. Year is out of '
-                                    'allowed bounds ({:d} - {:d})'
-                                    .format(year, const.MIN_YEAR, const.MAX_YEAR))
-           
-        if len(match_files) == 0:
-            raise DataCoverageError("No files could be found for dataset {}, "
-                                    "variable {}, ts_type {} between {} - {}."
-                                    .format(self.data_id, 
-                                            var_name, ts_type, 
-                                            min(years_to_load),
-                                            max(years_to_load)))
-        
-        self.match_files = match_files    
-        return match_files
                  
     def concatenate_cubes(self, cubes):
         """Concatenate list of cubes into one cube
@@ -1502,56 +1505,6 @@ class ReadGridded(object):
         data = self._check_crop_time(data, start, stop)
         return data
     
-    def _load_varOLD(self, var_name, ts_type, start=None, stop=None,
-                  experiment=None, flex_ts_type=True, vert_which=None,
-                  **kwargs):
-        """Find files corresponding to input specs and load into GriddedData
-        
-        Note 
-        ----
-        See :func:`read_var` for I/O info.
-        """
-        
-        if flex_ts_type:
-            (match_files, 
-             ts_type) = self.find_var_files_flex_ts_type(var_name, 
-                                                         ts_type,
-                                                         start,
-                                                         stop, 
-                                                         experiment,
-                                                         vert_which)
-        else:
-            match_files = self.find_var_files_in_timeperiod(var_name, 
-                                                            ts_type, 
-                                                            start,
-                                                            stop,
-                                                            experiment,
-                                                            vert_which)
-        
-        (cube_list, 
-         from_files) = self._load_files(match_files, var_name, **kwargs)
-        
-        is_concat = False
-        if len(cube_list) > 1:
-            try:
-                cube = self.concatenate_cubes(cube_list)
-                is_concat = True
-            except iris.exceptions.ConcatenateError as e:
-                raise NotImplementedError('Failed to concatenate cubes: {}\n'
-                                          'Error: {}'.format(cube_list, repr(e)))
-        else:
-            cube = cube_list[0]
-        
-        data = GriddedData(input=cube, 
-                           from_files=from_files,
-                           data_id=self.data_id, 
-                           ts_type=ts_type,
-                           concatenated=is_concat)
-        
-        # crop cube in time (if applicable)
-        data = self._check_crop_time(data, start, stop)
-        return data
-    
     def _check_crop_time(self, data, start, stop):
         crop_time = False
         crop_time_range = [self.start, self.stop]
@@ -1951,21 +1904,11 @@ class ReadGriddedMulti(object):
     
 if __name__=="__main__":
     # Aerocom 2 convention
-    r = ReadGridded('ECMWF_CAMS_REAN')
-    r.get_files('od550aer', 'monthly', 2012)
-    print(r)
+    import pyaerocom as pya
     
-    data = r.read_var('od550aer', ts_type='monthly', flex_ts_type=True, 
-                      prefer_longer=True)
+    r = pya.io.ReadGridded('BCC-CUACE_HIST')
     
-# =============================================================================
-#     d0 = r0.read_var('od550aer', start=2006)
-#     
-#     r1 = ReadGridded('OsloCTM3v1.01')
-#     print(r1)
-#     
-#     d1 = r1.read_var('ec550aer', start=2010, ts_type='monthly',
-#                      vert_which='ModelLevel')
-#     
-#     
-# =============================================================================
+    d = r.read_var('od550aer', start=2010)
+    print(d)
+    
+    d.quickplot_map()
