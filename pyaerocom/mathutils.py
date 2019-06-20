@@ -6,9 +6,6 @@ Mathematical low level utility methods ofcd pyaerocom
 
 import numpy as np
 from pyaerocom import const, logger
-from pyaerocom.variable import VarNameInfo
-import iris
-from cf_units import Unit
 from scipy.stats import pearsonr, spearmanr, kendalltau
 
 ### LAMBDA FUNCTIONS
@@ -309,45 +306,6 @@ def compute_angstrom_coeff(od1, od2, lambda1, lambda2):
         Angstrom exponent(s)
     """
     return -np.log(od1 / od2) / np.log(lambda1 / lambda2)
-
-def compute_angstrom_coeff_cubes(od1, od2, lambda1=None, lambda2=None):
-    """Compute Angstrom coefficient cube based on 2 optical densitiy cubes
-    
-    Parameters
-    ----------
-    od1 : iris.cube.Cube
-        AOD at wavelength 1
-    od2 : iris.cube.Cube
-        AOD at wavelength 2
-    lambda1 : float
-        wavelength 1
-    lambda 2 : float
-        wavelength 2
-        
-    Returns
-    -------
-    Cube
-        Cube containing Angstrom exponent(s)
-    """
-    from pyaerocom import GriddedData
-    if isinstance(od1, GriddedData):
-        od1 = od1.grid
-    if isinstance(od2, GriddedData):
-        od2 = od2.grid
-    if lambda1 is None:
-        lambda1 = VarNameInfo(od1.var_name).wavelength_nm
-    if lambda2 is None:
-        lambda2 = VarNameInfo(od2.var_name).wavelength_nm
-    
-    if not od1.shape == od2.shape:
-        raise ValueError('Input grids do not have the same shape')
-    
-    logr = iris.analysis.maths.log(od1 / od2)
-    
-    wvl_r = np.log(lambda1 / lambda2)
-    ang = -1*iris.analysis.maths.divide(logr, wvl_r)
-    ang.units = Unit(1)
-    return ang
 
 def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref, 
                                  angstrom_coeff):
