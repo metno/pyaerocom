@@ -351,8 +351,7 @@ class Colocator(ColocationSetup):
     
     def _run_gridded_ungridded(self):
         """Analysis method for gridded vs. ungridded data"""
-        start, stop = self.start, self.stop
-        model_reader = ReadGridded(self.model_id, start, stop)
+        model_reader = ReadGridded(self.model_id)
         
         obs_reader = ReadUngridded(self.obs_id)
         
@@ -381,7 +380,7 @@ class Colocator(ColocationSetup):
         all_ts_types = const.GRID_IO.TS_TYPES
         
         ts_type = self.ts_type
-        
+        start, stop = self.start, self.stop
         data_objs = {}
         for obs_var, model_var in var_matches.items():
                 
@@ -478,8 +477,8 @@ class Colocator(ColocationSetup):
     
     def _run_gridded_gridded(self):
         start, stop = self.start, self.stop
-        model_reader = ReadGridded(self.model_id, start, stop)
-        obs_reader = ReadGridded(self.obs_id, start, stop)
+        model_reader = ReadGridded(self.model_id)
+        obs_reader = ReadGridded(self.obs_id)
     
         obs_vars = self.obs_vars
         
