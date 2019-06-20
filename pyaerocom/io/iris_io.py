@@ -270,6 +270,49 @@ def check_and_regrid_lons_cube(cube):
         print_log.warning('Failed to roll longitudes: {}'.format(repr(e)))
     return cube
 
+def check_dim_coord_names_cube(cube):
+    
+    from pyaerocom import const
+    coords = dict(lon = const.COORDINFO.lon,
+                  lat = const.COORDINFO.lat,
+                  time = const.COORDINFO.time)
+
+    for coord in cube.dim_coords:
+        cv, cs, cn = coord.var_name, coord.standard_name, coord.long_name
+        c=None
+        if cv in coords:
+            c = coords[cv]
+        elif cs in coords:
+            c = coords[cs]
+        elif cn in coords:
+            c = coords[cn]
+        if c is not None:
+            var_name = c.var_name
+            std_name = c.standard_name
+            lng_name = c.long_name
+            if not coord.var_name == var_name:
+                const.print_log.warning('Invalid var_name {} for coord {} '
+                                        'in cube. Overwriting with {}'
+                                        .format(coord.standard_name, 
+                                                coord.var_name, 
+                                                std_name))
+                coord.var_name = var_name
+            if not coord.standard_name == std_name:
+                const.print_log.warning('Invalid standard_name {} for coord {} '
+                                        'in cube. Overwriting with {}'
+                                        .format(coord.standard_name, 
+                                                coord.var_name, 
+                                                std_name))
+                coord.standard_name = std_name
+            if not coord.long_name == lng_name:
+                const.print_log.warning('Invalid long_name {} for coord {} in '
+                                        'cube. Overwriting with {}'
+                                        .format(coord.long_name, 
+                                                coord.var_name, 
+                                                lng_name))
+                coord.long_name = lng_name
+    return cube
+
 def check_dim_coords_cube(cube):
     """Checks, and if necessary and applicable, updates coords names in Cube
     
@@ -283,30 +326,7 @@ def check_dim_coords_cube(cube):
     iris.cube.Cube
         updated or unchanged cube
     """
-# =============================================================================
-#         if cube.ndim == 4:
-#             raise NotImplementedError('Cannot handle 4D data yet')
-# =============================================================================
-    if not cube.ndim == len(cube.dim_coords):
-        dim_names = [c.name() for c in cube.dim_coords]
-        raise NetcdfError('Dimension mismatch between data and coords.'
-                          'Cube dimension: {}. Registered dimensions : {}'
-                          .format(cube.ndim, dim_names))
-    for i, coord in enumerate(cube.dim_coords):
-        if not len(coord.points) == cube.shape[i]:
-            raise NetcdfError('Length mismatch of dimension coord {} '
-                              '({} points) and data dimension ({} points) '
-                              .format(coord.name(), len(coord.points),
-                                      cube.shape[i]))
-# =============================================================================
-#             if not coord.standard_name in self.VALID_DIM_STANDARD_NAMES:
-#                 raise NetcdfError('Invalid standard name of dimension coord. '
-#                                   'var_name: {}; standard_name: {}; '
-#                                   'long_name: {}'.format(coord.var_name,
-#                                                          coord.standard_name, 
-#                                                          coord.long_name))
-# =============================================================================
-
+    cube = check_dim_coord_names_cube(cube)
     return cube
 
 def check_time_coord(cube, ts_type, year):
@@ -491,13 +511,9 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
 if __name__== "__main__":
     import pyaerocom as pya
     
-    ddir = '/lustre/storeA/project/aerocom/aerocom-users-database/SATELLITE-DATA/CALIOP3/renamed/'
-    f1 = 'aerocom.CALIOP3.monthly.ec5323Ddust.2006.nc'
-    fconv = pya.io.FileConventionRead(from_file=f1)
-    cube = load_cube_custom(ddir + f1)
-    print(cube)
+    r = pya.io.ReadGridded('BCC-CUACE_HIST')
     
-    data = pya.GriddedData(cube)
-    print(data.start)
-    print(data.stop)
-    print(data)
+    d = r.read_var('zg')
+    print(d)
+    
+    
