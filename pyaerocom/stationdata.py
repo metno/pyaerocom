@@ -136,7 +136,6 @@ class StationData(StationMetaData):
             ud[var] = self.get_unit(var)
         return ud
 
-
     def check_var_unit_aerocom(self, var_name):
         """Check if unit of input variable is AeroCom default, if not, convert
 
@@ -730,9 +729,10 @@ class StationData(StationMetaData):
             raise MetaDataError('For merging of {} data, variable specific meta '
                                 'data needs to be available in var_info dict '
                                 .format(var_name))
-
-        self.check_var_unit_aerocom(var_name)
-        other.check_var_unit_aerocom(var_name)
+        
+        if self.get_unit(var_name) != other.get_unit(var_name):
+            self.check_var_unit_aerocom(var_name)
+            other.check_var_unit_aerocom(var_name)
 
         if self.check_if_3d(var_name):
             raise NotImplementedError('Coming soon...')
