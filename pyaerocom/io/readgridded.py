@@ -133,6 +133,8 @@ class ReadGridded(object):
                 'od550gt1aer'  :    add_cubes}
     
     _data_dir = ""
+    
+    VERT_ALT = {'Surface' : 'ModelLevel'}
 
     def __init__(self, data_id="", file_convention="aerocom3", init=True):
     
@@ -178,6 +180,7 @@ class ReadGridded(object):
         self._aux_requires = {}
         self._aux_funs = {}
         
+        self.ignore_vert_code = False
         if init and data_id:
             self.search_data_dir()
             self.search_all_files()
@@ -379,7 +382,19 @@ class ReadGridded(object):
         _dir = self.browser.find_data_dir(self.data_id)
         self.data_dir = _dir
         return _dir
-                
+            
+    @staticmethod
+    def _eval_data_id(data_id):
+        spl = data_id.split('_')
+        name, meteo = '',''
+        experiment = spl[-1]
+        if len(spl) > 1:
+            sspl = spl[0].split('-')
+            if len(sspl) > 1:
+                name = sspl[0]
+                meteo = sspl[-1]
+        return (name, meteo, experiment)
+    
     def search_all_files(self, update_file_convention=True):
         """Search all valid model files for this model
         
@@ -450,14 +465,12 @@ class ReadGridded(object):
                 if not info["ts_type"] in self.TS_TYPES:
                     raise TemporalResolutionError('Invalid frequency {}'
                                                   .format(info["ts_type"]))
-                if not info['data_id'] in ('', self.data_id):
-                    raise DataSourceError('Detected invalid data ID {} '
-                                          'in dataset {}'.format())
                 
-                experiment = info['data_id'].split('_')[-1]
+                name, meteo, experiment = self._eval_data_id(info['data_id']) 
                 result.append([var_name, info['year'], info['ts_type'], 
-                               info['vert_code'], info['data_id'], 
-                               experiment, info['is_at_stations'],
+                               info['vert_code'], self.data_id, 
+                               name, meteo, experiment, 
+                               info['is_at_stations'],
                                _is_3d, os.path.basename(_file)])
                     
             except (FileConventionError, DataSourceError, 
@@ -477,13 +490,18 @@ class ReadGridded(object):
         self._vars_3d = sorted(od.fromkeys(_vars_temp_3d))
         
         
-        header = ['var_name', 'year', 'ts_type', 'vert_code', 'data_id', 
-                  'experiment', 'is_at_stations', '3D', 'filename']
+        header = ['var_name', 'year', 'ts_type', 'vert_code', 'data_id', 'name',
+                  'meteo', 'experiment', 'is_at_stations', '3D', 'filename']
         df = pd.DataFrame(result, columns=header)
-        df.sort_values(['var_name', 'year', 'ts_type', 'data_id', 'experiment',
-                        'is_at_stations', '3D'], inplace=True)
+        df.sort_values(['var_name', 'year', 'ts_type', 'data_id', 'name',
+                        'meteo', 'experiment', 'is_at_stations', '3D'], 
+                        inplace=True)
         
+        uv = df.vert_code.unique()
+        if len(uv) == 1 and uv[0] == '':
+            self.ignore_vert_code = True
         self.file_info = df
+        
         if len(df) == 0:
             raise DataCoverageError('No files could be found for data {} and '
                                     'years range {}-{}'.format(self.data_id))
@@ -617,14 +635,15 @@ class ReadGridded(object):
                                    vert_which=vert_which, 
                                    is_at_stations=is_at_stations)
         if len(subset) == 0:
-            if vert_which is not None:
+            if vert_which in self.VERT_ALT:
+                vc =self.VERT_ALT[vert_which]
                 const.print_log.warning('No files could be found for var {} and '
                                         'vert_which {} in {}. Trying to find '
                                         'alternative options'
                                         .format(var_name, vert_which, 
                                                 self.data_id))
                 return self.filter_query(var_name, ts_type, start, stop, 
-                                             experiment, vert_which=None, 
+                                             experiment, vert_which=vc, 
                                              is_at_stations=is_at_stations,
                                              flex_ts_type=flex_ts_type, 
                                              prefer_longer=prefer_longer)
@@ -1078,76 +1097,6 @@ class ReadGridded(object):
                            computed=True)
         return data
     
-    def find_common_ts_typeOLD(self, vars_to_read, start=None, stop=None,
-                            ts_type=None, experiment=None,
-                            flex_ts_type=True, vert_which=None):
-        """Find common ts_type for list of variables to be read
-        
-        Parameters
-        ----------
-        vars_to_read : list
-            list of variables that is supposed to be read
-        start : :obj:`Timestamp` or :obj:`str`, optional
-            start time of data import (if valid input, then the current 
-            :attr:`start` will be overwritten)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
-            stop time of data import (if valid input, then the current 
-            :attr:`start` will be overwritten)
-        ts_type : str
-            string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
-            of the available resolutions is used
-        experiment : str
-            name of experiment (only relevant if this dataset contains more 
-            than one experiment)
-        flex_ts_type : bool
-            if True and if applicable,start=None, stop=None,
-                 ts_type=None, flex_ts_type=True then another ts_type is used in case 
-            the input ts_type is not available for this variable
-        vert_which : str
-            valid AeroCom vertical info string encoded in name (e.g. Column,
-            ModelLevel)
-            
-        Returns
-        -------
-        str 
-            common ts_type for input variable
-            
-        Raises
-        ------
-        DataCoverageError
-            if no match can be found
-            
-        """
-        if isinstance(vars_to_read, str):
-            vars_to_read = [vars_to_read]
-            
-        common_ts_types = []
-        for i, var in enumerate(vars_to_read):
-            for ts_type in const.GRID_IO.TS_TYPES:
-                # check if ts_type is available
-                try:
-                    self.find_var_files_in_timeperiod(var, ts_type, start, 
-                                                      stop, experiment,
-                                                      vert_which)
-                    if i == 0:
-                        common_ts_types.append(ts_type)
-                except DataCoverageError:
-                    if i != 0 and ts_type in common_ts_types:
-                        common_ts_types.pop(common_ts_types.index(ts_type))
-                    pass
-        if len(common_ts_types) == 0:
-            raise DataCoverageError('Could not find any common ts_type for '
-                                    'variables {}'.format(vars_to_read))
-        elif not ts_type in common_ts_types:
-            if not flex_ts_type:
-                raise DataCoverageError('Could not find common ts_type={} for '
-                                        'variables {}'
-                                        .format(ts_type, vars_to_read))
-            else:
-                ts_type =  common_ts_types[0] #highest resolution
-        return ts_type
-    
     def find_common_ts_type(self, vars_to_read, start=None, stop=None,
                             ts_type=None, experiment=None, vert_which=None, 
                             flex_ts_type=True):
@@ -1537,6 +1486,8 @@ class ReadGridded(object):
         ----
         See :func:`read_var` for I/O info.
         """
+        if self.ignore_vert_code:
+            vert_which = None
         subset = self.filter_query(var_name, ts_type, start, stop, 
                                    experiment, vert_which, 
                                    is_at_stations=False, 
