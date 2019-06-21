@@ -117,6 +117,11 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass        
     
+    @property
+    def data_id(self):
+        """Wrapper for :attr:`DATA_ID` (pyaerocom standard name)"""
+        return self.DATA_ID
+    
     @abc.abstractproperty
     def SUPPORTED_DATASETS(self):
         """List of all datasets supported by this interface
