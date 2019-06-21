@@ -667,8 +667,12 @@ class AerocomEvaluation(object):
     
         fp = os.path.join(self.out_dirs['ts'], filename)
         if os.path.exists(fp):
-             with open(fp, 'r') as f:
-                current = simplejson.load(f)
+            try:
+                with open(fp, 'r') as f:
+                    current = simplejson.load(f)
+            except Exception as e:
+                raise Exception('Fatal: could not open existing json file: {}. '
+                                'Reason: {}'.format(fp, repr(e)))
         else:
             current = {}
         current[ts_data['model_name']] = ts_data
