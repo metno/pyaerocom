@@ -90,7 +90,7 @@ class ColocationSetup(BrowseDict):
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).  
-    obs_vert_type : :obj:`str` or :obj:`dict`, optional
+    obs_vert_type : str or dict, optional
         Aerocom vertical code encoded in the model filenames (only AeroCom 3 
         and later). Specifies which model file should be read in case there are
         multiple options (e.g. surface level data can be read from a 
@@ -101,6 +101,9 @@ class ColocationSetup(BrowseDict):
         `obs_vert_type=dict(od550aer='Column', ec550aer='ModelLevel')`), 
         information is extracted variable specific, for those who are defined
         in the dictionary, for all others, `None` is used.
+    model_vert_type_alt : str or dict, optional
+        like :attr:`obs_vert_type` but is used in case of exception cases, i.e.
+        where the `obs_vert_type` is not available in the models.
     var_outlier_ranges : :obj:`dict`, optional
         dictionary specifying outlier ranges for individual variables. 
         (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
@@ -142,9 +145,10 @@ class ColocationSetup(BrowseDict):
                  vert_scheme=None, harmonise_units=False, 
                  model_use_vars=None, model_read_aux=None, 
                  read_opts_ungridded=None, obs_vert_type=None, 
-                 var_outlier_ranges=None, model_ts_type_read=None, 
-                 obs_ts_type_read=None, flex_ts_type_gridded=True,
-                 basedir_coldata=None, save_coldata=True):
+                 model_vert_type_alt=None, var_outlier_ranges=None, 
+                 model_ts_type_read=None, obs_ts_type_read=None, 
+                 flex_ts_type_gridded=True, basedir_coldata=None, 
+                 save_coldata=True):
         
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
@@ -162,6 +166,7 @@ class ColocationSetup(BrowseDict):
         
         self.obs_vars = obs_vars
         self.obs_vert_type = obs_vert_type
+        self.model_vert_type_alt = model_vert_type_alt
         self.read_opts_ungridded = read_opts_ungridded
         self.obs_ts_type_read = obs_ts_type_read
         
@@ -326,6 +331,8 @@ class Colocator(ColocationSetup):
         else:
             vert_which = None
             ts_type_read = self.obs_ts_type_read
+        msg = ('No data files available for dataset {} ({})'
+               .format(reader.data_id, var_name))
         try:
             return reader.read_var(var_name, 
                                    start=start,
@@ -334,21 +341,30 @@ class Colocator(ColocationSetup):
                                    flex_ts_type=self.flex_ts_type_gridded,
                                    vert_which=vert_which)
         except DataCoverageError:
-            msg = ('No data files available for dataset {} ({})'
-                   .format(reader.data_id, var_name))
-            if not is_model or not self.obs_vert_type in self.OBS_VERT_TYPES_ALT:
+            vt=None
+            if is_model:
+                if self.obs_vert_type in self.OBS_VERT_TYPES_ALT:
+                    vt = self.OBS_VERT_TYPES_ALT[self.obs_vert_type]
+                elif self.model_vert_type_alt is not None:    
+                    mva = self.model_vert_type_alt
+                    if isinstance(mva, str):
+                        vt = mva
+                    elif isinstance(mva, dict) and var_name in mva:
+                        vt = mva[var_name]
+                        
+            if vt is None:
                 raise DataCoverageError(msg)
-                
-            # if request refers to model data, try to read alternative dataset
-            # that may be used to extract the data
-            obs_vert_type_alt = self.OBS_VERT_TYPES_ALT[self.obs_vert_type]
+            
             return reader.read_var(var_name, 
                                    start=start,
                                    stop=stop, 
                                    ts_type=ts_type_read,
                                    flex_ts_type=self.flex_ts_type_gridded,
-                                   vert_which=obs_vert_type_alt)
-    
+                                   vert_which=vt)
+        
+            
+        
+        
     def _run_gridded_ungridded(self):
         """Analysis method for gridded vs. ungridded data"""
         model_reader = ReadGridded(self.model_id)
