@@ -157,62 +157,7 @@ class UngriddedData(object):
                 assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
                           'index assigned in data and var_idx for {} in meta-block'
                           .format(var, idx))
-            
-    def extract_var(self, var_name):
-        """Split this object into single-var UngriddedData objects
-        
-        """
-        self._check_index()
-
-        VAR = var_name
-        var_idx = data.var_idx[VAR]
-        
-        totnum = np.sum(data._data[:, data._VARINDEX] == var_idx)
-        
-        colnum, rownum = data.shape
-        
-        if rownum != len(data._init_index()):
-            raise NotImplementedError('Cannot split UngriddedData objects that have '
-                                      'additional columns other than default columns')
-            
-        subset = pya.UngriddedData(totnum)
-        
-        subset.var_idx[VAR] = 0
-        subset._index = data.index
-        
-        meta_idx = -1
-        arr_idx = 0
-        
-        for midx, didx in data.meta_idx.items():
-            if VAR in didx and len(didx[VAR]) > 0:
-                meta_idx += 1
-                meta =  {}
-                _meta = data.metadata[midx]
-                meta.update(_meta)
-                meta['var_info'] = od()
-                meta['var_info'][VAR] = _meta['var_info'][VAR]
-                meta['variables'] = [VAR]
-                subset.metadata[meta_idx] = meta
                 
-                idx = didx[VAR]
-            
-                subset.meta_idx[meta_idx] = {}
-                
-                num_add = len(idx)
-                start = arr_idx
-                stop = arr_idx + num_add
-                subset.meta_idx[meta_idx][VAR] = np.arange(start, stop)
-                
-                
-                subset._data[start:stop] = data._data[idx]
-                subset._data[start:stop, subset._METADATAKEYINDEX] = meta_idx
-                subset._data[start:stop, subset._VARINDEX] = 0
-                
-                arr_idx += num_add
-        
-        subset._check_index()
-        return subset
-    
     @property
     def index(self):
         return self._index
@@ -1270,7 +1215,66 @@ class UngriddedData(object):
         """
         logger.info('Extracting dataset {} from data object'.format(data_id))
         return self.filter_by_meta(data_id=data_id)
-
+    
+    def extract_var(self, var_name):
+        """Split this object into single-var UngriddedData objects
+        
+        """
+        self._check_index()
+        if not var_name in self.contains_vars:
+            raise AttributeError('No such variable {} in data'.format(var_name))
+        var_idx = self.var_idx[var_name]
+        
+        totnum = np.sum(self._data[:, self._VARINDEX] == var_idx)
+        
+        colnum, rownum = self.shape
+        
+        if rownum != len(self._init_index()):
+            raise NotImplementedError('Cannot split UngriddedData objects that have '
+                                      'additional columns other than default columns')
+            
+        subset = UngriddedData(totnum)
+        
+        subset.var_idx[var_name] = 0
+        subset._index = self.index
+        
+        meta_idx = -1
+        arr_idx = 0
+        
+        for midx, didx in self.meta_idx.items():
+            if var_name in didx and len(didx[var_name]) > 0:
+                meta_idx += 1
+                meta =  {}
+                _meta = self.metadata[midx]
+                meta.update(_meta)
+                meta['var_info'] = od()
+                meta['var_info'][var_name] = _meta['var_info'][var_name]
+                meta['variables'] = [var_name]
+                subset.metadata[meta_idx] = meta
+                
+                idx = didx[var_name]
+            
+                subset.meta_idx[meta_idx] = {}
+                
+                num_add = len(idx)
+                start = arr_idx
+                stop = arr_idx + num_add
+                subset.meta_idx[meta_idx][var_name] = np.arange(start, stop)
+                
+                
+                subset._data[start:stop] = self._data[idx]
+                subset._data[start:stop, subset._METADATAKEYINDEX] = meta_idx
+                subset._data[start:stop, subset._VARINDEX] = 0
+                
+                arr_idx += num_add
+        
+        subset._check_index()
+        subset.filter_hist.update(self.filter_hist)
+        subset._add_to_filter_history('Created {} single var object from '
+                                      'multivar UngriddedData instance'
+                                      .format(var_name))
+        return subset
+    
     def _station_to_json_trends(self, var_name, station_name, 
                                 freq, **kwargs):
         """Convert station data to json file for trends interface
@@ -1496,6 +1500,7 @@ class UngriddedData(object):
             obj._data = np.vstack([obj._data, other._data])
             obj.data_revision.update(other.data_revision)
         obj.filter_hist.update(other.filter_hist)
+        obj._check_index()
         return obj
     
     def change_var_idx(self, var_name, new_idx):
