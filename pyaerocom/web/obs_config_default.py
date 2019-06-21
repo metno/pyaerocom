@@ -11,8 +11,7 @@ OBS_SOURCES = {
 'EBAS-Lev3'         :   dict(obs_id='EBASMC', 
                              obs_vars=['absc550aer', 'scatc550dryaer'], 
                              vert_scheme='surface',
-                             obs_vert_type='Surface',
-                             obs_vert_type_alt='ModelLevel'),
+                             obs_vert_type='Surface'),
         
 'AeronetSun'        :   dict(obs_id='AeronetSunV3Lev2.daily',
                              obs_vars=['ang4487aer', 'od550aer'],
