@@ -6,6 +6,7 @@ import sys
 import os
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.exceptions import DataCoverageError
+from time import time
 
 class EbasSQLRequest(BrowseDict):
     """Low level dictionary like object for EBAS sqlite queries
@@ -199,8 +200,7 @@ class EbasSQLRequest(BrowseDict):
             s += "\n{}: {}".format(k, v)
         s += '\nFilename request string:\n{}'.format(self.make_file_query_str())
         return s
-        
-        
+                    
 class EbasFileIndex(object):
     """EBAS SQLite I/O interface
     
@@ -359,6 +359,67 @@ class EbasFileIndex(object):
             if con:
                 con.close() 
     
+    def execute_request_fast(self, request):
+        """Connect to database and retrieve data for input request
+        
+        Parameters
+        ----------
+        request : :obj:`EbasSQLRequest` or :obj:`str`
+            request specifications
+            
+        Returns
+        -------
+        list 
+            list of tuples containing the retrieved results. The number of 
+            items in each tuple corresponds to the number of requested 
+            parameters (usually one, can be specified in 
+            :func:`make_query_str` using argument ``what``)
+            
+        """
+        def _result_iter(cursor, arraysize=10):
+            """An iterator that uses fetchmany to keep memory usage down
+            
+            Found here: http://code.activestate.com/recipes/137270-use-generators-
+            for-fetching-large-db-record-sets/
+            """
+            while True:
+                results = cursor.fetchmany(arraysize)
+                if not results:
+                    break
+                for result in results:
+                    yield result
+                    
+        if isinstance(request, EbasSQLRequest):
+            request = request.make_query_str()
+        if not isinstance(request, str):
+            raise IOError("Invalid input: Need instance of class "
+                          "EbasSQLRequest or SQL request string for query")
+        try:
+            con = sqlite3.connect(self.database)
+            cur = con.cursor()
+            t0 = time()
+            cur.execute(request)
+            print('Exec.: ', time() - t0, 's')
+            result = []
+            while True:
+                _r = cur.fetchmany(10000)
+                if not _r:
+                    break
+                print(_r)
+                result.extend(_r)
+            return result
+            #return [f for f in _result_iter(cur)]
+            #return [f for f in cur.fetchall()]
+        except sqlite3.Error as e:
+            if con:
+                con.rollback()
+                
+            print("Error: {}".format(repr(e)))
+            sys.exit(1)
+        finally:
+            if con:
+                con.close()
+                
     def execute_request(self, request):
         """Connect to database and retrieve data for input request
         
@@ -384,14 +445,18 @@ class EbasFileIndex(object):
         try:
             con = sqlite3.connect(self.database)
             cur = con.cursor()
+            t0 = time()
             cur.execute(request)
+            files = [f for f in cur.fetchall()]
+            const.logger.info('Elapsed time fetching EBAS datafiles: {:.1f} s'.format(time() - t0))
             #return [f[0] for f in cur.fetchall()]
-            return [f for f in cur.fetchall()]
+            return files
         except sqlite3.Error as e:
             if con:
                 con.rollback()
                 
-            print("Error: {}".format(repr(e)))
+            const.logger.exception('Error fetching EBAS filenames from SQLite '
+                                   'database: {}'.format(repr(e)))
             sys.exit(1)
         finally:
             if con:
@@ -430,19 +495,17 @@ if __name__=="__main__":
     
     req = EbasSQLRequest(variables=['aerosol_light_scattering_coefficient'],
                          station_names='Alert')
-    #req.update(lat_range=(80, 90))
     
-    files = db.get_file_names(req.make_query_str())
+    t0 = time()
+    files = db.execute_request_fast(req) 
+    t1=time()
     
-    data = EbasNasaAmesFile(join(const.EBASMC_DATA_DIR, files[19]))
-    data.print_col_info()
+    print(t1 - t0,  's')
     
-    df = data.to_dataframe()
+    files1 = db.execute_request(req)
     
-    #print(len(files))
+    t2=time()
     
-    
-
-    
+    print(t2 - t1,  's')
     
     
