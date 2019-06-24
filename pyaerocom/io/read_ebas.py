@@ -133,7 +133,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.16T_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.17_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -1134,11 +1134,9 @@ if __name__=="__main__":
 
     r = ReadEbas()
     r.opts.keep_aux_vars = True
-    from time import time
     
-    t0 = time()
-    data0 =  r.read('scatc550dryaer', station_names='Barrow')
-    t1 =time()
+    data =  r.read(['scatc550aer', 'sconcpm10'], station_names='Ba*')
+    
     
 
     
