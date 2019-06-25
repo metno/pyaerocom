@@ -42,6 +42,8 @@ class ReadUngriddedBase(abc.ABC):
     #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {}
     
+    IGNORE_META_KEYS = []
+    
     def __str__(self):
         return ("Dataset name: {}\n"
                 "Data directory: {}\n"
@@ -443,19 +445,11 @@ class ReadUngriddedBase(abc.ABC):
                     data['contains_vars'].append(var)
                 except KeyError:
                     data['contains_vars'] = [var]
-            else:
-                data['var_info'][var]['missing'] = {'num' : len(data.dtime),
-                                                    'vars': missing}
-                
 # =============================================================================
 #             else:
-#                 data[var] = np.ones(len(data['dtime']))*np.nan
-#                 self.logger.warning("Could not compute variable {}. One or "
-#                                     "more of the required variables {} is "
-#                                     "missing in data. Filling with NaNs"
-#                                     .format(var, required))
+#                 data['var_info'][var]['missing'] = {'num' : len(data.dtime),
+#                                                     'vars': missing}
 # =============================================================================
-        #data.var_info[var] = dict(computed_from=required)
         return data
     
     def remove_outliers(self, data, vars_to_retrieve, **valid_rng_vars):
