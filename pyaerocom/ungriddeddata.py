@@ -14,7 +14,8 @@ from pyaerocom import StationData
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
-                               start_stop, merge_station_data)
+                               start_stop, merge_station_data,
+                               isnumeric)
 from pyaerocom.metastandards import StationMetaData
 
 class UngriddedData(object):
@@ -194,6 +195,11 @@ class UngriddedData(object):
     def _COLNO(self):
         return len(self._index)
     
+    @property
+    def has_flag_data(self):
+        """Boolean specifying whether this object contains flag data"""
+        return (~np.isnan(self._data[:, self._DATAFLAGINDEX])).any()
+        
     def copy(self):
         """Make a copy of this object
         
@@ -661,12 +667,17 @@ class UngriddedData(object):
             
             vals = subset[:, self._DATAINDEX]
             vals_err = subset[:, self._DATAERRINDEX]
+            flagged = subset[:, self._DATAFLAGINDEX]
+            
             altitude =  subset[:, self._DATAHEIGHTINDEX]
                 
             data = pd.Series(vals, dtime)
             if not data.index.is_monotonic:
                 data = data.sort_index()
-            sd.data_err[var] = vals_err
+            if any(~np.isnan(vals_err)):
+                sd.data_err[var] = vals_err
+            if any(~np.isnan(flagged)):
+                sd.data_flagged[var] = flagged
         
             sd['dtime'] = data.index.values
             sd[var] = data
@@ -851,7 +862,7 @@ class UngriddedData(object):
         return result
                      
         
-    def _check_filter_match(self, meta, str_f, list_f, range_f):
+    def _check_filter_match(self, meta, str_f, list_f, range_f, val_f):
         """Helper method that checks if station meta item matches filters
         
         Note
@@ -859,13 +870,16 @@ class UngriddedData(object):
         This method is used in :func:`apply_filter`
         """
         for k, v in str_f.items():
-            if not meta[k] == v:
+            if not k in meta or not meta[k] == v:
                 return False
         for k, v in list_f.items():
-            if not meta[k] in v:
+            if not k in meta or not meta[k] in v:
                 return False
         for k, v in range_f.items():
-            if not in_range(meta[k], v[0], v[1]):
+            if not k in meta or not in_range(meta[k], v[0], v[1]):
+                return False
+        for k, v in val_f.items():
+            if not k in meta or not meta[k] == v:
                 return False
         return True
     
@@ -898,6 +912,7 @@ class UngriddedData(object):
         str_f = {}
         list_f = {}
         range_f = {}
+        val_f = {}
         for key, val in filter_attributes.items():
             if not key in valid_keys:
                 raise IOError('Invalid input parameter for filtering: {}. '
@@ -905,6 +920,8 @@ class UngriddedData(object):
             
             if isinstance(val, str):
                 str_f[key] = val
+            elif isnumeric(val):
+                val_f[key] = val
             elif isinstance(val, (list, np.ndarray, tuple)): 
                 if all([isinstance(x, str) for x in val]):
                     list_f[key] = val
@@ -916,7 +933,7 @@ class UngriddedData(object):
                         raise IOError('Failed to convert input ({}) specifying '
                                       'value range of {} into floating point '
                                       'numbers'.format(list(val), key))
-        return (str_f, list_f, range_f)
+        return (str_f, list_f, range_f, val_f)
     
     def check_unit(self, var_name, unit=None):
         """Check if variable unit corresponds to AeroCom unit
@@ -961,6 +978,40 @@ class UngriddedData(object):
             if not unit_conversion_fac(u, unit) == 1:
                 raise MetaDataError('Invalid unit {} detected (expected {})'
                                     .format(u, unit))
+    
+    def set_flags_nan(self, inplace=False):
+        """Set all flagged datapoints to NaN
+        
+        Parameters
+        ----------
+        inplace : bool
+            if True, the flagged datapoints will be set to NaN in this object, 
+            otherwise a new oject will be created and returned
+            
+        Returns
+        -------
+        UngriddedData
+            data object that has all flagged data values set to NaN
+            
+        Raises
+        ------
+        AttributeError
+            if no flags are assigned
+        """
+        
+        if not self.has_flag_data:
+            raise AttributeError('Ungridded data object does not contain '
+                                 'flagged data points')
+        if inplace:
+            obj = self
+        else:
+            obj = self.copy()
+        mask = obj._data[:, obj._DATAFLAGINDEX] == 1
+        
+        obj._data[mask, obj._DATAINDEX] = np.nan
+        
+        obj._add_to_filter_history('Set flagged data points to NaN')
+        return obj
     
     # TODO: check, confirm and remove Beta version note in docstring   
     def remove_outliers(self, var_name, inplace=False, low=None, high=None,
@@ -1101,6 +1152,8 @@ class UngriddedData(object):
             for k in const.STANDARD_COORD_NAMES:
                 d[k].append(meta[k])
         return d
+    
+    
                
     def _find_meta_matches(self, *filters):
         """Find meta matches for input attributes
