@@ -19,7 +19,6 @@
 # MA 02110-1301, USA
 
 import os
-from copy import deepcopy
 from datetime import datetime
 import numpy as np
 from collections import OrderedDict as od
@@ -31,7 +30,7 @@ from pyaerocom import StationData
 from pyaerocom import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
-from pyaerocom.io import EbasNasaAmesFile
+from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.exceptions import (VariableDefinitionError, NotInFileError,
                                   EbasFileError)
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -58,15 +57,13 @@ class ReadEbasOptions(BrowseDict):
         but file contains 3 columns of that variable, e.g. at 520, 530 and 
         540 nm), then the closest wavelength to the queried wavelength is used
         within the specified tolerance level.
-    remove_invalid_flags : bool
+    eval_flags : bool
         If True, the flag columns in the NASA Ames files are read and decoded 
         (using :func:`EbasFlagCol.decode`) and the (up to 3 flags for each 
         measurement) are evaluated as valid / invalid using the information 
-        in the flags CSV file
-    remove_outliers : bool
-        if True, outliers will be removed during reading, using each 
-        variable's `minimum` and `maximum` attribute specified in 
-        file variables.ini
+        in the flags CSV file. The evaluated flags are stored in the 
+        data files returned by the reading methods :func:`ReadEbas.read` 
+        and :func:`ReadEbas.read_file`.
     keep_aux_vars : bool
         if True, auxiliary variables required for computed variables will be 
         written to the :class:`UngriddedData` object created in 
@@ -84,11 +81,7 @@ class ReadEbasOptions(BrowseDict):
     """
     #: Names of options that correspond to reading filter constraints
     _FILTER_IDS = ['prefer_statistics',
-                   'wavelength_tol_nm',
-                   'remove_invalid_flags',
-                   'remove_outliers',
-                   'keep_aux_vars',
-                   'datalevel']
+                   'wavelength_tol_nm']
     
     def __init__(self):
         
@@ -98,17 +91,13 @@ class ReadEbasOptions(BrowseDict):
         
         self.wavelength_tol_nm = 50
         
-        self.remove_invalid_flags = True
-        
-        self.remove_outliers = False
+        self.eval_flags = True
         
         self.keep_aux_vars = False
         
         self.log_read_stats = False
         
         self.merge_meta = False
-        
-        self.datalevel = None
     
     @property
     def filter_dict(self):
@@ -282,18 +271,9 @@ class ReadEbas(ReadUngriddedBase):
         return self.opts.merge_meta
     
     @property
-    def remove_invalid_flags(self):
+    def eval_flags(self):
         """Boolean specifying whether to use EBAS flag columns"""
-        return self.opts.remove_invalid_flags
-    
-    @property
-    def remove_outliers(self):
-        """Boolean secifying whether outliers should be removed
-        
-        If True, the `minimum` and `maximum` attributes for each variable 
-        are used which are / can be specified in variables.ini
-        """
-        return self.opts.remove_outliers
+        return self.opts.eval_flags
 
     def _merge_lists(self, lists_per_var):
         """Merge dictionary of lists for each variable into one list
@@ -316,7 +296,8 @@ class ReadEbas(ReadUngriddedBase):
             merged file list (is also written into :attr:`files`)
         """
         # original lists are modified, so make a copy of them
-        lists = deepcopy(lists_per_var)
+        #lists = deepcopy(lists_per_var)
+        lists = lists_per_var
         mapping = {}
         for var, lst in lists.items():
             for fpath in lst:
@@ -334,16 +315,8 @@ class ReadEbas(ReadUngriddedBase):
         files, files_contain = [], []
         for path, contains_vars in mapping.items():
             files.append(path)
-            
-# =============================================================================
-#             contains = []
-#             for var in contains_vars:
-#                 if var in self.AUX_REQUIRES:
-#                     contains.extend(self.AUX_REQUIRES[var])
-#                 else:
-#                     contains.append(var)
-# =============================================================================
             files_contain.append(contains_vars)
+            
         self.files = files
         self.files_contain = files_contain
         
@@ -422,8 +395,10 @@ class ReadEbas(ReadUngriddedBase):
                                 if fnmatch.fnmatch(stat, name):
                                     stats.append(stat)
                     constraints['station_names'] = stats
-            if not 'datalevel' in constraints:
-                constraints['datalevel'] = self.opts.datalevel
+# =============================================================================
+#             if not 'datalevel' in constraints:
+#                 constraints['datalevel'] = self.opts.datalevel
+# =============================================================================
 
             req = info.make_sql_request(**constraints)
             
@@ -596,51 +571,111 @@ class ReadEbas(ReadUngriddedBase):
 #                                         result_col))
 # =============================================================================
         return result_col
-
-    def read_file(self, filename, vars_to_retrieve=None, _vars_to_read=None, 
-                  _vars_to_compute=None, remove_outliers=None):
-        """Read EBAS NASA Ames file
-        
-        Parameters
-        ----------
-        filename : str
-            absolute path to filename to read
-        vars_to_retrieve : :obj:`list`, optional
-            list of str with variable names to read, if None (and if not 
-            both of the alternative possible parameters ``_vars_to_read`` and
-            ``_vars_to_compute`` are specified explicitely) then the default
-            settings are used
-        _vars_to_read : :obj:`list`, optional
-            private (used in method :func:`read`). List of variables to read 
-            (only considered if also ``_vars_to_compute`` is provided)
-            
-        Returns
-        -------
-        StationData
-            dict-like object containing results
-        """
-        if remove_outliers is not None:
-            self.opts.remove_outliers = remove_outliers
-            
-        # implemented in base class
-        if _vars_to_read is None or _vars_to_compute is None:
-            vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
-        else:
-            vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
-        
-        for var in vars_to_read:
-            if not var in self.loaded_ebas_vars:
-                self.loaded_ebas_vars[var] = EbasVarInfo(var)
-            
-            if self.loaded_ebas_vars[var].requires is not None:
-                for aux_var in self.loaded_ebas_vars[var].requires:
-                    if not aux_var in self.loaded_ebas_vars:
-                        self.loaded_ebas_vars[aux_var] = EbasVarInfo(aux_var)  
-            
-        file = EbasNasaAmesFile(filename)
+    
+    def _add_meta(self, data_out, file):
         meta = file.meta
         name = meta['station_name'].replace('/', ';')
         
+        data_out['filename'] = os.path.basename(file.file)
+        data_out['data_id'] = self.DATA_ID
+        data_out['PI'] = file['data_originator']
+        data_out['station_id'] = meta['station_code']
+        
+        data_out['station_name'] = name
+        if name in self.MERGE_STATIONS:
+            data_out['station_name'] = self.MERGE_STATIONS[name]
+            data_out['station_name_orig'] = name
+        else:
+            data_out['station_name'] = name
+        
+        
+        # write meta information
+        tres_code = meta['resolution_code']
+        
+        try: # this works in almost all cases
+            ts_type = self.TS_TYPE_CODES[tres_code]
+        except KeyError:
+            self.logger.info('Unkown temporal resolution {}'.format(tres_code))
+            ts_type = tres_code
+            raise NotImplementedError('Cannot handle EBAS resolution code {}'
+                                      .format(tres_code))
+
+        data_out['ts_type'] = ts_type
+        # altitude of station
+        try:
+            altitude = float(meta['station_altitude'].split(' ')[0])
+        except:
+            altitude = np.nan
+        try:
+            meas_height = float(meta['measurement_height'].split(' ')[0])
+        except KeyError:
+            meas_height = 0.0
+        
+        data_alt = altitude + meas_height
+            
+        # file specific meta information
+        #data_out.update(meta)
+        data_out['latitude'] = float(meta['station_latitude'])
+        data_out['longitude'] = float(meta['station_longitude'])
+        data_out['altitude'] = data_alt
+        data_out['meas_height'] = meas_height
+        data_out['station_altitude'] = altitude
+        
+        data_out['instrument_name'] = meta['instrument_name']
+        data_out['instrument_type'] = meta['instrument_type']
+        
+        data_out['matrix'] = meta['matrix']
+        data_out['revision_date'] = file['revision_date']
+        
+        setting, land_use, gaw_type, lev =  None, None, None, None
+        if 'station_setting' in meta:
+            setting = meta['station_setting']
+        
+        if 'station_land_use' in meta:
+            land_use = meta['station_land_use']
+            
+        if 'station_gaw_type' in meta:
+            gaw_type = meta['station_gaw_type']
+    
+        if 'data_level' in meta:
+            lev = int(meta['data_level'])
+        
+        data_out['station_setting'] = setting
+        data_out['station_land_use'] = land_use
+        data_out['station_gaw_type'] = gaw_type
+        
+        # NOTE: may be also defined per column in attr. var_defs
+        
+        data_out['datalevel'] = lev
+        
+        
+        return data_out
+     
+    def find_var_cols(self, vars_to_read, loaded_nasa_ames):
+        """Find best-match variable columns in loaded NASA Ames file
+        
+        For each of the input variables, try to find one or more matches in the 
+        input NASA Ames file (loaded data object). If more than one match 
+        occurs, identify the best one (an example here is: user wants 
+        scatc550aer and file contains scattering coefficients at 530 nm and 
+        580 nm: in this case the 530 nm column will be used, cf. also accepted
+        wavelength tolerance for reading of wavelength dependent variables
+        :attr:`wavelength_tol_nm`).
+        
+        Parameters
+        ----------
+        vars_to_read : list
+            list of variables that are supposed to be read
+        loaded_nasa_ames : EbasNasaAmesFile
+            loaded data object
+        
+        Returns
+        -------
+        dict
+            dictionary specifying the best-match variable column for each 
+            of the input variables.
+        """
+        file = loaded_nasa_ames
         var_cols = {}
         for var in vars_to_read:
             ebas_var_info = self.loaded_ebas_vars[var]
@@ -648,20 +683,15 @@ class ReadEbas(ReadUngriddedBase):
                 self.loaded_aerocom_vars[var] = var_info = const.VARS[var]
             else:
                 var_info = self.loaded_aerocom_vars[var]
-# =============================================================================
-#             if ebas_var_info['matrix'] is not None:
-#                 if not file.matrix in ebas_var_info['matrix']:
-#                     continue
-# =============================================================================
             
             try:
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
                 const.logger.warning('Variable {} (EBAS name(s): {}) is '
-                                     'missing in file {} ({}, start: {})'
+                                     'missing in file {} (start: {})'
                                      .format(var, ebas_var_info.component, 
-                                             os.path.basename(filename),
-                                             name, file.base_date))
+                                             os.path.basename(file.file),
+                                             file.base_date))
                 continue
             # init helper variable for finding closest wavelength (if 
             # no exact wavelength match can be found)
@@ -692,12 +722,6 @@ class ReadEbas(ReadUngriddedBase):
                             matches.append(colnum)
                         elif wvl_diff == min_diff_wvl:
                             matches.append(colnum)
-                
-# =============================================================================
-#                 elif 'location' in colinfo:
-#                     raise NotImplementedError('For developers, please '
-#                                               'check!')
-# =============================================================================
                 else:
                     matches.append(colnum)
             if matches:
@@ -707,7 +731,7 @@ class ReadEbas(ReadUngriddedBase):
         if not len(var_cols) > 0:
             raise NotInFileError('None of the specified variables {} could be '
                                  'found in file {}'.format(vars_to_read,
-                                                os.path.basename(filename)))
+                                                os.path.basename(file.file)))
         
         for var, cols in var_cols.items():
             if len(cols) > 1:
@@ -715,103 +739,69 @@ class ReadEbas(ReadUngriddedBase):
                                                   self.loaded_ebas_vars[var],
                                                   file)
                 var_cols[var] = col
+        return var_cols
     
+    def read_file(self, filename, vars_to_retrieve=None, _vars_to_read=None, 
+                  _vars_to_compute=None):
+        """Read EBAS NASA Ames file
+        
+        Parameters
+        ----------
+        filename : str
+            absolute path to filename to read
+        vars_to_retrieve : :obj:`list`, optional
+            list of str with variable names to read, if None (and if not 
+            both of the alternative possible parameters ``_vars_to_read`` and
+            ``_vars_to_compute`` are specified explicitely) then the default
+            settings are used
+            
+        Returns
+        -------
+        StationData
+            dict-like object containing results
+        """
+        # implemented in base class
+        if _vars_to_read is None or _vars_to_compute is None:
+            vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+        else:
+            vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
+        
+        for var in vars_to_read:
+            if not var in self.loaded_ebas_vars:
+                self.loaded_ebas_vars[var] = EbasVarInfo(var)
+            
+            if self.loaded_ebas_vars[var].requires is not None:
+                for aux_var in self.loaded_ebas_vars[var].requires:
+                    if not aux_var in self.loaded_ebas_vars:
+                        self.loaded_ebas_vars[aux_var] = EbasVarInfo(aux_var)  
+            
+        file = EbasNasaAmesFile(filename)
+        
+        # find columns in NASA Ames file for variables that are to be read
+        var_cols = self.find_var_cols(vars_to_read=vars_to_read,
+                                      loaded_nasa_ames=file)
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        #data_out['filename'] = filename
-        data_out.data_id = self.DATA_ID
         
-        # write meta information
-        tres_code = meta['resolution_code']
-        try: # this works in almost all cases
-            ts_type = self.TS_TYPE_CODES[tres_code]
-        except KeyError:
-            self.logger.info('Unkown temporal resolution {}'.format(tres_code))
-            ts_type = tres_code
-            raise Exception(tres_code)
-
-        data_out['ts_type'] = ts_type
-        # altitude of station
-        try:
-            altitude = float(meta['station_altitude'].split(' ')[0])
-        except:
-            altitude = np.nan
-        try:
-            meas_height = float(meta['measurement_height'].split(' ')[0])
-        except KeyError:
-            meas_height = 0.0
-        try:
-            lev = float(meta['data_level'])
-        except:
-            lev = None
-        data_out['datalevel'] = lev
-        data_alt = altitude + meas_height
-            
-        # file specific meta information
-        #data_out.update(meta)
-        data_out['longitude'] = float(meta['station_longitude'])
-        data_out['latitude'] = float(meta['station_latitude'])
-        
-        data_out['altitude'] = altitude
-        
-        if name in self.MERGE_STATIONS:
-            data_out['station_name'] = self.MERGE_STATIONS[name]
-            data_out['station_name_orig'] = name
-        else:
-            data_out['station_name'] = name
-        data_out['PI'] = file['data_originator']
-        data_out['altitude'] = data_alt
-        data_out['instrument_name'] = meta['instrument_name']
-        data_out['instrument_type'] = meta['instrument_type']
-        
-        # NOTE: may be also defined per column in attr. var_defs
-        data_out['matrix'] = meta['matrix']
-        data_out['datalevel'] = meta['data_level']
-        data_out['revision_date'] = file['revision_date']
-        
+        data_out = self._add_meta(data_out, file)
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
-        data_out['contains_vars'] = []
         #totnum = file.data.shape[0]
         for var, colnums  in var_cols.items():
-            
+            data_out['var_info'][var] = {}
             if len(colnums) != 1:
                 raise Exception('Something went wrong...please debug')
             colnum = colnums[0]
             _col = file.var_defs[colnum]
             data = file.data[:, colnum]
             
-            notnan_invalid, invalid = None, None
-            if self.remove_invalid_flags:
-                
-                # get rows that are marked as invalid
+            if self.eval_flags:
                 invalid = ~file.flag_col_info[_col.flag_col].valid
-                
-                # now get all invalid rows where data is not already set NaN
-                notnan_invalid = ~np.isnan(data) * invalid
-                # TODO: consider removing this check and applying mask without
-                # retrieving information about how many are set to NaN
-                _tot = np.sum(notnan_invalid)
-                if _tot > 0:
-                    data[notnan_invalid] = np.nan
-                    const.logger.warning('Found {} (of {}) invalid flags (flag '
-                                         'col {}) for var {} in file {}. '
-                                         'Remaining no. of valid data points: {}'
-                                         .format(_tot, len(data), _col.flag_col, 
-                                                 var, os.path.basename(filename),
-                                                 np.sum(~np.isnan(data))))
-            
-            # REMOVE OUTLIERS
-            if self.remove_outliers:
-                info = self.loaded_aerocom_vars[var]
-                outlier_mask = np.logical_or(data < info.minimum, 
-                                             data > info.maximum)
-    
-                data[outlier_mask] = np.nan
-                
+                data_out.data_flagged[var] = invalid
+
             data_out[var] = data
-            
+            meta = file.meta
             
             if not 'unit' in _col: #make sure a unit is assigned to data column
                 _col['unit']= file.unit
@@ -826,52 +816,82 @@ class ReadEbas(ReadUngriddedBase):
                     stats = meta['statistics']
                 _col['statistics'] = stats
                 
-            data_out['var_info'][var] = _col
-            data_out['contains_vars'].append(var)
+            var_info = _col.to_dict()
+            data_out['var_info'][var].update(var_info)
             
             if self.log_read_stats:
                 info = data_out['var_info'][var]
                 info['numtot'] = len(data)
                 info['numnans'] = np.isnan(data).sum()
-            
-                if notnan_invalid is not None:
-                    info['num_notnan_flag_invalid'] = notnan_invalid.sum()
-                    info['num_flag_invalid'] = invalid.sum()
         
-        if len(data_out['contains_vars']) == 0:
+        if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
                                 'are NaN in {}'.format(filename))
         data_out['dtime'] = file.time_stamps
         
         # compute additional variables (if applicable)
+        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+    
+        return data_out
+    
+    def compute_additional_vars(self, data, vars_to_compute):
+        """Compute additional variables and put into station data
+        
+        Note
+        ----
+        Extended version of :func:`ReadUngriddedBase.compute_additional_vars`
+        
+        Parameters
+        ----------
+        data : dict-like
+            data object containing data vectors for variables that are required
+            for computation (cf. input param ``vars_to_compute``)
+        vars_to_compute : list
+            list of variable names that are supposed to be computed. 
+            Variables that are required for the computation of the variables
+            need to be specified in :attr:`AUX_VARS` and need to be 
+            available as data vectors in the provided data dictionary (key is
+            the corresponding variable name of the required variable).
+        
+        Returns
+        -------
+        dict
+            updated data object now containing also computed variables
+        """
+        data = super(ReadEbas, self).compute_additional_vars(data, 
+                                                             vars_to_compute)
         for var in vars_to_compute:
+            if not var in data: # variable could not be computed -> ignore
+                continue
+            
             if not var in self.loaded_ebas_vars:
                 self.loaded_ebas_vars[var] = EbasVarInfo(var)
-            data_out.var_info[var] = self.loaded_ebas_vars[var]
             
-        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+            data.var_info[var] = self.loaded_ebas_vars[var]
 
-        for var in vars_to_compute:
-            if var in self.AUX_USE_META and var in data_out:
-                to_dict = data_out['var_info'][var]
+            if var in self.AUX_USE_META:
+                to_dict = data['var_info'][var]
                 from_var = self.AUX_USE_META[var]
-                if from_var in data_out:
-                    from_dict = data_out['var_info'][from_var]
+                if from_var in data:
+                    from_dict = data['var_info'][from_var]
                     for k, v in from_dict.items():
                         if not k in to_dict or to_dict[k] is None:
                             to_dict[k] = v
                     if self.log_read_stats:
                         # determines the additional number of points that were set 
                         # to NaN while computing the variable. If
-                        to_dict['num_nan_diff'] = (np.isnan(data_out[var]).sum() 
-                                                   - np.isnan(data_out[from_var]).sum())
-        
-        
-        
-        return data_out
+                        nandiff = (np.isnan(data[var]).sum() - 
+                                   np.isnan(data[from_var]).sum())
+                        
+                        to_dict['num_nan_diff'] = nandiff
+                if from_var in data.data_flagged:
+                    data.data_flagged[var] = data.data_flagged[from_var]
+                if from_var in data.data_err:
+                    data.data_err[var] = data.data_err[from_var]
+        return data
     
     def read(self, vars_to_retrieve=None, first_file=None, 
-             last_file=None, multiproc=False, **constraints):
+             last_file=None, multiproc=False, files=None, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -922,16 +942,21 @@ class ReadEbas(ReadUngriddedBase):
                 if not var in vars_to_retrieve:
                     vars_to_retrieve.append(var)
         
-        self.get_file_list(vars_to_retrieve, **constraints)
-        files = self.files
+        if files is None:
+            self.get_file_list(vars_to_retrieve, **constraints)
+            files = self.files
+            files_contain = self.files_contain
+        else:
+            files_contain = [vars_to_retrieve]*len(files)
+            
     
         if first_file is None:
             first_file = 0
         if last_file is None:
             last_file = len(files)
-        
         files = files[first_file:last_file]
-        files_contain = self.files_contain[first_file:last_file]
+        files_contain = files_contain[first_file:last_file]
+        
         
         if not multiproc:
             data = self._read_files(files, vars_to_retrieve,
@@ -1009,6 +1034,7 @@ class ReadEbas(ReadUngriddedBase):
                 const.print_log.warning('Skipping reading of EBAS NASA Ames '
                                         'file: {}. Reason: {}'
                                         .format(_file, repr(e)))
+                raise Exception
                 continue
             
             # Fill the metatdata dict
@@ -1017,15 +1043,10 @@ class ReadEbas(ReadUngriddedBase):
             # in the time series plot
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
-            #metadata[meta_key].update(station_data.get_station_coords())
-            metadata[meta_key]['data_id'] = self.DATA_ID
-            metadata[meta_key]['ts_type'] = station_data['ts_type']
-            metadata[meta_key]['instrument_name'] = station_data['instrument_name']
-            metadata[meta_key]['revision_date'] = station_data['revision_date'] 
-            metadata[meta_key]['datalevel'] = station_data['datalevel'] 
-            metadata[meta_key]['filename'] = os.path.basename(_file)
+
             if 'station_name_orig' in station_data:
                 metadata[meta_key]['station_name_orig'] = station_data['station_name_orig']     
+            
             metadata[meta_key]['var_info'] = od()
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
@@ -1033,17 +1054,15 @@ class ReadEbas(ReadUngriddedBase):
             
             num_times = len(station_data['dtime'])
             
+            contains_vars = list(station_data.var_info.keys())
             #access array containing time stamps
             # TODO: check using index instead (even though not a problem here 
             # since all Aerocom data files are of type timeseries)
             times = np.float64(station_data['dtime'])
             
             append_vars = [x for x in np.intersect1d(vars_to_retrieve, 
-                                          station_data.contains_vars)]
+                                                     contains_vars)]
             
-            for var in append_vars:
-                var_info = station_data['var_info'][var]
-                metadata[meta_key]['var_info'][var] = var_info.to_dict()
             totnum = num_times * len(append_vars)
             
             #check if size of data object needs to be extended
@@ -1052,12 +1071,13 @@ class ReadEbas(ReadUngriddedBase):
                 data_obj.add_chunk(totnum)
                 
             for var_count, var in enumerate(append_vars):
-
+                # data values
                 values = station_data[var]
-
-
+                
+                # get start / stop index for this data vector
                 start = idx + var_count * num_times
                 stop = start + num_times
+                
                 
                 if not var in data_obj.var_idx:
                     var_count_glob += 1
@@ -1081,14 +1101,21 @@ class ReadEbas(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
+                if var in station_data.data_flagged:
+                    valid = station_data.data_flagged[var]
+                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = valid
+                if var in station_data.data_err:
+                    errs = station_data.data_err[var]
+                    data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
+                    
+                var_info = station_data['var_info'][var]
+                metadata[meta_key]['var_info'][var] = od()
+                metadata[meta_key]['var_info'][var].update(var_info)
                 meta_idx[meta_key][var] = np.arange(start, stop)
-                #
-# =============================================================================
-#                 var_info = station_data['var_info'][var]
-#                 metadata[meta_key]['var_info'][var] = var_info.to_dict()
-# =============================================================================
+
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
+                    
             metadata[meta_key]['variables'] = append_vars
             idx += totnum  
             meta_key = meta_key + 1.
@@ -1102,33 +1129,6 @@ class ReadEbas(ReadUngriddedBase):
         self.data = data_obj
         
         return data_obj
-    
-# =============================================================================
-#     def __contains__(self, key):
-#         '''Options
-#         
-#         Used 
-#         '''
-#         return True if key in ReadEbasOptions().keys() else False
-# =============================================================================
-    
-# =============================================================================
-#     def __dir__(self):
-#         
-#         _dir = super(ReadEbas, self).__dir__()
-#         _dir.extend(self.opts.keys())
-#         return _dir
-#     
-#     def __setattr__(self, key, val):
-#         if key in self.opts:
-#             self.opts.__setattr__(key, val)
-#         super(ReadEbas, self).__setattr__(key, val)
-#         
-#     def __getattr__(self, key):
-#         if key in self.opts:
-#             return self.opts[key]
-#         return super(ReadEbas, self).__getattr__(key)
-# =============================================================================
     
 if __name__=="__main__":
 
