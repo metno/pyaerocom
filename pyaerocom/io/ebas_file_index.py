@@ -448,7 +448,8 @@ class EbasFileIndex(object):
             t0 = time()
             cur.execute(request)
             files = [f for f in cur.fetchall()]
-            const.logger.info('Elapsed time fetching EBAS datafiles: {:.1f} s'.format(time() - t0))
+            const.logger.info('Elapsed time fetching EBAS datafiles: {:.1f} s'
+                              .format(time() - t0))
             #return [f[0] for f in cur.fetchall()]
             return files
         except sqlite3.Error as e:
