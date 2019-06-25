@@ -56,6 +56,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: are dimensionless as specified in :attr:`DEFAULT_UNIT`)
     UNITS = {}
     
+    IGNORE_META_KEYS = ['date', 'time', 'day_of_year']
     def __init__(self, dataset_to_read=None):
         super(ReadAeronetBase, self).__init__(dataset_to_read)
         
@@ -370,7 +371,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             # in the time series plot
             meta = od()
             meta['var_info'] = od()
-            meta.update(station_data.get_meta())
+            meta.update(station_data.get_meta(ignore_keys=self.IGNORE_META_KEYS))
             #metadata[meta_key].update(station_data.get_station_coords())
             meta['data_id'] = self.DATA_ID
             meta['ts_type'] = self.TS_TYPE
