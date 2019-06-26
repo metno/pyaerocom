@@ -138,11 +138,21 @@ class ReadGAW(ReadUngriddedBase):
         # Fill dictionary with relevant metadata and variables from the file.
         # Reformatthe strings, and replace whitespaces in with underscore.
         data_out['station_name'] = meta[6].strip().replace(' ', '_')
-        data_out['longitude'] = float(meta[12].strip())
-        data_out['latitude'] = float(meta[11].strip())
-        data_out['altitude'] = float(meta[13].strip())
+        try:
+            data_out['longitude'] = float(meta[12].strip())
+            data_out['latitude'] = float(meta[11].strip())
+            data_out['altitude'] = float(meta[13].strip())
+        except Exception as e:
+            from pyaerocom.exceptions import MetaDataError
+            raise MetaDataError('Failed to read station coordinates. {}'
+                                .format(repr(e)))
         data_out['filename'] = meta[1].strip().replace(' ', '_')
-        data_out['data_version'] = (meta[5].strip())  # int(meta[5].strip())
+        #print(meta[5].strip(), type(meta[5].strip()))
+        #print(int(meta[5].strip()), type(int(meta[5].strip())))
+        try:
+            data_out['data_version'] = int(meta[5].strip())  #(meta[5].strip())  #   ??????????????????
+        except:
+            data_out['data_version'] = None
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
         data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
@@ -158,8 +168,11 @@ class ReadGAW(ReadUngriddedBase):
         for i in range(1, len(data)):
             datestring = data[i][0]  + 'T' + data[i][1]
             data_out['dtime'].append(np.datetime64(datestring, 's'))
-            #data_out['vmrdms'].append(np.float(data[i][4]))
-            data_out['vmrdms'].append((data[i][4]))
+            try:
+                data_out['vmrdms'].append(np.float(data[i][4]))
+            except:
+                data_out['vmrdms'] = None
+            #data_out['vmrdms'].append((data[i][4]))
             data_out['vmrdms_nd'].append(np.float(data[i][5]))
             data_out['vmrdms_std'].append(np.float(data[i][6]))
             data_out['vmrdms_flag'].append(np.int(data[i][7]))
@@ -172,10 +185,13 @@ class ReadGAW(ReadUngriddedBase):
         data_out['dtime'] = np.asarray(data_out['dtime'])
         
         # Replace invalid measurements with nan values
+        i= 0
         for key, value in self.NAN_VAL.items():
+            print(key, value, i)
             if data_out[key].dtype != 'float64':
                 data_out[key] = data_out[key].astype('float64')
             data_out[key][data_out[key]==value]=np.nan
+            i = i+1
                         
         # convert data vectors to pandas.Series (if attribute 
         # vars_as_series=True)
@@ -189,8 +205,11 @@ class ReadGAW(ReadUngriddedBase):
          
         return data_out
     
-    def read(self, vars_to_retrieve=None, files=None, first_file=None, 
-             last_file=None):
+    def read(self, vars_to_retrieve=None, 
+             files=['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
+                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat'],
+                    first_file=None, 
+                    last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
