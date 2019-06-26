@@ -146,7 +146,7 @@ class ReadGAW(ReadUngriddedBase):
             from pyaerocom.exceptions import MetaDataError
             raise MetaDataError('Failed to read station coordinates. {}'
                                 .format(repr(e)))
-        data_out['filename'] = meta[1].strip().replace(' ', '_')
+        data_out['filename'] = meta[1].strip()
         #print(meta[5].strip(), type(meta[5].strip()))
         #print(int(meta[5].strip()), type(int(meta[5].strip())))
         try:
@@ -202,6 +202,7 @@ class ReadGAW(ReadUngriddedBase):
                                               index=data_out['dtime'])
                 else:
                     del data_out[key]
+                    
          
         return data_out
     
@@ -232,6 +233,9 @@ class ReadGAW(ReadUngriddedBase):
         UngriddedData
             data object
         """
+        
+        # TODO: the method should be able to read all the files in the directory
+        
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -278,6 +282,10 @@ class ReadGAW(ReadUngriddedBase):
             else:
                 instr = self.INSTRUMENT_NAME
             metadata[meta_key]['instrument_name'] = instr
+            
+            # TODO: Add 'var_info' to the metadata block
+            # metadata[meta_key]['var_info'] = 'some info'
+            # Var info is a dictionary and it must contain the key 'units'
             
             # List with indices of this station for each variable
             meta_idx[meta_key] = od()
@@ -334,7 +342,7 @@ class ReadGAW(ReadUngriddedBase):
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         
-        
+        print(self)
         return data_obj
     
 if __name__ == "__main__":
