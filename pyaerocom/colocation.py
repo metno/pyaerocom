@@ -212,8 +212,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
               'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time,
               'latitude'    : lats,
-              'longitude'   : lons,
-              }
+              'longitude'   : lons}
     
     dims = ['data_source', 'time', 'latitude', 'longitude']
 
