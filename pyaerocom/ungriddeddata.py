@@ -147,6 +147,15 @@ class UngriddedData(object):
         vars_avail = self.var_idx
         
         for idx, meta in self.metadata.items():
+            if not 'var_info' in meta:
+                if not 'variables' in meta:
+                    raise AttributeError('Need either variables (list) or '
+                                         'var_info (dict) in meta block {}: {}'
+                                         .format(idx, meta))
+                meta['var_info'] = {}
+                for v in meta['variables']:
+                    meta['var_info'][v] = {}
+                    
             var_idx = self.meta_idx[idx]
             for var, indices in var_idx.items():
                 assert var in meta['variables'] or var in meta['var_info'], \
@@ -158,7 +167,7 @@ class UngriddedData(object):
                 assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
                           'index assigned in data and var_idx for {} in meta-block'
                           .format(var, idx))
-                
+                      
     @property
     def index(self):
         return self._index
@@ -1053,9 +1062,7 @@ class UngriddedData(object):
         ------
         ValueError
             if input :attr:`move_to_trash` is True and in case for some of the
-            measurements there is already data in the trash.
-        Uni
-            
+            measurements there is already data in the trash. 
         """
         if inplace:
             new = self
@@ -1084,19 +1091,20 @@ class UngriddedData(object):
         invalid_vals = new._data[mask, new._DATAINDEX]
         new._data[mask, new._DATAINDEX] = np.nan
         
-        # check if trash is empty and put outliers into trash
-        trash = new._data[mask, new._TRASHINDEX]
-        if np.isnan(trash).sum() == len(trash): #trash is empty
-            new._data[mask, new._TRASHINDEX] = invalid_vals
-        else:
-            raise ValueError('Trash is not empty for some of the datapoints. '
-                             'Please empty trash first using method '
-                             ':func:`empty_trash` or deactivate input arg '
-                             ':attr:`move_to_trash`')
-        
+        if move_to_trash:
+            # check if trash is empty and put outliers into trash
+            trash = new._data[mask, new._TRASHINDEX]
+            if np.isnan(trash).sum() == len(trash): #trash is empty
+                new._data[mask, new._TRASHINDEX] = invalid_vals
+            else:
+                raise ValueError('Trash is not empty for some of the datapoints. '
+                                 'Please empty trash first using method '
+                                 ':func:`empty_trash` or deactivate input arg '
+                                 ':attr:`move_to_trash`')
+            
         info = ('Removed {} outliers from {} data (range: {}-{}, in trash: {})'
                 .format(len(invalid_vals), var_name, low, high, move_to_trash))
-        
+            
         new._add_to_filter_history(info)
         return new
             
@@ -1152,9 +1160,7 @@ class UngriddedData(object):
             for k in const.STANDARD_COORD_NAMES:
                 d[k].append(meta[k])
         return d
-    
-    
-               
+            
     def _find_meta_matches(self, *filters):
         """Find meta matches for input attributes
             
@@ -1172,7 +1178,7 @@ class UngriddedData(object):
                     totnum += len(self.meta_idx[meta_idx][var])
                 
         return (meta_matches, totnum)
-                    
+        
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
         
@@ -1218,6 +1224,10 @@ class UngriddedData(object):
         filters = self._init_meta_filters(**filter_attributes)
 
         meta_matches, totnum_new = self._find_meta_matches(*filters)
+        if len(meta_matches) == len(self.metadata):
+            const.print_log.info('Input filters {} result in unchanged data '
+                                 'object'.format(filter_attributes))
+            return self
         new = UngriddedData(num_points=totnum_new)
         for meta_idx in meta_matches:
             meta = self.metadata[meta_idx]
@@ -1249,6 +1259,53 @@ class UngriddedData(object):
         
         return new
     
+    def clear_meta_no_data(self, inplace=True):
+        """Remove all metadata blocks that do not have data associated with it
+        
+        Parameters
+        ----------
+        inplace : bool
+            if True, the changes are applied to this instance directly, else
+            to a copy
+        
+        Returns
+        -------
+        UngriddedData
+            cleaned up data object
+        
+        Raises
+        ------
+        DataCoverageError
+            if filtering results in empty data object
+        """
+        if inplace:
+            obj = self
+        else:
+            obj = self.copy()
+        meta_new = od()
+        meta_idx_new = od()
+        for idx, val in obj.meta_idx.items():
+            meta = obj.metadata[idx]
+            if not bool(val): # no data assigned with this metadata block
+                # sanity check
+                if bool(meta['var_info']):
+                    raise AttributeError('meta_idx {} suggests empty data block '
+                                         'but metadata[{}] contains variable '
+                                         'information')
+            else:
+                meta_new[idx] = meta
+                meta_idx_new[idx] = val
+        num_removed = len(obj.metadata) - len(meta_new)
+        if not bool(meta_new):
+            raise DataCoverageError('UngriddedData object appears to be empty')
+        elif num_removed > 0: # some meta blocks are empty
+            obj.metadata = meta_new
+            obj.meta_idx = meta_idx_new
+            
+        obj._add_to_filter_history('Removed {} metadata blocks that have no '
+                                   'data assigned'.format(num_removed))
+        obj._check_index()
+        return obj
     
     def extract_dataset(self, data_id):
         """Extract single dataset into new instance of :class:`UngriddedData`
