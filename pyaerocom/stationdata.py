@@ -60,6 +60,8 @@ class StationData(StationMetaData):
         
         self.data_err = BrowseDict()        
         self.overlap = BrowseDict()
+        self.data_flagged = BrowseDict()
+        
         super(StationData, self).__init__(**meta_info)
     
     @property
