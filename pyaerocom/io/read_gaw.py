@@ -157,6 +157,7 @@ class ReadGAW(ReadUngriddedBase):
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
         data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
         data_out['variables'] = vars_to_retrieve 
+        data_out['var_info']['units'] = meta[20].strip().replace(' ', '_')
 
         # Add date and time and the rest of the data to a dictionary
         data_out['dtime'] = []
@@ -283,9 +284,19 @@ class ReadGAW(ReadUngriddedBase):
                 instr = self.INSTRUMENT_NAME
             metadata[meta_key]['instrument_name'] = instr
             
-            # TODO: Add 'var_info' to the metadata block
-            # metadata[meta_key]['var_info'] = 'some info'
-            # Var info is a dictionary and it must contain the key 'units'
+            # TODO: Add more keys to var_info
+            var_info = {}
+            
+            # Var info is a dictionary and it must contain the key 'units' to 
+            # be able to do the colocation
+            if (station_data['var_info']['units'] is not None):
+                u = station_data['var_info']['units']
+            else:
+                u = 1
+                
+            var_info['units'] = u
+            metadata[meta_key]['var_info'] = 'some info'
+            
             
             # List with indices of this station for each variable
             meta_idx[meta_key] = od()
