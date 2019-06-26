@@ -396,8 +396,8 @@ class ReadEbas(ReadUngriddedBase):
                                     stats.append(stat)
                     constraints['station_names'] = stats
 # =============================================================================
-#             if not 'datalevel' in constraints:
-#                 constraints['datalevel'] = self.opts.datalevel
+#             if not 'data_level' in constraints:
+#                 constraints['data_level'] = self.opts.data_level
 # =============================================================================
 
             req = info.make_sql_request(**constraints)
@@ -638,7 +638,10 @@ class ReadEbas(ReadUngriddedBase):
             gaw_type = meta['station_gaw_type']
     
         if 'data_level' in meta:
-            lev = int(meta['data_level'])
+            try:
+                lev = int(meta['data_level'])
+            except:
+                pass
         
         data_out['station_setting'] = setting
         data_out['station_land_use'] = land_use
@@ -646,7 +649,7 @@ class ReadEbas(ReadUngriddedBase):
         
         # NOTE: may be also defined per column in attr. var_defs
         
-        data_out['datalevel'] = lev
+        data_out['data_level'] = lev
         
         
         return data_out
@@ -963,6 +966,7 @@ class ReadEbas(ReadUngriddedBase):
                                     files_contain, constraints)
         else:
             raise NotImplementedError('Coming soon...')
+        data.clear_meta_no_data()
 # =============================================================================
 #             from multiprocessing import Pool, Manager, cpu_count
 #             from functools import partial
@@ -1034,7 +1038,7 @@ class ReadEbas(ReadUngriddedBase):
                 const.print_log.warning('Skipping reading of EBAS NASA Ames '
                                         'file: {}. Reason: {}'
                                         .format(_file, repr(e)))
-                raise Exception
+
                 continue
             
             # Fill the metatdata dict
