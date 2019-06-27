@@ -78,7 +78,7 @@ class UngriddedData(object):
         
     """
     #: version of class (for caching)
-    __version__ = '0.20'
+    __version__ = '0.21'
     
     #: inital total number of rows in dataarray
     _ROWNO = 10000
@@ -171,6 +171,11 @@ class UngriddedData(object):
     @property
     def index(self):
         return self._index
+    
+    @property
+    def first_meta_idx(self):
+        """First available metadata index"""
+        return list(self.metadata.keys())[0]
     
     def _init_index(self, add_cols=None):
         """Init index mapping for columns in dataarray"""
@@ -917,7 +922,7 @@ class UngriddedData(object):
             
         """
         # initiate filters that are checked
-        valid_keys = self.metadata[0].keys()
+        valid_keys = self.metadata[self.first_meta_idx].keys()
         str_f = {}
         list_f = {}
         range_f = {}
@@ -1217,7 +1222,6 @@ class UngriddedData(object):
         meta_idx_new = 0.0
         data_idx_new = 0
     
-        
         if 'variables' in filter_attributes:
             raise NotImplementedError('Cannot yet filter by variables')
             
@@ -1880,7 +1884,7 @@ class UngriddedData(object):
         return (dates, data_this_match, data_other_match)
     
     def _meta_to_lists(self):
-        meta = {k:[] for k in self.metadata[0].keys()}
+        meta = {k:[] for k in self.metadata[self.first_meta_idx].keys()}
         for meta_item in self.metadata.values():
             for k, v in meta.items():
                 v.append(meta_item[k])
