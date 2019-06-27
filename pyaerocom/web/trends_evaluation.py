@@ -21,7 +21,7 @@ from pyaerocom.web.var_groups import var_groups
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    update_menu_trends_iface,
                                    get_all_config_files_trends_iface)
-from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.exceptions import DataCoverageError, MetaDataError
 from pyaerocom.region import Region, find_closest_region_coord
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
@@ -521,12 +521,61 @@ class TrendsEvaluation(object):
             if any([x in added for x in subset]):
                 raise ValueError('Fatal: one variable appears to exist in 2 groups')
             added.extend(subset)
-            result.append(subset)
+            if len(subset) > 0:
+                result.append(subset)
         rest = [x for x in vars_to_retrieve if not x in added]
         if len(rest) > 0:
             result.append(rest)
         return result
+       
+    def apply_filters_ungridded(self, data, filters, outlier_ranges=None, 
+                                vars_to_retrieve=None):
+        """Filter ungridded data
         
+        Parameters
+        ----------
+        data : UngriddedData
+            instance of data object
+        filters : dict
+            dictionary of filters that are supposed to be applied to the data
+        
+        Returns
+        -------
+        UngriddedData
+            filtered data object
+        """
+        remove_outliers = False
+        set_flags_nan = False
+        if 'remove_outliers' in filters:
+            remove_outliers = filters.pop('remove_outliers')
+        if 'set_flags_nan' in filters:
+            set_flags_nan = filters.pop('set_flags_nan')
+        data = data.filter_by_meta(**filters)
+        
+        if remove_outliers:
+            if outlier_ranges is None:
+                outlier_ranges = {}
+            if vars_to_retrieve is None:
+                vars_to_retrieve = data.contains_vars
+            for var in vars_to_retrieve:
+                if not var in data.contains_vars:
+                    continue
+                lower, upper = None, None
+                if var in outlier_ranges:
+                    lower, upper = outlier_ranges[var]
+                data = data.remove_outliers(var, 
+                                            inplace=True,
+                                            low=lower, 
+                                            high=upper, 
+                                            move_to_trash=False)
+        if set_flags_nan:
+            if not data.has_flag_data:
+                raise MetaDataError('Cannot apply filter "set_flags_nan" to '
+                                    'UngriddedData object, since it does not '
+                                    'contain flag information')
+            data = data.set_flags_nan(inplace=True)
+        return data
+            
     def run_single(self, obs_name, write_logfiles):
         """Run one of the config entries in :attr:`obs_config`
         
@@ -584,10 +633,16 @@ class TrendsEvaluation(object):
             ungridded_data = self.load_ungridded(obs_id, vars_to_retrieve, 
                                                  **constraints)
             
+            if 'obs_filters' in config:
+                ungridded_data = self.apply_filters_ungridded(
+                        data=ungridded_data, 
+                        filters=config['obs_filters'],
+                        outlier_ranges=min_max,
+                        vars_to_retrieve=vars_to_retrieve)
+            
             if config['obs_vert_type']=='Profile':
                 files_created = self._run_single_3d(ungridded_data=ungridded_data, 
                                                     vars_to_retrieve=vars_to_retrieve,
-                                                    min_max=min_max, 
                                                     min_dim=min_dim,
                                                     models=models, 
                                                     name=obs_name, 
@@ -596,7 +651,6 @@ class TrendsEvaluation(object):
             else:
                 files_created = self._run_single_2d(ungridded_data=ungridded_data, 
                                                     vars_to_retrieve=vars_to_retrieve,
-                                                    min_max=min_max, 
                                                     min_dim=min_dim,
                                                     models=models, 
                                                     name=obs_name,
@@ -1069,7 +1123,13 @@ class TrendsEvaluation(object):
         return filename
     
     def _remove_outliers(self, stat, var_name, min_max, logfile=None):
-        """Remove outliers from StationData objects"""
+        """Remove outliers from StationData objects
+        
+        NOTE
+        ----
+        This method is deprecated since 26.6.2019, since outlier removal is now
+        done already in UngriddedData object.
+        """
         
         raw = stat[var_name]
         len0 =  len(raw)
@@ -1408,7 +1468,6 @@ class TrendsEvaluation(object):
                     data[seas]['val'].append(np.nan)
                 else:
                     data[seas]['val'].append(np.nanmean(catch['value']))
-            
             # assign dates and jsdates vector to data dict
             data[seas]['date'] = np.asarray(dates)
             if len(dates) > 0:
@@ -1623,13 +1682,12 @@ class TrendsEvaluation(object):
                                         .format(obs_name, nowstr), 'w+'))
         return (outlier_log, err_log, files_log)
     
-    def _run_single_2d(self, ungridded_data, vars_to_retrieve, min_max,
+    def _run_single_2d(self, ungridded_data, vars_to_retrieve,
                        min_dim, models, name, vert_which, files_created, 
                        err_log):
     
         files_created = self._run_single_helper(ungridded_data=ungridded_data, 
                                                 vars_to_retrieve=vars_to_retrieve, 
-                                                min_max=min_max, 
                                                 name=name, 
                                                 vert_which=vert_which,
                                                 files_created=files_created,
@@ -1638,7 +1696,7 @@ class TrendsEvaluation(object):
                                                 err_log=err_log)
         return files_created
     
-    def _run_single_3d(self, ungridded_data, vars_to_retrieve, min_max,
+    def _run_single_3d(self, ungridded_data, vars_to_retrieve,
                        min_dim, models, name, files_created, err_log):
         if models is not None:
             raise NotImplementedError('Cannot yet colocate 3D observations '
@@ -1646,7 +1704,6 @@ class TrendsEvaluation(object):
         for add_name, alt_range in self.VERT_LAYERS.items():
             files_created = self._run_single_helper(ungridded_data=ungridded_data, 
                                                     vars_to_retrieve=vars_to_retrieve, 
-                                                    min_max=min_max, 
                                                     min_dim=min_dim,  
                                                     models=models,
                                                     name=name, 
@@ -1656,8 +1713,7 @@ class TrendsEvaluation(object):
                                                     altitude=alt_range)
         return files_created
     
-    
-    def _run_single_helper(self, ungridded_data, vars_to_retrieve, min_max,
+    def _run_single_helper(self, ungridded_data, vars_to_retrieve,
                            name, vert_which, files_created, min_dim, 
                            models, err_log=None, **alt_range):
         from pyaerocom.exceptions import DataCoverageError
@@ -1681,8 +1737,6 @@ class TrendsEvaluation(object):
             stats_processed = []
             map_data = []
             rng = None
-            if var in min_max:
-                rng = min_max[var]
             
             stats_ok = []
             lats_ok = []
@@ -1695,10 +1749,6 @@ class TrendsEvaluation(object):
                     raise Exception('Unexpected Error, please check')
                 
                 try:
-                    if rng is not None:
-                        stat = self._remove_outliers(stat, var_name=var, 
-                                                     min_max=rng)
-                    
                     data_dict = self._station_to_timeseries(stat, 
                                                             var_name=var, 
                                                             **alt_range)
@@ -1834,8 +1884,7 @@ def check_ebas_default():
     """Make sure the EBAS default configuration has not changed"""
     from pyaerocom.io import ReadEbas
     r = ReadEbas()
-    assert r.opts.remove_invalid_flags
-    assert r.opts.datalevel == None
+    assert r.opts.eval_flags
     assert r.opts.keep_aux_vars == False
             
 if __name__ == '__main__':    
