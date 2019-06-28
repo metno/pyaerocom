@@ -179,7 +179,7 @@ class UngriddedData(object):
     
     def _init_index(self, add_cols=None):
         """Init index mapping for columns in dataarray"""
-        idx = od(metadata       = self._METADATAKEYINDEX,
+        idx = od(meta           = self._METADATAKEYINDEX,
                  time           = self._TIMEINDEX,
                  stoptime       = self._STOPTIMEINDEX,
                  latitude       = self._LATINDEX,
@@ -2127,7 +2127,9 @@ class UngriddedData(object):
                         len(self.metadata)))
         
     def __getitem__(self, key):
-        return self.to_station_data(key, insert_nans=True)
+        if isnumeric(key) or key in self.unique_station_names:
+            return self.to_station_data(key, insert_nans=True)
+        raise KeyError('Invalid input key, need metadata index or station name ')
     
     def __and__(self, other):
         """Merge this object with another using the logical ``and`` operator
