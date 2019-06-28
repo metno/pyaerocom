@@ -68,7 +68,6 @@ class GridIO(object):
         
     """
     _AEROCOM = {'FILE_TYPE': '.nc',
-               'TS_TYPES': ['hourly', '3hourly', 'daily', 'monthly', 'yearly'],
                'DEL_TIME_BOUNDS': True,
                'SHIFT_LONS': True,
                'CHECK_TIME_FILENAME': True,
@@ -78,7 +77,6 @@ class GridIO(object):
                'USE_RENAMED_DIR': True,
                'INCLUDE_SUBDIRS': False}
     _DEFAULT = {'FILE_TYPE': '.nc',
-             'TS_TYPES': ['hourly', '3hourly', 'daily', 'monthly', 'yearly'],
              'DEL_TIME_BOUNDS': True,
              'SHIFT_LONS': False,
              'CHECK_TIME_FILENAME': False,
