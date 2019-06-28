@@ -367,7 +367,8 @@ class StationData(StationMetaData):
 # =============================================================================
         return vals
     
-    def get_meta(self, force_single_value=True, quality_check=True):
+    def get_meta(self, force_single_value=True, quality_check=True,
+                 add_none_vals=False):
         """Return meta-data as dictionary
         
         Parameters
@@ -380,6 +381,8 @@ class StationData(StationMetaData):
             standarad deviation in the values is compared to the upper limits
             allowed in the local variation. The upper limits are specified
             in attr. ``COORD_MAX_VAR``. 
+        add_none_vals : bool
+            
         
         Returns
         -------
@@ -398,7 +401,7 @@ class StationData(StationMetaData):
         for key in self.STANDARD_META_KEYS:
             if key in self.STANDARD_COORD_KEYS: # this has been handled above
                 continue
-            if self[key] is None:
+            if self[key] is None and not add_none_vals:
                 logger.info('No metadata available for key {}'.format(key))
                 continue
             
@@ -1146,7 +1149,7 @@ class StationData(StationMetaData):
 
         if freq is not None:
             data = resample_timeseries(data, freq, how=resample_how,
-                                           **kwargs)
+                                       **kwargs)
 
         return data
     
