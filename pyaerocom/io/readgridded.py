@@ -1356,16 +1356,16 @@ class ReadGridded(object):
         return data
         
                 
-    def read(self, var_names=None, start=None, stop=None, ts_type=None, 
+    def read(self, vars_to_retrieve=None, start=None, stop=None, ts_type=None, 
              experiment=None, vert_which=None, flex_ts_type=True, 
-             prefer_longer=False, require_all_vars_avail=False):
+             prefer_longer=False, require_all_vars_avail=False, **kwargs):
         """Read all variables that could be found 
         
         Reads all variables that are available (i.e. in :attr:`vars`)
         
         Parameters
         ----------
-        var_names : list or str, optional
+        vars_to_retrieve : list or str, optional
             variables that are supposed to be read. If None, all variables
             that are available are read.
         start : Timestamp or str, optional
@@ -1393,6 +1393,8 @@ class ReadGridded(object):
         require_all_vars_avail : bool
             if True, it is strictly required that all input variables are 
             available. 
+        **kwargs
+            optional and support for deprecated input args
         
         Returns
         -------
@@ -1409,24 +1411,31 @@ class ReadGridded(object):
             2. if ``require_all_vars_avail=True`` and if none of the input 
             variables is available in this object
         """
-
-        if var_names is None:
-            var_names = self.vars
-        elif isinstance(var_names, str):
-            var_names = [var_names]
-        elif not isinstance(var_names, list):
-            raise IOError("Invalid input for var_names {}. Need string or list "
-                          "of strings specifying var_names to load. You may "
-                          "also leave it empty (None) in which case all "
-                          "available variables are loaded".format(var_names))
+        if vars_to_retrieve is None and 'var_names' in kwargs:
+            const.print_log.warning(DeprecationWarning('Input arg var_names '
+                                                       'is deprecated (but '
+                                                       'still works). Please '
+                                                       'use vars_to_retrieve '
+                                                       'instead'))
+            vars_to_retrieve = kwargs['var_names']
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.vars
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        elif not isinstance(vars_to_retrieve, list):
+            raise IOError('Invalid input for vars_to_retrieve {}. Need string '
+                          'or list of strings specifying var_names to load. '
+                          'You may also leave it empty (None) in which case all '
+                          'available variables are loaded'
+                          .format(vars_to_retrieve))
         if require_all_vars_avail:
-            if not all([var in self.vars_provided for var in var_names]):
+            if not all([var in self.vars_provided for var in vars_to_retrieve]):
                 raise VarNotAvailableError('One or more of the specified vars '
                                         '({}) is not available in {} database. '
                                         'Available vars: {}'.format(
-                                        var_names, self.data_id, 
+                                        vars_to_retrieve, self.data_id, 
                                         self.vars_provided))
-        var_names = list(np.intersect1d(self.vars_provided, var_names))
+        var_names = list(np.intersect1d(self.vars_provided, vars_to_retrieve))
         if len(var_names) == 0:
             raise VarNotAvailableError('None of the desired variables is '
                                         'available in {}'.format(self.data_id))
