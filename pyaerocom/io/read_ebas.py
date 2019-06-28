@@ -122,7 +122,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.18_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.19_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -1046,7 +1046,7 @@ class ReadEbas(ReadUngriddedBase):
             # use the lat location here since we have to choose one location
             # in the time series plot
             metadata[meta_key] = od()
-            metadata[meta_key].update(station_data.get_meta())
+            metadata[meta_key].update(station_data.get_meta(add_none_vals=True))
 
             if 'station_name_orig' in station_data:
                 metadata[meta_key]['station_name_orig'] = station_data['station_name_orig']     
@@ -1139,7 +1139,7 @@ if __name__=="__main__":
     r = ReadEbas()
     r.opts.keep_aux_vars = True
     
-    data =  r.read(['scatc550aer', 'sconcpm10'], station_names='Ba*')
+    data =  r.read(['sconco3'], station_names='Ba*')
     
     
 
