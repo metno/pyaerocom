@@ -1072,10 +1072,12 @@ class TrendsEvaluation(object):
                                                             station_name))
         
         outfile = os.path.join(self.out_dirs['ts'], filename)
-        
-        pd.DataFrame(trends_stat).T.reset_index().to_json(outfile,
-                                                          double_precision=5) 
-    
+        try:
+            pd.DataFrame(trends_stat).T.reset_index().to_json(outfile,
+                                                              double_precision=5) 
+        except ValueError as e:
+            raise ValueError('FATAL: could not save station time-series trends '
+                             'data to json. Reason: {}'.format(repr(e)))
         return filename
     
     def _remove_outliers(self, stat, var_name, min_max, logfile=None):

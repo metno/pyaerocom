@@ -120,6 +120,7 @@ class UngriddedData(object):
         self._data = np.ones([num_points, self._COLNO]) * np.nan
 
         self.metadata = od()
+        # single value data revision is deprecated
         self.data_revision = od()
         self.meta_idx = od()
         self.var_idx = od()
@@ -127,6 +128,22 @@ class UngriddedData(object):
         self._idx = -1
         
         self.filter_hist = od()
+
+    def _get_data_revision_helper(self, data_id):
+        rev = None
+        for meta in self.metadata.values():
+            if meta['data_id'] == data_id:
+                if rev is None:
+                    rev = meta['data_revision']
+                elif not meta['data_revision'] == rev:
+                    raise MetaDataError('Found different data revisions for '
+                                         'dataset {}'.format(data_id))
+        if data_id in self.data_revision:
+            if not rev == self.data_revision[data_id]:
+                raise MetaDataError('Found different data revisions for '
+                                    'dataset {}'.format(data_id))
+        self.data_revision[data_id] = rev
+        return rev
     
     def _check_index(self):
         """Checks if all indices are assigned correctly"""
@@ -167,7 +184,7 @@ class UngriddedData(object):
                 assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
                           'index assigned in data and var_idx for {} in meta-block'
                           .format(var, idx))
-                      
+        
     @property
     def index(self):
         return self._index
@@ -616,8 +633,7 @@ class UngriddedData(object):
             try:
                 rev = self.data_revision[val['data_id']]
             except:
-                print_log.warning('Data revision could not be accessed in '
-                                  'UngriddedData')
+                print_log.warning('Data revision could not be accessed')
         sd.data_revision = rev
         if not 'variables' in val or val['variables'] in (None, []):
             raise VarNotAvailableError('Metablock does not contain variable '

@@ -1051,6 +1051,7 @@ class ReadEbas(ReadUngriddedBase):
             if 'station_name_orig' in station_data:
                 metadata[meta_key]['station_name_orig'] = station_data['station_name_orig']     
             
+            metadata[meta_key]['data_revision'] = self.data_revision
             metadata[meta_key]['var_info'] = od()
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
@@ -1129,7 +1130,7 @@ class ReadEbas(ReadUngriddedBase):
         if self.merge_meta:
             data_obj = data_obj.merge_common_meta(ignore_keys=['filename', 
                                                                'PI'])
-        data_obj.data_revision[self.DATA_ID] = self.data_revision
+        #data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj
         
         return data_obj

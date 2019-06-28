@@ -31,7 +31,7 @@ class ReadUngriddedBase(abc.ABC):
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.06'
+    __baseversion__ = '0.07'
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -254,18 +254,19 @@ class ReadUngriddedBase(abc.ABC):
     def data_revision(self):
         """Revision string from file Revision.txt in the main data directory
         """
+        if '_data_revision' in self.__dict__:
+            return self.__dict__['_data_revision']
+        rev = 'n/d'
         try:
             revision_file = os.path.join(self.DATASET_PATH, self.REVISION_FILE)
             if os.path.isfile(revision_file):
                 with open(revision_file, 'rt') as in_file:
-                    revision = in_file.readline().strip()
-                    in_file.close()
-                    
-                return revision
-            raise Exception
+                    rev = in_file.readline().strip()
         except:
-            return 'n/d'
-        
+            pass
+        self._data_revision = rev
+        return rev
+    
     @property
     def verbosity_level(self):
         """Current level of verbosity of logger"""

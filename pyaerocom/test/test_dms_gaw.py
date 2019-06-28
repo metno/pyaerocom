@@ -22,7 +22,6 @@ def data_vmrdms_ams_cvo():
 
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
-    assert 'DMS_AMS_CVO' in data.data_revision
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
     assert data.shape == (819+7977, 12)
     assert len(data.metadata) == 2

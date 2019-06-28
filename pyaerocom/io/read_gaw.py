@@ -282,7 +282,7 @@ class ReadGAW(ReadUngriddedBase):
             else:
                 instr = self.INSTRUMENT_NAME
             metadata[meta_key]['instrument_name'] = instr
-            
+            metadata[meta_key]['data_revision'] = self.data_revision
             # TODO: Add 'var_info' to the metadata block
             # metadata[meta_key]['var_info'] = 'some info'
             # Var info is a dictionary and it must contain the key 'units'
@@ -339,10 +339,9 @@ class ReadGAW(ReadUngriddedBase):
         
         # Shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        data_obj.data_revision[self.DATASET_NAME] = self.data_revision
+        #data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         
-        print(self)
         return data_obj
     
 if __name__ == "__main__":

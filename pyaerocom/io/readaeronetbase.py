@@ -16,7 +16,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """    
-    __baseversion__ = '0.07_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.08_' + ReadUngriddedBase.__baseversion__
     
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -381,6 +381,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             else:
                 instr = self.INSTRUMENT_NAME
             meta['instrument_name'] = instr
+            meta['data_revision'] = self.data_revision
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = od()
@@ -443,7 +444,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        data_obj.data_revision[self.DATA_ID] = self.data_revision
+        #data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj
         return data_obj
     

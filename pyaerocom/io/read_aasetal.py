@@ -22,7 +22,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.02'
+    __version__ = '0.03'
 
     COL_DELIM = ','
 
@@ -255,6 +255,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     instr = self.INSTRUMENT_NAME
 
                 metadata[meta_key]['instrument_name'] = instr
+                metadata[meta_key]['data_revision'] = self.data_revision
 
                 # this is a list with indices of this station for each variable
                 # not sure yet, if we really need that or if it speeds up things
@@ -301,7 +302,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 idx += totnum
                 
         data_obj._data = data_obj._data[:idx]
-        data_obj.data_revision[self.DATA_ID] = self.data_revision
+        #data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj # initalizing a pointer to it selves
         return data_obj
     

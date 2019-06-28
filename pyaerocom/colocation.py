@@ -7,10 +7,12 @@ import numpy as np
 import os
 import pandas as pd
 from pyaerocom import logger
-from pyaerocom.exceptions import (VarNotAvailableError, TimeMatchError,
-                                  ColocationError, 
+from pyaerocom.exceptions import (ColocationError, 
                                   DataUnitError,
-                                  DimensionOrderError)
+                                  DimensionOrderError,
+                                  MetaDataError,
+                                  TimeMatchError,
+                                  VarNotAvailableError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
                                PANDAS_RESAMPLE_OFFSETS,
@@ -536,7 +538,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     try:
         revision = ungridded_data.data_revision[dataset_ref]
     except: 
-        revision = 'n/a'
+        try:
+            revision = ungridded_data._get_data_revision_helper(dataset_ref)
+        except MetaDataError:
+            revision = 'MULTIPLE'
+        except:
+            revision = 'n/a'
+            
     files = [os.path.basename(x) for x in gridded_data.from_files]
     
     meta = {'data_source'       :   [dataset_ref,
