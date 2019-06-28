@@ -12,9 +12,13 @@ from fnmatch import fnmatch
 import numpy as np
 import os, glob
 import pandas as pd
-from pyaerocom import const, __version__
+from pyaerocom import const, __version__, Region
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom.helpers import isnumeric
+from pyaerocom.trends_helpers import (_init_trends_result_dict, 
+                                      _compute_trend_error,
+                                      _get_season, _mid_season, 
+                                      _find_area)
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.io import ReadGridded
 from pyaerocom.web.var_groups import var_groups
@@ -22,7 +26,6 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    update_menu_trends_iface,
                                    get_all_config_files_trends_iface)
 from pyaerocom.exceptions import DataCoverageError, MetaDataError
-from pyaerocom.region import Region, find_closest_region_coord
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 import simplejson
@@ -1031,54 +1034,7 @@ class TrendsEvaluation(object):
                                .format(k))
             cfg[k] = ModelConfigEval(**v)
         self.model_config = cfg
-        
-    def _get_season(self, m, yr):
-        if m in [3,4,5]:
-            return 'spring-{}'.format(int(yr))
-        if m in [6,7,8]:
-            return 'summer-{}'.format(int(yr))
-        if m in [9,10,11]:
-            return 'autumn-{}'.format(int(yr))
-        if m in [12]:
-            return 'winter-{}'.format(int(yr)+1)
-        if m in [1,2]:
-            return 'winter-{}'.format(int(yr))
-        raise ValueError('Failed to retrieve season for m={}, yr={}'
-                         .format(m, yr))
-    
-    def _mid_season(self, seas, yr):
-        if seas=='spring':
-            return np.datetime64('{}-04-15'.format(yr))    
-        if seas=='summer':
-            return np.datetime64('{}-07-15'.format(yr))
-        if seas=='autumn':
-            return np.datetime64('{}-10-15'.format(yr))    
-        if seas=='winter':
-            return np.datetime64('{}-01-15'.format(yr))    
-        if seas=='all':
-            return np.datetime64('{}-06-15'.format(yr))    
-        raise ValueError('Invalid input for season (seas):', seas)
-    
-    def _find_area(self, lat, lon):
-        """Find area corresponding to input lat/lon coordinate
-        
-        Parameters
-        ----------
-        lat : float
-            latitude
-        lon : float
-            longitude
-        
-        Returns
-        -------
-        str
-            name of region
-        """
-        reg = find_closest_region_coord(lat, lon)
-        if reg in self.DEFAULT_REGIONS:
-            return self.DEFAULT_REGIONS[reg]
-        return reg
-    
+
     def _save_map_json(self, map_data, obs_name, obs_var, vert_which,
                        mod_name=None, mod_var=None):
         map_outname = ('OBS-{}:{}_{}_MOD-{}:{}.json'.format(obs_name, 
@@ -1361,14 +1317,7 @@ class TrendsEvaluation(object):
     
     @staticmethod
     def _init_trends_result_dict(start_yr):
-        keys = ['pval', 'm', 'm_err', 
-                'n', 'y_mean', 'y_min', 'y_max', 'coverage',
-                'slp', 'slp_err', 'reg0', 't0', # data specific
-                'slp_{}'.format(start_yr), # period specific
-                'slp_{}_err'.format(start_yr), # period specific
-                'reg0_{}'.format(start_yr) # period specific
-                ]
-        return dict.fromkeys(keys)
+        return _init_trends_result_dict(start_yr)
     
     @staticmethod
     def _compute_trend_error(m, m_err, v0, v0_err):
@@ -1398,9 +1347,7 @@ class TrendsEvaluation(object):
             error of T in computed using gaussian error propagation of trend 
             formula in units of %/yr
         """
-        delta_sl = m_err / v0
-        delta_ref = m * v0_err / v0**2
-        return np.sqrt(delta_sl**2 + delta_ref**2) * 100
+        return _compute_trend_error(m, m_err, v0, v0_err)
     
     @staticmethod
     def _compute_trend_error_alt(reg, residual_magnitude, dt):
@@ -1435,8 +1382,8 @@ class TrendsEvaluation(object):
          #add season to monthly data
         mobs = data['mobs']
         
-        mobs['season'] = mobs.apply(lambda row: self._get_season(row['month'],
-                                                                 row['year']), 
+        mobs['season'] = mobs.apply(lambda row: _get_season(row['month'],
+                                                            row['year']), 
                                     axis=1)
         
         mobs = mobs.dropna(subset=['value'])
@@ -1461,7 +1408,7 @@ class TrendsEvaluation(object):
                 else:
                     catch = mobs[mobs['season'].str.contains('{}-{}'.format(seas, yr))]
                 
-                dates.append(self._mid_season(seas, yr))
+                dates.append(_mid_season(seas, yr))
     
                 #needs 4 seasons to compute seasonal average to avoid biases
                 if seas=='all' and len(np.unique(catch['season'].values)) < 4:
@@ -1484,8 +1431,8 @@ class TrendsEvaluation(object):
                 # or last value in tseries (or both) is NaN)
                 start_yr, stop_yr = self._years_from_periodstr(period)
                 
-                start_date = self._mid_season(seas, start_yr)
-                stop_date = self._mid_season(seas, stop_yr)
+                start_date = _mid_season(seas, start_yr)
+                stop_date = _mid_season(seas, stop_yr)
                 
                 period_index = pd.date_range(start=start_date,
                                              end=stop_date, 
@@ -1651,7 +1598,8 @@ class TrendsEvaluation(object):
                                            'val'   : data[seas]['val'], 
                                            'trends': data[seas]['trends']}
         
-        reg = self._find_area(data['lat'], data['lon'])
+        reg = _find_area(data['lat'], data['lon'], 
+                         regions_dict=self.DEFAULT_REGIONS)
         if reg == 'WORLD':
             reg = None
         # station information for map view
@@ -1736,7 +1684,6 @@ class TrendsEvaluation(object):
             var_out = var
             stats_processed = []
             map_data = []
-            rng = None
             
             stats_ok = []
             lats_ok = []
@@ -1879,7 +1826,7 @@ class TrendsEvaluation(object):
             files_created['map'].append(map_outname)
         
         return files_created
-    
+
 def check_ebas_default():
     """Make sure the EBAS default configuration has not changed"""
     from pyaerocom.io import ReadEbas
