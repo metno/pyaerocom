@@ -31,21 +31,11 @@ def test_first_file():
     read.files = PATHS
     
     stat = read.read_file(PATHS[0], 'ec532aer')
-    keys = ['dtime', 'var_info', 'station_coords', 'data_err', 
-            'overlap', 'data_flagged', 'filename', 'station_id', 
-            'station_name', 'instrument_name', 'PI', 'country', 'ts_type', 
-            'latitude', 'longitude', 'altitude', 'data_id', 
-            'dataset_name', 'data_product', 'data_version', 
-            'data_level', 'revision_date', 'website', 'ts_type_src', 
-            'stat_merge_pref_attr', 'location', 'start_date', 
-            'start_utc', 'stop_utc', 'wavelength_emis', 
-            'wavelength_det', 'res_raw_m', 'zenith_ang_deg', 
-            'comments', 'shots_avg', 'detection_mode', 
-            'res_eval', 'input_params', 'eval_method', 
-            'stopdtime', 'has_zdust', 'ec532aer', 
-            'contains_vars']
-    npt.assert_array_equal(list(stat.keys()),
-                           keys)
+    
+    assert 'data_level' in stat
+    assert 'wavelength_det' in stat
+    assert 'has_zdust' in stat
+    assert 'eval_method' in stat
     
     assert 'ec532aer' in stat.var_info
     
