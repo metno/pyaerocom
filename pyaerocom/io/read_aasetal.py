@@ -22,7 +22,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.03'
+    __version__ = '0.04'
 
     COL_DELIM = ','
 
@@ -43,13 +43,21 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     #: base class ReadUngriddedBase)
     # This contains the mapping between the requested variables and what it is called in the files.
     
-    #: Dictionary mapping variable name to the keys present in the files. 
-    VAR_TO_KEY = {}
-    VAR_TO_KEY["sconcso4pr"] = "concentration_mgS/L"
-    VAR_TO_KEY["pr"] = 'precip_amount_mm'
-    VAR_TO_KEY["wetso4"] = "deposition_kgS/ha"
-    VAR_TO_KEY["sconcso2"] = 'concentration_ugS/m3'
-    VAR_TO_KEY["sconcso4"] = 'concentration_ugS/m3'
+    COLNAMES_VARS = {}
+    COLNAMES_VARS['concentration_mgS/L'] = ['sconcso4pr']
+    COLNAMES_VARS['concentration_ugS/m3'] = ['sconcso4', 'sconcso2']
+    COLNAMES_VARS['precip_amount_mm'] = ['pr']
+    COLNAMES_VARS['deposition_kgS/ha'] = ['wetso4']
+    
+# =============================================================================
+#     #: Dictionary mapping variable name to the keys present in the files. 
+#     VAR_TO_KEY = {}
+#     VAR_TO_KEY["sconcso4pr"] = "concentration_mgS/L"
+#     VAR_TO_KEY["pr"] = 'precip_amount_mm'
+#     VAR_TO_KEY["wetso4"] = "deposition_kgS/ha"
+#     VAR_TO_KEY["sconcso2"] = 'concentration_ugS/m3'
+#     VAR_TO_KEY["sconcso4"] = 'concentration_ugS/m3'
+# =============================================================================
 
     #: Dictionary mapping filenames to available variables in the respective files. 
     FILES_CONTAIN = {}
@@ -67,15 +75,15 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
     #: :obj: `list` of :obj: `str` 
     #: List containing all the variables available in this data set.
-    PROVIDES_VARIABLES = list(VAR_TO_KEY.keys())
+    PROVIDES_VARIABLES = list(VARS_TO_FILES.keys())
     
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
-
+    
     @property
     def DEFAULT_VARS(self):
         return self.PROVIDES_VARIABLES
-
+    
     def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
         """ Read one GawTadSubsetAasEtAl file
 
@@ -153,35 +161,43 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             s["ts_type"] = self.TS_TYPE
             s['variables'] = []
             
-            # The variables present in this file is the intersection between 
-            # the keys in the file and the variables name available, 
-            # here expressed in terms of their keynames in order to retrieve them.
-            variables_present = list(set(station_group.keys()).intersection(
-                                                    self.VAR_TO_KEY.values()))
-
+# =============================================================================
+#             # The variables present in this file is the intersection between 
+#             # the keys in the file and the variables name available, 
+#             # here expressed in terms of their keynames in order to retrieve them.
+#             variables_present = list(set(station_group.keys()).intersection(
+#                                                     self.VAR_TO_KEY.values()))
+# =============================================================================
+            
+            var_names = self.COLNAMES_VARS
             # Looping over all keys in the grouped data frame.
             for key in station_group: # NOT YEAR OR MONTH, BUT WOULD LIKE TO KEEP THOSE.
                 # Enters if the the key is a variable
-                if key in variables_present:
-                    # Looping over all varibales to retrieve
-                    for var in vars_to_retrieve:
-                        if var == "wetso4":
-                            # input unit is kg S/ha
-                            y = station_group['year'].values
-                            m = station_group['month'].values
-                            
-                            monthly_to_sec = days_in_month(y, m)*24*60*60             
-                            mass_sulhpor = pd.to_numeric(station_group[key], 
-                                                         errors='coerce').values
-                            s[var] = unitconversion_wet_deposition(mass_sulhpor, 
-                             "monthly")/monthly_to_sec#monthly_to_sec[:156]
-                            # output variable is ks so4 m-2s-1
-                        else:
-                            # Other variable have the correct unit.
-                            s[var] = pd.to_numeric(station_group[key], 
-                                                   errors='coerce').values
-                        # Adds the variable
-                        s['variables'].append(var)
+                if key in var_names:
+                    _var = np.intersect1d(var_names[key], vars_to_retrieve)
+                    if len(_var) == 0:
+                        continue
+                    elif len(_var) > 1:
+                        raise IOError('Found multiple matches...')
+                    var = _var[0]
+                
+                    if var == "wetso4":
+                        # input unit is kg S/ha
+                        y = station_group['year'].values
+                        m = station_group['month'].values
+                        
+                        monthly_to_sec = days_in_month(y, m)*24*60*60             
+                        mass_sulhpor = pd.to_numeric(station_group[key], 
+                                                     errors='coerce').values
+                        s[var] = unitconversion_wet_deposition(mass_sulhpor, 
+                         "monthly")/monthly_to_sec#monthly_to_sec[:156]
+                        # output variable is ks so4 m-2s-1
+                    else:
+                        # Other variable have the correct unit.
+                        s[var] = pd.to_numeric(station_group[key], 
+                                               errors='coerce').values
+                    # Adds the variable
+                    s['variables'].append(var)
                 else:
                     if key == 'dtime':
                         s[key] = station_group[key].values
@@ -324,7 +340,6 @@ def days_in_month(years, months):
     nr_of_days = []
     if len(index_feb) == 0:
         nr_of_days = np.array([days[m-1] for m in months])
-        print(nr_of_days)
         return nr_of_days
     else:
         for counter, m in enumerate(months):
