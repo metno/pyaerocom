@@ -138,6 +138,15 @@ class StationData(StationMetaData):
             ud[var] = self.get_unit(var)
         return ud
 
+    def compute_trend(self, var_name, start_year=None, stop_year=None,
+                      season=None, slope_confidence=None, **alt_range):
+        if not self.has_var(var_name):
+            raise VarNotAvailableError('No such variables {} in StationData'
+                                       .format(var_name))
+        from pyaerocom.trends_helpers import compute_trends_station
+        return compute_trends_station(self, var_name, start_year, stop_year, 
+                                      season, slope_confidence, **alt_range)
+        
     def check_var_unit_aerocom(self, var_name):
         """Check if unit of input variable is AeroCom default, if not, convert
 

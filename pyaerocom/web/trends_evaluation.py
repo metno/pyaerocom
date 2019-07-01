@@ -18,7 +18,7 @@ from pyaerocom.helpers import isnumeric
 from pyaerocom.trends_helpers import (_init_trends_result_dict, 
                                       _compute_trend_error,
                                       _get_season, _mid_season, 
-                                      _find_area)
+                                      _find_area, _years_from_periodstr)
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.io import ReadGridded
 from pyaerocom.web.var_groups import var_groups
@@ -312,7 +312,7 @@ class TrendsEvaluation(object):
             return False
         for p in self.periods:
             try:
-                start, stop = self._years_from_periodstr(p)
+                start, stop = _years_from_periodstr(p)
             except:
                 raise ValueError('Invalid input for period: {}. '
                                  'Need string in format "2010-2019"'.format(p))
@@ -1073,9 +1073,9 @@ class TrendsEvaluation(object):
         
         outfile = os.path.join(self.out_dirs['ts'], filename)
         try:
-            pd.DataFrame(trends_stat).T.reset_index().to_json(outfile,
-                                                              double_precision=5) 
-        except ValueError as e:
+            df = pd.DataFrame(trends_stat)
+            df.T.reset_index().to_json(outfile, double_precision=5) 
+        except ValueError as e:        
             raise ValueError('FATAL: could not save station time-series trends '
                              'data to json. Reason: {}'.format(repr(e)))
         return filename
@@ -1141,21 +1141,21 @@ class TrendsEvaluation(object):
         else:
             var_info = {}
         for k, v in keymap.items():
+            val = None
             if v in ['var_name', 'data_overlap']:
                 continue
             elif v in vardata:
                 raise Exception('Key {} already exists... please debug...'
                                 .format(k))
             try: # longitude, latitude and altitude are @property decorators in StationData
-                vardata[v] = station[k]
+                val = station[k]
             except:   
                 if k in var_info:
-                    vardata[v] = var_info[k]
-        # fill up missing keys
-        for v in keymap.values():
-            if not v in vardata:
-                vardata[v] = None
-                
+                    val = var_info[k]
+            if isinstance(val, (list, tuple)):
+                val = '; '.join([str(x) for x in val])
+            vardata[v] = val
+        
         # this is necessary, as e.g. altitude attribute of input station data 
         # is not necessarily the station coordinate!
         for cname, cval in station.get_station_coords().items():
@@ -1300,24 +1300,6 @@ class TrendsEvaluation(object):
         return (dates - epoch).astype('timedelta64[ms]').astype(int)
     
     @staticmethod
-    def _years_from_periodstr(period):
-        """Convert period str to start / stop years
-        
-        Parameters
-        ----------
-        period : str
-            period str, e.g. '1990-2010'
-            
-        Returns
-        -------
-        int
-            start year
-        int 
-            stop year
-        """
-        return [int(x) for x in period.split('-')]
-    
-    @staticmethod
     def _init_trends_result_dict(start_yr):
         return _init_trends_result_dict(start_yr)
     
@@ -1431,7 +1413,7 @@ class TrendsEvaluation(object):
                 
                 # desired start / stop year (note, that this may change if first 
                 # or last value in tseries (or both) is NaN)
-                start_yr, stop_yr = self._years_from_periodstr(period)
+                start_yr, stop_yr = _years_from_periodstr(period)
                 
                 start_date = _mid_season(seas, start_yr)
                 stop_date = _mid_season(seas, stop_yr)
