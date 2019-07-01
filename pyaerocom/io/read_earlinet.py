@@ -539,7 +539,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     data_obj._data[idx:stop, 
                                    col_idx['altitude']] = stat['altitude']
                     data_obj._data[idx:stop, 
-                                   col_idx['metadata']] = meta_key
+                                   col_idx['meta']] = meta_key
                                    
                     # write data to data object
                     data_obj._data[idx:stop, col_idx['time']] = time
