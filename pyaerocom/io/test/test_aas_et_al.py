@@ -230,7 +230,8 @@ def test_ungriddeddata_surface_cons_so2():
     data = reader.read()  # read all variables
     assert len(data.station_name) == 890
     #assert 'n/a' in data.data_revision not woriking
-    assert data.shape == (1063631, 12)
+    assert data.shape == (436121, 12)
+    
 
 if __name__ == "__main__":
     # pya.change_verbosity('info')
