@@ -1133,6 +1133,10 @@ class StationData(StationMetaData):
             data = self.select_altitude(var_name, alt_info)
         else:
             data = self[var_name]
+        if 'ts_type' in kwargs:
+            if freq is not None:
+                raise ValueError('Both freq and ts_type are provided as input')
+            freq = kwargs.pop('ts_type')
             
         if isinstance(data, xray.DataArray):
             if not 'time' in data.dims:
