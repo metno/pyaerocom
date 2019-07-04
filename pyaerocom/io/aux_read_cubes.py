@@ -5,7 +5,8 @@ Config file for AeroCom PhaseIII test project
 """
 
 
-from iris.cube import Cube
+import iris
+import numpy as np
 
 def _check_input_iscube(*data_objs):
     from pyaerocom.griddeddata import GriddedData
@@ -13,18 +14,12 @@ def _check_input_iscube(*data_objs):
     for obj in data_objs:
         if isinstance(obj, GriddedData):
             checked.append(obj.cube)
-        elif isinstance(obj, Cube):
+        elif isinstance(obj, iris.cube.Cube):
             checked.append(obj)
         else:
             raise ValueError('Invalid input: require GriddedData or Cube, got '
                              '{}'.format(type(obj)))
     return checked
-
-def add_cubes(gridded1, gridded2):
-    """Method to add cubes from 2 gridded data objects
-    """
-    cube1, cube2 = _check_input_iscube(gridded1, gridded2)
-    return  cube1 + cube2
 
 def _check_same_units(cube1, cube2):
     if cube1.units == cube2.units:
@@ -48,6 +43,19 @@ def _check_same_units(cube1, cube2):
         from pyaerocom.exceptions import UnitConversionError
         raise UnitConversionError('Failed to harmonise units')
 
+def add_cubes(gridded1, gridded2):
+    """Method to add cubes from 2 gridded data objects
+    """
+    cube1, cube2 = _check_input_iscube(gridded1, gridded2)
+    cube1, cube2 = _check_same_units(cube1, cube2)    
+    return  cube1 + cube2
+
+def subtract_cubes(gridded1, gridded2):
+    """Method to subtract 1 cube from another"""
+    cube1, cube2 = _check_input_iscube(gridded1, gridded2)
+    cube1, cube2 = _check_same_units(cube1, cube2)    
+    return  cube1 - cube2
+
 def compute_angstrom_coeff_cubes(od1, od2, lambda1=None, lambda2=None):
     """Compute Angstrom coefficient cube based on 2 optical densitiy cubes
     
@@ -68,6 +76,8 @@ def compute_angstrom_coeff_cubes(od1, od2, lambda1=None, lambda2=None):
         Cube containing Angstrom exponent(s)
     """
     from pyaerocom import GriddedData
+    from pyaerocom.variable import VarNameInfo
+    from cf_units import Unit
     if isinstance(od1, GriddedData):
         od1 = od1.grid
     if isinstance(od2, GriddedData):
@@ -86,10 +96,3 @@ def compute_angstrom_coeff_cubes(od1, od2, lambda1=None, lambda2=None):
     ang = -1*iris.analysis.maths.divide(logr, wvl_r)
     ang.units = Unit(1)
     return ang
-
-def subtract_cubes(gridded1, gridded2):
-    """Method to subtract 1 cube from another"""
-    cube1, cube2 = _check_input_iscube(gridded1, gridded2)
-    cube1, cube2 = _check_same_units(cube1, cube2)    
-    return  cube1 - cube2
-

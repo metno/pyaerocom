@@ -530,54 +530,6 @@ class TrendsEvaluation(object):
         if len(rest) > 0:
             result.append(rest)
         return result
-       
-    def apply_filters_ungridded(self, data, filters, outlier_ranges=None, 
-                                vars_to_retrieve=None):
-        """Filter ungridded data
-        
-        Parameters
-        ----------
-        data : UngriddedData
-            instance of data object
-        filters : dict
-            dictionary of filters that are supposed to be applied to the data
-        
-        Returns
-        -------
-        UngriddedData
-            filtered data object
-        """
-        remove_outliers = False
-        set_flags_nan = False
-        if 'remove_outliers' in filters:
-            remove_outliers = filters.pop('remove_outliers')
-        if 'set_flags_nan' in filters:
-            set_flags_nan = filters.pop('set_flags_nan')
-        data = data.filter_by_meta(**filters)
-        
-        if remove_outliers:
-            if outlier_ranges is None:
-                outlier_ranges = {}
-            if vars_to_retrieve is None:
-                vars_to_retrieve = data.contains_vars
-            for var in vars_to_retrieve:
-                if not var in data.contains_vars:
-                    continue
-                lower, upper = None, None
-                if var in outlier_ranges:
-                    lower, upper = outlier_ranges[var]
-                data = data.remove_outliers(var, 
-                                            inplace=True,
-                                            low=lower, 
-                                            high=upper, 
-                                            move_to_trash=False)
-        if set_flags_nan:
-            if not data.has_flag_data:
-                raise MetaDataError('Cannot apply filter "set_flags_nan" to '
-                                    'UngriddedData object, since it does not '
-                                    'contain flag information')
-            data = data.set_flags_nan(inplace=True)
-        return data
             
     def run_single(self, obs_name, write_logfiles):
         """Run one of the config entries in :attr:`obs_config`
@@ -637,11 +589,9 @@ class TrendsEvaluation(object):
                                                  **constraints)
             
             if 'obs_filters' in config:
-                ungridded_data = self.apply_filters_ungridded(
-                        data=ungridded_data, 
-                        filters=config['obs_filters'],
-                        outlier_ranges=min_max,
-                        vars_to_retrieve=vars_to_retrieve)
+                filters=config['obs_filters']
+                ungridded_data = ungridded_data.apply_filters(var_outlier_ranges=min_max,
+                                                              **filters)
             
             if config['obs_vert_type']=='Profile':
                 files_created = self._run_single_3d(ungridded_data=ungridded_data, 

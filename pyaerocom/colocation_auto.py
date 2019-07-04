@@ -126,6 +126,12 @@ class ColocationSetup(BrowseDict):
         model or gridded observation (e.g. satellites). Defaults to True.
     basedir_coldata : str
         base directory for storing of colocated data files
+    obs_name : str, optional
+        if provided, this string will be used in colocated data filename to 
+        specify obsnetwork, else obs_id will be used
+    model_name : str, optional
+        if provided, this string will be used in colocated data filename to 
+        specify model, else obs_id will be used
     save_coldata : bool
         if True, colocated data objects are saved as NetCDF file.
     """ 
@@ -148,6 +154,7 @@ class ColocationSetup(BrowseDict):
                  model_vert_type_alt=None, var_outlier_ranges=None, 
                  model_ts_type_read=None, obs_ts_type_read=None, 
                  flex_ts_type_gridded=True, basedir_coldata=None, 
+                 obs_name=None, model_name=None,
                  save_coldata=True):
         
         if isinstance(obs_vars, str):
@@ -173,7 +180,9 @@ class ColocationSetup(BrowseDict):
         self.model_use_vars = model_use_vars
         
         self.model_id = model_id
+        self.model_name = model_name
         self.obs_id = obs_id
+        self.obs_name = obs_name
         
         self.start = start
         self.stop = stop
@@ -363,8 +372,23 @@ class Colocator(ColocationSetup):
                                    vert_which=vt)
         
             
-        
-        
+    def _eval_obs_filters(self):
+        obs_filters = self['obs_filters']
+        remaining = {}
+        if not isinstance(obs_filters, dict):
+            raise AttributeError('Detected obs_filters attribute in '
+                                 'Colocator class, which is not a '
+                                 'dictionary: {}'.format(obs_filters))
+        for key, val in obs_filters.items():
+            if key in self: # can be handled
+                if isinstance(self[key], dict) and isinstance(val, dict):
+                    self[key].update(val)
+                else:
+                    self[key] = val
+            else:
+                remaining[key] = val
+        return remaining
+    
     def _run_gridded_ungridded(self):
         """Analysis method for gridded vs. ungridded data"""
         model_reader = ReadGridded(self.model_id)
@@ -389,7 +413,10 @@ class Colocator(ColocationSetup):
         obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
                                    vars_to_retrieve=obs_vars,
                                    **ropts)
-        
+        if 'obs_filters' in self:
+            remaining_filters = self._eval_obs_filters()
+            obs_data = obs_data.apply_filters(**remaining_filters)
+            
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
                             
@@ -471,7 +498,7 @@ class Colocator(ColocationSetup):
                                                      harmonise_units=self.harmonise_units,
                                                      var_outlier_ranges=self.var_outlier_ranges)
                 if self.save_coldata:
-                    coldata.to_netcdf(out_dir)
+                    coldata.to_netcdf(out_dir, savename=savename)
                 if self._log:
                     self._log.write('WRITE: {}\n'.format(savename))
                     print_log.info('Writing file {}'.format(savename))
@@ -492,10 +519,17 @@ class Colocator(ColocationSetup):
         return data_objs
     
     def _run_gridded_gridded(self):
+        
         start, stop = self.start, self.stop
         model_reader = ReadGridded(self.model_id)
         obs_reader = ReadGridded(self.obs_id)
-    
+        
+        if 'obs_filters' in self:
+            remaining_filters = self._eval_obs_filters()
+            if bool(remaining_filters):
+                raise NotImplementedError('Cannot apply filters {} to gridded '
+                                          'observation data.'.format(remaining_filters))
+            
         obs_vars = self.obs_vars
         
         obs_vars_avail =  obs_reader.vars_provided
@@ -508,7 +542,8 @@ class Colocator(ColocationSetup):
         var_matches = self._find_var_matches(obs_vars, model_reader)
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
-            
+        
+        
         all_ts_types = const.GRID_IO.TS_TYPES
         
         ts_type = self.ts_type
@@ -610,7 +645,7 @@ class Colocator(ColocationSetup):
                                                    harmonise_units=self.harmonise_units,
                                                    var_outlier_ranges=self.var_outlier_ranges)
                 if self.save_coldata:
-                    coldata.to_netcdf(out_dir)
+                    coldata.to_netcdf(out_dir, savename=savename)
                 if self._log:
                     self._log.write('WRITE: {}\n'.format(savename))
                     print_log.info('Writing file {}'.format(savename))
@@ -665,9 +700,18 @@ class Colocator(ColocationSetup):
         start_str = to_datestring_YYYYMMDD(start)
         stop_str = to_datestring_YYYYMMDD(stop)
         ts_type_src = model_data.ts_type
+        if isinstance(self.obs_name, str):
+            obs_id = self.obs_name
+        else:
+            obs_id = self.obs_id
+            
+        if isinstance(self.model_name, str):
+            model_id = self.model_name
+        else:
+            model_id = model_data.data_id
         coll_data_name = ColocatedData._aerocom_savename(var_name=model_data.var_name,
-                                                         obs_id=self.obs_id, 
-                                                         model_id=model_data.data_id, 
+                                                         obs_id=obs_id, 
+                                                         model_id=model_id, 
                                                          ts_type_src=ts_type_src, 
                                                          start_str=start_str, 
                                                          stop_str=stop_str, 

@@ -54,6 +54,7 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
                           'daily'   :   'D',
                           'weekly'  :   'W',
                           'monthly' :   'MS', #Month start !
+                          'season'  :   'Q', 
                           'yearly'  :   'AS'}
 
 PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
@@ -229,7 +230,7 @@ def isrange(val):
     return False
        
 def merge_station_data(stats, var_name, pref_attr=None, 
-                       sort_by_largest=True, fill_missing_nan=True,
+                       sort_by_largest=True, fill_missing_nan=True, 
                        **add_meta_keys):
     """Merge multiple StationData objects (from one station) into one instance
     
@@ -352,9 +353,12 @@ def merge_station_data(stats, var_name, pref_attr=None,
                                     stat[var_name].values)
             
             if has_errs:
-                _data_err[:, i] = np.interp(vert_grid, 
-                                            stat['altitude'], 
-                                            stat.data_err[var_name])
+                try:
+                    _data_err[:, i] = np.interp(vert_grid, 
+                                                stat['altitude'], 
+                                                stat.data_err[var_name])
+                except:
+                    pass
         _coords = {'time'     : tidx,
                    'altitude' : vert_grid}
         
@@ -948,3 +952,10 @@ def get_time_rng_constraint(start, stop):
 if __name__=="__main__":
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
+    
+    import pyaerocom as pya
+    
+    stat = pya.io.ReadAeronetSunV3().read(vars_to_retrieve='od550aer', 
+                                  file_pattern='Solar*').to_station_data('Solar*')
+    
+    print(stat)

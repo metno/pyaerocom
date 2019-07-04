@@ -1936,10 +1936,7 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = pya.io.ReadGridded('BCC-CUACE_HIST')
+    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
     
-    for var in ['od550ss', 'od550dust', 'od550gt1aer']:
-        d = r.read_var(var, start=2010)
-        d.quickplot_map()
-    
+    ang = r.compute_var('ang4487aer')
     

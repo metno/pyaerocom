@@ -452,30 +452,29 @@ def make_info_table_evaluation_iface(config):
                         raise Exception
                     oi[obs_name] = motab = {}
                     motab['model_var'] = mvar
-                    motab['obs_id'] = obs_id = config.get_obs_id(obs_name)
+                    motab['obs_id'] = config.get_obs_id(obs_name)
                     files = glob.glob('{}/{}/{}*REF-{}*.nc'
                                       .format(config.coldata_dir, 
-                                              model_id, mvar, obs_id))
-                    file = None
-                    if len(files) == 1:
-                        file = files[0]
-                    else: 
+                                              model_id, mvar, obs_name))
+                    
+                    if not len(files) == 1:
                         if len(files) > 1:
                             motab['MULTIFILES'] = len(files)
                         else:
-                            raise Exception('No colocated data file found...')
-                    if file is not None:
-                        coldata = ColocatedData(file)
-                        for k, v in coldata.meta.items():
-                            if not k in SKIP_META:
-                                if isinstance(v, (list, tuple)):
-                                    if not len(v) == 2:
-                                        raise Exception
-                                
-                                    motab['{}_obs'.format(k)] = str(v[0])
-                                    motab['{}_mod'.format(k)] = str(v[1])
-                                else:
-                                    motab[k] = str(v)
+                            motab['NOFILES'] = True
+                        continue
+                    
+                    coldata = ColocatedData(files[0])
+                    for k, v in coldata.meta.items():
+                        if not k in SKIP_META:
+                            if isinstance(v, (list, tuple)):
+                                if not len(v) == 2:
+                                    raise Exception
+                            
+                                motab['{}_obs'.format(k)] = str(v[0])
+                                motab['{}_mod'.format(k)] = str(v[1])
+                            else:
+                                motab[k] = str(v)
     return table
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     gridded_data : GriddedData
         gridded data (e.g. model results)
     gridded_data_ref : GriddedData
-        reference (ground-truth) dataset that is used to evaluate 
+        reference dataset that is used to evaluate 
         :attr:`gridded_data` (e.g. gridded observation data)
     ts_type : str
         desired temporal resolution of colocated data (must be valid AeroCom
@@ -151,8 +151,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     
         
     # get both objects in same time resolution
-    gridded_data = gridded_data.downscale_time(ts_type)
-    gridded_data_ref = gridded_data_ref.downscale_time(ts_type)
+    gridded_data = gridded_data.resample_time(ts_type)
+    gridded_data_ref = gridded_data_ref.resample_time(ts_type)
     
     # guess bounds (for area weighted regridding, which is the default)
     gridded_data._check_lonlat_bounds()
@@ -384,8 +384,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         
         gridded_data = gridded_data.interpolate(latitude=lats_new, 
                                                 longitude=lons_new)
-    # downscale time (if applicable)
-    gridded_data = gridded_data.downscale_time(to_ts_type=ts_type)
+    # resample time (if applicable)
+    gridded_data = gridded_data.resample_time(to_ts_type=ts_type)
 
     # pandas frequency string for TS type
     freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
@@ -587,7 +587,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
               }
     dims = ['data_source', 'time', 'station_name']
     data = ColocatedData(data=arr, coords=coords, dims=dims, name=var,
-                          attrs=meta)
+                         attrs=meta)
     
     return data
 

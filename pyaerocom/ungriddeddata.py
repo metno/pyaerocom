@@ -144,7 +144,7 @@ class UngriddedData(object):
                                     'dataset {}'.format(data_id))
         self.data_revision[data_id] = rev
         return rev
-    
+
     def _check_index(self):
         """Checks if all indices are assigned correctly"""
         assert len(self.meta_idx) == len(self.metadata), \
@@ -153,7 +153,8 @@ class UngriddedData(object):
         assert sum(self.meta_idx.keys()) == sum(self.metadata.keys()), \
             'Mismatch between keys of metadata dict and meta_idx dict'
         
-        var_indices = np.unique(self._data[:, self._VARINDEX])
+        _varnums = self._data[:, self._VARINDEX]
+        var_indices = np.unique(_varnums[~np.isnan(_varnums)])
         
         assert len(var_indices) == len(self.var_idx), \
             'Mismatch between number of variables in data array and var_idx attr.'
@@ -175,9 +176,13 @@ class UngriddedData(object):
                     
             var_idx = self.meta_idx[idx]
             for var, indices in var_idx.items():
+                if len(indices) == 0:
+                    continue # no data assigned for this metadata index
+                
                 assert var in meta['variables'] or var in meta['var_info'], \
                     ('Var {} is indexed in meta_idx[{}] but not in metadata[{}]'
                      .format(var, idx, idx))
+                
                 var_idx_data = np.unique(self._data[indices, self._VARINDEX])
                 assert len(var_idx_data) == 1, ('Found multiple variable indices for '
                           'var {}: {}'.format(var, var_idx_data))
@@ -1199,7 +1204,77 @@ class UngriddedData(object):
                     totnum += len(self.meta_idx[meta_idx][var])
                 
         return (meta_matches, totnum)
+       
         
+    def apply_filters(self, var_outlier_ranges=None, **filter_attributes):
+        """Extended filtering method
+        
+        Combines :func:`filter_by_meta` and adds option to also remove outliers
+        (keyword `remove_outliers`), set flagged data points to NaN (keyword 
+        `set_flags_nan`) and to extract individual variables (keyword
+        `var_name`).
+        
+        Parameters
+        ----------
+        var_outlier_ranges : dict, optional
+            dictionary specifying custom outlier ranges for individual 
+            variables.
+        **filter_attributes : dict
+            filters that are supposed to be applied to the data.
+            To remove outliers, use keyword `remove_outliers`, to set flagged 
+            values to NaN, use keyword `set_flags_nan`, to extract single or
+            multiple variables, use keyword `var_name`. Further filter keys 
+            are assumed to be metadata specific and are passed to 
+            :func:`filter_by_meta`.
+            
+        Returns
+        -------
+        UngriddedData
+            filtered data object
+        """
+        remove_outliers = False
+        set_flags_nan = False
+        extract_vars = None
+        if 'remove_outliers' in filter_attributes:
+            remove_outliers = filter_attributes.pop('remove_outliers')
+        if 'set_flags_nan' in filter_attributes:
+            set_flags_nan = filter_attributes.pop('set_flags_nan')
+        if 'var_name' in filter_attributes:
+            extract_vars = filter_attributes.pop('var_name')
+            if isinstance(extract_vars, str):
+                extract_vars = [extract_vars]
+            for var in extract_vars:
+                if not var in self.contains_vars:
+                    raise VarNotAvailableError('No such variable {} in '
+                                               'UngriddedData object. '
+                                               'Available vars: {}'
+                                               .format(var, self.contains_vars))
+        data = self.filter_by_meta(**filter_attributes)
+        
+        if extract_vars is not None:
+            data = data.extract_vars(extract_vars)
+            
+        if remove_outliers:
+            if var_outlier_ranges is None:
+                var_outlier_ranges = {}
+            
+            for var in data.contains_vars:
+                lower, upper = None, None #uses pyaerocom default specified in variables.ini
+                if var in var_outlier_ranges:
+                    lower, upper = var_outlier_ranges[var]
+                data = data.remove_outliers(var, 
+                                            inplace=True,
+                                            low=lower, 
+                                            high=upper, 
+                                            move_to_trash=False)
+        if set_flags_nan:
+            if not data.has_flag_data:
+                raise MetaDataError('Cannot apply filter "set_flags_nan" to '
+                                    'UngriddedData object, since it does not '
+                                    'contain flag information')
+            data = data.set_flags_nan(inplace=True)
+        return data
+    
     def filter_by_meta(self, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
         
@@ -1346,13 +1421,28 @@ class UngriddedData(object):
         logger.info('Extracting dataset {} from data object'.format(data_id))
         return self.filter_by_meta(data_id=data_id)
     
-    def extract_var(self, var_name):
+    def extract_var(self, var_name, check_index=True):
         """Split this object into single-var UngriddedData objects
         
+        Parameters
+        ----------
+        var_name : str
+            name of variable that is supposed to be extracted
+        check_index : Bool
+            Call :func:`_check_index` in the new data object.
+            
+        Returns
+        -------
+        UngriddedData
+            new data object containing only input variable data
         """
-        self._check_index()
         if not var_name in self.contains_vars:
-            raise AttributeError('No such variable {} in data'.format(var_name))
+            raise VarNotAvailableError('No such variable {} in data'.format(var_name))
+        elif len(self.contains_vars) == 1:
+            const.print_log.info('Data object is already single variable. '
+                                 'Returning copy')
+            return self.copy()
+        
         var_idx = self.var_idx[var_name]
         
         totnum = np.sum(self._data[:, self._VARINDEX] == var_idx)
@@ -1398,13 +1488,50 @@ class UngriddedData(object):
                 
                 arr_idx += num_add
         
-        subset._check_index()
+        if check_index:
+            subset._check_index()
         subset.filter_hist.update(self.filter_hist)
         subset._add_to_filter_history('Created {} single var object from '
                                       'multivar UngriddedData instance'
                                       .format(var_name))
         return subset
     
+    def extract_vars(self, var_names, check_index=True):
+        """Extract multiple variables from dataset
+        
+        Loops over input variable names and calls :func:`extract_var` to 
+        retrieve single variable UngriddedData objects for each variable and
+        then merges all of these into one object
+        
+        Parameters
+        ----------
+        var_names : list or str
+            list of variables to be extracted
+        check_index : Bool
+            Call :func:`_check_index` in the new data object.
+        
+        Returns
+        -------
+        UngriddedData
+            new data object containing input variables
+            
+        Raises
+        -------
+        VarNotAvailableError
+            if one of the input variables is not available in this data 
+            object
+        """
+        if isinstance(var_names, str):
+            return self.extract_var(var_names)
+        data = UngriddedData()
+        
+        for var in var_names:
+            data.append(self.extract_var(var, check_index=False))
+        if check_index:
+            data._check_index()
+        return data
+        
+            
     def _station_to_json_trends(self, var_name, station_name, 
                                 freq, **kwargs):
         """Convert station data to json file for trends interface
@@ -2314,20 +2441,11 @@ if __name__ == "__main__":
 
 
     data = pya.io.ReadUngridded().read('EBASMC',
-                                       ['scatc550aer', 'absc550aer'],
-                                       station_names='Puy*')
-
-    data1 =  data.remove_outliers('scatc550aer')
-
-    stat = data1.to_station_data('P*', 'scatc550aer',
-                                  merge_if_multi=True,
-                                  merge_pref_attr='revision_date')
-
-    stat.plot_timeseries('scatc550aer', add_overlaps=True)
-    data = pya.io.ReadUngridded().read('EBASMC', ['scatc550dryaer',
-                               'absc550aer'])
+                                       ['scatc550aer', 'absc550aer',
+                                        'scatc550dryaer'])
     
-    f = pya.Filter(altitude_filter='noMOUNTAINS')
-    
-    subset = f(data)
+    subset = data.apply_filters(var_name=['absc550aer', 'scatc550dryaer'],
+                                remove_outliers=True, set_flags_nan=True,
+                                data_level=2, 
+                                var_outlier_ranges={'scatc550dryaer':[0, 100]})
     
