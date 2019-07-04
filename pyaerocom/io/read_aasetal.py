@@ -8,6 +8,7 @@ from collections import OrderedDict
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
 
 class ReadSulphurAasEtAl(ReadUngriddedBase):
     """Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
@@ -149,17 +150,21 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
                     if var == "wetso4":
                         # input unit is kg S/ha
-                        y = station_group['year'].values
-                        m = station_group['month'].values
-
-                        monthly_to_sec = days_in_month(y, m)*24*60*60
+                        days_in_month = station_group['dtime'].dt.daysinmonth
+                        monthly_to_sec = days_in_month*24*60*60
+                        
                         mass_sulhpor = pd.to_numeric(station_group[key],
                                                      errors='coerce').values
-                        s[var] = unitconversion_wet_deposition(mass_sulhpor,
+                        s[var] = unitconv_wet_depo(mass_sulhpor,
                          "monthly")/monthly_to_sec#monthly_to_sec[:156]
                         # output variable is ks so4 m-2s-1
+                    elif "sconcso" in var:
+                        conc = pd.to_numeric(station_group[key],
+                                               errors='coerce').values
+                        s[var] = unitconv_sfc_conc(conc, int(var[-1]))
+                    
                     else:
-                        # Other variable have the correct unit.
+                        # variables precip and sconcso4pr is of the correct unit. 
                         s[var] = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                     # Adds the variable
@@ -299,133 +304,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         #data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj # initalizing a pointer to it selves
         return data_obj
-    
-def is_leap_year(year):
-    """
-    Returns boolean:
-        True : its a leap year.
-        False : its not.
-    """
-    return (year % 4 == 0) and (year % 100 != 0) or (year % 400 == 0)
-
-def days_in_month(years, months):
-    """ Returns arrays containing the numbers of days in the respective month.
-
-    Parameters
-    ---------------------
-    years : ndarray
-
-    months : ndarray
-
-    OBS! This might exist in pd.Period('2018-02-03').days_in_month
-    """
-    days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    index_feb = np.where(months==2)[0]
-    nr_of_days = []
-    if len(index_feb) == 0:
-        nr_of_days = np.array([days[m-1] for m in months])
-        return nr_of_days
-    else:
-        for counter, m in enumerate(months):
-            if is_leap_year(years[counter]) and m == 2:
-                nr_of_days.append(29)
-            else:
-                nr_of_days.append(days[m-1])
-        return np.array(nr_of_days)
-
-def unitconversion_wet_deposition(data, ts_type="monthly"):
-    """
-    Converting:  ug S/ ha to ug SOx/m2 
-    Adding mass of oksygen.
-    
-    Parameters:
-    ------------------
-    data: array-like
-    
-    ts_type: Default monthly
-    The timeseries type.
-    
-    Return:
-    ------------
-    data in units of ug sox/m3
-    """
-    # TODO : add for a different number of days in one year.
-    mm_s = 0.001*32.065 # in kilos pr mol
-    mm_o = 4*15.9999*0.001 # molar mass of four okygen atom ins 
-    
-    nr_molecules = mass_to_nr_molecules(data, mm_s) # in the order of 10**27 
-    added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o)
-    mass = data + added_weight_oksygen
-    return mass*10000
-
-def mass_to_nr_molecules(mass, Mm):
-    """ Calculating the number of molecules from mass and molarmass.
-
-    Mass, Molar mass need to be in the same unit, either both g and g/mol 
-    or kg and kg/mol.
-
-    Parameters
-    ---------------------------
-    mass : float
-        mass of all compounds.
-
-    mm : float
-        molar mass of compound.
-
-    Returns
-    -----------------
-    nr_molecules : float
-        number of molecules
-    """
-    A = 6.022*10**23
-
-    return mass/Mm*A    
-
-def nr_molecules_to_mass(nr_molecules, Mm):
-    """ Calculates the mass from the number of molecules and molar mass.
-
-    Parameters
-    ---------------
-    nr_molecules : int
-        Number of molecules
-
-    mm : float
-        Molar mass [g/mol]
-
-    Returns
-    ---------------------
-    mass : float
-        mass in grams
-    """
-    A = 6.022*10**23
-    mass = Mm*nr_molecules/A
-    return mass
-    
-def unitconversion_surface_concentrations(data, nr_of_O = 2):
-    """ Unitconverting:  ugS/m3 to ugSOx/m3
-    
-    Parameters
-    ------------------
-    data : array_like
-        Contains the data in units of ugS/m3.
-    
-    nr_of_O: int
-        The number of O's in you desired SOx compound.
-    
-    Returns
-    ------------
-    data : ndarray
-        data in units of ug SOx/m3
-    
-    """
-    mm_s = 32.065*10**6 # in units of ug/mol
-    mm_o = nr_of_O*15.9999*10**6 ## in units of ug/mol
-    nr_molecules = mass_to_nr_molecules(data, mm_s) # 32.065*10**6) [ug/mol]
-    added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o) # ug
-    # added weights in micrograms 
-    mass = data + added_weight_oksygen # in micrograms
-    return mass
-
+ 
 def _check_line_endings(filename):
     ll = None
     wrong_endings = {}
@@ -450,7 +329,6 @@ if __name__ == "__main__":
      import matplotlib.pyplot as plt
      #change_verbosity('info')
      V = "wetso4"
-     V = "sconcso4"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
 
      #so2 = aa.read('sconcso2')

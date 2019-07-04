@@ -410,11 +410,12 @@ def test_article():
 if __name__ == "__main__":
     # pya.change_verbosity('info')
     # import sys
-    
-    
-    #test_ungriddeddata()
-    #test_article()
     test_unitconversion_surface_conc()
     test_unitconversion_wetdep()
+    
+    #test_ungriddeddata()
+    test_article()
+
+    
     
 # =============================================================================
