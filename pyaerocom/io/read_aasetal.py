@@ -156,9 +156,17 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         mass_sulhpor = pd.to_numeric(station_group[key],
                                                      errors='coerce').values
                         s[var] = unitconv_wet_depo(mass_sulhpor,
-                         "monthly")/monthly_to_sec#monthly_to_sec[:156]
-                        # output variable is ks so4 m-2s-1
-                    elif "sconcso" in var:
+                         "monthly")/monthly_to_sec
+                         
+                    elif var == "sconcso4pr":
+                        # Works when elif tests are in this order.
+                        conc = pd.to_numeric(station_group[key],
+                                               errors='coerce').values
+                                              
+                        # conversion function operates in micro grams.
+                        s[var] = unitconv_sfc_conc(conc, 10**3*2)/10**3
+
+                    elif "sconcso" in var: 
                         conc = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                         s[var] = unitconv_sfc_conc(conc, int(var[-1]))
@@ -328,7 +336,7 @@ if __name__ == "__main__":
      from pyaerocom import change_verbosity
      import matplotlib.pyplot as plt
      #change_verbosity('info')
-     V = "wetso4"
+     V = "sconcso4pr"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
 
      #so2 = aa.read('sconcso2')
