@@ -368,9 +368,10 @@ def calc_slope(ungridded, region, period, var):
 def test_ungriddeddata():
     reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
     data = reader.read()  # read all variables
-    
+    #print('len(data.station_name = {})'.format( len(data.station_name) ))
+    #print('data.shape {} '.format(data.shape))
     assert len(data.station_name) == 890
-    assert data.shape == (1063631, 12)
+    assert data.shape == (436121, 12)
 
 @lustre_unavail
 def test_article():
@@ -412,9 +413,8 @@ if __name__ == "__main__":
     # import sys
     test_unitconversion_surface_conc()
     test_unitconversion_wetdep()
-    
-    #test_ungriddeddata()
-    test_article()
+    test_ungriddeddata()
+    #test_article()
 
     
     
