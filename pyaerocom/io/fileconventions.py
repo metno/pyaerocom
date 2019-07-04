@@ -65,8 +65,8 @@ class FileConventionRead(object):
         """Empty dictionary containing init values of infos to be 
         extracted from filenames
         """
-        return od(year=None, var_name=None, ts_type=None, vert_pos=None,
-                  is_at_stations=False, data_id=None)
+        return od(year=None, var_name=None, ts_type=None, vert_code='',
+                  is_at_stations=False, data_id='')
         
     def from_file(self, file):
         """Identify convention from a file
@@ -147,7 +147,7 @@ class FileConventionRead(object):
             msg = ("Failed to extract year information from file {} "
                    "using file convention Aerocom 3".format(basename(file), 
                                                             self.name))
-            raise IOError(msg)
+            raise FileConventionError(msg)
         try:
             # include vars for the surface
             if spl[self.vert_pos].lower() in self.AEROCOM3_VERT_INFO['2d']:
@@ -178,9 +178,9 @@ class FileConventionRead(object):
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
         try:
-            info["vert_pos"] = spl[self.vert_pos]
+            info["vert_code"] = spl[self.vert_pos]
         except:
-            raise FileConventionError('Failed to extract vert_pos from '
+            raise FileConventionError('Failed to extract vert_code from '
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
             
@@ -287,12 +287,12 @@ class FileConventionRead(object):
         
     
     
-    def string_mask(self, experiment, var, year, ts_type, vert_which=None):
+    def string_mask(self, data_id, var, year, ts_type, vert_which=None):
         """Returns mask that can be used to identify files of this convention
         
         Parameters
         ----------
-        experiment : str
+        data_id : str
             experiment ID (e.g. GISS-MATRIX.A2.CTRL)
         var : str
             variable string ID (e.g. "od550aer")
@@ -317,7 +317,8 @@ class FileConventionRead(object):
         match_str_aero3 = conf_aero3.string_mask(var, year, ts_type)
             
         """
-        
+        if ts_type is None:
+            ts_type = '*'
         if self.name == "aerocom2":
             if vert_which is not None:
                 raise FileConventionError('Specification of vert_which ({}) is '
@@ -325,11 +326,11 @@ class FileConventionRead(object):
                                           'aerocom2 naming convention'
                                           .format(vert_which))
                 
-            return ".".join(['.*', experiment, ts_type, var, str(year), 'nc'])
+            return ".".join(['.*', data_id, ts_type, var, str(year), 'nc'])
         elif self.name == "aerocom3":
             if vert_which is None:
                 vert_which = '.*'
-            return "_".join(['.*',  experiment, var, vert_which, str(year), ts_type]) + '.nc'
+            return "_".join(['.*',  data_id, var, vert_which, str(year), ts_type]) + '.nc'
         else:
             raise NotImplementedError("File matching mask for convention %s "
                                       "not yet defined..." %self.name)

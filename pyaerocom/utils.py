@@ -85,7 +85,7 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
     header = ['Var', 'Model', 'Years', 'Freq', 'Vertical', 'At stations', 
               'AUX vars', 'Dim', 'Dim names','Shape', 'Read ok']
     result = []
-    table_cols = ['year', 'ts_type', 'vert_pos', 'is_at_stations', 'aux_vars']
+    table_cols = ['year', 'ts_type', 'vert_code', 'is_at_stations', 'aux_vars']
     for i, model in enumerate(model_ids):
         print('At model: {} ({} of {})'.format(model, i, len(model_ids)))
         try:

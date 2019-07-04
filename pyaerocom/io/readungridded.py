@@ -46,6 +46,7 @@ from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_aasetal import ReadSulphurAasEtAl
 from pyaerocom.io.read_gaw import ReadGAW
 
+
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -81,18 +82,11 @@ class ReadUngridded(object):
         #: be filled in setter of datasets_to_read)
         self._readers = {}
         
-        self.data = None
-        
         self.datasets_to_read = datasets_to_read
     
         # optional: list of variables that are supposed to be imported, if 
         # None, all variables provided by the corresponding network are loaded
         self.vars_to_retrieve = vars_to_retrieve
-        
-        self.revision = {}
-        self.data_version = {}
-    
-        self.cache_files = {}
         
         # initiate a logger for this class
         self.logger = logging.getLogger(__name__)
@@ -100,7 +94,19 @@ class ReadUngridded(object):
         if ignore_cache:
             self.logger.info('Deactivating caching')
             const.CACHING = False
-            
+           
+    @property
+    def DATASET_PATH(self):
+        """Data directory of dataset to read 
+        
+        Raises exception if more than one dataset to read is specified
+        """
+        if not len(self._datasets_to_read) == 1:
+            raise ValueError('Conflict: multiple datasets are assigned to be '
+                             'read, but dataset path can only be retrieved for '
+                             'single dataset retrievals')
+        return self.get_reader(self._datasets_to_read[0]).DATASET_PATH
+    
     @property
     def ignore_cache(self):
         if os.path.exists(self._DONOTCACHEFILE) or not const.CACHING:
@@ -129,7 +135,6 @@ class ReadUngridded(object):
             raise ValueError('Could not fetch reader class. More than one '
                              'dataset is assigned in attr. '
                              'datasets_to_read')
-        
         return dsr[0]
     
     @property
@@ -225,7 +230,148 @@ class ReadUngridded(object):
         raise NetworkNotImplemented("No reading class available yet for dataset "
                                     "{}".format(dataset_to_read))
         
+    
     def read_dataset(self, dataset_to_read, vars_to_retrieve=None, 
+                     **kwargs):
+        """Read dataset into an instance of :class:`ReadUngridded`
+        
+        Note
+        ----
+        This method does not assign loaded data obj to class attribute 
+        :attr:`data` (only :func:`read` does)
+        
+        Parameters
+        ----------
+        dataset_to_read : str
+            name of dataset
+        vars_to_retrieve : list
+            list of variables to be retrieved. If None (default), the default
+            variables of each reading routine are imported
+            
+        Returns
+        --------
+        UngriddedData
+            data object
+        """
+        _caching = None
+        if len(kwargs) > 0:
+            _caching = const.CACHING 
+            const.CACHING = False
+            
+            print_log.info('Received additional reading constraints, '
+                           'ignoring caching')
+        if vars_to_retrieve is None:
+            # Note: self.vars_to_retrieve may be None as well, then
+            # default variables of each network are read
+            vars_to_retrieve = self.vars_to_retrieve 
+        
+        reader = self.get_reader(dataset_to_read)
+        
+        if vars_to_retrieve is None:
+            vars_to_retrieve = reader.PROVIDES_VARIABLES
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+            
+        # Since this interface enables to load multiple datasets, each of 
+        # which support a number of variables, here, only the variables are 
+        # considered that are supported by the dataset
+        vars_available = [var for var in vars_to_retrieve if var in 
+                          reader.PROVIDES_VARIABLES]
+        
+        cache = CacheHandlerUngridded(reader)
+        if not self.ignore_cache:
+            # initate cache handler    
+            for var in vars_available:
+                try:
+                    cache.check_and_load(var_name=var)
+                except:
+                    self.logger.exception('Fatal: compatibility error between '
+                                          'old cache file {} and current version '
+                                          'of code ')
+                    
+            
+        vars_to_read = [v for v in vars_available if not v in cache.loaded_data]
+        data_read = None
+        if len(vars_to_read) > 0:
+            
+            _loglevel = print_log.level
+            print_log.setLevel(logging.INFO)
+            data_read = reader.read(vars_to_read, **kwargs)
+            print_log.setLevel(_loglevel)
+            
+            for var in vars_to_read:
+                # write the cache file
+                if not self.ignore_cache:
+                    try:
+                        cache.write(data_read, var)
+                    except Exception as e:
+                        _caching = False
+                        print_log.warning('Failed to write to cache directory. '
+                                          'Error: {}. Deactivating caching in '
+                                          'pyaerocom'.format(repr(e)))
+        
+        if len(vars_to_read) == len(vars_available):
+            data_out = data_read
+        else:
+            data_out = UngriddedData()
+            for var in vars_available:
+                if var in cache.loaded_data:
+                    data_out.append(cache.loaded_data[var])
+            if data_read is not None:
+                data_out.append(data_read)
+                
+        if _caching is not None:
+            const.CACHING = _caching
+        return data_out
+    
+    def read(self, datasets_to_read=None, vars_to_retrieve=None, **kwargs):
+        """Read observations
+
+        Iter over all datasets in :attr:`datasets_to_read`, call 
+        :func:`read_dataset` and append to data object
+        
+        Example
+        -------
+        >>> import pyaerocom.io.readungridded as pio
+        >>> from pyaerocom import const
+        >>> obj = pio.ReadUngridded(dataset_to_read=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME)
+        >>> obj.read()
+        >>> print(obj)
+        >>> print(obj.metadata[0.]['latitude'])
+        """
+        if datasets_to_read is not None:
+            self.datasets_to_read = datasets_to_read
+        if vars_to_retrieve is not None:
+            self.vars_to_retrieve = vars_to_retrieve
+            
+        data = UngriddedData()
+        for ds in self.datasets_to_read:
+            self.logger.info('Reading {} data'.format(ds))
+            data.append(self.read_dataset(ds, vars_to_retrieve, **kwargs))
+            self.logger.info('Successfully imported {} data'.format(ds))
+        return data
+    
+    @property
+    def SUPPORTED_DATASETS(self):
+        """Returns list of strings containing all supported dataset names"""
+        l = []
+        for r in self.SUPPORTED:
+            l.extend(r.SUPPORTED_DATASETS)
+        return l 
+    
+    @property
+    def supported_datasets(self):
+        return self.SUPPORTED_DATASETS
+    
+    def __str__(self):
+        #raise NotImplementedError("Requires review after API changes")
+        s=''
+        for ds in self.datasets_to_read:
+            s += '\n{}'.format(self.get_reader(ds))
+        return s
+    
+    # OUTSOURCED
+    def read_datasetOLD(self, dataset_to_read, vars_to_retrieve=None, 
                      **kwargs):
         """Read single dataset into instance of :class:`ReadUngridded`
         
@@ -274,6 +420,7 @@ class ReadUngridded(object):
         
         # read the data sets
         cache_hit_flag = False
+        
         if not self.ignore_cache:
             # initate cache handler
             try:
@@ -319,60 +466,11 @@ class ReadUngridded(object):
         if _caching is not None:
             const.CACHING = _caching
         return data
-    
-    def read(self, datasets_to_read=None, vars_to_retrieve=None,
-             **kwargs):
-        """Read observations
-
-        Iter over all datasets in :attr:`datasets_to_read`, call 
-        :func:`read_dataset` and append to data object
-        
-        Example
-        -------
-        >>> import pyaerocom.io.readungridded as pio
-        >>> from pyaerocom import const
-        >>> obj = pio.ReadUngridded(dataset_to_read=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME)
-        >>> obj.read()
-        >>> print(obj)
-        >>> print(obj.metadata[0.]['latitude'])
-        """
-        if datasets_to_read is not None:
-            self.datasets_to_read = datasets_to_read
-        if vars_to_retrieve is not None:
-            self.vars_to_retrieve = vars_to_retrieve
-            
-        data = UngriddedData()
-        for ds in self.datasets_to_read:
-            self.logger.info('Reading {} data'.format(ds))
-            data.append(self.read_dataset(ds, vars_to_retrieve, **kwargs))
-            self.logger.info('Successfully imported {} data'.format(ds))
-        self.data = data
-        return data
-    
-    @property
-    def SUPPORTED_DATASETS(self):
-        """Returns list of strings containing all supported dataset names"""
-        l = []
-        for r in self.SUPPORTED:
-            l.extend(r.SUPPORTED_DATASETS)
-        return l 
-    
-    @property
-    def supported_datasets(self):
-        return self.SUPPORTED_DATASETS
-    
-    def __str__(self):
-        #raise NotImplementedError("Requires review after API changes")
-        s=''
-        for ds in self.datasets_to_read:
-            s += '\n{}'.format(self.get_reader(ds))
-        return s
-    
 if __name__=="__main__":
 
-    reader = ReadUngridded('AeronetSunV3Lev2.daily', ignore_cache=True)
+    reader = ReadUngridded('AeronetSunV3Lev2.daily')
     
-    data =reader.read(vars_to_retrieve='od550aer')
+    data = reader.read(vars_to_retrieve=['od550aer', 'ang4487aer'])
     
 # =============================================================================
 #     data = reader.read([const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
@@ -381,6 +479,3 @@ if __name__=="__main__":
 #                     last_file=10)
 #     
 # =============================================================================
-    
-    
-    

@@ -31,7 +31,7 @@ class ReadUngriddedBase(abc.ABC):
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.06'
+    __baseversion__ = '0.07'
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -41,6 +41,8 @@ class ReadUngriddedBase(abc.ABC):
     #: Functions that are used to compute additional variables (i.e. one 
     #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {}
+    
+    IGNORE_META_KEYS = []
     
     def __str__(self):
         return ("Dataset name: {}\n"
@@ -116,6 +118,11 @@ class ReadUngriddedBase(abc.ABC):
         
         """
         pass        
+    
+    @property
+    def data_id(self):
+        """Wrapper for :attr:`DATA_ID` (pyaerocom standard name)"""
+        return self.DATA_ID
     
     @abc.abstractproperty
     def SUPPORTED_DATASETS(self):
@@ -247,18 +254,19 @@ class ReadUngriddedBase(abc.ABC):
     def data_revision(self):
         """Revision string from file Revision.txt in the main data directory
         """
+        if '_data_revision' in self.__dict__:
+            return self.__dict__['_data_revision']
+        rev = 'n/d'
         try:
             revision_file = os.path.join(self.DATASET_PATH, self.REVISION_FILE)
             if os.path.isfile(revision_file):
                 with open(revision_file, 'rt') as in_file:
-                    revision = in_file.readline().strip()
-                    in_file.close()
-                    
-                return revision
-            raise Exception
+                    rev = in_file.readline().strip()
         except:
-            return 'n/d'
-        
+            pass
+        self._data_revision = rev
+        return rev
+    
     @property
     def verbosity_level(self):
         """Current level of verbosity of logger"""
@@ -438,19 +446,11 @@ class ReadUngriddedBase(abc.ABC):
                     data['contains_vars'].append(var)
                 except KeyError:
                     data['contains_vars'] = [var]
-            else:
-                data['var_info'][var]['missing'] = {'num' : len(data.dtime),
-                                                    'vars': missing}
-                
 # =============================================================================
 #             else:
-#                 data[var] = np.ones(len(data['dtime']))*np.nan
-#                 self.logger.warning("Could not compute variable {}. One or "
-#                                     "more of the required variables {} is "
-#                                     "missing in data. Filling with NaNs"
-#                                     .format(var, required))
+#                 data['var_info'][var]['missing'] = {'num' : len(data.dtime),
+#                                                     'vars': missing}
 # =============================================================================
-        #data.var_info[var] = dict(computed_from=required)
         return data
     
     def remove_outliers(self, data, vars_to_retrieve, **valid_rng_vars):

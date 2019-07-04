@@ -26,6 +26,15 @@ class AerocomConnectionError(IOError):
 class AltitudeAccessError(ValueError):
     pass
 
+class CachingError(IOError):
+    pass
+
+class CacheWriteError(CachingError):
+    pass
+
+class CacheReadError(CachingError):
+    pass
+
 class ColocationError(ValueError):
     pass
 
@@ -42,6 +51,12 @@ class DataCoverageError(ValueError):
     pass
 
 class DataDimensionError(ValueError):
+    pass
+
+class DataQueryError(ValueError):
+    pass
+
+class DataSourceError(ValueError):
     pass
 
 class DataUnitError(ValueError):

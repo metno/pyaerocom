@@ -37,7 +37,9 @@ class ColocatedData(object):
         Colocated data. If str, then it is attempted to be loaded from file.
         Else, it is assumed that data is numpy array and that all further 
         supplementary inputs (e.g. coords, dims) for the 
-        instantiation of :class:`DataArray` is provided via **kwargs. I
+        instantiation of :class:`DataArray` is provided via **kwargs. 
+    ref_data_id : str, optional
+        ID of reference data 
     **kwargs
         Additional keyword args that are passed to init of :class:`DataArray` 
         in case input :arg:`data` is numpy array.
@@ -47,9 +49,10 @@ class ColocatedData(object):
     IOError
         if init fails
     """
-    __version__ = '0.06'
+    __version__ = '0.07'
     def __init__(self, data=None, **kwargs):
         self._data = None
+        self
         if data is not None:
             # check if input is DataArray and if not, try to create instance
             # of DataArray. If this fails, raise Exception

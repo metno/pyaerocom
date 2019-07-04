@@ -60,6 +60,8 @@ class StationData(StationMetaData):
         
         self.data_err = BrowseDict()        
         self.overlap = BrowseDict()
+        self.data_flagged = BrowseDict()
+        
         super(StationData, self).__init__(**meta_info)
     
     @property
@@ -136,7 +138,15 @@ class StationData(StationMetaData):
             ud[var] = self.get_unit(var)
         return ud
 
-
+    def compute_trend(self, var_name, start_year=None, stop_year=None,
+                      season=None, slope_confidence=None, **alt_range):
+        if not self.has_var(var_name):
+            raise VarNotAvailableError('No such variables {} in StationData'
+                                       .format(var_name))
+        from pyaerocom.trends_helpers import compute_trends_station
+        return compute_trends_station(self, var_name, start_year, stop_year, 
+                                      season, slope_confidence, **alt_range)
+        
     def check_var_unit_aerocom(self, var_name):
         """Check if unit of input variable is AeroCom default, if not, convert
 
@@ -366,7 +376,8 @@ class StationData(StationMetaData):
 # =============================================================================
         return vals
     
-    def get_meta(self, force_single_value=True, quality_check=True):
+    def get_meta(self, force_single_value=True, quality_check=True,
+                 add_none_vals=False):
         """Return meta-data as dictionary
         
         Parameters
@@ -379,6 +390,8 @@ class StationData(StationMetaData):
             standarad deviation in the values is compared to the upper limits
             allowed in the local variation. The upper limits are specified
             in attr. ``COORD_MAX_VAR``. 
+        add_none_vals : bool
+            
         
         Returns
         -------
@@ -397,7 +410,7 @@ class StationData(StationMetaData):
         for key in self.STANDARD_META_KEYS:
             if key in self.STANDARD_COORD_KEYS: # this has been handled above
                 continue
-            if self[key] is None:
+            if self[key] is None and not add_none_vals:
                 logger.info('No metadata available for key {}'.format(key))
                 continue
             
@@ -730,9 +743,10 @@ class StationData(StationMetaData):
             raise MetaDataError('For merging of {} data, variable specific meta '
                                 'data needs to be available in var_info dict '
                                 .format(var_name))
-
-        self.check_var_unit_aerocom(var_name)
-        other.check_var_unit_aerocom(var_name)
+        
+        if self.get_unit(var_name) != other.get_unit(var_name):
+            self.check_var_unit_aerocom(var_name)
+            other.check_var_unit_aerocom(var_name)
 
         if self.check_if_3d(var_name):
             raise NotImplementedError('Coming soon...')
@@ -1128,6 +1142,10 @@ class StationData(StationMetaData):
             data = self.select_altitude(var_name, alt_info)
         else:
             data = self[var_name]
+        if 'ts_type' in kwargs:
+            if freq is not None:
+                raise ValueError('Both freq and ts_type are provided as input')
+            freq = kwargs.pop('ts_type')
             
         if isinstance(data, xray.DataArray):
             if not 'time' in data.dims:
@@ -1144,7 +1162,7 @@ class StationData(StationMetaData):
 
         if freq is not None:
             data = resample_timeseries(data, freq, how=resample_how,
-                                           **kwargs)
+                                       **kwargs)
 
         return data
     

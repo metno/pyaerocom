@@ -53,7 +53,7 @@ def main():
         raise FileNotFoundError('No such file or directory: {}'.format(args.config_dir))
     
     import pyaerocom as pya
-    cfg_avail = pya.web.helpers.get_all_config_files(args.config_dir)
+    cfg_avail = pya.web.helpers.get_all_config_files_evaluation_iface(args.config_dir)
     
     if len(cfg_avail) == 0:
         raise FileNotFoundError('Could not find any valid configuration files '

@@ -54,6 +54,7 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
                           'daily'   :   'D',
                           'weekly'  :   'W',
                           'monthly' :   'MS', #Month start !
+                          'season'  :   'Q', 
                           'yearly'  :   'AS'}
 
 PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
@@ -149,6 +150,36 @@ def get_lowest_resolution(ts_type, *ts_types):
             lowest = freq
     return lowest
 
+def get_highest_resolution(ts_type, *ts_types):
+    """Get the highest resolution from several ts_type codes
+    
+    Parameters
+    ----------
+    ts_type : str
+        first ts_type
+    *ts_types
+        one or more additional ts_type codes
+    
+    Returns
+    -------
+    str
+        the ts_type that corresponds to the highest resolution
+        
+    Raises
+    ------
+    ValueError
+        if one of the input ts_type codes is not supported
+    """
+    all_ts_types = const.GRID_IO.TS_TYPES
+    highest = ts_type
+    for freq in ts_types:
+        if not freq in all_ts_types:
+            raise ValueError('Invalid input, only valid ts_type codes are '
+                             'supported: {}'.format(all_ts_types))
+        elif all_ts_types.index(highest) > all_ts_types.index(freq):
+            highest = freq
+    return highest
+
 def isnumeric(val):
     """Check if input value is numeric
     
@@ -199,7 +230,7 @@ def isrange(val):
     return False
        
 def merge_station_data(stats, var_name, pref_attr=None, 
-                       sort_by_largest=True, fill_missing_nan=True,
+                       sort_by_largest=True, fill_missing_nan=True, 
                        **add_meta_keys):
     """Merge multiple StationData objects (from one station) into one instance
     
@@ -322,9 +353,12 @@ def merge_station_data(stats, var_name, pref_attr=None,
                                     stat[var_name].values)
             
             if has_errs:
-                _data_err[:, i] = np.interp(vert_grid, 
-                                            stat['altitude'], 
-                                            stat.data_err[var_name])
+                try:
+                    _data_err[:, i] = np.interp(vert_grid, 
+                                                stat['altitude'], 
+                                                stat.data_err[var_name])
+                except:
+                    pass
         _coords = {'time'     : tidx,
                    'altitude' : vert_grid}
         
@@ -916,38 +950,12 @@ def get_time_rng_constraint(start, stop):
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 
 if __name__=="__main__":
-    print(TS_TYPE_TO_PANDAS_FREQ)
-    print(PANDAS_FREQ_TO_TS_TYPE)
+    print(get_lowest_resolution('yearly', 'daily', 'monthly'))
+    print(get_highest_resolution('yearly', 'daily', 'monthly'))
     
-    print(TS_TYPE_TO_NUMPY_FREQ)
-    print(NUMPY_FREQ_TO_TS_TYPE)
-
-    isrange(slice(1,2))
-
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    NUM = 1000 #days 
-    LAMBDA = 40 
-    dates = pd.date_range(start='2010', freq='h', periods=NUM)
+    import pyaerocom as pya
     
-    x = np.arange(NUM)
-    trend_slope = 3 / NUM
-    yoffset = 8
-    signal = np.sin(np.pi*2*x / LAMBDA) + trend_slope*x + yoffset
-    noise = np.random.random(NUM) -.5
-    vals = signal + noise
+    stat = pya.io.ReadAeronetSunV3().read(vars_to_retrieve='od550aer', 
+                                  file_pattern='Solar*').to_station_data('Solar*')
     
-    s0 = pd.Series(vals, dates)
-    ax = s0.plot(label='original (daily)',figsize=(16,8))
-    
-    def remove_datapoints_random(series, rest_coverage_percent=40):
-        import random
-        num = len(series)
-        num_samples = int(rest_coverage_percent / 100 * num)
-        indices = sorted(random.sample(range(num), num_samples))
-        return series[indices]
-    
-    def to_monthly_augustin(series):
-        pass
-    
-    ax.legend()
+    print(stat)

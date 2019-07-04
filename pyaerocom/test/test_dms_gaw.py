@@ -22,7 +22,6 @@ def data_vmrdms_ams_cvo():
 
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
-    assert 'DMS_AMS_CVO' in data.data_revision
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
     assert data.shape == (819+7977, 12)
     assert len(data.metadata) == 2
@@ -51,47 +50,21 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx= 0)
     
     keys = list(stat.keys())
-
-    npt.assert_array_equal(keys, 
-                           ['dtime', 
-                            'var_info',
-                            'station_coords',
-                            'data_err', 
-                            'overlap', 
-                            'filename', 
-                            'station_id', 
-                            'station_name', 
-                            'instrument_name', 
-                            'PI', 
-                            'country', 
-                            'ts_type', 
-                            'latitude', 
-                            'longitude', 
-                            'altitude', 
-                            'data_id', 
-                            'dataset_name', 
-                            'data_product', 
-                            'data_version', 
-                            'data_level', 
-                            'revision_date', 
-                            'ts_type_src', 
-                            'stat_merge_pref_attr',
-                            'data_revision',
-                            'vmrdms'])
-   
+    assert 'vmrdms' in keys
+    assert 'var_info' in keys
+    
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('1987-03-01T00:00:00.000000000'), 
                              np.datetime64('2008-12-31T00:00:00.000000000')])
     
     vals = [stat['instrument_name'], stat['ts_type'], stat['filename']]
-    print(vals)
     
     npt.assert_array_equal(vals,
                            ['unknown', 
                             'daily',  
                             'ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat'])
     
-    d = stat.vmrdms
+    d = stat['vmrdms']
     vals = [d.mean(), d.std(), d.max(), d.min()]
     npt.assert_allclose(vals,
                          [185.6800736155262, 237.1293922258991, 2807.6, 5.1],

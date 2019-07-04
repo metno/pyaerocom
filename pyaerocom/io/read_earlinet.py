@@ -69,12 +69,12 @@ class ReadEarlinet(ReadUngriddedBase):
     TS_TYPE = 'n/d'
     
     #: dictionary specifying the file search patterns for each variable
-    VAR_PATTERNS_FILE = {'ec532aer'     : '*/*.e532', 
-                         'ec355aer'     : '*/*.e355',
-                         'bscatc532aer' : '*/*.b532',
-                         'bscatc355aer' : '*/*.b355',
-                         'bscatc1064aer': '*/*.b1064',
-                         'zdust'        : '*/*.e*'}
+    VAR_PATTERNS_FILE = {'ec532aer'     : '*.e532', 
+                         'ec355aer'     : '*.e355',
+                         'bscatc532aer' : '*.b532',
+                         'bscatc355aer' : '*.b355',
+                         'bscatc1064aer': '*.b1064',
+                         'zdust'        : '*.e*'}
     
     
     #: dictionary specifying the file column names (values) for each Aerocom 
@@ -315,6 +315,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     if unit_ok:
                         err *= unit_fac
                     err_read = True
+                    
             # 1D variable
             if var == 'zdust':
                 if not val.ndim == 0:
@@ -343,6 +344,8 @@ class ReadEarlinet(ReadUngriddedBase):
             else:
                 if not val.ndim == 1:
                     raise ValueError('Extinction data must be one dimensional')
+                elif len(val) == 0:
+                    continue # no data
                 # Remove NaN equivalent values
                 val[val>self._MAX_VAL_NAN] = np.nan
                     
@@ -403,7 +406,8 @@ class ReadEarlinet(ReadUngriddedBase):
         return (data_out)
     
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
-             last_file=None, read_err=None, remove_outliers=True):
+             last_file=None, read_err=None, remove_outliers=True,
+             file_pattern=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -423,6 +427,8 @@ class ReadEarlinet(ReadUngriddedBase):
         read_err : bool
             if True, uncertainty data is also read (where available). If 
             unspecified (None), then the default is used (cf. :attr:`READ_ERR`)
+         file_pattern : str, optional
+            string pattern for file search (cf :func:`get_file_list`)
             
         Returns
         -------
@@ -438,7 +444,7 @@ class ReadEarlinet(ReadUngriddedBase):
             
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list(vars_to_retrieve)
+                self.get_file_list(vars_to_retrieve, file_pattern=file_pattern)
             files = self.files
     
         if first_file is None:
@@ -465,7 +471,8 @@ class ReadEarlinet(ReadUngriddedBase):
         disp_each = int(num_files*0.1)
         if disp_each < 1:
             disp_each = 1
-            
+        
+        VAR_IDX = -1
         for i, _file in enumerate(files):
             if i%disp_each == 0:
                 print("Reading file {} of {} ({})".format(i+1, 
@@ -494,6 +501,7 @@ class ReadEarlinet(ReadUngriddedBase):
                         metadata[meta_key][add_meta] = stat[add_meta]
                 #metadata[meta_key]['station_id'] = station_id
                 #metadata[meta_key]['data_id'] = self.DATA_ID
+                metadata[meta_key]['data_revision'] = self.data_revision
                 metadata[meta_key]['variables'] = []
                 metadata[meta_key]['var_info'] = od()
                 # this is a list with indices of this station for each variable
@@ -503,7 +511,13 @@ class ReadEarlinet(ReadUngriddedBase):
                 
                 # Is floating point single value
                 time = stat.dtime[0]
-                for var_idx, var in enumerate(stat.contains_vars):
+                for var in stat.contains_vars:
+                    if not var in data_obj.var_idx:
+                        VAR_IDX +=1
+                        data_obj.var_idx[var] = VAR_IDX
+                    
+                    var_idx = data_obj.var_idx[var]
+                        
                     val = stat[var]
                     metadata[meta_key]['var_info'][var] = vi = od()
                     if isinstance(val, VerticalProfile):
@@ -538,7 +552,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     data_obj._data[idx:stop, 
                                    col_idx['altitude']] = stat['altitude']
                     data_obj._data[idx:stop, 
-                                   col_idx['metadata']] = meta_key
+                                   col_idx['meta']] = meta_key
                                    
                     # write data to data object
                     data_obj._data[idx:stop, col_idx['time']] = time
@@ -556,9 +570,9 @@ class ReadEarlinet(ReadUngriddedBase):
                     
                     if not var in metadata[meta_key]['variables']:
                         metadata[meta_key]['variables'].append(var)
-                    if not var in data_obj.var_idx:
-                        data_obj.var_idx[var] = var_idx
+                    
                     idx += add
+                    
             except Exception as e:
                 self.read_failed.append(_file)
                 self.logger.exception('Failed to read file {} (ERR: {})'
@@ -567,7 +581,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        data_obj.data_revision[self.DATA_ID] = self.data_revision
+        #data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj
         return data_obj
         
@@ -597,7 +611,7 @@ class ReadEarlinet(ReadUngriddedBase):
         return self.exclude_files
     
     #TODO: check performance (it is usually slow...)
-    def get_file_list(self, vars_to_retrieve=None):
+    def get_file_list(self, vars_to_retrieve=None, file_pattern=None):
         """Perform recusive file search for all input variables
         
         Note
@@ -615,6 +629,7 @@ class ReadEarlinet(ReadUngriddedBase):
         list
             list containing file paths
         """
+        
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -628,14 +643,32 @@ class ReadEarlinet(ReadUngriddedBase):
                 from pyaerocom.exceptions import VarNotAvailableError
                 raise VarNotAvailableError('Input variable {} is not supported'
                                            .format(var))
-            patterns.append(self.VAR_PATTERNS_FILE[var])
+            
+            pattern = self.VAR_PATTERNS_FILE[var]
+            if file_pattern is not None:
+                if '/' in pattern:
+                    raise NotImplementedError('Cannot apply file pattern to '
+                                              'wildcard path mask including / ')
+                elif '.' in file_pattern:
+                    raise NotImplementedError('filetype delimiter . not '
+                                              'supported')
+                spl = pattern.split('.')
+                if not '*' in spl[0]:
+                    raise AttributeError('Invalid file pattern: {}'.format(pattern))
+                spl[0] = spl[0].replace('*', file_pattern)
+                pattern = '.'.join(spl)
+                
+            patterns.append(pattern)
             
         matches = []
         for root, dirnames, files in os.walk(self.DATASET_PATH):
+            paths = [os.path.join(root, f) for f in files]
             for pattern in patterns:
-                paths = [os.path.join(root, f) for f in files]
-                for path in fnmatch.filter(paths, pattern):
-                    if  os.path.basename(path) in exclude:
+                for path in paths:
+                    file = os.path.basename(path)
+                    if not fnmatch.fnmatch(file, pattern):
+                        continue
+                    elif file in exclude:
                         self.excluded_files.append(path)
                     else:
                         matches.append(path)
@@ -652,45 +685,14 @@ if __name__=="__main__":
 
     
     plt.close('all')
-    read = ReadEarlinet()
-    #read.read(['bscatc532aer','ec532aer'])
-    read.verbosity_level = 'warning'
+    r = ReadEarlinet()
     
-    ALL = False
-    if ALL:
-        lst = read.get_file_list(['bscatc532aer','ec532aer'])
-    else:
-        
-        # to accelerate things for testing (first 20 files)
-        lst = ['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008192050.e532',
-               '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1009162031.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1012131839.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1011221924.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1105122027.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1507232059.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1107072042.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109192000.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001251402.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1001211841.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1005272143.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev0911091200.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109222000.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1103242017.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109052000.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109152000.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1109082000.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1006212036.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1008022112.e532',
-                 '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/ev1508272229.e532']
-        
-        read.files = lst
+    print(r.DATASET_PATH)
     
-    stat = read.read_file(lst[0], 'ec532aer')
+    data = r.read(['ec532aer', 'bscatc532aer'])
     
-    print(stat.var_info)
-    ax = stat.ec532aer.plot()
-    
-    
+    data._check_index()
+
 # =============================================================================
 #     data = read.read('ec532aer')
 #     print(data)

@@ -673,7 +673,8 @@ class GriddedData(object):
         self.grid.transpose(new_order)
         
     def to_time_series(self, sample_points=None, scheme="nearest", 
-                       collapse_scalar=True, vert_scheme=None, **coords):
+                       collapse_scalar=True, vert_scheme=None, 
+                       add_meta=None, **coords):
 
         """Extract time-series for provided input coordinates (lon, lat)
 
@@ -706,6 +707,12 @@ class GriddedData(object):
             If not other specified and if `altitude` coordinates are provided
             via sample_points (or **coords parameters) then, vert_scheme will 
             be set to `altitude`. Else, `profile` is used.
+        add_meta : dict, optional
+            dictionary specifying additional metadata for individual input 
+            coordinates. Keys are meta attribute names (e.g. station_name)
+            and corresponding values are lists (with length of input coords)
+            or single entries that are supposed to be assigned to each station.
+            E.g. `add_meta=dict(station_name=[<list_of_station_names>])`). 
         **coords
             additional keyword args that may be used to provide the interpolation
             coordinates (for details, see :func:`interpolate`)
@@ -737,13 +744,16 @@ class GriddedData(object):
                              "same lengths")
         if self.ndim == 3: #data does not contain vertical dimension
             return self._to_timeseries_2D(sample_points, scheme,
-                                          collapse_scalar)
+                                          collapse_scalar,
+                                          add_meta=add_meta)
         
         return self._to_timeseries_3D(sample_points, scheme, 
-                                      collapse_scalar, vert_scheme)
+                                      collapse_scalar, vert_scheme,
+                                      add_meta=add_meta)
     
         
-    def _to_timeseries_2D(self, sample_points, scheme, collapse_scalar):
+    def _to_timeseries_2D(self, sample_points, scheme, collapse_scalar,
+                          add_meta=None):
         """Extract time-series for provided input coordinates (lon, lat)
         
         Todo
@@ -778,21 +788,38 @@ class GriddedData(object):
         arr = data.grid.data
         grid_lons = data.longitude.points
         result = []
+        meta_iter = {}
+        meta_glob = {}
+        if add_meta is not None:
+            for meta_key, meta_val in add_meta.items():
+                try:
+                    if not len(meta_val) == len(lons):
+                        raise ValueError
+                    meta_iter[meta_key] = meta_val
+                except:
+                    meta_glob[meta_key] = meta_val
+            
         for i, lat in enumerate(lats):
             lon = lons[i]
             j = np.where(grid_lons==lon)[0][0]
             
             data = StationData(latitude=lat, 
                                longitude=lon,
-                               data_id=self.name)
+                               data_id=self.name,
+                               ts_type=self.ts_type)
             data.var_info[var] = {'units':self.units}
             data[var] = Series(arr[:, i, j], index=times)
+            for meta_key, meta_val in meta_iter.items():
+                data[meta_key] = meta_val[i]
+            for meta_key, meta_val in meta_glob.items():
+                data[meta_key] = meta_val
             result.append(data)
         return result
 
     def _apply_vert_scheme(self, sample_points, vert_scheme=None):
         """Helper method that checks and infers vertical scheme for time
         series computation from 3D data (used in :func:`_to_timeseries_3D`)"""        
+        
         if vert_scheme is None:
             const.print_log.info('Setting vert_scheme in GriddedData to mean')
             vert_scheme ='mean'        
@@ -882,13 +909,14 @@ class GriddedData(object):
             return last_lev_idx
         
     def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
-                          vert_scheme='surface'):
+                          vert_scheme='surface', add_meta=None):
 
         # data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
-                    
+    
+        # ToDo: check if _to_timeseries_2D can be called here                    
         return data.to_time_series(sample_points, scheme, 
-                                   collapse_scalar)
+                                   collapse_scalar, add_meta=add_meta)
     
     def to_time_series_single_coord(self, latitude, longitude):
         """Make time series dictionary of single location using neirest coordinate
@@ -1277,13 +1305,13 @@ class GriddedData(object):
         fconv = FileConventionRead().from_file(f)
         base_info = fconv.get_info_from_file(f)
     
-        vert_pos = base_info['vert_pos']
-        if vert_pos is None:
-            vert_pos = 'UNDEFINED'
+        vert_code = base_info['vert_code']
+        if vert_code is None:
+            vert_code = 'UNDEFINED'
         if at_stations:
-            vert_pos += 'AtStations'
+            vert_code += 'AtStations'
             
-        name = [fconv.name, self.name, self.var_name, vert_pos,
+        name = [fconv.name, self.name, self.var_name, vert_code,
                 str(pd.Timestamp(self.start).year), self.ts_type]
         return '_'.format(fconv.file_sep).join(name) + '.nc'
     

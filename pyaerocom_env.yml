@@ -12,4 +12,5 @@ dependencies:
   - netcdf4
   - cf_units
   - numpy
+  - simplejson
   - pytest

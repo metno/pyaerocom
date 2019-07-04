@@ -35,13 +35,14 @@ class DataSource(BrowseDict):
         occur. The associated values of this attribute need to be sortable 
         (e.g. revision_date). This is only relevant in case overlaps occur. 
     """
-    _types = dict(dataset_name  =   str,
-                  data_product  =   str,
-                  data_version  =   float,
-                  data_level    =   float,
-                  ts_type_src   =   str,
-                  stat_merge_pref_attr = str, 
-                  revision_date =   np.datetime64)
+    _types = dict(dataset_name          =   str,
+                  data_product          =   str,
+                  data_version          =   float,
+                  data_level            =   float,
+                  ts_type_src           =   str,
+                  stat_merge_pref_attr  =   str, 
+                  revision_date         =   np.datetime64,
+                  website               =   str)
     
     _ini_file_name = 'data_sources.ini'
     def __init__(self, **info):
@@ -52,6 +53,7 @@ class DataSource(BrowseDict):
         self.data_version = None
         self.data_level = None
         self.revision_date = None
+        self.website = None
         
         self.ts_type_src = None
         
@@ -67,6 +69,33 @@ class DataSource(BrowseDict):
         from pyaerocom.io.helpers import get_obsnetwork_dir
         return get_obsnetwork_dir(self.data_id)
     
+    
+    def dataset_str(self):
+        s = ''
+        if self.dataset_name is not None:
+            s += self.dataset_name
+            hasv = False
+            if self.data_version is not None:
+                s += '(v{}'.format(self.data_version)
+                hasv = True
+            if self.data_level is not None:
+                if hasv:
+                    s += ', Lev {})'.format(self.data_level)
+                else:
+                    s += '(Lev {})'.format(self.data_level)
+            else:
+                s += ')'
+        else:
+            s += self.data_id
+        return s
+    
+    def load_dataset_info(self):
+        """Wrapper for :func:`_parse_source_info_from_ini`"""
+        try:
+            self._parse_source_info_from_ini()
+        except:
+            pass
+        
     def _parse_source_info_from_ini(self):
         """Parse source info from ini file"""
         try:
@@ -150,3 +179,4 @@ if __name__ == '__main__':
     meta = StationMetaData(data_id = 'AeronetSunV3Lev2.daily',
                            ts_type = 'blaaaa')
     print(meta)
+    print(meta.dataset_str())
