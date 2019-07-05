@@ -59,6 +59,7 @@ from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
 
+
 class ReadGridded(object):
     """Class for reading gridded files based on network or model ID
     
@@ -1653,7 +1654,7 @@ class ReadGriddedMulti(object):
     
     Attributes
     ----------
-    names : list
+    data_ids : list
         list containing string IDs of all models that should be imported
     results : dict
         dictionary containing :class:`ReadGridded` instances for each
@@ -1665,7 +1666,7 @@ class ReadGriddedMulti(object):
     >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
     >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
     >>> read = pyaerocom.io.ReadGriddedMulti(models, start, stop)
-    >>> print(read.names)
+    >>> print(read.data_ids)
     ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
     >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
     >>> assert type(read_cam) == pyaerocom.io.ReadGridded
@@ -1682,118 +1683,32 @@ class ReadGriddedMulti(object):
     od550lt1aer
     od870aer
     """
-    # "private attributes (defined with one underscore). These may be 
-    # controlled using getter and setter methods (@property operator, see 
-    # e.g. definition of def start below)
-    _start = None
-    _stop = None
-    def __init__(self, names, start=None, stop=None):
+
+    def __init__(self, data_ids):
         const.print_log.warning(DeprecationWarning('ReadGriddedMulti class is '
                                                    'deprecated and will not '
                                                    'be further developed. '
                                                    'Please use ReadGridded.'))
-        if isinstance(names, str):
-            names = [names]
-        if not isinstance(names, list) or not all([isinstance(x, str) for x in names]):
+        if isinstance(data_ids, str):
+            data_ids = [data_ids]
+        if not isinstance(data_ids, list) or not all([isinstance(x, str) for x in data_ids]):
             raise IllegalArgumentError("Please provide string or list of strings")
     
-        self.names = names
+        self.data_ids = data_ids
         #: dictionary containing instances of :class:`ReadGridded` for each
         #: datset
-        self.results = od()
         
-        self.init_failed = od()
+        self.readers = {}
+        self.data = {}
         
-        # only overwrite if there is input, note that the attributes
-        # start and stop are defined below as @property getter and
-        # setter methods, that ensure that the input is convertible to 
-        # pandas.Timestamp
-        if start:
-            self.start = start
-        if stop:
-            self.stop = stop
+        self._init_readers()
         
-        self.init_results()
+    def _init_readers(self):
+        for data_id in self.data_ids:
+            self.readers[data_id] = ReadGridded(data_id)
         
-    @property
-    def start(self):
-        """Start time for the data import
-        
-        Note      
-        ----
-        If input is not :class:`pandas.Timestamp`, it must be convertible 
-        into :class:`pandas.Timestamp` (e.g. "2012-1-1")
-        """
-        return self._start
-    
-    @start.setter
-    def start(self, value):
-        if not isinstance(value, str):
-            try:
-                value = str(value)
-            except:
-                raise ValueError("Failed to convert non-string input for "
-                                 "time stamp into string")
-        if not isinstance(value, pd.Timestamp):    
-            try:
-                value = pd.Timestamp(value)
-            except:
-                raise ValueError("Failed to convert input value to pandas "
-                                  "Timestamp: %s" %value)
-        self._start = value
-            
-    @property
-    def stop(self):
-        """Stop time for the data import
-        
-        Note      
-        ----
-        If input is not :class:`pandas.Timestamp`, it must be convertible 
-        into :class:`pandas.Timestamp` (e.g. "2012-1-1")
-        
-        """
-        return self._stop
-
-    @stop.setter
-    def stop(self, value):
-        if not isinstance(value, str):
-            try:
-                value = str(value)
-            except:
-                raise ValueError("Failed to convert non-string input for "
-                                 "time stamp into string")
-        if not isinstance(value, pd.Timestamp):  
-            try:
-                value = pd.Timestamp(value)
-            except:
-                raise ValueError("Failed to convert input value to pandas "
-                                  "Timestamp: %s" %value)
-        self._stop = value
-    
-    def init_results(self):
-        """Initiate the reading classes for each dataset
-        
-        Creates and initates instance of :class:`ReadGridded` for each 
-        dataset name specified in attr. :attr:`names`.
-        
-        Raises
-        ------
-        Exception 
-            if one of the reading classes cannot be instantiated properly. The
-            type of Exception 
-        """
-        self.results = od()
-        for name in self.names:
-            try:
-                self.results[name] = ReadGridded(name, 
-                                                 self.start,
-                                                 self.stop)
-            except Exception as e:
-                self.init_failed[name] = repr(e)
-    
-        
-    def read(self, var_names, start=None, stop=None,
-             ts_type=None, flex_ts_type=True):
+    def read(self, vars_to_retrieve, start=None, stop=None,
+             ts_type=None, **kwargs):
         """High level method to import data for multiple variables and models
         
         Parameters
@@ -1827,107 +1742,34 @@ class ReadGriddedMulti(object):
             >>> read.read(["od550aer", "od550so4", "od550bc"])
             
         """
-        if start:
-            self.start = start
-        if stop:
-            self.stop = stop
-    
-        for name, reader in self.results.items():
-            try:
-                reader.read(var_names, start, stop, ts_type,
-                            flex_ts_type=flex_ts_type)
-            except Exception as e:
-                reader.logger.exception('Failed to read data of {}\n'
-                                        'Error message: {}'.format(name,
-                                                                   repr(e)))
-        return self.results
-    
-    def read_individual_years(self, var_names, years_to_load, 
-                              ts_type=None, require_all_years_avail=False,
-                              require_all_vars_avail=False):
-        """Read individual years into instances of :class:`GriddedData`
-        
-        Calls :func:`read_individual_years` from :class:`ReadGridded` for each
-        of the datasets in this object.
-        
-        Parameters
-        ----------
-        var_names : :obj:`list` or :obj:`str`
-            variables that are supposed to be read
-        years_to_load : list
-            list specifying the years to be loaded
-        ts_type : str
-            string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
-            of the available resolutions is used
-        require_all_years_avail : bool
-            if True, it is strictly required that all input years are 
-            available. 
-        require_all_vars_avail : bool
-            if True, it is strictly required that all input variables are 
-            available.
+        if isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
             
-        
-        Returns
-        -------
-        dict
-            nested dictionary dictionary containing the results for each 
-            variable and for each year
-            
-        Raises 
-        ------
-        YearNotAvailableError
-            1. if ``require_all_years_avail=True`` and one or more of the provided 
-            years is not available in this class
-            2. if none of the required years is available in either of the 
-            reading classes for the individual models
-        VarNotAvailableError
-            1. if ``require_all_vars_avail=True`` and one or more of the 
-            desired variables is not available in this class
-            2. if ``require_all_vars_avail=True`` and if none of the input 
-            variables is available in this object
-        
-        """
-        raise NotImplementedError(DeprecationWarning('Method is deprecated'))
-        for name, reader in self.results.items():
-            reader.read_individual_years(var_names, years_to_load, ts_type,
-                                         require_all_years_avail,
-                                         require_all_vars_avail)
-            
-        return self.results
-    
-    def __getitem__(self, name):
-        """Try access import result for one of the models
-        
-        Parameters
-        ----------
-        name : str
-            string specifying model that is supposed to be extracted
-        
-        Returns
-        -------
-        ReadGridded
-            the corresponding read class for this model
-            
-        Raises
-        -------
-        ValueError
-            if results for ``name`` are not available
-        """
-        if isinstance(name, int):
-            name = self.names[name]
-        if not name in self.results:
-            raise ValueError("No data found for name %s" %name)
-        return self.results[name]
+        for data_id in self.data_ids:
+            if not data_id in self.readers:
+                self.readers[data_id] = ReadGridded(data_id)
+            reader = self.readers[data_id]
+            if not data_id in self.data:
+                self.data[data_id] = {}
+            for var in vars_to_retrieve:
+                try:
+                    data = reader.read_var(var, start, stop, ts_type, **kwargs)
+                    self.data[data_id][var] = data
+                except Exception as e:
+                    const.print_log.exception('Failed to read data of {}\n'
+                                            'Error message: {}'.format(data_id,
+                                                                       repr(e)))
+        return self.data
     
     def __str__(self):
         head = "Pyaerocom %s" %type(self).__name__
         s = ("\n%s\n%s\n"
-             "Model IDs: %s\n" %(head, len(head)*"-", self.names))
-        if self.results:
+             "Data-IDs: %s\n" %(head, len(head)*"-", self.data_ids))
+        if bool(self.data):
             s += "\nLoaded data:"
-            for name, read in self.results.items():
-                s += "\n%s" %read
+            for name, vardata in self.data.items():
+                for var, data in vardata.items():
+                    s += "\n%s" %var
         return s
     
 if __name__=="__main__":
