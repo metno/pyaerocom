@@ -201,6 +201,7 @@ class ColocationSetup(BrowseDict):
     
         self.model_ts_type_read = model_ts_type_read
         self.model_read_aux = model_read_aux
+        self.model_use_climatology = False
         
         self.flex_ts_type_gridded = True
         #: If True, existing colocated data files will be re-computed and overwritten
@@ -337,6 +338,9 @@ class Colocator(ColocationSetup):
         if is_model:
             vert_which = self.obs_vert_type
             ts_type_read = self.model_ts_type_read
+            if self.model_use_climatology:
+                start = 9999
+                stop = None
         else:
             vert_which = None
             ts_type_read = self.obs_ts_type_read
@@ -486,6 +490,9 @@ class Colocator(ColocationSetup):
                         os.remove(os.path.join(out_dir, savename))
                         
             try:
+                by=None
+                if self.model_use_climatology:
+                    by=to_pandas_timestamp(start).year
                 coldata = colocate_gridded_ungridded(gridded_data=model_data, 
                                                      ungridded_data=obs_data, 
                                                      ts_type=ts_type, 
@@ -496,7 +503,8 @@ class Colocator(ColocationSetup):
                                                      remove_outliers=self.remove_outliers,
                                                      vert_scheme=self.vert_scheme,
                                                      harmonise_units=self.harmonise_units,
-                                                     var_outlier_ranges=self.var_outlier_ranges)
+                                                     var_outlier_ranges=self.var_outlier_ranges,
+                                                     update_baseyear_gridded=by)
                 if self.save_coldata:
                     coldata.to_netcdf(out_dir, savename=savename)
                 if self._log:
