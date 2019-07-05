@@ -300,11 +300,16 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
                 models_sorted = sort_dict_by_name(models)
                 new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
     new_menu = {}
+    basedir = os.path.dirname(config.menu_file)
+    available_exps = os.listdir(basedir)
     if os.path.exists(config.menu_file):
         with open(config.menu_file, 'r') as f:
             current = simplejson.load(f)
         for exp, submenu in current.items():
             if exp in ignore_experiments:
+                continue
+            elif not exp in available_exps:
+                const.print_log.info('Removing outdated experiment from menu.json')
                 continue
             new_menu[exp] = submenu
     
@@ -317,7 +322,8 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
     
     with open(config.menu_file, 'w+') as f:
         f.write(simplejson.dumps(new_menu, indent=4))
-   
+        
+    
 def update_menu_trends_iface(config):
     """Update menu for Aerosol trends interface
     
