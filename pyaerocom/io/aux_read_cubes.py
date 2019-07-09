@@ -27,11 +27,13 @@ def _check_same_units(cube1, cube2):
     from pyaerocom import const
     var1 = cube1.var_name
     u1 = cube1.units
+    
     var2 = cube2.var_name
     u2 = cube2.units
+
     if var1 in const.VARS and u1 == const.VARS[var1]['units'] :
-            cube2.convert_units(u1)
-            return (cube1, cube2)
+        cube2.convert_units(u1)
+        return (cube1, cube2)
     elif var2 in const.VARS and u2 == const.VARS[var2]['units'] :
         cube1.convert_units(u2)
         return (cube1, cube2)
@@ -48,7 +50,8 @@ def add_cubes(gridded1, gridded2):
     """
     cube1, cube2 = _check_input_iscube(gridded1, gridded2)
     cube1, cube2 = _check_same_units(cube1, cube2)    
-    return  cube1 + cube2
+    added = cube1 + cube2
+    return  added
 
 def subtract_cubes(gridded1, gridded2):
     """Method to subtract 1 cube from another"""
