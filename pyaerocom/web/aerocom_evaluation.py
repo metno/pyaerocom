@@ -19,7 +19,8 @@ from pyaerocom.io.helpers import save_dict_json
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
                                    update_menu_evaluation_iface, 
-                                   make_info_table_evaluation_iface)
+                                   make_info_table_evaluation_iface, 
+                                   read_json, write_json)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
 
 from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
@@ -717,8 +718,9 @@ class AerocomEvaluation(object):
         model_id = self.get_model_id(model_name)
         #obs_id = self.get_obs_id(obs_name)
         
-        files = glob.glob('{}/{}/*REF-{}*.nc'.format(self.coldata_dir, 
-                                                     model_id, obs_name))
+        files = glob.glob('{}/{}/*REF-{}*MOD-{}*.nc'.format(self.coldata_dir, 
+                                                            model_id, obs_name,
+                                                            model_name))
         if len(files) == 0:
             msg = ('Could not find any colocated data files for model {}, '
                    'obs {}'
@@ -978,8 +980,10 @@ class AerocomEvaluation(object):
                 res = self.make_json_files(model_name, obs_name)
         
         if update_menu:
+            self.clean_json_files()
             self.update_menu()
             self.make_info_table_web()
+            
         return res            
         
     def info_string_evalrun(self, obs_list, model_list):
@@ -1009,16 +1013,43 @@ class AerocomEvaluation(object):
         s += '\n'
         return s
     
+    def check_read_model(self, model_name, var_name, **kwargs):
+        if not model_name in self.model_config:
+            raise ValueError('No such model available {}'.format(model_name))
+        mcfg = self.get_model_config(model_name)
+        
+        from pyaerocom.io import ReadGridded
+        r = ReadGridded(mcfg['model_id'])
+        try:
+            var_name = mcfg['model_use_vars'][var_name]
+        except:
+            pass
+        
+        if 'model_read_aux' in mcfg and var_name in mcfg['model_read_aux']:
+            aa = mcfg['model_read_aux'][var_name]
+            
+        
+            r.add_aux_compute(var_name, vars_required=aa['vars_required'], 
+                              fun=aa['fun'])
+        return r.read_var(var_name, **kwargs)
+        
+    def _info_from_map_file(self, filename):
+        f = filename
+        obs_info = f.split('OBS-')[1].split('_MOD')[0].split('_')
+        obs_name, obs_var = obs_info[0].split(':')
+        vert_code = obs_info[1]
+        mod_name, mod_var =  f.split('MOD-')[1].split('.json')[0].split(':')
+        return (obs_name, obs_var, vert_code, mod_name, mod_var)
+    
     def get_web_overview_table(self):
         """Computes overview table based on existing map files"""
         tab = []
         from pandas import DataFrame
         for f in self.all_map_files:
             if f.endswith('.json') and f.startswith('OBS'):
-                obs_info = f.split('OBS-')[1].split('_MOD')[0].split('_')
-                obs_name, obs_var = obs_info[0].split(':')
-                vert_code = obs_info[1]
-                mod_name, mod_var =  f.split('MOD-')[1].split('.json')[0].split(':')
+                (obs_name, obs_var, 
+                 vert_code, 
+                 mod_name, mod_var) = self._info_from_map_file(f)
                 if mod_name in self.model_ignore:
                     continue
                 elif not mod_name in self.model_config:
@@ -1088,6 +1119,51 @@ class AerocomEvaluation(object):
             d[k] = as_dict
         return d        
     
+    def clean_json_files(self):
+        """Checks all existing json files and removes outdated data
+        
+        This may be relevant when updating a model name or similar.
+        """
+        for file in self.all_map_files:
+            (obs_name, obs_var, 
+             vert_code, 
+             mod_name, mod_var) = self._info_from_map_file(file)
+            if not obs_name in self.obs_config or not mod_name in self.model_config:
+                const.print_log.info('Removing outdated map file: {}'.format(file))
+                os.remove(os.path.join(self.out_dirs['map'], file))
+        for fp in glob.glob('{}/*.json'.format(self.out_dirs['ts'])):
+            self._check_clean_ts_file(fp)
+        self.update_menu()
+        self.make_info_table_web()
+                
+    def _check_clean_ts_file(self, fp):
+        if not os.path.basename(fp).split('OBS-')[-1].split(':')[0] in self.obs_config:
+            const.print_log.info('Removing outdated ts file: {}'.format(fp))
+            os.remove(fp)
+            return
+        try:
+            data = read_json(fp)
+        except:
+            const.print_log.exception('FATAL: detected corrupt json file: {}. '
+                                      'Removing file...'.format(fp))
+            os.remove(fp)
+            return
+        if all([x in self.model_config for x in list(data.keys())]):
+            return
+        data_new = {}
+        for mod_name in data.keys():
+            if not mod_name in self.model_config:
+                const.print_log.info('Removing model {} from {}'
+                                .format(mod_name, os.path.basename(fp)))
+                continue
+            
+            data_new[mod_name] = data[mod_name]
+        
+        write_json(data_new, fp)
+            
+                
+                
+        
     def to_dict(self):
         """Convert configuration to dictionary"""
         d = {}
