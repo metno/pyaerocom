@@ -408,11 +408,12 @@ def make_datetimeindex(ts_type, year):
         index object
     """
     import pandas as pd
-    conv = TSTR_TO_NP_DT[ts_type]
-    start = datetime64("{}-01-01 00:00:00".format(year)).astype(conv)
-    stop = datetime64("{}-12-31 23:59:59".format(year)).astype(conv)
-    return pd.DatetimeIndex(start=start, end=stop, 
-                            freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+    start = datetime64("{}-01-01 00:00:00".format(year))
+    stop = datetime64("{}-12-31 23:59:59".format(year))
+    
+    idx = pd.DatetimeIndex(start=start, end=stop, 
+                           freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+    return idx
 
 
 
@@ -456,7 +457,14 @@ def _check_correct_time_dim(cube, file, file_convention=None):
             add_file_to_log(file, 'Invalid time dimension')
     return cube
     
-        
+def _check_leap_year(num, num_per, ts_type):
+    if ts_type == 'daily' and num + 1 == num_per:
+        return True
+    elif ts_type == '3hourly' and num + 8 == num_per:
+        return True
+    elif ts_type == 'hourly' and num + 24 == num_per:
+        return True
+    return False
 def check_time_coord(cube, ts_type, year):
     """Method that checks the time coordinate of an iris Cube
     
@@ -491,12 +499,20 @@ def check_time_coord(cube, ts_type, year):
 
     tidx = make_datetimeindex(ts_type, year)
     
-    
+    num_per = len(tidx)
     num = len(t.points)
-    if not num == len(tidx):
-        raise UnresolvableTimeDefinitionError('Expected {} timestamps but '
-                                              'data has {}'
-                                              .format(len(tidx), num))
+
+    if not num == num_per:
+        if tidx[0].is_leap_year:
+            if not _check_leap_year(num, num_per, ts_type):
+                raise UnresolvableTimeDefinitionError('Expected {} timestamps but '
+                                                  'data has {}'
+                                                  .format(len(tidx), num))
+        else:
+            raise UnresolvableTimeDefinitionError('Expected {} timestamps but '
+                                                  'data has {}'
+                                                  .format(len(tidx), num))
+        
     
     pstr = TS_TYPE_TO_PANDAS_FREQ[ts_type]
     # ToDo: check why MS is not working for period conversion
