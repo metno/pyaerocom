@@ -642,6 +642,9 @@ class Colocator(ColocationSetup):
                     else:
                         os.remove(os.path.join(out_dir, savename))
             try:  
+                by=None
+                if self.model_use_climatology:
+                    by=to_pandas_timestamp(start).year
                 coldata = colocate_gridded_gridded(gridded_data=model_data,
                                                    gridded_data_ref=obs_data, 
                                                    ts_type=ts_type, 
@@ -651,7 +654,8 @@ class Colocator(ColocationSetup):
                                                    remove_outliers=self.remove_outliers,
                                                    vert_scheme=self.vert_scheme,
                                                    harmonise_units=self.harmonise_units,
-                                                   var_outlier_ranges=self.var_outlier_ranges)
+                                                   var_outlier_ranges=self.var_outlier_ranges,
+                                                   update_baseyear_gridded=by)
                 if self.save_coldata:
                     coldata.to_netcdf(out_dir, savename=savename)
                 if self._log:
