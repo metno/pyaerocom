@@ -303,8 +303,7 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
     basedir = os.path.dirname(config.menu_file)
     available_exps = os.listdir(basedir)
     if os.path.exists(config.menu_file):
-        with open(config.menu_file, 'r') as f:
-            current = simplejson.load(f)
+        current = read_json(config.menu_file)
         for exp, submenu in current.items():
             if exp in ignore_experiments:
                 continue
@@ -322,8 +321,37 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
     
     with open(config.menu_file, 'w+') as f:
         f.write(simplejson.dumps(new_menu, indent=4))
-        
+ 
+def read_json(file_path):
+    """Read json file
     
+    Parameters
+    ----------
+    file_path : str
+        json file path
+    
+    Returns
+    -------
+    dict
+        content as dictionary
+    """
+    with open(file_path, 'r') as f:
+        data = simplejson.load(f)
+    return data
+
+def write_json(data_dict, file_path, indent=4):
+    """Save json file
+    
+    Parameters
+    ----------
+    data_dict : dict
+        dictionary that can be written to json file
+    file_path : str
+        output file path
+    """
+    with open(file_path, 'w+') as f:
+        f.write(simplejson.dumps(data_dict, indent=4))
+
 def update_menu_trends_iface(config):
     """Update menu for Aerosol trends interface
     
