@@ -27,6 +27,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              vert_scheme=None, harmonise_units=True,
                              regrid_scheme='areaweighted', 
                              var_outlier_ranges=None,
+                             update_baseyear_gridded=None,
                              **kwargs):
     """Colocate 2 gridded data objects
     
@@ -77,10 +78,17 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     var_outlier_ranges : :obj:`dict`, optional
         dictionary specifying outlier ranges for individual variables. 
         (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
+    update_baseyear_gridded : int, optional
+        optional input that can be set in order to redefine the time dimension
+        in the gridded data object to be analysed. E.g., if the data object 
+        is a climatology (one year of data) that has set the base year of the
+        time dimension to a value other than the specified input start / stop 
+        time this may be used to update the time in order to make colocation 
+        possible.
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
-        
+    
     Returns
     -------
     ColocatedData
@@ -113,7 +121,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             low, high = var_outlier_ranges[var]
         if var_ref in var_outlier_ranges:
             low_ref, high_ref = var_outlier_ranges[var_ref]
-            
+    
+    if update_baseyear_gridded is not None:
+        # update time dimension in gridded data
+        gridded_data.base_year = update_baseyear_gridded
+        
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
@@ -226,6 +238,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                regrid_res_deg=None, remove_outliers=True,
                                vert_scheme=None, harmonise_units=True, 
                                var_ref=None, var_outlier_ranges=None, 
+                               update_baseyear_gridded=None,
                                **kwargs):
     """Colocate gridded with ungridded data 
     
@@ -278,6 +291,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     var_outlier_ranges : :obj:`dict`, optional
         dictionary specifying outlier ranges for individual variables. 
         (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
+    update_baseyear_gridded : int, optional
+        optional input that can be set in order to redefine the time dimension
+        in the gridded data object to be analysed. E.g., if the data object 
+        is a climatology (one year of data) that has set the base year of the
+        time dimension to a value other than the specified input start / stop 
+        time this may be used to update the time in order to make colocation 
+        possible.
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
@@ -329,6 +349,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     dataset_ref = ungridded_data.contains_datasets[0]
     
+    if update_baseyear_gridded is not None:
+        # update time dimension in gridded data
+        gridded_data.base_year = update_baseyear_gridded
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)

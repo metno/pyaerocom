@@ -18,8 +18,12 @@ import iris
 from iris.experimental.equalise_cubes import equalise_attributes
 
 from pyaerocom import const, logger
-from pyaerocom.exceptions import NetcdfError
+from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
+                                  FileConventionError, 
+                                  UnresolvableTimeDefinitionError)
+
 from pyaerocom.helpers import cftime_to_datetime64
+from pyaerocom.helpers import TS_TYPE_TO_PANDAS_FREQ
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
 
@@ -194,39 +198,19 @@ def load_cube_custom(file, var_name=None, file_convention=None,
         raise NetcdfError('Variable {} not available in file {}'.format(var_name, 
                                                                         file))
     if perform_checks:
+        try:
+            cube = _check_var_unit_cube(cube)
+        except VariableDefinitionError:
+            pass
+        
         grid_io = const.GRID_IO
-        if file_convention is None:
-            try:
-                file_convention = FileConventionRead(from_file=file)
-            except:
-                pass
-        
-        if isinstance(file_convention, FileConventionRead):
-            finfo = file_convention.get_info_from_file(file)
-            if grid_io.CHECK_TIME_FILENAME:
-                if not check_time_coord(cube, ts_type=finfo["ts_type"], 
-                                        year=finfo["year"]):
-                
-                    msg = ("Invalid time dimension coordinate in file {}. " 
-                           .format(os.path.basename(file)))
-                    logger.warning(msg)
-                    if grid_io.CORRECT_TIME_FILENAME:
-                        logger.warning("Attempting to correct time coordinate "
-                                       "using information in file name")
-                        try:
-                            cube = correct_time_coord(cube, 
-                                                      ts_type=finfo["ts_type"],
-                                                      year=finfo["year"]) 
-                        except:
-                            pass
-                    if const.WRITE_FILEIO_ERR_LOG:
-                        add_file_to_log(file, 'Invalid time dimension')
-            else:
-                logger.warning("WARNING: Automatic check of time "
-                               "array in netCDF files is deactivated. "
-                               "This may cause problems in case "
-                               "the time dimension is not CF conform.")
-        
+        if grid_io.CHECK_TIME_FILENAME:
+            cube = _check_correct_time_dim(cube, file,  file_convention)
+        else:
+            logger.warning("WARNING: Automatic check of time "
+                           "array in netCDF files is deactivated. "
+                           "This may cause problems in case "
+                           "the time dimension is not CF conform.") 
         if grid_io.CHECK_DIM_COORDS:
             cube = check_dim_coords_cube(cube)
         
@@ -329,7 +313,23 @@ def check_dim_coords_cube(cube):
     cube = check_dim_coord_names_cube(cube)
     return cube
 
-def check_time_coord(cube, ts_type, year):
+
+def _check_var_unit_cube(cube):
+    var = cube.var_name
+    if not var in const.VARS:
+        raise VariableDefinitionError('No such pyaerocom default variable: {}'
+                                      .format(cube.var_name))
+    
+    u = cube.units
+    if isinstance(u, str):
+        u = cf_units.Unit(u)
+    if str(const.VARS[var].units) == '1' and u.is_unknown():
+        const.print_log.info('Overwriting unit {} in cube {} with value "1"'
+                             .format(str(u), var))
+        cube.units = cf_units.Unit('1')
+    return cube
+
+def check_time_coordOLD(cube, ts_type, year):
     """Method that checks the time coordinate of an iris Cube
     
     This method checks if the time dimension of a cube is accessible and 
@@ -391,6 +391,132 @@ def check_time_coord(cube, ts_type, year):
                        "Error message: {}".format(repr(e)))
         ok = False
     return ok
+
+def make_datetimeindex(ts_type, year):
+    """Create pandas datetime index 
+    
+    Parameters
+    ----------
+    ts_type : str
+        pyaerocom ts_type
+    year : int
+        year
+        
+    Returns
+    -------
+    pandas.DatetimeIndex
+        index object
+    """
+    import pandas as pd
+    conv = TSTR_TO_NP_DT[ts_type]
+    start = datetime64("{}-01-01 00:00:00".format(year)).astype(conv)
+    stop = datetime64("{}-12-31 23:59:59".format(year)).astype(conv)
+    return pd.DatetimeIndex(start=start, end=stop, 
+                            freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+
+
+
+def _check_correct_time_dim(cube, file, file_convention=None):
+    if file_convention is None:
+        try:
+            file_convention = FileConventionRead(from_file=file)
+        except:
+            pass
+    
+    if not isinstance(file_convention, FileConventionRead):
+        
+        raise FileConventionError('Unknown file convention: {}'
+                                  .format(file_convention))
+        
+    finfo = file_convention.get_info_from_file(file)
+    ts_type = finfo['ts_type']
+    year = finfo['year']
+    if not ts_type in const.GRID_IO.TS_TYPES:
+        raise FileConventionError('Invalid ts_type in file: {}'.format(ts_type))
+    elif not -2000 <= year <= 20000:
+        raise FileConventionError('Invalid year in file: {}'.format(year))
+    try:
+        check_time_coord(cube, ts_type, year)
+    except UnresolvableTimeDefinitionError as e:
+        raise UnresolvableTimeDefinitionError(repr(e))
+    except:
+        msg = ("Invalid time dimension coordinate in file {}. " 
+               .format(os.path.basename(file)))
+        logger.warning(msg)
+        if const.GRID_IO.CORRECT_TIME_FILENAME:
+            logger.warning("Attempting to correct time coordinate "
+                           "using information in file name")
+            try:
+                cube = correct_time_coord(cube, 
+                                          ts_type=finfo["ts_type"],
+                                          year=finfo["year"]) 
+            except:
+                pass
+        if const.WRITE_FILEIO_ERR_LOG:
+            add_file_to_log(file, 'Invalid time dimension')
+    return cube
+    
+        
+def check_time_coord(cube, ts_type, year):
+    """Method that checks the time coordinate of an iris Cube
+    
+    This method checks if the time dimension of a cube is accessible and 
+    according to the standard (i.e. fully usable). It only checks, and does not
+    correct. For the latter, please see :func:`correct_time_coord`.
+    
+    Parameters
+    ----------
+    cube : Cube
+        cube containing data
+    ts_type : str
+        pyaerocom ts_type
+    year : 
+        year of data
+    
+    Returns
+    -------
+    bool
+        True, if time dimension is ok, False if not
+    """
+    try:
+        t = cube.coord("time")
+    except:
+        raise AttributeError("Cube does not contain time dimension")
+    if not isinstance(t, iris.coords.DimCoord):
+        raise AttributeError("Time is not a DimCoord instance")
+    try:
+        cftime_to_datetime64(0, cfunit=t.units)
+    except:
+        raise ValueError("Could not convert time unit string")
+
+    tidx = make_datetimeindex(ts_type, year)
+    
+    
+    num = len(t.points)
+    if not num == len(tidx):
+        raise UnresolvableTimeDefinitionError('Expected {} timestamps but '
+                                              'data has {}'
+                                              .format(len(tidx), num))
+    
+    pstr = TS_TYPE_TO_PANDAS_FREQ[ts_type]
+    # ToDo: check why MS is not working for period conversion
+    if pstr == 'MS':
+        pstr = 'M'
+    # convert first and last timestamps of index array into periods 
+    # (e.g. January and December for monthly data)
+    per0 = tidx[0].to_period(pstr)
+    per1 = tidx[-1].to_period(pstr)    
+    
+    # first and last timestamp in data
+    t0, t1 = cftime_to_datetime64([t.points[0], t.points[-1]], cfunit=t.units)
+    
+    if not per0.start_time <= t0 <= per0.end_time:
+        raise ValueError('First timestamp of data {} does not lie in first '
+                         'period: {}'.format(t0, per0))
+    elif not per1.start_time <= t1 <= per1.end_time:
+        raise ValueError('Last timestamp of data {} does not lie in last '
+                         'period: {}'.format(t1, per1))
+        
 
 def correct_time_coord(cube, ts_type, year):
     """Method that corrects the time coordinate of an iris Cube
