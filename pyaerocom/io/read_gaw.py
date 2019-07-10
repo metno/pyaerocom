@@ -156,7 +156,7 @@ class ReadGAW(ReadUngriddedBase):
         data_out['filename'] = meta[1].strip()
 
         try:
-            data_out['data_version'] = int(meta[5].strip())  #(meta[5].strip())  #   ??????????????????
+            data_out['data_version'] = int(meta[5].strip())
         except:
             data_out['data_version'] = None
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
@@ -192,33 +192,10 @@ class ReadGAW(ReadUngriddedBase):
         data_out['sd']  = data[:, data_idx[self.VAR_NAMES_FILE['sd']]]
         # Add date and time and the rest of the data to a dictionary
         data_out['dtime'] = []
-        #data_out['vmrdms'] = []
-        #data_out['nd'] = []
-        #data_out['sd'] = []
-        #data_out['f'] = []
         
         datestring = np.core.defchararray.add(data[:, 0], 'T')
         datestring = np.core.defchararray.add(datestring, data[:, 1])
         data_out['dtime'] = datestring.astype("datetime64[s]")
-        
-        #for i in range(1, len(data)):
-        #    datestring = data[i][0]  + 'T' + data[i][1]
-        #    data_out['dtime'].append(np.datetime64(datestring, 's'))
-            #try:
-            #    data_out['vmrdms'].append(np.float(data[i][4]))
-            #except:
-            #    data_out['vmrdms'] = None
-            #data_out['vmrdms'].append((data[i][4]))
-            #data_out['nd'].append(np.float(data[i][5]))
-            #data_out['sd'].append(np.float(data[i][6]))
-            #data_out['f'].append(np.int(data[i][7]))
-             
-        # Convert the data (not the metadata) to arrays
-        #data_out['vmrdms'] = np.asarray(data_out['vmrdms'])
-        #data_out['nd'] = np.asarray(data_out['nd'])
-        #data_out['sd'] = np.asarray(data_out['sd'])
-        #data_out['f'] = np.asarray(data_out['f'])
-        #data_out['dtime'] = np.asarray(data_out['dtime'])
         
         # Replace invalid measurements with nan values
         i= 0
@@ -236,14 +213,7 @@ class ReadGAW(ReadUngriddedBase):
             for var in vars_to_retrieve:
                 if var in data_out:
                     data_out[var] = pd.Series(data_out[var], 
-                                              index=data_out['dtime'])
-                
-                    
-        # We want our units in mole mole-1 for vmrdms
-        #if  data_out['var_info']['units'] == 'ppt':
-        #    data_out['var_info']['units'] = 'mole mole-1'
-        #    data_out['vmrdms'] = data_out['vmrdms'] * 10e12
-        
+                                              index=data_out['dtime'])        
         
         return data_out
     
@@ -295,7 +265,7 @@ class ReadGAW(ReadUngriddedBase):
         files = files[first_file:last_file]
         
         data_obj = UngriddedData() 
-        meta_key = 0.0  # Why 0.0 ??? 
+        meta_key = 0.0 
         idx = 0  
         
         # Assign metadata object and index
@@ -309,16 +279,13 @@ class ReadGAW(ReadUngriddedBase):
             station_data = self.read_file(_file, 
                                           vars_to_retrieve=vars_to_retrieve)
 
+            print('station_data:', station_data)
             # Fill the metadata dict.
             # The location in the data set is time step dependant.
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
-            #metadata[meta_key].update(station_data.get_unit('vmrdms'))
-            #metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-            #metadata[meta_key]['ts_type'] = self.TS_TYPE
             metadata[meta_key]['variables'] = vars_to_retrieve
-            #metadata[meta_key]['data_id'] = self.DATA_ID
             if ('instrument_name' in station_data 
                 and station_data['instrument_name'] is not None):
                 instr = station_data['instrument_name']
@@ -326,21 +293,7 @@ class ReadGAW(ReadUngriddedBase):
                 instr = self.INSTRUMENT_NAME
             metadata[meta_key]['instrument_name'] = instr
             
-            # TODO: Add more keys to var_info
-            #var_info = {}
-            
-            # Var info is a dictionary and it must contain the key 'units' to 
-            # be able to do the colocation
-            #if (station_data['var_info']['units'] is not None):
-            #    u = station_data['var_info']['units']
-            #else:
-            #    u = 1
-                
-            #print('unit:', u)
-           
-            # 
-            #metadata[meta_key]['var_info']['units'] = u
-            #print(metadata[meta_key]['var_info']['units'])
+            metadata[meta_key]['var_info'] = station_data['var_info']
             
             
             # List with indices of this station for each variable
@@ -392,13 +345,15 @@ class ReadGAW(ReadUngriddedBase):
                             
             idx += totnum  
             meta_key = meta_key + 1.
+            
+        #print('station_data:', station_data)
         
         # Shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         
-        print(self)
+        #print(self)
         return data_obj
     
 if __name__ == "__main__":
@@ -410,6 +365,10 @@ if __name__ == "__main__":
     r = ReadGAW()
     data = r.read(vars_to_retrieve = ['vmrdms', 'f'])
     print('vars to retrieve:', data.vars_to_retrieve)
+    
+    
+    print('!!!!metadata:', data.metadata )
+    
     
     stat = data['Cape_Verde_Observatory']
     
