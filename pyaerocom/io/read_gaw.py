@@ -16,6 +16,7 @@ Attributes
 
 """
 
+# TODO: check figures!!!!
 
 import numpy as np
 from collections import OrderedDict as od
@@ -50,22 +51,22 @@ class ReadGAW(ReadUngriddedBase):
     TS_TYPE = 'daily'
     
     # Default variables for read method
-    DEFAULT_VARS = ['vmrdms']
+    DEFAULT_VARS = ['vmrdms', 'sd']
     
     # Dictionary specifying values corresponding to invalid measurements
     NAN_VAL ={}
     NAN_VAL['vmrdms'] = -999999999999.99
-    NAN_VAL['vmrdms_nd'] = -9999
-    NAN_VAL['vmrdms_std'] = -99999.
-    NAN_VAL['vmrdms_flag'] = -9999
+    NAN_VAL['nd'] = -9999
+    NAN_VAL['sd'] = -99999.
+    NAN_VAL['f'] = -9999
     
     # Dictionary specifying the file column names (values) for each Aerocom 
     # variable (keys)
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmrdms'] = 'dimethylsulfide'
-    VAR_NAMES_FILE['vmrdms_nd'] = 'number_of_observations'
-    VAR_NAMES_FILE['vmrdms_std'] = 'standard_deviation'
-    VAR_NAMES_FILE['vmrdms_flag'] = 'flag'
+    VAR_NAMES_FILE['nd'] = 'ND'
+    VAR_NAMES_FILE['sd'] = 'SD'
+    VAR_NAMES_FILE['f'] = 'F'
 
     # List of variables that are provided by this dataset (will be extended 
     # by auxiliary variables on class init, for details see __init__ method of
@@ -123,15 +124,21 @@ class ReadGAW(ReadUngriddedBase):
             f.readline()
             f.readline()
             f.readline()
+            data_keys = f.readline().split()
             
             data = []
             for line in f:
-                columns = line.split()
-                data.append(columns)
-                
-        # Empty data object (a dictionary with extended functionality)
-        data_out = StationData()
+                rows = line.split()
+                data.append(rows)
         
+        data = np.array(data) 
+        # names of the columns in the file that I want to use        
+        data_keys = data_keys[5:] 
+        # dictionary with keys and column index in the data
+        data_idx = { data_keys[i]: i+4 for i in range(0, len(data_keys) ) }
+               
+        # Empty data object (a dictionary with extended functionality)
+        data_out = StationData()    
         data_out.data_id = self.DATA_ID
         data_out.dataset_name = self.DATASET_NAME  # is this supposed to be the same?
                 
@@ -147,63 +154,67 @@ class ReadGAW(ReadUngriddedBase):
             raise MetaDataError('Failed to read station coordinates. {}'
                                 .format(repr(e)))
         data_out['filename'] = meta[1].strip()
-        #print(meta[5].strip(), type(meta[5].strip()))
-        #print(int(meta[5].strip()), type(int(meta[5].strip())))
+
         try:
-            data_out['data_version'] = int(meta[5].strip())  #(meta[5].strip())  #   ??????????????????
+            data_out['data_version'] = int(meta[5].strip())
         except:
             data_out['data_version'] = None
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
         data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
         data_out['variables'] = vars_to_retrieve 
-
+        u = meta[20].strip().replace(' ', '_')
+    
+        # data in vars_to_retrieve
+        # only vmrdms or all??
+        for var in vars_to_retrieve:
+            # find column
+            idx = data_idx[self.VAR_NAMES_FILE[var]]
+            # get data
+            data_out['var_info'][var] = od()
+            if idx == 4:  # vmrdms
+                if u == 'ppt':
+                    data_out['var_info'][var]['units'] = 'mol mol-1'
+                    data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e12
+                    # reset nan values
+                    data_out[var] = np.where(data_out[var]==self.NAN_VAL['vmrdms']*1e12, 
+                            self.NAN_VAL['vmrdms'], data_out[var])  
+                else:
+                    data_out['var_info'][var]['units'] = u
+                    data_out[var] = data[:, idx].astype(np.float)
+            else:
+                data_out['var_info'][var]['units'] = 1  # Or leave empty? 
+                data_out[var] = data[:, idx].astype(np.float)
+                
+        
+        # If only vmrdms above, we need to write sd and f
+        data_out['f']  = data[:, data_idx[self.VAR_NAMES_FILE['f']]]
+        data_out['sd']  = data[:, data_idx[self.VAR_NAMES_FILE['sd']]]
         # Add date and time and the rest of the data to a dictionary
         data_out['dtime'] = []
-        data_out['vmrdms'] = []
-        data_out['vmrdms_nd'] = []
-        data_out['vmrdms_std'] = []
-        data_out['vmrdms_flag'] = []
-    
-        for i in range(1, len(data)):
-            datestring = data[i][0]  + 'T' + data[i][1]
-            data_out['dtime'].append(np.datetime64(datestring, 's'))
-            try:
-                data_out['vmrdms'].append(np.float(data[i][4]))
-            except:
-                data_out['vmrdms'] = None
-            #data_out['vmrdms'].append((data[i][4]))
-            data_out['vmrdms_nd'].append(np.float(data[i][5]))
-            data_out['vmrdms_std'].append(np.float(data[i][6]))
-            data_out['vmrdms_flag'].append(np.int(data[i][7]))
-             
-        # Convert the data (not the metadata) to arrays
-        data_out['vmrdms'] = np.asarray(data_out['vmrdms'])
-        data_out['vmrdms_nd'] = np.asarray(data_out['vmrdms_nd'])
-        data_out['vmrdms_std'] = np.asarray(data_out['vmrdms_std'])
-        data_out['vmrdms_flag'] = np.asarray(data_out['vmrdms_flag'])
-        data_out['dtime'] = np.asarray(data_out['dtime'])
+        
+        datestring = np.core.defchararray.add(data[:, 0], 'T')
+        datestring = np.core.defchararray.add(datestring, data[:, 1])
+        data_out['dtime'] = datestring.astype("datetime64[s]")
         
         # Replace invalid measurements with nan values
         i= 0
         for key, value in self.NAN_VAL.items():
-            print(key, value, i)
-            if data_out[key].dtype != 'float64':
-                data_out[key] = data_out[key].astype('float64')
-            data_out[key][data_out[key]==value]=np.nan
-            i = i+1
+            if key in data_out.keys():
+                print(key, value, i)
+                if data_out[key].dtype != 'float64':
+                    data_out[key] = data_out[key].astype('float64')
+                data_out[key][data_out[key]==value]=np.nan
+                i = i+1
                         
         # convert data vectors to pandas.Series (if attribute 
         # vars_as_series=True)
         if vars_as_series:        
-            for key in data_out:
-                if key in vars_to_retrieve:
-                    data_out[key] = pd.Series(data_out[key], 
-                                              index=data_out['dtime'])
-                else:
-                    del data_out[key]
-                    
-         
+            for var in vars_to_retrieve:
+                if var in data_out:
+                    data_out[var] = pd.Series(data_out[var], 
+                                              index=data_out['dtime'])        
+        
         return data_out
     
     def read(self, vars_to_retrieve=None, 
@@ -254,7 +265,7 @@ class ReadGAW(ReadUngriddedBase):
         files = files[first_file:last_file]
         
         data_obj = UngriddedData() 
-        meta_key = 0.0  # Why 0.0 ??? 
+        meta_key = 0.0 
         idx = 0  
         
         # Assign metadata object and index
@@ -263,29 +274,27 @@ class ReadGAW(ReadUngriddedBase):
     
         num_vars = len(vars_to_retrieve)
 
+
         for i, _file in enumerate(files):
             station_data = self.read_file(_file, 
                                           vars_to_retrieve=vars_to_retrieve)
-              
+
+            print('station_data:', station_data)
             # Fill the metadata dict.
             # The location in the data set is time step dependant.
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
-            metadata[meta_key]['dataset_name'] = self.DATASET_NAME
-            metadata[meta_key]['ts_type'] = self.TS_TYPE
             metadata[meta_key]['variables'] = vars_to_retrieve
-            metadata[meta_key]['data_id'] = self.DATA_ID
             if ('instrument_name' in station_data 
                 and station_data['instrument_name'] is not None):
                 instr = station_data['instrument_name']
             else:
                 instr = self.INSTRUMENT_NAME
             metadata[meta_key]['instrument_name'] = instr
-            metadata[meta_key]['data_revision'] = self.data_revision
-            # TODO: Add 'var_info' to the metadata block
-            # metadata[meta_key]['var_info'] = 'some info'
-            # Var info is a dictionary and it must contain the key 'units'
+
+            metadata[meta_key]['var_info'] = station_data['var_info']
+    
             
             # List with indices of this station for each variable
             meta_idx[meta_key] = od()
@@ -317,10 +326,9 @@ class ReadGAW(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._DATAHEIGHTINDEX
                                ] = station_data['dataaltitude']
                 data_obj._data[start:stop, data_obj._DATAERRINDEX
-                               ] = station_data['vmrdms_std']
+                               ] = station_data['sd']
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
-                               ] = station_data['vmrdms_flag']
-                               
+                               ] = station_data['f']                           
                 # Write data to data object
                 data_obj._data[start:stop, data_obj._TIMEINDEX
                                ] = station_data['dtime']
@@ -330,18 +338,25 @@ class ReadGAW(ReadUngriddedBase):
                                ] = var_idx
                 
                 meta_idx[meta_key][var] = np.arange(start, stop)
+
                 
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
                             
             idx += totnum  
             meta_key = meta_key + 1.
+            
+        #print('station_data:', station_data)
         
         # Shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         #data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         
+<<<<<<< HEAD
+=======
+        #print(self)
+>>>>>>> paulina
         return data_obj
     
 if __name__ == "__main__":
@@ -351,8 +366,12 @@ if __name__ == "__main__":
     # https://aerocom.met.no/DATA/AEROCOM_WORK/oxford10/pdf_pap/suntharalingam_sulfate_2010.pdf
      
     r = ReadGAW()
-    data = r.read(vars_to_retrieve = ['vmrdms', 'vmrdms_flag'])
+    data = r.read(vars_to_retrieve = ['vmrdms', 'f'])
     print('vars to retrieve:', data.vars_to_retrieve)
+    
+    
+    print('!!!!metadata:', data.metadata )
+    
     
     stat = data['Cape_Verde_Observatory']
     
@@ -360,7 +379,7 @@ if __name__ == "__main__":
     print('Cape Verde Observatory:', stat)
     
     # plot flag at Amsterdam Island
-    ax = stat.plot_timeseries('vmrdms_flag')
+    ax = stat.plot_timeseries('f')
     plt.show()
 
     
@@ -420,8 +439,5 @@ if __name__ == "__main__":
     dms_median_9099.plot(label='median', ax=ax)
     plt.legend(loc='best')
     plt.show()
-  
 
-
-
- 
+    
