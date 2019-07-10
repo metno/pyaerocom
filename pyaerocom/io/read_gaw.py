@@ -51,7 +51,7 @@ class ReadGAW(ReadUngriddedBase):
     TS_TYPE = 'daily'
     
     # Default variables for read method
-    DEFAULT_VARS = ['vmrdms', 'sd']
+    #DEFAULT_VARS = ['vmrdms', 'sd']
     
     # Dictionary specifying values corresponding to invalid measurements
     NAN_VAL ={}
@@ -64,6 +64,8 @@ class ReadGAW(ReadUngriddedBase):
     # variable (keys)
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmrdms'] = 'dimethylsulfide'
+    VAR_NAMES_FILE['sconcbc'] = 'blackCarbon'
+    VAR_NAMES_FILE['sconcso4'] = 'SO4'
     VAR_NAMES_FILE['nd'] = 'ND'
     VAR_NAMES_FILE['sd'] = 'SD'
     VAR_NAMES_FILE['f'] = 'F'
@@ -74,6 +76,10 @@ class ReadGAW(ReadUngriddedBase):
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
     INSTRUMENT_NAME = 'unknown'
+    
+    @property
+    def DEFAULT_VARS(self):
+        return self.PROVIDES_VARIABLES
     
     @property
     def DATASET_NAME(self): 
