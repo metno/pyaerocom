@@ -16,6 +16,7 @@ Attributes
 
 """
 
+# TODO: check figures!!!!
 
 import numpy as np
 from collections import OrderedDict as od
@@ -162,7 +163,6 @@ class ReadGAW(ReadUngriddedBase):
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
         data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
         data_out['variables'] = vars_to_retrieve 
-        #data_out['var_info']['units'] = meta[20].strip().replace(' ', '_')
         u = meta[20].strip().replace(' ', '_')
     
         # data in vars_to_retrieve
@@ -175,7 +175,10 @@ class ReadGAW(ReadUngriddedBase):
             if idx == 4:  # vmrdms
                 if u == 'ppt':
                     data_out['var_info'][var]['units'] = 'mol mol-1'
-                    data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 10e12
+                    data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e12
+                    # reset nan values
+                    data_out[var] = np.where(data_out[var]==self.NAN_VAL['vmrdms']*1e12, 
+                            self.NAN_VAL['vmrdms'], data_out[var])  
                 else:
                     data_out['var_info'][var]['units'] = u
                     data_out[var] = data[:, idx].astype(np.float)
