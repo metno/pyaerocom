@@ -352,11 +352,7 @@ class ReadGAW(ReadUngriddedBase):
         data_obj._data = data_obj._data[:idx]
         #data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
-        
-<<<<<<< HEAD
-=======
-        #print(self)
->>>>>>> paulina
+
         return data_obj
     
 if __name__ == "__main__":
