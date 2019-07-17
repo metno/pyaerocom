@@ -16,8 +16,6 @@ Attributes
 
 """
 
-# TODO: check figures!!!!
-
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -62,6 +60,7 @@ class ReadGAW(ReadUngriddedBase):
     
     # Dictionary specifying the file column names (values) for each Aerocom 
     # variable (keys)
+    # Do we want CS and REM? Don't know what these columns are...
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmrdms'] = 'dimethylsulfide'
     VAR_NAMES_FILE['sconcbc'] = 'blackCarbon'
@@ -107,7 +106,7 @@ class ReadGAW(ReadUngriddedBase):
             
         """
         if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS   
+            vars_to_retrieve = self.DEFAULT_VARS # Change this!!! use mata line 17: Parameter!!
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         
@@ -118,6 +117,14 @@ class ReadGAW(ReadUngriddedBase):
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
          
+        
+        # reverse dict to get keys of certain values (possible only because 
+        # values are hashable and unique)
+        # Could also define the dict VAR_NAMES_FILE with the inverse order and 
+        # PROVIDES_VARIABLES = list(VAR_NAMES_FILE.values())
+        inv_dict = dict(zip(self.VAR_NAMES_FILE.values(), self.VAR_NAMES_FILE.keys()))
+        
+        
         # Open the file, store the metadata in the first lines of the file, 
         # skip empty lines and headers, and store the data.
         with open(filename, 'r') as f:         
@@ -130,18 +137,44 @@ class ReadGAW(ReadUngriddedBase):
             f.readline()
             f.readline()
             f.readline()
-            data_keys = f.readline().split()
+            file_vars = f.readline().split()
             
             data = []
             for line in f:
+                line = line.replace('/', '-')  # some dates have the wrong format
                 rows = line.split()
                 data.append(rows)
-        
+                
         data = np.array(data) 
-        # names of the columns in the file that I want to use        
-        data_keys = data_keys[5:] 
+        # names of the columns in the file that I want to use  
+        file_vars = file_vars[5:9]         
+        # If we want to include CS and REM, then:
+        # file_vars = file_vars[5:9]
+        # and add these variables to VAR_NAMES_FILE
+                
+                
+        # The variables analized are only the intersection of those provided by 
+        # the dataset, vars_to_retrieve, and those available in the file,
+        # file_vars.
+        
+        # We need to map the variables in the file with the values in VAR_NAME_FILE, 
+        # and for that we reverse the dictionary.
+        # Revert dict to get keys of certain values is possible only because 
+        # values are hashable and unique.
+        # Could also define the dict VAR_NAMES_FILE with the inverse order and 
+        # PROVIDES_VARIABLES = list(VAR_NAMES_FILE.values())
+        inv_dict = dict(zip(self.VAR_NAMES_FILE.values(), self.VAR_NAMES_FILE.keys()))
+        
+        
+        test = set(vars_to_retrieve)
+        test2 = [inv_dict[x] for x in file_vars]
+        
+        vars_to_retrieve_file = list(set(vars_to_retrieve).intersection(
+                [inv_dict[x] for x in file_vars]))
+    
+
         # dictionary with keys and column index in the data
-        data_idx = { data_keys[i]: i+4 for i in range(0, len(data_keys) ) }
+        data_idx = { file_vars[i]: i+4 for i in range(0, len(file_vars) ) }
                
         # Empty data object (a dictionary with extended functionality)
         data_out = StationData()    
@@ -168,13 +201,16 @@ class ReadGAW(ReadUngriddedBase):
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
         data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
-        data_out['variables'] = vars_to_retrieve 
+        data_out['variables'] = vars_to_retrieve_file 
         u = meta[20].strip().replace(' ', '_')
     
-        # data in vars_to_retrieve
+    
+        
+        # data in vars_to_retrieve_file
         # only vmrdms or all??
-        for var in vars_to_retrieve:
+        for var in vars_to_retrieve_file:
             # find column
+            print(self.VAR_NAMES_FILE[var])
             idx = data_idx[self.VAR_NAMES_FILE[var]]
             # get data
             data_out['var_info'][var] = od()
@@ -199,8 +235,17 @@ class ReadGAW(ReadUngriddedBase):
         # Add date and time and the rest of the data to a dictionary
         data_out['dtime'] = []
         
-        datestring = np.core.defchararray.add(data[:, 0], 'T')
-        datestring = np.core.defchararray.add(datestring, data[:, 1])
+        
+        # if any hour is missing, just look at the date. This could be a 
+        # problem if the dataset has many observations for the same day and 
+        # only one observations does not specify the hour
+        # Another option is to drop observations with missing hour, but then
+        # a problem arises when data is not hourly. 
+        if any('99:99' in s for s in data[:, 1]):
+            datestring = data[:, 0]
+        else:
+            datestring = np.core.defchararray.add(data[:, 0], 'T')   
+            datestring = np.core.defchararray.add(datestring, data[:, 1])
         data_out['dtime'] = datestring.astype("datetime64[s]")
         
         # Replace invalid measurements with nan values
@@ -216,7 +261,7 @@ class ReadGAW(ReadUngriddedBase):
         # convert data vectors to pandas.Series (if attribute 
         # vars_as_series=True)
         if vars_as_series:        
-            for var in vars_to_retrieve:
+            for var in vars_to_retrieve_file:
                 if var in data_out:
                     data_out[var] = pd.Series(data_out[var], 
                                               index=data_out['dtime'])        
@@ -225,7 +270,8 @@ class ReadGAW(ReadUngriddedBase):
     
     def read(self, vars_to_retrieve=None, 
              files=['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
-                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat'],
+                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat',
+                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat'],
                     first_file=None, 
                     last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
