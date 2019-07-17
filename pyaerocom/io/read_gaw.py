@@ -39,7 +39,7 @@ class ReadGAW(ReadUngriddedBase):
     __version__ = '0.01'
     
     # Name of the dataset (OBS_ID)
-    DATA_ID = const.DMS_AMS_CVO_NAME
+    DATA_ID = const.DMS_AMS_CVO_NAME  # change this since we added more vars?
     
     # List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -54,6 +54,7 @@ class ReadGAW(ReadUngriddedBase):
     # Dictionary specifying values corresponding to invalid measurements
     NAN_VAL ={}
     NAN_VAL['vmrdms'] = -999999999999.99
+    NAN_VAL['sconcso4'] = -999999999999.99
     NAN_VAL['nd'] = -9999
     NAN_VAL['sd'] = -99999.
     NAN_VAL['f'] = -9999
@@ -165,10 +166,6 @@ class ReadGAW(ReadUngriddedBase):
         # PROVIDES_VARIABLES = list(VAR_NAMES_FILE.values())
         inv_dict = dict(zip(self.VAR_NAMES_FILE.values(), self.VAR_NAMES_FILE.keys()))
         
-        
-        test = set(vars_to_retrieve)
-        test2 = [inv_dict[x] for x in file_vars]
-        
         vars_to_retrieve_file = list(set(vars_to_retrieve).intersection(
                 [inv_dict[x] for x in file_vars]))
     
@@ -224,6 +221,7 @@ class ReadGAW(ReadUngriddedBase):
                 else:
                     data_out['var_info'][var]['units'] = u
                     data_out[var] = data[:, idx].astype(np.float)
+
             else:
                 data_out['var_info'][var]['units'] = 1  # Or leave empty? 
                 data_out[var] = data[:, idx].astype(np.float)
@@ -324,20 +322,24 @@ class ReadGAW(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
     
-        num_vars = len(vars_to_retrieve)
+        # num_vars = len(vars_to_retrieve)
 
 
         for i, _file in enumerate(files):
             station_data = self.read_file(_file, 
                                           vars_to_retrieve=vars_to_retrieve)
+            
+            # only the variables in the file
+            num_vars = len(station_data.var_info.keys())  
 
-            print('station_data:', station_data)
+            #print('station_data:', station_data)
+            
             # Fill the metadata dict.
             # The location in the data set is time step dependant.
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
-            metadata[meta_key]['variables'] = vars_to_retrieve
+            metadata[meta_key]['variables'] = list(station_data.var_info.keys()) #vars_to_retrieve
             if ('instrument_name' in station_data 
                 and station_data['instrument_name'] is not None):
                 instr = station_data['instrument_name']
@@ -360,7 +362,7 @@ class ReadGAW(ReadUngriddedBase):
                 # if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(totnum)
                      
-            for var_idx, var in enumerate(vars_to_retrieve):
+            for var_idx, var in enumerate(list(station_data.var_info)): # enumerate(vars_to_retrieve):
                 values = station_data[var]
                 start = idx + var_idx * num_times
                 stop = start + num_times
@@ -412,9 +414,20 @@ if __name__ == "__main__":
     # References: 
     # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2000JD900236
     # https://aerocom.met.no/DATA/AEROCOM_WORK/oxford10/pdf_pap/suntharalingam_sulfate_2010.pdf
-     
+    """
+    r = ReadGAW()
+    station_data = r.read_file(filename= '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat', vars_to_retrieve = ['vmrdms', 'f'])
+    """
+    
     r = ReadGAW()
     data = r.read(vars_to_retrieve = ['vmrdms', 'f'])
+    
+    # If I want to use dms_ai = data['Amsterdam_Island'].vmrdms
+    # data = r.read(files=['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
+    #                '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat',
+    #                '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat'],
+    #                vars_to_retrieve = ['vmrdms', 'f'])
+    
     print('vars to retrieve:', data.vars_to_retrieve)
     
     
@@ -444,7 +457,8 @@ if __name__ == "__main__":
     
     # 2004-2008
     # plot monthly mean
-    dms_ai = data['Amsterdam_Island'].vmrdms
+    # dms_ai = data['Amsterdam_Island'].vmrdms  # error when reading more than one file with the same station name
+    dms_ai = data[0].vmrdms # if all the files are read
     dms_ai_0408 = dms_ai['2004-1-1':'2008-12-31']
     dms_ai_monthly_0408 = dms_ai_0408.resample('M', 'mean')
     plt.figure()
@@ -489,3 +503,12 @@ if __name__ == "__main__":
     plt.show()
 
     
+
+    
+    
+    # SO4 file
+    
+    data2 = r.read(vars_to_retrieve = ['sconcso4'])
+    stat = data2[2]
+    ax = stat.plot_timeseries('sconcso4')
+    plt.show()
