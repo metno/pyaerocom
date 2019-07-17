@@ -55,6 +55,7 @@ class ReadGAW(ReadUngriddedBase):
     NAN_VAL ={}
     NAN_VAL['vmrdms'] = -999999999999.99
     NAN_VAL['sconcso4'] = -999999999999.99
+    NAN_VAL['sconcbc'] = -999999999999.99  # Assumed, there is actually no missing data in the file
     NAN_VAL['nd'] = -9999
     NAN_VAL['sd'] = -99999.
     NAN_VAL['f'] = -9999
@@ -209,9 +210,19 @@ class ReadGAW(ReadUngriddedBase):
             # find column
             print(self.VAR_NAMES_FILE[var])
             idx = data_idx[self.VAR_NAMES_FILE[var]]
+            
+            
+            # decide what to do with values == '#REF!' or '-'. Maybe dropping the
+            #entire line is the best option
+            data[:, idx] = np.where(data[:, idx]=='#REF!', 
+                        self.NAN_VAL[var], data[:, idx]) 
+            data[:, idx] = np.where(data[:, idx]=='-', 
+                        self.NAN_VAL[var], data[:, idx]) 
+                    
             # get data
             data_out['var_info'][var] = od()
             if idx == 4:  # vmrdms
+
                 if u == 'ppt':
                     data_out['var_info'][var]['units'] = 'mol mol-1'
                     data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e12
@@ -269,7 +280,9 @@ class ReadGAW(ReadUngriddedBase):
     def read(self, vars_to_retrieve=None, 
              files=['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
                     '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat',
-                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat'],
+                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat',
+                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/blackcarbon.dat',
+                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/dms.dat'],
                     first_file=None, 
                     last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
@@ -296,6 +309,8 @@ class ReadGAW(ReadUngriddedBase):
         """
         
         # TODO: the method should be able to read all the files in the directory
+        #       Change files to None when this is achieved
+        #       For that, we need to edit the DMS file, and change the variable name to dimethylsulfide
         
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -506,9 +521,20 @@ if __name__ == "__main__":
 
     
     
-    # SO4 file
-    
+    # SO4    
     data2 = r.read(vars_to_retrieve = ['sconcso4'])
     stat = data2[2]
     ax = stat.plot_timeseries('sconcso4')
+    plt.show()
+    
+    # black carbon
+    data3 = r.read(vars_to_retrieve = ['sconcbc'])
+    stat = data3[3]
+    ax = stat.plot_timeseries('sconcbc')
+    plt.show()
+    
+    # dms second file
+    data4 = r.read(vars_to_retrieve = ['vmrdms'])
+    stat = data4[4]
+    ax = stat.plot_timeseries('vmrdms')
     plt.show()
