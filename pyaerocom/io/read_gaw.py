@@ -1,19 +1,10 @@
-# -*- coding: utf-8 -*-
-"""Interface for reading DMS data at Amsterdam Island and Cape Verde Observatory.
+"""Interface for reading GAW files.
 
 This file is part of the pyaerocom package.
 
 Example
 -------
-
-Reference to notebook with examples?
-
-Notes
------
-
-Attributes
-----------
-
+Notebook: '../../notebooks/DMS.ipynb'
 """
 
 import numpy as np
@@ -107,7 +98,7 @@ class ReadGAW(ReadUngriddedBase):
             
         """
         if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS # Change this!!! use mata line 17: Parameter!!
+            vars_to_retrieve = self.DEFAULT_VARS 
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         
@@ -143,8 +134,7 @@ class ReadGAW(ReadUngriddedBase):
             for line in f:
                 line = line.replace('/', '-')  # some dates have the wrong format
                 rows = line.split()
-                data.append(rows)
-                
+                data.append(rows)               
                 
         # the next line lines should be deleted after correcting msa file
         # Drop line with empties (e.g. last line in msa file)     
@@ -152,12 +142,8 @@ class ReadGAW(ReadUngriddedBase):
                 if np.shape(data[i])[0] != 10:
                     del data[i]
                     
-                    
-                    
-  
-                
-                
         data = np.array(data) 
+        
         # names of the columns in the file that I want to use  
         file_vars = file_vars[5:9]         
         # If we want to include CS and REM, then:
@@ -273,16 +259,11 @@ class ReadGAW(ReadUngriddedBase):
         
         return data_out
     
+    
     def read(self, vars_to_retrieve=None, 
              files=None,
-                    #['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
-                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat',
-                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat',
-                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/blackcarbon.dat',
-                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/dms.dat',
-                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/msa.dat'],
-                    first_file=None, 
-                    last_file=None):
+             first_file=None, 
+             last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -305,10 +286,6 @@ class ReadGAW(ReadUngriddedBase):
         UngriddedData
             data object
         """
-        
-        # TODO: the method should be able to read all the files in the directory
-        #       Change files to None when this is achieved
-        #       For that, we need to edit the DMS file, and change the variable name to dimethylsulfide
         
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -334,9 +311,6 @@ class ReadGAW(ReadUngriddedBase):
         # Assign metadata object and index
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
-    
-        # num_vars = len(vars_to_retrieve)
-
 
         for i, _file in enumerate(files):
             station_data = self.read_file(_file, 
@@ -373,7 +347,7 @@ class ReadGAW(ReadUngriddedBase):
                 # if totnum < data_obj._CHUNKSIZE, then the latter is used
                 data_obj.add_chunk(totnum)
                      
-            for var_idx, var in enumerate(list(station_data.var_info)): # enumerate(vars_to_retrieve):
+            for var_idx, var in enumerate(list(station_data.var_info)): 
                 values = station_data[var]
                 start = idx + var_idx * num_times
                 stop = start + num_times
@@ -394,16 +368,13 @@ class ReadGAW(ReadUngriddedBase):
                                ] = station_data['sd']
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
                                ] = station_data['f']                           
-                # Write data to data object
                 data_obj._data[start:stop, data_obj._TIMEINDEX
                                ] = station_data['dtime']
                 data_obj._data[start:stop, data_obj._DATAINDEX
                                ] = values
                 data_obj._data[start:stop, data_obj._VARINDEX
-                               ] = var_idx
-                
+                               ] = var_idx               
                 meta_idx[meta_key][var] = np.arange(start, stop)
-
                 
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
@@ -411,7 +382,6 @@ class ReadGAW(ReadUngriddedBase):
             idx += totnum  
             meta_key = meta_key + 1.
             
-        #print('station_data:', station_data)
         
         # Shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
@@ -420,16 +390,10 @@ class ReadGAW(ReadUngriddedBase):
 
         return data_obj
     
+    
 if __name__ == "__main__":
     
-    # References: 
-    # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2000JD900236
-    # https://aerocom.met.no/DATA/AEROCOM_WORK/oxford10/pdf_pap/suntharalingam_sulfate_2010.pdf
-    """
-    r = ReadGAW()
-    station_data = r.read_file(filename= '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat', vars_to_retrieve = ['vmrdms', 'f'])
-    """
-    
+    # Test that the reading routine works 
     
     r = ReadGAW()
     data = r.read(vars_to_retrieve = ['vmrdms', 'f'])
@@ -441,10 +405,7 @@ if __name__ == "__main__":
     #                vars_to_retrieve = ['vmrdms', 'f'])
     
     print('vars to retrieve:', data.vars_to_retrieve)
-    
-    
-    print('!!!!metadata:', data.metadata )
-    
+    print('metadata:', data.metadata )
     
     stat = data['Cape_Verde_Observatory']
     
@@ -454,7 +415,6 @@ if __name__ == "__main__":
     # plot flag at Amsterdam Island
     ax = stat.plot_timeseries('f')
     plt.show()
-
     
     # Plot vmrdms at Amsterdam Island and Cape Verde Observatory in the same figure
     ax = data.plot_station_timeseries(station_name='Amsterdam_Island', 
@@ -466,6 +426,12 @@ if __name__ == "__main__":
                                  label='Cape Verde Observatory')
     ax.set_title("vmrdms")
     plt.show()
+    
+    
+    # Compare with papers
+    # References: 
+    # https://agupubs.onlinelibrary.wiley.com/doi/epdf/10.1029/2000JD900236
+    # https://aerocom.met.no/DATA/AEROCOM_WORK/oxford10/pdf_pap/suntharalingam_sulfate_2010.pdf
     
     # 2004-2008
     # plot monthly mean
@@ -508,21 +474,17 @@ if __name__ == "__main__":
     dms_median_9099 = dms_ai_monthly_median_9099.groupby(
             dms_ai_monthly_median_9099.index.month).median()
 
-
     print('DMS monthly median at Amsterdam Island (1990-1999):', dms_median_9099)
     dms_median_9099.plot(label='median', ax=ax)
     plt.legend(loc='best')
     plt.show()
-
     
-    
-    
+    # Test that the reading routine wirks for the rest of the variables
     # SO4    
     data2 = r.read(vars_to_retrieve = ['sconcso4'])
     stat = data2[5]
     ax = stat.plot_timeseries('sconcso4')
     plt.show()
-    
     
     # black carbon
     data3 = r.read(vars_to_retrieve = ['sconcbc'])
