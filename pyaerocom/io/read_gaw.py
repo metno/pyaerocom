@@ -48,25 +48,24 @@ class ReadGAW(ReadUngriddedBase):
     # defined temporal resolution
     TS_TYPE = 'daily'
     
-    # Default variables for read method
-    #DEFAULT_VARS = ['vmrdms', 'sd']
-    
     # Dictionary specifying values corresponding to invalid measurements
     NAN_VAL ={}
     NAN_VAL['vmrdms'] = -999999999999.99
     NAN_VAL['sconcso4'] = -999999999999.99
     NAN_VAL['sconcbc'] = -999999999999.99  # Assumed, there is actually no missing data in the file
+    NAN_VAL['sconcmsa'] = -999999999999.99
     NAN_VAL['nd'] = -9999
     NAN_VAL['sd'] = -99999.
     NAN_VAL['f'] = -9999
     
     # Dictionary specifying the file column names (values) for each Aerocom 
     # variable (keys)
-    # Do we want CS and REM? Don't know what these columns are...
+    # Do we want CS and REM? Don't know what these columns represent...
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmrdms'] = 'dimethylsulfide'
     VAR_NAMES_FILE['sconcbc'] = 'blackCarbon'
     VAR_NAMES_FILE['sconcso4'] = 'SO4'
+    VAR_NAMES_FILE['sconcmsa'] = 'MSA'
     VAR_NAMES_FILE['nd'] = 'ND'
     VAR_NAMES_FILE['sd'] = 'SD'
     VAR_NAMES_FILE['f'] = 'F'
@@ -118,20 +117,19 @@ class ReadGAW(ReadUngriddedBase):
         
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
-         
         
+        # We need to map the variables in the file with the values in VAR_NAME_FILE, 
+        # and for that we reverse the dictionary.         
         # reverse dict to get keys of certain values (possible only because 
         # values are hashable and unique)
         # Could also define the dict VAR_NAMES_FILE with the inverse order and 
         # PROVIDES_VARIABLES = list(VAR_NAMES_FILE.values())
         inv_dict = dict(zip(self.VAR_NAMES_FILE.values(), self.VAR_NAMES_FILE.keys()))
-        
-        
+
         # Open the file, store the metadata in the first lines of the file, 
-        # skip empty lines and headers, and store the data.
-        with open(filename, 'r') as f:         
-        
-            # metadata (first rows in the file)
+        # skip empty lines, and store the headers and the data
+        with open(filename, 'r') as f:                 
+            # metadata (fixed number of rows in gaw files)
             meta = [next(f).split(':', 1)[1] for data in range(26)]
 
             f.readline()
@@ -147,40 +145,41 @@ class ReadGAW(ReadUngriddedBase):
                 rows = line.split()
                 data.append(rows)
                 
+                
+        # the next line lines should be deleted after correcting msa file
+        # Drop line with empties (e.g. last line in msa file)     
+        for i in range(len(data)):
+                if np.shape(data[i])[0] != 10:
+                    del data[i]
+                    
+                    
+                    
+  
+                
+                
         data = np.array(data) 
         # names of the columns in the file that I want to use  
         file_vars = file_vars[5:9]         
         # If we want to include CS and REM, then:
-        # file_vars = file_vars[5:9]
-        # and add these variables to VAR_NAMES_FILE
-                
+        # file_vars = file_vars[5:]
+        # and add these variables to VAR_NAMES_FILE                
                 
         # The variables analized are only the intersection of those provided by 
         # the dataset, vars_to_retrieve, and those available in the file,
-        # file_vars.
-        
-        # We need to map the variables in the file with the values in VAR_NAME_FILE, 
-        # and for that we reverse the dictionary.
-        # Revert dict to get keys of certain values is possible only because 
-        # values are hashable and unique.
-        # Could also define the dict VAR_NAMES_FILE with the inverse order and 
-        # PROVIDES_VARIABLES = list(VAR_NAMES_FILE.values())
-        inv_dict = dict(zip(self.VAR_NAMES_FILE.values(), self.VAR_NAMES_FILE.keys()))
-        
+        # file_vars.       
         vars_to_retrieve_file = list(set(vars_to_retrieve).intersection(
                 [inv_dict[x] for x in file_vars]))
     
-
         # dictionary with keys and column index in the data
         data_idx = { file_vars[i]: i+4 for i in range(0, len(file_vars) ) }
                
         # Empty data object (a dictionary with extended functionality)
         data_out = StationData()    
         data_out.data_id = self.DATA_ID
-        data_out.dataset_name = self.DATASET_NAME  # is this supposed to be the same?
+        data_out.dataset_name = self.DATASET_NAME
                 
         # Fill dictionary with relevant metadata and variables from the file.
-        # Reformatthe strings, and replace whitespaces in with underscore.
+        # Reformat the strings, and replace whitespaces in with underscore.
         data_out['station_name'] = meta[6].strip().replace(' ', '_')
         try:
             data_out['longitude'] = float(meta[12].strip())
@@ -191,7 +190,6 @@ class ReadGAW(ReadUngriddedBase):
             raise MetaDataError('Failed to read station coordinates. {}'
                                 .format(repr(e)))
         data_out['filename'] = meta[1].strip()
-
         try:
             data_out['data_version'] = int(meta[5].strip())
         except:
@@ -200,20 +198,16 @@ class ReadGAW(ReadUngriddedBase):
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')
         data_out['dataaltitude'] = meta[15].strip().replace(' ', '_')
         data_out['variables'] = vars_to_retrieve_file 
-        u = meta[20].strip().replace(' ', '_')
-    
-    
+        u = meta[20].strip().replace(' ', '_')  
         
         # data in vars_to_retrieve_file
-        # only vmrdms or all??
         for var in vars_to_retrieve_file:
             # find column
             print(self.VAR_NAMES_FILE[var])
             idx = data_idx[self.VAR_NAMES_FILE[var]]
-            
-            
+                     
             # decide what to do with values == '#REF!' or '-'. Maybe dropping the
-            #entire line is the best option
+            # entire line instead is the best option
             data[:, idx] = np.where(data[:, idx]=='#REF!', 
                         self.NAN_VAL[var], data[:, idx]) 
             data[:, idx] = np.where(data[:, idx]=='-', 
@@ -221,22 +215,24 @@ class ReadGAW(ReadUngriddedBase):
                     
             # get data
             data_out['var_info'][var] = od()
-            if idx == 4:  # vmrdms
-
+            if idx == 4:  # variable
                 if u == 'ppt':
                     data_out['var_info'][var]['units'] = 'mol mol-1'
                     data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e12
                     # reset nan values
                     data_out[var] = np.where(data_out[var]==self.NAN_VAL['vmrdms']*1e12, 
-                            self.NAN_VAL['vmrdms'], data_out[var])  
+                            self.NAN_VAL['vmrdms'], data_out[var])
+                elif u == 'ng/m3':
+                    data_out['var_info'][var]['units'] = 'ug/m3'
+                    data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e-3
+                    data_out[var] = np.where(data_out[var]==self.NAN_VAL['sconcmsa']*1e-3, 
+                            self.NAN_VAL['sconcmsa'], data_out[var])                       
                 else:
                     data_out['var_info'][var]['units'] = u
                     data_out[var] = data[:, idx].astype(np.float)
-
             else:
-                data_out['var_info'][var]['units'] = 1  # Or leave empty? 
-                data_out[var] = data[:, idx].astype(np.float)
-                
+                data_out['var_info'][var]['units'] = 1  # If dimensionless quantity
+                data_out[var] = data[:, idx].astype(np.float)               
         
         # If only vmrdms above, we need to write sd and f
         data_out['f']  = data[:, data_idx[self.VAR_NAMES_FILE['f']]]
@@ -278,11 +274,13 @@ class ReadGAW(ReadUngriddedBase):
         return data_out
     
     def read(self, vars_to_retrieve=None, 
-             files=['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
-                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat',
-                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat',
-                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/blackcarbon.dat',
-                    '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/dms.dat'],
+             files=None,
+                    #['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/ams137s00.lsce.as.fl.dimethylsulfide.nl.da.dat',
+                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/cvo116n00.uyrk.as.cn.dimethylsulfide.nl.da.dat',
+                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat',
+                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/blackcarbon.dat',
+                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/dms.dat',
+                    #'/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/msa.dat'],
                     first_file=None, 
                     last_file=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
@@ -347,10 +345,8 @@ class ReadGAW(ReadUngriddedBase):
             # only the variables in the file
             num_vars = len(station_data.var_info.keys())  
 
-            #print('station_data:', station_data)
-            
             # Fill the metadata dict.
-            # The location in the data set is time step dependant.
+            # The location in the data set is time step dependant
             metadata[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(station_data.get_station_coords())
@@ -433,6 +429,7 @@ if __name__ == "__main__":
     r = ReadGAW()
     station_data = r.read_file(filename= '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/DMS_AMS_CVO/data/so4.dat', vars_to_retrieve = ['vmrdms', 'f'])
     """
+    
     
     r = ReadGAW()
     data = r.read(vars_to_retrieve = ['vmrdms', 'f'])
@@ -518,23 +515,30 @@ if __name__ == "__main__":
     plt.show()
 
     
-
     
     
     # SO4    
     data2 = r.read(vars_to_retrieve = ['sconcso4'])
-    stat = data2[2]
+    stat = data2[5]
     ax = stat.plot_timeseries('sconcso4')
     plt.show()
     
+    
     # black carbon
     data3 = r.read(vars_to_retrieve = ['sconcbc'])
-    stat = data3[3]
+    stat = data3[1]
     ax = stat.plot_timeseries('sconcbc')
     plt.show()
     
     # dms second file
     data4 = r.read(vars_to_retrieve = ['vmrdms'])
-    stat = data4[4]
+    stat = data4[3]
     ax = stat.plot_timeseries('vmrdms')
     plt.show()
+    
+    # msa
+    data5 = r.read(vars_to_retrieve = ['sconcmsa'])
+    stat = data5[4]
+    ax = stat.plot_timeseries('sconcmsa')
+    plt.show()
+    
