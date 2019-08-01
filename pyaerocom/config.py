@@ -89,7 +89,7 @@ class Config(object):
     AERONET_SUN_V3L2_SDA_DAILY_NAME = 'AeronetSDAV3Lev2.daily'
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev2.AP'
 
-    #: Aeront V3 inversions
+    #: Aeronet V3 inversions
     AERONET_INV_V3L15_DAILY_NAME = 'AeronetInvV3Lev1.5.daily'
     AERONET_INV_V3L2_DAILY_NAME = 'AeronetInvV3Lev2.daily'
     
@@ -138,6 +138,10 @@ class Config(object):
     #names of the different obs networks
     OBSNET_NONE = 'NONE'
     NOMODELNAME = 'OBSERVATIONS-ONLY'
+
+    # names for the satellite data sets
+    SENTINEL5P_NAME = 'Sentinel5P'
+    AEOLUS_NAME = 'AeolusL2A'
     
     RM_CACHE_OUTDATED = True
 
