@@ -32,6 +32,7 @@
 # MA 02110-1301, USA
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.io.readsatellitel2base import ReadL2DataBase
 import geopy
 import numpy as np
 import logging
@@ -39,7 +40,7 @@ from pyaerocom import const
 from pyaerocom.ungriddeddata import UngriddedData
 
 
-class ReadL2Data(ReadUngriddedBase):
+class ReadL2Data(ReadL2DataBase):
     """Interface for reading various Sentinel5P L2 data
 
     at this point only N2O and Ozone data is (will be) supported
