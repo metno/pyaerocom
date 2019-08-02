@@ -109,24 +109,27 @@ class UngriddedData(object):
     _LAT_OFFSET = np.float(90.)
     
     STANDARD_META_KEYS = list(StationMetaData().keys())
-    def __init__(self, num_points=None, add_cols=None):
-        
+    def __init__(self, num_points=None, add_cols=None, chunksize=_CHUNKSIZE):
+
         self._index = self._init_index(add_cols)
         if num_points is None:
             num_points = self._ROWNO
-            
-        
+        else:
+            self._ROWNO = num_points
+
+        self._CHUNKSIZE = chunksize
+
         #keep private, this is not supposed to be used by the user
-        self._data = np.ones([num_points, self._COLNO]) * np.nan
+        self._data = np.empty([num_points, self._COLNO]) * np.nan
 
         self.metadata = od()
         # single value data revision is deprecated
         self.data_revision = od()
         self.meta_idx = od()
         self.var_idx = od()
-        
+
         self._idx = -1
-        
+
         self.filter_hist = od()
 
     def _get_data_revision_helper(self, data_id):
