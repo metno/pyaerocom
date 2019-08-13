@@ -943,7 +943,7 @@ class StationData(StationMetaData):
         return new
     
     def resample_timeseries(self, var_name, ts_type, how='mean',
-                            inplace=False, min_num_obs=None):
+                            inplace=False, min_num_obs=None, **kwargs):
         """Resample one of the time-series in this object
         
         Parameters
@@ -1005,6 +1005,32 @@ class StationData(StationMetaData):
                 self.ts_type = ts_type
                 self.dtime = new.index.values
         return new
+    
+    def remove_variable(self, var_name):
+        """Remove variable data
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable that is to be removed
+            
+        Returns
+        -------
+        StationData
+            current instance of this object, with data removed
+        
+        Raises
+        ------
+        VarNotAvailableError
+            if the input variable is not available in this object
+        """
+        if not self.has_var(var_name):
+            raise VarNotAvailableError('No such variable in StationData: {}'
+                                       .format(var_name))
+        self.pop(var_name)
+        if var_name in self.var_info:
+            self.var_info.pop(var_name)
+        return self
     
     def insert_nans_timeseries(self, var_name):
         """Fill up missing values with NaNs in an existing time series
