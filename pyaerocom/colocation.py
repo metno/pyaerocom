@@ -5,6 +5,7 @@ Methods and / or classes to perform colocation
 """
 import numpy as np
 import os
+from fnmatch import fnmatch
 import pandas as pd
 from pyaerocom import logger
 from pyaerocom.exceptions import (ColocationError, 
@@ -239,6 +240,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                vert_scheme=None, harmonise_units=True, 
                                var_ref=None, var_outlier_ranges=None, 
                                update_baseyear_gridded=None,
+                               ignore_station_names=None,
                                **kwargs):
     """Colocate gridded with ungridded data 
     
@@ -298,6 +300,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         time dimension to a value other than the specified input start / stop 
         time this may be used to update the time in order to make colocation 
         possible.
+    ignore_station_names : str or list, optional
+        station name or pattern or list of station names or patterns that should
+        be ignored
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
@@ -419,12 +424,14 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref, 
                                        high=high_ref)
+        
     all_stats = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
                                                    start=start, 
                                                    stop=stop, 
                                                    freq=freq_pd, 
                                                    by_station_name=True,
-                                                   interp_nans=False)
+                                                   interp_nans=False,
+                                                   **kwargs)
     
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
@@ -457,6 +464,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     alts = []
     station_names = []
     
+    if ignore_station_names is not None:
+        if isinstance(ignore_station_names, str):
+            ignore_station_names = [ignore_station_names]
+        if not isinstance(ignore_station_names, list):
+            raise ValueError('Invalid input for ignore_station_names, need str '
+                             'or list of strings')
     # TIME INDEX ARRAY FOR COLLOCATED DATA OBJECT
     time_idx = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
     if freq_pd in PANDAS_RESAMPLE_OFFSETS:
@@ -471,6 +484,14 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded_unit = None
     for i, obs_data in enumerate(obs_stat_data):
         if obs_data is not None:
+            if ignore_station_names is not None:
+                ok = True
+                for pattern in ignore_station_names:
+                    if fnmatch(obs_data.station_name, pattern):
+                        ok = False
+                        continue
+                if not ok:
+                    continue
             if ts_type_src_ref is None:
                 ts_type_src_ref = obs_data['ts_type_src']
             elif not obs_data['ts_type_src'] == ts_type_src_ref:
@@ -619,14 +640,13 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
     
-    reader = pya.io.ReadGridded('ECMWF_OSUITE')
-    model_data = reader.read_var(var_name='od550aer', start=2010)
+    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
     
-    obs_reader = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
-    obs_data = obs_reader.read(vars_to_retrieve='od550aer')
+    coldata = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, ts_type='monthly',
+                                                    start=2010,
+                                                    filter_name='WORLD-noMOUNTAINS',
+                                                    remove_outliers=True,
+                                                    min_num_obs=25)
     
-    colocated_data = pya.colocation.colocate_gridded_ungridded(model_data, 
-                                                               obs_data,
-                                                               ts_type='monthly')
-    
-    colocated_data.plot_scatter()
+    coldata.plot_scatter()
