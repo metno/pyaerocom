@@ -25,7 +25,7 @@ from pyaerocom.io.helpers_units import (unitconv_sfc_conc_bck,
                                         unitconv_wet_depo)
 
 TRUE_SLOPE = {'N-America': {"sconcso4": {'2000–2010': -3.03,
-                                          '2000–2015':  -3.15},
+                                          '2000–2015': -3.15},
 
                              "wetso4": {'2000–2010': -2.30,
                                         '2000–2015': -2.78},
@@ -44,9 +44,7 @@ TRUE_SLOPE = {'N-America': {"sconcso4": {'2000–2010': -3.03,
                                            '2000–2015':-3.89
                                            },
                               },
-
                    }
-
 
 TRUE_NR_STATIONS = {'N-America': {"sconcso4": {'2000–2010': 227,
                                                '2000–2015': 218},
@@ -70,8 +68,6 @@ TRUE_NR_STATIONS = {'N-America': {"sconcso4": {'2000–2010': 227,
                                                },
                                   },
                        }
-
-
 
 
 def _get_season_current(mm,yyyy):
@@ -146,6 +142,7 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
              value=s_monthly.values)
 
     mobs = pd.DataFrame(d)
+    #print(mobs.head())
 
     mobs['season'] = mobs.apply(lambda row: _get_season_current(row['month'],
                                                                 row['year']), 
@@ -156,7 +153,7 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
     # trends with yearly and seasonal averages
     seasons = ['spring', 'summer', 'autumn', 'winter', 'all']
     yrs = np.unique(mobs['year'])
-
+    #print('yrs {}'.format(yrs))
     data = {}
     
     # added to minimize the computation
@@ -176,7 +173,7 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
             data[seas]['date'].append(date)
             epoch = datetime.datetime(1970, 1, 1)
             data[seas]['jsdate'] = [(dat - epoch).total_seconds() * 1000 for dat in data[seas]['date']]
-                        
+
             # needs 4 seasons to compute seasonal average to avoid biases
             if (seas == 'all') & (len(np.unique(catch['season'].values)) < 4):
                 data[seas]['val'].append(np.nan)
@@ -185,69 +182,86 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
                 data[seas]['val'].append(np.nanmean(catch['value']))
         
         # trends for this season
-        data[seas]['trends'] = {}
-
+        data[seas]['trends'] = {}   
         # filter period
         for period in periods:
             p0 = int(period[:4])
             p1 = int(period[5:])
             data[seas]['trends'][period] = {}
-
+      
             # Mann-Kendall test
             x = np.array(data[seas]['jsdate'])
             y = np.array(data[seas]['val'])
             len_period = len(y)
 
             # works only on not nan values
-            x = x[~np.isnan(y)]
+            x = x[~np.isnan(y)] # Better ith np.isfinite()
             y = y[~np.isnan(y)]
 
             # filtering to the period limit
             jsp0 = (datetime.datetime(p0, 1, 1) - epoch).total_seconds() * 1000
             jsp1 = (datetime.datetime(p1, 12, 31) - epoch).total_seconds() * 1000
+            
             y = y[(x >= jsp0) & (x <= jsp1)] 
             x = x[(x >= jsp0) & (x <= jsp1)]
   
             #print("y: len {}, x : {}".format(len(y), len(x)))
+            
             # Making sure there is at least 75% coverage in the data period.
             # and that we have more than two points
             if len(y)/len_period >= 0.75 and len(y) > 1: 
                 # kendall
+                # TODO THIS IS WHERE YOU SHOULD ASK AUGUSTIN HOW THINGS 
+                # SHOULD BE RESTRICTED BY KENTAL TAu
+                
                 [tau, pval] = kendalltau(x, y)
+                #print('pval {}'.format(pval))
                 data[seas]['trends'][period]['pval'] = pval
                 
-                # theil slope
-                res = theilslopes(y, x, 0.9)
-                reg = res[0] * np.asarray(x) + res[1] * np.ones(len(x))
-                slp = res[0] * 1000 * 60 * 60 * 24 * 365 / reg[0]  # slp per milliseconds to slp per year
-                data[seas]['trends'][period]['slp'] = slp * 100  # in percent
-                data[seas]['trends'][period]['reg0'] = reg[0]
-                data[seas]['trends'][period]['t0'] = x[0]
-                data[seas]['trends'][period]['n'] = len(y)
+                if pval < 0.1:
+                    # Theil slope
+                    res = theilslopes(y, x, 0.9)
+                    print(res)
+                    medslope, medintercept, lo_slope, up_slope = res
+                    reg = medslope* np.asarray(x) + medintercept * np.ones(len(x))
+                    print(res)
+                    #print('avrage slp {}'.format(np.mean(res/reg)*1000 * 60 * 60 * 24 * 365.25))
+                    #print('reg {}'.format(reg))
+                    
+                    slp = res[0] * 1000 * 60 * 60 * 24 * 365.25 / reg[0]  # slp per milliseconds to slp per year
+                    data[seas]['trends'][period]['slp'] = slp * 100  # in percent
+                    data[seas]['trends'][period]['reg0'] = reg[0]
+                    data[seas]['trends'][period]['t0'] = x[0]
+                    data[seas]['trends'][period]['n'] = len(y)
+                else:
+                    data[seas]['trends'][period]['pval'] = None
+                    data[seas]['trends'][period]['slp'] = None
+                    data[seas]['trends'][period]['reg0'] = None
+                    data[seas]['trends'][period]['t0'] = None
+                    data[seas]['trends'][period]['n'] = len(y) 
             else:
+                #print('Not enough data coverage.')
                 data[seas]['trends'][period]['pval'] = None
                 data[seas]['trends'][period]['slp'] = None
                 data[seas]['trends'][period]['reg0'] = None
                 data[seas]['trends'][period]['t0'] = None
-                data[seas]['trends'][period]['n'] = len(y)
+                data[seas]['trends'][period]['n'] = len(y) 
+            #print( data[seas]['trends'][period] )   
     return data
-
-
 
 def test_unitconversion_surface_conc():
     a = 10
     temp = unitconv_sfc_conc(a, 2)
     A = unitconv_sfc_conc_bck(temp, 2)
-    print("a {}, temp {} , A{}".format(a, temp,  A))
+    #print("a {}, temp {} , A{}".format(a, temp,  A))
     assert np.abs(a - A) < 0.001
 
 def test_unitconversion_wetdep():
     a = 10
     temp = unitconv_wet_depo(a)
     A = unitconv_wet_depo_bck(temp)
-    print("a {}, temp {} , A{}".format(a, temp,  A))
+    #print("a {}, temp {} , A{}".format(a, temp,  A))
     assert np.abs(a - A) < 0.001
-
 
 def create_region(region):
     """ Small modifications to the one in the trends interface.
@@ -318,7 +332,7 @@ def years_to_string(start, stop):
 def years_from_periodstr(period):
     return [int(x) for x in period.split('–')]
 
-def covert_data(data, var):
+def convert_data(data, var):
     if var == "sconcso4":
         return unitconv_sfc_conc_bck(data, x=4)
     elif var == "sconcso2":
@@ -336,21 +350,22 @@ def calc_slope(ungridded, region, period, var):
     
     :return: Boolean
     """
-    start, stop = years_from_periodstr(period[0])
     # crop data to region
+    start, stop = years_from_periodstr(period[0])
     regional = crop_data_to_region(ungridded, region = region)
 
     # crop to timeseries
     stations =  regional.to_station_data_all(var, start, stop, 'monthly')
+    name = stations['station_name']
+    #print('nbr names {}'.format(len(name)))
     slp_stations = []
     station_names = []
 
     for station in stations['stats']:
         #date = station['dtime']
         ts = station[var]
-        s_monthly = covert_data(ts.values, var)
+        s_monthly = convert_data(ts.values, var)
         # not pandas series now may need to convert it back to that
-               
         s_monthly = ts
         # input to compute_trends_current period is supposed to be a list.
         data = compute_trends_current(s_monthly, period, only_yearly=True)
@@ -358,10 +373,22 @@ def calc_slope(ungridded, region, period, var):
 
         if slp is not None:
             slp_stations.append(slp)
-        else:     
-            station_names.append( station.station_name )
-
+            station_names.append(station.station_name)
+            
+            
+    print('\n Percentage {}/{} = {}'.format(len(station_names), len(name), 
+                                          len(station_names)/ len(name) ))
+    
+    max_name = station_names[np.argmax(slp_stations)] 
+    slp_stations.remove(np.max(slp_stations))
+    slp_stations.remove(np.max(slp_stations))
     nr_stations = len(slp_stations)
+    
+    #plt.plot(slp_stations)
+    #plt.title('Station {}'.format(max_name))
+    #plt.xticks(station_names)
+    #plt.show()
+    
     return nr_stations, np.mean(slp_stations)
 
 @lustre_unavail
@@ -377,7 +404,7 @@ def test_ungriddeddata():
 def test_article():
     regions = ['Europe', 'N-America']
     VARS = ['sconcso4', 'sconcso2', 'wetso4']
-    periods = ['2000–2010', '2000–2015'] # not useed yet bcause of problems with the heigfen. 
+    periods = ['2000–2010', '2000–2015'] # OBS (bad coding) problems with the heigfen. 
 
     for v in VARS:
         # can reuse the ungridded data object for all regions and periods.
@@ -388,15 +415,15 @@ def test_article():
                 # true values
                 true_mean_slope = TRUE_SLOPE[r][v][p]
                 ns = TRUE_NR_STATIONS[r][v][p]
-                print("  ")
+                
                 # computed values              
                 nr_stations, predicted_mean_slope = calc_slope(ungridded, r, [p], v)
-                print(" REGION {}, variable {}, period {} ".format(r, v, p))
+                print("REGION {}, variable {}, period {} ".format(r, v, p))
                 print("calc {} ,  true [nr stations] {}".format(nr_stations, ns))
                 print("calc_slope {}, true_slope   {}".format(
-                                        predicted_mean_slope, true_mean_slope))
+                                        np.around(predicted_mean_slope, 2), true_mean_slope))
                 
-                # Test similarity
+                # Test similarity:
                 
                 # TODO 1) check slope (calc_slope - true_slope) / true_slope x 100
                 # TODO 2) check that the number of stations are the same.
@@ -411,10 +438,14 @@ def test_article():
 if __name__ == "__main__":
     # pya.change_verbosity('info')
     # import sys
-    test_unitconversion_surface_conc()
-    test_unitconversion_wetdep()
-    test_ungriddeddata()
-    #test_article()
+    
+    # OBS the three below works
+    #test_unitconversion_surface_conc()
+    #test_unitconversion_wetdep()
+    #test_ungriddeddata()
+    
+    # TODO test article on hold 
+    test_article()
 
     
     

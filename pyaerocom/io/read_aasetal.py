@@ -30,7 +30,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     TS_TYPE = 'monthly'
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = 'GAWTADsubsetAasEtAl'
+    DATA_ID = 'GAWTADsubsetAasEtAl' #'GAWTADsubsetAasEtAl'
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -155,11 +155,13 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         
                         mass_sulhpor = pd.to_numeric(station_group[key],
                                                      errors='coerce').values
+                        #print('Converting wetso4 ...  ')
                         s[var] = unitconv_wet_depo(mass_sulhpor,
                          "monthly")/monthly_to_sec
                          
                     elif var == "sconcso4pr":
                         # Works when elif tests are in this order.
+                        #print('Converting sconcso4pr ...  ')
                         conc = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                                               
@@ -167,12 +169,15 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         s[var] = unitconv_sfc_conc(conc, 10**3*2)/10**3
 
                     elif "sconcso" in var: 
+                        #print('ever true')
+                        #print('converting var {}'.format(var) )
                         conc = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                         s[var] = unitconv_sfc_conc(conc, int(var[-1]))
                     
                     else:
-                        # variables precip and sconcso4pr is of the correct unit. 
+                        # variables precip and is of the correct unit. 
+                        print(' Not converting va {}'.format(var))
                         s[var] = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                     # Adds the variable
@@ -234,7 +239,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         for file in files:
             filename = os.path.basename(file)
             if not filename in self.FILES_CONTAIN:
-                raise IOError('Invalid file name {}, this should not happen'
+                raise IOError('Invalid file name {}, this should not happen.'
                               .format(filename))
             var_matches = [var for var in vars_to_retrieve if var in
                             self.FILES_CONTAIN[filename]]
@@ -336,19 +341,20 @@ if __name__ == "__main__":
      from pyaerocom import change_verbosity
      import matplotlib.pyplot as plt
      #change_verbosity('info')
-     V = "sconcso4pr"
+     #V = "sconcso4pr"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
 
      #so2 = aa.read('sconcso2')
      #so4_aero = aa.read('sconcso4')
-     ungridded = aa.read(V)#['sconcso4', 'sconcso2']
-     abington = ungridded.to_station_data("Oulanka", V)
-     abington.plot_timeseries(V)
+     V = ['sconcso4', 'sconcso2', 'sconcso4pr' , 'wetso4', 'pr'] #
+     ungridded = aa.read(V)
+     #abington = ungridded.to_station_data("Oulanka", V)
+     #abington.plot_timeseries(V)
      
      #abington2 = dataNone.to_station_data("Oulanka", 'sconcso2')
      #abington2.plot_timeseries('sconcso2')
      
-     plt.show()
+     #plt.show()
      #dataString = aa.read("sconcso4")
      #dataString.plot_station_coordinates(markersize=12, color='lime')
      #print(dataString.station_name)
