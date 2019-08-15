@@ -123,6 +123,19 @@ class Config(object):
                                upper = 15000,
                                step  = 250)
     
+    
+    
+    #: If True, then whenever applicable the time resampling constraints
+    #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when 
+    #: resampling in StationData and thus colocation routines. Requires that 
+    #: original obs_data is available in a certain regular resolution (or at
+    #: least has ts_type assigned to it)
+    OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS = True
+    
+    #: Time resample strategies for certain cominations, first level refers
+    #: to TO, second to FROM and values are minimum number of observations
+    OBS_MIN_NUM_RESAMPLE = dict(monthly     =   dict(daily  = 2))
+    
     #: This boolean can be used to enable / disable the former (i.e. use
     #: available wavelengths of variable in a certain range around variable
     #: wavelength).
