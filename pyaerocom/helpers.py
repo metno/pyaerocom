@@ -82,8 +82,49 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'monthly'  : '%b %Y',
                          'yearly'   : '%Y'}
 
+TS_TYPE_SECS = {'hourly'  : 3600,
+                '3hourly' : 10800,
+                'daily'   : 86400,
+                'weekly'  : 604800,
+                'monthly' : 2592000, #counting 3 days per month (APPROX)
+                'yearly'  : 31536000} #counting 365 days (APPROX)
+
+XARR_TIME_GROUPERS = {'hourly'  : 'hour',
+                      'daily'   : 'day',
+                      'weekly'  : 'week',
+                      'monthly' : 'month', 
+                      'yearly'  : 'year'}
+
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
+def infer_time_resolution(time_stamps):
+    """Infer time resolution based on input time-stamps
+    
+    Uses the minimum time difference found in input array between consecutive
+    time stamps and based on that finds the corresponding AeroCom resolution
+    
+    Parameters
+    ----------
+    time_stamps : pandas.DatetimeIndex
+        time stamps 
+    
+    Ret    
+    """
+    import pandas as pd
+    if not isinstance(time_stamps, pd.DatetimeIndex):
+        try:
+            time_stamps = pd.DatetimeIndex(time_stamps)
+        except:
+            raise ValueError('Could not infer time resolution: failed to '
+                             'convert input to pandas.DatetimeIndex')
+    vals = time_stamps.values
+    highest_secs = abs(vals[1:] - vals[:-1]).min().astype('timedelta64[s]').astype(int)
+    
+    for tp in const.GRID_IO.TS_TYPES:
+        if highest_secs <= TS_TYPE_SECS[tp]:
+            return tp
+    raise ValueError('Could not infer time resolution')
+    
 def get_standard_name(var_name):
     """Converts AeroCom variable name to CF standard name
     
@@ -467,7 +508,6 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     return arr.resample(time=freq, loffset=loffset).mean(dim='time')
     
-
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
     
@@ -954,9 +994,7 @@ if __name__=="__main__":
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
     
-    import pyaerocom as pya
-    
-    stat = pya.io.ReadAeronetSunV3().read(vars_to_retrieve='od550aer', 
-                                  file_pattern='Solar*').to_station_data('Solar*')
-    
-    print(stat)
+    print(infer_time_resolution([np.datetime64('2010-01-01'),
+                                 np.datetime64('2010-01-02'),
+                                 np.datetime64('2010-01-05'),
+                                 np.datetime64('2010-10-15')]))
