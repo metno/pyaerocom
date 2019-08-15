@@ -100,8 +100,7 @@ def set_map_ticks(ax, xticks=None, yticks=None):
 def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
              xticks=None, yticks=None, color_theme=COLOR_THEME, 
              projection=None, title=None, gridlines=False, 
-             fig=None, ax=None,
-             draw_coastlines=True, contains_cbar=False):
+             fig=None, ax=None, draw_coastlines=True, contains_cbar=False):
     """Initalise a map plot
     
     Parameters
@@ -188,11 +187,11 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
     
     return ax
 
-def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
-                            xlim=(-180, 180), ylim=(-90, 90), vmin=None, 
-                            vmax=None, add_zero=False, c_under=None, 
+def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None, 
+                            unit=None, xlim=(-180, 180), ylim=(-90, 90), 
+                            vmin=None, vmax=None, add_zero=False, c_under=None, 
                             c_over=None, log_scale=True, discrete_norm=True, 
-                            cbar_levels=None, cbar_ticks=None, 
+                            cbar_levels=None, cbar_ticks=None, add_cbar=True,
                             cmap=None, color_theme=COLOR_THEME, **kwargs):
     """Make a plot of gridded data onto a map
     
@@ -247,10 +246,31 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
     kwargs['contains_cbar'] = True
     ax = init_map(xlim, ylim, color_theme=color_theme, **kwargs)
     fig = ax.figure
-    
-    if not isinstance(data, np.ndarray) or not data.ndim == 2:
+    from pyaerocom.griddeddata import GriddedData
+    if isinstance(data, GriddedData):
+        if not data.has_latlon_dims:
+            from pyaerocom.exceptions import DataDimensionError
+            raise DataDimensionError('Input data needs to have latitude and '
+                                     'longitude dimension')
+        if not data.ndim == 2:
+            if not data.ndim == 3 or not 'time' in data.dimcoord_names:
+                raise DataDimensionError('Input data needs to be 2 dimensional '
+                                         'or 3D with time being the 3rd '
+                                         'dimension')
+            data.reorder_dimensions_tseries()
+            if data.shape[0] != 1:
+                from pyaerocom import print_log
+                print_log.info('Data has time dimension, using first time stamp')
+                data = data[0]
+        
+        lons = data.longitude.points
+        lats = data.latitude.points
+        data = data.grid.data
+    elif not isinstance(data, np.ndarray) or not data.ndim == 2:
         raise IOError("Need 2D numpy array")
-    elif isinstance(data, np.ma.MaskedArray):
+    elif not isinstance(lats, np.ndarray) or not isinstance(lons, np.ndarray):
+        raise ValueError('Missing lats or lons input')
+    if isinstance(data, np.ma.MaskedArray):
         sh = data.shape
         if data.mask.sum() == sh[0] * sh[1]:
             raise ValueError('All datapoints in input data (masked array) are '
@@ -469,5 +489,5 @@ if __name__ == "__main__":
     read = pyaerocom.io.ReadGridded('MODIS6.aqua')
 
     data = read.read_var("od550aer")
-    data.quickplot_map(800, cbar_levels=[0.1,1,3,10], add_zero=True)
+    data.quickplot_map(800, add_zero=True)
     
