@@ -1119,10 +1119,6 @@ class GriddedData(object):
     def resample_time(self, to_ts_type='monthly'):
         """Downscale in time to predefined resolution resolution
         
-        Note
-        ----
-        Beta version
-        
         Parameters
         ----------
         to_ts_type : str
@@ -1143,16 +1139,18 @@ class GriddedData(object):
         if not self.has_time_dim:
             raise DataDimensionError('Require time dimension in GriddedData: '
                                      '{}'.format(self.short_str()))
-            
-        ts_types_avail = const.GRID_IO.TS_TYPES
-        idx_ts_type = ts_types_avail.index(to_ts_type)
-        if self.ts_type == to_ts_type:
+        from pyaerocom.tstype import TsType
+        
+        to = TsType(to_ts_type)
+        current = TsType(self.ts_type)
+        
+        if current == to:
             logger.info('Data is already in {} resolution'.format(to_ts_type))
             return self
         if not to_ts_type in IRIS_AGGREGATORS:
             raise TemporalResolutionError('Resolution {} cannot '
                 'converted'.format(to_ts_type))
-        elif ts_types_avail.index(self.ts_type) >= idx_ts_type:
+        elif current < to: #current resolution is smaller than desired
             raise TemporalResolutionError('Cannot increase '
                 'temporal resolution from {} to {}'.format(self.ts_type,
                                           to_ts_type))
@@ -1183,8 +1181,6 @@ class GriddedData(object):
     
     def add_aggregator(self, aggr_name):
         raise NotImplementedError
-    
-    
 
     def calc_area_weights(self):
         """Calculate area weights for grid"""
