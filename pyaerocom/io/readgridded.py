@@ -481,7 +481,7 @@ class ReadGridded(object):
                 msg = ("Failed to import file {}\nModel: {}\n"
                        "Error: {}".format(os.path.basename(_file), 
                                          self.data_id, repr(e)))
-                print_log.warning(msg)
+                logger.warning(msg)
                 if const.WRITE_FILEIO_ERR_LOG:
                     add_file_to_log(_file, msg)
         
