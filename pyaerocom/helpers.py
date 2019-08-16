@@ -644,26 +644,96 @@ def to_datetime64(value):
                              'Error: {}'.format(value, repr(e)))
   
 def is_year(val):
+    """Check if input is / may be year
+    
+    Parameters
+    ----------
+    val
+        input that is supposed to be checked    
+    
+    Returns
+    -------
+    bool
+        True if input is a number between -2000 and 10000, else False
+    """
     try:
         if -2000 < int(val) < 10000:
             return True
         raise Exception
     except:
         return False
+  
+def _check_climatology_timestamp(t):
+    if isnumeric(t) and t == 9999:
+        return pd.Timestamp('1-1-2222')
+    elif isinstance(t, np.datetime64):
+        tstr = str(t)
+        if tstr.startswith('9999'):
+            return pd.Timestamp(tstr.replace('9999', '2222'))
+    elif isinstance(t, str) and '9999' in t:
+        return pd.Timestamp(t.replace('9999', '2222'))
+    elif isinstance(t, datetime) and t.year == 9999:
+        return pd.Timestamp(t.replace(year=2222))
+    raise ValueError('Failed to identify {} as climatological timestamp...'
+                     .format(t))
     
 def start_stop(start, stop=None):
-    start = to_pandas_timestamp(start)
+    """Create pandas timestamps from input start / stop values
+    
+    Note
+    ----
+    If input suggests climatological data in AeroCom format (i.e. year=9999) 
+    then the year is converted to 2222 instead since pandas cannot handle 
+    year 9999.
+    
+    Parameters
+    -----------
+    start
+        start time (any format that can be converted to pandas.Timestamp)
+    stop
+        stop time (any format that can be converted to pandas.Timestamp)
+    
+    Returns
+    -------
+    pandas.Timestamp
+        start timestamp
+    pandas.Timestamp
+        stop timestamp
+    
+    Raises
+    ------
+    ValueError
+        if input cannot be converted to pandas timestamps
+    """
+    isclim = False
+    try:
+        start = to_pandas_timestamp(start)
+    except pd.errors.OutOfBoundsDatetime: # probably climatology
+        start = _check_climatology_timestamp(start)
+        isclim = True
+        
     if stop is None:
-        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(start.year))
+        if isclim:
+            yr = 2222
+        else:
+            yr = start.year
+        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(yr))
     else:
-        stop = to_pandas_timestamp(stop)
+        try:
+            stop = to_pandas_timestamp(stop)
+        except pd.errors.OutOfBoundsDatetime:
+            stop = _check_climatology_timestamp(stop)
     return (start, stop)
 
 def datetime2str(time, ts_type=None):
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)
-    time = to_pandas_timestamp(time).strftime(conv)
+    try:
+        time = to_pandas_timestamp(time).strftime(conv)
+    except pd.errors.OutOfBoundsDatetime:
+        const.print_log.warning('Failed to convert time {} to string'.format(time))
+        pass
     return time
 
 def start_stop_str(start, stop=None, ts_type=None):
