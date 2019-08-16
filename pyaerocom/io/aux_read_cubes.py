@@ -49,8 +49,20 @@ def add_cubes(gridded1, gridded2):
     """Method to add cubes from 2 gridded data objects
     """
     cube1, cube2 = _check_input_iscube(gridded1, gridded2)
-    cube1, cube2 = _check_same_units(cube1, cube2)    
-    added = cube1 + cube2
+    cube1, cube2 = _check_same_units(cube1, cube2)
+    
+    try:
+        added = cube1 + cube2
+    except ValueError as e:
+        from pyaerocom import print_log
+        if not 'differing coordinates (time)' in repr(e):
+            raise
+        print_log.warning('Could not add cubes straight out of the box because '
+                          'time definition varies, trying to unify time dim')
+        #cubes = iris.cube.CubeList([cube1, cube2])
+        #equalise_attributes(cubes)
+        iris.util.unify_time_units([cube1, cube2])
+        added = cube1 + cube2
     return  added
 
 def subtract_cubes(gridded1, gridded2):
