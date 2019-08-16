@@ -941,7 +941,7 @@ class GriddedData(object):
                 return np.argmax(self.grid.dim_coords[3].points)
         except:
             if not const.GRID_IO.INFER_SURFACE_LEVEL:
-                raise DataExtractionError('Cannot infer surface level sinces '
+                raise DataExtractionError('Cannot infer surface level since '
                                           'global option INFER_SURFACE_LEVEL in'
                                           'pyaerocom.const.GRID_IO is deactivated')
             last_lev_idx = self.shape[-1] - 1
@@ -1602,7 +1602,7 @@ class GriddedData(object):
     
     
     def quickplot_map(self, time_idx=0, xlim=(-180, 180), ylim=(-90, 90),
-                      **kwargs):
+                      add_mean=True, **kwargs):
         """Make a quick plot onto a map
         
         Parameters
@@ -1613,6 +1613,8 @@ class GriddedData(object):
             2-element tuple specifying plotted longitude range
         ylim : tuple
             2-element tuple specifying plotted latitude range
+        add_mean : bool
+            if True, the mean value over the region and period is inserted
         **kwargs
             additional keyword arguments passed to 
             :func:`pyaerocom.quickplot.plot_map`
@@ -1637,19 +1639,19 @@ class GriddedData(object):
                 except:
                     raise ValueError('Failed to interpret input time stamp')
             
-            data = self[time_idx].grid.data
+            data = self[time_idx]
         else:
             if not self.ndim == 2:
                 raise DataDimensionError('Invalid number of dimensions: {}. '
                                          'Expected 2.'.format(self.ndim))
-            data = self.grid.data
         
         from pyaerocom.plot.mapping import plot_griddeddata_on_map 
         
         lons = self.longitude.points
         lats = self.latitude.points
         
-        fig = plot_griddeddata_on_map(data=data, lons=lons, lats=lats, 
+        fig = plot_griddeddata_on_map(data=data.grid.data, lons=lons, 
+                                      lats=lats, 
                                       var_name=self.var_name, 
                                       unit=self.units,
                                       xlim=xlim, ylim=ylim, 
@@ -1663,6 +1665,21 @@ class GriddedData(object):
                                 self.ts_type)
         fig.axes[0].set_title("{} ({}, {})".format(self.data_id, 
                               self.var_name, tstr))
+        if add_mean:
+            from pyaerocom.plot.config import COLOR_THEME
+            
+            ax = fig.axes[0]
+            mean = data.area_weighted_mean()
+            
+            mustr = r'$\tau_{AW}$={:.2f}'.format(mean)
+            u = str(self.units)
+            if not u=='1':
+                mustr += ' [{}]'.format(u)
+            ax.text(0.02, 0.02, mustr,
+                    color=COLOR_THEME.color_map_text, 
+                    transform=ax.transAxes,
+                    fontsize=22,
+                    bbox=dict(facecolor='#ffffff', edgecolor='none', alpha=0.65))
         return fig
     
     def min(self):
@@ -1879,9 +1896,11 @@ if __name__=='__main__':
     
     plt.close("all")
     
-    reader = pya.io.ReadGridded('ECMWF_CAMS_REAN')
+    reader = pya.io.ReadGridded('CAM6-Oslo_NF1850norbc_aer2014_f19_20190727')
     
-    d = reader.read_var('od550aer', start=2010)    
+    d = reader.read_var('od550aer', start=9999)    
+    fig = d.quickplot_map()
+    
 # =============================================================================
 #     data.downscale_time('monthly')
 #     
