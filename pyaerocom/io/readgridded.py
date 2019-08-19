@@ -297,7 +297,10 @@ class ReadGridded(object):
         if len(self.years_avail) == 0:
             raise AttributeError('No information about available years accessible'
                                  'please run method search_all_files first')
-        return to_pandas_timestamp(sorted(self.years_avail)[0])
+        yr = sorted(self.years_avail)[0]
+        if yr == 9999:
+            yr = 2222
+        return to_pandas_timestamp(yr)
             
     @property
     def stop(self):
@@ -316,9 +319,12 @@ class ReadGridded(object):
         year = years[-1]
         
         if year == 9999:
-            self.logger.warning('Data contains climatology. Cannot be handled '
-                                'yet and will be ignored')
-            year = years[-2]
+            self.logger.warning('Data contains climatology. Will be ignored '
+                                'as stop time, using last year')
+            if len(years) == 1:
+                year = 2222
+            else:
+                year = years[-2]
             
         return to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
     
@@ -333,6 +339,8 @@ class ReadGridded(object):
         start_provided = False
         if start is None:
             start = self.start
+            if start.year == 2222:
+                return np.array([9999])
         else:
             start_provided = True
             if start == 9999:
