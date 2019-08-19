@@ -52,7 +52,7 @@ class ColocatedData(object):
     __version__ = '0.07'
     def __init__(self, data=None, **kwargs):
         self._data = None
-        self
+        
         if data is not None:
             # check if input is DataArray and if not, try to create instance
             # of DataArray. If this fails, raise Exception
@@ -191,9 +191,12 @@ class ColocatedData(object):
         if not self.check_dimensions():
             raise DataDimensionError('Invalid dimensionality...')
         if self.ndim == 3:
+
             return self.data.shape[2]
         
         elif self.ndim == 4:
+            raise NotImplementedError('Currently unavailable, please check, also '
+                                      'against new method coords_with_data!!')
             if not all([x in self.data.dims for x in ('longitude', 'latitude')]):
                 raise AttributeError('Cannot determine grid points. Either '
                                      'longitude or latitude are not contained '
@@ -204,7 +207,19 @@ class ColocatedData(object):
             vals = np.nanmean(self.data.data[0], axis=0)
             valid = ~np.isnan(vals)
             return np.sum(valid)
-     
+    
+    @property
+    def coords_with_data(self):
+        """Number of lat/lon coordinates that contain at least one datapoint"""
+        if not self.check_dimensions():
+            raise DataDimensionError('Invalid dimensionality...')
+        if self.ndim == 3:
+            subset = self.data.data[0]
+            tidx = self.data.dims.index('time') - 1
+            valid = ~np.all(np.isnan(subset), axis=tidx)
+            return valid.sum()
+        raise NotImplementedError
+        
     def min(self):
         return self.data.min()
     
@@ -224,6 +239,77 @@ class ColocatedData(object):
         except:
             return False
         
+    def resample_time(self, to_ts_type, min_num_obs=None, 
+                      colocate_time=True, inplace=True, **kwargs):
+        """Resample time dimension
+        
+        Parameters
+        ----------
+        to_ts_type : str
+            new temporal resolution (must be lower than current resolution)
+        
+        Returns
+        -------
+        ColocatedData
+            new data object containing resampled data
+            
+        Raises
+        ------
+        TemporalResolutionError
+            if input resolution is higher than current resolution
+        """
+        from pyaerocom.tstype import TsType
+        from pyaerocom.helpers import TS_TYPE_TO_PANDAS_FREQ
+        
+        if inplace:
+            col = self
+        else:
+            col = self.copy()
+            
+        to, current = TsType(to_ts_type), TsType(col.ts_type)
+        if to == current:
+            const.print_log.info('Skipping resampling of ColocatedData. Data is '
+                                 'already in {} resolution'.format(to_ts_type))
+            return col
+        elif to > current:
+            from pyaerocom.exceptions import TemporalResolutionError
+            raise TemporalResolutionError('Cannot resample time: input resolution '
+                                          '{} is higher than current {}'
+                                          .format(to_ts_type, current.val))
+        
+        # First, compute a mask (in new resolution) that fulfilles the 
+        # minimum number of measurements requirement
+        invalid = None
+        if min_num_obs is not None:
+            from pyaerocom.helpers import XARR_TIME_GROUPERS
+            if not to.val in XARR_TIME_GROUPERS:
+                raise ValueError('Cannot infer xarray grouper for ts_type {}'
+                                 .format(to.val))
+            gr = XARR_TIME_GROUPERS[to.val]
+            # 2D mask with shape of resampled data array
+            invalid = col.data[0].groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+            
+        # if colocate time is activated, remove datapoints from model, where
+        # there is no observation
+        if colocate_time:
+            mask = np.isnan(col.data[0]).data
+            col.data.data[1][mask] = np.nan
+            
+        freq = TS_TYPE_TO_PANDAS_FREQ[to.val]
+        
+        data_arr = col.data.resample({'time' : freq}).mean(dim='time')
+        if invalid is not None:
+            data_arr.data[0][invalid.data] = np.nan
+        data_arr.attrs.update(col.meta)
+        data_arr.attrs['ts_type'] = to.val
+        
+        col.data = data_arr
+        return col
+        
+    def copy(self):
+        """Copy this object"""
+        return ColocatedData(self.data.copy())
+    
     def calc_statistics(self, constrain_val_range=False, **kwargs):
         """Calculate statistics from data ensemble
         
@@ -259,7 +345,7 @@ class ColocatedData(object):
             matplotlib axes instance
         """
         meta = self.meta
-        num_points = self.num_grid_points
+        num_points = self.coords_with_data
         vars_ = meta['var_name']
         
         if constrain_val_range:
