@@ -69,7 +69,6 @@ TRUE_NR_STATIONS = {'N-America': {"sconcso4": {'2000–2010': 227,
                                   },
                        }
 
-
 def _get_season_current(mm,yyyy):
     if mm in [3,4,5]:
         s = 'spring-'+str(int(yyyy))
@@ -204,8 +203,6 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
             
             y = y[(x >= jsp0) & (x <= jsp1)] 
             x = x[(x >= jsp0) & (x <= jsp1)]
-  
-            #print("y: len {}, x : {}".format(len(y), len(x)))
             
             # Making sure there is at least 75% coverage in the data period.
             # and that we have more than two points
@@ -227,7 +224,6 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
                     print(res)
                     #print('avrage slp {}'.format(np.mean(res/reg)*1000 * 60 * 60 * 24 * 365.25))
                     #print('reg {}'.format(reg))
-                    
                     slp = res[0] * 1000 * 60 * 60 * 24 * 365.25 / reg[0]  # slp per milliseconds to slp per year
                     data[seas]['trends'][period]['slp'] = slp * 100  # in percent
                     data[seas]['trends'][period]['reg0'] = reg[0]
@@ -253,14 +249,13 @@ def test_unitconversion_surface_conc():
     a = 10
     temp = unitconv_sfc_conc(a, 2)
     A = unitconv_sfc_conc_bck(temp, 2)
-    #print("a {}, temp {} , A{}".format(a, temp,  A))
     assert np.abs(a - A) < 0.001
 
 def test_unitconversion_wetdep():
     a = 10
-    temp = unitconv_wet_depo(a)
-    A = unitconv_wet_depo_bck(temp)
-    #print("a {}, temp {} , A{}".format(a, temp,  A))
+    time = pd.Series(np.datetime64('2002-06-28'))
+    temp = unitconv_wet_depo(a, time)
+    A = unitconv_wet_depo_bck(temp, time)
     assert np.abs(a - A) < 0.001
 
 def create_region(region):
@@ -395,27 +390,81 @@ def calc_slope(ungridded, region, period, var):
 def test_ungriddeddata():
     reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
     data = reader.read()  # read all variables
-    #print('len(data.station_name = {})'.format( len(data.station_name) ))
-    #print('data.shape {} '.format(data.shape))
     assert len(data.station_name) == 890
     assert data.shape == (436121, 12)
+
+@lustre_unavail
+def test_reading_routines():
+    """
+    Read one station Yellowstone NP. Retrive station from ungridded data object, 
+    convert unit back and compare this to the raw data from the file. 
+    
+    Do one station for each variable?
+    
+    """
+    
+    files = ['/lustre/storeA/project/aerocom/aerocom1//AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data/monthly_so2.csv', 
+             '/lustre/storeA/project/aerocom/aerocom1//AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data/monthly_so4_aero.csv', 
+             '/lustre/storeA/project/aerocom/aerocom1//AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data/monthly_so4_precip.csv']
+    
+    df = pd.read_csv(files[0], sep=",", low_memory=False)
+    subset = df[df.station_name == 'Yellowstone NP']
+    vals = subset['concentration_ugS/m3'].astype(float).values
+    ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'sconcso2')
+    station = ungridded.to_station_data('Yellowstone NP', 'sconcso2')
+    conv = unitconv_sfc_conc_bck(station.sconcso2.values, 2)
+    print(np.abs(conv - vals).sum())
+    assert (np.abs(conv - vals).sum() < 0.000001, 
+            'Unconsistancy between reading a file and reading a station. '+
+            'File: monthly_so2.csv. Station: Yellowstone NP. '
+            +'Variable: sconcso2. '  )
+
+    df = pd.read_csv(files[1], sep=",", low_memory=False)
+    subset = df[df.station_name == 'Payerne']
+    vals = subset['concentration_ugS/m3'].astype(float).values
+    ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'sconcso4')
+    station = ungridded.to_station_data('Payerne', 'sconcso4')
+    conv = unitconv_sfc_conc_bck(station.sconcso4.values, 4)
+    print(np.abs(conv - vals).sum())
+    assert (np.abs(conv - vals).sum() < 0.000001, 
+            'Unconsistancy between reading a file and reading a station. ' 
+            +'File: monthly_so4_aero.csv. Station: Payerne. '
+            +'Variable: sconcso4.')
+    
+    df = pd.read_csv(files[2], sep=",", low_memory=False)
+    subset = df[df.station_name == 'Algoma']
+    
+    tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
+    dates_alt = [tconv(yr, m) for yr, m in zip(subset.year.values, subset.month.values)]
+    subset['dtime'] = np.array(dates_alt)
+    
+    vals = subset['deposition_kgS/ha'].astype(float).values   
+    ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'wetso4')
+    station = ungridded.to_station_data('Algoma', 'wetso4')
+    conv = unitconv_wet_depo_bck(station.wetso4.values, subset['dtime'], 'monthly')
+    summen = np.abs(conv - vals).sum()
+    assert (summen < 0.00001, 'Unconsistancy between reading a file and reading a'
+            +'station. File: monthly_so4_aero.csv. Station: Algoma. '
+            +'Variable: wetso4.')
+    
+    print('Passed test on reading routines. ')
+    return
 
 @lustre_unavail
 def test_article():
     regions = ['Europe', 'N-America']
     VARS = ['sconcso4', 'sconcso2', 'wetso4']
-    periods = ['2000–2010', '2000–2015'] # OBS (bad coding) problems with the heigfen. 
+    periods = ['2000–2010', '2000–2015'] 
+    # OBS (bad coding) problems with the heigfen. 
 
     for v in VARS:
         # can reuse the ungridded data object for all regions and periods.
         ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve=v)
         for r in regions:
             for p in periods:
-                
                 # true values
                 true_mean_slope = TRUE_SLOPE[r][v][p]
                 ns = TRUE_NR_STATIONS[r][v][p]
-                
                 # computed values              
                 nr_stations, predicted_mean_slope = calc_slope(ungridded, r, [p], v)
                 print("REGION {}, variable {}, period {} ".format(r, v, p))
@@ -424,7 +473,6 @@ def test_article():
                                         np.around(predicted_mean_slope, 2), true_mean_slope))
                 
                 # Test similarity:
-                
                 # TODO 1) check slope (calc_slope - true_slope) / true_slope x 100
                 # TODO 2) check that the number of stations are the same.
                 
@@ -445,8 +493,7 @@ if __name__ == "__main__":
     #test_ungriddeddata()
     
     # TODO test article on hold 
-    test_article()
-
-    
+    test_reading_routines()
+    #test_unitconversion_wetdep()
     
 # =============================================================================

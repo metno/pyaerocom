@@ -49,16 +49,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     COLNAMES_VARS['precip_amount_mm'] = ['pr']
     COLNAMES_VARS['deposition_kgS/ha'] = ['wetso4']
 
-# =============================================================================
-#     #: Dictionary mapping variable name to the keys present in the files.
-#     VAR_TO_KEY = {}
-#     VAR_TO_KEY["sconcso4pr"] = "concentration_mgS/L"
-#     VAR_TO_KEY["pr"] = 'precip_amount_mm'
-#     VAR_TO_KEY["wetso4"] = "deposition_kgS/ha"
-#     VAR_TO_KEY["sconcso2"] = 'concentration_ugS/m3'
-#     VAR_TO_KEY["sconcso4"] = 'concentration_ugS/m3'
-# =============================================================================
-
     #: Dictionary mapping filenames to available variables in the respective files. 
     FILES_CONTAIN = {}
     FILES_CONTAIN['monthly_so2.csv'] = ['sconcso2']
@@ -104,12 +94,10 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         station_list = []
         df = pd.read_csv(filename, sep=",", low_memory=False)
         
-        # 
+        # Converting month and year. 
         tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
-
         dates_alt = [tconv(yr, m) for yr, m in
                      zip(df.year.values, df.month.values)]
-
         df['dtime'] = np.array(dates_alt)
 
         # array av numpy.datetime64
@@ -127,18 +115,10 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             s["data_id"] = self.DATA_ID
             s["ts_type"] = self.TS_TYPE
             s['variables'] = []
-            
-# =============================================================================
-#             # The variables present in this file is the intersection between
-#             # the keys in the file and the variables name available,
-#             # here expressed in terms of their keynames in order to retrieve them.
-#             variables_present = list(set(station_group.keys()).intersection(
-#                                                     self.VAR_TO_KEY.values()))
-# =============================================================================
 
             var_names = self.COLNAMES_VARS
             # Looping over all keys in the grouped data frame.
-            for key in station_group: # NOT YEAR OR MONTH, BUT WOULD LIKE TO KEEP THOSE.
+            for key in station_group:
                 # Enters if the the key is a variable
                 if key in var_names:
                     _var = np.intersect1d(var_names[key], vars_to_retrieve)
@@ -148,33 +128,32 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         raise IOError('Found multiple matches...')
                     var = _var[0]
 
-                    if var == "wetso4":
-                        # input unit is kg S/ha
-                        days_in_month = station_group['dtime'].dt.daysinmonth
-                        monthly_to_sec = days_in_month*24*60*60
-                        
+                    if var == "wetso4":                    
                         mass_sulhpor = pd.to_numeric(station_group[key],
                                                      errors='coerce').values
-                        #print('Converting wetso4 ...  ')
-                        s[var] = unitconv_wet_depo(mass_sulhpor,
-                         "monthly")/monthly_to_sec
+                        s[var] = unitconv_wet_depo(mass_sulhpor, 
+                                                   station_group['dtime'],  
+                                                   "monthly")
                          
                     elif var == "sconcso4pr":
                         # Works when elif tests are in this order.
-                        #print('Converting sconcso4pr ...  ')
+                        # Unitconversion: from concentration_mgS/L.
+                        print(station_group.columns.values)
                         conc = pd.to_numeric(station_group[key],
                                                errors='coerce').values
-                                              
-                        # conversion function operates in micro grams.
-                        s[var] = unitconv_sfc_conc(conc, 10**3*2)/10**3
+                        # Conversion function operates in micro grams.
+                        
+                        # TODO fix unit.....!!!!!
+                        s[var] = unitconv_sfc_conc(conc, 4*10**(-3))*10**3
+                        # unitconv_sfc_conc is used for ug/m3
+                        # ug = 10**-3 mg
+                        # L = 10**-3m3
 
                     elif "sconcso" in var: 
-                        #print('ever true')
-                        #print('converting var {}'.format(var) )
                         conc = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                         s[var] = unitconv_sfc_conc(conc, int(var[-1]))
-                    
+
                     else:
                         # variables precip and is of the correct unit. 
                         print(' Not converting va {}'.format(var))
@@ -346,7 +325,7 @@ if __name__ == "__main__":
 
      #so2 = aa.read('sconcso2')
      #so4_aero = aa.read('sconcso4')
-     V = ['sconcso4', 'sconcso2', 'sconcso4pr' , 'wetso4', 'pr'] #
+     V = ['sconcso4'] #
      ungridded = aa.read(V)
      #abington = ungridded.to_station_data("Oulanka", V)
      #abington.plot_timeseries(V)
