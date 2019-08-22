@@ -116,6 +116,9 @@ class TemporalResolutionError(ValueError):
 class UnitConversionError(ValueError):
     pass
 
+class UnresolvableTimeDefinitionError(DataDimensionError, NetcdfError):
+    """Is raised if time definition in NetCDF file is wrong and cannot be corrected"""
+    pass
 class VarNotAvailableError(DataCoverageError):
     pass
 

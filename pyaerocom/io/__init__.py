@@ -53,6 +53,25 @@ def geopy_available():
                        'enabled')
     return False
 
+def coda_available():
+    """Helper method that checks if coda library is available
+
+    Required for import of ReadAeolusL2aData and ReadSentinel5pL2Data
+
+    Returns
+    -------
+    bool
+        True, if library is available, else False
+    """
+    try:
+        import coda
+        return True
+    except ModuleNotFoundError:
+        from logging import getLogger
+        logger = getLogger('pyaerocom')
+        logger.warning('coda library is not available. Sentinel5P and Aeolus data read not enabled')
+    return False
+
 from .aerocom_browser import AerocomBrowser
 from .readungriddedbase import ReadUngriddedBase
 
@@ -74,7 +93,11 @@ from .read_gaw import ReadGAW
 from .readgridded import ReadGridded, ReadGriddedMulti
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
-if geopy_available():
-    from .read_aeolus_l2a_data import ReadAeolusL2aData    
-    
+if geopy_available() and coda_available():
+    # the coda and geopy libraries are needed to read l2 data of the supported satellites
+    # Aeolus and Sentinel5P
+    from .read_aeolus_l2a_data import ReadAeolusL2aData
+    from .read_sentinel5p_data import ReadL2Data
+
+
 from . import testfiles

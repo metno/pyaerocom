@@ -324,6 +324,52 @@ class GriddedData(object):
         return isinstance(self.grid.data, np.ma.core.MaskedArray)
     
     @property
+    def base_year(self):
+        """Base year of time dimension
+        
+        Note
+        ----
+        Changing this attribute will update the time-dimension.
+        """
+        if not self.has_time_dim:
+            raise DataDimensionError('Could not access base year: data has no '
+                                     'time dimension')
+        try:
+            return self.time.units.utime().origin.year
+        except Exception as e:
+            raise DataDimensionError('Could access base-year. Unexpected error: '
+                                     '{}'.format(repr(e)))
+            
+    @base_year.setter
+    def base_year(self, val):
+        self.change_base_year(val)
+            
+    def change_base_year(self, new_year):
+        """Changes base year of time dimension 
+        
+        Relevant, e.g. for climatological analyses
+        
+        Parameters
+        -----------
+        new_year : int 
+            new base year (can also be other than integer if it is convertible)
+        """
+        if not self.has_time_dim:
+            raise DataDimensionError('Data object has no time dimension ... ')
+        if isinstance(new_year, str):
+            try:
+                new_year = int(new_year)
+                if not new_year > -2000 and new_year < 20000:
+                    raise ValueError('Need value between -2000 and 20000')
+            except Exception as e:
+                raise ValueError(repr(e))
+        from cf_units import Unit
+        u = self.time.units
+        
+        self.time.units = Unit(u.origin.replace(str(u.utime().origin.year), 
+                                                str(new_year)), 
+                                calendar=u.calendar)
+    @property
     def start(self):
         """Start time of dataset as datetime64 object"""
         if not self.is_cube:
@@ -430,14 +476,11 @@ class GriddedData(object):
     
     @property
     def is_climatology(self):
-        try:
-            year = to_pandas_timestamp(self.start).year
-            if year == 9999:
-                return True
-            return False
-        except pd.errors.OutOfBoundsDatetime:
+        ff = self.from_files
+        if len(ff) == 1 and '9999' in os.path.basename(ff[0]):
             return True
-    
+        return False
+
     @property
     def has_data(self):
         """True if grid data is available (:attr:`grid` =! None)

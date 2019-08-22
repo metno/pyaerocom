@@ -265,6 +265,9 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
     X, Y = meshgrid(lons, lats)
     dmin = data.min()
     dmax = data.max()
+    if dmin == dmax:
+        raise ValueError('Minimum value in data equals maximum value: '
+                         '{}'.format(dmin))
     if vmin is None:
         vmin = dmin
     else:
@@ -301,7 +304,6 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
                 norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
         
             else:
-                print(vmin, vmax)
                 norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
         else: 
             if cmap is None or isinstance(cmap, str):
