@@ -16,7 +16,6 @@ from scipy.stats.mstats import theilslopes
 import pandas as pd
 from pyaerocom import const
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom._lowlevel_helpers import BrowseDict
 
 #SEASONS = ['spring','summer','autumn','winter','all']
 
