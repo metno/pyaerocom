@@ -68,6 +68,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         plot axes instance
     """
     
+    # TODO this should allow things without mulitinex
+    
     if not isinstance(df.columns, pd.MultiIndex):
         raise AttributeError("So far, heatmaps can only be created for "
                              "single column tabular data (e.g. Bias or "

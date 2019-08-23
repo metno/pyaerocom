@@ -141,8 +141,6 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
              value=s_monthly.values)
 
     mobs = pd.DataFrame(d)
-    #print(mobs.head())
-
     mobs['season'] = mobs.apply(lambda row: _get_season_current(row['month'],
                                                                 row['year']), 
                                                                 axis=1)
@@ -207,7 +205,8 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
             # Making sure there is at least 75% coverage in the data period.
             # and that we have more than two points
             if len(y)/len_period >= 0.75 and len(y) > 1: 
-                # kendall
+                # Kendall
+                
                 # TODO THIS IS WHERE YOU SHOULD ASK AUGUSTIN HOW THINGS 
                 # SHOULD BE RESTRICTED BY KENTAL TAu
                 
@@ -218,12 +217,8 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
                 if pval < 0.1:
                     # Theil slope
                     res = theilslopes(y, x, 0.9)
-                    print(res)
                     medslope, medintercept, lo_slope, up_slope = res
                     reg = medslope* np.asarray(x) + medintercept * np.ones(len(x))
-                    print(res)
-                    #print('avrage slp {}'.format(np.mean(res/reg)*1000 * 60 * 60 * 24 * 365.25))
-                    #print('reg {}'.format(reg))
                     slp = res[0] * 1000 * 60 * 60 * 24 * 365.25 / reg[0]  # slp per milliseconds to slp per year
                     data[seas]['trends'][period]['slp'] = slp * 100  # in percent
                     data[seas]['trends'][period]['reg0'] = reg[0]
@@ -236,27 +231,25 @@ def compute_trends_current(s_monthly, periods, only_yearly=True):
                     data[seas]['trends'][period]['t0'] = None
                     data[seas]['trends'][period]['n'] = len(y) 
             else:
-                #print('Not enough data coverage.')
                 data[seas]['trends'][period]['pval'] = None
                 data[seas]['trends'][period]['slp'] = None
                 data[seas]['trends'][period]['reg0'] = None
                 data[seas]['trends'][period]['t0'] = None
                 data[seas]['trends'][period]['n'] = len(y) 
-            #print( data[seas]['trends'][period] )   
     return data
 
 def test_unitconversion_surface_conc():
     a = 10
     temp = unitconv_sfc_conc(a, 2)
     A = unitconv_sfc_conc_bck(temp, 2)
-    assert np.abs(a - A) < 0.001
+    assert np.abs(a - A) < 0.000001
 
 def test_unitconversion_wetdep():
     a = 10
     time = pd.Series(np.datetime64('2002-06-28'))
     temp = unitconv_wet_depo(a, time)
     A = unitconv_wet_depo_bck(temp, time)
-    assert np.abs(a - A) < 0.001
+    assert np.abs(a - A) < 0.000001
 
 def create_region(region):
     """ Small modifications to the one in the trends interface.
@@ -378,12 +371,6 @@ def calc_slope(ungridded, region, period, var):
     slp_stations.remove(np.max(slp_stations))
     slp_stations.remove(np.max(slp_stations))
     nr_stations = len(slp_stations)
-    
-    #plt.plot(slp_stations)
-    #plt.title('Station {}'.format(max_name))
-    #plt.xticks(station_names)
-    #plt.show()
-    
     return nr_stations, np.mean(slp_stations)
 
 @lustre_unavail
@@ -397,10 +384,7 @@ def test_ungriddeddata():
 def test_reading_routines():
     """
     Read one station Yellowstone NP. Retrive station from ungridded data object, 
-    convert unit back and compare this to the raw data from the file. 
-    
-    Do one station for each variable?
-    
+    convert unit back and compare this to the raw data from the file.    
     """
     
     files = ['/lustre/storeA/project/aerocom/aerocom1//AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data/monthly_so2.csv', 
@@ -431,24 +415,31 @@ def test_reading_routines():
             +'File: monthly_so4_aero.csv. Station: Payerne. '
             +'Variable: sconcso4.')
     
+    station_name = 'Abington (CT15)'
     df = pd.read_csv(files[2], sep=",", low_memory=False)
-    subset = df[df.station_name == 'Algoma']
+    subset = df[df.station_name == station_name]
     
     tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
     dates_alt = [tconv(yr, m) for yr, m in zip(subset.year.values, subset.month.values)]
     subset['dtime'] = np.array(dates_alt)
     
-    vals = subset['deposition_kgS/ha'].astype(float).values   
+    vals = subset['deposition_kgS/ha'].astype(float).values  
+    print('Numbers of nans in original files {}.'.format(np.isnan(vals).sum()))
+    
     ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'wetso4')
-    station = ungridded.to_station_data('Algoma', 'wetso4')
-    conv = unitconv_wet_depo_bck(station.wetso4.values, subset['dtime'], 'monthly')
+    station = ungridded.to_station_data(station_name, 'wetso4')
+    conv = unitconv_wet_depo_bck(station.wetso4.values, subset['dtime'], 'monthly').values
+    print('Numbers of nans in converted files {}.'.format(np.isnan(conv).sum()))
     summen = np.abs(conv - vals).sum()
     assert (summen < 0.00001, 'Unconsistancy between reading a file and reading a'
-            +'station. File: monthly_so4_aero.csv. Station: Algoma. '
-            +'Variable: wetso4.')
-    
+            +'station. File: monthly_so4_aero.csv. Station: {}. '
+            +'Variable: wetso4.'.format(station_name))
     print('Passed test on reading routines. ')
     return
+
+
+def test_nbr_of_nans():
+    pass
 
 @lustre_unavail
 def test_article():

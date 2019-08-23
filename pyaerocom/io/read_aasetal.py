@@ -93,7 +93,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         station_list = []
         df = pd.read_csv(filename, sep=",", low_memory=False)
-        
         # Converting month and year. 
         tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
         dates_alt = [tconv(yr, m) for yr, m in
@@ -138,7 +137,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     elif var == "sconcso4pr":
                         # Works when elif tests are in this order.
                         # Unitconversion: from concentration_mgS/L.
-                        print(station_group.columns.values)
                         conc = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                         # Conversion function operates in micro grams.
@@ -269,7 +267,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         varindex += 1
                         data_obj.var_idx[var] = varindex
                         var_idx = varindex
-                        #print("adding var {} (assigned index: {})".format(var, varindex))
                     else:
                         var_idx = data_obj.var_idx[var]
 
@@ -293,7 +290,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 idx += totnum
                 
         data_obj._data = data_obj._data[:idx]
-        #data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj # initalizing a pointer to it selves
         return data_obj
  

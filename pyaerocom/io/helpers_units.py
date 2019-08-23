@@ -119,18 +119,18 @@ def unitconv_wet_depo_bck(data, time, ts_type = "monthly"):
        
     """
     # kg SO4 m-2 s-1 to kg S/ha 
-    mm_so4 = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
+    mm_so4 = 0.001*32.065 + 0.001*15.999*4 # kg/mol
     mm_s = 32.065*0.001 # kg/mol
-    mm_o = 0.001*15.999*4
+    mm_o = 0.001*15.999*4 # kg/mol
     
-    days_in_month = time.dt.daysinmonth
-    monthly_to_sec = days_in_month*24*60*60
+    days_in_month = time.dt.daysinmonth 
+    monthly_to_sec = days_in_month*24*60*60 # Seconds in each 
         
     nr_molecules = data*Avogadro/mm_so4 # [1]
     mass_S       = nr_molecules*mm_s/Avogadro # mass in kg
     
     # Mulitply by seconds in one month 
-    mass_pr_ha = mass_S*monthly_to_sec/10000
+    mass_pr_ha = mass_S*monthly_to_sec*10000
     return mass_pr_ha
 
 def unitconv_wet_depo(data, time, ts_type = "monthly"):
@@ -155,7 +155,6 @@ def unitconv_wet_depo(data, time, ts_type = "monthly"):
         data in units of ugSOx/m3
 
     """
-
     mmSO4 = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
     mm_s = 32.065*0.001 # kg/mol
     
@@ -164,6 +163,46 @@ def unitconv_wet_depo(data, time, ts_type = "monthly"):
     
     days_in_month = time.dt.daysinmonth
     monthly_to_sec = days_in_month*24*60*60
-     
+    print('includes new changes')
+    mass_pr_square_m_pr_sek = mass_SO4/(10000*monthly_to_sec)
+    return mass_pr_square_m_pr_sek
+
+def unitconv_wet_depo_from_emep(data, time, ts_type = "monthly"):
+    """ Unitconversion mgS m-2 to kg SO4 m-2 s-1.
+
+    Milligram to kilos is 10-6.
+
+    Adding mass of oksygen.
+    
+    Parameters
+    ------------------
+    data: ndarray
+        data in unit mg S m-2.
+
+    time : pd.Seires[numpy.datetime64]
+        Array of datetime64 timesteps.
+
+    ts_type : str
+        The timeseries type. Default "monthly".
+
+    Returns
+    ------------------
+    data : ndarray
+        data in units of ugSOx/m3
+
+    """
+    # TODO add if time is not of correct pandas series convert 
+    # numpy ndarray to pandas series. Much better than having to remeber that the only thing thats a åandas seies.
+    # If time
+
+    mm_so4 = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
+    mm_s  = 0.001*32.065 # kg/mol
+    data_in_kilos = data*10**(-9)
+    nr_molecules = data_in_kilos*Avogadro/mm_s  # [1]
+    mass_SO4     = nr_molecules*mm_so4/Avogadro # mass in kg
+    days_in_month  = time.dt.daysinmonth
+    monthly_to_sec = days_in_month*24*60*60
     mass_pr_square_m_pr_sek = mass_SO4*10000/monthly_to_sec
     return mass_pr_square_m_pr_sek
+
+
