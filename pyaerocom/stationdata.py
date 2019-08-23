@@ -81,7 +81,7 @@ class StationData(StationMetaData):
             numpy array specifying default coordinates
         """
         return const.make_default_vert_grid()
-
+    
     def has_var(self, var_name):
         """Checks if input variable is available in data object
 
@@ -1165,9 +1165,9 @@ class StationData(StationMetaData):
                                           'contain 2 dimensions altitude and '
                                           'time')
             if isrange(altitudes):
-                                
-                return data.sel(altitude=slice(altitudes[0], 
-                                               altitudes[1]))
+                if not isinstance(altitudes, slice):
+                    altitudes = slice(altitudes[0], altitudes[1])
+                return data.sel(altitude=altitudes)
             
             raise DataExtractionError('Cannot intepret input for '
                                           'altitude...')
