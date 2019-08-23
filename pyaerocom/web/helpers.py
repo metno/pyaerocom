@@ -8,11 +8,30 @@ ToDo
 - the configuration classes could inherit from a base class or could be more unified
 
 """
-import os, glob
+import os, glob, shutil
 import simplejson
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, sort_dict_by_name
 
+def delete_experiment_data(base_dir, proj_id, exp_id):
+    """Delete all data associated with a certain experiment
+        
+    Parameters
+    ----------
+    base_dir : str, optional
+        basic output direcory (containg subdirs of all projects)
+    proj_name : str, optional
+        name of project, if None, then this project is used
+    exp_name : str, optional
+        name experiment, if None, then this project is used
+    """
+    
+    p = os.path.join(base_dir, proj_id, exp_id)
+    if not os.path.exists(p):
+        raise NameError('No such data directory found: {}'.format(p))
+    
+    shutil.rmtree(p)
+    
 def get_all_config_files_evaluation_iface(config_dir):
     """
     
