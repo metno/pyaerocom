@@ -31,7 +31,7 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
     Parameters
     ----------
     color_theme : :obj:`ColorTheme`, optional
-        instance of pyaerocom color theme. If None, the default schems is used
+        instance of pyaerocom color theme. If None, the default schemes is used
     vmin : :obj:`float`, optional
         lower end of value range
     vmax : :obj:`float`, optional
@@ -192,7 +192,8 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                             vmin=None, vmax=None, add_zero=False, c_under=None, 
                             c_over=None, log_scale=True, discrete_norm=True, 
                             cbar_levels=None, cbar_ticks=None, add_cbar=True,
-                            cmap=None, color_theme=COLOR_THEME, **kwargs):
+                            cmap=None, cbar_ticks_sci=True, 
+                            color_theme=COLOR_THEME, **kwargs):
     """Make a plot of gridded data onto a map
     
     Note
@@ -258,10 +259,8 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                                          'or 3D with time being the 3rd '
                                          'dimension')
             data.reorder_dimensions_tseries()
-            if data.shape[0] != 1:
-                from pyaerocom import print_log
-                print_log.info('Data has time dimension, using first time stamp')
-                data = data[0]
+            
+            data = data[0]
         
         lons = data.longitude.points
         lats = data.latitude.points
@@ -283,9 +282,12 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
         print(repr(e))
     X, Y = meshgrid(lons, lats)
-    dmin = data.min()
-    dmax = data.max()
-    if dmin == dmax:
+    dmin = np.nanmin(data)
+    dmax = np.nanmax(data)
+    
+    if any([np.isnan(x) for x in [dmin, dmax]]):
+        raise ValueError('Cannot plot map of data: all values are NaN')
+    elif dmin == dmax:
         raise ValueError('Minimum value in data equals maximum value: '
                          '{}'.format(dmin))
     if vmin is None:
@@ -354,21 +356,26 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
 #         print(min_mag)
 #         #fmt = "%." + str(min_mag) + "f"
 # =============================================================================
-
-    cbar = fig.colorbar(disp, cmap=cmap, norm=norm, boundaries=bounds, 
-                        extend=cbar_extend, cax=ax_cbar)#, format=fmt)
-    
-    if var_name is not None:
-        var_str = var_name# + VARS.unit_str
-        if unit is not None:
-            if not str(unit) in ['1', 'no_unit']:
-                var_str += ' [{}]'.format(unit)
+    if add_cbar:
+        cbar = fig.colorbar(disp, cmap=cmap, norm=norm, boundaries=bounds, 
+                            extend=cbar_extend, cax=ax_cbar)
         
-        cbar.set_label(var_str)
+        if var_name is not None:
+            var_str = var_name# + VARS.unit_str
+            if unit is not None:
+                if not str(unit) in ['1', 'no_unit']:
+                    var_str += ' [{}]'.format(unit)
+            
+            cbar.set_label(var_str)
+        
+        if cbar_ticks:
+            cbar.set_ticks(cbar_ticks)
+        if cbar_ticks_sci:
+            cbar.ax.set_yticklabels(['{:.1e}'.format(float(x.get_text())) 
+                                     for x in cbar.ax.get_yticklabels()])
+            
+        
     
-    if cbar_ticks:
-        cbar.set_ticks(cbar_ticks)
-
     return fig
 
 def plot_map_aerocom(data, region=None, fig=None, **kwargs):
@@ -486,8 +493,9 @@ if __name__ == "__main__":
     
     ax= init_map()
     
-    read = pyaerocom.io.ReadGridded('MODIS6.aqua')
+    read = pyaerocom.io.ReadGridded('MISR_V32')
 
-    data = read.read_var("od550aer")
-    data.quickplot_map(800, add_zero=True)
+    data = read.read_var("od550aer", start=2010)
+    print(data.area_weighted_mean().data)
+    data.quickplot_map()
     
