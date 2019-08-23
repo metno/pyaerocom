@@ -138,20 +138,3 @@ if __name__=="__main__":
     test_load_berlin()
     aeronetsunv3lev2_subset = make_dataset()
     
-    no_odcount = 0
-    mean_vals = []
-    std_vals = []
-    for stat in aeronetsunv3lev2_subset:
-        if not 'ang4487aer' in stat:
-            no_odcount += 1
-            continue
-        mean = np.mean(stat.ang4487aer)
-        if np.isnan(mean):
-            no_odcount += 1
-            continue
-        mean_vals.append(mean)
-        std_vals.append(np.std(stat.ang4487aer))
-    assert no_odcount == 1
-    [print('{:.4f},'.format(x)) for x in mean_vals]
-    print()
-    [print('{:.4f},'.format(x)) for x in std_vals]
