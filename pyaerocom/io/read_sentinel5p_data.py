@@ -58,45 +58,41 @@ class ReadL2Data(ReadL2DataBase):
     # Flag if the dataset contains all years or not
     DATASET_IS_YEARLY = False
 
-    SUPPORTED_SUFFIXES = []
-    SUPPORTED_SUFFIXES.append('.nc')
-
-    SUPPORTED_ARCHIVE_SUFFIXES = []
-    SUPPORTED_ARCHIVE_SUFFIXES.append('.TGZ')
-    SUPPORTED_ARCHIVE_SUFFIXES.append('.tgz')
-    SUPPORTED_ARCHIVE_SUFFIXES.append('.tar')
-    SUPPORTED_ARCHIVE_SUFFIXES.append('.tar.gz')
-
-    GLOBAL_ATTRIBUTES = {}
-    FILE_DIR = ''
-    FILE_MASK = '*.nc'
-
-    # variable names
-    # dimension data
-    _LATITUDENAME = 'latitude'
-    _LONGITUDENAME = 'longitude'
-    _ALTITUDENAME = 'altitude'
-
-    _TIME_NAME = 'time'
-    _TIME_OFFSET_NAME = 'delta_time'
     _NO2NAME = 'tcolno2'
     _O3NAME = 'tcolo3'
     _QANAME = 'qa_index'
+    DEFAULT_VARS = [_O3NAME]
+    PROVIDES_VARIABLES = [_NO2NAME, _O3NAME]
 
-    _LATBOUNDSNAME = 'lat_bnds'
-    _LATBOUNDSSIZE = 4
-    _LONBOUNDSNAME = 'lon_bnds'
-    _LONBOUNDSSIZE = 4
+    # SUPPORTED_SUFFIXES = []
+    # SUPPORTED_SUFFIXES.append('.nc')
+    # 
+    # SUPPORTED_ARCHIVE_SUFFIXES = []
+    # SUPPORTED_ARCHIVE_SUFFIXES.append('.TGZ')
+    # SUPPORTED_ARCHIVE_SUFFIXES.append('.tgz')
+    # SUPPORTED_ARCHIVE_SUFFIXES.append('.tar')
+    # SUPPORTED_ARCHIVE_SUFFIXES.append('.tar.gz')
+    # 
+    # GLOBAL_ATTRIBUTES = {}
+    # FILE_DIR = ''
+    # FILE_MASK = '*.nc'
 
-    COORDINATE_NAMES = [_LATITUDENAME, _LONGITUDENAME, _ALTITUDENAME, _LATBOUNDSNAME, _LONBOUNDSNAME]
+    # _TIME_OFFSET_NAME = 'delta_time'
+    #
+    # _LATBOUNDSNAME = 'lat_bnds'
+    # _LATBOUNDSSIZE = 4
+    # _LONBOUNDSNAME = 'lon_bnds'
+    # _LONBOUNDSSIZE = 4
+    #
+    # COORDINATE_NAMES = [ReadL2DataBase._LATITUDENAME, ReadL2DataBase._LONGITUDENAME, ReadL2DataBase._ALTITUDENAME, _LATBOUNDSNAME, _LONBOUNDSNAME]
 
 
     # variable names for the different retrievals
 
-    _TIMEINDEX = UngriddedData._TIMEINDEX
-    _LATINDEX = UngriddedData._LATINDEX
-    _LONINDEX = UngriddedData._LONINDEX
-    _ALTITUDEINDEX = UngriddedData._ALTITUDEINDEX
+    # _TIMEINDEX = UngriddedData._TIMEINDEX
+    # _LATINDEX = UngriddedData._LATINDEX
+    # _LONINDEX = UngriddedData._LONINDEX
+    # _ALTITUDEINDEX = UngriddedData._ALTITUDEINDEX
     # for distance calculations we need the location in radians
     # so store these for speed in self.data
     # the following indexes indicate the column where that is stored
@@ -104,169 +100,91 @@ class ReadL2Data(ReadL2DataBase):
     # _RADLONINDEX = 5
     # _DISTINDEX = 6
 
-    _DATAINDEX01 = UngriddedData._DATAINDEX
+    # _DATAINDEX01 = UngriddedData._DATAINDEX
     # _DATAINDEX02 = 8
     # _DATAINDEX03 = 9
     # _DATAINDEX04 = 10
-    _QAINDEX = UngriddedData._DATAFLAGINDEX
-    _TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
-    _LATBOUNDINDEX = 13
-    _LONBOUNDINDEX = _LATBOUNDINDEX + _LATBOUNDSSIZE + 1
-
-    _COLNO = _LATBOUNDINDEX + _LATBOUNDSSIZE + _LONBOUNDSSIZE + 2
-
-    _ROWNO = 1000000
-    _CHUNKSIZE = 100000
-    _HEIGHTSTEPNO = 24
-
-    GROUP_DELIMITER = '/'
-
-    # create a dict with the aerocom variable name as key and the index number in the
-    # resulting numpy array as value.
-    INDEX_DICT = {}
-    INDEX_DICT.update({_LATITUDENAME: _LATINDEX})
-    INDEX_DICT.update({_LONGITUDENAME: _LONINDEX})
-    INDEX_DICT.update({_ALTITUDENAME: _ALTITUDEINDEX})
-    INDEX_DICT.update({_TIME_NAME: _TIMEINDEX})
-    INDEX_DICT.update({_TIME_OFFSET_NAME: _TIME_OFFSET_INDEX})
-    INDEX_DICT.update({_NO2NAME: _DATAINDEX01})
-    INDEX_DICT.update({_O3NAME: _DATAINDEX01})
-    INDEX_DICT.update({_QANAME: _QAINDEX})
-    INDEX_DICT.update({_LATBOUNDSNAME: _LATBOUNDINDEX})
-    INDEX_DICT.update({_LONBOUNDSNAME: _LONBOUNDINDEX})
-
-    # dictionary to store array sizes of an element in self.data
-    SIZE_DICT = {}
-    SIZE_DICT.update({_LATBOUNDSNAME: _LATBOUNDSSIZE})
-    SIZE_DICT.update({_LONBOUNDSNAME: _LONBOUNDSSIZE})
-
-    # NaN values are variable specific
-    NAN_DICT = {}
-    NAN_DICT.update({_LATITUDENAME: -1.E-6})
-    NAN_DICT.update({_LONGITUDENAME: -1.E-6})
-    NAN_DICT.update({_ALTITUDENAME: -1.})
-
-    # the following defines necessary quality flags for a value to make it into the used data set
-    # the flag needs to have a HIGHER or EQUAL value than the one listed here
-    # The valuse are taken form the product readme file
-    QUALITY_FLAGS = {}
-    QUALITY_FLAGS.update({_NO2NAME: 0.75})
-    # QUALITY_FLAGS.update({_NO2NAME: 0.5}) #cloudy
-    QUALITY_FLAGS.update({_O3NAME: 0.7})
+    # _QAINDEX = UngriddedData._DATAFLAGINDEX
+    # _TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
+    # _LATBOUNDINDEX = 13
+    # _LONBOUNDINDEX = _LATBOUNDINDEX + _LATBOUNDSSIZE + 1
+    #
+    # _COLNO = _LATBOUNDINDEX + _LATBOUNDSSIZE + _LONBOUNDSSIZE + 2
+    #
+    # _HEIGHTSTEPNO = 24
+    #
+    # # create a dict with the aerocom variable name as key and the index number in the
+    # # resulting numpy array as value.
+    # INDEX_DICT = {}
+    # INDEX_DICT.update({_LATITUDENAME: _LATINDEX})
+    # INDEX_DICT.update({_LONGITUDENAME: _LONINDEX})
+    # INDEX_DICT.update({_ALTITUDENAME: _ALTITUDEINDEX})
+    # INDEX_DICT.update({_TIME_NAME: _TIMEINDEX})
+    # INDEX_DICT.update({_TIME_OFFSET_NAME: _TIME_OFFSET_INDEX})
+    # INDEX_DICT.update({_NO2NAME: _DATAINDEX01})
+    # INDEX_DICT.update({_O3NAME: _DATAINDEX01})
+    # INDEX_DICT.update({_QANAME: _QAINDEX})
+    # INDEX_DICT.update({_LATBOUNDSNAME: _LATBOUNDINDEX})
+    # INDEX_DICT.update({_LONBOUNDSNAME: _LONBOUNDINDEX})
+    #
+    # # dictionary to store array sizes of an element in self.data
+    # SIZE_DICT = {}
+    # SIZE_DICT.update({_LATBOUNDSNAME: _LATBOUNDSSIZE})
+    # SIZE_DICT.update({_LONBOUNDSNAME: _LONBOUNDSSIZE})
+    #
+    # # NaN values are variable specific
+    # NAN_DICT = {}
+    # NAN_DICT.update({_LATITUDENAME: -1.E-6})
+    # NAN_DICT.update({_LONGITUDENAME: -1.E-6})
+    # NAN_DICT.update({_ALTITUDENAME: -1.})
+    #
+    # # the following defines necessary quality flags for a value to make it into the used data set
+    # # the flag needs to have a HIGHER or EQUAL value than the one listed here
+    # # The valuse are taken form the product readme file
+    # QUALITY_FLAGS = {}
+    # QUALITY_FLAGS.update({_NO2NAME: 0.75})
+    # # QUALITY_FLAGS.update({_NO2NAME: 0.5}) #cloudy
+    # QUALITY_FLAGS.update({_O3NAME: 0.7})
 
     # PROVIDES_VARIABLES = list(RETRIEVAL_READ_PARAMETERS['sca']['metadata'].keys())
     # PROVIDES_VARIABLES.extend(RETRIEVAL_READ_PARAMETERS['sca']['vars'].keys())
 
-    # max distance between point on the earth's surface for a match
-    # in meters
-    MAX_DISTANCE = 50000.
-    EARTH_RADIUS = geopy.distance.EARTH_RADIUS
-    NANVAL_META = -1.E-6
-    NANVAL_DATA = -1.E6
 
-    # these are the variable specific attributes written into a netcdf file
-    NETCDF_VAR_ATTRIBUTES = {}
-    NETCDF_VAR_ATTRIBUTES['latitude'] = {}
-    # NETCDF_VAR_ATTRIBUTES['latitude']['_FillValue'] = {}
-    NETCDF_VAR_ATTRIBUTES['latitude']['long_name'] = 'latitude'
-    NETCDF_VAR_ATTRIBUTES['latitude']['standard_name'] = 'latitude'
-    NETCDF_VAR_ATTRIBUTES['latitude']['units'] = 'degrees north'
-    NETCDF_VAR_ATTRIBUTES['latitude']['bounds'] = 'lat_bnds'
-    NETCDF_VAR_ATTRIBUTES['latitude']['axis'] = 'Y'
-    NETCDF_VAR_ATTRIBUTES['longitude'] = {}
-    # NETCDF_VAR_ATTRIBUTES['longitude']['_FillValue'] = {}
-    NETCDF_VAR_ATTRIBUTES['longitude']['long_name'] = 'longitude'
-    NETCDF_VAR_ATTRIBUTES['longitude']['standard_name'] = 'longitude'
-    NETCDF_VAR_ATTRIBUTES['longitude']['units'] = 'degrees_east'
-    NETCDF_VAR_ATTRIBUTES['longitude']['bounds'] = 'lon_bnds'
-    NETCDF_VAR_ATTRIBUTES['longitude']['axis'] = 'X'
-    NETCDF_VAR_ATTRIBUTES['altitude'] = {}
-    # NETCDF_VAR_ATTRIBUTES['altitude']['_FillValue'] = {}
-    NETCDF_VAR_ATTRIBUTES['altitude']['long_name'] = 'altitude'
-    NETCDF_VAR_ATTRIBUTES['altitude']['standard_name'] = 'altitude'
-    NETCDF_VAR_ATTRIBUTES['altitude']['units'] = 'm'
 
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME] = {}
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME]['_FillValue'] = np.nan
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME]['long_name'] = \
-        'Tropospheric vertical column of nitrogen dioxide'
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME][
-        'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME]['units'] = 'mol m-2'
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME]['coordinates'] = 'longitude latitude'
-
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_mean'] = \
-        NETCDF_VAR_ATTRIBUTES[_NO2NAME]
-
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs'] = {}
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs']['_FillValue'] = np.nan
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs']['long_name'] = \
-        'number of observations'
-    # NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs'][
-    #     'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs']['units'] = '1'
-    NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs']['coordinates'] = 'longitude latitude'
-
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_mean'] = {}
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_mean']['_FillValue'] = np.nan
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_mean']['long_name'] = \
-        'total vertical ozone column'
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_mean'][
-        'standard_name'] = 'atmosphere_mole_content_of_ozone'
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_mean']['units'] = 'mol m-2'
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_mean']['coordinates'] = 'longitude latitude'
-
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs'] = {}
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs']['_FillValue'] = np.nan
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs']['long_name'] = \
-        'number of observations'
-    # NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs'][
-    #     'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs']['units'] = '1'
-    NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs']['coordinates'] = 'longitude latitude'
-
-    NETCDF_VAR_ATTRIBUTES[_QANAME] = {}
-    NETCDF_VAR_ATTRIBUTES[_QANAME]['_FillValue'] = np.nan
-    NETCDF_VAR_ATTRIBUTES[_QANAME]['long_name'] = 'data quality value'
-    NETCDF_VAR_ATTRIBUTES[_QANAME]['comment'] = \
-        'A continuous quality descriptor, varying between 0(no data) and 1 (full quality data). Recommend to ignore data with qa_value < 0.5'
-    NETCDF_VAR_ATTRIBUTES[_QANAME]['units'] = '1'
-    NETCDF_VAR_ATTRIBUTES[_QANAME]['coordinates'] = 'longitude latitude'
-
-    CODA_READ_PARAMETERS = {}
-    CODA_READ_PARAMETERS[_NO2NAME] = {}
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'] = {}
-    CODA_READ_PARAMETERS[_NO2NAME]['vars'] = {}
-    CODA_READ_PARAMETERS[_NO2NAME]['time_offset'] = np.float_(24. * 60. * 60.)
-    CODA_READ_PARAMETERS[_O3NAME] = {}
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'] = {}
-    CODA_READ_PARAMETERS[_O3NAME]['vars'] = {}
-    CODA_READ_PARAMETERS[_O3NAME]['time_offset'] = np.float_(24. * 60. * 60.)
-
-    # CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time'
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LATITUDENAME] = 'PRODUCT/latitude'
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LONGITUDENAME] = 'PRODUCT/longitude'
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
-    CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_QANAME] = 'PRODUCT/qa_value'
-    CODA_READ_PARAMETERS[_NO2NAME]['vars'][_NO2NAME] = 'PRODUCT/nitrogendioxide_tropospheric_column'
-
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time'
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'][_TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LATITUDENAME] = 'PRODUCT/latitude'
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LONGITUDENAME] = 'PRODUCT/longitude'
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
-    CODA_READ_PARAMETERS[_O3NAME]['metadata'][_QANAME] = 'PRODUCT/qa_value'
-    CODA_READ_PARAMETERS[_O3NAME]['vars'][_O3NAME] = 'PRODUCT/ozone_total_vertical_column'
+    # CODA_READ_PARAMETERS = {}
+    # CODA_READ_PARAMETERS[_NO2NAME] = {}
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'] = {}
+    # CODA_READ_PARAMETERS[_NO2NAME]['vars'] = {}
+    # CODA_READ_PARAMETERS[_NO2NAME]['time_offset'] = np.float_(24. * 60. * 60.)
+    # CODA_READ_PARAMETERS[_O3NAME] = {}
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'] = {}
+    # CODA_READ_PARAMETERS[_O3NAME]['vars'] = {}
+    # CODA_READ_PARAMETERS[_O3NAME]['time_offset'] = np.float_(24. * 60. * 60.)
+    #
+    # # CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time'
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LATITUDENAME] = 'PRODUCT/latitude'
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LONGITUDENAME] = 'PRODUCT/longitude'
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
+    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_QANAME] = 'PRODUCT/qa_value'
+    # CODA_READ_PARAMETERS[_NO2NAME]['vars'][_NO2NAME] = 'PRODUCT/nitrogendioxide_tropospheric_column'
+    #
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time'
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LATITUDENAME] = 'PRODUCT/latitude'
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LONGITUDENAME] = 'PRODUCT/longitude'
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
+    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_QANAME] = 'PRODUCT/qa_value'
+    # CODA_READ_PARAMETERS[_O3NAME]['vars'][_O3NAME] = 'PRODUCT/ozone_total_vertical_column'
 
     SUPPORTED_DATASETS = []
     SUPPORTED_DATASETS.append(DATA_ID)
 
-    DEFAULT_VARS = [_O3NAME]
-    PROVIDES_VARIABLES = [_NO2NAME, _O3NAME]
+    # DEFAULT_VARS = [_O3NAME]
+    # PROVIDES_VARIABLES = [_NO2NAME, _O3NAME]
     TS_TYPE = 'undefined'
 
     def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
@@ -285,6 +203,140 @@ class ReadL2Data(ReadL2DataBase):
         # stored in rads in self.data already
         # trades RAM for speed
         self.rads_in_array_flag = False
+        # these are the variable specific attributes written into a netcdf file
+        self._TIME_OFFSET_NAME = 'delta_time'
+        self._NO2NAME = 'tcolno2'
+        self._O3NAME = 'tcolo3'
+        self._QANAME = 'qa_index'
+
+        self._LATBOUNDSNAME = 'lat_bnds'
+        self._LATBOUNDSSIZE = 4
+        self._LONBOUNDSNAME = 'lon_bnds'
+        self._LONBOUNDSSIZE = 4
+
+        self.COORDINATE_NAMES = [self._LATITUDENAME, self._LONGITUDENAME, self._ALTITUDENAME,
+                            self._LATBOUNDSNAME, self._LONBOUNDSNAME]
+
+        self._QAINDEX = UngriddedData._DATAFLAGINDEX
+        self._TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
+        self._LATBOUNDINDEX = 13
+        self._LONBOUNDINDEX = self._LATBOUNDINDEX + self._LATBOUNDSSIZE + 1
+
+        self._COLNO = self._LATBOUNDINDEX + self._LATBOUNDSSIZE + self._LONBOUNDSSIZE + 2
+
+        self._HEIGHTSTEPNO = 24
+
+        # create a dict with the aerocom variable name as key and the index number in the
+        # resulting numpy array as value.
+        # INDEX_DICT = {}
+        self.INDEX_DICT.update({self._LATITUDENAME: self._LATINDEX})
+        self.INDEX_DICT.update({self._LONGITUDENAME: self._LONINDEX})
+        self.INDEX_DICT.update({self._ALTITUDENAME: self._ALTITUDEINDEX})
+        self.INDEX_DICT.update({self._TIME_NAME: self._TIMEINDEX})
+        self.INDEX_DICT.update({self._TIME_OFFSET_NAME: self._TIME_OFFSET_INDEX})
+        self.INDEX_DICT.update({self._NO2NAME: self._DATAINDEX01})
+        self.INDEX_DICT.update({self._O3NAME: self._DATAINDEX01})
+        self.INDEX_DICT.update({self._QANAME: self._QAINDEX})
+        self.INDEX_DICT.update({self._LATBOUNDSNAME: self._LATBOUNDINDEX})
+        self.INDEX_DICT.update({self._LONBOUNDSNAME: self._LONBOUNDINDEX})
+
+        # dictionary to store array sizes of an element in self.data
+        # SIZE_DICT = {}
+        self.SIZE_DICT.update({self._LATBOUNDSNAME: self._LATBOUNDSSIZE})
+        self.SIZE_DICT.update({self._LONBOUNDSNAME: self._LONBOUNDSSIZE})
+
+        # NaN values are variable specific
+        # NAN_DICT = {}
+        self.NAN_DICT.update({self._LATITUDENAME: -1.E-6})
+        self.NAN_DICT.update({self._LONGITUDENAME: -1.E-6})
+        self.NAN_DICT.update({self._ALTITUDENAME: -1.})
+
+        # the following defines necessary quality flags for a value to make it into the used data set
+        # the flag needs to have a HIGHER or EQUAL value than the one listed here
+        # The valuse are taken form the product readme file
+        # QUALITY_FLAGS = {}
+        self.QUALITY_FLAGS.update({self._NO2NAME: 0.75})
+        # QUALITY_FLAGS.update({_NO2NAME: 0.5}) #cloudy
+        self.QUALITY_FLAGS.update({self._O3NAME: 0.7})
+
+
+        self.CODA_READ_PARAMETERS[self._NO2NAME] = {}
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'] = {}
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'] = {}
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['time_offset'] = np.float_(24. * 60. * 60.)
+        self.CODA_READ_PARAMETERS[self._O3NAME] = {}
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'] = {}
+        self.CODA_READ_PARAMETERS[self._O3NAME]['vars'] = {}
+        self.CODA_READ_PARAMETERS[self._O3NAME]['time_offset'] = np.float_(24. * 60. * 60.)
+
+        # self.CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._TIME_NAME] = 'PRODUCT/time'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LATITUDENAME] = 'PRODUCT/latitude'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][
+            self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._QANAME] = 'PRODUCT/qa_value'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._NO2NAME] = 'PRODUCT/nitrogendioxide_tropospheric_column'
+
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._TIME_NAME] = 'PRODUCT/time'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LATITUDENAME] = 'PRODUCT/latitude'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._QANAME] = 'PRODUCT/qa_value'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['vars'][self._O3NAME] = 'PRODUCT/ozone_total_vertical_column'
+
+
+        ####################################
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['long_name'] = \
+            'Tropospheric vertical column of nitrogen dioxide'
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME][
+            'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = 'mol m-2'
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['coordinates'] = 'longitude latitude'
+
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_mean'] = \
+            self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]
+
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_numobs'] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_numobs']['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_numobs']['long_name'] = \
+            'number of observations'
+        # self.NETCDF_VAR_ATTRIBUTES[_NO2NAME+'_numobs'][
+        #     'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_numobs']['units'] = '1'
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_numobs']['coordinates'] = 'longitude latitude'
+
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_mean'] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_mean']['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_mean']['long_name'] = \
+            'total vertical ozone column'
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_mean'][
+            'standard_name'] = 'atmosphere_mole_content_of_ozone'
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_mean']['units'] = 'mol m-2'
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_mean']['coordinates'] = 'longitude latitude'
+
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_numobs'] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_numobs']['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_numobs']['long_name'] = \
+            'number of observations'
+        # self.NETCDF_VAR_ATTRIBUTES[_O3NAME+'_numobs'][
+        #     'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_numobs']['units'] = '1'
+        self.NETCDF_VAR_ATTRIBUTES[self._O3NAME + '_numobs']['coordinates'] = 'longitude latitude'
+
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['long_name'] = 'data quality value'
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['comment'] = \
+            'A continuous quality descriptor, varying between 0(no data) and 1 (full quality data). Recommend to ignore data with qa_value < 0.5'
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['units'] = '1'
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['coordinates'] = 'longitude latitude'
 
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
@@ -300,7 +352,7 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
     def read_file(self, filename, vars_to_retrieve='tcolno2', return_as='dict',
-                  loglevel=None, apply_quality_flag=True, colno=_COLNO):
+                  loglevel=None, apply_quality_flag=True, colno=None):
         """method to read the file partially
 
         Parameters
@@ -344,6 +396,9 @@ class ReadL2Data(ReadL2DataBase):
 
 
         """
+
+        if colno is None:
+            colno = self._COLNO
 
         import time
         import coda
@@ -623,15 +678,29 @@ class ReadL2Data(ReadL2DataBase):
             # data_obj.append(tmp_obj)
 
         self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
+        return data_obj
 
     ###################################################################################
-if __name__=="__main__":
+if __name__ == "__main__":
     """small test for the sentinel5p reading...
     """
     import pyaerocom as pya
     obj = pya.io.read_sentinel5p_data.ReadL2Data()
     testfiles = []
+
     testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190531T165100_20190531T183230_08446_01_010107_20190606T185838.nc')
     testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190530T051930_20190530T070100_08425_01_010107_20190605T070532.nc')
     data = obj.read(files=testfiles)
-    pass
+    global_attributes = {}
+    global_attributes['input files']=','.join(obj.files_read)
+    global_attributes['info']='file created by pyaerocom.io.read_sentinel5p_data '+obj.__version__+' (https://github.com/metno/pyaerocom) at '+\
+                              np.datetime64('now').astype('str')
+    global_attributes['quality']='quality flag of 0.7 applied'
+
+    # print(data._data[0:10, obj._TIMEINDEX].astype('datetime64[ms]'))
+    obj.to_netcdf_simple(data_to_write=data, global_attributes=global_attributes, vars_to_write=obj.DEFAULT_VARS,
+                         netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc')
+    gridded_data = obj.to_grid(data=data, vars=obj.DEFAULT_VARS, )
+    obj.to_netcdf_simple(data_to_write=gridded_data, global_attributes=global_attributes, vars_to_write=obj.DEFAULT_VARS,
+                         gridded=True,
+                         netcdf_filename='/home/jang/tmp/to_netcdf_simple_gridded.nc')
