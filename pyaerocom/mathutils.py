@@ -72,8 +72,8 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     mask = ~np.isnan(ref_data) * ~np.isnan(data)
     num_points = sum(mask)
     
-    result['totnum'] = len(mask)
-    result['num_valid'] = num_points
+    result['totnum'] = float(len(mask))
+    result['num_valid'] = float(num_points)
     result['refdata_mean'] = np.nanmean(ref_data)
     result['refdata_std'] = np.nanstd(ref_data)
     result['data_mean'] = np.nanmean(data)
