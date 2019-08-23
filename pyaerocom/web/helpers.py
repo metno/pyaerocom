@@ -13,7 +13,7 @@ import simplejson
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, sort_dict_by_name
 
-def delete_experiment_data(base_dir, proj_id, exp_id):
+def delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id):
     """Delete all data associated with a certain experiment
         
     Parameters
@@ -265,7 +265,11 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
     new = {}
     if ignore_experiments is None:
         ignore_experiments = []
-    tab = config.get_web_overview_table()
+    try:
+        tab = config.get_web_overview_table()
+    except FileNotFoundError:
+        import pandas as pd
+        tab = pd.DataFrame()
     
     for index, info in tab.iterrows():
         obs_var, obs_name, vert_code, mod_name, mod_var = info
@@ -327,7 +331,8 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
             if exp in ignore_experiments:
                 continue
             elif not exp in available_exps:
-                const.print_log.info('Removing outdated experiment from menu.json')
+                const.print_log.info('Removing outdated experiment {} from '
+                                     'menu.json'.format(exp))
                 continue
             new_menu[exp] = submenu
     
