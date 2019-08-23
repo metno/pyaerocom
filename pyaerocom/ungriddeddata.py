@@ -493,12 +493,6 @@ class UngriddedData(object):
         freq : str
             pandas frequency string (e.g. 'D' for daily, 'M' for month end) or
             valid pyaerocom ts_type
-        interp_nans : bool
-            if True, all NaN values in the time series for each 
-            variable are interpolated using linear interpolation
-        min_coverage_interp : float
-            required coverage fraction for interpolation (default is 0.68, i.e.
-            roughly corresponding to 1 sigma)
         merge_if_multi : bool
             if True and if data request results in multiple instances of 
             StationData objects, then these are attempted to be merged into one 
@@ -637,7 +631,7 @@ class UngriddedData(object):
         check_keys = ['instrument_name', 'filename', 'revision_date',
                       'station_name_orig']
         sd = StationData()
-        
+    
         val = self.metadata[meta_idx]
         
         # TODO: make sure in reading classes that data_revision is assigned
@@ -739,6 +733,7 @@ class UngriddedData(object):
         
             sd['dtime'] = data.index.values
             sd[var] = data
+            sd['var_info'][var] = od()
             FOUND_ONE = True
             # check if there is information about altitude (then relevant 3D
             # variables and parameters are included too)
@@ -751,10 +746,8 @@ class UngriddedData(object):
                     sd.var_info['altitude'] = vi['altitude']
                 sd.altitude = altitude
             if var in vi:
-                sd.var_info[var] = vi[var]
-            else:
-                sd.var_info[var] = od()
-        
+                sd.var_info[var].update(vi[var])
+            
             if len(data.index) == len(data.index.unique()):
                 sd.var_info[var]['overlap'] = False  
             else:
@@ -842,6 +835,7 @@ class UngriddedData(object):
         out_data = {'stats'         : [],
                     'station_name'  : [],
                     'latitude'      : [],
+                    'failed'        : [],
                     'longitude'     : []}
             
         _iter = self._generate_station_index(by_station_name, 
@@ -863,66 +857,9 @@ class UngriddedData(object):
                     DataCoverageError) as e:
                 logger.warning('Failed to convert to StationData '
                                'Error: {}'.format(repr(e)))
+                out_data['failed'].append([idx, repr(e)])
         return out_data
-    
-# See new implementation (changed on 6/3/19 by J. Gliss)
-# =============================================================================
-#     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None, 
-#                                 freq=None, include_stats_nodata=True, **kwargs):
-#         """Convert all data to :class:`StationData` objects
-#         
-#         Creates one instance of :class:`StationData` for each metadata block in 
-#         this object. For datasets like Aeronet, this corresponds to one
-# 
-#         Parameters
-#         ----------
-#         vars_to_convert : :obj:`list` or :obj:`str`, optional
-#             variables that are supposed to be converted. If None, use all 
-#             variables that are available for this station
-#         start
-#             start time, optional (if not None, input must be convertible into
-#             pandas.Timestamp)
-#         stop 
-#             stop time, optional (if not None, input must be convertible into
-#             pandas.Timestamp)
-#         freq : str
-#             pandas frequency string (e.g. 'D' for daily, 'M' for month end)
-#             or valid pyaerocom ts_type (e.g. 'hourly', 'monthly').
-#         
-#         **kwargs
-#             additional keyword args passed to :func:`to_station_data` (e.g.
-#             `merge_if_multi, merge_pref_attr, merge_sort_by_largest, 
-#             insert_nans`)
-# 
-#         Returns
-#         -------
-#         list 
-#             list containing loaded instances of :class:`StationData` for each
-#             station in :attr:`metadata`, where :func:`to_station_data` was 
-#             successful, and ``None`` entries for meta data indices where 
-#             :func:`to_station_data` failed (e.g. because no temporal match, 
-#             etc.)
-# 
-#         """
-#         out_data = []
-#         for index in self.metadata:
-#             try:
-#                 data = self.to_station_data(index, vars_to_convert, start, 
-#                                             stop, freq)
-#                 
-#                 out_data.append(data)
-#             # catch the exceptions that are acceptable
-#             except (VarNotAvailableError, TimeMatchError, 
-#                     DataCoverageError) as e:
-#                 logger.warning('Failed to convert to StationData '
-#                                'Error: {}'.format(repr(e)))
-#                 # append None to make sure indices of stations are 
-#                 # preserved in output array
-#                 if include_stats_nodata:
-#                     out_data.append(None)
-#         return out_data
-# =============================================================================
-    
+  
     # TODO: check more general cases (i.e. no need to convert to StationData
     # if no time conversion is required)
     def get_variable_data(self, variables, start=None, stop=None,
@@ -1022,11 +959,15 @@ class UngriddedData(object):
                 elif len(val) == 2:
                     try:
                         low, high = float(val[0]), float(val[1])
+                        if not low < high:
+                            raise ValueError('First entry needs to be smaller '
+                                             'than 2nd')
                         range_f[key] = [low, high]
-                    except:
-                        raise IOError('Failed to convert input ({}) specifying '
-                                      'value range of {} into floating point '
-                                      'numbers'.format(list(val), key))
+                    except Exception as e:
+                        raise ValueError('Failed to convert input ({}) specifying '
+                                         'value range of {} into floating point '
+                                         'numbers. Reason: {}'
+                                         .format(list(val), key, repr(e)))
         return (str_f, list_f, range_f, val_f)
     
     def check_unit(self, var_name, unit=None):
@@ -2316,12 +2257,19 @@ class UngriddedData(object):
     def __iter__(self):
         return self
     
+    #: ToDo revise cases of DataCoverageError
     def __next__(self):
         self._idx += 1
         if self._idx == len(self.metadata):
             self._idx = -1
             raise StopIteration
-        return self[self._idx]
+        try:
+            return self[self._idx]
+        except DataCoverageError:
+            const.print_log.warning('No variable data in metadata block {}. '
+                                    'Returning empty StationData'
+                                    .format(self._idx))
+            return StationData()
     
     def __repr__(self):
         return ('{} <networks: {}; vars: {}; instruments: {};'
