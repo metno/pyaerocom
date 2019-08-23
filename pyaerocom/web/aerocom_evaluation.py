@@ -204,6 +204,7 @@ class AerocomEvaluation(object):
         self.var_mapping = {}
         self.var_order_menu = []
         
+        self._valid_obs_vars = {}
         try:
             self.load_config(self.proj_id, self.exp_id, config_dir)
             print('Found and imported config file for {} / {}'.format(self.proj_id,
@@ -250,6 +251,8 @@ class AerocomEvaluation(object):
     @property
     def all_map_files(self):
         """List of all existing map files"""
+        if not os.path.exists(self.out_dirs['map']):
+            raise FileNotFoundError('No data available for this experiment')
         return os.listdir(self.out_dirs['map'])
     
     def _update_custom_read_methods(self):
@@ -487,7 +490,7 @@ class AerocomEvaluation(object):
             r['maxLon'] = lonr[1]
         save_dict_json(regs, self.regions_file)
         return regs
-                
+    
     def compute_json_files_from_colocateddata(self, coldata, obs_name=None, 
                                               model_name=None):
         """Creates all json files for one ColocatedData object"""
@@ -559,8 +562,16 @@ class AerocomEvaluation(object):
         scat_data = {}
         hm_data = {}
         
+        
         ts_type = d.meta['ts_type']
         vert_code = self.get_vert_code(obs_name, obs_var)
+        
+        for reg in get_all_default_region_ids():
+            filtered = d.apply_latlon_filter(region_id=reg)
+            hm_data[reg] = filtered.calc_statistics()
+        
+        self._write_heatmap_json(hm_data, obs_name, obs_var, vert_code, 
+                                 model_name, model_var)
         
         if vert_code == 'ModelLevel':
             raise NotImplementedError('Coming soon...')
@@ -666,6 +677,39 @@ class AerocomEvaluation(object):
             return info
         return info[obs_var]
     
+    def _write_heatmap_json(self, result, obs_name, obs_var, vert_code, 
+                            model_name, model_var):
+        fp = os.path.join(self.out_dirs['hm'], 'glob_stats.json')
+        if os.path.exists(fp):
+            try:
+                with open(fp, 'r') as f:
+                    current = simplejson.load(f)
+            except Exception as e:
+                raise Exception('Fatal: could not open existing json file: {}. '
+                                'Reason: {}'.format(fp, repr(e)))
+        else:
+            current = {}
+        if not obs_var in current:
+            current[obs_var] = {}
+        ov = current[obs_var]
+        if not obs_name in ov:
+            ov[obs_name] = {}
+        on = ov[obs_name]
+        if not vert_code in on:
+            on[vert_code] = {}
+        ovc = on[vert_code]
+        if not model_name in ovc:
+            ovc[model_name] = {}
+        mn = ovc[model_name]
+        if model_var in mn:
+            const.print_log.info('Overwriting existing heatmap statistics for '
+                                 'model {}/{} ({}, {}, {}) in glob_stats.json'
+                                 .format(model_name, model_var, obs_var, obs_name, 
+                                         vert_code))
+        mn[model_var] = result
+        with open(fp, 'w') as f:
+            simplejson.dump(current, f, ignore_nan=True)
+        
     def _write_stationdata_json(self, ts_data):
         
         filename = self.get_stationfile_name(ts_data['station_name'], 
@@ -814,15 +858,26 @@ class AerocomEvaluation(object):
         # for specifying the model and obs names in the colocated data file
         col.model_name = model_name
         col.obs_name = obs_name
-        
-        if var_name is not None:
-            if not isinstance(var_name, str):
-                raise ValueError('Invalid input for var_name: {}. Need str'
-                                 .format(var_name))
-
-            col.obs_vars = [var_name]
+# =============================================================================
+#         
+#         obs_vars = col.obs_vars
+#         add = []
+#         if isinstance(col.model_add_vars, dict):
+#             for obs_var, mod_var in col.model_add_vars.items():
+#                 if obs_var in obs_vars:
+#                     add.append(mod_var)
+#         col.obs_vars.extend(add)
+# =============================================================================
+# =============================================================================
+#         if var_name is not None:
+#             if not isinstance(var_name, str):
+#                 raise ValueError('Invalid input for var_name: {}. Need str'
+#                                  .format(var_name))
+# 
+#             col.obs_vars = [var_name]
+# =============================================================================
         # run colocation
-        col.run()
+        col.run(var_name)
         
         return col
     
@@ -989,7 +1044,7 @@ class AerocomEvaluation(object):
             list containing all colocated data objects that have been converted
             to json files.
         """
-        
+        res = None
         if reanalyse_existing is not None:
             self.colocation_settings['reanalyse_existing'] = reanalyse_existing
         if raise_exceptions is not None:
@@ -1168,31 +1223,71 @@ class AerocomEvaluation(object):
             d[k] = as_dict
         return d        
     
+    def delete_experiment_data(self, base_dir=None, proj_id=None, exp_id=None):
+        """Delete all data associated with a certain experiment
+        
+        Parameters
+        ----------
+        base_dir : str, optional
+            basic output direcory (containg subdirs of all projects)
+        proj_name : str, optional
+            name of project, if None, then this project is used
+        exp_name : str, optional
+            name experiment, if None, then this project is used
+        """
+        from pyaerocom.web.helpers import delete_experiment_data_evaluation_iface
+        if proj_id is None:
+            proj_id = self.proj_id
+        if exp_id is None:
+            exp_id = self.exp_id
+        if base_dir is None:
+            base_dir = self.out_basedir
+        delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id)
+        self.update_menu()
+        
     def clean_json_files(self):
         """Checks all existing json files and removes outdated data
         
         This may be relevant when updating a model name or similar.
         """
+        
         for file in self.all_map_files:
             (obs_name, obs_var, 
              vert_code, 
              mod_name, mod_var) = self._info_from_map_file(file)
-            ok = (obs_name in self.obs_config and mod_name in self.model_config
-                  and obs_var in self.obs_config[obs_name]['obs_vars'])
-            if not ok:
+        
+            if not (obs_name in self.obs_config and
+                    mod_name in self.model_config and
+                    obs_var in self._get_valid_obs_vars(obs_name)):
+                
                 const.print_log.info('Removing outdated map file: {}'.format(file))
                 os.remove(os.path.join(self.out_dirs['map'], file))
         for fp in glob.glob('{}/*.json'.format(self.out_dirs['ts'])):
             self._check_clean_ts_file(fp)
         self.update_menu()
         self.make_info_table_web()
-                
+    
+    def _get_valid_obs_vars(self, obs_name):
+        if obs_name in self._valid_obs_vars:
+            return self._valid_obs_vars[obs_name]
+    
+        obs_vars = self.obs_config[obs_name]['obs_vars']
+        add = []
+        for mname, mcfg in self.model_config.items():
+            if 'model_add_vars' in mcfg:
+                for ovar, mvar in mcfg['model_add_vars'].items():
+                    if ovar in obs_vars and not mvar in add:
+                        add.append(mvar)
+        obs_vars.extend(add)
+        self._valid_obs_vars[obs_name]  = obs_vars
+        return obs_vars
+    
     def _check_clean_ts_file(self, fp):
         spl = os.path.basename(fp).split('OBS-')[-1].split(':')
         obs_name = spl[0]
         obs_var = spl[1].split('_')[0]
-        ok = obs_name in self.obs_config and obs_var in self.obs_config[obs_name]['obs_vars']
-        if not ok:
+        if not (obs_name in self.obs_config and 
+                obs_var in self._get_valid_obs_vars(obs_name)):
             const.print_log.info('Removing outdated ts file: {}'.format(fp))
             os.remove(fp)
             return
