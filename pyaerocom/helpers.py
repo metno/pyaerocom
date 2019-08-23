@@ -97,6 +97,72 @@ XARR_TIME_GROUPERS = {'hourly'  : 'hour',
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
+def delete_all_coords_cube(cube, inplace=True):
+    """Delete all coordinates of an iris cube
+    
+    Parameters
+    ----------
+    cube : iris.cube.Cube
+        input cube that is supposed to be cleared of coordinates
+    inplace : bool
+        if True, then the coordinates are deleted in the input object, else in
+        a copy of it
+        
+    Returns
+    -------
+    iris.cube.Cube
+        input cube without coordinates 
+    """
+    if not inplace:
+        cube = cube.copy()
+        
+    for aux_fac in cube.aux_factories:
+        cube.remove_aux_factory(aux_fac)
+
+    for coord in cube.coords():
+        cube.remove_coord(coord)
+    return cube
+
+def copy_coords_cube(to_cube, from_cube, inplace=True):
+    """Copy all coordinates from one cube to another
+    
+    Requires the underlying data to be the same shape. 
+    
+    Warning
+    --------
+    This operation will delete all existing coordinates and auxiliary 
+    coordinates and will then copy the ones from the input data object.
+    No checks of any kind will be performed
+    
+    Parameters
+    ----------
+    to_cube
+    other : GriddedData or Cube
+        other data object (needs to be same shape as this object)
+    
+    Returns
+    -------
+    GriddedData
+        data object containing coordinates from other object
+    """
+    if not all([isinstance(x, iris.cube.Cube) for x in [to_cube, from_cube]]):
+        raise ValueError('Invalid input. Need instances of iris.cube.Cube class...')
+        
+    if not from_cube.shape == to_cube.shape:
+        raise DataDimensionError('Cannot copy coordinates: shape mismatch')
+    
+    to_cube = delete_all_coords_cube(to_cube, inplace)
+    
+    for i, dim_coord in enumerate(from_cube.dim_coords):
+        to_cube.add_dim_coord(dim_coord, i)
+    
+    for aux_coord, dim in from_cube._aux_coords_and_dims:
+        to_cube.add_aux_coord(aux_coord, dim)
+        
+    for aux_fac in from_cube.aux_factories:
+        to_cube.add_aux_factory(aux_fac)
+    return to_cube
+
 def infer_time_resolution(time_stamps):
     """Infer time resolution based on input time-stamps
     
