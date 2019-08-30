@@ -392,6 +392,12 @@ class Colocator(ColocationSetup):
     def _read_gridded(self, reader, var_name, start, stop, is_model=True):
         if is_model:
             vert_which = self.obs_vert_type
+            if all(x=='' for x in reader.file_info.vert_code.values):
+                print_log.info('Deactivating model file search by vertical '
+                               'code for {}, since filenames do not include '
+                               'information about vertical code (probably '
+                               'AeroCom 2 convention)'.format(reader.data_id))
+                vert_which = None
             ts_type_read = self.model_ts_type_read
             if self.model_use_climatology:
                 start = 9999
