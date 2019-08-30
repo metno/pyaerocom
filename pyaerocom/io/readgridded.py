@@ -43,7 +43,8 @@ import iris
 from pyaerocom import const, print_log, logger
 from pyaerocom.variable import Variable, is_3d
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
-                                         add_cubes)
+                                         add_cubes,
+                                         multiply_cubes)
 from pyaerocom.helpers import to_pandas_timestamp, get_highest_resolution
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
@@ -125,13 +126,15 @@ class ReadGridded(object):
         
     """
     AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
-                    'od550gt1aer'   : ['od550dust', 'od550ss']}
+                    'od550gt1aer'   : ['od550dust', 'od550ss'],
+                    'conc*'        : ['mmr*', 'rho']}
     
     AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
                     'od870aer'  :   ['od865aer']}
     
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
-                'od550gt1aer'  :    add_cubes}
+                'od550gt1aer'  :    add_cubes,
+                'conc*'        :    multiply_cubes}
     
     _data_dir = ""
     
@@ -785,6 +788,31 @@ class ReadGridded(object):
         """        
         return concatenate_iris_cubes(cubes, error_on_mismatch=True)
     
+    def _get_aux_fun(self, var_to_compute):
+        """Get method used to compute input variable
+        
+        Parameters
+        ----------
+        var_to_compute : str
+            variable to be computed
+        
+        Returns
+        -------
+        callable
+            method that is used to compute variable
+        
+        Raises
+        ------
+        AttributeError
+            if no function is defined for that variable name
+        """
+        if var_to_compute in self.AUX_FUNS:
+            return self.AUX_FUNS[var_to_compute]
+        elif var_to_compute in self._aux_funs:
+            return self._aux_funs[var_to_compute]
+        raise AttributeError('No method found for computation of {}'
+                             .format(var_to_compute))
+        
     def _get_aux_vars(self, var_to_compute):
         """Helper that searches auxiliary variables for computation of input var
         
@@ -808,7 +836,7 @@ class ReadGridded(object):
         """
         if var_to_compute in self._aux_requires:
             vars_req = self._aux_requires[var_to_compute]
-        else:
+        elif var_to_compute in self.AUX_REQUIRES:
             vars_req = self.AUX_REQUIRES[var_to_compute]
         
         vars_to_read = []
@@ -879,14 +907,24 @@ class ReadGridded(object):
         if vars_to_read is None:
             vars_to_read = self._get_aux_vars(var_name)
         if aux_fun is None:
-            aux_fun = self.AUX_FUNS[var_name]
+            aux_fun = self._get_aux_fun(var_name)
         data = []
         # all variables that are required need to be in the same temporal
         # resolution
-        ts_type = self.find_common_ts_type(vars_to_read, start, stop, ts_type, 
-                                           experiment, 
-                                           vert_which=vert_which,
-                                           flex_ts_type=flex_ts_type)  
+        try:
+            ts_type = self.find_common_ts_type(vars_to_read, start, stop, 
+                                               ts_type, experiment, 
+                                               vert_which=vert_which,
+                                               flex_ts_type=flex_ts_type)  
+        except DataCoverageError:
+            if not vert_which in self.VERT_ALT:
+                raise
+            vert_which = self.VERT_ALT[vert_which]
+            
+            ts_type = self.find_common_ts_type(vars_to_read, start, stop, 
+                                               ts_type, experiment, 
+                                               vert_which=vert_which,
+                                               flex_ts_type=flex_ts_type)  
         for var in vars_to_read:
             aux_data = self._load_var(var_name=var, 
                                       ts_type=ts_type, 
@@ -1012,7 +1050,74 @@ class ReadGridded(object):
                              'object')
         self._aux_requires[var_name] = vars_required
         self._aux_funs[var_name] = fun
+    
+    def check_compute_var(self, var_name):
+        """Check if variable name belongs to family that can be computed
         
+        For instance, if input var_name is `sconcdust` this method will check
+        :attr:`AUX_REQUIRES` to see if there is a variable family pattern
+        (`conc*`) defined that specifies how to compute these variables. If 
+        a match is found, the required variables and computation method is 
+        added via :func:`add_aux_compute`.
+        
+        Note
+        ----
+        BETA version, use with care
+        
+        Parameters
+        -----------
+        var_name : str
+            variable name to be checked
+        
+        Returns
+        -------
+        bool
+            True if match is found, else False
+        """
+        
+        if '*' in var_name:
+            from pyaerocom.exceptions import VariableDefinitionError
+            raise VariableDefinitionError('Invalid variable name {}. Must not '
+                                          'contain *'.format(var_name))
+        if var_name in self.AUX_REQUIRES:
+            return True
+        elif var_name in self._aux_requires:
+            return True
+        import fnmatch
+        patterns = [x for x in self.AUX_REQUIRES if '*' in x]
+        vars_found = []
+        for pattern in patterns:
+            if fnmatch.fnmatch(var_name, pattern):
+                vars_required = self.AUX_REQUIRES[pattern]
+                for addvar in vars_required:
+                    
+                    if not '*' in addvar:
+                        vars_found.append(addvar)
+                    else:
+                        _addvar = var_name
+                        spl1 = pattern.split('*')
+                        spl2 = addvar.split('*')
+                        if len(spl1) != len(spl2):
+                            raise AttributeError('variable patterns in '
+                                                 'AUX_REQUIRES and corresponding '
+                                                 'values (with * in name) need '
+                                                 'to have the same number of '
+                                                 'wildcard delimiters')
+                        for i, substr in enumerate(spl1):
+                            if bool(substr):
+                                _addvar = _addvar.replace(substr, spl2[i])
+                        vars_found.append(_addvar)
+                if (len(vars_found) == len(vars_required) and
+                    all([x in self.vars_provided for x in vars_found])):
+                    
+                    self.add_aux_compute(var_name, 
+                                         vars_required=vars_found,
+                                         fun=self.AUX_FUNS[pattern])
+                        
+                    return True
+        return False
+    
+                
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, vert_which=None, 
@@ -1122,6 +1227,7 @@ class ReadGridded(object):
                                      'variable to read {}'.format(vert_which, 
                                                                   var_name))
                 vert_which = None
+                
         if var_to_read is not None: # variable can be read directly
             data = self._load_var(var_name=var_to_read, 
                                   ts_type=ts_type, 
@@ -1131,18 +1237,8 @@ class ReadGridded(object):
                                   flex_ts_type=flex_ts_type, 
                                   prefer_longer=prefer_longer,
                                   **kwargs)
-        elif var_name in self._aux_requires:
-            data = self.compute_var(var_name=var_name, 
-                                    start=start, stop=stop, 
-                                    ts_type=ts_type, 
-                                    experiment=experiment, 
-                                    vert_which=vert_which,
-                                    flex_ts_type=flex_ts_type, 
-                                    prefer_longer=prefer_longer,
-                                    vars_to_read=self._aux_requires[var_name],
-                                    aux_fun=self._aux_funs[var_name])
-            
-        elif var_name in self.AUX_REQUIRES: #variable can be computed 
+        
+        elif self.check_compute_var(var_name):
             data = self.compute_var(var_name=var_name, 
                                     start=start, stop=stop, 
                                     ts_type=ts_type, 
@@ -1150,6 +1246,11 @@ class ReadGridded(object):
                                     vert_which=vert_which,
                                     flex_ts_type=flex_ts_type, 
                                     prefer_longer=prefer_longer)
+# =============================================================================
+#                                     vars_to_read=self._aux_requires[var_name],
+#                                     aux_fun=self._aux_funs[var_name])
+#             
+# =============================================================================
         else:
             raise VarNotAvailableError("Error: variable {} not available in "
                                        "files and can also not be computed."
@@ -1261,7 +1362,19 @@ class ReadGridded(object):
             except (VarNotAvailableError, DataCoverageError) as e:
                 self.logger.warning(repr(e))
         return tuple(data)
-        
+    
+    def _check_correct_units_cube(self, cube):
+        if ('invalid_units' in cube.attributes and 
+            cube.attributes['invalid_units'] in const.GRID_IO.UNITS_ALIASES):
+            
+            from_unit = cube.attributes['invalid_units']
+            to_unit = const.GRID_IO.UNITS_ALIASES[from_unit]
+            const.logger.info('Updating invalid unit in {} from {} to {}'
+                              .format(repr(cube), from_unit, to_unit))
+            
+            cube.units = to_unit
+        return cube
+                
     def _load_files(self, files, var_name, perform_checks=True,
                     **kwargs):
         """Load list of files containing variable to read into Cube instances
@@ -1288,10 +1401,13 @@ class ReadGridded(object):
         cubes, loaded_files = load_cubes_custom(files, var_name,
                                                 perform_checks=perform_checks,
                                                 **kwargs)
+        for cube in cubes:
+            cube = self._check_correct_units_cube(cube)
+            
         if len(loaded_files) == 0:
             raise IOError("None of the input files could be loaded in {}"
                           .format(self.data_id))
-    
+        
         self.loaded_cubes[var_name] = cubes
         return (cubes, loaded_files)
     
@@ -1593,15 +1709,9 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
+    r = pya.io.ReadGridded('CAM5-ATRAS_AP3-CTRL')
     
-    print(r)
     
-    data = r.read_var('od550aer', start=9999)
+    data = r.read_var('concdust')
     
-    print(data.is_climatology)
-    
-    data.base_year=2005
-    
-    data.quickplot_map()
     
