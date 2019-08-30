@@ -239,7 +239,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                          name=gridded_data.var_name, attrs=meta)
     
     if colocate_time and grid_ts_type != ts_type:
-        data = data.resample_time(to_ts_type=ts_type, **kwargs)
+        data = data.resample_time(to_ts_type=ts_type, 
+                                  colocate_time=True,
+                                  **kwargs)
     return data
 
 def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None, 
@@ -614,7 +616,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                          attrs=meta)
     
     if colocate_time and grid_ts_type != ts_type:
-        data = data.resample_time(to_ts_type=ts_type, **kwargs)
+        data = data.resample_time(to_ts_type=ts_type, 
+                                  colocate_time=True,
+                                  **kwargs)
     return data
 
 if __name__=='__main__':
