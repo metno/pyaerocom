@@ -484,9 +484,12 @@ class GriddedData(object):
         if not isinstance(value, iris.cube.Cube):
             raise TypeError("Grid data format %s is not supported, need Cube" 
                             %type(value))
+
+        for key, val in self._META_ADD.items():
+            if not key in value.attributes:
+                value.attributes[key] = val
         self._grid = value
-        self.update_meta(**self._META_ADD)
-    
+        
     @property
     def plot_settings(self):
         """:class:`Variable` instance that contains plot settings
@@ -873,7 +876,9 @@ class GriddedData(object):
                                data_id=self.name,
                                ts_type=self.ts_type)
             data.var_info[var] = {'units':self.units}
-            data[var] = Series(arr[:, i, j], index=times)
+            vals = arr[:, i, j]
+            
+            data[var] = Series(vals, index=times)
             for meta_key, meta_val in meta_iter.items():
                 data[meta_key] = meta_val[i]
             for meta_key, meta_val in meta_glob.items():
@@ -945,6 +950,14 @@ class GriddedData(object):
         self._altitude_access.get_altitude(**coords)
         raise NotImplementedError('Coming soon...')
         
+    def extract_surface_level(self):
+        """Extract surface level from 4D field"""     
+        if not self.ndim==4:
+            raise DataDimensionError('Can only extract surface level for 4D '
+                                     'gridded data object')
+        idx = self._infer_index_surface_level()
+        return self[:,:,:,idx]
+    
     def _infer_index_surface_level(self):
         if not self.ndim == 4:
             raise DataDimensionError('Can only infer surface level for 4D '
@@ -957,9 +970,11 @@ class GriddedData(object):
         from pyaerocom import vert_coords as vc
         try:
             coord = vc.VerticalCoordinate(cname)
-            if coord.lev_increases_with_alt:
+            if coord.lev_increases_with_alt: 
+                # vertical coordinate values increase with altitude -> find lowest value (e.g. altitude)
                 return np.argmin(self.grid.dim_coords[3].points)
             else:
+                # vertical coordinate values decrease with altitude -> find highest value (e.g. pressure)
                 return np.argmax(self.grid.dim_coords[3].points)
         except:
             if not const.GRID_IO.INFER_SURFACE_LEVEL:
@@ -1658,8 +1673,12 @@ class GriddedData(object):
                 t = cftime_to_datetime64(self.time[time_idx])[0]
                 tstr = datetime2str(t, self.ts_type)
             except:
-                tstr = datetime2str(self.time_stamps()[time_idx], 
-                                    self.ts_type)
+                try:
+                    tstr = datetime2str(self.time_stamps()[time_idx], 
+                                        self.ts_type)
+                except:
+                    print_log.warning('Failed to retrieve ts_type in '
+                                      'GriddedData {}'.format(repr(self)))
         else:
             if not self.ndim == 2:
                 raise DataDimensionError('Invalid number of dimensions: {}. '
@@ -1905,7 +1924,7 @@ class GriddedData(object):
     
     def __add__(self, other):
         raise NotImplementedError('Coming soon')
-    
+        
     #sorted out
     def _to_timeseries_iter_coords_2D(self, sample_points, scheme, 
                                       collapse_scalar):
@@ -2004,23 +2023,15 @@ if __name__=='__main__':
     import pyaerocom as pya
     plt.close("all")
     
-    empty0 = GriddedData()
     
-    empty = GriddedData(var_name='od550aer')
+    reader = pya.io.ReadGridded('CAM5_CTRL2016')
+    absc550aer = reader.read_var('abs550dryaer', start=2010, 
+                                vert_which='Surface')        
+    ec550dryaer = reader.read_var('ec550dryaer', start=2010, 
+                                  vert_which='Surface')        
     
-    
-    reader = pya.io.ReadGridded('CAM6-Oslo_NF1850norbc_aer2014_f19_20190727')
-    d = reader.read_var('od550aer', start=9999)    
-    
-    ws = d.area_weights
-    subset = d.collapsed(coords=["longitude", "latitude"], 
-                         aggregator=MEAN, 
-                         weights=ws)
-    
-    #print(d.area_weighted_mean().data)
-    fig = d.quickplot_map()
-    
-    
+    absc550aer.quickplot_map()
+    ec550dryaer.quickplot_map()
 
 # =============================================================================
 #     data.downscale_time('monthly')
