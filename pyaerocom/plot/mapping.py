@@ -157,9 +157,9 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
         else:
             fig.clf()
         if contains_cbar:
-            ax = fig.add_axes([0.1, 0.12, 0.8, 0.8], projection=projection)
+            ax = fig.add_axes([0.1, 0.12, 0.75, 0.8], projection=projection)
         else:
-            ax = fig.add_axes([0.1, 0.12, 0.9, 0.8], projection=projection)
+            ax = fig.add_axes([0.1, 0.12, 0.85, 0.8], projection=projection)
     
     if fix_aspect:
         ax.set_aspect(MAP_AXES_ASPECT)
@@ -371,11 +371,15 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         if cbar_ticks:
             cbar.set_ticks(cbar_ticks)
         if cbar_ticks_sci:
-            cbar.ax.set_yticklabels(['{:.1e}'.format(float(x.get_text())) 
-                                     for x in cbar.ax.get_yticklabels()])
+            lbls = []
+            for lbl in cbar.ax.get_yticklabels():
+                tstr = lbl.get_text()
+                if bool(tstr):
+                    lbls.append('{:.1e}'.format(float(tstr)))
+                else:
+                    lbls.append('')
+            cbar.ax.set_yticklabels(lbls)
             
-        
-    
     return fig
 
 def plot_map_aerocom(data, region=None, fig=None, **kwargs):
@@ -488,14 +492,8 @@ def plot_map(data, *args, **kwargs):
    
 if __name__ == "__main__":
     from matplotlib.pyplot import close
-    import pyaerocom
+    import pyaerocom as pya
     close("all")
     
-    ax= init_map()
-    
-    read = pyaerocom.io.ReadGridded('MISR_V32')
-
-    data = read.read_var("od550aer", start=2010)
-    print(data.area_weighted_mean().data)
-    data.quickplot_map()
-    
+    d = pya.io.ReadGridded('ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD').read_var('ang4487aer', start=2010)
+    d.quickplot_map(vmin=-1, vmax=4)
