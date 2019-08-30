@@ -67,6 +67,7 @@ class GridIO(object):
         vertical dimension)
         
     """
+    UNITS_ALIASES = {'/m' : 'm-1'}
     _AEROCOM = {'FILE_TYPE': '.nc',
                'DEL_TIME_BOUNDS': True,
                'SHIFT_LONS': True,
