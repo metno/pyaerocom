@@ -727,6 +727,24 @@ class Config(object):
                     self.logger.warning('Failed to init output and colocated data '
                                         'directory from config file. Error: {}'
                                         .format(repr(e)))
+
+            try:
+                _dir = cr['outputfolders']['LOCALTMPDIR']
+                # expand $HOME
+                if '$HOME' in _dir:
+                    _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+                if '${USER}' in _dir:
+                    _dir = _dir.replace('${USER}', getpass.getuser())
+                local_tmp_dir = _dir
+
+                if not self._write_access(local_tmp_dir):
+                    raise PermissionError('Cannot write to {}'.format(local_tmp_dir))
+                self.LOCAL_TMP_DIR = local_tmp_dir
+
+            except Exception as e:
+                    self.logger.warning('Failed to init local tmp directory from '
+                                        'config file. Error: {}'
+                                        .format(repr(e)))
                     
         if cr.has_section('supplfolders'):
             for name, path in cr['supplfolders'].items():
