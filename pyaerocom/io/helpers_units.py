@@ -87,6 +87,7 @@ def unitconv_sfc_conc(data, nr_of_O = 2):
         data in units of ug SOx/m3
     
     """
+ 
     mm_s = 32.065*10**6 # in units of ug/mol
     mm_o = nr_of_O*15.9999*10**6 ## in units of ug/mol
     nr_molecules = mass_to_nr_molecules(data, mm_s) # 32.065*10**6) [ug/mol]
@@ -158,6 +159,8 @@ def unitconv_wet_depo(data, time, ts_type = "monthly"):
     mmSO4 = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
     mm_s = 32.065*0.001 # kg/mol
     
+    print('uses new updated version, in that case fix conversion')
+
     nr_molecules = data*Avogadro/mm_s # [1]
     mass_SO4 = nr_molecules*mmSO4/Avogadro # mass in kg
     
