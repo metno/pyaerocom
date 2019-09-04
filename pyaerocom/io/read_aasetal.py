@@ -11,6 +11,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
 
 from pyaerocom.units_helpers import convert_unit
+from pyaerocom.helpers import get_tot_number_of_seconds
 
 class ReadSulphurAasEtAl(ReadUngriddedBase):
     """Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
@@ -64,6 +65,13 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     VARS_TO_FILES['pr']         = ['monthly_so4_precip.csv']
     VARS_TO_FILES['wetso4']     = ['monthly_so4_precip.csv']
     VARS_TO_FILES['sconcso4pr'] = ['monthly_so4_precip.csv']
+    print(VARS_TO_FILES.keys())
+    # (from to unit)
+    UNITCONVERSION = {'sconcso2': ('ug S/m2', 'ug m-2'), 
+                      'sconcso4': ('ug S/m2', 'ug m-2'), 
+                      'wetso4':   ('kg S/ha', 'kg m-2 s-1'), 
+                      'sconcso4pr': ('mgS/L', 'g m-3')
+                      }
 
     #: :obj: `list` of :obj: `str` 
     #: List containing all the variables available in this data set.
@@ -110,7 +118,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         # Looping over every station:
         for name, station_group in grouped:
-
+            
             s = StationData()
             # Meta data
             s['station_name'] = name
@@ -131,7 +139,25 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     elif len(_var) > 1:
                         raise IOError('Found multiple matches...')
                     var = _var[0]
+                    if var in self.UNITCONVERSION.keys():
+                        # Convert units 
+                        from_unit, to_unit = self.UNITCONVERSION[var]
+                        
+                        values = pd.to_numeric(station_group[key],
+                                               errors='coerce').values
+                                               
+                        s[var] = convert_unit(data=values, from_unit = from_unit, 
+                                             to_unit = to_unit, var_name = var)
+                        if var == 'wetso4':
+                            s[var] = s[var]*get_tot_number_of_seconds(ts_time = 'monthly', dtime = s['dtime'])
 
+                    else:
+                        # This should only be true for
+                        values = pd.to_numeric(station_group[key],
+                                               errors='coerce').values
+                                               
+                    """
+                    #s[var] = 
                     if var == "wetso4":                    
                         mass_sulhpor = pd.to_numeric(station_group[key],
                                                      errors='coerce').values
@@ -163,6 +189,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         s[var] = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                     # Adds the variable
+                    """
                     s['variables'].append(var)
                 else:
                     if key == 'dtime':
@@ -170,6 +197,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     else:
                         # Store the meta data. 
                         s[key] = station_group[key].values[0]
+                
             # Added the created station to the station list.
             station_list.append(s)
         return station_list
