@@ -1210,14 +1210,21 @@ class ReadGridded(object):
         #ts_type = self._check_ts_type(ts_type)
         var_to_read = None
         if var_name in self.vars:
-            var_to_read = var_name
+            var_to_read = var_name  
         else:
             # e.g. user asks for od550aer but files contain only 3d var od5503daer
-            if not var_to_read in self.vars: 
-                for var in self._vars_3d:
-                    if Variable(var).var_name == var_name:
-                        var_to_read = var
-        
+            #if not var_to_read in self.vars: 
+            for var in self._vars_3d:
+                if Variable(var).var_name == var_name:
+                    var_to_read = var
+            if var_to_read is None:
+                for alias in const.VARS[var_name].aliases:
+                    if alias in self.vars:
+                        const.print_log.info('Did not find {} field, loading '
+                                             '{} instead'.format(var_name,
+                                              alias))
+                        var_to_read = alias
+    
         if isinstance(vert_which, dict):
             try:
                 vert_which = vert_which[var_name]
@@ -1246,6 +1253,7 @@ class ReadGridded(object):
                                     vert_which=vert_which,
                                     flex_ts_type=flex_ts_type, 
                                     prefer_longer=prefer_longer)
+
 # =============================================================================
 #                                     vars_to_read=self._aux_requires[var_name],
 #                                     aux_fun=self._aux_funs[var_name])
@@ -1709,9 +1717,10 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = pya.io.ReadGridded('CAM5-ATRAS_AP3-CTRL')
+    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
+    print(r.vars_provided)
     
-    
-    data = r.read_var('concdust')
+    data = r.read_var('concpm10')
+    data.resample_time('yearly').quickplot_map()
     
     
