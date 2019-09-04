@@ -10,6 +10,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
 
+from pyaerocom.units_helpers import convert_unit
+
 class ReadSulphurAasEtAl(ReadUngriddedBase):
     """Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
 

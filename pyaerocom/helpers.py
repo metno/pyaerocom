@@ -14,9 +14,8 @@ import xarray as xray
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
+
 from pyaerocom import logger, const
-
-
 
 # The following import was removed and the information about available unit 
 # strings was copied from the netCDF4 module directly here
@@ -62,9 +61,9 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
 
 PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
                            'MS' : '14D'}
-
+ 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
-
+print(PANDAS_FREQ_TO_TS_TYPE)
 # frequency strings 
 TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
                           '3hourly' :   '3h',
@@ -77,7 +76,7 @@ NUMPY_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_NUMPY_FREQ.items()}
 
 # conversion of datetime-like objects for given temporal resolutions (can, e.g.
 # be used in plotting methods)
-TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
+TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', # Default
                          'hourly'   : '%d.%m.%Y',
                          '3hourly'  : '%d.%m.%Y',
                          'daily'    : '%d.%m.%Y',
@@ -193,6 +192,19 @@ def infer_time_resolution(time_stamps):
         if highest_secs <= TS_TYPE_SECS[tp]:
             return tp
     raise ValueError('Could not infer time resolution')
+
+def get_tot_number_of_seconds(ts_type, dtime = None):
+    ts_tpe = TsType(ts_type)
+    
+    if ts_tpe >= TsType('montly'):
+        if dtime is None:
+            raise AttributeError('For frequncies larger than or eq. monthly you'+
+                                 'need to provide dtime in order to compute the number of second.  ')
+        else:
+            # find seconds from dtime 
+            return None
+    else:
+        return TS_TYPE_SECS[ts_type]
     
 def get_standard_name(var_name):
     """Converts AeroCom variable name to CF standard name
@@ -548,6 +560,17 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         ts_type)
     how : str
         choose from mean or median
+data : np.ndarray or similar
+    input data
+from_unit : cf_units.Unit or str
+    current unit of input data
+to_unit : cf_units.Unit or str
+    new unit of input data
+var_name : str, optional
+    name of variable. If provided, method 
+    :func:`unit_conversion_fac_custom` is called before the standard unit
+    conversion is applied. That requires that `var_name` is specified in
+    :a
     min_num_obs : :obj:`int`, optional
         minimum number of observations required per period (when downsampling).
         E.g. if input is in daily resolution and freq is monthly and 
@@ -1097,6 +1120,8 @@ def get_time_rng_constraint(start, stop):
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 
 if __name__=="__main__":
+    
+    print(PANDAS_FREQ_TO_TS_TYPE)
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
     
