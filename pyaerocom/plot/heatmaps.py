@@ -13,7 +13,11 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
                   normalise_rows=False, normalise_rows_how='median',
                   normalise_rows_col=None,
                   annot=True, table_name="", num_digits=0, ax=None, 
-                  figsize=(12,12), cbar=False, **kwargs):
+                  figsize=(12,12), cbar=False, xticklabels = None, 
+                  yticklabels = None, **kwargs):
+    
+    # TODO add xticklabels and yticklabels
+    
     """Plot a pandas dataframe as heatmap
     
     Parameters
@@ -68,19 +72,26 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         plot axes instance
     """
     
-    # TODO this should allow things without mulitinex
-    
+    # TODO this should allow things without mulitinex|
+    #print(df.columns)
+        
     if not isinstance(df.columns, pd.MultiIndex):
-        raise AttributeError("So far, heatmaps can only be created for "
-                             "single column tabular data (e.g. Bias or "
-                             "RMSE) with a partly unstacked MultiIndex")
-        
+        print('Not instance of multiindex.')        
+    	#raise AttributeError("So far, heatmaps can only be created for "
+            #                     "single column tabular data (e.g. Bias or "
+            #                     "RMSE) with a partly unstacked MultiIndex")
+    else:
+        print(" Checks for different number of columns")
+
+        if len(df.columns) > 1:	
+            print('New version edited by hanna.')
+		
     if df.columns.names[0] is None and len(df.columns.levels[0]) > 1:
-        raise AttributeError("Heatmaps can only be plotted for single "
-                             "column data (e.g. Bias, RMSE). Please "
-                             "extract column first")
-        
-    num_fmt = ".{}f".format(num_digits)
+        #raise AttributeError("Heatmaps can only be plotted for single "
+        #                     "column data (e.g. Bias, RMSE). Please "
+        #                     "extract column first")
+        print('bla bla .. .. ..  newest')
+           
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
     else:
@@ -120,7 +131,13 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         vmin = df_hm.min().min() * (1-low)
     elif vmax is None:
         vmax = df_hm.max().max() * (1+high)
-    #print(vmin, vmax)
+    
+    # If the user needs to many displays 
+    if num_digits < 5:
+        num_fmt = ".{}f".format(num_digits)
+    else:
+        num_fmt = ".4g"
+    
     if center:
         ax = heatmap(df_hm, center=center, cmap=cmap, annot=annot, ax=ax, 
                      fmt=num_fmt,
@@ -130,8 +147,16 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
                  fmt=num_fmt,
                  cbar=cbar, cbar_kws=cbar_kws, vmin=vmin, vmax=vmax)
     ax.set_title(table_name, fontsize=16)
-    xticklabels = ax.get_xticklabels()
-    ax.set_xticklabels(xticklabels, rotation=45, ha='right')
+    
+    if yticklabels is not None:
+        ax.set_yticklabels(yticklabels, rotation=45, ha='left')
+    
+    if xticklabels is not None:
+        ax.set_xticklabels(xticklabels, rotation=45, ha='right')
+    else:
+        xticklabels = ax.get_xticklabels()
+        ax.set_xticklabels(xticklabels, rotation=45, ha='right')
+        
     fig.tight_layout()
     
     return ax
