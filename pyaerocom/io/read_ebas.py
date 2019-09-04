@@ -168,6 +168,7 @@ class ReadEbas(ReadUngriddedBase):
                 'absc550dryaer'     :   compute_absc550dryaer}
     
     
+    IGNORE_WAVELENGTH = ['conceqbc']
     # list of all available resolution codes (extracted from SQLite database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
     
@@ -737,7 +738,8 @@ class ReadEbas(ReadUngriddedBase):
                     if wvl is None:
                         raise VariableDefinitionError('Require wavelength '
                                                       'specification for '
-                                                      'Aerocom variable {}'.format(var))
+                                                      'Aerocom variable {}'
+                                                      .format(var))
                     wvl_col = colinfo.get_wavelength_nm()
                     wvl_low = wvl - self.wavelength_tol_nm
                     wvl_high = wvl + self.wavelength_tol_nm
@@ -1191,7 +1193,7 @@ if __name__=="__main__":
 
     r = ReadEbas()
     
-    data =  r.read(['concss'])
+    data =  r.read(['concs'])
     
     
 

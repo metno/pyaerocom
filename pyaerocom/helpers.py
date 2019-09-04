@@ -16,8 +16,6 @@ from pyaerocom.exceptions import (LongitudeConstraintError,
                                   DataDimensionError)
 from pyaerocom import logger, const
 
-
-
 # The following import was removed and the information about available unit 
 # strings was copied from the netCDF4 module directly here
 # from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
@@ -250,15 +248,19 @@ def get_lowest_resolution(ts_type, *ts_types):
     ValueError
         if one of the input ts_type codes is not supported
     """
-    all_ts_types = const.GRID_IO.TS_TYPES
-    lowest = ts_type
+    #all_ts_types = const.GRID_IO.TS_TYPES
+    from pyaerocom.tstype import TsType
+    lowest = TsType(ts_type)
     for freq in ts_types:
-        if not freq in all_ts_types:
-            raise ValueError('Invalid input, only valid ts_type codes are '
-                             'supported: {}'.format(all_ts_types))
-        elif all_ts_types.index(lowest) < all_ts_types.index(freq):
-            lowest = freq
-    return lowest
+# =============================================================================
+#         if not freq in all_ts_types:
+#             raise ValueError('Invalid input, only valid ts_type codes are '
+#                              'supported: {}'.format(all_ts_types))
+# =============================================================================
+        _temp = TsType(freq)
+        if _temp < lowest:
+            lowest = _temp
+    return lowest.val
 
 def get_highest_resolution(ts_type, *ts_types):
     """Get the highest resolution from several ts_type codes
