@@ -61,7 +61,7 @@ TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
 
 PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
                            'MS' : '14D'}
- 
+
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 print(PANDAS_FREQ_TO_TS_TYPE)
 # frequency strings 
@@ -195,17 +195,17 @@ def infer_time_resolution(time_stamps):
 
 def get_tot_number_of_seconds(ts_type, dtime = None):
     ts_tpe = TsType(ts_type)
-    
+
     if ts_tpe >= TsType('montly'):
         if dtime is None:
             raise AttributeError('For frequncies larger than or eq. monthly you'+
                                  'need to provide dtime in order to compute the number of second.  ')
         else:
-            # find seconds from dtime 
+            # find seconds from dtime
             return None
     else:
         return TS_TYPE_SECS[ts_type]
-    
+
 def get_standard_name(var_name):
     """Converts AeroCom variable name to CF standard name
     
@@ -262,15 +262,19 @@ def get_lowest_resolution(ts_type, *ts_types):
     ValueError
         if one of the input ts_type codes is not supported
     """
-    all_ts_types = const.GRID_IO.TS_TYPES
-    lowest = ts_type
+    #all_ts_types = const.GRID_IO.TS_TYPES
+    from pyaerocom.tstype import TsType
+    lowest = TsType(ts_type)
     for freq in ts_types:
-        if not freq in all_ts_types:
-            raise ValueError('Invalid input, only valid ts_type codes are '
-                             'supported: {}'.format(all_ts_types))
-        elif all_ts_types.index(lowest) < all_ts_types.index(freq):
-            lowest = freq
-    return lowest
+# =============================================================================
+#         if not freq in all_ts_types:
+#             raise ValueError('Invalid input, only valid ts_type codes are '
+#                              'supported: {}'.format(all_ts_types))
+# =============================================================================
+        _temp = TsType(freq)
+        if _temp < lowest:
+            lowest = _temp
+    return lowest.val
 
 def get_highest_resolution(ts_type, *ts_types):
     """Get the highest resolution from several ts_type codes
@@ -560,17 +564,6 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         ts_type)
     how : str
         choose from mean or median
-data : np.ndarray or similar
-    input data
-from_unit : cf_units.Unit or str
-    current unit of input data
-to_unit : cf_units.Unit or str
-    new unit of input data
-var_name : str, optional
-    name of variable. If provided, method 
-    :func:`unit_conversion_fac_custom` is called before the standard unit
-    conversion is applied. That requires that `var_name` is specified in
-    :a
     min_num_obs : :obj:`int`, optional
         minimum number of observations required per period (when downsampling).
         E.g. if input is in daily resolution and freq is monthly and 
@@ -1120,8 +1113,6 @@ def get_time_rng_constraint(start, stop):
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 
 if __name__=="__main__":
-    
-    print(PANDAS_FREQ_TO_TS_TYPE)
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
     

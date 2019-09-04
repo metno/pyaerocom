@@ -36,9 +36,11 @@ HA_TO_SQM = 10000   # hectar to square metre.
 UCONV_MUL_FACS = pd.DataFrame([
         
   ['concso4', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO4],
+  ['concso2','ug S/m3', 'ug m-3',  UCONV_FAC_S_SO2],
+  ['concbc','ug C/m3', 'ug m-3',  1.0],
+  ['concoa','ug C/m3', 'ug m-3',  1.0],
+  ['conctc','ug C/m3', 'ug m-3',  1.0],
   ['concso2', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO2],
-  ['concbc',  'ug C/m3', 'ug m-3',  1.0],
-  ['concoa',  'ug C/m3', 'ug m-3',  1.0],
   ['wetso4',  'kg S/ha', 'kg m-2',  UCONV_FAC_S_SO4 / HA_TO_SQM],
   ['sconcso4pr', 'mgS/L', 'g m-3',  UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
 
@@ -53,7 +55,7 @@ UALIASES = {'ug S m-3' : 'ug S/m3',
 # if sum(CONV_MUL_FACS.index.duplicated()) > 0:
 #     raise ValueError('Each unit can only be defined once')
 # =============================================================================
-    
+
 def unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit"""
     if from_unit in UALIASES:
@@ -145,10 +147,10 @@ if __name__ == '__main__':
     
     print(convert_unit(np.ones(3), 'ug S/m3', 'ug m-3', 'concso4'))
     
-    data = np.ones(10)    
-    
+    data = np.ones(10)
+
     unit = 'kg S/ha'
     var_name = 'wetso4'
     print(unit_conversion_fac_custom(var_name, unit))
-    
+
     print(convert_unit(data, unit, 'kg m-2', var_name))

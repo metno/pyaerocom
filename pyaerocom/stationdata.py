@@ -1043,14 +1043,14 @@ class StationData(StationMetaData):
         
         if isinstance(data, pd.Series):
             new = resample_timeseries(data, 
-                                      freq=to_ts_type.val, 
+                                      freq=to_ts_type.to_pandas(), 
                                       how=how,
                                       min_num_obs=min_num_obs)
             
         elif isinstance(data, xray.DataArray):
             
             new = resample_time_dataarray(data, 
-                                          freq=to_ts_type.val, 
+                                          freq=to_ts_type.to_pandas(), 
                                           how=how, 
                                           min_num_obs=min_num_obs)
             
