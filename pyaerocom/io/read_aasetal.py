@@ -22,7 +22,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.04'
+    __version__ = '0.05'
 
     COL_DELIM = ','
 
@@ -57,10 +57,10 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     
     #: Dictionary mapping variable name to hard coded filenames. 
     VARS_TO_FILES = {}
-    VARS_TO_FILES['sconcso2'] = ['monthly_so2.csv']
-    VARS_TO_FILES['sconcso4'] = ['monthly_so4_aero.csv']
-    VARS_TO_FILES['pr'] = ['monthly_so4_precip.csv']
-    VARS_TO_FILES['wetso4'] = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['sconcso2']   = ['monthly_so2.csv']
+    VARS_TO_FILES['sconcso4']   = ['monthly_so4_aero.csv']
+    VARS_TO_FILES['pr']         = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['wetso4']     = ['monthly_so4_precip.csv']
     VARS_TO_FILES['sconcso4pr'] = ['monthly_so4_precip.csv']
 
     #: :obj: `list` of :obj: `str` 
@@ -69,7 +69,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
-
+    
+    #def __init__(self):
+        #print("hello update ")
+        #super(ReadUngriddedBase).__init__(dataset_to_read = DATA_ID)
+    
     @property
     def DEFAULT_VARS(self):
         return self.PROVIDES_VARIABLES
@@ -90,7 +94,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         station_list : List[StationData]
             List of dictionary-like object containing data
         """
-
         station_list = []
         df = pd.read_csv(filename, sep=",", low_memory=False)
         # Converting month and year. 
@@ -154,7 +157,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
                     else:
                         # variables precip and is of the correct unit. 
-                        print(' Not converting va {}'.format(var))
+                        #print(' Not converting va {}'.format(var))
                         s[var] = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                     # Adds the variable
@@ -321,14 +324,12 @@ if __name__ == "__main__":
 
      #so2 = aa.read('sconcso2')
      #so4_aero = aa.read('sconcso4')
-     V = ['sconcso4'] #
+     V = ['wetso4'] #
      ungridded = aa.read(V)
-     #abington = ungridded.to_station_data("Oulanka", V)
-     #abington.plot_timeseries(V)
-     
-     #abington2 = dataNone.to_station_data("Oulanka", 'sconcso2')
-     #abington2.plot_timeseries('sconcso2')
-     
+     names = ungridded.station_name[:10]
+     abington = ungridded.to_station_data(names[0], V)
+     abington.plot_timeseries(V[0])
+    
      #plt.show()
      #dataString = aa.read("sconcso4")
      #dataString.plot_station_coordinates(markersize=12, color='lime')
