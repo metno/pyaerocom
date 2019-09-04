@@ -5,7 +5,8 @@ General helper methods for the pyaerocom library.
 """
 from pyaerocom import const
 import re
-from pyaerocom.helpers import PANDAS_FREQ_TO_TS_TYPE, TS_TYPE_TO_PANDAS_FREQ
+from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE, 
+                                   TS_TYPE_TO_PANDAS_FREQ)
 
 class TsType(object):
     VALID = const.GRID_IO.TS_TYPES
@@ -16,6 +17,7 @@ class TsType(object):
                    'daily'  : 7,
                    'weekly' : 4,
                    'monthly': 12}
+    
     def __init__(self, val):
         self._mulfac = 1.0
         self._val = None

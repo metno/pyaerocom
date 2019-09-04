@@ -2448,26 +2448,5 @@ if __name__ == "__main__":
     
     import pyaerocom as pya
     
-    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
-    
-    num_idx_all = data._generate_station_index(by_station_name=False)
-    
-    num_idx_900 = data._generate_station_index(by_station_name=False,
-                                               ignore_index=list(range(900,2000)))
-    num_idx_not1 = data._generate_station_index(by_station_name=False,
-                                               ignore_index=1)
-    
-    stat_idx_all = data._generate_station_index(by_station_name=True)
-    
-
-# =============================================================================
-#     data = pya.io.ReadUngridded().read('EBASMC',
-#                                        ['scatc550aer', 'absc550aer',
-#                                         'scatc550dryaer'])
-#     
-#     subset = data.apply_filters(var_name=['absc550aer', 'scatc550dryaer'],
-#                                 remove_outliers=True, set_flags_nan=True,
-#                                 data_level=2, 
-#                                 var_outlier_ranges={'scatc550dryaer':[0, 100]})
-#     
-# =============================================================================
+    data = pya.io.ReadUngridded().read('EBASMC', 'conctc')
+    data.plot_station_coordinates(var_name='conctc')

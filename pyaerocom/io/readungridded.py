@@ -468,9 +468,11 @@ class ReadUngridded(object):
         return data
 if __name__=="__main__":
 
-    reader = ReadUngridded('AeronetSunV3Lev2.daily')
+    reader = ReadUngridded()
     
-    data = reader.read(vars_to_retrieve=['od550aer', 'ang4487aer'])
+    data = reader.read('EBASMC', 
+                       vars_to_retrieve=['conctc', 'concoa', 'concbc', 'conceqbc'])
+    
     
 # =============================================================================
 #     data = reader.read([const.AERONET_SUN_V2L2_AOD_DAILY_NAME,

@@ -22,14 +22,15 @@ from pyaerocom.exceptions import (CoordinateError,
                                   TemporalResolutionError,
                                   VariableDefinitionError,
                                   VariableNotFoundError)
+
+from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
+
 from pyaerocom.helpers import (get_time_rng_constraint,
                                get_lon_rng_constraint,
                                get_lat_rng_constraint,
                                cftime_to_datetime64,
                                str_to_iris,
-                               IRIS_AGGREGATORS,
                                to_pandas_timestamp,
-                               TS_TYPE_TO_NUMPY_FREQ,
                                datetime2str,
                                isrange, isnumeric,
                                delete_all_coords_cube,

@@ -17,6 +17,7 @@ from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
                                resample_time_dataarray)
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
+from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -957,7 +958,6 @@ class StationData(StationMetaData):
                                             self.dtime[-1]))
         new = new.interpolate().dropna()
         if inplace:
-            from pyaerocom.helpers import PANDAS_FREQ_TO_TS_TYPE
             ts_type = PANDAS_FREQ_TO_TS_TYPE[new.index.freqstr]
             self[var_name] = new
             

@@ -9,6 +9,8 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
+from pyaerocom.tstype import TsType
+from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ, XARR_TIME_GROUPERS
 import numpy as np
 import pandas as pd
 import os
@@ -268,9 +270,6 @@ class ColocatedData(object):
         TemporalResolutionError
             if input resolution is higher than current resolution
         """
-        from pyaerocom.tstype import TsType
-        from pyaerocom.helpers import TS_TYPE_TO_PANDAS_FREQ
-        
         if inplace:
             col = self
         else:
@@ -291,7 +290,6 @@ class ColocatedData(object):
         # minimum number of measurements requirement
         invalid = None
         if min_num_obs is not None:
-            from pyaerocom.helpers import XARR_TIME_GROUPERS
             if not to.val in XARR_TIME_GROUPERS:
                 raise ValueError('Cannot infer xarray grouper for ts_type {}'
                                  .format(to.val))
