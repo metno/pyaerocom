@@ -3,17 +3,20 @@
 """
 General helper methods for the pyaerocom library.
 """
+from cf_units import Unit
+from datetime import MINYEAR, datetime, date
 import iris
 from iris import coord_categorisation
+import numpy as np
 import pandas as pd
 import xarray as xray
-import numpy as np
+
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
 from pyaerocom import logger, const
-from cf_units import Unit
-from datetime import MINYEAR, datetime, date
+
+
 
 # The following import was removed and the information about available unit 
 # strings was copied from the netCDF4 module directly here
@@ -573,39 +576,6 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         raise NotImplementedError('Coming soon...')
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     return arr.resample(time=freq, loffset=loffset).mean(dim='time')
-    
-def unit_conversion_fac(from_unit, to_unit):
-    """Returns multiplicative unit conversion factor for input units
-    
-    Note
-    ----
-    Input must be either instances of :class:`cf_units.Unit` class or string.
-    
-    Parameters
-    ----------
-    from_unit : :obj:`cf_units.Unit`, or :obj:`str`
-        unit to be converted
-    to_unit : :obj:`cf_units.Unit`, or :obj:`str`
-        final unit
-        
-    Returns
-    --------
-    float
-        multiplicative conversion factor
-        
-    Raises
-    ------
-    ValueError
-        if units cannot be converted into each other using cf_units package
-    """
-    if isinstance(from_unit, str):
-        from_unit = Unit(from_unit)
-    try:
-        return from_unit.convert(1, to_unit)    
-    except ValueError:
-        from pyaerocom.exceptions import UnitConversionError
-        raise UnitConversionError('Failed to convert unit from {} to {}'
-                                  .format(from_unit, to_unit))
     
 def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
                    num_keys=NUM_KEYS_META, num_rtol=1e-2):
