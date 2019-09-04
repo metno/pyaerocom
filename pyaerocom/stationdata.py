@@ -9,12 +9,14 @@ from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   DataExtractionError, DataDimensionError,
                                   UnitConversionError, DataUnitError,
                                   TemporalResolutionError)
-from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
+from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr, 
+                                         BrowseDict)
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
 from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
-                               resample_time_dataarray,
-                               unit_conversion_fac)
+                               resample_time_dataarray)
+
+from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -236,9 +238,12 @@ class StationData(StationMetaData):
         """
         unit = self.get_unit(var_name)
         
-        conv_fac = unit_conversion_fac(unit, to_unit)
         data = self[var_name]
-        data *= conv_fac
+        data = convert_unit(data, from_unit=unit, to_unit=to_unit, 
+                            var_name=var_name)
+        #conv_fac = unit_conversion_fac(unit, to_unit)
+        
+        #data *= conv_fac
         self[var_name] = data
         self.var_info[var_name]['units'] = to_unit
         const.logger.info('Successfully converted unit of variable {} in {} '
