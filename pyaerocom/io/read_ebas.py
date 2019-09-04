@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-import os
+import os, re
 from datetime import datetime
 import fnmatch
 import numpy as np
@@ -125,7 +125,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.22_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.23_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -622,8 +622,8 @@ class ReadEbas(ReadUngriddedBase):
         try:
             ts_type = self.TS_TYPE_CODES[tres_code]
         except KeyError:
-            ival = tres_code[:-1]
-            code = tres_code[-1]
+            ival = re.findall('\d+', tres_code)[0]
+            code = tres_code.split(ival)[-1]
             if not code in self.TS_TYPE_CODES:
                 raise NotImplementedError('Cannot handle EBAS resolution code '
                                           '{}'.format(tres_code))
