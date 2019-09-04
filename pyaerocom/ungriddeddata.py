@@ -985,7 +985,7 @@ class UngriddedData(object):
         MetaDataError
             if unit information is not accessible for input variable name
         """
-        from pyaerocom.helpers import unit_conversion_fac
+        from pyaerocom.units_helpers import unit_conversion_fac
         if unit is None:
             unit = const.VARS[var_name]['units']
             

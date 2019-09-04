@@ -502,9 +502,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     for i, obs_stat in enumerate(obs_stat_data):
         if ts_type_src_ref is None:
             ts_type_src_ref = obs_stat['ts_type_src']
-        elif not obs_stat['ts_type_src'] == ts_type_src_ref:
-            raise ValueError('Cannot perform colocation. Ungridded data '
-                             'object contains different source frequencies')
+        elif obs_stat['ts_type_src'] != ts_type_src_ref:
+            spl = ts_type_src_ref.split(';')
+            if not obs_stat['ts_type_src'] in spl:
+                spl.append(obs_stat['ts_type_src'])
+            ts_type_src_ref = ';'.join(spl)
+            
         if ungridded_unit is None:
             try:
                 ungridded_unit = obs_stat['var_info'][var_ref]['units']

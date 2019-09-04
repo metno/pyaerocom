@@ -53,7 +53,7 @@ class EbasVarInfo(BrowseDict):
         self.requires = None
         
         #: scale factor for conversion to Aerocom units
-        self.scale_factor = None
+        self.scale_factor = 1
         
         #imports default information and, on top, variable information (if 
         # applicable)
@@ -128,7 +128,7 @@ class EbasVarInfo(BrowseDict):
                 if key in ('var_name', 'old_name') :
                     self[key] = val
                 elif key =='scale_factor':
-                    self[key] = val.split(',')[0]
+                    self[key] = float(val.split('#')[0].strip())
                 else:
                     self[key] = list(dict.fromkeys([x for x in val.split(',')]))
         

@@ -59,9 +59,6 @@ def test_resample_timeseries(timeseries_synthetic):
         assert time.year == 2000, time.year
         assert time.day == 15, time.day
     
-def test_unit_conversion_fac():
-    assert helpers.unit_conversion_fac('m-1', '1/Mm') == 1e6
-    
 def test_same_meta_dict():
     d1 =  dict(station_name = 'bla',
                station_id = 'blub', 
