@@ -5,11 +5,12 @@ General helper methods for the pyaerocom library.
 """
 from pyaerocom import const
 import re
-from pyaerocom.helpers import PANDAS_FREQ_TO_TS_TYPE
+from pyaerocom.helpers import PANDAS_FREQ_TO_TS_TYPE, TS_TYPE_TO_PANDAS_FREQ
 
 class TsType(object):
     VALID = const.GRID_IO.TS_TYPES
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
+    TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     
     TS_MAX_VALS = {'hourly' : 24,
                    'daily'  : 7,
@@ -60,6 +61,13 @@ class TsType(object):
         Uses :func:`pandas.infer_freq` to infer frequency
         """
         raise NotImplementedError
+    
+    def to_pandas(self):
+        """Convert ts_type to pandas frequency string"""
+        freq = self.TO_PANDAS[self._val]
+        if self._mulfac == 1:
+            return freq
+        return '{}{}'.format(self._mulfac, freq)
         
     def _from_pandas(self, val):
         if not val in self.FROM_PANDAS:
