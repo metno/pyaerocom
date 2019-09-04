@@ -35,6 +35,7 @@ UCONV_MUL_FACS = pd.DataFrame([
   ['concso2','ug S/m3', 'ug m-3',  UCONV_FAC_S_SO2],
   ['concbc','ug C/m3', 'ug m-3',  1.0],
   ['concoa','ug C/m3', 'ug m-3',  1.0],
+  ['conctc','ug C/m3', 'ug m-3',  1.0],
 
 ], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
 
