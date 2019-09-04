@@ -20,6 +20,7 @@
 
 import os
 from datetime import datetime
+import fnmatch
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
@@ -98,6 +99,8 @@ class ReadEbasOptions(BrowseDict):
         self.log_read_stats = False
         
         self.merge_meta = False
+        
+        self.convert_units = True
     
     @property
     def filter_dict(self):
@@ -122,7 +125,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.19_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.22_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -144,7 +147,11 @@ class ReadEbas(ReadUngriddedBase):
     TS_TYPE_CODES = {'1h'   :   'hourly',
                      '1d'   :   'daily',
                      '1w'   :   'weekly',
-                     '1mo'  :   'monthly'}
+                     '1mo'  :   'monthly',
+                     'h'   :   'hourly',
+                     'd'   :   'daily',
+                     'w'   :   'weekly',
+                     'mo'  :   'monthly'}
     
     
     AUX_REQUIRES = {'scatc550dryaer'    :   ['scatc550aer',
@@ -205,6 +212,8 @@ class ReadEbas(ReadUngriddedBase):
         #: this is filled in method get_file_list and specifies variables 
         #: to be read from each file
         self.files_contain = []
+        
+        self._all_stats = None
     
     @property
     def filelog(self):
@@ -322,6 +331,39 @@ class ReadEbas(ReadUngriddedBase):
         
         return files
     
+    @property
+    def all_station_names(self):
+        """List of all available station names in EBAS database"""
+        if self._all_stats is None:
+            self._all_stats = self.file_index.ALL_STATION_NAMES
+        return self._all_stats
+    
+    def find_station_matches(self, stats_or_patterns):
+        val = stats_or_patterns
+        all_stats = self.all_station_names
+        stats = []
+        if isinstance(val, str):
+            val = [val]
+        elif isinstance(val, tuple):
+            val = [x for x in val]
+        
+        for name in val:
+            if '*' in name: 
+                #handle wildcard
+                for stat in all_stats:
+                    if fnmatch.fnmatch(stat, name):
+                        stats.append(stat)
+            elif name in all_stats:
+                stats.append(name)
+            else:
+                const.print_log.warning('Ignoring station_names input {}. '
+                                        'No match could be found'.format(name))
+                
+        if not bool(stats):
+            raise FileNotFoundError('No EBAS data files could be found for '
+                                    'stations {}'.format(stats_or_patterns))
+        return list(dict.fromkeys(stats).keys())
+    
     def get_file_list(self, vars_to_retrieve=None, **constraints):
         """Get list of files for all variables to retrieve
         
@@ -365,36 +407,21 @@ class ReadEbas(ReadUngriddedBase):
         db = self.file_index
         files_vars = {}
         totnum = 0
+        const.print_log.info('Retrieving EBAS files for variables\n{}'
+                             .format(vars_to_retrieve))
         for var in vars_to_retrieve:
+            const.print_log.info('Var: {}. '
+                                 '(this is only plotted because provided SQL '
+                                 'database is slow ...)'.format(var))
+            
             if not var in self.PROVIDES_VARIABLES:
                 raise AttributeError('No such variable {}'.format(var))
             info = EbasVarInfo(var)
             self.loaded_ebas_vars[var] = info
 
             if 'station_names' in constraints:
-                val = constraints['station_names']
-                contains_wildcards = False
-                if isinstance(val, str):
-                    val = [val]
-                elif isinstance(val, tuple):
-                    val = [x for x in val]
-                for name in val:
-                    if '*' in name:
-                        contains_wildcards = True
-                        break
-                
-                if contains_wildcards:
-                    stats = []
-                    import fnmatch
-                    all_stats = db.ALL_STATION_NAMES
-                    for name in val:
-                        if not '*' in name:
-                            stats.append(name)
-                        else:
-                            for stat in all_stats:
-                                if fnmatch.fnmatch(stat, name):
-                                    stats.append(stat)
-                    constraints['station_names'] = stats
+                stat_matches = self.find_station_matches(constraints['station_names'])
+                constraints['station_names'] = stat_matches
 # =============================================================================
 #             if not 'data_level' in constraints:
 #                 constraints['data_level'] = self.opts.data_level
@@ -416,7 +443,8 @@ class ReadEbas(ReadUngriddedBase):
             self.logger.info('{} files found for variable {}'.format(num, var))
         if len(files_vars) == 0:
             raise IOError('No file could be retrieved for either of the '
-                          'specified input variables: {}'.format(vars_to_retrieve))
+                          'specified input variables: {}'
+                          .format(vars_to_retrieve))
         
         self._lists_orig = files_vars
         files = self._merge_lists(files_vars)
@@ -591,14 +619,16 @@ class ReadEbas(ReadUngriddedBase):
         
         # write meta information
         tres_code = meta['resolution_code']
-        
-        try: # this works in almost all cases
+        try:
             ts_type = self.TS_TYPE_CODES[tres_code]
         except KeyError:
-            self.logger.info('Unkown temporal resolution {}'.format(tres_code))
-            ts_type = tres_code
-            raise NotImplementedError('Cannot handle EBAS resolution code {}'
-                                      .format(tres_code))
+            ival = tres_code[:-1]
+            code = tres_code[-1]
+            if not code in self.TS_TYPE_CODES:
+                raise NotImplementedError('Cannot handle EBAS resolution code '
+                                          '{}'.format(tres_code))
+            ts_type = ival + self.TS_TYPE_CODES[code]
+            self.TS_TYPE_CODES[tres_code] = ts_type
 
         data_out['ts_type'] = ts_type
         # altitude of station
@@ -765,7 +795,8 @@ class ReadEbas(ReadUngriddedBase):
         """
         # implemented in base class
         if _vars_to_read is None or _vars_to_compute is None:
-            vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+            (vars_to_read, 
+             vars_to_compute) = self.check_vars_to_retrieve(vars_to_retrieve)
         else:
             vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
         
@@ -802,8 +833,12 @@ class ReadEbas(ReadUngriddedBase):
             if self.eval_flags:
                 invalid = ~file.flag_col_info[_col.flag_col].valid
                 data_out.data_flagged[var] = invalid
-
+            sf = self.loaded_ebas_vars[var].scale_factor
+            if sf != 1:
+                data *= sf
+                data_out['var_info'][var]['scale_factor'] = sf
             data_out[var] = data
+            
             meta = file.meta
             
             if not 'unit' in _col: #make sure a unit is assigned to data column
@@ -818,15 +853,23 @@ class ReadEbas(ReadUngriddedBase):
                 if 'statistics' in meta:
                     stats = meta['statistics']
                 _col['statistics'] = stats
+            
+            
                 
             var_info = _col.to_dict()
             data_out['var_info'][var].update(var_info)
             
+            if self.opts.convert_units:
+                try:
+                    data_out = self._convert_varunit_stationdata(data_out, var)
+                except:
+                    raise
             if self.log_read_stats:
                 info = data_out['var_info'][var]
                 info['numtot'] = len(data)
                 info['numnans'] = np.isnan(data).sum()
-        
+            
+            
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
                                 'are NaN in {}'.format(filename))
@@ -834,9 +877,18 @@ class ReadEbas(ReadUngriddedBase):
         
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
-    
+        
+            
         return data_out
     
+    def _convert_varunit_stationdata(self, sd, var):
+        from_unit = sd.var_info[var]['units']
+        to_unit = self.loaded_aerocom_vars[var]['units']
+        if from_unit != to_unit:
+            sd.convert_unit(var, to_unit)    
+        return sd
+            
+                
     def compute_additional_vars(self, data, vars_to_compute):
         """Compute additional variables and put into station data
         
@@ -1138,9 +1190,8 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
 
     r = ReadEbas()
-    r.opts.keep_aux_vars = True
     
-    data =  r.read(['sconco3'], station_names='Ba*')
+    data =  r.read(['concss'])
     
     
 
