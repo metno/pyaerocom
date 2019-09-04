@@ -275,21 +275,21 @@ def check_dim_coord_names_cube(cube):
             std_name = c.standard_name
             lng_name = c.long_name
             if not coord.var_name == var_name:
-                const.print_log.warning('Invalid var_name {} for coord {} '
+                const.logger.warning('Invalid var_name {} for coord {} '
                                         'in cube. Overwriting with {}'
                                         .format(coord.standard_name, 
                                                 coord.var_name, 
                                                 std_name))
                 coord.var_name = var_name
             if not coord.standard_name == std_name:
-                const.print_log.warning('Invalid standard_name {} for coord {} '
+                const.logger.warning('Invalid standard_name {} for coord {} '
                                         'in cube. Overwriting with {}'
                                         .format(coord.standard_name, 
                                                 coord.var_name, 
                                                 std_name))
                 coord.standard_name = std_name
             if not coord.long_name == lng_name:
-                const.print_log.warning('Invalid long_name {} for coord {} in '
+                const.logger.warning('Invalid long_name {} for coord {} in '
                                         'cube. Overwriting with {}'
                                         .format(coord.long_name, 
                                                 coord.var_name, 

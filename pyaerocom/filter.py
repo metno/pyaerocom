@@ -5,10 +5,11 @@ Created on Thu Aug 16 09:03:31 2018
 
 @author: jonasg
 """
-from pyaerocom import logger
+from pyaerocom import logger, print_log
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.region import Region
 
 class Filter(BrowseDict):
@@ -143,13 +144,16 @@ class Filter(BrowseDict):
     def _apply_gridded(self, data_obj):
         """Apply filter to instance of class :class:`GriddedData`
         """
-        logger.warning('Applying regional cropping in gridded data using Filter '
+        print_log.warning('Applying regional cropping in GriddedData using Filter '
                        'class. Note that this does not yet include potential '
-                       'cropping in the altitude dimension. Coming soon...')
+                       'cropping in the vertical dimension. Coming soon...')
         return data_obj.crop(region=self._region)
     
     def _apply_colocated(self, data_obj):
-        raise NotImplementedError
+        print_log.warning('Applying regional cropping in ColocatedData using Filter '
+                       'class. Note that this does not yet include potential '
+                       'cropping in the vertical dimension. Coming soon...')
+        return data_obj.apply_latlon_filter(region_id=self.region_name)
         
     def apply(self, data_obj):
         """Apply filter to data object
@@ -178,6 +182,8 @@ class Filter(BrowseDict):
             return self._apply_ungridded(data_obj)
         elif isinstance(data_obj, GriddedData):
             return self._apply_gridded(data_obj)
+        elif isinstance(data_obj, ColocatedData):
+            return self._apply_colocated(data_obj)
         raise IOError('Cannot filter {} obj, need instance of GriddedData or '
                 'UngriddedData'.format(type(data_obj)))
       

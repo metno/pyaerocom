@@ -7,7 +7,8 @@ import numpy as np
 import simplejson
 
 # internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
+from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
+                                         sort_dict_by_name)
 from pyaerocom import const
 from pyaerocom import __version__ as pyaerocom_version
 from pyaerocom.helpers import resample_time_dataarray
@@ -204,6 +205,7 @@ class AerocomEvaluation(object):
         self.var_mapping = {}
         self.var_order_menu = []
         
+        self._valid_obs_vars = {}
         try:
             self.load_config(self.proj_id, self.exp_id, config_dir)
             print('Found and imported config file for {} / {}'.format(self.proj_id,
@@ -216,6 +218,7 @@ class AerocomEvaluation(object):
     def proj_dir(self):
         """Project directory"""
         return os.path.join(self.out_basedir, self.proj_id)
+    
     
     @property
     def exp_dir(self):
@@ -250,6 +253,8 @@ class AerocomEvaluation(object):
     @property
     def all_map_files(self):
         """List of all existing map files"""
+        if not os.path.exists(self.out_dirs['map']):
+            raise FileNotFoundError('No data available for this experiment')
         return os.listdir(self.out_dirs['map'])
     
     def _update_custom_read_methods(self):
@@ -487,7 +492,7 @@ class AerocomEvaluation(object):
             r['maxLon'] = lonr[1]
         save_dict_json(regs, self.regions_file)
         return regs
-                
+    
     def compute_json_files_from_colocateddata(self, coldata, obs_name=None, 
                                               model_name=None):
         """Creates all json files for one ColocatedData object"""
@@ -530,7 +535,7 @@ class AerocomEvaluation(object):
                 data_arrs[freq] = arr
                 
                 js = (arr.time.values.astype('datetime64[s]') - 
-                                   np.datetime64('1970', '[s]')).astype(int) * 1000
+                      np.datetime64('1970', '[s]')).astype(int) * 1000
                 jsdate[freq] = js.tolist()
                 
             else:
@@ -559,8 +564,20 @@ class AerocomEvaluation(object):
         scat_data = {}
         hm_data = {}
         
+        
         ts_type = d.meta['ts_type']
         vert_code = self.get_vert_code(obs_name, obs_var)
+        
+        for reg in get_all_default_region_ids():
+            filtered = d.apply_latlon_filter(region_id=reg)
+            stats = filtered.calc_statistics()
+            for k, v in stats.items():
+                stats[k] = np.float64(v)
+            
+            hm_data[reg] = stats
+        
+        self._write_heatmap_json(hm_data, obs_name, obs_var, vert_code, 
+                                 model_name, model_var)
         
         if vert_code == 'ModelLevel':
             raise NotImplementedError('Coming soon...')
@@ -611,7 +628,8 @@ class AerocomEvaluation(object):
                     map_stat['{}_statistics'.format(tres)].update(stats_dummy)
                     continue
                 
-                obs_vals = arr.sel(data_source=obs_id, station_name=stat_name).values
+                obs_vals = arr.sel(data_source=obs_id, 
+                                   station_name=stat_name).values
                 if all(np.isnan(obs_vals)):
                     _disp += ': No obs data'
                     ts_data['{}_date'.format(tres)] = []
@@ -620,7 +638,9 @@ class AerocomEvaluation(object):
                     map_stat['{}_statistics'.format(tres)].update(stats_dummy)
                     continue
                 has_data = True
-                mod_vals = arr.sel(data_source=model_id, station_name=stat_name).values
+                mod_vals = arr.sel(data_source=model_id, 
+                                   station_name=stat_name).values
+                
                 if not len(jsdate[tres]) == len(obs_vals):
                     raise Exception('Please debug...')
                 
@@ -666,6 +686,94 @@ class AerocomEvaluation(object):
             return info
         return info[obs_var]
     
+    @property
+    def _heatmap_file(self):
+        return os.path.join(self.out_dirs['hm'], 'glob_stats.json')
+    
+    def update_heatmap_json(self):
+        fp = self._heatmap_file
+        if not os.path.exists(fp):
+            raise FileNotFoundError(fp)
+            
+        with open(self.menu_file, 'r') as f:
+            menu = simplejson.load(f)
+        with open(fp, 'r') as f:
+            data = simplejson.load(f)
+        if not self.exp_id in menu:
+            raise ValueError('No entry found in menu.json for experiment {}'
+                             .format(self.exp_id))
+        
+        menu = menu[self.exp_id]
+        hm = {}
+        for var, info in menu.items():
+            obs_dict = info['obs']
+            if not var in hm:
+                hm[var] = {}
+            for obs, vdict in obs_dict.items():
+                if not obs in hm[var]:
+                    hm[var][obs] = {}
+                for vc, mdict in vdict.items():
+                    if not vc in hm[var][obs]:
+                        hm[var][obs][vc] = {}
+                    for mod, minfo in mdict.items():
+                        if not mod in hm[var][obs][vc]:
+                            hm[var][obs][vc][mod] = {}
+                        modvar = minfo['var']
+                        if not modvar in hm[var][obs][vc][mod]:
+                            hm[var][obs][vc][mod][modvar] = {}
+                        hm_data = data[var][obs][vc][mod][modvar]
+                        hm[var][obs][vc][mod][modvar] = hm_data
+                            
+                            
+# =============================================================================
+#         new = sort_dict_by_name(data, pref_list=self.var_order_menu)
+#         new_sorted = {}
+#         for var, obs_dict in new.items():
+#             sorted_obs = sort_dict_by_name(obs_dict)
+#             new_sorted[var] = sorted_obs
+#             for obs_name, vert_codes in sorted_obs.items():
+#                 vert_codes_sorted = sort_dict_by_name(vert_codes)
+#                 new_sorted[var][obs_name] = vert_codes_sorted
+#                 for vert_code, models in vert_codes_sorted.items():
+#                     models_sorted = sort_dict_by_name(models)
+#                     new_sorted[var][obs_name][vert_code] = models_sorted
+# =============================================================================
+        with open(fp, 'w') as f:
+            simplejson.dump(hm, f, ignore_nan=True)
+        
+    def _write_heatmap_json(self, result, obs_name, obs_var, vert_code, 
+                            model_name, model_var):
+        fp = self._heatmap_file
+        if os.path.exists(fp):
+            try:
+                with open(fp, 'r') as f:
+                    current = simplejson.load(f)
+            except Exception as e:
+                raise Exception('Fatal: could not open existing json file: {}. '
+                                'Reason: {}'.format(fp, repr(e)))
+        else:
+            current = {}
+        if not obs_var in current:
+            current[obs_var] = {}
+        ov = current[obs_var]
+        if not obs_name in ov:
+            ov[obs_name] = {}
+        on = ov[obs_name]
+        if not vert_code in on:
+            on[vert_code] = {}
+        ovc = on[vert_code]
+        if not model_name in ovc:
+            ovc[model_name] = {}
+        mn = ovc[model_name]
+        if model_var in mn:
+            const.print_log.info('Overwriting existing heatmap statistics for '
+                                 'model {}/{} ({}, {}, {}) in glob_stats.json'
+                                 .format(model_name, model_var, obs_var, obs_name, 
+                                         vert_code))
+        mn[model_var] = result
+        with open(fp, 'w') as f:
+            simplejson.dump(current, f, ignore_nan=True)
+        
     def _write_stationdata_json(self, ts_data):
         
         filename = self.get_stationfile_name(ts_data['station_name'], 
@@ -699,28 +807,47 @@ class AerocomEvaluation(object):
         return ('OBS-{}:{}_{}_MOD-{}:{}.json'
                 .format(obs_name, obs_var, vert_code, model_name, model_var))
     
-    def make_json_files(self, model_name, obs_name):
-        """Convert colocated data file(s) in model data directory into json
+    def find_coldata_files(self, model_name, obs_name, var_name=None):
+        """Find colocated data files for a certain model/obs/var combination
         
         Parameters
         ----------
         model_name : str
-            name of model run
+            name of model
         obs_name : str
             name of observation network
+        var_name : str, optional
+            name of variable.
+            
+        Returns
+        -------
+        list
+            list of file paths of ColocatedData files that match input specs
         """
-        if self.clear_existing_json:
-            for f in glob.glob('{}/**/*OBS-{}*MOD-{}*.json'
-                               .format(self.exp_dir, obs_name, model_name)):
-                print('DELETING: {}'.format(os.path.basename(f)))
-                os.remove(f)
-        converted = []
-        model_id = self.get_model_id(model_name)
-        #obs_id = self.get_obs_id(obs_name)
         
-        files = glob.glob('{}/{}/*REF-{}*MOD-{}*.nc'.format(self.coldata_dir, 
-                                                            model_id, obs_name,
-                                                            model_name))
+        files = []
+        model_id = self.get_model_id(model_name)
+        coldata_dir = os.path.join(self.coldata_dir, model_id)
+        if os.path.exists(coldata_dir):
+            for fname in os.listdir(coldata_dir):
+                try:
+                    m = ColocatedData.get_meta_from_filename(fname)
+                    match = (m['data_source'][0] == obs_name and
+                             m['data_source'][1] == model_name)
+                    if match:
+                        if var_name is not None and var_name != m['var_name']:
+                            continue
+                        files.append(os.path.join(coldata_dir, fname))
+                except:
+                    const.print_log.warning('Invalid file {} in coldata dir'
+                                            .format(fname))
+# =============================================================================
+#         files = glob.glob('{}/{}/{}REF-{}*MOD-{}*.nc'.format(self.coldata_dir, 
+#                                                               model_id, 
+#                                                               vstr,
+#                                                               obs_name,
+#                                                               model_name))
+# =============================================================================
         if len(files) == 0:
             msg = ('Could not find any colocated data files for model {}, '
                    'obs {}'
@@ -729,6 +856,39 @@ class AerocomEvaluation(object):
                 raise IOError(msg)
             else:
                 self._log.warning(msg)
+        return files
+    
+    def make_json_files(self, model_name, obs_name, var_name=None):
+        """Convert colocated data file(s) in model data directory into json
+        
+        Parameters
+        ----------
+        model_name : str
+            name of model run
+        obs_name : str
+            name of observation network
+        var_name : str, optional
+            name of variable supposed to be analysed. If None, then all
+            variables available for observation network are used (defined in 
+            :attr:`obs_config` for each entry). Defaults to None.
+        
+        Returns
+        -------
+        list
+            list of colocated data files that were converted
+        """
+# =============================================================================
+#         if self.clear_existing_json:
+#             smask = ('{}/**/*OBS-{}{}MOD-{}*.json'
+#                      .format(self.exp_dir, obs_name, vstr, model_name))
+#             for f in glob.glob(smask):
+#                 print('DELETING: {}'.format(os.path.basename(f)))
+#                 os.remove(f)
+# =============================================================================
+        converted = []
+        
+        #obs_id = self.get_obs_id(obs_name)
+        files = self.find_coldata_files(model_name, obs_name, var_name)
         for file in files:
             const.print_log.info('Processing file {}'.format(file))
             d = ColocatedData(file)
@@ -749,7 +909,30 @@ class AerocomEvaluation(object):
                 const.print_log.info('DELETING FILE: {}'.format(file))
                 os.remove(file)
             
-    def run_colocation(self, model_name, obs_name):
+    def run_colocation(self, model_name, obs_name, var_name=None):
+        """Run colocation for model / obs combination
+        
+        Parameters
+        ----------
+        model_name : str or list, optional
+            Name or pattern specifying model that is supposed to be analysed.
+            Can also be a list of names or patterns to specify multiple models.
+            If None (default), then all models are run that are part of this
+            experiment.
+        obs_name : :obj:`str`, or :obj:`list`, optional
+            Like :attr:`model_name`, but for specification(s) of observations
+            that are supposed to be used. If None (default) all observations 
+            are used.
+        var_name : str, optional
+            name of variable supposed to be analysed. If None, then all
+            variables available for observation network are used (defined in 
+            :attr:`obs_config` for each entry). Defaults to None.
+            
+        Returns
+        -------
+        Colocator
+            instance of colocation class
+        """
         if self.colocation_settings['reanalyse_existing']:
             self.delete_all_colocateddata_files(model_name, obs_name)
             
@@ -775,10 +958,26 @@ class AerocomEvaluation(object):
         # for specifying the model and obs names in the colocated data file
         col.model_name = model_name
         col.obs_name = obs_name
-        
-        
+# =============================================================================
+#         
+#         obs_vars = col.obs_vars
+#         add = []
+#         if isinstance(col.model_add_vars, dict):
+#             for obs_var, mod_var in col.model_add_vars.items():
+#                 if obs_var in obs_vars:
+#                     add.append(mod_var)
+#         col.obs_vars.extend(add)
+# =============================================================================
+# =============================================================================
+#         if var_name is not None:
+#             if not isinstance(var_name, str):
+#                 raise ValueError('Invalid input for var_name: {}. Need str'
+#                                  .format(var_name))
+# 
+#             col.obs_vars = [var_name]
+# =============================================================================
         # run colocation
-        col.run()
+        col.run(var_name)
         
         return col
     
@@ -898,7 +1097,8 @@ class AerocomEvaluation(object):
                            .format(name_or_pattern))
         return matches
     
-    def run_evaluation(self, model_name=None, obs_name=None, update_menu=True, 
+    def run_evaluation(self, model_name=None, obs_name=None, var_name=None, 
+                       update_interface=True, 
                        reanalyse_existing=None, raise_exceptions=None, 
                        clear_existing_json=None, only_colocation=None):
         """Create colocated data and json files for model / obs combination
@@ -914,9 +1114,14 @@ class AerocomEvaluation(object):
             Like :attr:`model_name`, but for specification(s) of observations
             that are supposed to be used. If None (default) all observations 
             are used.
-        update_menu : bool
-            if true, the menu.json file will be automatically updated after the
-            run and also, the model info table (minfo.json) file is created and
+        var_name : str, optional
+            name of variable supposed to be analysed. If None, then all
+            variables available for observation network are used (defined in 
+            :attr:`obs_config` for each entry). Defaults to None.
+        update_interface : bool
+            if true, relevant json files that determine what is displayed 
+            online are updated after the run, including the the menu.json file 
+            and also, the model info table (minfo.json) file is created and
             saved in :attr:`exp_dir`.
         reanalyse_existing : Bool, optional
             if True, existing colocated data files are ignored. If None, the
@@ -940,7 +1145,7 @@ class AerocomEvaluation(object):
             list containing all colocated data objects that have been converted
             to json files.
         """
-        
+        res = None
         if reanalyse_existing is not None:
             self.colocation_settings['reanalyse_existing'] = reanalyse_existing
         if raise_exceptions is not None:
@@ -950,6 +1155,9 @@ class AerocomEvaluation(object):
         if only_colocation is not None:
             self.only_colocation = only_colocation
         
+        if self.clear_existing_json:
+            self.clean_json_files()
+            
         if model_name is None:
             model_list = list(self.model_config)
         else:
@@ -972,18 +1180,17 @@ class AerocomEvaluation(object):
                     self._log.info('Skipping model {}'.format(model_name))
                     continue
             
-                self.run_colocation(model_name, obs_name)
+                self.run_colocation(model_name, obs_name, var_name)
                 if only_colocation:
                     self._log.info('Skipping computation of json files for {}'
                                    '/{}'.format(obs_name, model_name))
                     continue
-                res = self.make_json_files(model_name, obs_name)
+                res = self.make_json_files(model_name, obs_name, var_name)
         
-        if update_menu:
-            self.clean_json_files()
-            self.update_menu()
-            self.make_info_table_web()
-            
+        if update_interface:
+            #self.clean_json_files()
+            self.update_interface()
+
         return res            
         
     def info_string_evalrun(self, obs_list, model_list):
@@ -1061,8 +1268,8 @@ class AerocomEvaluation(object):
                                             'Will be ignored'.format(f))
                     continue
                 tab.append([obs_var, obs_name, vert_code, mod_name, mod_var])
-        return DataFrame(tab, columns=['Obs.' , 'Obs. var', 'vert',
-                                       'Model', 'Model var.'])
+        return DataFrame(tab, columns=['Var' , 'Obs', 'vert',
+                                       'Model', 'Model var'])
     
     def get_obsvar_name_and_type(self, obs_var):
         """Get menu name and type of observation variable
@@ -1088,9 +1295,23 @@ class AerocomEvaluation(object):
                               'Using variable name'.format(obs_var))
         return (name, tp, cat)
     
+    def update_interface(self, **opts):
+        """Update web interface
+        
+        Things done here:
+            
+            - Update menu file
+            - Make web info table json (tab informations in interface)
+            - update and order heatmap file
+        """
+        self.update_menu(**opts)
+        self.make_info_table_web()
+        self.update_heatmap_json()
+        
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
         update_menu_evaluation_iface(self, **opts)
+        
         
     def make_info_table_web(self):
         """Make and safe table with detailed infos about processed data files
@@ -1119,25 +1340,71 @@ class AerocomEvaluation(object):
             d[k] = as_dict
         return d        
     
-    def clean_json_files(self):
+    def delete_experiment_data(self, base_dir=None, proj_id=None, exp_id=None):
+        """Delete all data associated with a certain experiment
+        
+        Parameters
+        ----------
+        base_dir : str, optional
+            basic output direcory (containg subdirs of all projects)
+        proj_name : str, optional
+            name of project, if None, then this project is used
+        exp_name : str, optional
+            name experiment, if None, then this project is used
+        """
+        from pyaerocom.web.helpers import delete_experiment_data_evaluation_iface
+        if proj_id is None:
+            proj_id = self.proj_id
+        if exp_id is None:
+            exp_id = self.exp_id
+        if base_dir is None:
+            base_dir = self.out_basedir
+        delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id)
+        self.update_interface()
+        
+    def clean_json_files(self, update_interface=False):
         """Checks all existing json files and removes outdated data
         
         This may be relevant when updating a model name or similar.
         """
+        
         for file in self.all_map_files:
             (obs_name, obs_var, 
              vert_code, 
              mod_name, mod_var) = self._info_from_map_file(file)
-            if not obs_name in self.obs_config or not mod_name in self.model_config:
+        
+            if not (obs_name in self.obs_config and
+                    mod_name in self.model_config and
+                    obs_var in self._get_valid_obs_vars(obs_name)):
+                
                 const.print_log.info('Removing outdated map file: {}'.format(file))
                 os.remove(os.path.join(self.out_dirs['map'], file))
         for fp in glob.glob('{}/*.json'.format(self.out_dirs['ts'])):
             self._check_clean_ts_file(fp)
-        self.update_menu()
-        self.make_info_table_web()
-                
+        if update_interface:
+            self.update_interface()
+    
+    def _get_valid_obs_vars(self, obs_name):
+        if obs_name in self._valid_obs_vars:
+            return self._valid_obs_vars[obs_name]
+    
+        obs_vars = self.obs_config[obs_name]['obs_vars']
+        add = []
+        for mname, mcfg in self.model_config.items():
+            if 'model_add_vars' in mcfg:
+                for ovar, mvar in mcfg['model_add_vars'].items():
+                    if ovar in obs_vars and not mvar in add:
+                        add.append(mvar)
+        obs_vars.extend(add)
+        self._valid_obs_vars[obs_name]  = obs_vars
+        return obs_vars
+    
     def _check_clean_ts_file(self, fp):
-        if not os.path.basename(fp).split('OBS-')[-1].split(':')[0] in self.obs_config:
+        spl = os.path.basename(fp).split('OBS-')[-1].split(':')
+        obs_name = spl[0]
+        obs_var = spl[1].split('_')[0]
+        if not (obs_name in self.obs_config and 
+                obs_var in self._get_valid_obs_vars(obs_name)):
             const.print_log.info('Removing outdated ts file: {}'.format(fp))
             os.remove(fp)
             return

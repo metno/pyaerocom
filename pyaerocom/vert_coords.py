@@ -262,6 +262,8 @@ class VerticalCoordinate(object):
         True
         """
         if not self.var_name in self._LEV_INCREASES_WITH_ALT:
+            if self.standard_name in self._LEV_INCREASES_WITH_ALT:
+                return self._LEV_INCREASES_WITH_ALT[self.standard_name]
             raise ValueError('Failed to access information '
                              'lev_increases_with_alt for vertical coordinate {}'
                              .format(self.var_name))

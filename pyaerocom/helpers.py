@@ -82,8 +82,115 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'monthly'  : '%b %Y',
                          'yearly'   : '%Y'}
 
+TS_TYPE_SECS = {'hourly'  : 3600,
+                '3hourly' : 10800,
+                'daily'   : 86400,
+                'weekly'  : 604800,
+                'monthly' : 2592000, #counting 3 days per month (APPROX)
+                'yearly'  : 31536000} #counting 365 days (APPROX)
+
+XARR_TIME_GROUPERS = {'hourly'  : 'hour',
+                      'daily'   : 'day',
+                      'weekly'  : 'week',
+                      'monthly' : 'month', 
+                      'yearly'  : 'year'}
+
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
+def delete_all_coords_cube(cube, inplace=True):
+    """Delete all coordinates of an iris cube
+    
+    Parameters
+    ----------
+    cube : iris.cube.Cube
+        input cube that is supposed to be cleared of coordinates
+    inplace : bool
+        if True, then the coordinates are deleted in the input object, else in
+        a copy of it
+        
+    Returns
+    -------
+    iris.cube.Cube
+        input cube without coordinates 
+    """
+    if not inplace:
+        cube = cube.copy()
+        
+    for aux_fac in cube.aux_factories:
+        cube.remove_aux_factory(aux_fac)
+
+    for coord in cube.coords():
+        cube.remove_coord(coord)
+    return cube
+
+def copy_coords_cube(to_cube, from_cube, inplace=True):
+    """Copy all coordinates from one cube to another
+    
+    Requires the underlying data to be the same shape. 
+    
+    Warning
+    --------
+    This operation will delete all existing coordinates and auxiliary 
+    coordinates and will then copy the ones from the input data object.
+    No checks of any kind will be performed
+    
+    Parameters
+    ----------
+    to_cube
+    other : GriddedData or Cube
+        other data object (needs to be same shape as this object)
+    
+    Returns
+    -------
+    GriddedData
+        data object containing coordinates from other object
+    """
+    if not all([isinstance(x, iris.cube.Cube) for x in [to_cube, from_cube]]):
+        raise ValueError('Invalid input. Need instances of iris.cube.Cube class...')
+        
+    if not from_cube.shape == to_cube.shape:
+        raise DataDimensionError('Cannot copy coordinates: shape mismatch')
+    
+    to_cube = delete_all_coords_cube(to_cube, inplace)
+    
+    for i, dim_coord in enumerate(from_cube.dim_coords):
+        to_cube.add_dim_coord(dim_coord, i)
+    
+    for aux_coord, dim in from_cube._aux_coords_and_dims:
+        to_cube.add_aux_coord(aux_coord, dim)
+        
+    for aux_fac in from_cube.aux_factories:
+        to_cube.add_aux_factory(aux_fac)
+    return to_cube
+
+def infer_time_resolution(time_stamps):
+    """Infer time resolution based on input time-stamps
+    
+    Uses the minimum time difference found in input array between consecutive
+    time stamps and based on that finds the corresponding AeroCom resolution
+    
+    Parameters
+    ----------
+    time_stamps : pandas.DatetimeIndex
+        time stamps 
+    
+    Ret    
+    """
+    import pandas as pd
+    if not isinstance(time_stamps, pd.DatetimeIndex):
+        try:
+            time_stamps = pd.DatetimeIndex(time_stamps)
+        except:
+            raise ValueError('Could not infer time resolution: failed to '
+                             'convert input to pandas.DatetimeIndex')
+    vals = time_stamps.values
+    highest_secs = abs(vals[1:] - vals[:-1]).min().astype('timedelta64[s]').astype(int)
+    
+    for tp in const.GRID_IO.TS_TYPES:
+        if highest_secs <= TS_TYPE_SECS[tp]:
+            return tp
+    raise ValueError('Could not infer time resolution')
+    
 def get_standard_name(var_name):
     """Converts AeroCom variable name to CF standard name
     
@@ -467,7 +574,6 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     return arr.resample(time=freq, loffset=loffset).mean(dim='time')
     
-
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
     
@@ -604,26 +710,96 @@ def to_datetime64(value):
                              'Error: {}'.format(value, repr(e)))
   
 def is_year(val):
+    """Check if input is / may be year
+    
+    Parameters
+    ----------
+    val
+        input that is supposed to be checked    
+    
+    Returns
+    -------
+    bool
+        True if input is a number between -2000 and 10000, else False
+    """
     try:
         if -2000 < int(val) < 10000:
             return True
         raise Exception
     except:
         return False
+  
+def _check_climatology_timestamp(t):
+    if isnumeric(t) and t == 9999:
+        return pd.Timestamp('1-1-2222')
+    elif isinstance(t, np.datetime64):
+        tstr = str(t)
+        if tstr.startswith('9999'):
+            return pd.Timestamp(tstr.replace('9999', '2222'))
+    elif isinstance(t, str) and '9999' in t:
+        return pd.Timestamp(t.replace('9999', '2222'))
+    elif isinstance(t, datetime) and t.year == 9999:
+        return pd.Timestamp(t.replace(year=2222))
+    raise ValueError('Failed to identify {} as climatological timestamp...'
+                     .format(t))
     
 def start_stop(start, stop=None):
-    start = to_pandas_timestamp(start)
+    """Create pandas timestamps from input start / stop values
+    
+    Note
+    ----
+    If input suggests climatological data in AeroCom format (i.e. year=9999) 
+    then the year is converted to 2222 instead since pandas cannot handle 
+    year 9999.
+    
+    Parameters
+    -----------
+    start
+        start time (any format that can be converted to pandas.Timestamp)
+    stop
+        stop time (any format that can be converted to pandas.Timestamp)
+    
+    Returns
+    -------
+    pandas.Timestamp
+        start timestamp
+    pandas.Timestamp
+        stop timestamp
+    
+    Raises
+    ------
+    ValueError
+        if input cannot be converted to pandas timestamps
+    """
+    isclim = False
+    try:
+        start = to_pandas_timestamp(start)
+    except pd.errors.OutOfBoundsDatetime: # probably climatology
+        start = _check_climatology_timestamp(start)
+        isclim = True
+        
     if stop is None:
-        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(start.year))
+        if isclim:
+            yr = 2222
+        else:
+            yr = start.year
+        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(yr))
     else:
-        stop = to_pandas_timestamp(stop)
+        try:
+            stop = to_pandas_timestamp(stop)
+        except pd.errors.OutOfBoundsDatetime:
+            stop = _check_climatology_timestamp(stop)
     return (start, stop)
 
 def datetime2str(time, ts_type=None):
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)
-    time = to_pandas_timestamp(time).strftime(conv)
+    try:
+        time = to_pandas_timestamp(time).strftime(conv)
+    except pd.errors.OutOfBoundsDatetime:
+        const.print_log.warning('Failed to convert time {} to string'.format(time))
+        pass
     return time
 
 def start_stop_str(start, stop=None, ts_type=None):
@@ -954,9 +1130,7 @@ if __name__=="__main__":
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
     
-    import pyaerocom as pya
-    
-    stat = pya.io.ReadAeronetSunV3().read(vars_to_retrieve='od550aer', 
-                                  file_pattern='Solar*').to_station_data('Solar*')
-    
-    print(stat)
+    print(infer_time_resolution([np.datetime64('2010-01-01'),
+                                 np.datetime64('2010-01-02'),
+                                 np.datetime64('2010-01-05'),
+                                 np.datetime64('2010-10-15')]))

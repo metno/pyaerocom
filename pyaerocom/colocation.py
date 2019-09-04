@@ -15,7 +15,6 @@ from pyaerocom.exceptions import (ColocationError,
                                   VarNotAvailableError)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                TS_TYPE_TO_PANDAS_FREQ,
-                               PANDAS_RESAMPLE_OFFSETS,
                                to_datestring_YYYYMMDD)
 
 from pyaerocom.filter import Filter
@@ -28,6 +27,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              regrid_scheme='areaweighted', 
                              var_outlier_ranges=None,
                              update_baseyear_gridded=None,
+                             colocate_time=False,
                              **kwargs):
     """Colocate 2 gridded data objects
     
@@ -85,6 +85,10 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         time dimension to a value other than the specified input start / stop 
         time this may be used to update the time in order to make colocation 
         possible.
+    colocate_time : bool
+        if True and if original time resolution of data is higher than desired
+        time resolution (`ts_type`), then both datasets are colocated in time 
+        *before* resampling to lower resolution. 
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
@@ -163,8 +167,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     
         
     # get both objects in same time resolution
-    gridded_data = gridded_data.resample_time(ts_type)
-    gridded_data_ref = gridded_data_ref.resample_time(ts_type)
+    if not colocate_time:
+        gridded_data = gridded_data.resample_time(ts_type)
+        gridded_data_ref = gridded_data_ref.resample_time(ts_type)
     
     # guess bounds (for area weighted regridding, which is the default)
     gridded_data._check_lonlat_bounds()
@@ -229,9 +234,15 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
               'longitude'   : lons}
     
     dims = ['data_source', 'time', 'latitude', 'longitude']
-
-    return ColocatedData(data=arr, coords=coords, dims=dims,
+    
+    data = ColocatedData(data=arr, coords=coords, dims=dims,
                          name=gridded_data.var_name, attrs=meta)
+    
+    if colocate_time and grid_ts_type != ts_type:
+        data = data.resample_time(to_ts_type=ts_type, 
+                                  colocate_time=True,
+                                  **kwargs)
+    return data
 
 def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None, 
                                start=None, stop=None, filter_name=None,
@@ -239,6 +250,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                vert_scheme=None, harmonise_units=True, 
                                var_ref=None, var_outlier_ranges=None, 
                                update_baseyear_gridded=None,
+                               ignore_station_names=None,
+                               colocate_time=False,
                                **kwargs):
     """Colocate gridded with ungridded data 
     
@@ -257,7 +270,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         variable to be colocated
     ts_type : str
         desired temporal resolution of colocated data (must be valid AeroCom
-        ts_type str such as daily, monthly, yearly..)
+        ts_type str such as daily, monthly, yearly.). The colocation itself is
+        done in the highest available resolution and resampling to `ts_type` is
+        done afterwards. You may change this behaviour by setting input param
+        `resample_first=True` (default is False).
     start : :obj:`str` or :obj:`datetime64` or similar, optional
         start time for colocation, if None, the start time of the input
         :class:`GriddedData` object is used
@@ -298,9 +314,16 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         time dimension to a value other than the specified input start / stop 
         time this may be used to update the time in order to make colocation 
         possible.
+    ignore_station_names : str or list, optional
+        station name or pattern or list of station names or patterns that should
+        be ignored
+    colocate_time : bool
+        if True and if original time resolution of data is higher than desired
+        time resolution (`ts_type`), then both datasets are colocated in time 
+        *before* resampling to lower resolution. 
     **kwargs
-        additional keyword args (not used here, but included such that factory 
-        class can handle different methods with different inputs)
+        additional keyword args (passet to 
+        :func:`UngriddedData.to_station_data_all`)
         
     Returns
     -------
@@ -324,10 +347,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         var_outlier_ranges = {}
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
-    var = gridded_data.var_info.var_name
-    
+    var = gridded_data.var_name
+    aerocom_var = gridded_data.var_name_aerocom
     if var_ref is None:
-        var_ref = var
+        var_ref = aerocom_var
         
     if remove_outliers:
         low, high, low_ref, high_ref = None, None, None, None    
@@ -374,7 +397,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     if stop > grid_stop:
         stop = grid_stop
     # check overlap
-    if stop < grid_start or start >  grid_stop:
+    if stop < grid_start or start > grid_stop:
         raise TimeMatchError('Input time range {}-{} does not '
                              'overlap with data range: {}-{}'
                              .format(start, stop, grid_start, grid_stop))  
@@ -387,12 +410,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     # apply filter to data
     ungridded_data = regfilter(ungridded_data)
-    
-    #Commented out on 6/2/19 due to new colocation strategy 
-# =============================================================================
-#     ungridded_lons = ungridded_data.longitude
-#     ungridded_lats = ungridded_data.latitude               
-# =============================================================================
 
     #crop time
     gridded_data = gridded_data.crop(time_range=(start, stop))
@@ -407,28 +424,37 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         
         gridded_data = gridded_data.interpolate(latitude=lats_new, 
                                                 longitude=lons_new)
-    # resample time (if applicable)
-    gridded_data = gridded_data.resample_time(to_ts_type=ts_type)
-
-    # pandas frequency string for TS type
-    freq_pd = TS_TYPE_TO_PANDAS_FREQ[ts_type]
-    #freq_np = TS_TYPE_TO_NUMPY_FREQ[ts_type]
     
-    #start = pd.Timestamp(start.to_datetime64().astype('datetime64[{}]'.format(freq_np)))
+    ungridded_freq = None # that keeps ungridded data in original resolution
+    
+    if not colocate_time:
+        
+        gridded_data = gridded_data.resample_time(to_ts_type=ts_type)
+        ungridded_freq = ts_type # converts ungridded data directly to desired resolution
+        
+    # ts_type that is used for colocation
+    col_ts_type = gridded_data.ts_type
+    
+    # pandas frequency string that corresponds to col_ts_type
+    col_freq = TS_TYPE_TO_PANDAS_FREQ[col_ts_type]
+    
     if remove_outliers:
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref, 
                                        high=high_ref)
+        
+       
     all_stats = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
                                                    start=start, 
                                                    stop=stop, 
-                                                   freq=freq_pd, 
+                                                   freq=ungridded_freq,
                                                    by_station_name=True,
-                                                   interp_nans=False)
+                                                   ignore_index=ignore_station_names)
     
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
+    
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError('Variable {} is not available in specified '
                                    'time interval ({}-{})'
@@ -449,115 +475,98 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                                  latitude=ungridded_lats,
                                                  vert_scheme=vert_scheme)
     
+    # Generate time index of ColocatedData object
+    time_idx = pd.DatetimeIndex(start=start, end=stop, freq=col_freq)
+    #periods = time_idx.to_period(col_freq)
+# =============================================================================
+#     if col_freq in PANDAS_RESAMPLE_OFFSETS:
+#         offs = np.timedelta64(1, '[{}]'.format(PANDAS_RESAMPLE_OFFSETS[col_freq]))
+#         time_idx = time_idx + offs
+# =============================================================================
     
-    obs_vals = []
-    grid_vals = []
+    coldata = np.empty((2, len(time_idx), len(obs_stat_data)))
+    
     lons = []
     lats = []
     alts = []
     station_names = []
-    
-    # TIME INDEX ARRAY FOR COLLOCATED DATA OBJECT
-    time_idx = pd.DatetimeIndex(freq=freq_pd, start=start, end=stop)
-    if freq_pd in PANDAS_RESAMPLE_OFFSETS:
-        offs = np.timedelta64(1, '[{}]'.format(PANDAS_RESAMPLE_OFFSETS[freq_pd]))
-        time_idx = time_idx + offs
-        
+                
     ungridded_unit = None
     ts_type_src_ref = None
     if not harmonise_units:
         gridded_unit = str(gridded_data.units)
     else:
         gridded_unit = None
-    for i, obs_data in enumerate(obs_stat_data):
-        if obs_data is not None:
-            if ts_type_src_ref is None:
-                ts_type_src_ref = obs_data['ts_type_src']
-            elif not obs_data['ts_type_src'] == ts_type_src_ref:
-                raise ValueError('Cannot perform colocation. Ungridded data '
-                                 'object contains different source frequencies')
-            if ungridded_unit is None:
-                try:
-                    ungridded_unit = obs_data['var_info'][var_ref]['units']
-                except KeyError as e: #variable information or unit is not defined
-                    logger.exception(repr(e))
-            try:
-                unit = obs_data['var_info'][var_ref]['units']
-            except:
-                unit = None
-            if not unit == ungridded_unit:
-                raise ValueError('Cannot perform colocation. Ungridded data '
-                                 'object contains different units ({})'.format(var_ref))
-            # get observations (Note: the index of the observation time series
-            # is already in the specified frequency format, and thus, does not
-            # need to be updated, for details (or if errors occur), cf. 
-            # UngriddedData.to_station_data, where the conversion happens)
-            
-            # get model data corresponding to station
-            grid_stat = grid_stat_data[i]
-            
-            if harmonise_units:
-                grid_unit = grid_stat.get_unit(var)
-                obs_unit = obs_data.get_unit(var_ref)
-                if not grid_unit == obs_unit:
-                    grid_stat.convert_unit(var, obs_unit)
-                if gridded_unit is None:
-                    gridded_unit = obs_unit
-            if remove_outliers:
-                # don't check if harmonise_units is active, because the 
-                # remove_outliers method checks units based AeroCom default 
-                # variables, and a variable mapping might be active, i.e. 
-                # sometimes models use abs550aer for absorption coefficients 
-                # with units [m-1] and not for AAOD (which is the AeroCom default
-                # and unitless. Hence, unit check in remove_outliers works only
-                # if the variable name (and unit) corresonds to AeroCom default)
-                chk_unit = not harmonise_units 
-                grid_stat.remove_outliers(var, low=low, high=high,
-                                          check_unit=chk_unit)
-                
-            grid_tseries = grid_stat[var]  
-            obs_tseries = obs_data[var_ref]
-            
-            if any(np.isnan(grid_tseries)):
-                if all(np.isnan(grid_tseries)):
-                    logger.warning('All values in model data are NaN at '
-                                   'coordinate lat={:.2f}, lon={:.2f}'
-                                   .format(obs_data.latitude, 
-                                           obs_data.longitude))
-                    continue
-                logger.warning('Model timeseries contains NaNs at coordinate '
-                               'lat={:.2f}, lon={:.2f}'
-                               .format(obs_data.latitude, obs_data.longitude))
-            elif not len(grid_tseries) == len(time_idx):
-                raise Exception('DEVELOPER: PLEASE DEBUG AND FIND SOLUTION')
-            # make sure, time index is defined in the right way (i.e.
-            # according to TIME_INDEX, e.g. if ts_type='monthly', it should
-            # not be the mid or end of month)
-            
-# =============================================================================
-#             grid_tseries = pd.Series(grid_tseries.values, 
-#                                      index=time_idx)
-# =============================================================================
-            
-            # the following command takes care of filling up with NaNs in obs
-            # where data is missing
-            df = pd.DataFrame({'ungridded' : obs_tseries, 
-                               'gridded'   : grid_tseries.values}, 
-                              index=time_idx)
-            
-            grid_vals_temp = df['gridded'].values
-
-            obs_vals.append(df['ungridded'].values)
-            grid_vals.append(grid_vals_temp)
-            
-            lons.append(obs_data.longitude)
-            lats.append(obs_data.latitude)
-            alts.append(obs_data.altitude)
-            station_names.append(obs_data.station_name)
     
-    if len(obs_vals) == 0:
-        raise ColocationError('No observations could be found that match '
-                               'the colocation constraints')
+    # loop over all stations and append to colocated data object
+    for i, obs_stat in enumerate(obs_stat_data):
+        if ts_type_src_ref is None:
+            ts_type_src_ref = obs_stat['ts_type_src']
+        elif not obs_stat['ts_type_src'] == ts_type_src_ref:
+            raise ValueError('Cannot perform colocation. Ungridded data '
+                             'object contains different source frequencies')
+        if ungridded_unit is None:
+            try:
+                ungridded_unit = obs_stat['var_info'][var_ref]['units']
+            except KeyError as e: #variable information or unit is not defined
+                logger.exception(repr(e))
+        try:
+            unit = obs_stat['var_info'][var_ref]['units']
+        except:
+            unit = None
+        if not unit == ungridded_unit:
+            raise ValueError('Cannot perform colocation. Ungridded data '
+                             'object contains different units ({})'.format(var_ref))
+        # get observations (Note: the index of the observation time series
+        # is already in the specified frequency format, and thus, does not
+        # need to be updated, for details (or if errors occur), cf. 
+        # UngriddedData.to_station_data, where the conversion happens)
+        
+        # get model data corresponding to station
+        grid_stat = grid_stat_data[i]
+        
+        if harmonise_units:
+            grid_unit = grid_stat.get_unit(var)
+            obs_unit = obs_stat.get_unit(var_ref)
+            if not grid_unit == obs_unit:
+                grid_stat.convert_unit(var, obs_unit)
+            if gridded_unit is None:
+                gridded_unit = obs_unit
+        
+        if remove_outliers:
+            # don't check if harmonise_units is active, because the 
+            # remove_outliers method checks units based AeroCom default 
+            # variables, and a variable mapping might be active, i.e. 
+            # sometimes models use abs550aer for absorption coefficients 
+            # with units [m-1] and not for AAOD (which is the AeroCom default
+            # and unitless. Hence, unit check in remove_outliers works only
+            # if the variable name (and unit) corresonds to AeroCom default)
+            chk_unit = not harmonise_units 
+            grid_stat.remove_outliers(var, low=low, high=high,
+                                      check_unit=chk_unit)
+        
+        # get grid and obs timeseries data (that may be sampled in arbitrary
+        # time resolution, particularly the obs data)
+        grid_ts = grid_stat[var]
+        obs_ts = obs_stat[var_ref]
+        
+        # resample to the colocation frequency
+        obs_ts1 = obs_ts.resample(col_freq).mean()
+        grid_ts1 = grid_ts.resample(col_freq).mean()
+        
+        # fill up missing time stamps
+        _df = pd.concat([obs_ts1, grid_ts1], axis=1, keys=['o', 'm'])
+        
+        # assign the unified timeseries data to the colocated data array
+        # at current station index i
+        coldata[0, :, i] = _df['o'].values
+        coldata[1, :, i] = _df['m'].values
+        
+        lons.append(obs_stat.longitude)
+        lats.append(obs_stat.latitude)
+        alts.append(obs_stat.altitude)
+        station_names.append(obs_stat.station_name)
+    
     try:
         revision = ungridded_data.data_revision[dataset_ref]
     except: 
@@ -573,7 +582,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     meta = {'data_source'       :   [dataset_ref,
                                      gridded_data.name],
             'var_name'          :   [var_ref, var],
-            'ts_type'           :   ts_type,
+            'ts_type'           :   col_ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [ts_type_src_ref, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
@@ -584,18 +593,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'data_level'        :   3,
             'revision_ref'      :   revision,
             'from_files'        :   files,
-            'from_files_ref'    :   None}
+            'from_files_ref'    :   None,
+            'stations_ignored'  :   ignore_station_names}
 
     
     meta.update(regfilter.to_dict())
-    
-    grid_vals = np.asarray(grid_vals)
-    obs_vals = np.asarray(obs_vals)
-    
-    stat_dim, time_dim = grid_vals.shape
-    arr = np.array((obs_vals, grid_vals))
-    arr = np.swapaxes(arr, 1, 2)
-    #.reshape((2, time_dim, stat_dim))
     
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
@@ -608,10 +610,15 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
               'longitude'   : ('station_name', lons),
               'altitude'    : ('station_name', alts)
               }
+    
     dims = ['data_source', 'time', 'station_name']
-    data = ColocatedData(data=arr, coords=coords, dims=dims, name=var,
+    data = ColocatedData(data=coldata, coords=coords, dims=dims, name=var,
                          attrs=meta)
     
+    if colocate_time and grid_ts_type != ts_type:
+        data = data.resample_time(to_ts_type=ts_type, 
+                                  colocate_time=True,
+                                  **kwargs)
     return data
 
 if __name__=='__main__':
@@ -619,14 +626,33 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
     
-    reader = pya.io.ReadGridded('ECMWF_OSUITE')
-    model_data = reader.read_var(var_name='od550aer', start=2010)
+    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    obs_reader = pya.io.ReadUngridded('AeronetSunV3Lev2.daily')
-    obs_data = obs_reader.read(vars_to_retrieve='od550aer')
+    gridded_obs = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer',
+                                                         start=2010)
     
-    colocated_data = pya.colocation.colocate_gridded_ungridded(model_data, 
-                                                               obs_data,
-                                                               ts_type='monthly')
+    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', 
+                                                               start=2010)
     
-    colocated_data.plot_scatter()
+    aeronet = colocate_gridded_ungridded(modeldata, obsdata, 'monthly',
+                                         start = 2010)
+    
+    aeronet.plot_scatter()
+    
+    daily = colocate_gridded_gridded(modeldata, gridded_obs, 
+                                       ts_type='daily',
+                                       colocate_time=False)
+    
+    daily.plot_scatter()
+    
+    monthly = colocate_gridded_gridded(modeldata, gridded_obs, 
+                                       ts_type='monthly',
+                                       colocate_time=False)
+    
+    monthly2 = colocate_gridded_gridded(modeldata, gridded_obs, 
+                                        ts_type='monthly',
+                                        colocate_time=True)
+    
+    daily.plot_scatter()
+    monthly.plot_scatter()
+    monthly2.plot_scatter()

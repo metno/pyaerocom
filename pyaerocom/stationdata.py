@@ -7,9 +7,11 @@ from pyaerocom import VerticalProfile, logger, const
 
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   DataExtractionError, DataDimensionError,
-                                  UnitConversionError, DataUnitError)
+                                  UnitConversionError, DataUnitError,
+                                  TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 from pyaerocom.metastandards import StationMetaData
+from pyaerocom.tstype import TsType
 from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
                                resample_time_dataarray,
                                unit_conversion_fac)
@@ -50,6 +52,9 @@ class StationData(StationMetaData):
     #: station
     _COORD_MAX_VAR = 0.1 #km
     STANDARD_META_KEYS = list(StationMetaData().keys())
+    
+    VALID_TS_TYPES = const.GRID_IO.TS_TYPES
+    
     def __init__(self, **meta_info):
 
         self.dtime = []
@@ -76,7 +81,7 @@ class StationData(StationMetaData):
             numpy array specifying default coordinates
         """
         return const.make_default_vert_grid()
-
+    
     def has_var(self, var_name):
         """Checks if input variable is available in data object
 
@@ -830,15 +835,21 @@ class StationData(StationMetaData):
         """
         return pd.DataFrame(data=self.get_data_columns(), index=self.dtime)
     
-    def get_var_ts_type(self, var_name):
+    def get_var_ts_type(self, var_name, try_infer=True):
         """Get ts_type for a certain variable
+        
+        Note
+        ----
+        Converts to ts_type string if assigned ts_type is in pandas format
         
         Parameters
         ----------
         var_name : str
             data variable name for which the ts_type is supposed to be
             retrieved
-        
+        try_infer : bool
+            if ts_type is not available, try inferring it from data
+            
         Returns
         -------
         str
@@ -848,23 +859,33 @@ class StationData(StationMetaData):
         ------
         MetaDataError
             if no metadata is available for this variable (e.g. if ``var_name``
-            cannot be found in :attr:`var_info`) or if the 
+            cannot be found in :attr:`var_info`)
         """
+        # make sure there exists a var_info dict for this variable
         if not var_name in self.var_info:
-            raise MetaDataError('No variable specific metadata available '
-                                'for {}'.format(var_name))
+            self.var_info[var_name] = {}
         
+        # use variable specific entry if available
         if 'ts_type' in self.var_info[var_name]:
-            tp = self.var_info[var_name]['ts_type']
-        else:
-            tp = self.ts_type
-            self.var_info[var_name]['ts_type'] = tp
-        if tp is None:
-            raise MetaDataError('ts_type is not defined...')
-        elif not tp in const.GRID_IO.TS_TYPES:
-            raise MetaDataError('Invalid ts_type {}: need AEROCOM default {}'
-                                .format(tp, const.GRID_IO.TS_TYPES))
-        return tp
+            return TsType(self.var_info[var_name]['ts_type']).val
+        elif isinstance(self.ts_type, str):
+            # ensures validity and corrects for pandas strings
+            ts_type = TsType(self.ts_type).val 
+            self.var_info[var_name]['ts_type'] = ts_type
+            return ts_type
+        
+        if try_infer:
+            const.print_log('Trying to infer ts_type in StationData {} '
+                            'for variable {}'.format(self.station_name, var_name))
+            from pyaerocom.helpers import infer_time_resolution
+            try:
+                s = self._to_ts_helper(var_name)
+                ts_type = infer_time_resolution(s.index)
+                self.var_info[var_name]['ts_type'] = ts_type
+                return ts_type
+            except:
+                pass #Raise standard error
+        raise MetaDataError('Could not access ts_type for {}'.format(var_name))
         
     def remove_outliers(self, var_name, low=None, high=None,
                         check_unit=True):
@@ -943,7 +964,7 @@ class StationData(StationMetaData):
         return new
     
     def resample_timeseries(self, var_name, ts_type, how='mean',
-                            inplace=False, min_num_obs=None):
+                            inplace=False, min_num_obs=None, **kwargs):
         """Resample one of the time-series in this object
         
         Parameters
@@ -971,6 +992,39 @@ class StationData(StationMetaData):
         """
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
+        
+        to_ts_type = TsType(ts_type) # make sure to use AeroCom ts_type
+        
+        current = None
+        try: 
+            current = TsType(self.get_var_ts_type(var_name))
+            if to_ts_type > current:
+                raise TemporalResolutionError('Cannot resample {} in StationData. '
+                                              'Input frequency {} '
+                                              'is higher than current resolution {}'
+                                              .format(var_name, to_ts_type, current))
+            if min_num_obs is not None:
+                if current == to_ts_type and min_num_obs:
+                    const.print_log.warning('Setting min_num_obs to None in '
+                                            'StationData.resample_timeseries since '
+                                            'input resolution is the same as current '
+                                            'resolution')
+                    min_num_obs = None
+            
+            elif ts_type in const.OBS_MIN_NUM_RESAMPLE:
+                rules = const.OBS_MIN_NUM_RESAMPLE[to_ts_type.val]
+                if current.val in rules:
+                    min_num_obs =  rules[current.val]
+                    
+        except:
+            if min_num_obs is not None:
+                const.print_log.warning('Failed to access current temporal '
+                                        'resolution of {} data in StationData {}. '
+                                        'Deactivating min_num_obs={} requirement'
+                                        .format(var_name, self.station_name, 
+                                                min_num_obs))
+                min_num_obs = None
+    
         data = self[var_name]
     
         if not isinstance(data, (pd.Series, xray.DataArray)):
@@ -983,17 +1037,23 @@ class StationData(StationMetaData):
                                  'Error: {}'.format(repr(e)))
         
         if isinstance(data, pd.Series):
-            new = resample_timeseries(data, freq=ts_type, how=how,
+            new = resample_timeseries(data, 
+                                      freq=to_ts_type.val, 
+                                      how=how,
                                       min_num_obs=min_num_obs)
+            
         elif isinstance(data, xray.DataArray):
             
-            new = resample_time_dataarray(data, freq=ts_type, how=how, 
+            new = resample_time_dataarray(data, 
+                                          freq=to_ts_type.val, 
+                                          how=how, 
                                           min_num_obs=min_num_obs)
             
         
         if inplace:
             self[var_name] = new
-            self.var_info[var_name]['ts_type'] = ts_type        
+            self.var_info[var_name]['ts_type'] = to_ts_type.val
+            # there is other variables that are not resampled
             if len(self.var_info) > 1 and self.ts_type is not None:     
                 _tt = self.ts_type
                 self.ts_type = None
@@ -1001,10 +1061,36 @@ class StationData(StationMetaData):
                 for var, info in self.var_info.items():
                     if not var == var_name:
                         info['ts_type'] = _tt
-            else:
-                self.ts_type = ts_type
+            else: #no other variables, update global class attributes
+                self.ts_type = to_ts_type.val
                 self.dtime = new.index.values
         return new
+    
+    def remove_variable(self, var_name):
+        """Remove variable data
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable that is to be removed
+            
+        Returns
+        -------
+        StationData
+            current instance of this object, with data removed
+        
+        Raises
+        ------
+        VarNotAvailableError
+            if the input variable is not available in this object
+        """
+        if not self.has_var(var_name):
+            raise VarNotAvailableError('No such variable in StationData: {}'
+                                       .format(var_name))
+        self.pop(var_name)
+        if var_name in self.var_info:
+            self.var_info.pop(var_name)
+        return self
     
     def insert_nans_timeseries(self, var_name):
         """Fill up missing values with NaNs in an existing time series
@@ -1050,7 +1136,10 @@ class StationData(StationMetaData):
             data as timeseries
         """
         data = self[var_name]
-        if not data.ndim == 1:
+        if isinstance(data, pd.Series):
+            return data
+        
+        elif not data.ndim == 1:
             raise NotImplementedError('Multi-dimensional data columns '
                                       'cannot be converted to time-series')
         self.check_dtime()
@@ -1076,9 +1165,9 @@ class StationData(StationMetaData):
                                           'contain 2 dimensions altitude and '
                                           'time')
             if isrange(altitudes):
-                                
-                return data.sel(altitude=slice(altitudes[0], 
-                                               altitudes[1]))
+                if not isinstance(altitudes, slice):
+                    altitudes = slice(altitudes[0], altitudes[1])
+                return data.sel(altitude=altitudes)
             
             raise DataExtractionError('Cannot intepret input for '
                                           'altitude...')

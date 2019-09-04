@@ -130,7 +130,29 @@ class VarNameInfo(object):
             s += '\nwavelength_nm: {}'.format(self.wavelength_nm)
         return s
  
-def _read_alias_ini():
+def parse_variables_ini(fpath=None):
+    """Returns instance of ConfigParser to access information"""
+    if fpath is None:
+        fpath = os.path.join(__dir__, "data", "variables.ini")
+        
+    if not os.path.exists(fpath):
+        raise FileNotFoundError("FATAL: variables.ini file could not be found "
+                                "at {}".format(fpath))
+    parser = ConfigParser()
+    parser.read(fpath)
+    return parser
+
+def parse_aliases_ini():
+    """Returns instance of ConfigParser to access information"""
+    fpath = os.path.join(__dir__, "data", "aliases.ini")
+    if not os.path.exists(fpath):
+        raise FileNotFoundError("FATAL: aliases.ini file could not be found "
+                                "at {}".format(fpath))
+    parser = ConfigParser()
+    parser.read(fpath)
+    return parser
+
+def _read_alias_ini(parser=None):
     """Read all alias definitions from aliases.ini file and return as dict
     
     Returns
@@ -139,18 +161,46 @@ def _read_alias_ini():
         keys are AEROCOM standard names of variable, values are corresponding
         aliases
     """
-    file = os.path.join(__dir__, "data", "aliases.ini")
-    if not os.path.exists(file):
-        return {}
-    parser = ConfigParser()
-    parser.read(file)
+    if parser is None:
+        parser = parse_aliases_ini()
     aliases = {}
     items = parser['aliases']
     for var_name in items:
         _aliases = [x.strip() for x in items[var_name].strip().split(',')]
         for alias in _aliases:
             aliases[alias] = var_name
+    for var_fam, alias_fam in parser['alias_families'].items():
+        if ',' in alias_fam:
+            raise Exception('Found invalid definition of alias family {}: {}. '
+                            'Only one family can be mapped to a variable name'
+                            .format(var_fam, alias_fam))
     return aliases
+
+def get_aliases(var_name, parser=None):
+    """Get aliases for a certain variable"""
+    if parser is None:
+        file = os.path.join(__dir__, "data", "aliases.ini")
+        parser = ConfigParser()
+        parser.read(file)
+        
+    info = parser['aliases']
+    aliases = []
+    if var_name in info:
+        aliases.extend([a.strip() for a in info[var_name].split(',')])
+    for var_fam, alias_fam in parser['alias_families'].items():
+        if var_name.startswith(var_fam):
+            alias = var_name.replace(var_fam, alias_fam)
+            aliases.append(alias)
+    return aliases
+
+def _check_alias_family(var_name, parser):
+    for var_fam, alias_fam in parser['alias_families'].items():
+        if var_name.startswith(alias_fam):
+            var_name_aerocom = var_name.replace(alias_fam, var_fam)
+            return var_name_aerocom
+    raise VariableDefinitionError('Input variable could not be identified as '
+                                  'belonging to either of the available alias '
+                                  'variable families')
 
 class Variable(object):
     """Interface that specifies default settings for a variable
@@ -365,14 +415,7 @@ class Variable(object):
     
     @staticmethod
     def read_config():
-        fpath = os.path.join(__dir__, "data", "variables.ini")
-        if not os.path.exists(fpath):
-            raise IOError("Variable ini file could not be found: %s"
-                          %fpath)
-        cfg = ConfigParser()
-        cfg.read(fpath)
-        return cfg
-    
+        return parse_variables_ini()
     
     @property
     def var_name_info(self):
@@ -387,13 +430,7 @@ class Variable(object):
         list
             list containing valid aliases
         """
-        file = os.path.join(__dir__, "data", "aliases.ini")
-        parser = ConfigParser()
-        parser.read(file)
-        info = parser['aliases']
-        if self.var_name in info:
-            return [a.strip() for a in info[self.var_name].split(',')]
-        return []
+        return get_aliases(self.var_name)
     
     @property
     def long_name(self):
@@ -438,14 +475,20 @@ class Variable(object):
             elif isinstance(var_name_alt, str) and var_name_alt in cfg:
                 var_info = cfg[var_name_alt]
             else:
-                aliases = _read_alias_ini()
+                ap = parse_aliases_ini()
+                aliases = _read_alias_ini(ap)
                 if var_name in aliases:
                     var_name = aliases[var_name]
                     var_info = cfg[var_name]
-                else:
-                    logger.warning("No default configuration available for "
-                                   "variable {}. Using DEFAULT settings"
-                                   .format(var_name))
+                else :
+                    try:
+                        var_name=_check_alias_family(var_name, ap)
+                        var_info = cfg[var_name]
+                    except VariableDefinitionError:
+                    
+                        logger.warning("No default configuration available for "
+                                       "variable {}. Using DEFAULT settings"
+                                       .format(var_name))
             
         default = cfg['DEFAULT']
         
@@ -518,20 +561,33 @@ class Variable(object):
 
 class VarCollection(object):
     """Variable access class based on variables config file"""
-    _var_ini = None
+    
     def __init__(self, var_ini):
+        self._all_vars = None
+        self._var_ini = None
         
         self.var_ini = var_ini
         
-        self._cfg = self._read_ini()
+        self._cfg_parser = parse_variables_ini(var_ini)
+        self._alias_parser = parse_aliases_ini()
         self._idx = -1
         
-        self.all_vars = [k.lower() for k in self._cfg.keys()]
-    
-        
         logger.info("Importing variable aliases info")
-        self.all_vars.extend(list(_read_alias_ini()))
-            
+        
+    @property
+    def all_vars(self):
+        """List of all variables
+        
+        Note: does not include variable names that may be inferred via 
+        alias families as defined in section [alias_families] in
+        aliases.ini.
+        """
+        if self._all_vars is None:
+            all_vars = [k.lower() for k in self._cfg_parser.keys()]
+            all_vars.extend(list(_read_alias_ini()))
+            self._all_vars=all_vars
+        return self._all_vars
+    
     @property
     def var_ini(self):
         """Config file specifying variable information"""
@@ -613,7 +669,7 @@ class VarCollection(object):
             return True
         return False
     
-    def __getattr__(self, var_name):
+    def __getattr__(self, attr):
         """Use . operator to access variables
         
         Example
@@ -622,7 +678,9 @@ class VarCollection(object):
         >>> all_vars.od550aer
         Variable od550aer
         """
-        return self[var_name]
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+        return self[attr]
         
     def __getitem__(self, var_name):
         """Use [] operator to access variables
@@ -635,15 +693,19 @@ class VarCollection(object):
         """
         #make sure to be in the right namespace
         if var_name in self:
-            return Variable(var_name, cfg=self._cfg)
+            return Variable(var_name, cfg=self._cfg_parser)
     
         low = var_name.lower()
         check = low.replace('3d','').replace('dry', '')
         
         if not check in self:
-            raise VariableDefinitionError("No default configuration available "
-                                          "for variable {}".format(var_name))
-        return Variable(var_name, cfg=self._cfg)
+            try:
+                _check_alias_family(check, parser=self._alias_parser)
+            except VariableDefinitionError:    
+                raise VariableDefinitionError("No default configuration "
+                                              "available for variable {}"
+                                              .format(var_name))
+        return Variable(var_name, cfg=self._cfg_parser)
         
         
     def __str__(self):
@@ -677,12 +739,9 @@ def all_var_names():
 
 if __name__=="__main__":
     
-    from pyaerocom import const
-    all_vars = VarCollection(const._coords_info_file)
+    import pyaerocom as pya
     
-    var1 = Variable('ec550aer')
-    
-    print(var1.units)
-    
-    
-    v = const.VARS.dryhno3
+    all_vars = VarCollection(pya.const._coords_info_file)
+
+    print(pya.const.VARS.sconcso4)
+    print(Variable('sconcso4'))

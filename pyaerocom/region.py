@@ -332,7 +332,13 @@ def find_closest_region_coord(lat, lon, **add_regions):
                 min_dist = d
                 best=rname
         return best
-                
+
+def valid_region(name) -> bool:
+    """Boolean specifying whether input region is valid or not"""
+    if isinstance(name, str):
+        return True if name.upper() in get_all_default_region_ids() else False
+    return False
+
 if __name__=="__main__":
 
     r = Region()
@@ -344,3 +350,4 @@ if __name__=="__main__":
     reg = find_closest_region_coord(lat, lon)
     print(reg)
         
+    print(valid_region('europe'))

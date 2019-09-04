@@ -32,7 +32,8 @@ def main():
                    help='Delete (potentially) existing json files before rerun')
     p.add_argument('-p', '--print_config', action='store_true',
                    help='print configuration (no analysis is run')
-    
+    p.add_argument('--delete', action='store_true',
+                   help='print configuration (no analysis is run')
     
     
     args = p.parse_args()
@@ -53,6 +54,7 @@ def main():
         raise FileNotFoundError('No such file or directory: {}'.format(args.config_dir))
     
     import pyaerocom as pya
+
     cfg_avail = pya.web.helpers.get_all_config_files_evaluation_iface(args.config_dir)
     
     if len(cfg_avail) == 0:
@@ -70,17 +72,23 @@ def main():
                                    exp_id=args.exp_id, 
                                    config_dir=args.config_dir)
     
+    if args.delete:
+        ae.delete_experiment_data()
+        sys.exit()
+     
     if args.print_config:
         print(ae)
         sys.exit()
     
     if args.model_name is not None:
-        if not args.model_name in list(ae.model_config):
+        if len(ae.find_model_matches(args.model_name)) == 0:
+        #if not args.model_name in list(ae.model_config):
             raise ValueError('No such model_name available in current config. '
                              'Please choose from: {}'
                              .format(list(ae.model_config)))
     if args.obs_name is not None:
-        if not args.obs_name in list(ae.obs_config):
+        if len(ae.find_obs_matches(args.obs_name)) == 0:
+        #if not args.obs_name in list(ae.obs_config):
             raise ValueError('No such obs_name available in current config. '
                              'Please choose from: {}'
                              .format(list(ae.obs_config)))
