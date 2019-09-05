@@ -1284,7 +1284,7 @@ class GriddedData(object):
                                            region, repr(e)))
             if not isinstance(region, Region):
                 raise ValueError("Invalid input for region")
-            suppl["region"] = region
+            suppl["region"] = region.name
             lon_range, lat_range = region.lon_range, region.lat_range
         if lon_range is not None and lat_range is not None:
             data = self.grid.intersection(longitude=lon_range, 
