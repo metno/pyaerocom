@@ -123,7 +123,7 @@ class Config(object):
                                upper = 15000,
                                step  = 250)
     
-    
+    RH_MAX_PERCENT_DRY = 40
     
     #: If True, then whenever applicable the time resampling constraints
     #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when 
