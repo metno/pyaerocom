@@ -91,7 +91,7 @@ class GridIO(object):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest
         # resolution
-        self.TS_TYPES = ['hourly', '3hourly', 'daily', 'weekly', 
+        self.TS_TYPES = ['minutely', 'hourly', '3hourly', 'daily', 'weekly', 
                          'monthly', 'yearly']
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
