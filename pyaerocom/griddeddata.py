@@ -1285,7 +1285,7 @@ class GriddedData(object):
                                            region, repr(e)))
             if not isinstance(region, Region):
                 raise ValueError("Invalid input for region")
-            suppl["region"] = region
+            suppl["region"] = region.name
             lon_range, lat_range = region.lon_range, region.lat_range
         if lon_range is not None and lat_range is not None:
             data = self.grid.intersection(longitude=lon_range, 
@@ -2025,14 +2025,10 @@ if __name__=='__main__':
     plt.close("all")
     
     
-    reader = pya.io.ReadGridded('CAM5_CTRL2016')
-    absc550aer = reader.read_var('abs550dryaer', start=2010, 
-                                vert_which='Surface')        
-    ec550dryaer = reader.read_var('ec550dryaer', start=2010, 
-                                  vert_which='Surface')        
+    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
+    print('Here')
+    ts = data.get_area_weighted_timeseries()
     
-    absc550aer.quickplot_map()
-    ec550dryaer.quickplot_map()
 
 # =============================================================================
 #     data.downscale_time('monthly')
