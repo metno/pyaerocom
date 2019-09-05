@@ -29,7 +29,9 @@ IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
                     'yearly'    :   coord_categorisation.add_year} 
 
 # some helper dictionaries for conversion of temporal resolution
-TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
+# https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
+TS_TYPE_TO_PANDAS_FREQ = {'minutely':   'T',
+                          'hourly'  :   'H',
                           '3hourly' :   '3H',
                           'daily'   :   'D',
                           'weekly'  :   'W',
@@ -43,7 +45,9 @@ PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 
 # frequency strings 
-TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
+# https://numpy.org/devdocs/reference/arrays.datetime.html#datetime-units
+TS_TYPE_TO_NUMPY_FREQ =  {'minutely':   'm',
+                          'hourly'  :   'h',
                           '3hourly' :   '3h',
                           'daily'   :   'D',
                           'weekly'  :   'W',
@@ -60,7 +64,8 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'monthly'  : '%b %Y',
                          'yearly'   : '%Y'}
 
-TS_TYPE_SECS = {'hourly'  : 3600,
+TS_TYPE_SECS = {'minutely': 60,
+                'hourly'  : 3600,
                 '3hourly' : 10800,
                 'daily'   : 86400,
                 'weekly'  : 604800,
