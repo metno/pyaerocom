@@ -7,6 +7,7 @@ from pyaerocom import const
 import re
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE, 
                                    TS_TYPE_TO_PANDAS_FREQ)
+from pyaerocom.exceptions import TemporalResolutionError
 
 class TsType(object):
     VALID = const.GRID_IO.TS_TYPES
@@ -23,10 +24,25 @@ class TsType(object):
         self._val = None
         
         self.val = val
-        
+    
+    @property
+    def mulfac(self):
+        """Multiplication factor of frequency"""
+        return self._mulfac
+    
+    @property
+    def base(self):
+        """Base string (without multiplication factor, cf :attr:`mulfac`)"""
+        return self._val
+    
+    @property
+    def name(self):
+        """Name of ts_type (Wrapper for :attr:`val`)"""
+        return self.val
+    
     @property
     def val(self):
-        """String name of frequency"""
+        """Value of frequency (string type), e.g. 3daily"""
         if self._mulfac != 1:
             return '{}{}'.format(self._mulfac, self._val)
         return self._val
@@ -35,7 +51,8 @@ class TsType(object):
     def val(self, val):
         ival=1
         if val[-1].isdigit():
-            raise ValueError('Invalid input for TsType: {}'.format(val))
+            raise TemporalResolutionError('Invalid input for TsType: {}'
+                                          .format(val))
         elif val[0].isdigit():
             ivalstr = re.findall('\d+', val)[0]
             val = val.split(ivalstr)[-1]
@@ -43,16 +60,18 @@ class TsType(object):
         if not val in self.VALID:
             try:
                 val = self._from_pandas(val)
-            except ValueError:
-                raise ValueError('Invalid input. Need any valid ts_type: {}'
-                                 .format(self.VALID))
+            except TemporalResolutionError:
+                raise TemporalResolutionError('Invalid input. Need any valid '
+                                              'ts_type: {}'
+                                              .format(self.VALID))
         if val in self.TS_MAX_VALS and ival != 1:
             if ival > self.TS_MAX_VALS[val]:
-                raise ValueError('Invalid input for ts_type {}{}. '
-                                 'Interval factor {} exceeds maximum allowed '
-                                 'for {}, which is: {}'
-                                 .format(ival, val, ival, val, 
-                                         self.TS_MAX_VALS[val]))
+                raise TemporalResolutionError('Invalid input for ts_type {}{}. '
+                                              'Interval factor {} exceeds '
+                                              'maximum allowed for {}, which '
+                                              'is: {}'
+                                              .format(ival, val, ival, val, 
+                                                      self.TS_MAX_VALS[val]))
         self._val = val
         self._mulfac = ival
         
@@ -73,8 +92,9 @@ class TsType(object):
         
     def _from_pandas(self, val):
         if not val in self.FROM_PANDAS:
-            raise ValueError('Invalid input: {}, need pandas frequency string'
-                             .format(val))
+            raise TemporalResolutionError('Invalid input: {}, need pandas '
+                                          'frequency string'
+                                          .format(val))
         return self.FROM_PANDAS[val]
     
     def __lt__(self, other):

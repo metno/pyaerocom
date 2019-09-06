@@ -34,7 +34,7 @@ TS_TYPE_TO_PANDAS_FREQ = {'minutely':   'T',
                           'hourly'  :   'H',
                           '3hourly' :   '3H',
                           'daily'   :   'D',
-                          'weekly'  :   'W',
+                          'weekly'  :   'W-MON',
                           'monthly' :   'MS', #Month start !
                           'season'  :   'Q', 
                           'yearly'  :   'AS'}
@@ -72,8 +72,8 @@ TS_TYPE_SECS = {'minutely': 60,
                 'monthly' : 2592000, #counting 3 days per month (APPROX)
                 'yearly'  : 31536000} #counting 365 days (APPROX)
 
-XARR_TIME_GROUPERS = {'hourly'  : 'hour',
-                      'daily'   : 'day',
-                      'weekly'  : 'week',
-                      'monthly' : 'month', 
-                      'yearly'  : 'year'}
+XARR_TIME_GROUPERS = {'H'       : 'hour',
+                      'D'       : 'day',
+                      'W-Mon'   : 'week',
+                      'MS'      : 'month', 
+                      'AS'      : 'year'}

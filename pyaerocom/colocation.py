@@ -563,7 +563,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         
         # assign the unified timeseries data to the colocated data array
         # at current station index i
-        coldata[0, :, i] = _df['o'].values
+        try:
+            coldata[0, :, i] = _df['o'].values
+        except:
+            print()
         coldata[1, :, i] = _df['m'].values
         
         lons.append(obs_stat.longitude)

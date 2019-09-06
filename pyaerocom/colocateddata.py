@@ -38,7 +38,7 @@ class ColocatedData(object):
     
     Parameters
     ----------
-    data : :obj:`xarray.DataArray` or :obj:`numpy.ndarray` or :obj:`str`, optional
+    data : xarray.DataArray or numpy.ndarray or str, optional
         Colocated data. If str, then it is attempted to be loaded from file.
         Else, it is assumed that data is numpy array and that all further 
         supplementary inputs (e.g. coords, dims) for the 
@@ -54,7 +54,7 @@ class ColocatedData(object):
     IOError
         if init fails
     """
-    __version__ = '0.08'
+    __version__ = '0.09'
     def __init__(self, data=None, **kwargs):
         self._data = None
         
@@ -251,7 +251,8 @@ class ColocatedData(object):
         except:
             return False
     
-    def resample_time(self, to_ts_type, min_num_obs=None, 
+    def resample_time(self, to_ts_type, how='mean',
+                      apply_constraints=None, min_num_obs=None, 
                       colocate_time=True, inplace=True, **kwargs):
         """Resample time dimension
         
@@ -275,44 +276,72 @@ class ColocatedData(object):
         else:
             col = self.copy()
             
-        to, current = TsType(to_ts_type), TsType(col.ts_type)
-        if to == current:
-            const.print_log.info('Skipping resampling of ColocatedData. Data is '
-                                 'already in {} resolution'.format(to_ts_type))
-            return col
-        elif to > current:
-            from pyaerocom.exceptions import TemporalResolutionError
-            raise TemporalResolutionError('Cannot resample time: input resolution '
-                                          '{} is higher than current {}'
-                                          .format(to_ts_type, current.val))
-        
-        # First, compute a mask (in new resolution) that fulfilles the 
-        # minimum number of measurements requirement
-        invalid = None
-        if min_num_obs is not None:
-            if not to.val in XARR_TIME_GROUPERS:
-                raise ValueError('Cannot infer xarray grouper for ts_type {}'
-                                 .format(to.val))
-            gr = XARR_TIME_GROUPERS[to.val]
-            # 2D mask with shape of resampled data array
-            invalid = col.data[0].groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
-            
+# =============================================================================
+#         to, current = TsType(to_ts_type), TsType(col.ts_type)
+#         if to == current:
+#             const.print_log.info('Skipping resampling of ColocatedData. Data is '
+#                                  'already in {} resolution'.format(to_ts_type))
+#             return col
+#         elif to > current:
+#             from pyaerocom.exceptions import TemporalResolutionError
+#             raise TemporalResolutionError('Cannot resample time: input resolution '
+#                                           '{} is higher than current {}'
+#                                           .format(to_ts_type, current.val))
+#         
+# =============================================================================
         # if colocate time is activated, remove datapoints from model, where
         # there is no observation
         if colocate_time:
             mask = np.isnan(col.data[0]).data
             col.data.data[1][mask] = np.nan
-            
-        freq = TS_TYPE_TO_PANDAS_FREQ[to.val]
+        # First, compute a mask (in new resolution) that fulfills the 
+        # minimum number of measurements requirement
+# =============================================================================
+#         invalid = None
+#         if min_num_obs is not None:
+#             pd_freq=to.to_pandas()
+#             if not pd_freq in XARR_TIME_GROUPERS:
+#                 raise ValueError('Cannot infer xarray grouper for ts_type {}'
+#                                  .format(to.val))
+#             gr = XARR_TIME_GROUPERS[pd_freq]
+#             # 2D mask with shape of resampled data array
+#             invalid = col.data.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+#             
+#         
+#             
+#         freq = TS_TYPE_TO_PANDAS_FREQ[to.val]
+#         
+#         data_arr = col.data.resample({'time' : freq}).mean(dim='time')
+#         if invalid is not None:
+#             data_arr.data[invalid.data] = np.nan
+# =============================================================================
+        from pyaerocom.time_resampler import TimeResampler
         
-        data_arr = col.data.resample({'time' : freq}).mean(dim='time')
-        if invalid is not None:
-            data_arr.data[0][invalid.data] = np.nan
+        res = TimeResampler(col.data)
+        data_arr = res.resample(to_ts_type=to_ts_type,
+                                 from_ts_type=col.ts_type,
+                                 how=how,
+                                 apply_constraints=apply_constraints,
+                                 min_num_obs=min_num_obs,**kwargs)
+        
         data_arr.attrs.update(col.meta)
-        data_arr.attrs['ts_type'] = to.val
+        data_arr.attrs['ts_type'] = to_ts_type
         
         col.data = data_arr
         return col
+    
+    def get_coords_valid_obs(self):
+        
+        obs = self.data[0]
+        if self.ndim == 4:
+            stacked = obs.stack(x=['latitude', 'longitude'])
+            invalid = stacked.isnull().all(dim='time')
+            coords = stacked.x[~invalid].values
+            return list(zip(*list(coords)))
+        
+        invalid = obs.isnull().all(dim='time')
+        return (list(obs.latitude[~invalid].values), 
+                list(obs.longitude[~invalid].values))
         
     def copy(self):
         """Copy this object"""
@@ -461,16 +490,15 @@ class ColocatedData(object):
         return obj
         
     @staticmethod
-    def _aerocom_savename(var_name, obs_id, model_id, ts_type_src, start_str, 
+    def _aerocom_savename(var_name, obs_id, model_id, start_str, 
                           stop_str, ts_type, filter_name):
-        return ('{}_REF-{}_MOD-{}-{}_{}_{}_{}_{}'.format(var_name,
-                                                         obs_id, 
-                                                         model_id, 
-                                                         ts_type_src, 
-                                                         start_str, 
-                                                         stop_str,
-                                                         ts_type,
-                                                         filter_name))
+        return ('{}_REF-{}_MOD-{}_{}_{}_{}_{}'.format(var_name,
+                                                      obs_id, 
+                                                      model_id, 
+                                                      start_str, 
+                                                      stop_str,
+                                                      ts_type,
+                                                      filter_name))
     @property
     def savename_aerocom(self):
         """Default save name for data object following AeroCom convention"""
@@ -478,7 +506,6 @@ class ColocatedData(object):
         stop_str = self.meta['stop_str']
         
         source_info = self.meta['data_source']
-        ts_type_src = self.meta['ts_type_src'][1] #model
         data_ref_id = source_info[0]
         if len(source_info) > 2:
             model_id = 'MultiModels'
@@ -487,7 +514,6 @@ class ColocatedData(object):
         return self._aerocom_savename(self.name,
                                       data_ref_id,
                                       model_id,
-                                      ts_type_src,
                                       start_str,
                                       stop_str,
                                       self.ts_type,
@@ -784,16 +810,17 @@ class ColocatedData(object):
     
         return ColocatedData(filtered)
         
-    def plot_coordinates(self, marker='x', markersize=8, fontsize_base=10, 
+    def plot_coordinates(self, marker='x', markersize=12, fontsize_base=10, 
                          **kwargs):
         
         from pyaerocom.plot.plotcoordinates import plot_coordinates
         
-        return plot_coordinates(lons=self.data.longitude.values, 
-                                lats=self.data.latitude.values, 
+        lats, lons = self.get_coords_valid_obs()
+        return plot_coordinates(lons=lons, 
+                                lats=lats, 
                                 marker=marker, markersize=markersize,
                                 fontsize_base=fontsize_base, **kwargs)
-    
+        
     def __contains__(self, val):
         return self.data.__contains__(val)
     
@@ -823,22 +850,28 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close('all')
+    
     obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
 
     coldata1 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
-                                                        ts_type='monthly',
-                                                        start=2010,
-                                                        var_outlier_ranges={'od550aer':[0,10]},
-                                                        filter_name='WORLD-noMOUNTAINS',
-                                                        remove_outliers=True, 
-                                                        colocate_time=False)
+                                                         ts_type='daily',
+                                                         start=2010,
+                                                         var_outlier_ranges={'od550aer':[0,10]},
+                                                         filter_name='WORLD-noMOUNTAINS',
+                                                         remove_outliers=True, 
+                                                         colocate_time=False)
+    coldata1 = coldata1.resample_time('yearly', colocate_time=True)
+    coldata1.plot_coordinates()
     
     sat = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
     
     coldata2 = pya.colocation.colocate_gridded_gridded(modeldata, sat, 
                                                        ts_type='monthly',
                                                        regrid_res_deg=10)
+    
+   
+    coldata2.plot_coordinates()
     
     sat_namerica = coldata2.apply_latlon_filter(region_id='NAMERICA')
     sat_namerica.plot_scatter()

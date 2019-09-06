@@ -467,9 +467,15 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
         data = resampler.agg(how)
     else:
         df = resampler.agg([how, 'count'])
-        df[how][df['count'] < min_num_obs] = np.nan
+        print(freq, min_num_obs)
+        print('before mean', df[how].mean())
+        invalid = df['count'] < min_num_obs
+        print(len(invalid), invalid.sum())
+        df[how][invalid] = np.nan
+        print('after mean', df[how].mean())
         data = df[how]
-    return data
+        
+    return data.loc[s.index[0]:s.index[-1]]
 
 def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
@@ -511,10 +517,25 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     elif not 'time' in arr.dims:
         raise DataDimensionError('Cannot resample time: input DataArray has '
                                  'no time dimension')
+    
+    from pyaerocom.tstype import TsType
+    from pyaerocom.time_config import XARR_TIME_GROUPERS
+    to = TsType(freq)
+    pd_freq=to.to_pandas()
+    invalid = None
     if min_num_obs is not None:
-        raise NotImplementedError('Coming soon...')
+        if not pd_freq in XARR_TIME_GROUPERS:
+            raise ValueError('Cannot infer xarray grouper for ts_type {}'
+                             .format(to.val))
+        gr = XARR_TIME_GROUPERS[pd_freq]
+        # 2D mask with shape of resampled data array
+        invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+    
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
-    return arr.resample(time=freq, loffset=loffset).mean(dim='time')
+    arr = arr.resample(time=pd_freq, loffset=loffset).mean(dim='time')
+    if invalid is not None:
+        arr.data[invalid.data] = np.nan
+    return arr
     
 def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
                    num_keys=NUM_KEYS_META, num_rtol=1e-2):

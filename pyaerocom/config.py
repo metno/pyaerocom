@@ -122,7 +122,7 @@ class Config(object):
     DEFAULT_VERT_GRID_DEF = od(lower = 0,
                                upper = 15000,
                                step  = 250)
-    
+    #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
     
     #: If True, then whenever applicable the time resampling constraints
@@ -134,7 +134,10 @@ class Config(object):
     
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations
-    OBS_MIN_NUM_RESAMPLE = dict(monthly     =   dict(daily  = 2))
+    OBS_MIN_NUM_RESAMPLE = dict(yearly      =   dict(monthly    = 3),
+                                monthly     =   dict(daily      = 7),
+                                daily       =   dict(hourly     = 6),
+                                hourly      =   dict(minutely   = 15))
     
     #: This boolean can be used to enable / disable the former (i.e. use
     #: available wavelengths of variable in a certain range around variable

@@ -13,8 +13,8 @@ from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
                                          BrowseDict)
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
-from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
-                               resample_time_dataarray)
+from pyaerocom.time_resampler import TimeResampler
+from pyaerocom.helpers import isnumeric, isrange
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
@@ -675,7 +675,7 @@ class StationData(StationMetaData):
     def _merge_vardata_2d(self, other, var_name):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
         ts_type = self._ensure_same_var_ts_type_other(other, var_name)
-
+        
         s0 = self.resample_timeseries(var_name, ts_type=ts_type,
                                       inplace=True).dropna()
         s1 = other.resample_timeseries(var_name, inplace=True,
@@ -942,8 +942,9 @@ class StationData(StationMetaData):
         
         ToDo: complete docstring
         """
+        raise NotImplementedError('Needs review...')
         new = self.to_timeseries(var_name, freq=freq, 
-                                  resample_how='mean')
+                                 resample_how='mean')
         coverage = 1 - new.isnull().sum() / len(new)
         if coverage < min_coverage_interp:
             from pyaerocom.exceptions import DataCoverageError
@@ -967,9 +968,10 @@ class StationData(StationMetaData):
             else:
                 self.ts_type = ts_type
         return new
-    
+        
     def resample_timeseries(self, var_name, ts_type, how='mean',
-                            inplace=False, min_num_obs=None, **kwargs):
+                            apply_constraints=None, min_num_obs=None, 
+                            inplace=False, **kwargs):
         """Resample one of the time-series in this object
         
         Parameters
@@ -981,80 +983,71 @@ class StationData(StationMetaData):
             frequency string)
         how : str
             how should the resampled data be averaged (e.g. mean, median)
+        apply_constraints : bool, optional
+            if True, then hierarchical resampling constraints are applied
+            (for details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        min_num_obs : dict or int, optional
+            minimum number of observations required per period (when 
+            downsampling). For details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
         inplace : bool
             if True, then the current data object stored in self, will be 
             overwritten with the resampled time-series
-        min_num_obs : :obj:`int`, optional
-            minimum number of observations required per period (when downsampling).
-            E.g. if input is in daily resolution and freq is monthly and 
-            min_num_obs is 10, then all months that have less than 10 days of data
-            are set to nan.
+        **kwargs
+            Additional keyword args passed to 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`
             
         Returns
         -------
-        pandas.Series
-            resampled time-series
+        pandas.Series or xarray.DataArray
+            resampled time-series data
         """
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
         
         to_ts_type = TsType(ts_type) # make sure to use AeroCom ts_type
         
-        current = None
         try: 
-            current = TsType(self.get_var_ts_type(var_name))
-            if to_ts_type > current:
-                raise TemporalResolutionError('Cannot resample {} in StationData. '
-                                              'Input frequency {} '
-                                              'is higher than current resolution {}'
-                                              .format(var_name, to_ts_type, current))
-            if min_num_obs is not None:
-                if current == to_ts_type and min_num_obs:
-                    const.print_log.warning('Setting min_num_obs to None in '
-                                            'StationData.resample_timeseries since '
-                                            'input resolution is the same as current '
-                                            'resolution')
-                    min_num_obs = None
-            
-            elif ts_type in const.OBS_MIN_NUM_RESAMPLE:
-                rules = const.OBS_MIN_NUM_RESAMPLE[to_ts_type.val]
-                if current.val in rules:
-                    min_num_obs =  rules[current.val]
-                    
-        except:
-            if min_num_obs is not None:
-                const.print_log.warning('Failed to access current temporal '
-                                        'resolution of {} data in StationData {}. '
-                                        'Deactivating min_num_obs={} requirement'
-                                        .format(var_name, self.station_name, 
-                                                min_num_obs))
-                min_num_obs = None
+            from_ts_type = TsType(self.get_var_ts_type(var_name))
+        except MetaDataError:
+            from_ts_type == None
+            const.print_log.warning('Failed to access current temporal '
+                                    'resolution of {} data in StationData {}. '
+                                    'No resampling constraints will be applied'
+                                    .format(var_name, self.station_name))
     
         data = self[var_name]
     
         if not isinstance(data, (pd.Series, xray.DataArray)):
             try:
-                data = self.to_timeseries(var_name, inplace=inplace)
+                data = self.to_timeseries(var_name)
             except Exception as e:
                 raise ValueError('{} data must be stored as pandas Series '
                                  'instance or as xarray.DataArray. Failed to '
                                  'convert to pandas Series.'
                                  'Error: {}'.format(repr(e)))
-        
-        if isinstance(data, pd.Series):
-            new = resample_timeseries(data, 
-                                      freq=to_ts_type.to_pandas(), 
-                                      how=how,
-                                      min_num_obs=min_num_obs)
+        resampler = TimeResampler(data)
+        new = resampler.resample(to_ts_type=to_ts_type,
+                                 from_ts_type=from_ts_type,
+                                 how=how,
+                                 apply_constraints=apply_constraints,
+                                 min_num_obs=min_num_obs, 
+                                 **kwargs)
+# =============================================================================
+#         if isinstance(data, pd.Series):
+#             new = resample_timeseries(data, 
+#                                       freq=to_ts_type.to_pandas(), 
+#                                       how=how,
+#                                       min_num_obs=min_num_obs)
+#             
+#         elif isinstance(data, xray.DataArray):
+#             new = resample_time_dataarray(data, 
+#                                           freq=to_ts_type.to_pandas(), 
+#                                           how=how, 
+#                                           min_num_obs=min_num_obs)
+# =============================================================================
             
-        elif isinstance(data, xray.DataArray):
-            
-            new = resample_time_dataarray(data, 
-                                          freq=to_ts_type.to_pandas(), 
-                                          how=how, 
-                                          min_num_obs=min_num_obs)
-            
-        
         if inplace:
             self[var_name] = new
             self.var_info[var_name]['ts_type'] = to_ts_type.val
@@ -1198,7 +1191,7 @@ class StationData(StationMetaData):
         
         
     def to_timeseries(self, var_name, freq=None, resample_how='mean', 
-                      **kwargs):
+                      apply_constraints=None, min_num_obs=None, **kwargs):
         """Get pandas.Series object for one of the data columns
         
         Parameters
@@ -1211,6 +1204,14 @@ class StationData(StationMetaData):
         resample_how : str
             choose from mean or median (only relevant if input parameter freq 
             is provided, i.e. if resampling is applied)
+        apply_constraints : bool, optional
+            if True, then hierarchical resampling constraints are applied
+            (for details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        min_num_obs : dict or int, optional
+            minimum number of observations required per period (when 
+            downsampling). For details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
         **kwargs
             optional keyword args passed to :func:`resample_timeseries`
             
@@ -1255,8 +1256,21 @@ class StationData(StationMetaData):
             data = self._to_ts_helper(var_name)
 
         if freq is not None:
-            data = resample_timeseries(data, freq, how=resample_how,
-                                       **kwargs)
+            resampler = TimeResampler(data)
+            try:
+                from_ts_type = self.get_var_ts_type(var_name)
+            except MetaDataError:
+                from_ts_type = None
+            data = resampler.resample(to_ts_type=freq, 
+                                      from_ts_type=from_ts_type, 
+                                      how=resample_how, 
+                                      apply_constraints=apply_constraints,
+                                      min_num_obs=min_num_obs,
+                                      **kwargs)
+# =============================================================================
+#             data = resample_timeseries(data, freq, how=resample_how,
+#                                        **kwargs)
+# =============================================================================
 
         return data
     
