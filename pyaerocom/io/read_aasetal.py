@@ -14,18 +14,17 @@ from pyaerocom.units_helpers import convert_unit
 from pyaerocom.helpers import get_tot_number_of_seconds
 
 class ReadSulphurAasEtAl(ReadUngriddedBase):
-    """Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
+    """ Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
 
     See Also
     ---------
         :class:`ReadUngriddedBase`
- 
 	"""
     # name of files in GawTadSubsetAasEtAl
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.05'
+    __version__ = '0.07'
 
     COL_DELIM = ','
 
@@ -47,15 +46,15 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     # This contains the mapping between the requested variables and what it is called in the files.
     
     COLNAMES_VARS = {}
-    COLNAMES_VARS['concentration_mgS/L'] = ['sconcso4pr']
+    COLNAMES_VARS['concentration_mgS/L']  = ['sconcso4pr']
     COLNAMES_VARS['concentration_ugS/m3'] = ['sconcso4', 'sconcso2']
-    COLNAMES_VARS['precip_amount_mm'] = ['pr']
-    COLNAMES_VARS['deposition_kgS/ha'] = ['wetso4']
+    COLNAMES_VARS['precip_amount_mm']     = ['pr']
+    COLNAMES_VARS['deposition_kgS/ha']    = ['wetso4']
 
     #: Dictionary mapping filenames to available variables in the respective files. 
     FILES_CONTAIN = {}
-    FILES_CONTAIN['monthly_so2.csv'] = ['sconcso2']
-    FILES_CONTAIN['monthly_so4_aero.csv'] = ['sconcso4']
+    FILES_CONTAIN['monthly_so2.csv']        = ['sconcso2']
+    FILES_CONTAIN['monthly_so4_aero.csv']   = ['sconcso4']
     FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'sconcso4pr']
     
     #: Dictionary mapping variable name to hard coded filenames. 
@@ -65,12 +64,12 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     VARS_TO_FILES['pr']         = ['monthly_so4_precip.csv']
     VARS_TO_FILES['wetso4']     = ['monthly_so4_precip.csv']
     VARS_TO_FILES['sconcso4pr'] = ['monthly_so4_precip.csv']
-    print(VARS_TO_FILES.keys())
+    
     # (from to unit)
-    UNITCONVERSION = {'sconcso2': ('ug S/m2', 'ug m-2'), 
-                      'sconcso4': ('ug S/m2', 'ug m-2'), 
-                      'wetso4':   ('kg S/ha', 'kg m-2 s-1'), 
-                      'sconcso4pr': ('mgS/L', 'g m-3')
+    UNITCONVERSION = {'sconcso2':   ('ug S/m2', 'ug m-2'), 
+                      'sconcso4':   ('ug S/m2', 'ug m-2'), 
+                      'wetso4':     ('kg S/ha', 'kg m-2'),  #  s-1
+                      'sconcso4pr': ('mg S/L',   'g m-3')
                       }
 
     #: :obj: `list` of :obj: `str` 
@@ -118,6 +117,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         # Looping over every station:
         for name, station_group in grouped:
+            print(station_group.head())
+            station_group.drop_duplicates(subset='dtime', keep='first',inplace = True)  # Drops duplacate rows 
+            # ask Jonas
             
             s = StationData()
             # Meta data
@@ -149,47 +151,14 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         s[var] = convert_unit(data=values, from_unit = from_unit, 
                                              to_unit = to_unit, var_name = var)
                         if var == 'wetso4':
-                            s[var] = s[var]*get_tot_number_of_seconds(ts_time = 'monthly', dtime = s['dtime'])
+                            s[var] = s[var]/get_tot_number_of_seconds(ts_type = 'monthly', 
+                                                 dtime = station_group['dtime'])
 
                     else:
                         # This should only be true for
                         values = pd.to_numeric(station_group[key],
                                                errors='coerce').values
-                                               
-                    """
-                    #s[var] = 
-                    if var == "wetso4":                    
-                        mass_sulhpor = pd.to_numeric(station_group[key],
-                                                     errors='coerce').values
-                        s[var] = unitconv_wet_depo(mass_sulhpor, 
-                                                   station_group['dtime'],  
-                                                   "monthly")
-                         
-                    elif var == "sconcso4pr":
-                        # Works when elif tests are in this order.
-                        # Unitconversion: from concentration_mgS/L.
-                        conc = pd.to_numeric(station_group[key],
-                                               errors='coerce').values
-                        # Conversion function operates in micro grams.
-                        
-                        # TODO fix unit.....!!!!!
-                        s[var] = unitconv_sfc_conc(conc, 4*10**(-3))*10**3
-                        # unitconv_sfc_conc is used for ug/m3
-                        # ug = 10**-3 mg
-                        # L = 10**-3m3
-
-                    elif "sconcso" in var: 
-                        conc = pd.to_numeric(station_group[key],
-                                               errors='coerce').values
-                        s[var] = unitconv_sfc_conc(conc, int(var[-1]))
-
-                    else:
-                        # variables precip and is of the correct unit. 
-                        #print(' Not converting va {}'.format(var))
-                        s[var] = pd.to_numeric(station_group[key],
-                                               errors='coerce').values
-                    # Adds the variable
-                    """
+                                             
                     s['variables'].append(var)
                 else:
                     if key == 'dtime':
@@ -357,7 +326,7 @@ if __name__ == "__main__":
      V = ['wetso4'] #
      ungridded = aa.read(V)
      names = ungridded.station_name[:10]
-     abington = ungridded.to_station_data(names[0], V)
+     abington = ungridded.to_station_data('K-puszta', V)
      abington.plot_timeseries(V[0])
     
      #plt.show()
