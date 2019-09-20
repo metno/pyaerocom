@@ -1688,8 +1688,8 @@ class GriddedData(object):
         
         from pyaerocom.plot.mapping import plot_griddeddata_on_map 
         
-        lons = self.longitude.points
-        lats = self.latitude.points
+        lons = self.longitude.contiguous_bounds()
+        lats = self.latitude.contiguous_bounds()
         
         fig = plot_griddeddata_on_map(data=data.grid.data, lons=lons, 
                                       lats=lats, 
