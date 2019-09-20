@@ -572,7 +572,8 @@ class UngriddedData(object):
                 if not var in stat:
                     continue
                 if freq is not None:
-                    stat.resample_timeseries(var, freq, inplace=True, **kwargs) # this does also insert NaNs, thus elif in next   
+                    stat.resample_timeseries(var, freq, inplace=True, 
+                                             **kwargs) # this does also insert NaNs, thus elif in next   
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
                 if np.all(np.isnan(stat[var].values)):
@@ -720,7 +721,6 @@ class UngriddedData(object):
                 continue
             vals_err = subset[:, self._DATAERRINDEX]
             flagged = subset[:, self._DATAFLAGINDEX]
-            
             altitude =  subset[:, self._DATAHEIGHTINDEX]
                 
             data = pd.Series(vals, dtime)
@@ -1014,7 +1014,7 @@ class UngriddedData(object):
                 raise MetaDataError('Invalid unit {} detected (expected {})'
                                     .format(u, unit))
     
-    def set_flags_nan(self, inplace=False):
+    def set_flags_nan(self, inplace=False, verbose=False):
         """Set all flagged datapoints to NaN
         
         Parameters
@@ -1044,8 +1044,7 @@ class UngriddedData(object):
         mask = obj._data[:, obj._DATAFLAGINDEX] == 1
         
         obj._data[mask, obj._DATAINDEX] = np.nan
-        
-        obj._add_to_filter_history('Set flagged data points to NaN')
+        obj._add_to_filter_history('set_flags_nan')
         return obj
     
     # TODO: check, confirm and remove Beta version note in docstring   
@@ -2446,7 +2445,48 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
         
 if __name__ == "__main__":
     
+    import matplotlib.pyplot as plt
     import pyaerocom as pya
+    plt.close('all')
+    data =  pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
     
-    data = pya.io.ReadUngridded().read('EBASMC', 'conctc')
-    data.plot_station_coordinates(var_name='conctc')
+    idx = data._find_station_indices('Alert')
+    
+    stats = []
+    for i in idx:
+        try:
+            stat = data.to_station_data(i, start=2010)
+            stats.append(stat)
+            print(i, stat.revision_date)
+            ax = stat.plot_timeseries('absc550aer')
+            ax.set_title(stat.filename, fontsize=10)
+            ax.set_xlabel('Revision date: {}'.format(stat.revision_date))
+            
+        except:
+            pass
+    
+    raise Exception
+    absc =  data
+    #scatc =  data.extract_var('scatc550dryaer')
+    
+    print('ABSC')
+    corra = data.set_flags_nan(inplace=False)
+    
+    for stat in absc.unique_station_names:
+        print('------------------------')
+        print(stat)
+        print('------------------------')
+        try:
+            print('RAW')
+            raw = absc.to_station_data(stat)
+            print('CORR')
+            corr = corra.to_station_data(stat)
+        except:
+            continue
+        
+        print()
+        
+    
+
+        
+    
