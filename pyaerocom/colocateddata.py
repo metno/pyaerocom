@@ -9,8 +9,6 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
-from pyaerocom.tstype import TsType
-from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ, XARR_TIME_GROUPERS
 import numpy as np
 import pandas as pd
 import os
@@ -54,7 +52,7 @@ class ColocatedData(object):
     IOError
         if init fails
     """
-    __version__ = '0.09'
+    __version__ = '0.10'
     def __init__(self, data=None, **kwargs):
         self._data = None
         
@@ -319,15 +317,18 @@ class ColocatedData(object):
         
         res = TimeResampler(col.data)
         data_arr = res.resample(to_ts_type=to_ts_type,
-                                 from_ts_type=col.ts_type,
-                                 how=how,
-                                 apply_constraints=apply_constraints,
-                                 min_num_obs=min_num_obs,**kwargs)
+                                from_ts_type=col.ts_type,
+                                how=how,
+                                apply_constraints=apply_constraints,
+                                min_num_obs=min_num_obs, **kwargs)
         
         data_arr.attrs.update(col.meta)
         data_arr.attrs['ts_type'] = to_ts_type
         
         col.data = data_arr
+        col.data.attrs['colocate_time'] = colocate_time
+        col.data.attrs.update(res.last_setup)
+        
         return col
     
     def get_coords_valid_obs(self):
@@ -534,7 +535,7 @@ class ColocatedData(object):
         dict
             dicitonary with meta information
         """
-        spl = os.path.basename(file_path).split('_COLL')[0].split('_')
+        spl = os.path.basename(file_path).split('.nc')[0].split('_')
         
         start = to_pandas_timestamp(spl[-4])
         stop = to_pandas_timestamp(spl[-3])
@@ -558,11 +559,11 @@ class ColocatedData(object):
                 mod_base = item.split('MOD-')[1]
             if not in_mod:
                 ref_base += item
-        model, ts_type_src = mod_base.rsplit('-',1)
-        meta['data_source'] = [ref_base, model]
-        meta['ts_type_src'] = ts_type_src
+        #model, ts_type_src = mod_base.rsplit('-',1)
+        meta['data_source'] = [ref_base, mod_base]
+        #meta['ts_type_src'] = ts_type_src
         return meta
-            
+      
     def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save data object as .nc file
         
@@ -586,9 +587,21 @@ class ColocatedData(object):
             savename = self.savename_aerocom
         if not savename.endswith('.nc'):
             savename = '{}.nc'.format(savename)
+        out = None
         for k, v in self.data.attrs.items():
             if v is None:
                 self.data.attrs[k] = 'None'
+            elif isinstance(v, bool):
+                self.data.attrs[k] = int(v)
+            if k == 'min_num_obs' and isinstance(v, dict):
+                out = ''
+                for to, how in v.items():
+                    for fr, num in how.items():
+                        out += '{},{},{};'.format(to, fr, num)
+                
+        if out is not None:
+            self.data.attrs['_min_num_obs'] = out
+            self.data.attrs.pop('min_num_obs')
         self.data.to_netcdf(path=os.path.join(out_dir, savename), **kwargs)
       
     def read_netcdf(self, file_path):
@@ -605,7 +618,18 @@ class ColocatedData(object):
         except Exception as e:
             raise NetcdfError('Invlid file name for ColocatedData: {}.Error: {}'
                               .format(os.path.basename(file_path, repr(e))))
-        self.data = xarray.open_dataarray(file_path)
+        arr = xarray.open_dataarray(file_path)
+        if '_min_num_obs' in arr.attrs:
+            info = {}
+            for val in arr.attrs['_min_num_obs'].split(';')[:-1]:
+                to, fr, num = val.split(',')
+                if not to in info:
+                    info[to] = {}
+                if not fr in info[to]:
+                    info[to][fr] = {}
+                info[to][fr] = int(num)
+            arr.attrs['min_num_obs'] = info
+        self.data = arr
         return self
     
     def to_dataframe(self):
@@ -850,6 +874,10 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close('all')
+    
+    col_filename = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
+    
+    meta = ColocatedData.get_meta_from_filename(col_filename)
     
     obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
