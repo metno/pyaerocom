@@ -29,6 +29,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              var_outlier_ranges=None,
                              update_baseyear_gridded=None,
                              colocate_time=False,
+                             apply_time_resampling_constraints=None,
+                             min_num_obs=None,
+                             var_keep_outliers=True,
                              **kwargs):
     """Colocate 2 gridded data objects
     
@@ -90,6 +93,19 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time 
         *before* resampling to lower resolution. 
+    apply_time_resampling_constraints : bool, optional
+        if True, then time resampling constraints are applied as provided via 
+        :attr:`min_num_obs` or if that one is unspecified, as defined in
+        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than 
+        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
+        (which defaults to True !!).
+    min_num_obs : int or dict, optional
+        minimum number of observations for resampling of time
+    var_keep_outliers : bool
+        if True, then no outliers will be removed from dataset to be analysed, 
+        even if `remove_outliers` is True. That is because for model evaluation
+        often only outliers are supposed to be removed in the observations but
+        not in the model.
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
@@ -147,7 +163,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         stop = to_pandas_timestamp(stop)
     
     # check overlap
-    if stop < grid_start or start >  grid_stop:
+    if stop < grid_start or start > grid_stop:
         raise TimeMatchError('Input time range {}-{} does not '
                              'overlap with data range: {}-{}'
                              .format(start, stop, grid_start, grid_stop))
@@ -206,11 +222,15 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'data_level'        :   3,
             'revision_ref'      :   gridded_data_ref.data_revision,
             'from_files'        :   files,
-            'from_files_ref'    :   files_ref}
+            'from_files_ref'    :   files_ref,
+            'colocate_time'     :   colocate_time,
+            'apply_constraints' :   apply_time_resampling_constraints,
+            'min_num_obs'       :   min_num_obs}
     
     meta.update(regfilter.to_dict())
     if remove_outliers:
-        gridded_data.remove_outliers(low, high)
+        if not var_keep_outliers:
+            gridded_data.remove_outliers(low, high)
         gridded_data_ref.remove_outliers(low_ref, high_ref)
     data = gridded_data.grid.data
     if isinstance(data, np.ma.core.MaskedArray):
@@ -242,6 +262,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if colocate_time and grid_ts_type != ts_type:
         data = data.resample_time(to_ts_type=ts_type, 
                                   colocate_time=True,
+                                  apply_constraints=apply_time_resampling_constraints,
+                                  min_num_obs=min_num_obs,
                                   **kwargs)
     return data
 
@@ -252,7 +274,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                var_ref=None, var_outlier_ranges=None, 
                                update_baseyear_gridded=None,
                                ignore_station_names=None,
+                               apply_time_resampling_constraints=None,
+                               min_num_obs=None,
                                colocate_time=False,
+                               var_keep_outliers=True,
                                **kwargs):
     """Colocate gridded with ungridded data 
     
@@ -318,12 +343,25 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     ignore_station_names : str or list, optional
         station name or pattern or list of station names or patterns that should
         be ignored
+    apply_time_resampling_constraints : bool, optional
+        if True, then time resampling constraints are applied as provided via 
+        :attr:`min_num_obs` or if that one is unspecified, as defined in
+        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than 
+        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
+        (which defaults to True !!).
+    min_num_obs : int or dict, optional
+        minimum number of observations for resampling of time
     colocate_time : bool
         if True and if original time resolution of data is higher than desired
         time resolution (`ts_type`), then both datasets are colocated in time 
         *before* resampling to lower resolution. 
+    var_keep_outliers : bool
+        if True, then no outliers will be removed from dataset to be analysed, 
+        even if `remove_outliers` is True. That is because for model evaluation
+        often only outliers are supposed to be removed in the observations but
+        not in the model.
     **kwargs
-        additional keyword args (passet to 
+        additional keyword args (passed to 
         :func:`UngriddedData.to_station_data_all`)
         
     Returns
@@ -429,7 +467,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     ungridded_freq = None # that keeps ungridded data in original resolution
     
     if not colocate_time:
-        
         gridded_data = gridded_data.resample_time(to_ts_type=ts_type)
         ungridded_freq = ts_type # converts ungridded data directly to desired resolution
         
@@ -443,18 +480,29 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref, 
                                        high=high_ref)
-        
-       
-    all_stats = ungridded_data.to_station_data_all(vars_to_convert=var_ref, 
-                                                   start=start, 
-                                                   stop=stop, 
-                                                   freq=ungridded_freq,
-                                                   by_station_name=True,
-                                                   ignore_index=ignore_station_names)
+    
+    all_stats = ungridded_data.to_station_data_all(
+            
+            vars_to_convert=var_ref, 
+            start=start, 
+            stop=stop, 
+            freq=ungridded_freq,
+            by_station_name=True,
+            ignore_index=ignore_station_names,
+            apply_constraints=apply_time_resampling_constraints,
+            min_num_obs=min_num_obs,
+            **kwargs)
     
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
+    
+    # resampling constraints may have been altered in case input was None, 
+    # thus overwrite
+    vi = obs_stat_data[0]['var_info'][var_ref]
+    if 'apply_constraints' in vi:
+        apply_time_resampling_constraints = vi['apply_constraints']
+        min_num_obs = vi['min_num_obs']
     
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError('Variable {} is not available in specified '
@@ -501,6 +549,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
+        
         if ts_type_src_ref is None:
             ts_type_src_ref = obs_stat['ts_type_src']
         elif obs_stat['ts_type_src'] != ts_type_src_ref:
@@ -528,7 +577,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         
         # get model data corresponding to station
         grid_stat = grid_stat_data[i]
-        
         if harmonise_units:
             grid_unit = grid_stat.get_unit(var)
             obs_unit = obs_stat.get_unit(var_ref)
@@ -537,17 +585,17 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             if gridded_unit is None:
                 gridded_unit = obs_unit
         
-        if remove_outliers:
+        if remove_outliers and not var_keep_outliers:
             # don't check if harmonise_units is active, because the 
-            # remove_outliers method checks units based AeroCom default 
+            # remove_outliers method checks units based on AeroCom default 
             # variables, and a variable mapping might be active, i.e. 
             # sometimes models use abs550aer for absorption coefficients 
             # with units [m-1] and not for AAOD (which is the AeroCom default
             # and unitless. Hence, unit check in remove_outliers works only
             # if the variable name (and unit) corresonds to AeroCom default)
-            chk_unit = not harmonise_units 
+            #chk_unit = not harmonise_units 
             grid_stat.remove_outliers(var, low=low, high=high,
-                                      check_unit=chk_unit)
+                                      check_unit=True)
         
         # get grid and obs timeseries data (that may be sampled in arbitrary
         # time resolution, particularly the obs data)
@@ -562,11 +610,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         _df = pd.concat([obs_ts1, grid_ts1], axis=1, keys=['o', 'm'])
         
         # assign the unified timeseries data to the colocated data array
-        # at current station index i
-        try:
-            coldata[0, :, i] = _df['o'].values
-        except:
-            print()
+        coldata[0, :, i] = _df['o'].values
         coldata[1, :, i] = _df['m'].values
         
         lons.append(obs_stat.longitude)
@@ -601,7 +645,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'revision_ref'      :   revision,
             'from_files'        :   files,
             'from_files_ref'    :   None,
-            'stations_ignored'  :   ignore_station_names}
+            'stations_ignored'  :   ignore_station_names,
+            'colocate_time'     :   colocate_time,
+            'apply_constraints' :   apply_time_resampling_constraints,
+            'min_num_obs'       :   min_num_obs}
 
     
     meta.update(regfilter.to_dict())
@@ -625,6 +672,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     if colocate_time and grid_ts_type != ts_type:
         data = data.resample_time(to_ts_type=ts_type, 
                                   colocate_time=True,
+                                  apply_constraints=apply_time_resampling_constraints,
+                                  min_num_obs=min_num_obs,
                                   **kwargs)
     return data
 
@@ -635,31 +684,12 @@ if __name__=='__main__':
     
     obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    gridded_obs = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer',
-                                                         start=2010)
     
-    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', 
-                                                               start=2010)
-    
-    aeronet = colocate_gridded_ungridded(modeldata, obsdata, 'monthly',
-                                         start = 2010)
-    
-    aeronet.plot_scatter()
-    
-    daily = colocate_gridded_gridded(modeldata, gridded_obs, 
-                                       ts_type='daily',
-                                       colocate_time=False)
-    
-    daily.plot_scatter()
-    
-    monthly = colocate_gridded_gridded(modeldata, gridded_obs, 
-                                       ts_type='monthly',
-                                       colocate_time=False)
-    
-    monthly2 = colocate_gridded_gridded(modeldata, gridded_obs, 
-                                        ts_type='monthly',
-                                        colocate_time=True)
-    
-    daily.plot_scatter()
-    monthly.plot_scatter()
-    monthly2.plot_scatter()
+    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
+    coldata = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, ts_type='monthly',
+                                                    start=2010,
+                                                    var_outlier_ranges={'od550aer':[0,10]},
+                                                    filter_name='WORLD-noMOUNTAINS',
+                                                    remove_outliers=True,
+                                                    colocate_time=False, 
+                                                    min_num_obs=None)
