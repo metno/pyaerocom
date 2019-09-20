@@ -467,12 +467,12 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
         data = resampler.agg(how)
     else:
         df = resampler.agg([how, 'count'])
-        print(freq, min_num_obs)
-        print('before mean', df[how].mean())
+        const.logger.info(freq, min_num_obs)
+        const.logger.info('before mean', df[how].mean())
         invalid = df['count'] < min_num_obs
-        print(len(invalid), invalid.sum())
+        const.logger.info(len(invalid), invalid.sum())
         df[how][invalid] = np.nan
-        print('after mean', df[how].mean())
+        const.logger.info('after mean', df[how].mean())
         data = df[how]
         
     return data.loc[s.index[0]:s.index[-1]]
