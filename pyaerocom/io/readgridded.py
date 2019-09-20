@@ -331,6 +331,22 @@ class ReadGridded(object):
             
         return to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
     
+    def has_var(self, var_name):
+        """Check if variable is available
+        
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+        
+        Returns
+        -------
+        bool
+        """
+        if var_name in self.vars_provided or self.check_compute_var(var_name):
+            return True
+        return False
+    
     def _get_years_to_load(self, start=None, stop=None):
         """Array containing year numbers that are supposed to be loaded
         
@@ -1717,10 +1733,8 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    print(r.vars_provided)
+    data = ReadGridded('TM5_AP3-CTRL2019').read_var('od550aer')
     
-    data = r.read_var('concpm10')
-    data.resample_time('yearly').quickplot_map()
+    data.quickplot_map()
     
     
