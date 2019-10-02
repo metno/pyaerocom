@@ -36,11 +36,13 @@ HA_TO_SQM = 10000   # hectar to square metre.
 # logic of hierarchy is: variable -> from unit -> to_unit -> conversion factor
 UCONV_MUL_FACS = pd.DataFrame([
         
-  ['concso4', 'ug S/m2', 'ug m-2',  UCONV_FAC_S_SO4],
-  ['concso2', 'ug S/m2', 'ug m-2',  UCONV_FAC_S_SO2],
+  ['sconcso4', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO4],
+  ['sconcso2', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO2],
+  
   ['concbc', 'ug C/m3', 'ug m-3',  1.0],
   ['concoa', 'ug C/m3', 'ug m-3',  1.0],
   ['conctc', 'ug C/m3', 'ug m-3',  1.0],
+  
   ['wetso4', 'kg S/ha', 'kg m-2',  UCONV_FAC_S_SO4 / HA_TO_SQM],
   ['sconcso4pr', 'mg S/L', 'g m-3',  UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
 
@@ -145,6 +147,7 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
     data
         data in new unit
     """
+    print(var_name)
     if var_name in UCONV_MUL_FACS.index:
         from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name, 
                                                              from_unit)
@@ -160,12 +163,12 @@ if __name__ == '__main__':
     print(df)
     import numpy as np
     
-    print(convert_unit(np.ones(3), 'ug S/m3', 'ug m-3', 'concso4'))
+    print(convert_unit(np.ones(3), 'ug S/m3', 'ug m-3', 'sconcso4'))
     
     data = np.ones(10)
 
     unit = 'kg S/ha'
     var_name = 'wetso4'
-    print(unit_conversion_fac_custom(var_name, unit))
+    #print(unit_conversion_fac_custom(var_name, unit))
 
-    print(convert_unit(data, unit, 'kg m-2', var_name))
+    #print(convert_unit(data, unit, 'kg m-2', var_name))

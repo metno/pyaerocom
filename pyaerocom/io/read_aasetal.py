@@ -8,7 +8,7 @@ from collections import OrderedDict
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
+#from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
 
 from pyaerocom.units_helpers import convert_unit
 from pyaerocom.helpers import get_tot_number_of_seconds
@@ -66,8 +66,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     VARS_TO_FILES['sconcso4pr'] = ['monthly_so4_precip.csv']
     
     # (from to unit)
-    UNITCONVERSION = {'sconcso2':   ('ug S/m2', 'ug m-2'), 
-                      'sconcso4':   ('ug S/m2', 'ug m-2'), 
+    UNITCONVERSION = {'sconcso2':   ('ug S/m3', 'ug m-3'), 
+                      'sconcso4':   ('ug S/m3', 'ug m-3'), 
                       'wetso4':     ('kg S/ha', 'kg m-2'),  #  s-1
                       'sconcso4pr': ('mg S/L',   'g m-3')
                       }
@@ -153,7 +153,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                                                  dtime = station_group['dtime'])
                     else:
                         # This should only be true for
-                        values = pd.to_numeric(station_group[key],
+                        s[var] = pd.to_numeric(station_group[key],
                                                errors='coerce').values
                                              
                     s['variables'].append(var)
@@ -231,7 +231,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 metadata[meta_key]['data_id'] = self.DATA_ID
                 metadata[meta_key]['ts_type'] = self.TS_TYPE
                 metadata[meta_key]['variables'] = station_data["variables"]
-
                 # Is instrumentname
                 if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
                     instr = station_data['instrument_name']
@@ -255,7 +254,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 if (idx + totnum) >= data_obj._ROWNO:
                     # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
-
                 for var_count, var in enumerate(temp_vars):
 
                     values = station_data[var]
@@ -320,7 +318,7 @@ if __name__ == "__main__":
 
      #so2 = aa.read('sconcso2')
      #so4_aero = aa.read('sconcso4')
-     V = ['wetso4'] #
+     V = ['pr']
      ungridded = aa.read(V)
      names = ungridded.station_name[:10]
      abington = ungridded.to_station_data('K-puszta', V)
