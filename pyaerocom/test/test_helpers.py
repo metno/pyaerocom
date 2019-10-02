@@ -74,9 +74,6 @@ def test_same_meta_dict():
                PI='pi2')
     
     assert helpers.same_meta_dict(d1, d2) == False
-    
-def test_str_to_iris():
-    pass
 
 def test_to_pandas_timestamp():
     pass

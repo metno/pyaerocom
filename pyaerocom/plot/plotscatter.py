@@ -85,9 +85,9 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                                  lowlim_stats, highlim_stats)
 
     if loglog:
-        ax.loglog(x_vals, y_vals, ' k+')
+        ax.loglog(x_vals, y_vals, ' k+', alpha=0.5)
     else:
-        ax.plot(x_vals, y_vals, ' k+')
+        ax.plot(x_vals, y_vals, ' k+', alpha=0.5)
     
     try:
         title = start_stop_str(start, stop, ts_type)

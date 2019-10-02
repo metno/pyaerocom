@@ -145,6 +145,10 @@ class EbasVarInfo(BrowseDict):
                 d[k] = v
         return d
     
+    def get_all_components(self):
+        """Get list of all components"""
+        return get_all_components(self.var_name)
+    
     def make_sql_request(self, **constraints):
         """Create an SQL request for the specifications in this object
         
@@ -160,13 +164,21 @@ class EbasVarInfo(BrowseDict):
             the SQL request object that can be used to retrieve corresponding 
             file names using instance of :func:`EbasFileIndex.get_file_names`.
         """
-        variables = []
-        if self.component is not None:
-            variables.extend(self.component)
-        if self.requires is not None:
-            for aux_var in self.requires:
-                variables.extend(EbasVarInfo(aux_var).component)
-        
+        variables = self.get_all_components()
+# =============================================================================
+#         if self.component is not None:
+#             variables.extend(self.component)
+#         if self.requires is not None:
+#             for aux_var in self.requires:
+#                 aux_info = EbasVarInfo(aux_var)
+#                 if aux_info.component is not None:
+#                     variables.extend(aux_info.component)
+#                 elif aux_info.requires is not None:
+#                     variables.extend(aux_info.requires)
+#         
+#         # remove duplicates
+#         variables = list(set(variables))
+# =============================================================================
         if len(variables) == 0:
             raise AttributeError('At least one component (Ebas variable name) '
                              'must be specified for retrieval of variable '
@@ -187,6 +199,31 @@ class EbasVarInfo(BrowseDict):
         for k, v in self.items():
                 s += "\n%s: %s" %(k,v)
         return s
+
+def get_all_components(var_name, varlist=None):
+    """Get all EBAS components required to read a certain variable
+    
+    Parameters
+    ----------
+    var_name : str
+        AeroCom variable name
+    varlist : list, optional
+        list of components already inferred (this function runs recursively).
+        
+    Returns
+    -------
+    list
+        list of components required to read / compute input AeroCom variable
+    """
+    if varlist is None:
+        varlist = []
+    aux_info = EbasVarInfo(var_name)
+    if aux_info.component is not None:
+        varlist.extend(aux_info.component)
+    if aux_info.requires is not None:
+        for aux_var in aux_info.requires:
+            varlist = get_all_components(aux_var, varlist)
+    return list(set(varlist))
 
 def check_all_variables():
     """Helper function that checks all EBAS variables against SQL database
@@ -237,25 +274,6 @@ def check_all_variables():
     return errors
             
 if __name__=="__main__":
-    from pyaerocom.io import EbasFileIndex, EbasNasaAmesFile
-    from pyaerocom import const
-
-    print(EbasVarInfo('sconcso2'))
-    info = EbasVarInfo('wetso4t')
-    print(info)
+    print(EbasVarInfo('concso2'))
     
-    ext = EbasVarInfo()
-    print(ext)
-    req = ext.make_sql_request()
-    print(req)
-    
-    idx = EbasFileIndex()
-    file_names = idx.get_file_names(req)
-    fp1 = os.path.join(const.EBASMC_DATA_DIR, file_names[0])
-    data_first = EbasNasaAmesFile(fp1)
-    print(data_first)
-
-
-    errors = check_all_variables()
-    for err in errors:
-        print(err)
+    print(get_all_components('ang4470dryaer'))

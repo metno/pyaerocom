@@ -176,6 +176,7 @@ class AerocomEvaluation(object):
         self.exp_name = None
         
         self.clear_existing_json = True
+        
         self.only_colocation = False
         
         #: Base directory for output
@@ -206,13 +207,15 @@ class AerocomEvaluation(object):
         self.var_order_menu = []
         
         self._valid_obs_vars = {}
-        try:
-            self.load_config(self.proj_id, self.exp_id, config_dir)
-            print('Found and imported config file for {} / {}'.format(self.proj_id,
-                  self.exp_id))
-        except:
-            pass
+        if proj_id is not None:
+            try:
+                self.load_config(self.proj_id, self.exp_id, config_dir)
+                const.print_log.warn('Found and imported config file for {} / {}'
+                                     .format(self.proj_id, self.exp_id))
+            except:
+                pass
         self.update(**settings)
+        
     
     @property
     def proj_dir(self):
@@ -539,7 +542,13 @@ class AerocomEvaluation(object):
                 jsdate[freq] = js.tolist()
                 
             else:
-                data_arrs[freq] = _a = resample_time_dataarray(arr, freq=freq)
+                colstp = self.colocation_settings
+                _a = d.resample_time(to_ts_type=freq,
+                                     apply_constraints=colstp.apply_time_resampling_constraints, 
+                                     min_num_obs=colstp.min_num_obs,
+                                     colocate_time=colstp.colocate_time,
+                                     inplace=False).data
+                data_arrs[freq] = _a #= resample_time_dataarray(arr, freq=freq)
                 js = (_a.time.values.astype('datetime64[s]') - 
                       np.datetime64('1970', '[s]')).astype(int) * 1000
                 jsdate[freq] = js.tolist()      
@@ -565,11 +574,30 @@ class AerocomEvaluation(object):
         hm_data = {}
         
         
-        ts_type = d.meta['ts_type']
+        #ts_type = d.meta['ts_type']
         vert_code = self.get_vert_code(obs_name, obs_var)
         
+        if ts_type == 'monthly':
+            hmd = d
+        else:
+            cs = self.colocation_settings
+            ac = cs.apply_time_resampling_constraints
+            if ac is None:
+                ac = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
+                
+            if ac:
+                mo = cs.min_num_obs
+                if cs.min_num_obs is None:
+                    mo = const.OBS_MIN_NUM_RESAMPLE
+                
+            hmd  = d.resample_time(to_ts_type='monthly',
+                                   apply_constraints=ac,
+                                   min_num_obs=mo,
+                                   colocate_time=cs['colocate_time'], 
+                                   inplace=False)
+                                   
         for reg in get_all_default_region_ids():
-            filtered = d.apply_latlon_filter(region_id=reg)
+            filtered = hmd.apply_latlon_filter(region_id=reg)
             stats = filtered.calc_statistics()
             for k, v in stats.items():
                 stats[k] = np.float64(v)
@@ -835,19 +863,11 @@ class AerocomEvaluation(object):
                     match = (m['data_source'][0] == obs_name and
                              m['data_source'][1] == model_name)
                     if match:
-                        if var_name is not None and var_name != m['var_name']:
-                            continue
                         files.append(os.path.join(coldata_dir, fname))
                 except:
                     const.print_log.warning('Invalid file {} in coldata dir'
                                             .format(fname))
-# =============================================================================
-#         files = glob.glob('{}/{}/{}REF-{}*MOD-{}*.nc'.format(self.coldata_dir, 
-#                                                               model_id, 
-#                                                               vstr,
-#                                                               obs_name,
-#                                                               model_name))
-# =============================================================================
+
         if len(files) == 0:
             msg = ('Could not find any colocated data files for model {}, '
                    'obs {}'
@@ -858,7 +878,8 @@ class AerocomEvaluation(object):
                 self._log.warning(msg)
         return files
     
-    def make_json_files(self, model_name, obs_name, var_name=None):
+    def make_json_files(self, model_name, obs_name, var_name=None,
+                        colocator=None):
         """Convert colocated data file(s) in model data directory into json
         
         Parameters
@@ -871,25 +892,39 @@ class AerocomEvaluation(object):
             name of variable supposed to be analysed. If None, then all
             variables available for observation network are used (defined in 
             :attr:`obs_config` for each entry). Defaults to None.
+        colocator : Colocator, optional
+            instance of colocator class containing information about which
+            files to process (e.g. created in :func:`run_evaluation`). If None,
+            than all colocated data files are processed that are located in the
+            corresponding colocation data directory and that match the input 
+            specs.
         
         Returns
         -------
         list
             list of colocated data files that were converted
         """
-# =============================================================================
-#         if self.clear_existing_json:
-#             smask = ('{}/**/*OBS-{}{}MOD-{}*.json'
-#                      .format(self.exp_dir, obs_name, vstr, model_name))
-#             for f in glob.glob(smask):
-#                 print('DELETING: {}'.format(os.path.basename(f)))
-#                 os.remove(f)
-# =============================================================================
         converted = []
         
-        #obs_id = self.get_obs_id(obs_name)
         files = self.find_coldata_files(model_name, obs_name, var_name)
         for file in files:
+            fname = os.path.basename(file)
+            if not fname in colocator.file_status:
+                const.print_log.info('Skipping computation of json files from '
+                                     'colocated data file {}. This file is not '
+                                     'part of this experiment (obs config)'
+                                     .format(fname, self.obs_config[obs_name]))
+                continue
+            if colocator.file_status[fname] == 'skipped':
+                const.print_log.info('Recomputing json files for existing '
+                                     'colocated data file')
+            elif not colocator.file_status[fname] == 'saved':
+                const.print_log.info('Skipping computation of json files from '
+                                     'colocated data file {}. Colocator object '
+                                     'has marked this file as {} (need either '
+                                     'status skipped or saved)'
+                                     .format(fname, colocator.file_status[fname]))
+                continue
             const.print_log.info('Processing file {}'.format(file))
             d = ColocatedData(file)
             self.compute_json_files_from_colocateddata(d, obs_name, model_name)
@@ -958,24 +993,7 @@ class AerocomEvaluation(object):
         # for specifying the model and obs names in the colocated data file
         col.model_name = model_name
         col.obs_name = obs_name
-# =============================================================================
-#         
-#         obs_vars = col.obs_vars
-#         add = []
-#         if isinstance(col.model_add_vars, dict):
-#             for obs_var, mod_var in col.model_add_vars.items():
-#                 if obs_var in obs_vars:
-#                     add.append(mod_var)
-#         col.obs_vars.extend(add)
-# =============================================================================
-# =============================================================================
-#         if var_name is not None:
-#             if not isinstance(var_name, str):
-#                 raise ValueError('Invalid input for var_name: {}. Need str'
-#                                  .format(var_name))
-# 
-#             col.obs_vars = [var_name]
-# =============================================================================
+        
         # run colocation
         col.run(var_name)
         
@@ -1093,7 +1111,7 @@ class AerocomEvaluation(object):
                 if fnmatch(mname, search_pattern) and not mname in matches:
                     matches.append(mname)
         if len(matches) == 0:
-            raise KeyError('No models could be found that match input {}'
+            raise KeyError('No observations could be found that match input {}'
                            .format(name_or_pattern))
         return matches
     
@@ -1180,12 +1198,13 @@ class AerocomEvaluation(object):
                     self._log.info('Skipping model {}'.format(model_name))
                     continue
             
-                self.run_colocation(model_name, obs_name, var_name)
+                col = self.run_colocation(model_name, obs_name, var_name)
                 if only_colocation:
                     self._log.info('Skipping computation of json files for {}'
                                    '/{}'.format(obs_name, model_name))
                     continue
-                res = self.make_json_files(model_name, obs_name, var_name)
+                res = self.make_json_files(model_name, obs_name, var_name,
+                                           colocator=col)
         
         if update_interface:
             #self.clean_json_files()
@@ -1267,6 +1286,12 @@ class AerocomEvaluation(object):
                     const.print_log.warning('Found outdated json map file: {}'
                                             'Will be ignored'.format(f))
                     continue
+                mcfg = self.model_config[mod_name]
+                if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
+                    if mcfg['model_use_vars'][obs_var] != mod_var:
+                        const.print_log.warning('Ignoring map file {}'
+                                                .format(f))
+                        continue
                 tab.append([obs_var, obs_name, vert_code, mod_name, mod_var])
         return DataFrame(tab, columns=['Var' , 'Obs', 'vert',
                                        'Model', 'Model var'])
@@ -1372,11 +1397,20 @@ class AerocomEvaluation(object):
             (obs_name, obs_var, 
              vert_code, 
              mod_name, mod_var) = self._info_from_map_file(file)
+            remove=False
+            obs_vars = self._get_valid_obs_vars(obs_name)
         
             if not (obs_name in self.obs_config and
                     mod_name in self.model_config and
-                    obs_var in self._get_valid_obs_vars(obs_name)):
-                
+                    obs_var in obs_vars):
+                remove = True
+            
+            mcfg = self.model_config[mod_name]
+            if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
+                if not mod_var == mcfg['model_use_vars'][obs_var]:
+                    remove=True
+                    
+            if remove:
                 const.print_log.info('Removing outdated map file: {}'.format(file))
                 os.remove(os.path.join(self.out_dirs['map'], file))
         for fp in glob.glob('{}/*.json'.format(self.out_dirs['ts'])):

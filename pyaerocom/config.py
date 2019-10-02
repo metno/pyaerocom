@@ -122,8 +122,8 @@ class Config(object):
     DEFAULT_VERT_GRID_DEF = od(lower = 0,
                                upper = 15000,
                                step  = 250)
-    
-    
+    #: maximum allowed RH to be considered dry
+    RH_MAX_PERCENT_DRY = 40
     
     #: If True, then whenever applicable the time resampling constraints
     #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when 
@@ -134,7 +134,10 @@ class Config(object):
     
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations
-    OBS_MIN_NUM_RESAMPLE = dict(monthly     =   dict(daily  = 2))
+    OBS_MIN_NUM_RESAMPLE = dict(yearly      =   dict(monthly    = 3),
+                                monthly     =   dict(daily      = 7),
+                                daily       =   dict(hourly     = 6),
+                                hourly      =   dict(minutely   = 15))
     
     #: This boolean can be used to enable / disable the former (i.e. use
     #: available wavelengths of variable in a certain range around variable
@@ -693,6 +696,10 @@ class Config(object):
             self._ebas_flag_info = read_ebas_flags_file(self.EBAS_FLAGS_FILE)
         return self._ebas_flag_info
     
+    def load_default_config(self):
+        """Read AeroCom default config file"""
+        self.read_config(self._config_files['metno'])
+        
     def read_config(self, config_file, keep_basedirs=True):
         """Read and import form paths.ini"""
         if not os.path.isfile(config_file):

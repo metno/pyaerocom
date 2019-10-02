@@ -6,7 +6,6 @@ General helper methods for the pyaerocom library.
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
 import iris
-from iris import coord_categorisation
 import numpy as np
 import pandas as pd
 import xarray as xray
@@ -14,90 +13,27 @@ import xarray as xray
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
-
 from pyaerocom import logger, const
-
-# The following import was removed and the information about available unit 
-# strings was copied from the netCDF4 module directly here
-# from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
-#                     hr_units, day_units)
-# from netCDF4._netCDF4 import _dateparse
-microsec_units = ['microseconds', 'microsecond', 'microsec', 'microsecs']
-millisec_units = ['milliseconds', 'millisecond', 'millisec', 'millisecs']
-sec_units = ['second', 'seconds', 'sec', 'secs', 's']
-min_units = ['minute', 'minutes', 'min', 'mins']
-hr_units = ['hour', 'hours', 'hr', 'hrs', 'h']
-day_units = ['day', 'days', 'd']
-
-#
-# Start of the gregorian calendar
-# adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
-GREGORIAN_BASE = datetime(1582, 10, 15)
-
-_STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
-                    gmean       = iris.analysis.GMEAN, 
-                    hmean       = iris.analysis.HMEAN,
-                    max         = iris.analysis.MAX, 
-                    mean        = iris.analysis.MEAN,
-                    median      = iris.analysis.MEDIAN,
-                    sum         = iris.analysis.SUM,
-                    nearest     = iris.analysis.Nearest,
-                    linear      = iris.analysis.Linear,
-                    areaweighted= iris.analysis.AreaWeighted)
-
-IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
-                    'daily'     :   coord_categorisation.add_day_of_year,
-                    'monthly'   :   coord_categorisation.add_month_number,
-                    'yearly'    :   coord_categorisation.add_year} 
-
-# some helper dictionaries for conversion of temporal resolution
-TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
-                          '3hourly' :   '3H',
-                          'daily'   :   'D',
-                          'weekly'  :   'W',
-                          'monthly' :   'MS', #Month start !
-                          'season'  :   'Q', 
-                          'yearly'  :   'AS'}
-
-PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
-                           'MS' : '14D'}
-
-PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
-print(PANDAS_FREQ_TO_TS_TYPE)
-# frequency strings 
-TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
-                          '3hourly' :   '3h',
-                          'daily'   :   'D',
-                          'weekly'  :   'W',
-                          'monthly' :   'M', #Month start !
-                          'yearly'  :   'Y'}
-
-NUMPY_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_NUMPY_FREQ.items()}
-
-# conversion of datetime-like objects for given temporal resolutions (can, e.g.
-# be used in plotting methods)
-TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', # Default
-                         'hourly'   : '%d.%m.%Y',
-                         '3hourly'  : '%d.%m.%Y',
-                         'daily'    : '%d.%m.%Y',
-                         'weekly'   : '%d.%m.%Y',
-                         'monthly'  : '%b %Y',
-                         'yearly'   : '%Y'}
-
-TS_TYPE_SECS = {'hourly'  : 3600,
-                '3hourly' : 10800,
-                'daily'   : 86400,
-                'weekly'  : 604800,
-                'monthly' : 2592000, #counting 3 days per month (APPROX)
-                'yearly'  : 31536000} #counting 365 days (APPROX)
-
-XARR_TIME_GROUPERS = {'hourly'  : 'hour',
-                      'daily'   : 'day',
-                      'weekly'  : 'week',
-                      'monthly' : 'month', 
-                      'yearly'  : 'year'}
+from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
+                                   TS_TYPE_TO_PANDAS_FREQ,
+                                   PANDAS_RESAMPLE_OFFSETS,
+                                   TS_TYPE_DATETIME_CONV,
+                                   microsec_units, millisec_units,
+                                   sec_units, min_units, hr_units,
+                                   day_units)
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
+
+STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
+                   gmean       = iris.analysis.GMEAN,
+                   hmean       = iris.analysis.HMEAN,
+                   max         = iris.analysis.MAX,
+                   mean        = iris.analysis.MEAN,
+                   median      = iris.analysis.MEDIAN,
+                   sum         = iris.analysis.SUM,
+                   nearest     = iris.analysis.Nearest,
+                   linear      = iris.analysis.Linear,
+                   areaweighted= iris.analysis.AreaWeighted)
 
 def delete_all_coords_cube(cube, inplace=True):
     """Delete all coordinates of an iris cube
@@ -195,7 +131,7 @@ def infer_time_resolution(time_stamps):
 
 def get_tot_number_of_seconds(ts_type, dtime = None):
     from pyaerocom.tstype import TsType
-    
+
     ts_tpe = TsType(ts_type)
 
     if ts_tpe >= TsType('monthly'):
@@ -204,7 +140,7 @@ def get_tot_number_of_seconds(ts_type, dtime = None):
                                  ' need to provide dtime in order to compute the number of second.')
         else:
             # find seconds from dtime
-            # TODO generalize this 
+            # TODO generalize this
             days_in_month = dtime.dt.daysinmonth
             if ts_type == 'monthly':
                 monthly_to_sec = days_in_month*24*60*60
@@ -550,9 +486,15 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
         data = resampler.agg(how)
     else:
         df = resampler.agg([how, 'count'])
-        df[how][df['count'] < min_num_obs] = np.nan
+        const.logger.info(freq, min_num_obs)
+        const.logger.info('before mean', df[how].mean())
+        invalid = df['count'] < min_num_obs
+        const.logger.info(len(invalid), invalid.sum())
+        df[how][invalid] = np.nan
+        const.logger.info('after mean', df[how].mean())
         data = df[how]
-    return data
+
+    return data.loc[s.index[0]:s.index[-1]]
 
 def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
@@ -594,10 +536,25 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     elif not 'time' in arr.dims:
         raise DataDimensionError('Cannot resample time: input DataArray has '
                                  'no time dimension')
+
+    from pyaerocom.tstype import TsType
+    from pyaerocom.time_config import XARR_TIME_GROUPERS
+    to = TsType(freq)
+    pd_freq=to.to_pandas()
+    invalid = None
     if min_num_obs is not None:
-        raise NotImplementedError('Coming soon...')
+        if not pd_freq in XARR_TIME_GROUPERS:
+            raise ValueError('Cannot infer xarray grouper for ts_type {}'
+                             .format(to.val))
+        gr = XARR_TIME_GROUPERS[pd_freq]
+        # 2D mask with shape of resampled data array
+        invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
-    return arr.resample(time=freq, loffset=loffset).mean(dim='time')
+    arr = arr.resample(time=pd_freq, loffset=loffset).mean(dim='time')
+    if invalid is not None:
+        arr.data[invalid.data] = np.nan
+    return arr
     
 def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
                    num_keys=NUM_KEYS_META, num_rtol=1e-2):
@@ -639,12 +596,12 @@ def same_meta_dict(meta1, meta2, ignore_keys=['PI'],
 def str_to_iris(key, **kwargs):
     """Mapping function that converts strings into iris analysis objects
     
-    Please see dictionary ``_STR_TO_IRIS`` in this module for valid definitions
+    Please see dictionary ``STR_TO_IRIS`` in this module for valid definitions
     
     Parameters
     ----------
     key : str
-        key of :attr:`_STR_TO_IRIS` dictionary
+        key of :attr:`STR_TO_IRIS` dictionary
         
     Returns
     -------
@@ -652,10 +609,10 @@ def str_to_iris(key, **kwargs):
         corresponding iris analysis object (e.g. Aggregator, method)
     """
     key = key.lower()
-    if not key in _STR_TO_IRIS:
+    if not key in STR_TO_IRIS:
         raise KeyError("No iris.analysis object available for key %s, please "
-                       "choose from %s" %(key, _STR_TO_IRIS.keys()))
-    val = _STR_TO_IRIS[key]
+                       "choose from %s" %(key, STR_TO_IRIS.keys()))
+    val = STR_TO_IRIS[key]
     if callable(val):
         return val(**kwargs)
     return val

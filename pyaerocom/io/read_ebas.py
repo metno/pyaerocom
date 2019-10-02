@@ -24,7 +24,11 @@ import fnmatch
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
-from pyaerocom.mathutils import compute_scatc550dryaer, compute_absc550dryaer
+from pyaerocom.mathutils import (compute_scatc550dryaer, 
+                                 compute_scatc440dryaer,
+                                 compute_scatc700dryaer,
+                                 compute_absc550dryaer,
+                                 compute_ang4470dryaer_from_dry_scat)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _print_read_info
 from pyaerocom import StationData
@@ -32,8 +36,7 @@ from pyaerocom import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
-from pyaerocom.exceptions import (VariableDefinitionError, NotInFileError,
-                                  EbasFileError)
+from pyaerocom.exceptions import NotInFileError, EbasFileError
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 class ReadEbasOptions(BrowseDict):
@@ -46,7 +49,7 @@ class ReadEbasOptions(BrowseDict):
         columns for one variable, where each column corresponds to one of the
         here defined statistics that where applied to the data. This attribute
         is only considered for ebas variables, that have not explicitely defined
-        what statistics to use (and in which preferred order, if appicable).
+        what statistics to use (and in which preferred order, if applicable).
         Reading preferences for all Ebas variables are specified in the file
         ebas_config.ini in the data directory of pyaerocom.
     ignore_statistics : list
@@ -125,7 +128,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.23_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.25_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -144,28 +147,41 @@ class ReadEbas(ReadUngriddedBase):
                     'scatc550aer'] # light scattering coefficient
     
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
-    TS_TYPE_CODES = {'1h'   :   'hourly',
+    TS_TYPE_CODES = {'1mn'  :   'minutely',
+                     '1h'   :   'hourly',
                      '1d'   :   'daily',
                      '1w'   :   'weekly',
                      '1mo'  :   'monthly',
-                     'h'   :   'hourly',
-                     'd'   :   'daily',
-                     'w'   :   'weekly',
-                     'mo'  :   'monthly'}
+                     'mn'   :   'minutely',
+                     'h'    :   'hourly',
+                     'd'    :   'daily',
+                     'w'    :   'weekly',
+                     'mo'   :   'monthly'}
     
     
     AUX_REQUIRES = {'scatc550dryaer'    :   ['scatc550aer',
                                              'scatcrh'],
+                    'scatc440dryaer'    :   ['scatc440aer',
+                                             'scatcrh'],
+                    'scatc700dryaer'    :   ['scatc700aer',
+                                             'scatcrh'],
                     'absc550dryaer'     :   ['absc550aer',
-                                             'abscrh']}
+                                             'abscrh'],
+                    'ang4470dryaer'     :   ['scatc440dryaer',
+                                             'scatc700dryaer']}
     
     # Specifies which metainformation is supposed to be migrated to computed
     # variable
     AUX_USE_META = {'scatc550dryaer'    :   'scatc550aer',
+                    'scatc440dryaer'    :   'scatc440aer',
+                    'scatc700dryaer'    :   'scatc700aer',
                     'absc550dryaer'     :   'absc550aer'}
     
-    AUX_FUNS = {'scatc550dryaer'    :   compute_scatc550dryaer,
-                'absc550dryaer'     :   compute_absc550dryaer}
+    AUX_FUNS = {'scatc440dryaer'    :   compute_scatc440dryaer,
+                'scatc550dryaer'    :   compute_scatc550dryaer,
+                'scatc700dryaer'    :   compute_scatc700dryaer,
+                'absc550dryaer'     :   compute_absc550dryaer,
+                'ang4470dryaer'     :   compute_ang4470dryaer_from_dry_scat}
     
     
     IGNORE_WAVELENGTH = ['conceqbc']
@@ -411,10 +427,6 @@ class ReadEbas(ReadUngriddedBase):
         const.print_log.info('Retrieving EBAS files for variables\n{}'
                              .format(vars_to_retrieve))
         for var in vars_to_retrieve:
-            const.print_log.info('Var: {}. '
-                                 '(this is only plotted because provided SQL '
-                                 'database is slow ...)'.format(var))
-            
             if not var in self.PROVIDES_VARIABLES:
                 raise AttributeError('No such variable {}'.format(var))
             info = EbasVarInfo(var)
@@ -685,6 +697,41 @@ class ReadEbas(ReadUngriddedBase):
         
         return data_out
      
+    def _find_wavelength_matches(self, col_matches, file, var_info):
+        """
+        """
+        min_diff_wvl = 1e6
+        matches = []
+        # get wavelength of column and tolerance
+        wvl = var_info.wavelength_nm
+        wvl_low = wvl - self.wavelength_tol_nm
+        wvl_high = wvl + self.wavelength_tol_nm
+        
+        for colnum in col_matches:
+            colinfo = file.var_defs[colnum]
+            if not 'wavelength' in colinfo:
+                const.print_log.warn('Ignoring column {} ({}) in EBAS file for '
+                                     'reading var {}: column misses wavelength '
+                                     'specification'
+                                     .format(colnum, colinfo, var_info))
+        
+            wvl_col = colinfo.get_wavelength_nm()
+            # wavelength is in tolerance range
+            if wvl_low <= wvl_col <= wvl_high:
+                wvl_diff = wvl_col - wvl
+                if abs(wvl_diff) < abs(min_diff_wvl):
+                    # the wavelength difference of this column to
+                    # the desired wavelength of the variable is 
+                    # smaller than any of the detected before, so
+                    # ignore those from earlier columns by reinit
+                    # of the matches list
+                    min_diff_wvl = wvl_diff
+                    matches = []
+                    matches.append(colnum)
+                elif wvl_diff == min_diff_wvl:
+                    matches.append(colnum)
+        return matches
+    
     def find_var_cols(self, vars_to_read, loaded_nasa_ames):
         """Find best-match variable columns in loaded NASA Ames file
         
@@ -711,13 +758,20 @@ class ReadEbas(ReadUngriddedBase):
         """
         file = loaded_nasa_ames
         var_cols = {}
+        # Loop over all variables that are supposed to be read
         for var in vars_to_read:
+            # get corresponding EBAS variable info ...
             ebas_var_info = self.loaded_ebas_vars[var]
+            # ... and AeroCom variable definition
             if not var in self.loaded_aerocom_vars:
                 self.loaded_aerocom_vars[var] = var_info = const.VARS[var]
             else:
                 var_info = self.loaded_aerocom_vars[var]
-            
+            # Find all columns in file that match the current variable 
+            # There may be multiple matches, e.g. because the variable may
+            # be sampled at different wavelenghts or there may be different 
+            # statistics applied, or there may be different matrices
+            # available (e.g. aerosol, pm10, pm25)
             try:
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
@@ -727,41 +781,18 @@ class ReadEbas(ReadUngriddedBase):
                                              os.path.basename(file.file),
                                              file.base_date))
                 continue
-            # init helper variable for finding closest wavelength (if 
-            # no exact wavelength match can be found)
-            min_diff_wvl = 1e6
-            matches = []
-            for colnum in col_matches:
-                colinfo = file.var_defs[colnum]
-                if 'wavelength' in colinfo:
-                    wvl = var_info.wavelength_nm
-                    if wvl is None:
-                        raise VariableDefinitionError('Require wavelength '
-                                                      'specification for '
-                                                      'Aerocom variable {}'
-                                                      .format(var))
-                    wvl_col = colinfo.get_wavelength_nm()
-                    wvl_low = wvl - self.wavelength_tol_nm
-                    wvl_high = wvl + self.wavelength_tol_nm
-                    # wavelength is in tolerance range
-                    if wvl_low <= wvl_col <= wvl_high:
-                        wvl_diff = wvl_col - wvl
-                        if abs(wvl_diff) < abs(min_diff_wvl):
-                            # the wavelength difference of this column to
-                            # the desired wavelength of the variable is 
-                            # smaller than any of the detected before, so
-                            # ignore those from earlier columns by reinit
-                            # of the matches dictionary
-                            min_diff_wvl = wvl_diff
-                            matches = []
-                            matches.append(colnum)
-                        elif wvl_diff == min_diff_wvl:
-                            matches.append(colnum)
-                else:
-                    matches.append(colnum)
-            if matches:
+            
+            # if AeroCom variable has a wavelength specified, find the column (s)
+            # that are closest to this wavelength. There may be multiple column
+            # matches, e.g. due to different statistics or matrix columns, these
+            # will be sorted out below. 
+            if var_info.wavelength_nm is not None and len(col_matches) > 1:
+                col_matches = self._find_wavelength_matches(col_matches,
+                                                            file, var_info)
+
+            if bool(col_matches):
                 # loop was interrupted since exact wavelength match was found
-                var_cols[var] = matches
+                var_cols[var] = col_matches
         
         if not len(var_cols) > 0:
             raise NotInFileError('None of the specified variables {} could be '
@@ -945,7 +976,15 @@ class ReadEbas(ReadUngriddedBase):
                     data.data_flagged[var] = data.data_flagged[from_var]
                 if from_var in data.data_err:
                     data.data_err[var] = data.data_err[from_var]
+            if not 'units' in data['var_info'][var]:
+                data['var_info'][var]['units'] = self.var_info(var)['units']
         return data
+    
+    def var_info(self, var_name):
+        """Aerocom variable info for input var_name"""
+        if not var_name in self.loaded_aerocom_vars:
+            self.loaded_aerocom_vars[var_name] = const.VARS[var_name]
+        return self.loaded_aerocom_vars[var_name]
     
     def read(self, vars_to_retrieve=None, first_file=None, 
              last_file=None, multiproc=False, files=None, **constraints):
@@ -994,7 +1033,8 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
         
         if self.keep_aux_vars:
-            vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+            (vars_to_read, 
+             vars_to_compute) = self.check_vars_to_retrieve(vars_to_retrieve)
             for var in vars_to_read:
                 if not var in vars_to_retrieve:
                     vars_to_retrieve.append(var)
@@ -1157,12 +1197,14 @@ class ReadEbas(ReadUngriddedBase):
                                
                 # write data to data object
                 data_obj._data[start:stop, data_obj._TIMEINDEX] = times
+
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
+
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
                 if var in station_data.data_flagged:
-                    valid = station_data.data_flagged[var]
-                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = valid
+                    invalid = station_data.data_flagged[var]
+                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = invalid
                 if var in station_data.data_err:
                     errs = station_data.data_err[var]
                     data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
@@ -1193,8 +1235,7 @@ if __name__=="__main__":
 
     r = ReadEbas()
     
-    data =  r.read(['concs'])
-    
+
     
 
     

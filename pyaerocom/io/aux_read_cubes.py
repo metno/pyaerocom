@@ -84,6 +84,22 @@ def merge_meta_cubes(cube1, cube2):
         return {'NOTE'  : 'MERGE_FAILED',
                 'meta1' : cube1.attributes, 
                 'meta2' : cube2.attributes}
+
+def apply_rh_thresh_cubes(cube, rh_cube, rh_max=None):
+    """Method that applies a low RH filter to input cube"""
+    cube, rh_cube =  _check_input_iscube(cube, rh_cube)
+    if rh_max is None:
+        from pyaerocom import const
+        rh_max = const.VARS[cube.var_name]['dry_rh_max']
+    if not cube.shape == rh_cube.shape:
+        raise ValueError
+    mask = rh_cube.data > rh_max
+    cube_out = cube.copy()
+    cube_out.data[mask] = np.nan
+    cube_out.attributes.update(cube.attributes)
+    cube_out.attributes['rh_max'] = rh_max
+    return cube_out
+    
         
 def add_cubes(cube1, cube2):
     """Method to add cubes from 2 gridded data objects

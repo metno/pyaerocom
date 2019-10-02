@@ -415,6 +415,24 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     
     return result
 
+def compute_ang4470dryaer_from_dry_scat(data):
+    """Compute angstrom exponent between 440 and 700 nm 
+    
+    Parameters
+    ----------
+    StationData or dict
+        data containing dry scattering coefficients at 440 and 700 nm
+        (i.e. keys scatc440dryaer and scatc700dryaer)
+    
+    Returns
+    -------
+    StationData or dict
+        extended data object containing angstrom exponent
+    """
+    return compute_angstrom_coeff(data['scatc440dryaer'],
+                                  data['scatc700dryaer'],
+                                  440, 700)
+
 def compute_scatc550dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
     
@@ -433,6 +451,48 @@ def compute_scatc550dryaer(data):
     """
     rh_max= const.VARS['scatc550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='scatc550aer', 
+                               rh_colname='scatcrh', 
+                               rh_max_percent=rh_max)
+    
+def compute_scatc440dryaer(data):
+    """Compute dry scattering coefficent applying RH threshold
+    
+    Cf. :func:`_compute_dry_helper`
+    
+    Parameters
+    ----------
+    dict
+        data object containing scattering and RH data
+    
+    Returns
+    -------
+    dict 
+        modified data object containing new column scatc550dryaer
+    
+    """
+    rh_max= const.VARS['scatc440dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='scatc440aer', 
+                               rh_colname='scatcrh', 
+                               rh_max_percent=rh_max)
+
+def compute_scatc700dryaer(data):
+    """Compute dry scattering coefficent applying RH threshold
+    
+    Cf. :func:`_compute_dry_helper`
+    
+    Parameters
+    ----------
+    dict
+        data object containing scattering and RH data
+    
+    Returns
+    -------
+    dict 
+        modified data object containing new column scatc550dryaer
+    
+    """
+    rh_max= const.VARS['scatc700dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='scatc700aer', 
                                rh_colname='scatcrh', 
                                rh_max_percent=rh_max)
     
@@ -458,7 +518,7 @@ def compute_absc550dryaer(data):
                                rh_max_percent=rh_max)
     
 def _compute_dry_helper(data, data_colname, rh_colname, 
-                        rh_max_percent):
+                        rh_max_percent=None):
     """Compute new column that contains data where RH is smaller than ...
     
     All values in original data columns are set to NaN, where RH exceeds a 
@@ -480,6 +540,9 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     dict
         modified data dictionary with new dry data column 
     """
+    if rh_max_percent is None:
+        rh_max_percent = const.RH_MAX_PERCENT_DRY
+        
     vals = np.array(data[data_colname], copy=True)
 
     rh = data[rh_colname]
