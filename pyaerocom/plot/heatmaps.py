@@ -82,15 +82,13 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
              raise AttributeError("Heatmaps can only be created for "+
                                  "single column tabular data (e.g. Bias or "+
                                  "RMSE) with a partly unstacked MultiIndex or a "+
-                                 "simple DataFrame without muliindex. "+
-                                 "Not {} ".format(len(df.columns.levels[0]))+
-                                 " columns which you provided now. "+
-                                 "Please extract a column. ")
-                                 
-    
+                                 "single index DataFrame. "+
+                                 "Not MulitiIndex of {} ".format(len(df.columns.levels[0]))+
+                                 " columns which you provided. "+
+                                 "Please extract a column. ")  
             
     if circle:
-        raise NotImplementedError('Adding circles to heatmap is not implmented yet.')
+        raise NotImplementedError('Adding circles to heatmap is not implemented yet.')
 
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
@@ -119,13 +117,9 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         cbar_kws['format'] = FuncFormatter(lambda x, pos: '{:.0%}'.format(x))
         #df = df.div(df.max(axis=1), axis=0)
     if color_rowwise:
-        # TODO this messes up annotations and times 100.
         df_hm = df.div(abs(df).max(axis=1), axis=0)
-        print('colors rowvise')
-        #df_hm = df.div(df.max(axis=1), axis=0)
     else:
         df_hm = df
-        print("updates df_hm")
 
     cbar_kws['label'] = table_name
     if annot is True:
@@ -141,15 +135,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         num_fmt = ".{}f".format(num_digits)
     else:
         num_fmt = ".4g"
-    
-    if center:
-        print("centre is {} true?".format(center))
-        ax = heatmap(df_hm, center=center, cmap=cmap, annot=annot, ax=ax, 
-                     fmt=num_fmt,
-                     cbar=cbar, cbar_kws=cbar_kws, vmin=vmin, vmax=vmax)
-    else:
-        print("centre is {} false?".format(center))
-        ax = heatmap(df_hm, cmap=cmap, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
+
+    ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
                  fmt=num_fmt, cbar=cbar, cbar_kws=cbar_kws,
                  vmin=vmin, vmax=vmax, **kwargs)
         

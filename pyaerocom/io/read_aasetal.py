@@ -117,10 +117,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         # Looping over every station:
         for name, station_group in grouped:
-            print(station_group.head())
-            station_group.drop_duplicates(subset='dtime', keep='first',inplace = True)  # Drops duplacate rows 
-            # ask Jonas
-            
+            station_group = station_group.drop_duplicates(subset='dtime', keep='first')  # Drops duplacate rows 
+         
             s = StationData()
             # Meta data
             s['station_name'] = name
@@ -153,7 +151,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         if var == 'wetso4':
                             s[var] = s[var]/get_tot_number_of_seconds(ts_type = 'monthly', 
                                                  dtime = station_group['dtime'])
-
                     else:
                         # This should only be true for
                         values = pd.to_numeric(station_group[key],
@@ -328,7 +325,7 @@ if __name__ == "__main__":
      names = ungridded.station_name[:10]
      abington = ungridded.to_station_data('K-puszta', V)
      abington.plot_timeseries(V[0])
-    
+     plt.show()
      #plt.show()
      #dataString = aa.read("sconcso4")
      #dataString.plot_station_coordinates(markersize=12, color='lime')
