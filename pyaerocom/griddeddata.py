@@ -312,8 +312,6 @@ class GriddedData(object):
             self._altitude_access = AltitudeAccess(self)    
         return self._altitude_access
     
-    
-    
     @property
     def delta_t(self):
         """Array containing timedelta values for each time stamp"""

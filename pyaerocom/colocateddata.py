@@ -202,29 +202,34 @@ class ColocatedData(object):
     @property
     def num_grid_points(self):
         """Number of lon / lat grid points that contain data"""
+        const.print_log.warning(DeprecationWarning('OLD NAME: please use num_coords'))
+        return self.num_coords
+    
+    @property
+    def num_coords(self):
+        """Total number of lat/lon coordinates"""
         if not self.check_dimensions():
             raise DataDimensionError('Invalid dimensionality...')
-        if self.ndim == 3:
-
-            return self.data.shape[2]
+        if 'station_name' in self.coords:
+            return len(self.data.station_name)
         
         elif self.ndim == 4:
-            raise NotImplementedError('Currently unavailable, please check, also '
-                                      'against new method coords_with_data!!')
             if not all([x in self.data.dims for x in ('longitude', 'latitude')]):
                 raise AttributeError('Cannot determine grid points. Either '
                                      'longitude or latitude are not contained '
                                      'in 4D data object, which contains the '
                                      'following dimensions: {}'.self.data.dims)
-            # get all grid points that contain at least one valid data point 
-            # along time dimension
-            vals = np.nanmean(self.data.data[0], axis=0)
-            valid = ~np.isnan(vals)
-            return np.sum(valid)
+            return len(self.data.longitude) * len(self.data.latitude)
+        raise DataDimensionError('Could not infer number of coordinates')
     
     @property
-    def coords_with_data(self):
-        """Number of lat/lon coordinates that contain at least one datapoint"""
+    def num_coords_with_data(self):
+        """Number of lat/lon coordinates that contain at least one datapoint
+        
+        Todo
+        ----
+        check 4D data 
+        """
         if not self.check_dimensions():
             raise DataDimensionError('Invalid dimensionality...')
         
@@ -363,10 +368,12 @@ class ColocatedData(object):
             kwargs['lowlim'] = var.lower_limit
             kwargs['highlim'] = var.upper_limit
             
-            
-        return calc_statistics(self.data.values[1].flatten(),
-                               self.data.values[0].flatten(),
-                               **kwargs)
+        stats = calc_statistics(self.data.values[1].flatten(),
+                                self.data.values[0].flatten(),
+                                **kwargs)
+        stats['num_coords_with_data'] = self.num_coords_with_data
+        stats['num_coords_tot'] = self.num_coords
+        return stats
         
     def plot_scatter(self, constrain_val_range=False,  **kwargs):
         """Create scatter plot of data
@@ -382,7 +389,7 @@ class ColocatedData(object):
             matplotlib axes instance
         """
         meta = self.meta
-        num_points = self.coords_with_data
+        num_points = self.num_coords_with_data
         vars_ = meta['var_name']
         
         if constrain_val_range:
