@@ -37,12 +37,12 @@ HA_TO_SQM = 10000   # hectar to square metre.
 UCONV_MUL_FACS = pd.DataFrame([
         
   ['concso4', 'ug S/m2', 'ug m-2',  UCONV_FAC_S_SO4],
-  ['concso2','ug S/m2', 'ug m-2',  UCONV_FAC_S_SO2],
-  ['concbc','ug C/m3', 'ug m-3',  1.0],
-  ['concoa','ug C/m3', 'ug m-3',  1.0],
-  ['conctc','ug C/m3', 'ug m-3',  1.0],
-  ['wetso4',  'kg S/ha', 'kg m-2',  UCONV_FAC_S_SO4 / HA_TO_SQM],
-  ['sconcso4pr', 'mgS/L', 'g m-3',  UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
+  ['concso2', 'ug S/m2', 'ug m-2',  UCONV_FAC_S_SO2],
+  ['concbc', 'ug C/m3', 'ug m-3',  1.0],
+  ['concoa', 'ug C/m3', 'ug m-3',  1.0],
+  ['conctc', 'ug C/m3', 'ug m-3',  1.0],
+  ['wetso4', 'kg S/ha', 'kg m-2',  UCONV_FAC_S_SO4 / HA_TO_SQM],
+  ['sconcso4pr', 'mg S/L', 'g m-3',  UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
 
 ], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
 
