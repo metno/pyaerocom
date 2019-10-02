@@ -46,30 +46,30 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     # This contains the mapping between the requested variables and what it is called in the files.
     
     COLNAMES_VARS = {}
-    COLNAMES_VARS['concentration_mgS/L']  = ['sconcso4pr']
-    COLNAMES_VARS['concentration_ugS/m3'] = ['sconcso4', 'sconcso2']
+    COLNAMES_VARS['concentration_mgS/L']  = ['concso4pr']
+    COLNAMES_VARS['concentration_ugS/m3'] = ['concso4', 'concso2']
     COLNAMES_VARS['precip_amount_mm']     = ['pr']
     COLNAMES_VARS['deposition_kgS/ha']    = ['wetso4']
 
     #: Dictionary mapping filenames to available variables in the respective files. 
     FILES_CONTAIN = {}
-    FILES_CONTAIN['monthly_so2.csv']        = ['sconcso2']
-    FILES_CONTAIN['monthly_so4_aero.csv']   = ['sconcso4']
+    FILES_CONTAIN['monthly_so2.csv']        = ['concso2']
+    FILES_CONTAIN['monthly_so4_aero.csv']   = ['concso4']
     FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'sconcso4pr']
     
     #: Dictionary mapping variable name to hard coded filenames. 
     VARS_TO_FILES = {}
-    VARS_TO_FILES['sconcso2']   = ['monthly_so2.csv']
-    VARS_TO_FILES['sconcso4']   = ['monthly_so4_aero.csv']
-    VARS_TO_FILES['pr']         = ['monthly_so4_precip.csv']
-    VARS_TO_FILES['wetso4']     = ['monthly_so4_precip.csv']
-    VARS_TO_FILES['sconcso4pr'] = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['concso2']   = ['monthly_so2.csv']
+    VARS_TO_FILES['concso4']   = ['monthly_so4_aero.csv']
+    VARS_TO_FILES['pr']        = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['wetso4']    = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['concso4pr'] = ['monthly_so4_precip.csv']
     
     # (from to unit)
-    UNITCONVERSION = {'sconcso2':   ('ug S/m3', 'ug m-3'), 
-                      'sconcso4':   ('ug S/m3', 'ug m-3'), 
-                      'wetso4':     ('kg S/ha', 'kg m-2'),  #  s-1
-                      'sconcso4pr': ('mg S/L',   'g m-3')
+    UNITCONVERSION = {'concso2':   ('ug S/m3', 'ug m-3'), 
+                      'concso4':   ('ug S/m3', 'ug m-3'), 
+                      'wetso4':    ('kg S/ha', 'kg m-2'),  #  s-1
+                      'concso4pr': ('mg S/L',   'g m-3')
                       }
 
     #: :obj: `list` of :obj: `str` 
@@ -142,10 +142,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     if var in self.UNITCONVERSION.keys():
                         # Convert units 
                         from_unit, to_unit = self.UNITCONVERSION[var]
-                        
                         values = pd.to_numeric(station_group[key],
                                                errors='coerce').values
-                                               
                         s[var] = convert_unit(data=values, from_unit = from_unit, 
                                              to_unit = to_unit, var_name = var)
                         if var == 'wetso4':
@@ -192,11 +190,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         files = self.get_file_list()
 
         unit={}
-        unit['sconcso2'] = 'ug m-3'
-        unit['sconcso4'] = 'ug m-3'
+        unit['concso2'] = 'ug m-3'
+        unit['concso4'] = 'ug m-3'
         unit['pr']       = 'mm'
         unit['wetso4']   = 'kg m-2 s-1'
-        unit['sconcso4pr'] = 'g m-3' # removed sulphur from unit mgS/L
+        unit['concso4pr'] = 'g m-3' # removed sulphur from unit mgS/L
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -315,10 +313,10 @@ if __name__ == "__main__":
      #change_verbosity('info')
      #V = "sconcso4pr"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-
+         # todo : 
      #so2 = aa.read('sconcso2')
      #so4_aero = aa.read('sconcso4')
-     V = ['pr']
+     V = ['concso2']
      ungridded = aa.read(V)
      names = ungridded.station_name[:10]
      abington = ungridded.to_station_data('K-puszta', V)
