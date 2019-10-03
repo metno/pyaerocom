@@ -25,7 +25,7 @@ def aeronetsunv3lev2_subset():
 
 @lustre_unavail
 def test_shape_ungridded(aeronetsunv3lev2_subset):
-    assert aeronetsunv3lev2_subset.shape == (62194, 12)
+    assert aeronetsunv3lev2_subset.shape == (63170, 12)
     
 @lustre_unavail
 def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
@@ -135,6 +135,7 @@ def test_load_berlin():
     
     
 if __name__=="__main__":
+    
     test_load_berlin()
     aeronetsunv3lev2_subset = make_dataset()
-    
+    test_shape_ungridded(aeronetsunv3lev2_subset)

@@ -9,7 +9,7 @@ Created on Thu Apr 12 14:45:43 2018
 import pytest
 import numpy.testing as npt
 import numpy as np
-from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
+from pyaerocom.test.settings import lustre_unavail
 from pyaerocom.io import ReadEbas
 
 def _make_data():
@@ -52,7 +52,7 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
     
     assert 'scatc550aer' in stat
     assert 'scatc550aer' in stat.overlap
-    assert len(stat.overlap['scatc550aer']) == 25789 #17466
+    assert len(stat.overlap['scatc550aer']) == 25787 #17466
     assert stat['stat_merge_pref_attr'] == 'revision_date'
     assert int(stat['data_level']) == 2
     
@@ -79,6 +79,40 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
                         [2.91, 4.58, -3.47, 97.65], rtol=1e-1)
 
 @lustre_unavail   
+def test_scat_jungfraujoch_lev3(data_scat_jungfraujoch):
+    data_scat_jungfraujoch = data_scat_jungfraujoch.apply_filters(
+            set_flags_nan=True, remove_outliers=True, data_level=2)
+    stat = data_scat_jungfraujoch.to_station_data('Jung*')
+    
+    assert 'scatc550aer' in stat
+    assert 'scatc550aer' in stat.overlap
+    assert len(stat.overlap['scatc550aer']) == 25787 #17466
+    assert stat['stat_merge_pref_attr'] == 'revision_date'
+    assert int(stat['data_level']) == 2
+    
+    npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
+                            [np.datetime64('1995-07-08T23:00:00'), 
+                             np.datetime64('2018-12-31T23:00:00')])
+    
+    vals = [stat['instrument_name'], stat['ts_type'], stat['PI'],
+            len(stat.filename.split(';'))]
+    
+    npt.assert_array_equal(vals,
+                           ['Ecotech_Aurora3000_JFJ_dry; TSI_3563_JFJ_dry; IN3563',
+                            'hourly',
+                            'Bukowiecki, Nicolas; Baltensperger, Urs; Weingartner, Ernest',
+                            28])
+    
+    d = stat.scatc550aer
+    vals = [d.mean(), d.std(), d.min(), d.max()]
+    npt.assert_allclose(vals, [4.66, 7.60, -5.57, 182.7], rtol=1e-1)
+    
+    d = stat.overlap['scatc550aer']
+    vals = [d.mean(), d.std(), d.min(), d.max()]
+    npt.assert_allclose(vals,
+                        [2.91, 4.58, -3.47, 97.65], rtol=1e-1)
+    
+@lustre_unavail   
 def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
     
     stat = data_scat_jungfraujoch.to_station_data('Jung*', 
@@ -93,7 +127,7 @@ def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
     d = stat['scatc550aer']
     vals = [d.mean(), d.std(), d.min(), d.max()]
 
-    npt.assert_allclose(vals, [4.39, 3.49, 0.63, 11.81], rtol=1e-1)
+    npt.assert_allclose(vals, [4.37, 3.48, 0.46, 11.93], rtol=1e-1)
     
 if __name__=="__main__":
    # pya.change_verbosity('info')
@@ -101,6 +135,8 @@ if __name__=="__main__":
     d = _make_data()
     test_ungriddeddata_jungfraujoch(d)
     test_scat_jungfraujoch(d)
+    test_scat_jungfraujoch_lev3(d)
+    
     test_scat_jungfraujoch_subset(d)
 # =============================================================================
 #     
