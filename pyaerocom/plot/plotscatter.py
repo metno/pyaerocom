@@ -25,7 +25,8 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                          filter_name=None, lowlim_stats=None, 
                          highlim_stats=None, loglog=None, savefig=False, 
                          save_dir=None, save_name=None, ax=None, figsize=None, 
-                         fontsize_base=10):
+                         fontsize_base=10, marker='+', color='k', alpha=0.5,
+                         **kwargs):
     """Method that performs a scatter plot of data in AEROCOM format
     
     Parameters
@@ -52,7 +53,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     axes
         instance of :class:`matplotlib.axes`
     """
-    
+
     if isinstance(y_vals, list):
         y_vals = np.asarray(y_vals)
     if isinstance(x_vals, list):
@@ -85,9 +86,11 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                                  lowlim_stats, highlim_stats)
 
     if loglog:
-        ax.loglog(x_vals, y_vals, ' k+', alpha=0.5)
+        ax.loglog(x_vals, y_vals, ls='none', color=color, marker=marker, 
+                  alpha=alpha, **kwargs)
     else:
-        ax.plot(x_vals, y_vals, ' k+', alpha=0.5)
+        ax.plot(x_vals, y_vals, ls='none', color=color, marker=marker, 
+                  alpha=alpha, **kwargs)
     
     try:
         title = start_stop_str(start, stop, ts_type)
