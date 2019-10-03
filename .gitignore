@@ -138,3 +138,6 @@ docs/tut0*.rst
 docs/add*.rst
 docs/tut1*.rst
 
+
+# Issues directory
+issues/
