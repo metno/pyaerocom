@@ -151,6 +151,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
     
+    grid_start_ref = to_pandas_timestamp(gridded_data_ref.start)
+    grid_stop_ref = to_pandas_timestamp(gridded_data_ref.stop)
+    
     grid_ts_type = gridded_data.ts_type
     
     if start is None:
@@ -162,6 +165,10 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     else:
         stop = to_pandas_timestamp(stop)
     
+    if grid_start_ref > start:
+        start = grid_start_ref
+    if grid_stop_ref < stop:
+        stop = grid_stop_ref
     # check overlap
     if stop < grid_start or start > grid_stop:
         raise TimeMatchError('Input time range {}-{} does not '
@@ -682,14 +689,22 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
     
-    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    obsdata = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
     
     
-    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
-    coldata = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, ts_type='monthly',
-                                                    start=2010,
-                                                    var_outlier_ranges={'od550aer':[0,10]},
-                                                    filter_name='WORLD-noMOUNTAINS',
-                                                    remove_outliers=True,
-                                                    colocate_time=False, 
-                                                    min_num_obs=None)
+    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
+    coldata = pya.colocation.colocate_gridded_gridded(modeldata, obsdata, 
+                                                      ts_type='monthly',
+                                                      regrid_res_deg=5,
+                                                      remove_outliers=True,
+                                                      colocate_time=False)
+    
+    stats = coldata.calc_statistics()
+    
+    coldata_alt = pya.colocation.colocate_gridded_gridded(modeldata, obsdata, 
+                                                      ts_type='monthly',
+                                                      regrid_res_deg=5,
+                                                      remove_outliers=True,
+                                                      colocate_time=True)
+    
+    stats_alt = coldata_alt.calc_statistics()
