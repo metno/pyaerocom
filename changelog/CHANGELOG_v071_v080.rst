@@ -5,6 +5,27 @@ Automatically generated (and slightly modified) using::
 Release 0.8.0 (0.7.1 -> 0.8.0)
 =======================================
 
+- 2019-10-04, Jonas Gliss	Replaced all occurrences of sconc with conc in mod. test_aas_et_al.py after merging #43 due to failing tests
+- 2019-10-04, Jonas Gliss	Merge branch 'hanna_dev' into v080DEV
+- 2019-10-04, Jonas Gliss	Merge branch 'v080DEV' into hanna_dev
+- 2019-10-04, Jonas Gliss	Merge branch 'paulina' into v080DEV
+- 2019-10-04, Jonas Gliss	Merged v080DEV into paulina
+- 2019-10-03, Jonas Gliss	Fixed merge conflict in .gitignore
+- 2019-10-03, Jonas Gliss	Bumped version
+- 2019-10-03, Jonas Gliss	Minor improvements in user-friendliness of trends computation and plotting
+- 2019-10-03, Jonas Gliss	Added start / stop check against refdata in gridded / gridded colocation routine
+- 2019-10-03, Jonas Gliss	Added new metod get_metadata_from_filename in io/helpers.py
+- 2019-10-03, Jonas Gliss	Scatter plot can now handle more controls on style (e.g. marker, transparency, color, etc.)
+- 2019-10-03, Jonas Gliss	Added new global option  PERFORM_FMT_CHECKS in GridIO class (for checking files against naming convention) and updated reading of gridded data accordingly in other modules affected; minor changes in GriddedData reading and plotting
+- 2019-10-03, Jonas Gliss	Fixed some tests
+- 2019-10-03, Jonas Gliss	(MAJOR) Revised method calc_statistics: now biases and FGE are computed based on only positive values
+- 2019-10-02, Jonas Gliss	Fixed minor bug in json file computation in Aerocom Evaluation (arose from very recent changes) and added number of stations to calc_statistics in ColcatedData
+- 2019-10-02, hannasv	updated sconcsoX to concsoX
+- 2019-10-02, hannasv	fixed but with unitconversion and in reading precipitation in read aas et al
+- 2019-10-02, hannasv	fixed comments and removed printstatements
+- 2019-10-02, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-10-02, hannasv	extended functionality in heatmaps allow one columned multiindex or single index df
+- 2019-10-01, Jonas Gliss	Added changelog and first draft of release summary for v0.8.0
 - 2019-09-29, Jonas Gliss	Added method load_default_config in Config class
 - 2019-09-20, Jonas Gliss	Improved data processing flow in AerocomEvaluation and added new time resampling constraints for computation of json files (e.g. computation of monthly averages if colocated data object is daily)
 - 2019-09-20, Jonas Gliss	Added option model_keep_outliers in Colocator and new (UNTESTED) attribute obs_vars_rename
@@ -22,6 +43,8 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-09-20, Jonas Gliss	Added some aliases
 - 2019-09-20, Jonas Gliss	Added time resampling info in StationData.var_info when resampling
 - 2019-09-20, Jonas Gliss	TimeResampler has apply_constraints option set to False now (prev. None), added info attr dict last_setup
+- 2019-09-11, hannasv	added drop duplicate entries of same moth (dtime) in reading routine. Keeps first value
+- 2019-09-11, hannasv	working on heatmaps with circles and annotations
 - 2019-09-10, Jonas Gliss	Deactivated multiprocessing reading of many cubes and added output in case of large number of files
 - 2019-09-06, Jonas Gliss	Added transparency in scatter plots
 - 2019-09-06, Jonas Gliss	(MAJOR): improved handling of time resampling, now all unified in new TimeResampler class in time_resampler.py module, used in StationData and ColocatedData, using hierarchical resampling strategy; improved TsType
@@ -43,6 +66,9 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-09-05, Jonas Gliss	Removed invalid string in definition DEFAULT variable and added new variables scatc440aer, scatc700aer, ang4470aer; changed unit of [rh] variable from 1 to %
 - 2019-09-04, Augustin Mortier	Included variable alias check (e.g. check for sconcpm10 if concpm10 is not available) in ReadGridded
 - 2019-09-04, Jonas Gliss	(API REFACTOR): Moved global dicts for time conversion from helpers.py to new module time_config.py and updated all affected imports
+- 2019-09-04, hannasv	worked on updating unitconversion aas et al
+- 2019-09-04, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-09-04, hannasv	updating unitconversion
 - 2019-09-04, Jonas Gliss	Improved flexibility of time resampling now supporting flexible ts_types (e.g.3daily)
 - 2019-09-04, Jonas Gliss	Improved handling of more flexible ts_types
 - 2019-09-04, Jonas Gliss	(BETA): TsType class can now also handle more flexible ts_types such as 4daily
@@ -50,6 +76,7 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-09-04, Jonas Gliss	Added conctc to units_helpers for custom conversion
 - 2019-09-04, Jonas Gliss	Added conctc to variables.ini
 - 2019-09-04, Jonas Gliss	Added conctc to ebas_config.ini
+- 2019-09-04, hannasv	Merge branch 'v080DEV' into hanna_dev
 - 2019-09-04, Jonas Gliss	dumped version
 - 2019-09-04, Jonas Gliss	(BETA): support multiple source ts_types for obsdata in colocation routine gridded/ungridded
 - 2019-09-04, Jonas Gliss	Major improvements in ReadEbas: flexible support for time frequencies (e.g. 4d); applying of scale factors defined in ebas_config.ini; conversion of non CF conform units (e.g. ug S/m3 to ug/m3)
@@ -62,6 +89,12 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-09-04, Jonas Gliss	New test module for new module units_helpers.py
 - 2019-09-04, Jonas Gliss	Updated information in ebas_config.ini (scale factors of concXX vars)
 - 2019-09-04, Jonas Gliss	(API): new module units_helpers.py that contains custom unit conversion information and methods (i.e. non CF conform units) and moved relevant helper methods for unit conversion from helpers.py
+- 2019-09-04, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-09-04, hannasv	WV Structuring dataframe for model intercomparison
+- 2019-09-04, hannasv	WV Structuring dataframe for model intercomparison
+- 2019-09-04, hannasv	fixed wetso4 unit again, works -- compared to model data
+- 2019-09-04, hannasv	added import of ReadSulphurAasEtAl
+- 2019-09-04, hannasv	updated with x y ticklabels and standform if user ask for to many digits
 - 2019-08-30, Jonas Gliss	Merge branch 'v080DEV' of https://github.com/metno/pyaerocom into v080DEV
 - 2019-08-30, Jonas Gliss	AerocomEvaluation: added more support for autoupdating and checking outdated, now also properly handling the newly introduced heatmap files
 - 2019-08-30, Jonas Gliss	Added more support for handling missing vertical codes in Colocator (e.g. due to old naming convention)
@@ -78,6 +111,7 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-08-30, Jonas Gliss	New method merge_dicts in _lowlevel_helpers.py (used to merge metadata in GriddedData)
 - 2019-08-27, Jan Jurgen Griesfeller	added LOCAL_TMP_DIR to config class and paths.ini
 - 2019-08-23, Jan Jurgen Griesfeller	added proper command line interface and mad L2 writing work
+- 2019-08-23, hannasv	worked on intercomparrison to aas et al and heatmaps
 - 2019-08-23, Jonas Gliss	Merge branch 'v080DEV' of https://github.com/metno/pyaerocom into v080DEV
 - 2019-08-23, Jonas Gliss	Updated version
 - 2019-08-23, Jonas Gliss	(MAJOR REFACTOR): GriddedData is now storing metadata directly in underlying Cube (suppl_info -> metadata); var_name uses original one, aerocom var_name via new attr var_name_aerocom, var_info more flexible; new methods copy_coordinates, delete_coordinates, copy, delete_aux_vars; more robust unit check and __init__
@@ -102,6 +136,8 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-08-23, Jonas Gliss	Added aliases for clear-sky variables
 - 2019-08-23, Jonas Gliss	Added clear-sky AE and AOD to web naming conventions
 - 2019-08-23, Jonas Gliss	Added geonum to pyaerocom_env.yml
+- 2019-08-22, hannasv	Merge branch 'v080DEV' into hanna_dev
+- 2019-08-22, hannasv	corrected bug in unitconversion of wetso4
 - 2019-08-19, Jonas Gliss	Added more support for reading of climatological data
 - 2019-08-19, Jonas Gliss	Added clear-sky aliases for absorption coefficient
 - 2019-08-19, Jonas Gliss	ColocatedData: new methods coords_with_data and resample_time
@@ -121,6 +157,7 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-08-15, Jonas Gliss	AerocomEvaluation: can now also be run for single variable; minor bug fixes
 - 2019-08-15, Jonas Gliss	New test module for TsType class
 - 2019-08-15, Jonas Gliss	New module tstype which includes new class TsType (for easier handling of different time resolutions)
+- 2019-08-14, hannasv	first day back
 - 2019-08-13, Jonas Gliss	New option ignore_station_names in colocation.py (ungridded/gridded) and included option to pass kwargs in to_station_data_all of UngriddedData (e.g. for min_num_obs in resampling of timeseries)
 - 2019-08-13, Jonas Gliss	New method remove_variable in StationData
 - 2019-08-13, Jonas Gliss	change_verbosity can now also get another logger as input
@@ -129,6 +166,19 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-08-02, Jan Jurgen Griesfeller	added very basic Sentinel5P reading; data has no metadata at this point.
 - 2019-08-02, Jan Jurgen Griesfeller	added option to define chunksize to speed up satellite data reading where
 - 2019-08-01, Jan Jurgen Griesfeller	added data set names for Aeolus and Sentinel5p satellite data
+- 2019-07-24, Paulina Souza Tedesco	deleted some old comments
+- 2019-07-24, Paulina Souza Tedesco	ran notebook for latest version of the reading routine
+- 2019-07-24, Paulina Souza Tedesco	changes made to reading routine work on notebook
+- 2019-07-24, Paulina Souza Tedesco	reads all the files in the PYAEROCOM/DMS_AMS_CVO DIRECTORY. However, some files need to be edited, standarized, and then the readig routine can be simplified
+- 2019-07-24, Paulina Souza Tedesco	added variable sconcmsa
+- 2019-07-17, Paulina Souza Tedesco	reading routine works for all variables but MSA; decide what to do with this (name and units)
+- 2019-07-17, Paulina Souza Tedesco	 generalized reading routine for SO4
+- 2019-07-17, Paulina Souza Tedesco	fixed format of dtime in data_out. In read_file, intersected vars_to_retrieve with the variables available in the file. TODO: intersect variables in the read()
+- 2019-07-10, Paulina Souza Tedesco	added property DEFAULT_VARS
+- 2019-07-10, Paulina Souza Tedesco	removed comment
+- 2019-07-10, Paulina Souza Tedesco	update file with remote version
+- 2019-07-10, Paulina Souza Tedesco	new version with var_info['units']
+- 2019-07-10, Paulina Souza Tedesco	corrected units
 - 2019-07-09, Jonas Gliss	Fixed time dimension check leap year issue
 - 2019-07-09, Jonas Gliss	Merge branch 'hanna_dev' into v080DEV
 - 2019-07-09, Jonas Gliss	Merge branch 'v080DEV' into hanna_dev
@@ -151,6 +201,7 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-07-04, hannasv	Merge remote-tracking branch 'origin/v080DEV' into hanna_dev
 - 2019-07-04, hannasv	added helpers units file
 - 2019-07-04, Jonas Gliss	Worked on trends processing and automated processing routines; cleaned up some code
+- 2019-07-03, Paulina Souza Tedesco	iterate over variables in VAR_NAMES_FILE to generate data_out. Write units in var_info, and confert ppt to mol/mol
 - 2019-07-01, Jonas Gliss	Worked on harmonisation of trends computation; BETA version available in StationData -> compute_trend
 - 2019-07-01, Jonas Gliss	Updated test in test_aas_et_al.py, after fixing #34
 - 2019-07-01, Jonas Gliss	Removed revision data test from test_ebas_sample_stats.py
@@ -174,6 +225,7 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-06-27, Jonas Gliss	Updated TrendsEvaluation class: now, outlier filtering and other ungridded filters (e.g. flag removal, data level selection) is done in UngriddedData object directly, before time series conversion
 - 2019-06-27, Jonas Gliss	Changed version of UngriddedData and added new method first_meta_idx
 - 2019-06-27, Jonas Gliss	Changed version of ReadEbas class
+- 2019-06-26, Paulina Souza Tedesco	added var_info with units to metadata. TODO: change units to mol mol-1
 - 2019-06-26, Jonas	Merge pull request #33 from metno/paulina
 - 2019-06-26, Paulina Souza Tedesco	Merge branch 'paulina' into v080DEV
 - 2019-06-26, Paulina Souza Tedesco	Added some comments
@@ -525,10 +577,15 @@ Release 0.8.0 (0.7.1 -> 0.8.0)
 - 2019-03-05, Jonas Gliss	Added deprecation info in analysis.py (will soon refactured into pure colocation module)
 - 2019-03-05, Jonas Gliss	Added test case for basic access of station coordinates in UngriddedData
 - 2019-03-05, Jonas Gliss	Changed attr. station_coordinates (now dictionary with coord names and lists containing coordinates); increased robustness of to_station_data in case data object does not contain any variable data
+- 2019-03-04, Jonas Gliss	Merge README from v080DEV
 - 2019-03-04, Jonas Gliss	Updated formatting of README
 - 2019-03-04, Jonas Gliss	Updated formatting of README
 - 2019-03-04, Jonas Gliss	Merge README from master
+- 2019-03-04, Jonas Gliss	Updated formatting of README for more friendly display in GitHub (md instead of rst).
+- 2019-03-04, Jonas Gliss	Merge README from branch v080DEV
 - 2019-03-04, Jonas Gliss	Added link to pyaerocom_env.yml in README
+- 2019-03-04, Jonas Gliss	Merge README and .gitignore from branch v080DEV
+- 2019-03-04, Jonas Gliss	Merge pyaerocom_env.yml from branch v080DEV
 - 2019-03-04, Jonas Gliss	Updated installation information in README
 - 2019-03-04, Jonas Gliss	Removed environment name from pyaerocom_env.yml
 - 2019-02-28, Jonas Gliss	Updated version

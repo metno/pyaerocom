@@ -67,6 +67,7 @@ This release comprises major improvements, changes and many new features compare
   - High level interface (`Colocator` class) for automatic colocation, e.g. used in `AerocomEvaluation` class for web processing.
 
 - Other changes:
+  - Updated method `calc_statistics`: biases (NMB, MNMB) and FGE are now computed only from positive values
   - New modules `units_helpers.py` providing custom unit conversion, e.g. for non-CF conform units in data files (e.g. sulphur specific mass concentration data: ug S m-3)
   - Improved caching stragegy (now single variable instances of `UngriddedData` are cached)
   - Easier installation options
@@ -99,5 +100,11 @@ This release comprises major improvements, changes and many new features compare
   - Filtering by land / sea masks
   - Computation of regional average time series in data objects
 
-- Planned major API changes:
-  - StationData based on xarray.Dataset (currently variable data can be either numpy array, pandas Series or xarray)
+- Planned major changes for v0.9.0:
+  - API refactor: StationData based on xarray.Dataset (currently variable data can be either numpy array, pandas Series or xarray)
+  - Include filtering using land / sea masks (should work for `GriddedData`, `UngriddedData`, `ColocatedData`)
+  - 4D data (ModelLevel):
+    - conversion of vertical level coordinates to altitude
+    - profile colocation (would add additional vertical dimension to `Colocateddata`)
+    - Retrieval of aerosol layer height (PRODUCT)
+    - Default vertical domains for vertical aggregation (particularly for web interfaces, e.g. 0-2km, 2-6km, >6km)
