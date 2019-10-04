@@ -1,3 +1,5 @@
+from scipy.constants import Avogadro
+
 def mass_to_nr_molecules(mass, mm):
     """ Calculating the number of molecules form mass and molarmass.
 
@@ -10,15 +12,14 @@ def mass_to_nr_molecules(mass, mm):
         mass of all compounds.
         
     mm : float
-        molar mass of compound.
+        molar mass of compounds.
     
     Returns 
     -----------------
     nr_molecules : float
         number of molecules     
     """
-    A = 6.022*10**23
-    nr_molecules = mass/mm*A
+    nr_molecules = mass/mm*Avogadro
     return nr_molecules
 
 def nr_molecules_to_mass(nr_molecules, mm):
@@ -37,8 +38,7 @@ def nr_molecules_to_mass(nr_molecules, mm):
     mass : float
         mass in grams
     """
-    A = 6.022*10**23 # avogadros number
-    mass = mm*nr_molecules/A
+    mass = mm*nr_molecules/Avogadro
     return mass
 
 def unitconv_sfc_conc_bck(data, x = 2):
@@ -63,12 +63,11 @@ def unitconv_sfc_conc_bck(data, x = 2):
     """
 
     mmO = 15.9999 # molar mass oxygen
-    mmS = 32.065 # molar mass sulphur
-    mm_compound =  (mmS + x*mmO)*10**3 
-    # since data is in micrograms we should have the 
+    mmS = 32.065  # molar mass sulphur
+    mm_compound =  (mmS + x*mmO)*10**3 # *10**3 gives molar mass in micrograms 
     
-    nr_molecules = mass_to_nr_molecules(data, mm_compound)
-    weight_s = nr_molecules_to_mass(nr_molecules, mmS*10**3) # weight in kilos
+    nr_molecules = mass_to_nr_molecules(data, mm_compound) 
+    weight_s = nr_molecules_to_mass(nr_molecules, mmS*10**3) # weigth in ug 
     return weight_s
 
 def unitconv_sfc_conc(data, nr_of_O = 2):
@@ -88,6 +87,7 @@ def unitconv_sfc_conc(data, nr_of_O = 2):
         data in units of ug SOx/m3
     
     """
+ 
     mm_s = 32.065*10**6 # in units of ug/mol
     mm_o = nr_of_O*15.9999*10**6 ## in units of ug/mol
     nr_molecules = mass_to_nr_molecules(data, mm_s) # 32.065*10**6) [ug/mol]
@@ -97,34 +97,43 @@ def unitconv_sfc_conc(data, nr_of_O = 2):
     return mass
 
     
-def unitconv_wet_depo_bck(data, ts_type = "monthly"):
-    """ The unitconversion kgS/ha to kg S/m-2 s-1.
-    
-    NOT INCLUDED THE SECONDS PART YET.
-
+def unitconv_wet_depo_bck(data, time, ts_type = "monthly"):
+    """ The unitconversion kg SO4 m-2 s-1 to kgS/ha.
+ 
     Removing the weight of oxygen.
 
     Parameters
     ------------------
     data: ndarray
         Sulphur data you wish to convert.
-        
+    
+    time : pd.Seires[numpy.datetime64]
+         Array of datetime64 timesteps.
+    
     ts_type: str    
        The timeseries type. Default monthly.
     
     Returns
     ------------------
     data : ndarray
-       Sulphur data in units of ugSOx/m3.
+       Sulphur data in units of ugSOx m-3 s-1.
+       
     """
-    mm_compund = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
-    mm_s = 32.065   # g/mol
-    nr_molecules = mass_to_nr_molecules(data, mm_compund) # in the order of 10**27 
-    mass_S = nr_molecules_to_mass(nr_molecules, mm_s)*0.001
-    return mass_S/10000 # to be divid by days in month
+    # kg SO4 m-2 s-1 to kg S/ha 
+    mm_so4 = 0.001*32.065 + 0.001*15.999*4 # kg/mol
+    mm_s = 32.065*0.001 # kg/mol
+    mm_o = 0.001*15.999*4 # kg/mol
+    
+    days_in_month = time.dt.daysinmonth 
+    monthly_to_sec = days_in_month*24*60*60 # Seconds in each 
+    nr_molecules = data*Avogadro/mm_so4 # [1]
+    mass_S       = nr_molecules*mm_s/Avogadro # mass in kg
+    # Mulitply by seconds in one month 
+    mass_pr_ha = mass_S*monthly_to_sec*10000
+    return mass_pr_ha
 
-def unitconv_wet_depo(data, ts_type = "monthly"):
-    """ Unitconversion kg S/ha to kg SOx/m2.
+def unitconv_wet_depo(data, time, ts_type = "monthly"):
+    """ Unitconversion kg S/ha to kg SOx m-2 s-1.
 
     Adding mass of oksygen.
     
@@ -133,9 +142,11 @@ def unitconv_wet_depo(data, ts_type = "monthly"):
     data: ndarray
         data in unit kg S/ha = kg S/(1000 m2)
 
+    time : pd.Seires[numpy.datetime64]
+        Array of datetime64 timesteps.
+
     ts_type : str
         The timeseries type. Default "monthly".
-
 
     Returns
     ------------------
@@ -143,14 +154,53 @@ def unitconv_wet_depo(data, ts_type = "monthly"):
         data in units of ugSOx/m3
 
     """
+    mmSO4 = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
+    mm_s = 32.065*0.001 # kg/mol
+    #print('uses new updated version, in that case fix conversion')
+    nr_molecules = data*Avogadro/mm_s # [1]
+    mass_SO4 = nr_molecules*mmSO4/Avogadro # mass in kl
+    days_in_month = time.dt.daysinmonth
+    monthly_to_sec = days_in_month*24*60*60
+    #print('includes new changes')
+    mass_pr_square_m_pr_sek = mass_SO4/(10000*monthly_to_sec)
+    return mass_pr_square_m_pr_sek
 
-    mm_s = 0.001*32.065 # in kilos pr mol
-    mm_o = 4*15.9999 # molar mass of four okygen atom in kilo
-    #mm_compound = mm_s + mm_o
+def unitconv_wet_depo_from_emep(data, time, ts_type = "monthly"):
+    """ Unitconversion mgS m-2 to kg SO4 m-2 s-1.
+
+    Milligram to kilos is 10-6.
+
+    Adding mass of oksygen.
     
-    nr_molecules = mass_to_nr_molecules(data, mm_s) # in the order of 10**27 
-    added_weight_oksygen = nr_molecules_to_mass(nr_molecules, mm_o)*0.001 
-    # added_weight_oksygen [ mass in kg ]
-    
-    mass = data + added_weight_oksygen
-    return mass*10000
+    Parameters
+    ------------------
+    data: ndarray
+        data in unit mg S m-2.
+
+    time : pd.Seires[numpy.datetime64]
+        Array of datetime64 timesteps.
+
+    ts_type : str
+        The timeseries type. Default "monthly".
+
+    Returns
+    ------------------
+    data : ndarray
+        data in units of ugSOx/m3
+
+    """
+    # TODO add if time is not of correct pandas series convert 
+    # numpy ndarray to pandas series. Much better than having to remeber that the only thing thats a åandas seies.
+    # If time
+
+    mm_so4 = 0.001*32.065 + 0.001*15.999*4 # in kg/mol
+    mm_s  = 0.001*32.065 # kg/mol
+    data_in_kilos = data*10**(-9)
+    nr_molecules = data_in_kilos*Avogadro/mm_s  # [1]
+    mass_SO4     = nr_molecules*mm_so4/Avogadro # mass in kg
+    days_in_month  = time.dt.daysinmonth
+    monthly_to_sec = days_in_month*24*60*60
+    mass_pr_square_m_pr_sek = mass_SO4*10000/monthly_to_sec
+    return mass_pr_square_m_pr_sek
+
+

@@ -13,7 +13,10 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
                   normalise_rows=False, normalise_rows_how='median',
                   normalise_rows_col=None,
                   annot=True, table_name="", num_digits=0, ax=None, 
-                  figsize=(12,12), cbar=False, **kwargs):
+                  figsize=(12,12), cbar=False, xticklabels = None, 
+                  yticklabels = None, xlabel= '',  ylabel = '', circle = None, **kwargs):
+    
+
     """Plot a pandas dataframe as heatmap
     
     Parameters
@@ -61,24 +64,32 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         size of figure for plot
     cbar : bool
         if True, a colorbar is included
-    
+    xticklabels : List[str]
+        List of string labels.
+    yticklabels : List[str]
+        List of string labels.
+        
     Returns
     -------
     axes
         plot axes instance
     """
     
-    if not isinstance(df.columns, pd.MultiIndex):
-        raise AttributeError("So far, heatmaps can only be created for "
-                             "single column tabular data (e.g. Bias or "
-                             "RMSE) with a partly unstacked MultiIndex")
-        
-    if df.columns.names[0] is None and len(df.columns.levels[0]) > 1:
-        raise AttributeError("Heatmaps can only be plotted for single "
-                             "column data (e.g. Bias, RMSE). Please "
-                             "extract column first")
-        
-    num_fmt = ".{}f".format(num_digits)
+    # Old vesion only for 
+    if isinstance(df.columns, pd.MultiIndex):
+        # If pandas is a instance of multicolumns make sure that it only ha one column.
+        if len(df.columns.levels) > 1:
+             raise AttributeError("Heatmaps can only be created for "+
+                                 "single column tabular data (e.g. Bias or "+
+                                 "RMSE) with a partly unstacked MultiIndex or a "+
+                                 "single index DataFrame. "+
+                                 "Not MulitiIndex of {} ".format(len(df.columns.levels[0]))+
+                                 " columns which you provided. "+
+                                 "Please extract a column. ")  
+            
+    if circle:
+        raise NotImplementedError('Adding circles to heatmap is not implemented yet.')
+
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
     else:
@@ -99,7 +110,6 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
             else:
                 raise ValueError('Invalid input for normalise_rows_how ({}). '
                                  'Choose from mean, median or sum'.format(normalise_rows_how))
-            #print(norm_ref)
             table_name += " (norm. row {})".format(normalise_rows_how)
         df = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
         num_fmt = ".0%"
@@ -108,28 +118,49 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         #df = df.div(df.max(axis=1), axis=0)
     if color_rowwise:
         df_hm = df.div(abs(df).max(axis=1), axis=0)
-        #df_hm = df.div(df.max(axis=1), axis=0)
     else:
         df_hm = df
+
     cbar_kws['label'] = table_name
     if annot is True:
         annot = df.values
+
     if vmin is None:
         vmin = df_hm.min().min() * (1-low)
     elif vmax is None:
         vmax = df_hm.max().max() * (1+high)
-    #print(vmin, vmax)
-    if center:
-        ax = heatmap(df_hm, center=center, cmap=cmap, annot=annot, ax=ax, 
-                     fmt=num_fmt,
-                     cbar=cbar, cbar_kws=cbar_kws, vmin=vmin, vmax=vmax)
+    
+    # If the user needs too many displays 
+    if num_digits < 5:
+        num_fmt = ".{}f".format(num_digits)
     else:
-        ax = heatmap(df_hm, cmap=cmap, annot=annot, ax=ax, 
-                 fmt=num_fmt,
-                 cbar=cbar, cbar_kws=cbar_kws, vmin=vmin, vmax=vmax)
+        num_fmt = ".4g"
+
+    ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
+                 fmt=num_fmt, cbar=cbar, cbar_kws=cbar_kws,
+                 vmin=vmin, vmax=vmax, **kwargs)
+        
     ax.set_title(table_name, fontsize=16)
-    xticklabels = ax.get_xticklabels()
-    ax.set_xticklabels(xticklabels, rotation=45, ha='right')
+    
+    if yticklabels:
+        ax.set_yticklabels(yticklabels, rotation=45, ha='left')
+    
+    if xticklabels:
+        ax.set_xticklabels(xticklabels, rotation=45, ha='right')
+    else:
+        xticklabels = ax.get_xticklabels()
+        ax.set_xticklabels(xticklabels, rotation=45, ha='right')
+    
+    if xlabel:
+        ax.set_xlabel(xlabel, fontsize = 12)
+    else:
+        ax.set_xlabel('') 
+    
+    if ylabel:
+        ax.set_ylabel(ylabel, fontsize = 12)
+    else:
+        ax.set_ylabel('') 
+    
     fig.tight_layout()
     
     return ax
