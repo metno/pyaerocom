@@ -42,9 +42,9 @@ class ReadGAW(ReadUngriddedBase):
     # Dictionary specifying values corresponding to invalid measurements
     NAN_VAL ={}
     NAN_VAL['vmrdms'] = -999999999999.99
-    NAN_VAL['sconcso4'] = -999999999999.99
-    NAN_VAL['sconcbc'] = -999999999999.99  # Assumed, there is actually no missing data in the file
-    NAN_VAL['sconcmsa'] = -999999999999.99
+    NAN_VAL['concso4'] = -999999999999.99
+    NAN_VAL['concbc'] = -999999999999.99  # Assumed, there is actually no missing data in the file
+    NAN_VAL['concmsa'] = -999999999999.99
     NAN_VAL['nd'] = -9999
     NAN_VAL['sd'] = -99999.
     NAN_VAL['f'] = -9999
@@ -54,9 +54,9 @@ class ReadGAW(ReadUngriddedBase):
     # Do we want CS and REM? Don't know what these columns represent...
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmrdms'] = 'dimethylsulfide'
-    VAR_NAMES_FILE['sconcbc'] = 'blackCarbon'
-    VAR_NAMES_FILE['sconcso4'] = 'SO4'
-    VAR_NAMES_FILE['sconcmsa'] = 'MSA'
+    VAR_NAMES_FILE['concbc'] = 'blackCarbon'
+    VAR_NAMES_FILE['concso4'] = 'SO4'
+    VAR_NAMES_FILE['concmsa'] = 'MSA'
     VAR_NAMES_FILE['nd'] = 'ND'
     VAR_NAMES_FILE['sd'] = 'SD'
     VAR_NAMES_FILE['f'] = 'F'
@@ -211,8 +211,8 @@ class ReadGAW(ReadUngriddedBase):
                 elif u == 'ng/m3':
                     data_out['var_info'][var]['units'] = 'ug/m3'
                     data_out[var] = np.asarray(data[:, idx]).astype(np.float) * 1e-3
-                    data_out[var] = np.where(data_out[var]==self.NAN_VAL['sconcmsa']*1e-3, 
-                            self.NAN_VAL['sconcmsa'], data_out[var])                       
+                    data_out[var] = np.where(data_out[var]==self.NAN_VAL['concmsa']*1e-3,
+                            self.NAN_VAL['concmsa'], data_out[var])
                 else:
                     data_out['var_info'][var]['units'] = u
                     data_out[var] = data[:, idx].astype(np.float)
@@ -481,15 +481,15 @@ if __name__ == "__main__":
     
     # Test that the reading routine wirks for the rest of the variables
     # SO4    
-    data2 = r.read(vars_to_retrieve = ['sconcso4'])
+    data2 = r.read(vars_to_retrieve = ['concso4'])
     stat = data2[5]
-    ax = stat.plot_timeseries('sconcso4')
+    ax = stat.plot_timeseries('concso4')
     plt.show()
     
     # black carbon
-    data3 = r.read(vars_to_retrieve = ['sconcbc'])
+    data3 = r.read(vars_to_retrieve = ['concbc'])
     stat = data3[1]
-    ax = stat.plot_timeseries('sconcbc')
+    ax = stat.plot_timeseries('concbc')
     plt.show()
     
     # dms second file
@@ -499,8 +499,8 @@ if __name__ == "__main__":
     plt.show()
     
     # msa
-    data5 = r.read(vars_to_retrieve = ['sconcmsa'])
+    data5 = r.read(vars_to_retrieve = ['concmsa'])
     stat = data5[4]
-    ax = stat.plot_timeseries('sconcmsa')
+    ax = stat.plot_timeseries('concmsa')
     plt.show()
     

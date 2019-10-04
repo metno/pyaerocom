@@ -1070,7 +1070,7 @@ class ReadGridded(object):
     def check_compute_var(self, var_name):
         """Check if variable name belongs to family that can be computed
         
-        For instance, if input var_name is `sconcdust` this method will check
+        For instance, if input var_name is `concdust` this method will check
         :attr:`AUX_REQUIRES` to see if there is a variable family pattern
         (`conc*`) defined that specifies how to compute these variables. If 
         a match is found, the required variables and computation method is 

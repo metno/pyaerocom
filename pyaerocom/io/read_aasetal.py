@@ -55,7 +55,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     FILES_CONTAIN = {}
     FILES_CONTAIN['monthly_so2.csv']        = ['concso2']
     FILES_CONTAIN['monthly_so4_aero.csv']   = ['concso4']
-    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'sconcso4pr']
+    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'concso4pr']
     
     #: Dictionary mapping variable name to hard coded filenames. 
     VARS_TO_FILES = {}
@@ -311,11 +311,11 @@ if __name__ == "__main__":
      from pyaerocom import change_verbosity
      import matplotlib.pyplot as plt
      #change_verbosity('info')
-     #V = "sconcso4pr"
+     #V = "concso4pr"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
          # todo : 
-     #so2 = aa.read('sconcso2')
-     #so4_aero = aa.read('sconcso4')
+     #so2 = aa.read('concso2')
+     #so4_aero = aa.read('concso4')
      V = ['concso2']
      ungridded = aa.read(V)
      names = ungridded.station_name[:10]
@@ -323,19 +323,19 @@ if __name__ == "__main__":
      abington.plot_timeseries(V[0])
      plt.show()
      #plt.show()
-     #dataString = aa.read("sconcso4")
+     #dataString = aa.read("concso4")
      #dataString.plot_station_coordinates(markersize=12, color='lime')
      #print(dataString.station_name)
-     #abington = dataString.to_station_data("Abington", 'sconcso4')
-     #abington.plot_timeseries('sconcso4')
+     #abington = dataString.to_station_data("Abington", 'concso4')
+     #abington.plot_timeseries('concso4')
      #plt.show()
      
-     #dataList =  aa.read(["sconcso2","sconcso4"])
+     #dataList =  aa.read(["concso2","concso4"])
      #dataList.plot_station_coordinates(markersize=12, color='red')
      #plt.show()
 
      #sprint(ungridded.metadata[2.0])
-     #when = ungridded.meta_idx[2.0]['sconcso2']
+     #when = ungridded.meta_idx[2.0]['concso2']
      #print(ungridded._data[when[0]:when[-1], ungridded._DATAINDEX])
 
      #dataNone.plot_station_coordinates('wetso4', color='lime')
@@ -346,9 +346,9 @@ if __name__ == "__main__":
      #print(ungridded.metadata[0])
 
 
-     #stat = ungridded.to_station_data('Abington', "sconcso4")
-     #stat.plot_timeseries("sconcso4", ax = ax)
+     #stat = ungridded.to_station_data('Abington', "concso4")
+     #stat.plot_timeseries("concso4", ax = ax)
      #plt.show()
-     #ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
+     #ax = ungridded.plot_station_timeseries('Abington', 'concso2')
      #ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
 
