@@ -7,7 +7,7 @@ Created on Mon Jul  9 14:14:29 2018
 # TODO: Docstrings
 import pytest
 import numpy.testing as npt
-from pandas import Timestamp
+from pandas import Timestamp, DataFrame
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.readgridded import ReadGridded
 
@@ -23,34 +23,15 @@ def dataset():
     return make_dataset()
     
 @lustre_unavail    
-def test_variables(dataset):
-    assert len(dataset.vars) == 17, 'Mismatch in number of available variables'
-    npt.assert_array_equal(dataset.vars,
-                           ['ang4487aer',
-                            'bscatc532aerboa',
-                            'bscatc532aertoa',
-                            'ec532aer',
-                            'ec532dryaer',
-                            'od440aer',
-                            'od550aer',
-                            'od550bc',
-                            'od550dust',
-                            'od550oa',
-                            'od550so4',
-                            'od550ss',
-                            'od865aer',
-                            'sconcpm10',
-                            'sconcpm25',
-                            'time',
-                            'z'])
-@lustre_unavail    
-def test_years_available(dataset):
-    years = list(range(2003, 2019)) + [9999]
-    npt.assert_array_equal(dataset.years_avail, years)    
+def test_file_info(dataset):
+
+    assert isinstance(dataset.file_info, DataFrame)
+    assert len(dataset.file_info.columns) == 11, 'Mismatch colnum file_info (df)'
 
 @lustre_unavail    
-def test_no_of_files(dataset):
-    assert len(dataset.files) == 269
+def test_years_available(dataset):
+    years = list(range(2003, 2020)) + [9999]
+    npt.assert_array_equal(dataset.years_avail, years)    
 
 @lustre_unavail
 def test_data_dir(dataset):
@@ -99,8 +80,8 @@ def test_read_vars(dataset):
     
 if __name__=="__main__":
     ds = make_dataset()
-
-    test_variables(ds)
+    test_years_available(ds)
+    test_file_info(ds)
     test_read_vars(ds)
     
     

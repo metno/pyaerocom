@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pyaerocom import const
 from pyaerocom.helpers import start_stop_str
-from pyaerocom.mathutils import calc_statistics
+from pyaerocom.mathutils import calc_statistics, exponent
 
 def plot_scatter(x_vals, y_vals, **kwargs):
     """Scatter plot
@@ -22,10 +22,11 @@ def plot_scatter(x_vals, y_vals, **kwargs):
 def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None, 
                          x_name=None, y_name=None, start=None, stop=None, 
                          ts_type=None, unit=None, stations_ok=None, 
-                         filter_name=None, lowlim_stats=None, highlim_stats=None, 
-                         loglog=None, savefig=False, save_dir=None, 
-                         save_name=None, ax=None, figsize=None, 
-                         fontsize_base=10):
+                         filter_name=None, lowlim_stats=None, 
+                         highlim_stats=None, loglog=None, savefig=False, 
+                         save_dir=None, save_name=None, ax=None, figsize=None, 
+                         fontsize_base=10, marker='+', color='k', alpha=0.5,
+                         **kwargs):
     """Method that performs a scatter plot of data in AEROCOM format
     
     Parameters
@@ -52,7 +53,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     axes
         instance of :class:`matplotlib.axes`
     """
-    
+
     if isinstance(y_vals, list):
         y_vals = np.asarray(y_vals)
     if isinstance(x_vals, list):
@@ -66,6 +67,14 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         
     xlim = VARS['scat_xlim']
     ylim = VARS['scat_ylim']
+    
+    if xlim is None or ylim is None:
+        low  =  np.min([np.nanmin(x_vals), np.nanmin(y_vals)])
+        high =  np.max([np.nanmax(x_vals), np.nanmax(y_vals)])
+        
+        xlim = [low, high]
+        ylim = [low, high]
+
     if ax is None:
         if figsize is None:
             figsize = (10,8)
@@ -77,9 +86,11 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                                  lowlim_stats, highlim_stats)
 
     if loglog:
-        ax.loglog(x_vals, y_vals, ' k+')
+        ax.loglog(x_vals, y_vals, ls='none', color=color, marker=marker, 
+                  alpha=alpha, **kwargs)
     else:
-        ax.plot(x_vals, y_vals, ' k+')
+        ax.plot(x_vals, y_vals, ls='none', color=color, marker=marker, 
+                  alpha=alpha, **kwargs)
     
     try:
         title = start_stop_str(start, stop, ts_type)
@@ -91,6 +102,11 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     if not loglog:
         xlim[0] = 0
         ylim[0] = 0
+    elif any(x[0] < 0 for x in [xlim, ylim]):
+        
+        low = 10**(float(exponent(abs(np.nanmin(y_vals))) - 1))
+        xlim[0] = low
+        ylim[0] = low
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     xlbl = '{}'.format(x_name)
@@ -106,8 +122,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     
     ax.tick_params(labelsize=fontsize_base)
     
-    ax.plot(VARS['scat_xlim'], VARS['scat_ylim'], '-',
-             color='grey')
+    ax.plot(xlim, ylim, '-', color='grey')
     
     xypos =   {'var_info'       :   (0.01, .95),
                'refdata_mean'   :   (0.01, 0.90),
@@ -122,7 +137,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                'filter_name'    :   (0.8, 0.06)}
     
     var_str = var_name# + VARS.unit_str
-
+    _ndig = abs(exponent(statistics['refdata_mean']) - 2)
     if unit is None:
         unit = 'N/D'
     if not str(unit) in ['1', 'no_unit']:
@@ -133,15 +148,21 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                         xy=xypos['var_info'], xycoords='axes fraction', 
                         fontsize=fontsize_base+4, color='red')
 
-    ax.annotate('Mean (x-data): {:.3f}'.format(statistics['refdata_mean']),
-                        xy=xypos['refdata_mean'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, 
-                        color='red')
+    ax.annotate('Mean (x-data): {:.{}f}; Rng: [{:.{}f}, {:.{}f}]'
+                .format(statistics['refdata_mean'], _ndig,
+                        np.nanmin(x_vals),_ndig,
+                        np.nanmax(x_vals), _ndig),
+                xy=xypos['refdata_mean'], xycoords='axes fraction', 
+                fontsize=fontsize_base, 
+                color='red')
     
-    ax.annotate('Mean (y-data): {:.3f}'.format(statistics['data_mean']),
-                        xy=xypos['data_mean'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, 
-                        color='red')
+    ax.annotate('Mean (y-data): {:.{}f}; Rng: [{:.{}f}, {:.{}f}]'
+                .format(statistics['data_mean'], _ndig,
+                        np.nanmin(y_vals),_ndig,
+                        np.nanmax(y_vals), _ndig),
+                xy=xypos['data_mean'], xycoords='axes fraction', 
+                fontsize=fontsize_base, 
+                color='red')
     
     ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']*100),
                         xy=xypos['nmb'], xycoords='axes fraction', 

@@ -3,87 +3,132 @@
 """
 General helper methods for the pyaerocom library.
 """
+from cf_units import Unit
+from datetime import MINYEAR, datetime, date
 import iris
-from iris import coord_categorisation
+import numpy as np
 import pandas as pd
 import xarray as xray
-import numpy as np
+
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
 from pyaerocom import logger, const
-from cf_units import Unit
-from datetime import MINYEAR, datetime, date
-
-# The following import was removed and the information about available unit 
-# strings was copied from the netCDF4 module directly here
-# from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
-#                     hr_units, day_units)
-# from netCDF4._netCDF4 import _dateparse
-microsec_units = ['microseconds', 'microsecond', 'microsec', 'microsecs']
-millisec_units = ['milliseconds', 'millisecond', 'millisec', 'millisecs']
-sec_units = ['second', 'seconds', 'sec', 'secs', 's']
-min_units = ['minute', 'minutes', 'min', 'mins']
-hr_units = ['hour', 'hours', 'hr', 'hrs', 'h']
-day_units = ['day', 'days', 'd']
-
-#
-# Start of the gregorian calendar
-# adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
-GREGORIAN_BASE = datetime(1582, 10, 15)
-
-_STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
-                    gmean       = iris.analysis.GMEAN, 
-                    hmean       = iris.analysis.HMEAN,
-                    max         = iris.analysis.MAX, 
-                    mean        = iris.analysis.MEAN,
-                    median      = iris.analysis.MEDIAN,
-                    sum         = iris.analysis.SUM,
-                    nearest     = iris.analysis.Nearest,
-                    linear      = iris.analysis.Linear,
-                    areaweighted= iris.analysis.AreaWeighted)
-
-IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
-                    'daily'     :   coord_categorisation.add_day_of_year,
-                    'monthly'   :   coord_categorisation.add_month_number,
-                    'yearly'    :   coord_categorisation.add_year} 
-
-# some helper dictionaries for conversion of temporal resolution
-TS_TYPE_TO_PANDAS_FREQ = {'hourly'  :   'H',
-                          '3hourly' :   '3H',
-                          'daily'   :   'D',
-                          'weekly'  :   'W',
-                          'monthly' :   'MS', #Month start !
-                          'season'  :   'Q', 
-                          'yearly'  :   'AS'}
-
-PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
-                           'MS' : '14D'}
-
-PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
-
-# frequency strings 
-TS_TYPE_TO_NUMPY_FREQ =  {'hourly'  :   'h',
-                          '3hourly' :   '3h',
-                          'daily'   :   'D',
-                          'weekly'  :   'W',
-                          'monthly' :   'M', #Month start !
-                          'yearly'  :   'Y'}
-
-NUMPY_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_NUMPY_FREQ.items()}
-
-# conversion of datetime-like objects for given temporal resolutions (can, e.g.
-# be used in plotting methods)
-TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
-                         'hourly'   : '%d.%m.%Y',
-                         '3hourly'  : '%d.%m.%Y',
-                         'daily'    : '%d.%m.%Y',
-                         'weekly'   : '%d.%m.%Y',
-                         'monthly'  : '%b %Y',
-                         'yearly'   : '%Y'}
+from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS, 
+                                   TS_TYPE_TO_PANDAS_FREQ,
+                                   PANDAS_RESAMPLE_OFFSETS,
+                                   TS_TYPE_DATETIME_CONV,
+                                   microsec_units, millisec_units,
+                                   sec_units, min_units, hr_units,
+                                   day_units)
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
+STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
+                   gmean       = iris.analysis.GMEAN, 
+                   hmean       = iris.analysis.HMEAN,
+                   max         = iris.analysis.MAX, 
+                   mean        = iris.analysis.MEAN,
+                   median      = iris.analysis.MEDIAN,
+                   sum         = iris.analysis.SUM,
+                   nearest     = iris.analysis.Nearest,
+                   linear      = iris.analysis.Linear,
+                   areaweighted= iris.analysis.AreaWeighted)
+
+def delete_all_coords_cube(cube, inplace=True):
+    """Delete all coordinates of an iris cube
+    
+    Parameters
+    ----------
+    cube : iris.cube.Cube
+        input cube that is supposed to be cleared of coordinates
+    inplace : bool
+        if True, then the coordinates are deleted in the input object, else in
+        a copy of it
+        
+    Returns
+    -------
+    iris.cube.Cube
+        input cube without coordinates 
+    """
+    if not inplace:
+        cube = cube.copy()
+        
+    for aux_fac in cube.aux_factories:
+        cube.remove_aux_factory(aux_fac)
+
+    for coord in cube.coords():
+        cube.remove_coord(coord)
+    return cube
+
+def copy_coords_cube(to_cube, from_cube, inplace=True):
+    """Copy all coordinates from one cube to another
+    
+    Requires the underlying data to be the same shape. 
+    
+    Warning
+    --------
+    This operation will delete all existing coordinates and auxiliary 
+    coordinates and will then copy the ones from the input data object.
+    No checks of any kind will be performed
+    
+    Parameters
+    ----------
+    to_cube
+    other : GriddedData or Cube
+        other data object (needs to be same shape as this object)
+    
+    Returns
+    -------
+    GriddedData
+        data object containing coordinates from other object
+    """
+    if not all([isinstance(x, iris.cube.Cube) for x in [to_cube, from_cube]]):
+        raise ValueError('Invalid input. Need instances of iris.cube.Cube class...')
+        
+    if not from_cube.shape == to_cube.shape:
+        raise DataDimensionError('Cannot copy coordinates: shape mismatch')
+    
+    to_cube = delete_all_coords_cube(to_cube, inplace)
+    
+    for i, dim_coord in enumerate(from_cube.dim_coords):
+        to_cube.add_dim_coord(dim_coord, i)
+    
+    for aux_coord, dim in from_cube._aux_coords_and_dims:
+        to_cube.add_aux_coord(aux_coord, dim)
+        
+    for aux_fac in from_cube.aux_factories:
+        to_cube.add_aux_factory(aux_fac)
+    return to_cube
+
+def infer_time_resolution(time_stamps):
+    """Infer time resolution based on input time-stamps
+    
+    Uses the minimum time difference found in input array between consecutive
+    time stamps and based on that finds the corresponding AeroCom resolution
+    
+    Parameters
+    ----------
+    time_stamps : pandas.DatetimeIndex
+        time stamps 
+    
+    Ret    
+    """
+    import pandas as pd
+    if not isinstance(time_stamps, pd.DatetimeIndex):
+        try:
+            time_stamps = pd.DatetimeIndex(time_stamps)
+        except:
+            raise ValueError('Could not infer time resolution: failed to '
+                             'convert input to pandas.DatetimeIndex')
+    vals = time_stamps.values
+    highest_secs = abs(vals[1:] - vals[:-1]).min().astype('timedelta64[s]').astype(int)
+    
+    for tp in const.GRID_IO.TS_TYPES:
+        if highest_secs <= TS_TYPE_SECS[tp]:
+            return tp
+    raise ValueError('Could not infer time resolution')
+    
 def get_standard_name(var_name):
     """Converts AeroCom variable name to CF standard name
     
@@ -140,15 +185,19 @@ def get_lowest_resolution(ts_type, *ts_types):
     ValueError
         if one of the input ts_type codes is not supported
     """
-    all_ts_types = const.GRID_IO.TS_TYPES
-    lowest = ts_type
+    #all_ts_types = const.GRID_IO.TS_TYPES
+    from pyaerocom.tstype import TsType
+    lowest = TsType(ts_type)
     for freq in ts_types:
-        if not freq in all_ts_types:
-            raise ValueError('Invalid input, only valid ts_type codes are '
-                             'supported: {}'.format(all_ts_types))
-        elif all_ts_types.index(lowest) < all_ts_types.index(freq):
-            lowest = freq
-    return lowest
+# =============================================================================
+#         if not freq in all_ts_types:
+#             raise ValueError('Invalid input, only valid ts_type codes are '
+#                              'supported: {}'.format(all_ts_types))
+# =============================================================================
+        _temp = TsType(freq)
+        if _temp < lowest:
+            lowest = _temp
+    return lowest.val
 
 def get_highest_resolution(ts_type, *ts_types):
     """Get the highest resolution from several ts_type codes
@@ -418,9 +467,15 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
         data = resampler.agg(how)
     else:
         df = resampler.agg([how, 'count'])
-        df[how][df['count'] < min_num_obs] = np.nan
+        const.logger.info(freq, min_num_obs)
+        const.logger.info('before mean', df[how].mean())
+        invalid = df['count'] < min_num_obs
+        const.logger.info(len(invalid), invalid.sum())
+        df[how][invalid] = np.nan
+        const.logger.info('after mean', df[how].mean())
         data = df[how]
-    return data
+        
+    return data.loc[s.index[0]:s.index[-1]]
 
 def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
@@ -462,44 +517,25 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     elif not 'time' in arr.dims:
         raise DataDimensionError('Cannot resample time: input DataArray has '
                                  'no time dimension')
+    
+    from pyaerocom.tstype import TsType
+    from pyaerocom.time_config import XARR_TIME_GROUPERS
+    to = TsType(freq)
+    pd_freq=to.to_pandas()
+    invalid = None
     if min_num_obs is not None:
-        raise NotImplementedError('Coming soon...')
+        if not pd_freq in XARR_TIME_GROUPERS:
+            raise ValueError('Cannot infer xarray grouper for ts_type {}'
+                             .format(to.val))
+        gr = XARR_TIME_GROUPERS[pd_freq]
+        # 2D mask with shape of resampled data array
+        invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+    
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
-    return arr.resample(time=freq, loffset=loffset).mean(dim='time')
-    
-
-def unit_conversion_fac(from_unit, to_unit):
-    """Returns multiplicative unit conversion factor for input units
-    
-    Note
-    ----
-    Input must be either instances of :class:`cf_units.Unit` class or string.
-    
-    Parameters
-    ----------
-    from_unit : :obj:`cf_units.Unit`, or :obj:`str`
-        unit to be converted
-    to_unit : :obj:`cf_units.Unit`, or :obj:`str`
-        final unit
-        
-    Returns
-    --------
-    float
-        multiplicative conversion factor
-        
-    Raises
-    ------
-    ValueError
-        if units cannot be converted into each other using cf_units package
-    """
-    if isinstance(from_unit, str):
-        from_unit = Unit(from_unit)
-    try:
-        return from_unit.convert(1, to_unit)    
-    except ValueError:
-        from pyaerocom.exceptions import UnitConversionError
-        raise UnitConversionError('Failed to convert unit from {} to {}'
-                                  .format(from_unit, to_unit))
+    arr = arr.resample(time=pd_freq, loffset=loffset).mean(dim='time')
+    if invalid is not None:
+        arr.data[invalid.data] = np.nan
+    return arr
     
 def same_meta_dict(meta1, meta2, ignore_keys=['PI'], 
                    num_keys=NUM_KEYS_META, num_rtol=1e-2):
@@ -541,12 +577,12 @@ def same_meta_dict(meta1, meta2, ignore_keys=['PI'],
 def str_to_iris(key, **kwargs):
     """Mapping function that converts strings into iris analysis objects
     
-    Please see dictionary ``_STR_TO_IRIS`` in this module for valid definitions
+    Please see dictionary ``STR_TO_IRIS`` in this module for valid definitions
     
     Parameters
     ----------
     key : str
-        key of :attr:`_STR_TO_IRIS` dictionary
+        key of :attr:`STR_TO_IRIS` dictionary
         
     Returns
     -------
@@ -554,10 +590,10 @@ def str_to_iris(key, **kwargs):
         corresponding iris analysis object (e.g. Aggregator, method)
     """
     key = key.lower()
-    if not key in _STR_TO_IRIS:
+    if not key in STR_TO_IRIS:
         raise KeyError("No iris.analysis object available for key %s, please "
-                       "choose from %s" %(key, _STR_TO_IRIS.keys()))
-    val = _STR_TO_IRIS[key]
+                       "choose from %s" %(key, STR_TO_IRIS.keys()))
+    val = STR_TO_IRIS[key]
     if callable(val):
         return val(**kwargs)
     return val
@@ -604,26 +640,96 @@ def to_datetime64(value):
                              'Error: {}'.format(value, repr(e)))
   
 def is_year(val):
+    """Check if input is / may be year
+    
+    Parameters
+    ----------
+    val
+        input that is supposed to be checked    
+    
+    Returns
+    -------
+    bool
+        True if input is a number between -2000 and 10000, else False
+    """
     try:
         if -2000 < int(val) < 10000:
             return True
         raise Exception
     except:
         return False
+  
+def _check_climatology_timestamp(t):
+    if isnumeric(t) and t == 9999:
+        return pd.Timestamp('1-1-2222')
+    elif isinstance(t, np.datetime64):
+        tstr = str(t)
+        if tstr.startswith('9999'):
+            return pd.Timestamp(tstr.replace('9999', '2222'))
+    elif isinstance(t, str) and '9999' in t:
+        return pd.Timestamp(t.replace('9999', '2222'))
+    elif isinstance(t, datetime) and t.year == 9999:
+        return pd.Timestamp(t.replace(year=2222))
+    raise ValueError('Failed to identify {} as climatological timestamp...'
+                     .format(t))
     
 def start_stop(start, stop=None):
-    start = to_pandas_timestamp(start)
+    """Create pandas timestamps from input start / stop values
+    
+    Note
+    ----
+    If input suggests climatological data in AeroCom format (i.e. year=9999) 
+    then the year is converted to 2222 instead since pandas cannot handle 
+    year 9999.
+    
+    Parameters
+    -----------
+    start
+        start time (any format that can be converted to pandas.Timestamp)
+    stop
+        stop time (any format that can be converted to pandas.Timestamp)
+    
+    Returns
+    -------
+    pandas.Timestamp
+        start timestamp
+    pandas.Timestamp
+        stop timestamp
+    
+    Raises
+    ------
+    ValueError
+        if input cannot be converted to pandas timestamps
+    """
+    isclim = False
+    try:
+        start = to_pandas_timestamp(start)
+    except pd.errors.OutOfBoundsDatetime: # probably climatology
+        start = _check_climatology_timestamp(start)
+        isclim = True
+        
     if stop is None:
-        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(start.year))
+        if isclim:
+            yr = 2222
+        else:
+            yr = start.year
+        stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(yr))
     else:
-        stop = to_pandas_timestamp(stop)
+        try:
+            stop = to_pandas_timestamp(stop)
+        except pd.errors.OutOfBoundsDatetime:
+            stop = _check_climatology_timestamp(stop)
     return (start, stop)
 
 def datetime2str(time, ts_type=None):
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)
-    time = to_pandas_timestamp(time).strftime(conv)
+    try:
+        time = to_pandas_timestamp(time).strftime(conv)
+    except pd.errors.OutOfBoundsDatetime:
+        const.print_log.warning('Failed to convert time {} to string'.format(time))
+        pass
     return time
 
 def start_stop_str(start, stop=None, ts_type=None):
@@ -954,9 +1060,7 @@ if __name__=="__main__":
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
     
-    import pyaerocom as pya
-    
-    stat = pya.io.ReadAeronetSunV3().read(vars_to_retrieve='od550aer', 
-                                  file_pattern='Solar*').to_station_data('Solar*')
-    
-    print(stat)
+    print(infer_time_resolution([np.datetime64('2010-01-01'),
+                                 np.datetime64('2010-01-02'),
+                                 np.datetime64('2010-01-05'),
+                                 np.datetime64('2010-10-15')]))

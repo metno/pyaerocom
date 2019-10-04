@@ -3,9 +3,12 @@
 from pyaerocom import logger, const
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
-from pyaerocom.exceptions import DataDimensionError, NetcdfError
+from pyaerocom.exceptions import (CoordinateError, DataDimensionError, 
+                                  DataSourceError, 
+                                  NetcdfError, VarNotAvailableError)
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
+from pyaerocom.region import valid_region, Region
 import numpy as np
 import pandas as pd
 import os
@@ -33,7 +36,7 @@ class ColocatedData(object):
     
     Parameters
     ----------
-    data : :obj:`xarray.DataArray` or :obj:`numpy.ndarray` or :obj:`str`, optional
+    data : xarray.DataArray or numpy.ndarray or str, optional
         Colocated data. If str, then it is attempted to be loaded from file.
         Else, it is assumed that data is numpy array and that all further 
         supplementary inputs (e.g. coords, dims) for the 
@@ -49,10 +52,10 @@ class ColocatedData(object):
     IOError
         if init fails
     """
-    __version__ = '0.07'
+    __version__ = '0.10'
     def __init__(self, data=None, **kwargs):
         self._data = None
-        self
+        
         if data is not None:
             # check if input is DataArray and if not, try to create instance
             # of DataArray. If this fails, raise Exception
@@ -102,6 +105,16 @@ class ColocatedData(object):
         return self.data.ndim
     
     @property
+    def coords(self):
+        """Coordinates of data array"""
+        return self.data.coords
+    
+    @property
+    def dims(self):
+        """Names of dimensions"""
+        return self.data.dims
+    
+    @property
     def shape(self):
         """Shape of data array"""
         return self.data.shape
@@ -119,7 +132,7 @@ class ColocatedData(object):
     @property
     def longitude(self):
         """Array of longitude coordinates"""
-        if not 'longitude' in self.data:
+        if not 'longitude' in self.data.coords:
             raise AttributeError('ColocatedData does not include longitude '
                                  'coordinate')
         return self.data.longitude
@@ -127,10 +140,11 @@ class ColocatedData(object):
     @property
     def latitude(self):
         """Array of latitude coordinates"""
-        if not 'latitude' in self.data:
+        if not 'latitude' in self.data.coords:
             raise AttributeError('ColocatedData does not include latitude '
                                  'coordinate')
         return self.data.latitude
+    
     
     @property
     def time(self):
@@ -188,10 +202,16 @@ class ColocatedData(object):
     @property
     def num_grid_points(self):
         """Number of lon / lat grid points that contain data"""
+        const.print_log.warning(DeprecationWarning('OLD NAME: please use num_coords'))
+        return self.num_coords
+    
+    @property
+    def num_coords(self):
+        """Total number of lat/lon coordinates"""
         if not self.check_dimensions():
             raise DataDimensionError('Invalid dimensionality...')
-        if self.ndim == 3:
-            return self.data.shape[2]
+        if 'station_name' in self.coords:
+            return len(self.data.station_name)
         
         elif self.ndim == 4:
             if not all([x in self.data.dims for x in ('longitude', 'latitude')]):
@@ -199,12 +219,22 @@ class ColocatedData(object):
                                      'longitude or latitude are not contained '
                                      'in 4D data object, which contains the '
                                      'following dimensions: {}'.self.data.dims)
-            # get all grid points that contain at least one valid data point 
-            # along time dimension
-            vals = np.nanmean(self.data.data[0], axis=0)
-            valid = ~np.isnan(vals)
-            return np.sum(valid)
-     
+            return len(self.data.longitude) * len(self.data.latitude)
+        raise DataDimensionError('Could not infer number of coordinates')
+    
+    @property
+    def num_coords_with_data(self):
+        """Number of lat/lon coordinates that contain at least one datapoint
+        
+        Todo
+        ----
+        check 4D data 
+        """
+        if not self.check_dimensions():
+            raise DataDimensionError('Invalid dimensionality...')
+        
+        return (self.data[0].count(dim='time') > 0).data.sum()
+        
     def min(self):
         return self.data.min()
     
@@ -223,7 +253,106 @@ class ColocatedData(object):
             raise Exception
         except:
             return False
+    
+    def resample_time(self, to_ts_type, how='mean',
+                      apply_constraints=None, min_num_obs=None, 
+                      colocate_time=True, inplace=True, **kwargs):
+        """Resample time dimension
         
+        Parameters
+        ----------
+        to_ts_type : str
+            new temporal resolution (must be lower than current resolution)
+        
+        Returns
+        -------
+        ColocatedData
+            new data object containing resampled data
+            
+        Raises
+        ------
+        TemporalResolutionError
+            if input resolution is higher than current resolution
+        """
+        if inplace:
+            col = self
+        else:
+            col = self.copy()
+            
+# =============================================================================
+#         to, current = TsType(to_ts_type), TsType(col.ts_type)
+#         if to == current:
+#             const.print_log.info('Skipping resampling of ColocatedData. Data is '
+#                                  'already in {} resolution'.format(to_ts_type))
+#             return col
+#         elif to > current:
+#             from pyaerocom.exceptions import TemporalResolutionError
+#             raise TemporalResolutionError('Cannot resample time: input resolution '
+#                                           '{} is higher than current {}'
+#                                           .format(to_ts_type, current.val))
+#         
+# =============================================================================
+        # if colocate time is activated, remove datapoints from model, where
+        # there is no observation
+        if colocate_time:
+            mask = np.isnan(col.data[0]).data
+            col.data.data[1][mask] = np.nan
+        # First, compute a mask (in new resolution) that fulfills the 
+        # minimum number of measurements requirement
+# =============================================================================
+#         invalid = None
+#         if min_num_obs is not None:
+#             pd_freq=to.to_pandas()
+#             if not pd_freq in XARR_TIME_GROUPERS:
+#                 raise ValueError('Cannot infer xarray grouper for ts_type {}'
+#                                  .format(to.val))
+#             gr = XARR_TIME_GROUPERS[pd_freq]
+#             # 2D mask with shape of resampled data array
+#             invalid = col.data.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+#             
+#         
+#             
+#         freq = TS_TYPE_TO_PANDAS_FREQ[to.val]
+#         
+#         data_arr = col.data.resample({'time' : freq}).mean(dim='time')
+#         if invalid is not None:
+#             data_arr.data[invalid.data] = np.nan
+# =============================================================================
+        from pyaerocom.time_resampler import TimeResampler
+        
+        res = TimeResampler(col.data)
+        data_arr = res.resample(to_ts_type=to_ts_type,
+                                from_ts_type=col.ts_type,
+                                how=how,
+                                apply_constraints=apply_constraints,
+                                min_num_obs=min_num_obs, **kwargs)
+        
+        data_arr.attrs.update(col.meta)
+        data_arr.attrs['ts_type'] = to_ts_type
+        
+        col.data = data_arr
+        col.data.attrs['colocate_time'] = colocate_time
+        col.data.attrs.update(res.last_setup)
+        
+        return col
+    
+    def get_coords_valid_obs(self):
+        
+        obs = self.data[0]
+        if self.ndim == 4:
+            stacked = obs.stack(x=['latitude', 'longitude'])
+            invalid = stacked.isnull().all(dim='time')
+            coords = stacked.x[~invalid].values
+            return list(zip(*list(coords)))
+        
+        invalid = obs.isnull().all(dim='time')
+        return (list(obs.latitude[~invalid].values), 
+                list(obs.longitude[~invalid].values))
+        
+    def copy(self):
+        """Copy this object"""
+        return ColocatedData(self.data.copy())
+    
     def calc_statistics(self, constrain_val_range=False, **kwargs):
         """Calculate statistics from data ensemble
         
@@ -239,12 +368,13 @@ class ColocatedData(object):
             kwargs['lowlim'] = var.lower_limit
             kwargs['highlim'] = var.upper_limit
             
-            
-        return calc_statistics(self.data.values[1].flatten(),
-                               self.data.values[0].flatten(),
-                               **kwargs)
+        stats = calc_statistics(self.data.values[1].flatten(),
+                                self.data.values[0].flatten(),
+                                **kwargs)
+        stats['num_coords_with_data'] = self.num_coords_with_data
+        stats['num_coords_tot'] = self.num_coords
+        return stats
         
-    
     def plot_scatter(self, constrain_val_range=False,  **kwargs):
         """Create scatter plot of data
         
@@ -259,7 +389,7 @@ class ColocatedData(object):
             matplotlib axes instance
         """
         meta = self.meta
-        num_points = self.num_grid_points
+        num_points = self.num_coords_with_data
         vars_ = meta['var_name']
         
         if constrain_val_range:
@@ -321,17 +451,62 @@ class ColocatedData(object):
                                 attrs=meta)
         self._data = arr
     
+    def rename_variable(self, var_name, new_var_name, data_source, 
+                        inplace=True):
+        """Rename a variable in this object
+        
+        Parameters
+        ----------
+        var_name : str
+            current variable name
+        new_var_name : str
+            new variable name
+        data_source : str
+            name of data source (along data_source dimension)
+        inplace : bool
+            replace here or create new instance
+        
+        Returns
+        -------
+        ColocatedData
+            instance with renamed variable
+            
+        Raises
+        ------
+        VarNotAvailableError
+            if input variable is not available in this object
+        DataSourceError
+            if input data_source is not available in this object
+        """
+        if not data_source in self.meta['data_source']:
+            raise DataSourceError('No such data source {} in ColocatedData'
+                                  .format(data_source))
+        if not var_name in self.meta['var_name']:
+            raise VarNotAvailableError('No such variable {} in ColocatedData'
+                                       .format(var_name))
+    
+        if inplace:
+            obj = self
+        else:
+            obj = self.copy()
+        arr = obj.data
+        idx = arr.attrs['data_source'].index(data_source)
+        arr.attrs['var_name'][idx] = new_var_name
+        if var_name == arr.name:
+            arr.name = new_var_name
+        obj.data = arr
+        return obj
+        
     @staticmethod
-    def _aerocom_savename(var_name, obs_id, model_id, ts_type_src, start_str, 
+    def _aerocom_savename(var_name, obs_id, model_id, start_str, 
                           stop_str, ts_type, filter_name):
-        return ('{}_REF-{}_MOD-{}-{}_{}_{}_{}_{}'.format(var_name,
-                                                         obs_id, 
-                                                         model_id, 
-                                                         ts_type_src, 
-                                                         start_str, 
-                                                         stop_str,
-                                                         ts_type,
-                                                         filter_name))
+        return ('{}_REF-{}_MOD-{}_{}_{}_{}_{}'.format(var_name,
+                                                      obs_id, 
+                                                      model_id, 
+                                                      start_str, 
+                                                      stop_str,
+                                                      ts_type,
+                                                      filter_name))
     @property
     def savename_aerocom(self):
         """Default save name for data object following AeroCom convention"""
@@ -339,7 +514,6 @@ class ColocatedData(object):
         stop_str = self.meta['stop_str']
         
         source_info = self.meta['data_source']
-        ts_type_src = self.meta['ts_type_src'][1] #model
         data_ref_id = source_info[0]
         if len(source_info) > 2:
             model_id = 'MultiModels'
@@ -348,7 +522,6 @@ class ColocatedData(object):
         return self._aerocom_savename(self.name,
                                       data_ref_id,
                                       model_id,
-                                      ts_type_src,
                                       start_str,
                                       stop_str,
                                       self.ts_type,
@@ -369,7 +542,7 @@ class ColocatedData(object):
         dict
             dicitonary with meta information
         """
-        spl = os.path.basename(file_path).split('_COLL')[0].split('_')
+        spl = os.path.basename(file_path).split('.nc')[0].split('_')
         
         start = to_pandas_timestamp(spl[-4])
         stop = to_pandas_timestamp(spl[-3])
@@ -393,11 +566,11 @@ class ColocatedData(object):
                 mod_base = item.split('MOD-')[1]
             if not in_mod:
                 ref_base += item
-        model, ts_type_src = mod_base.rsplit('-',1)
-        meta['data_source'] = [ref_base, model]
-        meta['ts_type_src'] = ts_type_src
+        #model, ts_type_src = mod_base.rsplit('-',1)
+        meta['data_source'] = [ref_base, mod_base]
+        #meta['ts_type_src'] = ts_type_src
         return meta
-            
+      
     def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save data object as .nc file
         
@@ -421,9 +594,21 @@ class ColocatedData(object):
             savename = self.savename_aerocom
         if not savename.endswith('.nc'):
             savename = '{}.nc'.format(savename)
+        out = None
         for k, v in self.data.attrs.items():
             if v is None:
                 self.data.attrs[k] = 'None'
+            elif isinstance(v, bool):
+                self.data.attrs[k] = int(v)
+            if k == 'min_num_obs' and isinstance(v, dict):
+                out = ''
+                for to, how in v.items():
+                    for fr, num in how.items():
+                        out += '{},{},{};'.format(to, fr, num)
+                
+        if out is not None:
+            self.data.attrs['_min_num_obs'] = out
+            self.data.attrs.pop('min_num_obs')
         self.data.to_netcdf(path=os.path.join(out_dir, savename), **kwargs)
       
     def read_netcdf(self, file_path):
@@ -440,7 +625,18 @@ class ColocatedData(object):
         except Exception as e:
             raise NetcdfError('Invlid file name for ColocatedData: {}.Error: {}'
                               .format(os.path.basename(file_path, repr(e))))
-        self.data = xarray.open_dataarray(file_path)
+        arr = xarray.open_dataarray(file_path)
+        if '_min_num_obs' in arr.attrs:
+            info = {}
+            for val in arr.attrs['_min_num_obs'].split(';')[:-1]:
+                to, fr, num = val.split(',')
+                if not to in info:
+                    info[to] = {}
+                if not fr in info[to]:
+                    info[to][fr] = {}
+                info[to][fr] = int(num)
+            arr.attrs['min_num_obs'] = info
+        self.data = arr
         return self
     
     def to_dataframe(self):
@@ -522,6 +718,140 @@ class ColocatedData(object):
         raise IOError('Failed to import file {}. File type is not supported '
                       .format(os.path.basename(file_path)))
     
+    
+        
+    def _check_latlon_coords(self):
+        _check = ('latitude', 'longitude')
+        if not all([x in self.coords for x in _check]):
+            raise CoordinateError('Missing latitude or longitude coordinate '
+                                  '(or both)')
+        elif any([x in self.dims for x in _check]):
+            if not all([x in self.dims for x in _check]):
+                raise CoordinateError('Only one of latitude / longitude is '
+                                      'dimension (require None or both)')
+            return False
+        return True
+        
+        
+    def _filter_latlon_2d(self, lat_range, lon_range):
+        
+        if not 'station_name' in self.dims:
+            raise DataDimensionError('Cannot filter region, require dimension '
+                                      'station_name')
+        arr = self.data
+        if not list(self.dims).index('station_name') == 2:
+            raise DataDimensionError('station_name must be 3. dimensional index')
+            
+        mask = (np.logical_and(arr.longitude > lon_range[0], 
+                               arr.longitude < lon_range[1]) & 
+                np.logical_and(arr.latitude > lat_range[0], 
+                               arr.latitude < lat_range[1]))
+        
+        return arr[:,:,mask]
+    
+    def _filter_latlon_3d(self, lat_range, lon_range):
+        if not isinstance(lat_range, slice):
+            lat_range = slice(lat_range[0], lat_range[1])
+        if not isinstance(lon_range, slice):
+            lon_range = slice(lon_range[0], lon_range[1])
+            
+        return self.data.sel(dict(latitude=lat_range, longitude=lon_range))
+    
+    def apply_latlon_filter(self, lat_range=None, lon_range=None, 
+                            region_id=None):
+        """Apply regional filter 
+        
+        Returns new object filtered for input coordinate range
+        
+        Parameters
+        ----------
+        lat_range : list, optional
+            latitude range that is supposed to be applied. If specified, then
+            also lon_range need to be specified, else, region_id is checked 
+            against AeroCom default regions (and used if applicable)
+        lon_range : list, optional
+            longitude range that is supposed to be applied. If specified, then
+            also lat_range need to be specified, else, region_id is checked 
+            against AeroCom default regions (and used if applicable)
+        region_id : str
+            name of region to be applied 
+        
+        Returns
+        -------
+        ColocatedData
+            filtered data object
+        """
+        is_2d = self._check_latlon_coords()
+        if valid_region(region_id):
+            reg = Region(region_id)
+            if lon_range is not None and lon_range != reg.lon_range:
+                raise ValueError('Conflict: receieved region ID {}, which has '
+                                 'a different longitude range ({}) than input '
+                                 'lon_range {}'
+                                 .format(region_id, reg.lon_range, lon_range))
+            if lat_range is not None and lat_range != reg.lat_range:
+                raise ValueError('Conflict: receieved region ID {}, which has '
+                                 'a different longitude range ({}) than input '
+                                 'lat_range {}'
+                                 .format(region_id, reg.lat_range, lat_range))
+            lon_range = reg.lon_range
+            lat_range = reg.lat_range
+            region_id = reg.name
+            
+        if lon_range is None and lat_range is None:
+            raise ValueError('Need either lon_range or lat_range or valid '
+                             'region_id')
+        if lon_range is None:
+            lon_range = [-180, 180]
+        if lat_range is None:
+            lat_range = [-90, 90]
+        
+        latr, lonr = self.data.attrs['lat_range'], self.data.attrs['lon_range']
+        if np.equal(latr, lat_range).all() and np.equal(lonr, lon_range).all():
+            const.print_log.info('Filtering of lat_range={} and lon_range={} '
+                                 'results in unchanged object, returning self'
+                                 .format(lon_range, lat_range))
+            return self
+        
+        if lat_range[0] < latr[0]:
+            lat_range[0] = latr[0]
+        if lat_range[1] > latr[1]:
+            lat_range[1] = latr[1]
+        if lon_range[0] < lonr[0]:
+            lon_range[0] = lonr[0]
+        if lon_range[1] > lonr[1]:
+            lon_range[1] = lonr[1]
+            
+        if is_2d:
+            filtered = self._filter_latlon_2d(lat_range, lon_range)
+        else:
+            filtered = self._filter_latlon_3d(lat_range, lon_range)
+            
+        if not isinstance(region_id, str):
+            region_id = 'CUSTOM'
+        try:
+            alt_info = filtered.attrs['filter_name'].split('-', 1)[-1]
+        except:
+            alt_info = 'CUSTOM'
+        
+        filtered.attrs['filter_name'] = '{}-{}'.format(region_id, alt_info)
+        filtered.attrs['region'] = region_id
+        filtered.attrs['lon_range'] = lon_range
+        filtered.attrs['lat_range'] = lat_range
+    
+        return ColocatedData(filtered)
+        
+    def plot_coordinates(self, marker='x', markersize=12, fontsize_base=10, 
+                         **kwargs):
+        
+        from pyaerocom.plot.plotcoordinates import plot_coordinates
+        
+        lats, lons = self.get_coords_valid_obs()
+        return plot_coordinates(lons=lons, 
+                                lats=lats, 
+                                marker=marker, markersize=markersize,
+                                fontsize_base=fontsize_base, **kwargs)
+        
     def __contains__(self, val):
         return self.data.__contains__(val)
     
@@ -546,19 +876,68 @@ class ColocatedData(object):
                                                 'please use units instead'))
         return self.units
 
-
-    
 if __name__=="__main__":
     
-    testdir = '~/github/aerocom_evaluation/coldata/OsloCTM3v1.01/'
-    testfile = 'abs550aer_REF-EBASMC_MOD-OsloCTM3v1.01-daily_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
-    d = ColocatedData()
+    import matplotlib.pyplot as plt
+    import pyaerocom as pya
+    plt.close('all')
     
-    d.read_netcdf(testdir + testfile)
-    #fp = os.path.join(OUT_DIR, d.savename_aerocom + '.nc')
-    print(d)
-    #d1 = ColocatedData(fp)
-    #print(d1)
+    col_filename = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
+    
+    meta = ColocatedData.get_meta_from_filename(col_filename)
+    
+    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
+
+    coldata1 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
+                                                         ts_type='daily',
+                                                         start=2010,
+                                                         var_outlier_ranges={'od550aer':[0,10]},
+                                                         filter_name='WORLD-noMOUNTAINS',
+                                                         remove_outliers=True, 
+                                                         colocate_time=False)
+    coldata1 = coldata1.resample_time('yearly', colocate_time=True)
+    coldata1.plot_coordinates()
+    
+    sat = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
+    
+    coldata2 = pya.colocation.colocate_gridded_gridded(modeldata, sat, 
+                                                       ts_type='monthly',
+                                                       regrid_res_deg=10)
+    
+   
+    coldata2.plot_coordinates()
+    
+    sat_namerica = coldata2.apply_latlon_filter(region_id='NAMERICA')
+    sat_namerica.plot_scatter()
+    sat_namerica.plot_coordinates()
+    
+    coldata1.plot_scatter()
+    
+    stats = {}
+    for region_id in pya.region.get_all_default_region_ids():
+        filtered = coldata1.apply_latlon_filter(region_id=region_id)
+        stats[region_id] = filtered.calc_statistics()
+    print('AERONET')    
+    for r, s in stats.items():
+        if s['num_valid'] == 0:
+            print('No data in region {}'.format(r))
+        else:
+            print('{}: NMB={:.3f} (R={:.2f})'.format(r, s['nmb']*100, s['R']))
+
+    stats = {}
+    for region_id in pya.region.get_all_default_region_ids():
+        filtered = coldata2.apply_latlon_filter(region_id=region_id)
+        stats[region_id] = filtered.calc_statistics()
+    print('MODIS')    
+    for r, s in stats.items():
+        if s['num_valid'] == 0:
+            print('No data in region {}'.format(r))
+        else:
+            print('{}: NMB={:.3f} (R={:.2f})'.format(r, s['nmb']*100, s['R']))
+    
+    
+    
     
         
     

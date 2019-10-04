@@ -31,7 +31,7 @@ from collections import OrderedDict as od
 import numpy as np
 import xarray
 from pyaerocom import const
-from pyaerocom.helpers import unit_conversion_fac
+from pyaerocom.units_helpers import unit_conversion_fac
 from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom import StationData, VerticalProfile, Variable

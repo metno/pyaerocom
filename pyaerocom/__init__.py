@@ -26,13 +26,15 @@ def _init_logger():
     print_log.setLevel(logging.INFO)
     return (logger, print_log)
 
-def change_verbosity(new_level='debug'):
+def change_verbosity(new_level='debug', log=None):
+    if log is None:
+        log = logger
     if isinstance(new_level, str):
         if not new_level in LOGLEVELS:
             raise ValueError("Invalid input for loglevel, choose "
                              "from {}".format(LOGLEVELS.keys()))
         new_level = LOGLEVELS[new_level]
-    logger.setLevel(new_level)
+    log.setLevel(new_level)
     
 ### Functions for package initialisation
 def _init_supplemental():

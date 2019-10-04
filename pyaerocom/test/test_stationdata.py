@@ -59,7 +59,7 @@ if __name__=="__main__":
         from pyaerocom import Variable
         stat1.convert_unit('ec550aer', Variable('ec550aer').units)
     
-    from pyaerocom.helpers import unit_conversion_fac
+    from pyaerocom.units_helpers import unit_conversion_fac
     
     fac = unit_conversion_fac('m-1', '1/Mm')
     print(stat1)

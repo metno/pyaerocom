@@ -59,9 +59,6 @@ def test_resample_timeseries(timeseries_synthetic):
         assert time.year == 2000, time.year
         assert time.day == 15, time.day
     
-def test_unit_conversion_fac():
-    assert helpers.unit_conversion_fac('m-1', '1/Mm') == 1e6
-    
 def test_same_meta_dict():
     d1 =  dict(station_name = 'bla',
                station_id = 'blub', 
@@ -77,9 +74,6 @@ def test_same_meta_dict():
                PI='pi2')
     
     assert helpers.same_meta_dict(d1, d2) == False
-    
-def test_str_to_iris():
-    pass
 
 def test_to_pandas_timestamp():
     pass

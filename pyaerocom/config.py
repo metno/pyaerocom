@@ -89,7 +89,7 @@ class Config(object):
     AERONET_SUN_V3L2_SDA_DAILY_NAME = 'AeronetSDAV3Lev2.daily'
     AERONET_SUN_V3L2_SDA_ALL_POINTS_NAME = 'AeronetSDAV3Lev2.AP'
 
-    #: Aeront V3 inversions
+    #: Aeronet V3 inversions
     AERONET_INV_V3L15_DAILY_NAME = 'AeronetInvV3Lev1.5.daily'
     AERONET_INV_V3L2_DAILY_NAME = 'AeronetInvV3Lev2.daily'
     
@@ -122,6 +122,22 @@ class Config(object):
     DEFAULT_VERT_GRID_DEF = od(lower = 0,
                                upper = 15000,
                                step  = 250)
+    #: maximum allowed RH to be considered dry
+    RH_MAX_PERCENT_DRY = 40
+    
+    #: If True, then whenever applicable the time resampling constraints
+    #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when 
+    #: resampling in StationData and thus colocation routines. Requires that 
+    #: original obs_data is available in a certain regular resolution (or at
+    #: least has ts_type assigned to it)
+    OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS = True
+    
+    #: Time resample strategies for certain cominations, first level refers
+    #: to TO, second to FROM and values are minimum number of observations
+    OBS_MIN_NUM_RESAMPLE = dict(yearly      =   dict(monthly    = 3),
+                                monthly     =   dict(daily      = 7),
+                                daily       =   dict(hourly     = 6),
+                                hourly      =   dict(minutely   = 15))
     
     #: This boolean can be used to enable / disable the former (i.e. use
     #: available wavelengths of variable in a certain range around variable
@@ -138,6 +154,10 @@ class Config(object):
     #names of the different obs networks
     OBSNET_NONE = 'NONE'
     NOMODELNAME = 'OBSERVATIONS-ONLY'
+
+    # names for the satellite data sets
+    SENTINEL5P_NAME = 'Sentinel5P'
+    AEOLUS_NAME = 'AeolusL2A'
     
     RM_CACHE_OUTDATED = True
 
@@ -676,6 +696,10 @@ class Config(object):
             self._ebas_flag_info = read_ebas_flags_file(self.EBAS_FLAGS_FILE)
         return self._ebas_flag_info
     
+    def load_default_config(self):
+        """Read AeroCom default config file"""
+        self.read_config(self._config_files['metno'])
+        
     def read_config(self, config_file, keep_basedirs=True):
         """Read and import form paths.ini"""
         if not os.path.isfile(config_file):
@@ -709,6 +733,24 @@ class Config(object):
                 except Exception as e:
                     self.logger.warning('Failed to init output and colocated data '
                                         'directory from config file. Error: {}'
+                                        .format(repr(e)))
+
+            try:
+                _dir = cr['outputfolders']['LOCALTMPDIR']
+                # expand $HOME
+                if '$HOME' in _dir:
+                    _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+                if '${USER}' in _dir:
+                    _dir = _dir.replace('${USER}', getpass.getuser())
+                local_tmp_dir = _dir
+
+                if not self._write_access(local_tmp_dir):
+                    raise PermissionError('Cannot write to {}'.format(local_tmp_dir))
+                self.LOCAL_TMP_DIR = local_tmp_dir
+
+            except Exception as e:
+                    self.logger.warning('Failed to init local tmp directory from '
+                                        'config file. Error: {}'
                                         .format(repr(e)))
                     
         if cr.has_section('supplfolders'):

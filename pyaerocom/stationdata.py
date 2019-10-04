@@ -7,12 +7,17 @@ from pyaerocom import VerticalProfile, logger, const
 
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   DataExtractionError, DataDimensionError,
-                                  UnitConversionError, DataUnitError)
-from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
+                                  UnitConversionError, DataUnitError,
+                                  TemporalResolutionError)
+from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr, 
+                                         BrowseDict)
 from pyaerocom.metastandards import StationMetaData
-from pyaerocom.helpers import (resample_timeseries, isnumeric, isrange,
-                               resample_time_dataarray,
-                               unit_conversion_fac)
+from pyaerocom.tstype import TsType
+from pyaerocom.time_resampler import TimeResampler
+from pyaerocom.helpers import isnumeric, isrange
+
+from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
+from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data
@@ -50,6 +55,9 @@ class StationData(StationMetaData):
     #: station
     _COORD_MAX_VAR = 0.1 #km
     STANDARD_META_KEYS = list(StationMetaData().keys())
+    
+    VALID_TS_TYPES = const.GRID_IO.TS_TYPES
+    
     def __init__(self, **meta_info):
 
         self.dtime = []
@@ -76,7 +84,7 @@ class StationData(StationMetaData):
             numpy array specifying default coordinates
         """
         return const.make_default_vert_grid()
-
+    
     def has_var(self, var_name):
         """Checks if input variable is available in data object
 
@@ -231,9 +239,12 @@ class StationData(StationMetaData):
         """
         unit = self.get_unit(var_name)
         
-        conv_fac = unit_conversion_fac(unit, to_unit)
         data = self[var_name]
-        data *= conv_fac
+        data = convert_unit(data, from_unit=unit, to_unit=to_unit, 
+                            var_name=var_name)
+        #conv_fac = unit_conversion_fac(unit, to_unit)
+        
+        #data *= conv_fac
         self[var_name] = data
         self.var_info[var_name]['units'] = to_unit
         const.logger.info('Successfully converted unit of variable {} in {} '
@@ -664,7 +675,7 @@ class StationData(StationMetaData):
     def _merge_vardata_2d(self, other, var_name):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
         ts_type = self._ensure_same_var_ts_type_other(other, var_name)
-
+        
         s0 = self.resample_timeseries(var_name, ts_type=ts_type,
                                       inplace=True).dropna()
         s1 = other.resample_timeseries(var_name, inplace=True,
@@ -830,15 +841,21 @@ class StationData(StationMetaData):
         """
         return pd.DataFrame(data=self.get_data_columns(), index=self.dtime)
     
-    def get_var_ts_type(self, var_name):
+    def get_var_ts_type(self, var_name, try_infer=True):
         """Get ts_type for a certain variable
+        
+        Note
+        ----
+        Converts to ts_type string if assigned ts_type is in pandas format
         
         Parameters
         ----------
         var_name : str
             data variable name for which the ts_type is supposed to be
             retrieved
-        
+        try_infer : bool
+            if ts_type is not available, try inferring it from data
+            
         Returns
         -------
         str
@@ -848,23 +865,33 @@ class StationData(StationMetaData):
         ------
         MetaDataError
             if no metadata is available for this variable (e.g. if ``var_name``
-            cannot be found in :attr:`var_info`) or if the 
+            cannot be found in :attr:`var_info`)
         """
+        # make sure there exists a var_info dict for this variable
         if not var_name in self.var_info:
-            raise MetaDataError('No variable specific metadata available '
-                                'for {}'.format(var_name))
+            self.var_info[var_name] = {}
         
+        # use variable specific entry if available
         if 'ts_type' in self.var_info[var_name]:
-            tp = self.var_info[var_name]['ts_type']
-        else:
-            tp = self.ts_type
-            self.var_info[var_name]['ts_type'] = tp
-        if tp is None:
-            raise MetaDataError('ts_type is not defined...')
-        elif not tp in const.GRID_IO.TS_TYPES:
-            raise MetaDataError('Invalid ts_type {}: need AEROCOM default {}'
-                                .format(tp, const.GRID_IO.TS_TYPES))
-        return tp
+            return TsType(self.var_info[var_name]['ts_type']).val
+        elif isinstance(self.ts_type, str):
+            # ensures validity and corrects for pandas strings
+            ts_type = TsType(self.ts_type).val 
+            self.var_info[var_name]['ts_type'] = ts_type
+            return ts_type
+        
+        if try_infer:
+            const.print_log.warning('Trying to infer ts_type in StationData {} '
+                            'for variable {}'.format(self.station_name, var_name))
+            from pyaerocom.helpers import infer_time_resolution
+            try:
+                s = self._to_ts_helper(var_name)
+                ts_type = infer_time_resolution(s.index)
+                self.var_info[var_name]['ts_type'] = ts_type
+                return ts_type
+            except:
+                pass #Raise standard error
+        raise MetaDataError('Could not access ts_type for {}'.format(var_name))
         
     def remove_outliers(self, var_name, low=None, high=None,
                         check_unit=True):
@@ -915,8 +942,9 @@ class StationData(StationMetaData):
         
         ToDo: complete docstring
         """
+        raise NotImplementedError('Needs review...')
         new = self.to_timeseries(var_name, freq=freq, 
-                                  resample_how='mean')
+                                 resample_how='mean')
         coverage = 1 - new.isnull().sum() / len(new)
         if coverage < min_coverage_interp:
             from pyaerocom.exceptions import DataCoverageError
@@ -931,7 +959,6 @@ class StationData(StationMetaData):
                                             self.dtime[-1]))
         new = new.interpolate().dropna()
         if inplace:
-            from pyaerocom.helpers import PANDAS_FREQ_TO_TS_TYPE
             ts_type = PANDAS_FREQ_TO_TS_TYPE[new.index.freqstr]
             self[var_name] = new
             
@@ -941,9 +968,10 @@ class StationData(StationMetaData):
             else:
                 self.ts_type = ts_type
         return new
-    
+        
     def resample_timeseries(self, var_name, ts_type, how='mean',
-                            inplace=False, min_num_obs=None):
+                            apply_constraints=None, min_num_obs=None, 
+                            inplace=False, **kwargs):
         """Resample one of the time-series in this object
         
         Parameters
@@ -955,45 +983,77 @@ class StationData(StationMetaData):
             frequency string)
         how : str
             how should the resampled data be averaged (e.g. mean, median)
+        apply_constraints : bool, optional
+            if True, then hierarchical resampling constraints are applied
+            (for details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        min_num_obs : dict or int, optional
+            minimum number of observations required per period (when 
+            downsampling). For details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
         inplace : bool
             if True, then the current data object stored in self, will be 
             overwritten with the resampled time-series
-        min_num_obs : :obj:`int`, optional
-            minimum number of observations required per period (when downsampling).
-            E.g. if input is in daily resolution and freq is monthly and 
-            min_num_obs is 10, then all months that have less than 10 days of data
-            are set to nan.
+        **kwargs
+            Additional keyword args passed to 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`
             
         Returns
         -------
-        pandas.Series
-            resampled time-series
+        pandas.Series or xarray.DataArray
+            resampled time-series data
         """
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
+        
+        to_ts_type = TsType(ts_type) # make sure to use AeroCom ts_type
+        
+        try: 
+            from_ts_type = TsType(self.get_var_ts_type(var_name))
+        except (MetaDataError, TemporalResolutionError):
+            from_ts_type = None
+            const.print_log.warning('Failed to access current temporal '
+                                    'resolution of {} data in StationData {}. '
+                                    'No resampling constraints will be applied'
+                                    .format(var_name, self.station_name))
+    
         data = self[var_name]
     
         if not isinstance(data, (pd.Series, xray.DataArray)):
             try:
-                data = self.to_timeseries(var_name, inplace=inplace)
+                data = self.to_timeseries(var_name)
             except Exception as e:
                 raise ValueError('{} data must be stored as pandas Series '
                                  'instance or as xarray.DataArray. Failed to '
                                  'convert to pandas Series.'
                                  'Error: {}'.format(repr(e)))
-        
-        if isinstance(data, pd.Series):
-            new = resample_timeseries(data, freq=ts_type, how=how,
-                                      min_num_obs=min_num_obs)
-        elif isinstance(data, xray.DataArray):
+        resampler = TimeResampler(data)
+        new = resampler.resample(to_ts_type=to_ts_type,
+                                 from_ts_type=from_ts_type,
+                                 how=how,
+                                 apply_constraints=apply_constraints,
+                                 min_num_obs=min_num_obs, 
+                                 **kwargs)
+
+# =============================================================================
+#         if isinstance(data, pd.Series):
+#             new = resample_timeseries(data, 
+#                                       freq=to_ts_type.to_pandas(), 
+#                                       how=how,
+#                                       min_num_obs=min_num_obs)
+#             
+#         elif isinstance(data, xray.DataArray):
+#             new = resample_time_dataarray(data, 
+#                                           freq=to_ts_type.to_pandas(), 
+#                                           how=how, 
+#                                           min_num_obs=min_num_obs)
+# =============================================================================
             
-            new = resample_time_dataarray(data, freq=ts_type, how=how, 
-                                          min_num_obs=min_num_obs)
-            
-        
         if inplace:
             self[var_name] = new
-            self.var_info[var_name]['ts_type'] = ts_type        
+            self.var_info[var_name]['ts_type'] = to_ts_type.val
+            self.var_info[var_name].update(resampler.last_setup)
+            # there is other variables that are not resampled
             if len(self.var_info) > 1 and self.ts_type is not None:     
                 _tt = self.ts_type
                 self.ts_type = None
@@ -1001,10 +1061,36 @@ class StationData(StationMetaData):
                 for var, info in self.var_info.items():
                     if not var == var_name:
                         info['ts_type'] = _tt
-            else:
-                self.ts_type = ts_type
+            else: #no other variables, update global class attributes
+                self.ts_type = to_ts_type.val
                 self.dtime = new.index.values
         return new
+    
+    def remove_variable(self, var_name):
+        """Remove variable data
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable that is to be removed
+            
+        Returns
+        -------
+        StationData
+            current instance of this object, with data removed
+        
+        Raises
+        ------
+        VarNotAvailableError
+            if the input variable is not available in this object
+        """
+        if not self.has_var(var_name):
+            raise VarNotAvailableError('No such variable in StationData: {}'
+                                       .format(var_name))
+        self.pop(var_name)
+        if var_name in self.var_info:
+            self.var_info.pop(var_name)
+        return self
     
     def insert_nans_timeseries(self, var_name):
         """Fill up missing values with NaNs in an existing time series
@@ -1050,7 +1136,10 @@ class StationData(StationMetaData):
             data as timeseries
         """
         data = self[var_name]
-        if not data.ndim == 1:
+        if isinstance(data, pd.Series):
+            return data
+        
+        elif not data.ndim == 1:
             raise NotImplementedError('Multi-dimensional data columns '
                                       'cannot be converted to time-series')
         self.check_dtime()
@@ -1076,9 +1165,9 @@ class StationData(StationMetaData):
                                           'contain 2 dimensions altitude and '
                                           'time')
             if isrange(altitudes):
-                                
-                return data.sel(altitude=slice(altitudes[0], 
-                                               altitudes[1]))
+                if not isinstance(altitudes, slice):
+                    altitudes = slice(altitudes[0], altitudes[1])
+                return data.sel(altitude=altitudes)
             
             raise DataExtractionError('Cannot intepret input for '
                                           'altitude...')
@@ -1104,7 +1193,7 @@ class StationData(StationMetaData):
         
         
     def to_timeseries(self, var_name, freq=None, resample_how='mean', 
-                      **kwargs):
+                      apply_constraints=None, min_num_obs=None, **kwargs):
         """Get pandas.Series object for one of the data columns
         
         Parameters
@@ -1117,6 +1206,14 @@ class StationData(StationMetaData):
         resample_how : str
             choose from mean or median (only relevant if input parameter freq 
             is provided, i.e. if resampling is applied)
+        apply_constraints : bool, optional
+            if True, then hierarchical resampling constraints are applied
+            (for details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        min_num_obs : dict or int, optional
+            minimum number of observations required per period (when 
+            downsampling). For details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
         **kwargs
             optional keyword args passed to :func:`resample_timeseries`
             
@@ -1161,8 +1258,21 @@ class StationData(StationMetaData):
             data = self._to_ts_helper(var_name)
 
         if freq is not None:
-            data = resample_timeseries(data, freq, how=resample_how,
-                                       **kwargs)
+            resampler = TimeResampler(data)
+            try:
+                from_ts_type = self.get_var_ts_type(var_name)
+            except MetaDataError:
+                from_ts_type = None
+            data = resampler.resample(to_ts_type=freq, 
+                                      from_ts_type=from_ts_type, 
+                                      how=resample_how, 
+                                      apply_constraints=apply_constraints,
+                                      min_num_obs=min_num_obs,
+                                      **kwargs)
+# =============================================================================
+#             data = resample_timeseries(data, freq, how=resample_how,
+#                                        **kwargs)
+# =============================================================================
 
         return data
     
@@ -1248,6 +1358,7 @@ class StationData(StationMetaData):
         if add_overlaps and var_name in self.overlap:
             so = self.overlap[var_name]
             try:
+                from pyaerocom.helpers import resample_timeseries
                 so = resample_timeseries(so, freq, how=resample_how)
             except:
                 pass

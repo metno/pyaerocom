@@ -41,8 +41,8 @@ def test_load_berlin_AeroSdaV2L2D():
         vals.append(np.nanmean(data[var]))
     
     npt.assert_allclose(vals, 
-                        [0.032438, 0.148135, 0.180573, 1.369884, 0.158433, 0.028672,
-                         0.129761], 
+                        [0.032668, 0.143719, 0.176387, 1.356139, 0.154892, 
+                         0.028947, 0.125944], 
                         rtol=TEST_RTOL)
     
 if __name__=="__main__":

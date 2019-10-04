@@ -31,7 +31,7 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
     Parameters
     ----------
     color_theme : :obj:`ColorTheme`, optional
-        instance of pyaerocom color theme. If None, the default schems is used
+        instance of pyaerocom color theme. If None, the default schemes is used
     vmin : :obj:`float`, optional
         lower end of value range
     vmax : :obj:`float`, optional
@@ -100,8 +100,7 @@ def set_map_ticks(ax, xticks=None, yticks=None):
 def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
              xticks=None, yticks=None, color_theme=COLOR_THEME, 
              projection=None, title=None, gridlines=False, 
-             fig=None, ax=None,
-             draw_coastlines=True, contains_cbar=False):
+             fig=None, ax=None, draw_coastlines=True, contains_cbar=False):
     """Initalise a map plot
     
     Parameters
@@ -158,9 +157,9 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
         else:
             fig.clf()
         if contains_cbar:
-            ax = fig.add_axes([0.1, 0.12, 0.8, 0.8], projection=projection)
+            ax = fig.add_axes([0.1, 0.12, 0.75, 0.8], projection=projection)
         else:
-            ax = fig.add_axes([0.1, 0.12, 0.9, 0.8], projection=projection)
+            ax = fig.add_axes([0.1, 0.12, 0.85, 0.8], projection=projection)
     
     if fix_aspect:
         ax.set_aspect(MAP_AXES_ASPECT)
@@ -188,12 +187,13 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
     
     return ax
 
-def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
-                            xlim=(-180, 180), ylim=(-90, 90), vmin=None, 
-                            vmax=None, add_zero=False, c_under=None, 
+def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None, 
+                            unit=None, xlim=(-180, 180), ylim=(-90, 90), 
+                            vmin=None, vmax=None, add_zero=False, c_under=None, 
                             c_over=None, log_scale=True, discrete_norm=True, 
-                            cbar_levels=None, cbar_ticks=None, 
-                            cmap=None, color_theme=COLOR_THEME, **kwargs):
+                            cbar_levels=None, cbar_ticks=None, add_cbar=True,
+                            cmap=None, cbar_ticks_sci=False, 
+                            color_theme=COLOR_THEME, **kwargs):
     """Make a plot of gridded data onto a map
     
     Note
@@ -247,10 +247,29 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
     kwargs['contains_cbar'] = True
     ax = init_map(xlim, ylim, color_theme=color_theme, **kwargs)
     fig = ax.figure
-    
-    if not isinstance(data, np.ndarray) or not data.ndim == 2:
+    from pyaerocom.griddeddata import GriddedData
+    if isinstance(data, GriddedData):
+        if not data.has_latlon_dims:
+            from pyaerocom.exceptions import DataDimensionError
+            raise DataDimensionError('Input data needs to have latitude and '
+                                     'longitude dimension')
+        if not data.ndim == 2:
+            if not data.ndim == 3 or not 'time' in data.dimcoord_names:
+                raise DataDimensionError('Input data needs to be 2 dimensional '
+                                         'or 3D with time being the 3rd '
+                                         'dimension')
+            data.reorder_dimensions_tseries()
+            
+            data = data[0]
+        
+        lons = data.longitude.points
+        lats = data.latitude.points
+        data = data.grid.data
+    elif not isinstance(data, np.ndarray) or not data.ndim == 2:
         raise IOError("Need 2D numpy array")
-    elif isinstance(data, np.ma.MaskedArray):
+    elif not isinstance(lats, np.ndarray) or not isinstance(lons, np.ndarray):
+        raise ValueError('Missing lats or lons input')
+    if isinstance(data, np.ma.MaskedArray):
         sh = data.shape
         if data.mask.sum() == sh[0] * sh[1]:
             raise ValueError('All datapoints in input data (masked array) are '
@@ -263,9 +282,12 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
         ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
         print(repr(e))
     X, Y = meshgrid(lons, lats)
-    dmin = data.min()
-    dmax = data.max()
-    if dmin == dmax:
+    dmin = np.nanmin(data)
+    dmax = np.nanmax(data)
+    
+    if any([np.isnan(x) for x in [dmin, dmax]]):
+        raise ValueError('Cannot plot map of data: all values are NaN')
+    elif dmin == dmax:
         raise ValueError('Minimum value in data equals maximum value: '
                          '{}'.format(dmin))
     if vmin is None:
@@ -334,21 +356,30 @@ def plot_griddeddata_on_map(data, lons, lats, var_name=None, unit=None,
 #         print(min_mag)
 #         #fmt = "%." + str(min_mag) + "f"
 # =============================================================================
-
-    cbar = fig.colorbar(disp, cmap=cmap, norm=norm, boundaries=bounds, 
-                        extend=cbar_extend, cax=ax_cbar)#, format=fmt)
-    
-    if var_name is not None:
-        var_str = var_name# + VARS.unit_str
-        if unit is not None:
-            if not str(unit) in ['1', 'no_unit']:
-                var_str += ' [{}]'.format(unit)
+    if add_cbar:
+        cbar = fig.colorbar(disp, cmap=cmap, norm=norm, boundaries=bounds, 
+                            extend=cbar_extend, cax=ax_cbar)
         
-        cbar.set_label(var_str)
-    
-    if cbar_ticks:
-        cbar.set_ticks(cbar_ticks)
-
+        if var_name is not None:
+            var_str = var_name# + VARS.unit_str
+            if unit is not None:
+                if not str(unit) in ['1', 'no_unit']:
+                    var_str += ' [{}]'.format(unit)
+            
+            cbar.set_label(var_str)
+        
+        if cbar_ticks:
+            cbar.set_ticks(cbar_ticks)
+        if cbar_ticks_sci:
+            lbls = []
+            for lbl in cbar.ax.get_yticklabels():
+                tstr = lbl.get_text()
+                if bool(tstr):
+                    lbls.append('{:.1e}'.format(float(tstr)))
+                else:
+                    lbls.append('')
+            cbar.ax.set_yticklabels(lbls)
+            
     return fig
 
 def plot_map_aerocom(data, region=None, fig=None, **kwargs):
@@ -461,13 +492,8 @@ def plot_map(data, *args, **kwargs):
    
 if __name__ == "__main__":
     from matplotlib.pyplot import close
-    import pyaerocom
+    import pyaerocom as pya
     close("all")
     
-    ax= init_map()
-    
-    read = pyaerocom.io.ReadGridded('MODIS6.aqua')
-
-    data = read.read_var("od550aer")
-    data.quickplot_map(800, cbar_levels=[0.1,1,3,10], add_zero=True)
-    
+    d = pya.io.ReadGridded('ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD').read_var('ang4487aer', start=2010)
+    d.quickplot_map(vmin=-1, vmax=4)

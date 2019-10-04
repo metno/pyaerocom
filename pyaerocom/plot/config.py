@@ -99,6 +99,7 @@ class ColorTheme(object):
         self.cmap_map_div = cmap_map_div
         self.cmap_map_div_shifted = cmap_map_div_shifted
         self.color_coastline = color_coastline
+        self.color_map_text = 'r'
         if not name in _COLOR_THEMES:
             warn("Invalid name for color theme, using default theme")
             name = DEFAULT_THEME

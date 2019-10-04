@@ -70,17 +70,17 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result = {}
     
     mask = ~np.isnan(ref_data) * ~np.isnan(data)
-    num_points = sum(mask)
+    num_points = mask.sum()
     
-    result['totnum'] = len(mask)
-    result['num_valid'] = num_points
+    data, ref_data = data[mask], ref_data[mask]
+    
+    result['totnum'] = float(len(mask))
+    result['num_valid'] = float(num_points)
     result['refdata_mean'] = np.nanmean(ref_data)
     result['refdata_std'] = np.nanstd(ref_data)
     result['data_mean'] = np.nanmean(data)
     result['data_std'] = np.nanstd(data)
-    
     if not num_points > min_num_valid:
-        data, ref_data = data[mask], ref_data[mask]
         if lowlim is not None:
             valid = np.logical_and(data>lowlim, ref_data>lowlim)
             data = data[valid]
@@ -97,7 +97,6 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         result['R'] = np.nan
         result['R_spearman'] = np.nan
     else:
-        data, ref_data = data[mask], ref_data[mask]
         if lowlim is not None:
             valid = np.logical_and(data>lowlim, ref_data>lowlim)
             data = data[valid]
@@ -109,17 +108,34 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         
         difference = data - ref_data
         
-        result['rms'] = np.sqrt(np.sum(np.power(difference, 2)) / num_points)
-        result['nmb'] = np.sum(difference) / np.sum(ref_data) #*100.
-        tmp = difference / (data + ref_data)
-        
-        result['mnmb'] = 2. / num_points * np.sum(tmp)# * 100.
-        result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) #* 100.
-        #result['fge'] = 2. / np.sum(np.abs(tmp)) * 100.
+        result['rms'] = np.sqrt(np.mean(difference**2))
         
         result['R'] = pearsonr(data, ref_data)[0]
         result['R_spearman'] = spearmanr(data, ref_data)[0]
         result['R_kendall'] = kendalltau(data, ref_data)[0]
+        
+        # NMB, MNMB and FGE are constrained to positive values, thus negative
+        # values need to be removed
+        neg_ref = ref_data < 0
+        neg_data = data < 0
+        
+        use_indices = ~(neg_data + neg_ref)
+        
+        diff_pos = difference[use_indices]
+        ref_data_pos = ref_data[use_indices]
+        data_pos = data[use_indices]
+        
+        num_points_pos = len(data_pos)
+        
+        result['nmb'] = np.sum(diff_pos) / np.sum(ref_data_pos) #*100.
+        
+        tmp = diff_pos / (data_pos + ref_data_pos)
+        
+        result['mnmb'] = 2. / num_points_pos * np.sum(tmp)# * 100.
+        result['fge'] = 2. / num_points_pos * np.sum(np.abs(tmp)) #* 100.
+        
+        result['num_neg_data'] = np.sum(neg_data)
+        result['num_neg_refdata'] = np.sum(neg_ref)
      
     return result
 
@@ -415,6 +431,24 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     
     return result
 
+def compute_ang4470dryaer_from_dry_scat(data):
+    """Compute angstrom exponent between 440 and 700 nm 
+    
+    Parameters
+    ----------
+    StationData or dict
+        data containing dry scattering coefficients at 440 and 700 nm
+        (i.e. keys scatc440dryaer and scatc700dryaer)
+    
+    Returns
+    -------
+    StationData or dict
+        extended data object containing angstrom exponent
+    """
+    return compute_angstrom_coeff(data['scatc440dryaer'],
+                                  data['scatc700dryaer'],
+                                  440, 700)
+
 def compute_scatc550dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
     
@@ -433,6 +467,48 @@ def compute_scatc550dryaer(data):
     """
     rh_max= const.VARS['scatc550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='scatc550aer', 
+                               rh_colname='scatcrh', 
+                               rh_max_percent=rh_max)
+    
+def compute_scatc440dryaer(data):
+    """Compute dry scattering coefficent applying RH threshold
+    
+    Cf. :func:`_compute_dry_helper`
+    
+    Parameters
+    ----------
+    dict
+        data object containing scattering and RH data
+    
+    Returns
+    -------
+    dict 
+        modified data object containing new column scatc550dryaer
+    
+    """
+    rh_max= const.VARS['scatc440dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='scatc440aer', 
+                               rh_colname='scatcrh', 
+                               rh_max_percent=rh_max)
+
+def compute_scatc700dryaer(data):
+    """Compute dry scattering coefficent applying RH threshold
+    
+    Cf. :func:`_compute_dry_helper`
+    
+    Parameters
+    ----------
+    dict
+        data object containing scattering and RH data
+    
+    Returns
+    -------
+    dict 
+        modified data object containing new column scatc550dryaer
+    
+    """
+    rh_max= const.VARS['scatc700dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='scatc700aer', 
                                rh_colname='scatcrh', 
                                rh_max_percent=rh_max)
     
@@ -458,7 +534,7 @@ def compute_absc550dryaer(data):
                                rh_max_percent=rh_max)
     
 def _compute_dry_helper(data, data_colname, rh_colname, 
-                        rh_max_percent):
+                        rh_max_percent=None):
     """Compute new column that contains data where RH is smaller than ...
     
     All values in original data columns are set to NaN, where RH exceeds a 
@@ -480,6 +556,9 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     dict
         modified data dictionary with new dry data column 
     """
+    if rh_max_percent is None:
+        rh_max_percent = const.RH_MAX_PERCENT_DRY
+        
     vals = np.array(data[data_colname], copy=True)
 
     rh = data[rh_colname]
