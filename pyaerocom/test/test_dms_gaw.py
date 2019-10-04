@@ -17,9 +17,11 @@ def _make_data():
     return r.read('vmrdms')
 
 @pytest.fixture(scope='module')
+@lustre_unavail
 def data_vmrdms_ams_cvo():
     return _make_data()
 
+@lustre_unavail
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'

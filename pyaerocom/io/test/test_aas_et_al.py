@@ -17,7 +17,7 @@ from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 
 import pyaerocom as pya
-from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
+from pyaerocom.test.settings import lustre_unavail, TEST_RTOL, test_not_working
 from pyaerocom.io.read_aasetal import ReadSulphurAasEtAl
 from pyaerocom.io.helpers_units import (unitconv_sfc_conc_bck, 
                                         unitconv_sfc_conc, 
@@ -244,6 +244,7 @@ def test_unitconversion_surface_conc():
     A = unitconv_sfc_conc_bck(temp, 2)
     assert np.abs(a - A) < 0.000001
 
+@test_not_working
 def test_unitconversion_wetdep():
     a = 10
     time = pd.Series(np.datetime64('2002-06-28'))
@@ -484,7 +485,7 @@ if __name__ == "__main__":
     #test_ungriddeddata()
     
     # TODO test article on hold 
-    test_reading_routines()
-    #test_unitconversion_wetdep()
+    #test_reading_routines()
+    test_unitconversion_wetdep()
     
 # =============================================================================

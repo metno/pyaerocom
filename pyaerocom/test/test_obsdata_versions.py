@@ -10,6 +10,9 @@ import pytest
 import numpy.testing as npt
 from pyaerocom.io import ReadUngridded
 
+from pyaerocom.test.settings import lustre_unavail
+
+@lustre_unavail
 def test_revision_dates():
     f = ReadUngridded()
     l = {}
