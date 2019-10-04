@@ -1,6 +1,7 @@
 NEWS
 ====
 
+- **October 2019**: Release of version 0.8.0
 - **April 2019**: AeroCom has a new (inter)face: We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments. The new online interface can be found `here <https://aerocom-evaluation.met.no/>`__.
 
 About
@@ -29,7 +30,7 @@ Main features
 
 - Access to the AeroCom model database.
 - Data objects for analysis of gridded and ungridded (point-cloud) observations.
-- This includes interfaces for conversion of data to data types of related data analysis libraries such as `pandas <https://pandas.pydata.org/>`__, `numpy <http://www.numpy.org/>`__, `xarray <http://xarray.pydata.org/en/stable/>`__ or `iris <https://scitools.org.uk/iris/docs/latest/>`__. 
+- This includes interfaces for conversion of data to data types of related data analysis libraries such as `pandas <https://pandas.pydata.org/>`__, `numpy <http://www.numpy.org/>`__, `xarray <http://xarray.pydata.org/en/stable/>`__ or `iris <https://scitools.org.uk/iris/docs/latest/>`__.
 - Colocation tools for gridded and ungridded datasets.
 - Harmonisation of variable and metadata conventions.
 - Data visualisation tools and interfaces to common plotting libraries such as `matplotlib <https://matplotlib.org/>`__ or `cartopy <https://scitools.org.uk/cartopy/docs/latest/>`__.
@@ -49,7 +50,7 @@ The AEROCOM-project (http://aerocom.met.no/) is an open international initiative
 
 This repository contains the aerocom python tools which are / will be used to produce the standard aerocom analyses shown at the aerocom phase 2 interface (http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl)
 
-At this point the tools are work in progress and will develop into a replacement for the IDL based aerocom-tools that cannot be made public because they use 3rd party libraries with a non GPL compatible license.
+At this point the tools are co-operational together with the IDL based aerocom-tools that cannot be made public because they use 3rd party libraries with a non GPL compatible license.
 
 Website and code documentation
 ==============================
@@ -58,8 +59,6 @@ The official website including code documentation is hosted here:
 
 http://aerocom.met.no/pyaerocom
 
-if you are not already *here* anyways ;)
-
 Requirements
 ============
 
@@ -67,6 +66,8 @@ Please see file `pyaerocom_env.yml <https://github.com/metno/pyaerocom/blob/mast
 
 Installing all requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**NOTE**: if you install pyaerocom via the latest conda-forge release, you can skip this section, as conda takes care of installing all requirements.
 
 We recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.7 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
 
@@ -84,8 +85,6 @@ Alternatively, you can include the requirements into an existing environment. Fi
 
 Installation of pyaerocom
 =========================
-
-**NOTE**: Use branch v080DEV for most recent changes. This branch is not yet released and cannot be installed using Option 1. Please install from source if you want the most recent version (Option 2).
 
 You have several options to install pyaerocom, the first one is the easiest, but may not refer to the most recent (non-released) version of pyaerocom. So please check first, which version you are interested in.
 
@@ -136,6 +135,8 @@ Please follow the instructions provided here, to retrieve access to the AEROCOM 
 
 https://wiki.met.no/aerocom/data_retrieval
 
+**NOTE**: the users database does not contain any ground based observational data (such as EBAS, AERONET, etc.) but only the model data. It does include, however, some level 3 gridded satellite datasets which may be used for model evaluation.
+
 Getting started
 ===============
 
@@ -153,5 +154,5 @@ contain the example data used in the notebooks. This is `planned to be updated s
 Remark for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-pyaerocom has only been tested on macOS and other linux systems (Ubuntu). Many high-level features won't work on Windows machines at the moment, that is, features that rely on and are built upon access to the AEROCOM database servers and automatic database path navigation. In particular, this includes the automised reading of gridded and ungridded data using the either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__).
-However, you may still define file locations in your Python script yourself yourself and use the more low-level features for reading the data. Windows support will be provided soon. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
+pyaerocom is not tested on Windows systems and may only work in parts and thus some features may not work on Windows machines at the moment. In particular, features that rely on and are built upon access to the AEROCOM database servers and automatic database path navigation. This includes the automised reading of gridded and ungridded data using either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__).
+However, you may still define file locations in your Python scripts yourself and use the more low-level features for reading the data. Windows support will be provided soon. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
