@@ -75,12 +75,12 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
 def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
     
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx= 0, 
-                                                  start=2000, stop=2008, 
-                                                  freq='monthly')
+                                               start=2000, stop=2008, 
+                                               freq='monthly')
     
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('2000-01-15T00:00:00.000000000'),
-                             np.datetime64('2008-01-15T00:00:00.000000000') ])
+                             np.datetime64('2007-12-15T00:00:00.000000000') ])
     assert stat.ts_type == 'monthly'
     assert stat.ts_type_src == 'daily'
     

@@ -1399,7 +1399,7 @@ class ReadGridded(object):
             cube.units = to_unit
         return cube
                 
-    def _load_files(self, files, var_name, perform_checks=True,
+    def _load_files(self, files, var_name, perform_fmt_checks=None,
                     **kwargs):
         """Load list of files containing variable to read into Cube instances
         
@@ -1409,7 +1409,7 @@ class ReadGridded(object):
             list of netcdf file
         var_name : str
             name of variable to read
-        perform_checks : bool
+        perform_fmt_checks : bool
             if True, the loaded data is checked for consistency with 
             AeroCom default requirements.
         **kwargs
@@ -1423,7 +1423,7 @@ class ReadGridded(object):
             list containing corresponding filenames of loaded cubes
         """
         cubes, loaded_files = load_cubes_custom(files, var_name,
-                                                perform_checks=perform_checks,
+                                                perform_fmt_checks=perform_fmt_checks,
                                                 **kwargs)
         for cube in cubes:
             cube = self._check_correct_units_cube(cube)

@@ -70,7 +70,9 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result = {}
     
     mask = ~np.isnan(ref_data) * ~np.isnan(data)
-    num_points = sum(mask)
+    num_points = mask.sum()
+    
+    data, ref_data = data[mask], ref_data[mask]
     
     result['totnum'] = float(len(mask))
     result['num_valid'] = float(num_points)
@@ -78,9 +80,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result['refdata_std'] = np.nanstd(ref_data)
     result['data_mean'] = np.nanmean(data)
     result['data_std'] = np.nanstd(data)
-    
     if not num_points > min_num_valid:
-        data, ref_data = data[mask], ref_data[mask]
         if lowlim is not None:
             valid = np.logical_and(data>lowlim, ref_data>lowlim)
             data = data[valid]
@@ -97,7 +97,6 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         result['R'] = np.nan
         result['R_spearman'] = np.nan
     else:
-        data, ref_data = data[mask], ref_data[mask]
         if lowlim is not None:
             valid = np.logical_and(data>lowlim, ref_data>lowlim)
             data = data[valid]
@@ -109,17 +108,34 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         
         difference = data - ref_data
         
-        result['rms'] = np.sqrt(np.sum(np.power(difference, 2)) / num_points)
-        result['nmb'] = np.sum(difference) / np.sum(ref_data) #*100.
-        tmp = difference / (data + ref_data)
-        
-        result['mnmb'] = 2. / num_points * np.sum(tmp)# * 100.
-        result['fge'] = 2. / num_points * np.sum(np.abs(tmp)) #* 100.
-        #result['fge'] = 2. / np.sum(np.abs(tmp)) * 100.
+        result['rms'] = np.sqrt(np.mean(difference**2))
         
         result['R'] = pearsonr(data, ref_data)[0]
         result['R_spearman'] = spearmanr(data, ref_data)[0]
         result['R_kendall'] = kendalltau(data, ref_data)[0]
+        
+        # NMB, MNMB and FGE are constrained to positive values, thus negative
+        # values need to be removed
+        neg_ref = ref_data < 0
+        neg_data = data < 0
+        
+        use_indices = ~(neg_data + neg_ref)
+        
+        diff_pos = difference[use_indices]
+        ref_data_pos = ref_data[use_indices]
+        data_pos = data[use_indices]
+        
+        num_points_pos = len(data_pos)
+        
+        result['nmb'] = np.sum(diff_pos) / np.sum(ref_data_pos) #*100.
+        
+        tmp = diff_pos / (data_pos + ref_data_pos)
+        
+        result['mnmb'] = 2. / num_points_pos * np.sum(tmp)# * 100.
+        result['fge'] = 2. / num_points_pos * np.sum(np.abs(tmp)) #* 100.
+        
+        result['num_neg_data'] = np.sum(neg_data)
+        result['num_neg_refdata'] = np.sum(neg_ref)
      
     return result
 

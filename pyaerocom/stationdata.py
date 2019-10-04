@@ -881,7 +881,7 @@ class StationData(StationMetaData):
             return ts_type
         
         if try_infer:
-            const.print_log('Trying to infer ts_type in StationData {} '
+            const.print_log.warning('Trying to infer ts_type in StationData {} '
                             'for variable {}'.format(self.station_name, var_name))
             from pyaerocom.helpers import infer_time_resolution
             try:
@@ -1010,8 +1010,8 @@ class StationData(StationMetaData):
         
         try: 
             from_ts_type = TsType(self.get_var_ts_type(var_name))
-        except MetaDataError:
-            from_ts_type == None
+        except (MetaDataError, TemporalResolutionError):
+            from_ts_type = None
             const.print_log.warning('Failed to access current temporal '
                                     'resolution of {} data in StationData {}. '
                                     'No resampling constraints will be applied'
