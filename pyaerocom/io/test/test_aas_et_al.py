@@ -24,46 +24,46 @@ from pyaerocom.io.helpers_units import (unitconv_sfc_conc_bck,
                                         unitconv_wet_depo_bck,
                                         unitconv_wet_depo)
 
-TRUE_SLOPE = {'N-America': {"sconcso4": {'2000–2010': -3.03,
+TRUE_SLOPE = {'N-America': {"concso4": {'2000–2010': -3.03,
                                           '2000–2015': -3.15},
 
                              "wetso4": {'2000–2010': -2.30,
                                         '2000–2015': -2.78},
 
-                             'sconcso2': {'2000–2010': -4.55,
+                             'concso2': {'2000–2010': -4.55,
                                           '2000–2015':-4.69
                                           }},
 
-                   'Europe': {'sconcso4': {'2000–2010':  -2.86,
+                   'Europe': {'concso4': {'2000–2010':  -2.86,
                                            '2000–2015':  -2.67},
 
                               'wetso4': {'2000–2010': -3.85,
                                          '2000–2015': -3.40,
                                          },
-                              'sconcso2': {'2000–2010': -4.23,
+                              'concso2': {'2000–2010': -4.23,
                                            '2000–2015':-3.89
                                            },
                               },
                    }
 
-TRUE_NR_STATIONS = {'N-America': {"sconcso4": {'2000–2010': 227,
+TRUE_NR_STATIONS = {'N-America': {"concso4": {'2000–2010': 227,
                                                '2000–2015': 218},
                               
                                      "wetso4": {'2000–2010': 226,
                                                 '2000–2015': 215
                                                 },
         
-                                     'sconcso2': {'2000–2010': 78,
+                                     'concso2': {'2000–2010': 78,
                                                   '2000–2015': 77
                                                   }},
 
-                       'Europe': {'sconcso4': {'2000–2010': 43,
+                       'Europe': {'concso4': {'2000–2010': 43,
                                                '2000–2015': 36},
 
                                   'wetso4': {'2000–2010': 73,
                                              '2000–2015': 67
                                              },
-                                  'sconcso2': {'2000–2010': 51,
+                                  'concso2': {'2000–2010': 51,
                                                '2000–2015': 47
                                                },
                                   },
@@ -321,9 +321,9 @@ def years_from_periodstr(period):
     return [int(x) for x in period.split('–')]
 
 def convert_data(data, var):
-    if var == "sconcso4":
+    if var == "concso4":
         return unitconv_sfc_conc_bck(data, x=4)
-    elif var == "sconcso2":
+    elif var == "concso2":
         unitconv_sfc_conc_bck(data, x=2)
     elif var == "wetso4":
         unitconv_wet_depo_bck(data)
@@ -394,26 +394,26 @@ def test_reading_routines():
     df = pd.read_csv(files[0], sep=",", low_memory=False)
     subset = df[df.station_name == 'Yellowstone NP']
     vals = subset['concentration_ugS/m3'].astype(float).values
-    ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'sconcso2')
-    station = ungridded.to_station_data('Yellowstone NP', 'sconcso2')
-    conv = unitconv_sfc_conc_bck(station.sconcso2.values, 2)
+    ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'concso2')
+    station = ungridded.to_station_data('Yellowstone NP', 'concso2')
+    conv = unitconv_sfc_conc_bck(station.concso2.values, 2)
     print(np.abs(conv - vals).sum())
     assert (np.abs(conv - vals).sum() < 0.000001, 
             'Unconsistancy between reading a file and reading a station. '+
             'File: monthly_so2.csv. Station: Yellowstone NP. '
-            +'Variable: sconcso2. '  )
+            +'Variable: concso2. '  )
 
     df = pd.read_csv(files[1], sep=",", low_memory=False)
     subset = df[df.station_name == 'Payerne']
     vals = subset['concentration_ugS/m3'].astype(float).values
-    ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'sconcso4')
-    station = ungridded.to_station_data('Payerne', 'sconcso4')
-    conv = unitconv_sfc_conc_bck(station.sconcso4.values, 4)
+    ungridded = ReadSulphurAasEtAl().read(vars_to_retrieve = 'concso4')
+    station = ungridded.to_station_data('Payerne', 'concso4')
+    conv = unitconv_sfc_conc_bck(station.concso4.values, 4)
     print(np.abs(conv - vals).sum())
     assert (np.abs(conv - vals).sum() < 0.000001, 
             'Unconsistancy between reading a file and reading a station. ' 
             +'File: monthly_so4_aero.csv. Station: Payerne. '
-            +'Variable: sconcso4.')
+            +'Variable: concso4.')
     
     station_name = 'Abington (CT15)'
     df = pd.read_csv(files[2], sep=",", low_memory=False)
@@ -444,7 +444,7 @@ def test_nbr_of_nans():
 @lustre_unavail
 def test_article():
     regions = ['Europe', 'N-America']
-    VARS = ['sconcso4', 'sconcso2', 'wetso4']
+    VARS = ['concso4', 'concso2', 'wetso4']
     periods = ['2000–2010', '2000–2015'] 
     # OBS (bad coding) problems with the heigfen. 
 
