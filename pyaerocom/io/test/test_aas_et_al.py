@@ -375,6 +375,7 @@ def calc_slope(ungridded, region, period, var):
     return nr_stations, np.mean(slp_stations)
 
 @lustre_unavail
+@test_not_working
 def test_ungriddeddata():
     reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
     data = reader.read()  # read all variables
@@ -443,6 +444,7 @@ def test_nbr_of_nans():
     pass
 
 @lustre_unavail
+@test_not_working
 def test_article():
     regions = ['Europe', 'N-America']
     VARS = ['concso4', 'concso2', 'wetso4']

@@ -12,7 +12,7 @@ pyaerocom is written and tested for Python >= 3.6 and for unix based systems. py
 This includes reading and processing of gridded data (e.g. model data or level 3 satellite data, e.g. NetCDF files) and ungridded data (e.g. observational data from `AERONET <https://aeronet.gsfc.nasa.gov/>`__ or `EBAS <http://ebas.nilu.no/>`__ networks, e.g. ASCII files) as well as tools for colocation and cross evaluation of different datasets.
 
 Main features
-^^^^^^^^^^^^^https://www.google.com/search?client=ubuntu&channel=fs&q=pypi+pyaerocom&ie=utf-8&oe=utf-8
+^^^^^^^^^^^^^
 
 - Reading routines for many ground based observation databases, such as:
 

@@ -9,7 +9,7 @@ Created on Wed May 15 11:05:50 2019
 import pytest
 import numpy.testing as npt
 import numpy as np
-from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
+from pyaerocom.test.settings import lustre_unavail, TEST_RTOL, test_not_working
 from pyaerocom.io import ReadGAW
 
 def _make_data():
@@ -22,6 +22,7 @@ def data_vmrdms_ams_cvo():
     return _make_data()
 
 @lustre_unavail
+@test_not_working
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
@@ -48,6 +49,7 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     
     
 @lustre_unavail   
+@test_not_working
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx= 0)
     
