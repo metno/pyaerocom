@@ -2,14 +2,15 @@ NEWS
 ====
 
 - **October 2019**: Release of version 0.8.0
-- **April 2019**: AeroCom has a new (inter)face: We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments. The new online interface can be found `here <https://aerocom-evaluation.met.no/>`__.
+- **April 2019**: AeroCom has a new web : We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments (in parallel with the IDL processing displayed in the Phase 2 interface). The new online interface can be found at:
+`https://aerocom-evaluation.met.no <https://aerocom-evaluation.met.no/>`__.
 
 About
 =====
 
-pyaerocom is written and tested for Python >= 3.6 and for unix based systems. pyaerocom provides tools for processing and plotting of data related to the AEROCOM-project.
+pyaerocom is written and tested for Python >= 3.6 and for unix based systems. pyaerocom provides tools for processing and plotting of data related to the AeroCom project.
 
-This includes reading and processing of gridded data (e.g. model or satellite data, e.g. NetCDF files) and ungridded data (e.g. observational data from `AERONET <https://aeronet.gsfc.nasa.gov/>`__ or `EBAS <http://ebas.nilu.no/>`__ networks, e.g. ASCII files) as well as tools for colocation and cross evaluation of different datasets.
+This includes reading and processing of gridded data (e.g. model data or level 3 satellite data, e.g. NetCDF files) and ungridded data (e.g. observational data from `AERONET <https://aeronet.gsfc.nasa.gov/>`__ or `EBAS <http://ebas.nilu.no/>`__ networks, e.g. ASCII files) as well as tools for colocation and cross evaluation of different datasets.
 
 Main features
 ^^^^^^^^^^^^^
@@ -46,9 +47,9 @@ Usage examples
 AeroCom
 =======
 
-The AEROCOM-project (http://aerocom.met.no/) is an open international initiative of scientists interested in the advancement of the understanding of the global aerosol and its impact on climate. A large number of observations (including MODIS, POLDER, MISR, AVHHR, SEAWIFS, TOMS, AATSR, AERONET and surface concentrations) and results from more than 14 global models have been assembled to document and compare state of the art modeling of the global aerosol. A common protocol has been established and models are asked to make use of the AEROCOM emission inventories for the year 2000 and preindustrial times. Results are documented via interactive websites which give access to 2D fields and standard comparisons to observations. Regular workshops are held to discuss findings and future directions.
+The AeroCom-project (http://aerocom.met.no/) is an open international initiative of scientists interested in the advancement of the understanding of the global aerosol and its impact on climate. A large number of observations (including MODIS, POLDER, MISR, AVHHR, SEAWIFS, TOMS, AATSR, AERONET and surface concentrations) and results from more than 14 global models have been assembled to document and compare state of the art modeling of the global aerosol. A common protocol has been established and models are asked to make use of the AeroCom emission inventories for the year 2000 and preindustrial times. Results are documented via interactive websites which give access to 2D fields and standard comparisons to observations. Regular workshops are held to discuss findings and future directions.
 
-This repository contains the aerocom python tools which are / will be used to produce the standard aerocom analyses shown at the aerocom phase 2 interface (http://aerocom.met.no/cgi-bin/AEROCOM/aerocom/surfobs_annualrs.pl)
+This repository contains the AeroCom python tools which are / will be used to produce the standard AeroCom analyses shown at the AeroCom phase 2 interface (http://aerocom.met.no/cgi-bin/AeroCom/aerocom/surfobs_annualrs.pl)
 
 At this point the tools are co-operational together with the IDL based aerocom-tools that cannot be made public because they use 3rd party libraries with a non GPL compatible license.
 
@@ -131,7 +132,7 @@ Finally, we recommend installing jupyter (if not already installed in your conda
 Access to users database
 ========================
 
-Please follow the instructions provided here, to retrieve access to the AEROCOM users database:
+Please follow the instructions provided here, to retrieve access to the AeroCom users database:
 
 https://wiki.met.no/aerocom/data_retrieval
 
@@ -154,5 +155,5 @@ contain the example data used in the notebooks. This is `planned to be updated s
 Remark for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-pyaerocom is not tested on Windows systems and may only work in parts and thus some features may not work on Windows machines at the moment. In particular, features that rely on and are built upon access to the AEROCOM database servers and automatic database path navigation. This includes the automised reading of gridded and ungridded data using either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__).
+pyaerocom is not tested on Windows systems and may only work in parts and thus some features may not work on Windows machines at the moment. In particular, features that rely on and are built upon access to the AeroCom database servers and automatic database path navigation. This includes the automised reading of gridded and ungridded data using either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__).
 However, you may still define file locations in your Python scripts yourself and use the more low-level features for reading the data. Windows support will be provided soon. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
