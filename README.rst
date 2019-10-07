@@ -2,8 +2,7 @@ NEWS
 ====
 
 - **October 2019**: Release of version 0.8.0
-- **April 2019**: AeroCom has a new web : We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments (in parallel with the IDL processing displayed in the Phase 2 interface). The new online interface can be found at:
-`https://aerocom-evaluation.met.no <https://aerocom-evaluation.met.no/>`__.
+- **April 2019**: AeroCom has a new web : We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments (in parallel with the IDL processing displayed in the Phase 2 interface). The new online interface can be found at: `https://aerocom-evaluation.met.no <https://aerocom-evaluation.met.no/>`__.
 
 About
 =====
@@ -13,7 +12,7 @@ pyaerocom is written and tested for Python >= 3.6 and for unix based systems. py
 This includes reading and processing of gridded data (e.g. model data or level 3 satellite data, e.g. NetCDF files) and ungridded data (e.g. observational data from `AERONET <https://aeronet.gsfc.nasa.gov/>`__ or `EBAS <http://ebas.nilu.no/>`__ networks, e.g. ASCII files) as well as tools for colocation and cross evaluation of different datasets.
 
 Main features
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^https://www.google.com/search?client=ubuntu&channel=fs&q=pypi+pyaerocom&ie=utf-8&oe=utf-8
 
 - Reading routines for many ground based observation databases, such as:
 
@@ -116,7 +115,7 @@ To install pyaerocom from source, please download and extract the `latest releas
 
 	python setup.py install
 
-Alternatively, if you plan to apply local changes to the pyaerocom source code, you may install in `development mode <>`__::
+Alternatively, if you plan to apply local changes to the pyaerocom source code, you may install in development mode::
 
 	python setup.py develop
 
@@ -145,7 +144,7 @@ After installing pyaerocom, open your python executable and try to import pyaero
 
 	import pyaerocom as pya
 
-To get started, please see `introduction notebook <https://github.com/metno/pyaerocom/blob/master/notebooks/tut00_get_started.ipynb>`__.
+To get started, please see `introduction tutorial <https://pyaerocom.met.no/tutorials.html#getting-started>`__.
 
 **NOTE:** pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
 
