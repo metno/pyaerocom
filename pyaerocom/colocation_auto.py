@@ -579,6 +579,7 @@ class Colocator(ColocationSetup):
 #                                               'in model {}'.format(model_data.ts_type,
 #                                                                    self.model_id))
 # =============================================================================
+            ignore_stats = None
             if self.ignore_station_names is not None:
                 ignore_stats = self.ignore_station_names
                 if isinstance(ignore_stats, dict):
@@ -586,6 +587,7 @@ class Colocator(ColocationSetup):
                         ignore_stats = ignore_stats[obs_var]
                     else:
                         ignore_stats = None
+                    
             #ts_type_src = model_data.ts_type
             if TsType(ts_type_src) < TsType(ts_type):# < all_ts_types.index(ts_type_src):
                 print_log.info('Updating ts_type from {} to {} (highest '
