@@ -127,13 +127,18 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         
         num_points_pos = len(data_pos)
         
-        result['nmb'] = np.sum(diff_pos) / np.sum(ref_data_pos) #*100.
-        
-        tmp = diff_pos / (data_pos + ref_data_pos)
-        
-        result['mnmb'] = 2. / num_points_pos * np.sum(tmp)# * 100.
-        result['fge'] = 2. / num_points_pos * np.sum(np.abs(tmp)) #* 100.
-        
+        if num_points_pos == 0:
+            result['nmb'] = np.nan
+            result['mnmb'] = np.nan
+            result['fge'] = np.nan
+        else:
+            result['nmb'] = np.sum(diff_pos) / np.sum(ref_data_pos) #*100.
+            
+            tmp = diff_pos / (data_pos + ref_data_pos)
+            
+            result['mnmb'] = 2. / num_points_pos * np.sum(tmp)# * 100.
+            result['fge'] = 2. / num_points_pos * np.sum(np.abs(tmp)) #* 100.
+            
         result['num_neg_data'] = np.sum(neg_data)
         result['num_neg_refdata'] = np.sum(neg_ref)
      
