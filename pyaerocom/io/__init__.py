@@ -96,7 +96,7 @@ from .fileconventions import FileConventionRead
 if geopy_available() and coda_available():
     # the coda and geopy libraries are needed to read l2 data of the supported satellites
     # Aeolus and Sentinel5P
-    from .read_aeolus_l2a_data import ReadAeolusL2aData
+    from .read_aeolus_l2a_data import ReadL2Data
     from .read_sentinel5p_data import ReadL2Data
 
 
