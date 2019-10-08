@@ -21,6 +21,10 @@ class GridIO(object):
     TS_TYPES : list
         list of strings specifying temporal resolution options encrypted in
         file names.
+    PERFORM_FMT_CHECKS : bool
+        perform formatting checks when reading netcdf data, using metadata 
+        encoded in filenames (requires that NetCDF file follows a registered
+        naming convention)
     DEL_TIME_BOUNDS : bool
         if True, preexisting bounds on time are deleted when grid data is 
         loaded. Else, nothing is done. Aerocom default is True
@@ -69,23 +73,25 @@ class GridIO(object):
     """
     UNITS_ALIASES = {'/m' : 'm-1'}
     _AEROCOM = {'FILE_TYPE': '.nc',
-               'DEL_TIME_BOUNDS': True,
-               'SHIFT_LONS': True,
-               'CHECK_TIME_FILENAME': True,
-               'CORRECT_TIME_FILENAME': True,
-               'CHECK_DIM_COORDS': True,
-               'EQUALISE_METADATA': True,
-               'USE_RENAMED_DIR': True,
-               'INCLUDE_SUBDIRS': False}
+                'PERFORM_FMT_CHECKS': True,
+                'DEL_TIME_BOUNDS': True,
+                'SHIFT_LONS': True,
+                'CHECK_TIME_FILENAME': True,
+                'CORRECT_TIME_FILENAME': True,
+                'CHECK_DIM_COORDS': True,
+                'EQUALISE_METADATA': True,
+                'USE_RENAMED_DIR': True,
+                'INCLUDE_SUBDIRS': False}
     _DEFAULT = {'FILE_TYPE': '.nc',
-             'DEL_TIME_BOUNDS': True,
-             'SHIFT_LONS': False,
-             'CHECK_TIME_FILENAME': False,
-             'CORRECT_TIME_FILENAME': False,
-             'CHECK_DIM_COORDS': False,
-             'EQUALISE_METADATA': False,
-             'USE_RENAMED_DIR': False,
-             'INCLUDE_SUBDIRS': True}
+                'PERFORM_FMT_CHECKS' : False,
+                'DEL_TIME_BOUNDS': True,
+                'SHIFT_LONS': False,
+                'CHECK_TIME_FILENAME': False,
+                'CORRECT_TIME_FILENAME': False,
+                'CHECK_DIM_COORDS': False,
+                'EQUALISE_METADATA': False,
+                'USE_RENAMED_DIR': False,
+                'INCLUDE_SUBDIRS': True}
     
     def __init__(self, **kwargs):
         self.FILE_TYPE = '.nc'
@@ -93,6 +99,9 @@ class GridIO(object):
         # resolution
         self.TS_TYPES = ['minutely', 'hourly', '3hourly', 'daily', 'weekly', 
                          'monthly', 'yearly']
+        
+        self.PERFORM_FMT_CHECKS = True
+        
         #delete time bounds if they exist in netCDF files
         self.DEL_TIME_BOUNDS = True
         #shift longitudes to -180 -> 180 repr (if applicable)
@@ -104,6 +113,7 @@ class GridIO(object):
         self.CHECK_DIM_COORDS = False
          # check and update metadata dictionary on Cube load since 
          # iris concatenate of Cubes only works if metadata is equal
+        
         
         self.EQUALISE_METADATA = True
         

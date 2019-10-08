@@ -89,6 +89,7 @@ from .read_aeronet_sunv3 import ReadAeronetSunV3
 from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
 from .read_gaw import ReadGAW
+from .read_aasetal import ReadSulphurAasEtAl
 
 from .readgridded import ReadGridded, ReadGriddedMulti
 from .readungridded import ReadUngridded
@@ -101,3 +102,4 @@ if geopy_available() and coda_available():
 
 
 from . import testfiles
+from . import helpers_units

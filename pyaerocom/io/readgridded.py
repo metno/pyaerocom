@@ -331,6 +331,22 @@ class ReadGridded(object):
             
         return to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
     
+    def has_var(self, var_name):
+        """Check if variable is available
+        
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+        
+        Returns
+        -------
+        bool
+        """
+        if var_name in self.vars_provided or self.check_compute_var(var_name):
+            return True
+        return False
+    
     def _get_years_to_load(self, start=None, stop=None):
         """Array containing year numbers that are supposed to be loaded
         
@@ -1054,7 +1070,7 @@ class ReadGridded(object):
     def check_compute_var(self, var_name):
         """Check if variable name belongs to family that can be computed
         
-        For instance, if input var_name is `sconcdust` this method will check
+        For instance, if input var_name is `concdust` this method will check
         :attr:`AUX_REQUIRES` to see if there is a variable family pattern
         (`conc*`) defined that specifies how to compute these variables. If 
         a match is found, the required variables and computation method is 
@@ -1383,7 +1399,7 @@ class ReadGridded(object):
             cube.units = to_unit
         return cube
                 
-    def _load_files(self, files, var_name, perform_checks=True,
+    def _load_files(self, files, var_name, perform_fmt_checks=None,
                     **kwargs):
         """Load list of files containing variable to read into Cube instances
         
@@ -1393,7 +1409,7 @@ class ReadGridded(object):
             list of netcdf file
         var_name : str
             name of variable to read
-        perform_checks : bool
+        perform_fmt_checks : bool
             if True, the loaded data is checked for consistency with 
             AeroCom default requirements.
         **kwargs
@@ -1407,7 +1423,7 @@ class ReadGridded(object):
             list containing corresponding filenames of loaded cubes
         """
         cubes, loaded_files = load_cubes_custom(files, var_name,
-                                                perform_checks=perform_checks,
+                                                perform_fmt_checks=perform_fmt_checks,
                                                 **kwargs)
         for cube in cubes:
             cube = self._check_correct_units_cube(cube)
@@ -1717,10 +1733,8 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    print(r.vars_provided)
+    data = ReadGridded('TM5_AP3-CTRL2019').read_var('od550aer')
     
-    data = r.read_var('concpm10')
-    data.resample_time('yearly').quickplot_map()
+    data.quickplot_map()
     
     

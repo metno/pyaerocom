@@ -8,21 +8,23 @@ from collections import OrderedDict
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
+#from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
+
+from pyaerocom.units_helpers import convert_unit
+from pyaerocom.helpers import get_tot_number_of_seconds
 
 class ReadSulphurAasEtAl(ReadUngriddedBase):
-    """Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
+    """ Interface for reading subset of GAW-TAD-EANET data related to the nature paper.
 
     See Also
     ---------
         :class:`ReadUngriddedBase`
- 
 	"""
     # name of files in GawTadSubsetAasEtAl
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.04'
+    __version__ = '0.07'
 
     COL_DELIM = ','
 
@@ -30,7 +32,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     TS_TYPE = 'monthly'
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = 'GAWTADsubsetAasEtAl'
+    DATA_ID = 'GAWTADsubsetAasEtAl' #'GAWTADsubsetAasEtAl'
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
@@ -44,34 +46,31 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     # This contains the mapping between the requested variables and what it is called in the files.
     
     COLNAMES_VARS = {}
-    COLNAMES_VARS['concentration_mgS/L'] = ['sconcso4pr']
-    COLNAMES_VARS['concentration_ugS/m3'] = ['sconcso4', 'sconcso2']
-    COLNAMES_VARS['precip_amount_mm'] = ['pr']
-    COLNAMES_VARS['deposition_kgS/ha'] = ['wetso4']
-
-# =============================================================================
-#     #: Dictionary mapping variable name to the keys present in the files.
-#     VAR_TO_KEY = {}
-#     VAR_TO_KEY["sconcso4pr"] = "concentration_mgS/L"
-#     VAR_TO_KEY["pr"] = 'precip_amount_mm'
-#     VAR_TO_KEY["wetso4"] = "deposition_kgS/ha"
-#     VAR_TO_KEY["sconcso2"] = 'concentration_ugS/m3'
-#     VAR_TO_KEY["sconcso4"] = 'concentration_ugS/m3'
-# =============================================================================
+    COLNAMES_VARS['concentration_mgS/L']  = ['concso4pr']
+    COLNAMES_VARS['concentration_ugS/m3'] = ['concso4', 'concso2']
+    COLNAMES_VARS['precip_amount_mm']     = ['pr']
+    COLNAMES_VARS['deposition_kgS/ha']    = ['wetso4']
 
     #: Dictionary mapping filenames to available variables in the respective files. 
     FILES_CONTAIN = {}
-    FILES_CONTAIN['monthly_so2.csv'] = ['sconcso2']
-    FILES_CONTAIN['monthly_so4_aero.csv'] = ['sconcso4']
-    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'sconcso4pr']
+    FILES_CONTAIN['monthly_so2.csv']        = ['concso2']
+    FILES_CONTAIN['monthly_so4_aero.csv']   = ['concso4']
+    FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'concso4pr']
     
     #: Dictionary mapping variable name to hard coded filenames. 
     VARS_TO_FILES = {}
-    VARS_TO_FILES['sconcso2'] = ['monthly_so2.csv']
-    VARS_TO_FILES['sconcso4'] = ['monthly_so4_aero.csv']
-    VARS_TO_FILES['pr'] = ['monthly_so4_precip.csv']
-    VARS_TO_FILES['wetso4'] = ['monthly_so4_precip.csv']
-    VARS_TO_FILES['sconcso4pr'] = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['concso2']   = ['monthly_so2.csv']
+    VARS_TO_FILES['concso4']   = ['monthly_so4_aero.csv']
+    VARS_TO_FILES['pr']        = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['wetso4']    = ['monthly_so4_precip.csv']
+    VARS_TO_FILES['concso4pr'] = ['monthly_so4_precip.csv']
+    
+    # (from to unit)
+    UNITCONVERSION = {'concso2':   ('ug S/m3', 'ug m-3'), 
+                      'concso4':   ('ug S/m3', 'ug m-3'), 
+                      'wetso4':    ('kg S/ha', 'kg m-2'),  #  s-1
+                      'concso4pr': ('mg S/L',   'g m-3')
+                      }
 
     #: :obj: `list` of :obj: `str` 
     #: List containing all the variables available in this data set.
@@ -79,7 +78,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
-
+    
+    #def __init__(self):
+        #print("hello update ")
+        #super(ReadUngriddedBase).__init__(dataset_to_read = DATA_ID)
+    
     @property
     def DEFAULT_VARS(self):
         return self.PROVIDES_VARIABLES
@@ -100,16 +103,12 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         station_list : List[StationData]
             List of dictionary-like object containing data
         """
-
         station_list = []
         df = pd.read_csv(filename, sep=",", low_memory=False)
-        
-        # 
+        # Converting month and year. 
         tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
-
         dates_alt = [tconv(yr, m) for yr, m in
                      zip(df.year.values, df.month.values)]
-
         df['dtime'] = np.array(dates_alt)
 
         # array av numpy.datetime64
@@ -118,7 +117,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         # Looping over every station:
         for name, station_group in grouped:
-
+            station_group = station_group.drop_duplicates(subset='dtime', keep='first')  # Drops duplacate rows 
+         
             s = StationData()
             # Meta data
             s['station_name'] = name
@@ -127,18 +127,10 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             s["data_id"] = self.DATA_ID
             s["ts_type"] = self.TS_TYPE
             s['variables'] = []
-            
-# =============================================================================
-#             # The variables present in this file is the intersection between
-#             # the keys in the file and the variables name available,
-#             # here expressed in terms of their keynames in order to retrieve them.
-#             variables_present = list(set(station_group.keys()).intersection(
-#                                                     self.VAR_TO_KEY.values()))
-# =============================================================================
 
             var_names = self.COLNAMES_VARS
             # Looping over all keys in the grouped data frame.
-            for key in station_group: # NOT YEAR OR MONTH, BUT WOULD LIKE TO KEEP THOSE.
+            for key in station_group:
                 # Enters if the the key is a variable
                 if key in var_names:
                     _var = np.intersect1d(var_names[key], vars_to_retrieve)
@@ -147,35 +139,21 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     elif len(_var) > 1:
                         raise IOError('Found multiple matches...')
                     var = _var[0]
-
-                    if var == "wetso4":
-                        # input unit is kg S/ha
-                        days_in_month = station_group['dtime'].dt.daysinmonth
-                        monthly_to_sec = days_in_month*24*60*60
-                        
-                        mass_sulhpor = pd.to_numeric(station_group[key],
-                                                     errors='coerce').values
-                        s[var] = unitconv_wet_depo(mass_sulhpor,
-                         "monthly")/monthly_to_sec
-                         
-                    elif var == "sconcso4pr":
-                        # Works when elif tests are in this order.
-                        conc = pd.to_numeric(station_group[key],
+                    if var in self.UNITCONVERSION.keys():
+                        # Convert units 
+                        from_unit, to_unit = self.UNITCONVERSION[var]
+                        values = pd.to_numeric(station_group[key],
                                                errors='coerce').values
-                                              
-                        # conversion function operates in micro grams.
-                        s[var] = unitconv_sfc_conc(conc, 10**3*2)/10**3
-
-                    elif "sconcso" in var: 
-                        conc = pd.to_numeric(station_group[key],
-                                               errors='coerce').values
-                        s[var] = unitconv_sfc_conc(conc, int(var[-1]))
-                    
+                        s[var] = convert_unit(data=values, from_unit = from_unit, 
+                                             to_unit = to_unit, var_name = var)
+                        if var == 'wetso4':
+                            s[var] = s[var]/get_tot_number_of_seconds(ts_type = 'monthly', 
+                                                 dtime = station_group['dtime'])
                     else:
-                        # variables precip and sconcso4pr is of the correct unit. 
+                        # This should only be true for
                         s[var] = pd.to_numeric(station_group[key],
                                                errors='coerce').values
-                    # Adds the variable
+                                             
                     s['variables'].append(var)
                 else:
                     if key == 'dtime':
@@ -183,6 +161,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     else:
                         # Store the meta data. 
                         s[key] = station_group[key].values[0]
+                
             # Added the created station to the station list.
             station_list.append(s)
         return station_list
@@ -211,11 +190,11 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         files = self.get_file_list()
 
         unit={}
-        unit['sconcso2'] = 'ug m-3'
-        unit['sconcso4'] = 'ug m-3'
+        unit['concso2'] = 'ug m-3'
+        unit['concso4'] = 'ug m-3'
         unit['pr']       = 'mm'
         unit['wetso4']   = 'kg m-2 s-1'
-        unit['sconcso4pr'] = 'g m-3' # removed sulphur from unit mgS/L
+        unit['concso4pr'] = 'g m-3' # removed sulphur from unit mgS/L
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
@@ -234,7 +213,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         for file in files:
             filename = os.path.basename(file)
             if not filename in self.FILES_CONTAIN:
-                raise IOError('Invalid file name {}, this should not happen'
+                raise IOError('Invalid file name {}, this should not happen.'
                               .format(filename))
             var_matches = [var for var in vars_to_retrieve if var in
                             self.FILES_CONTAIN[filename]]
@@ -250,7 +229,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 metadata[meta_key]['data_id'] = self.DATA_ID
                 metadata[meta_key]['ts_type'] = self.TS_TYPE
                 metadata[meta_key]['variables'] = station_data["variables"]
-
                 # Is instrumentname
                 if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
                     instr = station_data['instrument_name']
@@ -274,7 +252,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 if (idx + totnum) >= data_obj._ROWNO:
                     # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
-
                 for var_count, var in enumerate(temp_vars):
 
                     values = station_data[var]
@@ -285,7 +262,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         varindex += 1
                         data_obj.var_idx[var] = varindex
                         var_idx = varindex
-                        #print("adding var {} (assigned index: {})".format(var, varindex))
                     else:
                         var_idx = data_obj.var_idx[var]
 
@@ -309,7 +285,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 idx += totnum
                 
         data_obj._data = data_obj._data[:idx]
-        #data_obj.data_revision[self.DATA_ID] = self.data_revision
         self.data = data_obj # initalizing a pointer to it selves
         return data_obj
  
@@ -336,32 +311,31 @@ if __name__ == "__main__":
      from pyaerocom import change_verbosity
      import matplotlib.pyplot as plt
      #change_verbosity('info')
-     V = "sconcso4pr"
+     #V = "concso4pr"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-
-     #so2 = aa.read('sconcso2')
-     #so4_aero = aa.read('sconcso4')
-     ungridded = aa.read(V)#['sconcso4', 'sconcso2']
-     abington = ungridded.to_station_data("Oulanka", V)
-     abington.plot_timeseries(V)
-     
-     #abington2 = dataNone.to_station_data("Oulanka", 'sconcso2')
-     #abington2.plot_timeseries('sconcso2')
-     
+         # todo : 
+     #so2 = aa.read('concso2')
+     #so4_aero = aa.read('concso4')
+     V = ['concso2']
+     ungridded = aa.read(V)
+     names = ungridded.station_name[:10]
+     abington = ungridded.to_station_data('K-puszta', V)
+     abington.plot_timeseries(V[0])
      plt.show()
-     #dataString = aa.read("sconcso4")
+     #plt.show()
+     #dataString = aa.read("concso4")
      #dataString.plot_station_coordinates(markersize=12, color='lime')
      #print(dataString.station_name)
-     #abington = dataString.to_station_data("Abington", 'sconcso4')
-     #abington.plot_timeseries('sconcso4')
+     #abington = dataString.to_station_data("Abington", 'concso4')
+     #abington.plot_timeseries('concso4')
      #plt.show()
      
-     #dataList =  aa.read(["sconcso2","sconcso4"])
+     #dataList =  aa.read(["concso2","concso4"])
      #dataList.plot_station_coordinates(markersize=12, color='red')
      #plt.show()
 
      #sprint(ungridded.metadata[2.0])
-     #when = ungridded.meta_idx[2.0]['sconcso2']
+     #when = ungridded.meta_idx[2.0]['concso2']
      #print(ungridded._data[when[0]:when[-1], ungridded._DATAINDEX])
 
      #dataNone.plot_station_coordinates('wetso4', color='lime')
@@ -372,9 +346,9 @@ if __name__ == "__main__":
      #print(ungridded.metadata[0])
 
 
-     #stat = ungridded.to_station_data('Abington', "sconcso4")
-     #stat.plot_timeseries("sconcso4", ax = ax)
+     #stat = ungridded.to_station_data('Abington', "concso4")
+     #stat.plot_timeseries("concso4", ax = ax)
      #plt.show()
-     #ax = ungridded.plot_station_timeseries('Abington', 'sconcso2')
+     #ax = ungridded.plot_station_timeseries('Abington', 'concso2')
      #ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
 

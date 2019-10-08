@@ -8,6 +8,6 @@ Created on Tue Jun 18 14:44:33 2019
 
 var_groups = {'EBASMC' : [
                 ['scatc550aer', 'scatc550dryaer','absc550aer'],
-                ['sconco3'],
-                ['sconcpm10', 'sconcpm25']]}
+                ['conco3'],
+                ['concpm10', 'concpm25']]}
 

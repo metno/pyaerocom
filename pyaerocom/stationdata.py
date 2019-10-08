@@ -881,7 +881,7 @@ class StationData(StationMetaData):
             return ts_type
         
         if try_infer:
-            const.print_log('Trying to infer ts_type in StationData {} '
+            const.print_log.warning('Trying to infer ts_type in StationData {} '
                             'for variable {}'.format(self.station_name, var_name))
             from pyaerocom.helpers import infer_time_resolution
             try:
@@ -1010,8 +1010,8 @@ class StationData(StationMetaData):
         
         try: 
             from_ts_type = TsType(self.get_var_ts_type(var_name))
-        except MetaDataError:
-            from_ts_type == None
+        except (MetaDataError, TemporalResolutionError):
+            from_ts_type = None
             const.print_log.warning('Failed to access current temporal '
                                     'resolution of {} data in StationData {}. '
                                     'No resampling constraints will be applied'
@@ -1034,6 +1034,7 @@ class StationData(StationMetaData):
                                  apply_constraints=apply_constraints,
                                  min_num_obs=min_num_obs, 
                                  **kwargs)
+
 # =============================================================================
 #         if isinstance(data, pd.Series):
 #             new = resample_timeseries(data, 
@@ -1051,6 +1052,7 @@ class StationData(StationMetaData):
         if inplace:
             self[var_name] = new
             self.var_info[var_name]['ts_type'] = to_ts_type.val
+            self.var_info[var_name].update(resampler.last_setup)
             # there is other variables that are not resampled
             if len(self.var_info) > 1 and self.ts_type is not None:     
                 _tt = self.ts_type
@@ -1356,6 +1358,7 @@ class StationData(StationMetaData):
         if add_overlaps and var_name in self.overlap:
             so = self.overlap[var_name]
             try:
+                from pyaerocom.helpers import resample_timeseries
                 so = resample_timeseries(so, freq, how=resample_how)
             except:
                 pass

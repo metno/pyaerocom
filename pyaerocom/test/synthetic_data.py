@@ -69,11 +69,11 @@ def _make_station_data2():
 
     stat.ec550aer = np.random.random_sample(NUM_DAYS) -.5
     stat.od550aer = np.ones(NUM_DAYS)
-    stat.sconco3 = np.arange(NUM_DAYS)
+    stat.conco3 = np.arange(NUM_DAYS)
     
     stat.var_info['ec550aer'] = {'units' : 'Mm-1'}
     stat.var_info['od550aer'] = {'units' : '1'}
-    stat.var_info['sconco3']  = {'units' : 'ug m-3'}
+    stat.var_info['conco3']  = {'units' : 'ug m-3'}
     
     return stat
 

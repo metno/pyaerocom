@@ -312,8 +312,6 @@ class GriddedData(object):
             self._altitude_access = AltitudeAccess(self)    
         return self._altitude_access
     
-    
-    
     @property
     def delta_t(self):
         """Array containing timedelta values for each time stamp"""
@@ -608,7 +606,7 @@ class GriddedData(object):
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return 'time' in self.dimcoord_names
     
-    def load_input(self, input, var_name=None):
+    def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
         
         Parameters
@@ -618,16 +616,23 @@ class GriddedData(object):
         var_name : :obj:`str`, optional
             variable name that is extracted if `input` is a file path . Irrelevant
             if `input` is preloaded Cube
-            
+        perform_fmt_checks : bool, optional
+            perform formatting checks based on information in filenames
+    
         """
         if isinstance(input, iris.cube.Cube):
             self.grid = input #instance of Cube
             
         elif isinstance(input, str) and os.path.exists(input):
             from pyaerocom.io.iris_io import load_cube_custom
-            self.grid = load_cube_custom(input, var_name)
+            self.grid = load_cube_custom(input, var_name,
+                                         perform_fmt_checks=perform_fmt_checks)
             self.metadata["from_files"].append(input)
-            
+            try:
+                from pyaerocom.io.helpers import get_metadata_from_filename
+                self.update_meta(**get_metadata_from_filename(input))
+            except:
+                logger.warning('Failed to access metadata from filename')
         else:
             raise IOError('Failed to load input: {}'.format(input))
         
@@ -1688,8 +1693,8 @@ class GriddedData(object):
         
         from pyaerocom.plot.mapping import plot_griddeddata_on_map 
         
-        lons = self.longitude.points
-        lats = self.latitude.points
+        lons = self.longitude.contiguous_bounds()
+        lats = self.latitude.contiguous_bounds()
         
         fig = plot_griddeddata_on_map(data=data.grid.data, lons=lons, 
                                       lats=lats, 
@@ -1698,25 +1703,28 @@ class GriddedData(object):
                                       xlim=xlim, ylim=ylim, 
                                       **kwargs)
         
-        
-        
         fig.axes[0].set_title("{} ({}, {})".format(self.data_id, 
                               self.var_name, tstr))
         if add_mean:
             from pyaerocom.plot.config import COLOR_THEME
             
             ax = fig.axes[0]
-            mean = data.area_weighted_mean()
+            try:
+                mean = data.area_weighted_mean()
+                mustr = 'Mean={:.2f}'.format(mean)
+                u = str(self.units)
+                if not u=='1':
+                    mustr += ' [{}]'.format(u)
+                ax.text(0.02, 0.02, mustr,
+                        color=COLOR_THEME.color_map_text, 
+                        transform=ax.transAxes,
+                        fontsize=22,
+                        bbox=dict(facecolor='#ffffff', edgecolor='none', 
+                                  alpha=0.65))
+            except Exception as e:
+                print_log.warning('Failed to compute / add area weighted mean. '
+                                  'Reason: {}'.format(repr(e)))
             
-            mustr = r'$\tau_{{AW}}$={:.2f}'.format(mean)
-            u = str(self.units)
-            if not u=='1':
-                mustr += ' [{}]'.format(u)
-            ax.text(0.02, 0.02, mustr,
-                    color=COLOR_THEME.color_map_text, 
-                    transform=ax.transAxes,
-                    fontsize=22,
-                    bbox=dict(facecolor='#ffffff', edgecolor='none', alpha=0.65))
         return fig
     
     def min(self):
@@ -1821,7 +1829,7 @@ class GriddedData(object):
             try:
                 from pyaerocom.io.iris_io import load_cube_custom
                 cube = load_cube_custom(file, var_name=var_name,
-                                        perform_checks=False)
+                                        perform__fmt_checks=False)
                 return GriddedData(cube, from_files=file)
             except:
                 pass
@@ -1834,6 +1842,7 @@ class GriddedData(object):
         raise VariableNotFoundError('Could not find variable {}'.format(var_name))
     
     def update_meta(self, **kwargs):
+        """Update metadata dictionary"""
         for key, val in kwargs.items():
             self._grid.attributes[key] = val
             

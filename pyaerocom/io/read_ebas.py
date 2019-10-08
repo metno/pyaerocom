@@ -1033,7 +1033,8 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
         
         if self.keep_aux_vars:
-            vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+            (vars_to_read, 
+             vars_to_compute) = self.check_vars_to_retrieve(vars_to_retrieve)
             for var in vars_to_read:
                 if not var in vars_to_retrieve:
                     vars_to_retrieve.append(var)
@@ -1196,15 +1197,14 @@ class ReadEbas(ReadUngriddedBase):
                                
                 # write data to data object
                 data_obj._data[start:stop, data_obj._TIMEINDEX] = times
-                try:
-                    data_obj._data[start:stop, data_obj._DATAINDEX] = values
-                except:
-                    print()
+
+                data_obj._data[start:stop, data_obj._DATAINDEX] = values
+
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
                 if var in station_data.data_flagged:
-                    valid = station_data.data_flagged[var]
-                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = valid
+                    invalid = station_data.data_flagged[var]
+                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = invalid
                 if var in station_data.data_err:
                     errs = station_data.data_err[var]
                     data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
@@ -1235,13 +1235,7 @@ if __name__=="__main__":
 
     r = ReadEbas()
     
-    #data =  r.read(['ang4470dryaer'])
-    
-    data =  r.read(['conceqbc'])
-    
-    ax = data.plot_station_coordinates(var_name='conceqbc', markersize=100)
-    ax = data.plot_station_coordinates(var_name='conceqbc', start=2010, color='lime', markersize=50, ax=ax)
-    
+
     
 
     

@@ -14,7 +14,7 @@ def test_load_berlin():
     dataset = ReadAeronetInvV3()
     files = dataset.find_in_file_list('*Berlin*')
     assert len(files) == 1
-    assert os.path.basename(files[0]) == '19930101_20190330_Berlin_FUB.all'
+    assert os.path.basename(files[0]) == '19930101_20190914_Berlin_FUB.all'
     data = dataset.read_file(files[0],
                              vars_to_retrieve=['abs550aer'])
     

@@ -696,6 +696,10 @@ class Config(object):
             self._ebas_flag_info = read_ebas_flags_file(self.EBAS_FLAGS_FILE)
         return self._ebas_flag_info
     
+    def load_default_config(self):
+        """Read AeroCom default config file"""
+        self.read_config(self._config_files['metno'])
+        
     def read_config(self, config_file, keep_basedirs=True):
         """Read and import form paths.ini"""
         if not os.path.isfile(config_file):

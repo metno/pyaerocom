@@ -41,6 +41,12 @@ def _print_read_info(i, mod, tot_num, last_t, name, logger):
                         (t-last_t).seconds))
     return t
 
+def get_metadata_from_filename(filename):
+    """Try access metadata information from filename"""
+    from pyaerocom.io.fileconventions import FileConventionRead
+    fc = FileConventionRead().from_file(filename)
+    return fc.get_info_from_file(filename)
+    
 def read_ebas_flags_file(ebas_flags_csv):
     """Reads file ebas_flags.csv
     
