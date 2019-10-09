@@ -7,11 +7,9 @@ import numpy as np
 import simplejson
 
 # internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
-                                         sort_dict_by_name)
+from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
 from pyaerocom import __version__ as pyaerocom_version
-from pyaerocom.helpers import resample_time_dataarray
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.region import (get_all_default_region_ids, 
                               find_closest_region_coord,
