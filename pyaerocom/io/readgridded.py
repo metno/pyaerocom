@@ -43,8 +43,8 @@ import iris
 from pyaerocom import const, print_log, logger
 from pyaerocom.variable import Variable, is_3d
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
-                                         add_cubes,
-                                         multiply_cubes)
+                                         multiply_cubes,
+                                         subtract_cubes)
 from pyaerocom.helpers import to_pandas_timestamp, get_highest_resolution
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
@@ -126,14 +126,14 @@ class ReadGridded(object):
         
     """
     AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
-                    'od550gt1aer'   : ['od550dust', 'od550ss'],
+                    'od550gt1aer'   : ['od550aer', 'od550lt1aer'],
                     'conc*'        : ['mmr*', 'rho']}
     
     AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
                     'od870aer'  :   ['od865aer']}
     
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
-                'od550gt1aer'  :    add_cubes,
+                'od550gt1aer'  :    subtract_cubes,
                 'conc*'        :    multiply_cubes}
     
     _data_dir = ""
@@ -238,7 +238,7 @@ class ReadGridded(object):
         self._aux_avail = []
         for aux_var in self.AUX_REQUIRES.keys():
             try:
-                self._get_aux_vars(aux_var)
+                self._get_aux_vars_and_fun(aux_var)
                 if not aux_var in v:
                     v.append(aux_var)
                 self._aux_avail.append(aux_var)
@@ -246,7 +246,7 @@ class ReadGridded(object):
                 pass
         for aux_var in self._aux_requires.keys():
             try:
-                self._get_aux_vars(aux_var)
+                self._get_aux_vars_and_fun(aux_var)
                 if not aux_var in v:
                     v.append(aux_var)
                 self._aux_avail.append(aux_var)
@@ -747,7 +747,7 @@ class ReadGridded(object):
             if var_to_compute in result:
                 continue
             try:
-                vars_to_read = self._get_aux_vars(var_to_compute)
+                vars_to_read = self._get_aux_vars_and_fun(var_to_compute)[0]
             except VarNotAvailableError:
                 pass
             else:
@@ -804,32 +804,80 @@ class ReadGridded(object):
         """        
         return concatenate_iris_cubes(cubes, error_on_mismatch=True)
     
-    def _get_aux_fun(self, var_to_compute):
-        """Get method used to compute input variable
-        
-        Parameters
-        ----------
-        var_to_compute : str
-            variable to be computed
-        
-        Returns
-        -------
-        callable
-            method that is used to compute variable
-        
-        Raises
-        ------
-        AttributeError
-            if no function is defined for that variable name
-        """
-        if var_to_compute in self.AUX_FUNS:
-            return self.AUX_FUNS[var_to_compute]
-        elif var_to_compute in self._aux_funs:
-            return self._aux_funs[var_to_compute]
-        raise AttributeError('No method found for computation of {}'
-                             .format(var_to_compute))
-        
-    def _get_aux_vars(self, var_to_compute):
+# =============================================================================
+#     def _get_aux_fun(self, var_to_compute):
+#         """Get method used to compute input variable
+#         
+#         Parameters
+#         ----------
+#         var_to_compute : str
+#             variable to be computed
+#         
+#         Returns
+#         -------
+#         callable
+#             method that is used to compute variable
+#         
+#         Raises
+#         ------
+#         AttributeError
+#             if no function is defined for that variable name
+#         """
+#         if var_to_compute in self.AUX_FUNS:
+#             return self.AUX_FUNS[var_to_compute]
+#         elif var_to_compute in self._aux_funs:
+#             return self._aux_funs[var_to_compute]
+#         raise AttributeError('No method found for computation of {}'
+#                              .format(var_to_compute))
+#         
+#     def _get_aux_vars(self, var_to_compute):
+#         """Helper that searches auxiliary variables for computation of input var
+#         
+#         Parameters
+#         ----------
+#         var_to_compute : str
+#             one of the auxiliary variables that is supported by this interface
+#             (cf. :attr:`AUX_REQUIRES`)
+#         
+#         Returns 
+#         -------
+#         list
+#             list of variables that are used as input for computation method 
+#             of input variable (cf. :attr:`AUX_FUNS`)
+#             
+#         Raises 
+#         ------
+#         VarNotAvailableError
+#             if one of the required variables for computation is not available 
+#             in the data
+#         """
+#         if var_to_compute in self._aux_requires:
+#             vars_req = self._aux_requires[var_to_compute]
+#         elif var_to_compute in self.AUX_REQUIRES:
+#             vars_req = self.AUX_REQUIRES[var_to_compute]
+#         
+#         vars_to_read = []
+#         for var in vars_req:
+#             found = 0
+#             if var in self.vars:
+#                 found = 1
+#                 vars_to_read.append(var)
+#             elif var in self.AUX_ALT_VARS:
+#                 for alt_var in list(self.AUX_ALT_VARS[var]):
+#                     if alt_var in self.vars:
+#                         found = 1
+#                         vars_to_read.append(alt_var)
+#                         break
+#             if not found:
+#                 raise VarNotAvailableError('Cannot compute {}, since {} '
+#                                            '(req. for computation) is not '
+#                                            'available in data'
+#                                            .format(var_to_compute, 
+#                                                    var))
+#         return vars_to_read
+# =============================================================================
+    
+    def _get_aux_vars_and_fun(self, var_to_compute):
         """Helper that searches auxiliary variables for computation of input var
         
         Parameters
@@ -850,10 +898,14 @@ class ReadGridded(object):
             if one of the required variables for computation is not available 
             in the data
         """
-        if var_to_compute in self._aux_requires:
+        if (var_to_compute in self._aux_requires and 
+            var_to_compute in self._aux_funs):
             vars_req = self._aux_requires[var_to_compute]
-        elif var_to_compute in self.AUX_REQUIRES:
+            fun = self._aux_funs[var_to_compute]
+        elif (var_to_compute in self.AUX_REQUIRES and 
+              var_to_compute in self.AUX_FUNS):
             vars_req = self.AUX_REQUIRES[var_to_compute]
+            fun = self.AUX_FUNS[var_to_compute]
         
         vars_to_read = []
         for var in vars_req:
@@ -873,8 +925,8 @@ class ReadGridded(object):
                                            'available in data'
                                            .format(var_to_compute, 
                                                    var))
-        return vars_to_read
-                
+        return (vars_to_read, fun)
+    
     def compute_var(self, var_name, start=None, stop=None, ts_type=None, 
                     experiment=None, vert_which=None, flex_ts_type=True, 
                     prefer_longer=False, vars_to_read=None, aux_fun=None, 
@@ -920,10 +972,10 @@ class ReadGridded(object):
         GriddedData
             loaded data object
         """
-        if vars_to_read is None:
-            vars_to_read = self._get_aux_vars(var_name)
-        if aux_fun is None:
-            aux_fun = self._get_aux_fun(var_name)
+        if vars_to_read is not None:
+            self.add_aux_compute(var_name, vars_to_read, aux_fun)
+        vars_to_read, aux_fun = self._get_aux_vars_and_fun(var_name)
+        
         data = []
         # all variables that are required need to be in the same temporal
         # resolution
@@ -1225,22 +1277,25 @@ class ReadGridded(object):
                 
         #ts_type = self._check_ts_type(ts_type)
         var_to_read = None
-        if var_name in self.vars:
-            var_to_read = var_name  
-        else:
-            # e.g. user asks for od550aer but files contain only 3d var od5503daer
-            #if not var_to_read in self.vars: 
-            for var in self._vars_3d:
-                if Variable(var).var_name == var_name:
-                    var_to_read = var
-            if var_to_read is None:
-                for alias in const.VARS[var_name].aliases:
-                    if alias in self.vars:
-                        const.print_log.info('Did not find {} field, loading '
-                                             '{} instead'.format(var_name,
-                                              alias))
-                        var_to_read = alias
-    
+        do_compute = (var_name in self._aux_requires and 
+                      self.check_compute_var(var_name))
+        if not do_compute:
+            if var_name in self.vars:
+                var_to_read = var_name  
+            else:
+                # e.g. user asks for od550aer but files contain only 3d var od5503daer
+                #if not var_to_read in self.vars: 
+                for var in self._vars_3d:
+                    if Variable(var).var_name == var_name:
+                        var_to_read = var
+                if var_to_read is None:
+                    for alias in const.VARS[var_name].aliases:
+                        if alias in self.vars:
+                            const.print_log.info('Did not find {} field, loading '
+                                                 '{} instead'.format(var_name,
+                                                  alias))
+                            var_to_read = alias
+        
         if isinstance(vert_which, dict):
             try:
                 vert_which = vert_which[var_name]
@@ -1733,8 +1788,17 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    data = ReadGridded('TM5_AP3-CTRL2019').read_var('od550aer')
+    r = ReadGridded('CAM6-Oslo_NHIST_f19_tn14_20190710_2010')
     
-    data.quickplot_map()
+    data0 = r.read_var('od550gt1aer')
+    
+    fun = pya.io.aux_read_cubes.add_cubes
+    
+    data1 = r.read_var('od550gt1aer', aux_vars=['od550dust', 'od550ss'],
+                       aux_fun=fun)
+    
+    
+    data0.quickplot_map()
+    data1.quickplot_map()
     
     
