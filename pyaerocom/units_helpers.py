@@ -186,7 +186,7 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
                                                              to_unit)
         data = np.divide(data, pre_conv_fac)
     
-    conv_fac = unit_conversion_fac(to_unit, from _unit)
+    conv_fac = unit_conversion_fac(to_unit, from_unit)
     if conv_fac != 1:
         data = np.divide(data, conv_fac)
     return data
