@@ -24,7 +24,9 @@ setup(
                      'pyaerocom.plot',
                      'pyaerocom.web',
                      'pyaerocom.interactive',
-                     'pyaerocom.web.cli'],
+                     'pyaerocom.web.cli',
+                     'pyaerocom.test',
+                     'pyaerocom.io.test'],
     #include_package_data = True,            
     package_data=   {'pyaerocom'    :   ['data/*']},
 
