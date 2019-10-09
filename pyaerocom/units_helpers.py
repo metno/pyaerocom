@@ -157,6 +157,40 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
         data *= conv_fac
     return data
 
+
+def convert_unit_back(data, from_unit, to_unit, var_name=None):
+    """Convert unit of data 
+    
+    Parameters
+    ----------
+    data : np.ndarray or similar
+        input data
+    from_unit : cf_units.Unit or str
+        current unit of input data
+    to_unit : cf_units.Unit or str
+        new unit of input data
+    var_name : str, optional
+        name of variable. If provided, method 
+        :func:`unit_conversion_fac_custom` is called before the standard unit
+        conversion is applied. That requires that `var_name` is specified in
+        :attr:`pyaerocom.molmasses.CONV_MUL_FACS`.
+    
+    Returns
+    -------
+    data
+        data in new unit
+    
+    """
+    if var_name in UCONV_MUL_FACS.index:
+        from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name, 
+                                                             to_unit)
+        data = np.divide(data, pre_conv_fac)
+    
+    conv_fac = unit_conversion_fac(to_unit, from _unit)
+    if conv_fac != 1:
+        data = np.divide(data, conv_fac)
+    return data
+
 if __name__ == '__main__':
     df = UCONV_MUL_FACS
     print(df)
