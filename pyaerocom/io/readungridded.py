@@ -148,10 +148,17 @@ class ReadUngridded(object):
             datasets = [datasets]
         elif not isinstance(datasets, (tuple, list)):
             raise IOError('Invalid input for parameter datasets_to_read')
+        avail = []
         for ds in datasets:
-            self.find_read_class(ds)
-            
-        self._datasets_to_read = datasets    
+            try:
+                self.find_read_class(ds)
+                avail.append(ds)
+            except NetworkNotSupported:
+                print_log.warning('Removing {} from list of datasets to read '
+                                  'in ReadUngridded class. Reason: network '
+                                  'not supported or data is not available'
+                                  .format(ds))
+        self._datasets_to_read = avail    
     
     def dataset_provides_variables(self, dataset_to_read=None):
         """List of variables provided by a certain dataset"""
@@ -221,7 +228,8 @@ class ReadUngridded(object):
         if dataset_to_read in self._readers:
             return self._readers[dataset_to_read]
         if not dataset_to_read in const.OBS_IDS:
-            raise NetworkNotSupported("Network {} is not supported"
+            raise NetworkNotSupported("Network {} is not supported or data is "
+                                      "not available on this machine"
                                       .format(dataset_to_read))
         for cls in self.SUPPORTED:
             if dataset_to_read in cls.SUPPORTED_DATASETS:

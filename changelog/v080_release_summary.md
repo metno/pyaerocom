@@ -8,6 +8,7 @@ This release comprises major improvements, changes and many new features compare
     - `TrendsEvaluation` for data displayed at https://aerocom-trends.met.no/
 
 - Gridded reading (`ReadGridded` class and methods used therein)
+  - og550gtaer is now primarily computed via od550aer-od550lt1aer and if this is not possible, via od550dust+od550ss
   - easy file filtering for all attributes accessible via filename (e.g. model, variable, year, vertical type)
   - option to compute variables during runtime for custom methods
   - Clean up of outdated methods
