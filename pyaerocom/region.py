@@ -355,7 +355,7 @@ if __name__=="__main__":
     r = Region()
     r.import_default("EUROPE")
         
-    all_ids = get_all_default_region_ids()
+    all_ids = get_all_default_region_ids(True)
     
     lat, lon = 89, 30
     reg = find_closest_region_coord(lat, lon)
