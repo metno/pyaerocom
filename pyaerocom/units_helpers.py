@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-
 Molecular masses and units (for conversion of species)
-
-Created on Mon Sep  2 08:47:56 2019
+Created on Mon Sep 2 08:47:56 2019
 
 @author: jonasg
 """
@@ -13,7 +11,6 @@ import cf_units
 from pyaerocom.helpers import TS_TYPE_SECS
 
 # 1. DEFINITION OF MOLAR MASSES
-
 
 # Atoms
 M_O = 15.999 # g/mol

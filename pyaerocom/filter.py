@@ -192,10 +192,15 @@ class Filter(BrowseDict):
     
     
 if __name__=="__main__":
-    f = Filter('EUROPE-wMOUNTAINS')
+    f = Filter('PANhtap-wMOUNTAINS')
     print(f)
-    f.set_region('NAMERICA')
+    f.set_region('PANhtap')
     print(f)  
     f.set_altitude_filter('noMOUNTAINS')     
     print(f.to_dict())
+    all_regions = pya.region.all()
     
+    for region in all_regions:
+        r = pya.Region(region)
+        lon = r.lon_range
+        lat = r.lat_range
