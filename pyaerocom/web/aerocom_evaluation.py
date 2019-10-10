@@ -162,8 +162,8 @@ class AerocomEvaluation(object):
             'raise_exceptions'    : 'Raise exceptions if they occur'
     }
                           
-    def __init__(self, proj_id=None, exp_id=None, config_dir=None,
-                 **settings):
+    def __init__(self, proj_id=None, exp_id=None, config_dir=None, 
+                 try_load_json=True, **settings):
         
         self._log = const.print_log
         
@@ -205,7 +205,7 @@ class AerocomEvaluation(object):
         self.var_order_menu = []
         
         self._valid_obs_vars = {}
-        if proj_id is not None:
+        if try_load_json and proj_id is not None:
             try:
                 self.load_config(self.proj_id, self.exp_id, config_dir)
                 const.print_log.warn('Found and imported config file for {} / {}'
