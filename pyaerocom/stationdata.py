@@ -1423,13 +1423,19 @@ class StationData(StationMetaData):
         return s
     
 if __name__=="__main__":
+    import pyaerocom as pya
+    import matplotlib.pyplot as plt
     
-    s = StationData(station_name='Bla', revision_date='20, 21')
-    s2 = StationData(station_name='Bla', revision_date='21, 22, 23',
-                     latitude=30, longitude=10, altitude=400)
+    plt.close('all')
+    data0 = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    print(s)
-    s.merge_meta_same_station(s2)
-    print(s2)
-    print(s)
+    sv = data0.to_station_data('Solar*')
+    sv.plot_timeseries('od550aer', 'yearly')
+    
+    data = pya.io.ReadUngridded().read('EBASMC', 'concoc')
+    
+    birkenes = data.to_station_data('Birken*')
+    
+    ax = birkenes.plot_timeseries('concoc')
+    ax = birkenes.plot_timeseries('concoc', 'yearly', ax=ax)
     
