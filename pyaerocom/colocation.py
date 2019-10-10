@@ -27,11 +27,13 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              vert_scheme=None, harmonise_units=True,
                              regrid_scheme='areaweighted', 
                              var_outlier_ranges=None,
+                             var_ref_outlier_ranges=None,
                              update_baseyear_gridded=None,
-                             colocate_time=False,
                              apply_time_resampling_constraints=None,
                              min_num_obs=None,
+                             colocate_time=False,
                              var_keep_outliers=True,
+                             var_ref_keep_outliers=False, 
                              **kwargs):
     """Colocate 2 gridded data objects
     
@@ -75,13 +77,15 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     harmonise_units : bool
         if True, units are attempted to be harmonised (note: raises Exception
         if True and units cannot be harmonised).
-    var_ref : :obj:`str`, optional
-        variable against which data in :attr:`gridded_data` is supposed to be
-        compared. If None, then the same variable is used 
-        (i.e. `gridded_data.var_name`).
+    regrid_scheme : str
+        iris scheme used for regridding (defaults to area weighted regridding)
     var_outlier_ranges : :obj:`dict`, optional
-        dictionary specifying outlier ranges for individual variables. 
-        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
+        dictionary specifying outlier ranges for dataset to be analysed
+        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4])). If None, then
+        the pyaerocom default outlier ranges are used for the input variable.
+        Defaults to None.
+    var_ref_outlier_ranges : dict, optional
+        like `var_outlier_ranges` but for reference dataset.
     update_baseyear_gridded : int, optional
         optional input that can be set in order to redefine the time dimension
         in the gridded data object to be analysed. E.g., if the data object 
@@ -89,10 +93,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         time dimension to a value other than the specified input start / stop 
         time this may be used to update the time in order to make colocation 
         possible.
-    colocate_time : bool
-        if True and if original time resolution of data is higher than desired
-        time resolution (`ts_type`), then both datasets are colocated in time 
-        *before* resampling to lower resolution. 
     apply_time_resampling_constraints : bool, optional
         if True, then time resampling constraints are applied as provided via 
         :attr:`min_num_obs` or if that one is unspecified, as defined in
@@ -101,11 +101,18 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         (which defaults to True !!).
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
+    colocate_time : bool
+        if True and if original time resolution of data is higher than desired
+        time resolution (`ts_type`), then both datasets are colocated in time 
+        *before* resampling to lower resolution. 
     var_keep_outliers : bool
         if True, then no outliers will be removed from dataset to be analysed, 
         even if `remove_outliers` is True. That is because for model evaluation
         often only outliers are supposed to be removed in the observations but
         not in the model.
+    var_ref_keep_outliers : bool
+        if True, then no outliers will be removed from the reference dataset, 
+        even if `remove_outliers` is True.
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
@@ -121,8 +128,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                   'for gridded / gridded colocation...')
     if ts_type is None:
         ts_type = 'monthly'
+    
     if var_outlier_ranges is None:
         var_outlier_ranges = {}
+    if var_ref_outlier_ranges is None:
+        var_ref_outlier_ranges = {}
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
     if gridded_data.var_info.has_unit:
@@ -140,8 +150,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         low, high, low_ref, high_ref = None, None, None, None    
         if var in var_outlier_ranges:
             low, high = var_outlier_ranges[var]
-        if var_ref in var_outlier_ranges:
-            low_ref, high_ref = var_outlier_ranges[var_ref]
+        if var_ref in var_ref_outlier_ranges:
+            low_ref, high_ref = var_ref_outlier_ranges[var_ref]
     
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
@@ -238,7 +248,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if remove_outliers:
         if not var_keep_outliers:
             gridded_data.remove_outliers(low, high)
-        gridded_data_ref.remove_outliers(low_ref, high_ref)
+        if not var_ref_keep_outliers:
+            gridded_data_ref.remove_outliers(low_ref, high_ref)
+            
     data = gridded_data.grid.data
     if isinstance(data, np.ma.core.MaskedArray):
         data = data.filled(np.nan)
@@ -278,13 +290,16 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                start=None, stop=None, filter_name=None,
                                regrid_res_deg=None, remove_outliers=True,
                                vert_scheme=None, harmonise_units=True, 
-                               var_ref=None, var_outlier_ranges=None, 
+                               var_ref=None, 
+                               var_outlier_ranges=None, 
+                               var_ref_outlier_ranges=None,
                                update_baseyear_gridded=None,
                                ignore_station_names=None,
                                apply_time_resampling_constraints=None,
                                min_num_obs=None,
                                colocate_time=False,
                                var_keep_outliers=True,
+                               var_ref_keep_outliers=False, 
                                **kwargs):
     """Colocate gridded with ungridded data 
     
@@ -299,8 +314,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded data (e.g. model results)
     ungridded_data : UngriddedData
         ungridded data (e.g. observations)
-    var_name : str
-        variable to be colocated
     ts_type : str
         desired temporal resolution of colocated data (must be valid AeroCom
         ts_type str such as daily, monthly, yearly.). The colocation itself is
@@ -337,11 +350,15 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         variable against which data in :attr:`gridded_data` is supposed to be
         compared. If None, then the same variable is used 
         (i.e. `gridded_data.var_name`).
-    var_outlier_ranges : :obj:`dict`, optional
-        dictionary specifying outlier ranges for individual variables. 
-        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
+    var_outlier_ranges : dict, optional
+        dictionary specifying outlier ranges for dataset to be analysed
+        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4])). If None, then
+        the pyaerocom default outlier ranges are used for the input variable.
+        Defaults to None.
+    var_ref_outlier_ranges : dict, optional
+        like `var_outlier_ranges` but for reference dataset.
     update_baseyear_gridded : int, optional
-        optional input that can be set in order to redefine the time dimension
+        optional input that can be set in order to re-define the time dimension
         in the gridded data object to be analysed. E.g., if the data object 
         is a climatology (one year of data) that has set the base year of the
         time dimension to a value other than the specified input start / stop 
@@ -367,6 +384,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         even if `remove_outliers` is True. That is because for model evaluation
         often only outliers are supposed to be removed in the observations but
         not in the model.
+    var_ref_keep_outliers : bool
+        if True, then no outliers will be removed from the reference dataset, 
+        even if `remove_outliers` is True.
     **kwargs
         additional keyword args (passed to 
         :func:`UngriddedData.to_station_data_all`)
@@ -391,8 +411,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     """
     if var_outlier_ranges is None:
         var_outlier_ranges = {}
+    if var_ref_outlier_ranges is None:
+        var_ref_outlier_ranges = {}
+        
     if filter_name is None:
         filter_name = 'WORLD-wMOUNTAINS'
+    
     var = gridded_data.var_name
     aerocom_var = gridded_data.var_name_aerocom
     if var_ref is None:
@@ -402,8 +426,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         low, high, low_ref, high_ref = None, None, None, None    
         if var in var_outlier_ranges:
             low, high = var_outlier_ranges[var]
-        if var_ref in var_outlier_ranges:
-            low_ref, high_ref = var_outlier_ranges[var_ref]
+        if var_ref in var_ref_outlier_ranges:
+            low_ref, high_ref = var_ref_outlier_ranges[var_ref]
             
     if not var_ref in ungridded_data.contains_vars:
         raise VarNotAvailableError('Variable {} is not available in ungridded '
@@ -483,7 +507,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     # pandas frequency string that corresponds to col_ts_type
     col_freq = TS_TYPE_TO_PANDAS_FREQ[col_ts_type]
     
-    if remove_outliers:
+    if remove_outliers and not var_ref_keep_outliers:
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref, 
                                        high=high_ref)
@@ -655,7 +679,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'stations_ignored'  :   ignore_station_names,
             'colocate_time'     :   colocate_time,
             'apply_constraints' :   apply_time_resampling_constraints,
-            'min_num_obs'       :   min_num_obs}
+            'min_num_obs'       :   min_num_obs,
+            'outliers_removed'  :   remove_outliers}
 
     
     meta.update(regfilter.to_dict())
@@ -689,7 +714,8 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
     
-    obsdata = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
+    obsdata = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', 
+                                start=2010)
     
     
     modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
