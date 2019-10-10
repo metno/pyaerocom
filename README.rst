@@ -1,7 +1,7 @@
 NEWS
 ====
 
-- **October 2019**: Release of version 0.8.0
+- **October 2019**: Release of version 0.8.0 (available via *conda-forge* and *PyPi*)
 - **April 2019**: AeroCom has a new web : We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments (in parallel with the IDL processing displayed in the Phase 2 interface). The new online interface can be found at: `https://aerocom-evaluation.met.no <https://aerocom-evaluation.met.no/>`__.
 
 About
@@ -62,12 +62,12 @@ http://aerocom.met.no/pyaerocom
 Requirements
 ============
 
-Please see file `pyaerocom_env.yml <https://github.com/metno/pyaerocom/blob/master/pyaerocom_env.yml>`__ in the toplevel directory for a list of all requirements.
+A list of all requirements is provided in file `pyaerocom_env.yml <https://github.com/metno/pyaerocom/blob/master/pyaerocom_env.yml>`__.
 
 Installing all requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**NOTE**: if you install pyaerocom via the latest conda-forge release, you can skip this section, as conda takes care of installing all requirements.
+**NOTE:** You can skip this section if you install the latest *conda-forge* release (more infos below under *Installation*).
 
 We recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.7 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
 
@@ -79,7 +79,7 @@ This will create a new conda environment called *pya* which can be activated usi
 
 	conda activate pya
 
-Alternatively, you can include the requirements into an existing environment. First, activate the existing environment, and then install the dependencies using:
+Alternatively, you can include the requirements into an existing environment. First, activate the existing environment, and then install the dependencies using::
 
 	conda env update -f=pyaerocom_env.yml
 
@@ -98,13 +98,17 @@ Option 1: Installation using conda install
 
 If you use *conda* as a package manager, the easiest way to install pyaerocom (and all requirements, see previous section) is to use the build provided in the *nordicesmhub* conda channel::
 
-	conda install -c nordicesmhub -c conda-forge pyaerocom
+	conda install -c conda-forge pyaerocom
 
 This will install the latest release of pyaerocom including all requirements. Alternatively, you may install from source as described in the following.
 
 **NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
 
-Option 2: Installing from source
+Option 2: Install latest release via PyPi
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Option 3: Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you use the *conda* packages manager, please make sure to `activate the environment <https://conda.io/docs/user-guide/tasks/manage-environments.html#activating-an-environment>`__ you want to install pyaerocom into. For more information about conda environments, `see here <https://conda.io/docs/user-guide/tasks/manage-environments.html>`__.
