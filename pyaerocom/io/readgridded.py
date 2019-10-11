@@ -108,12 +108,10 @@ class ReadGridded(object):
     ----------
     data_id : str
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
-    start : :obj:`pandas.Timestamp` or :obj:`str`, optional
-        desired start time of dataset (note, that strings are passed to 
-        :class:`pandas.Timestamp` without further checking)
-    stop : :obj:`pandas.Timestamp` or :obj:`str`, optional
-        desired stop time of dataset (note, that strings are passed to 
-        :class:`pandas.Timestamp` without further checking)
+    data_dir : str, optional
+        directory containing data files. If provided, only this directory is
+        considered for data files, else the input `data_id` is used to search 
+        for the corresponding directory.
     file_convention : str
         string ID specifying the file convention of this model (cf. 
         installation file `file_conventions.ini <https://github.com/metno/
@@ -140,7 +138,7 @@ class ReadGridded(object):
     
     VERT_ALT = {'Surface' : 'ModelLevel'}
 
-    def __init__(self, data_id="", file_convention="aerocom3", init=True):
+    def __init__(self, data_id="", data_dir=None, file_convention="aerocom3", init=True):
     
         if not isinstance(data_id, str):
             if isinstance(data_id, list):
@@ -151,6 +149,8 @@ class ReadGridded(object):
                        %type(data_id))
             raise TypeError(msg)
         
+        self._data_dir = None
+        
         #: data_id of gridded dataset        
         self.data_id = data_id
         
@@ -158,6 +158,9 @@ class ReadGridded(object):
         
         #: Dictionary containing loaded results for different variables
         self.data = od()
+        
+        #: Cube lists for each loaded variable
+        self.loaded_cubes = od()
         
         # file naming convention. Default is aerocom3 file convention, change 
         # using self.file_convention.import_default("aerocom2"). Is 
@@ -171,8 +174,7 @@ class ReadGridded(object):
         self._vars_2d = []
         self._vars_3d = []
         
-        #: Cube lists for each loaded variable
-        self.loaded_cubes = od()
+        
         
         #: This object can be used to 
         self.browser = AerocomBrowser()
@@ -185,11 +187,37 @@ class ReadGridded(object):
         self._aux_funs = {}
         
         self.ignore_vert_code = False
-        if init and data_id:
+        if data_dir is not None:
+            self.data_dir = data_dir
+        elif data_id:
             self.search_data_dir()
-            self.search_all_files()
-     
+        if self.data_dir is not None:
+            try:
+                self.search_all_files()
+            except DataCoverageError as e:
+                print_log.warning(repr(e))
+
+    def reinit(self):
+        """Reinit everything that is loaded specific to data_dir"""
+        self.file_info = None
+        self._vars_2d = []
+        self._vars_3d =[]
+        self.loaded_cubes = od()
+        self.data = od()
+        
+    @property
+    def data_dir(self):
+        """Directory of data files"""
+        return self._data_dir
     
+    @data_dir.setter
+    def data_dir(self, val):
+        if not isinstance(val, str) or not os.path.isdir(val):
+            raise FileNotFoundError('Input data directory {} does not exist'
+                                    .format(val))
+        self._data_dir = val
+        self.reinit() 
+            
     @property
     def years_avail(self):
         """Available years"""
@@ -259,22 +287,6 @@ class ReadGridded(object):
             if not var in v:
                 v.append(var)
         return v
-    
-    @property
-    def data_dir(self):
-        """Model directory"""
-        dirloc = self._data_dir
-        if not os.path.isdir(dirloc):
-            raise IOError("Model directory for ID %s not available or does "
-                          "not exist" %self.data_id)
-        return dirloc
-    
-    @data_dir.setter
-    def data_dir(self, value):
-        if isinstance(value, str) and os.path.isdir(value):
-            self._data_dir = value
-        else:
-            raise ValueError("Could not set directory: %s" %value)
     
     @property
     def file_type(self):
@@ -425,6 +437,31 @@ class ReadGridded(object):
                 meteo = sspl[-1]
         return (name, meteo, experiment)
     
+    def _update_file_convention(self, files):
+        """Update current file convention based on input files
+        
+        Loops over all files in input list and as updates the file convention
+        based on the first file in list that matches one of the registered 
+        conventions.
+        
+        Updates class :attr:`file_convention`
+        
+        Raises
+        ------
+        FileNotFoundError
+            if none of the input files matches a registered convention.
+        """
+        for file in files:
+            try:
+                self.file_convention.from_file(os.path.basename(file))
+                return
+            except:
+                pass
+        
+        raise FileNotFoundError('None of the available files in {} matches a '
+                                'registered pyaerocom file convention'
+                                .format(self.data_dir))
+        
     def search_all_files(self, update_file_convention=True):
         """Search all valid model files for this model
         
@@ -446,33 +483,30 @@ class ReadGridded(object):
             
         Raises
         ------
-        IOError
-            if none of the files in the data directory follows either of the 
-            available naming conventions (cf. data file *fileconventions.ini*)
+        DataCoverageError
+            if no valid files could be found
         """
         result = []
         files_ignored = []
         # get all netcdf files in folder
         nc_files = glob(self.data_dir + '/*{}'.format(self.file_type))
+        if len(nc_files) == 0:
+            print_log.warning('No files of type {} could be found in current '
+                              'data_dir={}'.format(self.file_type, 
+                                        os.path.abspath(self.data_dir)))
+            return
+        
         if update_file_convention:
             # Check if the found file has a naming according the aerocom conventions
             # and set the convention for all files (maybe this need to be 
             # updated in case there can be more than one file naming convention
             # within one model directory)
-            ok = False
-            for file in nc_files:
-                try:
-                    self.file_convention.from_file(os.path.basename(file))
-                    ok = True
-                    break
-                except:
-                    pass
-            if not ok:
-                raise IOError("Failed to identify file naming convention "
-                              "from files in model directory for model "
-                              "%s\ndata_dir: %s"
-                              %(self.data_id, self.data_dir))
-        
+            try:
+                self._update_file_convention(nc_files)
+            except FileNotFoundError as e:
+                print_log.warning(repr(e))
+                return
+                
         _vars_temp = []
         _vars_temp_3d = []
         
@@ -1787,7 +1821,7 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     import pyaerocom as pya
-    
+    pya.browse_database('CAM53*Oslo*UNTUNED*')
     r = ReadGridded('CAM6-Oslo_NHIST_f19_tn14_20190710_2010')
     
     data0 = r.read_var('od550gt1aer')
