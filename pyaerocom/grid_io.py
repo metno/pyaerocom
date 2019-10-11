@@ -52,10 +52,6 @@ class GridIO(object):
         This might need to be reviewed and should be used with care if 
         specific metadata aspects of individual files need to be accessed.
         Aerocom default is True
-    USE_RENAMED_DIR : bool
-        if True, data files are searched within a subdirectory named "renamed" 
-        that needs to exist withing the data directory of a certain model or
-        obs data type. Aerocom default is True.
     USE_FILECONVENTION : bool
         if True, file names are strictly required to follow one of the file
         naming conventions that can be specified in the file 
@@ -80,8 +76,8 @@ class GridIO(object):
                 'CORRECT_TIME_FILENAME': True,
                 'CHECK_DIM_COORDS': True,
                 'EQUALISE_METADATA': True,
-                'USE_RENAMED_DIR': True,
                 'INCLUDE_SUBDIRS': False}
+    
     _DEFAULT = {'FILE_TYPE': '.nc',
                 'PERFORM_FMT_CHECKS' : False,
                 'DEL_TIME_BOUNDS': True,
@@ -90,7 +86,6 @@ class GridIO(object):
                 'CORRECT_TIME_FILENAME': False,
                 'CHECK_DIM_COORDS': False,
                 'EQUALISE_METADATA': False,
-                'USE_RENAMED_DIR': False,
                 'INCLUDE_SUBDIRS': True}
     
     def __init__(self, **kwargs):
@@ -117,12 +112,10 @@ class GridIO(object):
         
         self.EQUALISE_METADATA = True
         
-        self.USE_RENAMED_DIR = True
-        
         self.INCLUDE_SUBDIRS = False
         
         self.INFER_SURFACE_LEVEL = True
-        
+    
     def load_aerocom_default(self):
         self.from_dict(self._AEROCOM)
     
