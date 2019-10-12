@@ -8,7 +8,8 @@ This release comprises major improvements, changes and many new features compare
     - `TrendsEvaluation` for data displayed at https://aerocom-trends.met.no/
 
 - Gridded reading (`ReadGridded` class and methods used therein)
-  - og550gtaer is now primarily computed via od550aer-od550lt1aer and if this is not possible, via od550dust+od550ss
+  - `data_dir` can be provided directly on input in `ReadGridded` (e.g. for working locally with no database access). However, data files are required to be in AeroCom naming convention.
+  - og550gtaer is now primarily computed via od550aer-od550lt1aer
   - easy file filtering for all attributes accessible via filename (e.g. model, variable, year, vertical type)
   - option to compute variables during runtime for custom methods
   - Clean up of outdated methods
@@ -59,6 +60,7 @@ This release comprises major improvements, changes and many new features compare
   - All data classes contain many more helper and analysis methods and attributes, that are not explicitely mentioned here, for details see changelog
 
 - Colocation: Improved flexibility and robustness of colocation routines (modules `colocation.py`, `colocation_auto.py`), e.g.
+  - more control on individual outlier removal for both input datasets
   - hierarchical resampling
   - option for outlier removal
   - option for unit harmonisation

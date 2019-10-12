@@ -5,6 +5,41 @@ Automatically generated (and slightly modified) using::
 Release 0.8.0 (0.7.1 -> 0.8.0)
 =======================================
 
+- 2019-10-12, Jonas Gliss	Bumped version (v080rc5)
+- 2019-10-12, Jonas Gliss	ReadGridded.data_id is no property decorator and is set automatically when initiating via data_dir (based on filenames), if applicable
+- 2019-10-11, Jonas Gliss	Generalised ReadGridded: data_dir can now be provided on input (if no access to any AeroCom database is provided
+- 2019-10-11, Jonas Gliss	Bumped version (v0.8.0rc4) and removed global flag USE_RENAMED_DIR from GridIO class (is now handled automatically in AerocomBrowser)
+- 2019-10-10, Jonas Gliss	Added option try_load_json in init of AerocomEvaluation class to avoid automatic preloading of json files
+- 2019-10-10, Jonas Gliss	Updated colocation routines (colocation.py and colocation_auto.py): now outlier removal (and ranges) can be controlled independently for model and obs
+- 2019-10-10, Jonas Gliss	Updated README
+- 2019-10-10, Jonas Gliss	Added support for variable concoc (provided by EBAS) and fixed minor bug in creation of hierarchical resamling index of TimeResampler class
+- 2019-10-09, Jonas Gliss	Bumped version
+- 2019-10-09, Jonas Gliss	Added test directories in setup.py packages and updated version to 2nd release candidate
+- 2019-10-09, Jonas Gliss	Removed some unused imports in aerocom_evaluation.py
+- 2019-10-09, Jonas Gliss	Merge branch 'master' into hanna_dev
+- 2019-10-09, hannasv	fixed syntax bug, added an extra space
+- 2019-10-09, hannasv	fixed unit bug in test_aasetal and added unitconversion back to units_helpers
+- 2019-10-09, Jonas Gliss	Merge branch 'master' into v080DEV
+- 2019-10-09, Jonas Gliss	Updated release summary for v080
+- 2019-10-09, Jonas Gliss	Added od550cslt1aer to aliases of var od550lt1aer
+- 2019-10-09, Jonas Gliss	Removed return type annotations in some methods in region.py
+- 2019-10-08, Jan Jurgen Griesfeller	Merge branch 'v080DEV' of github.com:metno/pyaerocom into v080DEV
+- 2019-10-08, Jan Jurgen Griesfeller	latest updates to be merged into master; not finished
+- 2019-10-08, Jonas Gliss	Fixed some subpackage imports in pyaerocom init
+- 2019-10-08, Jonas Gliss	Fixed bug in mathutils.calc_statistics, that arose from recent changes (i.e. only pos. values for bias computation and case where num_points_pos is 0 -> division by zero)
+- 2019-10-07, Jonas Gliss	Fixed minor bug in colocation_auto.py (init param ignore_stats=None if not specified in colocation config)
+- 2019-10-07, Jonas Gliss	Flagged some failing tests and removed a link from README that was accidentally copied in
+- 2019-10-07, Jonas Gliss	Updated links in readme
+- 2019-10-07, Jonas Gliss	Updated version for tagging pre-release
+- 2019-10-04, Jonas Gliss	Updated version for first pre-release of version 0.8.0
+- 2019-10-04, Jonas Gliss	Bumped version
+- 2019-10-04, Jonas Gliss	Fixed some tests and made init of ReadUngridded class more flexible in case no obsdata is found
+- 2019-10-04, Jonas Gliss	Updated README
+- 2019-10-04, Jonas Gliss	Removed import of multiproc module
+- 2019-10-04, Jonas Gliss	Deleted outdated modules station.py, tools dir and multiproc.py
+- 2019-10-04, Jonas Gliss	Deleted notebooks directory (ALL notebooks, tutorials, etc. go into pyaerocom-tutorials repository)
+- 2019-10-04, Jonas Gliss	Replaced occurrences of sconc with conc in most modules
+- 2019-10-04, Jonas Gliss	Updated MANIFEST.in and changelog / release note for upcoming release of v080
 - 2019-10-04, Jonas Gliss	Replaced all occurrences of sconc with conc in mod. test_aas_et_al.py after merging #43 due to failing tests
 - 2019-10-04, Jonas Gliss	Merge branch 'hanna_dev' into v080DEV
 - 2019-10-04, Jonas Gliss	Merge branch 'v080DEV' into hanna_dev
