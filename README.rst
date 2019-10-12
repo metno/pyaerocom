@@ -107,6 +107,10 @@ This will install the latest release of pyaerocom including all requirements. Al
 Option 2: Install latest release via PyPi
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+**NOTE:** this will install the latest released version of pyaerocom, which is the same as distributed via *conda-forge* (see prev. point). However, installation via PyPi does **not** take care of any requirements but only installs pyaerocom::
+
+	pip install pyaerocom
+
 
 Option 3: Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -125,12 +129,6 @@ Alternatively, if you plan to apply local changes to the pyaerocom source code, 
 
 You may also download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaerocom>`__ to install the very latest (not yet released) version of pyaerocom.
 
-More detailed installation instructions `can be found here <https://github.com/metno/pyaerocom/blob/master/notebooks/info00_install_detailed.ipynb>`__.
-
-Finally, we recommend installing jupyter (if not already installed in your conda environment)::
-
-   conda install jupyter
-
 
 Access to users database
 ========================
@@ -139,7 +137,7 @@ Please follow the instructions provided here, to retrieve access to the AeroCom 
 
 https://wiki.met.no/aerocom/data_retrieval
 
-**NOTE**: the users database does not contain any ground based observational data (such as EBAS, AERONET, etc.) but only the model data. It does include, however, some level 3 gridded satellite datasets which may be used for model evaluation.
+**NOTE**: the users database does not contain any ground based observational data (such as EBAS, AERONET, etc.) but only the AeroCom model data available in the database as well as some gridded level 3 satellite datasets which may be used for model evaluation.
 
 Getting started
 ===============
@@ -150,10 +148,13 @@ After installing pyaerocom, open your python executable and try to import pyaero
 
 To get started, please see `introduction tutorial <https://pyaerocom.met.no/tutorials.html#getting-started>`__.
 
-**NOTE:** pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
+Tutorials (Jupyter notebooks)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The directory *notebooks* contains introduction tutorials for many features of pyaerocom. Note that, for now, you have to be connected to the METNO servers which
-contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.
+A number of tutorial jupyter notebooks can be found in the `pyaerocom-tutorials repo <https://github.com/metno/pyaerocom-tutorials/tree/master/notebooks>`__
+
+**NOTE:** in order to execute these notebooks you need to be connected to the AeroCom database located on servers of the Norwegian Meteorological Institute (MetNo). Thus, if you are not happen to be an employee of the institute you will not be able to execute the tutorial notebooks on your own machine. We are working on providing an example dataset that can be downloaded and rewrite the notebooks based on these example data.
+
 
 Remark for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^^
