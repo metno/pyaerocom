@@ -138,21 +138,24 @@ class ReadGridded(object):
     
     VERT_ALT = {'Surface' : 'ModelLevel'}
 
-    def __init__(self, data_id="", data_dir=None, file_convention="aerocom3", init=True):
+    def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3", 
+                 init=True):
     
-        if not isinstance(data_id, str):
-            if isinstance(data_id, list):
-                msg = ("Input for data_id is list. You might want to use "
-                       "class ReadGriddedMulti for import?")
-            else:
-                msg = ("Invalid input for data_id. Need str, got: %s"
-                       %type(data_id))
-            raise TypeError(msg)
-        
+# =============================================================================
+#         if not isinstance(data_id, str):
+#             if isinstance(data_id, list):
+#                 msg = ("Input for data_id is list. You might want to use "
+#                        "class ReadGriddedMulti for import?")
+#             else:
+#                 msg = ("Invalid input for data_id. Need str, got: %s"
+#                        %type(data_id))
+#             raise TypeError(msg)
+# =============================================================================
+            
         self._data_dir = None
         
         #: data_id of gridded dataset        
-        self.data_id = data_id
+        self._data_id = data_id
         
         self.logger = logger
         
@@ -204,6 +207,18 @@ class ReadGridded(object):
         self._vars_3d =[]
         self.loaded_cubes = od()
         self.data = od()
+      
+    @property
+    def data_id(self):
+        return self._data_id
+    
+    @data_id.setter
+    def data_id(self, val):
+        if val is None:
+            val = ''
+        if not isinstance(val, str):
+            raise ValueError('Invalid input for data_id, need str')
+        self._data_id = val
         
     @property
     def data_dir(self):
@@ -518,6 +533,8 @@ class ReadGridded(object):
                 continue
             try:
                 info = self.file_convention.get_info_from_file(_file)
+                if not self.data_id:
+                    self.data_id = info['data_id']
                 var_name = info['var_name']
                 _is_3d = False
                 if is_3d(var_name):
@@ -1821,18 +1838,7 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     import pyaerocom as pya
-    pya.browse_database('CAM53*Oslo*UNTUNED*')
-    r = ReadGridded('CAM6-Oslo_NHIST_f19_tn14_20190710_2010')
     
-    data0 = r.read_var('od550gt1aer')
+    r = ReadGridded(data_dir='/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III-2019/TM5_AP3-CTRL2019/renamed')
     
-    fun = pya.io.aux_read_cubes.add_cubes
-    
-    data1 = r.read_var('od550gt1aer', aux_vars=['od550dust', 'od550ss'],
-                       aux_fun=fun)
-    
-    
-    data0.quickplot_map()
-    data1.quickplot_map()
-    
-    
+    print(r.data_id)
