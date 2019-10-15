@@ -1441,7 +1441,12 @@ class GriddedData(object):
         path = subset.to_netcdf(out_dir, savename)
         print_log.info('Finished computing AtStations file.')
         return path
-        
+       
+    def to_xarray(self):
+        from xarray import DataArray
+        arr = DataArray.from_iris(self.cube)
+        return arr
+    
     def to_netcdf(self, out_dir, savename=None):
         """Save as netcdf file
         
