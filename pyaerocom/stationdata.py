@@ -1321,6 +1321,8 @@ class StationData(StationMetaData):
             if length of data array does not equal the length of the time array
         """
         import matplotlib.pyplot as plt
+        if 'ts_type' in kwargs:
+            freq = kwargs.pop('ts_type')
         if 'label' in kwargs:
             lbl = kwargs.pop('label')
         else:
@@ -1349,7 +1351,7 @@ class StationData(StationMetaData):
         if tit is None:
             try:
                 tit = self.get_meta(force_single_value=True, 
-                                      quality_check=False)['station_name']    
+                                    quality_check=False)['station_name']    
             except:
                 tit = 'Failed to retrieve station_name'
         s = self.to_timeseries(var_name, freq, resample_how)

@@ -170,7 +170,7 @@ class Config(object):
     
     #: timeout to check if one of the supported server locations can be 
     #: accessed
-    SERVER_CHECK_TIMEOUT = 5 #0.1 #s
+    SERVER_CHECK_TIMEOUT = 1 #0.1 #s
     
     from pyaerocom import __dir__
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
@@ -183,6 +183,8 @@ class Config(object):
     
     _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
     _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
+    _testdata_search_dirs=['${HOME}/pyaerocom-testdata/',
+                           '${HOME}/MyPyaerocom/pyaerocom-testdata/']
     _outhomename = 'MyPyaerocom'
     
     DONOTCACHEFILE = None
@@ -202,7 +204,7 @@ class Config(object):
         self._obsbasedir = obs_base_dir
         self._cachedir = cache_dir
         self._outputdir = output_dir
-        self._testdatadir = os.path.join(self.HOMEDIR, 'pyaerocom-testdata')
+        self._testdatadir = None
         self._colocateddatadir = colocateddata_dir
         
         # Options
@@ -210,15 +212,16 @@ class Config(object):
         
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
-        print_log.info('Initating pyaerocom configuration')
+        self.logger.info('Initiating pyaerocom configuration')
         
         
         if not isinstance(config_file, str) or not os.path.exists(config_file):
             from time import time
-            print_log.info('Checking database access...')
+            self.logger.info('Checking database access...')
             t0 = time()
             config_file = self._infer_config_file()
-            print_log.info('Expired time: {:.3f} s'.format(time() - t0))
+            self.logger.info('Expired time (to infer DB config): {:.3f} s'
+                           .format(time() - t0))
         
         
         self._var_param = None
@@ -268,17 +271,30 @@ class Config(object):
         bool
             True, if location is accessible, else False
         """
+        
+        
+        self.logger.info('Checking access to: {}'.format(loc))
+        return self._test_ls(loc, self.SERVER_CHECK_TIMEOUT)
 # =============================================================================
-#         try:
-#             os.listdir(loc)
-#             return True
-#         except:
-#             return False
+#         return check_fun_timeout_multiproc(self._test_ls, fun_args=(loc, ),
+#                                            timeout_secs=self.SERVER_CHECK_TIMEOUT)
 # =============================================================================
-        self.print_log.info('Checking access to: {}'.format(loc))
-        return check_fun_timeout_multiproc(os.listdir, fun_args=(loc, ),
-                                           timeout_secs=self.SERVER_CHECK_TIMEOUT)
     
+    def _test_ls(self, testdir, timeout):
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError
+        pool = ThreadPoolExecutor()
+        def safe_ls(testdir, timeout):
+            future = pool.submit(os.listdir, testdir)
+            try:
+                res = future.result(timeout)
+                self.logger.info('listdir {}: {}'.format(testdir, res))
+                return True
+            
+            except Exception as e:
+                self.logger.info(repr(e))
+                return False
+        return safe_ls(testdir, timeout)
+        
     @property
     def has_access_lustre(self):
         """Boolean specifying whether the lustre database can be accessed"""
@@ -286,7 +302,7 @@ class Config(object):
         p = os.path.join(self.ROOTDIR, 'lustre/')
         if os.path.exists(p):
             ok = self._check_access(os.path.join(p, 'storeA'))
-        self.print_log.info('Access to lustre database: {}'.format(ok))
+        self.logger.info('Access to lustre database: {}'.format(ok))
         return ok
     
     @property
@@ -298,31 +314,32 @@ class Config(object):
             test_loc = os.path.join(p, 'aerocom-users-database')
             ok = self._check_access(test_loc)
                 
-        self.print_log.info("Access to aerocom-users-database: {}".format(ok))
+        self.logger.info("Access to aerocom-users-database: {}".format(ok))
         return ok
     
     @property
     def has_access_testdata(self):
         """Boolean specifying whether the testdataset can be accessed"""
-        ok = False
-        if self.dir_exists(self._testdatadir) and 'modeldata' in os.listdir(self.TESTDATADIR):
-            ok = True
-            
-        self.print_log.info("Access to pyaerocom-testdata: {}".format(ok))
-        return ok
+        for dirtmp in self._testdata_search_dirs:
+            dirtmp = dirtmp.replace('${HOME}', self.HOMEDIR)
+            if self.dir_exists(dirtmp):
+                self.logger.info("Access to pyaerocom-testdata")    
+                self._testdatadir = dirtmp
+                return True
+        return False
     
     def _infer_config_file(self):
         """Infer the database configuration to be loaded"""
         if self.has_access_lustre:
-            self.print_log.info("Init data paths for lustre")
+            #self.print_log.info("Init data paths for lustre")
             self.GRID_IO.load_aerocom_default()
             return self._config_files['metno']
         elif self.has_access_users_database:
-            self.print_log.info("Init data paths for users database")
+            #self.print_log.info("Init data paths for users database")
             self.GRID_IO.load_aerocom_default()
             return self._config_files['aerocom-users-database']
         elif self.has_access_testdata:
-            self.print_log.info("Init data paths for pyaerocom testdata")
+            #self.logger.info("Init data paths for pyaerocom testdata")
             self.GRID_IO.load_aerocom_default()
             return self._config_files['pyaerocom-testdata']
         
@@ -441,8 +458,7 @@ class Config(object):
             logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
             return logdir
         except Exception as e:
-            from pyaerocom import print_log
-            print_log.info('Failed to access LOGFILESDIR: {}'
+            self.print_log.info('Failed to access LOGFILESDIR: {}'
                            'Deactivating file logging'.format(repr(e)))
             self.WRITE_FILEIO_ERR_LOG = False
             
@@ -497,19 +513,20 @@ class Config(object):
         self._modelbasedir = value
         
         subdirs = os.listdir(value)
-        from pyaerocom import print_log
         if 'aerocom0' in subdirs:
-            print_log.info('Initiating directories for lustre')
+            self.print_log.info('Initiating directories for lustre')
             self.read_config(self._config_ini, 
                              keep_basedirs=True)
         elif 'obsdata' in subdirs: #test dataset
             
-            print_log.info('Initiating directories for pyaerocom testdataset')
+            self.print_log.info('Initiating directories for pyaerocom test '
+                                'dataset')
             self.read_config(self._config_ini_testdata, 
                              keep_basedirs=True)
             self._cachedir = os.path.join('..', '_cache')
         elif 'AMAP' in subdirs:
-            print_log.info('Initiating directories for AEROCOM users database')
+            self.print_log.info('Initiating directories for AEROCOM users '
+                                'database')
             self.read_config(self._config_ini_user_server, 
                              keep_basedirs=True)
         else:
@@ -880,7 +897,6 @@ class Config(object):
 if __name__=="__main__":
     import pyaerocom as pya
     
-    pya.const.COORDINFO.a
 # =============================================================================
 #     pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
 #     
