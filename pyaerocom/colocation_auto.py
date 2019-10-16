@@ -174,10 +174,12 @@ class ColocationSetup(BrowseDict):
                  model_use_vars=None, model_add_vars=None, 
                  model_read_aux=None, read_opts_ungridded=None, 
                  obs_vert_type=None, model_vert_type_alt=None, 
-                 var_outlier_ranges=None, model_ts_type_read=None, 
+                 var_outlier_ranges=None, var_ref_outlier_ranges=None,
+                 model_ts_type_read=None, 
                  obs_ts_type_read=None, flex_ts_type_gridded=True, 
                  apply_time_resampling_constraints=None, min_num_obs=None,
                  model_keep_outliers=True,
+                 obs_keep_outliers=False,
                  colocate_time=False, basedir_coldata=None, 
                  obs_name=None, model_name=None,
                  save_coldata=True, **kwargs):
@@ -206,10 +208,12 @@ class ColocationSetup(BrowseDict):
         self.model_use_vars = model_use_vars
         self.model_add_vars = model_add_vars
         self.model_keep_outliers = model_keep_outliers
+        
         self.model_id = model_id
         self.model_name = model_name
         self.obs_id = obs_id
         self.obs_name = obs_name
+        self.obs_keep_outliers = obs_keep_outliers
         
         self.start = start
         self.stop = stop
@@ -225,6 +229,8 @@ class ColocationSetup(BrowseDict):
         self.min_num_obs=min_num_obs
         
         self.var_outlier_ranges = var_outlier_ranges
+        self.var_ref_outlier_ranges = var_ref_outlier_ranges
+        
         self.harmonise_units = harmonise_units
         self.vert_scheme = vert_scheme
         self.regrid_res_deg = regrid_res_deg
@@ -637,12 +643,14 @@ class Colocator(ColocationSetup):
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
                         var_outlier_ranges=self.var_outlier_ranges,
+                        var_ref_outlier_ranges=self.var_ref_outlier_ranges,
                         update_baseyear_gridded=by, 
                         ignore_station_names=ignore_stats,
                         apply_time_resampling_constraints=self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
-                        var_keep_outliers=self.model_keep_outliers)
+                        var_keep_outliers=self.model_keep_outliers,
+                        var_ref_keep_outliers=self.obs_keep_outliers)
                 
                 if self.save_coldata:
                     self._save_coldata(coldata, savename, out_dir, model_var, 
@@ -795,11 +803,14 @@ class Colocator(ColocationSetup):
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
                         var_outlier_ranges=self.var_outlier_ranges,
+                        var_ref_outlier_ranges=self.var_ref_outlier_ranges,
                         update_baseyear_gridded=by,
-                        apply_time_resampling_constraints=self.apply_time_resampling_constraints,
+                        apply_time_resampling_constraints=\
+                            self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
-                        var_keep_outliers=self.model_keep_outliers)
+                        var_keep_outliers=self.model_keep_outliers,
+                        var_ref_keep_outliers=self.obs_keep_outliers)
                 if self.save_coldata:
                     self._save_coldata(coldata, savename, out_dir, model_var, 
                                        model_data, obs_var)

@@ -101,35 +101,43 @@ class AerocomBrowser(BrowseDict):
                         match = bool(re.search(pattern, subdir))
                     if match:
                         _dir = join(search_dir, subdir)
-                        ok = True 
-                        if const.GRID_IO.USE_RENAMED_DIR:
-                            logger.info("Checking if renamed directory exists")
-                            _dir = join(_dir, "renamed")
-                            if not isdir(_dir):
-                                ok = False
-                                _warnings.append("Renamed folder does not exist "
-                                                 "in {}".format(join(search_dir, 
-                                                     subdir)))
-                        # directory exists and is candidate since it matches 
-                        # the pattern
-                        if ok:
-                            # append name of candidate ...
-                            _candidates.append(subdir)
-                            # ... and the corresponding data directory
-                            self[subdir] = _dir
-                            
-                            # now check if it is actually an exact match, if 
-                            # applicable
-                            if return_if_match:
-                            
-                                if ignorecase:
-                                    match = name_or_pattern.lower() == subdir.lower()
-                                else:
-                                    match = name_or_pattern == subdir
-                                if match:
-                                    logger.info("Found match for ID {}".format(name_or_pattern))
-                                    if return_if_match:
-                                        return _dir
+                        _rnsubdir = join(_dir, "renamed")
+                        if isdir(_rnsubdir):
+                            logger.info("{} has subdir renamed. Using that one"
+                                        .format(_dir))
+                            _dir = _rnsubdir
+# =============================================================================
+#                         ok = True 
+#                         if const.GRID_IO.USE_RENAMED_DIR:
+#                             logger.info("Checking if renamed directory exists")
+#                             _dir = join(_dir, "renamed")
+#                             if not isdir(_dir):
+#                                 ok = False
+#                                 _warnings.append("Renamed folder does not exist "
+#                                                  "in {}".format(join(search_dir, 
+#                                                      subdir)))
+#                         # directory exists and is candidate since it matches 
+#                         # the pattern
+#                         if ok:
+# =============================================================================
+                        # append name of candidate ...
+                        _candidates.append(subdir)
+                        # ... and the corresponding data directory
+                        self[subdir] = _dir
+                        
+                        # now check if it is actually an exact match, if 
+                        # applicable
+                        if return_if_match:
+                        
+                            if ignorecase:
+                                match = name_or_pattern.lower() == subdir.lower()
+                            else:
+                                match = name_or_pattern == subdir
+                            if match:
+                                logger.info("Found match for ID {}"
+                                            .format(name_or_pattern))
+                                if return_if_match:
+                                    return _dir
                                 
                                 
                         
