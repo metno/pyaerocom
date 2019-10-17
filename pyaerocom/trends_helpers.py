@@ -661,7 +661,7 @@ def compute_trends_station(station, var_name, start_year=None,
             trv['daily'] = station.to_timeseries(var_name, freq='daily', **alt_range)
     # monthly is mandatory
     if not trv.has_monthly:
-        if freq in ts_types and ts_types.index(freq) >= ts_types.index('monthly'):
+        if freq in ts_types and ts_types.index(freq) > ts_types.index('monthly'):
             raise TemporalResolutionError('Need monthly or higher')
         ms = station.to_timeseries(var_name, freq='monthly', **alt_range)
         trv['monthly'] = ms
