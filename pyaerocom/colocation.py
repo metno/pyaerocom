@@ -480,7 +480,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     # apply filter to data
     ungridded_data = regfilter(ungridded_data)
-
+    
     #crop time
     gridded_data = gridded_data.crop(time_range=(start, stop))
     

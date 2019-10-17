@@ -1312,6 +1312,10 @@ class GriddedData(object):
             if all(isinstance(x, Timestamp) for x in time_range):
                 logger.info("Cropping along time axis based on Timestamps")
                 time_constraint = get_time_rng_constraint(*time_range)
+                try:
+                    self.cube.coord("time").bounds = None
+                except:
+                    pass
                 data = data.extract(time_constraint)
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
