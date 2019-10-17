@@ -896,7 +896,11 @@ class Config(object):
         
 if __name__=="__main__":
     import pyaerocom as pya
+    pya.const.BASEDIR = '/home/jonasg/MyPyaerocom/pyaerocom-testdata/'
     
+    #pya.browse_database('Aero*Sun*')
+    
+    pya.browse_database('GAW*')
 # =============================================================================
 #     pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
 #     
