@@ -1203,8 +1203,12 @@ class UngriddedData(object):
                     totnum += len(self.meta_idx[meta_idx][var])
                 
         return (meta_matches, totnum)
-       
+    
+    def filter_region(self, region_id=None):
+        raise NotImplementedError('Filter region is not implemented for ungriddeddata object.')
+        return
         
+    
     def apply_filters(self, var_outlier_ranges=None, **filter_attributes):
         """Extended filtering method
         

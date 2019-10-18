@@ -133,7 +133,9 @@ class Filter(BrowseDict):
                 'lon_range' :   self.lon_range,
                 'lat_range' :   self.lat_range,
                 'alt_range' :   self.alt_range}
-        
+    
+    # TODO move this inside the respective classes.
+    
     def _apply_ungridded(self, data_obj):
         """Apply filter to instance of class :class:`UngriddedData`
         """
@@ -145,8 +147,8 @@ class Filter(BrowseDict):
         """Apply filter to instance of class :class:`GriddedData`
         """
         print_log.warning('Applying regional cropping in GriddedData using Filter '
-                       'class. Note that this does not yet include potential '
-                       'cropping in the vertical dimension. Coming soon...')
+                          'class. Note that this does not yet include potential '
+                          'cropping in the vertical dimension. Coming soon...')
         return data_obj.crop(region=self._region)
     
     def _apply_colocated(self, data_obj):

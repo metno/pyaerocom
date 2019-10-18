@@ -841,6 +841,10 @@ class ColocatedData(object):
     
         return ColocatedData(filtered)
         
+    def filter_region(self, region_id=None):
+        raise NotImplementedError('Filter region is not implemented for collocated data object.')
+        return
+    
     def plot_coordinates(self, marker='x', markersize=12, fontsize_base=10, 
                          **kwargs):
         

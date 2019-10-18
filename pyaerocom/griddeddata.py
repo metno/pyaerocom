@@ -1004,6 +1004,20 @@ class GriddedData(object):
         return data.to_time_series(sample_points, scheme, 
                                    collapse_scalar, add_meta=add_meta)
     
+    def filter_region(self, region_id=None):
+        
+        # 1) Need to load mask --> this should be in a helper 
+        IRIS_MASKS = mask.to_iris()
+        # 2) Need to regrid mask to be the same as gridded data 
+        
+        
+        # 3) apply mask using iris magic ... 
+        
+        # return gridded data
+        
+        raise NotImplementedError('Filter region is not implemented for GriddedData object.')
+        return 
+    
     def to_time_series_single_coord(self, latitude, longitude):
         """Make time series dictionary of single location using neirest coordinate
         

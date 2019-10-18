@@ -161,6 +161,12 @@ class Config(object):
     
     DEFAULT_REGIONS = ['EUROPE', 'WORLD', 'ASIA', 'AUSTRALIA', 'CHINA', 
                        'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
+    
+    HTAP_REGIONS = ['PANhtap', 'EAShtap', 'NAFhtap', 'MDEhtap', 'LANDhtap', 
+                    'SAShtap', 'SPOhtap', 'OCNhtap',  'SEAhtap', 'RBUhtap', 
+                    'EEUROPEhtap', 'NAMhtap', 'WEUROPEhtap', 'SAFhtap', 
+                    'USAhtap', 'SAMhtap', 'EURhtap', 'NPOhtap', 'MCAhtap']
+    
     RM_CACHE_OUTDATED = True
 
     #: Name of the file containing the revision string of an obs data network
@@ -175,6 +181,7 @@ class Config(object):
     SERVER_CHECK_TIMEOUT = 5 #0.1 #s
     
     from pyaerocom import __dir__
+    # TODO add something here.??
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
     _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
