@@ -653,9 +653,11 @@ class GriddedData(object):
         
     def convert_unit(self, new_unit):
         """Convert unit of data to new unit"""
-        if self._size_GB > self._MAX_SIZE_GB:
-            raise MemoryError('Cannot convert unit in {} since data is too '
-                              'large ({} GB)'.format(self.name, self._size_GB))
+# =============================================================================
+#         if self._size_GB > self._MAX_SIZE_GB:
+#             raise MemoryError('Cannot convert unit in {} since data is too '
+#                               'large ({} GB)'.format(self.name, self._size_GB))
+# =============================================================================
         self.grid.convert_units(new_unit)
         
     def time_stamps(self):
@@ -1451,6 +1453,16 @@ class GriddedData(object):
         arr = DataArray.from_iris(self.cube)
         return arr
     
+    def _check_meta_netcdf(self):
+        """Get rid of empty entries and convert bools to int in meta"""
+        meta_out = {}
+        for k, v in self.metadata.items():
+            if type(v) == bool:
+                meta_out[k] = int(v)
+            elif v != None:
+                meta_out[k] = v
+        self.cube.attributes = meta_out
+        
     def to_netcdf(self, out_dir, savename=None):
         """Save as netcdf file
         
@@ -1466,6 +1478,7 @@ class GriddedData(object):
         str
             file path
         """
+        self.check_meta_netcdf()
         if savename is None:
             savename = self.aerocom_filename()
         fp = os.path.join(out_dir, savename)
@@ -1521,10 +1534,12 @@ class GriddedData(object):
             >>> print(itp.shape)
             (365, 1, 1)
         """
-        if self._size_GB > self._MAX_SIZE_GB:
-            raise MemoryError('Data is too large (grid size: {}, file: {} GB) '
-                              'for interpolation (which requires loading data '
-                              'into memory)'.format(self.shape, self._size_GB))
+# =============================================================================
+#         if self._size_GB > self._MAX_SIZE_GB:
+#             raise MemoryError('Data is too large (grid size: {}, file: {} GB) '
+#                               'for interpolation (which requires loading data '
+#                               'into memory)'.format(self.shape, self._size_GB))
+# =============================================================================
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)
         if not sample_points:
@@ -1798,6 +1813,7 @@ class GriddedData(object):
         These method is intended to be used for operations that actually 
         require the *realisation* of the (lazy loaded) data. 
         """
+        raise NotImplementedError
         return sum([os.path.getsize(f) for f in self.from_files]) / 10**9
     
     def __getattr__(self, attr):
