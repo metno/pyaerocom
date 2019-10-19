@@ -1478,7 +1478,7 @@ class GriddedData(object):
         str
             file path
         """
-        self.check_meta_netcdf()
+        self._check_meta_netcdf()
         if savename is None:
             savename = self.aerocom_filename()
         fp = os.path.join(out_dir, savename)
