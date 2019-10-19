@@ -204,7 +204,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
     def read(self, vars_to_retrieve=None, files=[], first_file=None,
              last_file=None, file_pattern=None, list_coda_paths=False,
-             local_temp_dir=None):
+             local_temp_dir=None, return_as='numpy'):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -316,28 +316,48 @@ class ReadL2DataBase(ReadUngriddedBase):
                 return data_obj
 
             file_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve,
-                                       loglevel=logging.INFO, return_as='numpy')
-            self.logger.info('{} points read'.format(file_data.shape[0]))
-            # the metadata dict is left empty for L2 data
-            # the location in the data set is time step dependant!
-            if idx == 0:
-                data_obj._data = file_data
+                                       loglevel=logging.INFO, return_as=return_as)
+            if return_as == 'numpy':
+                self.logger.info('{} points read'.format(file_data.shape[0]))
+                # the metadata dict is left empty for L2 data
+                # the location in the data set is time step dependant!
+                if idx == 0:
+                    data_obj._data = file_data
 
+                else:
+                    data_obj._data = np.append(data_obj._data, file_data, axis=0)
+
+                data_obj._idx = data_obj._data.shape[0] + 1
+                file_data = None
+                # remove file if it was temporary one
+                if _file in temp_files:
+                    os.remove(_file)
+                #     pass
+                # tmp_obj = UngriddedData()
+                # tmp_obj._data = file_data
+                # tmp_obj._idx = data_obj._data.shape[0] + 1
+                # data_obj.append(tmp_obj)
+                self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
+            elif return_as == 'dict':
+                if idx == 0:
+                    data_obj._data = file_data
+                else:
+                    # TODO: append the dictionary entries!!
+                    data_obj._data = np.append(data_obj._data, file_data, axis=0)
+
+                # data_obj._idx = data_obj._data.shape[0] + 1
+                # file_data = None
+                # remove file if it was temporary one
+                if _file in temp_files:
+                    os.remove(_file)
+                #     pass
+                # tmp_obj = UngriddedData()
+                # tmp_obj._data = file_data
+                # tmp_obj._idx = data_obj._data.shape[0] + 1
+                # data_obj.append(tmp_obj)
             else:
-                data_obj._data = np.append(data_obj._data, file_data, axis=0)
+                pass
 
-            data_obj._idx = data_obj._data.shape[0] + 1
-            file_data = None
-            # remove file if it was temporary one
-            if _file in temp_files:
-                os.remove(_file)
-            #     pass
-            # tmp_obj = UngriddedData()
-            # tmp_obj._data = file_data
-            # tmp_obj._idx = data_obj._data.shape[0] + 1
-            # data_obj.append(tmp_obj)
-
-        self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
         return data_obj
 
     ###################################################################################
