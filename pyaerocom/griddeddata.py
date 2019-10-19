@@ -627,6 +627,10 @@ class GriddedData(object):
             from pyaerocom.io.iris_io import load_cube_custom
             self.grid = load_cube_custom(input, var_name,
                                          perform_fmt_checks=perform_fmt_checks)
+            if not 'from_files' in self.metadata:
+                self.metadata['from_files'] = []
+            elif not isinstance(self.metadata["from_files"], list):
+                self.metadata["from_files"] = [self.metadata["from_files"]]
             self.metadata["from_files"].append(input)
             try:
                 from pyaerocom.io.helpers import get_metadata_from_filename
