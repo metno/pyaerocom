@@ -420,7 +420,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     var = gridded_data.var_name
     aerocom_var = gridded_data.var_name_aerocom
     if var_ref is None:
-        var_ref = aerocom_var
+        if aerocom_var is not None:
+            var_ref = aerocom_var
+        else: 
+            var_ref = var
         
     if remove_outliers:
         low, high, low_ref, high_ref = None, None, None, None    
