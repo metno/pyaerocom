@@ -1321,6 +1321,8 @@ class StationData(StationMetaData):
             if length of data array does not equal the length of the time array
         """
         import matplotlib.pyplot as plt
+        if 'ts_type' in kwargs:
+            freq = kwargs.pop('ts_type')
         if 'label' in kwargs:
             lbl = kwargs.pop('label')
         else:
@@ -1349,7 +1351,7 @@ class StationData(StationMetaData):
         if tit is None:
             try:
                 tit = self.get_meta(force_single_value=True, 
-                                      quality_check=False)['station_name']    
+                                    quality_check=False)['station_name']    
             except:
                 tit = 'Failed to retrieve station_name'
         s = self.to_timeseries(var_name, freq, resample_how)
@@ -1423,13 +1425,19 @@ class StationData(StationMetaData):
         return s
     
 if __name__=="__main__":
+    import pyaerocom as pya
+    import matplotlib.pyplot as plt
     
-    s = StationData(station_name='Bla', revision_date='20, 21')
-    s2 = StationData(station_name='Bla', revision_date='21, 22, 23',
-                     latitude=30, longitude=10, altitude=400)
+    plt.close('all')
+    data0 = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    print(s)
-    s.merge_meta_same_station(s2)
-    print(s2)
-    print(s)
+    sv = data0.to_station_data('Solar*')
+    sv.plot_timeseries('od550aer', 'yearly')
+    
+    data = pya.io.ReadUngridded().read('EBASMC', 'concoc')
+    
+    birkenes = data.to_station_data('Birken*')
+    
+    ax = birkenes.plot_timeseries('concoc')
+    ax = birkenes.plot_timeseries('concoc', 'yearly', ax=ax)
     

@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
 from collections import OrderedDict as od
-from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
+from pyaerocom.exceptions import (DataCoverageError, TemporalResolutionError,
+                                  MetaDataError)
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 import pandas as pd
@@ -661,7 +662,7 @@ def compute_trends_station(station, var_name, start_year=None,
             trv['daily'] = station.to_timeseries(var_name, freq='daily', **alt_range)
     # monthly is mandatory
     if not trv.has_monthly:
-        if freq in ts_types and ts_types.index(freq) >= ts_types.index('monthly'):
+        if freq in ts_types and ts_types.index(freq) > ts_types.index('monthly'):
             raise TemporalResolutionError('Need monthly or higher')
         ms = station.to_timeseries(var_name, freq='monthly', **alt_range)
         trv['monthly'] = ms
@@ -679,8 +680,11 @@ def compute_trends_station(station, var_name, start_year=None,
     result = trv.compute_trend(start_year, stop_year, season, 
                                slope_confidence)
     
-    
-    trv.meta.update(station.get_meta(add_none_vals=True))
+    try:
+        trv.meta.update(station.get_meta(add_none_vals=True))
+    except MetaDataError:
+        trv.meta.update(station.get_meta(force_single_value=False,
+                                         add_none_vals=True))
     if var_name in station.var_info:
         trv.meta.update(station.var_info[var_name])
     return result

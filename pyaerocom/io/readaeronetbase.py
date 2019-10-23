@@ -410,7 +410,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                 data_obj._data[start:stop, 
                                data_obj._LATINDEX] = station_data['latitude']
                 data_obj._data[start:stop, 
-                               data_obj._LONINDEX] = station_data['latitude']
+                               data_obj._LONINDEX] = station_data['longitude']
                 data_obj._data[start:stop, 
                                data_obj._ALTITUDEINDEX] = station_data['altitude']
                 data_obj._data[start:stop, 

@@ -6,8 +6,7 @@ Created on Wed Aug  1 09:06:06 2018
 @author: jonasg
 """
 import re
-from os import listdir
-from os.path import isdir,join
+import os
 import fnmatch
 from pyaerocom import const, logger
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -76,62 +75,63 @@ class AerocomBrowser(BrowseDict):
             if match:
                 logger.info("Found match for search pattern in obs network "
                             "directories {}".format(obs_id))
-                self[obs_id] = const.OBSCONFIG[obs_id]["PATH"]
-                if return_if_match:
-                    return self[obs_id]
+                path = os.path.normpath(const.OBSCONFIG[obs_id]["PATH"])
+                if os.path.exists(path):
+                    self[obs_id] = path
+                    if return_if_match:
+                        return path
             else:
                 if ignorecase:
                     match = bool(re.search(pattern, obs_id, re.IGNORECASE))
                 else:
                     match = bool(re.search(pattern, obs_id))
-            if match:
-                self[obs_id] = const.OBSCONFIG[obs_id]["PATH"]
-                _candidates.append(obs_id)
+                if match:
+                    path = os.path.normpath(const.OBSCONFIG[obs_id]["PATH"])
+                    if os.path.exists(path):
+                        self[obs_id] = path 
+                        _candidates.append(obs_id)
+                        if return_if_match:
+                            return path
                 
         for search_dir in const.MODELDIRS:
             # get the directories
-            if isdir(search_dir):
+            if os.path.isdir(search_dir):
                 #subdirs = listdir(search_dir)
-                subdirs = [x for x in listdir(search_dir) if 
-                           isdir(join(search_dir, x))]
+                subdirs = [x for x in os.listdir(search_dir) if 
+                           os.path.isdir(os.path.join(search_dir, x))]
                 for subdir in subdirs:
                     if ignorecase:
                         match = bool(re.search(pattern, subdir,re.IGNORECASE))
                     else:
                         match = bool(re.search(pattern, subdir))
                     if match:
-                        _dir = join(search_dir, subdir)
-                        ok = True 
-                        if const.GRID_IO.USE_RENAMED_DIR:
-                            logger.info("Checking if renamed directory exists")
-                            _dir = join(_dir, "renamed")
-                            if not isdir(_dir):
-                                ok = False
-                                _warnings.append("Renamed folder does not exist "
-                                                 "in {}".format(join(search_dir, 
-                                                     subdir)))
-                        # directory exists and is candidate since it matches 
-                        # the pattern
-                        if ok:
-                            # append name of candidate ...
-                            _candidates.append(subdir)
-                            # ... and the corresponding data directory
-                            self[subdir] = _dir
-                            
-                            # now check if it is actually an exact match, if 
-                            # applicable
-                            if return_if_match:
-                            
-                                if ignorecase:
-                                    match = name_or_pattern.lower() == subdir.lower()
-                                else:
-                                    match = name_or_pattern == subdir
-                                if match:
-                                    logger.info("Found match for ID {}".format(name_or_pattern))
-                                    if return_if_match:
-                                        return _dir
-                                
-                                
+                        _dir = os.path.normpath(os.path.join(search_dir, subdir))
+                        _rnsubdir = os.path.join(_dir, "renamed")
+                        if os.path.isdir(_rnsubdir):
+                            logger.info("{} has subdir renamed. Using that one"
+                                        .format(_dir))
+                            _dir = _rnsubdir
+                        if any([_dir in x for x in self.values()]):
+                            # directory was already found before
+                            continue
+                        # append name of candidate ...
+                        _candidates.append(subdir)
+                        # ... and the corresponding data directory
+                        self[subdir] = _dir
+                        
+                        # now check if it is actually an exact match, if 
+                        # applicable
+                        if return_if_match:
+                        
+                            if ignorecase:
+                                match = name_or_pattern.lower() == subdir.lower()
+                            else:
+                                match = name_or_pattern == subdir
+                            if match:
+                                logger.info("Found match for ID {}"
+                                            .format(name_or_pattern))
+                                if return_if_match:
+                                    return _dir
                         
             else:
                 _msgs.append('directory %s does not exist\n'
@@ -155,6 +155,16 @@ class AerocomBrowser(BrowseDict):
                                               _candidates))
         return _candidates
         
+    @property
+    def dirs_found(self):
+        """All directories that were found"""
+        return list(self.values())
+    
+    @property
+    def ids_found(self):
+        """All data IDs that were found"""
+        return list(self.keys())
+    
     def find_data_dir(self, name_or_pattern, ignorecase=True):
         """Find match of input name or pattern in Aerocom database
         

@@ -1,7 +1,7 @@
 NEWS
 ====
 
-- **October 2019**: Release of version 0.8.0
+- **October 2019**: Release of version 0.8.0 (available via *conda-forge* and *PyPi*)
 - **April 2019**: AeroCom has a new web : We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments (in parallel with the IDL processing displayed in the Phase 2 interface). The new online interface can be found at: `https://aerocom-evaluation.met.no <https://aerocom-evaluation.met.no/>`__.
 
 About
@@ -62,12 +62,12 @@ http://aerocom.met.no/pyaerocom
 Requirements
 ============
 
-Please see file `pyaerocom_env.yml <https://github.com/metno/pyaerocom/blob/master/pyaerocom_env.yml>`__ in the toplevel directory for a list of all requirements.
+A list of all requirements is provided in file `pyaerocom_env.yml <https://github.com/metno/pyaerocom/blob/master/pyaerocom_env.yml>`__.
 
 Installing all requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**NOTE**: if you install pyaerocom via the latest conda-forge release, you can skip this section, as conda takes care of installing all requirements.
+**NOTE:** You can skip this section if you install the latest *conda-forge* release (more infos below under *Installation*).
 
 We recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.7 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
 
@@ -79,7 +79,7 @@ This will create a new conda environment called *pya* which can be activated usi
 
 	conda activate pya
 
-Alternatively, you can include the requirements into an existing environment. First, activate the existing environment, and then install the dependencies using:
+Alternatively, you can include the requirements into an existing environment. First, activate the existing environment, and then install the dependencies using::
 
 	conda env update -f=pyaerocom_env.yml
 
@@ -98,13 +98,21 @@ Option 1: Installation using conda install
 
 If you use *conda* as a package manager, the easiest way to install pyaerocom (and all requirements, see previous section) is to use the build provided in the *nordicesmhub* conda channel::
 
-	conda install -c nordicesmhub -c conda-forge pyaerocom
+	conda install -c conda-forge pyaerocom
 
 This will install the latest release of pyaerocom including all requirements. Alternatively, you may install from source as described in the following.
 
 **NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
 
-Option 2: Installing from source
+Option 2: Install latest release via PyPi
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**NOTE:** this will install the latest released version of pyaerocom, which is the same as distributed via *conda-forge* (see prev. point). However, installation via PyPi does **not** take care of any requirements but only installs pyaerocom::
+
+	pip install pyaerocom
+
+
+Option 3: Installing from source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you use the *conda* packages manager, please make sure to `activate the environment <https://conda.io/docs/user-guide/tasks/manage-environments.html#activating-an-environment>`__ you want to install pyaerocom into. For more information about conda environments, `see here <https://conda.io/docs/user-guide/tasks/manage-environments.html>`__.
@@ -121,12 +129,6 @@ Alternatively, if you plan to apply local changes to the pyaerocom source code, 
 
 You may also download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaerocom>`__ to install the very latest (not yet released) version of pyaerocom.
 
-More detailed installation instructions `can be found here <https://github.com/metno/pyaerocom/blob/master/notebooks/info00_install_detailed.ipynb>`__.
-
-Finally, we recommend installing jupyter (if not already installed in your conda environment)::
-
-   conda install jupyter
-
 
 Access to users database
 ========================
@@ -135,7 +137,7 @@ Please follow the instructions provided here, to retrieve access to the AeroCom 
 
 https://wiki.met.no/aerocom/data_retrieval
 
-**NOTE**: the users database does not contain any ground based observational data (such as EBAS, AERONET, etc.) but only the model data. It does include, however, some level 3 gridded satellite datasets which may be used for model evaluation.
+**NOTE**: the users database does not contain any ground based observational data (such as EBAS, AERONET, etc.) but only the AeroCom model data available in the database as well as some gridded level 3 satellite datasets which may be used for model evaluation.
 
 Getting started
 ===============
@@ -146,10 +148,13 @@ After installing pyaerocom, open your python executable and try to import pyaero
 
 To get started, please see `introduction tutorial <https://pyaerocom.met.no/tutorials.html#getting-started>`__.
 
-**NOTE:** pyaerocom requires access to the AeroCom database located on servers of the Norwegian Meteorological Institute.
+Tutorials (Jupyter notebooks)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The directory *notebooks* contains introduction tutorials for many features of pyaerocom. Note that, for now, you have to be connected to the METNO servers which
-contain the example data used in the notebooks. This is `planned to be updated soon <https://github.com/metno/pyaerocom/issues/22>`__ so that the notebooks are based on a publicly available example dataset.
+A number of tutorial jupyter notebooks can be found in the `pyaerocom-tutorials repo <https://github.com/metno/pyaerocom-tutorials/tree/master/notebooks>`__
+
+**NOTE:** in order to execute these notebooks you need to be connected to the AeroCom database located on servers of the Norwegian Meteorological Institute (MetNo). Thus, if you are not happen to be an employee of the institute you will not be able to execute the tutorial notebooks on your own machine. We are working on providing an example dataset that can be downloaded and rewrite the notebooks based on these example data.
+
 
 Remark for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -71,7 +71,7 @@ class ReadL2Data(ReadL2DataBase):
 
     TS_TYPE = 'undefined'
 
-    def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False, 
+    def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False,
                  read_averaging_kernel=True):
         super(ReadL2Data, self).__init__(dataset_to_read)
         self.verbose = verbose
@@ -93,13 +93,16 @@ class ReadL2Data(ReadL2DataBase):
         self._NO2NAME = 'tcolno2'
         self._O3NAME = 'tcolo3'
         self._QANAME = 'qa_index'
+        self._SCANLINENAME = 'scanline'
+        self._GROUNDPIXELNAME = 'ground_pixel'
 
         self._LATBOUNDSNAME = 'lat_bnds'
         self._LATBOUNDSSIZE = 4
         self._LONBOUNDSNAME = 'lon_bnds'
         self._LONBOUNDSSIZE = 4
         self.COORDINATE_NAMES = [self._LATITUDENAME, self._LONGITUDENAME, self._ALTITUDENAME,
-                                 self._LATBOUNDSNAME, self._LONBOUNDSNAME, self._LEVELSNAME]
+                                 self._LATBOUNDSNAME, self._LONBOUNDSNAME, self._LEVELSNAME,
+                                 self._TIME_NAME]
 
         self._QAINDEX = UngriddedData._DATAFLAGINDEX
         self._TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
@@ -161,6 +164,8 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LATITUDENAME] = 'PRODUCT/latitude'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._SCANLINENAME] = 'PRODUCT/scanline'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._GROUNDPIXELNAME] = 'PRODUCT/ground_pixel'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][
             self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
@@ -173,6 +178,8 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._SCANLINENAME] = 'PRODUCT/scanline'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._GROUNDPIXELNAME] = 'PRODUCT/ground_pixel'
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._QANAME] = 'PRODUCT/qa_value'
         self.CODA_READ_PARAMETERS[self._O3NAME]['vars'][self._O3NAME] = 'PRODUCT/ozone_total_vertical_column'
 
@@ -264,6 +271,8 @@ class ReadL2Data(ReadL2DataBase):
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LATITUDENAME] = 'PRODUCT/latitude'
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._SCANLINENAME] = 'PRODUCT/scanline'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._GROUNDPIXELNAME] = 'PRODUCT/ground_pixel'
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
             self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._QANAME] = 'PRODUCT/qa_value'
@@ -544,152 +553,320 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
 
-    # def read(self, vars_to_retrieve=None, files=[], first_file=None,
-    #          last_file=None, file_pattern=None, list_coda_paths=False,
-    #          local_temp_dir=None):
-    #     """Method that reads list of files as instance of :class:`UngriddedData`
-    #
-    #     Parameters
-    #     ----------
-    #     vars_to_retrieve : :obj:`list` or similar, optional,
-    #         list containing variable IDs that are supposed to be read. If None,
-    #         all variables in :attr:`PROVIDES_VARIABLES` are loaded
-    #     files : :obj:`list`, optional
-    #         list of files to be read. If None, then the file list is used that
-    #         is returned on :func:`get_file_list`.
-    #     first_file : :obj:`int`, optional
-    #         index of first file in file list to read. If None, the very first
-    #         file in the list is used. Note: is ignored if input parameter
-    #         `file_pattern` is specified.
-    #     last_file : :obj:`int`, optional
-    #         index of last file in list to read. If None, the very last file
-    #         in the list is used. Note: is ignored if input parameter
-    #         `file_pattern` is specified.
-    #     file_pattern : str, optional
-    #         string pattern for file search (cf :func:`get_file_list`)
-    #     :param local_temp_dir:
-    #
-    #     Returns
-    #     -------
-    #     UngriddedData
-    #         data object
-    #
-    #     Example:
-    #     >>> import pyaerocom as pya
-    #     >>> obj = pya.io.read_sentinel5p_data.ReadL2Data()
-    #     >>> testfiles = []
-    #     >>> testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190531T165100_20190531T183230_08446_01_010107_20190606T185838.nc')
-    #     >>> testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190530T051930_20190530T070100_08425_01_010107_20190605T070532.nc')
-    #     >>> data=obj.read(files=testfiles)
-    #     or with a tar file:
-    #     >>> import pyaerocom as pya
-    #     >>> obj = pya.io.read_sentinel5p_data.ReadL2Data()
-    #     >>> testfiles = []
-    #     >>> testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/tar/2019/01/tropomi_no2_20190115.tar')
-    #     >>> data=obj.read(files=testfiles, vars_to_retrieve='tcolno2')
-    #
-    #     """
-    #
-    #     import pathlib
-    #     import tarfile
-    #     import os
-    #
-    #     if local_temp_dir is None:
-    #         local_temp_dir = self.LOCAL_TMP_DIR
-    #
-    #     if vars_to_retrieve is None:
-    #         vars_to_retrieve = self.DEFAULT_VARS
-    #     elif isinstance(vars_to_retrieve, str):
-    #         vars_to_retrieve = [vars_to_retrieve]
-    #
-    #     if files is None:
-    #         if len(self.files) == 0:
-    #             self.get_file_list(pattern=file_pattern)
-    #         files = self.files
-    #
-    #     if file_pattern is None:
-    #         if first_file is None:
-    #             first_file = 0
-    #         if last_file is None:
-    #             last_file = len(files)
-    #
-    #         files = files[first_file:last_file]
-    #
-    #     self.read_failed = []
-    #     temp_files = {}
-    #
-    #     data_obj = UngriddedData(num_points=self._COLNO, chunksize=self._CHUNKSIZE)
-    #     meta_key = 0.0
-    #     idx = 0
-    #
-    #     # check if the supplied file is a supported archive file (tar in this case)
-    #     # and extract the files with supported suffixes to const._cachedir
-    #     non_archive_files = []
-    #     for idx, _file in enumerate(sorted(files)):
-    #         # temp = 'reading file: {}'.format(_file)
-    #
-    #         self.logger.info('file: {}'.format(_file))
-    #         suffix = pathlib.Path(_file).suffix
-    #         if suffix in self.SUPPORTED_ARCHIVE_SUFFIXES:
-    #             temp = 'opening archive file; using {} as temp dir.'.format(local_temp_dir)
-    #             self.logger.info(temp)
-    #             # untar archive files first
-    #             tarhandle = tarfile.open(_file)
-    #             files_in_tar = tarhandle.getnames()
-    #             for file_in_tar in files_in_tar:
-    #                 if pathlib.Path(file_in_tar).suffix in self.SUPPORTED_SUFFIXES:
-    #                     # extract file to tmp path
-    #                     member = tarhandle.getmember(file_in_tar)
-    #                     temp = 'extracting file {}...'.format(member.name)
-    #                     self.logger.info(temp)
-    #                     tarhandle.extract(member, path=local_temp_dir, set_attrs=False)
-    #                     extract_file = os.path.join(local_temp_dir, member.name)
-    #                     non_archive_files.append(extract_file)
-    #                     temp_files[extract_file] = True
-    #             tarhandle.close()
-    #         else:
-    #             non_archive_files.append(_file)
-    #
-    #
-    #     for idx, _file in enumerate(sorted(non_archive_files)):
-    #         # list coda data paths in the 1st file in case the user asked for that
-    #         if idx == 0 and list_coda_paths:
-    #             pass
-    #             coda_handle = coda.open(_file)
-    #             root_field_names = coda.get_field_names(coda_handle)
-    #             for field in root_field_names:
-    #                 print(field)
-    #             coda.close(coda_handle)
-    #             data_obj = None
-    #             return data_obj
-    #
-    #         file_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve,
-    #                                    loglevel=logging.INFO, return_as='numpy')
-    #         self.logger.info('{} points read'.format(file_data.shape[0]))
-    #         # the metadata dict is left empty for L2 data
-    #         # the location in the data set is time step dependant!
-    #         if idx == 0:
-    #             data_obj._data = file_data
-    #
-    #         else:
-    #             data_obj._data = np.append(data_obj._data, file_data, axis=0)
-    #
-    #         data_obj._idx = data_obj._data.shape[0] + 1
-    #         file_data = None
-    #         # remove file if it was temporary one
-    #         if _file in temp_files:
-    #             os.remove(_file)
-    #         #     pass
-    #         # tmp_obj = UngriddedData()
-    #         # tmp_obj._data = file_data
-    #         # tmp_obj._idx = data_obj._data.shape[0] + 1
-    #         # data_obj.append(tmp_obj)
-    #
-    #     self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
-    #     return data_obj
+    def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc', global_attributes=None,
+                         vars_to_write=None, data_to_write=None, gridded=False):
+
+        if data_to_write is None:
+            _data = self.data
+        else:
+            _data = data_to_write._data
+
+        if isinstance(_data, dict):
+            # write out the read data using the dictionary directly
+            vars_to_write_out = vars_to_write.copy()
+            if isinstance(vars_to_write_out, str):
+                vars_to_write_out = [vars_to_write_out]
+
+            ds = self.to_xarray(_data)
+
+            # add potential global attributes
+            try:
+                for name in global_attributes:
+                    ds.attrs[name] = global_attributes[name]
+            except:
+                pass
+
+            ds.to_netcdf(netcdf_filename)
+            obj.logger.info('file {} written'.format(netcdf_filename))
+        else:
+            #call super class
+            super().to_netcdf_simple(netcdf_filename, global_attributes, vars_to_write, data_to_write, gridded)
 
     ###################################################################################
-    
+    def _match_dim_name(self, dim_dict, dim_size=None, data=None):
+        """small helper routine to match the dimension size to a dimension name"""
+
+        # try to match the shapes to the dimensions
+        ret_data ={}
+
+        if data is not None:
+            for var in data:
+                ret_data[var] = []
+                for _size in data[var].shape:
+                    try:
+                        ret_data[var].append(dim_dict[_size])
+                    except:
+                        pass
+            return ret_data
+        else:
+            return dim_dict[dim_size]
+    ###################################################################################
+
+    def to_xarray(self,data_to_write=None, gridded=False):
+        """helper method to turn a read dictionary into an xarray dataset opbject"""
+
+        if isinstance(data_to_write,dict):
+            _data = data_to_write
+        else:
+            _data = data_to_write._data
+
+        import xarray as xr
+        import numpy as np
+
+        if not gridded:
+            # vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]['metadata'].keys()))
+            # var_write_out = _data.keys()
+
+            # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
+            # build the datetimedata...
+            ts_no = len(_data['scanline'])
+            swath_width = len(_data['ground_pixel'])
+            point_dim_len = ts_no * swath_width
+            datetimedata = np.empty(point_dim_len)
+            for idx, _time in enumerate(_data['delta_time']):
+                # print('range: {} to {}'.format(idx*swath_width,(idx+1)*swath_width-1))
+                datetimedata[idx * swath_width:(idx + 1) * swath_width] = _data['delta_time'][idx]
+                # datetimedata[idx*swath_width:(idx+1)*swath_width] = _data['delta_time'].astype('datetime64[ms]')
+            # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[ms]'))
+            # pointnumber = np.arange(0, len(datetimedata))
+            bounds_dim_name = 'bounds'
+            bounds_dim_size = 4
+            point_dim_name = 'point'
+            point_dim_size = point_dim_len
+            swath_dim_name = self._GROUNDPIXELNAME
+            swath_dim_size = swath_width
+            level_dim_name = self._LEVELSNAME
+            level_dim_size = self._LEVELSSIZE
+            tm5_constant_dim_name = 'const_dim'
+            tm5_constant_dim_size = 2
+            scanline_dim_name = self._SCANLINENAME
+            scanline_dim_size = ts_no
+            ds = xr.Dataset()
+
+            # time and potentially levels are special variables that needs special treatment
+            ds[self._TIME_NAME] = (point_dim_name), datetimedata.astype('datetime64[ms]')
+            skip_vars = [self._TIME_NAME]
+            skip_vars.extend(['delta_time'])
+            ds[self._LEVELSNAME] = (level_dim_name), np.arange(self._LEVELSSIZE)
+            skip_vars.extend([self._LEVELSNAME])
+            ds[self._GROUNDPIXELNAME] = (swath_dim_name), _data['ground_pixel']
+            skip_vars.extend([self._GROUNDPIXELNAME])
+            ds[point_dim_name] = np.arange(point_dim_len)
+            ds[tm5_constant_dim_name] = np.arange(tm5_constant_dim_size)
+            ds[bounds_dim_name] = np.arange(4)
+
+            # define a dict with the dimension size as key and the dimensions name as value
+            dim_size_dict = {}
+            dim_size_dict[point_dim_size] = point_dim_name
+            dim_size_dict[bounds_dim_size] = bounds_dim_name
+            dim_size_dict[swath_dim_size] = swath_dim_name
+            dim_size_dict[level_dim_size] = level_dim_name
+            dim_size_dict[tm5_constant_dim_size] = tm5_constant_dim_name
+            dim_size_dict[scanline_dim_size] = scanline_dim_name
+
+            dim_name_dict = self._match_dim_name(dim_size_dict, data=_data)
+            for var in _data:
+                # loop through the variables
+                if var in skip_vars:
+                    continue
+                print('variable: {}'.format(var))
+                if len(_data[var].shape) == 1:
+                    # var with dimension time (e.g. 3245)
+                    # each time needs to be repeated by the swath width
+                    try:
+                        ds[var] = (point_dim_name), _data[var]
+                    except ValueError:
+                        ds[var] = (dim_size_dict[_data[var].shape[0]]), _data[var]
+
+                elif len(_data[var].shape) == 2:
+                    # var with dimension time and swath (e.g. 3245, 450)
+                    try:
+                        ds[var] = (point_dim_name), _data[var].reshape(point_dim_len)
+                    except ValueError:
+                        ds[var] = (dim_name_dict[var]), _data[var]
+
+                elif len(_data[var].shape) == 3:
+                    # var with dimension time, swath and levels or bounds
+                    # store some vars depending on the points dimension as a 2d variable
+                    if var == 'avg_kernel':
+                        ds[var] = (point_dim_name, level_dim_name), _data[var].reshape([point_dim_size, level_dim_size])
+                    elif var == 'lat_bnds' or var == 'lon_bnds':
+                        ds[var] = (point_dim_name, bounds_dim_name), _data[var].reshape(
+                            [point_dim_size, bounds_dim_size])
+                    else:
+                        ds[var] = (dim_name_dict[var]), _data[var]
+                        pass
+
+            # add attributes to variables
+            for var in ds:
+                # add predifined attributes
+                try:
+                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+
+                except KeyError:
+                    pass
+
+            # remove _FillValue attribute from coordinate variables since that
+            # is forbidden by CF convention
+            for var in self.COORDINATE_NAMES:
+                # if var in self.COORDINATE_NAMES:
+                try:
+                    del ds[var].encoding['_FillValue']
+                except KeyError:
+                    pass
+
+                # # add predifined attributes
+                # try:
+                #     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                #         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+                #
+                # except KeyError:
+                #     pass
+            return ds
+        else:
+            # gridded
+            pass
+
+    ###################################################################################
+
+    def to_grid(self, data=None, vars=None, gridtype='1x1', engine='python', return_data_for_gridding=True,
+                averaging_kernels=None):
+        """to_grid method that takes a xarray.Dataset object as input"""
+
+        import xarray as xr
+        import numpy as np
+
+        if isinstance(data,dict):
+            _data = self.to_xarray(data_to_write=data)
+        else:
+            _data = self.to_xarray(data_to_write=data._data)
+
+        if engine == 'python':
+            data_for_gridding, gridded_var_data, grid_lats, grid_lons, max_grid_dist_lat, max_grid_dist_lon = \
+                self._to_grid_grid_init(gridtype=gridtype, vars=vars ,init_time=_data['time'].mean())
+
+
+            start_time = time.perf_counter()
+            matching_points = 0
+            # predefine the output data dict
+            # data_for_gridding = {}
+
+            # Loop through the output grid and collect data
+            # store that in data_for_gridding[var]
+            for lat_idx, grid_lat in enumerate(grid_lats):
+                diff_lat = np.absolute((_data[self._LATITUDENAME].data - grid_lat))
+                lat_match_indexes = np.squeeze(np.where(diff_lat <= (max_grid_dist_lat/2.)))
+                print('lat: {}, matched indexes: {}'.format(grid_lat, lat_match_indexes.size))
+                if lat_match_indexes.size == 0:
+                    continue
+
+                for lon_idx, grid_lon in enumerate(grid_lons):
+                    diff_lon = np.absolute((_data[self._LONGITUDENAME].data[lat_match_indexes] - grid_lon))
+                    lon_match_indexes = np.squeeze(np.where(diff_lon <= (max_grid_dist_lon/2.)))
+                    if lon_match_indexes.size == 0:
+                        continue
+
+                    for var in vars:
+                        if return_data_for_gridding:
+                            data_for_gridding[var][grid_lat][grid_lon] = \
+                                np.array(_data[self._LONGITUDENAME].data[lat_match_indexes[lon_match_indexes]])
+                            # np.array(data[lat_match_indexes[lon_match_indexes], self.INDEX_DICT[var]])
+
+                        gridded_var_data[var]['mean'][lat_idx, lon_idx] = \
+                            np.nanmean(_data[var].data[lat_match_indexes[lon_match_indexes]])
+                        gridded_var_data[var]['stddev'][lat_idx, lon_idx] = \
+                            np.nanstd(_data[var].data[lat_match_indexes[lon_match_indexes]])
+                        gridded_var_data[var]['numobs'][lat_idx, lon_idx] = \
+                            _data[var].data[lat_match_indexes[lon_match_indexes]].size
+                        matching_points = matching_points + _data[var].data[lat_match_indexes[lon_match_indexes]].size
+
+            end_time = time.perf_counter()
+            elapsed_sec = end_time - start_time
+            temp = 'time for global 1x1 gridding with python data types [s]: {:.3f}'.format(elapsed_sec)
+            self.logger.info(temp)
+            temp = 'matched {} points out of {} existing points to grid'.format(matching_points, _data['time'].size)
+            self.logger.info(temp)
+
+            if return_data_for_gridding:
+                self.logger.info('returning also data_for_gridding...')
+                return gridded_var_data, data_for_gridding
+            else:
+                return gridded_var_data
+
+        elif gridtype == '1x1_emep':
+            # 1 by on degree grid on emep domain
+            pass
+
+
+        pass
+
+
+
+
+
+
+        if isinstance(data, xr.Dataset):
+
+            pass
+        else:
+            super().to_grid(data=None, vars=None, gridtype='1x1', engine='python', return_data_for_gridding=False)
+    ###################################################################################
+
+    def _to_grid_grid_init(self,gridtype='1x1',vars=None,init_time=None):
+        """small helper routine to init the grid data struct"""
+
+        import numpy as np
+
+        start_time = time.perf_counter()
+        grid_data_prot = {}
+
+        grid_lats = []
+        grid_lons = []
+        gridded_var_data = {}
+        max_grid_dist_lon = 0.
+        max_grid_dist_lat = 0.
+        data_for_gridding = {}
+
+        if gridtype == '1x1':
+            # global 1x1 degree grid
+            # pass
+            temp = 'starting simple gridding for 1x1 degree grid...'
+            self.logger.info(temp)
+            max_grid_dist_lon = 1.
+            max_grid_dist_lat = 1.
+            grid_lats = np.arange(-89.5, 90.5, max_grid_dist_lat)
+            grid_lons = np.arange(-179.5, 180.5, max_grid_dist_lon)
+
+            grid_array_prot = np.full((grid_lats.size, grid_lons.size), np.nan)
+            # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
+            for grid_lat in grid_lats:
+                grid_data_prot[grid_lat] = {}
+                for grid_lon in grid_lons:
+                    grid_data_prot[grid_lat][grid_lon] = {}
+
+            end_time = time.perf_counter()
+            elapsed_sec = end_time - start_time
+            temp = 'time for global 1x1 gridding with python data types [s] init: {:.3f}'.format(elapsed_sec)
+            self.logger.info(temp)
+
+            # predefine the output data dict
+            for var in vars:
+                data_for_gridding[var] = grid_data_prot.copy()
+                gridded_var_data['latitude'] = grid_lats
+                gridded_var_data['longitude'] = grid_lons
+                gridded_var_data['time'] = init_time
+
+                gridded_var_data[var] = {}
+                gridded_var_data[var]['mean'] = grid_array_prot.copy()
+                gridded_var_data[var]['stddev'] = grid_array_prot.copy()
+                gridded_var_data[var]['numobs'] = grid_array_prot.copy()
+        else:
+            pass
+
+
+        return data_for_gridding, gridded_var_data, grid_lats, grid_lons, max_grid_dist_lat, max_grid_dist_lon
+
 
 if __name__ == "__main__":
     """small test for the sentinel5p reading...
@@ -879,7 +1056,7 @@ if __name__ == "__main__":
     vars_to_retrieve = options['variables'].copy()
 
     data_numpy = obj.read(files=options['files'], vars_to_retrieve=vars_to_retrieve[0],
-                          local_temp_dir=default_local_temp_dir)
+                          local_temp_dir=default_local_temp_dir, return_as='dict')
 
     # limit data to EMEP CAMS domain
     if options['emepflag']:

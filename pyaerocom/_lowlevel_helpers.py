@@ -96,6 +96,11 @@ def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):
     Uses multiprocessing module to test if input function finishes within a 
     certain time interval.
     
+    Note
+    ----
+    Please only use if method to call cannot raise an Exception as this is not
+    handled here in which case True is returned.
+    
     Parameters
     ----------
     fun : callable
