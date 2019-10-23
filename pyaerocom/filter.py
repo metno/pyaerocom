@@ -49,6 +49,7 @@ class Filter(BrowseDict):
     #: dictionary specifying altitude filters
     ALTITUDE_FILTERS = {'wMOUNTAINS'    :   None, #reserve namespace for
                         'noMOUNTAINS'   :   [-1e6, 1e3]} # 1000 m upper limit
+    
     NO_FILTER_NAME = 'WORLD-wMOUNTAINS'
     def __init__(self, name=None, region=None, altitude_filter=None, **kwargs):
         # default name (i.e. corresponds to no filtering)

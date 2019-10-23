@@ -19,10 +19,36 @@ e.g. via filter_region(self, region_id, alt_range=None).
 @author: hannas
 """
 
-from pyaerocom.region import Region
-from pyaerocom.filter import Filter
+import os 
+import glob
 
+#from pyaerocom.region import Region
+#from pyaerocom.filter import Filter
 
+import xarray as xr
+
+def load_region_mask(region_id='PANhtap'):
+    """    
+    Returns
+    ---------
+    xarray.DataArray containing the masks. 
+    """
+
+    path  = '//home/hannas/Desktop/htap/'  # get from config
+    fil =  glob.glob(path + region_id + '*0.1*.nc')[0]
+    print(fil)
+    masks = xr.open_dataset(fil)
+    return masks[region_id]
+
+def available_region_mask():
+    arr = []
+    path = '//home/hannas/Desktop/htap/'
+    files =  glob.glob(path + '*0.1*.nc')
+    for fil in files:
+        arr.append(os.path.basename(fil).split('.')[0])
+    return arr
+
+"""
 class LandSeaMask(object):
     MASK_FILENAMSE = {'EUROPE' : 'XY.nc'}
     def __init__(self, name):
@@ -51,4 +77,6 @@ class LandSeaMask(object):
         pass
     
     # need def apply filter to ungridded, gridded and 
+    
+"""
     
