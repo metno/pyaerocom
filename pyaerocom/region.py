@@ -140,7 +140,7 @@ class Region(BrowseDict):
             self.lat_range_plot = self.lat_range
     
     @property
-    def center_coordinate(self) -> tuple:
+    def center_coordinate(self):
         """Center coordinate of this region"""
         latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0])/2
         lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0])/2
@@ -188,7 +188,7 @@ class Region(BrowseDict):
         lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
         return lat_ok * lon_ok
     
-    def __contains__(self, val: tuple) ->  bool:
+    def __contains__(self, val):
         if not isinstance(val, tuple):
             raise TypeError('Invalid input, need tuple')
         if not len(val) == 2:
@@ -274,7 +274,7 @@ def get_all_default_regions():
         
     return all_regions
    
-def get_regions_coord(lat, lon, **add_regions) -> list:
+def get_regions_coord(lat, lon, **add_regions):
     """Get all regions that contain input coordinate
     
     Parameters
@@ -344,7 +344,7 @@ def find_closest_region_coord(lat, lon, **add_regions):
                 best=rname
         return best
 
-def valid_region(name) -> bool:
+def valid_region(name):
     """Boolean specifying whether input region is valid or not"""
     if isinstance(name, str):
         return True if name.upper() in get_all_default_region_ids() else False

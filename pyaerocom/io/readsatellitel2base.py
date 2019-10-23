@@ -63,7 +63,7 @@ class ReadL2DataBase(ReadUngriddedBase):
     TS_TYPE = 'undefined'
 
     __baseversion__ = '0.01_' + ReadUngriddedBase.__baseversion__
-    
+
     def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
         super(ReadL2DataBase, self).__init__(dataset_to_read)
         self.verbose = verbose
@@ -96,6 +96,8 @@ class ReadL2DataBase(ReadUngriddedBase):
         self._LATITUDENAME = 'latitude'
         self._LONGITUDENAME = 'longitude'
         self._ALTITUDENAME = 'altitude'
+        self._LEVELSNAME = 'level'
+        self._LEVELSSIZE = 34
 
         self._TIME_NAME = 'time'
 
@@ -181,6 +183,11 @@ class ReadL2DataBase(ReadUngriddedBase):
         # PROVIDES_VARIABLES = []
         # self.DEFAULT_VARS = []
 
+        try:
+            self.LOCAL_TMP_DIR = const.LOCAL_TMP_DIR
+        except:
+            self.LOCAL_TMP_DIR = const.CACHEDIR
+
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
             # if self.logger.hasHandlers():
@@ -193,6 +200,145 @@ class ReadL2DataBase(ReadUngriddedBase):
             # self.logger.addHandler(console_handler)
             self.logger.setLevel(loglevel)
 
+    ###################################################################################
+
+    def read(self, vars_to_retrieve=None, files=[], first_file=None,
+             last_file=None, file_pattern=None, list_coda_paths=False,
+             local_temp_dir=None):
+        """Method that reads list of files as instance of :class:`UngriddedData`
+
+        Parameters
+        ----------
+        vars_to_retrieve : :obj:`list` or similar, optional,
+            list containing variable IDs that are supposed to be read. If None,
+            all variables in :attr:`PROVIDES_VARIABLES` are loaded
+        files : :obj:`list`, optional
+            list of files to be read. If None, then the file list is used that
+            is returned on :func:`get_file_list`.
+        first_file : :obj:`int`, optional
+            index of first file in file list to read. If None, the very first
+            file in the list is used. Note: is ignored if input parameter
+            `file_pattern` is specified.
+        last_file : :obj:`int`, optional
+            index of last file in list to read. If None, the very last file
+            in the list is used. Note: is ignored if input parameter
+            `file_pattern` is specified.
+        file_pattern : str, optional
+            string pattern for file search (cf :func:`get_file_list`)
+        :param local_temp_dir:
+
+        Returns
+        -------
+        UngriddedData
+            data object
+
+        Example:
+        >>> import pyaerocom as pya
+        >>> obj = pya.io.read_aeolus_l2a_data.ReadL2Data()
+        >>> testfiles = []
+        >>> testfiles.append('/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/download/2018-12/01/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.TGZ')
+        >>> data=obj.read(files=testfiles)
+        >>> data=obj.read(files=testfiles, vars_to_retrieve='ec355aer')
+
+        """
+
+        import pathlib
+        import tarfile
+        import os
+        import coda
+
+        if local_temp_dir is None:
+            local_temp_dir = self.LOCAL_TMP_DIR
+
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+
+        if files is None:
+            if len(self.files) == 0:
+                self.get_file_list(pattern=file_pattern)
+            files = self.files
+
+        if file_pattern is None:
+            if first_file is None:
+                first_file = 0
+            if last_file is None:
+                last_file = len(files)
+
+            files = files[first_file:last_file]
+
+        self.read_failed = []
+        temp_files = {}
+
+        data_obj = UngriddedData(num_points=self._COLNO, chunksize=self._CHUNKSIZE)
+        meta_key = 0.0
+        idx = 0
+
+        # check if the supplied file is a supported archive file (tar in this case)
+        # and extract the files with supported suffixes to const._cachedir
+        non_archive_files = []
+        for idx, _file in enumerate(sorted(files)):
+            # temp = 'reading file: {}'.format(_file)
+
+            self.logger.info('file: {}'.format(_file))
+            suffix = pathlib.Path(_file).suffix
+            if suffix in self.SUPPORTED_ARCHIVE_SUFFIXES:
+                temp = 'opening archive file; using {} as temp dir.'.format(local_temp_dir)
+                self.logger.info(temp)
+                # untar archive files first
+                tarhandle = tarfile.open(_file)
+                files_in_tar = tarhandle.getnames()
+                for file_in_tar in files_in_tar:
+                    if pathlib.Path(file_in_tar).suffix in self.SUPPORTED_SUFFIXES:
+                        # extract file to tmp path
+                        member = tarhandle.getmember(file_in_tar)
+                        temp = 'extracting file {}...'.format(member.name)
+                        self.logger.info(temp)
+                        tarhandle.extract(member, path=local_temp_dir, set_attrs=False)
+                        extract_file = os.path.join(local_temp_dir, member.name)
+                        non_archive_files.append(extract_file)
+                        temp_files[extract_file] = True
+                tarhandle.close()
+            else:
+                non_archive_files.append(_file)
+
+        for idx, _file in enumerate(sorted(non_archive_files)):
+            # list coda data paths in the 1st file in case the user asked for that
+            if idx == 0 and list_coda_paths:
+                pass
+                coda_handle = coda.open(_file)
+                root_field_names = coda.get_field_names(coda_handle)
+                for field in root_field_names:
+                    print(field)
+                coda.close(coda_handle)
+                data_obj = None
+                return data_obj
+
+            file_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve,
+                                       loglevel=logging.INFO, return_as='numpy')
+            self.logger.info('{} points read'.format(file_data.shape[0]))
+            # the metadata dict is left empty for L2 data
+            # the location in the data set is time step dependant!
+            if idx == 0:
+                data_obj._data = file_data
+
+            else:
+                data_obj._data = np.append(data_obj._data, file_data, axis=0)
+
+            data_obj._idx = data_obj._data.shape[0] + 1
+            file_data = None
+            # remove file if it was temporary one
+            if _file in temp_files:
+                os.remove(_file)
+            #     pass
+            # tmp_obj = UngriddedData()
+            # tmp_obj._data = file_data
+            # tmp_obj._idx = data_obj._data.shape[0] + 1
+            # data_obj.append(tmp_obj)
+
+        self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
+        return data_obj
 
     ###################################################################################
 
@@ -234,12 +380,18 @@ class ReadL2DataBase(ReadUngriddedBase):
             # pointnumber = np.arange(0, len(datetimedata))
             bounds_dim_name = 'bounds'
             point_dim_name = 'point'
+            level_dim_name = self._LEVELSNAME
             ds = xr.Dataset()
 
-            # time is a special variable that needs special treatment
-            ds['time'] = (point_dim_name), datetimedata
+            # time and potentially levels are special variables that needs special treatment
+            ds[self._TIME_NAME] = (point_dim_name), datetimedata
+            skip_vars = [self._TIME_NAME]
+            if level_dim_name in vars_to_write_out:
+                ds[level_dim_name] = np.arange(self._LEVELSSIZE)
+                skip_vars.extend([self._LEVELSNAME])
+
             for var in vars_to_write_out:
-                if var == self._TIME_NAME:
+                if var in skip_vars:
                     continue
                 # 1D data
                 if var not in self.SIZE_DICT:
@@ -253,7 +405,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                 if var in self.COORDINATE_NAMES:
                     ds[var].encoding['_FillValue'] = None
 
-                # add predifined attributes
+                # add predefined attributes
                 try:
                     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
                         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
@@ -288,8 +440,10 @@ class ReadL2DataBase(ReadUngriddedBase):
                     continue
                 # 1D data
                 # 3D data
-                ds[var+'_mean'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['mean'],(len(ds[time_dim_name]),len(_data[lat_dim_name]), len(_data[lon_dim_name])))
-                ds[var+'_numobs'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['numobs'],(len(ds[time_dim_name]),len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+                ds[var + '_mean'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['mean'], (
+                len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+                ds[var + '_numobs'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['numobs'], (
+                len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])))
 
                 # remove _FillVar attribute for coordinate variables as CF requires it
 
@@ -316,7 +470,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                 except KeyError:
                     pass
 
-    # add potential global attributes
+        # add potential global attributes
         try:
             for name in global_attributes:
                 ds.attrs[name] = global_attributes[name]
@@ -361,7 +515,7 @@ class ReadL2DataBase(ReadUngriddedBase):
             if gridtype == '1x1':
                 # global 1x1 degree grid
                 # pass
-                temp='starting simple gridding for 1x1 degree grid...'
+                temp = 'starting simple gridding for 1x1 degree grid...'
                 self.logger.info(temp)
                 max_grid_dist_lon = 1.
                 max_grid_dist_lat = 1.
@@ -380,14 +534,14 @@ class ReadL2DataBase(ReadUngriddedBase):
                 temp = 'time for global 1x1 gridding with python data types [s] init: {:.3f}'.format(elapsed_sec)
                 self.logger.info(temp)
 
-                #predefine the output data dict
+                # predefine the output data dict
                 data_for_gridding = {}
                 gridded_var_data = {}
                 for var in vars:
                     data_for_gridding[var] = grid_data_prot.copy()
-                    gridded_var_data['latitude']=grid_lats
-                    gridded_var_data['longitude']=grid_lons
-                    gridded_var_data['time']=np.mean(data[:, self._TIMEINDEX]).astype('datetime64[ms]')
+                    gridded_var_data['latitude'] = grid_lats
+                    gridded_var_data['longitude'] = grid_lons
+                    gridded_var_data['time'] = np.mean(data[:, self._TIMEINDEX]).astype('datetime64[ms]')
 
                     gridded_var_data[var] = {}
                     gridded_var_data[var]['mean'] = grid_array_prot.copy()
@@ -411,11 +565,11 @@ class ReadL2DataBase(ReadUngriddedBase):
                         for var in vars:
                             data_for_gridding[var][grid_lat][grid_lon] = \
                                 np.array(data[lat_match_indexes[lon_match_indexes], self.INDEX_DICT[var]])
-                            gridded_var_data[var]['mean'][lat_idx,lon_idx] = \
+                            gridded_var_data[var]['mean'][lat_idx, lon_idx] = \
                                 np.nanmean(data[lat_match_indexes[lon_match_indexes], self.INDEX_DICT[var]])
-                            gridded_var_data[var]['stddev'][lat_idx,lon_idx] = \
+                            gridded_var_data[var]['stddev'][lat_idx, lon_idx] = \
                                 np.nanstd(data[lat_match_indexes[lon_match_indexes], self.INDEX_DICT[var]])
-                            gridded_var_data[var]['numobs'][lat_idx,lon_idx] = \
+                            gridded_var_data[var]['numobs'][lat_idx, lon_idx] = \
                                 data[lat_match_indexes[lon_match_indexes], self.INDEX_DICT[var]].size
 
                 # now go through self.data and select the appropriate data points
@@ -438,6 +592,7 @@ class ReadL2DataBase(ReadUngriddedBase):
             pass
 
         pass
+
     ###################################################################################
 
     def select_bbox(self, _data, bbox=None):
@@ -601,11 +756,11 @@ class ReadL2DataBase(ReadUngriddedBase):
 
             if himalaya_flag:
                 for peak in himalaya_data:
-                    x,y=m(himalaya_data[peak][1], himalaya_data[peak][0])
-                    plot=m.plot(x, y, 4, marker='.', color='b')
+                    x, y = m(himalaya_data[peak][1], himalaya_data[peak][0])
+                    plot = m.plot(x, y, 4, marker='.', color='b')
 
             if title:
-                plt.title(title,fontsize='small')
+                plt.title(title, fontsize='small')
             plt.savefig(plotfilename, dpi=300)
             plt.close()
 
