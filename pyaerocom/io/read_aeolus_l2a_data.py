@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 ################################################################
 # read_aeolus_l2a_data.py
 #
@@ -2073,9 +2074,9 @@ if __name__ == '__main__':
                         help="file(s) to read",nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity",
                         action='store_true')
-    parser.add_argument("--listpaths", help="list the file contents.", action='store_true')
-    parser.add_argument("--readpaths", help="read listed rootpaths of DBL file. Can be comma separated",
-                        default='mph,sca_optical_properties')
+    # parser.add_argument("--listpaths", help="list the file contents.", action='store_true')
+    # parser.add_argument("--readpaths", help="read listed rootpaths of DBL file. Can be comma separated",
+    #                     default='mph,sca_optical_properties')
     parser.add_argument("-o", "--outfile", help="output file")
     parser.add_argument("--outdir", help="output directory; the filename will be extended with the string '.nc'")
     parser.add_argument("--logfile", help="logfile; defaults to /home/jang/tmp/aeolus2netcdf.log",
@@ -2091,8 +2092,8 @@ if __name__ == '__main__':
     parser.add_argument("--lonmax", help="max longitude to return", default=np.float_(45.))
     parser.add_argument("--dir", help="work on all files below this directory",
                         default='/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/download/AE_OPER_ALD_U_N_2A_*')
-    parser.add_argument("--filemask", help="file mask to find data files",
-                        default='*AE_OPER_ALD_U_N_2A_*')
+    # parser.add_argument("--filemask", help="file mask to find data files",
+    #                     default='*AE_OPER_ALD_U_N_2A_*')
     parser.add_argument("--tempdir", help="directory for temporary files",
                         default=os.path.join(os.environ['HOME'], 'tmp'))
     parser.add_argument("--plotmap", help="flag to plot a map of the data points; files will be put in outdir",
@@ -2101,10 +2102,10 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument("--variables", help="comma separated list of variables to write; default: ec355aer,bs355aer",
                         default='ec355aer')
-    parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca", default='sca')
-    parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
-                        action='store_true')
-    parser.add_argument("--modeloutdir", help="directory for colocated model files; will have a similar filename as aeolus input file",
+    # parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca", default='sca')
+    # parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
+    #                     action='store_true')
+    parser.add_argument("--modeloutdir", help="directory for colocated model files; will have a similar filename as input file",
                         default=os.path.join(os.environ['HOME'], 'tmp'))
     parser.add_argument("--topofile", help="topography file; defaults to {}.".format(default_topo_file),
                         default=default_topo_file)

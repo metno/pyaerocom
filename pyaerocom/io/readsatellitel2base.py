@@ -157,7 +157,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         # NETCDF_VAR_ATTRIBUTES[_LATITUDENAME]['_FillValue'] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['long_name'] = 'latitude'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['standard_name'] = 'latitude'
-        self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['units'] = 'degrees north'
+        self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['units'] = 'degrees_north'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['bounds'] = 'lat_bnds'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['axis'] = 'Y'
         self.NETCDF_VAR_ATTRIBUTES[self._LONGITUDENAME] = {}
