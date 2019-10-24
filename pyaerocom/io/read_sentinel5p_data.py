@@ -584,11 +584,17 @@ class ReadL2Data(ReadL2DataBase):
                 pass
 
             obj.logger.info('writing file {}...'.format(netcdf_filename))
+            #compress the main variables
             encoding={}
-            encoding[self._NO2NAME] = {'zlib': True,'complevel': 5}
+            if self._NO2NAME in ds:
+                encoding[self._NO2NAME] = {'zlib': True,'complevel': 5}
+            if self._AVERAGINGKERNELNAME in ds:
+                encoding[self._AVERAGINGKERNELNAME] = {'zlib': True,'complevel': 5}
+            if self._O3NAME in ds:
+                encoding[self._O3NAME] = {'zlib': True, 'complevel': 5}
             # encoding[self._O3NAME] = {'zlib': True,'complevel': 5}
-            # ds.to_netcdf(netcdf_filename, encoding=encoding)
-            ds.to_netcdf(netcdf_filename)
+            ds.to_netcdf(netcdf_filename, encoding=encoding)
+            # ds.to_netcdf(netcdf_filename)
             obj.logger.info('file {} written'.format(netcdf_filename))
         else:
             #call super class
