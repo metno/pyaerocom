@@ -125,7 +125,7 @@ class ReadGridded(object):
     """
     AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
                     'od550gt1aer'   : ['od550aer', 'od550lt1aer'],
-                    'conc*'        : ['mmr*', 'rho']}
+                    'conc*'         : ['mmr*', 'rho']}
     
     AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
                     'od870aer'  :   ['od865aer']}
@@ -1198,50 +1198,57 @@ class ReadGridded(object):
             from pyaerocom.exceptions import VariableDefinitionError
             raise VariableDefinitionError('Invalid variable name {}. Must not '
                                           'contain *'.format(var_name))
+        found = False
         if var_name in self.AUX_REQUIRES:
-            return True
+            found = True
         elif var_name in self._aux_requires:
-            return True
-        import fnmatch
-        patterns = [x for x in self.AUX_REQUIRES if '*' in x]
-        vars_found = []
-        for pattern in patterns:
-            if fnmatch.fnmatch(var_name, pattern):
-                vars_required = self.AUX_REQUIRES[pattern]
-                for addvar in vars_required:
-                    
-                    if not '*' in addvar:
-                        vars_found.append(addvar)
-                    else:
-                        _addvar = var_name
-                        spl1 = pattern.split('*')
-                        spl2 = addvar.split('*')
-                        if len(spl1) != len(spl2):
-                            raise AttributeError('variable patterns in '
-                                                 'AUX_REQUIRES and corresponding '
-                                                 'values (with * in name) need '
-                                                 'to have the same number of '
-                                                 'wildcard delimiters')
-                        for i, substr in enumerate(spl1):
-                            if bool(substr):
-                                _addvar = _addvar.replace(substr, spl2[i])
-                        vars_found.append(_addvar)
-                if (len(vars_found) == len(vars_required) and
-                    all([x in self.vars_provided for x in vars_found])):
-                    
-                    self.add_aux_compute(var_name, 
-                                         vars_required=vars_found,
-                                         fun=self.AUX_FUNS[pattern])
+            found = True
+        else:
+            import fnmatch
+            patterns = [x for x in self.AUX_REQUIRES if '*' in x]
+            vars_found = []
+            for pattern in patterns:
+                if fnmatch.fnmatch(var_name, pattern):
+                    vars_required = self.AUX_REQUIRES[pattern]
+                    for addvar in vars_required:
                         
-                    return True
-        return False
+                        if not '*' in addvar:
+                            vars_found.append(addvar)
+                        else:
+                            _addvar = var_name
+                            spl1 = pattern.split('*')
+                            spl2 = addvar.split('*')
+                            if len(spl1) != len(spl2):
+                                raise AttributeError('variable patterns in '
+                                                     'AUX_REQUIRES and corresponding '
+                                                     'values (with * in name) need '
+                                                     'to have the same number of '
+                                                     'wildcard delimiters')
+                            for i, substr in enumerate(spl1):
+                                if bool(substr):
+                                    _addvar = _addvar.replace(substr, spl2[i])
+                            vars_found.append(_addvar)
+                    if (len(vars_found) == len(vars_required) and
+                        all([x in self.vars_provided for x in vars_found])):
+                        
+                        self.add_aux_compute(var_name, 
+                                             vars_required=vars_found,
+                                             fun=self.AUX_FUNS[pattern])
+                            
+                        found=True
+        if found:
+            try:
+                self._get_aux_vars_and_fun(var_name)
+            except VarNotAvailableError:
+                found = False
+        return found
     
                 
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, vert_which=None, 
                  flex_ts_type=True, prefer_longer=False, 
-                 aux_vars=None, aux_fun=None,
+                 aux_vars=None, aux_fun=None, 
                  **kwargs):
         """Read model data for a specific variable
         
@@ -1328,6 +1335,9 @@ class ReadGridded(object):
                 
         #ts_type = self._check_ts_type(ts_type)
         var_to_read = None
+        # this input variable was explicitely set to be computed, in which 
+        # case reading of that variable is ignored even if a file exists for 
+        # that
         do_compute = (var_name in self._aux_requires and 
                       self.check_compute_var(var_name))
         if not do_compute:
@@ -1342,9 +1352,9 @@ class ReadGridded(object):
                 if var_to_read is None:
                     for alias in const.VARS[var_name].aliases:
                         if alias in self.vars:
-                            const.print_log.info('Did not find {} field, loading '
-                                                 '{} instead'.format(var_name,
-                                                  alias))
+                            const.print_log.info('Did not find {} field but {}. '
+                                                 'Using the latter instead'
+                                                 .format(var_name, alias))
                             var_to_read = alias
         
         if isinstance(vert_which, dict):
@@ -1839,6 +1849,17 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = ReadGridded(data_dir='/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III-2019/TM5_AP3-CTRL2019/renamed')
+# =============================================================================
+#     r = ReadGridded('GFDL-AM4-met2010_AP3-CTRL')
+#     
+#     print(r)
+#     
+#     data = r.read_var('concso4')
+# =============================================================================
     
-    print(r.data_id)
+    r = ReadGridded('FMI-SAT-MERGED11')
+    
+    print(r)
+    
+    data = r.read_var('ang4487aer')
+    
