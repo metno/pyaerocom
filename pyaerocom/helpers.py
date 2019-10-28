@@ -457,6 +457,33 @@ def _get_pandas_freq_and_loffset(freq):
         loffset = PANDAS_RESAMPLE_OFFSETS[freq]
     return (freq, loffset)
 
+def make_datetime_index(start, stop, freq):
+    """Make pandas.DatetimeIndex for input specs
+    
+    Note
+    ----
+    If input frequency is specified in `PANDAS_RESAMPLE_OFFSETS`, an offset 
+    will be added (e.g. 15 days for monthly data).
+    
+    Parameters
+    ----------
+    start 
+        start time
+    stop
+        stop time
+    freq
+        frequency
+    
+    Returns
+    -------
+    DatetimeIndex
+    """
+    freq, loffset = _get_pandas_freq_and_loffset(freq)
+    idx = pd.date_range(start=start, end=stop, freq=freq)
+    if loffset is not None:
+        idx = idx + pd.Timedelta(loffset)
+    return idx
+
 def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
     
