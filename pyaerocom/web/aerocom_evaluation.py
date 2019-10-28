@@ -1389,7 +1389,10 @@ class AerocomEvaluation(object):
             exp_id = self.exp_id
         if base_dir is None:
             base_dir = self.out_basedir
-        delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id)
+        try:
+            delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id)
+        except NameError:
+            pass
         self.update_interface()
         
     def clean_json_files(self, update_interface=False):
