@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 ################################################################
 # read_sentinel5p_data.py
 #
@@ -52,7 +53,7 @@ class ReadL2Data(ReadL2DataBase):
     """
 
     _FILEMASK = '*.nc'
-    __version__ = "0.01"
+    __version__ = "0.02"
     DATA_ID = const.SENTINEL5P_NAME
 
     DATASET_PATH = '/lustre/storeB/project/fou/kl/vals5p/download'
@@ -111,7 +112,6 @@ class ReadL2Data(ReadL2DataBase):
         self._COLNO = self._LATBOUNDINDEX + self._LATBOUNDSSIZE + self._LONBOUNDSSIZE + 2
         self._HEIGHTSTEPNO = 24
         self.SUPPORTED_SUFFIXES.append('.nc')
-
 
 
 
@@ -331,6 +331,11 @@ class ReadL2Data(ReadL2DataBase):
                 self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]['vars'][self._TM5_CONSTANT_B_NAME]
             self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._AVERAGINGKERNELNAME] = \
                 self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['vars'][self._AVERAGINGKERNELNAME]
+
+        self.STATICFIELDNAMES = [self._GROUNDPIXELNAME, self._LEVELSNAME, self._TM5_CONSTANT_A_NAME, self._TM5_CONSTANT_B_NAME]
+
+        # field name whose size determines the number of time steps in a product
+        self.TSSIZENAME=self._TIME_OFFSET_NAME
 
 
         if loglevel is not None:
@@ -554,12 +559,15 @@ class ReadL2Data(ReadL2DataBase):
     ###################################################################################
 
     def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc', global_attributes=None,
-                         vars_to_write=None, data_to_write=None, gridded=False):
+                         vars_to_write=None, data_to_write=None, gridded=False, apply_quality_flag=0.0):
 
         if data_to_write is None:
             _data = self.data
         else:
-            _data = data_to_write._data
+            try:
+                _data = data_to_write._data
+            except AttributeError:
+                _data = data_to_write
 
         if isinstance(_data, dict):
             # write out the read data using the dictionary directly
@@ -567,7 +575,7 @@ class ReadL2Data(ReadL2DataBase):
             if isinstance(vars_to_write_out, str):
                 vars_to_write_out = [vars_to_write_out]
 
-            ds = self.to_xarray(_data)
+            ds = self.to_xarray(_data, gridded=gridded, apply_quality_flag=apply_quality_flag)
 
             # add potential global attributes
             try:
@@ -576,7 +584,18 @@ class ReadL2Data(ReadL2DataBase):
             except:
                 pass
 
-            ds.to_netcdf(netcdf_filename)
+            obj.logger.info('writing file {}...'.format(netcdf_filename))
+            #compress the main variables
+            encoding={}
+            if self._NO2NAME in ds:
+                encoding[self._NO2NAME] = {'zlib': True,'complevel': 5}
+            if self._AVERAGINGKERNELNAME in ds:
+                encoding[self._AVERAGINGKERNELNAME] = {'zlib': True,'complevel': 5}
+            if self._O3NAME in ds:
+                encoding[self._O3NAME] = {'zlib': True, 'complevel': 5}
+            # encoding[self._O3NAME] = {'zlib': True,'complevel': 5}
+            ds.to_netcdf(netcdf_filename, encoding=encoding)
+            # ds.to_netcdf(netcdf_filename)
             obj.logger.info('file {} written'.format(netcdf_filename))
         else:
             #call super class
@@ -592,6 +611,12 @@ class ReadL2Data(ReadL2DataBase):
         if data is not None:
             for var in data:
                 ret_data[var] = []
+                # not all is a ndarray with a shape
+                try:
+                    shape = data[var].shape
+                except:
+                    continue
+
                 for _size in data[var].shape:
                     try:
                         ret_data[var].append(dim_dict[_size])
@@ -602,7 +627,7 @@ class ReadL2Data(ReadL2DataBase):
             return dim_dict[dim_size]
     ###################################################################################
 
-    def to_xarray(self,data_to_write=None, gridded=False):
+    def to_xarray(self,data_to_write=None, gridded=False,apply_quality_flag=0.0 ):
         """helper method to turn a read dictionary into an xarray dataset opbject"""
 
         if isinstance(data_to_write,dict):
@@ -612,6 +637,11 @@ class ReadL2Data(ReadL2DataBase):
 
         import xarray as xr
         import numpy as np
+
+        bounds_dim_name = 'bounds'
+        bounds_dim_size = 4
+        level_dim_name = self._LEVELSNAME
+        level_dim_size = self._LEVELSSIZE
 
         if not gridded:
             # vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]['metadata'].keys()))
@@ -623,29 +653,25 @@ class ReadL2Data(ReadL2DataBase):
             swath_width = len(_data['ground_pixel'])
             point_dim_len = ts_no * swath_width
             datetimedata = np.empty(point_dim_len)
+            point_dim_name = 'point'
+            point_dim_size = point_dim_len
+            swath_dim_name = self._GROUNDPIXELNAME
+            swath_dim_size = swath_width
+            tm5_constant_dim_name = 'const_dim'
+            tm5_constant_dim_size = 2
+            # scanline_dim_name = self._SCANLINENAME
+            # scanline_dim_size = ts_no
             for idx, _time in enumerate(_data['delta_time']):
                 # print('range: {} to {}'.format(idx*swath_width,(idx+1)*swath_width-1))
                 datetimedata[idx * swath_width:(idx + 1) * swath_width] = _data['delta_time'][idx]
                 # datetimedata[idx*swath_width:(idx+1)*swath_width] = _data['delta_time'].astype('datetime64[ms]')
             # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[ms]'))
             # pointnumber = np.arange(0, len(datetimedata))
-            bounds_dim_name = 'bounds'
-            bounds_dim_size = 4
-            point_dim_name = 'point'
-            point_dim_size = point_dim_len
-            swath_dim_name = self._GROUNDPIXELNAME
-            swath_dim_size = swath_width
-            level_dim_name = self._LEVELSNAME
-            level_dim_size = self._LEVELSSIZE
-            tm5_constant_dim_name = 'const_dim'
-            tm5_constant_dim_size = 2
-            scanline_dim_name = self._SCANLINENAME
-            scanline_dim_size = ts_no
             ds = xr.Dataset()
 
             # time and potentially levels are special variables that needs special treatment
             ds[self._TIME_NAME] = (point_dim_name), datetimedata.astype('datetime64[ms]')
-            skip_vars = [self._TIME_NAME]
+            skip_vars = [self._TIME_NAME, self._SCANLINENAME]
             skip_vars.extend(['delta_time'])
             ds[self._LEVELSNAME] = (level_dim_name), np.arange(self._LEVELSSIZE)
             skip_vars.extend([self._LEVELSNAME])
@@ -662,75 +688,159 @@ class ReadL2Data(ReadL2DataBase):
             dim_size_dict[swath_dim_size] = swath_dim_name
             dim_size_dict[level_dim_size] = level_dim_name
             dim_size_dict[tm5_constant_dim_size] = tm5_constant_dim_name
-            dim_size_dict[scanline_dim_size] = scanline_dim_name
+            # dim_size_dict[scanline_dim_size] = scanline_dim_name
 
             dim_name_dict = self._match_dim_name(dim_size_dict, data=_data)
+            if apply_quality_flag > 0.:
+                # apply quality flags on the point cloud
+                qflags = _data[self._QANAME].reshape(point_dim_len)
+                keep_indexes = np.where(qflags >= apply_quality_flag)
+                elements_to_add = len(keep_indexes[0])
+                # dim_size_dict[elements_to_add] = point_dim_name
+                ds = xr.Dataset()
+                ds[self._TIME_NAME] = (point_dim_name), datetimedata.astype('datetime64[ms]')[keep_indexes]
+                ds[point_dim_name] = np.arange(elements_to_add)
+                # point_dim_size = elements_to_add
+
             for var in _data:
                 # loop through the variables
                 if var in skip_vars:
+                    continue
+                try:
+                    shape = _data[var].shape
+                except AttributeError:
                     continue
                 print('variable: {}'.format(var))
                 if len(_data[var].shape) == 1:
                     # var with dimension time (e.g. 3245)
                     # each time needs to be repeated by the swath width
-                    try:
-                        ds[var] = (point_dim_name), _data[var]
-                    except ValueError:
-                        ds[var] = (dim_size_dict[_data[var].shape[0]]), _data[var]
+                    if apply_quality_flag == 0.:
+                        try:
+                            ds[var] = (point_dim_name), _data[var]
+                        except ValueError:
+                            ds[var] = (dim_size_dict[_data[var].shape[0]]), _data[var]
+                    else:
+                        try:
+                            ds[var] = (point_dim_name), _data[var][keep_indexes]
+                        except ValueError:
+                            ds[var] = (dim_size_dict[_data[var].shape[0]]), _data[var][keep_indexes]
 
                 elif len(_data[var].shape) == 2:
                     # var with dimension time and swath (e.g. 3245, 450)
-                    try:
-                        ds[var] = (point_dim_name), _data[var].reshape(point_dim_len)
-                    except ValueError:
-                        ds[var] = (dim_name_dict[var]), _data[var]
+                    if apply_quality_flag == 0.:
+                        try:
+                            ds[var] = (point_dim_name), _data[var].reshape(point_dim_len)
+                        except ValueError:
+                            ds[var] = (dim_name_dict[var]), _data[var]
+                    else:
+                        try:
+                            ds[var] = (point_dim_name), (_data[var].reshape(point_dim_len))[keep_indexes]
+                        except ValueError:
+                            ds[var] = (dim_name_dict[var]), _data[var]
 
                 elif len(_data[var].shape) == 3:
                     # var with dimension time, swath and levels or bounds
                     # store some vars depending on the points dimension as a 2d variable
-                    if var == 'avg_kernel':
-                        ds[var] = (point_dim_name, level_dim_name), _data[var].reshape([point_dim_size, level_dim_size])
-                    elif var == 'lat_bnds' or var == 'lon_bnds':
-                        ds[var] = (point_dim_name, bounds_dim_name), _data[var].reshape(
-                            [point_dim_size, bounds_dim_size])
+                    if apply_quality_flag == 0.:
+                        if var == 'avg_kernel':
+                            ds[var] = (point_dim_name, level_dim_name), _data[var].reshape([point_dim_size, level_dim_size])
+                        elif var == 'lat_bnds' or var == 'lon_bnds':
+                            ds[var] = (point_dim_name, bounds_dim_name), _data[var].reshape(
+                                [point_dim_size, bounds_dim_size])
+                        else:
+                            ds[var] = (dim_name_dict[var]), _data[var]
+                            pass
                     else:
-                        ds[var] = (dim_name_dict[var]), _data[var]
-                        pass
+                        if var == 'avg_kernel':
+                            # temp = np.squeeze((_data[var].reshape([point_dim_size, level_dim_size]))[keep_indexes,:])
+                            ds[var] = (point_dim_name, level_dim_name), \
+                                np.squeeze((_data[var].reshape([point_dim_size, level_dim_size]))[keep_indexes,:])
+                            print('{}'.format(var))
+
+                        elif var == 'lat_bnds' or var == 'lon_bnds':
+                            ds[var] = (point_dim_name, bounds_dim_name), \
+                                      np.squeeze(_data[var].reshape([point_dim_size, bounds_dim_size])[keep_indexes,:])
+                        else:
+                            ds[var] = (dim_name_dict[var]), _data[var]
+                            pass
 
             # add attributes to variables
             for var in ds:
                 # add predifined attributes
+                print('var {}'.format(var))
                 try:
                     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
                         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
-
                 except KeyError:
                     pass
 
-            # remove _FillValue attribute from coordinate variables since that
-            # is forbidden by CF convention
-            for var in self.COORDINATE_NAMES:
-                # if var in self.COORDINATE_NAMES:
-                try:
-                    del ds[var].encoding['_FillValue']
-                except KeyError:
-                    pass
-
-                # # add predifined attributes
-                # try:
-                #     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
-                #         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
-                #
-                # except KeyError:
-                #     pass
-            return ds
         else:
             # gridded
             pass
+            time_dim_name = self._TIME_NAME
+            lat_dim_name = self._LATITUDENAME
+            lon_dim_name = self._LONGITUDENAME
+
+            ds = xr.Dataset()
+
+            # temp = 15 + 8 * np.random.randn(2, 2, 3)
+            # ds = xr.Dataset({'temperature': (['x', 'y', 'time'],  temp),
+            #    ....:                  'precipitation': (['x', 'y', 'time'], precip)},
+            #    ....:                 coords={'lon': (['x', 'y'], lon),
+            #    ....:                         'lat': (['x', 'y'], lat),
+            #    ....:                         'time': pd.date_range('2014-09-06', periods=3),
+            #    ....:                         'reference_time': pd.Timestamp('2014-09-05')})
+            # coordinate variables need special treatment
+
+            ds[time_dim_name] = np.array(_data[time_dim_name].astype('datetime64[D]'))
+            ds[lat_dim_name] = (lat_dim_name), _data[lat_dim_name],
+            ds[lon_dim_name] = (lon_dim_name), _data[lon_dim_name]
+
+            # for var in vars_to_write_out:
+            vars_to_write_out = data_to_write.keys()
+            for var in vars_to_write_out:
+                if var in self.COORDINATE_NAMES:
+                # if var == self._TIME_NAME:
+                    continue
+                # 1D data
+                # 3D data
+                ds[var + '_mean'] = (lat_dim_name, lon_dim_name), np.reshape(_data[var]['mean'], (
+                    len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+                ds[var + '_numobs'] = (lat_dim_name, lon_dim_name), np.reshape(_data[var]['numobs'], (
+                    len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+
+
+            # add attributes to variables
+            for var in ds.variables:
+                # add predifined attributes
+                print('var {}'.format(var))
+                try:
+                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+                except KeyError:
+                    pass
+
+        # remove _FillValue attribute from coordinate variables since that
+        # is forbidden by CF convention
+        for var in self.COORDINATE_NAMES:
+            # if var in self.COORDINATE_NAMES:
+            try:
+                del ds[var].encoding['_FillValue']
+            except KeyError:
+                pass
+
+            # # add predifined attributes
+            # try:
+            #     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+            #         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+            #
+            # except KeyError:
+            #     pass
+        return ds
 
     ###################################################################################
 
-    def to_grid(self, data=None, vars=None, gridtype='1x1', engine='python', return_data_for_gridding=True,
+    def to_grid(self, data=None, vars=None, gridtype='1x1', engine='python', return_data_for_gridding=False,
                 averaging_kernels=None):
         """to_grid method that takes a xarray.Dataset object as input"""
 
@@ -773,13 +883,19 @@ class ReadL2Data(ReadL2DataBase):
                                 np.array(_data[self._LONGITUDENAME].data[lat_match_indexes[lon_match_indexes]])
                             # np.array(data[lat_match_indexes[lon_match_indexes], self.INDEX_DICT[var]])
 
-                        gridded_var_data[var]['mean'][lat_idx, lon_idx] = \
-                            np.nanmean(_data[var].data[lat_match_indexes[lon_match_indexes]])
-                        gridded_var_data[var]['stddev'][lat_idx, lon_idx] = \
-                            np.nanstd(_data[var].data[lat_match_indexes[lon_match_indexes]])
-                        gridded_var_data[var]['numobs'][lat_idx, lon_idx] = \
-                            _data[var].data[lat_match_indexes[lon_match_indexes]].size
-                        matching_points = matching_points + _data[var].data[lat_match_indexes[lon_match_indexes]].size
+                        less_than_zero_indexes = np.where(_data[var].data[lat_match_indexes[lon_match_indexes]] > 0.)
+
+                        try:
+                            gridded_var_data[var]['mean'][lat_idx, lon_idx] = \
+                                np.nanmean(_data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]])
+                            gridded_var_data[var]['stddev'][lat_idx, lon_idx] = \
+                                np.nanstd(_data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]])
+                            gridded_var_data[var]['numobs'][lat_idx, lon_idx] = \
+                                _data[var].data[lat_match_indexes[lon_match_indexes]].size
+                            matching_points = matching_points + \
+                                              _data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]].size
+                        except IndexError:
+                            continue
 
             end_time = time.perf_counter()
             elapsed_sec = end_time - start_time
@@ -879,6 +995,8 @@ if __name__ == "__main__":
     # default_gridded_out_file = './gridded.nc'
     default_local_temp_dir = '/home/jang/tmp/'
 
+    default_min_quality_flag = 0.7
+
     parser = argparse.ArgumentParser(
         description='command line interface to pyaerocom.io.readsentinel5p_data.py\n\n\n')
     parser.add_argument("--file",
@@ -927,6 +1045,8 @@ if __name__ == "__main__":
     parser.add_argument("--topofile", help="topography file; defaults to {}.".format(default_topo_file),
                         default=default_topo_file)
     parser.add_argument("--gridfile", help="grid data and write it to given output file (in netcdf).")
+    parser.add_argument("--qflag", help="min quality flag to keep data. Defaults to {}".format(default_min_quality_flag),
+                        default = default_min_quality_flag)
 
     args = parser.parse_args()
 
@@ -937,6 +1057,9 @@ if __name__ == "__main__":
 
     if args.filemask:
         options['filemask'] = args.filemask
+
+    if args.qflag:
+        options['qflag'] = args.qflag
 
     if args.gridfile:
         options['gridfile'] = args.gridfile
@@ -1086,7 +1209,7 @@ if __name__ == "__main__":
         global_attributes['input files']=','.join(obj.files_read)
         global_attributes['info']='file created by pyaerocom.io.read_sentinel5p_data '+obj.__version__+' (https://github.com/metno/pyaerocom) at '+\
                                   np.datetime64('now').astype('str')
-        global_attributes['quality']='quality flag of 0.7 applied'
+        global_attributes['quality']='quality flag of {} applied'.format(options['qflag'])
 
     # obj.to_netcdf_simple(data_to_write=data_numpy, global_attributes=obj.global_attributes, vars_to_write=obj.DEFAULT_VARS,
     #                      netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc')
@@ -1101,13 +1224,15 @@ if __name__ == "__main__":
         if os.path.exists(options['outfile']):
             if options['overwrite']:
                 obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                     global_attributes=global_attributes, vars_to_write=vars_to_retrieve)
+                                     global_attributes=global_attributes, vars_to_write=vars_to_retrieve,
+                                     apply_quality_flag=options['qflag'])
             else:
                 sys.stderr.write('Error: path {} exists'.format(options['outfile']))
         else:
             # obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
             obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                 global_attributes=global_attributes, vars_to_write=vars_to_retrieve)
+                                 global_attributes=global_attributes, vars_to_write=vars_to_retrieve,
+                                 apply_quality_flag=options['qflag'])
 
     # write L3 gridded data
     if 'gridfile' in options:
