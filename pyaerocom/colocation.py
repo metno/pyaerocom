@@ -635,8 +635,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         
         # get grid and obs timeseries data (that may be sampled in arbitrary
         # time resolution, particularly the obs data)
-        grid_ts = grid_stat[var]
-        obs_ts = obs_stat[var_ref]
+# =============================================================================
+#         grid_ts = grid_stat[var]
+#         obs_ts = obs_stat[var_ref]
+# =============================================================================
         
         # resample to the colocation frequency
 # =============================================================================
