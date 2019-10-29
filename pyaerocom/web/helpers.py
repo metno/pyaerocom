@@ -319,7 +319,8 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
         else:
             dobs_vert = dobs[vert_code]
         if mod_name in dobs_vert:
-            raise Exception
+            const.print_log.warning('Overwriting old entry for {}: {}'
+                                    .format(mod_name, dobs_vert[mod_name]))
         dobs_vert[mod_name] = {'dir' : mod_name,
                                'id'  : config.model_config[mod_name]['model_id'],
                                'var' : mod_var}
