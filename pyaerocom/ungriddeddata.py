@@ -16,7 +16,10 @@ from pyaerocom.helpers import (same_meta_dict,
                                start_stop_str,
                                start_stop, merge_station_data,
                                isnumeric)
+
 from pyaerocom.metastandards import StationMetaData
+
+from pyaerocom.land_sea_mask import load_region_mask, available_region_mask
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -58,7 +61,7 @@ class UngriddedData(object):
         dictionary containing meta information about the data. Keys are 
         floating point numbers corresponding to each station, values are 
         corresponding dictionaries containing station information.
-    mata_idx : dict
+    meta_idx : dict
         dictionary containing index mapping for each station and variable. Keys
         correspond to metadata key (float -> station, see :attr:`metadata`) and 
         values are dictionaries containing keys specifying variable name and 
@@ -1203,8 +1206,39 @@ class UngriddedData(object):
                     totnum += len(self.meta_idx[meta_idx][var])
                 
         return (meta_matches, totnum)
-       
+    
+    def filter_region(self, region_id=None):
+        if region_id is None:
+            raise ValueError("Oppgi en region_id. All available regions {}.".format(available_region_mask()))
+
+        mask = load_region_mask(region_id = region_id)  
         
+        lons = np.unique(self._data[:, self._LONINDEX])
+        lats = np.unique(self._data[:, self._LATINDEX])
+
+        for lon, lat in zip(lons, lats):
+            lat = np.around(lat, 1)
+            lon = np.around(lon, 1) 
+            m = mask['lat'==lat]['lon'==lon].values
+            
+            if m != 1:
+                _lats = (self._data[:, self._LATINDEX] - lat < 0.000001)
+                _lons = (self._data[:, self._LONINDEX] - lon < 0.000001)
+                
+                idx_lat = np.where(_lats)
+                idx_lon = np.where(_lons)
+                idx_to_drop = np.intersect1d(idx_lat, idx_lon)
+                
+                metadatA = self._data[idx_to_drop, self._METADATAKEYINDEX]
+        
+                if len(metadatA) > 0:
+                    i = metadatA[0]
+                    del self.metadata[i]
+                
+                self._data = np.delete(self._data, idx_to_drop, axis=0)
+        return self
+        
+    
     def apply_filters(self, var_outlier_ranges=None, **filter_attributes):
         """Extended filtering method
         
@@ -2447,9 +2481,23 @@ if __name__ == "__main__":
     
     import matplotlib.pyplot as plt
     import pyaerocom as pya
-    plt.close('all')
-    data =  pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
     
+    plt.close('all')
+    ungridded_data =  pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
+    print('Original data shape {}.'.format(ungridded_data._data.shape))
+    print('Original metadata shape {}.'.format(len(ungridded_data.metadata)))
+    #data.plot_station_coordinates()
+    
+    data = ungridded_data.filter_region(region_id = 'SEAhtap')
+    print('Next data shape {}.'.format(ungridded_data._data.shape))
+    data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
+    print('Original data shape {}.'.format(ungridded_data._data.shape))
+    print('Original metadata shape {}.'.format(len(data.metadata)))
+    
+    
+    
+    
+    """
     idx = data._find_station_indices('Alert')
     
     stats = []
@@ -2486,7 +2534,7 @@ if __name__ == "__main__":
         
         print()
         
-    
+    """
 
         
     
