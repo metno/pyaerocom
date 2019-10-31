@@ -16,7 +16,8 @@ from pyaerocom.exceptions import (ColocationError,
 
 from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
 from pyaerocom.helpers import (to_pandas_timestamp, 
-                               to_datestring_YYYYMMDD)
+                               to_datestring_YYYYMMDD,
+                               make_datetime_index)
 
 from pyaerocom.filter import Filter
 from pyaerocom.colocateddata import ColocatedData
@@ -558,8 +559,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                                  latitude=ungridded_lats,
                                                  vert_scheme=vert_scheme)
     
+    time_idx = make_datetime_index(start, stop, col_freq)
     # Generate time index of ColocatedData object
-    time_idx = pd.DatetimeIndex(start=start, end=stop, freq=col_freq)
+    #time_idx = pd.DatetimeIndex(start=start, end=stop, freq=col_freq)
     #periods = time_idx.to_period(col_freq)
 # =============================================================================
 #     if col_freq in PANDAS_RESAMPLE_OFFSETS:
@@ -633,15 +635,35 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         
         # get grid and obs timeseries data (that may be sampled in arbitrary
         # time resolution, particularly the obs data)
-        grid_ts = grid_stat[var]
-        obs_ts = obs_stat[var_ref]
+# =============================================================================
+#         grid_ts = grid_stat[var]
+#         obs_ts = obs_stat[var_ref]
+# =============================================================================
         
         # resample to the colocation frequency
-        obs_ts1 = obs_ts.resample(col_freq).mean()
-        grid_ts1 = grid_ts.resample(col_freq).mean()
+# =============================================================================
+#         obs_ts1 = obs_ts.resample(col_freq).mean()
+#         grid_ts1 = grid_ts.resample(col_freq).mean()
+# =============================================================================
+        
+        grid_ts2 = grid_stat.resample_timeseries(
+                    var, 
+                    ts_type=col_freq,
+                    how='mean',
+                    apply_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
+                    inplace=False)
+        
+        obs_ts2 = obs_stat.resample_timeseries(
+                    var_ref, 
+                    ts_type=col_freq,
+                    how='mean',
+                    apply_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
+                    inplace=False)
         
         # fill up missing time stamps
-        _df = pd.concat([obs_ts1, grid_ts1], axis=1, keys=['o', 'm'])
+        _df = pd.concat([obs_ts2, grid_ts2], axis=1, keys=['o', 'm'])
         
         # assign the unified timeseries data to the colocated data array
         coldata[0, :, i] = _df['o'].values
