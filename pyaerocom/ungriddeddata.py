@@ -19,7 +19,7 @@ from pyaerocom.helpers import (same_meta_dict,
 
 from pyaerocom.metastandards import StationMetaData
 
-from pyaerocom.land_sea_mask import load_region_mask, available_region_mask
+from pyaerocom.land_sea_mask import load_region_mask, available_region_mask, get_mask
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -1209,33 +1209,36 @@ class UngriddedData(object):
     
     def filter_region(self, region_id=None):
         if region_id is None:
-            raise ValueError("Oppgi en region_id. All available regions {}.".format(available_region_mask()))
+            raise ValueError("Specify a region_id. Available regions: {}.".format(available_region_mask()))
 
-        mask = load_region_mask(region_id = region_id)  
+        #obs_reader = pya.io.ReadUngridded(datasets_to_read=OBS_ID, vars_to_retrieve = VAR)
+        #read_data  = obs_reader.read()
         
-        lons = np.unique(self._data[:, self._LONINDEX])
-        lats = np.unique(self._data[:, self._LATINDEX])
-
-        for lon, lat in zip(lons, lats):
-            lat = np.around(lat, 1)
-            lon = np.around(lon, 1) 
-            m = mask['lat'==lat]['lon'==lon].values
+        data      = self._data
+        _metadata = self.metadata
+        
+        mask = load_region_mask(region_id=region_id)   
+        test = _metadata.copy().items()
+        data = self._data
+        indexes_to_drop = []
+        
+        for key, meta in test:
+            lat = meta['latitude']
+            lon = meta['longitude']
+        
+            mask_pixel = get_mask( lat, lon, mask )
             
-            if m != 1:
-                _lats = (self._data[:, self._LATINDEX] - lat < 0.000001)
-                _lons = (self._data[:, self._LONINDEX] - lon < 0.000001)
+            if mask_pixel < 1:
+                del self.metadata[key]
                 
-                idx_lat = np.where(_lats)
-                idx_lon = np.where(_lons)
-                idx_to_drop = np.intersect1d(idx_lat, idx_lon)
-                
-                metadatA = self._data[idx_to_drop, self._METADATAKEYINDEX]
-        
-                if len(metadatA) > 0:
-                    i = metadatA[0]
-                    del self.metadata[i]
-                
-                self._data = np.delete(self._data, idx_to_drop, axis=0)
+                if len(self.vars_to_retrieve) == 1 and isinstance(self.vars_to_retrieve, list):
+                    indexes_to_drop.append(self.meta_idx[key][self.vars_to_retrieve[0]]) # update to vars to read.
+                else:
+                    raise NotImplementedError("Not filtering for ungridded data object containing "+
+                                              "several variables. Current vars to retrieve {}".format(self.vars_to_retrieve))
+                    
+        rem = np.concatenate(indexes_to_drop)
+        self._data = np.delete(data, rem, axis = 0)
         return self
         
     
@@ -2484,11 +2487,12 @@ if __name__ == "__main__":
     
     plt.close('all')
     ungridded_data =  pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
+    ungridded_data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     print('Original data shape {}.'.format(ungridded_data._data.shape))
     print('Original metadata shape {}.'.format(len(ungridded_data.metadata)))
     #data.plot_station_coordinates()
     
-    data = ungridded_data.filter_region(region_id = 'SEAhtap')
+    data = ungridded_data.filter_region(region_id = 'EURhtap')
     print('Next data shape {}.'.format(ungridded_data._data.shape))
     data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     print('Original data shape {}.'.format(ungridded_data._data.shape))

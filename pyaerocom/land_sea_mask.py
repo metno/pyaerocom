@@ -3,20 +3,7 @@
 """
 Created on Wed Oct  9 13:01:34 2019
 
-Message from Jonas 
-
-Think we should stick to that (namely that the filtering is done in the data object). 
-The idea that I have currently is that all data objects (ColocatedData, UngriddedData, GriddedData) 
-get a new method filter_region(self, region_id) which has all the logic to filter either rectangles 
-but which can also handle the masks if the input region_id corresponds to a mask. If we have it like 
-that, we can also get rid of the private sub methods _apply_gridded, _apply_ungridded, _apply_colocated
- in the Filter class (because then we can call the filter_region class in Filter.apply directly).
-
-We also should think about the altitude filtering (currently in Filter only 
-applied for UngriddedData), which should also happen in the data objects, 
-e.g. via filter_region(self, region_id, alt_range=None).
-
-@author: hannas
+author: hannas@met.no
 """
 
 import os 
@@ -24,14 +11,15 @@ import glob
 
 #from pyaerocom.region import Region
 #from pyaerocom.filter import Filter
-
+import numpy as np
 import xarray as xr
 
 def load_region_mask(region_id='PANhtap'):
     """    
     Returns
     ---------
-    xarray.DataArray containing the masks. 
+    mask : xarray.DataArray containing the masks. 
+    
     """
 
     path  = '//home/hannas/Desktop/htap/'  # get from config
@@ -41,12 +29,37 @@ def load_region_mask(region_id='PANhtap'):
     return masks[region_id]
 
 def available_region_mask():
+    """
+    Returns
+    ----------
+    arr : List[str]
+        Returns a list of available htap region masks.
+    """
     arr = []
-    path = '//home/hannas/Desktop/htap/'
+    path = '//home/hannas/Desktop/htap/' # TODO update
     files =  glob.glob(path + '*0.1*.nc')
     for fil in files:
         arr.append(os.path.basename(fil).split('.')[0])
     return arr
+
+def get_mask(lat, lon, mask):
+    """
+    lat : float
+    lon : float
+    mask : xarray dataset  
+    
+    Returns
+    --------
+    m : float 
+        pixel mask is either zero or 1
+    
+    """
+    la = np.around(lat, 2)
+    lo = np.around(lon, 2) 
+  
+    mask_pixel = mask.sel(lat = slice(la + 0.1, la), long = slice(lo - 0.1, lo))
+    m = mask_pixel.values[0][0]  
+    return m
 
 """
 class LandSeaMask(object):
