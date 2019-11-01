@@ -409,7 +409,7 @@ def check_time_coordOLD(cube, ts_type, year):
         ok = False
     return ok
 
-def make_datetimeindex(ts_type, year):
+def make_datetimeindex_from_year(ts_type, year):
     """Create pandas datetime index 
     
     Parameters
@@ -427,9 +427,12 @@ def make_datetimeindex(ts_type, year):
     import pandas as pd
     start = datetime64("{}-01-01 00:00:00".format(year))
     stop = datetime64("{}-12-31 23:59:59".format(year))
-    
-    idx = pd.DatetimeIndex(start=start, end=stop, 
-                           freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+    idx = pd.date_range(start=start, end=stop, 
+                        freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+# =============================================================================
+#     idx = pd.DatetimeIndex(start=start, end=stop, 
+#                            freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+# =============================================================================
     return idx
 
 
@@ -514,7 +517,7 @@ def check_time_coord(cube, ts_type, year):
     except:
         raise ValueError("Could not convert time unit string")
 
-    tidx = make_datetimeindex(ts_type, year)
+    tidx = make_datetimeindex_from_year(ts_type, year)
     
     num_per = len(tidx)
     num = len(t.points)
