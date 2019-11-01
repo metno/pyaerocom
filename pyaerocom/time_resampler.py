@@ -86,10 +86,10 @@ class TimeResampler(object):
         
         Parameters
         ----------
-        input_data : pandas.Series or xarray.DataArray
-            data to be resampled
         to_ts_type : str or pyaerocom.tstype.TsType
             output resolution
+        input_data : pandas.Series or xarray.DataArray
+            data to be resampled
         how : str
             string specifying how the data is to be aggregated, default is mean
         apply_constraints : bool, optional
@@ -106,8 +106,7 @@ class TimeResampler(object):
                     {'monthly'  :   {'daily'  : 7}, 
                      'daily'    :   {'hourly' : 6}}
                     
-            to require at least 6 hours per day and 7 days per month. Or, if 
-            data is daily and output is monthly and   
+            to require at least 6 hours per day and 7 days per month. 
         **kwargs
            additional input arguments passed to resampling method
           
@@ -187,6 +186,14 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
 
+
+    data = pya.io.ReadGridded('AATSR_SU_v4.3').read_var('od550aer', start=2010)
+    mon_iris = data.resample_time('monthly')
+    
+    mon_xarr = data.resample_time('monthly', apply_constraints=True,
+                                  min_num_obs=1)
+    
+    
     plt.close('all')
     data = pya.io.ReadUngridded().read('EBASMC', 'scatc550dryaer')
     
