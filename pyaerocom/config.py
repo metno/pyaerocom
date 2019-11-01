@@ -105,7 +105,7 @@ class Config(object):
 
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = 'GAWTADsubsetAasEtAl'
-    
+
     #: DMS
     DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
 
@@ -181,7 +181,7 @@ class Config(object):
     _outhomename = 'MyPyaerocom'
     
     from pyaerocom import __dir__
-    _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
+    _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
     _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
     
