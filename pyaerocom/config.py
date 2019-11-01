@@ -161,6 +161,14 @@ class Config(object):
     SENTINEL5P_NAME = 'Sentinel5P'
     AEOLUS_NAME = 'AeolusL2A'
     
+    DEFAULT_REGIONS = ['EUROPE', 'WORLD', 'ASIA', 'AUSTRALIA', 'CHINA', 
+                       'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
+    
+    HTAP_REGIONS = ['PANhtap', 'EAShtap', 'NAFhtap', 'MDEhtap', 'LANDhtap', 
+                    'SAShtap', 'SPOhtap', 'OCNhtap',  'SEAhtap', 'RBUhtap', 
+                    'EEUROPEhtap', 'NAMhtap', 'WEUROPEhtap', 'SAFhtap', 
+                    'USAhtap', 'SAMhtap', 'EURhtap', 'NPOhtap', 'MCAhtap']
+    
     RM_CACHE_OUTDATED = True
 
     #: Name of the file containing the revision string of an obs data network
@@ -173,7 +181,7 @@ class Config(object):
     _outhomename = 'MyPyaerocom'
     
     from pyaerocom import __dir__
-    _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
+    _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
     _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
     

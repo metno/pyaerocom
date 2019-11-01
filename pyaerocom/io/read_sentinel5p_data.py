@@ -140,6 +140,9 @@ class ReadL2Data(ReadL2DataBase):
         self.NAN_DICT.update({self._LONGITUDENAME: -1.E-6})
         self.NAN_DICT.update({self._ALTITUDENAME: -1.})
 
+        # scaling factors e.g. for unit conversion
+        self.SCALING_FACTORS[self._NO2NAME] = np.float_(6.022140857e+19/1.e15)
+
         # the following defines necessary quality flags for a value to make it into the used data set
         # the flag needs to have a HIGHER or EQUAL value than the one listed here
         # The valuse are taken form the product readme file
@@ -190,7 +193,8 @@ class ReadL2Data(ReadL2DataBase):
             'Tropospheric vertical column of nitrogen dioxide'
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME][
             'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
-        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = 'mol m-2'
+        # self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = 'mol m-2'
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = '1e15 molecules cm-2'
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['coordinates'] = 'longitude latitude'
 
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_mean'] = \
@@ -498,6 +502,10 @@ class ReadL2Data(ReadL2DataBase):
             else:
                 file_data[var] = np.squeeze(coda.fetch(product,
                                                        groups[0]))
+
+            if var in self.SCALING_FACTORS:
+                file_data[var] = file_data[var] * self.SCALING_FACTORS[var]
+
         coda.close(product)
 
         if return_as == 'numpy':
@@ -899,7 +907,7 @@ class ReadL2Data(ReadL2DataBase):
 
             end_time = time.perf_counter()
             elapsed_sec = end_time - start_time
-            temp = 'time for global 1x1 gridding with python data types [s]: {:.3f}'.format(elapsed_sec)
+            temp = 'time for global {} gridding with python data types [s]: {:.3f}'.format(gridtype, elapsed_sec)
             self.logger.info(temp)
             temp = 'matched {} points out of {} existing points to grid'.format(matching_points, _data['time'].size)
             self.logger.info(temp)
@@ -926,7 +934,7 @@ class ReadL2Data(ReadL2DataBase):
 
             pass
         else:
-            super().to_grid(data=None, vars=None, gridtype='1x1', engine='python', return_data_for_gridding=False)
+            super().to_grid(data=None, vars=None, gridtype=gridtype, engine='python', return_data_for_gridding=False)
     ###################################################################################
 
     def _to_grid_grid_init(self,gridtype='1x1',vars=None,init_time=None):
@@ -944,6 +952,11 @@ class ReadL2Data(ReadL2DataBase):
         max_grid_dist_lat = 0.
         data_for_gridding = {}
 
+        min_lat = -90.
+        max_lat = 90.
+        min_lon = -180.
+        max_lon = 180.
+
         if gridtype == '1x1':
             # global 1x1 degree grid
             # pass
@@ -951,34 +964,44 @@ class ReadL2Data(ReadL2DataBase):
             self.logger.info(temp)
             max_grid_dist_lon = 1.
             max_grid_dist_lat = 1.
-            grid_lats = np.arange(-89.5, 90.5, max_grid_dist_lat)
-            grid_lons = np.arange(-179.5, 180.5, max_grid_dist_lon)
 
-            grid_array_prot = np.full((grid_lats.size, grid_lons.size), np.nan)
-            # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
-            for grid_lat in grid_lats:
-                grid_data_prot[grid_lat] = {}
-                for grid_lon in grid_lons:
-                    grid_data_prot[grid_lat][grid_lon] = {}
-
-            end_time = time.perf_counter()
-            elapsed_sec = end_time - start_time
-            temp = 'time for global 1x1 gridding with python data types [s] init: {:.3f}'.format(elapsed_sec)
+        elif gridtype == '0.5x0.5':
+            # global 0.5x0.5 degree grid
+            # pass
+            temp = 'starting simple gridding for 0.5x0.5 degree grid...'
             self.logger.info(temp)
 
-            # predefine the output data dict
-            for var in vars:
-                data_for_gridding[var] = grid_data_prot.copy()
-                gridded_var_data['latitude'] = grid_lats
-                gridded_var_data['longitude'] = grid_lons
-                gridded_var_data['time'] = init_time
+            max_grid_dist_lon = 0.5
+            max_grid_dist_lat = 0.5
 
-                gridded_var_data[var] = {}
-                gridded_var_data[var]['mean'] = grid_array_prot.copy()
-                gridded_var_data[var]['stddev'] = grid_array_prot.copy()
-                gridded_var_data[var]['numobs'] = grid_array_prot.copy()
         else:
             pass
+
+        grid_lats = np.arange(min_lat + max_grid_dist_lat / 2., 90. + max_grid_dist_lat / 2., max_grid_dist_lat)
+        grid_lons = np.arange(min_lon + max_grid_dist_lon / 2., max_lon + max_grid_dist_lon / 2., max_grid_dist_lon)
+        grid_array_prot = np.full((grid_lats.size, grid_lons.size), np.nan)
+        # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
+        for grid_lat in grid_lats:
+            grid_data_prot[grid_lat] = {}
+            for grid_lon in grid_lons:
+                grid_data_prot[grid_lat][grid_lon] = {}
+
+        end_time = time.perf_counter()
+        elapsed_sec = end_time - start_time
+        temp = 'time for global {} gridding with python data types [s] init: {:.3f}'.format(gridtype, elapsed_sec)
+        self.logger.info(temp)
+
+        # predefine the output data dict
+        for var in vars:
+            data_for_gridding[var] = grid_data_prot.copy()
+            gridded_var_data['latitude'] = grid_lats
+            gridded_var_data['longitude'] = grid_lons
+            gridded_var_data['time'] = init_time
+
+            gridded_var_data[var] = {}
+            gridded_var_data[var]['mean'] = grid_array_prot.copy()
+            gridded_var_data[var]['stddev'] = grid_array_prot.copy()
+            gridded_var_data[var]['numobs'] = grid_array_prot.copy()
 
 
         return data_for_gridding, gridded_var_data, grid_lats, grid_lons, max_grid_dist_lat, max_grid_dist_lon
@@ -1236,7 +1259,7 @@ if __name__ == "__main__":
 
     # write L3 gridded data
     if 'gridfile' in options:
-        gridded_var_data = obj.to_grid(data=data_numpy, vars=vars_to_retrieve)
+        gridded_var_data = obj.to_grid(data=data_numpy, vars=vars_to_retrieve, gridtype='0.5x0.5')
 
         obj.to_netcdf_simple(netcdf_filename=options['gridfile'],
                              vars_to_write=vars_to_retrieve,

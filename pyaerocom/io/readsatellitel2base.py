@@ -178,6 +178,8 @@ class ReadL2DataBase(ReadUngriddedBase):
         self.DATASET_READ = ''
 
         self.COORDINATE_NAMES = []
+
+        self.SCALING_FACTORS = {}
         # list with static field names
         self.STATICFIELDNAMES = []
         # field name whose size determines the number of time steps in a product

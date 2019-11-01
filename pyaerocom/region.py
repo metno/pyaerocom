@@ -49,7 +49,7 @@ class Region(BrowseDict):
     -------
     Just initiate with a valid region ID
     
-        >>> from pyaerocom import Region
+        >>> from pyaerocom import Region("
         >>> europe = Region("EUROPE")
         >>> india = Region("INDIA")
         >>> print(europe)
@@ -119,6 +119,7 @@ class Region(BrowseDict):
                           %fpath)
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
+        
         if not name in conf_reader:
             raise AttributeError("No default region available for %s" %name)
         self._name = name
@@ -212,15 +213,25 @@ def all():
     """Wrapper for :func:`get_all_default_region_ids`"""
     return get_all_default_region_ids()
 
-def get_all_default_region_ids():
+def get_all_default_region_ids(use_all_in_ini=False):
     """Get list containing IDs of all default regions
     
+    Parameters
+    ----------
+    use_all_in_ini : bool
+        if True, then all regions defined in regions.ini are used, else, 
+        the list of regions, defined in header of :class:`Config`
+        
     Returns
     -------
     list
         all default region IDs (sections in `regions.ini <https://github.com/
         metno/pyaerocom/blob/master/pyaerocom/data/regions.ini>`__ file)
     """
+    if not use_all_in_ini:
+        from pyaerocom import const
+        return const.DEFAULT_REGIONS
+    
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
         raise IOError("File conventions ini file could not be found: %s"
@@ -344,10 +355,12 @@ if __name__=="__main__":
     r = Region()
     r.import_default("EUROPE")
         
-    all_ids = get_all_default_region_ids()
+    all_ids = get_all_default_region_ids(True)
     
     lat, lon = 89, 30
     reg = find_closest_region_coord(lat, lon)
     print(reg)
         
     print(valid_region('europe'))
+    
+    
