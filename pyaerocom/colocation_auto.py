@@ -67,7 +67,8 @@ class ColocationSetup(BrowseDict):
         will be automatically set to the end of that year. Else, it will be 
         set to the last available timestamp in the model data.
     filter_name : str
-        name of filter to be applied
+        name of filter to be applied. If None, AeroCom default is used
+        (i.e. `pyaerocom.const.DEFAULT_REG_FILTER`)
     regrid_res_deg : :obj:`int`, optional
         resolution in degrees for regridding of model grid (done before 
         colocation)
@@ -167,8 +168,8 @@ class ColocationSetup(BrowseDict):
     OBS_VERT_TYPES_ALT = {'Surface'    :   'ModelLevel'}
     
     def __init__(self, model_id=None, obs_id=None, obs_vars=None, 
-                 ts_type='daily', start=None, stop=None,
-                 filter_name='WORLD-noMOUNTAINS', 
+                 ts_type=None, start=None, stop=None,
+                 filter_name=None, 
                  regrid_res_deg=None, remove_outliers=True,
                  vert_scheme=None, harmonise_units=False, 
                  model_use_vars=None, model_add_vars=None, 
@@ -275,6 +276,9 @@ class ColocationSetup(BrowseDict):
                 self[key].update(val)
             else:
                 self[key] = val
+        sd = self.basedir_coldata
+        if isinstance(sd, str) and not os.path.exists(sd):
+            os.mkdir(sd)
 
 class Colocator(ColocationSetup):
     """High level class for running colocation
@@ -579,6 +583,9 @@ class Colocator(ColocationSetup):
                 else:
                     continue
             ts_type_src = model_data.ts_type
+            if ts_type is None:
+                # if colocation frequency is not specified
+                ts_type = ts_type_src
 # =============================================================================
 #             if not model_data.ts_type in all_ts_types:
 #                 raise TemporalResolutionError('Invalid temporal resolution {} '
@@ -730,8 +737,12 @@ class Colocator(ColocationSetup):
             
             if not model_data.ts_type in all_ts_types:
                 raise TemporalResolutionError('Invalid temporal resolution {} '
-                                              'in model {}'.format(model_data.ts_type,
-                                                                   self.model_id))
+                                              'in model {}'
+                                              .format(model_data.ts_type,
+                                                      self.model_id))
+            
+            if ts_type is None:
+                ts_type = model_data.ts_type
             try:
                 obs_data  = self._read_gridded(reader=obs_reader, 
                                                var_name=obs_var, 
