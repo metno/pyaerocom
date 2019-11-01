@@ -105,7 +105,7 @@ class Config(object):
 
     #: GAW TAD subset aas et al paper
     GAWTADSUBSETAASETAL_NAME = 'GAWTADsubsetAasEtAl'
-
+    
     #: DMS
     DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
 
@@ -126,6 +126,7 @@ class Config(object):
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
     
+    DEFAULT_REG_FILTER = 'WORLD-noMOUNTAINS'
     #: If True, then whenever applicable the time resampling constraints
     #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when 
     #: resampling in StationData and thus colocation routines. Requires that 
