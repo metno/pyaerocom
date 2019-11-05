@@ -36,6 +36,7 @@ etopo1_unavail = pytest.mark.skipif(not ETOPO1_AVAIL,
 
 always_skipped = pytest.mark.skipif(True==True, reason='Seek the answer')
 
+test_not_working = pytest.mark.skip(reason='Method raises Exception')
 
 
 @always_skipped

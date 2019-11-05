@@ -5,8 +5,69 @@ Small helper utility functions for pyaerocom
 """   
 import numpy as np
 import os
+from concurrent.futures import ThreadPoolExecutor
 import multiprocessing as mp
 from collections import OrderedDict
+
+def check_dir_access(path, timeout=0.1):
+    """Uses multiprocessing approach to check if location can be accessed
+    
+    Parameters
+    ----------
+    loc : str
+        path that is supposed to be checked
+    
+    Returns
+    -------
+    bool
+        True, if location is accessible, else False
+    """
+    if not isinstance(path, str):
+        return False
+    pool = ThreadPoolExecutor()
+    def try_ls(testdir, timeout):
+        future = pool.submit(os.listdir, testdir)
+        try:
+            future.result(timeout)
+            return True
+        except:
+            return False
+    return try_ls(path, timeout)
+
+
+def check_write_access(path, timeout=0.1):
+    """Check if input location provides write access
+    
+    Parameters
+    ----------
+    path : str
+        directory to be tested
+    timeout : float
+        timeout in seconds (to avoid blockage at non-existing locations)
+        
+    """
+    if not isinstance(path, str):
+        # not a path
+        return False
+    
+    pool = ThreadPoolExecutor()
+
+    def _test_write_access(path):
+        test = os.path.join(path, '_tmp')
+        try:
+            os.mkdir(test)
+            os.rmdir(test)
+            return True
+        except:
+            return False    
+        
+    def run_timeout(path, timeout):
+        future = pool.submit(_test_write_access, path)
+        try:
+            return future.result(timeout)
+        except:
+            return False
+    return run_timeout(path, timeout)
 
 class BrowseDict(OrderedDict):
     """Dictionary with get / set attribute methods
@@ -95,6 +156,11 @@ def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):
     
     Uses multiprocessing module to test if input function finishes within a 
     certain time interval.
+    
+    Note
+    ----
+    Please only use if method to call cannot raise an Exception as this is not
+    handled here in which case True is returned.
     
     Parameters
     ----------

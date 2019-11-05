@@ -14,7 +14,7 @@ from pyaerocom.exceptions import (LongitudeConstraintError,
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
 from pyaerocom import logger, const
-from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS, 
+from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    PANDAS_RESAMPLE_OFFSETS,
                                    TS_TYPE_DATETIME_CONV,
@@ -25,9 +25,9 @@ from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
 STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
-                   gmean       = iris.analysis.GMEAN, 
+                   gmean       = iris.analysis.GMEAN,
                    hmean       = iris.analysis.HMEAN,
-                   max         = iris.analysis.MAX, 
+                   max         = iris.analysis.MAX,
                    mean        = iris.analysis.MEAN,
                    median      = iris.analysis.MEDIAN,
                    sum         = iris.analysis.SUM,
@@ -128,7 +128,26 @@ def infer_time_resolution(time_stamps):
         if highest_secs <= TS_TYPE_SECS[tp]:
             return tp
     raise ValueError('Could not infer time resolution')
-    
+
+def get_tot_number_of_seconds(ts_type, dtime = None):
+    from pyaerocom.tstype import TsType
+
+    ts_tpe = TsType(ts_type)
+
+    if ts_tpe >= TsType('monthly'):
+        if dtime is None:
+            raise AttributeError('For frequncies larger than or eq. monthly you' +
+                                 ' need to provide dtime in order to compute the number of second.')
+        else:
+            # find seconds from dtime
+            # TODO generalize this
+            days_in_month = dtime.dt.daysinmonth
+            if ts_type == 'monthly':
+                monthly_to_sec = days_in_month*24*60*60
+            return monthly_to_sec
+    else:
+        return TS_TYPE_SECS[ts_type]
+
 def get_standard_name(var_name):
     """Converts AeroCom variable name to CF standard name
     
@@ -438,6 +457,33 @@ def _get_pandas_freq_and_loffset(freq):
         loffset = PANDAS_RESAMPLE_OFFSETS[freq]
     return (freq, loffset)
 
+def make_datetime_index(start, stop, freq):
+    """Make pandas.DatetimeIndex for input specs
+    
+    Note
+    ----
+    If input frequency is specified in `PANDAS_RESAMPLE_OFFSETS`, an offset 
+    will be added (e.g. 15 days for monthly data).
+    
+    Parameters
+    ----------
+    start 
+        start time
+    stop
+        stop time
+    freq
+        frequency
+    
+    Returns
+    -------
+    DatetimeIndex
+    """
+    freq, loffset = _get_pandas_freq_and_loffset(freq)
+    idx = pd.date_range(start=start, end=stop, freq=freq)
+    if loffset is not None:
+        idx = idx + pd.Timedelta(loffset)
+    return idx
+
 def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
     
@@ -467,15 +513,15 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
         data = resampler.agg(how)
     else:
         df = resampler.agg([how, 'count'])
-        print(freq, min_num_obs)
-        print('before mean', df[how].mean())
+        const.logger.info(freq, min_num_obs)
+        const.logger.info('before mean', df[how].mean())
         invalid = df['count'] < min_num_obs
-        print(len(invalid), invalid.sum())
+        const.logger.info(len(invalid), invalid.sum())
         df[how][invalid] = np.nan
-        print('after mean', df[how].mean())
+        const.logger.info('after mean', df[how].mean())
         data = df[how]
-        
-    return data.loc[s.index[0]:s.index[-1]]
+
+    return data#.loc[s.index[0]:s.index[-1]]
 
 def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
@@ -517,7 +563,7 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     elif not 'time' in arr.dims:
         raise DataDimensionError('Cannot resample time: input DataArray has '
                                  'no time dimension')
-    
+
     from pyaerocom.tstype import TsType
     from pyaerocom.time_config import XARR_TIME_GROUPERS
     to = TsType(freq)
@@ -530,7 +576,7 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         gr = XARR_TIME_GROUPERS[pd_freq]
         # 2D mask with shape of resampled data array
         invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
-    
+
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     arr = arr.resample(time=pd_freq, loffset=loffset).mean(dim='time')
     if invalid is not None:

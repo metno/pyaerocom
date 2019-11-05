@@ -192,7 +192,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                             vmin=None, vmax=None, add_zero=False, c_under=None, 
                             c_over=None, log_scale=True, discrete_norm=True, 
                             cbar_levels=None, cbar_ticks=None, add_cbar=True,
-                            cmap=None, cbar_ticks_sci=True, 
+                            cmap=None, cbar_ticks_sci=False, 
                             color_theme=COLOR_THEME, **kwargs):
     """Make a plot of gridded data onto a map
     

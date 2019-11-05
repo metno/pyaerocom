@@ -49,6 +49,7 @@ class Filter(BrowseDict):
     #: dictionary specifying altitude filters
     ALTITUDE_FILTERS = {'wMOUNTAINS'    :   None, #reserve namespace for
                         'noMOUNTAINS'   :   [-1e6, 1e3]} # 1000 m upper limit
+    
     NO_FILTER_NAME = 'WORLD-wMOUNTAINS'
     def __init__(self, name=None, region=None, altitude_filter=None, **kwargs):
         # default name (i.e. corresponds to no filtering)
@@ -133,7 +134,9 @@ class Filter(BrowseDict):
                 'lon_range' :   self.lon_range,
                 'lat_range' :   self.lat_range,
                 'alt_range' :   self.alt_range}
-        
+    
+    # TODO move this inside the respective classes.
+    
     def _apply_ungridded(self, data_obj):
         """Apply filter to instance of class :class:`UngriddedData`
         """
@@ -145,8 +148,8 @@ class Filter(BrowseDict):
         """Apply filter to instance of class :class:`GriddedData`
         """
         print_log.warning('Applying regional cropping in GriddedData using Filter '
-                       'class. Note that this does not yet include potential '
-                       'cropping in the vertical dimension. Coming soon...')
+                          'class. Note that this does not yet include potential '
+                          'cropping in the vertical dimension. Coming soon...')
         return data_obj.crop(region=self._region)
     
     def _apply_colocated(self, data_obj):
@@ -192,10 +195,15 @@ class Filter(BrowseDict):
     
     
 if __name__=="__main__":
-    f = Filter('EUROPE-wMOUNTAINS')
+    f = Filter('PANhtap-wMOUNTAINS')
     print(f)
-    f.set_region('NAMERICA')
+    f.set_region('PANhtap')
     print(f)  
     f.set_altitude_filter('noMOUNTAINS')     
     print(f.to_dict())
+    all_regions = pya.region.all()
     
+    for region in all_regions:
+        r = pya.Region(region)
+        lon = r.lon_range
+        lat = r.lat_range

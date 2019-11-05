@@ -10,30 +10,32 @@ import pytest
 import numpy.testing as npt
 from pyaerocom.io import ReadUngridded
 
+from pyaerocom.test.settings import lustre_unavail
+
+@lustre_unavail
 def test_revision_dates():
     f = ReadUngridded()
     l = {}
     for s in f.SUPPORTED:
         r = s()
         l[r.DATA_ID] = r.data_revision
-    
-    ids = list(l.keys())
-    revs = list(l.values())
-    npt.assert_array_equal(ids, ['AeronetInvV3Lev2.daily', 
-                                 'AeronetInvV2Lev2.daily',
-                                 'AeronetSDAV2Lev2.daily', 
-                                 'AeronetSDAV3Lev2.daily',
-                                 'AeronetSunV2Lev2.daily', 
-                                 'AeronetSunV3Lev2.daily', 
-                                 'EARLINET',
-                                 'EBASMC',
-                                 'DMS_AMS_CVO',
-                                 'GAWTADsubsetAasEtAl'])
+    res = []
+    order = sorted(list(l.keys()))
+    for name in order:
+        res.append([name, l[name]])
 
-    npt.assert_array_equal(revs, ['20190330', '20171216', '20180519', 
-                                  '20190425', '20180519', '20190606', 
-                                  '20190129', '20190701', '20190807',
-                                  '20190522'])
+    npt.assert_array_equal(res, 
+                           [['AeronetInvV2Lev2.daily', '20171216'], 
+                            ['AeronetInvV3Lev2.daily', '20190914'], 
+                            ['AeronetSDAV2Lev2.daily', '20180519'], 
+                            ['AeronetSDAV3Lev2.daily', '20190920'], 
+                            ['AeronetSunV2Lev2.daily', '20180519'], 
+                            ['AeronetSunV3Lev2.daily', '20190920'], 
+                            ['DMS_AMS_CVO', '20190807'], 
+                            ['EARLINET', '20190129'], 
+                            ['EBASMC', '20191001'], 
+                            ['GAWTADsubsetAasEtAl', '20190522']])
+
     
 if __name__=="__main__":
     import sys

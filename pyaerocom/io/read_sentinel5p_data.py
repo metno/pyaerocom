@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 ################################################################
-# read_aeronet_sunv3.py
+# read_sentinel5p_data.py
 #
-# read Aeronet direct sun V3 data
+# read Sentinel5P L2 data
 #
 # this file is part of the pyaerocom package
 #
@@ -11,7 +12,7 @@
 # Last changed: See git log
 #################################################################
 
-# Copyright (C) 2018 met.no
+# Copyright (C) 2019 met.no
 # Contact information:
 # Norwegian Meteorological Institute
 # Box 43 Blindern
@@ -32,8 +33,8 @@
 # MA 02110-1301, USA
 
 from pyaerocom.io.readsatellitel2base import ReadL2DataBase
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-import geopy
+# from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+# import geopy
 import numpy as np
 import logging
 from pyaerocom import const
@@ -52,7 +53,7 @@ class ReadL2Data(ReadL2DataBase):
     """
 
     _FILEMASK = '*.nc'
-    __version__ = "0.01"
+    __version__ = "0.02"
     DATA_ID = const.SENTINEL5P_NAME
 
     DATASET_PATH = '/lustre/storeB/project/fou/kl/vals5p/download'
@@ -65,130 +66,14 @@ class ReadL2Data(ReadL2DataBase):
     DEFAULT_VARS = [_O3NAME]
     PROVIDES_VARIABLES = [_NO2NAME, _O3NAME]
 
-    # SUPPORTED_SUFFIXES = []
-    # SUPPORTED_SUFFIXES.append('.nc')
-    # 
-    # SUPPORTED_ARCHIVE_SUFFIXES = []
-    # SUPPORTED_ARCHIVE_SUFFIXES.append('.TGZ')
-    # SUPPORTED_ARCHIVE_SUFFIXES.append('.tgz')
-    # SUPPORTED_ARCHIVE_SUFFIXES.append('.tar')
-    # SUPPORTED_ARCHIVE_SUFFIXES.append('.tar.gz')
-    # 
-    # GLOBAL_ATTRIBUTES = {}
-    # FILE_DIR = ''
-    # FILE_MASK = '*.nc'
-
-    # _TIME_OFFSET_NAME = 'delta_time'
-    #
-    # _LATBOUNDSNAME = 'lat_bnds'
-    # _LATBOUNDSSIZE = 4
-    # _LONBOUNDSNAME = 'lon_bnds'
-    # _LONBOUNDSSIZE = 4
-    #
-    # COORDINATE_NAMES = [ReadL2DataBase._LATITUDENAME, ReadL2DataBase._LONGITUDENAME, ReadL2DataBase._ALTITUDENAME, _LATBOUNDSNAME, _LONBOUNDSNAME]
-
-
-    # variable names for the different retrievals
-
-    # _TIMEINDEX = UngriddedData._TIMEINDEX
-    # _LATINDEX = UngriddedData._LATINDEX
-    # _LONINDEX = UngriddedData._LONINDEX
-    # _ALTITUDEINDEX = UngriddedData._ALTITUDEINDEX
-    # for distance calculations we need the location in radians
-    # so store these for speed in self.data
-    # the following indexes indicate the column where that is stored
-    # _RADLATINDEX = 4
-    # _RADLONINDEX = 5
-    # _DISTINDEX = 6
-
-    # _DATAINDEX01 = UngriddedData._DATAINDEX
-    # _DATAINDEX02 = 8
-    # _DATAINDEX03 = 9
-    # _DATAINDEX04 = 10
-    # _QAINDEX = UngriddedData._DATAFLAGINDEX
-    # _TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
-    # _LATBOUNDINDEX = 13
-    # _LONBOUNDINDEX = _LATBOUNDINDEX + _LATBOUNDSSIZE + 1
-    #
-    # _COLNO = _LATBOUNDINDEX + _LATBOUNDSSIZE + _LONBOUNDSSIZE + 2
-    #
-    # _HEIGHTSTEPNO = 24
-    #
-    # # create a dict with the aerocom variable name as key and the index number in the
-    # # resulting numpy array as value.
-    # INDEX_DICT = {}
-    # INDEX_DICT.update({_LATITUDENAME: _LATINDEX})
-    # INDEX_DICT.update({_LONGITUDENAME: _LONINDEX})
-    # INDEX_DICT.update({_ALTITUDENAME: _ALTITUDEINDEX})
-    # INDEX_DICT.update({_TIME_NAME: _TIMEINDEX})
-    # INDEX_DICT.update({_TIME_OFFSET_NAME: _TIME_OFFSET_INDEX})
-    # INDEX_DICT.update({_NO2NAME: _DATAINDEX01})
-    # INDEX_DICT.update({_O3NAME: _DATAINDEX01})
-    # INDEX_DICT.update({_QANAME: _QAINDEX})
-    # INDEX_DICT.update({_LATBOUNDSNAME: _LATBOUNDINDEX})
-    # INDEX_DICT.update({_LONBOUNDSNAME: _LONBOUNDINDEX})
-    #
-    # # dictionary to store array sizes of an element in self.data
-    # SIZE_DICT = {}
-    # SIZE_DICT.update({_LATBOUNDSNAME: _LATBOUNDSSIZE})
-    # SIZE_DICT.update({_LONBOUNDSNAME: _LONBOUNDSSIZE})
-    #
-    # # NaN values are variable specific
-    # NAN_DICT = {}
-    # NAN_DICT.update({_LATITUDENAME: -1.E-6})
-    # NAN_DICT.update({_LONGITUDENAME: -1.E-6})
-    # NAN_DICT.update({_ALTITUDENAME: -1.})
-    #
-    # # the following defines necessary quality flags for a value to make it into the used data set
-    # # the flag needs to have a HIGHER or EQUAL value than the one listed here
-    # # The valuse are taken form the product readme file
-    # QUALITY_FLAGS = {}
-    # QUALITY_FLAGS.update({_NO2NAME: 0.75})
-    # # QUALITY_FLAGS.update({_NO2NAME: 0.5}) #cloudy
-    # QUALITY_FLAGS.update({_O3NAME: 0.7})
-
-    # PROVIDES_VARIABLES = list(RETRIEVAL_READ_PARAMETERS['sca']['metadata'].keys())
-    # PROVIDES_VARIABLES.extend(RETRIEVAL_READ_PARAMETERS['sca']['vars'].keys())
-
-
-
-    # CODA_READ_PARAMETERS = {}
-    # CODA_READ_PARAMETERS[_NO2NAME] = {}
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'] = {}
-    # CODA_READ_PARAMETERS[_NO2NAME]['vars'] = {}
-    # CODA_READ_PARAMETERS[_NO2NAME]['time_offset'] = np.float_(24. * 60. * 60.)
-    # CODA_READ_PARAMETERS[_O3NAME] = {}
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'] = {}
-    # CODA_READ_PARAMETERS[_O3NAME]['vars'] = {}
-    # CODA_READ_PARAMETERS[_O3NAME]['time_offset'] = np.float_(24. * 60. * 60.)
-    #
-    # # CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time'
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LATITUDENAME] = 'PRODUCT/latitude'
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LONGITUDENAME] = 'PRODUCT/longitude'
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
-    # CODA_READ_PARAMETERS[_NO2NAME]['metadata'][_QANAME] = 'PRODUCT/qa_value'
-    # CODA_READ_PARAMETERS[_NO2NAME]['vars'][_NO2NAME] = 'PRODUCT/nitrogendioxide_tropospheric_column'
-    #
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time'
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LATITUDENAME] = 'PRODUCT/latitude'
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LONGITUDENAME] = 'PRODUCT/longitude'
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
-    # CODA_READ_PARAMETERS[_O3NAME]['metadata'][_QANAME] = 'PRODUCT/qa_value'
-    # CODA_READ_PARAMETERS[_O3NAME]['vars'][_O3NAME] = 'PRODUCT/ozone_total_vertical_column'
 
     SUPPORTED_DATASETS = []
     SUPPORTED_DATASETS.append(DATA_ID)
 
-    # DEFAULT_VARS = [_O3NAME]
-    # PROVIDES_VARIABLES = [_NO2NAME, _O3NAME]
     TS_TYPE = 'undefined'
 
-    def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
+    def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False,
+                 read_averaging_kernel=True):
         super(ReadL2Data, self).__init__(dataset_to_read)
         self.verbose = verbose
         self.metadata = {}
@@ -209,25 +94,25 @@ class ReadL2Data(ReadL2DataBase):
         self._NO2NAME = 'tcolno2'
         self._O3NAME = 'tcolo3'
         self._QANAME = 'qa_index'
+        self._SCANLINENAME = 'scanline'
+        self._GROUNDPIXELNAME = 'ground_pixel'
 
         self._LATBOUNDSNAME = 'lat_bnds'
         self._LATBOUNDSSIZE = 4
         self._LONBOUNDSNAME = 'lon_bnds'
         self._LONBOUNDSSIZE = 4
-
         self.COORDINATE_NAMES = [self._LATITUDENAME, self._LONGITUDENAME, self._ALTITUDENAME,
-                            self._LATBOUNDSNAME, self._LONBOUNDSNAME]
+                                 self._LATBOUNDSNAME, self._LONBOUNDSNAME, self._LEVELSNAME,
+                                 self._TIME_NAME]
 
         self._QAINDEX = UngriddedData._DATAFLAGINDEX
         self._TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
         self._LATBOUNDINDEX = 13
         self._LONBOUNDINDEX = self._LATBOUNDINDEX + self._LATBOUNDSSIZE + 1
-
         self._COLNO = self._LATBOUNDINDEX + self._LATBOUNDSSIZE + self._LONBOUNDSSIZE + 2
-
         self._HEIGHTSTEPNO = 24
-
         self.SUPPORTED_SUFFIXES.append('.nc')
+
 
 
         # create a dict with the aerocom variable name as key and the index number in the
@@ -255,6 +140,9 @@ class ReadL2Data(ReadL2DataBase):
         self.NAN_DICT.update({self._LONGITUDENAME: -1.E-6})
         self.NAN_DICT.update({self._ALTITUDENAME: -1.})
 
+        # scaling factors e.g. for unit conversion
+        self.SCALING_FACTORS[self._NO2NAME] = np.float_(6.022140857e+19/1.e15)
+
         # the following defines necessary quality flags for a value to make it into the used data set
         # the flag needs to have a HIGHER or EQUAL value than the one listed here
         # The valuse are taken form the product readme file
@@ -273,11 +161,14 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._O3NAME]['vars'] = {}
         self.CODA_READ_PARAMETERS[self._O3NAME]['time_offset'] = np.float_(24. * 60. * 60.)
 
+
         # self.CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._TIME_NAME] = 'PRODUCT/time'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LATITUDENAME] = 'PRODUCT/latitude'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._SCANLINENAME] = 'PRODUCT/scanline'
+        self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._GROUNDPIXELNAME] = 'PRODUCT/ground_pixel'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][
             self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
@@ -290,9 +181,10 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._SCANLINENAME] = 'PRODUCT/scanline'
+        self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._GROUNDPIXELNAME] = 'PRODUCT/ground_pixel'
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'][self._QANAME] = 'PRODUCT/qa_value'
         self.CODA_READ_PARAMETERS[self._O3NAME]['vars'][self._O3NAME] = 'PRODUCT/ozone_total_vertical_column'
-
 
         ####################################
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME] = {}
@@ -301,7 +193,8 @@ class ReadL2Data(ReadL2DataBase):
             'Tropospheric vertical column of nitrogen dioxide'
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME][
             'standard_name'] = 'troposphere_mole_content_of_nitrogen_dioxide'
-        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = 'mol m-2'
+        # self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = 'mol m-2'
+        self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['units'] = '1e15 molecules cm-2'
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME]['coordinates'] = 'longitude latitude'
 
         self.NETCDF_VAR_ATTRIBUTES[self._NO2NAME + '_mean'] = \
@@ -345,6 +238,110 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['units'] = '1'
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['coordinates'] = 'longitude latitude'
 
+        if read_averaging_kernel:
+            # reading the averaging kernel needs some more data fields
+            self._AVERAGINGKERNELNAME = 'avg_kernel'
+            self._AVERAGINGKERNELSIZE = 34
+            self._AVERAGINGKERNELINDEX = self._LONBOUNDINDEX + self._LONBOUNDSSIZE + 1
+            self._GROUNDPRESSURENAME = 'p0'
+            self._GROUNDPRESSUREINDEX = self._AVERAGINGKERNELINDEX + self._AVERAGINGKERNELSIZE
+            self._LEVELSNAME = 'levels'
+            self._LEVELSSIZE = self._AVERAGINGKERNELSIZE
+            self._LEVELSINDEX = self._GROUNDPRESSUREINDEX + 1
+            self._TM5_TROPOPAUSE_LAYER_INDEX_NAME = 'tm5_tropopause_layer_index'
+            self._TM5_TROPOPAUSE_LAYER_INDEX_INDEX = self._LEVELSINDEX + self._LEVELSSIZE + 1
+            self._TM5_CONSTANT_A_NAME = 'tm5_constant_a'
+            self._TM5_CONSTANT_A_INDEX = self._TM5_TROPOPAUSE_LAYER_INDEX_INDEX + 1
+            self._TM5_CONSTANT_B_NAME = 'tm5_constant_b'
+            self._TM5_CONSTANT_B_INDEX = self._TM5_CONSTANT_A_INDEX + 1
+
+
+            self._COLNO = self._TM5_CONSTANT_B_INDEX + 1
+            self.INDEX_DICT.update({self._AVERAGINGKERNELNAME: self._AVERAGINGKERNELINDEX})
+            self.INDEX_DICT.update({self._LEVELSNAME: self._LEVELSINDEX})
+            self.INDEX_DICT.update({self._GROUNDPRESSURENAME: self._GROUNDPRESSUREINDEX})
+            self.INDEX_DICT.update({self._TM5_TROPOPAUSE_LAYER_INDEX_NAME: self._TM5_TROPOPAUSE_LAYER_INDEX_INDEX})
+            self.INDEX_DICT.update({self._TM5_CONSTANT_A_NAME: self._TM5_CONSTANT_A_INDEX})
+            self.INDEX_DICT.update({self._TM5_CONSTANT_B_NAME: self._TM5_CONSTANT_B_INDEX})
+
+            self.SIZE_DICT.update({self._AVERAGINGKERNELNAME: self._AVERAGINGKERNELSIZE})
+            self.SIZE_DICT.update({self._LEVELSNAME: self._LEVELSSIZE})
+
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME] = {}
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'] = {}
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['vars'] = {}
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['time_offset'] = np.float_(24. * 60. * 60.)
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._TIME_NAME] = 'PRODUCT/time'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._TIME_OFFSET_NAME] = 'PRODUCT/delta_time'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LATITUDENAME] = 'PRODUCT/latitude'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LONGITUDENAME] = 'PRODUCT/longitude'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._SCANLINENAME] = 'PRODUCT/scanline'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._GROUNDPIXELNAME] = 'PRODUCT/ground_pixel'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LONBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/longitude_bounds'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._LATBOUNDSNAME] = 'PRODUCT/SUPPORT_DATA/GEOLOCATIONS/latitude_bounds'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['metadata'][self._QANAME] = 'PRODUCT/qa_value'
+            self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['vars'][self._AVERAGINGKERNELNAME] = 'PRODUCT/averaging_kernel'
+
+            self.CODA_READ_PARAMETERS[self._LEVELSNAME] = {}
+            self.CODA_READ_PARAMETERS[self._LEVELSNAME]['metadata'] = {}
+            self.CODA_READ_PARAMETERS[self._LEVELSNAME]['vars'] = {}
+            self.CODA_READ_PARAMETERS[self._LEVELSNAME]['time_offset'] = np.float_(24. * 60. * 60.)
+            self.CODA_READ_PARAMETERS[self._LEVELSNAME]['vars'][self._LEVELSNAME] = 'PRODUCT/layer'
+
+            self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME] = {}
+            self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]['metadata'] = {}
+            self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]['vars'] = {}
+            self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]['time_offset'] = np.float_(24. * 60. * 60.)
+            self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]['vars'][self._GROUNDPRESSURENAME] = \
+                'PRODUCT/SUPPORT_DATA/INPUT_DATA/surface_pressure'
+
+            self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]['metadata'] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]['vars'] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]['time_offset'] = np.float_(24. * 60. * 60.)
+            self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]['vars'][self._TM5_TROPOPAUSE_LAYER_INDEX_NAME] = \
+                'PRODUCT/tm5_tropopause_layer_index'
+
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]['metadata'] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]['vars'] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]['time_offset'] = np.float_(24. * 60. * 60.)
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]['vars'][self._TM5_CONSTANT_A_NAME] = \
+                'PRODUCT/tm5_constant_a'
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]['metadata'] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]['vars'] = {}
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]['time_offset'] = np.float_(24. * 60. * 60.)
+            self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]['vars'][self._TM5_CONSTANT_B_NAME] = \
+                'PRODUCT/tm5_constant_b'
+
+            self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME] = {}
+            self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]['_FillValue'] = np.nan
+            self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]['long_name'] = 'averaging kernel'
+            # self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]['standard_name'] = 'averaging_kernel'
+            self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]['units'] = '1'
+            self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]['coordinates'] = \
+                'longitude latitude {}'.format(self._LEVELSNAME)
+
+            self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._LEVELSNAME] = \
+                self.CODA_READ_PARAMETERS[self._LEVELSNAME]['vars'][self._LEVELSNAME]
+            self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._GROUNDPRESSURENAME] = \
+                self.CODA_READ_PARAMETERS[self._GROUNDPRESSURENAME]['vars'][self._GROUNDPRESSURENAME]
+            self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._TM5_TROPOPAUSE_LAYER_INDEX_NAME] = \
+                self.CODA_READ_PARAMETERS[self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]['vars'][self._TM5_TROPOPAUSE_LAYER_INDEX_NAME]
+            self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._TM5_CONSTANT_A_NAME] = \
+                self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_A_NAME]['vars'][self._TM5_CONSTANT_A_NAME]
+            self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._TM5_CONSTANT_B_NAME] = \
+                self.CODA_READ_PARAMETERS[self._TM5_CONSTANT_B_NAME]['vars'][self._TM5_CONSTANT_B_NAME]
+            self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'][self._AVERAGINGKERNELNAME] = \
+                self.CODA_READ_PARAMETERS[self._AVERAGINGKERNELNAME]['vars'][self._AVERAGINGKERNELNAME]
+
+        self.STATICFIELDNAMES = [self._GROUNDPIXELNAME, self._LEVELSNAME, self._TM5_CONSTANT_A_NAME, self._TM5_CONSTANT_B_NAME]
+
+        # field name whose size determines the number of time steps in a product
+        self.TSSIZENAME=self._TIME_OFFSET_NAME
+
+
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
             # if self.logger.hasHandlers():
@@ -358,9 +355,9 @@ class ReadL2Data(ReadL2DataBase):
             self.logger.setLevel(loglevel)
 
     ###################################################################################
-    def read_file(self, filename, vars_to_retrieve='tcolno2', return_as='dict',
-                  loglevel=None, apply_quality_flag=True, colno=None):
-        """method to read the file partially
+    def read_file(self, filename, vars_to_retrieve=['tcolno2'], return_as='dict',
+                  loglevel=None, apply_quality_flag=True, colno=None, read_avg_kernel=True):
+        """method to read the file a Sentinel 5P data file
 
         Parameters
         ----------
@@ -382,6 +379,9 @@ class ReadL2Data(ReadL2DataBase):
             and is onluy needed if the data ins converted to netcdf at this point. So we keep this optional for now
             since the netcdf export is nor yet implemented in pyaerocom.
             if colno < _COLNO the bounds will not be returned in the numpy array
+        read_avg_kernel : bool
+            also read the averaging kernel
+            default: True
 
         Returns
         --------
@@ -417,8 +417,8 @@ class ReadL2Data(ReadL2DataBase):
         # read file
         product = coda.open(filename)
 
-        # if isinstance(read_dataset, str):
-        #     read_dataset = [read_dataset]
+        if isinstance(vars_to_retrieve, str):
+            read_dataset = [vars_to_retrieve]
         vars_to_read_in = None
         vars_to_read_in = vars_to_retrieve.copy()
 
@@ -432,10 +432,12 @@ class ReadL2Data(ReadL2DataBase):
         # base_time = pd.DatetimeIndex(['2000-01-01'])
         # seconds_to_add = (base_time.view('int64') // pd.Timedelta(1, unit='s'))[0]
 
-        if vars_to_retrieve is None:
-            # read all variables
-            vars_to_read_in = list(self.CODA_READ_PARAMETERS[vars_to_retrieve[0]]['vars'].keys())
-        vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[vars_to_retrieve[0]]['metadata'].keys()))
+        # if vars_to_retrieve[0] is None:
+        #     # read all variables
+        #     vars_to_read_in = list(self.CODA_READ_PARAMETERS[vars_to_retrieve[0]]['vars'].keys())
+        for _vars in vars_to_retrieve:
+            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[_vars]['vars'].keys()))
+            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[_vars]['metadata'].keys()))
         # get rid of duplicates
         vars_to_read_in = list(set(vars_to_read_in))
 
@@ -501,6 +503,11 @@ class ReadL2Data(ReadL2DataBase):
                 file_data[var] = np.squeeze(coda.fetch(product,
                                                        groups[0]))
 
+            if var in self.SCALING_FACTORS:
+                file_data[var] = file_data[var] * self.SCALING_FACTORS[var]
+
+        coda.close(product)
+
         if return_as == 'numpy':
             # return as one multidimensional numpy array that can be put into self.data directly
             # (column wise because the column numbers do not match)
@@ -512,8 +519,8 @@ class ReadL2Data(ReadL2DataBase):
                 for _index in range(file_data[self._LATITUDENAME].shape[1]):
                     # check first if the quality flag requirement is met
 
-                    if apply_quality_flag and file_data[self._QANAME][idx, _index] < self.QUALITY_FLAGS[
-                        vars_to_retrieve[0]]:
+                    if apply_quality_flag and \
+                            file_data[self._QANAME][idx, _index] < self.QUALITY_FLAGS[vars_to_retrieve[0]]:
                         # potential debugging...
                         # if _index < 100:
                         #     print(file_data[self._QANAME][idx,_index])
@@ -549,7 +556,6 @@ class ReadL2Data(ReadL2DataBase):
             # return only the needed elements...
             file_data = data[0:index_pointer]
 
-        coda.close(product)
         end_time = time.perf_counter()
         elapsed_sec = end_time - start
         temp = 'time for single file read [s]: {:.3f}'.format(elapsed_sec)
@@ -560,147 +566,446 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
 
-    def read(self, vars_to_retrieve=None, files=[], first_file=None,
-             last_file=None, file_pattern=None, list_coda_paths=False,
-             local_temp_dir=const._cachedir):
-        """Method that reads list of files as instance of :class:`UngriddedData`
+    def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc', global_attributes=None,
+                         vars_to_write=None, data_to_write=None, gridded=False, apply_quality_flag=0.0):
 
-        Parameters
-        ----------
-        vars_to_retrieve : :obj:`list` or similar, optional,
-            list containing variable IDs that are supposed to be read. If None,
-            all variables in :attr:`PROVIDES_VARIABLES` are loaded
-        files : :obj:`list`, optional
-            list of files to be read. If None, then the file list is used that
-            is returned on :func:`get_file_list`.
-        first_file : :obj:`int`, optional
-            index of first file in file list to read. If None, the very first
-            file in the list is used. Note: is ignored if input parameter
-            `file_pattern` is specified.
-        last_file : :obj:`int`, optional
-            index of last file in list to read. If None, the very last file
-            in the list is used. Note: is ignored if input parameter
-            `file_pattern` is specified.
-        file_pattern : str, optional
-            string pattern for file search (cf :func:`get_file_list`)
+        if data_to_write is None:
+            _data = self.data
+        else:
+            try:
+                _data = data_to_write._data
+            except AttributeError:
+                _data = data_to_write
 
-        Returns
-        -------
-        UngriddedData
-            data object
+        if isinstance(_data, dict):
+            # write out the read data using the dictionary directly
+            vars_to_write_out = vars_to_write.copy()
+            if isinstance(vars_to_write_out, str):
+                vars_to_write_out = [vars_to_write_out]
 
-        Example:
-        >>> import pyaerocom as pya
-        >>> obj = pya.io.read_sentinel5p_data.ReadL2Data()
-        >>> testfiles = []
-        >>> testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190531T165100_20190531T183230_08446_01_010107_20190606T185838.nc')
-        >>> testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190530T051930_20190530T070100_08425_01_010107_20190605T070532.nc')
-        >>> data=obj.read(files=testfiles)
-        or with a tar file:
-        >>> import pyaerocom as pya
-        >>> obj = pya.io.read_sentinel5p_data.ReadL2Data()
-        >>> testfiles = []
-        >>> testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/tar/2019/01/tropomi_no2_20190115.tar')
-        >>> data=obj.read(files=testfiles, vars_to_retrieve='tcolno2')
-        """
+            ds = self.to_xarray(_data, gridded=gridded, apply_quality_flag=apply_quality_flag)
 
-        import pathlib
-        import tarfile
-        import os
-
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-
-        if files is None:
-            if len(self.files) == 0:
-                self.get_file_list(pattern=file_pattern)
-            files = self.files
-
-        if file_pattern is None:
-            if first_file is None:
-                first_file = 0
-            if last_file is None:
-                last_file = len(files)
-
-            files = files[first_file:last_file]
-
-        self.read_failed = []
-        temp_files = {}
-
-        data_obj = UngriddedData(num_points=self._COLNO, chunksize=self._CHUNKSIZE)
-        meta_key = 0.0
-        idx = 0
-
-        # check if the supplied file is a supported archive file (tar in this case)
-        # and extract the files with supported suffixes to const._cachedir
-        non_archive_files = []
-        for idx, _file in enumerate(sorted(files)):
-            # temp = 'reading file: {}'.format(_file)
-
-            self.logger.info('file: {}'.format(_file))
-            suffix = pathlib.Path(_file).suffix
-            if suffix in self.SUPPORTED_ARCHIVE_SUFFIXES:
-                temp = 'opening archive file; using {} as temp dir.'.format(local_temp_dir)
-                self.logger.info(temp)
-                # untar archive files first
-                tarhandle = tarfile.open(_file)
-                files_in_tar = tarhandle.getnames()
-                for file_in_tar in files_in_tar:
-                    if pathlib.Path(file_in_tar).suffix in self.SUPPORTED_SUFFIXES:
-                        # extract file to tmp path
-                        member = tarhandle.getmember(file_in_tar)
-                        temp = 'extracting file {}...'.format(member.name)
-                        self.logger.info(temp)
-                        tarhandle.extract(member, path=local_temp_dir, set_attrs=False)
-                        extract_file = os.path.join(local_temp_dir, member.name)
-                        non_archive_files.append(extract_file)
-                        temp_files[extract_file] = True
-                tarhandle.close()
-            else:
-                non_archive_files.append(_file)
-
-
-        for idx, _file in enumerate(sorted(non_archive_files)):
-            # list coda data paths in the 1st file in case the user asked for that
-            if idx == 0 and list_coda_paths:
+            # add potential global attributes
+            try:
+                for name in global_attributes:
+                    ds.attrs[name] = global_attributes[name]
+            except:
                 pass
-                coda_handle = coda.open(_file)
-                root_field_names = coda.get_field_names(coda_handle)
-                for field in root_field_names:
-                    print(field)
-                coda.close(coda_handle)
-                data_obj = None
-                return data_obj
 
-            file_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve,
-                                       loglevel=logging.INFO, return_as='numpy')
-            self.logger.info('{} points read'.format(file_data.shape[0]))
-            # the metadata dict is left empty for L2 data
-            # the location in the data set is time step dependant!
-            if idx == 0:
-                data_obj._data = file_data
-
-            else:
-                data_obj._data = np.append(data_obj._data, file_data, axis=0)
-
-            data_obj._idx = data_obj._data.shape[0] + 1
-            file_data = None
-            # remove file if it was temporary one
-            if _file in temp_files:
-                os.remove(_file)
-            #     pass
-            # tmp_obj = UngriddedData()
-            # tmp_obj._data = file_data
-            # tmp_obj._idx = data_obj._data.shape[0] + 1
-            # data_obj.append(tmp_obj)
-
-        self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
-        return data_obj
+            obj.logger.info('writing file {}...'.format(netcdf_filename))
+            #compress the main variables
+            encoding={}
+            if self._NO2NAME in ds:
+                encoding[self._NO2NAME] = {'zlib': True,'complevel': 5}
+            if self._AVERAGINGKERNELNAME in ds:
+                encoding[self._AVERAGINGKERNELNAME] = {'zlib': True,'complevel': 5}
+            if self._O3NAME in ds:
+                encoding[self._O3NAME] = {'zlib': True, 'complevel': 5}
+            # encoding[self._O3NAME] = {'zlib': True,'complevel': 5}
+            ds.to_netcdf(netcdf_filename, encoding=encoding)
+            # ds.to_netcdf(netcdf_filename)
+            obj.logger.info('file {} written'.format(netcdf_filename))
+        else:
+            #call super class
+            super().to_netcdf_simple(netcdf_filename, global_attributes, vars_to_write, data_to_write, gridded)
 
     ###################################################################################
-    
+    def _match_dim_name(self, dim_dict, dim_size=None, data=None):
+        """small helper routine to match the dimension size to a dimension name"""
+
+        # try to match the shapes to the dimensions
+        ret_data ={}
+
+        if data is not None:
+            for var in data:
+                ret_data[var] = []
+                # not all is a ndarray with a shape
+                try:
+                    shape = data[var].shape
+                except:
+                    continue
+
+                for _size in data[var].shape:
+                    try:
+                        ret_data[var].append(dim_dict[_size])
+                    except:
+                        pass
+            return ret_data
+        else:
+            return dim_dict[dim_size]
+    ###################################################################################
+
+    def to_xarray(self,data_to_write=None, gridded=False,apply_quality_flag=0.0 ):
+        """helper method to turn a read dictionary into an xarray dataset opbject"""
+
+        if isinstance(data_to_write,dict):
+            _data = data_to_write
+        else:
+            _data = data_to_write._data
+
+        import xarray as xr
+        import numpy as np
+
+        bounds_dim_name = 'bounds'
+        bounds_dim_size = 4
+        level_dim_name = self._LEVELSNAME
+        level_dim_size = self._LEVELSSIZE
+
+        if not gridded:
+            # vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]['metadata'].keys()))
+            # var_write_out = _data.keys()
+
+            # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
+            # build the datetimedata...
+            ts_no = len(_data['scanline'])
+            swath_width = len(_data['ground_pixel'])
+            point_dim_len = ts_no * swath_width
+            datetimedata = np.empty(point_dim_len)
+            point_dim_name = 'point'
+            point_dim_size = point_dim_len
+            swath_dim_name = self._GROUNDPIXELNAME
+            swath_dim_size = swath_width
+            tm5_constant_dim_name = 'const_dim'
+            tm5_constant_dim_size = 2
+            # scanline_dim_name = self._SCANLINENAME
+            # scanline_dim_size = ts_no
+            for idx, _time in enumerate(_data['delta_time']):
+                # print('range: {} to {}'.format(idx*swath_width,(idx+1)*swath_width-1))
+                datetimedata[idx * swath_width:(idx + 1) * swath_width] = _data['delta_time'][idx]
+                # datetimedata[idx*swath_width:(idx+1)*swath_width] = _data['delta_time'].astype('datetime64[ms]')
+            # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[ms]'))
+            # pointnumber = np.arange(0, len(datetimedata))
+            ds = xr.Dataset()
+
+            # time and potentially levels are special variables that needs special treatment
+            ds[self._TIME_NAME] = (point_dim_name), datetimedata.astype('datetime64[ms]')
+            skip_vars = [self._TIME_NAME, self._SCANLINENAME]
+            skip_vars.extend(['delta_time'])
+            ds[self._LEVELSNAME] = (level_dim_name), np.arange(self._LEVELSSIZE)
+            skip_vars.extend([self._LEVELSNAME])
+            ds[self._GROUNDPIXELNAME] = (swath_dim_name), _data['ground_pixel']
+            skip_vars.extend([self._GROUNDPIXELNAME])
+            ds[point_dim_name] = np.arange(point_dim_len)
+            ds[tm5_constant_dim_name] = np.arange(tm5_constant_dim_size)
+            ds[bounds_dim_name] = np.arange(4)
+
+            # define a dict with the dimension size as key and the dimensions name as value
+            dim_size_dict = {}
+            dim_size_dict[point_dim_size] = point_dim_name
+            dim_size_dict[bounds_dim_size] = bounds_dim_name
+            dim_size_dict[swath_dim_size] = swath_dim_name
+            dim_size_dict[level_dim_size] = level_dim_name
+            dim_size_dict[tm5_constant_dim_size] = tm5_constant_dim_name
+            # dim_size_dict[scanline_dim_size] = scanline_dim_name
+
+            dim_name_dict = self._match_dim_name(dim_size_dict, data=_data)
+            if apply_quality_flag > 0.:
+                # apply quality flags on the point cloud
+                qflags = _data[self._QANAME].reshape(point_dim_len)
+                keep_indexes = np.where(qflags >= apply_quality_flag)
+                elements_to_add = len(keep_indexes[0])
+                # dim_size_dict[elements_to_add] = point_dim_name
+                ds = xr.Dataset()
+                ds[self._TIME_NAME] = (point_dim_name), datetimedata.astype('datetime64[ms]')[keep_indexes]
+                ds[point_dim_name] = np.arange(elements_to_add)
+                # point_dim_size = elements_to_add
+
+            for var in _data:
+                # loop through the variables
+                if var in skip_vars:
+                    continue
+                try:
+                    shape = _data[var].shape
+                except AttributeError:
+                    continue
+                print('variable: {}'.format(var))
+                if len(_data[var].shape) == 1:
+                    # var with dimension time (e.g. 3245)
+                    # each time needs to be repeated by the swath width
+                    if apply_quality_flag == 0.:
+                        try:
+                            ds[var] = (point_dim_name), _data[var]
+                        except ValueError:
+                            ds[var] = (dim_size_dict[_data[var].shape[0]]), _data[var]
+                    else:
+                        try:
+                            ds[var] = (point_dim_name), _data[var][keep_indexes]
+                        except ValueError:
+                            ds[var] = (dim_size_dict[_data[var].shape[0]]), _data[var][keep_indexes]
+
+                elif len(_data[var].shape) == 2:
+                    # var with dimension time and swath (e.g. 3245, 450)
+                    if apply_quality_flag == 0.:
+                        try:
+                            ds[var] = (point_dim_name), _data[var].reshape(point_dim_len)
+                        except ValueError:
+                            ds[var] = (dim_name_dict[var]), _data[var]
+                    else:
+                        try:
+                            ds[var] = (point_dim_name), (_data[var].reshape(point_dim_len))[keep_indexes]
+                        except ValueError:
+                            ds[var] = (dim_name_dict[var]), _data[var]
+
+                elif len(_data[var].shape) == 3:
+                    # var with dimension time, swath and levels or bounds
+                    # store some vars depending on the points dimension as a 2d variable
+                    if apply_quality_flag == 0.:
+                        if var == 'avg_kernel':
+                            ds[var] = (point_dim_name, level_dim_name), _data[var].reshape([point_dim_size, level_dim_size])
+                        elif var == 'lat_bnds' or var == 'lon_bnds':
+                            ds[var] = (point_dim_name, bounds_dim_name), _data[var].reshape(
+                                [point_dim_size, bounds_dim_size])
+                        else:
+                            ds[var] = (dim_name_dict[var]), _data[var]
+                            pass
+                    else:
+                        if var == 'avg_kernel':
+                            # temp = np.squeeze((_data[var].reshape([point_dim_size, level_dim_size]))[keep_indexes,:])
+                            ds[var] = (point_dim_name, level_dim_name), \
+                                np.squeeze((_data[var].reshape([point_dim_size, level_dim_size]))[keep_indexes,:])
+                            print('{}'.format(var))
+
+                        elif var == 'lat_bnds' or var == 'lon_bnds':
+                            ds[var] = (point_dim_name, bounds_dim_name), \
+                                      np.squeeze(_data[var].reshape([point_dim_size, bounds_dim_size])[keep_indexes,:])
+                        else:
+                            ds[var] = (dim_name_dict[var]), _data[var]
+                            pass
+
+            # add attributes to variables
+            for var in ds:
+                # add predifined attributes
+                print('var {}'.format(var))
+                try:
+                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+                except KeyError:
+                    pass
+
+        else:
+            # gridded
+            pass
+            time_dim_name = self._TIME_NAME
+            lat_dim_name = self._LATITUDENAME
+            lon_dim_name = self._LONGITUDENAME
+
+            ds = xr.Dataset()
+
+            # temp = 15 + 8 * np.random.randn(2, 2, 3)
+            # ds = xr.Dataset({'temperature': (['x', 'y', 'time'],  temp),
+            #    ....:                  'precipitation': (['x', 'y', 'time'], precip)},
+            #    ....:                 coords={'lon': (['x', 'y'], lon),
+            #    ....:                         'lat': (['x', 'y'], lat),
+            #    ....:                         'time': pd.date_range('2014-09-06', periods=3),
+            #    ....:                         'reference_time': pd.Timestamp('2014-09-05')})
+            # coordinate variables need special treatment
+
+            ds[time_dim_name] = np.array(_data[time_dim_name].astype('datetime64[D]'))
+            ds[lat_dim_name] = (lat_dim_name), _data[lat_dim_name],
+            ds[lon_dim_name] = (lon_dim_name), _data[lon_dim_name]
+
+            # for var in vars_to_write_out:
+            vars_to_write_out = data_to_write.keys()
+            for var in vars_to_write_out:
+                if var in self.COORDINATE_NAMES:
+                # if var == self._TIME_NAME:
+                    continue
+                # 1D data
+                # 3D data
+                ds[var + '_mean'] = (lat_dim_name, lon_dim_name), np.reshape(_data[var]['mean'], (
+                    len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+                ds[var + '_numobs'] = (lat_dim_name, lon_dim_name), np.reshape(_data[var]['numobs'], (
+                    len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+
+
+            # add attributes to variables
+            for var in ds.variables:
+                # add predifined attributes
+                print('var {}'.format(var))
+                try:
+                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+                except KeyError:
+                    pass
+
+        # remove _FillValue attribute from coordinate variables since that
+        # is forbidden by CF convention
+        for var in self.COORDINATE_NAMES:
+            # if var in self.COORDINATE_NAMES:
+            try:
+                del ds[var].encoding['_FillValue']
+            except KeyError:
+                pass
+
+            # # add predifined attributes
+            # try:
+            #     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+            #         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+            #
+            # except KeyError:
+            #     pass
+        return ds
+
+    ###################################################################################
+
+    def to_grid(self, data=None, vars=None, gridtype='1x1', engine='python', return_data_for_gridding=False,
+                averaging_kernels=None):
+        """to_grid method that takes a xarray.Dataset object as input"""
+
+        import xarray as xr
+        import numpy as np
+
+        if isinstance(data,dict):
+            _data = self.to_xarray(data_to_write=data)
+        else:
+            _data = self.to_xarray(data_to_write=data._data)
+
+        if engine == 'python':
+            data_for_gridding, gridded_var_data, grid_lats, grid_lons, max_grid_dist_lat, max_grid_dist_lon = \
+                self._to_grid_grid_init(gridtype=gridtype, vars=vars ,init_time=_data['time'].mean())
+
+
+            start_time = time.perf_counter()
+            matching_points = 0
+            # predefine the output data dict
+            # data_for_gridding = {}
+
+            # Loop through the output grid and collect data
+            # store that in data_for_gridding[var]
+            for lat_idx, grid_lat in enumerate(grid_lats):
+                diff_lat = np.absolute((_data[self._LATITUDENAME].data - grid_lat))
+                lat_match_indexes = np.squeeze(np.where(diff_lat <= (max_grid_dist_lat/2.)))
+                print('lat: {}, matched indexes: {}'.format(grid_lat, lat_match_indexes.size))
+                if lat_match_indexes.size == 0:
+                    continue
+
+                for lon_idx, grid_lon in enumerate(grid_lons):
+                    diff_lon = np.absolute((_data[self._LONGITUDENAME].data[lat_match_indexes] - grid_lon))
+                    lon_match_indexes = np.squeeze(np.where(diff_lon <= (max_grid_dist_lon/2.)))
+                    if lon_match_indexes.size == 0:
+                        continue
+
+                    for var in vars:
+                        if return_data_for_gridding:
+                            data_for_gridding[var][grid_lat][grid_lon] = \
+                                np.array(_data[self._LONGITUDENAME].data[lat_match_indexes[lon_match_indexes]])
+                            # np.array(data[lat_match_indexes[lon_match_indexes], self.INDEX_DICT[var]])
+
+                        less_than_zero_indexes = np.where(_data[var].data[lat_match_indexes[lon_match_indexes]] > 0.)
+
+                        try:
+                            gridded_var_data[var]['mean'][lat_idx, lon_idx] = \
+                                np.nanmean(_data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]])
+                            gridded_var_data[var]['stddev'][lat_idx, lon_idx] = \
+                                np.nanstd(_data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]])
+                            gridded_var_data[var]['numobs'][lat_idx, lon_idx] = \
+                                _data[var].data[lat_match_indexes[lon_match_indexes]].size
+                            matching_points = matching_points + \
+                                              _data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]].size
+                        except IndexError:
+                            continue
+
+            end_time = time.perf_counter()
+            elapsed_sec = end_time - start_time
+            temp = 'time for global {} gridding with python data types [s]: {:.3f}'.format(gridtype, elapsed_sec)
+            self.logger.info(temp)
+            temp = 'matched {} points out of {} existing points to grid'.format(matching_points, _data['time'].size)
+            self.logger.info(temp)
+
+            if return_data_for_gridding:
+                self.logger.info('returning also data_for_gridding...')
+                return gridded_var_data, data_for_gridding
+            else:
+                return gridded_var_data
+
+        elif gridtype == '1x1_emep':
+            # 1 by on degree grid on emep domain
+            pass
+
+
+        pass
+
+
+
+
+
+
+        if isinstance(data, xr.Dataset):
+
+            pass
+        else:
+            super().to_grid(data=None, vars=None, gridtype=gridtype, engine='python', return_data_for_gridding=False)
+    ###################################################################################
+
+    def _to_grid_grid_init(self,gridtype='1x1',vars=None,init_time=None):
+        """small helper routine to init the grid data struct"""
+
+        import numpy as np
+
+        start_time = time.perf_counter()
+        grid_data_prot = {}
+
+        grid_lats = []
+        grid_lons = []
+        gridded_var_data = {}
+        max_grid_dist_lon = 0.
+        max_grid_dist_lat = 0.
+        data_for_gridding = {}
+
+        min_lat = -90.
+        max_lat = 90.
+        min_lon = -180.
+        max_lon = 180.
+
+        if gridtype == '1x1':
+            # global 1x1 degree grid
+            # pass
+            temp = 'starting simple gridding for 1x1 degree grid...'
+            self.logger.info(temp)
+            max_grid_dist_lon = 1.
+            max_grid_dist_lat = 1.
+
+        elif gridtype == '0.5x0.5':
+            # global 0.5x0.5 degree grid
+            # pass
+            temp = 'starting simple gridding for 0.5x0.5 degree grid...'
+            self.logger.info(temp)
+
+            max_grid_dist_lon = 0.5
+            max_grid_dist_lat = 0.5
+
+        else:
+            pass
+
+        grid_lats = np.arange(min_lat + max_grid_dist_lat / 2., 90. + max_grid_dist_lat / 2., max_grid_dist_lat)
+        grid_lons = np.arange(min_lon + max_grid_dist_lon / 2., max_lon + max_grid_dist_lon / 2., max_grid_dist_lon)
+        grid_array_prot = np.full((grid_lats.size, grid_lons.size), np.nan)
+        # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
+        for grid_lat in grid_lats:
+            grid_data_prot[grid_lat] = {}
+            for grid_lon in grid_lons:
+                grid_data_prot[grid_lat][grid_lon] = {}
+
+        end_time = time.perf_counter()
+        elapsed_sec = end_time - start_time
+        temp = 'time for global {} gridding with python data types [s] init: {:.3f}'.format(gridtype, elapsed_sec)
+        self.logger.info(temp)
+
+        # predefine the output data dict
+        for var in vars:
+            data_for_gridding[var] = grid_data_prot.copy()
+            gridded_var_data['latitude'] = grid_lats
+            gridded_var_data['longitude'] = grid_lons
+            gridded_var_data['time'] = init_time
+
+            gridded_var_data[var] = {}
+            gridded_var_data[var]['mean'] = grid_array_prot.copy()
+            gridded_var_data[var]['stddev'] = grid_array_prot.copy()
+            gridded_var_data[var]['numobs'] = grid_array_prot.copy()
+
+
+        return data_for_gridding, gridded_var_data, grid_lats, grid_lons, max_grid_dist_lat, max_grid_dist_lon
+
 
 if __name__ == "__main__":
     """small test for the sentinel5p reading...
@@ -712,6 +1017,8 @@ if __name__ == "__main__":
     default_topo_file = '/lustre/storeB/project/fou/kl/admaeolus/EMEP.topo/MACC14_topo_v1.nc'
     # default_gridded_out_file = './gridded.nc'
     default_local_temp_dir = '/home/jang/tmp/'
+
+    default_min_quality_flag = 0.7
 
     parser = argparse.ArgumentParser(
         description='command line interface to pyaerocom.io.readsentinel5p_data.py\n\n\n')
@@ -761,6 +1068,8 @@ if __name__ == "__main__":
     parser.add_argument("--topofile", help="topography file; defaults to {}.".format(default_topo_file),
                         default=default_topo_file)
     parser.add_argument("--gridfile", help="grid data and write it to given output file (in netcdf).")
+    parser.add_argument("--qflag", help="min quality flag to keep data. Defaults to {}".format(default_min_quality_flag),
+                        default = default_min_quality_flag)
 
     args = parser.parse_args()
 
@@ -771,6 +1080,9 @@ if __name__ == "__main__":
 
     if args.filemask:
         options['filemask'] = args.filemask
+
+    if args.qflag:
+        options['qflag'] = args.qflag
 
     if args.gridfile:
         options['gridfile'] = args.gridfile
@@ -890,7 +1202,7 @@ if __name__ == "__main__":
     vars_to_retrieve = options['variables'].copy()
 
     data_numpy = obj.read(files=options['files'], vars_to_retrieve=vars_to_retrieve[0],
-                          local_temp_dir=default_local_temp_dir)
+                          local_temp_dir=default_local_temp_dir, return_as='dict')
 
     # limit data to EMEP CAMS domain
     if options['emepflag']:
@@ -920,7 +1232,7 @@ if __name__ == "__main__":
         global_attributes['input files']=','.join(obj.files_read)
         global_attributes['info']='file created by pyaerocom.io.read_sentinel5p_data '+obj.__version__+' (https://github.com/metno/pyaerocom) at '+\
                                   np.datetime64('now').astype('str')
-        global_attributes['quality']='quality flag of 0.7 applied'
+        global_attributes['quality']='quality flag of {} applied'.format(options['qflag'])
 
     # obj.to_netcdf_simple(data_to_write=data_numpy, global_attributes=obj.global_attributes, vars_to_write=obj.DEFAULT_VARS,
     #                      netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc')
@@ -935,17 +1247,19 @@ if __name__ == "__main__":
         if os.path.exists(options['outfile']):
             if options['overwrite']:
                 obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                     global_attributes=global_attributes, vars_to_write=vars_to_retrieve)
+                                     global_attributes=global_attributes, vars_to_write=vars_to_retrieve,
+                                     apply_quality_flag=options['qflag'])
             else:
                 sys.stderr.write('Error: path {} exists'.format(options['outfile']))
         else:
             # obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
             obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                 global_attributes=global_attributes, vars_to_write=vars_to_retrieve)
+                                 global_attributes=global_attributes, vars_to_write=vars_to_retrieve,
+                                 apply_quality_flag=options['qflag'])
 
     # write L3 gridded data
     if 'gridfile' in options:
-        gridded_var_data = obj.to_grid(vars=vars_to_retrieve)
+        gridded_var_data = obj.to_grid(data=data_numpy, vars=vars_to_retrieve, gridtype='0.5x0.5')
 
         obj.to_netcdf_simple(netcdf_filename=options['gridfile'],
                              vars_to_write=vars_to_retrieve,

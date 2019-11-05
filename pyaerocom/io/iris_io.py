@@ -44,7 +44,7 @@ TSTR_TO_CF = {"hourly"  :  "hours",
               "monthly" :  "days"}
 
 def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None, 
-                                 perform_checks=True, num_proc=None):
+                                 perform_fmt_checks=True, num_proc=None):
     """Like :func:`load_cubes_custom` but faster
     
     Uses multiprocessing module to distribute loading of multiple NetCDF files
@@ -62,7 +62,7 @@ def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None,
     file_convention : :obj:`FileConventionRead`, optional
         Aerocom file convention. If provided, then the data content (e.g. 
         dimension definitions) is tested against definition in file name
-    perform_checks : bool
+    perform_fmt_checks : bool
         if True, additional quality checks (and corrections) are (attempted to
         be) performed.
     num_proc : int
@@ -79,12 +79,12 @@ def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None,
         num_proc = multiprocessing.cpu_count() * 2
     func = partial(load_cube_custom, 
                    var_name=var_name, file_convention=file_convention, 
-                   perform_checks=perform_checks)
+                   perform_fmt_checks=perform_fmt_checks)
     p = multiprocessing.Pool(processes=num_proc)
     return p.map(func, files)
 
 def load_cubes_custom(files, var_name=None, file_convention=None, 
-                      perform_checks=True, **kwargs):
+                      perform_fmt_checks=True, **kwargs):
     """Load multiple NetCDF files into CubeList
     
     Parameters
@@ -99,7 +99,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
     file_convention : :obj:`FileConventionRead`, optional
         Aerocom file convention. If provided, then the data content (e.g. 
         dimension definitions) is tested against definition in file name
-    perform_checks : bool
+    perform_fmt_checks : bool
         if True, additional quality checks (and corrections) are (attempted to
         be) performed.
     **kwargs 
@@ -121,7 +121,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
 #         try:
 #             cubes =  _load_cubes_custom_multiproc(files, var_name, 
 #                                                   file_convention, 
-#                                                   perform_checks,
+#                                                   perform_fmt_checks,
 #                                                   **kwargs)
 #             # if this worked, all input files were successfully loaded and the 
 #             # function terminates, else, the retrieval is done file by file.
@@ -154,7 +154,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
     return (cubes, loaded_files)
 
 def load_cube_custom(file, var_name=None, file_convention=None, 
-                     perform_checks=True):
+                     perform_fmt_checks=None):
     """Load netcdf file as iris.Cube
     
     Parameters
@@ -169,7 +169,7 @@ def load_cube_custom(file, var_name=None, file_convention=None,
     file_convention : :obj:`FileConventionRead`, optional
         Aerocom file convention. If provided, then the data content (e.g. 
         dimension definitions) is tested against definition in file name
-    perform_checks : bool
+    perform_fmt_checks : bool
         if True, additional quality checks (and corrections) are (attempted to
         be) performed.
     
@@ -178,6 +178,8 @@ def load_cube_custom(file, var_name=None, file_convention=None,
     iris.cube.Cube
         loaded data as Cube
     """
+    if perform_fmt_checks is None:
+        perform_fmt_checks = const.GRID_IO.PERFORM_FMT_CHECKS
     cube_list = iris.load(file)
     
     _num = len(cube_list)
@@ -206,7 +208,7 @@ def load_cube_custom(file, var_name=None, file_convention=None,
     if cube is None:
         raise NetcdfError('Variable {} not available in file {}'.format(var_name, 
                                                                         file))
-    if perform_checks:
+    if perform_fmt_checks:
         try:
             cube = _check_var_unit_cube(cube)
         except VariableDefinitionError:
@@ -214,7 +216,13 @@ def load_cube_custom(file, var_name=None, file_convention=None,
         
         grid_io = const.GRID_IO
         if grid_io.CHECK_TIME_FILENAME:
-            cube = _check_correct_time_dim(cube, file,  file_convention)
+            try:
+                cube = _check_correct_time_dim(cube, file,  file_convention)
+            except FileConventionError:
+                const.print_log.warning('WARNING: failed to check / validate '
+                                        'time dim. using information in '
+                                        'filename. Reason: invalid file name '
+                                        'convention')
         else:
             logger.warning("WARNING: Automatic check of time "
                            "array in netCDF files is deactivated. "
@@ -401,7 +409,7 @@ def check_time_coordOLD(cube, ts_type, year):
         ok = False
     return ok
 
-def make_datetimeindex(ts_type, year):
+def make_datetimeindex_from_year(ts_type, year):
     """Create pandas datetime index 
     
     Parameters
@@ -419,9 +427,12 @@ def make_datetimeindex(ts_type, year):
     import pandas as pd
     start = datetime64("{}-01-01 00:00:00".format(year))
     stop = datetime64("{}-12-31 23:59:59".format(year))
-    
-    idx = pd.DatetimeIndex(start=start, end=stop, 
-                           freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+    idx = pd.date_range(start=start, end=stop, 
+                        freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+# =============================================================================
+#     idx = pd.DatetimeIndex(start=start, end=stop, 
+#                            freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+# =============================================================================
     return idx
 
 
@@ -506,7 +517,7 @@ def check_time_coord(cube, ts_type, year):
     except:
         raise ValueError("Could not convert time unit string")
 
-    tidx = make_datetimeindex(ts_type, year)
+    tidx = make_datetimeindex_from_year(ts_type, year)
     
     num_per = len(tidx)
     num = len(t.points)

@@ -27,6 +27,7 @@ class TimeResampler(object):
     APPLY_CONSTRAINTS = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
     FREQS_SUPPORTED = TS_TYPE_TO_PANDAS_FREQ
     def __init__(self, input_data=None):
+        self.last_setup = None
         self._input_data = None
         self.input_data = input_data
         self.valid_base_ts_types = [x for x in const.GRID_IO.TS_TYPES if
@@ -74,20 +75,29 @@ class TimeResampler(object):
                 min_num = min_num_obs[to][last_from]
                 last_from = to
                 idx.append((to, min_num))
+<<<<<<< HEAD
 
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
                  how='mean', apply_constraints=None,
+=======
+        if len(idx) == 0 or not idx[-1][0] == to_ts_type.base:
+            idx.append((to_ts_type.base, 0))
+        return idx
+
+    def resample(self, to_ts_type, input_data=None, from_ts_type=None,
+                 how='mean', apply_constraints=False,
+>>>>>>> origin/v081dev
                  min_num_obs=None, **kwargs):
         """Resample input data
 
         Parameters
         ----------
-        input_data : pandas.Series or xarray.DataArray
-            data to be resampled
         to_ts_type : str or pyaerocom.tstype.TsType
             output resolution
+        input_data : pandas.Series or xarray.DataArray
+            data to be resampled
         how : str
             string specifying how the data is to be aggregated, default is mean
         apply_constraints : bool, optional
@@ -103,10 +113,15 @@ class TimeResampler(object):
                 min_num_obs =
                     {'monthly'  :   {'daily'  : 7},
                      'daily'    :   {'hourly' : 6}}
+<<<<<<< HEAD
 
             to require at least 6 hours per day and 7 days per month. Or, if
             data is daily and output is monthly and
 
+=======
+
+            to require at least 6 hours per day and 7 days per month.
+>>>>>>> origin/v081dev
         **kwargs
            additional input arguments passed to resampling method
 
@@ -136,8 +151,9 @@ class TimeResampler(object):
         if apply_constraints is None:
             apply_constraints = self.APPLY_CONSTRAINTS
 
-
         if not apply_constraints:
+            self.last_setup = dict(apply_constraints=False,
+                                   min_num_obs=None)
             return self.fun(self.input_data, freq=to_ts_type.val,
                             how=how, **kwargs)
         elif from_ts_type is None:
@@ -145,6 +161,8 @@ class TimeResampler(object):
                                  'since input from_ts_type is None. Applying '
                                  'resampling to {} without any constraints'
                                  .format(to_ts_type))
+            self.last_setup = dict(apply_constraints=False,
+                                   min_num_obs=None)
             return self.fun(self.input_data, freq=to_ts_type.val,
                             how=how, **kwargs)
 
@@ -163,8 +181,10 @@ class TimeResampler(object):
                                           'to {}'
                                           .format(from_ts_type, to_ts_type))
         elif to_ts_type == from_ts_type:
-            #const.print_log.info('Input time frequency equals current frequency '
-            #                     'of data, ignoring any resampling constraints')
+            const.logger.info('Input time frequency equals current frequency '
+                              'of data, ignoring any resampling constraints')
+            self.last_setup = dict(apply_constraints=False,
+                                   min_num_obs=None)
             return self.fun(self.input_data, freq=to_ts_type.val, how=how,
                             **kwargs)
 
@@ -173,16 +193,25 @@ class TimeResampler(object):
 
         _idx = self._gen_idx(from_ts_type, to_ts_type, min_num_obs)
         data = self.input_data
-        for to_ts_type, min_num_obs in _idx:
+        for to_ts_type, mno in _idx:
             data = self.fun(data, freq=to_ts_type, how=how,
-                            min_num_obs=min_num_obs)
-
+                            min_num_obs=mno)
+        self.last_setup = dict(apply_constraints=True,
+                               min_num_obs=min_num_obs)
         return data
 
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
+
+
+    data = pya.io.ReadGridded('AATSR_SU_v4.3').read_var('od550aer', start=2010)
+    mon_iris = data.resample_time('monthly')
+
+    mon_xarr = data.resample_time('monthly', apply_constraints=True,
+                                  min_num_obs=1)
+
 
     plt.close('all')
     data = pya.io.ReadUngridded().read('EBASMC', 'concpm10')

@@ -30,7 +30,7 @@ def test_file_info(dataset):
 
 @lustre_unavail    
 def test_years_available(dataset):
-    years = list(range(2003, 2019)) + [9999]
+    years = list(range(2003, 2020)) + [9999]
     npt.assert_array_equal(dataset.years_avail, years)    
 
 @lustre_unavail
@@ -80,7 +80,7 @@ def test_read_vars(dataset):
     
 if __name__=="__main__":
     ds = make_dataset()
-
+    test_years_available(ds)
     test_file_info(ds)
     test_read_vars(ds)
     

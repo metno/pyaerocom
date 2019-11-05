@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
 from collections import OrderedDict as od
-from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
+from pyaerocom.exceptions import (DataCoverageError, TemporalResolutionError,
+                                  MetaDataError)
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 import pandas as pd
@@ -492,6 +493,7 @@ class TrendsEngine(object):
             result['slp_{}'.format(start_year)] = tp
             result['slp_{}_err'.format(start_year)] = tperr
             result['reg0_{}'.format(start_year)] = v0p
+            result['period'] = period_str
     
         if not seas in self.results:
             self.results[seas] = od()
@@ -511,9 +513,16 @@ class TrendsEngine(object):
     def get_trend_color(self, trend_val):
         return self.CMAP(self.NORM(trend_val))
     
-    def plot(self, season, period, ax=None):
+    def plot(self, season='all', period=None, ax=None):
         if not season in self.seasons_avail:
-            raise AttributeError('No results available for season {}'.format(season))
+            raise AttributeError('No results available for season {}'
+                                 .format(season))
+        if period is None:
+            if len(self.results[season]) > 1:
+                raise ValueError('Found multiple trends for different periods: '
+                                 '{}. Please specify period...'
+                                 .format(list(self.results[season].keys())))
+            period = list(self.results[season].keys())[0]
         if ax is None:
             fig, ax = plt.subplots(1,1, figsize=(18, 8))
         if self.has_daily:
@@ -653,7 +662,7 @@ def compute_trends_station(station, var_name, start_year=None,
             trv['daily'] = station.to_timeseries(var_name, freq='daily', **alt_range)
     # monthly is mandatory
     if not trv.has_monthly:
-        if freq in ts_types and ts_types.index(freq) >= ts_types.index('monthly'):
+        if freq in ts_types and ts_types.index(freq) > ts_types.index('monthly'):
             raise TemporalResolutionError('Need monthly or higher')
         ms = station.to_timeseries(var_name, freq='monthly', **alt_range)
         trv['monthly'] = ms
@@ -671,8 +680,11 @@ def compute_trends_station(station, var_name, start_year=None,
     result = trv.compute_trend(start_year, stop_year, season, 
                                slope_confidence)
     
-    
-    trv.meta.update(station.get_meta(add_none_vals=True))
+    try:
+        trv.meta.update(station.get_meta(add_none_vals=True))
+    except MetaDataError:
+        trv.meta.update(station.get_meta(force_single_value=False,
+                                         add_none_vals=True))
     if var_name in station.var_info:
         trv.meta.update(station.var_info[var_name])
     return result

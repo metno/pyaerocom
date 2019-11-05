@@ -84,7 +84,6 @@ const = Config()
 from . import metastandards
 from . import mathutils
 from . import geodesy
-from . import multiproc
 from . import vert_coords
 
 from .vertical_profile import VerticalProfile

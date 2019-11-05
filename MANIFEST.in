@@ -1,5 +1,5 @@
-include notebooks/*ipynb
+include LICENSE
 include README.rst
 include VERSION.md
-include CHANGELOG.md
 include pyaerocom_env.yml
+include pytest.ini

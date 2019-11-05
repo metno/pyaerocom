@@ -885,7 +885,7 @@ class StationData(StationMetaData):
             return ts_type
         
         if try_infer:
-            const.print_log('Trying to infer ts_type in StationData {} '
+            const.print_log.warning('Trying to infer ts_type in StationData {} '
                             'for variable {}'.format(self.station_name, var_name))
             from pyaerocom.helpers import infer_time_resolution
             try:
@@ -1014,8 +1014,8 @@ class StationData(StationMetaData):
         
         try: 
             from_ts_type = TsType(self.get_var_ts_type(var_name))
-        except MetaDataError:
-            from_ts_type == None
+        except (MetaDataError, TemporalResolutionError):
+            from_ts_type = None
             const.print_log.warning('Failed to access current temporal '
                                     'resolution of {} data in StationData {}. '
                                     'No resampling constraints will be applied'
@@ -1038,6 +1038,7 @@ class StationData(StationMetaData):
                                  apply_constraints=apply_constraints,
                                  min_num_obs=min_num_obs, 
                                  **kwargs)
+
 # =============================================================================
 #         if isinstance(data, pd.Series):
 #             new = resample_timeseries(data, 
@@ -1055,6 +1056,7 @@ class StationData(StationMetaData):
         if inplace:
             self[var_name] = new
             self.var_info[var_name]['ts_type'] = to_ts_type.val
+            self.var_info[var_name].update(resampler.last_setup)
             # there is other variables that are not resampled
             if len(self.var_info) > 1 and self.ts_type is not None:     
                 _tt = self.ts_type
@@ -1323,6 +1325,8 @@ class StationData(StationMetaData):
             if length of data array does not equal the length of the time array
         """
         import matplotlib.pyplot as plt
+        if 'ts_type' in kwargs:
+            freq = kwargs.pop('ts_type')
         if 'label' in kwargs:
             lbl = kwargs.pop('label')
         else:
@@ -1351,7 +1355,7 @@ class StationData(StationMetaData):
         if tit is None:
             try:
                 tit = self.get_meta(force_single_value=True, 
-                                      quality_check=False)['station_name']    
+                                    quality_check=False)['station_name']    
             except:
                 tit = 'Failed to retrieve station_name'
         s = self.to_timeseries(var_name, freq, resample_how)
@@ -1360,6 +1364,7 @@ class StationData(StationMetaData):
         if add_overlaps and var_name in self.overlap:
             so = self.overlap[var_name]
             try:
+                from pyaerocom.helpers import resample_timeseries
                 so = resample_timeseries(so, freq, how=resample_how)
             except:
                 pass
@@ -1424,13 +1429,19 @@ class StationData(StationMetaData):
         return s
     
 if __name__=="__main__":
+    import pyaerocom as pya
+    import matplotlib.pyplot as plt
     
-    s = StationData(station_name='Bla', revision_date='20, 21')
-    s2 = StationData(station_name='Bla', revision_date='21, 22, 23',
-                     latitude=30, longitude=10, altitude=400)
+    plt.close('all')
+    data0 = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    print(s)
-    s.merge_meta_same_station(s2)
-    print(s2)
-    print(s)
+    sv = data0.to_station_data('Solar*')
+    sv.plot_timeseries('od550aer', 'yearly')
+    
+    data = pya.io.ReadUngridded().read('EBASMC', 'concoc')
+    
+    birkenes = data.to_station_data('Birken*')
+    
+    ax = birkenes.plot_timeseries('concoc')
+    ax = birkenes.plot_timeseries('concoc', 'yearly', ax=ax)
     

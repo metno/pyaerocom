@@ -43,8 +43,8 @@ import iris
 from pyaerocom import const, print_log, logger
 from pyaerocom.variable import Variable, is_3d
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
-                                         add_cubes,
-                                         multiply_cubes)
+                                         multiply_cubes,
+                                         subtract_cubes)
 from pyaerocom.helpers import to_pandas_timestamp, get_highest_resolution
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
@@ -108,12 +108,10 @@ class ReadGridded(object):
     ----------
     data_id : str
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
-    start : :obj:`pandas.Timestamp` or :obj:`str`, optional
-        desired start time of dataset (note, that strings are passed to 
-        :class:`pandas.Timestamp` without further checking)
-    stop : :obj:`pandas.Timestamp` or :obj:`str`, optional
-        desired stop time of dataset (note, that strings are passed to 
-        :class:`pandas.Timestamp` without further checking)
+    data_dir : str, optional
+        directory containing data files. If provided, only this directory is
+        considered for data files, else the input `data_id` is used to search 
+        for the corresponding directory.
     file_convention : str
         string ID specifying the file convention of this model (cf. 
         installation file `file_conventions.ini <https://github.com/metno/
@@ -126,38 +124,46 @@ class ReadGridded(object):
         
     """
     AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
-                    'od550gt1aer'   : ['od550dust', 'od550ss'],
-                    'conc*'        : ['mmr*', 'rho']}
+                    'od550gt1aer'   : ['od550aer', 'od550lt1aer'],
+                    'conc*'         : ['mmr*', 'rho']}
     
     AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
                     'od870aer'  :   ['od865aer']}
     
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
-                'od550gt1aer'  :    add_cubes,
+                'od550gt1aer'  :    subtract_cubes,
                 'conc*'        :    multiply_cubes}
     
     _data_dir = ""
     
     VERT_ALT = {'Surface' : 'ModelLevel'}
 
-    def __init__(self, data_id="", file_convention="aerocom3", init=True):
+    def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3", 
+                 init=True):
     
-        if not isinstance(data_id, str):
-            if isinstance(data_id, list):
-                msg = ("Input for data_id is list. You might want to use "
-                       "class ReadGriddedMulti for import?")
-            else:
-                msg = ("Invalid input for data_id. Need str, got: %s"
-                       %type(data_id))
-            raise TypeError(msg)
+# =============================================================================
+#         if not isinstance(data_id, str):
+#             if isinstance(data_id, list):
+#                 msg = ("Input for data_id is list. You might want to use "
+#                        "class ReadGriddedMulti for import?")
+#             else:
+#                 msg = ("Invalid input for data_id. Need str, got: %s"
+#                        %type(data_id))
+#             raise TypeError(msg)
+# =============================================================================
+            
+        self._data_dir = None
         
         #: data_id of gridded dataset        
-        self.data_id = data_id
+        self._data_id = data_id
         
         self.logger = logger
         
         #: Dictionary containing loaded results for different variables
         self.data = od()
+        
+        #: Cube lists for each loaded variable
+        self.loaded_cubes = od()
         
         # file naming convention. Default is aerocom3 file convention, change 
         # using self.file_convention.import_default("aerocom2"). Is 
@@ -171,8 +177,7 @@ class ReadGridded(object):
         self._vars_2d = []
         self._vars_3d = []
         
-        #: Cube lists for each loaded variable
-        self.loaded_cubes = od()
+        
         
         #: This object can be used to 
         self.browser = AerocomBrowser()
@@ -185,11 +190,49 @@ class ReadGridded(object):
         self._aux_funs = {}
         
         self.ignore_vert_code = False
-        if init and data_id:
+        if data_dir is not None:
+            self.data_dir = data_dir
+        elif data_id:
             self.search_data_dir()
-            self.search_all_files()
-     
+        if self.data_dir is not None:
+            try:
+                self.search_all_files()
+            except DataCoverageError as e:
+                print_log.warning(repr(e))
+
+    def reinit(self):
+        """Reinit everything that is loaded specific to data_dir"""
+        self.file_info = None
+        self._vars_2d = []
+        self._vars_3d =[]
+        self.loaded_cubes = od()
+        self.data = od()
+      
+    @property
+    def data_id(self):
+        return self._data_id
     
+    @data_id.setter
+    def data_id(self, val):
+        if val is None:
+            val = ''
+        if not isinstance(val, str):
+            raise ValueError('Invalid input for data_id, need str')
+        self._data_id = val
+        
+    @property
+    def data_dir(self):
+        """Directory of data files"""
+        return self._data_dir
+    
+    @data_dir.setter
+    def data_dir(self, val):
+        if not isinstance(val, str) or not os.path.isdir(val):
+            raise FileNotFoundError('Input data directory {} does not exist'
+                                    .format(val))
+        self._data_dir = val
+        self.reinit() 
+            
     @property
     def years_avail(self):
         """Available years"""
@@ -238,7 +281,7 @@ class ReadGridded(object):
         self._aux_avail = []
         for aux_var in self.AUX_REQUIRES.keys():
             try:
-                self._get_aux_vars(aux_var)
+                self._get_aux_vars_and_fun(aux_var)
                 if not aux_var in v:
                     v.append(aux_var)
                 self._aux_avail.append(aux_var)
@@ -246,7 +289,7 @@ class ReadGridded(object):
                 pass
         for aux_var in self._aux_requires.keys():
             try:
-                self._get_aux_vars(aux_var)
+                self._get_aux_vars_and_fun(aux_var)
                 if not aux_var in v:
                     v.append(aux_var)
                 self._aux_avail.append(aux_var)
@@ -259,22 +302,6 @@ class ReadGridded(object):
             if not var in v:
                 v.append(var)
         return v
-    
-    @property
-    def data_dir(self):
-        """Model directory"""
-        dirloc = self._data_dir
-        if not os.path.isdir(dirloc):
-            raise IOError("Model directory for ID %s not available or does "
-                          "not exist" %self.data_id)
-        return dirloc
-    
-    @data_dir.setter
-    def data_dir(self, value):
-        if isinstance(value, str) and os.path.isdir(value):
-            self._data_dir = value
-        else:
-            raise ValueError("Could not set directory: %s" %value)
     
     @property
     def file_type(self):
@@ -330,6 +357,22 @@ class ReadGridded(object):
                 year = years[-2]
             
         return to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
+    
+    def has_var(self, var_name):
+        """Check if variable is available
+        
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+        
+        Returns
+        -------
+        bool
+        """
+        if var_name in self.vars_provided or self.check_compute_var(var_name):
+            return True
+        return False
     
     def _get_years_to_load(self, start=None, stop=None):
         """Array containing year numbers that are supposed to be loaded
@@ -409,6 +452,31 @@ class ReadGridded(object):
                 meteo = sspl[-1]
         return (name, meteo, experiment)
     
+    def _update_file_convention(self, files):
+        """Update current file convention based on input files
+        
+        Loops over all files in input list and as updates the file convention
+        based on the first file in list that matches one of the registered 
+        conventions.
+        
+        Updates class :attr:`file_convention`
+        
+        Raises
+        ------
+        FileNotFoundError
+            if none of the input files matches a registered convention.
+        """
+        for file in files:
+            try:
+                self.file_convention.from_file(os.path.basename(file))
+                return
+            except:
+                pass
+        
+        raise FileNotFoundError('None of the available files in {} matches a '
+                                'registered pyaerocom file convention'
+                                .format(self.data_dir))
+        
     def search_all_files(self, update_file_convention=True):
         """Search all valid model files for this model
         
@@ -430,33 +498,30 @@ class ReadGridded(object):
             
         Raises
         ------
-        IOError
-            if none of the files in the data directory follows either of the 
-            available naming conventions (cf. data file *fileconventions.ini*)
+        DataCoverageError
+            if no valid files could be found
         """
         result = []
         files_ignored = []
         # get all netcdf files in folder
         nc_files = glob(self.data_dir + '/*{}'.format(self.file_type))
+        if len(nc_files) == 0:
+            print_log.warning('No files of type {} could be found in current '
+                              'data_dir={}'.format(self.file_type, 
+                                        os.path.abspath(self.data_dir)))
+            return
+        
         if update_file_convention:
             # Check if the found file has a naming according the aerocom conventions
             # and set the convention for all files (maybe this need to be 
             # updated in case there can be more than one file naming convention
             # within one model directory)
-            ok = False
-            for file in nc_files:
-                try:
-                    self.file_convention.from_file(os.path.basename(file))
-                    ok = True
-                    break
-                except:
-                    pass
-            if not ok:
-                raise IOError("Failed to identify file naming convention "
-                              "from files in model directory for model "
-                              "%s\ndata_dir: %s"
-                              %(self.data_id, self.data_dir))
-        
+            try:
+                self._update_file_convention(nc_files)
+            except FileNotFoundError as e:
+                print_log.warning(repr(e))
+                return
+                
         _vars_temp = []
         _vars_temp_3d = []
         
@@ -468,6 +533,8 @@ class ReadGridded(object):
                 continue
             try:
                 info = self.file_convention.get_info_from_file(_file)
+                if not self.data_id:
+                    self.data_id = info['data_id']
                 var_name = info['var_name']
                 _is_3d = False
                 if is_3d(var_name):
@@ -731,7 +798,7 @@ class ReadGridded(object):
             if var_to_compute in result:
                 continue
             try:
-                vars_to_read = self._get_aux_vars(var_to_compute)
+                vars_to_read = self._get_aux_vars_and_fun(var_to_compute)[0]
             except VarNotAvailableError:
                 pass
             else:
@@ -788,32 +855,80 @@ class ReadGridded(object):
         """        
         return concatenate_iris_cubes(cubes, error_on_mismatch=True)
     
-    def _get_aux_fun(self, var_to_compute):
-        """Get method used to compute input variable
-        
-        Parameters
-        ----------
-        var_to_compute : str
-            variable to be computed
-        
-        Returns
-        -------
-        callable
-            method that is used to compute variable
-        
-        Raises
-        ------
-        AttributeError
-            if no function is defined for that variable name
-        """
-        if var_to_compute in self.AUX_FUNS:
-            return self.AUX_FUNS[var_to_compute]
-        elif var_to_compute in self._aux_funs:
-            return self._aux_funs[var_to_compute]
-        raise AttributeError('No method found for computation of {}'
-                             .format(var_to_compute))
-        
-    def _get_aux_vars(self, var_to_compute):
+# =============================================================================
+#     def _get_aux_fun(self, var_to_compute):
+#         """Get method used to compute input variable
+#         
+#         Parameters
+#         ----------
+#         var_to_compute : str
+#             variable to be computed
+#         
+#         Returns
+#         -------
+#         callable
+#             method that is used to compute variable
+#         
+#         Raises
+#         ------
+#         AttributeError
+#             if no function is defined for that variable name
+#         """
+#         if var_to_compute in self.AUX_FUNS:
+#             return self.AUX_FUNS[var_to_compute]
+#         elif var_to_compute in self._aux_funs:
+#             return self._aux_funs[var_to_compute]
+#         raise AttributeError('No method found for computation of {}'
+#                              .format(var_to_compute))
+#         
+#     def _get_aux_vars(self, var_to_compute):
+#         """Helper that searches auxiliary variables for computation of input var
+#         
+#         Parameters
+#         ----------
+#         var_to_compute : str
+#             one of the auxiliary variables that is supported by this interface
+#             (cf. :attr:`AUX_REQUIRES`)
+#         
+#         Returns 
+#         -------
+#         list
+#             list of variables that are used as input for computation method 
+#             of input variable (cf. :attr:`AUX_FUNS`)
+#             
+#         Raises 
+#         ------
+#         VarNotAvailableError
+#             if one of the required variables for computation is not available 
+#             in the data
+#         """
+#         if var_to_compute in self._aux_requires:
+#             vars_req = self._aux_requires[var_to_compute]
+#         elif var_to_compute in self.AUX_REQUIRES:
+#             vars_req = self.AUX_REQUIRES[var_to_compute]
+#         
+#         vars_to_read = []
+#         for var in vars_req:
+#             found = 0
+#             if var in self.vars:
+#                 found = 1
+#                 vars_to_read.append(var)
+#             elif var in self.AUX_ALT_VARS:
+#                 for alt_var in list(self.AUX_ALT_VARS[var]):
+#                     if alt_var in self.vars:
+#                         found = 1
+#                         vars_to_read.append(alt_var)
+#                         break
+#             if not found:
+#                 raise VarNotAvailableError('Cannot compute {}, since {} '
+#                                            '(req. for computation) is not '
+#                                            'available in data'
+#                                            .format(var_to_compute, 
+#                                                    var))
+#         return vars_to_read
+# =============================================================================
+    
+    def _get_aux_vars_and_fun(self, var_to_compute):
         """Helper that searches auxiliary variables for computation of input var
         
         Parameters
@@ -834,10 +949,14 @@ class ReadGridded(object):
             if one of the required variables for computation is not available 
             in the data
         """
-        if var_to_compute in self._aux_requires:
+        if (var_to_compute in self._aux_requires and 
+            var_to_compute in self._aux_funs):
             vars_req = self._aux_requires[var_to_compute]
-        elif var_to_compute in self.AUX_REQUIRES:
+            fun = self._aux_funs[var_to_compute]
+        elif (var_to_compute in self.AUX_REQUIRES and 
+              var_to_compute in self.AUX_FUNS):
             vars_req = self.AUX_REQUIRES[var_to_compute]
+            fun = self.AUX_FUNS[var_to_compute]
         
         vars_to_read = []
         for var in vars_req:
@@ -857,8 +976,8 @@ class ReadGridded(object):
                                            'available in data'
                                            .format(var_to_compute, 
                                                    var))
-        return vars_to_read
-                
+        return (vars_to_read, fun)
+    
     def compute_var(self, var_name, start=None, stop=None, ts_type=None, 
                     experiment=None, vert_which=None, flex_ts_type=True, 
                     prefer_longer=False, vars_to_read=None, aux_fun=None, 
@@ -904,10 +1023,10 @@ class ReadGridded(object):
         GriddedData
             loaded data object
         """
-        if vars_to_read is None:
-            vars_to_read = self._get_aux_vars(var_name)
-        if aux_fun is None:
-            aux_fun = self._get_aux_fun(var_name)
+        if vars_to_read is not None:
+            self.add_aux_compute(var_name, vars_to_read, aux_fun)
+        vars_to_read, aux_fun = self._get_aux_vars_and_fun(var_name)
+        
         data = []
         # all variables that are required need to be in the same temporal
         # resolution
@@ -1054,7 +1173,7 @@ class ReadGridded(object):
     def check_compute_var(self, var_name):
         """Check if variable name belongs to family that can be computed
         
-        For instance, if input var_name is `sconcdust` this method will check
+        For instance, if input var_name is `concdust` this method will check
         :attr:`AUX_REQUIRES` to see if there is a variable family pattern
         (`conc*`) defined that specifies how to compute these variables. If 
         a match is found, the required variables and computation method is 
@@ -1079,50 +1198,57 @@ class ReadGridded(object):
             from pyaerocom.exceptions import VariableDefinitionError
             raise VariableDefinitionError('Invalid variable name {}. Must not '
                                           'contain *'.format(var_name))
+        found = False
         if var_name in self.AUX_REQUIRES:
-            return True
+            found = True
         elif var_name in self._aux_requires:
-            return True
-        import fnmatch
-        patterns = [x for x in self.AUX_REQUIRES if '*' in x]
-        vars_found = []
-        for pattern in patterns:
-            if fnmatch.fnmatch(var_name, pattern):
-                vars_required = self.AUX_REQUIRES[pattern]
-                for addvar in vars_required:
-                    
-                    if not '*' in addvar:
-                        vars_found.append(addvar)
-                    else:
-                        _addvar = var_name
-                        spl1 = pattern.split('*')
-                        spl2 = addvar.split('*')
-                        if len(spl1) != len(spl2):
-                            raise AttributeError('variable patterns in '
-                                                 'AUX_REQUIRES and corresponding '
-                                                 'values (with * in name) need '
-                                                 'to have the same number of '
-                                                 'wildcard delimiters')
-                        for i, substr in enumerate(spl1):
-                            if bool(substr):
-                                _addvar = _addvar.replace(substr, spl2[i])
-                        vars_found.append(_addvar)
-                if (len(vars_found) == len(vars_required) and
-                    all([x in self.vars_provided for x in vars_found])):
-                    
-                    self.add_aux_compute(var_name, 
-                                         vars_required=vars_found,
-                                         fun=self.AUX_FUNS[pattern])
+            found = True
+        else:
+            import fnmatch
+            patterns = [x for x in self.AUX_REQUIRES if '*' in x]
+            vars_found = []
+            for pattern in patterns:
+                if fnmatch.fnmatch(var_name, pattern):
+                    vars_required = self.AUX_REQUIRES[pattern]
+                    for addvar in vars_required:
                         
-                    return True
-        return False
+                        if not '*' in addvar:
+                            vars_found.append(addvar)
+                        else:
+                            _addvar = var_name
+                            spl1 = pattern.split('*')
+                            spl2 = addvar.split('*')
+                            if len(spl1) != len(spl2):
+                                raise AttributeError('variable patterns in '
+                                                     'AUX_REQUIRES and corresponding '
+                                                     'values (with * in name) need '
+                                                     'to have the same number of '
+                                                     'wildcard delimiters')
+                            for i, substr in enumerate(spl1):
+                                if bool(substr):
+                                    _addvar = _addvar.replace(substr, spl2[i])
+                            vars_found.append(_addvar)
+                    if (len(vars_found) == len(vars_required) and
+                        all([x in self.vars_provided for x in vars_found])):
+                        
+                        self.add_aux_compute(var_name, 
+                                             vars_required=vars_found,
+                                             fun=self.AUX_FUNS[pattern])
+                            
+                        found=True
+        if found:
+            try:
+                self._get_aux_vars_and_fun(var_name)
+            except VarNotAvailableError:
+                found = False
+        return found
     
                 
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, vert_which=None, 
                  flex_ts_type=True, prefer_longer=False, 
-                 aux_vars=None, aux_fun=None,
+                 aux_vars=None, aux_fun=None, 
                  **kwargs):
         """Read model data for a specific variable
         
@@ -1209,22 +1335,28 @@ class ReadGridded(object):
                 
         #ts_type = self._check_ts_type(ts_type)
         var_to_read = None
-        if var_name in self.vars:
-            var_to_read = var_name  
-        else:
-            # e.g. user asks for od550aer but files contain only 3d var od5503daer
-            #if not var_to_read in self.vars: 
-            for var in self._vars_3d:
-                if Variable(var).var_name == var_name:
-                    var_to_read = var
-            if var_to_read is None:
-                for alias in const.VARS[var_name].aliases:
-                    if alias in self.vars:
-                        const.print_log.info('Did not find {} field, loading '
-                                             '{} instead'.format(var_name,
-                                              alias))
-                        var_to_read = alias
-    
+        # this input variable was explicitely set to be computed, in which 
+        # case reading of that variable is ignored even if a file exists for 
+        # that
+        do_compute = (var_name in self._aux_requires and 
+                      self.check_compute_var(var_name))
+        if not do_compute:
+            if var_name in self.vars:
+                var_to_read = var_name  
+            else:
+                # e.g. user asks for od550aer but files contain only 3d var od5503daer
+                #if not var_to_read in self.vars: 
+                for var in self._vars_3d:
+                    if Variable(var).var_name == var_name:
+                        var_to_read = var
+                if var_to_read is None:
+                    for alias in const.VARS[var_name].aliases:
+                        if alias in self.vars:
+                            const.print_log.info('Did not find {} field but {}. '
+                                                 'Using the latter instead'
+                                                 .format(var_name, alias))
+                            var_to_read = alias
+        
         if isinstance(vert_which, dict):
             try:
                 vert_which = vert_which[var_name]
@@ -1383,7 +1515,7 @@ class ReadGridded(object):
             cube.units = to_unit
         return cube
                 
-    def _load_files(self, files, var_name, perform_checks=True,
+    def _load_files(self, files, var_name, perform_fmt_checks=None,
                     **kwargs):
         """Load list of files containing variable to read into Cube instances
         
@@ -1393,7 +1525,7 @@ class ReadGridded(object):
             list of netcdf file
         var_name : str
             name of variable to read
-        perform_checks : bool
+        perform_fmt_checks : bool
             if True, the loaded data is checked for consistency with 
             AeroCom default requirements.
         **kwargs
@@ -1407,7 +1539,7 @@ class ReadGridded(object):
             list containing corresponding filenames of loaded cubes
         """
         cubes, loaded_files = load_cubes_custom(files, var_name,
-                                                perform_checks=perform_checks,
+                                                perform_fmt_checks=perform_fmt_checks,
                                                 **kwargs)
         for cube in cubes:
             cube = self._check_correct_units_cube(cube)
@@ -1717,10 +1849,17 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = pya.io.ReadGridded('ECMWF_CAMS_REAN')
-    print(r.vars_provided)
+# =============================================================================
+#     r = ReadGridded('GFDL-AM4-met2010_AP3-CTRL')
+#     
+#     print(r)
+#     
+#     data = r.read_var('concso4')
+# =============================================================================
     
-    data = r.read_var('concpm10')
-    data.resample_time('yearly').quickplot_map()
+    r = ReadGridded('FMI-SAT-MERGED11')
     
+    print(r)
+    
+    data = r.read_var('ang4487aer')
     

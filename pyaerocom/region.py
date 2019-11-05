@@ -49,7 +49,7 @@ class Region(BrowseDict):
     -------
     Just initiate with a valid region ID
     
-        >>> from pyaerocom import Region
+        >>> from pyaerocom import Region("
         >>> europe = Region("EUROPE")
         >>> india = Region("INDIA")
         >>> print(europe)
@@ -119,6 +119,7 @@ class Region(BrowseDict):
                           %fpath)
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
+        
         if not name in conf_reader:
             raise AttributeError("No default region available for %s" %name)
         self._name = name
@@ -139,7 +140,7 @@ class Region(BrowseDict):
             self.lat_range_plot = self.lat_range
     
     @property
-    def center_coordinate(self) -> tuple:
+    def center_coordinate(self):
         """Center coordinate of this region"""
         latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0])/2
         lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0])/2
@@ -187,7 +188,7 @@ class Region(BrowseDict):
         lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
         return lat_ok * lon_ok
     
-    def __contains__(self, val: tuple) ->  bool:
+    def __contains__(self, val):
         if not isinstance(val, tuple):
             raise TypeError('Invalid input, need tuple')
         if not len(val) == 2:
@@ -212,15 +213,25 @@ def all():
     """Wrapper for :func:`get_all_default_region_ids`"""
     return get_all_default_region_ids()
 
-def get_all_default_region_ids():
+def get_all_default_region_ids(use_all_in_ini=False):
     """Get list containing IDs of all default regions
     
+    Parameters
+    ----------
+    use_all_in_ini : bool
+        if True, then all regions defined in regions.ini are used, else, 
+        the list of regions, defined in header of :class:`Config`
+        
     Returns
     -------
     list
         all default region IDs (sections in `regions.ini <https://github.com/
         metno/pyaerocom/blob/master/pyaerocom/data/regions.ini>`__ file)
     """
+    if not use_all_in_ini:
+        from pyaerocom import const
+        return const.DEFAULT_REGIONS
+    
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
         raise IOError("File conventions ini file could not be found: %s"
@@ -234,7 +245,7 @@ def get_all_default_region_ids():
         
     return all_ids
 
-def get_all_default_regions():
+def get_all_default_regions(use_all_in_ini=False):
     """Get dictionary containing all default regions from region.ini file
     
     Note
@@ -250,21 +261,34 @@ def get_all_default_regions():
         master/pyaerocom/data/regions.ini>`__ file
         
     """
+    all_regions = od()
+    if not use_all_in_ini:
+        from pyaerocom import const
+        for region in const.DEFAULT_REGIONS:
+            all_regions[region] = Region(region)
+        return all_regions
+            
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
         raise IOError("File conventions ini file could not be found: %s"
                       %fpath)
     conf_reader = ConfigParser()
     conf_reader.read(fpath)
-    all_regions = od()
+    
     for region in conf_reader:
         if not region == "DEFAULT":
             all_regions[region] = Region(region)
         
     return all_regions
-   
-def get_regions_coord(lat, lon, **add_regions) -> list:
+  
+#: ToDO: check how to handle methods properly with HTAP regions...
+def get_regions_coord(lat, lon, **add_regions):
     """Get all regions that contain input coordinate
+    
+    Note
+    ----
+    This does not yet include HTAP, since this causes troules in automated
+    AeroCom processing
     
     Parameters
     ----------
@@ -282,7 +306,7 @@ def get_regions_coord(lat, lon, **add_regions) -> list:
         list of regions that contain this coordinate
     """
     regs = []
-    all_regs = get_all_default_regions()
+    all_regs = get_all_default_regions(use_all_in_ini=False)
     for an, ar in add_regions.items():
         if isinstance(ar, Region):
             all_regs[an] = ar
@@ -333,7 +357,7 @@ def find_closest_region_coord(lat, lon, **add_regions):
                 best=rname
         return best
 
-def valid_region(name) -> bool:
+def valid_region(name):
     """Boolean specifying whether input region is valid or not"""
     if isinstance(name, str):
         return True if name.upper() in get_all_default_region_ids() else False
@@ -344,10 +368,12 @@ if __name__=="__main__":
     r = Region()
     r.import_default("EUROPE")
         
-    all_ids = get_all_default_region_ids()
+    all_ids = get_all_default_region_ids(True)
     
-    lat, lon = 89, 30
+    lat, lon = 10, 20
     reg = find_closest_region_coord(lat, lon)
     print(reg)
         
     print(valid_region('europe'))
+    
+    

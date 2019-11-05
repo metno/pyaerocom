@@ -9,7 +9,7 @@ Created on Wed May 15 11:05:50 2019
 import pytest
 import numpy.testing as npt
 import numpy as np
-from pyaerocom.test.settings import lustre_unavail, TEST_RTOL
+from pyaerocom.test.settings import lustre_unavail, TEST_RTOL, test_not_working
 from pyaerocom.io import ReadGAW
 
 def _make_data():
@@ -17,9 +17,12 @@ def _make_data():
     return r.read('vmrdms')
 
 @pytest.fixture(scope='module')
+@lustre_unavail
 def data_vmrdms_ams_cvo():
     return _make_data()
 
+@lustre_unavail
+@test_not_working
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
@@ -46,6 +49,7 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     
     
 @lustre_unavail   
+@test_not_working
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx= 0)
     
@@ -75,8 +79,8 @@ def test_vmrdms_ams(data_vmrdms_ams_cvo):
 def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
     
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx= 0, 
-                                                  start=2000, stop=2008, 
-                                                  freq='monthly')
+                                               start=2000, stop=2008, 
+                                               freq='monthly')
     
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('2000-01-15T00:00:00.000000000'),
@@ -88,6 +92,8 @@ def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
 if __name__=="__main__":
 
     d = _make_data()
-    test_ungriddeddata_ams_cvo(d)
-    test_vmrdms_ams(d)
+# =============================================================================
+#     test_ungriddeddata_ams_cvo(d)
+#     test_vmrdms_ams(d)
+# =============================================================================
     test_vmrdms_ams_subset(d)
