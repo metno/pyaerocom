@@ -478,11 +478,66 @@ def make_datetime_index(start, stop, freq):
     -------
     DatetimeIndex
     """
+    if not isinstance(start, pd.Timestamp):
+        start = to_pandas_timestamp(start)
+    if not isinstance(stop, pd.Timestamp):
+        stop = to_pandas_timestamp(stop)
+        
     freq, loffset = _get_pandas_freq_and_loffset(freq)
     idx = pd.date_range(start=start, end=stop, freq=freq)
     if loffset is not None:
         idx = idx + pd.Timedelta(loffset)
     return idx
+
+def calc_climatology(s, start, stop, min_num_obs=None,
+                     set_year=None):
+    """Compute climatological timeseries from pandas.Series
+    
+    Parameters
+    ----------
+    s : Series
+        time series data
+    start 
+        start time of climatology
+    stop
+        stop time of climatology
+    min_num_obs : int, optional
+        minimum number of observations required per aggregated month in  
+        climatological interval. Months not meeting this requirement will be
+        set to NaN.
+    
+    Returns
+    -------
+    Series
+        resampled time series object
+    
+    Raises
+    ------
+    """
+    if not isinstance(start, pd.Timestamp):
+        start, stop = start_stop(start, stop)
+    sc = s[start:stop]
+    if len(sc) == 0:
+        raise ValueError('Cropping input time series in climatological '
+                         'interval resulted in empty series')
+    if set_year is None:
+        set_year = int(start.year + (stop.year-start.year) / 2) + 1
+# =============================================================================
+#     i, f = start_stop_from_year(set_year)
+#     idx = make_datetime_index(i, f, 'monthly')
+# =============================================================================
+    df = pd.DataFrame(sc, columns=['data'])
+    df['month'] = df.index.month
+    
+    gr = df.groupby('month')
+    
+    mean = gr.mean()
+
+    if min_num_obs is not None:
+        num = gr.count()
+        mean[num < min_num_obs] = np.nan
+    idx = [np.datetime64('{}-{:02d}-15'.format(set_year, x)) for x in mean.index.values]
+    return pd.Series(mean['data'].values, idx)
 
 def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
@@ -645,7 +700,17 @@ def str_to_iris(key, **kwargs):
     return val
 
 def to_pandas_timestamp(value):
-    """Convert input to instance of :class:`pandas.Timestamp`"""
+    """Convert input to instance of :class:`pandas.Timestamp`
+    
+    Parameters
+    ----------
+    value
+        input value that is supposed to be converted to time stamp
+    
+    Returns
+    --------
+    pandas.Timestamp
+    """
     if isinstance(value, pd.Timestamp):
         return value
     elif isinstance(value, (str, np.datetime64, datetime, date)):
@@ -762,7 +827,12 @@ def start_stop(start, stop=None):
         stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(yr))
     else:
         try:
+            subt_sec = False
+            if isnumeric(stop):
+                subt_sec = True
             stop = to_pandas_timestamp(stop)
+            if subt_sec:
+                stop = stop - pd.Timedelta(1, 's')
         except pd.errors.OutOfBoundsDatetime:
             stop = _check_climatology_timestamp(stop)
     return (start, stop)
