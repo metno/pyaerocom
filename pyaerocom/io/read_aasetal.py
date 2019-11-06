@@ -194,7 +194,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         unit['concso4'] = 'ug m-3'
         unit['pr']       = 'mm'
         unit['wetso4']   = 'kg m-2 s-1'
-        unit['concso4pr'] = 'g m-3' # removed sulphur from unit mgS/L
+        unit['concso4pr'] = 'g m-3' # Removed sulphur from unit mgS/L
 
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS

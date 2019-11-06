@@ -9,7 +9,7 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
-from pyaerocom.land_sea_mask import (load_region_mask, get_mask, 
+from pyaerocom.land_sea_mask import (load_region_mask_xr, get_mask, 
                                      available_region_mask)
 
 import numpy as np
@@ -846,11 +846,11 @@ class ColocatedData(object):
         
     def filter_region(self, region_id=None):
         #raise NotImplementedError('Filter region is not implemented for collocated data object.')
-        drop_idx = []
+        #drop_idx = []
         data = self._data.copy()
         
         if region_id:
-            masks = load_region_mask(region_id = region_id)
+            masks = load_region_mask_xr(region_id = region_id)
             
             for i, station in enumerate(self._data.station_name):
                 lon = station.longitude.values
@@ -859,12 +859,12 @@ class ColocatedData(object):
                 
                 if mask < 1:
                     data = data.drop(dim = 'station_name', labels = str(station.station_name.values))
-                    drop_idx.append(i)
-
+                    #drop_idx.append(i)
             self._data = data
+            return self
         else:
             print("Please provide a region. Available regions are {}".format(available_region_mask()))
-        return
+            return
     
     def plot_coordinates(self, marker='x', markersize=12, fontsize_base=10, 
                          **kwargs):
@@ -964,9 +964,7 @@ if __name__=="__main__":
         if s['num_valid'] == 0:
             print('No data in region {}'.format(r))
         else:
-            print('{}: NMB={:.3f} (R={:.2f})'.format(r, s['nmb']*100, s['R']))
-    
-    
+            print('{}: NMB={:.3f} (R={:.2f})'.format(r, s['nmb']*100, s['R']))    
     """
     
         

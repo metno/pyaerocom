@@ -176,9 +176,10 @@ class Filter(BrowseDict):
                 except urllib.error.URLError as e:
                     print(e.reason)     
         
-        path = '/home/hannas/MyPyaerocom/htap_masks/'
+        #path = '/home/hannas/MyPyaerocom/htap_masks/'
         region_list = const.HTAP_REGIONS
-
+        path = const._mask_location
+        
         if os.path.exists(path):
             # check if htap regions are available in 
             if len(glob.glob( path + '*.nc' )) <= 0:
@@ -197,11 +198,7 @@ class Filter(BrowseDict):
             except OSError as error: 
                 print(error)     
                 return 
-
-        return 
-    
-
-
+        return
     
     def apply(self, data_obj):
         """Apply filter to data object
@@ -226,6 +223,7 @@ class Filter(BrowseDict):
                         'in {}. Returning unchanged object.'
                         .format(self.NO_FILTER_NAME, type(data_obj)))
             return data_obj
+        """
         if isinstance(data_obj, UngriddedData):
             return self._apply_ungridded(data_obj)
         elif isinstance(data_obj, GriddedData):
@@ -234,16 +232,21 @@ class Filter(BrowseDict):
             return self._apply_colocated(data_obj)
         raise IOError('Cannot filter {} obj, need instance of GriddedData or '
                 'UngriddedData'.format(type(data_obj)))
-      
+        """
+        return data_obj.filter_region(region_id = self.name)
+
     def __call__(self, data_obj):
         return self.apply(data_obj)
     
     
 if __name__=="__main__":
-    #f = Filter('PANHTAP-wMOUNTAINS')
-    #print(f)
+    import pyaerocom as pya
+   
+    f = Filter('PANHTAP-wMOUNTAINS')
+
+    ungridded_data = pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
+    ungridded_data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     
-    #f = Filter()
-    #print(f)
+    ungridded = f.apply(ungridded_data)
+    ungridded.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     
-    print(Filter('EUROPE-wMOUNTAINS')._check_if_htap_region_are_available_and_download())

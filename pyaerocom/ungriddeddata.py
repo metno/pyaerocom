@@ -10,7 +10,6 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, StationNotFoundError)
 from pyaerocom import StationData
-
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
@@ -19,7 +18,7 @@ from pyaerocom.helpers import (same_meta_dict,
 
 from pyaerocom.metastandards import StationMetaData
 
-from pyaerocom.land_sea_mask import load_region_mask, available_region_mask, get_mask
+from pyaerocom.land_sea_mask import load_region_mask_xr, available_region_mask, get_mask
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -1211,13 +1210,13 @@ class UngriddedData(object):
         if region_id is None:
             raise ValueError("Specify a region_id. Available regions: {}.".format(available_region_mask()))
 
-        #obs_reader = pya.io.ReadUngridded(datasets_to_read=OBS_ID, vars_to_retrieve = VAR)
-        #read_data  = obs_reader.read()
-        
         data      = self._data
         _metadata = self.metadata
         
-        mask = load_region_mask(region_id=region_id)   
+        if isinstance(region_id, list):
+            raise NotImplementedError("Not implemented yet. Add a lopp which sums all the masks and collect the pixels from these loops. ")
+            
+        mask = load_region_mask_xr(region_id=region_id)   
         test = _metadata.copy().items()
         data = self._data
         indexes_to_drop = []
@@ -1239,6 +1238,7 @@ class UngriddedData(object):
                     
         rem = np.concatenate(indexes_to_drop)
         self._data = np.delete(data, rem, axis = 0)
+        
         return self
         
     
@@ -2497,9 +2497,6 @@ if __name__ == "__main__":
     data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     print('Original data shape {}.'.format(ungridded_data._data.shape))
     print('Original metadata shape {}.'.format(len(data.metadata)))
-    
-    
-    
     
     """
     idx = data._find_station_indices('Alert')

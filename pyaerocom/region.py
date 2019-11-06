@@ -94,6 +94,10 @@ class Region(BrowseDict):
         """Name of region"""
         return self._name
     
+    @property
+    def is_htap(self):
+        return True if 'HTAP' in self.name else False
+    
     def import_default(self, name):
         """Import information about default region
         
