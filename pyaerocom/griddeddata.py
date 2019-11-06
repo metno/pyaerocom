@@ -12,8 +12,11 @@ from iris.analysis import MEAN
 from iris.exceptions import UnitConversionError
 from pandas import Timestamp, Series
 import numpy as np
+import numpy.ma as ma
 import pandas as pd
+
 from pyaerocom import const, logger, print_log
+from pyaerocom.land_sea_mask import load_region_mask_iris
 
 from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
@@ -35,6 +38,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                isrange, isnumeric,
                                delete_all_coords_cube,
                                copy_coords_cube)
+
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
@@ -831,7 +835,7 @@ class GriddedData(object):
                                       collapse_scalar, vert_scheme,
                                       add_meta=add_meta)
     
-        
+    #def apply_mask(self, )
     def _to_timeseries_2D(self, sample_points, scheme, collapse_scalar,
                           add_meta=None):
         """Extract time-series for provided input coordinates (lon, lat)
@@ -1010,19 +1014,43 @@ class GriddedData(object):
         return data.to_time_series(sample_points, scheme, 
                                    collapse_scalar, add_meta=add_meta)
     
-    def filter_region(self, region_id=None):
+    def filter_region(self, region_id=None, thresh_coast = 0.5):
+        """
+        TODO write documentation 
+        """
         
-        # 1) Need to load mask --> this should be in a helper 
-        IRIS_MASKS = mask.to_iris()
-        # 2) Need to regrid mask to be the same as gridded data 
-        
-        
-        # 3) apply mask using iris magic ... 
-        
-        # return gridded data
-        
-        raise NotImplementedError('Filter region is not implemented for GriddedData object.')
-        return 
+        if region_id:
+            region_id = 'SEAhtap'
+            
+            # loads  mask to iris cube
+            mask_iris = load_region_mask_iris(region_id=region_id)
+            
+            # Reads mask to griddedata 
+            mask_cube  = pya.GriddedData(mask_iris)
+            M_regr = mask_cube.regrid(self.cube)
+            mask_iris = load_region_mask_iris(region_id = region_id)
+            npm = M_regr.cube.data.data
+            
+            # Apply threshold on coast        
+            thresh_coast=0.5
+            
+            thresh_mask = npm > thresh_coast
+            npm[thresh_mask] = 0
+            npm[~thresh_mask] = 1
+            
+            try:
+                cube_data = self.cube.data
+                #example = ma.array([1, 2, 3], mask = [0, 1, 0])
+                if isinstance(cube_data, ma.core.MaskedArray):
+                    # UPDATE MASK WITH REGIONAL MASK.
+                    self.cube.data.mask = npm
+            
+            except MemoryError:
+                raise NotImplementedError(" Comming soon... ")
+            
+            return self
+        else:
+            raise ValueError("Please provide a region id. Available region id's are {}.".format())
     
     def to_time_series_single_coord(self, latitude, longitude):
         """Make time series dictionary of single location using neirest coordinate
@@ -2076,10 +2104,13 @@ if __name__=='__main__':
     import pyaerocom as pya
     plt.close("all")
     
-    
+    print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
+    data = data.filter_region(region_id  = 'SEAhtap')
+    data.quickplot_map()
+    plt.show()
     print('Here')
-    ts = data.get_area_weighted_timeseries()
+    #ts = data.get_area_weighted_timeseries()
     
 
 # =============================================================================
