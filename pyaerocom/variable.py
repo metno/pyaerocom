@@ -315,17 +315,18 @@ class Variable(object):
         self.is_dry = False
         
         var_name = var_name.lower()
-        
+        var_name_alt = None
         if '3d' in var_name:
             logger.info('Variable name {} contains 3d. Activating flag is_3d '
                         'and removing from var_name string'.format(var_name))
-            var_name = var_name.replace('3d','')
+            var_name_alt = var_name.replace('3d','')
             self.is_3d = True
         if 'dry' in var_name:
             self.is_dry = True
-            var_name_alt = var_name.replace('dry', '')
-        else:
-            var_name_alt = var_name
+            if isinstance(var_name_alt, str):
+                var_name_alt = var_name_alt.replace('dry', '')
+            else:
+                var_name_alt = var_name.replace('dry', '')
             
         self.var_name = var_name
         self.var_name_alt = var_name_alt #alternative var_name
@@ -440,6 +441,47 @@ class Variable(object):
     def keys(self):
         return list(self.__dict__.keys())
     
+    def _get_var_info(self, var_name, cfg):
+        """Get variable info for input var name
+        
+        Parameters
+        ----------
+        var_name : str
+            variable name to be searched
+        cfg 
+            config parser
+        
+        Returns
+        -------
+        dict
+            dictionary with variable info extracted from parser
+        
+        Raises
+        ------
+        VariableDefinitionError
+            if no match could be found
+        """
+        if var_name.lower() == 'default':
+            return cfg['DEFAULT']
+        if var_name is not None:
+            # input variable name is known
+            if var_name in cfg:
+                logger.info("Found default configuration for variable "
+                            "{}".format(var_name))
+                return cfg[var_name]
+                
+            ap = parse_aliases_ini()
+            aliases = _read_alias_ini(ap)
+            if var_name in aliases:
+                var_name = aliases[var_name]
+                return cfg[var_name]
+            
+            var_name=_check_alias_family(var_name, ap)
+            return cfg[var_name]
+            
+        raise VariableDefinitionError('No match could be found for variable {} '
+                                      .formar(var_name))
+                        
     def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
         """Import information about default region
         
@@ -465,33 +507,20 @@ class Variable(object):
         """
         if cfg is None:
             cfg = self.read_config()
-        var_info = {} 
-        if var_name is not None and var_name != 'DEFAULT':
-            if var_name in cfg:
-                logger.info("Found default configuration for variable "
-                            "{}".format(var_name))
-                var_info = cfg[var_name]
-                #self.var_name = var_name
-            elif isinstance(var_name_alt, str) and var_name_alt in cfg:
-                var_info = cfg[var_name_alt]
-            else:
-                ap = parse_aliases_ini()
-                aliases = _read_alias_ini(ap)
-                if var_name in aliases:
-                    var_name = aliases[var_name]
-                    var_info = cfg[var_name]
-                else :
-                    try:
-                        var_name=_check_alias_family(var_name, ap)
-                        var_info = cfg[var_name]
-                    except VariableDefinitionError:
-                    
-                        logger.warning("No default configuration available for "
-                                       "variable {}. Using DEFAULT settings"
-                                       .format(var_name))
-            
         default = cfg['DEFAULT']
-        
+    
+        var_info = None
+        if var_name_alt is not None:
+            try:
+                var_info = self._get_var_info(var_name_alt, cfg)
+            except VariableDefinitionError:
+                pass
+        if var_info is None:
+            try:
+                var_info = self._get_var_info(var_name, cfg)
+            except VariableDefinitionError:
+                var_info = {} 
+                
         for key in self.keys():
             if key in self.ALT_NAMES:
                 if self.ALT_NAMES[key] in var_info:
@@ -502,6 +531,33 @@ class Variable(object):
                 self._add(key, default[key])
              
         self.var_name = var_name
+# =============================================================================
+#         if var_name is not None and var_name != 'DEFAULT':
+#             # input variable name is known
+#             if var_name in cfg:
+#                 logger.info("Found default configuration for variable "
+#                             "{}".format(var_name))
+#                 var_info = cfg[var_name]
+#                 #self.var_name = var_name
+#             elif isinstance(var_name_alt, str) and var_name_alt in cfg:
+#                 var_info = cfg[var_name_alt]
+#             else:
+#                 ap = parse_aliases_ini()
+#                 aliases = _read_alias_ini(ap)
+#                 if var_name in aliases:
+#                     var_name = aliases[var_name]
+#                     var_info = cfg[var_name]
+#                 else :
+#                     try:
+#                         var_name=_check_alias_family(var_name, ap)
+#                         var_info = cfg[var_name]
+#                     except VariableDefinitionError:
+#                     
+#                         logger.warning("No default configuration available for "
+#                                        "variable {}. Using DEFAULT settings"
+#                                        .format(var_name))
+# =============================================================================
+        
     
     def _add(self, key, val):
         if key in self._TYPE_CONV:
@@ -741,7 +797,5 @@ if __name__=="__main__":
     
     import pyaerocom as pya
     
-    all_vars = VarCollection(pya.const._coords_info_file)
-
-    print(pya.const.VARS.sconcso4)
-    print(Variable('sconcso4'))
+    pya.const.VARS.od5503Ddryaer
+    pya.const.VARS.sc550dryaer

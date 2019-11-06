@@ -52,7 +52,7 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
     
     assert 'scatc550aer' in stat
     assert 'scatc550aer' in stat.overlap
-    assert len(stat.overlap['scatc550aer']) == 25787 #17466
+    assert len(stat.overlap['scatc550aer']) == 25789 #17466
     assert stat['stat_merge_pref_attr'] == 'revision_date'
     assert int(stat['data_level']) == 2
     
@@ -71,7 +71,7 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
     
     d = stat.scatc550aer
     vals = [d.mean(), d.std(), d.min(), d.max()]
-    npt.assert_allclose(vals, [4.66, 7.60, -5.57, 182.7], rtol=1e-1)
+    npt.assert_allclose(vals, [4.64, 7.55, -5.57, 182.7], rtol=1e-1)
     
     d = stat.overlap['scatc550aer']
     vals = [d.mean(), d.std(), d.min(), d.max()]
@@ -86,7 +86,7 @@ def test_scat_jungfraujoch_lev3(data_scat_jungfraujoch):
     
     assert 'scatc550aer' in stat
     assert 'scatc550aer' in stat.overlap
-    assert len(stat.overlap['scatc550aer']) == 25787 #17466
+    assert len(stat.overlap['scatc550aer']) == 25789 #17466
     assert stat['stat_merge_pref_attr'] == 'revision_date'
     assert int(stat['data_level']) == 2
     
@@ -105,7 +105,7 @@ def test_scat_jungfraujoch_lev3(data_scat_jungfraujoch):
     
     d = stat.scatc550aer
     vals = [d.mean(), d.std(), d.min(), d.max()]
-    npt.assert_allclose(vals, [4.66, 7.60, -5.57, 182.7], rtol=1e-1)
+    npt.assert_allclose(vals, [4.66, 7.59, -5.57, 182.7], rtol=1e-1)
     
     d = stat.overlap['scatc550aer']
     vals = [d.mean(), d.std(), d.min(), d.max()]

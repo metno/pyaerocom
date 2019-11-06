@@ -84,7 +84,7 @@ def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
     
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('2000-01-15T00:00:00.000000000'),
-                             np.datetime64('2007-12-15T00:00:00.000000000') ])
+                             np.datetime64('2008-01-15T00:00:00.000000000') ])
     assert stat.ts_type == 'monthly'
     assert stat.ts_type_src == 'daily'
     
@@ -92,6 +92,8 @@ def test_vmrdms_ams_subset(data_vmrdms_ams_cvo):
 if __name__=="__main__":
 
     d = _make_data()
-    test_ungriddeddata_ams_cvo(d)
-    test_vmrdms_ams(d)
+# =============================================================================
+#     test_ungriddeddata_ams_cvo(d)
+#     test_vmrdms_ams(d)
+# =============================================================================
     test_vmrdms_ams_subset(d)

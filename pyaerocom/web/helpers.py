@@ -239,7 +239,30 @@ class ModelConfigEval(BrowseDict):
         if not isinstance(self.model_id, str):
             raise ValueError('Invalid input for model_id {}. Need str.'
                              .format(self.model_id))
-            
+    
+def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
+    """Reorder experiment order in evaluation interface
+    
+    Parameters
+    ----------
+    menu_file : str
+        file path of menu.json file
+    exp_order : str or list, optional
+        desired experiment order (must not contain all available experiments 
+        in menu)
+    """
+    current = read_json(menu_file)
+    if exp_order is None:
+        # keep the way it is
+        exp_order = list(current.keys())
+    elif isinstance(exp_order, str):
+        exp_order = [exp_order]
+    if not isinstance(exp_order, list):
+        raise ValueError('Invalid input for exp_order, need None, str or list')
+    
+    new = sort_dict_by_name(current, pref_list=exp_order)
+    write_json(new, menu_file, indent=4)
+    
 def update_menu_evaluation_iface(config, ignore_experiments=None):
     """Update menu for Aerocom Evaluation interface
     
@@ -296,7 +319,8 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
         else:
             dobs_vert = dobs[vert_code]
         if mod_name in dobs_vert:
-            raise Exception
+            const.print_log.warning('Overwriting old entry for {}: {}'
+                                    .format(mod_name, dobs_vert[mod_name]))
         dobs_vert[mod_name] = {'dir' : mod_name,
                                'id'  : config.model_config[mod_name]['model_id'],
                                'var' : mod_var}

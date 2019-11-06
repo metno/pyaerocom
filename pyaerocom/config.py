@@ -43,7 +43,8 @@ import pyaerocom.obs_io as obs_io
 from pyaerocom.grid_io import GridIO
 from pyaerocom._lowlevel_helpers import (list_to_shortstr, 
                                          chk_make_subdir,
-                                         check_fun_timeout_multiproc)
+                                         check_dir_access,
+                                         check_write_access)
 from pyaerocom.variable import VarCollection
 try:
     from ConfigParser import ConfigParser
@@ -172,35 +173,51 @@ class Config(object):
     #: Name of the file containing the revision string of an obs data network
     REVISION_FILE = 'Revision.txt'
 
-    
-    BASEDIR_PPI = os.path.join('/lustre', 'storeA', 'project', 'aerocom') 
-    BASEDIR_USER_SERVER = os.path.join('/metno', 'aerocom-users-database')
-    
     #: timeout to check if one of the supported server locations can be 
     #: accessed
     SERVER_CHECK_TIMEOUT = 1 #0.1 #s
     
+    _outhomename = 'MyPyaerocom'
+
     from pyaerocom import __dir__
-    # TODO add something here.??
     _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
     _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
     
-    _config_files = {'metno'                  : _config_ini,
-                     'aerocom-users-database' : _config_ini_user_server,
-                     'pyaerocom-testdata'     : _config_ini_testdata}
+    # this dictionary links environment ID's with corresponding ini files
+    _config_files = {
+            'metno'            : _config_ini_lustre,
+            'users-db'         : _config_ini_user_server,
+            'testdata'         : _config_ini_testdata
+    }
+
+    # this dictionary links environment ID's with corresponding subdirectory
+    # names that are required to exist in order to load this environment
+    _check_subdirs_cfg = {
+            'metno'       : 'aerocom1',
+            'users-db'    : 'AMAP',
+            'testdata'    : 'modeldata',
+    }
+
     
     _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
     _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
-    _testdata_search_dirs=['${HOME}/pyaerocom-testdata/',
-                           '${HOME}/MyPyaerocom/pyaerocom-testdata/']
-    _outhomename = 'MyPyaerocom'
     
-    _mask_location = '/home/hannas/Desktop/htap/' 
+    _mask_location = '/home/hannas/Desktop/htap/'
     # todo update to ~/MyPyaerocom/htap_masks/' ask jonas
-    
+
+    # these are searched in preferred order both in root and home
+    _DB_SEARCH_SUBDIRS = od()
+    _DB_SEARCH_SUBDIRS['lustre/storeA/project/aerocom'] = 'metno'
+    #_DB_SEARCH_SUBDIRS['lustre/storeB/project/aerocom'] = 'metno'
+    _DB_SEARCH_SUBDIRS['metno/aerocom_users_database'] = 'users-db'
+    _DB_SEARCH_SUBDIRS['pyaerocom-testdata/'] = 'testdata'
+    _DB_SEARCH_SUBDIRS['MyPyaerocom/pyaerocom-testdata'] = 'testdata'
+
     DONOTCACHEFILE = None
-    def __init__(self, model_base_dir=None, obs_base_dir=None, 
+
+    _LUSTRE_CHECK_PATH = '/project/aerocom/aerocom1/'
+    def __init__(self, basedir=None,
                  output_dir=None, config_file=None, 
                  cache_dir=None, colocateddata_dir=None,
                  write_fileio_err_log=True, 
@@ -212,30 +229,16 @@ class Config(object):
         self.logger = logger
         
         # Directories
-        self._modelbasedir = model_base_dir
-        self._obsbasedir = obs_base_dir
+        self._modelbasedir = None
+        self._obsbasedir = None
         self._cachedir = cache_dir
         self._outputdir = output_dir
-        self._testdatadir = None
+
         self._colocateddatadir = colocateddata_dir
         
         # Options
         self._caching_active = activate_caching
-        
-        #: Settings for reading and writing of gridded data
-        self.GRID_IO = GridIO()
-        self.logger.info('Initiating pyaerocom configuration')
-        
-        
-        if not isinstance(config_file, str) or not os.path.exists(config_file):
-            from time import time
-            self.logger.info('Checking database access...')
-            t0 = time()
-            config_file = self._infer_config_file()
-            self.logger.info('Expired time (to infer DB config): {:.3f} s'
-                           .format(time() - t0))
-        
-        
+
         self._var_param = None
         self._coords = None
         
@@ -246,33 +249,76 @@ class Config(object):
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
         
-        
+        self.last_config_file = None
         self._ebas_flag_info = None
         
+        #: Settings for reading and writing of gridded data
+        self.GRID_IO = GridIO()
+        self.logger.info('Initiating pyaerocom configuration')
+
+        # If this is False and a config_file is specified and / or can be
+        # inferred, then existing base directories are ignored, else they are
+        # kept (cf. method read_config)
+        keep_basedirs = False
+
+        # checks and validates / invalidates input basedir and config_file
+        # if both are
+        (basedir,
+         config_file) = self._check_input_basedir_and_config_file(basedir,
+                                                                  config_file)
+
+        if not isinstance(config_file, str) or not os.path.exists(config_file):
+            self.logger.info('Checking database access...')
+            try:
+                _basedir, config_file = self.infer_basedir_and_config()
+            except FileNotFoundError:
+                _basedir = None
+            if basedir is None:
+                basedir = _basedir
+
+        if basedir is not None: # it passed the check and exists
+            self._modelbasedir = basedir
+            self._obsbasedir = basedir
+            keep_basedirs = True
+
+
         if config_file is not None:
-            
-            keep_basedirs = False
-            if self.dir_exists(model_base_dir) and self.dir_exists(obs_base_dir):
-                keep_basedirs=True
             try:
                 self.read_config(config_file, keep_basedirs)
-                
             except Exception as e:
-                from traceback import format_exc
-                self.init_outputdirs()
-                self.print_log.warning(format_exc())
-                self.print_log.warning("Failed to init config. Error: %s" %repr(e))
-        else:
-            self.init_outputdirs()
+                self.print_log.warning("Failed to read config. Error: {}"
+                                       .format(repr(e)))
+        # create MyPyaerocom directory
+        chk_make_subdir(self.HOMEDIR, self._outhomename)
+
+    def _check_input_basedir_and_config_file(self, basedir, config_file):
+        if config_file is not None and not os.path.exists(config_file):
+            self.print_log.warning('Ignoring input config_file {} since it '
+                                   'does not exist'.format(config_file))
+            config_file = None
+
+        if basedir is not None:
+            if not self._check_access(basedir):
+                self.print_log.warning('Failed to establish access to input '
+                                       'basedir={}'.format(basedir))
+                basedir=None
+            else:
+                if config_file is None:
+                    try:
+                        config_file, _ = self._infer_config_from_basedir(basedir)
+                    except FileNotFoundError:
+                        basedir=None # config_file is None and basedir is None
+
+        return basedir, config_file
+
+    @property
+    def _config_ini(self):
+        # for backwards compatibility
+        return self._config_ini_lustre
     
     def _check_access(self, loc):
         """Uses multiprocessing approach to check if location can be accessed
-        
-        Wrapper for :func:`check_fun_timeout_multiproc`. Uses method 
-        :func:`os.listdir` to validate accessibility at input location
-        (without the timeout and for mounted remote locations, this could 
-        otherwise take ages)
-        
+
         Parameters
         ----------
         loc : str
@@ -286,78 +332,50 @@ class Config(object):
         
         
         self.logger.info('Checking access to: {}'.format(loc))
-        return self._test_ls(loc, self.SERVER_CHECK_TIMEOUT)
-# =============================================================================
-#         return check_fun_timeout_multiproc(self._test_ls, fun_args=(loc, ),
-#                                            timeout_secs=self.SERVER_CHECK_TIMEOUT)
-# =============================================================================
+        return check_dir_access(loc, timeout=self.SERVER_CHECK_TIMEOUT)
     
-    def _test_ls(self, testdir, timeout):
-        from concurrent.futures import ThreadPoolExecutor, TimeoutError
-        pool = ThreadPoolExecutor()
-        def safe_ls(testdir, timeout):
-            future = pool.submit(os.listdir, testdir)
-            try:
-                res = future.result(timeout)
-                self.logger.info('listdir {}: {}'.format(testdir, res))
-                return True
-            
-            except Exception as e:
-                self.logger.info(repr(e))
-                return False
-        return safe_ls(testdir, timeout)
+    def _basedirs_search_db(self):
+        return [self.ROOTDIR, self.HOMEDIR]
+
+    def _check_env_access(self, basedir, env_id):
+        if not os.path.exists(basedir):
+            raise FileNotFoundError('Location not found: {}'.format(basedir))
+        if not env_id in self._check_subdirs_cfg:
+            raise ValueError('No such environment with ID {}. Choose from {}'
+                             .format(env_id,
+                                     list(self._check_subdirs_cfg.keys())))
+        return self._check_access(os.path.join(basedir,
+                                               self._check_subdirs_cfg[env_id]))
+
+    def _infer_config_from_basedir(self, basedir):
+        for env_id, chk_sub in self._check_subdirs_cfg.items():
+            chkdir =  os.path.join(basedir, chk_sub)
+            if self._check_access(chkdir):
+                return (self._config_files[env_id], env_id)
+        raise FileNotFoundError('Could not infer environment configuration '
+                                'for input directory: {}'.format(basedir))
         
+    def infer_basedir_and_config(self):
+        """Boolean specifying whether the lustre database can be accessed"""
+        for sub_envdir, cfg_id in self._DB_SEARCH_SUBDIRS.items():
+            for sdir in self._basedirs_search_db():
+                basedir = os.path.join(sdir, sub_envdir)
+                if self._check_access(basedir):
+                    _chk_dir = os.path.join(basedir,
+                                            self._check_subdirs_cfg[cfg_id])
+
+                    if self._check_access(_chk_dir):
+
+                        return (basedir, self._config_files[cfg_id])
+        raise FileNotFoundError('Could not find base directory for lustre')
+
     @property
     def has_access_lustre(self):
-        """Boolean specifying whether the lustre database can be accessed"""
-        ok = False
-        p = os.path.join(self.ROOTDIR, 'lustre/')
-        if os.path.exists(p):
-            ok = self._check_access(os.path.join(p, 'storeA'))
-        self.logger.info('Access to lustre database: {}'.format(ok))
-        return ok
-    
-    @property
-    def has_access_users_database(self):
-        """Boolean specifying whether the users database can be accessed"""
-        ok = False
-        p = os.path.join(self.ROOTDIR, 'metno/')
-        if os.path.exists(p):
-            test_loc = os.path.join(p, 'aerocom-users-database')
-            ok = self._check_access(test_loc)
-                
-        self.logger.info("Access to aerocom-users-database: {}".format(ok))
-        return ok
-    
-    @property
-    def has_access_testdata(self):
-        """Boolean specifying whether the testdataset can be accessed"""
-        for dirtmp in self._testdata_search_dirs:
-            dirtmp = dirtmp.replace('${HOME}', self.HOMEDIR)
-            if self.dir_exists(dirtmp):
-                self.logger.info("Access to pyaerocom-testdata")    
-                self._testdatadir = dirtmp
+        """Boolean specifying whether MetNO AeroCom server is accessible"""
+        for path in self.MODELDIRS:
+            if self._LUSTRE_CHECK_PATH in path and self._check_access(path):
                 return True
         return False
-    
-    def _infer_config_file(self):
-        """Infer the database configuration to be loaded"""
-        if self.has_access_lustre:
-            #self.print_log.info("Init data paths for lustre")
-            self.GRID_IO.load_aerocom_default()
-            return self._config_files['metno']
-        elif self.has_access_users_database:
-            #self.print_log.info("Init data paths for users database")
-            self.GRID_IO.load_aerocom_default()
-            return self._config_files['aerocom-users-database']
-        elif self.has_access_testdata:
-            #self.logger.info("Init data paths for pyaerocom testdata")
-            self.GRID_IO.load_aerocom_default()
-            return self._config_files['pyaerocom-testdata']
-        
-        self.GRID_IO.load_default()
-        return None
-    
     @property
     def ALL_DATABASE_IDS(self):
         '''ID's of available database configurations'''
@@ -365,84 +383,60 @@ class Config(object):
     
     @property
     def ROOTDIR(self):
+        """Local root directory"""
         return os.path.abspath(os.sep)
     
     @property
     def HOMEDIR(self):
         """Home directory of user"""
         return os.path.expanduser("~") + '/'
-    
-    @property
-    def TESTDATADIR(self):
-        return self._testdatadir
-    
-    @TESTDATADIR.setter
-    def TESTDATADIR(self, val):
-        if not self.dir_exists(val):
-            raise ValueError('Cannot set pyaerocom-testdata directory {}.'
-                             'Directory does not exist')
-        self._testdatadir = val
-        if not self.has_access_testdata:
-            self._testdatadir = None
-            raise IOError('Input path {} could not be identified as official '
-                          'pyaerocom testdata directory (requires that a sub '
-                          'directory modeldata exists)'.format(val))
-        self.read_config(self._config_files['pyaerocom-testdata'], keep_basedirs=False)
-    
+
     @property
     def OUTPUTDIR(self):
         """Default output directory"""
+        if not check_write_access(self._outputdir):
+            self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
         return self._outputdir
     
     @property
     def COLOCATEDDATADIR(self):
         """Directory for accessing and saving colocated data objects"""
+        if not check_write_access(self._colocateddatadir):
+            outdir = self.OUTPUTDIR
+            self._colocateddatadir = chk_make_subdir(outdir, 'colocated_data')
         return self._colocateddatadir
-    
-    @property
-    def OUT_BASEDIR(self):
-        msg = 'Attribute OUT_BASEDIR is deprecated. Please use OUTPUTDIR instead'
-        self.print_log.warning(DeprecationWarning(msg))
-        return self.OUTPUTDIR
-    
-    @property
-    def CACHING(self):
-        """Activate writing of and reading from cache files"""
-        return self._caching_active
-    
-    @CACHING.setter
-    def CACHING(self, val):
-        self._caching_active = bool(val)
-        
-    @property
-    def OBSDATACACHEDIR(self):
-        """Cache directory for UngriddedData objects (deprecated)"""
-        msg=('Attr. was renamed (but still works). Please us CACHEDIR instead')
-        self.print_log.warning(DeprecationWarning(msg))
-        return self.CACHEDIR
-    
+
     @property
     def CACHEDIR(self):
         """Cache directory for UngriddedData objects"""
-        if self._cachedir is None:
-            raise IOError('Cache directory is not defined')
+        if not check_write_access(self._cachedir):
+            outdir = self.OUTPUTDIR
+            self._cachedir = chk_make_subdir(outdir, '_cache')
         try:
             return chk_make_subdir(self._cachedir, getpass.getuser())
         except Exception as e:
-            from pyaerocom import print_log
-            print_log.info('Failed to access CACHEDIR: {}\n'
-                           'Deactivating caching'.format(repr(e)))
+            self.print_log.warning('Failed to access CACHEDIR: {}\n'
+                                   'Deactivating caching'.format(repr(e)))
             self._caching_active = False
             
     @CACHEDIR.setter
     def CACHEDIR(self, val):
         """Cache directory"""
-        if not os.path.exists(val):
-            raise ValueError('Input directory does not exist {}'.format(val))
-        elif not self._write_access(val):
-            raise ValueError('Cannot write to {}'.format(val))
+        if not check_write_access(val):
+            raise ValueError('Cannot set cache directory. Input directory {} '
+                             'does not exist or write '
+                             'permission is not granted'.format(val))
         self._cachedir = val
         
+    @property
+    def CACHING(self):
+        """Activate writing of and reading from cache files"""
+        return self._caching_active
+
+    @CACHING.setter
+    def CACHING(self, val):
+        self._caching_active = bool(val)
+
     @property
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
@@ -459,6 +453,7 @@ class Config(object):
     
     @property
     def COORDINFO(self):
+        """Instance of :class:`VarCollection` containing coordinate info"""
         if self._coords is None:
             self._coords = VarCollection(self._coords_info_file)
         return self._coords
@@ -489,7 +484,6 @@ class Config(object):
             raise IOError('Input directory does not exist')
         self._modelbasedir = value
         self.reload()
-        self.check_data_dirs()
     
     @property
     def OBSBASEDIR(self):
@@ -501,8 +495,7 @@ class Config(object):
         if not os.path.exists(value):
             raise IOError('Input directory does not exist')
         self._obsbasedir = value
-        self.reload()    
-        self.check_data_dirs()
+        self.reload()
     
     @property 
     def BASEDIR(self):
@@ -517,39 +510,22 @@ class Config(object):
     
     @BASEDIR.setter
     def BASEDIR(self, value):
-        if not os.path.exists(value):
-            raise IOError('Cannot change data base directory. Input directory '
-                          'does not exist')
+        if not self._check_access(value):
+            raise FileNotFoundError('Cannot change data base directory. '
+                                    'Input directory does not exist')
             
         self._obsbasedir = value
         self._modelbasedir = value
         
-        subdirs = os.listdir(value)
-        if 'aerocom0' in subdirs:
-            self.print_log.info('Initiating directories for lustre')
-            self.read_config(self._config_ini, 
-                             keep_basedirs=True)
-        elif 'obsdata' in subdirs: #test dataset
-            
-            self.print_log.info('Initiating directories for pyaerocom test '
-                                'dataset')
-            self.read_config(self._config_ini_testdata, 
-                             keep_basedirs=True)
-            self._cachedir = os.path.join('..', '_cache')
-        elif 'AMAP' in subdirs:
-            self.print_log.info('Initiating directories for AEROCOM users '
-                                'database')
-            self.read_config(self._config_ini_user_server, 
-                             keep_basedirs=True)
-        else:
-            self.reload()    
-        
-         
-    @property
-    def READY(self):
-        """Checks if relevant directories exist, returns True or False"""
-        return bool(self.check_directories())
-    
+        try:
+            config_file, env_id = self._infer_config_from_basedir(value)
+            self.print_log.info('Adding paths for {} with root at {}'
+                                .format(env_id, value))
+            self.read_config(config_file, keep_basedirs=True)
+        except FileNotFoundError:
+            self.print_log.warning('Failed to infer path environment for '
+                                   'input dir {}. No search paths will be added'
+                                   .format(value))
     @property
     def DIR_INI_FILES(self):
         """Directory containing configuration files"""
@@ -595,98 +571,12 @@ class Config(object):
                          self.DEFAULT_VERT_GRID_DEF['upper'] - offs,
                          step)
         
-    def dir_exists(self, path):
-        """Checks if directory exists"""
-        if isinstance(path, str) and os.path.isdir(path):
-            return True
-        return False
-    
-    @staticmethod
-    def _write_access(path):
-        test = os.path.join(path, '_tmp')
-        try:
-            os.mkdir(test)
-            os.rmdir(test)
-            return True
-        except:
-            return False
-        return os.access(path, os.W_OK)
-    
-    @staticmethod
-    def _read_access(path):
-        return os.access(path, os.R_OK)
-    
-    def check_directories(self):
-        """Checks all predefined data directories for availability
-        
-        Prints each directory that is not available
-        """
-        self.logger.info('Checking data directories')
-        ok =True
-        #model_dirs = []
-        # CHECK BASIC DATA READING DIRECTORIES
-        if not self.dir_exists(self._modelbasedir):
-            self.logger.warning("Model base directory {} does not exist"
-                                .format(self._modelbasedir))
-            ok=False
-        if not self.dir_exists(self._obsbasedir):
-            self.logger.warning("Observations base directory {} does not "
-                                "exist".format(self._obsbasedir))
-            ok=False
-        
-        return self.init_outputdirs() * ok
-    
-    def init_outputdirs(self):
-        """Initiate output directories based on current configuration
-        
-        Checks, and if applicable, writes / creates required output directories
-        (i.e. :attrs:`OUTPUTDIR, CACHEDIR, COLOCATEDDATADIR`).
-        
-        Returns
-        -------
-        bool
-            True, if everything is okay, False if not
-        """
-        out_ok = True
-        if not self.dir_exists(self._outputdir) or not self._write_access(self._outputdir):
-            out_ok = False
-            try:
-                self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
-                out_ok = True
-            except:
-                self.logger.warning('Failed to create {} directory in home '
-                                    'directory'.format(self._outhomename))
-        
-        if not out_ok or not self._write_access(self._outputdir):
-            self.log.info('Cannot establish write access to output directory {}'
-                           .format(self._outputdir))
-            return False
-
-        if (not self.dir_exists(self._colocateddatadir) or not 
-                self._read_access(self._colocateddatadir)):
-            self._colocateddatadir = os.path.join(self._outputdir,
-                                                  'colocated_data')
-        if not self.dir_exists(self._cachedir) or not self._write_access(self._cachedir):
-            self._cachedir = chk_make_subdir(self._outputdir, '_cache')
-        
-        
-        # if this file exists no cache file is read
-        # used to ease debugging
-        if self.dir_exists(self.CACHEDIR):
-            self.DONOTCACHEFILE = os.path.join(self.CACHEDIR, 'DONOTCACHE')
-            if os.path.exists(self.DONOTCACHEFILE):
-                self._caching_active = False
-        
-        if not self._write_access(self._cachedir):
-            self.logger.info('Cannot establish write access to cache '
-                             'directory {}. Deactivating caching of files'
-                             .format(self._cachedir))
-            self._caching_active = False
-        return out_ok
-    
-    def add_model_dir(self, dirname):
-        """Add new model directory"""
-        self.MODELDIRS.append(os.path.join(self.MODELBASEDIR, 'dirname'))
+    def add_data_search_dir(self, loc):
+        """Add new search directory for database browsing"""
+        if not self._check_access(loc):
+            raise FileNotFoundError('Input location {} could not be accessed'
+                                    .format(loc))
+        self.MODELDIRS.append(loc)
         
     def change_database(self, database_name='metno', keep_root=False):
         '''Changes the path setup for a specific data environment
@@ -708,9 +598,7 @@ class Config(object):
         self.read_config(self._config_files[database_name], 
                          keep_basedirs=keep_root)
         
-    def reload(self, keep_basedirs=True):
-        """Reload config file (for details see :func:`read_config`)"""
-        self.read_config(self._config_ini, keep_basedirs)
+
 
     @property    
     def EBAS_FLAG_INFO(self):
@@ -725,97 +613,98 @@ class Config(object):
             self._ebas_flag_info = read_ebas_flags_file(self.EBAS_FLAGS_FILE)
         return self._ebas_flag_info
     
-    def load_default_config(self):
-        """Read AeroCom default config file"""
-        self.read_config(self._config_files['metno'])
+    def reload(self, keep_basedirs=True):
+        """Reload config file (for details see :func:`read_config`)"""
+        self.read_config(self.last_config_file, keep_basedirs)
         
-    def read_config(self, config_file, keep_basedirs=True):
-        """Read and import form paths.ini"""
+    def read_config(self, config_file, keep_basedirs=True,
+                    init_obs_locations=False,
+                    init_model_locations=False):
+        """Read and import paths from ini file"""
         if not os.path.isfile(config_file):
             raise IOError("Configuration file paths.ini at %s does not exist "
                           "or is not a file"
                           %config_file)
-        self.OBSCONFIG = od()
+
+        if init_obs_locations:
+            self.OBSCONFIG = od()
+        if init_model_locations:
+            self.MODELDIRS = []
+
         cr = ConfigParser()
         cr.read(config_file)
+        #init base directories for Model data
+        if cr.has_section('modelfolders'):
+            mcfg = cr['modelfolders']
+            # check and update model base directory if applicable
+            if 'BASEDIR' in mcfg:
+                if not keep_basedirs or not self._check_access(self._modelbasedir):
+                    _dir = mcfg['BASEDIR']
+                    if '$HOME' in _dir:
+                        _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+
+                    self._modelbasedir = _dir
+
+            # load model paths if applicable
+            if self._check_access(self._modelbasedir) and 'dir' in mcfg:
+                mdirs = (mcfg['dir'].
+                         replace('${BASEDIR}', self._modelbasedir).
+                         replace('\n','').split(','))
+                for mdir in mdirs:
+                    # make sure to not add multiple times the same location
+                    if not mdir in self.MODELDIRS:
+                        self.MODELDIRS.append(mdir)
+
         if cr.has_section('outputfolders'):
-            if not keep_basedirs or not self.dir_exists(self._cachedir):
-                try:
-                    cachedir = cr['outputfolders']['CACHEDIR']
-                    if not self._write_access(cachedir):
-                        raise PermissionError('Cannot write to {}'.format(cachedir))
-                    self._cachedir = cr['outputfolders']['CACHEDIR']
-                except Exception as e:
-                    self.logger.warning('Failed to init cache directory from '
-                                        'config file. Error: {}'
-                                        .format(repr(e)))
-                
-            if not keep_basedirs or not self.dir_exists(self._outputdir):
-                try:
-                    outdir = cr['outputfolders']['OUTPUTDIR']
-                    if not self._write_access(outdir):
-                        raise PermissionError('Cannot write to {}'.format(outdir))
-                        
-                    self._outputdir = outdir
-                    self._colocateddatadir = os.path.join(outdir, 
-                                                          'colocated_data')
-                except Exception as e:
-                    self.logger.warning('Failed to init output and colocated data '
-                                        'directory from config file. Error: {}'
-                                        .format(repr(e)))
+            self._init_output_folders_from_cfg(cr['outputfolders'],
+                                               keep_basedirs)
 
-            try:
-                _dir = cr['outputfolders']['LOCALTMPDIR']
-                # expand $HOME
-                if '$HOME' in _dir:
-                    _dir = _dir.replace('$HOME', os.path.expanduser('~'))
-                if '${USER}' in _dir:
-                    _dir = _dir.replace('${USER}', getpass.getuser())
-                local_tmp_dir = _dir
-
-                if not self._write_access(local_tmp_dir):
-                    raise PermissionError('Cannot write to {}'.format(local_tmp_dir))
-                self.LOCAL_TMP_DIR = local_tmp_dir
-
-            except Exception as e:
-                    self.logger.warning('Failed to init local tmp directory from '
-                                        'config file. Error: {}'
-                                        .format(repr(e)))
-                    
         if cr.has_section('supplfolders'):
             for name, path in cr['supplfolders'].items():
-                if not os.path.exists(path):
-                    self.print_log.warning('Supplementary data directory for '
-                                        '{} does not exist:\n{}'.format(name, path))
                 self.SUPPLDIRS[name] = path
-                
-        #init base directories for Model data
-        if not keep_basedirs or not self.dir_exists(self._modelbasedir):
-            _dir = cr['modelfolders']['BASEDIR']
-            if '$HOME' in _dir:
-                _dir = _dir.replace('$HOME', os.path.expanduser('~'))
-            self._modelbasedir = _dir
-        
-        self.MODELDIRS = (cr['modelfolders']['dir'].
-                          replace('${BASEDIR}', self._modelbasedir).
-                          replace('\n','').split(','))
 
         #Read directories for observation location
-        if not keep_basedirs or not self.dir_exists(self._obsbasedir):
-            _dir = cr['obsfolders']['BASEDIR']
-            if '$HOME' in _dir:
-                _dir = _dir.replace('$HOME', os.path.expanduser('~'))
-            self._obsbasedir = _dir
-        
+        if cr.has_section('obsfolders'):
+            ocfg = cr['obsfolders']
+            if 'BASEDIR' in ocfg:
+                if not keep_basedirs or not self._check_access(self._obsbasedir):
+                    _dir = cr['obsfolders']['BASEDIR']
+                    if '$HOME' in _dir:
+                        _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+                    self._obsbasedir = _dir
         try:
             self._init_obsconfig(cr)
         except Exception as e:
-            from pyaerocom import print_log
-            print_log.exception('Failed to initiate obs config. Error: {}'
-                                .format(repr(e)))
+            self.print_log.exception('Failed to initiate obs config. '
+                                     'Error: {}'.format(repr(e)))
         cr.clear()
-        self.check_directories()
+        self.GRID_IO.load_aerocom_default()
+        self.last_config_file = config_file
     
+    def _init_output_folders_from_cfg(self, cfg, keep_basedirs):
+        if 'CACHEDIR' in cfg:
+            if not keep_basedirs or not self._check_access(self._cachedir):
+                self._cachedir = cfg['CACHEDIR']
+
+        if 'OUTPUTDIR' in cfg:
+            if not keep_basedirs or not self._check_access(self._outputdir):
+                self._outputdir = cfg['OUTPUTDIR']
+
+        if 'COLOCATEDDATADIR' in cfg:
+            if not keep_basedirs or not self._check_access(self._colocateddatadir):
+                self._colocateddatadir = cfg['COLOCATEDDATADIR']
+
+        if 'LOCALTMPDIR' in cfg:
+            _dir = cfg['LOCALTMPDIR']
+            # expand $HOME
+            if '$HOME' in _dir:
+                _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+            if '${USER}' in _dir:
+                _dir = _dir.replace('${USER}', getpass.getuser())
+            local_tmp_dir = _dir
+
+            self.LOCAL_TMP_DIR = local_tmp_dir
+
     def _add_obsname(self, name):
         name_str = '{}_NAME'.format(name.upper())
         self[name_str] =  name
@@ -823,10 +712,11 @@ class Config(object):
         
     def _add_obsnames_config(self, cr):
         names_cfg = []
-        for obsname, ID in cr['obsnames'].items():
-            name_str = '{}_NAME'.format(obsname.upper())
-            self[name_str] =  ID
-            names_cfg.append(name_str)
+        if cr.has_section('obsnames'):
+            for obsname, ID in cr['obsnames'].items():
+                name_str = '{}_NAME'.format(obsname.upper())
+                self[name_str] =  ID
+                names_cfg.append(name_str)
         return names_cfg
             
     def _init_obsconfig(self, cr):
@@ -834,26 +724,28 @@ class Config(object):
         names_cfg = self._add_obsnames_config(cr)
         
         OBSCONFIG = self.OBSCONFIG
-        for obsname, path in cr['obsfolders'].items():
-            if obsname.lower() == 'basedir':
-                continue
-            name_str = '{}_NAME'.format(obsname.upper())
-            if name_str in names_cfg:
-                ID = self.__dict__[name_str]    
-            else:
-                ID = self._add_obsname(obsname)
-            OBSCONFIG[ID] = {}
-            p = path.replace('${BASEDIR}', self._obsbasedir)
-            p = p.replace('$HOME', os.path.expanduser('~'))
-            OBSCONFIG[ID]['PATH'] = p
-            
-        for obsname, year in cr['obsstartyears'].items():
-            NAME = '{}_NAME'.format(obsname.upper())
-            if NAME in self.__dict__:
-                ID = self.__dict__[NAME]
-                if ID in OBSCONFIG.keys():
-                    OBSCONFIG[ID]['START_YEAR'] = year
-        
+        if cr.has_section('obsfolders'):
+            for obsname, path in cr['obsfolders'].items():
+                if obsname.lower() == 'basedir':
+                    continue
+                name_str = '{}_NAME'.format(obsname.upper())
+                if name_str in names_cfg:
+                    ID = self.__dict__[name_str]
+                else:
+                    ID = self._add_obsname(obsname)
+                OBSCONFIG[ID] = {}
+                p = path.replace('${BASEDIR}', self._obsbasedir)
+                p = p.replace('$HOME', os.path.expanduser('~'))
+                OBSCONFIG[ID]['PATH'] = p
+
+        if cr.has_section('obsstartyears'):
+            for obsname, year in cr['obsstartyears'].items():
+                NAME = '{}_NAME'.format(obsname.upper())
+                if NAME in self.__dict__:
+                    ID = self.__dict__[NAME]
+                    if ID in OBSCONFIG.keys():
+                        OBSCONFIG[ID]['START_YEAR'] = year
+
         self.OBSCONFIG = OBSCONFIG
     
     def add_data_source(self, data_dir, name=None):
@@ -905,16 +797,28 @@ class Config(object):
             else:
                 s += "\n%s: %s" %(k, v)
         return s
-        
+
+    @property
+    def OUT_BASEDIR(self):
+        msg = 'Attribute OUT_BASEDIR is deprecated. Please use OUTPUTDIR instead'
+        self.print_log.warning(DeprecationWarning(msg))
+        return self.OUTPUTDIR
+
+    @property
+    def OBSDATACACHEDIR(self):
+        """Cache directory for UngriddedData objects (deprecated)"""
+        msg=('Attr. was renamed (but still works). Please us CACHEDIR instead')
+        self.print_log.warning(DeprecationWarning(msg))
+        return self.CACHEDIR
+
 if __name__=="__main__":
     import pyaerocom as pya
+
+    print(pya.const.OUTPUTDIR)
+    print(pya.const.COLOCATEDDATADIR)
+    print(pya.const.CACHEDIR)
+
+    pya.const.BASEDIR = '/home/jonasg/'
     pya.const.BASEDIR = '/home/jonasg/MyPyaerocom/pyaerocom-testdata/'
     
-    #pya.browse_database('Aero*Sun*')
-    
-    pya.browse_database('GAW*')
-# =============================================================================
-#     pya.const.BASEDIR = '/home/jonasg/aerocom-users-database'
-#     
-#     pya.browse_database('Aeronet*')
-# =============================================================================
+    print(pya.const.has_access_lustre)

@@ -115,6 +115,8 @@ class GridIO(object):
         self.INCLUDE_SUBDIRS = False
         
         self.INFER_SURFACE_LEVEL = True
+        
+        self.load_default()
     
     def load_aerocom_default(self):
         self.from_dict(self._AEROCOM)

@@ -117,8 +117,8 @@ class ReadL2DataBase(ReadUngriddedBase):
         self._DATAINDEX01 = UngriddedData._DATAINDEX
         self._COLNO = 12
 
-        self._ROWNO = 1000000
-        self._CHUNKSIZE = 100000
+        self._ROWNO = 100000
+        self._CHUNKSIZE = 10000
 
         self.GROUP_DELIMITER = '/'
 
@@ -157,7 +157,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         # NETCDF_VAR_ATTRIBUTES[_LATITUDENAME]['_FillValue'] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['long_name'] = 'latitude'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['standard_name'] = 'latitude'
-        self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['units'] = 'degrees north'
+        self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['units'] = 'degrees_north'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['bounds'] = 'lat_bnds'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['axis'] = 'Y'
         self.NETCDF_VAR_ATTRIBUTES[self._LONGITUDENAME] = {}
@@ -179,6 +179,13 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         self.COORDINATE_NAMES = []
 
+        self.SCALING_FACTORS = {}
+        # list with static field names
+        self.STATICFIELDNAMES = []
+        # field name whose size determines the number of time steps in a product
+        self.TSSIZENAME=''
+
+        self._QANAME = ''
         # DEFAULT_VARS = []
         # PROVIDES_VARIABLES = []
         # self.DEFAULT_VARS = []
@@ -204,7 +211,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
     def read(self, vars_to_retrieve=None, files=[], first_file=None,
              last_file=None, file_pattern=None, list_coda_paths=False,
-             local_temp_dir=None, return_as='numpy'):
+             local_temp_dir=None, return_as='numpy', apply_quality_flag=0.0):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -340,22 +347,95 @@ class ReadL2DataBase(ReadUngriddedBase):
                 self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
             elif return_as == 'dict':
                 if idx == 0:
-                    data_obj._data = file_data
-                else:
-                    # TODO: append the dictionary entries!!
-                    data_obj._data = np.append(data_obj._data, file_data, axis=0)
+                    data_obj._data = {}
+                    shape_store = {}
+                    index_store = {}
+                    file_start_index_arr = [0]
+                    # apply quality flags
+                    if apply_quality_flag > 0.:
+                        qflags = file_data[self._QANAME]
+                        keep_indexes=np.where(qflags >= apply_quality_flag)
+                        elements_to_add = keep_indexes.size
+                    else:
+                        keep_indexes=np.arange(0,len(file_data[self._QANAME]))
+                        elements_to_add = file_data[self._QANAME].shape[0]
 
-                # data_obj._idx = data_obj._data.shape[0] + 1
-                # file_data = None
+                    for _key in file_data:
+                        # print('key: {}'.format(_key))
+                        shape_store[_key] = file_data[_key].shape
+                        index_store[_key] = file_data[_key].shape[0]
+                        input_shape = list(file_data[_key].shape)
+                        input_shape[0] = self._ROWNO
+                        data_obj._data[_key] = np.empty(input_shape, dtype=np.float_)
+                        if len(input_shape) == 1:
+                            data_obj._data[_key][0:file_data[_key].shape[0]] = file_data[_key]
+                        elif len(input_shape) == 2:
+                            data_obj._data[_key][0:file_data[_key].shape[0],:] = file_data[_key]
+                        elif len(input_shape) == 3:
+                            data_obj._data[_key][0:file_data[_key].shape[0],:,:] = file_data[_key]
+                        elif len(input_shape) == 4:
+                            data_obj._data[_key][0:file_data[_key].shape[0],:,:,:] = file_data[_key]
+                        else:
+                            pass
+
+                # 2nd + file
+                else:
+                    if apply_quality_flag > 0.:
+                        qflags = file_data[self._QANAME]
+                        keep_indexes=np.where(qflags >= apply_quality_flag)
+                        elements_to_add = keep_indexes.size
+
+                    file_start_index_arr.append(file_data[self.TSSIZENAME].shape[0])
+                    for _key in file_data:
+                        if _key in self.STATICFIELDNAMES:
+                            print('key: {}'.format(_key))
+                            continue
+                        # shape_store[_key] = file_data[_key].shape
+                        elements_to_add = file_data[_key].shape[0]
+                        # extend data_obj._data[_key] if necessary
+                        if index_store[_key] + elements_to_add > data_obj._data[_key].shape[0]:
+                            current_shape = list(data_obj._data[_key].shape)
+                            current_shape[0] = current_shape[0] + self._CHUNKSIZE
+                            tmp_data = np.empty(current_shape, dtype=np.float_)
+                            if len(current_shape) == 1:
+                                tmp_data[0:data_obj._data[_key].shape[0]] = data_obj._data[_key]
+                            elif len(current_shape) == 2:
+                                tmp_data[0:data_obj._data[_key].shape[0],:] = data_obj._data[_key]
+                            elif len(current_shape) == 3:
+                                tmp_data[0:data_obj._data[_key].shape[0],:,:] = data_obj._data[_key]
+                            elif len(current_shape) == 4:
+                                tmp_data[0:data_obj._data[_key].shape[0],:,:,:] = data_obj._data[_key]
+                            else:
+                                pass
+
+                        input_shape = list(file_data[_key].shape)
+                        if len(input_shape) == 1:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0]] = file_data[_key]
+                        elif len(input_shape) == 2:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0],:] = file_data[_key]
+                        elif len(input_shape) == 3:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0],:,:] = file_data[_key]
+                        elif len(input_shape) == 4:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0],:,:,:] = file_data[_key]
+                        else:
+                            pass
+                        index_store[_key] += elements_to_add
+
+                file_data = None
                 # remove file if it was temporary one
                 if _file in temp_files:
                     os.remove(_file)
-                #     pass
-                # tmp_obj = UngriddedData()
-                # tmp_obj._data = file_data
-                # tmp_obj._idx = data_obj._data.shape[0] + 1
-                # data_obj.append(tmp_obj)
             else:
+                pass
+
+        # now shorten the data dict to the necessary size
+        if return_as == 'dict':
+            for _key in data_obj._data:
+                data_obj._data[_key] = data_obj._data[_key][:index_store[_key]]
+            data_obj._data['file_indexes'] = file_start_index_arr
+
+            # apply the quality flags
+            if apply_quality_flag > 0.:
                 pass
 
         return data_obj
