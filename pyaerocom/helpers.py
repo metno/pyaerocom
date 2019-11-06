@@ -508,36 +508,37 @@ def calc_climatology(s, start, stop, min_num_obs=None,
     
     Returns
     -------
-    Series
-        resampled time series object
-    
-    Raises
-    ------
+    DataFrame
+        dataframe containing climatological mean and median timeseries as 
+        well as columns std and count
     """
     if not isinstance(start, pd.Timestamp):
         start, stop = start_stop(start, stop)
     sc = s[start:stop]
+    sc.dropna(inplace=True)
+    
     if len(sc) == 0:
         raise ValueError('Cropping input time series in climatological '
                          'interval resulted in empty series')
     if set_year is None:
         set_year = int(start.year + (stop.year-start.year) / 2) + 1
-# =============================================================================
-#     i, f = start_stop_from_year(set_year)
-#     idx = make_datetime_index(i, f, 'monthly')
-# =============================================================================
-    df = pd.DataFrame(sc, columns=['data'])
+
+    df = pd.DataFrame(sc)
     df['month'] = df.index.month
     
-    gr = df.groupby('month')
     
-    mean = gr.mean()
-
+    clim = df.groupby('month').agg(['mean', 'median', 'std','count'])
+    
+    clim.columns = clim.columns.droplevel(0)
+    idx = [np.datetime64('{}-{:02d}-15'.format(set_year, x)) for x in 
+           clim.index.values]
+    clim.set_index(pd.DatetimeIndex(idx), inplace=True)
     if min_num_obs is not None:
-        num = gr.count()
-        mean[num < min_num_obs] = np.nan
-    idx = [np.datetime64('{}-{:02d}-15'.format(set_year, x)) for x in mean.index.values]
-    return pd.Series(mean['data'].values, idx)
+        mask = clim['count'] < min_num_obs
+        clim['mean'][mask] = np.nan
+        clim['median'][mask] = np.nan
+        #mean[num < min_num_obs] = np.nan
+    return clim
 
 def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
