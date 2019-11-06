@@ -9,6 +9,9 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
+from pyaerocom.land_sea_mask import (load_region_mask, get_mask, 
+                                     available_region_mask)
+
 import numpy as np
 import pandas as pd
 import os
@@ -842,7 +845,25 @@ class ColocatedData(object):
         return ColocatedData(filtered)
         
     def filter_region(self, region_id=None):
-        raise NotImplementedError('Filter region is not implemented for collocated data object.')
+        #raise NotImplementedError('Filter region is not implemented for collocated data object.')
+        drop_idx = []
+        data = self._data.copy()
+        
+        if region_id:
+            masks = load_region_mask(region_id = region_id)
+            
+            for i, station in enumerate(self._data.station_name):
+                lon = station.longitude.values
+                lat = station.latitude.values
+                mask  = get_mask(lat, lon, masks)
+                
+                if mask < 1:
+                    data = data.drop(dim = 'station_name', labels = str(station.station_name.values))
+                    drop_idx.append(i)
+
+            self._data = data
+        else:
+            print("Please provide a region. Available regions are {}".format(available_region_mask()))
         return
     
     def plot_coordinates(self, marker='x', markersize=12, fontsize_base=10, 
@@ -900,9 +921,14 @@ if __name__=="__main__":
                                                          filter_name='WORLD-noMOUNTAINS',
                                                          remove_outliers=True, 
                                                          colocate_time=False)
-    coldata1 = coldata1.resample_time('yearly', colocate_time=True)
     coldata1.plot_coordinates()
+    coldata1.filter_region(region_id = 'SEAhtap')
+    coldata1.plot_coordinates()
+    #coldata1 = coldata1.resample_time('yearly', colocate_time=True)
+    #coldata1.plot_coordinates()
+    #print()
     
+    """
     sat = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
     
     coldata2 = pya.colocation.colocate_gridded_gridded(modeldata, sat, 
@@ -941,7 +967,7 @@ if __name__=="__main__":
             print('{}: NMB={:.3f} (R={:.2f})'.format(r, s['nmb']*100, s['R']))
     
     
-    
+    """
     
         
     
