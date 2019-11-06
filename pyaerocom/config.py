@@ -196,6 +196,9 @@ class Config(object):
                            '${HOME}/MyPyaerocom/pyaerocom-testdata/']
     _outhomename = 'MyPyaerocom'
     
+    _mask_location = '/home/hannas/Desktop/htap/' 
+    # todo update to ~/MyPyaerocom/htap_masks/' ask jonas
+    
     DONOTCACHEFILE = None
     def __init__(self, model_base_dir=None, obs_base_dir=None, 
                  output_dir=None, config_file=None, 
