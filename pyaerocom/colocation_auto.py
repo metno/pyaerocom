@@ -692,12 +692,14 @@ class Colocator(ColocationSetup):
             
         obs_vars = self.obs_vars
         
-        obs_vars_avail =  obs_reader.vars_provided
-        
-        for obs_var in obs_vars:
-            if not obs_var in obs_vars_avail:
-                raise DataCoverageError('Variable {} is not supported by {}'
-                                        .format(obs_var, self.obs_id))
+# =============================================================================
+#         obs_vars_avail =  obs_reader.vars_provided
+#         
+#         for obs_var in obs_vars:
+#             if not obs_var in obs_vars_avail:
+#                 raise DataCoverageError('Variable {} is not supported by {}'
+#                                         .format(obs_var, self.obs_id))
+# =============================================================================
         
         var_matches = self._find_var_matches(obs_vars, model_reader, var_name)
         if self.remove_outliers:
