@@ -655,6 +655,10 @@ class StationData(StationMetaData):
 
             from pyaerocom.helpers import get_lowest_resolution
             ts_type = get_lowest_resolution(ts_type, ts_type1)
+        from pyaerocom.tstype import TsType
+        _tt = TsType(ts_type)
+        if _tt.mulfac != 1:
+            ts_type = _tt.next_lower.val
         return ts_type
 
     def _update_var_timeinfo(self):
