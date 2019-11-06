@@ -5,12 +5,19 @@ Created on Thu Aug 16 09:03:31 2018
 
 @author: jonasg
 """
+
+import os
+import urllib
+import glob 
+      
 from pyaerocom import logger, print_log
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.region import Region
+from pyaerocom import const
+
 
 class Filter(BrowseDict):
     """Class that can be used to filter gridded and ungridded data objects
@@ -158,6 +165,44 @@ class Filter(BrowseDict):
                        'cropping in the vertical dimension. Coming soon...')
         return data_obj.apply_latlon_filter(region_id=self.region_name)
         
+    def _check_if_htap_region_are_available_and_download(self):
+        
+        def _download_masks(path, region_list):
+            for region in region_list: 
+                try: 
+                    url = 'https://github.com/metno/pyaerocom-suppl/blob/master/htap_masks/{}.0.1x0.1deg.nc'.format(region)
+                    filename = os.path.join( path, os.path.basename(url)  )
+                    urllib.request.urlretrieve(url, filename)
+                except urllib.error.URLError as e:
+                    print(e.reason)     
+        
+        path = '/home/hannas/MyPyaerocom/htap_masks/'
+        region_list = const.HTAP_REGIONS
+
+        if os.path.exists(path):
+            # check if htap regions are available in 
+            if len(glob.glob( path + '*.nc' )) <= 0:
+                print("Directory exit but doesn't contain any masks.")
+                # download 
+                _download_masks(path, region_list)
+            else:
+                print('Masks are available in MyPyaerocom')
+                return 
+        else:
+            # download 
+            print("Creates directory {}.".format(path))
+            try: 
+                os.mkdir(path) 
+                _download_masks(path, region_list)
+            except OSError as error: 
+                print(error)     
+                return 
+
+        return 
+    
+
+
+    
     def apply(self, data_obj):
         """Apply filter to data object
         
@@ -195,15 +240,10 @@ class Filter(BrowseDict):
     
     
 if __name__=="__main__":
-    f = Filter('PANhtap-wMOUNTAINS')
-    print(f)
-    f.set_region('PANhtap')
-    print(f)  
-    f.set_altitude_filter('noMOUNTAINS')     
-    print(f.to_dict())
-    all_regions = pya.region.all()
+    #f = Filter('PANHTAP-wMOUNTAINS')
+    #print(f)
     
-    for region in all_regions:
-        r = pya.Region(region)
-        lon = r.lon_range
-        lat = r.lat_range
+    #f = Filter()
+    #print(f)
+    
+    print(Filter('EUROPE-wMOUNTAINS')._check_if_htap_region_are_available_and_download())
