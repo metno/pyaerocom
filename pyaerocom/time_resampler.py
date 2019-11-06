@@ -103,15 +103,9 @@ class TimeResampler(object):
                 min_num_obs =
                     {'monthly'  :   {'daily'  : 7},
                      'daily'    :   {'hourly' : 6}}
-<<<<<<< HEAD
-
-            to require at least 6 hours per day and 7 days per month. Or, if
-            data is daily and output is monthly and
-
-=======
 
             to require at least 6 hours per day and 7 days per month.
->>>>>>> origin/v081dev
+
         **kwargs
            additional input arguments passed to resampling method
 
