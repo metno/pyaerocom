@@ -153,6 +153,11 @@ class Config(object):
     GCOSPERCENTCRIT =   np.float(0.1)
     GCOSABSCRIT     =   np.float(0.04)
     
+    
+    CLIM_START =2005
+    CLIM_STOP = 2015
+    CLIM_MIN_COUNT = 5
+    
     #names of the different obs networks
     OBSNET_NONE = 'NONE'
     NOMODELNAME = 'OBSERVATIONS-ONLY'

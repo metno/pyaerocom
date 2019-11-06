@@ -14,7 +14,7 @@ from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.helpers import isnumeric, isrange
+from pyaerocom.helpers import isnumeric, isrange, calc_climatology
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
@@ -68,6 +68,7 @@ class StationData(StationMetaData):
         
         self.data_err = BrowseDict()        
         self.overlap = BrowseDict()
+        self.numobs = BrowseDict()
         self.data_flagged = BrowseDict()
         
         super(StationData, self).__init__(**meta_info)
@@ -342,7 +343,8 @@ class StationData(StationMetaData):
                 stds[key] = 0
             else:
                 if not key in self or self[key] is None:
-                    raise MetaDataError('{} information is not available in data'.format(key))
+                    raise MetaDataError('{} information is not available in data'
+                                        .format(key))
                 val = self[key]
                 std = 0
                 # TODO: review the quality check and make shorter
@@ -967,6 +969,68 @@ class StationData(StationMetaData):
                 self.ts_type = None
             else:
                 self.ts_type = ts_type
+        return new
+        
+    def calc_climatology(self, var_name, start=None, stop=None, 
+                         apply_constraints=None, min_num_obs=None, 
+                         mincount_month=None, set_year=None,
+                         resample_how='mean'):
+        """Calculate climatological timeseries for input variable
+        
+        The computation is done as follows:
+            
+        1. retrieve monthly timesereries for climatological interval (if data
+        is not already monthly). This is done by applying input resampling 
+        constraints via `apply_constraints` and `min_num_obs` and if these
+        are unspecified, pyaerocom default is used (which is usually applying
+        a hierarchical resampling)
+        2. Climatological timeseries is then computed from that monthly 
+        timeseries, and if `apply_constraints` is True a further sampling 
+        coverage criterium is applied to compute the climatology, which can
+        be specified via `mincount_month`, or, if unspecified, pyaerocom 
+        default is used (cf. :attr:`pyaerocom.const.CLIM_MIN_COUNT`)
+        
+        Returns
+        -------
+        StationData
+            new instance of StationData containing climatological data
+        """
+        ts= self.to_timeseries(var_name, freq='monthly', 
+                               resample_how=resample_how, 
+                               apply_constraints=apply_constraints, 
+                               min_num_obs=min_num_obs)
+                
+        if start is None:
+            start = const.CLIM_START
+        if stop is None:
+            stop = const.CLIM_STOP
+        if apply_constraints is None:
+            apply_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
+        if apply_constraints and mincount_month is None:
+            mincount_month = const.CLIM_MIN_COUNT
+        
+        clim = calc_climatology(ts, start, stop, mincount_month,
+                                set_year, resample_how)
+        
+        new = StationData()
+        try:
+            new.update(self.get_meta())
+        except MetaDataError:
+            const.print_log.warning('Failed to retrieve metadata in '
+                                    'StationData')
+
+        new[var_name] = clim['data']
+        vi = {}
+        if var_name in self.var_info:
+            vi.update(self.var_info[var_name])
+            
+        new.var_info[var_name] = vi
+        new.var_info[var_name]['ts_type'] = 'monthly'
+        new.var_info[var_name]['is_climatology'] = True
+        new.var_info[var_name]['clim_start'] = start
+        new.var_info[var_name]['clim_stop'] = stop
+        new.data_err[var_name] = clim['std']
+        new.numobs[var_name] = clim['numobs']
         return new
         
     def resample_timeseries(self, var_name, ts_type, how='mean',
