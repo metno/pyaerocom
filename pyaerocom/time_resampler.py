@@ -75,20 +75,10 @@ class TimeResampler(object):
                 min_num = min_num_obs[to][last_from]
                 last_from = to
                 idx.append((to, min_num))
-<<<<<<< HEAD
-
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
                  how='mean', apply_constraints=None,
-=======
-        if len(idx) == 0 or not idx[-1][0] == to_ts_type.base:
-            idx.append((to_ts_type.base, 0))
-        return idx
-
-    def resample(self, to_ts_type, input_data=None, from_ts_type=None,
-                 how='mean', apply_constraints=False,
->>>>>>> origin/v081dev
                  min_num_obs=None, **kwargs):
         """Resample input data
 
