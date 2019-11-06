@@ -25,6 +25,7 @@ class TsType(object):
         
         self.val = val
     
+    
     @property
     def mulfac(self):
         """Multiplication factor of frequency"""
@@ -82,6 +83,24 @@ class TsType(object):
         Uses :func:`pandas.infer_freq` to infer frequency
         """
         raise NotImplementedError
+    
+    @property
+    def next_lower(self):
+        """Next lower resolution code"""
+        
+        idx = self.VALID.index(self._val)
+        if idx == len(self.VALID) - 1:
+            raise IndexError('No lower resolution available than {}'.format(self))
+        return TsType(self.VALID[idx+1])
+    
+    @property
+    def next_higher(self):
+        """Next lower resolution code"""
+        
+        idx = self.VALID.index(self._val)
+        if idx == 0:
+            raise IndexError('No lower resolution available than {}'.format(self))
+        return TsType(self.VALID[idx-1])
     
     def to_pandas(self):
         """Convert ts_type to pandas frequency string"""
@@ -145,6 +164,10 @@ if __name__=="__main__":
     
     print('hourly == 5hourly:', hourly==hourly5)
     print('hourly > 5hourly:', hourly>hourly5)
+    
+    print(monthly.next_lower)
+    
+    print(TsType('yearly').next_higher)
 # =============================================================================
 #     
 #     class Num(object):
