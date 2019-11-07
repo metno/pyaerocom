@@ -1424,12 +1424,12 @@ class AerocomEvaluation(object):
                     mod_name in self.model_config and
                     obs_var in obs_vars):
                 remove = True
-            
-            mcfg = self.model_config[mod_name]
-            if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
-                if not mod_var == mcfg['model_use_vars'][obs_var]:
-                    remove=True
-                    
+            if mod_name in self.model_config:
+                mcfg = self.model_config[mod_name]
+                if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
+                    if not mod_var == mcfg['model_use_vars'][obs_var]:
+                        remove=True
+                        
             if remove:
                 const.print_log.info('Removing outdated map file: {}'.format(file))
                 os.remove(os.path.join(self.out_dirs['map'], file))
