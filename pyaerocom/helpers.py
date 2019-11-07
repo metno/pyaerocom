@@ -489,7 +489,7 @@ def make_datetime_index(start, stop, freq):
         idx = idx + pd.Timedelta(loffset)
     return idx
 
-def calc_climatology(s, start, stop, mincount_month=None,
+def calc_climatology(s, start, stop, min_count=None,
                      set_year=None, resample_how='mean'):
     """Compute climatological timeseries from pandas.Series
     
@@ -498,9 +498,9 @@ def calc_climatology(s, start, stop, mincount_month=None,
     s : Series
         time series data
     start 
-        start time of climatology
+        start time of data used to compute climatology
     stop
-        stop time of climatology
+        start time of data used to compute climatology
     mincount_month : int, optional
         minimum number of observations required per aggregated month in  
         climatological interval. Months not meeting this requirement will be
@@ -540,8 +540,8 @@ def calc_climatology(s, start, stop, mincount_month=None,
     idx = [np.datetime64('{}-{:02d}-15'.format(set_year, x)) for x in 
            clim.index.values]
     clim.set_index(pd.DatetimeIndex(idx), inplace=True)
-    if mincount_month is not None:
-        mask = clim['numobs'] < mincount_month
+    if min_count is not None:
+        mask = clim['numobs'] < min_count
         clim['data'][mask] = np.nan
         #mean[num < min_num_obs] = np.nan
     return clim

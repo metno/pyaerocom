@@ -7,6 +7,7 @@ import numpy as np
 import os
 import pandas as pd
 from pyaerocom import logger, const
+from pyaerocom import __version__ as pya_ver
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (ColocationError, 
                                   DataUnitError,
@@ -265,6 +266,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'from_files'        :   files,
             'from_files_ref'    :   files_ref,
             'colocate_time'     :   colocate_time,
+            'obs_is_clim'       :   False,
+            'pyaerocom'         :   pya_ver,
             'apply_constraints' :   apply_time_resampling_constraints,
             'min_num_obs'       :   min_num_obs}
     
@@ -324,6 +327,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                colocate_time=False,
                                var_keep_outliers=True,
                                var_ref_keep_outliers=False, 
+                               use_climatology_ref=False,
                                **kwargs):
     """Colocate gridded with ungridded data 
     
@@ -411,6 +415,14 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     var_ref_keep_outliers : bool
         if True, then no outliers will be removed from the reference dataset, 
         even if `remove_outliers` is True.
+    use_climatology_ref : bool
+        if true, climatological timeseries are used from observations
+    clim_start 
+        start time of climatological timeseries (only relevant if 
+        `use_climatology_ref` is True). If None, pyaerocom default is used.
+    clim_stop 
+        stop time of climatological timeseries (only relevant if 
+        `use_climatology_ref` is True). If None, pyaerocom default is used.
     **kwargs
         additional keyword args (passed to 
         :func:`UngriddedData.to_station_data_all`)
@@ -536,20 +548,28 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     #col_ts_type = gridded_data.ts_type
     
     # pandas frequency string that corresponds to col_ts_type
-    col_freq = TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
+    
     
     if remove_outliers and not var_ref_keep_outliers:
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref, 
                                        high=high_ref)
     
+    if use_climatology_ref:
+        col_freq='monthly'
+        obs_start = const.CLIM_START
+        obs_stop = const.CLIM_STOP
+    else:
+        col_freq = TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
+        obs_start = start
+        obs_stop = stop
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
     all_stats = ungridded_data.to_station_data_all(
             
             vars_to_convert=var_ref, 
-            start=start, 
-            stop=stop,
+            start=obs_start, 
+            stop=obs_stop,
             by_station_name=True,
             ignore_index=ignore_station_names,
             **kwargs)
@@ -682,14 +702,20 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                     min_num_obs=min_num_obs,
                     inplace=False)
         
-        obs_ts2 = obs_stat.resample_timeseries(
-                    var_ref, 
-                    ts_type=col_freq,
-                    how='mean',
+        if use_climatology_ref:
+            obs_ts2 = obs_stat.calc_climatology(
+                    var_ref,
                     apply_constraints=apply_time_resampling_constraints,
-                    min_num_obs=min_num_obs,
-                    inplace=False)
-        
+                    min_num_obs=min_num_obs)[var_ref]
+        else:
+            obs_ts2 = obs_stat.resample_timeseries(
+                        var_ref, 
+                        ts_type=col_freq,
+                        how='mean',
+                        apply_constraints=apply_time_resampling_constraints,
+                        min_num_obs=min_num_obs,
+                        inplace=False)
+            
         # fill up missing time stamps
         _df = pd.concat([obs_ts2, grid_ts2], axis=1, keys=['o', 'm'])
         
@@ -717,7 +743,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     meta = {'data_source'       :   [dataset_ref,
                                      gridded_data.name],
             'var_name'          :   [var_ref, var],
-            'ts_type'           :   grid_ts_type, # will be updated below if resampling
+            'ts_type'           :   col_freq, # will be updated below if resampling
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [ts_type_src_ref, grid_ts_type],
             'start_str'         :   to_datestring_YYYYMMDD(start),
@@ -731,6 +757,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'from_files_ref'    :   None,
             'stations_ignored'  :   ignore_station_names,
             'colocate_time'     :   colocate_time,
+            'obs_is_clim'       :   use_climatology_ref,
+            'pyaerocom'         :   pya_ver,
             'apply_constraints' :   apply_time_resampling_constraints,
             'min_num_obs'       :   min_num_obs,
             'outliers_removed'  :   remove_outliers}
@@ -754,7 +782,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     data = ColocatedData(data=coldata, coords=coords, dims=dims, name=var,
                          attrs=meta)
     
-    if grid_ts_type != ts_type:
+    if col_freq != ts_type:
         data = data.resample_time(to_ts_type=ts_type, 
                                   colocate_time=colocate_time,
                                   apply_constraints=apply_time_resampling_constraints,
@@ -767,23 +795,30 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
     
-    obsdata = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', 
-                                start=2010)
     
+    obs = 'AeronetSunV3Lev2.daily'
+    obsvar = 'od550aer'
+    modvar = 'od550aer'
+    mod = 'ECHAM6.3-SALSA2.0-met2010_AP3-CTRL'
     
-    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
-    coldata = pya.colocation.colocate_gridded_gridded(modeldata, obsdata, 
+    start=2010
+    
+    r = pya.io.ReadUngridded()
+    obsdata = r.read(obs,
+                     vars_to_retrieve=obsvar)
+        
+    
+    modeldata = pya.io.ReadGridded(mod).read_var(modvar, start=start)
+    col0 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
                                                       ts_type='monthly',
-                                                      regrid_res_deg=5,
-                                                      remove_outliers=True,
-                                                      colocate_time=False)
+                                                      var_ref=obsvar,
+                                                      use_climatology_ref=True)
     
-    stats = coldata.calc_statistics()
+    col0.plot_scatter()
     
-    coldata_alt = pya.colocation.colocate_gridded_gridded(modeldata, obsdata, 
-                                                      ts_type='monthly',
-                                                      regrid_res_deg=5,
-                                                      remove_outliers=True,
-                                                      colocate_time=True)
+    col1 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
+                                                     ts_type='monthly',
+                                                     var_ref=obsvar,
+                                                     use_climatology_ref=False)
     
-    stats_alt = coldata_alt.calc_statistics()
+    col1.plot_scatter()

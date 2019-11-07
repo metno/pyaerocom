@@ -977,8 +977,8 @@ class StationData(StationMetaData):
         
     def calc_climatology(self, var_name, start=None, stop=None, 
                          apply_constraints=None, min_num_obs=None, 
-                         mincount_month=None, set_year=None,
-                         resample_how='mean'):
+                         clim_mincount=None, clim_freq=None, 
+                         set_year=None, resample_how=None):
         """Calculate climatological timeseries for input variable
         
         The computation is done as follows:
@@ -994,12 +994,61 @@ class StationData(StationMetaData):
         be specified via `mincount_month`, or, if unspecified, pyaerocom 
         default is used (cf. :attr:`pyaerocom.const.CLIM_MIN_COUNT`)
         
+        Parameters
+        ----------
+        var_name : str
+            name of data variable
+        start 
+            start time of data used to compute climatology
+        stop
+            start time of data used to compute climatology
+        apply_constraints : bool, optional
+            if True, then hierarchical resampling constraints are applied
+            (for details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        min_num_obs : dict or int, optional
+            minimum number of observations required per period (when 
+            downsampling). For details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        clim_micount : int, optional
+            minimum number of of monthly values required per month of 
+            climatology
+        set_year : int, optional
+            if specified, the output data will be assigned the input year. Else
+            the middle year of the climatological interval is used.
+        resample_how : str
+            how should the resampled data be averaged (e.g. mean, median)
+        **kwargs
+            Additional keyword args passed to 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`
+        
         Returns
         -------
         StationData
             new instance of StationData containing climatological data
         """
-        ts= self.to_timeseries(var_name, freq='monthly', 
+        if clim_freq is None:
+            clim_freq = const.CLIM_FREQ
+        
+        if resample_how is None:
+            resample_how = const.CLIM_RESAMPLE_HOW
+            
+        ts_type = TsType(self.get_var_ts_type(var_name))
+        
+        monthly = TsType('monthly')
+        if ts_type < monthly:
+            raise TemporalResolutionError('Cannot compute climatology, {} data '
+                                          'needs to be in monthly resolution '
+                                          'or higher (is: {})'.format(
+                                           var_name, ts_type))
+        if ts_type < TsType(clim_freq): #current resolution is lower than input climatological freq
+            supported = list(const.CLIM_MIN_COUNT.keys())
+            if str(ts_type) in supported:
+                clim_freq = ts_type
+            else: # use monthly
+                clim_freq = 'monthly'
+        
+        ts= self.to_timeseries(var_name, freq=clim_freq, 
                                resample_how=resample_how, 
                                apply_constraints=apply_constraints, 
                                min_num_obs=min_num_obs)
@@ -1010,11 +1059,14 @@ class StationData(StationMetaData):
             stop = const.CLIM_STOP
         if apply_constraints is None:
             apply_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
-        if apply_constraints and mincount_month is None:
-            mincount_month = const.CLIM_MIN_COUNT
+        if apply_constraints and clim_mincount is None:
+            clim_mincount = const.CLIM_MIN_COUNT[clim_freq]
         
-        clim = calc_climatology(ts, start, stop, mincount_month,
-                                set_year, resample_how)
+        
+        clim = calc_climatology(ts, start, stop, 
+                                min_count=clim_mincount,
+                                set_year=set_year, 
+                                resample_how=resample_how)
         
         new = StationData()
         try:
@@ -1030,9 +1082,13 @@ class StationData(StationMetaData):
             
         new.var_info[var_name] = vi
         new.var_info[var_name]['ts_type'] = 'monthly'
+        new.var_info[var_name]['ts_type_src'] = ts_type.base
         new.var_info[var_name]['is_climatology'] = True
         new.var_info[var_name]['clim_start'] = start
         new.var_info[var_name]['clim_stop'] = stop
+        new.var_info[var_name]['clim_freq'] = clim_freq
+        new.var_info[var_name]['clim_how'] = resample_how
+        new.var_info[var_name]['clim_mincount'] = clim_mincount
         new.data_err[var_name] = clim['std']
         new.numobs[var_name] = clim['numobs']
         return new

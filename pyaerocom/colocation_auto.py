@@ -142,6 +142,13 @@ class ColocationSetup(BrowseDict):
         time resampling constraints applied if input arg 
         `apply_time_resampling_constraints` is True - or None, in which case 
         :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used.
+    model_keep_outliers : bool
+        if True, no outliers are removed from model data
+    obs_keep_outliers : bool
+        if True, no outliers are removed from obs / reference data
+    obs_use_climatology : bool
+        BETA if True, pyaerocom default climatology is computed from observation 
+        stations (so far only possible for unrgidded / gridded colocation)
     colocate_time : bool
         if True and if obs and model sampling frequency (e.g. daily) are higher 
         than input colocation frequency (e.g. monthly), then the datasets are 
@@ -181,6 +188,7 @@ class ColocationSetup(BrowseDict):
                  apply_time_resampling_constraints=None, min_num_obs=None,
                  model_keep_outliers=True,
                  obs_keep_outliers=False,
+                 obs_use_climatology=False,
                  colocate_time=False, basedir_coldata=None, 
                  obs_name=None, model_name=None,
                  save_coldata=True, **kwargs):
@@ -215,6 +223,7 @@ class ColocationSetup(BrowseDict):
         self.obs_id = obs_id
         self.obs_name = obs_name
         self.obs_keep_outliers = obs_keep_outliers
+        self.obs_use_climatology = obs_use_climatology
         
         self.start = start
         self.stop = stop
@@ -657,7 +666,8 @@ class Colocator(ColocationSetup):
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
                         var_keep_outliers=self.model_keep_outliers,
-                        var_ref_keep_outliers=self.obs_keep_outliers)
+                        var_ref_keep_outliers=self.obs_keep_outliers,
+                        use_climatology_ref=self.obs_use_climatology)
                 
                 if self.save_coldata:
                     self._save_coldata(coldata, savename, out_dir, model_var, 
