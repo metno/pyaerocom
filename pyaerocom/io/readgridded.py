@@ -42,6 +42,7 @@ import iris
 
 from pyaerocom import const, print_log, logger
 from pyaerocom.variable import Variable, is_3d
+from pyaerocom.tstype import TsType, sort_ts_types
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          subtract_cubes)
@@ -311,6 +312,9 @@ class ReadGridded(object):
     @property
     def TS_TYPES(self):
         """List with valid filename encryptions specifying temporal resolution
+        
+        Update 7.11.2019: not in use anymore due to improved handling of 
+        all possible frequencies now using TsType class.
         """
         return const.GRID_IO.TS_TYPES
     
@@ -543,7 +547,7 @@ class ReadGridded(object):
                 else:
                     _vars_temp.append(var_name)
                 
-                if not info["ts_type"] in self.TS_TYPES:
+                if not TsType.valid(info["ts_type"]):# in self.TS_TYPES:
                     raise TemporalResolutionError('Invalid frequency {}'
                                                   .format(info["ts_type"]))
                 
@@ -1143,7 +1147,9 @@ class ReadGridded(object):
                                     'all input variables: {}'
                                     .format(ts_type, vars_to_read))
         
-        common_sorted = [x for x in const.GRID_IO.TS_TYPES if x in common]
+        # NOTE: Changed by jgliss on 7.11.2019 for more flexibility 
+        #common_sorted = [x for x in const.GRID_IO.TS_TYPES if x in common]
+        common_sorted = sort_ts_types(common)
         return common_sorted[0]
     
     def add_aux_compute(self, var_name, vars_required, fun):
@@ -1638,10 +1644,9 @@ class ReadGridded(object):
                                      'entry in their filename could be found')
                 
             ts_type = self.ts_types[0]
-        if not ts_type in self.TS_TYPES:
-            raise ValueError("Invalid input for ts_type, got: {}, "
-                             "allowed values: {}".format(ts_type, 
-                                                         self.TS_TYPES))
+        if not TsType.valid(ts_type):# in self.TS_TYPES:
+            raise ValueError("Invalid input for ts_type: {}"
+                             "allowed values: {}".format(ts_type))
         return ts_type
     
     def __getitem__(self, var_name):
