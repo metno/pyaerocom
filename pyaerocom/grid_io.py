@@ -92,7 +92,7 @@ class GridIO(object):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest
         # resolution
-        self.TS_TYPES = ['minutely', 'hourly', '3hourly', 'daily', 'weekly', 
+        self.TS_TYPES = ['minutely', 'hourly', 'daily', 'weekly', 
                          'monthly', 'yearly']
         
         self.PERFORM_FMT_CHECKS = True
