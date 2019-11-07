@@ -84,10 +84,17 @@ class TsType(object):
         """
         raise NotImplementedError
     
+    @staticmethod
+    def valid(val):
+        try:
+            TsType(val)
+            return True
+        except TemporalResolutionError:
+            return False
+        
     @property
     def next_lower(self):
         """Next lower resolution code"""
-        
         idx = self.VALID.index(self._val)
         if idx == len(self.VALID) - 1:
             raise IndexError('No lower resolution available than {}'.format(self))
@@ -142,6 +149,43 @@ class TsType(object):
     def __repr__(self):
         return self.val
     
+def sort_ts_types(ts_types):
+    """Sort a list of ts_types
+    
+    Parameters
+    ----------
+    ts_types : list
+        list of strings (or instance of :class:`TsType`) to be sorted
+    
+    Returns
+    -------
+    list
+        list of strings with sorted frequencies
+        
+    Raises 
+    ------
+    TemporalResolutionError
+        if one of the input ts_types is not supported
+    """
+    freqs_sorted = []
+    for ts_type in ts_types:
+        if isinstance(ts_type, str):
+            ts_type = TsType(ts_type)
+        if len(freqs_sorted) == 0:
+            freqs_sorted.append(ts_type)
+        else: 
+            insert = False
+            for i, tt in enumerate(freqs_sorted):
+                if tt < ts_type:
+                    insert=True
+                    break
+            if insert:
+                freqs_sorted.insert(i, ts_type)
+            else:
+                freqs_sorted.append(ts_type)
+            print(x for x in freqs_sorted)
+    return [str(tt) for tt in freqs_sorted]
+                
 if __name__=="__main__":
 
     
@@ -165,9 +209,20 @@ if __name__=="__main__":
     print('hourly == 5hourly:', hourly==hourly5)
     print('hourly > 5hourly:', hourly>hourly5)
     
-    print(monthly.next_lower)
-    
     print(TsType('yearly').next_higher)
+    
+    
+    hourly = TsType('hourly')
+    
+    daily = hourly.next_lower
+
+    print(hourly.next_lower)
+    
+    unsorted = ['monthly', 'hourly', '5minutely', '3daily', 'daily']
+    
+    sort = sort_ts_types(unsorted)
+    
+    print(sort)
 # =============================================================================
 #     
 #     class Num(object):
