@@ -156,7 +156,11 @@ class Config(object):
     
     CLIM_START =2005
     CLIM_STOP = 2015
-    CLIM_MIN_COUNT = 5
+    CLIM_FREQ = 'daily'
+    CLIM_RESAMPLE_HOW = 'mean' # median, ...
+    # as a function of climatological frequency
+    CLIM_MIN_COUNT = dict(daily = 30, # at least 30 daily measurements in each month over whole period
+                          monthly = 5) # analogue to daily ...
     
     #names of the different obs networks
     OBSNET_NONE = 'NONE'
