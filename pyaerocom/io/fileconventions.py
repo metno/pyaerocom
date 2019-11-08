@@ -6,6 +6,7 @@ Low level classes and methods for io
 from collections import OrderedDict as od
 from os.path import join, exists, basename, splitext
 from pyaerocom import const
+from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import FileConventionError
 try:
     from ConfigParser import ConfigParser
@@ -116,7 +117,7 @@ class FileConventionRead(object):
         """Check if filename is valid"""
         info = self.get_info_from_file(file)
         year = info["year"]
-        if not info['ts_type'] in self._io_opts.GRID_IO.TS_TYPES:
+        if not TsType.valid(info['ts_type']):
             raise FileConventionError("Invalid ts_type %s in filename %s"
                                            %(info['ts_type'], basename(file)))
         elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):

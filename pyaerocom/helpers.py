@@ -21,6 +21,7 @@ from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    microsec_units, millisec_units,
                                    sec_units, min_units, hr_units,
                                    day_units)
+from pyaerocom.tstype import TsType
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
@@ -218,6 +219,42 @@ def get_lowest_resolution(ts_type, *ts_types):
             lowest = _temp
     return lowest.val
 
+def sort_ts_types(ts_types):
+    """Sort a list of ts_types
+    
+    Parameters
+    ----------
+    ts_types : list
+        list of strings (or instance of :class:`TsType`) to be sorted
+    
+    Returns
+    -------
+    list
+        list of strings with sorted frequencies
+        
+    Raises 
+    ------
+    TemporalResolutionError
+        if one of the input ts_types is not supported
+    """
+    freqs_sorted = []
+    for ts_type in ts_types:
+        if isinstance(ts_type, str):
+            ts_type = TsType(ts_type)
+        if len(freqs_sorted) == 0:
+            freqs_sorted.append(ts_type)
+        else: 
+            insert = False
+            for i, tt in enumerate(freqs_sorted):
+                if tt < ts_type:
+                    insert=True
+                    break
+            if insert:
+                freqs_sorted.insert(i, ts_type)
+            else:
+                freqs_sorted.append(ts_type)
+    return [str(tt) for tt in freqs_sorted]
+
 def get_highest_resolution(ts_type, *ts_types):
     """Get the highest resolution from several ts_type codes
     
@@ -238,15 +275,9 @@ def get_highest_resolution(ts_type, *ts_types):
     ValueError
         if one of the input ts_type codes is not supported
     """
-    all_ts_types = const.GRID_IO.TS_TYPES
-    highest = ts_type
-    for freq in ts_types:
-        if not freq in all_ts_types:
-            raise ValueError('Invalid input, only valid ts_type codes are '
-                             'supported: {}'.format(all_ts_types))
-        elif all_ts_types.index(highest) > all_ts_types.index(freq):
-            highest = freq
-    return highest
+    lst = [ts_type]
+    lst.extend(ts_types)
+    return sort_ts_types(lst)[0]
 
 def isnumeric(val):
     """Check if input value is numeric
@@ -629,7 +660,7 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     from pyaerocom.tstype import TsType
     from pyaerocom.time_config import XARR_TIME_GROUPERS
     to = TsType(freq)
-    pd_freq=to.to_pandas()
+    pd_freq=to.to_pandas_freq()
     invalid = None
     if min_num_obs is not None:
         if not pd_freq in XARR_TIME_GROUPERS:

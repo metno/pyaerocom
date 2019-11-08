@@ -6,6 +6,10 @@ Definitions and helpers related to time conversion
 
 from iris import coord_categorisation
 from datetime import datetime
+
+
+TS_TYPES = ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']
+
 # The following import was removed and the information about available unit 
 # strings was copied from the netCDF4 module directly here
 # from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
@@ -32,7 +36,6 @@ IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
 TS_TYPE_TO_PANDAS_FREQ = {'minutely':   'T',
                           'hourly'  :   'H',
-                          '3hourly' :   '3H',
                           'daily'   :   'D',
                           'weekly'  :   'W-MON',
                           'monthly' :   'MS', #Month start !
@@ -48,7 +51,6 @@ PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 # https://numpy.org/devdocs/reference/arrays.datetime.html#datetime-units
 TS_TYPE_TO_NUMPY_FREQ =  {'minutely':   'm',
                           'hourly'  :   'h',
-                          '3hourly' :   '3h',
                           'daily'   :   'D',
                           'weekly'  :   'W',
                           'monthly' :   'M', #Month start !

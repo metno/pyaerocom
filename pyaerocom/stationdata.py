@@ -1158,20 +1158,6 @@ class StationData(StationMetaData):
                                  apply_constraints=apply_constraints,
                                  min_num_obs=min_num_obs, 
                                  **kwargs)
-
-# =============================================================================
-#         if isinstance(data, pd.Series):
-#             new = resample_timeseries(data, 
-#                                       freq=to_ts_type.to_pandas(), 
-#                                       how=how,
-#                                       min_num_obs=min_num_obs)
-#             
-#         elif isinstance(data, xray.DataArray):
-#             new = resample_time_dataarray(data, 
-#                                           freq=to_ts_type.to_pandas(), 
-#                                           how=how, 
-#                                           min_num_obs=min_num_obs)
-# =============================================================================
             
         if inplace:
             self[var_name] = new

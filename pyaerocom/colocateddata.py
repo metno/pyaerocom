@@ -279,45 +279,12 @@ class ColocatedData(object):
         else:
             col = self.copy()
             
-# =============================================================================
-#         to, current = TsType(to_ts_type), TsType(col.ts_type)
-#         if to == current:
-#             const.print_log.info('Skipping resampling of ColocatedData. Data is '
-#                                  'already in {} resolution'.format(to_ts_type))
-#             return col
-#         elif to > current:
-#             from pyaerocom.exceptions import TemporalResolutionError
-#             raise TemporalResolutionError('Cannot resample time: input resolution '
-#                                           '{} is higher than current {}'
-#                                           .format(to_ts_type, current.val))
-#         
-# =============================================================================
         # if colocate time is activated, remove datapoints from model, where
         # there is no observation
         if colocate_time:
             mask = np.isnan(col.data[0]).data
             col.data.data[1][mask] = np.nan
-        # First, compute a mask (in new resolution) that fulfills the 
-        # minimum number of measurements requirement
-# =============================================================================
-#         invalid = None
-#         if min_num_obs is not None:
-#             pd_freq=to.to_pandas()
-#             if not pd_freq in XARR_TIME_GROUPERS:
-#                 raise ValueError('Cannot infer xarray grouper for ts_type {}'
-#                                  .format(to.val))
-#             gr = XARR_TIME_GROUPERS[pd_freq]
-#             # 2D mask with shape of resampled data array
-#             invalid = col.data.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
-#             
-#         
-#             
-#         freq = TS_TYPE_TO_PANDAS_FREQ[to.val]
-#         
-#         data_arr = col.data.resample({'time' : freq}).mean(dim='time')
-#         if invalid is not None:
-#             data_arr.data[invalid.data] = np.nan
-# =============================================================================
+
         from pyaerocom.time_resampler import TimeResampler
         
         res = TimeResampler(col.data)

@@ -42,11 +42,13 @@ import iris
 
 from pyaerocom import const, print_log, logger
 from pyaerocom.variable import Variable, is_3d
-from pyaerocom.tstype import TsType, sort_ts_types
+from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          subtract_cubes)
-from pyaerocom.helpers import to_pandas_timestamp, get_highest_resolution
+from pyaerocom.helpers import (to_pandas_timestamp, 
+                               sort_ts_types,
+                               get_highest_resolution)
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
@@ -1862,7 +1864,7 @@ if __name__=="__main__":
 #     data = r.read_var('concso4')
 # =============================================================================
     
-    r = ReadGridded('FMI-SAT-MERGED11')
+    r = ReadGridded('ECMWF-IFS-CY45R1-CAMS-CTRL-met2010_AP3-CTRL')
     
     print(r)
     

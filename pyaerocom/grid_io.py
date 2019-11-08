@@ -6,6 +6,7 @@ Created on Thu Jun 20 09:07:42 2019
 @author: jonasg
 """
 from pyaerocom._lowlevel_helpers import dict_to_str
+from pyaerocom.time_config import TS_TYPES
 
 class GridIO(object):
     """Global I/O settings for gridded data
@@ -92,8 +93,7 @@ class GridIO(object):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest
         # resolution
-        self.TS_TYPES = ['minutely', 'hourly', 'daily', 'weekly', 
-                         'monthly', 'yearly']
+        self.TS_TYPES = TS_TYPES
         
         self.PERFORM_FMT_CHECKS = True
         
