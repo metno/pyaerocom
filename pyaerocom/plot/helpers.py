@@ -127,11 +127,78 @@ def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
         vmin = 1*10.0**(exponent(vmax) - 2)
         if not add_zero:
             add_zero = True
-    elif not vmax > vmin:
+    elif vmax < vmin:
+        raise ValueError("Error: vmax must exceed vmin")
+    bounds = [0] if add_zero else []
+    low =  float(exponent(vmin))
+    high = float(exponent(vmax))
+    bounds.extend(np.arange(np.floor(vmin*10**(-low)), 10, 1)*10.0**(low))
+    if low == high:
+        return bounds
+    
+    for mag in range(int(low+1), int(high)):
+        bounds.extend(np.linspace(1,9,9)*10**(mag))
+    bounds.extend(np.arange(1, np.ceil(vmax*10**(-high)), 1)*10.0**(high))
+    bounds.append(vmax)
+    return bounds
+
+def calc_pseudolog_cmaplevels_OLD(vmin, vmax, add_zero=False):
+    """Initiate pseudo-log discrete colormap levels
+    
+    Note
+    ----
+        This is a beta version and aims to 
+        
+    Parameters
+    ----------
+    vmin : float
+        lower end of colormap (e.g. minimum value of data)
+    vmax : float
+        upper value of colormap (e.g. maximum value of data)
+    add_zero : bool
+        if True, the lower bound is set to 0 (irrelevant if vmin is 0).
+        
+    Returns
+    -------
+    list
+        list containing boundary array for discrete colormap (e.g. using 
+        BoundaryNorm)
+    
+    Example
+    -------
+    >>> vmin, vmax = 0.02, 0.75
+    >>> vals = calc_pseudolog_cmaplevels(vmin, vmax, num_per_mag=10, add_zero=True)
+    >>> for val in vals: print("%.4f" %val)
+    0.0000
+    0.0100
+    0.0126
+    0.0158
+    0.0200
+    0.0251
+    0.0316
+    0.0398
+    0.0501
+    0.0631
+    0.0794
+    0.1000
+    
+    """
+    
+    if vmin < 0:
+        vmin = 0
+# =============================================================================
+#         raise ValueError("Invalid value vmin = %.3f for log space cmap levels "
+#                          "Please choose a number exceeding 0." %vmin)
+# =============================================================================
+    if vmin == 0:
+        vmin = 1*10.0**(exponent(vmax) - 2)
+        if not add_zero:
+            add_zero = True
+    elif vmax < vmin:
         raise ValueError("Error: vmax must exceed vmin")
     bounds = [0, vmin] if add_zero else [vmin]
-    high = float(exponent(vmax))
     low =  float(exponent(vmin))
+    high = float(exponent(vmax))
     bounds.extend(np.arange(np.ceil(vmin*10**(-low)), 10, 1)*10.0**(low))
     for mag in range(int(low+1), int(high)):
         bounds.extend(np.linspace(1,9,9)*10**(mag))

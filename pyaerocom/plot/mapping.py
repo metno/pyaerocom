@@ -121,7 +121,7 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
         ticks of y-axis (latitudes)
     projection 
         projection instance from cartopy.crs module (e.g. PlateCaree). May also
-        be string
+        be string.
     title : :obj:`str`, optional
         title that is supposed to be inserted
     fig : :obj:`Figure`, optional
@@ -492,8 +492,17 @@ def plot_map(data, *args, **kwargs):
    
 if __name__ == "__main__":
     from matplotlib.pyplot import close
-    import pyaerocom as pya
-    close("all")
+    close('all')
     
-    d = pya.io.ReadGridded('ECMWF-IFS-CY42R1-CAMS-RA-CTRL_AP3-CTRL2016-PD').read_var('ang4487aer', start=2010)
-    d.quickplot_map(vmin=-1, vmax=4)
+    import pyaerocom as pya
+    import numpy as np
+    
+    lats = np.arange(-30, 60)
+    lons = np.linspace(-90, 90)
+    
+    data = np.ones((len(lats), len(lons)))
+    data [20:40, 20:40] = 2
+    ax = pya.plot.mapping.plot_griddeddata_on_map(data, 
+                                                  lons=lons, 
+                                                  lats=lats, vmin=0, vmax=2,
+                                                  log_scale=False)
