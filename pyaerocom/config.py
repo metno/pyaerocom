@@ -448,7 +448,7 @@ class Config(object):
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
         self.print_log.warning('Deprecated (but still functional) name '
-                               'VARS. Please use VARS')
+                               'VAR_PARAM. Please use VARS')
         return self.VARS
     
     @property
