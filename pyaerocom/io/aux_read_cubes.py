@@ -30,7 +30,12 @@ def _apply_operator_cubes(cube1, cube2, operator_name,
                           .format(operator_name))
         if 'differing coordinates (time)' in repr(e):
             iris.util.unify_time_units([cube1, cube2])    
-        
+            attrs = {}
+            attrs.update(cube1.coord('time').attributes)
+            attrs.update(cube2.coord('time').attributes)
+            cube2.coord('time').attributes = attrs
+            cube1.coord('time').attributes = attrs
+
         elif allow_coord_merge:
             copy_coords_cube(to_cube=cube2, 
                              from_cube=cube1, 
@@ -141,7 +146,22 @@ def divide_cubes(cube1, cube2):
     
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
+   
+def lifetime_from_load_and_dep(load, wetdep, drydep):
+    """Compute lifetime from load and wet and dry deposition"""
+    raise NotImplementedError('Lifetime cannot be computed based on '
+                              'grid data')
+    load, wetdep, drydep = _check_input_iscube(load, wetdep, drydep)
+    deptot = _apply_operator_cubes(wetdep, drydep, 'add',
+                                   allow_coord_merge=True)
     
+    deptot.attributes.update(merge_meta_cubes(wetdep, drydep))
+    
+    cube_out = _apply_operator_cubes(load, deptot, 'divide',
+                                     allow_coord_merge=True)
+    cube_out.attributes.update(merge_meta_cubes(load, deptot))
+    return cube_out
+
 def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     """Compute Angstrom coefficient cube based on 2 optical densitiy cubes
     
