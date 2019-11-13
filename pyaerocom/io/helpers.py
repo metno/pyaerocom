@@ -13,22 +13,6 @@ from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
 
 from collections import OrderedDict as od
 
-TSTR_TO_NP_DT = {"hourly"  :  "datetime64[h]",
-                 "3hourly" :  "datetime64[3h]",
-                 "daily"   :  "datetime64[D]",
-                 "monthly" :  "datetime64[M]"}
-
-TSTR_TO_NP_TD = {"hourly"  :  "timedelta64[h]",
-                 "3hourly" :  "timedelta64[3h]",
-                 "daily"   :  "timedelta64[D]",
-                 "monthly" :  "timedelta64[M]"}
-
-
-TSTR_TO_CF = {"hourly"  :  "hours",
-              "3hourly" :  "hours",
-              "daily"   :  "days",
-              "monthly" :  "days"}
-
 def _print_read_info(i, mod, tot_num, last_t, name, logger):
     """Helper for displaying standardised output in reading classes
     

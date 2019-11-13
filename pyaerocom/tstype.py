@@ -6,21 +6,27 @@ General helper methods for the pyaerocom library.
 from pyaerocom import const
 import re
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE, 
-                                   TS_TYPE_TO_PANDAS_FREQ)
+                                   TS_TYPE_TO_PANDAS_FREQ,
+                                   TS_TYPE_TO_NUMPY_FREQ)
 from pyaerocom.exceptions import TemporalResolutionError
 
 class TsType(object):
     VALID = const.GRID_IO.TS_TYPES
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
+    TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
     
     TS_MAX_VALS = {'hourly' : 24,
                    'daily'  : 7,
                    'weekly' : 4,
                    'monthly': 12}
+
+    TSTR_TO_CF = {"hourly"  :  "hours",
+                  "daily"   :  "days",
+                  "monthly" :  "days"}
     
     def __init__(self, val):
-        self._mulfac = 1.0
+        self._mulfac = 1
         self._val = None
         
         self.val = val
@@ -30,6 +36,13 @@ class TsType(object):
         """Multiplication factor of frequency"""
         return self._mulfac
     
+    @mulfac.setter
+    def mulfac(self, value):
+        try:
+            self._mulfac = int(value)
+        except:
+            raise ValueError('mulfac needs to be int or convertible to int')
+
     @property
     def base(self):
         """Base string (without multiplication factor, cf :attr:`mulfac`)"""
@@ -74,7 +87,44 @@ class TsType(object):
                                                       self.TS_MAX_VALS[val]))
         self._val = val
         self._mulfac = ival
+    
+    @property
+    def datetime64_str(self):
+        """Convert ts_type str to datetime64 unit string"""
+        return 'datetime64[{}]'.format(self.to_numpy_freq())
+    
+    @property
+    def timedelta64_str(self):
+        """Convert ts_type str to datetime64 unit string"""
+        return 'timedelta64[{}]'.format(self.to_numpy_freq())
+    
+    @property
+    def cf_base_unit(self):
+        """Convert ts_type str to CF convention time unit"""
+        if not self.base in self.TSTR_TO_CF:
+            raise NotImplementedError('Cannot convert {} to CF str'
+                                      .format(self.base))
+        return self.TSTR_TO_CF[self.base]
+    
+    @property
+    def next_lower(self):
+        """Next lower resolution code"""
+        idx = self.VALID.index(self._val)
+        if idx == len(self.VALID) - 1:
+            raise IndexError('No lower resolution available than {}'.format(self))
+        return TsType(self.VALID[idx+1])
+    
+    @property
+    def next_higher(self):
+        """Next lower resolution code"""
+        if self.mulfac > 1:
+            return TsType(self._val)
         
+        idx = self.VALID.index(self._val)
+        if idx == 0:
+            raise IndexError('No lower resolution available than {}'.format(self))
+        return TsType(self.VALID[idx-1])
+    
     @staticmethod
     def infer(self, datetime_index):
         """Infer resolution based on input datateime_index
@@ -83,13 +133,31 @@ class TsType(object):
         """
         raise NotImplementedError
     
-    def to_pandas(self):
+    @staticmethod
+    def valid(val):
+        try:
+            TsType(val)
+            return True
+        except TemporalResolutionError:
+            return False
+        
+    def to_numpy_freq(self):
+        if not self._val in self.TO_NUMPY:
+            raise TemporalResolutionError('numpy frequency not available for {}'
+                                          .format(self._val))
+        freq = self.TO_NUMPY[self._val]
+        return '{}{}'.format(self.mulfac, freq)
+    
+    def to_pandas_freq(self):
         """Convert ts_type to pandas frequency string"""
+        if not self._val in self.TO_PANDAS:
+            raise TemporalResolutionError('pandas frequency not available for {}'
+                                          .format(self._val))
         freq = self.TO_PANDAS[self._val]
         if self._mulfac == 1:
             return freq
         return '{}{}'.format(self._mulfac, freq)
-        
+    
     def _from_pandas(self, val):
         if not val in self.FROM_PANDAS:
             raise TemporalResolutionError('Invalid input: {}, need pandas '
@@ -122,9 +190,10 @@ class TsType(object):
     
     def __repr__(self):
         return self.val
-    
+
 if __name__=="__main__":
 
+    from pyaerocom.helpers import sort_ts_types
     
     daily = TsType('daily')
     monthly = TsType('monthly')
@@ -145,6 +214,25 @@ if __name__=="__main__":
     
     print('hourly == 5hourly:', hourly==hourly5)
     print('hourly > 5hourly:', hourly>hourly5)
+    
+    print(TsType('yearly').next_higher)
+    
+    
+    hourly = TsType('hourly')
+    
+    daily = hourly.next_lower
+
+    print(hourly.next_lower)
+    
+    unsorted = ['monthly', 'hourly', '5minutely', '3daily', 'daily']
+    
+    sort = sort_ts_types(unsorted)
+    
+    print(sort)
+    
+    print(TsType('16hourly').datetime64_str)
+    print(TsType('16hourly').timedelta64_str)
+    print(TsType('16hourly').cf_base_unit)
 # =============================================================================
 #     
 #     class Num(object):

@@ -9,13 +9,13 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
 
 """
-import os
-from datetime import datetime
-from numpy import datetime64, asarray, arange
 import cf_units
-
+from datetime import datetime
 import iris
 from iris.experimental.equalise_cubes import equalise_attributes
+from numpy import datetime64, asarray, arange
+import os
+import pandas as pd
 
 from pyaerocom import const, logger
 from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
@@ -23,25 +23,10 @@ from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
                                   UnresolvableTimeDefinitionError)
 
 from pyaerocom.helpers import cftime_to_datetime64
+from pyaerocom.tstype import TsType
 from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
-
-TSTR_TO_NP_DT = {"hourly"  :  "datetime64[h]",
-                 "3hourly" :  "datetime64[3h]",
-                 "daily"   :  "datetime64[D]",
-                 "monthly" :  "datetime64[M]"}
-
-TSTR_TO_NP_TD = {"hourly"  :  "timedelta64[h]",
-                 "3hourly" :  "timedelta64[3h]",
-                 "daily"   :  "timedelta64[D]",
-                 "monthly" :  "timedelta64[M]"}
-
-
-TSTR_TO_CF = {"hourly"  :  "hours",
-              "3hourly" :  "hours",
-              "daily"   :  "days",
-              "monthly" :  "days"}
 
 def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None, 
                                  perform_fmt_checks=True, num_proc=None):
@@ -371,6 +356,7 @@ def check_time_coordOLD(cube, ts_type, year):
     """
     
     ok = True
+    ts_type = TsType(ts_type)
     test_idx = [0,1,2,7] #7, since last accessible index in a 3hourly dataset of one day is 7
     try:
         try:
@@ -383,9 +369,14 @@ def check_time_coordOLD(cube, ts_type, year):
             cftime_to_datetime64(0, cfunit=t.units)
         except:
             raise ValueError("Could not convert time unit string")
-        tres_np = TSTR_TO_NP_TD[ts_type]
-        conv = TSTR_TO_NP_DT[ts_type]
-        base = datetime64("%s-01-01 00:00:00" %year).astype(conv)
+# =============================================================================
+#         tres_np = TSTR_TO_NP_TD[ts_type]
+#         conv = TSTR_TO_NP_DT[ts_type]
+# =============================================================================
+        tres_np = ts_type.timedelta64_str
+        conv = ts_type.datetime64_str_str
+        
+        base = datetime64("{}-01-01 00:00:00".format(year)).astype(conv)
         test_datenums = asarray(test_idx)
         ts_nominal = base + test_datenums.astype(tres_np)
         dts_nominal = ts_nominal[1:] - ts_nominal[:-1]
@@ -409,13 +400,13 @@ def check_time_coordOLD(cube, ts_type, year):
         ok = False
     return ok
 
-def make_datetimeindex(ts_type, year):
+def make_datetimeindex_from_year(freq, year):
     """Create pandas datetime index 
     
     Parameters
     ----------
-    ts_type : str
-        pyaerocom ts_type
+    freq : str
+        pandas frequency str
     year : int
         year
         
@@ -423,13 +414,12 @@ def make_datetimeindex(ts_type, year):
     -------
     pandas.DatetimeIndex
         index object
-    """
-    import pandas as pd
+    """    
     start = datetime64("{}-01-01 00:00:00".format(year))
     stop = datetime64("{}-12-31 23:59:59".format(year))
-    
-    idx = pd.DatetimeIndex(start=start, end=stop, 
-                           freq=TS_TYPE_TO_PANDAS_FREQ[ts_type])
+    idx = pd.date_range(start=start, end=stop, 
+                        freq=freq)
+
     return idx
 
 
@@ -447,11 +437,14 @@ def _check_correct_time_dim(cube, file, file_convention=None):
                                   .format(file_convention))
         
     finfo = file_convention.get_info_from_file(file)
-    ts_type = finfo['ts_type']
+    try:
+        ts_type = TsType(finfo['ts_type'])
+    except:
+        raise FileConventionError('Invalid ts_type in file: {}'
+                                  .format(ts_type))
     year = finfo['year']
-    if not ts_type in const.GRID_IO.TS_TYPES:
-        raise FileConventionError('Invalid ts_type in file: {}'.format(ts_type))
-    elif not -2000 <= year <= 20000:
+    
+    if not const.MIN_YEAR <= year <= const.MAX_YEAR:
         raise FileConventionError('Invalid year in file: {}'.format(year))
     try:
         check_time_coord(cube, ts_type, year)
@@ -482,6 +475,7 @@ def _check_leap_year(num, num_per, ts_type):
     elif ts_type == 'hourly' and num + 24 == num_per:
         return True
     return False
+
 def check_time_coord(cube, ts_type, year):
     """Method that checks the time coordinate of an iris Cube
     
@@ -503,6 +497,8 @@ def check_time_coord(cube, ts_type, year):
     bool
         True, if time dimension is ok, False if not
     """
+    if isinstance(ts_type, str):
+        ts_type = TsType(ts_type)
     try:
         t = cube.coord("time")
     except:
@@ -513,8 +509,10 @@ def check_time_coord(cube, ts_type, year):
         cftime_to_datetime64(0, cfunit=t.units)
     except:
         raise ValueError("Could not convert time unit string")
-
-    tidx = make_datetimeindex(ts_type, year)
+        
+    freq = ts_type.to_pandas_freq()
+    
+    tidx = make_datetimeindex_from_year(freq, year)
     
     num_per = len(tidx)
     num = len(t.points)
@@ -530,15 +528,13 @@ def check_time_coord(cube, ts_type, year):
                                                   'data has {}'
                                                   .format(len(tidx), num))
         
-    
-    pstr = TS_TYPE_TO_PANDAS_FREQ[ts_type]
     # ToDo: check why MS is not working for period conversion
-    if pstr == 'MS':
-        pstr = 'M'
+    if freq == 'MS':
+        freq = 'M'
     # convert first and last timestamps of index array into periods 
     # (e.g. January and December for monthly data)
-    per0 = tidx[0].to_period(pstr)
-    per1 = tidx[-1].to_period(pstr)    
+    per0 = tidx[0].to_period(freq)
+    per1 = tidx[-1].to_period(freq)    
     
     # first and last timestamp in data
     t0, t1 = cftime_to_datetime64([t.points[0], t.points[-1]], cfunit=t.units)
@@ -558,7 +554,7 @@ def correct_time_coord(cube, ts_type, year):
     ----------
     cube : Cube
         cube containing data
-    ts_type : str
+    ts_type : TsType or str
         temporal resolution of data (e.g. "hourly", "daily"). This information
         is e.g. encrypted in the filename of a NetCDF file and may be 
         accessed using :class:`pyaerocom.io.FileConventionRead`
@@ -575,6 +571,8 @@ def correct_time_coord(cube, ts_type, year):
     """
     tindex_cube = None
     dim_lens = []
+    if isinstance(ts_type, str):
+        ts_type = TsType(ts_type)
     for i, coord in enumerate(cube.dim_coords):
         dim_lens.append(len(coord.points))
         if coord.name() == 'time':
@@ -587,13 +585,13 @@ def correct_time_coord(cube, ts_type, year):
     if tindex_cube is None:
         raise NetcdfError('Failed to identify data index of time dimension in '
                           'cube {}'.format(repr(cube)))
-    tres_str = TSTR_TO_CF[ts_type]
-    conv = TSTR_TO_NP_DT[ts_type]
+    tres_str = ts_type.cf_base_unit
+    conv = ts_type.datetime64_str
     tunit_str = '%s since %s-01-01 00:00:00' %(tres_str, year)
     num = cube.shape[tindex_cube]
 
     tunit = cf_units.Unit(tunit_str, calendar=cf_units.CALENDAR_STANDARD)
-    tres_np = TSTR_TO_NP_TD[ts_type]
+    tres_np = ts_type.timedelta64_str #TSTR_TO_NP_TD[ts_type]
     base = datetime64("%s-01-01 00:00:00" %year).astype(conv)
     times = base + arange(0, num, 1).astype(tres_np)
     # see this thread https://github.com/matplotlib/matplotlib/issues/2259/

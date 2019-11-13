@@ -42,10 +42,15 @@ import iris
 
 from pyaerocom import const, print_log, logger
 from pyaerocom.variable import Variable, is_3d
+from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
-                                         subtract_cubes)
-from pyaerocom.helpers import to_pandas_timestamp, get_highest_resolution
+                                         divide_cubes,
+                                         subtract_cubes,
+                                         lifetime_from_load_and_dep)
+from pyaerocom.helpers import (to_pandas_timestamp, 
+                               sort_ts_types,
+                               get_highest_resolution)
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
@@ -125,14 +130,20 @@ class ReadGridded(object):
     """
     AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
                     'od550gt1aer'   : ['od550aer', 'od550lt1aer'],
-                    'conc*'         : ['mmr*', 'rho']}
+                    'conc*'         : ['mmr*', 'rho'],
+                    'mec550*'       : ['od550*', 'load*'],
+                    #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
+                    }
     
     AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
                     'od870aer'  :   ['od865aer']}
     
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
                 'od550gt1aer'  :    subtract_cubes,
-                'conc*'        :    multiply_cubes}
+                'conc*'        :    multiply_cubes,
+                'mec550*'      :    divide_cubes,
+                #'tau*'         :    lifetime_from_load_and_dep
+                }
     
     _data_dir = ""
     
@@ -158,12 +169,7 @@ class ReadGridded(object):
         self._data_id = data_id
         
         self.logger = logger
-        
-        #: Dictionary containing loaded results for different variables
-        self.data = od()
-        
-        #: Cube lists for each loaded variable
-        self.loaded_cubes = od()
+    
         
         # file naming convention. Default is aerocom3 file convention, change 
         # using self.file_convention.import_default("aerocom2"). Is 
@@ -205,8 +211,6 @@ class ReadGridded(object):
         self.file_info = None
         self._vars_2d = []
         self._vars_3d =[]
-        self.loaded_cubes = od()
-        self.data = od()
       
     @property
     def data_id(self):
@@ -311,6 +315,9 @@ class ReadGridded(object):
     @property
     def TS_TYPES(self):
         """List with valid filename encryptions specifying temporal resolution
+        
+        Update 7.11.2019: not in use anymore due to improved handling of 
+        all possible frequencies now using TsType class.
         """
         return const.GRID_IO.TS_TYPES
     
@@ -543,7 +550,7 @@ class ReadGridded(object):
                 else:
                     _vars_temp.append(var_name)
                 
-                if not info["ts_type"] in self.TS_TYPES:
+                if not TsType.valid(info["ts_type"]):# in self.TS_TYPES:
                     raise TemporalResolutionError('Invalid frequency {}'
                                                   .format(info["ts_type"]))
                 
@@ -960,23 +967,15 @@ class ReadGridded(object):
         
         vars_to_read = []
         for var in vars_req:
-            found = 0
-            if var in self.vars:
-                found = 1
-                vars_to_read.append(var)
-            elif var in self.AUX_ALT_VARS:
-                for alt_var in list(self.AUX_ALT_VARS[var]):
-                    if alt_var in self.vars:
-                        found = 1
-                        vars_to_read.append(alt_var)
-                        break
-            if not found:
+            try:
+                vars_to_read.append(self._check_var_avail(var))
+            except VarNotAvailableError:
                 raise VarNotAvailableError('Cannot compute {}, since {} '
                                            '(req. for computation) is not '
                                            'available in data'
-                                           .format(var_to_compute, 
-                                                   var))
+                                           .format(var_to_compute, var))
         return (vars_to_read, fun)
+    
     
     def compute_var(self, var_name, start=None, stop=None, ts_type=None, 
                     experiment=None, vert_which=None, flex_ts_type=True, 
@@ -1143,7 +1142,9 @@ class ReadGridded(object):
                                     'all input variables: {}'
                                     .format(ts_type, vars_to_read))
         
-        common_sorted = [x for x in const.GRID_IO.TS_TYPES if x in common]
+        # NOTE: Changed by jgliss on 7.11.2019 for more flexibility 
+        #common_sorted = [x for x in const.GRID_IO.TS_TYPES if x in common]
+        common_sorted = sort_ts_types(common)
         return common_sorted[0]
     
     def add_aux_compute(self, var_name, vars_required, fun):
@@ -1228,22 +1229,48 @@ class ReadGridded(object):
                                 if bool(substr):
                                     _addvar = _addvar.replace(substr, spl2[i])
                             vars_found.append(_addvar)
-                    if (len(vars_found) == len(vars_required) and
-                        all([x in self.vars_provided for x in vars_found])):
-                        
-                        self.add_aux_compute(var_name, 
-                                             vars_required=vars_found,
-                                             fun=self.AUX_FUNS[pattern])
+                    
+                    if len(vars_found) == len(vars_required):
+                        all_ok = True
+                        vars_to_read = []
+                        for var in vars_found:
+                            try:
+                                vars_to_read.append(self._check_var_avail(var))
+                            except VarNotAvailableError:
+                                all_ok = False
+                                break
                             
-                        found=True
-        if found:
-            try:
-                self._get_aux_vars_and_fun(var_name)
-            except VarNotAvailableError:
-                found = False
+                        if all_ok:
+                            self.add_aux_compute(var_name, 
+                                                 vars_required=vars_to_read,
+                                                 fun=self.AUX_FUNS[pattern])
+                                
+                            found=True
+# =============================================================================
+#         if found:
+#             try:
+#                 self._get_aux_vars_and_fun(var_name)
+#             except VarNotAvailableError:
+#                 found = False
+# =============================================================================
         return found
     
-                
+    def _check_var_avail(self, var):
+        if var in self.vars:
+            return var
+        
+        if var in self.AUX_ALT_VARS:
+            for alt_var in list(self.AUX_ALT_VARS[var]):
+                if alt_var in self.vars:
+                    return alt_var
+            
+        v = const.VARS[var]
+    
+        for alias in v.aliases:
+            if alias in self.vars:
+                return alias
+        raise VarNotAvailableError('Var {} is not available in data...')
+            
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, vert_which=None, 
@@ -1395,13 +1422,15 @@ class ReadGridded(object):
             raise VarNotAvailableError("Error: variable {} not available in "
                                        "files and can also not be computed."
                                        .format(var_name))
-        
-        if var_name in self.data:
-            self.logger.warning("Warning: Data for variable {} already exists "
-                           "and will be overwritten".format(var_name))
+# =============================================================================
+#         
+#         if var_name in self.data:
+#             self.logger.warning("Warning: Data for variable {} already exists "
+#                            "and will be overwritten".format(var_name))
+# =============================================================================
         
         data.reader = self
-        self.data[var_name] = data
+        #self.data[var_name] = data
         
         return data
         
@@ -1548,7 +1577,7 @@ class ReadGridded(object):
             raise IOError("None of the input files could be loaded in {}"
                           .format(self.data_id))
         
-        self.loaded_cubes[var_name] = cubes
+        #self.loaded_cubes[var_name] = cubes
         return (cubes, loaded_files)
     
     def _load_var(self, var_name, ts_type, start, stop,
@@ -1638,10 +1667,9 @@ class ReadGridded(object):
                                      'entry in their filename could be found')
                 
             ts_type = self.ts_types[0]
-        if not ts_type in self.TS_TYPES:
-            raise ValueError("Invalid input for ts_type, got: {}, "
-                             "allowed values: {}".format(ts_type, 
-                                                         self.TS_TYPES))
+        if not TsType.valid(ts_type):# in self.TS_TYPES:
+            raise ValueError("Invalid input for ts_type: {}"
+                             "allowed values: {}".format(ts_type))
         return ts_type
     
     def __getitem__(self, var_name):
@@ -1663,8 +1691,8 @@ class ReadGridded(object):
             if results for ``var_name`` are not available
         """
         if not var_name in self.data:
-            self.read_var(var_name)
-        return self.data[var_name]
+            return self.read_var(var_name)
+        #return self.data[var_name]
     
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
@@ -1682,10 +1710,12 @@ class ReadGridded(object):
                                                 self.years_avail,
                                                 self.ts_types,
                                                 self.vars))
-        if self.data:
-            s += "\nLoaded GriddedData objects:\n"
-            for var_name, data in self.data.items():
-                s += "{}\n".format(data.short_str())
+# =============================================================================
+#         if self.data:
+#             s += "\nLoaded GriddedData objects:\n"
+#             for var_name, data in self.data.items():
+#                 s += "{}\n".format(data.short_str())
+# =============================================================================
 # =============================================================================
 #         if self.data_yearly:
 #             s += "\nLoaded GriddedData objects (individual years):\n"
@@ -1770,7 +1800,7 @@ class ReadGriddedMulti(object):
         #: datset
         
         self.readers = {}
-        self.data = {}
+        #self.data = {}
         
         self._init_readers()
         
@@ -1803,7 +1833,8 @@ class ReadGriddedMulti(object):
         Returns
         -------
         dict
-            result dictionary
+            loaded objects, keys are variable names, values are
+            instances of :class:`GridddedData`.
             
         Examples
         --------
@@ -1815,32 +1846,37 @@ class ReadGriddedMulti(object):
         """
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-            
+        out = {}
         for data_id in self.data_ids:
             if not data_id in self.readers:
                 self.readers[data_id] = ReadGridded(data_id)
             reader = self.readers[data_id]
-            if not data_id in self.data:
-                self.data[data_id] = {}
+# =============================================================================
+#             if not data_id in self.data:
+#                 self.data[data_id] = {}
+# =============================================================================
             for var in vars_to_retrieve:
                 try:
                     data = reader.read_var(var, start, stop, ts_type, **kwargs)
-                    self.data[data_id][var] = data
+                    out[var] = data
+                    #self.data[data_id][var] = data
                 except Exception as e:
                     const.print_log.exception('Failed to read data of {}\n'
                                             'Error message: {}'.format(data_id,
                                                                        repr(e)))
-        return self.data
+        return out
     
     def __str__(self):
         head = "Pyaerocom %s" %type(self).__name__
         s = ("\n%s\n%s\n"
              "Data-IDs: %s\n" %(head, len(head)*"-", self.data_ids))
-        if bool(self.data):
-            s += "\nLoaded data:"
-            for name, vardata in self.data.items():
-                for var, data in vardata.items():
-                    s += "\n%s" %var
+# =============================================================================
+#         if bool(self.data):
+#             s += "\nLoaded data:"
+#             for name, vardata in self.data.items():
+#                 for var, data in vardata.items():
+#                     s += "\n%s" %var
+# =============================================================================
         return s
     
 if __name__=="__main__":
@@ -1849,17 +1885,14 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-# =============================================================================
-#     r = ReadGridded('GFDL-AM4-met2010_AP3-CTRL')
-#     
-#     print(r)
-#     
-#     data = r.read_var('concso4')
-# =============================================================================
-    
-    r = ReadGridded('FMI-SAT-MERGED11')
+    r = ReadGridded('NorESM2-met2010_AP3-CTRL')
     
     print(r)
     
-    data = r.read_var('ang4487aer')
+    
+    
+    wet = r.read_var('wetdust', start=2010, ts_type='monthly')
+    
+    wet.quickplot_map()
+    
     

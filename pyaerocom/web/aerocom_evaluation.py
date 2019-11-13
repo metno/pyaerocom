@@ -754,7 +754,11 @@ class AerocomEvaluation(object):
                         modvar = minfo['var']
                         if not modvar in hm[var][obs][vc][mod]:
                             hm[var][obs][vc][mod][modvar] = {}
-                        hm_data = data[var][obs][vc][mod][modvar]
+                        try:
+                            hm_data = data[var][obs][vc][mod][modvar]
+                        except Exception as e:
+                            print(repr(e))
+                            raise Exception
                         hm[var][obs][vc][mod][modvar] = hm_data
                             
                             
@@ -1263,6 +1267,14 @@ class AerocomEvaluation(object):
             r.add_aux_compute(var_name, vars_required=aa['vars_required'], 
                               fun=aa['fun'])
         return r.read_var(var_name, **kwargs)
+    
+    def read_obsdata(self, obs_name):
+        """Read observation network"""
+        from pyaerocom.io import ReadUngridded
+        cfg = self.obs_config[obs_name]
+        obs_vars = cfg['obs_vars']
+        obs_id = cfg['obs_id']
+        return ReadUngridded().read(obs_id, obs_vars)
         
     def _info_from_map_file(self, filename):
         f = filename
@@ -1412,12 +1424,12 @@ class AerocomEvaluation(object):
                     mod_name in self.model_config and
                     obs_var in obs_vars):
                 remove = True
-            
-            mcfg = self.model_config[mod_name]
-            if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
-                if not mod_var == mcfg['model_use_vars'][obs_var]:
-                    remove=True
-                    
+            if mod_name in self.model_config:
+                mcfg = self.model_config[mod_name]
+                if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
+                    if not mod_var == mcfg['model_use_vars'][obs_var]:
+                        remove=True
+                        
             if remove:
                 const.print_log.info('Removing outdated map file: {}'.format(file))
                 os.remove(os.path.join(self.out_dirs['map'], file))

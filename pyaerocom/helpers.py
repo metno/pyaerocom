@@ -21,6 +21,7 @@ from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    microsec_units, millisec_units,
                                    sec_units, min_units, hr_units,
                                    day_units)
+from pyaerocom.tstype import TsType
 
 NUM_KEYS_META = ['longitude', 'latitude', 'altitude']
 
@@ -218,6 +219,42 @@ def get_lowest_resolution(ts_type, *ts_types):
             lowest = _temp
     return lowest.val
 
+def sort_ts_types(ts_types):
+    """Sort a list of ts_types
+    
+    Parameters
+    ----------
+    ts_types : list
+        list of strings (or instance of :class:`TsType`) to be sorted
+    
+    Returns
+    -------
+    list
+        list of strings with sorted frequencies
+        
+    Raises 
+    ------
+    TemporalResolutionError
+        if one of the input ts_types is not supported
+    """
+    freqs_sorted = []
+    for ts_type in ts_types:
+        if isinstance(ts_type, str):
+            ts_type = TsType(ts_type)
+        if len(freqs_sorted) == 0:
+            freqs_sorted.append(ts_type)
+        else: 
+            insert = False
+            for i, tt in enumerate(freqs_sorted):
+                if tt < ts_type:
+                    insert=True
+                    break
+            if insert:
+                freqs_sorted.insert(i, ts_type)
+            else:
+                freqs_sorted.append(ts_type)
+    return [str(tt) for tt in freqs_sorted]
+
 def get_highest_resolution(ts_type, *ts_types):
     """Get the highest resolution from several ts_type codes
     
@@ -238,15 +275,9 @@ def get_highest_resolution(ts_type, *ts_types):
     ValueError
         if one of the input ts_type codes is not supported
     """
-    all_ts_types = const.GRID_IO.TS_TYPES
-    highest = ts_type
-    for freq in ts_types:
-        if not freq in all_ts_types:
-            raise ValueError('Invalid input, only valid ts_type codes are '
-                             'supported: {}'.format(all_ts_types))
-        elif all_ts_types.index(highest) > all_ts_types.index(freq):
-            highest = freq
-    return highest
+    lst = [ts_type]
+    lst.extend(ts_types)
+    return sort_ts_types(lst)[0]
 
 def isnumeric(val):
     """Check if input value is numeric
@@ -478,11 +509,73 @@ def make_datetime_index(start, stop, freq):
     -------
     DatetimeIndex
     """
+    if not isinstance(start, pd.Timestamp):
+        start = to_pandas_timestamp(start)
+    if not isinstance(stop, pd.Timestamp):
+        stop = to_pandas_timestamp(stop)
+        
     freq, loffset = _get_pandas_freq_and_loffset(freq)
     idx = pd.date_range(start=start, end=stop, freq=freq)
     if loffset is not None:
         idx = idx + pd.Timedelta(loffset)
     return idx
+
+def calc_climatology(s, start, stop, min_count=None,
+                     set_year=None, resample_how='mean'):
+    """Compute climatological timeseries from pandas.Series
+    
+    Parameters
+    ----------
+    s : Series
+        time series data
+    start 
+        start time of data used to compute climatology
+    stop
+        start time of data used to compute climatology
+    mincount_month : int, optional
+        minimum number of observations required per aggregated month in  
+        climatological interval. Months not meeting this requirement will be
+        set to NaN.
+    set_year : int, optional
+        if specified, the output data will be assigned the input year. Else
+        the middle year of the climatological interval is used.
+    resample_how : str
+        string specifying how the climatological timeseries is to be 
+        aggregated
+    
+    Returns
+    -------
+    DataFrame
+        dataframe containing climatological mean and median timeseries as 
+        well as columns std and count
+    """
+    if not isinstance(start, pd.Timestamp):
+        start, stop = start_stop(start, stop)
+    sc = s[start:stop]
+    sc.dropna(inplace=True)
+    
+    if len(sc) == 0:
+        raise ValueError('Cropping input time series in climatological '
+                         'interval resulted in empty series')
+    if set_year is None:
+        set_year = int(start.year + (stop.year-start.year) / 2) + 1
+
+    df = pd.DataFrame(sc)
+    df['month'] = df.index.month
+    
+    
+    clim = df.groupby('month').agg([resample_how, 'std','count'])
+    
+    #clim.columns = clim.columns.droplevel(0)
+    clim.columns = ['data', 'std', 'numobs']
+    idx = [np.datetime64('{}-{:02d}-15'.format(set_year, x)) for x in 
+           clim.index.values]
+    clim.set_index(pd.DatetimeIndex(idx), inplace=True)
+    if min_count is not None:
+        mask = clim['numobs'] < min_count
+        clim['data'][mask] = np.nan
+        #mean[num < min_num_obs] = np.nan
+    return clim
 
 def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
@@ -567,7 +660,7 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     from pyaerocom.tstype import TsType
     from pyaerocom.time_config import XARR_TIME_GROUPERS
     to = TsType(freq)
-    pd_freq=to.to_pandas()
+    pd_freq=to.to_pandas_freq()
     invalid = None
     if min_num_obs is not None:
         if not pd_freq in XARR_TIME_GROUPERS:
@@ -645,7 +738,17 @@ def str_to_iris(key, **kwargs):
     return val
 
 def to_pandas_timestamp(value):
-    """Convert input to instance of :class:`pandas.Timestamp`"""
+    """Convert input to instance of :class:`pandas.Timestamp`
+    
+    Parameters
+    ----------
+    value
+        input value that is supposed to be converted to time stamp
+    
+    Returns
+    --------
+    pandas.Timestamp
+    """
     if isinstance(value, pd.Timestamp):
         return value
     elif isinstance(value, (str, np.datetime64, datetime, date)):
@@ -762,7 +865,12 @@ def start_stop(start, stop=None):
         stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(yr))
     else:
         try:
+            subt_sec = False
+            if isnumeric(stop):
+                subt_sec = True
             stop = to_pandas_timestamp(stop)
+            if subt_sec:
+                stop = stop - pd.Timedelta(1, 's')
         except pd.errors.OutOfBoundsDatetime:
             stop = _check_climatology_timestamp(stop)
     return (start, stop)

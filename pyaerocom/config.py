@@ -126,6 +126,7 @@ class Config(object):
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
     
+    DEFAULT_REG_FILTER = 'WORLD-noMOUNTAINS'
     #: If True, then whenever applicable the time resampling constraints
     #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when 
     #: resampling in StationData and thus colocation routines. Requires that 
@@ -151,6 +152,15 @@ class Config(object):
     #: not used at the moment
     GCOSPERCENTCRIT =   np.float(0.1)
     GCOSABSCRIT     =   np.float(0.04)
+    
+    
+    CLIM_START =2005
+    CLIM_STOP = 2015
+    CLIM_FREQ = 'daily'
+    CLIM_RESAMPLE_HOW = 'mean' # median, ...
+    # as a function of climatological frequency
+    CLIM_MIN_COUNT = dict(daily = 30, # at least 30 daily measurements in each month over whole period
+                          monthly = 5) # analogue to daily ...
     
     #names of the different obs networks
     OBSNET_NONE = 'NONE'
@@ -180,7 +190,7 @@ class Config(object):
     _outhomename = 'MyPyaerocom'
 
     from pyaerocom import __dir__
-    _config_ini = os.path.join(__dir__, 'data', 'paths.ini')
+    _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
     _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
     
@@ -441,7 +451,7 @@ class Config(object):
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
         self.print_log.warning('Deprecated (but still functional) name '
-                               'VARS. Please use VARS')
+                               'VAR_PARAM. Please use VARS')
         return self.VARS
     
     @property

@@ -249,7 +249,7 @@ def get_all_default_region_ids(use_all_in_ini=False):
         
     return all_ids
 
-def get_all_default_regions():
+def get_all_default_regions(use_all_in_ini=False):
     """Get dictionary containing all default regions from region.ini file
     
     Note
@@ -265,21 +265,34 @@ def get_all_default_regions():
         master/pyaerocom/data/regions.ini>`__ file
         
     """
+    all_regions = od()
+    if not use_all_in_ini:
+        from pyaerocom import const
+        for region in const.DEFAULT_REGIONS:
+            all_regions[region] = Region(region)
+        return all_regions
+            
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
         raise IOError("File conventions ini file could not be found: %s"
                       %fpath)
     conf_reader = ConfigParser()
     conf_reader.read(fpath)
-    all_regions = od()
+    
     for region in conf_reader:
         if not region == "DEFAULT":
             all_regions[region] = Region(region)
         
     return all_regions
-   
+  
+#: ToDO: check how to handle methods properly with HTAP regions...
 def get_regions_coord(lat, lon, **add_regions):
     """Get all regions that contain input coordinate
+    
+    Note
+    ----
+    This does not yet include HTAP, since this causes troules in automated
+    AeroCom processing
     
     Parameters
     ----------
@@ -297,7 +310,7 @@ def get_regions_coord(lat, lon, **add_regions):
         list of regions that contain this coordinate
     """
     regs = []
-    all_regs = get_all_default_regions()
+    all_regs = get_all_default_regions(use_all_in_ini=False)
     for an, ar in add_regions.items():
         if isinstance(ar, Region):
             all_regs[an] = ar
@@ -361,7 +374,7 @@ if __name__=="__main__":
         
     all_ids = get_all_default_region_ids(True)
     
-    lat, lon = 89, 30
+    lat, lon = 10, 20
     reg = find_closest_region_coord(lat, lon)
     print(reg)
         

@@ -14,7 +14,7 @@ from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.tstype import TsType
 from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.helpers import isnumeric, isrange
+from pyaerocom.helpers import isnumeric, isrange, calc_climatology
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
@@ -68,6 +68,7 @@ class StationData(StationMetaData):
         
         self.data_err = BrowseDict()        
         self.overlap = BrowseDict()
+        self.numobs = BrowseDict()
         self.data_flagged = BrowseDict()
         
         super(StationData, self).__init__(**meta_info)
@@ -342,7 +343,8 @@ class StationData(StationMetaData):
                 stds[key] = 0
             else:
                 if not key in self or self[key] is None:
-                    raise MetaDataError('{} information is not available in data'.format(key))
+                    raise MetaDataError('{} information is not available in data'
+                                        .format(key))
                 val = self[key]
                 std = 0
                 # TODO: review the quality check and make shorter
@@ -653,6 +655,10 @@ class StationData(StationMetaData):
 
             from pyaerocom.helpers import get_lowest_resolution
             ts_type = get_lowest_resolution(ts_type, ts_type1)
+        from pyaerocom.tstype import TsType
+        _tt = TsType(ts_type)
+        if _tt.mulfac != 1:
+            ts_type = _tt.next_lower.val
         return ts_type
 
     def _update_var_timeinfo(self):
@@ -969,6 +975,124 @@ class StationData(StationMetaData):
                 self.ts_type = ts_type
         return new
         
+    def calc_climatology(self, var_name, start=None, stop=None, 
+                         apply_constraints=None, min_num_obs=None, 
+                         clim_mincount=None, clim_freq=None, 
+                         set_year=None, resample_how=None):
+        """Calculate climatological timeseries for input variable
+        
+        The computation is done as follows:
+            
+        1. retrieve monthly timesereries for climatological interval (if data
+        is not already monthly). This is done by applying input resampling 
+        constraints via `apply_constraints` and `min_num_obs` and if these
+        are unspecified, pyaerocom default is used (which is usually applying
+        a hierarchical resampling)
+        2. Climatological timeseries is then computed from that monthly 
+        timeseries, and if `apply_constraints` is True a further sampling 
+        coverage criterium is applied to compute the climatology, which can
+        be specified via `mincount_month`, or, if unspecified, pyaerocom 
+        default is used (cf. :attr:`pyaerocom.const.CLIM_MIN_COUNT`)
+        
+        Parameters
+        ----------
+        var_name : str
+            name of data variable
+        start 
+            start time of data used to compute climatology
+        stop
+            start time of data used to compute climatology
+        apply_constraints : bool, optional
+            if True, then hierarchical resampling constraints are applied
+            (for details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        min_num_obs : dict or int, optional
+            minimum number of observations required per period (when 
+            downsampling). For details see 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`)
+        clim_micount : int, optional
+            minimum number of of monthly values required per month of 
+            climatology
+        set_year : int, optional
+            if specified, the output data will be assigned the input year. Else
+            the middle year of the climatological interval is used.
+        resample_how : str
+            how should the resampled data be averaged (e.g. mean, median)
+        **kwargs
+            Additional keyword args passed to 
+            :func:`pyaerocom.time_resampler.TimeResampler.resample`
+        
+        Returns
+        -------
+        StationData
+            new instance of StationData containing climatological data
+        """
+        if clim_freq is None:
+            clim_freq = const.CLIM_FREQ
+        
+        if resample_how is None:
+            resample_how = const.CLIM_RESAMPLE_HOW
+            
+        ts_type = TsType(self.get_var_ts_type(var_name))
+        
+        monthly = TsType('monthly')
+        if ts_type < monthly:
+            raise TemporalResolutionError('Cannot compute climatology, {} data '
+                                          'needs to be in monthly resolution '
+                                          'or higher (is: {})'.format(
+                                           var_name, ts_type))
+        if ts_type < TsType(clim_freq): #current resolution is lower than input climatological freq
+            supported = list(const.CLIM_MIN_COUNT.keys())
+            if str(ts_type) in supported:
+                clim_freq = ts_type
+            else: # use monthly
+                clim_freq = 'monthly'
+        
+        ts= self.to_timeseries(var_name, freq=clim_freq, 
+                               resample_how=resample_how, 
+                               apply_constraints=apply_constraints, 
+                               min_num_obs=min_num_obs)
+                
+        if start is None:
+            start = const.CLIM_START
+        if stop is None:
+            stop = const.CLIM_STOP
+        if apply_constraints is None:
+            apply_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
+        if apply_constraints and clim_mincount is None:
+            clim_mincount = const.CLIM_MIN_COUNT[clim_freq]
+        
+        
+        clim = calc_climatology(ts, start, stop, 
+                                min_count=clim_mincount,
+                                set_year=set_year, 
+                                resample_how=resample_how)
+        
+        new = StationData()
+        try:
+            new.update(self.get_meta())
+        except MetaDataError:
+            const.print_log.warning('Failed to retrieve metadata in '
+                                    'StationData')
+
+        new[var_name] = clim['data']
+        vi = {}
+        if var_name in self.var_info:
+            vi.update(self.var_info[var_name])
+            
+        new.var_info[var_name] = vi
+        new.var_info[var_name]['ts_type'] = 'monthly'
+        new.var_info[var_name]['ts_type_src'] = ts_type.base
+        new.var_info[var_name]['is_climatology'] = True
+        new.var_info[var_name]['clim_start'] = start
+        new.var_info[var_name]['clim_stop'] = stop
+        new.var_info[var_name]['clim_freq'] = clim_freq
+        new.var_info[var_name]['clim_how'] = resample_how
+        new.var_info[var_name]['clim_mincount'] = clim_mincount
+        new.data_err[var_name] = clim['std']
+        new.numobs[var_name] = clim['numobs']
+        return new
+        
     def resample_timeseries(self, var_name, ts_type, how='mean',
                             apply_constraints=None, min_num_obs=None, 
                             inplace=False, **kwargs):
@@ -1034,20 +1158,6 @@ class StationData(StationMetaData):
                                  apply_constraints=apply_constraints,
                                  min_num_obs=min_num_obs, 
                                  **kwargs)
-
-# =============================================================================
-#         if isinstance(data, pd.Series):
-#             new = resample_timeseries(data, 
-#                                       freq=to_ts_type.to_pandas(), 
-#                                       how=how,
-#                                       min_num_obs=min_num_obs)
-#             
-#         elif isinstance(data, xray.DataArray):
-#             new = resample_time_dataarray(data, 
-#                                           freq=to_ts_type.to_pandas(), 
-#                                           how=how, 
-#                                           min_num_obs=min_num_obs)
-# =============================================================================
             
         if inplace:
             self[var_name] = new
