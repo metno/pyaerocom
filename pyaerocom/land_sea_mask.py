@@ -6,7 +6,7 @@ Created on Wed Oct  9 13:01:34 2019
 author: hannas@met.no
 """
 
-#import os 
+import os 
 import glob
 import numpy as np
 import xarray as xr
@@ -24,20 +24,20 @@ def load_region_mask_xr(region_id='PANhtap'):
     
     pya.const.OUTPUTDIR
     """
-    path = const.OUTPUTDIR
-    path  = '/home/hannas/MyPyaerocom/htap_masks/'  # TODO : this should be MyPyaerocom ..... get from config
-    path = "/home/hannas/Desktop/htap/"
-    
+    path = const.FILTERMASKKDIR
+    print(path)
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
-            fil =  glob.glob(path + r + '*0.1*.nc')[0]
+            r = r.split("HTAP")[0]
+            fil =  glob.glob( os.path.join( path, '{}*0.1*.nc'.format(r)))[0]
             if i == 0:
-                masks = xr.open_dataset(fil)[region_id]
+                masks = xr.open_dataset(fil)[r+'htap']
             else:
-                masks += xr.open_dataset(fil)[region_id]
+                masks += xr.open_dataset(fil)[r+'htap']
     else:
-        fil =  glob.glob(path + region_id + '*0.1*.nc')[0]
-        masks = xr.open_dataset(fil)[region_id]
+        region_id  = region_id.split("HTAP")[0]
+        fil =  glob.glob( os.path.join( path, '{}*0.1*.nc'.format(region_id)))[0]
+        masks = xr.open_dataset(fil)[region_id+'htap']
     return masks
 
 def load_region_mask_iris(region_id='PANhtap'):
@@ -50,11 +50,8 @@ def load_region_mask_iris(region_id='PANhtap'):
     
     pya.const.OUTPUTDIR
     """
-    #path = const.OUTPUTDIR
-    #path  = '/home/hannas/MyPyaerocom/htap_masks/'  # TODO : this should be MyPyaerocom ..... get from config
-    #path = "/home/hannas/Desktop/htap/"
-    
-    path = '/home/hannas/Desktop/htap/' 
+    path = const.FILTERMASKKDIR
+    region_id = region_id.split("HTAP")[0]
     fil =  glob.glob(path + region_id + '*0.1*.nc')[0]
     masks = load_cube(fil)
     return masks
@@ -91,36 +88,47 @@ def get_mask(lat, lon, mask):
         print("Please provide masks of type xarray dataset, not {}".format(type(mask)))
         return
 
-"""
-class LandSeaMask(object):
-    MASK_FILENAMSE = {'EUROPE' : 'XY.nc'}
-    def __init__(self, name):
-        # call super
-        self._name = None
-        self.name = name
+def download_mask_urllib():
+    #from urllib.request import urlopen
+    from urllib.request import urlretrieve
+    from zipfile import ZipFile
+    path_out = const.FILTERMASKKDIR
+    url = 'https://github.com/metno/pyaerocom-suppl/tree/master/htap_masks.zip'
+
+    name = os.path.basename(url)
+    #print(name)
+    file = os.path.join(path_out, name)
+    urlretrieve(url, file)
+    print(file)
+    with ZipFile(file, 'r') as zipObj:
+        print(zipObj)
+        # Extract all the contents of zip file in current directory
+        zipObj.extractall()
     
-    @property
-    def name(self):
-        return self.name
+    print("Succesfully downloaded masks.")
+    return 
+
+def download_mask():
+    import requests
+
+    path_out = const.FILTERMASKKDIR
+    url = 'http://github.com/metno/pyaerocom-suppl/blob/master/htap_masks/'
     
-    @name.setter
-    def name(self, value):
-        if not self._name_exists(value):
-            raise ValueError()
-        self._name = value
+    regions = const.HTAP_REGIONS
+    
+    for region in regions:
+        filename = "{}htap.0.1x0.1deg.nc".format(region)
+        url_file = os.path.join(url, filename)
+        #name     = os.path.basename(url)
+        file     = os.path.join(path_out, filename)
+        myfile   = requests.get(url_file)
         
-    def load_mask_file(self):
-        from pyaerocom import const
-        try:
-            data_dir = const.SUPPLDIRS['landseamasks']
-        except KeyError:
-            raise 
-            
-    def real_hpt_region():
-        pass
-    
-    # need def apply filter to ungridded, gridded and 
-    
-"""
+        with open(file, 'wb') as data:
+            data.write(myfile.content)
+        
+    print("Succesfully downloaded masks.")
+    return 
+
 if __name__ == '__main__':
-    print(load_region_mask(region_id='PANhtap'))
+    #print(load_region_mask_xr(region_id='PAN'))
+    download_mask()

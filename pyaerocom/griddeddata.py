@@ -15,6 +15,8 @@ import numpy as np
 import numpy.ma as ma
 import pandas as pd
 
+import pyaerocom as pya
+
 from pyaerocom import const, logger, print_log
 from pyaerocom.land_sea_mask import load_region_mask_iris
 
@@ -1067,7 +1069,6 @@ class GriddedData(object):
         """
         
         if region_id:
-            region_id = 'SEAhtap'
             
             # loads  mask to iris cube
             mask_iris = load_region_mask_iris(region_id=region_id)

@@ -170,13 +170,13 @@ class Config(object):
     SENTINEL5P_NAME = 'Sentinel5P'
     AEOLUS_NAME = 'AeolusL2A'
     
-    DEFAULT_REGIONS = ['EUROPE', 'WORLD', 'ASIA', 'AUSTRALIA', 'CHINA', 
+    OLD_AEROCOM_REGIONS = ['EUROPE', 'WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
                        'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
     
-    HTAP_REGIONS = ['PANhtap', 'EAShtap', 'NAFhtap', 'MDEhtap', 'LANDhtap', 
-                    'SAShtap', 'SPOhtap', 'OCNhtap',  'SEAhtap', 'RBUhtap', 
-                    'EEUROPEhtap', 'NAMhtap', 'WEUROPEhtap', 'SAFhtap', 
-                    'USAhtap', 'SAMhtap', 'EURhtap', 'NPOhtap', 'MCAhtap']
+    HTAP_REGIONS = ['PAN', 'EAS', 'NAF', 'MDE', 'LAND', 
+                    'SAS', 'SPO', 'OCN',  'SEA', 'RBU', 
+                    'EEUROPE', 'NAM', 'WEUROPE', 'SAF', 
+                    'USA', 'SAM', 'EUR', 'NPO', 'MCA']
     
     RM_CACHE_OUTDATED = True
 
@@ -213,7 +213,7 @@ class Config(object):
     _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
     _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
     
-    _mask_location = '/home/hannas/Desktop/htap/'
+    #_mask_location = '/home/hannas/Desktop/htap/'
     # todo update to ~/MyPyaerocom/htap_masks/' ask jonas
 
     # these are searched in preferred order both in root and home
@@ -245,6 +245,7 @@ class Config(object):
         self._outputdir = output_dir
 
         self._colocateddatadir = colocateddata_dir
+        self._filtermaskdir = None
         
         # Options
         self._caching_active = activate_caching
@@ -407,6 +408,13 @@ class Config(object):
         if not check_write_access(self._outputdir):
             self._outputdir = chk_make_subdir(self.HOMEDIR, self._outhomename)
         return self._outputdir
+    
+    @property
+    def FILTERMASKKDIR(self):
+        if not check_write_access(self._filtermaskdir):
+            outdir = self.OUTPUTDIR
+            self._filtermaskdir = chk_make_subdir(outdir, 'filtermasks')
+        return self._filtermaskdir
     
     @property
     def COLOCATEDDATADIR(self):

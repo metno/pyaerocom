@@ -192,6 +192,11 @@ class Region(BrowseDict):
         lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
         return lat_ok * lon_ok
     
+    def plot(self):
+        from pyaerocom.plot.mapping import init_map
+        ax = init_map()
+        raise NotImplementedError('Coming soon...')
+        
     def __contains__(self, val):
         if not isinstance(val, tuple):
             raise TypeError('Invalid input, need tuple')
@@ -234,7 +239,7 @@ def get_all_default_region_ids(use_all_in_ini=False):
     """
     if not use_all_in_ini:
         from pyaerocom import const
-        return const.DEFAULT_REGIONS
+        return const.OLD_AEROCOM_REGIONS
     
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
@@ -268,7 +273,7 @@ def get_all_default_regions(use_all_in_ini=False):
     all_regions = od()
     if not use_all_in_ini:
         from pyaerocom import const
-        for region in const.DEFAULT_REGIONS:
+        for region in const.OLD_AEROCOM_REGIONS:
             all_regions[region] = Region(region)
         return all_regions
             
@@ -280,7 +285,7 @@ def get_all_default_regions(use_all_in_ini=False):
     conf_reader.read(fpath)
     
     for region in conf_reader:
-        if not region == "DEFAULT":
+        if not region == "DEFAULT": # TODO this should be updated right Jonas?
             all_regions[region] = Region(region)
         
     return all_regions

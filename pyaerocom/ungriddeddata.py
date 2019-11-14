@@ -18,7 +18,8 @@ from pyaerocom.helpers import (same_meta_dict,
 
 from pyaerocom.metastandards import StationMetaData
 
-from pyaerocom.land_sea_mask import load_region_mask_xr, available_region_mask, get_mask
+from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
+                                     get_mask)
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -1206,7 +1207,16 @@ class UngriddedData(object):
                 
         return (meta_matches, totnum)
     
-    def filter_region(self, region_id=None):
+    def filter_region(self, region_id=None, invert=False):
+        """
+        TODO : Write documentations
+        
+        Parameters
+        ----------
+        region_id : str or list (of strings)
+            ID of region or IDs of multiple regions to be combined
+        invert_mask : 
+        """
         if region_id is None:
             raise ValueError("Specify a region_id. Available regions: {}.".format(available_region_mask()))
 
@@ -1215,8 +1225,9 @@ class UngriddedData(object):
         
         if isinstance(region_id, list):
             raise NotImplementedError("Not implemented yet. Add a lopp which sums all the masks and collect the pixels from these loops. ")
-            
+        
         mask = load_region_mask_xr(region_id=region_id)   
+        print(mask)
         test = _metadata.copy().items()
         data = self._data
         indexes_to_drop = []
@@ -1235,7 +1246,7 @@ class UngriddedData(object):
                 else:
                     raise NotImplementedError("Not filtering for ungridded data object containing "+
                                               "several variables. Current vars to retrieve {}".format(self.vars_to_retrieve))
-                    
+        print("passes loop")
         rem = np.concatenate(indexes_to_drop)
         self._data = np.delete(data, rem, axis = 0)
         

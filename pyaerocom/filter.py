@@ -18,6 +18,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.region import Region
 from pyaerocom import const
 
+#from pyaerocom.land_sea_mask import load_region_mask_iris, load_region_mask_xr
 
 class Filter(BrowseDict):
     """Class that can be used to filter gridded and ungridded data objects
@@ -66,6 +67,7 @@ class Filter(BrowseDict):
         self.lon_range = None
         self.lat_range = None
         self.alt_range = None
+        self.mask = None
         
         if name is not None:
             self.infer_from_name(name)
@@ -95,6 +97,16 @@ class Filter(BrowseDict):
         if not isinstance(name, str):
             raise IOError('Invalid input for name, need string, got {}'.format(type(name)))
         spl = name.split('-')
+        
+        """
+        Expand this to infer from name if you want square region or masks.
+        Without the user needs to know the word htap.
+        
+        if htap --> load the attribute mask, can load lat lon range too since they exist.
+        else --> load lat lon range.
+        
+        """
+        print(spl)
         # intitialise
         self.set_region(spl[0])
         if len(spl) > 1:
@@ -126,6 +138,7 @@ class Filter(BrowseDict):
         
         spl = self.name.split('-')
         self._name = '{}-{}'.format(region.name, spl[1])
+     
     
     @property
     def region_name(self):
@@ -233,7 +246,9 @@ class Filter(BrowseDict):
         raise IOError('Cannot filter {} obj, need instance of GriddedData or '
                 'UngriddedData'.format(type(data_obj)))
         """
-        return data_obj.filter_region(region_id = self.name)
+        print("Tries new region {}".format(self.name))
+        # The filter region load its own masks
+        return data_obj.filter_region(region_id=self.name)
 
     def __call__(self, data_obj):
         return self.apply(data_obj)
