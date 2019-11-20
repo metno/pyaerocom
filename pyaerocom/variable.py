@@ -240,6 +240,10 @@ class Variable(object):
         corresponds to dry conditions.
     units : str
         unit of variable (None if no unit)
+    default_vert_code : str, optional
+        default vertical code to be loaded (i.e. Column, ModelLevel, Surface).
+        Only relevant during reading and in case conflicts occur (e.g.
+        abs550aer, 2010, Column and Surface files)
     aliases : list
         list of alternative names for this variable
     minimum : float
@@ -332,6 +336,7 @@ class Variable(object):
         self.var_name_alt = var_name_alt #alternative var_name
         self.standard_name = None
         self.units = '1'
+        self.default_vert_code = None
         #self.aliases = []
         self.wavelength_nm = None
         self.dry_rh_max = None
