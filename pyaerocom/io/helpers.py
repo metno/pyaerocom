@@ -13,6 +13,14 @@ from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
 
 from collections import OrderedDict as od
 
+def aerocom_savename(data_id, var_name, vert_code, year, ts_type):
+    """Generate filename in AeroCom conventions
+    
+    ToDo: complete docstring
+    """
+    return ('aerocom3_{}_{}_{}_{}_{}.nc'
+            .format(data_id, var_name, vert_code, year, ts_type))
+    
 def _print_read_info(i, mod, tot_num, last_t, name, logger):
     """Helper for displaying standardised output in reading classes
     
