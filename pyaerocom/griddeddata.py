@@ -24,6 +24,7 @@ from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
                                   DataExtractionError,
                                   DimensionOrderError,
+                                  ResamplingError,
                                   TemporalResolutionError,
                                   VariableDefinitionError,
                                   VariableNotFoundError)
@@ -39,7 +40,9 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                datetime2str,
                                isrange, isnumeric,
                                delete_all_coords_cube,
-                               copy_coords_cube)
+                               copy_coords_cube,
+                               make_dummy_cube_latlon,
+                               check_coord_circular)
 
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
@@ -524,7 +527,10 @@ class GriddedData(object):
         This attribute was formerly named ``name`` which is alse the 
         corresponding attribute name in :attr:`metadata`
         """
-        return self.metadata['data_id']
+        try:
+            return self.metadata['data_id']
+        except KeyError:
+            return 'N/D'
     
     @property
     def is_climatology(self):
@@ -1065,37 +1071,37 @@ class GriddedData(object):
     
     def filter_region(self, region_id=None, thresh_coast = 0.5):
         """
-        TODO write documentation 
+        TODO write documentation
         """
         
         if region_id:
-            
+
             # loads  mask to iris cube
             mask_iris = load_region_mask_iris(region_id=region_id)
-            
-            # Reads mask to griddedata 
+
+            # Reads mask to griddedata
             mask_cube  = pya.GriddedData(mask_iris)
             M_regr = mask_cube.regrid(self.cube)
             mask_iris = load_region_mask_iris(region_id = region_id)
             npm = M_regr.cube.data.data
-            
-            # Apply threshold on coast        
+
+            # Apply threshold on coast
             thresh_coast=0.5
-            
+
             thresh_mask = npm > thresh_coast
             npm[thresh_mask] = 0
             npm[~thresh_mask] = 1
-            
+
             try:
                 cube_data = self.cube.data
                 #example = ma.array([1, 2, 3], mask = [0, 1, 0])
                 if isinstance(cube_data, ma.core.MaskedArray):
                     # UPDATE MASK WITH REGIONAL MASK.
                     self.cube.data.mask = npm
-            
+
             except MemoryError:
                 raise NotImplementedError(" Comming soon... ")
-            
+
             return self
         else:
             raise ValueError("Please provide a region id. Available region id's are {}.".format())
@@ -1341,7 +1347,7 @@ class GriddedData(object):
         
     def resample_time(self, to_ts_type='monthly', how='mean', 
                       apply_constraints=False, min_num_obs=None,
-                      _use_iris=False):
+                      use_iris=False):
         """Resample time to input resolution
         
         Parameters
@@ -1381,12 +1387,19 @@ class GriddedData(object):
         if not self.has_time_dim:
             raise DataDimensionError('Require time dimension in GriddedData: '
                                      '{}'.format(self.short_str()))
-        if _use_iris and not apply_constraints and how=='mean':
+        if use_iris and not apply_constraints and how=='mean':
             return self._resample_time_iris(to_ts_type)
         
-        return self._resample_time_xarray(to_ts_type, how, 
-                                          apply_constraints, 
-                                          min_num_obs)
+        try:
+            return self._resample_time_xarray(to_ts_type, how,
+                                              apply_constraints,
+                                              min_num_obs)
+        except NotImplementedError as e:
+            raise ResamplingError('Resampling of time in GriddedData failed '
+                                  'using xarray. Reason: {}. Please try again '
+                                  'with input arg use_iris=True'
+                                  .format(repr(e)))
+
     
     def downscale_time(self, to_ts_type='monthly'):
         msg = DeprecationWarning('This method is deprecated. Please use new '
@@ -1495,15 +1508,7 @@ class GriddedData(object):
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
         return GriddedData(data, **suppl)
-        
-    
-    def area_weighted_mean(self):
-        """Get area weighted mean"""
-        ws = self.area_weights
-        return self.collapsed(coords=["longitude", "latitude"], 
-                              aggregator=MEAN, 
-                              weights=ws).grid.data
-        
+
     def get_area_weighted_timeseries(self, region=None):
         """Helper method to extract area weighted mean timeseries
         
@@ -1555,6 +1560,10 @@ class GriddedData(object):
         str
             generated file name based on what is in this object
         """
+        const.print_log.warning(
+            DeprecationWarning('This method is deprecated. Please use '
+                               'aerocom_savename instead')
+        )
         from pyaerocom.io import FileConventionRead
         f = self.from_files[0]
         fconv = FileConventionRead().from_file(f)
@@ -1570,6 +1579,34 @@ class GriddedData(object):
                 str(pd.Timestamp(self.start).year), self.ts_type]
         return '_'.format(fconv.file_sep).join(name) + '.nc'
     
+    def aerocom_savename(self, data_id=None, var_name=None,
+                         vert_code=None, year=None, ts_type=None):
+        """Get filename for saving following AeroCom conventions"""
+        from pyaerocom.io.helpers import aerocom_savename
+        if vert_code is None:
+            try:
+                from pyaerocom.io.fileconventions import FileConventionRead
+                f = self.from_files[0]
+                fconv = FileConventionRead().from_file(f)
+                vert_code = fconv.get_info_from_file(f)['vert_code']
+            except:
+                pass
+
+        if vert_code is None:
+            raise ValueError('Please provide input vert_code')
+
+        if data_id is None:
+            data_id = self.data_id
+        if var_name is None:
+            var_name = self.var_name
+        if year is None:
+            year = str(pd.Timestamp(self.start).year)
+        else:
+            year = str(year)
+        if ts_type is None:
+            ts_type = self.ts_type
+        return aerocom_savename(data_id, var_name, vert_code, year, ts_type)
+
     def compute_at_stations_file(self, latitudes=None, longitudes=None,
                                  out_dir=None, savename=None,
                                  obs_data=None):
@@ -1633,7 +1670,7 @@ class GriddedData(object):
                 meta_out[k] = v
         self.cube.attributes = meta_out
         
-    def to_netcdf(self, out_dir, savename=None):
+    def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save as netcdf file
         
         Paraemeters
@@ -1641,7 +1678,10 @@ class GriddedData(object):
         out_dir : str
             output direcory (must exist)
         savename : :obj:`str`, optional
-            name of file. If None, :func:`aerocom_filename` is used
+            name of file. If None, :func:`aerocom_savename` is used which is
+            generated automatically and may be modified via **kwargs
+        **kwargs
+            keywords for name
             
         Returns
         -------
@@ -1650,7 +1690,7 @@ class GriddedData(object):
         """
         self._check_meta_netcdf()
         if savename is None:
-            savename = self.aerocom_filename()
+            savename = self.aerocom_savename(**kwargs)
         fp = os.path.join(out_dir, savename)
         iris.save(self.grid, fp)
         return fp
@@ -1726,13 +1766,21 @@ class GriddedData(object):
         print_log.info('Successfully interpolated cube')
         return GriddedData(itp_cube, **self.metadata)
     
-    def regrid(self, other, scheme='areaweighted', **kwargs):
+    def regrid(self, other=None, lat_res_deg=None, lon_res_deg=None,
+               scheme='areaweighted', **kwargs):
         """Regrid this grid to grid resolution of other grid
         
         Parameters
         ----------
-        other : GriddedData
-            other data object
+        other : GriddedData or Cube, optional
+            other data object to regrid to. If None, then input args
+            `lat_res` and `lon_res` are used to regrid.
+        lat_res_deg : float or int, optional
+            latitude resolution in degrees (is only used if input arg `other`
+            is None)
+        lon_res_deg : float or int, optional
+            longitude resolution in degrees (is only used if input arg `other`
+            is None)
         scheme : str
             regridding scheme (e.g. linear, neirest, areaweighted)
             
@@ -1741,18 +1789,46 @@ class GriddedData(object):
         GriddedData 
             regridded data object (new instance, this object remains unchanged)
         """
-        if not isinstance(other, GriddedData):
+
+        if isinstance(other, iris.cube.Cube):
             other = GriddedData(other)
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
             
+        if other is None:
+            if any(x is None for x in (lat_res_deg, lon_res_deg)):
+                raise ValueError('Missing input for regridding. Need either '
+                                 'other data object or both lat_res_deg and '
+                                 'lon_res_deg specified')
+            dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
+                                           lon_res_deg=lon_res_deg)
+            other = GriddedData(dummy)
+
+        if not (self.has_latlon_dims * other.has_latlon_dims):
+            raise DataDimensionError('Can only regrid data objects with '
+                                     'latitude and longitude dimensions')
+
         self._check_lonlat_bounds()
         other._check_lonlat_bounds()
+
+        self.check_lon_circular()
+        other.check_lon_circular()
+
         data_rg = self.grid.regrid(other.grid, scheme)
         suppl = od(**self.metadata)
         suppl['regridded'] = True
-        return GriddedData(data_rg, **suppl)        
+        data_out = GriddedData(data_rg, **suppl)
+        return data_out
     
+    def check_lon_circular(self):
+        """Check if latitude and longitude coordinates are circular"""
+        if not self.has_latlon_dims:
+            raise DataDimensionError('No lat lon dimensions available...')
+        if not self.longitude.circular:
+            self.longitude.circular = check_coord_circular(self.longitude.points,
+                                                           360)
+        return self.longitude.circular
+
     def collapsed(self, coords, aggregator, **kwargs):
         """Collapse cube
         
@@ -1904,8 +1980,10 @@ class GriddedData(object):
             
             ax = fig.axes[0]
             try:
-                mean = data.area_weighted_mean()
-                mustr = 'Mean={:.2f}'.format(mean)
+                from pyaerocom.mathutils import exponent
+                mean = data.mean()
+                vstr = ('{:.%sf}'% (abs(exponent(mean)) + 1)).format(mean)
+                mustr = 'Mean={}'.format(vstr)
                 u = str(self.units)
                 if not u=='1':
                     mustr += ' [{}]'.format(u)
@@ -1937,7 +2015,14 @@ class GriddedData(object):
             return data.data[~data.mask].max()
         return data.max()
     
-    def mean(self):
+    def area_weighted_mean(self):
+        """Get area weighted mean"""
+        ws = self.area_weights
+        return self.collapsed(coords=["longitude", "latitude"],
+                              aggregator=MEAN,
+                              weights=ws).grid.data
+
+    def mean(self, how='areaweighted'):
         """Mean value of data array
         
         Note
@@ -1946,6 +2031,8 @@ class GriddedData(object):
         Does not consider area-weights or any other advanced averaging.
         """
         #make sure data is in memory
+        if how == 'areaweighted':
+            return self.area_weighted_mean().mean()
         data = self.grid.data
         if self.is_masked:
             return data.data[~data.mask].mean()

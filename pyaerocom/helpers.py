@@ -62,6 +62,156 @@ def delete_all_coords_cube(cube, inplace=True):
         cube.remove_coord(coord)
     return cube
 
+def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None, 
+                           lon_range=None):
+    """Make an empty Cube with given latitude and longitude resolution
+    
+    Dimensions will be lat, lon
+    
+    Parameters
+    ----------
+    lat_res_deg : float or int
+        latitude resolution of grid
+    lon_res_deg : float or int
+        longitude resolution of grid
+    lat_range : tuple or list
+        2-element list containing latitude range. If `None`, then `(-90, 90)`
+        is used.
+    lon_range : tuple or list
+        2-element list containing longitude range. If `None`, then `(-180, 180)`
+        is used.
+        
+    Returns
+    -------
+    Cube    
+        dummy cube in input resolution
+    """
+    if lat_range is None:
+        lat_range = (-90, 90)
+    if lon_range is None:
+        lon_range = (-180, 180)
+    
+    lons = np.arange(lon_range[0]+lon_res_deg/2, lon_range[1]+lon_res_deg/2, 
+                     lon_res_deg)
+    lats = np.arange(lat_range[0]+lat_res_deg/2, lat_range[1]+lat_res_deg/2, 
+                     lat_res_deg)
+    
+    lon_circ = check_coord_circular(lons, modulus=360)
+    latdim = iris.coords.DimCoord(lats, var_name='lat', 
+                                  standard_name='latitude', 
+                                  circular=False, 
+                                  units=Unit('degrees'))
+    
+    londim = iris.coords.DimCoord(lons, var_name='lon', 
+                                  standard_name='longitude', 
+                                  circular=lon_circ, 
+                                  units=Unit('degrees'))
+    
+    latdim.guess_bounds()
+    londim.guess_bounds()
+    dummy = iris.cube.Cube(np.ones((len(lats), len(lons))))
+
+    dummy.add_dim_coord(latdim, 0)
+    dummy.add_dim_coord(londim, 1)
+    dummy.var_name = 'dummy_grid'
+
+    return dummy
+
+def check_coord_circular(coord_vals, modulus, rtol=1e-5):
+    """Check circularity of coordinate
+    
+    Parameters
+    ----------
+    coord_vals : list or ndarray
+        values of coordinate to be tested
+    modulus : float or int
+        modulus of coordinate (e.g. 360 for longitude)
+    rtol : float
+        relative tolerance
+    
+    Returns
+    -------
+    bool
+        True if circularity is given, else False
+    
+    Raises
+    ------
+    ValueError
+        if circularity is given and results in overlap (right end of input 
+        array is mapped to a value larger than the first one at the left end
+        of the array)
+        
+        
+    """
+    if len(coord_vals) < 2:
+        const.print_log.warning('Checking coordinate values for circularity '
+                                'failed since coord array has less than 2 values')
+        return False
+    step = coord_vals[-1] - coord_vals[-2]
+    tol = step*rtol
+    diff = coord_vals[-1] - coord_vals[0] + step
+    if diff - tol > modulus:
+        raise ValueError('Circularity is given but results in overlap (right '
+                         'end of input array is mapped to a value larger than '
+                         'the first one at the left end of the array).')
+    if abs(modulus - diff) > tol:
+        return False
+    return True
+        
+    
+def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
+    """Make a cube from a numpy array
+    
+    Parameters
+    ----------
+    data : ndarray
+        input data
+    dims : list, optional
+        list of :class:`iris.coord.DimCoord` instances in order of dimensions 
+        of input data array (length of list and shapes of each of the 
+        coordinates must match dimensions of input data)
+    var_name : str, optional
+        name of variable
+    units : str
+        unit of variable
+    **attrs
+        additional attributes to be added to metadata
+    
+    Returns
+    -------
+    iris.cube.Cube
+    
+    Raises 
+    ------
+    DataDimensionError
+        if input `dims` is specified and results in conflict
+    """
+    if not isinstance(data, np.ndarray):
+        raise ValueError('Invalid input, need numpy array')
+    cube = iris.cube.Cube(data)
+    
+    cube.var_name=var_name
+    cube.units = units
+    
+    sh = data.shape
+    if dims is not None:
+        if not len(dims) == data.ndim:
+            
+            raise DataDimensionError('Input number of dimensios must match array '
+                                     'dimension number')
+        for i, dim in enumerate(dims):
+            if not isinstance(dim, iris.coords.DimCoord):
+                raise ValueError('Need iris.DimCoord...')
+            elif not len(dim.points) == sh[i]:
+                raise DataDimensionError('Length mismatch between {} dim ({}) and '
+                                         'array dimension {} ({})'
+                                         .format(dim.var_name, len(dim.points),
+                                                 i, sh[i]))
+            cube.add_dim_coord(dim, i)
+
+    cube.attributes.update(attrs)
+    return cube
+
 def copy_coords_cube(to_cube, from_cube, inplace=True):
     """Copy all coordinates from one cube to another
     

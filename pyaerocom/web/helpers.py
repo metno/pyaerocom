@@ -286,6 +286,7 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
                 'obs'       :   {}}
         
     new = {}
+    exp_id = config.exp_id
     if ignore_experiments is None:
         ignore_experiments = []
     try:
@@ -324,17 +325,19 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
         dobs_vert[mod_name] = {'dir' : mod_name,
                                'id'  : config.model_config[mod_name]['model_id'],
                                'var' : mod_var}
+    
+    if len(new)  > 0:
+        _new = {}
+        for var in config.var_order_menu:
+            try:
+                _new[var] = new[var]
+            except:
+                const.print_log.info('No variable {} found'.format(var))
+        for var, info in new.items():
+            if not var in _new:
+                _new[var] = info
+        new = _new
         
-    _new = {}
-    for var in config.var_order_menu:
-        try:
-            _new[var] = new[var]
-        except:
-            const.print_log.info('No variable {} found'.format(var))
-    for var, info in new.items():
-        if not var in _new:
-            _new[var] = info
-    new = _new
     new_sorted = {}
     for var, info in new.items():
         new_sorted[var] = info
@@ -352,7 +355,7 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
     if os.path.exists(config.menu_file):
         current = read_json(config.menu_file)
         for exp, submenu in current.items():
-            if exp in ignore_experiments:
+            if exp in ignore_experiments or len(submenu) == 0:
                 continue
             elif not exp in available_exps:
                 const.print_log.info('Removing outdated experiment {} from '
@@ -364,8 +367,8 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
         const.print_log.warning('Sub menu for experiment {} already exists in '
                                 'menu.json and will be overwritten'
                                 .format(config.exp_id))
-    
-    new_menu[config.exp_id] = new_sorted
+    if len(new_sorted) > 0:
+        new_menu[exp_id] = new_sorted
     
     with open(config.menu_file, 'w+') as f:
         f.write(simplejson.dumps(new_menu, indent=4))

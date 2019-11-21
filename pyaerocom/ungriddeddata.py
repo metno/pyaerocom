@@ -2161,6 +2161,7 @@ class UngriddedData(object):
                                  filter_name=None, start=None, 
                                  stop=None, ts_type=None, color='r', 
                                  marker='o', markersize=8, fontsize_base=10, 
+                                 legend=True, add_title=True, 
                                  **kwargs):
         """Plot station coordinates on a map
         
@@ -2191,6 +2192,10 @@ class UngriddedData(object):
             size of station markers
         fontsize_base : int
             basic fontsize 
+        legend : bool
+            if True, legend is added
+        add_title : bool
+            if True, title will be added
         **kwargs
             Addifional keyword args passed to 
             :func:`pyaerocom.plot.plot_coordinates`
@@ -2253,6 +2258,7 @@ class UngriddedData(object):
         ax = plot_coordinates(lons, lats,
                               color=color, marker=marker, 
                               markersize=markersize, 
+                              legend=legend,
                               fontsize_base=fontsize_base, **kwargs)
         region = f._region
         ax.set_xlim(region.lon_range_plot)
@@ -2266,7 +2272,8 @@ class UngriddedData(object):
             title = kwargs['title']
         else:
             title = info_str
-        ax.set_title(title, fontsize=fontsize_base+4)
+        if add_title:
+            ax.set_title(title, fontsize=fontsize_base+4)
         return ax
         
     def __contains__(self, key):

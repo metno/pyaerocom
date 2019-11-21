@@ -159,7 +159,10 @@ class ColorTheme(object):
     def __setitem__(self, key, value):
         if key in self.__dict__:
             self.__dict__[key] = value
-            
+    
+    def __repr__(self):
+        return self.name
+    
     def __str__(self):
         s = "pyaerocom ColorTheme"
         for k, v in self.__dict__.items():

@@ -101,6 +101,8 @@ class NetcdfError(IOError):
 class NotInFileError(IOError):
     pass
 
+class ResamplingError(ValueError):
+    pass
 class StationNotFoundError(AttributeError):
     pass
 

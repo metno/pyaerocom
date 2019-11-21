@@ -252,6 +252,14 @@ class AerocomEvaluation(object):
         return list(self.obs_config)
     
     @property
+    def all_obs_vars(self):
+        """List of all obs variables"""
+        obs_vars = []
+        for oname, ocfg in self.obs_config.items():
+            obs_vars.extend(ocfg['obs_vars'])
+        return sorted(list(np.unique(obs_vars)))
+        
+    @property
     def all_map_files(self):
         """List of all existing map files"""
         if not os.path.exists(self.out_dirs['map']):
@@ -441,6 +449,30 @@ class AerocomEvaluation(object):
                 raise KeyError('Obs configuration for {} does not contain '
                                'obs_id'.format(k))
                 
+    def get_model_name(self, model_id):
+        """Get model name for input model ID
+        
+        Parameters
+        ----------
+        model_id : str
+            AeroCom ID of model
+            
+        Returns
+        -------
+        str 
+            name of model
+            
+        Raises
+        ------
+        AttributeError
+            if no match could be found
+        """
+        for mname, mcfg in self.model_config.items():
+            if mname == model_id or mcfg['model_id'] == model_id:
+                return mname
+        raise AttributeError('No match could be found for input name {}'
+                             .format(model_id))
+        
     def get_model_id(self, model_name):
         """Get AeroCom ID for model name
         """
@@ -579,27 +611,7 @@ class AerocomEvaluation(object):
             hmd = ColocatedData(data_arrs['monthly'].unstack('station_name'))
         else:
             hmd = ColocatedData(data_arrs['monthly'])
-# =============================================================================
-#         if ts_type == 'monthly':
-#             hmd = coldata
-#         else:
-#             cs = self.colocation_settings
-#             ac = cs.apply_time_resampling_constraints
-#             if ac is None:
-#                 ac = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
-#                 
-#             if ac:
-#                 mo = cs.min_num_obs
-#                 if cs.min_num_obs is None:
-#                     mo = const.OBS_MIN_NUM_RESAMPLE
-#                 
-#             hmd  = coldata.resample_time(to_ts_type='monthly',
-#                                    apply_constraints=ac,
-#                                    min_num_obs=mo,
-#                                    colocate_time=cs['colocate_time'], 
-#                                    inplace=False)
-#                                    
-# =============================================================================
+
         for reg in get_all_default_region_ids():
             filtered = hmd.apply_latlon_filter(region_id=reg)
             stats = filtered.calc_statistics()
@@ -1248,25 +1260,48 @@ class AerocomEvaluation(object):
         s += '\n'
         return s
     
-    def check_read_model(self, model_name, var_name, **kwargs):
+    def check_read_model(self, model_name, var_name,  **kwargs):
+        const.print_log.warning(DeprecationWarning('Deprecated name of method '
+                                                   'read_model_data. Please '
+                                                   'use new name'))
+        
+        return self.read_model_data(model_name, var_name,  **kwargs)
+    
+    def read_model_data(self, model_name, var_name, **kwargs):
+        """Read model variable data
+        
+        """
         if not model_name in self.model_config:
             raise ValueError('No such model available {}'.format(model_name))
-        mcfg = self.get_model_config(model_name)
+        #mcfg = self.get_model_config(model_name)
         
-        from pyaerocom.io import ReadGridded
-        r = ReadGridded(mcfg['model_id'])
-        try:
-            var_name = mcfg['model_use_vars'][var_name]
-        except:
-            pass
-        
-        if 'model_read_aux' in mcfg and var_name in mcfg['model_read_aux']:
-            aa = mcfg['model_read_aux'][var_name]
-            
-        
-            r.add_aux_compute(var_name, vars_required=aa['vars_required'], 
-                              fun=aa['fun'])
-        return r.read_var(var_name, **kwargs)
+        col = Colocator()
+        col.update(**self.colocation_settings)
+        col.update(**self.get_model_config(model_name))
+        #col.update(**kwargs)
+        data = col.read_model_data(var_name, **kwargs)
+        return data
+# =============================================================================
+#         from pyaerocom.io import ReadGridded
+#         r = ReadGridded(mcfg['model_id'])
+#         try:
+#             var_name = mcfg['model_use_vars'][var_name]
+#         except:
+#             pass
+#         
+#         if 'model_read_aux' in mcfg and var_name in mcfg['model_read_aux']:
+#             aa = mcfg['model_read_aux'][var_name]
+#             
+#         
+#             r.add_aux_compute(var_name, vars_required=aa['vars_required'], 
+#                               fun=aa['fun'])
+#         
+#         if 'model_ts_type_read' in mcfg:
+#             ts_type = mcfg['model_ts_type_read']
+#         else:
+#             ts_type = self.ts_type
+#         return r.read_var(var_name, ts_type=ts_type, **kwargs)
+# =============================================================================
     
     def read_obsdata(self, obs_name):
         """Read observation network"""
@@ -1310,6 +1345,8 @@ class AerocomEvaluation(object):
                                                 .format(f))
                         continue
                 tab.append([obs_var, obs_name, vert_code, mod_name, mod_var])
+        if len(tab) == 0:
+            raise FileNotFoundError('No json files could be found')
         return DataFrame(tab, columns=['Var' , 'Obs', 'vert',
                                        'Model', 'Model var'])
     
@@ -1347,8 +1384,11 @@ class AerocomEvaluation(object):
             - update and order heatmap file
         """
         self.update_menu(**opts)
-        self.make_info_table_web()
-        self.update_heatmap_json()
+        try:
+            self.make_info_table_web()
+            self.update_heatmap_json()
+        except KeyError: # if no data is available for this experiment
+            pass
         
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""

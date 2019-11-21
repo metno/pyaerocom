@@ -162,6 +162,14 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         # update time dimension in gridded data
         gridded_data.base_year = update_baseyear_gridded
         
+    if regrid_res_deg is not None:
+        gridded_data_ref = gridded_data_ref.regrid(lat_res_deg=regrid_res_deg,
+                                                   lon_res_deg=regrid_res_deg,
+                                                   scheme=regrid_scheme)
+    # perform regridding
+    gridded_data = gridded_data.regrid(gridded_data_ref, 
+                                       scheme=regrid_scheme)
+    
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
@@ -175,10 +183,13 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if ref_ts_type != grid_ts_type:
         # ref data is in higher resolution
         if TsType(ref_ts_type) > TsType(grid_ts_type):
+            
             gridded_data_ref = gridded_data_ref.resample_time(
                     grid_ts_type,
                     apply_constraints=apply_time_resampling_constraints, 
                     min_num_obs=min_num_obs)
+            
+                
         else:
             gridded_data = gridded_data.resample_time(
                     ref_ts_type,
@@ -211,32 +222,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              .format(start, stop, grid_start, grid_stop))
     gridded_data = gridded_data.crop(time_range=(start, stop))
     gridded_data_ref = gridded_data_ref.crop(time_range=(start, stop))
-    
-    if regrid_res_deg is not None:
-        
-        lons = gridded_data_ref.longitude.points
-        lats = gridded_data_ref.latitude.points
-        
-        lons_new = np.arange(lons.min(), lons.max(), regrid_res_deg)
-        lats_new = np.arange(lats.min(), lats.max(), regrid_res_deg) 
-        
-        gridded_data_ref = gridded_data_ref.interpolate(latitude=lats_new, 
-                                                        longitude=lons_new)
-           
-    # get both objects in same time resolution
-# =============================================================================
-#     if not colocate_time:
-#         gridded_data = gridded_data.resample_time(ts_type)
-#         gridded_data_ref = gridded_data_ref.resample_time(ts_type)
-# =============================================================================
-    
-    # guess bounds (for area weighted regridding, which is the default)
-    gridded_data._check_lonlat_bounds()
-    gridded_data_ref._check_lonlat_bounds()
-    
-    # perform regridding
-    gridded_data = gridded_data.regrid(gridded_data_ref, 
-                                       scheme=regrid_scheme)
     
     # perform region extraction (if applicable)
     regfilter = Filter(name=filter_name)
@@ -317,6 +302,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                start=None, stop=None, filter_name=None,
                                regrid_res_deg=None, remove_outliers=True,
                                vert_scheme=None, harmonise_units=True, 
+                               regrid_scheme='areaweighted',
                                var_ref=None, 
                                var_outlier_ranges=None, 
                                var_ref_outlier_ranges=None,
@@ -525,30 +511,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     gridded_data = gridded_data.crop(time_range=(start, stop))
     
     if regrid_res_deg is not None:
-        
-        lons = gridded_data.longitude.points
-        lats = gridded_data.latitude.points
-        
-        lons_new = np.arange(lons.min(), lons.max(), regrid_res_deg)
-        lats_new = np.arange(lats.min(), lats.max(), regrid_res_deg) 
-        
-        gridded_data = gridded_data.interpolate(latitude=lats_new, 
-                                                longitude=lons_new)
-    
-    #ungridded_freq = None # that keeps ungridded data in original resolution
-    
-# =============================================================================
-#     if not colocate_time:
-#         gridded_data = gridded_data.resample_time(to_ts_type=ts_type)
-#         ungridded_freq = ts_type # converts ungridded data directly to desired resolution
-# =============================================================================
-    
-    
-    # ts_type that is used for colocation
-    #col_ts_type = gridded_data.ts_type
-    
-    # pandas frequency string that corresponds to col_ts_type
-    
+        gridded_data = gridded_data.regrid(lat_res_deg=regrid_res_deg,
+                                           lon_res_deg=regrid_res_deg,
+                                           scheme=regrid_scheme)
     
     if remove_outliers and not var_ref_keep_outliers:
         ungridded_data.remove_outliers(var_ref, inplace=True,
@@ -578,15 +543,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
     
-# =============================================================================
-#     # resampling constraints may have been altered in case input was None, 
-#     # thus overwrite
-#     vi = obs_stat_data[0]['var_info'][var_ref]
-#     if 'apply_constraints' in vi:
-#         apply_time_resampling_constraints = vi['apply_constraints']
-#         min_num_obs = vi['min_num_obs']
-# =============================================================================
-    
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError('Variable {} is not available in specified '
                                    'time interval ({}-{})'
@@ -608,14 +564,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                                  vert_scheme=vert_scheme)
     
     time_idx = make_datetime_index(start, stop, col_freq)
-    # Generate time index of ColocatedData object
-    #time_idx = pd.DatetimeIndex(start=start, end=stop, freq=col_freq)
-    #periods = time_idx.to_period(col_freq)
-# =============================================================================
-#     if col_freq in PANDAS_RESAMPLE_OFFSETS:
-#         offs = np.timedelta64(1, '[{}]'.format(PANDAS_RESAMPLE_OFFSETS[col_freq]))
-#         time_idx = time_idx + offs
-# =============================================================================
     
     coldata = np.empty((2, len(time_idx), len(obs_stat_data)))
     

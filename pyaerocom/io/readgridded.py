@@ -698,9 +698,9 @@ class ReadGridded(object):
         return ts_type
     
     def filter_query(self, var_name, ts_type=None, start=None, stop=None, 
-                         experiment=None, vert_which=None, 
-                         is_at_stations=False, flex_ts_type=True, 
-                         prefer_longer=False):
+                     experiment=None, vert_which=None, 
+                     is_at_stations=False, flex_ts_type=True, 
+                     prefer_longer=False):
         """Filter files for read query based on input specs
         
         Parameters
@@ -752,6 +752,14 @@ class ReadGridded(object):
         if len(exps) > 1:
             msg += 'Found multiple experiments. Choose from: {}'.format(exps)
         if len(verts) > 1:
+            dvc = const.VARS[var_name].default_vert_code
+            if dvc is not None and dvc in verts:
+                return self.filter_query(var_name, ts_type, start, stop, 
+                                         experiment, vert_which=dvc, 
+                                         is_at_stations=is_at_stations,
+                                         flex_ts_type=flex_ts_type, 
+                                         prefer_longer=prefer_longer)
+                
             if msg:
                 msg += '; '
             msg += 'Found multiple vertical codes. Choose from: {}'.format(verts)
@@ -1350,6 +1358,13 @@ class ReadGridded(object):
         if aux_vars is not None:
             self.add_aux_compute(var_name, aux_vars, aux_fun)
         
+        if all(x=='' for x in self.file_info.vert_code.values):
+                print_log.info('Deactivating file search by vertical '
+                               'code for {}, since filenames do not include '
+                               'information about vertical code (probably '
+                               'AeroCom 2 convention)'.format(self.data_id))
+                vert_which = None
+                
         if isinstance(ts_type, dict):
             try:
                 ts_type = ts_type[var_name]

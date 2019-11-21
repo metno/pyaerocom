@@ -26,7 +26,8 @@ from pyaerocom import ColocatedData, print_log
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError,
+                                  VarNotAvailableError)
                    
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
@@ -386,6 +387,8 @@ class Colocator(ColocationSetup):
     
     def _find_var_matches(self, obs_vars, model_reader, var_name=None):
         """Find variable matches in model data for input obs variables"""
+        if isinstance(obs_vars, str):
+            obs_vars = [obs_vars]
         var_matches = {}
         
         muv, mav = {}, {}
@@ -442,15 +445,39 @@ class Colocator(ColocationSetup):
                                             self.obs_vars))
         return var_matches
     
-    def _read_gridded(self, reader, var_name, start, stop, is_model=True):
+    def read_model_data(self, var_name, **kwargs):
+        """Read model variable data based on colocation setup
+        
+        Parameters
+        ----------
+        var_name : str
+            variable to be read
+        
+        Returns
+        -------
+        GriddedData
+            variable data
+        """
+        reader = ReadGridded(self.model_id)
+        try:
+            var_matches = self._find_var_matches(var_name, reader)
+        except DataCoverageError:
+            raise DataCoverageError('No match could be found in {} for '
+                                    'variable {}'
+                                    .format(self.model_id, var_name))
+        var = list(var_matches.keys())[0]
+        return self._read_gridded(reader, var, 
+                                  start=self.start, 
+                                  stop=self.stop, 
+                                  is_model=True, 
+                                  **kwargs)
+        
+    # ToDo: cumbersome (together with _find_var_matches, review whole handling
+    # of vertical codes for variable mappings...)
+    def _read_gridded(self, reader, var_name, start, stop, is_model=True,
+                      **kwargs):
         if is_model:
             vert_which = self.obs_vert_type
-            if all(x=='' for x in reader.file_info.vert_code.values):
-                print_log.info('Deactivating model file search by vertical '
-                               'code for {}, since filenames do not include '
-                               'information about vertical code (probably '
-                               'AeroCom 2 convention)'.format(reader.data_id))
-                vert_which = None
             ts_type_read = self.model_ts_type_read
             if self.model_use_climatology:
                 start = 9999
@@ -461,12 +488,17 @@ class Colocator(ColocationSetup):
         msg = ('No data files available for dataset {} ({})'
                .format(reader.data_id, var_name))
         try:
+            # set defaults if input was not specified explicitely
+            if not 'vert_which' in kwargs:
+                kwargs['vert_which'] = vert_which
+            if not 'ts_type' in kwargs:
+                kwargs['ts_type'] = ts_type_read
+                
             return reader.read_var(var_name, 
                                    start=start,
                                    stop=stop, 
-                                   ts_type=ts_type_read,
                                    flex_ts_type=self.flex_ts_type_gridded,
-                                   vert_which=vert_which)
+                                   **kwargs)
         except DataCoverageError:
             vt=None
             if is_model:
