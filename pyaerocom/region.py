@@ -12,6 +12,9 @@ from pyaerocom import const
 from pyaerocom import __dir__
 from pyaerocom._lowlevel_helpers import BrowseDict
 
+from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
+                                     get_mask)
+
 class Region(BrowseDict):
     """Interface that specifies an AEROCOM region
     
@@ -98,9 +101,7 @@ class Region(BrowseDict):
     
     @property
     def is_htap(self):
-        part_one = self.name.split("-")[0]
-        print(part_one)
-        if part_one in const.HTAP_REGIONS:
+        if self._name in const.HTAP_REGIONS:
             return True
         else:
             return False

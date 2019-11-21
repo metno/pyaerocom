@@ -18,6 +18,9 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.region import Region
 from pyaerocom import const
 
+from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
+                                     get_mask)
+
 #from pyaerocom.land_sea_mask import load_region_mask_iris, load_region_mask_xr
 
 class Filter(BrowseDict):

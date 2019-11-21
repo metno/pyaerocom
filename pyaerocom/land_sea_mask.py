@@ -14,30 +14,38 @@ import xarray as xr
 from pyaerocom import const
 from iris import load_cube
 
-def load_region_mask_xr(region_id='PANhtap'):
+def load_region_mask_xr(region_id='PAN'):
     """    
+    Creates a dataset of the union of regions sent as input.
+    
+    Parameters
+    ------------------
+    region_id : str or List[str]
+        The region id or ids you want to filter your data with.
+    
     Returns
     ---------
-    mask : xarray.DataArray containing the masks. 
-    
-    TODO : Update this one to send in a list and return the sum of the list. 
+    mask : xarray.DataArray 
+        containing the masks. 
     
     pya.const.OUTPUTDIR
     """
-    path = const.FILTERMASKKDIR
     path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
-    
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
             r = r.split("HTAP")[0]
-            fil =  glob.glob( os.path.join( path, '{}*0.1*.nc'.format(r)))[0]
+            fil =  glob.glob( os.path.join( path, '{}*.nc'.format(r)))[0]
             if i == 0:
                 masks = xr.open_dataset(fil)[r+'htap']
             else:
                 masks += xr.open_dataset(fil)[r+'htap']
+        # Could say that all values larger than 1 should be one
+        # only occurs if you use land and Europe. All other regions are disjuct.
+        #masks = masks - i 
+        masks = masks.where(masks < 1, 1)
     else:
         region_id  = region_id.split("HTAP")[0]
-        fil =  glob.glob( os.path.join( path, '{}*0.1*.nc'.format(region_id)))[0]
+        fil =  glob.glob( os.path.join( path, '{}*.nc'.format(region_id)))[0]
         masks = xr.open_dataset(fil)[region_id+'htap']
     return masks
 
@@ -58,7 +66,7 @@ def load_region_mask_iris(region_id='PANhtap'):
         raise NotImplementedError("Not implemented yet.") 
     
     region_id = region_id.split("HTAP")[0]
-    fil =  glob.glob(path + region_id + '*0.1*.nc')[0]
+    fil =  glob.glob(path + region_id + '*.nc')[0]
     masks = load_cube(fil)
     return masks
 
@@ -105,9 +113,8 @@ def download_mask_urllib():
     #print(name)
     file = os.path.join(path_out, name)
     urlretrieve(url, file)
-    print(file)
+
     with ZipFile(file, 'r') as zipObj:
-        print(zipObj)
         # Extract all the contents of zip file in current directory
         zipObj.extractall()
     
