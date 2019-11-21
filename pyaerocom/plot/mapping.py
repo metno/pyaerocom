@@ -55,7 +55,8 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
     return get_cmap(color_theme.cmap_map)
     
 
-def set_map_ticks(ax, xticks=None, yticks=None):
+def set_map_ticks(ax, xticks=None, yticks=None, add_x=True, 
+                  add_y=True):
     """Set or update ticks in instance of GeoAxes object (cartopy)
     
     Parameters
@@ -66,6 +67,10 @@ def set_map_ticks(ax, xticks=None, yticks=None):
         ticks of x-axis (longitudes)
     yticks : iterable, optional
         ticks of y-axis (latitudes)
+    add_x : bool
+        if True, x-axis labels are added
+    add_y : bool
+        if True, y-axis labels are added
         
     Returns
     -------
@@ -192,8 +197,9 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                             vmin=None, vmax=None, add_zero=False, c_under=None, 
                             c_over=None, log_scale=True, discrete_norm=True, 
                             cbar_levels=None, cbar_ticks=None, add_cbar=True,
-                            cmap=None, cbar_ticks_sci=False, 
-                            color_theme=COLOR_THEME, **kwargs):
+                            cmap=None, cbar_ticks_sci=False,
+                            color_theme=COLOR_THEME, ax=None,
+                            ax_cbar=None, shrink_cbar=1.0, **kwargs):
     """Make a plot of gridded data onto a map
     
     Note
@@ -245,7 +251,10 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         title or lon / lat range, etc.)
     """
     kwargs['contains_cbar'] = True
-    ax = init_map(xlim, ylim, color_theme=color_theme, **kwargs)
+    if ax is None:
+        ax = init_map(xlim, ylim, color_theme=color_theme, **kwargs)
+    if not isinstance(ax, GeoAxes):
+        raise AttributeError('Invalid input for ax, need GeoAxes')
     fig = ax.figure
     from pyaerocom.griddeddata import GriddedData
     if isinstance(data, GriddedData):
@@ -275,12 +284,13 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             raise ValueError('All datapoints in input data (masked array) are '
                              'invalid')
     _loc = ax.bbox._bbox
-    try:
-        ax_cbar = fig.add_axes([_loc.x1 + .02,
-                                _loc.y0, .02, _loc.y1 - _loc.y0])
-    except Exception as e:
-        ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
-        print(repr(e))
+    if add_cbar and ax_cbar is None:
+        try:
+            ax_cbar = fig.add_axes([_loc.x1 + .02,
+                                    _loc.y0, .02, _loc.y1 - _loc.y0])
+        except Exception as e:
+            ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
+            print(repr(e))
     X, Y = meshgrid(lons, lats)
     dmin = np.nanmin(data)
     dmax = np.nanmax(data)
@@ -306,8 +316,10 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         low, high = bounds[0], bounds[-1]
         if add_zero and low > 0:
             bounds.insert(0, 0) # insert zero bound
-        if cmap is None or isinstance(cmap, str):
+        if cmap is None:
             cmap = get_cmap_maps_aerocom(color_theme, low, high)
+        elif isinstance(cmap, str):
+            cmap = get_cmap(cmap)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
     else:
         if log_scale: # no negative values allowed
@@ -315,8 +327,10 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                 vmin = data[data>0].min()
                 if c_under is None: #special case, set c_under to indicate that there is values below 0
                     c_under = 'r'
-            if cmap is None or isinstance(cmap, str):
+            if cmap is None:
                 cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
+            elif isinstance(cmap, str):
+                cmap = get_cmap(cmap)
             if discrete_norm:
                 #to compute upper range of colour range, round up vmax
                 exp = float(exponent(vmax) - 1)
@@ -328,8 +342,10 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             else:
                 norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
         else: 
-            if cmap is None or isinstance(cmap, str):
+            if cmap is None:
                 cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
+            elif isinstance(cmap, str):
+                cmap = get_cmap(cmap)
             norm = Normalize(vmin=vmin, vmax=vmax)
     cbar_extend = "neither"
     if c_under is not None:
@@ -358,7 +374,8 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
 # =============================================================================
     if add_cbar:
         cbar = fig.colorbar(disp, cmap=cmap, norm=norm, boundaries=bounds, 
-                            extend=cbar_extend, cax=ax_cbar)
+                            extend=cbar_extend, cax=ax_cbar,
+                            shrink=shrink_cbar)
         
         if var_name is not None:
             var_str = var_name# + VARS.unit_str

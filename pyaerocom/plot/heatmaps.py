@@ -8,13 +8,18 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from seaborn import heatmap
 
-def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
-                  vmax=None, color_rowwise=True,
-                  normalise_rows=False, normalise_rows_how='median',
+def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, 
+                  vmin=None, vmax=None, color_rowwise=False,
+                  normalise_rows=False, 
+                  normalise_rows_how='median',
                   normalise_rows_col=None,
-                  annot=True, table_name="", num_digits=0, ax=None, 
-                  figsize=(12,12), cbar=False, xticklabels = None, 
-                  yticklabels = None, xlabel= '',  ylabel = '', circle = None, **kwargs):
+                  annot=True, num_digits=0, ax=None, 
+                  figsize=(12,12), cbar=False, cbar_label="", 
+                  xticklabels=None, xtick_rot=45,
+                  yticklabels=None, ytick_rot=45, 
+                  xlabel=None, ylabel=None, 
+                  title=None, circle=None, labelsize=12,
+                  **kwargs):
     
 
     """Plot a pandas dataframe as heatmap
@@ -49,12 +54,12 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
         if provided and if prev. arg. ``normalise_rows==True``, then the 
         corresponding table column is used for normalisation rather than 
         the mean value of each row
-    
     annot : bool
         if True, the table values are printed into the heatmap
-    table_name : str
-        title of plot and label of colorbar (if colorbar is included, see cbar
-        option)
+    cbar_label : str
+        label of colorbar (if colorbar is included, see cbar option)
+    title : str
+        title of heatmap
     num_digits : int
         number of digits printed in heatmap annotation
     ax : axes
@@ -74,7 +79,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
     axes
         plot axes instance
     """
-    
+    if cbar_label is None:
+        cbar_label = ''
     # Old vesion only for 
     if isinstance(df.columns, pd.MultiIndex):
         # If pandas is a instance of multicolumns make sure that it only ha one column.
@@ -95,11 +101,18 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
     else:
         fig = ax.figure
     cbar_kws = {}
+    annot_kws={"size": labelsize-4}
     
     if normalise_rows:
         if normalise_rows_col is not None:
+            if isinstance(normalise_rows_col, str):
+                try:
+                    normalise_rows_col = df.columns.to_list().index(normalise_rows_col)
+                except ValueError:
+                    raise ValueError('Failed to localise column {}'
+                                     .format(normalise_rows_col))
             norm_ref = df.values[:, normalise_rows_col]
-            table_name += " (norm. col. {})".format(normalise_rows_col)
+            cbar_label += " (norm. col. {})".format(normalise_rows_col)
         else:
             if normalise_rows_how == 'mean':
                 norm_ref = df.mean(axis=1)
@@ -110,7 +123,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
             else:
                 raise ValueError('Invalid input for normalise_rows_how ({}). '
                                  'Choose from mean, median or sum'.format(normalise_rows_how))
-            table_name += " (norm. row {})".format(normalise_rows_how)
+            cbar_label += " (norm. row {})".format(normalise_rows_how)
         df = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
         num_fmt = ".0%"
         
@@ -121,7 +134,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
     else:
         df_hm = df
 
-    cbar_kws['label'] = table_name
+    cbar_kws['label'] = cbar_label
+    
     if annot is True:
         annot = df.values
 
@@ -138,28 +152,38 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, vmin=None,
 
     ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
                  fmt=num_fmt, cbar=cbar, cbar_kws=cbar_kws,
-                 vmin=vmin, vmax=vmax, **kwargs)
+                 vmin=vmin, vmax=vmax, annot_kws=annot_kws, **kwargs)
+    
+    ax.figure.axes[-1].yaxis.label.set_size(labelsize)  
+    if title is not None:
+        ax.set_title(title, fontsize=labelsize+2)
+    
+    if yticklabels is None:
+        yticklabels = ax.get_yticklabels()
         
-    ax.set_title(table_name, fontsize=16)
     
-    if yticklabels:
-        ax.set_yticklabels(yticklabels, rotation=45, ha='left')
+    ax.set_yticklabels(yticklabels, 
+                       rotation=ytick_rot, 
+                       fontsize=labelsize-2)
     
-    if xticklabels:
-        ax.set_xticklabels(xticklabels, rotation=45, ha='right')
-    else:
+    if xticklabels is None:
         xticklabels = ax.get_xticklabels()
-        ax.set_xticklabels(xticklabels, rotation=45, ha='right')
+        
+    ax.set_xticklabels(xticklabels, 
+                       rotation=xtick_rot, 
+                       ha='right',
+                       fontsize=labelsize-2)
     
-    if xlabel:
-        ax.set_xlabel(xlabel, fontsize = 12)
-    else:
-        ax.set_xlabel('') 
+    #ax.set_xticklabels(xticklabels, rotation=45, ha='right')
     
-    if ylabel:
-        ax.set_ylabel(ylabel, fontsize = 12)
-    else:
-        ax.set_ylabel('') 
+    if xlabel is None:
+        xlabel = ''
+        
+    ax.set_xlabel(xlabel, fontsize=labelsize)
+    
+    if ylabel is None:
+        ylabel = ''
+    ax.set_ylabel(ylabel, fontsize=labelsize)
     
     fig.tight_layout()
     
