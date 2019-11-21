@@ -11,7 +11,7 @@ import glob
 import numpy as np
 import xarray as xr
 
-from pyaerocom import const
+#from pyaerocom import const
 from iris import load_cube
 
 def load_region_mask_xr(region_id='PAN'):

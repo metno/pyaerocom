@@ -8,7 +8,8 @@ from ast import literal_eval
 from collections import OrderedDict as od
 from configparser import ConfigParser
 
-from pyaerocom import const
+#from pyaerocom import Config
+#const = Config()
 from pyaerocom import __dir__
 from pyaerocom._lowlevel_helpers import BrowseDict
 
