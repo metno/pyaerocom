@@ -1069,7 +1069,7 @@ class GriddedData(object):
         return data.to_time_series(sample_points, scheme, 
                                    collapse_scalar, add_meta=add_meta)
     
-    def filter_region(self, region_id=None, thresh_coast = 0.5):
+    def filter_region(self, region_id=None, thresh_coast = 0.5, inplace = False):
         """
         TODO write documentation
         """
@@ -1091,9 +1091,12 @@ class GriddedData(object):
             thresh_mask = npm > thresh_coast
             npm[thresh_mask] = 0
             npm[~thresh_mask] = 1
-
+            
             try:
-                cube_data = self.cube.data
+                if inplace:
+                    cube_data = self.cube.data
+                else:
+                    cube_data = self.cube.data.copy()
                 #example = ma.array([1, 2, 3], mask = [0, 1, 0])
                 if isinstance(cube_data, ma.core.MaskedArray):
                     # UPDATE MASK WITH REGIONAL MASK.
@@ -1858,7 +1861,7 @@ class GriddedData(object):
         collapsed = self.grid.collapsed(coords, aggregator, **kwargs)
         return GriddedData(collapsed, **self.cube.attributes)
     
-    def extract(self, constraint):
+    def extract(self, constraint, inplace=False):
         """Extract subset
         
         Parameters
@@ -1874,8 +1877,10 @@ class GriddedData(object):
         data_crop = self.grid.extract(constraint)
         if not data_crop:
             raise DataExtractionError("Failed to extract subset")
-        
-        return GriddedData(data_crop, **self.metadata)
+        if inplace:
+            self.cube = data_crop
+        else:
+            return GriddedData(data_crop, **self.metadata)
     
     def intersection(self, *args, **kwargs):
         """Ectract subset using :func:`iris.cube.Cube.intersection` 

@@ -1207,7 +1207,7 @@ class UngriddedData(object):
                 
         return (meta_matches, totnum)
     
-    def filter_region(self, region_id=None, invert=False):
+    def filter_region(self, region_id=None, invert=False, inplace=False):
         """
         TODO : Write documentations
         
@@ -1245,9 +1245,12 @@ class UngriddedData(object):
                                               "several variables. Current vars to retrieve {}".format(self.vars_to_retrieve))
                 
         rem = np.concatenate(indexes_to_drop)
-        self._data = np.delete(data, rem, axis = 0)
+        if inplace:
+            self._data = np.delete(data, rem, axis = 0)
+            return self
+        else:
+            return np.delete(data, rem, axis = 0)
         
-        return self
         
     
     def apply_filters(self, var_outlier_ranges=None, **filter_attributes):

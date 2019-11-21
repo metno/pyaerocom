@@ -811,7 +811,7 @@ class ColocatedData(object):
     
         return ColocatedData(filtered)
         
-    def filter_region(self, region_id=None):
+    def filter_region(self, region_id=None, inplace = False):
         #raise NotImplementedError('Filter region is not implemented for collocated data object.')
         #drop_idx = []
         data = self._data.copy()
@@ -827,8 +827,12 @@ class ColocatedData(object):
                 if mask < 1:
                     data = data.drop(dim = 'station_name', labels = str(station.station_name.values))
                     #drop_idx.append(i)
-            self._data = data
-            return self
+                    
+            if inplace:
+                self._data = data
+                return self
+            else:
+                return data
         else:
             print("Please provide a region. Available regions are {}".format(available_region_mask()))
             return
