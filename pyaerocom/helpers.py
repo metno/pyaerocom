@@ -13,7 +13,7 @@ import xarray as xray
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
-from pyaerocom import logger, const
+from pyaerocom import logger
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    PANDAS_RESAMPLE_OFFSETS,
@@ -143,6 +143,7 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
         
         
     """
+    from pyaerocom import const
     if len(coord_vals) < 2:
         const.print_log.warning('Checking coordinate values for circularity '
                                 'failed since coord array has less than 2 values')
@@ -1026,6 +1027,8 @@ def start_stop(start, stop=None):
     return (start, stop)
 
 def datetime2str(time, ts_type=None):
+    from pyaerocom import const
+
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)

@@ -11,6 +11,7 @@ import glob
 import numpy as np
 import xarray as xr
 
+from pyaerocom.helpers import numpy_to_cube
 
 from iris import load_cube
 
@@ -27,11 +28,12 @@ def load_region_mask_xr(region_id='PAN'):
     ---------
     mask : xarray.DataArray 
         containing the masks. 
-    
-    pya.const.OUTPUTDIR
     """
     from pyaerocom import const
     path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
+    path = const.FILTERMASKKDIR
+    path = os.path.join(const.FILTERMASKKDIR, 'htap_masks/')
+
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
             r = r.split("HTAP")[0]
@@ -40,9 +42,6 @@ def load_region_mask_xr(region_id='PAN'):
                 masks = xr.open_dataset(fil)[r+'htap']
             else:
                 masks += xr.open_dataset(fil)[r+'htap']
-        # Could say that all values larger than 1 should be one
-        # only occurs if you use land and Europe. All other regions are disjuct.
-        #masks = masks - i 
         masks = masks.where(masks < 1, 1)
     else:
         region_id  = region_id.split("HTAP")[0]
@@ -50,7 +49,7 @@ def load_region_mask_xr(region_id='PAN'):
         masks = xr.open_dataset(fil)[region_id+'htap']
     return masks
 
-def load_region_mask_iris(region_id='PANhtap'):
+def load_region_mask_iris(region_id='PAN'):
     """    
     Returns
     ---------
@@ -59,18 +58,29 @@ def load_region_mask_iris(region_id='PANhtap'):
     TODO : Update this one to send in a list and return the sum of the list. 
     
     pya.const.OUTPUTDIR
+
+    Load : each cube seperatly and merge then after updating var_name
     """
     from pyaerocom import const
-    path = const.FILTERMASKKDIR
     path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
+    path = os.path.join(const.FILTERMASKKDIR, 'htap_masks/')
     
+    files = []
+    cubes = []
     if isinstance(region_id, list):
-        raise NotImplementedError("Not implemented yet.") 
-    
-    region_id = region_id.split("HTAP")[0]
-    fil =  glob.glob(path + region_id + '*.nc')[0]
-    masks = load_cube(fil)
-    return masks
+        for r in region_id:
+            region_id = r.split("HTAP")[0]
+            fil = glob.glob(path + region_id + '*.nc')[0]
+            files.append(fil)
+            masks = load_cube(fil)
+            cubes.append(masks)
+        merged = np.max([x.data for x in cubes], axis = 0)
+        merged_cube = numpy_to_cube(merged, dims=(cubes[0].coords()[0], cubes[0].coords()[1]))
+    else:
+        region_id = region_id.split("HTAP")[0]
+        fil = glob.glob(path + region_id + '*.nc')[0]
+        merged_cube = load_cube(fil)
+        return merged_cube
 
 def available_region_mask():
     """
@@ -105,46 +115,24 @@ def get_mask(lat, lon, mask):
         print("Please provide masks of type xarray dataset, not {}".format(type(mask)))
         return
 
-def download_mask_urllib():
+def download_mask():
     #from urllib.request import urlopen
     from urllib.request import urlretrieve
     from zipfile import ZipFile
+    from pyaerocom import const
+    
     path_out = const.FILTERMASKKDIR
-    url = 'https://github.com/metno/pyaerocom-suppl/tree/master/htap_masks.zip'
-
+    url = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks.zip'
     name = os.path.basename(url)
-    #print(name)
     file = os.path.join(path_out, name)
     urlretrieve(url, file)
-
     with ZipFile(file, 'r') as zipObj:
-        # Extract all the contents of zip file in current directory
         zipObj.extractall()
-    
     print("Succesfully downloaded masks.")
     return 
 
-def download_mask():
-    import requests
-
-    path_out = const.FILTERMASKKDIR
-    url = 'http://github.com/metno/pyaerocom-suppl/blob/master/htap_masks/'
-    
-    regions = const.HTAP_REGIONS
-    
-    for region in regions:
-        filename = "{}htap.0.1x0.1deg.nc".format(region)
-        url_file = os.path.join(url, filename)
-        #name     = os.path.basename(url)
-        file     = os.path.join(path_out, filename)
-        myfile   = requests.get(url_file)
-        
-        with open(file, 'wb') as data:
-            data.write(myfile.content)
-        
-    print("Succesfully downloaded masks.")
-    return 
 
 if __name__ == '__main__':
-    print(load_region_mask_xr(region_id='PAN'))
-    #download_mask()
+   #print(load_region_mask_xr(region_id='PAN'))
+   #download_mask()
+   print('hello')

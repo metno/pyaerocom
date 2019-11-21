@@ -13,8 +13,8 @@ from configparser import ConfigParser
 from pyaerocom import __dir__
 from pyaerocom._lowlevel_helpers import BrowseDict
 
-from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
-                                     get_mask)
+#from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
+#                                     get_mask)
 
 class Region(BrowseDict):
     """Interface that specifies an AEROCOM region
@@ -103,6 +103,7 @@ class Region(BrowseDict):
     @property
     def is_htap(self):
         from pyaerocom import const
+        
         if self._name in const.HTAP_REGIONS:
             return True
         else:
@@ -204,11 +205,13 @@ class Region(BrowseDict):
     
     def plot(self):
         from pyaerocom.plot.mapping import init_map
-        ax = init_map()
-        d = load_region_mask_xr(region_id=self.re)
-        d.plot(ax=ax)
-        raise NotImplementedError('Coming soon...')
+        from pyaerocom.land_sea_mask import load_region_mask_xr
         
+        ax = init_map()
+        d = load_region_mask_xr(region_id=self.name)
+        d.plot(ax=ax)    
+        return ax        
+    
     def __contains__(self, val):
         if not isinstance(val, tuple):
             raise TypeError('Invalid input, need tuple')
@@ -326,11 +329,13 @@ def get_regions_coord(lat, lon, **add_regions):
     list
         list of regions that contain this coordinate
     """
+     
     regs = []
     all_regs = get_all_default_regions(use_all_in_ini=False)
     for an, ar in add_regions.items():
-        if isinstance(ar, Region):
-            all_regs[an] = ar
+        if isinstance(ar, Region):      
+            if not ar.is_htap:
+                all_regs[an] = ar
 
     for rname, reg in all_regs.items():
         if rname == 'WORLD':
@@ -357,8 +362,8 @@ def find_closest_region_coord(lat, lon, **add_regions):
     Returns
     -------
     str
-        name of region
-    """
+        name of sqaure region
+    """ 
     regs = get_regions_coord(lat, lon, **add_regions)
     
     if len(regs) == 1:
@@ -387,7 +392,7 @@ def valid_region(name):
 if __name__=="__main__":
 
     r = Region("EUR")
-    print(r.is_htap())
+    print(r.is_htap)
     r.import_default("EUROPE")
         
     all_ids = get_all_default_region_ids(True)
