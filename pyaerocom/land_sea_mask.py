@@ -11,7 +11,7 @@ import glob
 import numpy as np
 import xarray as xr
 
-#from pyaerocom import const
+
 from iris import load_cube
 
 def load_region_mask_xr(region_id='PAN'):
@@ -30,6 +30,7 @@ def load_region_mask_xr(region_id='PAN'):
     
     pya.const.OUTPUTDIR
     """
+    from pyaerocom import const
     path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
@@ -59,6 +60,7 @@ def load_region_mask_iris(region_id='PANhtap'):
     
     pya.const.OUTPUTDIR
     """
+    from pyaerocom import const
     path = const.FILTERMASKKDIR
     path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
     
@@ -77,6 +79,7 @@ def available_region_mask():
     arr : List[str]
         Returns a list of available htap region masks.
     """
+    from pyaerocom import const
     return const.HTAP_REGIONS
 
 def get_mask(lat, lon, mask):

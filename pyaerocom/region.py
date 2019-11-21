@@ -102,6 +102,7 @@ class Region(BrowseDict):
     
     @property
     def is_htap(self):
+        from pyaerocom import const
         if self._name in const.HTAP_REGIONS:
             return True
         else:
