@@ -1223,11 +1223,8 @@ class UngriddedData(object):
         data      = self._data
         _metadata = self.metadata
         
-        if isinstance(region_id, list):
-            raise NotImplementedError("Not implemented yet. Add a lopp which sums all the masks and collect the pixels from these loops. ")
-        
         mask = load_region_mask_xr(region_id=region_id)   
-        print(mask)
+
         test = _metadata.copy().items()
         data = self._data
         indexes_to_drop = []
@@ -1246,7 +1243,7 @@ class UngriddedData(object):
                 else:
                     raise NotImplementedError("Not filtering for ungridded data object containing "+
                                               "several variables. Current vars to retrieve {}".format(self.vars_to_retrieve))
-        print("passes loop")
+                
         rem = np.concatenate(indexes_to_drop)
         self._data = np.delete(data, rem, axis = 0)
         
@@ -2457,6 +2454,7 @@ class UngriddedData(object):
             stats['stats']
         if isinstance(station_name, str):
             station_name = [station_name]
+            
         if isinstance(station_name, list):
             indices = []
             for meta_idx, info in self.metadata.items():
@@ -2503,7 +2501,7 @@ if __name__ == "__main__":
     print('Original metadata shape {}.'.format(len(ungridded_data.metadata)))
     #data.plot_station_coordinates()
     
-    data = ungridded_data.filter_region(region_id = 'EURhtap')
+    data = ungridded_data.filter_region(region_id = 'LAND')
     print('Next data shape {}.'.format(ungridded_data._data.shape))
     data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     print('Original data shape {}.'.format(ungridded_data._data.shape))

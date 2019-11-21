@@ -25,7 +25,8 @@ def load_region_mask_xr(region_id='PANhtap'):
     pya.const.OUTPUTDIR
     """
     path = const.FILTERMASKKDIR
-    print(path)
+    path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
+    
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
             r = r.split("HTAP")[0]
@@ -51,6 +52,11 @@ def load_region_mask_iris(region_id='PANhtap'):
     pya.const.OUTPUTDIR
     """
     path = const.FILTERMASKKDIR
+    path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
+    
+    if isinstance(region_id, list):
+        raise NotImplementedError("Not implemented yet.") 
+    
     region_id = region_id.split("HTAP")[0]
     fil =  glob.glob(path + region_id + '*0.1*.nc')[0]
     masks = load_cube(fil)
@@ -130,5 +136,5 @@ def download_mask():
     return 
 
 if __name__ == '__main__':
-    #print(load_region_mask_xr(region_id='PAN'))
-    download_mask()
+    print(load_region_mask_xr(region_id='PAN'))
+    #download_mask()

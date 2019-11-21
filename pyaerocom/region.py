@@ -7,6 +7,8 @@ from os.path import join, exists
 from ast import literal_eval
 from collections import OrderedDict as od
 from configparser import ConfigParser
+
+from pyaerocom import const
 from pyaerocom import __dir__
 from pyaerocom._lowlevel_helpers import BrowseDict
 
@@ -96,7 +98,12 @@ class Region(BrowseDict):
     
     @property
     def is_htap(self):
-        return True if 'HTAP' in self.name else False
+        part_one = self.name.split("-")[0]
+        print(part_one)
+        if part_one in const.HTAP_REGIONS:
+            return True
+        else:
+            return False
     
     def import_default(self, name):
         """Import information about default region
@@ -195,6 +202,8 @@ class Region(BrowseDict):
     def plot(self):
         from pyaerocom.plot.mapping import init_map
         ax = init_map()
+        d = load_region_mask_xr(region_id=self.re)
+        d.plot(ax=ax)
         raise NotImplementedError('Coming soon...')
         
     def __contains__(self, val):
@@ -374,15 +383,14 @@ def valid_region(name):
 
 if __name__=="__main__":
 
-    r = Region()
+    r = Region("EUR")
+    print(r.is_htap())
     r.import_default("EUROPE")
         
     all_ids = get_all_default_region_ids(True)
     
     lat, lon = 10, 20
     reg = find_closest_region_coord(lat, lon)
+    
     print(reg)
-        
     print(valid_region('europe'))
-    
-    
