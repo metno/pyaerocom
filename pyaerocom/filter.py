@@ -19,7 +19,7 @@ from pyaerocom.region import Region
 #from pyaerocom import const
 
 from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
-                                     get_mask)
+                                     get_mask, download_mask)
 
 #from pyaerocom.land_sea_mask import load_region_mask_iris, load_region_mask_xr
 
@@ -60,9 +60,11 @@ class Filter(BrowseDict):
     #: dictionary specifying altitude filters
     ALTITUDE_FILTERS = {'wMOUNTAINS'    :   None, #reserve namespace for
                         'noMOUNTAINS'   :   [-1e6, 1e3]} # 1000 m upper limit
-    
+
+    LAND_OCN_FILTERS = ['LAND', 'OCN']    
+
     NO_FILTER_NAME = 'WORLD-wMOUNTAINS'
-    def __init__(self, name=None, region=None, altitude_filter=None, **kwargs):
+    def __init__(self, name=None, region=None, altitude_filter=None, land_ocn = None, **kwargs):
         # default name (i.e. corresponds to no filtering)
         self._name = self.NO_FILTER_NAME
         self._region = None
@@ -71,6 +73,7 @@ class Filter(BrowseDict):
         self.lat_range = None
         self.alt_range = None
         self.mask = None
+        self.land_ocn = None
         
         if name is not None:
             self.infer_from_name(name)
@@ -79,10 +82,16 @@ class Filter(BrowseDict):
             
         if region is not None:
             self.set_region(region)
+              
+        if land_ocn is not None:
+            self.set_land_sea_filter(land_ocn)
+            
         if altitude_filter is not None:
             self.set_altitude_filter(altitude_filter)
-        
+
         self.update(**kwargs)
+        
+        self._check_if_htap_region_are_available_and_download()
         
     def infer_from_name(self, name):
         """Infer filter from name string
@@ -109,15 +118,29 @@ class Filter(BrowseDict):
         else --> load lat lon range.
         
         """
-        print(spl)
         # intitialise
         self.set_region(spl[0])
         if len(spl) > 1:
             alt_filter = spl[1]
         else:
             alt_filter = 'wMOUNTAINS'
+        if len(spl) > 2: 
+            land_sea = spl[2]
+            self.set_land_sea_filter(land_sea)
         self.set_altitude_filter(alt_filter)
     
+    def set_land_sea_filter(self, filter_name):
+        """Set default altitude filter"""
+        if not filter_name in self.LAND_OCN_FILTERS:
+            raise AttributeError('No such land sea filter: {}. Available '
+                                 'filters are: {}'.format(filter_name, 
+                                               self.LAND_OCN_FILTERS))
+        #self.alt_range = self.LAND_OCN_FILTERS[filter_name]
+        self.land_ocn = filter_name
+        #spl = self.name.split('-')
+        #self._name = '{}-{}-{}'.format(spl[0], filter_name)
+        return         
+        
     def set_altitude_filter(self, filter_name):
         """Set default altitude filter"""
         if not filter_name in self.ALTITUDE_FILTERS:
@@ -127,7 +150,11 @@ class Filter(BrowseDict):
         self.alt_range = self.ALTITUDE_FILTERS[filter_name]
         
         spl = self.name.split('-')
-        self._name = '{}-{}'.format(spl[0], filter_name)
+        if self.land_ocn:
+            self._name = '{}-{}-{}'.format(spl[0], filter_name, self.land_ocn)
+        else:
+            self._name = '{}-{}'.format(spl[0], filter_name)
+        return 
     
     def set_region(self, region):
         if isinstance(region, str):
@@ -140,7 +167,12 @@ class Filter(BrowseDict):
         self._region = region
         
         spl = self.name.split('-')
-        self._name = '{}-{}'.format(region.name, spl[1])
+        
+        if self.land_ocn:
+            self._name = '{}-{}-{}'.format(region.name, spl[1], self.land_ocn)
+        else:
+            self._name = '{}-{}'.format(region.name, spl[1])
+        
      
     
     @property
@@ -156,10 +188,11 @@ class Filter(BrowseDict):
         return {'region'    :   self.region_name, 
                 'lon_range' :   self.lon_range,
                 'lat_range' :   self.lat_range,
-                'alt_range' :   self.alt_range}
+                'alt_range' :   self.alt_range, 
+                'land_sea'  :   self.land_ocn}
     
     # TODO move this inside the respective classes.
-    
+    # Move into respective objects filter_region 
     def _apply_ungridded(self, data_obj):
         """Apply filter to instance of class :class:`UngriddedData`
         """
@@ -171,8 +204,8 @@ class Filter(BrowseDict):
         """Apply filter to instance of class :class:`GriddedData`
         """
         print_log.warning('Applying regional cropping in GriddedData using Filter '
-                          'class. Note that this does not yet include potential '
-                          'cropping in the vertical dimension. Coming soon...')
+                  'class. Note that this does not yet include potential '
+                  'cropping in the vertical dimension. Coming soon...')
         return data_obj.crop(region=self._region)
     
     def _apply_colocated(self, data_obj):
@@ -180,28 +213,21 @@ class Filter(BrowseDict):
                        'class. Note that this does not yet include potential '
                        'cropping in the vertical dimension. Coming soon...')
         return data_obj.apply_latlon_filter(region_id=self.region_name)
-        
+
     def _check_if_htap_region_are_available_and_download(self):
         
-        def _download_masks(path, region_list):
-            for region in region_list: 
-                try: 
-                    url = 'https://github.com/metno/pyaerocom-suppl/blob/master/htap_masks/{}.0.1x0.1deg.nc'.format(region)
-                    filename = os.path.join( path, os.path.basename(url)  )
-                    urllib.request.urlretrieve(url, filename)
-                except urllib.error.URLError as e:
-                    print(e.reason)     
-        
         #path = '/home/hannas/MyPyaerocom/htap_masks/'
-        region_list = const.HTAP_REGIONS
-        path = const._mask_location
-        
+        from pyaerocom import const
+        #region_list = const.HTAP_REGIONS
+        path = const.FILTERMASKKDIR
+
         if os.path.exists(path):
             # check if htap regions are available in 
-            if len(glob.glob( path + '*.nc' )) <= 0:
+            nbr_files = len(glob.glob( os.path.join(path, 'htap_masks') + '*.nc'  ) ) 
+            if nbr_files <= 0:
                 print("Directory exit but doesn't contain any masks.")
                 # download 
-                _download_masks(path, region_list)
+                download_mask()
             else:
                 print('Masks are available in MyPyaerocom')
                 return 
@@ -210,7 +236,7 @@ class Filter(BrowseDict):
             print("Creates directory {}.".format(path))
             try: 
                 os.mkdir(path) 
-                _download_masks(path, region_list)
+                download_mask()
             except OSError as error: 
                 print(error)     
                 return 
@@ -239,19 +265,30 @@ class Filter(BrowseDict):
                         'in {}. Returning unchanged object.'
                         .format(self.NO_FILTER_NAME, type(data_obj)))
             return data_obj
-        """
-        if isinstance(data_obj, UngriddedData):
-            return self._apply_ungridded(data_obj)
-        elif isinstance(data_obj, GriddedData):
-            return self._apply_gridded(data_obj)
-        elif isinstance(data_obj, ColocatedData):
-            return self._apply_colocated(data_obj)
-        raise IOError('Cannot filter {} obj, need instance of GriddedData or '
-                'UngriddedData'.format(type(data_obj)))
-        """
-        print("Tries new region {}".format(self.name))
-        # The filter region load its own masks
-        return data_obj.filter_region(region_id=self.name)
+        
+        spl = self.name.split('-')
+        if self._region.is_htap: 
+            # The region object is still "EUROPE" or "EUR".
+            if len(spl) > 2:
+                r_id = [spl[0], spl[1]]
+            else:
+                r_id = spl[0]
+            return data_obj.filter_region(region_id=r_id) 
+            
+        else:
+            # applies first land and sea mask, then the dquare region mask
+            if len(spl) > 2:
+                data_obj = data_obj.filter_region(region_id=spl[-1])
+                #data_obj.quickplot_map()
+                
+            if isinstance(data_obj, UngriddedData):
+                return self._apply_ungridded(data_obj)
+            elif isinstance(data_obj, GriddedData):
+                return self._apply_gridded(data_obj)
+            elif isinstance(data_obj, ColocatedData):
+                return self._apply_colocated(data_obj)
+            raise IOError('Cannot filter {} obj, need instance of GriddedData or '
+                          'UngriddedData'.format(type(data_obj)))
 
     def __call__(self, data_obj):
         return self.apply(data_obj)
@@ -259,12 +296,26 @@ class Filter(BrowseDict):
     
 if __name__=="__main__":
     import pyaerocom as pya
-   
-    f = Filter('PANHTAP-wMOUNTAINS')
+    import matplotlib.pyplot as plt
+    plt.close("all")
+    f = Filter(name = 'EUR-noMOUNTAINS-OCN')
+    # data can either coloc, gridded, ungridded
+    #data = f.apply(data)
+
+    #print(f.region)
+    #data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
+
+    
+    #data.quickplot_map()
+    #data.filter_region(region_id  = 'EUROPE-noMOUNTAINS-OCN')
+
+
 
     ungridded_data = pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
-    ungridded_data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
+    ungridded_data = f.apply(ungridded_data)
+    #ungridded_data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     
-    ungridded = f.apply(ungridded_data)
-    ungridded.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
+    #ungridded = f.apply(ungridded_data)
+    #ungridded_data = f.apply(ungridded_data)
+    #ungridded.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
     

@@ -204,12 +204,22 @@ class Region(BrowseDict):
         return lat_ok * lon_ok
     
     def plot(self):
+        """
+        Returns
+        --------------
+        ax 
+            Plot of masked regions
+        """
+        if not self.is_htap:
+            raise NotImplementedError("Comming soon ... ")
+            
         from pyaerocom.plot.mapping import init_map
         from pyaerocom.land_sea_mask import load_region_mask_xr
         
         ax = init_map()
         d = load_region_mask_xr(region_id=self.name)
         d.plot(ax=ax)    
+        # ax add geoaxes 
         return ax        
     
     def __contains__(self, val):
@@ -235,7 +245,8 @@ class Region(BrowseDict):
 
 def all():
     """Wrapper for :func:`get_all_default_region_ids`"""
-    return get_all_default_region_ids()
+    from pyaerocom import const
+    return get_all_default_region_ids() + const.HTAP_REGIONS
 
 def get_all_default_region_ids(use_all_in_ini=False):
     """Get list containing IDs of all default regions

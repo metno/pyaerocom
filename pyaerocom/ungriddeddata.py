@@ -199,10 +199,10 @@ class UngriddedData(object):
     @property
     def index(self):
         return self._index
-    
+
     @property
     def first_meta_idx(self):
-        """First available metadata index"""
+        #First available metadata index
         return list(self.metadata.keys())[0]
     
     def _init_index(self, add_cols=None):
@@ -1220,13 +1220,14 @@ class UngriddedData(object):
         if region_id is None:
             raise ValueError("Specify a region_id. Available regions: {}.".format(available_region_mask()))
 
-        data      = self._data
-        _metadata = self.metadata
+        ungridded = self.copy()
+    
+        data      = ungridded._data
+        _metadata = ungridded.metadata
         
         mask = load_region_mask_xr(region_id=region_id)   
 
         test = _metadata.copy().items()
-        data = self._data
         indexes_to_drop = []
         
         for key, meta in test:
@@ -1236,7 +1237,7 @@ class UngriddedData(object):
             mask_pixel = get_mask( lat, lon, mask )
             
             if mask_pixel < 1:
-                del self.metadata[key]
+                del ungridded.metadata[key]
                 
                 if len(self.vars_to_retrieve) == 1 and isinstance(self.vars_to_retrieve, list):
                     indexes_to_drop.append(self.meta_idx[key][self.vars_to_retrieve[0]]) # update to vars to read.
@@ -1245,11 +1246,21 @@ class UngriddedData(object):
                                               "several variables. Current vars to retrieve {}".format(self.vars_to_retrieve))
                 
         rem = np.concatenate(indexes_to_drop)
+        ungridded._data = np.delete(data, rem, axis = 0)
+        
+        if len(list(ungridded.metadata.keys())) == 0:
+            raise ValueError("Applying filter leaves no data.")
+        
         if inplace:
-            self._data = np.delete(data, rem, axis = 0)
+            self._data = ungridded._data
+            self.metadata = ungridded.metadata
+            #print(len(self.metadata))
             return self
         else:
-            return np.delete(data, rem, axis = 0)
+            #ungr = self.copy()
+            #ungr._data = np.delete(data, rem, axis = 0)
+            # print(len(ungr.metadata))
+            return ungridded
         
         
     

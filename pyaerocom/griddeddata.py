@@ -1072,11 +1072,14 @@ class GriddedData(object):
     def filter_region(self, region_id=None, thresh_coast = 0.5, inplace = False):
         """
         TODO write documentation
+        
+        Update this to know if its a htap region
+        
+        Should take EUROPE-noMountains-LAND/OCN as input.
         """
         
         if region_id:
 
-            # loads  mask to iris cube
             mask_iris = load_region_mask_iris(region_id=region_id)
 
             # Reads mask to griddedata
@@ -1092,20 +1095,22 @@ class GriddedData(object):
             npm[thresh_mask] = 0
             npm[~thresh_mask] = 1
             
+            griddeddata = self.copy()
+            
             try:
                 if inplace:
-                    cube_data = self.cube.data
+                    griddeddata = self
                 else:
-                    cube_data = self.cube.data.copy()
+                     griddeddata = self.copy()
                 #example = ma.array([1, 2, 3], mask = [0, 1, 0])
-                if isinstance(cube_data, ma.core.MaskedArray):
-                    # UPDATE MASK WITH REGIONAL MASK.
-                    self.cube.data.mask = npm
+                
+                # UPDATE MASK WITH REGIONAL MASK.
+                griddeddata.cube.data[:, npm.astype(bool)] = np.nan
 
             except MemoryError:
                 raise NotImplementedError(" Comming soon... ")
 
-            return self
+            return griddeddata
         else:
             raise ValueError("Please provide a region id. Available region id's are {}.".format())
     
@@ -2320,12 +2325,12 @@ if __name__=='__main__':
     import pyaerocom as pya
     plt.close("all")
     
-    print("uses last changes ")
+    # print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
-    data = data.filter_region(region_id  = 'SEAhtap')
+    data = data.filter_region(region_id  = 'EUROPE-noMONTAINS-LAND')
     data.quickplot_map()
     plt.show()
-    print('Here')
+    print(' Here  ')
     #ts = data.get_area_weighted_timeseries()
     
 
