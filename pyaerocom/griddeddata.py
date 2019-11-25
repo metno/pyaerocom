@@ -1352,7 +1352,7 @@ class GriddedData(object):
         return data
         
     def resample_time(self, to_ts_type='monthly', how='mean', 
-                      apply_constraints=False, min_num_obs=None,
+                      apply_constraints=None, min_num_obs=None,
                       use_iris=False):
         """Resample time to input resolution
         
@@ -1365,7 +1365,7 @@ class GriddedData(object):
             string specifying how the data is to be aggregated, default is mean
         apply_constraints : bool, optional
             if True, hierarchical resampling is applied using input 
-            `samping_constraints` (if provided) or else, using constraints 
+            `min_num_obs` (if provided) or else, using constraints 
             specified in :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`
         min_num_obs : dict or int, optinal
             integer or nested dictionary specifying minimum number of 
@@ -2030,7 +2030,7 @@ class GriddedData(object):
                               aggregator=MEAN,
                               weights=ws).grid.data
 
-    def mean(self, how='areaweighted'):
+    def mean(self, areaweighted=True):
         """Mean value of data array
         
         Note
@@ -2039,7 +2039,7 @@ class GriddedData(object):
         Does not consider area-weights or any other advanced averaging.
         """
         #make sure data is in memory
-        if how == 'areaweighted':
+        if areaweighted:
             return self.area_weighted_mean().mean()
         data = self.grid.data
         if self.is_masked:
