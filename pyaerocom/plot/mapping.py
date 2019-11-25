@@ -199,12 +199,8 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                             cbar_levels=None, cbar_ticks=None, add_cbar=True,
                             cmap=None, cbar_ticks_sci=False,
                             color_theme=COLOR_THEME, ax=None,
-                            ax_cbar=None, shrink_cbar=1.0, **kwargs):
+                            ax_cbar=None, **kwargs):
     """Make a plot of gridded data onto a map
-    
-    Note
-    ----
-    This is a lowlevel plotting method
     
     Parameters
     ----------
@@ -250,7 +246,8 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         ``fig.axes[0]`` to access the map axes instance (e.g. to modify the 
         title or lon / lat range, etc.)
     """
-    kwargs['contains_cbar'] = True
+    if add_cbar:
+        kwargs['contains_cbar'] = True
     if ax is None:
         ax = init_map(xlim, ylim, color_theme=color_theme, **kwargs)
     if not isinstance(ax, GeoAxes):
@@ -292,24 +289,10 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
             print(repr(e))
     X, Y = meshgrid(lons, lats)
-    dmin = np.nanmin(data)
-    dmax = np.nanmax(data)
-    
-    if any([np.isnan(x) for x in [dmin, dmax]]):
-        raise ValueError('Cannot plot map of data: all values are NaN')
-    elif dmin == dmax:
-        raise ValueError('Minimum value in data equals maximum value: '
-                         '{}'.format(dmin))
-    if vmin is None:
-        vmin = dmin
-    else:
-        if vmin < 0 and log_scale:
-            log_scale=False
-    if vmax is None:
-        vmax = dmax
     
     bounds = None
-    if cbar_levels: #user provided levels of colorbar explicitely
+    norm = None
+    if cbar_levels is not None: #user provided levels of colorbar explicitely
         if vmin is not None or vmax is not None:
             raise ValueError('Please provide either vmin/vmax OR cbar_levels')
         bounds = list(cbar_levels)
@@ -322,6 +305,21 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             cmap = get_cmap(cmap)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
     else:
+        dmin = np.nanmin(data)
+        dmax = np.nanmax(data)
+        
+        if any([np.isnan(x) for x in [dmin, dmax]]):
+            raise ValueError('Cannot plot map of data: all values are NaN')
+        elif dmin == dmax:
+            raise ValueError('Minimum value in data equals maximum value: '
+                             '{}'.format(dmin))
+        if vmin is None:
+            vmin = dmin
+        else:
+            if vmin < 0 and log_scale:
+                log_scale=False
+        if vmax is None:
+            vmax = dmax
         if log_scale: # no negative values allowed
             if vmin < 0:
                 vmin = data[data>0].min()
@@ -337,9 +335,12 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                 vmax_colors = ceil(vmax / 10**exp)*10**exp
                 bounds = calc_pseudolog_cmaplevels(vmin=vmin, vmax=vmax_colors,
                                                    add_zero=add_zero)
-                norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
+                norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, 
+                                    clip=False)
         
             else:
+                if not vmin > 0:
+                    raise ValueError('Logscale can only be applied for vmin>0')
                 norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
         else: 
             if cmap is None:
@@ -361,7 +362,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             cbar_extend = "both"
         else:
             cbar_extend = "max"
-      
+    fig.norm = norm
     disp = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm)
 # =============================================================================
 #     fmt = None
@@ -373,9 +374,10 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
 #         #fmt = "%." + str(min_mag) + "f"
 # =============================================================================
     if add_cbar:
-        cbar = fig.colorbar(disp, cmap=cmap, norm=norm, boundaries=bounds, 
-                            extend=cbar_extend, cax=ax_cbar,
-                            shrink=shrink_cbar)
+        cbar = fig.colorbar(disp, cmap=cmap, norm=norm, #boundaries=bounds, 
+                            extend=cbar_extend, cax=ax_cbar)
+                            #shrink=shrink_cbar)
+        fig.cbar = cbar
         
         if var_name is not None:
             var_str = var_name# + VARS.unit_str
@@ -396,7 +398,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                 else:
                     lbls.append('')
             cbar.ax.set_yticklabels(lbls)
-            
+        
     return fig
 
 def plot_map_aerocom(data, region=None, fig=None, **kwargs):
@@ -512,14 +514,32 @@ if __name__ == "__main__":
     close('all')
     
     import pyaerocom as pya
-    import numpy as np
     
-    lats = np.arange(-30, 60)
-    lons = np.linspace(-90, 90)
     
-    data = np.ones((len(lats), len(lons)))
-    data [20:40, 20:40] = 2
-    ax = pya.plot.mapping.plot_griddeddata_on_map(data, 
-                                                  lons=lons, 
-                                                  lats=lats, vmin=0, vmax=2,
-                                                  log_scale=False)
+    data = pya.io.ReadGridded('AEROCOM-MEAN_AP3-CTRL').read_var('od550aer')#.resample_time('yearly')
+    
+    num = 100
+    levels = np.percentile(data.cube.data, np.linspace(0,100, num))
+    
+    levs = []
+    
+    last = -999999999999
+    for lev in levels:
+        rounded = np.round(lev, -pya.mathutils.exponent(lev)+1)
+        if not rounded > last: #skip
+            print('Skipping', rounded)
+            continue
+        levs.append(rounded)
+        last = rounded
+    
+        
+        
+    
+    print(levels)
+    print(levs)
+    fig = plot_griddeddata_on_map(data, cbar_levels=levs, add_zero=True)
+    
+    yticks = fig.axes[-1].get_yticklabels()
+    
+    for tick in yticks:
+        print(tick)

@@ -471,7 +471,47 @@ class Colocator(ColocationSetup):
                                   stop=self.stop, 
                                   is_model=True, 
                                   **kwargs)
+    
+    
+    def read_ungridded(self, vars_to_read=None):
+        obs_reader = ReadUngridded(self.obs_id)
+        if vars_to_read is None:
+            vars_to_read = self.obs_vars
+        obs_vars = []
+        for var in vars_to_read:
+            if var in obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES:
+                obs_vars.append(var)
+            else:
+                const.print_log.warn('Variable {} is not supported by {} '
+                                     'and will be skipped'
+                                     .format(var, self.obs_id))
+        if len(obs_vars) == 0:
+            raise DataCoverageError('No observation variable matches found for '
+                                    '{}'.format(self.obs_id))
         
+        if self.read_opts_ungridded is not None:
+            ropts = self.read_opts_ungridded
+        else:
+            ropts = {}
+        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                                   vars_to_retrieve=obs_vars,
+                                   **ropts)
+        if 'obs_filters' in self:
+            remaining_filters = self._eval_obs_filters()
+            obs_data = obs_data.apply_filters(**remaining_filters)
+            
+        if self.remove_outliers:
+            #self._update_var_outlier_ranges(obs_vars=obs_vars)
+            for var in obs_vars:
+                low, high=None, None
+                try:
+                    low, high = self.var_ref_outlier_ranges[var]
+                except:
+                    pass
+                    
+                obs_data.remove_outliers(var, inplace=True, 
+                                         low=low, high=high)
+        return obs_data
     # ToDo: cumbersome (together with _find_var_matches, review whole handling
     # of vertical codes for variable mappings...)
     def _read_gridded(self, reader, var_name, start, stop, is_model=True,
@@ -485,10 +525,11 @@ class Colocator(ColocationSetup):
         else:
             vert_which = None
             ts_type_read = self.obs_ts_type_read
-        msg = ('No data files available for dataset {} ({})'
-               .format(reader.data_id, var_name))
+
         try:
             # set defaults if input was not specified explicitely
+            if ts_type_read is None and not self.flex_ts_type_gridded:
+                ts_type_read = self.ts_type
             if not 'vert_which' in kwargs:
                 kwargs['vert_which'] = vert_which
             if not 'ts_type' in kwargs:
@@ -510,9 +551,11 @@ class Colocator(ColocationSetup):
                         vt = mva
                     elif isinstance(mva, dict) and var_name in mva:
                         vt = mva[var_name]
-                        
+
             if vt is None:
-                raise DataCoverageError(msg)
+                raise DataCoverageError(('No data files available for dataset '
+                                         '{} ({})'
+                                         .format(reader.data_id, var_name)))
             
             return reader.read_var(var_name, 
                                    start=start,
@@ -560,7 +603,7 @@ class Colocator(ColocationSetup):
         if self._log:
             self._write_log('WRITE: {}\n'.format(savename))
             print_log.info('Writing file {}'.format(savename))
-        
+            
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         model_reader = ReadGridded(self.model_id)
@@ -585,6 +628,8 @@ class Colocator(ColocationSetup):
         obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
                                    vars_to_retrieve=obs_vars,
                                    **ropts)
+        
+        # ToDo: consider removing outliers already here.
         if 'obs_filters' in self:
             remaining_filters = self._eval_obs_filters()
             obs_data = obs_data.apply_filters(**remaining_filters)
@@ -593,9 +638,6 @@ class Colocator(ColocationSetup):
             self._update_var_outlier_ranges(var_matches)
                             
         #all_ts_types = const.GRID_IO.TS_TYPES
-        
-        
-        
         data_objs = {}
         for model_var, obs_var in var_matches.items():
             
@@ -960,22 +1002,37 @@ class Colocator(ColocationSetup):
         self.file_status[coldata_savename] = 'exists_not'
         return False
     
-    def _update_var_outlier_ranges(self, var_matches):
-        if not isinstance(self.var_outlier_ranges, dict):
-            return
-        for mvar, ovar in var_matches.items():
+    def _update_var_outlier_ranges(self, var_matches=None, obs_vars=None, 
+                                   mod_vars=None):
+        if isinstance(var_matches, dict):
+            obs_vars = list(var_matches.values())
+            mod_vars = list(var_matches.keys())
             
-            oname = const.VARS[ovar].var_name
-            if oname != ovar:
-                if ovar in self.var_outlier_ranges:
-                    if not oname in self.var_outlier_ranges:
-                        self.var_outlier_ranges[oname] = self.var_outlier_ranges[ovar]
-                    
-            mname = const.VARS[mvar].var_name
-            if mname != mvar:
-                if mvar in self.var_outlier_ranges:
-                    if not mname in self.var_outlier_ranges:
-                        self.var_outlier_ranges[mname] = self.var_outlier_ranges[mvar]
+        oor = self.var_ref_outlier_ranges
+        mor = self.var_outlier_ranges
+        
+        if isinstance(mor, dict) and isinstance(mod_vars, list):
+            for mvar in mod_vars:
+                mname = const.VARS[mvar].var_name
+                if mname != mvar and mvar in mor and not mname in mor:
+                    self.var_outlier_ranges[mname] = mor[mvar]
+        
+        if isinstance(oor, dict) and isinstance(obs_vars, list):
+            for ovar in obs_vars:
+                oname = const.VARS[ovar].var_name
+                if (oname != ovar and ovar in oor and not oname in oor):
+                    self.var_ref_outlier_ranges[oname] = oor[ovar]
+# =============================================================================
+#         for mvar, ovar in var_matches.items():
+#             if isinstance(oor, dict): 
+#                 oname = const.VARS[ovar].var_name
+#                 if (oname != ovar and ovar in oor and not oname in oor):
+#                         self.var_ref_outlier_ranges[oname] = oor[ovar]
+#             if isinstance(mor, dict):
+#                 mname = const.VARS[mvar].var_name
+#                 if mname != mvar and mvar in mor and not mname in mor:
+#                     self.var_outlier_ranges[mname] = mor[mvar]
+# =============================================================================
 
     def __call__(self, **kwargs):
         raise NotImplementedError

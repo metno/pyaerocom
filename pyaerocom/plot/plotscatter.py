@@ -25,7 +25,8 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                          filter_name=None, lowlim_stats=None, 
                          highlim_stats=None, loglog=None, savefig=False, 
                          save_dir=None, save_name=None, ax=None, figsize=None, 
-                         fontsize_base=10, marker='+', color='k', alpha=0.5,
+                         fontsize_base=11, fontsize_annot=None, 
+                         marker='+', color='k', alpha=0.5,
                          **kwargs):
     """Method that performs a scatter plot of data in AEROCOM format
     
@@ -64,7 +65,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         VARS = const.VARS.DEFAULT
     if loglog is None:
         loglog = VARS.scat_loglog
-        
+    
     xlim = VARS['scat_xlim']
     ylim = VARS['scat_ylim']
     
@@ -143,17 +144,19 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     if not str(unit) in ['1', 'no_unit']:
         var_str += ' [{}]'.format(unit)
 
+    if fontsize_annot is None:
+        fontsize_annot = fontsize_base
     ax.annotate("{} #: {} # st: {}".format(var_str, 
                         statistics['num_valid'], stations_ok),
                         xy=xypos['var_info'], xycoords='axes fraction', 
-                        fontsize=fontsize_base+4, color='red')
+                        fontsize=fontsize_annot+4, color='red')
 
     ax.annotate('Mean (x-data): {:.{}f}; Rng: [{:.{}f}, {:.{}f}]'
                 .format(statistics['refdata_mean'], _ndig,
                         np.nanmin(x_vals),_ndig,
                         np.nanmax(x_vals), _ndig),
                 xy=xypos['refdata_mean'], xycoords='axes fraction', 
-                fontsize=fontsize_base, 
+                fontsize=fontsize_annot, 
                 color='red')
     
     ax.annotate('Mean (y-data): {:.{}f}; Rng: [{:.{}f}, {:.{}f}]'
@@ -161,42 +164,42 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                         np.nanmin(y_vals),_ndig,
                         np.nanmax(y_vals), _ndig),
                 xy=xypos['data_mean'], xycoords='axes fraction', 
-                fontsize=fontsize_base, 
+                fontsize=fontsize_annot, 
                 color='red')
     
     ax.annotate('NMB: {:.1f}%'.format(statistics['nmb']*100),
                         xy=xypos['nmb'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, color='red')
+                        fontsize=fontsize_annot, color='red')
     
     ax.annotate('MNMB: {:.1f}%'.format(statistics['mnmb']*100),
                         xy=xypos['mnmb'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, color='red')
+                        fontsize=fontsize_annot, color='red')
     
     ax.annotate('R (Pearson): {:.3f}'.format(statistics['R']),
                         xy=xypos['R'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, color='red')
+                        fontsize=fontsize_annot, color='red')
 
     ax.annotate('RMS: {:.3f}'.format(statistics['rms']),
                         xy=xypos['rms'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, color='red')
+                        fontsize=fontsize_annot, color='red')
     
     ax.annotate('R (Kendall): {:.3f}'.format(statistics['R_kendall']),
                         xy=xypos['R_kendall'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, color='red')
+                        fontsize=fontsize_annot, color='red')
     
     
     ax.annotate('FGE: {:.1f}'.format(statistics['fge']),
                         xy=xypos['fge'], xycoords='axes fraction', 
-                        fontsize=fontsize_base, color='red')
+                        fontsize=fontsize_annot, color='red')
     # right lower part
     ax.annotate('{}'.format(ts_type),
                         xy=xypos['ts_type'], xycoords='axes fraction', 
                         ha='center', 
-                        fontsize=fontsize_base, color='black')
+                        fontsize=fontsize_annot, color='black')
     ax.annotate('{}'.format(filter_name),
                         xy=xypos['filter_name'], xycoords='axes fraction', 
                         ha='center', 
-                        fontsize=fontsize_base, color='black')
+                        fontsize=fontsize_annot, color='black')
     
     ax.set_aspect('equal')
     

@@ -606,11 +606,12 @@ class AerocomEvaluation(object):
         #ts_type = coldata.meta['ts_type']
         vert_code = self.get_vert_code(obs_name, obs_var)
         
+        
         # data used for heatmap display in interface
         if stacked:    
-            hmd = ColocatedData(data_arrs['monthly'].unstack('station_name'))
+            hmd = ColocatedData(data_arrs[ts_type].unstack('station_name'))
         else:
-            hmd = ColocatedData(data_arrs['monthly'])
+            hmd = ColocatedData(data_arrs[ts_type])
 
         for reg in get_all_default_region_ids():
             filtered = hmd.apply_latlon_filter(region_id=reg)
@@ -883,6 +884,9 @@ class AerocomEvaluation(object):
                     m = ColocatedData.get_meta_from_filename(fname)
                     match = (m['data_source'][0] == obs_name and
                              m['data_source'][1] == model_name)
+                    if var_name is not None:
+                        if not m['var_name'] == var_name:
+                            match = False
                     if match:
                         files.append(os.path.join(coldata_dir, fname))
                 except:
@@ -1215,9 +1219,17 @@ class AerocomEvaluation(object):
                 self._log.info('Skipping observation {}'.format(obs_name))
                 continue
             for model_name in model_list:
+                if model_name == obs_name:
+                    msg = ('Cannot run same dataset against each other'
+                           '({} vs. {})'.format(model_name, model_name))
+                    self._log.info(msg)
+                    const.print_log.info(msg)
+                    continue
+                    
                 if model_name in self.model_ignore:
                     self._log.info('Skipping model {}'.format(model_name))
                     continue
+                
             
                 col = self.run_colocation(model_name, obs_name, var_name)
                 if only_colocation:
@@ -1281,35 +1293,16 @@ class AerocomEvaluation(object):
         #col.update(**kwargs)
         data = col.read_model_data(var_name, **kwargs)
         return data
-# =============================================================================
-#         from pyaerocom.io import ReadGridded
-#         r = ReadGridded(mcfg['model_id'])
-#         try:
-#             var_name = mcfg['model_use_vars'][var_name]
-#         except:
-#             pass
-#         
-#         if 'model_read_aux' in mcfg and var_name in mcfg['model_read_aux']:
-#             aa = mcfg['model_read_aux'][var_name]
-#             
-#         
-#             r.add_aux_compute(var_name, vars_required=aa['vars_required'], 
-#                               fun=aa['fun'])
-#         
-#         if 'model_ts_type_read' in mcfg:
-#             ts_type = mcfg['model_ts_type_read']
-#         else:
-#             ts_type = self.ts_type
-#         return r.read_var(var_name, ts_type=ts_type, **kwargs)
-# =============================================================================
     
-    def read_obsdata(self, obs_name):
+    def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
         """Read observation network"""
-        from pyaerocom.io import ReadUngridded
-        cfg = self.obs_config[obs_name]
-        obs_vars = cfg['obs_vars']
-        obs_id = cfg['obs_id']
-        return ReadUngridded().read(obs_id, obs_vars)
+        
+        col = Colocator()
+        col.update(**self.colocation_settings)
+        col.update(**self.obs_config[obs_name])
+        
+        data = col.read_ungridded(vars_to_read)
+        return data
         
     def _info_from_map_file(self, filename):
         f = filename

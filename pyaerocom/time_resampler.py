@@ -178,6 +178,7 @@ class TimeResampler(object):
         _idx = self._gen_idx(from_ts_type, to_ts_type, min_num_obs)
         data = self.input_data
         for to_ts_type, mno in _idx:
+            const.logger.info('TO: {} ({})'.format(to_ts_type, mno))
             data = self.fun(data, freq=to_ts_type, how=how,
                             min_num_obs=mno)
         self.last_setup = dict(apply_constraints=True,
