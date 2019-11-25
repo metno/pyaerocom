@@ -267,6 +267,9 @@ def infer_time_resolution(time_stamps):
     Ret    
     """
     import pandas as pd
+    from pyaerocom import const
+
+
     if not isinstance(time_stamps, pd.DatetimeIndex):
         try:
             time_stamps = pd.DatetimeIndex(time_stamps)
@@ -316,6 +319,7 @@ def get_standard_name(var_name):
     str
         corresponding standard name
     """
+    from pyaerocom import const
     return const.VARS[var_name].standard_name
 
 def get_standard_unit(var_name):
@@ -334,6 +338,7 @@ def get_standard_unit(var_name):
     str
         corresponding standard unit
     """
+    from pyaerocom import const
     return const.VARS[var_name].unit
 
 def get_lowest_resolution(ts_type, *ts_types):
@@ -519,6 +524,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
         requires that information about the temporal resolution (ts_type) of
         the data is available in each of the StationData objects.
     """    
+    from pyaerocom import const
     if isinstance(var_name, list):
         if len(var_name) > 1:
             raise NotImplementedError('Merging of multivar data not yet possible')
