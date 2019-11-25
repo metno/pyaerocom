@@ -751,6 +751,7 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     Series
         resampled time series object
     """
+    from pyaerocom import const
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     resampler = s.resample(freq, loffset=loffset)
     if min_num_obs is None:

@@ -49,7 +49,6 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.vert_coords import AltitudeAccess
 
-
 class GriddedData(object):
     """Base class representing model data
     
@@ -1062,7 +1061,7 @@ class GriddedData(object):
     def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
                           vert_scheme='surface', add_meta=None):
 
-        # data contains vertical dimension
+        # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
     
         # ToDo: check if _to_timeseries_2D can be called here                    
@@ -1071,10 +1070,9 @@ class GriddedData(object):
     
     def filter_region(self, region_id=None, thresh_coast = 0.5, inplace = False):
         """
-        TODO write documentation
+        TODO. Write documentation.
         
-        Update this to know if its a htap region
-        
+        Update this to know if its a htap region.
         Should take EUROPE-noMountains-LAND/OCN as input.
         """
         

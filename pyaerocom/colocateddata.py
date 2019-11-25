@@ -893,8 +893,8 @@ if __name__=="__main__":
                                                          remove_outliers=True, 
                                                          colocate_time=False)
     coldata1.plot_coordinates()
-    coldata1.filter_region(region_id = 'SEAhtap')
-    coldata1.plot_coordinates()
+    #coldata1.filter_region(region_id = 'SEA')
+    #coldata1.plot_coordinates()
     #coldata1 = coldata1.resample_time('yearly', colocate_time=True)
     #coldata1.plot_coordinates()
     #print()

@@ -627,8 +627,7 @@ class UngriddedData(object):
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert, 
                                   start=None, stop=None):
         """Convert one metadata index to StationData (helper method)
-        
-        
+            
         See :func:`to_station_data` for input parameters
         """
         # may or may not be defined in metadata block
@@ -1220,17 +1219,23 @@ class UngriddedData(object):
         if region_id is None:
             raise ValueError("Specify a region_id. Available regions: {}.".format(available_region_mask()))
 
+        # 1. find matches -> list of meta indices that are in region
+        # 2. Get total number of datapoints -> defines shape of output UngriddedData
+        # 3. Create 
+        
         ungridded = self.copy()
-    
-        data      = ungridded._data
-        _metadata = ungridded.metadata
+        
+        # TOTNUM = 'find out'
+        # ungridded = UngriddedData(num_points=TOTNUM)
+        
+        data          = ungridded._data
+        _metadata     = ungridded.metadata
+        meta_indecies = ungridded.meta_idx
         
         mask = load_region_mask_xr(region_id=region_id)   
-
-        test = _metadata.copy().items()
         indexes_to_drop = []
         
-        for key, meta in test:
+        for key, meta in _metadata.copy().items():
             lat = meta['latitude']
             lon = meta['longitude']
         
@@ -1238,15 +1243,54 @@ class UngriddedData(object):
             
             if mask_pixel < 1:
                 del ungridded.metadata[key]
+                meta_indecies.pop(key) 
                 
                 if len(self.vars_to_retrieve) == 1 and isinstance(self.vars_to_retrieve, list):
                     indexes_to_drop.append(self.meta_idx[key][self.vars_to_retrieve[0]]) # update to vars to read.
                 else:
                     raise NotImplementedError("Not filtering for ungridded data object containing "+
                                               "several variables. Current vars to retrieve {}".format(self.vars_to_retrieve))
-                
         rem = np.concatenate(indexes_to_drop)
-        ungridded._data = np.delete(data, rem, axis = 0)
+        data = np.delete(data, rem, axis = 0)
+
+        totnum_new = len(data)
+        meta_matches = meta_indecies
+
+        new = UngriddedData(num_points=totnum_new)
+        # loop over old meta_idx and extract data and create new meta_idx in 
+        # output data object
+        meta_idx_new = 0
+        data_idx_new = 0
+        
+        for meta_idx in meta_matches:
+            meta = self.metadata[meta_idx]
+            new.metadata[meta_idx_new] = meta
+            new.meta_idx[meta_idx_new] = od()
+            
+            for var in meta['variables']:
+                indices = self.meta_idx[meta_idx][var]
+                totnum = len(indices)
+
+                stop = data_idx_new + totnum
+                
+                new._data[data_idx_new:stop, :] = self._data[indices, :]
+                new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
+                                                            stop)
+                new.var_idx[var] = self.var_idx[var]
+                data_idx_new += totnum
+            
+            meta_idx_new += 1
+
+        if meta_idx_new == 0 or data_idx_new == 0:
+            raise DataExtractionError('Filtering results in empty data object')
+        
+        new._data = new._data[:data_idx_new]
+        
+        # write history of filtering applied 
+        new.filter_hist.update(self.filter_hist)
+        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+        new.filter_hist[int(time_str)] = 'filter region'
+        new.data_revision.update(self.data_revision)
         
         if len(list(ungridded.metadata.keys())) == 0:
             raise ValueError("Applying filter leaves no data.")
@@ -1373,15 +1417,20 @@ class UngriddedData(object):
     
         if 'variables' in filter_attributes:
             raise NotImplementedError('Cannot yet filter by variables')
-            
+        
+        # separate filters by strin, list, etc.
         filters = self._init_meta_filters(**filter_attributes)
-
+        
+        # find all metadata blocks that match the filters
         meta_matches, totnum_new = self._find_meta_matches(*filters)
         if len(meta_matches) == len(self.metadata):
             const.print_log.info('Input filters {} result in unchanged data '
                                  'object'.format(filter_attributes))
             return self
+        # make a new empty object with the right size (totnum_new)
         new = UngriddedData(num_points=totnum_new)
+        # loop over old meta_idx and extract data and create new meta_idx in 
+        # output data object
         for meta_idx in meta_matches:
             meta = self.metadata[meta_idx]
             new.metadata[meta_idx_new] = meta

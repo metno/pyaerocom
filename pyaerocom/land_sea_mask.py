@@ -32,11 +32,12 @@ def load_region_mask_xr(region_id='PAN'):
     from pyaerocom import const
     path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
     path = const.FILTERMASKKDIR
-    path = os.path.join(const.FILTERMASKKDIR, 'htap_masks/')
-    print("region_id {}".format(region_id))
+    #path = os.path.join(const.FILTERMASKKDIR, 'htap_masks/')
+    #print("region_id {}".format(region_id))
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
             if r not in const.OLD_AEROCOM_REGIONS:
+                print(r)
                 fil =  glob.glob( os.path.join( path, '{}*.nc'.format(r)))[0]
                 if i == 0:
                     masks = xr.open_dataset(fil)[r+'htap']
@@ -45,6 +46,7 @@ def load_region_mask_xr(region_id='PAN'):
         masks = masks.where(masks < 1, 1)
     else:
         #region_id  = region_id.split("HTAP")[0]
+        print(region_id)
         if region_id not in const.OLD_AEROCOM_REGIONS:
             fil =  glob.glob( os.path.join( path, '{}*.nc'.format(region_id)))[0]
             masks = xr.open_dataset(fil)[region_id+'htap']
@@ -57,32 +59,32 @@ def load_region_mask_iris(region_id='PAN'):
     Returns
     ---------
     mask : xarray.DataArray containing the masks. 
-    
-    TODO : Update this one to send in a list and return the sum of the list. 
-    
-    pya.const.OUTPUTDIR
 
     Load : each cube seperatly and merge then after updating var_name
     """
     from pyaerocom import const
-    path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
-    path = os.path.join(const.FILTERMASKKDIR, 'htap_masks/')
-    print()
+    path = const.FILTERMASKKDIR
+    
     files = []
     cubes = []
+
     if isinstance(region_id, list):
         for r in region_id:
-            #region_id = r.split("HTAP")[0]
+            #print("   øksdhfja")
             if r not in const.OLD_AEROCOM_REGIONS:
-                fil = glob.glob(path + r + '*.nc')[0]
+                #print(glob.glob(path + r + '*.nc'))
+                #print("   øksdhfja")
+                path = os.path.join(path, r)
+                fil = glob.glob(path + '*.nc')[0]
                 files.append(fil)
                 masks = load_cube(fil)
                 cubes.append(masks)
+                
         merged = np.max([x.data for x in cubes], axis = 0)
         merged_cube = numpy_to_cube(merged, dims=(cubes[0].coords()[0], cubes[0].coords()[1]))
     else:
-        #region_id = region_id.split("HTAP")[0]
-        fil = glob.glob(path + region_id + '*.nc')[0]
+        path = os.path.join(path, region_id)
+        fil = glob.glob(path + '*.nc')[0]
         merged_cube = load_cube(fil)
         return merged_cube
 
@@ -136,6 +138,7 @@ def download_mask():
     return 
 
 if __name__ == '__main__':
-   download_mask()
+   print(load_region_mask_xr())
+   print(load_region_mask_iris())
    #download_mask()
    print('hello')

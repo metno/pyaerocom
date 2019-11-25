@@ -476,7 +476,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     grid_ts_type = gridded_data.ts_type
     
-    if ts_type is None or TsType(grid_ts_type)  < TsType(ts_type):
+    if ts_type is None or TsType(grid_ts_type) < TsType(ts_type):
         ts_type = grid_ts_type
     
     if start is None:
@@ -505,10 +505,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     regfilter = Filter(name=filter_name)
     
     # apply filter to data
-    ungridded_data = regfilter(ungridded_data)
+    ungridded_data = regfilter.apply(ungridded_data)
     
     #crop time
-    gridded_data = gridded_data.crop(time_range=(start, stop))
+    gridded_data = regfilter.apply(gridded_data)
+    #gridded_data.crop(time_range=(start, stop))
     
     if regrid_res_deg is not None:
         gridded_data = gridded_data.regrid(lat_res_deg=regrid_res_deg,

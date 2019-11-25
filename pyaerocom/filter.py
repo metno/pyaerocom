@@ -7,7 +7,6 @@ Created on Thu Aug 16 09:03:31 2018
 """
 
 import os
-import urllib
 import glob 
       
 from pyaerocom import logger, print_log
@@ -120,10 +119,12 @@ class Filter(BrowseDict):
         """
         # intitialise
         self.set_region(spl[0])
+        
         if len(spl) > 1:
             alt_filter = spl[1]
         else:
             alt_filter = 'wMOUNTAINS'
+            
         if len(spl) > 2: 
             land_sea = spl[2]
             self.set_land_sea_filter(land_sea)
@@ -135,10 +136,7 @@ class Filter(BrowseDict):
             raise AttributeError('No such land sea filter: {}. Available '
                                  'filters are: {}'.format(filter_name, 
                                                self.LAND_OCN_FILTERS))
-        #self.alt_range = self.LAND_OCN_FILTERS[filter_name]
         self.land_ocn = filter_name
-        #spl = self.name.split('-')
-        #self._name = '{}-{}-{}'.format(spl[0], filter_name)
         return         
         
     def set_altitude_filter(self, filter_name):
@@ -157,6 +155,7 @@ class Filter(BrowseDict):
         return 
     
     def set_region(self, region):
+        
         if isinstance(region, str):
             region = Region(region)
         if not isinstance(region, Region):
@@ -172,8 +171,6 @@ class Filter(BrowseDict):
             self._name = '{}-{}-{}'.format(region.name, spl[1], self.land_ocn)
         else:
             self._name = '{}-{}'.format(region.name, spl[1])
-        
-     
     
     @property
     def region_name(self):
@@ -215,25 +212,19 @@ class Filter(BrowseDict):
         return data_obj.apply_latlon_filter(region_id=self.region_name)
 
     def _check_if_htap_region_are_available_and_download(self):
-        
-        #path = '/home/hannas/MyPyaerocom/htap_masks/'
         from pyaerocom import const
-        #region_list = const.HTAP_REGIONS
         path = const.FILTERMASKKDIR
 
         if os.path.exists(path):
-            # check if htap regions are available in 
-            nbr_files = len(glob.glob( os.path.join(path, 'htap_masks') + '*.nc'  ) ) 
-            if nbr_files <= 0:
+            nbr_files = len(glob.glob( os.path.join(path, '*.nc'  ) ) )
+            if nbr_files == 0:
                 print("Directory exit but doesn't contain any masks.")
-                # download 
                 download_mask()
             else:
                 print('Masks are available in MyPyaerocom')
                 return 
         else:
-            # download 
-            print("Creates directory {}.".format(path))
+            print("Creates directory {} and download masks. ".format(path))
             try: 
                 os.mkdir(path) 
                 download_mask()
@@ -276,20 +267,24 @@ class Filter(BrowseDict):
             return data_obj.filter_region(region_id=r_id) 
             
         else:
-            # applies first land and sea mask, then the dquare region mask
+            
+            if isinstance(data_obj, UngriddedData):
+                data_obj = self._apply_ungridded(data_obj)
+                print(" Filters ungriddeddata")
+            elif isinstance(data_obj, GriddedData):
+                data_obj = self._apply_gridded(data_obj)
+                print(" Gridded data ")
+            elif isinstance(data_obj, ColocatedData):
+                data_obj = self._apply_colocated(data_obj)
+                print(" Colocated data  ")
+            #raise IOError('Cannot filter {} obj, need instance of GriddedData or '
+            #              'UngriddedData'.format(type(data_obj)))
+
             if len(spl) > 2:
                 data_obj = data_obj.filter_region(region_id=spl[-1])
-                #data_obj.quickplot_map()
-                
-            if isinstance(data_obj, UngriddedData):
-                return self._apply_ungridded(data_obj)
-            elif isinstance(data_obj, GriddedData):
-                return self._apply_gridded(data_obj)
-            elif isinstance(data_obj, ColocatedData):
-                return self._apply_colocated(data_obj)
-            raise IOError('Cannot filter {} obj, need instance of GriddedData or '
-                          'UngriddedData'.format(type(data_obj)))
-
+ 
+            return data_obj
+        
     def __call__(self, data_obj):
         return self.apply(data_obj)
     
@@ -297,25 +292,47 @@ class Filter(BrowseDict):
 if __name__=="__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
-    plt.close("all")
-    f = Filter(name = 'EUR-noMOUNTAINS-OCN')
-    # data can either coloc, gridded, ungridded
-    #data = f.apply(data)
-
-    #print(f.region)
-    #data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
-
     
+    plt.close("all")
+    #f = Filter(name = 'EUROPE-noMOUNTAINS-OCN')
+    
+    #ungridded_data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily' , 'od550aer')
+    #ungridded_data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
+
+    #data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
     #data.quickplot_map()
     #data.filter_region(region_id  = 'EUROPE-noMOUNTAINS-OCN')
-
-
-
-    ungridded_data = pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
-    ungridded_data = f.apply(ungridded_data)
-    #ungridded_data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
+    #data = f.apply(data)
+    #data.quickplot_map()
+    #data_coloc = pya.colocation.colocate_gridded_ungridded(data, ungridded_data, ts_type='monthly',
+    #                                                       filter_name='WORLD-noMOUNTAINS')
+    #data_coloc    
+    import pyaerocom as pya
+    pya.change_verbosity('critical')
     
-    #ungridded = f.apply(ungridded_data)
-    #ungridded_data = f.apply(ungridded_data)
-    #ungridded.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
+    YEAR = 2010
+    VAR = "od550aer"
+    TS_TYPE = "daily"
+    MODEL_ID = "ECMWF_CAMS_REAN"
+    OBS_ID = 'AeronetSunV3Lev2.daily'
+    
+    model_reader = pya.io.ReadGridded(MODEL_ID)
+    model_data = model_reader.read_var(VAR, start=YEAR)
+    
+    obs_reader = pya.io.ReadUngridded(OBS_ID, [VAR])
+    obs_data = obs_reader.read()#.filter_by_meta(altitude=[0, 1000])
+    
+    f = Filter(name = 'EUROPE-noMOUNTAINS-OCN')
+    #model_data = f.apply(model_data)
+    #obs_data = f.apply(obs_data)
+    data_coloc_alt = pya.colocation.colocate_gridded_ungridded(model_data, obs_data, ts_type='monthly',
+                                                               filter_name='EUROPE-noMOUNTAINS-OCN',
+                                                               colocate_time=True)
+    
+    data_coloc_alt.plot_coordinates()#scatter(marker='o', mec='none', color='b', alpha=0.05);
+    plt.show()
+    
+    #data_coloc_alt.plot_station_coordinates()
+    #plt.show()
+    
     
