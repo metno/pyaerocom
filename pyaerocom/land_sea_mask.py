@@ -37,7 +37,6 @@ def load_region_mask_xr(region_id='PAN'):
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
             if r not in const.OLD_AEROCOM_REGIONS:
-                print(r)
                 fil =  glob.glob( os.path.join( path, '{}*.nc'.format(r)))[0]
                 if i == 0:
                     masks = xr.open_dataset(fil)[r+'htap']
@@ -46,12 +45,11 @@ def load_region_mask_xr(region_id='PAN'):
         masks = masks.where(masks < 1, 1)
     else:
         #region_id  = region_id.split("HTAP")[0]
-        print(region_id)
         if region_id not in const.OLD_AEROCOM_REGIONS:
             fil =  glob.glob( os.path.join( path, '{}*.nc'.format(region_id)))[0]
             masks = xr.open_dataset(fil)[region_id+'htap']
         else:
-            raise ValueError("Not a valids region")
+            raise ValueError("Not a valids region.")
     return masks
 
 def load_region_mask_iris(region_id='PAN'):

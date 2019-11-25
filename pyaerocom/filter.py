@@ -270,13 +270,10 @@ class Filter(BrowseDict):
             
             if isinstance(data_obj, UngriddedData):
                 data_obj = self._apply_ungridded(data_obj)
-                print(" Filters ungriddeddata")
             elif isinstance(data_obj, GriddedData):
                 data_obj = self._apply_gridded(data_obj)
-                print(" Gridded data ")
             elif isinstance(data_obj, ColocatedData):
                 data_obj = self._apply_colocated(data_obj)
-                print(" Colocated data  ")
             #raise IOError('Cannot filter {} obj, need instance of GriddedData or '
             #              'UngriddedData'.format(type(data_obj)))
 
