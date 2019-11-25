@@ -121,24 +121,21 @@ def get_mask(lat, lon, mask):
 
 def download_mask():
     #from urllib.request import urlopen
-    from urllib.request import urlretrieve
-    from zipfile import ZipFile
     from pyaerocom import const
+    import requests
     
     path_out = const.FILTERMASKKDIR
-    url = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks.zip'
-    name = os.path.basename(url)
-    file = os.path.join(path_out, name)
-    urlretrieve(url, file)
-    
-    with ZipFile(file, 'r') as zipObj:
-        zipObj.extractall()
-    
-    print("Succesfully downloaded masks.")
+    bse_url = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
+
+    for region in const.HTAP_REGIONS:
+        filename = '{}htap.0.1x0.1deg.nc'.format(region)      
+        url = os.path.join(bse_url, filename)
+        file_out = os.path.join(path_out, filename)
+        r = requests.get(url)
+        open(file_out, 'wb').write(r.content) 
     return 
 
-
 if __name__ == '__main__':
-   print(load_region_mask_xr(region_id='EUR'))
+   download_mask()
    #download_mask()
    print('hello')
