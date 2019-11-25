@@ -51,7 +51,7 @@ def test_read_var(dataset):
             d.latitude.points[0],
             d.latitude.points[-1],
             d[0].mean()]
-    nominal = [-180.0, 178.875, 90.0, -90.0, 0.08924646]
+    nominal = [-180.0, 178.875, 90.0, -90.0, 0.11248]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
     return d
 
@@ -64,24 +64,29 @@ def test_prefer_longer(dataset):
     
 @lustre_unavail
 def test_read_vars(dataset):
-    d = dataset.read(['od440aer', 'od550aer', 'od865aer'], 
-                     ts_type="daily", start=START, stop=STOP)
-    vals = [len(d),
-            sum(d[0].shape),
-            sum(d[1].shape),
-            sum(d[2].shape)]
+    data = dataset.read(['od440aer', 'od550aer', 'od865aer'], 
+                        ts_type="daily", start=START, stop=STOP)
+    vals = [len(data),
+            sum(data[0].shape),
+            sum(data[1].shape),
+            sum(data[2].shape)]
     nominal = [3, 2307, 2307, 2307]
     npt.assert_array_equal(vals, nominal)
     
-    vals = [d[0][1825].mean(), d[1][1825].mean(), d[2][1825].mean()]
-    nominal = [0.11754113, 0.09734518, 0.06728536]
+    vals = [data[0][1825].mean(), 
+            data[1][1825].mean(), 
+            data[2][1825].mean()]
+    #nominal = [0.11754113, 0.09734518, 0.06728536]
+    # updated on 25.11.2019 since now by default area weighted mean is used
+    nominal = [0.14793, 0.12195, 0.08345]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
-    return d
     
 if __name__=="__main__":
     ds = make_dataset()
+    test_read_var(ds)
     test_years_available(ds)
     test_file_info(ds)
     test_read_vars(ds)
+    
     
     

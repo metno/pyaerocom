@@ -7,6 +7,7 @@ Created on Thu Apr 12 14:45:43 2018
 """
 
 import pytest
+import os
 import numpy.testing as npt
 from datetime import datetime
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
@@ -54,6 +55,21 @@ def data_osuite():
 
 ### tests
 @lustre_unavail
+def test_cams_rean_basic_properties(data_cams_rean):
+    
+    data =  data_cams_rean
+    assert data.ts_type == 'daily'
+    assert str(data.start) == '2010-01-01T00:00:00.000000'
+    assert str(data.stop) == '2012-12-31T23:59:59.999999'
+    assert len(data.time.points) == 1096
+    assert data.data_id == 'ECMWF_CAMS_REAN'
+    ff = ['aerocom.ECMWF_CAMS_REAN.daily.od550aer.2010.nc',
+          'aerocom.ECMWF_CAMS_REAN.daily.od550aer.2011.nc',
+          'aerocom.ECMWF_CAMS_REAN.daily.od550aer.2012.nc']
+    assert [os.path.basename(x) for x in data.from_files] == ff
+    assert data.shape == (1096, 161, 320)
+    
+@lustre_unavail
 def test_longitude(data_cci, data_osuite):
     """Test if longitudes are defined right"""
     lons_cci = data_cci.longitude.points
@@ -92,29 +108,25 @@ def test_time(data_cci, data_osuite):
 
 
 @lustre_unavail
-def test_downscale_time(data_cams_rean):
-    
+def test_resample_time(data_cams_rean):
     data = data_cams_rean
-    print(data)
     
-    monthly = data.downscale_time('monthly')
-    yearly = data.downscale_time('yearly')
+    monthly = data.resample_time('monthly')
+    yearly = data.resample_time('yearly')
     
-    npt.assert_array_equal(data.shape, (1097, 161, 320))
-    npt.assert_array_equal(monthly.shape, (37, 161, 320))
-    npt.assert_array_equal(yearly.shape, (4, 161, 320))
+    npt.assert_array_equal(data.shape, (1096, 161, 320))
+    npt.assert_array_equal(monthly.shape, (36, 161, 320))
+    npt.assert_array_equal(yearly.shape, (3, 161, 320))
     
     mean_vals = [data.mean(), monthly.mean(), yearly.mean()]
     npt.assert_allclose(actual=mean_vals,
-                        desired=[0.1213392669166126, 
-                                 0.12069144475849365, 
-                                 0.11591256935171756], rtol=TEST_RTOL)
+                        desired=[0.14915, 
+                                 0.14906, 
+                                 0.14906], rtol=TEST_RTOL)
 
 if __name__=="__main__":
-    import warnings
-    warnings.filterwarnings('ignore')
-    pytest.main()
     
-    
+    data = _load_cams_rean()
+    test_resample_time(data)
     
     
