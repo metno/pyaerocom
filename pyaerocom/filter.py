@@ -308,8 +308,8 @@ if __name__=="__main__":
     #                                                       filter_name='WORLD-noMOUNTAINS')
     #data_coloc    
     import pyaerocom as pya
-    pya.change_verbosity('critical')
-    
+    pya.change_verbosity('ignore')
+    plt.show()    
     YEAR = 2010
     VAR = "od550aer"
     TS_TYPE = "daily"
@@ -330,7 +330,7 @@ if __name__=="__main__":
                                                                colocate_time=True)
     
     data_coloc_alt.plot_coordinates()#scatter(marker='o', mec='none', color='b', alpha=0.05);
-    plt.show()
+
     
     #data_coloc_alt.plot_station_coordinates()
     #plt.show()
