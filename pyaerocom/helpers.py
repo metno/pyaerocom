@@ -824,9 +824,10 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         if not pd_freq in XARR_TIME_GROUPERS:
             raise ValueError('Cannot infer xarray grouper for ts_type {}'
                              .format(to.val))
-        gr = XARR_TIME_GROUPERS[pd_freq]
+        #gr = XARR_TIME_GROUPERS[pd_freq]
         # 2D mask with shape of resampled data array
-        invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+        #invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+        invalid = arr.resample(time=pd_freq).count(dim='time') < min_num_obs
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     arr = arr.resample(time=pd_freq, loffset=loffset).mean(dim='time')
