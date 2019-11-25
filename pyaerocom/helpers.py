@@ -13,7 +13,7 @@ import xarray as xray
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
-from pyaerocom import logger, const
+from pyaerocom import logger
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    PANDAS_RESAMPLE_OFFSETS,
@@ -143,6 +143,7 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
         
         
     """
+    from pyaerocom import const
     if len(coord_vals) < 2:
         const.print_log.warning('Checking coordinate values for circularity '
                                 'failed since coord array has less than 2 values')
@@ -266,6 +267,9 @@ def infer_time_resolution(time_stamps):
     Ret    
     """
     import pandas as pd
+    from pyaerocom import const
+
+
     if not isinstance(time_stamps, pd.DatetimeIndex):
         try:
             time_stamps = pd.DatetimeIndex(time_stamps)
@@ -315,6 +319,7 @@ def get_standard_name(var_name):
     str
         corresponding standard name
     """
+    from pyaerocom import const
     return const.VARS[var_name].standard_name
 
 def get_standard_unit(var_name):
@@ -333,6 +338,7 @@ def get_standard_unit(var_name):
     str
         corresponding standard unit
     """
+    from pyaerocom import const
     return const.VARS[var_name].unit
 
 def get_lowest_resolution(ts_type, *ts_types):
@@ -518,6 +524,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
         requires that information about the temporal resolution (ts_type) of
         the data is available in each of the StationData objects.
     """    
+    from pyaerocom import const
     if isinstance(var_name, list):
         if len(var_name) > 1:
             raise NotImplementedError('Merging of multivar data not yet possible')
@@ -750,6 +757,7 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     Series
         resampled time series object
     """
+    from pyaerocom import const
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     resampler = s.resample(freq, loffset=loffset)
     if min_num_obs is None:
@@ -816,9 +824,10 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         if not pd_freq in XARR_TIME_GROUPERS:
             raise ValueError('Cannot infer xarray grouper for ts_type {}'
                              .format(to.val))
-        gr = XARR_TIME_GROUPERS[pd_freq]
+        #gr = XARR_TIME_GROUPERS[pd_freq]
         # 2D mask with shape of resampled data array
-        invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+        #invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
+        invalid = arr.resample(time=pd_freq).count(dim='time') < min_num_obs
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     arr = arr.resample(time=pd_freq, loffset=loffset).mean(dim='time')
@@ -1026,6 +1035,8 @@ def start_stop(start, stop=None):
     return (start, stop)
 
 def datetime2str(time, ts_type=None):
+    from pyaerocom import const
+
     conv = TS_TYPE_DATETIME_CONV[ts_type]
     if is_year(time):
         return str(time)

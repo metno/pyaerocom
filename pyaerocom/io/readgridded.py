@@ -46,8 +46,7 @@ from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          divide_cubes,
-                                         subtract_cubes,
-                                         lifetime_from_load_and_dep)
+                                         subtract_cubes)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                sort_ts_types,
                                get_highest_resolution)
@@ -131,7 +130,7 @@ class ReadGridded(object):
     AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
                     'od550gt1aer'   : ['od550aer', 'od550lt1aer'],
                     'conc*'         : ['mmr*', 'rho'],
-                    'mec550*'       : ['od550*', 'load*'],
+                    #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
     
@@ -141,7 +140,7 @@ class ReadGridded(object):
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
                 'od550gt1aer'  :    subtract_cubes,
                 'conc*'        :    multiply_cubes,
-                'mec550*'      :    divide_cubes,
+                #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
     
@@ -406,7 +405,8 @@ class ReadGridded(object):
             else:
                 stop = self.stop
         else:
-            stop = to_pandas_timestamp(stop)
+            stop = to_pandas_timestamp(stop) 
+            stop -= np.timedelta64(1, 's') #subtract one second to end up at the end of previous year
         if const.MIN_YEAR > start.year:
             print_log.warning('First available year {} of data {} is smaller '
                               'than supported first year {}.'

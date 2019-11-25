@@ -1,3 +1,6 @@
+# This only installs the requirment of pyaerocom, not pyaerocom itself.
+# Activate the envoirnment and run python setup.py.
+
 channels:
   - conda-forge
 dependencies:
@@ -15,3 +18,4 @@ dependencies:
   - numpy
   - simplejson
   - pytest
+  - requests

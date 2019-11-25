@@ -7,8 +7,14 @@ from os.path import join, exists
 from ast import literal_eval
 from collections import OrderedDict as od
 from configparser import ConfigParser
+
+#from pyaerocom import Config
+#const = Config()
 from pyaerocom import __dir__
 from pyaerocom._lowlevel_helpers import BrowseDict
+
+#from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
+#                                     get_mask)
 
 class Region(BrowseDict):
     """Interface that specifies an AEROCOM region
@@ -93,6 +99,15 @@ class Region(BrowseDict):
     def name(self):
         """Name of region"""
         return self._name
+    
+    @property
+    def is_htap(self):
+        from pyaerocom import const
+        
+        if self._name in const.HTAP_REGIONS:
+            return True
+        else:
+            return False
     
     def import_default(self, name):
         """Import information about default region
@@ -188,6 +203,25 @@ class Region(BrowseDict):
         lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
         return lat_ok * lon_ok
     
+    def plot(self):
+        """
+        Returns
+        --------------
+        ax 
+            Plot of masked regions
+        """
+        if not self.is_htap:
+            raise NotImplementedError("Comming soon ... ")
+            
+        from pyaerocom.plot.mapping import init_map
+        from pyaerocom.land_sea_mask import load_region_mask_xr
+        
+        ax = init_map()
+        d = load_region_mask_xr(region_id=self.name)
+        d.plot(ax=ax)    
+        # ax add geoaxes 
+        return ax        
+    
     def __contains__(self, val):
         if not isinstance(val, tuple):
             raise TypeError('Invalid input, need tuple')
@@ -211,7 +245,8 @@ class Region(BrowseDict):
 
 def all():
     """Wrapper for :func:`get_all_default_region_ids`"""
-    return get_all_default_region_ids()
+    from pyaerocom import const
+    return get_all_default_region_ids() + const.HTAP_REGIONS
 
 def get_all_default_region_ids(use_all_in_ini=False):
     """Get list containing IDs of all default regions
@@ -230,7 +265,7 @@ def get_all_default_region_ids(use_all_in_ini=False):
     """
     if not use_all_in_ini:
         from pyaerocom import const
-        return const.DEFAULT_REGIONS
+        return const.OLD_AEROCOM_REGIONS
     
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
@@ -264,7 +299,7 @@ def get_all_default_regions(use_all_in_ini=False):
     all_regions = od()
     if not use_all_in_ini:
         from pyaerocom import const
-        for region in const.DEFAULT_REGIONS:
+        for region in const.OLD_AEROCOM_REGIONS:
             all_regions[region] = Region(region)
         return all_regions
             
@@ -276,7 +311,7 @@ def get_all_default_regions(use_all_in_ini=False):
     conf_reader.read(fpath)
     
     for region in conf_reader:
-        if not region == "DEFAULT":
+        if not region == "DEFAULT": # TODO this should be updated right Jonas?
             all_regions[region] = Region(region)
         
     return all_regions
@@ -305,11 +340,13 @@ def get_regions_coord(lat, lon, **add_regions):
     list
         list of regions that contain this coordinate
     """
+     
     regs = []
     all_regs = get_all_default_regions(use_all_in_ini=False)
     for an, ar in add_regions.items():
-        if isinstance(ar, Region):
-            all_regs[an] = ar
+        if isinstance(ar, Region):      
+            if not ar.is_htap:
+                all_regs[an] = ar
 
     for rname, reg in all_regs.items():
         if rname == 'WORLD':
@@ -336,8 +373,8 @@ def find_closest_region_coord(lat, lon, **add_regions):
     Returns
     -------
     str
-        name of region
-    """
+        name of sqaure region
+    """ 
     regs = get_regions_coord(lat, lon, **add_regions)
     
     if len(regs) == 1:
@@ -365,15 +402,14 @@ def valid_region(name):
 
 if __name__=="__main__":
 
-    r = Region()
+    r = Region("EUR")
+    print(r.is_htap)
     r.import_default("EUROPE")
         
     all_ids = get_all_default_region_ids(True)
     
     lat, lon = 10, 20
     reg = find_closest_region_coord(lat, lon)
+    
     print(reg)
-        
     print(valid_region('europe'))
-    
-    
