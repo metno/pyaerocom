@@ -525,7 +525,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
     else:
-        col_freq = TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
+        col_freq = grid_ts_type#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
         obs_start = start
         obs_stop = stop
     # get timeseries from all stations in provided time resolution
