@@ -7,6 +7,7 @@ Created on Mon Nov 25 15:27:28 2019
 """
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 import numpy.testing as npt
+from pyaerocom.colocation import colocate_gridded_ungridded
 import pytest
 
 def _load_modis6aqua_aod_2010():
@@ -38,8 +39,7 @@ def test_modis_data(modis_data):
     assert data.shape == (365, 180, 360)
 
 def test_colocate_gridded_ungridded_default(modis_data, aeronet_data):
-    coldata = pya.colocation.colocate_gridded_ungridded(modis_data, 
-                                                        aeronet_data)
+    coldata = colocate_gridded_ungridded(modis_data, aeronet_data)
     assert coldata.ts_type == 'daily'
     
     stats = {'totnum'       : 97455.0, 
@@ -66,13 +66,13 @@ def test_colocate_gridded_ungridded_default(modis_data, aeronet_data):
     vals_nominal = []
     for key, val in stats_calc.items():
         assert key in stats, key
-        vals.append(val)
+        vals.append(val)    
         vals_nominal.append(stats[key])
     npt.assert_allclose(vals, vals_nominal, rtol=TEST_RTOL)
         
     
 def test_colocate_gridded_ungridded_custom(modis_data, aeronet_data):
-    coldata = pya.colocation.colocate_gridded_ungridded(
+    coldata = colocate_gridded_ungridded(
             modis_data, 
             aeronet_data, 
             ts_type='monthly',
