@@ -44,6 +44,8 @@ class ReadUngriddedBase(abc.ABC):
     
     IGNORE_META_KEYS = []
     
+    _FILEMASK = '*.*'
+    
     def __str__(self):
         return ("Dataset name: {}\n"
                 "Data directory: {}\n"
@@ -538,7 +540,10 @@ class ReadUngriddedBase(abc.ABC):
             pattern = (pattern + self._FILEMASK).replace('**', '*')
         else:
             pattern = self._FILEMASK
-            
+        if pattern is None:
+            const.print_log.warning('_FILEMASK attr. must not be None...'
+                                    'using default pattern *.* for file search')
+            pattern = '*.*'
         self.logger.info('Fetching data files. This might take a while...')
         files = sorted(glob.glob(os.path.join(self.DATASET_PATH, 
                                               pattern)))
@@ -546,7 +551,7 @@ class ReadUngriddedBase(abc.ABC):
             all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
             raise IOError("No files could be detected matching file mask {} "
                           "in dataset {}, files in folder {}:\nFiles in "
-                          "folder:{}".format(self._FILEMASK, 
+                          "folder:{}".format(pattern, 
                                   self.dataset_to_read,
                                   self.DATASET_PATH,
                                   all_str))
