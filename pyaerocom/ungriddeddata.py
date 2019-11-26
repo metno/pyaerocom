@@ -19,7 +19,7 @@ from pyaerocom.helpers import (same_meta_dict,
 from pyaerocom.metastandards import StationMetaData
 
 from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
-                                     get_mask)
+                                     get_mask_value)
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -1239,7 +1239,7 @@ class UngriddedData(object):
             lat = meta['latitude']
             lon = meta['longitude']
         
-            mask_pixel = get_mask( lat, lon, mask )
+            mask_pixel = get_mask_value(lat, lon, mask)
             
             if mask_pixel < 1:
                 del ungridded.metadata[key]
