@@ -1068,7 +1068,7 @@ class GriddedData(object):
         return data.to_time_series(sample_points, scheme, 
                                    collapse_scalar, add_meta=add_meta)
     
-    def filter_region(self, region_id=None, thresh_coast = 0.5, inplace = False):
+    def filter_region(self, region_id=None, thresh_coast=0.5, inplace=False):
         """
         TODO. Write documentation.
         
@@ -1081,10 +1081,13 @@ class GriddedData(object):
             mask_iris = load_region_mask_iris(region_id=region_id)
 
             # Reads mask to griddedata
-            mask_cube  = pya.GriddedData(mask_iris)
-            M_regr = mask_cube.regrid(self.cube)
-            mask_iris = load_region_mask_iris(region_id = region_id)
-            npm = M_regr.cube.data.data
+            mask  = pya.GriddedData(mask_iris)
+            mask = mask.regrid(self.cube)
+            
+            npm = mask.cube.data
+            
+            if np.ma.is_masked(npm):
+                npm = npm.data
 
             # Apply threshold on coast
             thresh_coast=0.5
@@ -1093,17 +1096,18 @@ class GriddedData(object):
             npm[thresh_mask] = 0
             npm[~thresh_mask] = 1
             
-            griddeddata = self.copy()
+            #griddeddata = self.copy()
             
             try:
                 if inplace:
                     griddeddata = self
                 else:
-                     griddeddata = self.copy()
+                    griddeddata = self.copy()
                 #example = ma.array([1, 2, 3], mask = [0, 1, 0])
                 
                 # UPDATE MASK WITH REGIONAL MASK.
                 griddeddata.cube.data[:, npm.astype(bool)] = np.nan
+                griddeddata.metadata['region'] = region_id
 
             except MemoryError:
                 raise NotImplementedError(" Comming soon... ")
