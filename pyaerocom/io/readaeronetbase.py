@@ -43,6 +43,8 @@ class ReadAeronetBase(ReadUngriddedBase):
     #: 'station_name', 'longitude', 'latitude', 'altitude')
     META_NAMES_FILE = {}
     
+    META_NAMES_FILE_ALT = {},
+    
     #: name of measurement instrument
     INSTRUMENT_NAME = 'sun_photometer'
     
@@ -180,14 +182,25 @@ class ReadAeronetBase(ReadUngriddedBase):
         self._last_col_order = cols
         return col_index
     
+    def _check_alternative_colnames(self, val, mapping):
+        if val in self.META_NAMES_FILE_ALT:
+            alt_names = self.META_NAMES_FILE_ALT[val]
+            if isinstance(alt_names, str) and alt_names in mapping:
+                return alt_names
+            elif isinstance(alt_names, list):
+                for alt_name in alt_names:
+                    if alt_name in mapping:
+                        return alt_name
+        raise MetaDataError("Required meta-information string {} could "
+                            "not be found in file header".format(val))
+        
     def _find_vars_pattern_based(self, mapping):
         raise NotImplementedError
         col_index = od()
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
             if not val in mapping:
-                raise MetaDataError("Required meta-information string {} could "
-                                    "not be found in file header".format(val))
+                val = self._check_alternative_colnames(val, mapping)
             col_index[key] = mapping[val]
         p = self.VAR_PATTERNS_FILE
         
@@ -214,8 +227,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
             if not val in mapping:
-                raise MetaDataError("Required meta-information string {} could "
-                                    "not be found in file header".format(val))
+                val = self._check_alternative_colnames(val, mapping)
             col_index[key] = mapping[val]
         for var, colname in self.VAR_NAMES_FILE.items():
             if colname in mapping:

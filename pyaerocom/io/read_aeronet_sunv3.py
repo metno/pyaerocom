@@ -49,7 +49,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
     """
     #: Mask for identifying datafiles 
-    _FILEMASK = '*.lev30'
+    _FILEMASK = '*.lev*'
     
     #: version log of this class (for caching)
     __version__ = '0.08_' + ReadAeronetBase.__baseversion__
@@ -62,7 +62,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
                           const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME,
                           const.AERONET_SUN_V3L2_AOD_DAILY_NAME,
                           const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME]
-    
+
     #: dictionary assigning temporal resolution flags for supported datasets
     #: that are provided in a defined temporal resolution
     TS_TYPES = {const.AERONET_SUN_V3L15_AOD_DAILY_NAME :    'daily',
@@ -102,6 +102,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     META_NAMES_FILE['time'] = 'Time(hh:mm:ss)'
     META_NAMES_FILE['day_of_year'] = 'Day_of_Year'
     
+    META_NAMES_FILE_ALT = {'AERONET_Site' : ['AERONET_Site_Name']}
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
     #: by the original data but computed on import)
@@ -271,9 +272,11 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     
-    read = ReadAeronetSunV3()
-    files = read.get_file_list(pattern='*Berlin*')
-    data = read.read_file(files[0])#, read_all_possible=True)
-    #data = read.read(['od550aer', 'ang4487aer'])
+    reader = ReadAeronetSunV3('AeronetSunV3Lev2.AP')
+    files = reader.get_file_list(pattern='*Berlin*')
+    print(files)
     
-    #stat = data.to_station_data('Palgrunden')
+    stat =  reader.read_file(files[0], 'od550aer', vars_as_series=True)
+    
+    aod = stat.od550aer
+    
