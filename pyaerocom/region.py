@@ -13,9 +13,6 @@ from configparser import ConfigParser
 from pyaerocom import __dir__
 from pyaerocom._lowlevel_helpers import BrowseDict
 
-#from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
-#                                     get_mask)
-
 class Region(BrowseDict):
     """Interface that specifies an AEROCOM region
     
