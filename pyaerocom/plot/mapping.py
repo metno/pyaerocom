@@ -280,14 +280,10 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         if data.mask.sum() == sh[0] * sh[1]:
             raise ValueError('All datapoints in input data (masked array) are '
                              'invalid')
-    _loc = ax.bbox._bbox
+    
     if add_cbar and ax_cbar is None:
-        try:
-            ax_cbar = fig.add_axes([_loc.x1 + .02,
-                                    _loc.y0, .02, _loc.y1 - _loc.y0])
-        except Exception as e:
-            ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
-            print(repr(e))
+        ax_cbar = _add_cbar_axes(ax, where='right')
+    
     X, Y = meshgrid(lons, lats)
     
     bounds = None
@@ -401,6 +397,18 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         
     return fig
 
+def _add_cbar_axes(ax, where='right'):
+    _loc = ax.bbox._bbox
+    fig = ax.figure
+    
+    ax_cbar = fig.add_axes([_loc.x1 + .02,
+                            _loc.y0, .02, _loc.y1 - _loc.y0])
+    return ax_cbar
+# =============================================================================
+#     except Exception as e:
+#         ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
+#         print(repr(e))
+# =============================================================================
 def plot_map_aerocom(data, region=None, fig=None, **kwargs):
     """High level map plotting function for Aerocom default plotting
     
@@ -509,6 +517,115 @@ def plot_map(data, *args, **kwargs):
                                        *args, **kwargs)
     return plot_griddeddata_on_map(data, *args, **kwargs)
    
+    
+def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
+                                vmax=100, cmap='bwr', s=80, marker='o',
+                                step_bounds=None, add_cbar=True,
+                                cbar_extend='both',
+                                add_mean_edgecolor=True,
+                                ax=None, ax_cbar=None, 
+                                cbar_outline_visible=False, 
+                                ref_label=None, data_label=None, **kwargs):
+    """Plot map of normalised mean bias from instance of ColocatedData
+    
+    Note
+    ----
+    THIS IS A BETA FEATURE AND WILL BE GENERALISED IN THE FUTURE FOR OTHER
+    STATISTICAL PARAMETERS
+    
+    Parameters
+    ----------
+    coldata : ColocatedData
+        data object
+    in_percent : bool
+        plot bias in percent
+    vmin : int
+        minimum value of colormapping
+    vmax : int
+        maximum value of colormapping
+    cmap : str or cmap
+        colormap used, defaults to bwr
+    s : int
+        size of marker
+    marker : str
+        marker used
+    step_bounds : int, optional
+        step used for discrete colormapping (if None, continuous is used)
+    cbar_extend : str
+        extend colorbar
+    ax : GeoAxes, optional
+        axes into which the bias is supposed to be plotted
+    ax_cbar : plt.Axes, optional
+        axes for colorbar
+    cbar_outline_visible : bool
+        if False, borders of colorbar are removed
+    **kwargs
+        keyword args passed to :func:`init_map`
+        
+    Returns
+    -------
+    GeoAxes
+    """
+    
+    #_arr = coldata.data
+    mean_bias = coldata.calc_nmb_array()
+        
+    if mean_bias.ndim == 1:
+        (lats, 
+         lons, 
+         data) = mean_bias.latitude, mean_bias.longitude, mean_bias.data
+    elif 'latitude' in mean_bias.dims and 'longitude' in mean_bias.dims:
+        stacked = mean_bias.stack(latlon=['latitude', 'longitude'])
+        valid = ~stacked.isnull()#.all(dim='time')
+        coords = stacked.latlon[valid].values
+        lats, lons = list(zip(*list(coords)))
+        data = stacked.data[valid]
+    else:
+        raise NotImplementedError('Dimension error...')
+    
+    if ref_label is None: 
+        ref_label = coldata.meta['data_source'][0]
+    if data_label is None:
+        data_label = coldata.meta['data_source'][1]
+        
+    if in_percent:
+        data *= 100 
+    if ax is None:
+        ax = init_map(contains_cbar=True, **kwargs)
+
+    if not isinstance(ax, GeoAxes):
+        raise TypeError('Input axes need to be instance of cartopy.GeoAxes')
+    
+    fig = ax.figure
+    
+    norm=None
+    if isinstance(cmap, str):
+        cmap = get_cmap(cmap)
+    if step_bounds is not None:
+        bounds = np.arange(vmin, vmax+step_bounds, step_bounds)
+        norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
+    
+    ec = 'none'
+    if add_mean_edgecolor:
+        nn = Normalize(vmin=vmin, vmax=vmax)
+        nmb = coldata.calc_statistics()['nmb']
+        if in_percent:
+            nmb*=100
+        ec = cmap(nn(nmb))
+    _sc = ax.scatter(lons, lats, c=data, marker=marker, 
+                     cmap=cmap, vmin=vmin, vmax=vmax, s=s, norm=norm,
+                     label=ref_label, edgecolors=ec)
+    if add_cbar:
+        if ax_cbar is None:
+            ax_cbar = _add_cbar_axes(ax)
+        cbar = fig.colorbar(_sc, cmap=cmap, norm=norm, #boundaries=bounds, 
+                            extend=cbar_extend, cax=ax_cbar)
+        cbar.outline.set_visible(cbar_outline_visible)
+        cbar.set_label('NMB [%]')
+        
+    return ax
+    
+    
 if __name__ == "__main__":
     from matplotlib.pyplot import close
     close('all')
@@ -518,28 +635,25 @@ if __name__ == "__main__":
     
     data = pya.io.ReadGridded('AEROCOM-MEAN_AP3-CTRL').read_var('od550aer')#.resample_time('yearly')
     
-    num = 100
-    levels = np.percentile(data.cube.data, np.linspace(0,100, num))
+    obs0= pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    levs = []
+    col0 = pya.colocation.colocate_gridded_ungridded(data, obs0, 
+                                                     filter_name='LAND')
     
-    last = -999999999999
-    for lev in levels:
-        rounded = np.round(lev, -pya.mathutils.exponent(lev)+1)
-        if not rounded > last: #skip
-            print('Skipping', rounded)
-            continue
-        levs.append(rounded)
-        last = rounded
+    obs1= pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
     
-        
-        
+    col1 = pya.colocation.colocate_gridded_gridded(data, obs1, 
+                                                   filter_name='OCN',
+                                                   regrid_res_deg=5)
     
-    print(levels)
-    print(levs)
-    fig = plot_griddeddata_on_map(data, cbar_levels=levs, add_zero=True)
     
-    yticks = fig.axes[-1].get_yticklabels()
     
-    for tick in yticks:
-        print(tick)
+    ax = plot_nmb_map_colocateddata(col0, step_bounds=10, marker='^', 
+                                    ref_label='AERONET (LAND)')
+    ax = plot_nmb_map_colocateddata(col1, step_bounds=10, 
+                                    ax=ax, add_cbar=False, 
+                                    ref_label='MODIS6-aqua (OCN)')
+    
+    ax.legend()
+    
+    ax.set_title('AEROCOM ensemble model (2010)')
