@@ -16,7 +16,7 @@ from pyaerocom.exceptions import (ColocationError,
                                   TimeMatchError,
                                   VarNotAvailableError)
 
-from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
+#from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                to_datestring_YYYYMMDD,
                                make_datetime_index)
