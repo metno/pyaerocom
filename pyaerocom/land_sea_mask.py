@@ -103,21 +103,49 @@ def get_mask(lat, lon, mask):
     mask : xarray dataset  
     
     Returns
-    --------
-    m : float 
+    -------
+    float 
         pixel mask is either zero or 1
     
     """
-    la = np.around(lat, 2)
-    lo = np.around(lon, 2) 
+    from pyaerocom import const
+    const.print_log.warning(DeprecationWarning('This method is deprecated! '
+                                               'Use get_mask_value instead'))
+    return get_mask_value(lat, lon, mask)
+# =============================================================================
+#     la = np.around(lat, 2)
+#     lo = np.around(lon, 2) 
+#     
+#     if isinstance(mask, xr.DataArray):
+#         mask_pixel = mask.sel(lat = slice(la + 0.1, la), long = slice(lo - 0.1, lo))
+#         m = mask_pixel.values[0][0]  
+#         return m
+#     else:
+#         print("Please provide masks of type xarray dataset, not {}".format(type(mask)))
+#         return
+# =============================================================================
+
+def get_mask_value(lat, lon, mask):
+    """Get value of mask at input lat / lon position
     
-    if isinstance(mask, xr.DataArray):
-        mask_pixel = mask.sel(lat = slice(la + 0.1, la), long = slice(lo - 0.1, lo))
-        m = mask_pixel.values[0][0]  
-        return m
-    else:
-        print("Please provide masks of type xarray dataset, not {}".format(type(mask)))
-        return
+    Parameters
+    ----------
+    lat : float
+        latitute
+    lon : float
+        longitude
+    mask : xarray.DataArray
+        data array
+        
+    Returns
+    -------
+    float 
+        neirest neigbhour mask value to input lat lon
+    """
+    if not isinstance(mask, xr.DataArray):
+        raise ValueError('Invalid input for mask: need DataArray, got {}'
+                         .format(type(mask)))
+    return float(mask.sel(lat=lat, long=lon, method='nearest'))
 
 def download_mask():
     #from urllib.request import urlopen
