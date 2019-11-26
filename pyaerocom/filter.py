@@ -15,12 +15,8 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.region import Region
-#from pyaerocom import const
 
-from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
-                                     get_mask, download_mask)
-
-#from pyaerocom.land_sea_mask import load_region_mask_iris, load_region_mask_xr
+from pyaerocom.land_sea_mask import download_mask
 
 class Filter(BrowseDict):
     """Class that can be used to filter gridded and ungridded data objects
@@ -304,7 +300,6 @@ if __name__=="__main__":
     #data_coloc = pya.colocation.colocate_gridded_ungridded(data, ungridded_data, ts_type='monthly',
     #                                                       filter_name='WORLD-noMOUNTAINS')
     #data_coloc    
-    import pyaerocom as pya
     pya.change_verbosity('ignore')
     plt.show()    
     YEAR = 2010
