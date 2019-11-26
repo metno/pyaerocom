@@ -9,7 +9,7 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
-from pyaerocom.land_sea_mask import (load_region_mask_xr, get_mask, 
+from pyaerocom.land_sea_mask import (load_region_mask_xr, get_mask_value, 
                                      available_region_mask)
 
 import numpy as np
@@ -306,6 +306,88 @@ class ColocatedData(object):
         
         return col
     
+    def flatten_latlondim_station_name(self):
+        """Stack (flatten) lat / lon dimension into new dimension station_name
+        
+        Returns
+        -------
+        ColocatedData
+            new colocated data object with dimension station_name and lat lon
+            arrays as additional coordinates
+        """
+        if not 'latitude' in self.dims or not 'longitude' in self.dims:
+            raise AttributeError('Need latitude and longitude dimension')
+        elif 'station_name' in self.dims:
+            raise AttributeError('Cannot stack lat lon dimensions to new dim '
+                                 'station_name as it already exists in data')
+        
+        arr = self.stack(station_name=['latitude', 'longitude'], 
+                         inplace=False).data
+        meta = {}
+        meta.update(self.meta)
+        lats = arr.latitude.values
+        lons = arr.longitude.values
+        time = arr.time.values
+        stridx = [str(x) for x in arr.station_name.values]
+        nparr = arr.data
+        
+        coords = {
+                    'data_source' : meta['data_source'],
+                    'time'        : time,
+                    'station_name': stridx,
+                    'latitude'    : ('station_name', lats),
+                    'longitude'   : ('station_name', lons)
+        }
+    
+        dims = ['data_source', 'time', 'station_name']
+        
+        output = ColocatedData(data=nparr, coords=coords, dims=dims,
+                               name=self.name, attrs=meta)
+        return output
+    
+    def stack(self, inplace=False, **kwargs):
+        """Stack one or more dimensions
+        
+        Parameters
+        ----------
+        **kwargs
+            input arguments passed to :func:`DataArray.stack`
+            
+        Returns
+        -------
+        ColocatedData
+            stacked data object
+            
+        Example
+        -------
+        coldata = coldata.stack(latlon=['latitude', 'longitude'])
+        """
+        if inplace:
+            data = self
+        else:
+            data = self.copy()
+        data.data = data.data.stack(**kwargs)
+        return data
+    
+    def unstack(self, inplace=False, **kwargs):
+        """Unstack one or more dimensions
+        
+        Parameters
+        ----------
+        **kwargs
+            input arguments passed to :func:`DataArray.unstack`
+        
+        Returns
+        -------
+        ColocatedData
+            unstacked data object
+        """
+        if inplace:
+            data = self
+        else:
+            data = self.copy()
+        return data.unstack(**kwargs)
+    
     def get_coords_valid_obs(self):
         
         obs = self.data[0]
@@ -318,7 +400,20 @@ class ColocatedData(object):
         invalid = obs.isnull().all(dim='time')
         return (list(obs.latitude[~invalid].values), 
                 list(obs.longitude[~invalid].values))
+
+    def _iter_stats(self):
+        if not 'station_name' in self.data.dims:
+            raise AttributeError('ColocatedData object has no dimension '
+                                 'station_name. Consider stacking...')
+        if 'latitude' in self.dims and 'longitude' in self.dims:
+            raise AttributeError('Cannot init station iter index since '
+                                 'latitude and longitude are othorgonal')
+        lats = self.data.latitude.values
+        lons = self.data.longitude.values
+        stats = self.data.station_name.values
         
+        return list(zip(lats, lons, stats))
+    
     def copy(self):
         """Copy this object"""
         return ColocatedData(self.data.copy())
@@ -727,6 +822,10 @@ class ColocatedData(object):
             
         return self.data.sel(dict(latitude=lat_range, longitude=lon_range))
     
+    def calc_nmb_array(self):
+        _arr = self.data
+        return ((_arr[1] - _arr[0])/_arr[0]).mean('time') 
+        
     def apply_latlon_filter(self, lat_range=None, lon_range=None, 
                             region_id=None):
         """Apply regional filter 
@@ -811,32 +910,48 @@ class ColocatedData(object):
     
         return ColocatedData(filtered)
         
-    def filter_region(self, region_id=None, inplace = False):
-        #raise NotImplementedError('Filter region is not implemented for collocated data object.')
-        #drop_idx = []
-        data = self._data.copy()
+    def filter_region(self, region_id, inplace=False):
+        """Filter object by region
         
-        if region_id:
-            masks = load_region_mask_xr(region_id = region_id)
-            
-            for i, station in enumerate(self._data.station_name):
-                lon = station.longitude.values
-                lat = station.latitude.values
-                mask  = get_mask(lat, lon, masks)
-                
-                if mask < 1:
-                    data = data.drop(dim = 'station_name', labels = str(station.station_name.values))
-                    #drop_idx.append(i)
-                    
-            if inplace:
-                self._data = data
-                return self
-            else:
-                return data
+        Parameters
+        ----------
+        region_id : str
+            valid ID of region
+        inplace : bool
+            if True, the filtering is done directly in this instance, else 
+            a new instance is returned
+        
+        Returns
+        -------
+        ColocatedData
+            filtered data object
+        """
+        if inplace:
+            data = self
         else:
-            print("Please provide a region. Available regions are {}".format(available_region_mask()))
-            return
-    
+            data = self.copy()
+        
+        mask = load_region_mask_xr(region_id=region_id)
+        
+        if data.ndim == 4:
+            data = data.flatten_latlondim_station_name()
+        arr = data.data
+        drop_idx = []
+        print(data.shape)
+        for (lat, lon, stat) in data._iter_stats():
+            
+            if get_mask_value(lat, lon, mask) < 1:
+                drop_idx.append(stat)
+# =============================================================================
+#                 data = data.drop(dim='station_name', 
+#                                  labels=str(station.station_name.values))
+# =============================================================================
+        if len(drop_idx) > 0:
+            arr = arr.drop(dim='station_name', labels=drop_idx)
+        data.data = arr  
+        print(data.shape)
+        return data
+        
     def plot_coordinates(self, marker='x', markersize=12, fontsize_base=10, 
                          **kwargs):
         
