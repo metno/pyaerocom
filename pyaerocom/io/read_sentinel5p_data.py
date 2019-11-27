@@ -341,6 +341,36 @@ class ReadL2Data(ReadL2DataBase):
         # field name whose size determines the number of time steps in a product
         self.TSSIZENAME=self._TIME_OFFSET_NAME
 
+        # some gridding constants
+        self.MIN_LAT = -90.
+        self.MAX_LAT = 90.
+        self.MIN_LON = -180.
+        self.MAX_LON = 180.
+        # supported grids
+        self.SUPPORTED_GRIDS['CAMS50'] = {}
+        self.SUPPORTED_GRIDS['CAMS50']['grid_dist_lon'] = 0.25
+        self.SUPPORTED_GRIDS['CAMS50']['grid_dist_lat'] = 0.125
+        self.SUPPORTED_GRIDS['1x1'] = {}
+        self.SUPPORTED_GRIDS['1x1']['grid_dist_lon'] = 1.
+        self.SUPPORTED_GRIDS['1x1']['grid_dist_lat'] = 1.
+        self.SUPPORTED_GRIDS['0.5x0.5'] = {}
+        self.SUPPORTED_GRIDS['0.5x0.5']['grid_dist_lon'] = 0.5
+        self.SUPPORTED_GRIDS['0.5x0.5']['grid_dist_lat'] = 0.5
+        self.SUPPORTED_GRIDS['0.1x0.1'] = {}
+        self.SUPPORTED_GRIDS['0.1x0.1']['grid_dist_lon'] = 0.1
+        self.SUPPORTED_GRIDS['0.1x0.1']['grid_dist_lat'] = 0.1
+
+        for grid_name in self.SUPPORTED_GRIDS:
+            self.SUPPORTED_GRIDS[grid_name]['grid_lats'] = \
+                np.arange(self.MIN_LAT + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'] / 2., 
+                          self.MAX_LAT + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'] / 2., 
+                          self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'])
+            self.SUPPORTED_GRIDS[grid_name]['grid_lons'] = \
+                np.arange(self.MIN_LON + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'] / 2., 
+                          self.MAX_LON + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'] / 2., 
+                          self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'])
+
+
 
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
@@ -860,10 +890,19 @@ class ReadL2Data(ReadL2DataBase):
         else:
             _data = self.to_xarray(data_to_write=data._data)
 
+        if gridtype not in self.SUPPORTED_GRIDS:
+            temp = 'Error: Unknown grid: {}'.format(gridtype)
+            return
+
         if engine == 'python':
-            data_for_gridding, gridded_var_data, grid_lats, grid_lons, max_grid_dist_lat, max_grid_dist_lon = \
+
+            data_for_gridding, gridded_var_data = \
                 self._to_grid_grid_init(gridtype=gridtype, vars=vars ,init_time=_data['time'].mean())
 
+            grid_lats = self.SUPPORTED_GRIDS[gridtype]['grid_lats']
+            grid_lons = self.SUPPORTED_GRIDS[gridtype]['grid_lons']
+            grid_dist_lat = self.SUPPORTED_GRIDS[gridtype]['grid_dist_lat']
+            grid_dist_lon = self.SUPPORTED_GRIDS[gridtype]['grid_dist_lon']
 
             start_time = time.perf_counter()
             matching_points = 0
@@ -874,14 +913,14 @@ class ReadL2Data(ReadL2DataBase):
             # store that in data_for_gridding[var]
             for lat_idx, grid_lat in enumerate(grid_lats):
                 diff_lat = np.absolute((_data[self._LATITUDENAME].data - grid_lat))
-                lat_match_indexes = np.squeeze(np.where(diff_lat <= (max_grid_dist_lat/2.)))
+                lat_match_indexes = np.squeeze(np.where(diff_lat <= (grid_dist_lat/2.)))
                 print('lat: {}, matched indexes: {}'.format(grid_lat, lat_match_indexes.size))
                 if lat_match_indexes.size == 0:
                     continue
 
                 for lon_idx, grid_lon in enumerate(grid_lons):
                     diff_lon = np.absolute((_data[self._LONGITUDENAME].data[lat_match_indexes] - grid_lon))
-                    lon_match_indexes = np.squeeze(np.where(diff_lon <= (max_grid_dist_lon/2.)))
+                    lon_match_indexes = np.squeeze(np.where(diff_lon <= (grid_dist_lon/2.)))
                     if lon_match_indexes.size == 0:
                         continue
 
@@ -918,17 +957,12 @@ class ReadL2Data(ReadL2DataBase):
             else:
                 return gridded_var_data
 
-        elif gridtype == '1x1_emep':
+        else:
             # 1 by on degree grid on emep domain
             pass
 
 
         pass
-
-
-
-
-
 
         if isinstance(data, xr.Dataset):
 
@@ -944,47 +978,25 @@ class ReadL2Data(ReadL2DataBase):
 
         start_time = time.perf_counter()
         grid_data_prot = {}
-
-        grid_lats = []
-        grid_lons = []
         gridded_var_data = {}
-        max_grid_dist_lon = 0.
-        max_grid_dist_lat = 0.
         data_for_gridding = {}
 
-        min_lat = -90.
-        max_lat = 90.
-        min_lon = -180.
-        max_lon = 180.
-
-        if gridtype == '1x1':
-            # global 1x1 degree grid
-            # pass
-            temp = 'starting simple gridding for 1x1 degree grid...'
-            self.logger.info(temp)
-            max_grid_dist_lon = 1.
-            max_grid_dist_lat = 1.
-
-        elif gridtype == '0.5x0.5':
-            # global 0.5x0.5 degree grid
-            # pass
-            temp = 'starting simple gridding for 0.5x0.5 degree grid...'
+        if gridtype in self.SUPPORTED_GRIDS:
+            temp = 'starting simple gridding for {} grid...'.format(gridtype)
             self.logger.info(temp)
 
-            max_grid_dist_lon = 0.5
-            max_grid_dist_lat = 0.5
+            grid_array_prot = np.full((self.SUPPORTED_GRIDS[gridtype]['grid_lats'].size,
+                                       self.SUPPORTED_GRIDS[gridtype]['grid_lons'].size), np.nan)
+            # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
+            for grid_lat in self.SUPPORTED_GRIDS[gridtype]['grid_lats']:
+                grid_data_prot[grid_lat] = {}
+                for grid_lon in self.SUPPORTED_GRIDS[gridtype]['grid_lons']:
+                    grid_data_prot[grid_lat][grid_lon] = {}
 
-        else:
             pass
-
-        grid_lats = np.arange(min_lat + max_grid_dist_lat / 2., 90. + max_grid_dist_lat / 2., max_grid_dist_lat)
-        grid_lons = np.arange(min_lon + max_grid_dist_lon / 2., max_lon + max_grid_dist_lon / 2., max_grid_dist_lon)
-        grid_array_prot = np.full((grid_lats.size, grid_lons.size), np.nan)
-        # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
-        for grid_lat in grid_lats:
-            grid_data_prot[grid_lat] = {}
-            for grid_lon in grid_lons:
-                grid_data_prot[grid_lat][grid_lon] = {}
+        else:
+            temp = 'Error: Unknown grid: {}'.format(gridtype)
+            return
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start_time
@@ -994,8 +1006,8 @@ class ReadL2Data(ReadL2DataBase):
         # predefine the output data dict
         for var in vars:
             data_for_gridding[var] = grid_data_prot.copy()
-            gridded_var_data['latitude'] = grid_lats
-            gridded_var_data['longitude'] = grid_lons
+            gridded_var_data['latitude'] = self.SUPPORTED_GRIDS[gridtype]['grid_lats']
+            gridded_var_data['longitude'] = self.SUPPORTED_GRIDS[gridtype]['grid_lons']
             gridded_var_data['time'] = init_time
 
             gridded_var_data[var] = {}
@@ -1004,7 +1016,77 @@ class ReadL2Data(ReadL2DataBase):
             gridded_var_data[var]['numobs'] = grid_array_prot.copy()
 
 
-        return data_for_gridding, gridded_var_data, grid_lats, grid_lons, max_grid_dist_lat, max_grid_dist_lon
+        return data_for_gridding, \
+               gridded_var_data,
+
+    #####################################################################################
+
+    def select_bbox(self, data=None, vars=None, bbox=None):
+        """override base class method to work on with the read dictionary
+
+        works on L2 data only
+
+        """
+        if data is None:
+            _data = self.data
+        else:
+            try:
+                _data = data._data
+            except AttributeError:
+                _data = data
+
+        if isinstance(_data, dict):
+            # write out the read data using the dictionary directly
+            pass
+
+            import time
+            start = time.perf_counter()
+
+            # ret_data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
+            # index_counter = 0
+            # cut_flag = True
+            # data = _data._data
+
+            if bbox is not None:
+                logging.info(bbox)
+                lat_min = bbox[0]
+                lat_max = bbox[1]
+                lon_min = bbox[2]
+                lon_max = bbox[3]
+
+                # np.where can unfortunately only work with a single criterion
+                matching_indexes_lat_max = np.where(_data[self._LATITUDENAME] <= lat_max)
+
+                lats_remaining = _data[self._LATITUDENAME][matching_indexes_lat_max[0]]
+                matching_indexes_lat_min = np.where( _data[self._LATITUDENAME][matching_indexes_lat_max[0]]
+                                                     >= lat_min)
+                lats_remaining = _data[self._LATITUDENAME][matching_indexes_lat_max[0][matching_indexes_lat_min[0]]]
+
+
+
+
+                matching_indexes = np.where(ret_data[:, self._LATINDEX] <= lat_max)
+                ret_data = ret_data[matching_indexes[0], :]
+                # logging.warning('len after lat_max: {}'.format(len(ret_data)))
+                matching_indexes = np.where(ret_data[:, self._LATINDEX] >= lat_min)
+                ret_data = ret_data[matching_indexes[0], :]
+                # logging.warning('len after lat_min: {}'.format(len(ret_data)))
+                matching_indexes = np.where(ret_data[:, self._LONINDEX] <= lon_max)
+                ret_data = ret_data[matching_indexes[0], :]
+                # logging.warning('len after lon_max: {}'.format(len(ret_data)))
+                matching_indexes = np.where(ret_data[:, self._LONINDEX] >= lon_min)
+                ret_data = ret_data[matching_indexes[0], :]
+                # logging.warning('len after lon_min: {}'.format(len(ret_data)))
+                # matching_length = len(matching_indexes[0])
+                _data._data = ret_data
+                return _data
+
+
+        else:
+
+            super().select_bbox(_data, bbox)
+
+
 
 
 if __name__ == "__main__":
@@ -1018,7 +1100,11 @@ if __name__ == "__main__":
     # default_gridded_out_file = './gridded.nc'
     default_local_temp_dir = '/home/jang/tmp/'
 
-    default_min_quality_flag = 0.7
+    default_min_quality_flag = 0.75
+
+    obj = ReadL2Data(verbose=True)
+    SUPPORTED_GRIDS = obj.SUPPORTED_GRIDS.keys()
+    DEFAULT_GRID = 'CAMS50'
 
     parser = argparse.ArgumentParser(
         description='command line interface to pyaerocom.io.readsentinel5p_data.py\n\n\n')
@@ -1026,9 +1112,9 @@ if __name__ == "__main__":
                         help="file(s) to read", nargs="+")
     parser.add_argument("-v", "--verbose", help="switch on verbosity",
                         action='store_true')
-    parser.add_argument("--listpaths", help="list the file contents.", action='store_true')
-    parser.add_argument("--readpaths", help="read listed rootpaths of coda supported file. Can be comma separated",
-                        default='mph,sca_optical_properties')
+    # parser.add_argument("--listpaths", help="list the file contents.", action='store_true')
+    # parser.add_argument("--readpaths", help="read listed rootpaths of coda supported file. Can be comma separated",
+    #                     default='mph,sca_optical_properties')
     parser.add_argument("-o", "--outfile", help="output file")
     parser.add_argument("--outdir", help="output directory; the filename will be extended with the string '.nc'")
     # parser.add_argument("--plotdir", help="directories where the plots will be put; defaults to './'",
@@ -1047,39 +1133,42 @@ if __name__ == "__main__":
     parser.add_argument("--lonmax", help="max longitude to return", default=np.float_(45.))
     parser.add_argument("--dir", help="work on all files below this directory",
                         default='/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/download/AE_OPER_ALD_U_N_2A_*')
-    parser.add_argument("--filemask", help="file mask to find data files",
-                        default='*AE_OPER_ALD_U_N_2A_*')
+    # parser.add_argument("--filemask", help="file mask to find data files",
+    #                     default='*AE_OPER_ALD_U_N_2A_*')
     parser.add_argument("--tempdir", help="directory for temporary files",
                         default=os.path.join(os.environ['HOME'], 'tmp'))
-    parser.add_argument("--plotmap", help="flag to plot a map of the data points; files will be put in outdir",
-                        action='store_true')
-    parser.add_argument("--plotprofile", help="flag to plot the profiles; files will be put in outdir",
-                        action='store_true')
+    # parser.add_argument("--plotmap", help="flag to plot a map of the data points; files will be put in outdir",
+    #                     action='store_true')
+    # parser.add_argument("--plotprofile", help="flag to plot the profiles; files will be put in outdir",
+    #                     action='store_true')
     parser.add_argument("--variables",
                         help="comma separated list of variables to write; default: ec355aer,bs355aer",
                         default='ec355aer')
-    parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca",
-                        default='sca')
-    parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
-                        action='store_true')
-    parser.add_argument("--modeloutdir",
-                        help="directory for colocated model files; will have a similar filename as aeolus input file",
-                        default=os.path.join(os.environ['HOME'], 'tmp'))
-    parser.add_argument("--topofile", help="topography file; defaults to {}.".format(default_topo_file),
-                        default=default_topo_file)
+    # parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca",
+    #                     default='sca')
+    # parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
+    #                     action='store_true')
+    # parser.add_argument("--modeloutdir",
+    #                     help="directory for colocated model files; will have a similar filename as aeolus input file",
+    #                     default=os.path.join(os.environ['HOME'], 'tmp'))
+    # parser.add_argument("--topofile", help="topography file; defaults to {}.".format(default_topo_file),
+    #                     default=default_topo_file)
     parser.add_argument("--gridfile", help="grid data and write it to given output file (in netcdf).")
+    parser.add_argument("--gridname",
+                        help="name of the grid used for gridding. Supported grids are {}, defaults to {}".format(','.join(SUPPORTED_GRIDS),DEFAULT_GRID),
+                        default=DEFAULT_GRID)
     parser.add_argument("--qflag", help="min quality flag to keep data. Defaults to {}".format(default_min_quality_flag),
                         default = default_min_quality_flag)
 
     args = parser.parse_args()
 
-    if args.netcdfcolocate:
-        options['netcdfcolocate'] = True
-    else:
-        options['netcdfcolocate'] = False
+    # if args.netcdfcolocate:
+    #     options['netcdfcolocate'] = True
+    # else:
+    #     options['netcdfcolocate'] = False
 
-    if args.filemask:
-        options['filemask'] = args.filemask
+    # if args.filemask:
+    #     options['filemask'] = args.filemask
 
     if args.qflag:
         options['qflag'] = args.qflag
@@ -1087,11 +1176,14 @@ if __name__ == "__main__":
     if args.gridfile:
         options['gridfile'] = args.gridfile
 
-    if args.retrieval:
-        options['retrieval'] = args.retrieval
+    if args.gridname:
+        options['gridname'] = args.gridname
 
-    if args.modeloutdir:
-        options['modeloutdir'] = args.modeloutdir
+    # if args.retrieval:
+    #     options['retrieval'] = args.retrieval
+    #
+    # if args.modeloutdir:
+    #     options['modeloutdir'] = args.modeloutdir
 
     if args.dir:
         options['dir'] = args.dir
@@ -1104,15 +1196,15 @@ if __name__ == "__main__":
     # else:
     #     options['plotdir'] = './'
 
-    if args.plotmap:
-        options['plotmap'] = True
-    else:
-        options['plotmap'] = False
-
-    if args.plotprofile:
-        options['plotprofile'] = True
-    else:
-        options['plotprofile'] = False
+    # if args.plotmap:
+    #     options['plotmap'] = True
+    # else:
+    #     options['plotmap'] = False
+    #
+    # if args.plotprofile:
+    #     options['plotprofile'] = True
+    # else:
+    #     options['plotprofile'] = False
 
     if args.tempdir:
         options['tempdir'] = args.tempdir
@@ -1147,8 +1239,8 @@ if __name__ == "__main__":
     else:
         options['himalayas'] = False
 
-    if args.readpaths:
-        options['readpaths'] = args.readpaths.split(',')
+    # if args.readpaths:
+    #     options['readpaths'] = args.readpaths.split(',')
 
     if args.variables:
         options['variables'] = args.variables.split(',')
@@ -1156,10 +1248,10 @@ if __name__ == "__main__":
     if args.file:
         options['files'] = args.file
 
-    if args.listpaths:
-        options['listpaths'] = True
-    else:
-        options['listpaths'] = False
+    # if args.listpaths:
+    #     options['listpaths'] = True
+    # else:
+    #     options['listpaths'] = False
 
     if args.verbose:
         options['verbose'] = True
@@ -1177,8 +1269,8 @@ if __name__ == "__main__":
     # if args.codadef:
     #     options['codadef'] = args.codadef
 
-    if args.topofile:
-        options['topofile'] = args.topofile
+    # if args.topofile:
+    #     options['topofile'] = args.topofile
 
     import os
     # os.environ['CODA_DEFINITION'] = options['codadef']
@@ -1191,7 +1283,7 @@ if __name__ == "__main__":
     import pyaerocom as pya
 
     bbox = None
-    obj = ReadL2Data(verbose=True)
+
     non_archive_files = []
     temp_files_dir = {}
     temp_file_flag = False
@@ -1207,7 +1299,7 @@ if __name__ == "__main__":
     # limit data to EMEP CAMS domain
     if options['emepflag']:
         bbox = [options['latmin'], options['latmax'], options['lonmin'], options['lonmax']]
-        tmp_data = obj.select_bbox(data_numpy, bbox)
+        tmp_data = obj.select_bbox(data_numpy, bbox=bbox)
         if len(tmp_data) > 0:
             data_numpy = tmp_data
             obj.logger.info('data object contains {} points in emep area! '.format(len(tmp_data)))
@@ -1218,7 +1310,7 @@ if __name__ == "__main__":
 
     if options['himalayas']:
         bbox = [options['latmin'], options['latmax'], options['lonmin'], options['lonmax']]
-        tmp_data = obj.select_bbox(data_numpy, bbox)
+        tmp_data = obj.select_bbox(data_numpy, bbox=bbox)
         if len(tmp_data) > 0:
             data_numpy = tmp_data
             obj.logger.info('file {} contains {} points in himalaya area! '.format(filename, len(tmp_data)))
@@ -1259,7 +1351,8 @@ if __name__ == "__main__":
 
     # write L3 gridded data
     if 'gridfile' in options:
-        gridded_var_data = obj.to_grid(data=data_numpy, vars=vars_to_retrieve, gridtype='0.5x0.5')
+        gridded_var_data = obj.to_grid(data=data_numpy, vars=vars_to_retrieve,
+                                       gridtype=options['gridname'])
 
         obj.to_netcdf_simple(netcdf_filename=options['gridfile'],
                              vars_to_write=vars_to_retrieve,
@@ -1267,46 +1360,3 @@ if __name__ == "__main__":
                              data_to_write=gridded_var_data,
                              gridded=True)
 
-    if options['plotmap']:
-        if len(obj.gridded_data.keys()) == 0:
-            # gridding has not been done yet
-            gridded_var_data = obj.to_grid(vars=vars_to_retrieve)
-
-        if len(obj.files_read) == 1:
-            # single file read
-            plotmapfilename = os.path.join(options['plotdir'], '_'.join([options['variables'][0],
-                                                                         os.path.basename(
-                                                                             obj.files_read[0])]) + '.map.png')
-            title = '\n'.join([options['variables'][0], os.path.basename(obj.files_read[0])])
-            obj.plot_map(gridded_var_data, plotmapfilename, bbox=bbox, title=title)
-        else:
-            # archive file read
-            plot_date = np.datetime64(obj.gridded_data['time'], 'D').astype('str')
-            for var in options['variables']:
-                plotmapfilename = os.path.join(options['plotdir'], '_'.join([var, plot_date]) + '.map.png')
-                obj.logger.info('map plot file: {}'.format(plotmapfilename))
-                title = '_'.join([var, plot_date])
-                # title = os.path.basename(filename)
-
-                obj.plot_map(gridded_var_data, plotmapfilename, bbox=bbox, title=title)
-                # obj.plot_location_map(plotmapfilename)
-
-    # obj = pya.io.read_sentinel5p_data.ReadL2Data()
-    # testfiles = []
-    #
-    # testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190531T165100_20190531T183230_08446_01_010107_20190606T185838.nc')
-    # testfiles.append('/lustre/storeB/project/fou/kl/vals5p/download/O3/S5P_OFFL_L2__O3_____20190530T051930_20190530T070100_08425_01_010107_20190605T070532.nc')
-    # data = obj.read(files=testfiles)
-    # global_attributes = {}
-    # global_attributes['input files']=','.join(obj.files_read)
-    # global_attributes['info']='file created by pyaerocom.io.read_sentinel5p_data '+obj.__version__+' (https://github.com/metno/pyaerocom) at '+\
-    #                           np.datetime64('now').astype('str')
-    # global_attributes['quality']='quality flag of 0.7 applied'
-    #
-    # # print(data._data[0:10, obj._TIMEINDEX].astype('datetime64[ms]'))
-    # obj.to_netcdf_simple(data_to_write=data, global_attributes=global_attributes, vars_to_write=obj.DEFAULT_VARS,
-    #                      netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc')
-    # gridded_data = obj.to_grid(data=data, vars=obj.DEFAULT_VARS, )
-    # obj.to_netcdf_simple(data_to_write=gridded_data, global_attributes=global_attributes, vars_to_write=obj.DEFAULT_VARS,
-    #                      gridded=True,
-    #                      netcdf_filename='/home/jang/tmp/to_netcdf_simple_gridded.nc')
