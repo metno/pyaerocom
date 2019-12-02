@@ -203,14 +203,22 @@ class ReadAeronetSunV3(ReadAeronetBase):
                 else:
                     self.logger.warning("Variable {} not available in file {}"
                                         .format(var, os.path.basename(filename)))
-
-            for line in in_file:
+            pl = None
+            for i, line in enumerate(in_file):
                 # process line
                 dummy_arr = line.split(self.COL_DELIM)
                 
+                if pl is not None and len(dummy_arr) != len(pl):
+                    const.print_log.exception('Data line {} in {} is corrupt, '
+                                              'skipping...'.format(i, filename))
+                    continue
                 # copy the meta data (array of type string)
                 for var in self.META_NAMES_FILE:
-                    val = dummy_arr[col_index[var]]
+                    try:
+                        val = dummy_arr[col_index[var]]
+                    except IndexError as e:
+                        const.print_log.exception(repr(e))
+                        
                     try:
                         # e.g. lon, lat, altitude
                         val = float(val)
@@ -239,7 +247,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
                     elif val < self.NAN_VAL:
                         raise Exception('Developers: please debug')
                     data_out[var].append(val)
-
+                pl = dummy_arr
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
         
@@ -272,11 +280,15 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     
+    file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
+    
     reader = ReadAeronetSunV3('AeronetSunV3Lev2.AP')
-    files = reader.get_file_list(pattern='*Berlin*')
-    print(files)
+    files = reader.get_file_list()
     
-    stat =  reader.read_file(files[0], 'od550aer', vars_as_series=True)
     
-    aod = stat.od550aer
-    
+    for i, f in enumerate(files):
+        if f==file:
+            rf = [files[i-1], files[i]]
+            break
+            
+    data = reader.read('od550aer', files=rf)

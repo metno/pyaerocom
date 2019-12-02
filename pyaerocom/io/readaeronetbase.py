@@ -171,7 +171,10 @@ class ReadAeronetBase(ReadUngriddedBase):
         cols = col_index_str.strip().split(self.COL_DELIM)
         mapping = od()
         for idx, info_str in enumerate(cols):
-            mapping[info_str] = idx
+            if info_str in mapping:
+                mapping[info_str] = 'MULTI'
+            else:
+                mapping[info_str] = idx
         
         if use_all_possible:
             col_index = self._find_vars_pattern_based(mapping)
