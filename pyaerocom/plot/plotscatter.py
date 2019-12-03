@@ -60,15 +60,21 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     if isinstance(x_vals, list):
         x_vals = np.asarray(x_vals)
     try:
-        VARS = const.VARS[var_name]
+        var = const.VARS[var_name]
     except:
-        VARS = const.VARS.DEFAULT
+        var = const.VARS.DEFAULT
+    
+    try:
+        var_ref = const.VARS[var_name_ref]
+    except:
+        var_ref = const.VARS.DEFAULT
+
     if loglog is None:
-        loglog = VARS.scat_loglog
+        loglog = var_ref.scat_loglog
     
-    xlim = VARS['scat_xlim']
-    ylim = VARS['scat_ylim']
-    
+    xlim = var['scat_xlim']
+    ylim = var_ref['scat_ylim']
+        
     if xlim is None or ylim is None:
         low  =  np.min([np.nanmin(x_vals), np.nanmin(y_vals)])
         high =  np.max([np.nanmax(x_vals), np.nanmax(y_vals)])
@@ -118,8 +124,8 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     
     ax.set_title(title, fontsize=fontsize_base+4)
     
-    ax.xaxis.set_major_formatter(ScalarFormatter())
-    ax.yaxis.set_major_formatter(ScalarFormatter())
+    #ax.xaxis.set_major_formatter(ScalarFormatter())
+    #ax.yaxis.set_major_formatter(ScalarFormatter())
     
     ax.tick_params(labelsize=fontsize_base)
     

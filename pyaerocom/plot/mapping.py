@@ -371,8 +371,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
 # =============================================================================
     if add_cbar:
         cbar = fig.colorbar(disp, cmap=cmap, norm=norm, #boundaries=bounds, 
-                            extend=cbar_extend, cax=ax_cbar)
-                            #shrink=shrink_cbar)
+                            extend=cbar_extend, cax=ax_cbar, shrink=0.8)
         fig.cbar = cbar
         
         if var_name is not None:
