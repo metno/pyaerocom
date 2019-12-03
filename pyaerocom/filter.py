@@ -208,26 +208,26 @@ class Filter(BrowseDict):
         return data_obj.apply_latlon_filter(region_id=self.region_name)
 
     def _check_if_htap_region_are_available_and_download(self):
+        """
+        @hannsv: updated the logic here a little and removed unnecessary stuff
+        """
         from pyaerocom import const
         path = const.FILTERMASKKDIR
-
-        if os.path.exists(path):
-            nbr_files = len(glob.glob( os.path.join(path, '*.nc'  ) ) )
-            if nbr_files == 0:
-                print("Directory exit but doesn't contain any masks.")
-                download_mask()
-            else:
-                print('Masks are available in MyPyaerocom')
-                return 
-        else:
-            print("Creates directory {} and download masks. ".format(path))
-            try: 
-                os.mkdir(path) 
-                download_mask()
-            except OSError as error: 
-                print(error)     
-                return 
-        return
+        
+        
+        if not os.path.exists(path):
+            const.print_log.info('Creating mask directory at {}'.format(path))
+            os.mkdir(path)
+        
+        # ToDo: check for actual number of masks and not len == 0 (there may 
+        # be new masks in the future)
+        nbr_files = len(glob.glob(os.path.join(path, '*.nc')))
+        if nbr_files == 0:
+            const.logger.info('Mask directory exists but does not contain '
+                              'any masks.')
+            download_mask()
+            return
+        const.logger.info('Masks are available in MyPyaerocom')
     
     def apply(self, data_obj):
         """Apply filter to data object
