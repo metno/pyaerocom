@@ -120,6 +120,34 @@ class ReadL2Data(ReadL2DataBase):
 
         self.FILE_MASK = '*AE_OPER_ALD_U_N_2A*'
         self._QANAME = 'qa_index'
+        # quality index
+        # unfortunately the quality index is coded bit wise:
+        # QC information about processing
+        # Processing_QC_Flag
+        # Bit packed quality field
+        # Bit 1: Extinction; data valid 1, otherwise 0
+        # Bit 2: Backscatter; data valid 1, otherwise 0
+        # Bit 3: Mie SNR; data valid 1, otherwise 0
+        # Bit 4: Rayleigh SNR; data valid 1, otherwise 0
+        # Bit 5: Extinction error bar; data valid 1, otherwise 0
+        # Bit 6: Backscatter error bar; data valid 1, otherwise 0
+        # Bit 7: cumulative LOD; data valid 1, otherwise 0
+        # Bit 8: Spare
+        # or
+        # Mid_Processing_QC_Flag
+        # QC information about processing
+        # Bit packed quality field
+        # Bit 1: Extinction; data valid 1, otherwise 0
+        # Bit 2: Backscatter; data valid 1, otherwise 0
+        # Bit 3: BER; data valid 1, otherwise 0
+        # Bit 4: Mie SNR; data valid 1, otherwise 0
+        # Bit 5: Rayleigh SNR; data valid 1, otherwise 0
+        # Bit 6: Extinction error bar; data valid 1, otherwise 0
+        # Bit 7: Backscatter error bar; data valid 1, otherwise 0
+        # Bit 8: Cumulative LOD; data valid 1, otherwise 0
+        # this is the value against the actual qa_index will be 'anded' bitwise
+        # 1 means that we require only the extinction data to be valid
+        self._QAINDEX_VAL = np.uint8(1)
 
         self._LATBOUNDSNAME = 'lat_bnds'
         self._LATBOUNDSSIZE = 4
@@ -172,7 +200,11 @@ class ReadL2Data(ReadL2DataBase):
         self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'] = {}
         self.RETRIEVAL_READ_PARAMETERS['sca']['vars'] = {}
 
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_optical_properties/starttime'
+        # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_optical_properties/starttime'
+        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_pcd/starttime'
+        # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_starttime'] = 'sca_pcd/starttime'
+        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_mid_bins_qc_flag'] = 'sca_pcd/profile_pcd_mid_bins/processing_qc_flag'
+
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/qc_flag'
         self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/profile_pcd_bins/processing_qc_flag'
         self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][
@@ -192,6 +224,7 @@ class ReadL2Data(ReadL2DataBase):
         self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'] = {}
         self.RETRIEVAL_READ_PARAMETERS['ica']['vars'] = {}
         self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'][self._TIME_NAME] = 'ica_optical_properties/starttime'
+
         self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'][
             self._LATITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/latitude'
         self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'][
@@ -607,7 +640,7 @@ class ReadL2Data(ReadL2DataBase):
         import time
         import coda
 
-        # coda uses 2000-01-01T00:00:00 as epoch unfortunately.
+        # coda for Aeolus uses 2000-01-01T00:00:00 as epoch unfortunately.
         # so calculate the difference in seconds to the Unix epoch
         seconds_to_add = np.datetime64('2000-01-01T00:00:00') - np.datetime64('1970-01-01T00:00:00')
         seconds_to_add = seconds_to_add.astype(np.float_)
@@ -646,7 +679,6 @@ class ReadL2Data(ReadL2DataBase):
                                                 coda_groups_to_read[0],
                                                 -1,
                                                 coda_groups_to_read[1])
-
             # epoch is 1 January 2000 at ESA
             # so add offset to move that to 1 January 1970
             # and save it into a np.datetime64[ms] object
@@ -654,11 +686,15 @@ class ReadL2Data(ReadL2DataBase):
             file_data[self._TIME_NAME] = \
                 ((file_data[self._TIME_NAME] + seconds_to_add) * 1.E3).astype(np.int).astype('datetime64[ms]')
 
+            # list to store times to skip
+            # used in conjunction with the qa_level filtering; completely unvalid profiles will be skipped
+            times_to_skip = []
             # read data in a simple dictionary
             for var in vars_to_read_in:
                 # time has been read already
-                if var == self._TIME_NAME:
+                if var in [self._TIME_NAME, 'test_sca_pcd_starttime']:
                     continue
+
                 self.logger.info('reading var: {}'.format(var))
                 try:
                     groups = self.RETRIEVAL_READ_PARAMETERS[retrieval]['vars'][var].split(self.GROUP_DELIMITER)
@@ -687,16 +723,39 @@ class ReadL2Data(ReadL2DataBase):
                     for idx, key in enumerate(file_data[self._TIME_NAME]):
                         file_data[var][key] = coda.fetch(product,
                                                          groups[0])
+
+                if var == self._QANAME:
+                    file_data[var+'_anded'] = {}
+                    for idx, key in enumerate(file_data[self._TIME_NAME]):
+                        file_data[var][key] = np.uint8(file_data[var][key])
+                        file_data[var+'_anded'][key] = np.bitwise_and(file_data[var][key], self._QAINDEX_VAL)
+                        # if there's no valid extinction in the profile, add the profile's time
+                        # to the ones that are skipped during the conversion to a numpy array
+                        if np.sum(file_data[var+'_anded'][key]) == 0:
+                            print(file_data[var][key])
+                            times_to_skip.append(key)
+
+            coda.close(product)
+
             if return_as == 'numpy':
                 # return as one multidimensional numpy array that can be put into self.data directly
                 # (column wise because the column numbers do not match)
                 index_pointer = 0
                 data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
 
-                for idx, _time in enumerate(file_data['time'].astype(np.float_) / 1000.):
+                for idx, _time in enumerate(file_data['time'].astype(np.float_)):
+                    # skip times of profiles without a single valid extinction
+                    # the following is deprecated in current nympy
+                    # if _time in times_to_skip:
+                    if np.sum(np.isin(times_to_skip,file_data['time'][idx])) > 0:
+                        self.logger.info('skipped time {} due to no valid measurement'.format(_time.astype('datetime64[ms]')))
+                        continue
+                    else:
+                        pass
                     # file_data['time'].astype(np.float_) is milliseconds after the (Unix) epoch
                     # but we want to save the time as seconds since the epoch
-                    for _index in range(len(file_data['latitude'][file_data['time'][idx]])):
+                    _time = _time / 1000.
+                    for _index in range(len(file_data[self._QANAME][file_data[self._TIME_NAME][idx]])):
                         # this works because all variables have to have the same size
                         # (aka same number of height levels)
                         # This loop could be avoided using numpy index slicing
@@ -706,17 +765,17 @@ class ReadL2Data(ReadL2DataBase):
                             # time is the index, so skip it here
                             if var == self._TIME_NAME:
                                 continue
-                            # logitudes are 0 based for Aeolus, but -18- based for model data
+                            # longitudes are 0 based for Aeolus, but -180 based for model data
                             # adjust Aeolus to model data
                             if var == self._LONGITUDENAME:
                                 data[index_pointer, self.INDEX_DICT[var]] = \
-                                    file_data[var][file_data['time'][idx]][_index]
-                                if file_data[var][file_data['time'][idx]][_index] > 180.:
+                                    file_data[var][file_data[self._TIME_NAME][idx]][_index]
+                                if file_data[var][file_data[self._TIME_NAME][idx]][_index] > 180.:
                                     data[index_pointer, self.INDEX_DICT[var]] = \
-                                        file_data[var][file_data['time'][idx]][_index] - 360.
-                            elif var == self._QANAME:
+                                        file_data[var][file_data[self._TIME_NAME][idx]][_index] - 360.
+                            # elif var == self._QANAME:
                                 # quality index
-                                # unfortunately the quality indx is coded bit wise:
+                                # unfortunately the quality index is coded bit wise:
                                 # QC information about processing
                                 # Processing_QC_Flag
                                 # Bit packed quality field
@@ -740,7 +799,7 @@ class ReadL2Data(ReadL2DataBase):
                                 # Bit 6: Extinction error bar; data valid 1, otherwise 0
                                 # Bit 7: Backscatter error bar; data valid 1, otherwise 0
                                 # Bit 8: Cumulative LOD; data valid 1, otherwise 0
-                                pass
+                                # pass
                             else:
                                 data[index_pointer, self.INDEX_DICT[var]] = \
                                     file_data[var][file_data['time'][idx]][_index]
@@ -758,7 +817,6 @@ class ReadL2Data(ReadL2DataBase):
                 # return only the needed elements...
                 file_data = data[0:index_pointer]
 
-        coda.close(product)
         end_time = time.perf_counter()
         elapsed_sec = end_time - start
         temp = 'time for single file read [s]: {:.3f}'.format(elapsed_sec)
@@ -2102,7 +2160,7 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument("--variables", help="comma separated list of variables to write; default: ec355aer,bs355aer",
                         default='ec355aer')
-    # parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca", default='sca')
+    parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca", default='sca')
     # parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
     #                     action='store_true')
     parser.add_argument("--modeloutdir", help="directory for colocated model files; will have a similar filename as input file",
@@ -2112,16 +2170,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.netcdfcolocate:
-        options['netcdfcolocate'] = True
-    else:
-        options['netcdfcolocate'] = False
+    # if args.netcdfcolocate:
+    #     options['netcdfcolocate'] = True
+    # else:
+    #     options['netcdfcolocate'] = False
 
-    if args.filemask:
-        options['filemask'] = args.filemask
+    # if args.filemask:
+    #     options['filemask'] = args.filemask
 
-    if args.retrieval:
-        options['retrieval'] = args.retrieval
+    try:
+        if args.retrieval:
+            options['retrieval'] = args.retrieval
+    except AttributeError:
+        options['retrieval'] = 'sca'
 
     if args.modeloutdir:
         options['modeloutdir'] = args.modeloutdir
@@ -2180,8 +2241,8 @@ if __name__ == '__main__':
         options['himalayas'] = False
 
 
-    if args.readpaths:
-        options['readpaths'] = args.readpaths.split(',')
+    # if args.readpaths:
+    #     options['readpaths'] = args.readpaths.split(',')
 
     if args.variables:
         options['variables'] = args.variables.split(',')
@@ -2189,10 +2250,14 @@ if __name__ == '__main__':
     if args.file:
         options['files'] = args.file
 
-    if args.listpaths:
-        options['listpaths'] = True
-    else:
+    try:
+        if args.listpaths:
+            options['listpaths'] = True
+        else:
+            options['listpaths'] = False
+    except AttributeError:
         options['listpaths'] = False
+
 
     if args.verbose:
         options['verbose'] = True
@@ -2255,7 +2320,7 @@ if __name__ == '__main__':
                 print(field)
             coda.close(coda_handle)
         else:
-            obj = ReadAeolusL2aData(verbose=True)
+            obj = ReadL2Data(verbose=True)
             # read sca retrieval data
             vars_to_read = options['variables'].copy()
             filedata_numpy = obj.read_file(filename, vars_to_retrieve=vars_to_read, return_as='numpy',

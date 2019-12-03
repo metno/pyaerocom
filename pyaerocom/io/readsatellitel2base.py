@@ -190,6 +190,9 @@ class ReadL2DataBase(ReadUngriddedBase):
         # PROVIDES_VARIABLES = []
         # self.DEFAULT_VARS = []
 
+        # grid definitions for to_grid method
+        self.SUPPORTED_GRIDS = {}
+
         try:
             self.LOCAL_TMP_DIR = const.LOCAL_TMP_DIR
         except:
