@@ -65,7 +65,7 @@ class TimeResampler(object):
                                  .format(from_mul, from_ts_type))
         start = valid.index(from_ts_type.base)
         stop = valid.index(to_ts_type.base)
-
+        
         last_from = valid[start]
         idx = []
         for i in range(start+1, stop+1):
@@ -75,6 +75,8 @@ class TimeResampler(object):
                 min_num = min_num_obs[to][last_from]
                 last_from = to
                 idx.append((to, min_num))
+        if len(idx) == 0  or not idx[-1][0] == to_ts_type.val:
+            idx.append((to_ts_type.val, 0))
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
@@ -117,15 +119,15 @@ class TimeResampler(object):
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
 
-        if not to_ts_type.val in self.FREQS_SUPPORTED:
-            if to_ts_type.mulfac == 1:
-                raise NotImplementedError('Cannot resample to input frequency '
-                                      '{}. Choose from: {}'
-                                      .format(to_ts_type,
-                                              self.FREQS_SUPPORTED.keys()))
-            to_ts_type = to_ts_type.next_lower
-
-
+# =============================================================================
+#         if not to_ts_type.val in self.FREQS_SUPPORTED:
+#             if to_ts_type.mulfac == 1:
+#                 raise NotImplementedError('Cannot resample to input frequency '
+#                                       '{}. Choose from: {}'
+#                                       .format(to_ts_type,
+#                                               self.FREQS_SUPPORTED.keys()))
+#             to_ts_type = to_ts_type.next_lower
+# =============================================================================
 
         if input_data is not None:
             self.input_data = input_data
@@ -147,7 +149,8 @@ class TimeResampler(object):
                                  .format(to_ts_type))
             self.last_setup = dict(apply_constraints=False,
                                    min_num_obs=None)
-            return self.fun(self.input_data, freq=to_ts_type.val,
+            freq = to_ts_type.to_pandas_freq()
+            return self.fun(self.input_data, freq=freq,
                             how=how, **kwargs)
 
         if isinstance(from_ts_type, str):
@@ -169,7 +172,8 @@ class TimeResampler(object):
                               'of data, ignoring any resampling constraints')
             self.last_setup = dict(apply_constraints=False,
                                    min_num_obs=None)
-            return self.fun(self.input_data, freq=to_ts_type.val, how=how,
+            freq = to_ts_type.to_pandas_freq()
+            return self.fun(self.input_data, freq=freq, how=how,
                             **kwargs)
 
         if min_num_obs is None:
@@ -179,7 +183,8 @@ class TimeResampler(object):
         data = self.input_data
         for to_ts_type, mno in _idx:
             const.logger.info('TO: {} ({})'.format(to_ts_type, mno))
-            data = self.fun(data, freq=to_ts_type, how=how,
+            freq = TsType(to_ts_type).to_pandas_freq()
+            data = self.fun(data, freq=freq, how=how,
                             min_num_obs=mno)
         self.last_setup = dict(apply_constraints=True,
                                min_num_obs=min_num_obs)

@@ -7,7 +7,8 @@ from pyaerocom import const
 import re
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE, 
                                    TS_TYPE_TO_PANDAS_FREQ,
-                                   TS_TYPE_TO_NUMPY_FREQ)
+                                   TS_TYPE_TO_NUMPY_FREQ,
+                                   PANDAS_RESAMPLE_OFFSETS)
 from pyaerocom.exceptions import TemporalResolutionError
 
 class TsType(object):
@@ -15,6 +16,7 @@ class TsType(object):
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
+    RS_OFFSETS = PANDAS_RESAMPLE_OFFSETS
     
     TS_MAX_VALS = {'hourly' : 24,
                    'daily'  : 7,
@@ -157,7 +159,7 @@ class TsType(object):
         if self._mulfac == 1:
             return freq
         return '{}{}'.format(self._mulfac, freq)
-    
+
     def _from_pandas(self, val):
         if not val in self.FROM_PANDAS:
             raise TemporalResolutionError('Invalid input: {}, need pandas '
