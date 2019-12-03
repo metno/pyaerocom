@@ -13,7 +13,7 @@ import xarray as xray
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError)
-from pyaerocom import logger
+from pyaerocom import logger, const
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    PANDAS_RESAMPLE_OFFSETS,
@@ -61,6 +61,75 @@ def delete_all_coords_cube(cube, inplace=True):
     for coord in cube.coords():
         cube.remove_coord(coord)
     return cube
+
+def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
+                             lon_dimname=None, method='nearest',
+                             new_index_name=None):
+    """Extract individual lat / lon coordinates from `DataArray`
+    
+    Parameters
+    ----------
+    arr : DataArray
+        data (must contain lat and lon dimensions)
+    lat : array or similar
+        1D array containing latitude coordinates
+    lon : array or similar
+        1D array containing longitude coordinates
+    lat_dimname : str, optional
+        name of latitude dimension in input data (if None, it assumes standard
+        name)
+    lon_dimname : str, optional
+        name of longitude dimension in input data (if None, it assumes standard
+        name)
+    method : str
+        how to interpolate to input coordinates (defaults to nearest neighbour)
+    new_index_name : str, optional
+        name of flattend latlon dimension (defaults to latlon)
+    
+    Returns
+    -------
+    DataArray
+        data at input coordinates
+    """
+
+    if lat_dimname is None:
+        lat_dimname = 'lat'
+    if lon_dimname is None:
+        lon_dimname = 'lon'
+    if not lat_dimname in arr.dims and lat_dimname == 'lat':
+        for alias in const.COORDINFO['lat'].aliases:
+            if alias in arr.dims:
+                lat_dimname = alias
+                break
+    if not lon_dimname in arr.dims and lon_dimname == 'lon':
+        for alias in const.COORDINFO['lon'].aliases:
+            if alias in arr.dims:
+                lat_dimname = alias
+                break    
+    if isinstance(lat, str):
+        lat = [lat]
+    if isinstance(lon, str):
+        lon = [lon]
+    if new_index_name is None:
+        new_index_name = 'latlon'
+    where = {lat_dimname : xray.DataArray(lat, dims=new_index_name), 
+             lon_dimname : xray.DataArray(lon, dims=new_index_name)}
+    subset = arr.sel(where, method=method)
+    subset.attrs['lat_dimname'] = lat_dimname
+    subset.attrs['lon_dimname'] = lon_dimname
+    return subset
+    
+def lists_to_tuple_list(*lists):
+    """Convert input lists (of same length) into list of tuples
+    
+    e.g. input 2 lists of latitude and longitude coords, output one list 
+    with tuple coordinates at each index
+    """
+    return list(zip(*lists))
+
+def tuple_list_to_lists(tuple_list):
+    """Convert list with tuples (e.g. (lat, lon)) into multiple lists"""
+    return list(map(list, zip(tuple_list)))
 
 def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None, 
                            lon_range=None):
@@ -1372,6 +1441,8 @@ def get_time_rng_constraint(start, stop):
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
 
 if __name__=="__main__":
+    
+    idx = make_datetime_index(2010, 2011, '3hourly')
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
     
