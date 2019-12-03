@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from copy import deepcopy
+
 import pandas as pd
 import numpy as np
 import xarray as xray
@@ -682,10 +684,10 @@ class StationData(StationMetaData):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
         ts_type = self._ensure_same_var_ts_type_other(other, var_name)
         
-        s0 = self.resample_timeseries(var_name, ts_type=ts_type,
-                                      inplace=True).dropna()
-        s1 = other.resample_timeseries(var_name, inplace=True,
-                                       ts_type=ts_type).dropna()
+        s0 = self.resample_time(var_name, ts_type=ts_type,
+                                inplace=True)[var_name].dropna()
+        s1 = other.resample_time(var_name, inplace=True,
+                                 ts_type=ts_type)[var_name].dropna()
 
         info = other.var_info[var_name]
         removed = None
@@ -1092,10 +1094,10 @@ class StationData(StationMetaData):
         new.data_err[var_name] = clim['std']
         new.numobs[var_name] = clim['numobs']
         return new
-        
-    def resample_timeseries(self, var_name, ts_type, how='mean',
-                            apply_constraints=None, min_num_obs=None, 
-                            inplace=False, **kwargs):
+    
+    def resample_time(self, var_name, ts_type, how='mean',
+                      apply_constraints=None, min_num_obs=None, 
+                      inplace=False, **kwargs):
         """Resample one of the time-series in this object
         
         Parameters
@@ -1124,28 +1126,32 @@ class StationData(StationMetaData):
             
         Returns
         -------
-        pandas.Series or xarray.DataArray
-            resampled time-series data
+        StationData
+            with resampled variable timeseries
         """
-        if not var_name in self:
+        if inplace:
+            outdata = self
+        else: 
+            outdata = self.copy()
+        if not var_name in outdata:
             raise KeyError("Variable {} does not exist".format(var_name))
         
         to_ts_type = TsType(ts_type) # make sure to use AeroCom ts_type
         
         try: 
-            from_ts_type = TsType(self.get_var_ts_type(var_name))
+            from_ts_type = TsType(outdata.get_var_ts_type(var_name))
         except (MetaDataError, TemporalResolutionError):
             from_ts_type = None
             const.print_log.warning('Failed to access current temporal '
                                     'resolution of {} data in StationData {}. '
                                     'No resampling constraints will be applied'
-                                    .format(var_name, self.station_name))
+                                    .format(var_name, outdata.station_name))
     
-        data = self[var_name]
+        data = outdata[var_name]
     
         if not isinstance(data, (pd.Series, xray.DataArray)):
             try:
-                data = self.to_timeseries(var_name)
+                data = outdata.to_timeseries(var_name)
             except Exception as e:
                 raise ValueError('{} data must be stored as pandas Series '
                                  'instance or as xarray.DataArray. Failed to '
@@ -1159,22 +1165,37 @@ class StationData(StationMetaData):
                                  min_num_obs=min_num_obs, 
                                  **kwargs)
             
-        if inplace:
-            self[var_name] = new
-            self.var_info[var_name]['ts_type'] = to_ts_type.val
-            self.var_info[var_name].update(resampler.last_setup)
-            # there is other variables that are not resampled
-            if len(self.var_info) > 1 and self.ts_type is not None:     
-                _tt = self.ts_type
-                self.ts_type = None
-                self.dtime = None
-                for var, info in self.var_info.items():
-                    if not var == var_name:
-                        info['ts_type'] = _tt
-            else: #no other variables, update global class attributes
-                self.ts_type = to_ts_type.val
-                self.dtime = new.index.values
-        return new
+        
+        outdata[var_name] = new
+        outdata.var_info[var_name]['ts_type'] = to_ts_type.val
+        outdata.var_info[var_name].update(resampler.last_setup)
+        # there is other variables that are not resampled
+        if len(outdata.var_info) > 1 and outdata.ts_type is not None:     
+            _tt = outdata.ts_type
+            outdata.ts_type = None
+            outdata.dtime = None
+            for var, info in outdata.var_info.items():
+                if not var == var_name:
+                    info['ts_type'] = _tt
+        else: #no other variables, update global class attributes
+            outdata.ts_type = to_ts_type.val
+            outdata.dtime = new.index.values
+            
+        return outdata
+    
+    def resample_timeseries(self, var_name, **kwargs):
+        """Wrapper for :func:`resample_time` (for backwards compatibility)
+        
+        Note
+        ----
+        For backwards compatibility, this method will return a pandas Series
+        instead of the actual StationData object
+        """
+        const.print_log.warning(DeprecationWarning('This method was renamed '
+                                                   'to resample_time as a means '
+                                                   'of harmonisation with GriddedData '
+                                                   'and ColocatedData'))
+        return self.resample_time(var_name, **kwargs)[var_name]
     
     def remove_variable(self, var_name):
         """Remove variable data
@@ -1227,7 +1248,7 @@ class StationData(StationMetaData):
         """
         ts_type = self.get_var_ts_type(var_name)
         
-        self.resample_timeseries(var_name, ts_type, inplace=True)
+        self.resample_time(var_name, ts_type, inplace=True)
         
         return self
 
@@ -1494,7 +1515,15 @@ class StationData(StationMetaData):
         if legend:
             ax.legend()
         return ax
-
+    
+    def copy(self):
+        new = StationData()
+        for key, val in self.items():
+            cpv = deepcopy(val)
+            new[key] = cpv
+            
+        return new
+    
     def __str__(self):
         """String representation"""
         head = "Pyaerocom {}".format(type(self).__name__)
@@ -1537,17 +1566,16 @@ class StationData(StationMetaData):
 if __name__=="__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
+
     
-    plt.close('all')
-    data0 = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    empty = StationData()
     
-    sv = data0.to_station_data('Solar*')
-    sv.plot_timeseries('od550aer', 'yearly')
+    empty.var_info['bla'] = dict(blub=42)
     
-    data = pya.io.ReadUngridded().read('EBASMC', 'concoc')
+    empty_copy = empty.copy()
+    empty_copy.var_info['bla']['blub'] = 1
     
-    birkenes = data.to_station_data('Birken*')
+    print(empty.var_info['bla']['blub'])
+    print(empty_copy.var_info['bla']['blub'])
     
-    ax = birkenes.plot_timeseries('concoc')
-    ax = birkenes.plot_timeseries('concoc', 'yearly', ax=ax)
     
