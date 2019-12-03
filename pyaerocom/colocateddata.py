@@ -458,7 +458,7 @@ class ColocatedData(object):
         vars_ = meta['var_name']
         
         if constrain_val_range:
-            var = Variable(self.meta['var_name'][1])
+            var = Variable(self.meta['var_name'][0])
             kwargs['lowlim_stats'] = var.lower_limit
             kwargs['highlim_stats'] = var.upper_limit
             
@@ -823,8 +823,16 @@ class ColocatedData(object):
         return self.data.sel(dict(latitude=lat_range, longitude=lon_range))
     
     def calc_nmb_array(self):
+        """Calculate data array with normalised bias (NMB) values
+        
+        Returns
+        -------
+        DataArray
+            NMBs at each coordinate
+        """
         _arr = self.data
-        return ((_arr[1] - _arr[0])/_arr[0]).mean('time') 
+        mod, obs = _arr[1], _arr[0]
+        return (mod - obs).sum('time') / obs.sum('time') 
         
     def apply_latlon_filter(self, lat_range=None, lon_range=None, 
                             region_id=None):
