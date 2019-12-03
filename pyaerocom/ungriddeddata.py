@@ -575,8 +575,7 @@ class UngriddedData(object):
                 if not var in stat:
                     continue
                 if freq is not None:
-                    stat.resample_timeseries(var, freq, inplace=True, 
-                                             **kwargs) # this does also insert NaNs, thus elif in next   
+                    stat.resample_time(var, freq, inplace=True, **kwargs) # this does also insert NaNs, thus elif in next   
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
                 if np.all(np.isnan(stat[var].values)):
@@ -2561,60 +2560,8 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
         
 if __name__ == "__main__":
     
-    import matplotlib.pyplot as plt
-    import pyaerocom as pya
     
-    plt.close('all')
-    ungridded_data =  pya.io.ReadUngridded().read('EBASMC', 'absc550aer')
-    ungridded_data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
-    print('Original data shape {}.'.format(ungridded_data._data.shape))
-    print('Original metadata shape {}.'.format(len(ungridded_data.metadata)))
-    #data.plot_station_coordinates()
-    
-    data = ungridded_data.filter_region(region_id = 'LAND')
-    print('Next data shape {}.'.format(ungridded_data._data.shape))
-    data.plot_station_coordinates(marker = 'o', markersize=12, color='lime')
-    print('Original data shape {}.'.format(ungridded_data._data.shape))
-    print('Original metadata shape {}.'.format(len(data.metadata)))
-    
-    """
-    idx = data._find_station_indices('Alert')
-    
-    stats = []
-    for i in idx:
-        try:
-            stat = data.to_station_data(i, start=2010)
-            stats.append(stat)
-            print(i, stat.revision_date)
-            ax = stat.plot_timeseries('absc550aer')
-            ax.set_title(stat.filename, fontsize=10)
-            ax.set_xlabel('Revision date: {}'.format(stat.revision_date))
-            
-        except:
-            pass
-    
-    raise Exception
-    absc =  data
-    #scatc =  data.extract_var('scatc550dryaer')
-    
-    print('ABSC')
-    corra = data.set_flags_nan(inplace=False)
-    
-    for stat in absc.unique_station_names:
-        print('------------------------')
-        print(stat)
-        print('------------------------')
-        try:
-            print('RAW')
-            raw = absc.to_station_data(stat)
-            print('CORR')
-            corr = corra.to_station_data(stat)
-        except:
-            continue
-        
-        print()
-        
-    """
+    d = UngriddedData()
 
         
     
