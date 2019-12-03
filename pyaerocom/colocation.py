@@ -564,7 +564,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                                  latitude=ungridded_lats,
                                                  vert_scheme=vert_scheme)
     
-    time_idx = make_datetime_index(start, stop, col_freq)
+    pd_freq = TsType(col_freq).to_pandas_freq()
+    time_idx = make_datetime_index(start, stop, pd_freq)
     
     coldata = np.empty((2, len(time_idx), len(obs_stat_data)))
     
@@ -643,13 +644,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 #         grid_ts1 = grid_ts.resample(col_freq).mean()
 # =============================================================================
         
-        grid_ts2 = grid_stat.resample_timeseries(
+        grid_ts2 = grid_stat.resample_time(
                     var, 
                     ts_type=col_freq,
                     how='mean',
                     apply_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
-                    inplace=False)
+                    inplace=True)[var]
         
         if use_climatology_ref:
             obs_ts2 = obs_stat.calc_climatology(
@@ -657,13 +658,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                     apply_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs)[var_ref]
         else:
-            obs_ts2 = obs_stat.resample_timeseries(
+            obs_ts2 = obs_stat.resample_time(
                         var_ref, 
                         ts_type=col_freq,
                         how='mean',
                         apply_constraints=apply_time_resampling_constraints,
                         min_num_obs=min_num_obs,
-                        inplace=False)
+                        inplace=True)[var_ref]
             
         # fill up missing time stamps
         _df = pd.concat([obs_ts2, grid_ts2], axis=1, keys=['o', 'm'])
