@@ -208,8 +208,7 @@ class Filter(BrowseDict):
         return data_obj.apply_latlon_filter(region_id=self.region_name)
 
     def _check_if_htap_region_are_available_and_download(self):
-        """
-        @hannsv: updated the logic here a little and removed unnecessary stuff
+        """ Checks if htap masks are available and downloades them if not.
         """
         from pyaerocom import const
         path = const.FILTERMASKKDIR
@@ -300,7 +299,7 @@ if __name__=="__main__":
     #data_coloc = pya.colocation.colocate_gridded_ungridded(data, ungridded_data, ts_type='monthly',
     #                                                       filter_name='WORLD-noMOUNTAINS')
     #data_coloc    
-    pya.change_verbosity('ignore')
+    pya.change_verbosity('critical')
     plt.show()    
     YEAR = 2010
     VAR = "od550aer"

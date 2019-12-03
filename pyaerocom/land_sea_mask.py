@@ -30,7 +30,6 @@ def load_region_mask_xr(region_id='PAN'):
         containing the masks. 
     """
     from pyaerocom import const
-    path = '/home/hannas/Desktop/pyaerocom-suppl/htap_masks/'
     path = const.FILTERMASKKDIR
     #path = os.path.join(const.FILTERMASKKDIR, 'htap_masks/')
     #print("region_id {}".format(region_id))

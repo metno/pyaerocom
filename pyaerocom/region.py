@@ -209,11 +209,14 @@ class Region(BrowseDict):
         """
         if not self.is_htap:
             raise NotImplementedError("Comming soon ... ")
-            
+    
         from pyaerocom.plot.mapping import init_map
         from pyaerocom.land_sea_mask import load_region_mask_xr
         
         ax = init_map()
+        ax.axes.set_xlabel('Longitude')
+        ax.axes.set_ylabel('Latitude')
+        ax.axes.set_title("Region name: {}".format(r.name))
         d = load_region_mask_xr(region_id=self.name)
         d.plot(ax=ax)    
         # ax add geoaxes 

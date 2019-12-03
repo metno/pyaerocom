@@ -108,6 +108,7 @@ from .io.utils import browse_database
 from .variable import get_variable
 from .utils import create_varinfo_table
 #from .obsdata import ObsData, ProfileData, StationData
+from .filter import Filter
 #print('Elapsed time init pyaerocom: {} s'.format(time()-t0))
 
 

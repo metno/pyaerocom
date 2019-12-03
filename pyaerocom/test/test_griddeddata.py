@@ -30,7 +30,6 @@ def _load_tm5_2010_monthly():
     return GriddedData(fp)
     
 ### fixtures
-    
 
 @lustre_unavail
 @pytest.fixture(scope='module')
