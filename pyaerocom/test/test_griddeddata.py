@@ -25,7 +25,13 @@ def _load_cams_rean():
     return r.read_var('od550aer', ts_type='daily',
                       start=2010, stop=2013)
     
+def _load_tm5_2010_monthly():
+    fp = '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/TM5_AP3-CTRL2016/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc'
+    return GriddedData(fp)
+    
 ### fixtures
+    
+
 @lustre_unavail
 @pytest.fixture(scope='module')
 def data_cci():
@@ -42,6 +48,11 @@ def data_cci():
 @pytest.fixture(scope='module')
 def data_cams_rean():
     return _load_cams_rean()
+
+@lustre_unavail
+@pytest.fixture(scope='module')
+def data_tm5():
+    return _load_tm5_2010_monthly()
 
 @lustre_unavail
 @pytest.fixture(scope='module')
@@ -123,10 +134,50 @@ def test_resample_time(data_cams_rean):
                         desired=[0.14915, 
                                  0.14906, 
                                  0.14906], rtol=TEST_RTOL)
+@lustre_unavail
+def test_interpolate(data_tm5):
+    data = data_tm5
+    #test_resample_time(data)
+    
+    
+    lats = [-10, 20]
+    lons = [-120, 69]
+    
+    itp = data.interpolate(latitude=lats, longitude=lons)
+    
+    assert type(itp) == GriddedData
+    assert itp.shape == (12, 2, 2)
+    npt.assert_allclose(actual=[itp.mean(False),
+                                itp.mean(True)], 
+                        desired=[0.138774,
+                                0.137484], 
+                                 rtol=TEST_RTOL)
+    
+@lustre_unavail
+def test_to_time_series(data_tm5):
+    lats = [-10, 20]
+    lons = [-120, 69]
+    
+    latsm = [-9, 21]
+    lonsm = [-118.5, 70.5]
+    stats = data_tm5.to_time_series(latitude=lats, longitude=lons)
+    
+    lats_actual = []
+    lons_actual = []
+    means_actual = []
+
+    for stat in stats:
+        lats_actual.append(stat.latitude)
+        lons_actual.append(stat.longitude)
+        means_actual.append(stat.od550aer.mean())
+    npt.assert_array_equal(lats_actual, latsm)
+    npt.assert_array_equal(lons_actual, lonsm)
+    npt.assert_allclose(means_actual, [0.101353, 0.270886], rtol=TEST_RTOL)
 
 if __name__=="__main__":
     
-    data = _load_cams_rean()
-    test_resample_time(data)
+    data = _load_tm5_2010_monthly()
     
+    test_interpolate(data)
+    test_to_time_series(data)
     
