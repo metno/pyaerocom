@@ -79,14 +79,17 @@ class BrowseDict(OrderedDict):
     3
     """
     def __getattr__(self, key):
-        return self.__getitem__(key)
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            raise AttributeError(key)
     
     def __setattr__(self, key, val):
         self.__setitem__(key, val)
         
     def __dir__(self):
         return self.keys()
-
+        
     def __str__(self):
         return dict_to_str(self)
 
@@ -319,20 +322,8 @@ def str_underline(s, indent=0):
     return s
 
 if __name__ == '__main__':
+    from copy import deepcopy
     d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
     print(d)
-    
-    d1 = dict(station_name='Bla', var_name='od550aer',
-              other_info=['bla', 'blub'],
-              other_same=[1,2,3,4,'bla'],
-              var_info=dict(units='km-1',
-                            matrix='mars'))
-    
-    d2 = dict(station_name='Bla', var_name='od550gt1aer',
-              other_info='blablub',
-              other_same=[1,2,3,4,'bla'],
-              var_info=dict(units='m-1'))
 
-    d3 = merge_dicts(d1, d2, merged=True)
     
-    print(d3)
