@@ -12,7 +12,6 @@ from iris.analysis import MEAN
 from iris.exceptions import UnitConversionError
 from pandas import Timestamp, Series
 import numpy as np
-import numpy.ma as ma
 import pandas as pd
 
 import pyaerocom as pya
@@ -42,7 +41,10 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                delete_all_coords_cube,
                                copy_coords_cube,
                                make_dummy_cube_latlon,
-                               check_coord_circular)
+                               check_coord_circular,
+                               extract_latlon_dataarray,
+                               lists_to_tuple_list, 
+                               tuple_list_to_lists)
 
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
@@ -809,10 +811,65 @@ class GriddedData(object):
             new index order
         """
         self.grid.transpose(new_order)
+      
+    def mean_at_coords(self, latitude=None, longitude=None, 
+                       time_resample_kwargs=None, **kwargs):
+        """Compute mean value at all input locations
         
+        Parameters
+        ----------
+        latitude : 1D list or similar
+            list of latitude coordinates of coordinate locations. If None, 
+            please provided coords in iris style as list of (lat, lon) tuples
+            via `coords` (handled via arg kwargs)
+        longitude : 1D list or similar
+            list of longitude coordinates of coordinate locations. If None, 
+            please provided coords in iris style as list of (lat, lon) tuples
+            via `coords` (handled via arg kwargs)
+        time_resample_kwargs : dict, optional
+            time resampling arguments passed to 
+            :func:`StationData.resample_time`
+        **kwargs
+            additional keyword args passed to :func:`to_time_series`
+            
+        Returns
+        -------
+        float
+            mean value at coordinates over all times available in this object
+            
+        """
+        ts = self.to_time_series(latitude=latitude, 
+                                 longitude=longitude, 
+                                 **kwargs)
+        mean =  []
+        for stat in ts:
+            if isinstance(time_resample_kwargs, dict):
+                stat.resample_time(self.var_name,  
+                                   inplace=True,
+                                   **time_resample_kwargs)
+            data = stat[self.var_name].values
+            if len(data) > 0:
+                data = np.nanmean(data)
+            mean.append(data)
+        return np.nanmean(mean)
+    
+    def _coords_to_iris_sample_points(self, **coords):
+    
+        sample_points = []
+        num = None
+        for cname, vals in coords.items():
+            if isnumeric(vals):
+                vals= [vals]
+            if num is None:
+                num = len(vals)
+            elif num != len(vals):
+                raise ValueError('All coord arrays need to have same length')
+            sample_points.append((cname, vals))
+        return sample_points
+    
     def to_time_series(self, sample_points=None, scheme="nearest", 
-                       collapse_scalar=True, vert_scheme=None, 
-                       add_meta=None, **coords):
+                       vert_scheme=None, add_meta=None, use_iris=False,  
+                       **coords):
 
         """Extract time-series for provided input coordinates (lon, lat)
 
@@ -831,8 +888,6 @@ class GriddedData(object):
             retrieved
         scheme : str or iris interpolator object
             interpolation scheme (for details, see :func:`interpolate`)
-        collapse_scalar : bool
-            see :func:`interpolate`
         vert_scheme : str
             string specifying how to treat vertical coordinates. This is only
             relevant for data that contains vertical levels. It will be ignored
@@ -861,37 +916,125 @@ class GriddedData(object):
             list of result dictionaries for each coordinate. Dictionary keys
             are: ``longitude, latitude, var_name``
         """
+        if 'collapse_scalar' in coords: #for backwards compatibility
+            collapse_scalar = coords.pop('collapse_scalar')
+        else:
+            collapse_scalar = True
         try:
             self.check_dimcoords_tseries()
         except DimensionOrderError:
             self.reorder_dimensions_tseries()
+        pinfo = False
+        if np.prod(self.shape) > 5913000: # (shape of 2x2 deg, daily data)
+            pinfo = True
+            from time import time
+            t0 = time()
+            const.print_log.info('Extracting timeseries data from large array '
+                                 '(shape: {}). This may take a while...'
+                                 .format(self.shape))
         # if the method makes it to this point, it is 3 or 4 dimensional 
         # and the first 3 dimensions are time, latitude, longitude.
-        
-        # init input for sample points
-        if sample_points is None:
-            sample_points = []
-            for c, v in coords.items():
-                if isnumeric(v):
-                    v= [v]
-                sample_points.append((c, v))
-
-        lens = [len(x[1]) for x in sample_points]
-        if not all([lens[0]==x for x in lens]):
-            raise ValueError("Arrays for sample coordinates must have the "
-                             "same lengths")
+# =============================================================================
+#         lens = [len(x[1]) for x in sample_points]
+#         if not all([lens[0]==x for x in lens]):
+#             raise ValueError("Arrays for sample coordinates must have the "
+#                              "same lengths")
+# =============================================================================
         if self.ndim == 3: #data does not contain vertical dimension
-            return self._to_timeseries_2D(sample_points, scheme,
-                                          collapse_scalar,
-                                          add_meta=add_meta)
+            if use_iris:    
+                if sample_points is None:
+                    sample_points = self._coords_to_iris_sample_points(**coords)
+                result = self._to_timeseries_2D(sample_points, scheme,
+                                                collapse_scalar=collapse_scalar, 
+                                                add_meta=add_meta)
+            else: 
+                
+                result = self._to_time_series_xarray(scheme=scheme, **coords)
+            if pinfo:
+                const.print_log.info('Time series extraction successful. '
+                                     'Elapsed time: {:.0f} s'
+                                     .format(time() - t0))
+            return result
         
+        if sample_points is None:
+            sample_points = self._coords_to_iris_sample_points(**coords)
         return self._to_timeseries_3D(sample_points, scheme, 
-                                      collapse_scalar, vert_scheme,
+                                      collapse_scalar=collapse_scalar, 
+                                      vert_scheme=vert_scheme,
                                       add_meta=add_meta)
     
-    #def apply_mask(self, )
+    def _to_time_series_xarray(self, scheme='nearest',
+                               add_meta=None, ts_type=None, **coords):
+        
+        try:
+            self.check_dimcoords_tseries()
+        except DimensionOrderError:
+            self.reorder_dimensions_tseries()
+        
+        arr = self.to_xarray()
+        
+        if not len(coords) == 2:
+            raise NotImplementedError('Please provide only latitude / longitude '
+                                      'sampling points as input')
+        lat, lon = None, None
+        for coord, vals in coords.items():
+            if coord in ('lat', 'latitude'):
+                if isinstance(vals, str):
+                    vals = [vals]
+                lat = vals
+            elif coord in ('lon', 'longitude'):
+                if isinstance(vals, str):
+                    vals = [vals]
+                lon = vals
+
+        subset = extract_latlon_dataarray(arr, lat, lon, method=scheme,
+                                          new_index_name='latlon')
+        
+        lat_id = subset.attrs['lat_dimname']
+        lon_id = subset.attrs['lon_dimname']
+        var = self.var_name
+        times = self.time_stamps()
+        
+        meta_iter = {}
+        meta_glob = {}
+        if add_meta is not None:
+            for meta_key, meta_val in add_meta.items():
+                try:
+                    if not len(meta_val) == len(lon):
+                        raise ValueError
+                    meta_iter[meta_key] = meta_val
+                except:
+                    meta_glob[meta_key] = meta_val
+        
+        result = []      
+        subset = subset.compute()
+        data_np = subset.data
+        lats = subset[lat_id].data
+        lons = subset[lon_id].data
+        for sidx in range(subset.shape[-1]):
+            
+            data = StationData(latitude=lats[sidx], 
+                               longitude=lons[sidx],
+                               data_id=self.name,
+                               ts_type=self.ts_type)
+            
+            data.var_info[var] = {'units':self.units}
+            
+            vals = data_np[:, sidx]
+            
+            data[var] = Series(vals, index=times)
+            for meta_key, meta_val in meta_iter.items():
+                data[meta_key] = meta_val[sidx]
+            for meta_key, meta_val in meta_glob.items():
+                data[meta_key] = meta_val
+                
+            if ts_type is not None:
+                data.resample_time(var, ts_type, how='mean', inplace=True)
+            result.append(data)
+        return result
+    
     def _to_timeseries_2D(self, sample_points, scheme, collapse_scalar,
-                          add_meta=None):
+                          add_meta=None, ts_type=None):
         """Extract time-series for provided input coordinates (lon, lat)
         
         Todo
@@ -921,6 +1064,8 @@ class GriddedData(object):
         data = self.interpolate(sample_points, scheme, collapse_scalar)
         var = self.var_name
         times = data.time_stamps()
+        
+        #lats, lons = tuple_list_to_lists(sample_points)
         lats = [x[1] for x in sample_points if x[0] == "latitude"][0]
         lons = [x[1] for x in sample_points if x[0] == "longitude"][0]
         arr = data.grid.data
@@ -953,9 +1098,26 @@ class GriddedData(object):
                 data[meta_key] = meta_val[i]
             for meta_key, meta_val in meta_glob.items():
                 data[meta_key] = meta_val
+                
+            if ts_type is not None:
+                data.resample_time(var, ts_type, how='mean', inplace=True)
             result.append(data)
+        
+            
         return result
+    
+    def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
+                          vert_scheme='surface', add_meta=None, 
+                          ts_type=None):
 
+        # Data contains vertical dimension
+        data = self._apply_vert_scheme(sample_points, vert_scheme)
+    
+        # ToDo: check if _to_timeseries_2D can be called here                    
+        return data.to_time_series(sample_points, scheme, 
+                                   collapse_scalar, add_meta=add_meta,
+                                   ts_type=ts_type)
+        
     def _apply_vert_scheme(self, sample_points, vert_scheme=None):
         """Helper method that checks and infers vertical scheme for time
         series computation from 3D data (used in :func:`_to_timeseries_3D`)"""        
@@ -1057,16 +1219,6 @@ class GriddedData(object):
             if np.nanmean(first_lowest_idx) > np.nanmean(first_highest_idx):
                 return 0
             return last_lev_idx
-        
-    def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
-                          vert_scheme='surface', add_meta=None):
-
-        # Data contains vertical dimension
-        data = self._apply_vert_scheme(sample_points, vert_scheme)
-    
-        # ToDo: check if _to_timeseries_2D can be called here                    
-        return data.to_time_series(sample_points, scheme, 
-                                   collapse_scalar, add_meta=add_meta)
     
     def filter_region(self, region_id=None, thresh_coast=0.5, inplace=False):
         """
@@ -1770,7 +1922,7 @@ class GriddedData(object):
         try:
             itp_cube = self.grid.interpolate(sample_points, scheme, 
                                              collapse_scalar)
-        except MemoryError:
+        except MemoryError:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
             raise MemoryError("Interpolation failed since grid of interpolated "
                               "Cube is too large")
         print_log.info('Successfully interpolated cube')
@@ -2033,7 +2185,7 @@ class GriddedData(object):
         return self.collapsed(coords=["longitude", "latitude"],
                               aggregator=MEAN,
                               weights=ws).grid.data
-
+    
     def mean(self, areaweighted=True):
         """Mean value of data array
         
@@ -2326,7 +2478,7 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close("all")
-    
+
     # print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
     data = data.filter_region(region_id  = 'EUROPE-noMONTAINS-LAND')
