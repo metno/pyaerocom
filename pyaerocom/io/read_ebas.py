@@ -128,7 +128,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.25_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.26_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -786,7 +786,7 @@ class ReadEbas(ReadUngriddedBase):
             # that are closest to this wavelength. There may be multiple column
             # matches, e.g. due to different statistics or matrix columns, these
             # will be sorted out below. 
-            if var_info.wavelength_nm is not None and len(col_matches) > 1:
+            if var_info.wavelength_nm is not None:# and len(col_matches) > 1:
                 col_matches = self._find_wavelength_matches(col_matches,
                                                             file, var_info)
 
@@ -1232,8 +1232,9 @@ class ReadEbas(ReadUngriddedBase):
         return data_obj
     
 if __name__=="__main__":
-
+    
     r = ReadEbas()
+    tiksi = r.read('absc550aer', station_names='Tiksi')
     
 
     
