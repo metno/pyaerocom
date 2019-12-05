@@ -128,7 +128,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.26_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.27_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -185,6 +185,8 @@ class ReadEbas(ReadUngriddedBase):
     
     
     IGNORE_WAVELENGTH = ['conceqbc']
+    
+    IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
     # list of all available resolution codes (extracted from SQLite database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
     
@@ -449,6 +451,9 @@ class ReadEbas(ReadUngriddedBase):
             
             paths = []
             for file in filenames:
+                if file in self.IGNORE_FILES:
+                    const.print_log.info('Ignoring flagged file {}'.format(file))
+                    continue
                 paths.append(os.path.join(const.EBASMC_DATA_DIR, file))
             files_vars[var] = sorted(paths)
             num = len(paths)
@@ -1234,8 +1239,10 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     
     r = ReadEbas()
-    tiksi = r.read('absc550aer', station_names='Tiksi')
+    data = r.read('absc550aer', station_names='Alert',
+                   start_date='2010-01-01', stop_date='2010-12-31')
     
+    data.to_station_data('Alert', 'absc550aer', start=2010).plot_timeseries('absc550aer')
 
     
 
