@@ -216,7 +216,7 @@ class Region(BrowseDict):
         ax = init_map()
         ax.axes.set_xlabel('Longitude')
         ax.axes.set_ylabel('Latitude')
-        ax.axes.set_title("Region name: {}".format(r.name))
+        ax.axes.set_title("Region name: {}".format(self.name))
         d = load_region_mask_xr(region_id=self.name)
         d.plot(ax=ax)    
         # ax add geoaxes 

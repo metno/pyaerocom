@@ -238,9 +238,8 @@ class Filter(BrowseDict):
                     missing_reg.append(reg)
             
             const.logger.info('Mask directory exists but does not contain '
-                  'all available masks. Downloads {}'.format(missing_reg))                            
-            
-            download_mask(missing_reg) # downloads all masks. 
+                  'all available masks. Downloads {}.'.format(missing_reg))                            
+            download_mask(missing_reg)
             return
         const.logger.info('Masks are available in MyPyaerocom')
     
@@ -303,7 +302,7 @@ if __name__=="__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
     
-    plt.close("all")
+    #plt.close("all")
     #f = Filter(name = 'EUROPE-noMOUNTAINS-OCN')
     
     #ungridded_data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily' , 'od550aer')
@@ -317,26 +316,11 @@ if __name__=="__main__":
     #data_coloc = pya.colocation.colocate_gridded_ungridded(data, ungridded_data, ts_type='monthly',
     #                                                       filter_name='WORLD-noMOUNTAINS')
     #data_coloc    
-    pya.change_verbosity('critical')
+    pya.change_verbosity('info')
     import numpy as np
+    #._check_if_htap_region_are_available_and_download()
     
-    path = pya.const.FILTERMASKKDIR
-    files = glob.glob(os.path.join(path, '*.nc'))
-    
-    available_regions = []
-    missing_reg = []
-    
-    for b in files:
-        #print(b.split('.')[0])
-        temp = b.split('htap')[0]
-        reg = temp.split('/')[-1]
-        available_regions.append(reg)
-
-    for reg in pya.const.HTAP_REGIONS:
-        if not reg in available_regions:
-            missing_reg.append(reg)
-            
-    print(missing_reg)
+    f = Filter("EUR")
 
     """
     YEAR = 2010
