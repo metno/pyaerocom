@@ -213,20 +213,38 @@ class Filter(BrowseDict):
         from pyaerocom import const
         path = const.FILTERMASKKDIR
         
-        
         if not os.path.exists(path):
             const.print_log.info('Creating mask directory at {}'.format(path))
             os.mkdir(path)
         
         # ToDo: check for actual number of masks and not len == 0 (there may 
         # be new masks in the future)
-        nbr_files = len(glob.glob(os.path.join(path, '*.nc')))
-        if nbr_files == 0:
+        files = glob.glob(os.path.join(path, '*.nc'))
+        nbr_files = len(files)
+        
+        if nbr_files != 19:
+            files = glob.glob(os.path.join(path, '*.nc'))
+            
+            available_regions = []
+            missing_reg = []
+            
+            for b in files:
+                temp = b.split('htap')[0]
+                reg = temp.split('/')[-1]
+                available_regions.append(reg)
+        
+            for reg in pya.const.HTAP_REGIONS:
+                if not reg in available_regions:
+                    missing_reg.append(reg)
+            
             const.logger.info('Mask directory exists but does not contain '
-                              'any masks.')
-            download_mask()
+                  'all available masks. Downloads {}'.format(missing_reg))                            
+            
+            download_mask(missing_reg) # downloads all masks. 
             return
         const.logger.info('Masks are available in MyPyaerocom')
+    
+    
     
     def apply(self, data_obj):
         """Apply filter to data object
@@ -300,7 +318,27 @@ if __name__=="__main__":
     #                                                       filter_name='WORLD-noMOUNTAINS')
     #data_coloc    
     pya.change_verbosity('critical')
-    plt.show()    
+    import numpy as np
+    
+    path = pya.const.FILTERMASKKDIR
+    files = glob.glob(os.path.join(path, '*.nc'))
+    
+    available_regions = []
+    missing_reg = []
+    
+    for b in files:
+        #print(b.split('.')[0])
+        temp = b.split('htap')[0]
+        reg = temp.split('/')[-1]
+        available_regions.append(reg)
+
+    for reg in pya.const.HTAP_REGIONS:
+        if not reg in available_regions:
+            missing_reg.append(reg)
+            
+    print(missing_reg)
+
+    """
     YEAR = 2010
     VAR = "od550aer"
     TS_TYPE = "daily"
@@ -326,4 +364,4 @@ if __name__=="__main__":
     #data_coloc_alt.plot_station_coordinates()
     #plt.show()
     
-    
+    """

@@ -146,16 +146,22 @@ def get_mask_value(lat, lon, mask):
                          .format(type(mask)))
     return float(mask.sel(lat=lat, long=lon, method='nearest'))
 
-def download_mask():
+def download_mask(regions_to_download = None):
     #from urllib.request import urlopen
     from pyaerocom import const
     import requests
     
+    if regions_to_download is None:
+        regions_to_download = const.HTAP_REGIONS
     path_out = const.FILTERMASKKDIR
     bse_url = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
 
-    for region in const.HTAP_REGIONS:
-        filename = '{}htap.0.1x0.1deg.nc'.format(region)      
+    for region in regions_to_download:
+        if region == "ESA":
+            filename = '{}htap.nc'.format(region)
+        else:
+            filename = '{}htap.0.1x0.1deg.nc'.format(region)      
+            
         url = os.path.join(bse_url, filename)
         file_out = os.path.join(path_out, filename)
         r = requests.get(url)
