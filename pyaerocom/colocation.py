@@ -6,6 +6,7 @@ Methods and / or classes to perform colocation
 import numpy as np
 import os
 import pandas as pd
+import xarray as xr
 from pyaerocom import logger, const
 from pyaerocom import __version__ as pya_ver
 from pyaerocom.tstype import TsType
@@ -178,8 +179,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     grid_stop_ref = to_pandas_timestamp(gridded_data_ref.stop)
     
     # time resolution of dataset to be analysed
-    grid_ts_type = gridded_data.ts_type
-    ref_ts_type = gridded_data_ref.ts_type
+    grid_ts_type = grid_ts_type_src = gridded_data.ts_type
+    ref_ts_type = ref_ts_type_src = gridded_data_ref.ts_type
     if ref_ts_type != grid_ts_type:
         # ref data is in higher resolution
         if TsType(ref_ts_type) > TsType(grid_ts_type):
@@ -195,6 +196,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                     ref_ts_type,
                     apply_constraints=apply_time_resampling_constraints, 
                     min_num_obs=min_num_obs)
+            grid_ts_type = ref_ts_type
     # now both are in same temporal resolution
     
     # input ts_type is not specified or model is in lower resolution 
@@ -240,7 +242,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'var_name'          :   [var_ref, var],
             'ts_type'           :   grid_ts_type,
             'filter_name'       :   filter_name,
-            'ts_type_src'       :   [ref_ts_type, grid_ts_type],
+            'ts_type_src'       :   [ref_ts_type_src, grid_ts_type_src],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'var_units'         :   [str(gridded_data_ref.units),
@@ -583,7 +585,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
-        
         if ts_type_src_ref is None:
             ts_type_src_ref = obs_stat['ts_type_src']
         elif obs_stat['ts_type_src'] != ts_type_src_ref:
@@ -739,6 +740,67 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                   min_num_obs=min_num_obs,
                                   **kwargs)
     return data
+
+def correct_model_stp_coldata(coldata, p0=None, t0=273, inplace=False):
+    """Correct modeldata in colocated data object to STP conditions
+    
+    Note
+    ----
+    BETA version, quite unelegant coded (at 8pm 3 weeks before IPCC deadline), 
+    but should do the job!
+    """
+    if not inplace:
+        coldata = coldata.copy()
+    temp = xr.open_dataset(const.ERA5_SURFTEMP_FILE)['t2m']
+    from geonum.atmosphere import pressure
+    arr = coldata.data
+    
+    coords = zip(arr.latitude.values, arr.longitude.values, 
+                 arr.altitude.values, arr.station_name.values)
+    if p0 is None:
+        p0 = pressure() #STD conditions sea level
+    const.logger.info('Correcting model data in ColocatedData instance to STP')
+    cfacs = []
+    for i, (lat, lon, alt, name) in enumerate(coords):
+        const.logger.info(name, ', Lat', lat, ', Lon', lon)
+        p = pressure(alt)
+        const.logger.info('Alt', alt)
+        const.logger.info('P=', p/100, 'hPa')
+        
+        
+        temps = temp.sel(latitude=lat, longitude=lon, method='nearest').data
+        
+        if not len(temps) == len(arr.time):
+            raise NotImplementedError('Check timestamps')
+        const.logger.info('Mean Temp: ', temps.mean() - t0, ' C')
+        
+        corrfacs = (p0 / p) * (temps / t0)
+        
+        const.logger.info('Corr fac:', corrfacs.mean(), '+/-', corrfacs.std())
+        
+        cfacs.append(corrfacs.mean())
+        
+        #mularr = xr.DataArray(corrfacs)
+        
+        if not arr.station_name.values[i] == name:
+            raise Exception
+        elif not arr.dims[1] == 'time':
+            raise Exception
+    # =============================================================================
+    #     const.logger.info(corrfacs)
+    #     const.logger.info('Before', arr[1, :, i].data)
+    #     corrfacs[0] = 1
+    # =============================================================================
+        arr[1, :, i] *= corrfacs
+        #const.logger.info('After', arr[1, :, i].data)
+    cfacs = np.asarray(cfacs)
+    
+    const.logger.info('Min: ', cfacs.min())
+    const.logger.info('Mean: ', cfacs.mean())
+    const.logger.info('Max: ', cfacs.max())
+    coldata.data.attrs['Model_STP_corr'] = True
+    coldata.data.attrs['Model_STP_corr_mean'] = cfacs.mean()
+    return coldata
 
 if __name__=='__main__':
     import pyaerocom as pya
