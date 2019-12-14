@@ -46,7 +46,8 @@ from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          divide_cubes,
-                                         subtract_cubes)
+                                         subtract_cubes,
+                                         add_cubes)
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                sort_ts_types,
                                get_highest_resolution)
@@ -129,6 +130,8 @@ class ReadGridded(object):
     """
     AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
                     'od550gt1aer'   : ['od550aer', 'od550lt1aer'],
+                    'wetoa'         : ['wetpoa', 'wetsoa'],
+                    'dryoa'         : ['drypoa', 'drysoa'],
                     'conc*'         : ['mmr*', 'rho'],
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
@@ -139,6 +142,8 @@ class ReadGridded(object):
     
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
                 'od550gt1aer'  :    subtract_cubes,
+                'wetoa'        :    add_cubes,
+                'dryoa'        :    add_cubes,
                 'conc*'        :    multiply_cubes,
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
@@ -376,8 +381,13 @@ class ReadGridded(object):
         -------
         bool
         """
-        if var_name in self.vars_provided or self.check_compute_var(var_name):
+        provided = self.vars_provided
+        if var_name in provided or self.check_compute_var(var_name):
             return True
+        var = const.VARS[var_name]
+        for alias in var.aliases:
+            if alias in provided:
+                return True
         return False
     
     def _get_years_to_load(self, start=None, stop=None):
