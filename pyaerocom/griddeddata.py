@@ -169,6 +169,9 @@ class GriddedData(object):
     @var_name.setter
     def var_name(self, val):
         """Name of variable"""
+        if not isinstance(val, str):
+            raise ValueError('Invalid input for var_name, need str, got {}'
+                             .format(val))
         self.grid.var_name = val
     
     @property
@@ -654,7 +657,11 @@ class GriddedData(object):
             raise IOError('Failed to load input: {}'.format(input))
         
         if var_name is not None and self.var_name != var_name: 
-            self.var_name = var_name
+            try:
+                self.var_name = var_name
+            except ValueError:
+                const.print_log.warn('Could not update var_name, invalid input '
+                                     '{} (need str)'.format(var_name))
             
      
     def _get_info_from_filenames(self):
@@ -867,6 +874,22 @@ class GriddedData(object):
             sample_points.append((cname, vals))
         return sample_points
     
+    def _iris_sample_points_to_coords(self, sample_points):
+        lats, lons = None, None
+        for (name, vals) in sample_points:
+            if isnumeric(vals):
+                vals = [vals]
+            if name in ('lat', 'latitude'):
+                lats = vals
+            elif name in ('lon', 'longitude'):
+                lons = vals
+        if not lats or not lons or not len(lats) == len(lons):
+            raise ValueError('Could not extract latitude or longitude info '
+                             'from sampling_points or both input arrays '
+                             'do not have the same lenght')
+        
+        return dict(lat=lats, lon=lons)
+    
     def to_time_series(self, sample_points=None, scheme="nearest", 
                        vert_scheme=None, add_meta=None, use_iris=False,  
                        **coords):
@@ -948,8 +971,11 @@ class GriddedData(object):
                                                 collapse_scalar=collapse_scalar, 
                                                 add_meta=add_meta)
             else: 
-                
-                result = self._to_time_series_xarray(scheme=scheme, **coords)
+                if not coords:
+                    coords = self._iris_sample_points_to_coords(sample_points)
+                result = self._to_time_series_xarray(scheme=scheme, 
+                                                     add_meta=add_meta, 
+                                                     **coords)
             if pinfo:
                 const.print_log.info('Time series extraction successful. '
                                      'Elapsed time: {:.0f} s'
@@ -976,7 +1002,6 @@ class GriddedData(object):
         if not len(coords) == 2:
             raise NotImplementedError('Please provide only latitude / longitude '
                                       'sampling points as input')
-        lat, lon = None, None
         for coord, vals in coords.items():
             if coord in ('lat', 'latitude'):
                 if isinstance(vals, str):
@@ -986,7 +1011,8 @@ class GriddedData(object):
                 if isinstance(vals, str):
                     vals = [vals]
                 lon = vals
-
+        if lat is None or lon is None:
+            raise ValueError('Please provide latitude and longitude coords')
         subset = extract_latlon_dataarray(arr, lat, lon, method=scheme,
                                           new_index_name='latlon')
         
@@ -1107,16 +1133,14 @@ class GriddedData(object):
         return result
     
     def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
-                          vert_scheme='surface', add_meta=None, 
-                          ts_type=None):
+                          vert_scheme='surface', add_meta=None):
 
         # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
     
         # ToDo: check if _to_timeseries_2D can be called here                    
         return data.to_time_series(sample_points, scheme, 
-                                   collapse_scalar, add_meta=add_meta,
-                                   ts_type=ts_type)
+                                   collapse_scalar, add_meta=add_meta)
         
     def _apply_vert_scheme(self, sample_points, vert_scheme=None):
         """Helper method that checks and infers vertical scheme for time
@@ -2290,6 +2314,11 @@ class GriddedData(object):
     def update_meta(self, **kwargs):
         """Update metadata dictionary"""
         for key, val in kwargs.items():
+            if key == 'var_name' and not isinstance(val, str):
+                const.print_log.warn('Skipping assignment of var_name from '
+                                     'metadata in GriddedData, since attr. '
+                                     'needs to be str and is {}'.format(val))
+                continue
             self._grid.attributes[key] = val
             
     def delete_all_coords(self, inplace=True):
