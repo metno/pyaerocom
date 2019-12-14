@@ -3,7 +3,9 @@
 """
 Heatmap plotting functionality
 """
+import numpy as np
 import pandas as pd
+from pyaerocom.mathutils import exponent
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from seaborn import heatmap
@@ -13,12 +15,13 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   normalise_rows=False, 
                   normalise_rows_how='median',
                   normalise_rows_col=None,
-                  annot=True, num_digits=0, ax=None, 
+                  annot=True, num_digits=None, ax=None, 
                   figsize=(12,12), cbar=False, cbar_label="", 
                   xticklabels=None, xtick_rot=45,
                   yticklabels=None, ytick_rot=45, 
                   xlabel=None, ylabel=None, 
                   title=None, circle=None, labelsize=12,
+                  annot_fmt_rowwise=False,
                   **kwargs):
     
 
@@ -144,16 +147,56 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     elif vmax is None:
         vmax = df_hm.max().max() * (1+high)
     
-    # If the user needs too many displays 
-    if num_digits < 5:
-        num_fmt = ".{}f".format(num_digits)
-    else:
-        num_fmt = ".4g"
-
-    ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
-                 fmt=num_fmt, cbar=cbar, cbar_kws=cbar_kws,
-                 vmin=vmin, vmax=vmax, annot_kws=annot_kws, **kwargs)
     
+    #num_fmt=None   
+    #num_fmt = '3.2G'
+    if annot_fmt_rowwise and isinstance(annot, np.ndarray):
+        _annot = []
+        
+        for row in annot:
+            mask = row[~np.isnan(row)]
+            mask = mask[mask!=0]
+            exps = exponent(mask)
+            minexp = exps.min()
+            if minexp < -3:
+                rowfmt = '.1E'
+            elif minexp < 0:
+                rowfmt = '.{}f'.format(-minexp + 1)
+            elif minexp == 0:
+                rowfmt = '.1f'
+            else:
+                rowfmt = '.4g'
+            #numdigits = -exps.min()
+            row_fmt = []
+            #lowest = np.min(row)
+            #exp = exponent(lowest)
+            for i, val in enumerate(row):
+                if np.isnan(val):
+                    valstr = ''
+
+                else:
+                    #exp = exps(i)
+                    #fmt = '.{}f'.format(numdigits)
+                    valstr = format(val, rowfmt)
+                
+                row_fmt.append(valstr)
+            _annot.append(row_fmt)
+        annot = np.asarray(_annot)
+            #print(row)
+        ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
+                     cbar=cbar, cbar_kws=cbar_kws, fmt='', 
+                     vmin=vmin, vmax=vmax, annot_kws=annot_kws, **kwargs)
+    
+    else:
+        # If the user needs too many displays 
+        if num_digits is None or num_digits > 5:
+            num_fmt = ".4g"
+        else:
+            num_fmt = ".{}f".format(num_digits)
+        ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
+                     cbar=cbar, cbar_kws=cbar_kws, fmt=num_fmt, 
+                     vmin=vmin, vmax=vmax, annot_kws=annot_kws, **kwargs)
+        
     ax.figure.axes[-1].yaxis.label.set_size(labelsize)  
     if title is not None:
         ax.set_title(title, fontsize=labelsize+2)

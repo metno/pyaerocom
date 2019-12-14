@@ -129,7 +129,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     
     ax.tick_params(labelsize=fontsize_base)
     
-    ax.plot(xlim, ylim, '-', color='grey')
+    ax.plot(xlim, ylim, '--', color='#cccccc')
     
     xypos =   {'var_info'       :   (0.01, .95),
                'refdata_mean'   :   (0.01, 0.90),
