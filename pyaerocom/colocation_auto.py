@@ -21,7 +21,8 @@ from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                get_lowest_resolution, start_stop)
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
-                                  colocate_gridded_ungridded)
+                                  colocate_gridded_ungridded,
+                                  correct_model_stp_coldata)
 from pyaerocom import ColocatedData, print_log
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.tstype import TsType
@@ -218,6 +219,7 @@ class ColocationSetup(BrowseDict):
         self.model_use_vars = model_use_vars
         self.model_add_vars = model_add_vars
         self.model_keep_outliers = model_keep_outliers
+        self.model_to_stp = False
         
         self.model_id = model_id
         self.model_name = model_name
@@ -458,14 +460,21 @@ class Colocator(ColocationSetup):
         GriddedData
             variable data
         """
+        use_input_var = False
+        if 'use_input_var' in kwargs:
+            use_input_var = kwargs.pop('use_input_var')
+            
         reader = ReadGridded(self.model_id)
-        try:
-            var_matches = self._find_var_matches(var_name, reader)
-        except DataCoverageError:
-            raise DataCoverageError('No match could be found in {} for '
-                                    'variable {}'
-                                    .format(self.model_id, var_name))
-        var = list(var_matches.keys())[0]
+        if use_input_var:
+            var = var_name
+        else:
+            try:
+                var_matches = self._find_var_matches(var_name, reader)
+            except DataCoverageError:
+                raise DataCoverageError('No match could be found in {} for '
+                                        'variable {}'
+                                        .format(self.model_id, var_name))
+            var = list(var_matches.keys())[0]
         return self._read_gridded(reader, var, 
                                   start=self.start, 
                                   stop=self.stop, 
@@ -743,6 +752,8 @@ class Colocator(ColocationSetup):
                         var_ref_keep_outliers=self.obs_keep_outliers,
                         use_climatology_ref=self.obs_use_climatology)
                 
+                if self.model_to_stp:
+                    coldata = correct_model_stp_coldata(coldata)
                 if self.save_coldata:
                     self._save_coldata(coldata, savename, out_dir, model_var, 
                                        model_data, obs_var)
