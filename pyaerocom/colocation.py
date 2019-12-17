@@ -168,9 +168,12 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                                    lon_res_deg=regrid_res_deg,
                                                    scheme=regrid_scheme)
     # perform regridding
-    gridded_data = gridded_data.regrid(gridded_data_ref, 
-                                       scheme=regrid_scheme)
-    
+    if gridded_data.lon_res < gridded_data_ref.lon_res: #obs has lower resolution
+        gridded_data = gridded_data.regrid(gridded_data_ref, 
+                                           scheme=regrid_scheme)
+    else:
+        gridded_data_ref = gridded_data_ref.regrid(gridded_data, 
+                                                   scheme=regrid_scheme)
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
