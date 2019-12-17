@@ -22,7 +22,7 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
 from pyaerocom import ColocationSetup, ColocatedData, Colocator
 
-from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
+#from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
 from pyaerocom.exceptions import DataDimensionError
 
 # ToDo: complete docstring
@@ -176,6 +176,9 @@ class AerocomEvaluation(object):
         self.clear_existing_json = True
         
         self.only_colocation = False
+        self.only_json = False
+        
+        self.weighted_stats=False
         
         #: Base directory for output
         self.out_basedir = None
@@ -534,6 +537,7 @@ class AerocomEvaluation(object):
                              .format(type(coldata)))
         stats_dummy = {}
         
+        use_weights = self.weighted_stats
         for k in calc_statistics([1], [1]):
             stats_dummy[k] = np.nan
         
@@ -615,9 +619,11 @@ class AerocomEvaluation(object):
 
         for reg in get_all_default_region_ids():
             filtered = hmd.apply_latlon_filter(region_id=reg)
-            stats = filtered.calc_statistics()
+            stats = filtered.calc_statistics(use_area_weights=use_weights)
             for k, v in stats.items():
-                stats[k] = np.float64(v)
+                if not k=='NOTE':
+                    v = np.float64(v)
+                stats[k] = v
             
             hm_data[reg] = stats
         
@@ -930,15 +936,31 @@ class AerocomEvaluation(object):
             list of colocated data files that were converted
         """
         converted = []
-        
+       
         files = self.find_coldata_files(model_name, obs_name, var_name)
+        
+        if colocator is not None:
+            files = self._check_process_colfiles(files, colocator)
+            
+        if len(files) == 0:
+            const.print_log.info('Nothing to do...')
+            return converted
+        for file in files:
+            const.print_log.info('Processing file {}'.format(file))
+            d = ColocatedData(file)
+            self.compute_json_files_from_colocateddata(d, obs_name, model_name)
+            converted.append(file)
+        return converted
+    
+    def _check_process_colfiles(self, files, colocator):
+        remaining = []
         for file in files:
             fname = os.path.basename(file)
             if not fname in colocator.file_status:
                 const.print_log.info('Skipping computation of json files from '
                                      'colocated data file {}. This file is not '
                                      'part of this experiment (obs config)'
-                                     .format(fname, self.obs_config[obs_name]))
+                                     .format(fname))
                 continue
             if colocator.file_status[fname] == 'skipped':
                 const.print_log.info('Recomputing json files for existing '
@@ -950,11 +972,8 @@ class AerocomEvaluation(object):
                                      'status skipped or saved)'
                                      .format(fname, colocator.file_status[fname]))
                 continue
-            const.print_log.info('Processing file {}'.format(file))
-            d = ColocatedData(file)
-            self.compute_json_files_from_colocateddata(d, obs_name, model_name)
-            converted.append(file)
-        return converted
+            remaining.append(file)
+        return remaining
     
     def delete_all_colocateddata_files(self, model_name, obs_name):
         #model_id = self.get_model_id(model_name)
@@ -1143,7 +1162,8 @@ class AerocomEvaluation(object):
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None, 
                        update_interface=True, 
                        reanalyse_existing=None, raise_exceptions=None, 
-                       clear_existing_json=None, only_colocation=None):
+                       clear_existing_json=None, only_colocation=None,
+                       only_json=None):
         """Create colocated data and json files for model / obs combination
         
         Parameters
@@ -1169,18 +1189,21 @@ class AerocomEvaluation(object):
         reanalyse_existing : Bool, optional
             if True, existing colocated data files are ignored. If None, the
             class default will be used (defined in config file)
-        raise_exceptions : Bool, optional
+        raise_exceptions : bool, optional
             if True, exceptions during colocation will be raised if they occur 
             (for debugging). If None, the class default will be used (defined 
             in config file)
-        clear_existing_json : Bool, optional
+        clear_existing_json : bool, optional
             if True, existing json files for model / obs combination will be 
             deleted before rerun. If None, the
             class default will be used (defined in config file)
-        only_colocation : Bool, optional
+        only_colocation : bool, optional
             if True, only colocation will be performed and no json files will
             be created. If None, the class default will be used (defined in 
             config file)
+        only_json : bool, optional
+            if True, no colocation will be performed and only existing 
+            colocated data files will be re-processed.
             
         Returns
         -------
@@ -1197,7 +1220,8 @@ class AerocomEvaluation(object):
             self.clear_existing_json = clear_existing_json
         if only_colocation is not None:
             self.only_colocation = only_colocation
-        
+        if only_json is not None:
+            self.only_json = only_json
         if self.clear_existing_json:
             self.clean_json_files()
             
@@ -1230,8 +1254,10 @@ class AerocomEvaluation(object):
                     self._log.info('Skipping model {}'.format(model_name))
                     continue
                 
-            
-                col = self.run_colocation(model_name, obs_name, var_name)
+                if not self.only_json:
+                    col = self.run_colocation(model_name, obs_name, var_name)
+                else:
+                    col = None
                 if only_colocation:
                     self._log.info('Skipping computation of json files for {}'
                                    '/{}'.format(obs_name, model_name))
@@ -1279,7 +1305,8 @@ class AerocomEvaluation(object):
         
         return self.read_model_data(model_name, var_name,  **kwargs)
     
-    def read_model_data(self, model_name, var_name, **kwargs):
+    def read_model_data(self, model_name, var_name,
+                        **kwargs):
         """Read model variable data
         
         """

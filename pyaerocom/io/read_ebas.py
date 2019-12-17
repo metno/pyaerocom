@@ -95,6 +95,9 @@ class ReadEbasOptions(BrowseDict):
         
         self.wavelength_tol_nm = 50
         
+        self.shift_wavelengths = True
+        self.assume_default_ae_if_unavail = True
+        
         self.eval_flags = True
         
         self.keep_aux_vars = False
@@ -128,7 +131,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.25_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.28_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -185,6 +188,10 @@ class ReadEbas(ReadUngriddedBase):
     
     
     IGNORE_WAVELENGTH = ['conceqbc']
+    
+    ASSUME_AE_SHIFT_WVL = 1.0
+    
+    IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
     # list of all available resolution codes (extracted from SQLite database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
     
@@ -449,6 +456,9 @@ class ReadEbas(ReadUngriddedBase):
             
             paths = []
             for file in filenames:
+                if file in self.IGNORE_FILES:
+                    const.print_log.info('Ignoring flagged file {}'.format(file))
+                    continue
                 paths.append(os.path.join(const.EBASMC_DATA_DIR, file))
             files_vars[var] = sorted(paths)
             num = len(paths)
@@ -698,7 +708,7 @@ class ReadEbas(ReadUngriddedBase):
         return data_out
      
     def _find_wavelength_matches(self, col_matches, file, var_info):
-        """
+        """Find columns with wavelength closes to variable wavelenght
         """
         min_diff_wvl = 1e6
         matches = []
@@ -710,11 +720,11 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not 'wavelength' in colinfo:
-                const.print_log.warn('Ignoring column {} ({}) in EBAS file for '
-                                     'reading var {}: column misses wavelength '
-                                     'specification'
-                                     .format(colnum, colinfo, var_info))
-        
+                const.print_log.warn('Ignoring column {}\n{}\nVar {}: column '
+                                     'misses wavelength specification!'
+                                     .format(colnum, colinfo, 
+                                             var_info.var_name))
+                continue
             wvl_col = colinfo.get_wavelength_nm()
             # wavelength is in tolerance range
             if wvl_low <= wvl_col <= wvl_high:
@@ -730,7 +740,37 @@ class ReadEbas(ReadUngriddedBase):
                     matches.append(colnum)
                 elif wvl_diff == min_diff_wvl:
                     matches.append(colnum)
-        return matches
+        return (matches, min_diff_wvl)
+    
+    def _find_closest_wavelength_cols(self, col_matches, file, var_info):
+        """
+        """
+        min_diff_wvl = 1e6
+        matches = []
+        # get wavelength of column and tolerance
+        wvl = var_info.wavelength_nm
+        
+        for colnum in col_matches:
+            colinfo = file.var_defs[colnum]
+            if not 'wavelength' in colinfo:
+                const.print_log.warn('Ignoring column {} ({}) in EBAS file for '
+                                     'reading var {}: column misses wavelength '
+                                     'specification'
+                                     .format(colnum, colinfo, var_info))
+                continue
+            wvl_col = colinfo.get_wavelength_nm()
+            # wavelength is in tolerance range
+            diff = abs(wvl_col - wvl)
+            if diff < min_diff_wvl:
+                min_diff_wvl = diff
+                matches = [colnum]
+            elif diff == min_diff_wvl:
+                matches.append(colnum)
+            
+        return (matches, min_diff_wvl)
+    
+    def _shift_wavelength(self, vals, from_wvl, to_wvl, angexp):
+        return vals * (from_wvl / to_wvl)**angexp
     
     def find_var_cols(self, vars_to_read, loaded_nasa_ames):
         """Find best-match variable columns in loaded NASA Ames file
@@ -786,12 +826,19 @@ class ReadEbas(ReadUngriddedBase):
             # that are closest to this wavelength. There may be multiple column
             # matches, e.g. due to different statistics or matrix columns, these
             # will be sorted out below. 
-            if var_info.wavelength_nm is not None and len(col_matches) > 1:
-                col_matches = self._find_wavelength_matches(col_matches,
-                                                            file, var_info)
-
+            if var_info.wavelength_nm is not None:# and len(col_matches) > 1:
+                if self.opts.shift_wavelengths:
+                    (col_matches, 
+                     diff) = self._find_closest_wavelength_cols(col_matches, 
+                                                                file, 
+                                                                var_info)
+                else:
+                    (col_matches,
+                     diff)= self._find_wavelength_matches(col_matches,
+                                                          file, var_info)
+                
+                
             if bool(col_matches):
-                # loop was interrupted since exact wavelength match was found
                 var_cols[var] = col_matches
         
         if not len(var_cols) > 0:
@@ -870,14 +917,34 @@ class ReadEbas(ReadUngriddedBase):
             if sf != 1:
                 data *= sf
                 data_out['var_info'][var]['scale_factor'] = sf
-            data_out[var] = data
             
             meta = file.meta
             
             if not 'unit' in _col: #make sure a unit is assigned to data column
                 _col['unit']= file.unit
             if 'wavelength' in _col:
-                _col['wavelength_nm'] = _col.get_wavelength_nm() 
+                _col['wavelength_nm'] = wvlcol = _col.get_wavelength_nm() 
+                if self.opts.shift_wavelengths:
+                    towvl = self.var_info(var).wavelength_nm
+                    if wvlcol != towvl:
+                        # ToDo: add AE if available
+                        if self.opts.assume_default_ae_if_unavail:
+                            ae = self.ASSUME_AE_SHIFT_WVL
+                            data = self._shift_wavelength(vals=data, 
+                                                      from_wvl=wvlcol,
+                                                      to_wvl=towvl,
+                                                      angexp=ae)    
+                            _col['wavelength_adjustment'] = True
+                            _col['from_wavelength'] = wvlcol
+                            _col['wavelength_adjustment_angstrom'] = ae
+                            _col['wavelength'] = '{:.1f} nm'.format(towvl)
+                            _col['wavelength_nm'] = towvl
+                        else:
+                            raise NotImplementedError('Cannot correct for '
+                                                      'wavelength shift, need '
+                                                      'Angstrom Exp.')
+                        
+                        
             # TODO: double-check with NILU if this can be assumed
             if not 'matrix' in _col:
                 _col['matrix'] = meta['matrix']
@@ -887,7 +954,7 @@ class ReadEbas(ReadUngriddedBase):
                     stats = meta['statistics']
                 _col['statistics'] = stats
             
-            
+            data_out[var] = data
                 
             var_info = _col.to_dict()
             data_out['var_info'][var].update(var_info)
@@ -1232,10 +1299,12 @@ class ReadEbas(ReadUngriddedBase):
         return data_obj
     
 if __name__=="__main__":
-
-    r = ReadEbas()
     
-
+    r = ReadEbas()
+    files = ['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20060101020000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20070101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20080101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20080618090000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.28w.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20090101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20090107070000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20100101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20100101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20110101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20110101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20120101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20120101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.32w.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130813000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.9d.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130822000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.4mo.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20140101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20140101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.8w.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20150101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20160101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20170101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1mo.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20170131160000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.11mo.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20180101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas']
+    #files = r.get_file_list('absc550aer', station_names='Granada')
+    data = r.read('absc550aer', files=files[:5])
+    
     
 
     

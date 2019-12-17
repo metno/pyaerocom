@@ -265,9 +265,11 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                                          'or 3D with time being the 3rd '
                                          'dimension')
             data.reorder_dimensions_tseries()
-            
-            data = data[0]
-        
+            try:
+                data = data[0]
+            except:
+                print()
+                data = data[0]
         lons = data.longitude.points
         lats = data.latitude.points
         data = data.grid.data
@@ -524,7 +526,8 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
                                 add_mean_edgecolor=True,
                                 ax=None, ax_cbar=None, 
                                 cbar_outline_visible=False, 
-                                ref_label=None, data_label=None, **kwargs):
+                                ref_label=None, data_label=None, 
+                                stats_area_weighted=False, **kwargs):
     """Plot map of normalised mean bias from instance of ColocatedData
     
     Note
@@ -607,7 +610,7 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
     ec = 'none'
     if add_mean_edgecolor:
         nn = Normalize(vmin=vmin, vmax=vmax)
-        nmb = coldata.calc_statistics()['nmb']
+        nmb = coldata.calc_statistics(use_area_weights=stats_area_weighted)['nmb']
         if in_percent:
             nmb*=100
         ec = cmap(nn(nmb))
@@ -623,8 +626,8 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         cbar.set_label('NMB [%]')
         
     return ax
-    
-    
+
+   
 if __name__ == "__main__":
     from matplotlib.pyplot import close
     close('all')

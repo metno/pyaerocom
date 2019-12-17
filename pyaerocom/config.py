@@ -225,6 +225,8 @@ class Config(object):
     _DB_SEARCH_SUBDIRS['MyPyaerocom/pyaerocom-testdata'] = 'testdata'
 
     DONOTCACHEFILE = None
+    
+    ERA5_SURFTEMP_FILENAME = 'era5.msl.t2m.201001-201012.nc'
 
     _LUSTRE_CHECK_PATH = '/project/aerocom/aerocom1/'
     def __init__(self, basedir=None,
@@ -581,6 +583,15 @@ class Config(object):
         """List of all IDs of observations"""
         return [x for x in self.OBSCONFIG.keys()]
     
+    @property
+    def ERA5_SURFTEMP_FILE(self):
+        if 'era5' in self.SUPPLDIRS:
+            sdir = self.SUPPLDIRS['era5']
+            if os.path.exists(sdir) and self.ERA5_SURFTEMP_FILENAME in os.listdir(sdir):
+                return os.path.join(sdir, self.ERA5_SURFTEMP_FILENAME)
+        raise FileNotFoundError('ERA Interim surface temperature data cannot '
+                                'be accessed (check lustre connection)')
+        
     def make_default_vert_grid(self):
         """Makes default vertical grid for resampling of profile data"""
         step = self.DEFAULT_VERT_GRID_DEF['step']
@@ -840,3 +851,7 @@ if __name__=="__main__":
     pya.const.BASEDIR = '/home/jonasg/MyPyaerocom/pyaerocom-testdata/'
     
     print(pya.const.has_access_lustre)
+    
+    fp = pya.const.ERA5_SURFTEMP_FILE
+    
+    

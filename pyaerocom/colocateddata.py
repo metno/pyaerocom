@@ -238,6 +238,41 @@ class ColocatedData(object):
         
         return (self.data[0].count(dim='time') > 0).data.sum()
         
+    @property
+    def has_latlon_dims(self):
+        """Boolean specifying whether data has latitude and longitude dimensions"""
+        return all([dim in self.dims for dim in ['latitude', 'longitude']])
+    
+    @property
+    def area_weights(self):
+        return self.calc_area_weights()
+    
+    def calc_area_weights(self):
+        """Calculate area weights
+        
+        Note
+        ----
+        Only applies to colocated data that has latitude and longitude 
+        dimension.
+        
+        Returns
+        -------
+        ndarray
+            array containing weights for each datapoint (same shape as
+            `self.data[0]`)
+        """
+        if not self.has_latlon_dims:
+            raise DataDimensionError('Can only compute area weights for data '
+                                     'with latitude and longitude dimension')
+        if not 'units' in self.data.latitude.attrs:
+            self.data.latitude.attrs['units'] = 'degrees'    
+        if not 'units' in self.data.longitude.attrs:
+            self.data.longitude.attrs['units'] = 'degrees'
+        arr = self.data
+        from pyaerocom import GriddedData
+        obs = GriddedData(arr.to_iris())
+        return obs.calc_area_weights()
+    
     def min(self):
         return self.data.min()
     
@@ -418,8 +453,9 @@ class ColocatedData(object):
         """Copy this object"""
         return ColocatedData(self.data.copy())
     
-    def calc_statistics(self, constrain_val_range=False, **kwargs):
-        """Calculate statistics from data ensemble
+    def calc_statistics(self, constrain_val_range=False, 
+                        use_area_weights=False, **kwargs):
+        """Calculate statistics from model and obs data
         
         Wrapper for function :func:`pyaerocom.mathutils.calc_statistics` 
         
@@ -432,10 +468,16 @@ class ColocatedData(object):
             var = Variable(self.meta['var_name'][1])
             kwargs['lowlim'] = var.lower_limit
             kwargs['highlim'] = var.upper_limit
-            
+        
+        if use_area_weights and self.has_latlon_dims:
+            weights = self.area_weights[0].flatten()
+        else:
+            weights = None
+        
         stats = calc_statistics(self.data.values[1].flatten(),
                                 self.data.values[0].flatten(),
-                                **kwargs)
+                                weights=weights, **kwargs)
+    
         stats['num_coords_with_data'] = self.num_coords_with_data
         stats['num_coords_tot'] = self.num_coords
         return stats
@@ -466,6 +508,8 @@ class ColocatedData(object):
             var_ref = vars_[0]
         else:
             var_ref = None
+        # ToDo: include option to use area weighted stats in plotting 
+        # routine...
         return plot_scatter(x_vals=self.data.values[0].flatten(), 
                             y_vals=self.data.values[1].flatten(),
                             var_name=vars_[1],
@@ -479,7 +523,7 @@ class ColocatedData(object):
                             stations_ok=num_points,
                             filter_name=meta['filter_name'], 
                             **kwargs)
-    
+        
     def _load_fake_data(self, num_stations=1000, num_tstamps=365):
         raise NotImplementedError('Currently not working')
         data = np.empty((2, num_tstamps, num_stations))

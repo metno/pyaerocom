@@ -28,6 +28,10 @@ def main():
     p.add_argument('-r', '--reanalyse', action='store_true',
                    help='Reanalyse existing colocated data files')
     
+    p.add_argument('--onlyjson', action='store_true',
+                   help=('Recompute json files from existing colocated NetCDF '
+                         'files'))
+    
     p.add_argument('-c', '--clear', action='store_true',
                    help='Delete (potentially) existing json files before rerun')
     p.add_argument('-p', '--print_config', action='store_true',
@@ -49,6 +53,10 @@ def main():
         clear_existing_json = True
     else:
         clear_existing_json = None
+    if args.onlyjson:
+        onlyjson = True
+    else:
+        onlyjson = None
         
     if not os.path.exists(args.config_dir):
         raise FileNotFoundError('No such file or directory: {}'.format(args.config_dir))
@@ -92,12 +100,17 @@ def main():
             raise ValueError('No such obs_name available in current config. '
                              'Please choose from: {}'
                              .format(list(ae.obs_config)))
-
+    
+    if onlyjson:
+        print('RECOMPUTING EXISTING JSON FILES, NO COMPUTATION OF '
+              'COLOCATED DATA OBJECTS WILL BE PERFORMED')
+        
     ae.run_evaluation(model_name=args.model_name, 
                       obs_name=args.obs_name, 
                       reanalyse_existing=reanalyse_existing,
                       raise_exceptions=raise_exceptions,
-                      clear_existing_json=clear_existing_json)
+                      clear_existing_json=clear_existing_json,
+                      only_json=onlyjson)
     
     
     

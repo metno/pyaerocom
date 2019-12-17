@@ -6,6 +6,7 @@ Methods and / or classes to perform colocation
 import numpy as np
 import os
 import pandas as pd
+import xarray as xr
 from pyaerocom import logger, const
 from pyaerocom import __version__ as pya_ver
 from pyaerocom.tstype import TsType
@@ -167,9 +168,12 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                                    lon_res_deg=regrid_res_deg,
                                                    scheme=regrid_scheme)
     # perform regridding
-    gridded_data = gridded_data.regrid(gridded_data_ref, 
-                                       scheme=regrid_scheme)
-    
+    if gridded_data.lon_res < gridded_data_ref.lon_res: #obs has lower resolution
+        gridded_data = gridded_data.regrid(gridded_data_ref, 
+                                           scheme=regrid_scheme)
+    else:
+        gridded_data_ref = gridded_data_ref.regrid(gridded_data, 
+                                                   scheme=regrid_scheme)
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
@@ -178,8 +182,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     grid_stop_ref = to_pandas_timestamp(gridded_data_ref.stop)
     
     # time resolution of dataset to be analysed
-    grid_ts_type = gridded_data.ts_type
-    ref_ts_type = gridded_data_ref.ts_type
+    grid_ts_type = grid_ts_type_src = gridded_data.ts_type
+    ref_ts_type = ref_ts_type_src = gridded_data_ref.ts_type
     if ref_ts_type != grid_ts_type:
         # ref data is in higher resolution
         if TsType(ref_ts_type) > TsType(grid_ts_type):
@@ -195,6 +199,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                     ref_ts_type,
                     apply_constraints=apply_time_resampling_constraints, 
                     min_num_obs=min_num_obs)
+            grid_ts_type = ref_ts_type
     # now both are in same temporal resolution
     
     # input ts_type is not specified or model is in lower resolution 
@@ -240,7 +245,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'var_name'          :   [var_ref, var],
             'ts_type'           :   grid_ts_type,
             'filter_name'       :   filter_name,
-            'ts_type_src'       :   [ref_ts_type, grid_ts_type],
+            'ts_type_src'       :   [ref_ts_type_src, grid_ts_type_src],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'var_units'         :   [str(gridded_data_ref.units),
@@ -583,7 +588,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
-        
         if ts_type_src_ref is None:
             ts_type_src_ref = obs_stat['ts_type_src']
         elif obs_stat['ts_type_src'] != ts_type_src_ref:
@@ -739,6 +743,111 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                   min_num_obs=min_num_obs,
                                   **kwargs)
     return data
+
+def correct_model_stp_coldata(coldata, p0=None, t0=273, inplace=False):
+    """Correct modeldata in colocated data object to STP conditions
+    
+    Note
+    ----
+    BETA version, quite unelegant coded (at 8pm 3 weeks before IPCC deadline), 
+    but should do the job for 2010 monthly colocated data files (AND NOTHING
+    ELSE)!
+    """
+    if coldata.ndim != 3:
+        raise NotImplementedError('Can only handle 3D coldata so far...')
+    elif not coldata.ts_type == 'monthly' or not len(coldata.time)==12:
+        raise NotImplementedError('Can only handle monthly colocated data files '
+                                  'so far (since ERA5 temps are only available) '
+                                  'in monthly resolution')
+    startyr = pd.Timestamp(coldata.start).year
+    stopyr = pd.Timestamp(coldata.stop).year
+    if not all([x==2010 for x in (startyr, stopyr)]):
+        raise NotImplementedError('Can only handle 2010 monthly data so far')
+        
+    if not inplace:
+        coldata = coldata.copy()
+    temp = xr.open_dataset(const.ERA5_SURFTEMP_FILE)['t2m']
+    from geonum.atmosphere import pressure
+    arr = coldata.data
+    
+    coords = zip(arr.latitude.values, arr.longitude.values, 
+                 arr.altitude.values, arr.station_name.values)
+    if p0 is None:
+        p0 = pressure() #STD conditions sea level
+    const.logger.info('Correcting model data in ColocatedData instance to STP')
+    cfacs = []
+    meantemps = []
+    mintemps = []
+    maxtemps =[]
+    ps = []
+    for i, (lat, lon, alt, name) in enumerate(coords):
+        const.logger.info(name, ', Lat', lat, ', Lon', lon)
+        p = pressure(alt)
+        const.logger.info('Alt', alt)
+        const.logger.info('P=', p/100, 'hPa')
+        
+        ps.append(p/100)
+        
+        temps = temp.sel(latitude=lat, longitude=lon, method='nearest').data
+        
+        meantemps.append(temps.mean())
+        mintemps.append(temps.min())
+        maxtemps.append(temps.min())
+        
+        if not len(temps) == len(arr.time):
+            raise NotImplementedError('Check timestamps')
+        const.logger.info('Mean Temp: ', temps.mean() - t0, ' C')
+        
+        corrfacs = (p0 / p) * (temps / t0)
+        
+        const.logger.info('Corr fac:', corrfacs.mean(), '+/-', corrfacs.std())
+        
+        cfacs.append(corrfacs.mean())
+    
+        #mularr = xr.DataArray(corrfacs)
+        
+        if not arr.station_name.values[i] == name:
+            raise Exception
+        elif not arr.dims[1] == 'time':
+            raise Exception
+    # =============================================================================
+    #     const.logger.info(corrfacs)
+    #     const.logger.info('Before', arr[1, :, i].data)
+    #     corrfacs[0] = 1
+    # =============================================================================
+        arr[1, :, i] *= corrfacs
+        #const.logger.info('After', arr[1, :, i].data)
+    cfacs = np.asarray(cfacs)
+    
+    const.logger.info('Min: ', cfacs.min())
+    const.logger.info('Mean: ', cfacs.mean())
+    const.logger.info('Max: ', cfacs.max())
+    coldata.data.attrs['Model_STP_corr'] = True
+    
+    newcoords = dict(pres=('station_name', ps),
+                     temp_mean=('station_name', meantemps), 
+                     temp_min=('station_name', mintemps),
+                     temp_max=('station_name', maxtemps),
+                     stp_corrfac_mean=('station_name', cfacs))
+                 
+    coldata.data = coldata.data.assign_coords(newcoords)
+    
+    info_str = ('Correction factors to convert model data from ambient to '
+                'STP were computed using corrfac=(p0/p)*(T/T0) with T0=273K '
+                'and p0=1013 hPa and p is the pressure at the station location '
+                '(which was computed assuming a standard atmosphere and using '
+                'the station altitude) and T is the 2m surface temperature at '
+                'the station, applied on a monthly basis and estimated using '
+                'ERA5 data')
+                
+    coldata.data['pres'].attrs['units'] = 'hPa'
+    coldata.data['temp_mean'].attrs['units'] = 'K'
+    coldata.data['temp_min'].attrs['units'] = 'K'
+    coldata.data['temp_max'].attrs['units'] = 'K'
+    
+    coldata.data.attrs['Model_STP_corr'] = True
+    coldata.data.attrs['Model_STP_corr_info'] = info_str
+    return coldata
 
 if __name__=='__main__':
     import pyaerocom as pya

@@ -12,8 +12,37 @@ from scipy.stats import pearsonr, spearmanr, kendalltau
 in_range = lambda x, low, high: low <= x <= high
 
 ### OTHER FUNCTIONS
+
+def weighted_sum(data, weights):
+    """Compute weighted sum using numpy dot product"""
+    return np.dot(data, weights)
+
+def sum(data, weights=None):
+    """Summing operation with option to perform weighted sum"""
+    if weights is None:
+        return np.sum(data)
+    return weighted_sum(data, weights)
+
+def weighted_mean(x, w):
+    """Weighted Mean"""
+    return np.sum(x * w) / np.sum(w)
+
+def weighted_cov(x, y, w):
+    """Weighted Covariance"""
+    return np.sum(w * (x - weighted_mean(x, w)) * (y - weighted_mean(y, w))) / np.sum(w)
+
+def weighted_corr(x, y, w):
+    """Weighted Correlation"""
+    return weighted_cov(x, y, w) / np.sqrt(weighted_cov(x, x, w) * weighted_cov(y, y, w))
+
+def corr(x, y, w=None):
+    """Compute correlation coefficient"""
+    if w is None:
+        return pearsonr(x, y)[0]
+    return weighted_corr(x, y, w)
+
 def calc_statistics(data, ref_data, lowlim=None, highlim=None,
-                    min_num_valid=5):
+                    min_num_valid=5, weights=None):
     """Calc statistical properties from two data arrays
     
     Calculates the following statistical properties based on the two provided
@@ -74,12 +103,22 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     
     data, ref_data = data[mask], ref_data[mask]
     
+    ws = False
+    if weights is not None:
+        weights = weights[mask]
+        weights = weights / weights.max()    
+        ws = True
+        result['NOTE'] = ('Weights were not applied to FGE and kendall and '
+                          'spearman corr (not implemented)')
+        
     result['totnum'] = float(len(mask))
     result['num_valid'] = float(num_points)
     result['refdata_mean'] = np.nanmean(ref_data)
     result['refdata_std'] = np.nanstd(ref_data)
     result['data_mean'] = np.nanmean(data)
     result['data_std'] = np.nanstd(data)
+    result['weighted'] = ws
+
     if not num_points > min_num_valid:
         if lowlim is not None:
             valid = np.logical_and(data>lowlim, ref_data>lowlim)
@@ -96,52 +135,61 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         result['fge'] = np.nan
         result['R'] = np.nan
         result['R_spearman'] = np.nan
+        
+        return result
+
+    if lowlim is not None:
+        valid = np.logical_and(data>lowlim, ref_data>lowlim)
+        data = data[valid]
+        ref_data = ref_data[valid]
+    if highlim is not None:
+        valid = np.logical_and(data<highlim, ref_data<highlim)
+        data = data[valid]
+        ref_data = ref_data[valid]
+    
+    difference = data - ref_data
+    
+    diffsquare = difference**2
+    result['rms'] = np.sqrt(np.average(diffsquare, weights=weights))
+    
+    # NO implementation to apply weights yet ...
+    cr = corr(data, ref_data, weights)
+
+    result['R'] = cr
+    result['R_spearman'] = spearmanr(data, ref_data)[0]
+    result['R_kendall'] = kendalltau(data, ref_data)[0]
+    
+    # NMB, MNMB and FGE are constrained to positive values, thus negative
+    # values need to be removed
+    neg_ref = ref_data < 0
+    neg_data = data < 0
+    
+    use_indices = ~(neg_data + neg_ref)
+    
+    diff_pos = difference[use_indices]
+    ref_data_pos = ref_data[use_indices]
+    data_pos = data[use_indices]
+    if weights is not None:
+        weights = weights[use_indices]
+    
+    num_points_pos = len(data_pos)
+    
+    if num_points_pos == 0:
+        result['nmb'] = np.nan
+        result['mnmb'] = np.nan
+        result['fge'] = np.nan
     else:
-        if lowlim is not None:
-            valid = np.logical_and(data>lowlim, ref_data>lowlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
-        if highlim is not None:
-            valid = np.logical_and(data<highlim, ref_data<highlim)
-            data = data[valid]
-            ref_data = ref_data[valid]
+        result['nmb'] = (sum(diff_pos, weights=weights) / 
+                         sum(ref_data_pos, weights=weights)) #*100.
         
-        difference = data - ref_data
+        tmp = diff_pos / (data_pos + ref_data_pos)
         
-        result['rms'] = np.sqrt(np.mean(difference**2))
+        result['mnmb'] = 2. / num_points_pos * sum(tmp, weights=weights)# * 100.
+        result['fge'] = 2. / num_points_pos * sum(np.abs(tmp), weights=weights) #* 100.
         
-        result['R'] = pearsonr(data, ref_data)[0]
-        result['R_spearman'] = spearmanr(data, ref_data)[0]
-        result['R_kendall'] = kendalltau(data, ref_data)[0]
-        
-        # NMB, MNMB and FGE are constrained to positive values, thus negative
-        # values need to be removed
-        neg_ref = ref_data < 0
-        neg_data = data < 0
-        
-        use_indices = ~(neg_data + neg_ref)
-        
-        diff_pos = difference[use_indices]
-        ref_data_pos = ref_data[use_indices]
-        data_pos = data[use_indices]
-        
-        num_points_pos = len(data_pos)
-        
-        if num_points_pos == 0:
-            result['nmb'] = np.nan
-            result['mnmb'] = np.nan
-            result['fge'] = np.nan
-        else:
-            result['nmb'] = np.sum(diff_pos) / np.sum(ref_data_pos) #*100.
-            
-            tmp = diff_pos / (data_pos + ref_data_pos)
-            
-            result['mnmb'] = 2. / num_points_pos * np.sum(tmp)# * 100.
-            result['fge'] = 2. / num_points_pos * np.sum(np.abs(tmp)) #* 100.
-            
-        result['num_neg_data'] = np.sum(neg_data)
-        result['num_neg_refdata'] = np.sum(neg_ref)
-     
+    result['num_neg_data'] = np.sum(neg_data)
+    result['num_neg_refdata'] = np.sum(neg_ref)
+ 
     return result
 
 def closest_index(num_array, value):
@@ -627,8 +675,39 @@ def range_magnitude(low, high):
 if __name__ == "__main__":
     #import doctest
     exp = exponent(23)
-    print(numbers_in_str('Bla42Blub100'))
+    #print(numbers_in_str('Bla42Blub100'))
     #run tests in all docstrings
     #doctest.testmod()
     
+    mod = np.ones(20)
+    obs = np.ones(20)
+    weights = np.ones(20)
     
+    weights[10] = 100
+    
+    mod[10] = 10
+    obs[10] = 10
+    
+    c1 = calc_statistics(mod, obs)
+    c2 = calc_statistics(mod, obs, weights=weights)
+    
+    assert c1['nmb'] == 0
+    assert c1['mnmb'] == 0
+    assert c1['R'] == 1
+    
+    assert c2['nmb'] == 0
+    assert c2['mnmb'] == 0
+    assert c2['R'] == 1
+    
+    obs[10] = 9
+    
+    c1 = calc_statistics(mod, obs)
+    c2 = calc_statistics(mod, obs, weights=weights)
+    
+    assert c1['nmb'] == 0
+    assert c1['mnmb'] == 0
+    assert c1['R'] == 1
+    
+    assert c2['nmb'] == 0
+    assert c2['mnmb'] == 0
+    assert c2['R'] == 1

@@ -91,7 +91,17 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
     DataArray
         data at input coordinates
     """
-
+    
+# =============================================================================
+#     if lat_dimname is None:
+#         for name in ['lat', 'latitude']:
+#             if name in arr.dims:
+#                 lat_dimname = name
+#     if lon_dimname is None:
+#         for name in ['lon', 'longitude']:
+#             if name in arr.dims:
+#                 lon_dimname = name
+# =============================================================================
     if lat_dimname is None:
         lat_dimname = 'lat'
     if lon_dimname is None:
@@ -104,7 +114,7 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
     if not lon_dimname in arr.dims and lon_dimname == 'lon':
         for alias in const.COORDINFO['lon'].aliases:
             if alias in arr.dims:
-                lat_dimname = alias
+                lon_dimname = alias
                 break    
     if isinstance(lat, str):
         lat = [lat]
