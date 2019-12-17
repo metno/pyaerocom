@@ -21,6 +21,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   yticklabels=None, ytick_rot=45, 
                   xlabel=None, ylabel=None, 
                   title=None, circle=None, labelsize=12,
+                  annot_fontsize=None,
                   annot_fmt_rowwise=False,
                   **kwargs):
     
@@ -104,7 +105,9 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     else:
         fig = ax.figure
     cbar_kws = {}
-    annot_kws={"size": labelsize-4}
+    if annot_fontsize is None:
+        annot_fontsize = labelsize-4
+    annot_kws={"size": annot_fontsize}
     
     if normalise_rows:
         if normalise_rows_col is not None:
