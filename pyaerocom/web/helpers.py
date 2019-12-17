@@ -553,11 +553,11 @@ def make_info_table_evaluation_iface(config):
                     for k, v in coldata.meta.items():
                         if not k in SKIP_META:
                             if isinstance(v, (list, tuple)):
-                                if not len(v) == 2:
-                                    raise Exception
-                            
-                                motab['{}_obs'.format(k)] = str(v[0])
-                                motab['{}_mod'.format(k)] = str(v[1])
+                                if len(v) == 2:
+                                    motab['{}_obs'.format(k)] = str(v[0])
+                                    motab['{}_mod'.format(k)] = str(v[1])
+                                else:
+                                    motab[k] = ';'.join([str(x) for x in v])
                             else:
                                 motab[k] = str(v)
     return table
