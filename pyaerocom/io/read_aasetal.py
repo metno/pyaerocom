@@ -9,7 +9,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 #from pyaerocom.io.helpers_units import (unitconv_sfc_conc, unitconv_wet_depo)
-
+from pyaerocom import geodesy
 from pyaerocom.units_helpers import convert_unit
 from pyaerocom.helpers import get_tot_number_of_seconds
 
@@ -24,7 +24,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     _FILEMASK = '*.csv' # fix
 
     #: version log of this class (for caching)
-    __version__ = '0.07'
+    __version__ = '0.08'
 
     COL_DELIM = ','
 
@@ -88,7 +88,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         return self.PROVIDES_VARIABLES
 
     def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
-        """ Read one GawTadSubsetAasEtAl file
+        """ Read one GawTadSubsetAasEtAl file.
+        One file contains all stations for one variable. Special case, not 
+        AEROCOM convention. 
 
         Parameters
         ----------
@@ -122,7 +124,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
             s = StationData()
             # Meta data
             s['station_name'] = name
-            s["altitude"] = np.nan
+            
             s["filename"] = filename
             s["data_id"] = self.DATA_ID
             s["ts_type"] = self.TS_TYPE
@@ -162,6 +164,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         # Store the meta data. 
                         s[key] = station_group[key].values[0]
                 
+            # Since no altitude is provided in the files. Geodesy is used to approximate 
+            # altitude based on latitude and longitude. 
+            s["altitude"] = geodesy.get_topo_altitude(lat=s.latitude, lon=s.longitude)
             # Added the created station to the station list.
             station_list.append(s)
         return station_list
@@ -313,9 +318,6 @@ if __name__ == "__main__":
      #change_verbosity('info')
      #V = "concso4pr"
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-         # todo : 
-     #so2 = aa.read('concso2')
-     #so4_aero = aa.read('concso4')
      V = ['concso2']
      ungridded = aa.read(V)
      names = ungridded.station_name[:10]
@@ -350,5 +352,5 @@ if __name__ == "__main__":
      #stat.plot_timeseries("concso4", ax = ax)
      #plt.show()
      #ax = ungridded.plot_station_timeseries('Abington', 'concso2')
-     #ax.figure.savefig('/home/hannas/Desktop/test_plot_tseries_first_station.png')
+     
 

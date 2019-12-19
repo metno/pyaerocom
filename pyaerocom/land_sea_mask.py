@@ -31,8 +31,7 @@ def load_region_mask_xr(region_id='PAN'):
     """
     from pyaerocom import const
     path = const.FILTERMASKKDIR
-    #path = os.path.join(const.FILTERMASKKDIR, 'htap_masks/')
-    #print("region_id {}".format(region_id))
+
     if isinstance(region_id, list):
         for i, r in enumerate(region_id):
             if r not in const.OLD_AEROCOM_REGIONS:
@@ -43,7 +42,6 @@ def load_region_mask_xr(region_id='PAN'):
                     masks += xr.open_dataset(fil)[r+'htap']
         masks = masks.where(masks < 1, 1)
     else:
-        #region_id  = region_id.split("HTAP")[0]
         if region_id not in const.OLD_AEROCOM_REGIONS:
             fil =  glob.glob( os.path.join( path, '{}*.nc'.format(region_id)))[0]
             masks = xr.open_dataset(fil)[region_id+'htap']
@@ -52,7 +50,13 @@ def load_region_mask_xr(region_id='PAN'):
     return masks
 
 def load_region_mask_iris(region_id='PAN'):
-    """    
+    """ Loads regional mask to iris. 
+    
+    Parameters 
+    -----------
+    region_id : str
+        Chosen region. 
+    
     Returns
     ---------
     mask : xarray.DataArray containing the masks. 
@@ -67,10 +71,7 @@ def load_region_mask_iris(region_id='PAN'):
 
     if isinstance(region_id, list):
         for r in region_id:
-            #print("   øksdhfja")
             if r not in const.OLD_AEROCOM_REGIONS:
-                #print(glob.glob(path + r + '*.nc'))
-                #print("   øksdhfja")
                 path = os.path.join(path, r)
                 fil = glob.glob(path + '*.nc')[0]
                 files.append(fil)
@@ -97,10 +98,17 @@ def available_region_mask():
 
 def get_mask(lat, lon, mask):
     """
+    Parameters 
+    -----------
     lat : float
+        latitude 
+        
     lon : float
-    mask : xarray dataset  
-    
+        longitude 
+        
+    mask : xarray.Dataset  
+        Dataset contaning mask values. 
+        
     Returns
     -------
     float 
@@ -111,18 +119,6 @@ def get_mask(lat, lon, mask):
     const.print_log.warning(DeprecationWarning('This method is deprecated! '
                                                'Use get_mask_value instead'))
     return get_mask_value(lat, lon, mask)
-# =============================================================================
-#     la = np.around(lat, 2)
-#     lo = np.around(lon, 2) 
-#     
-#     if isinstance(mask, xr.DataArray):
-#         mask_pixel = mask.sel(lat = slice(la + 0.1, la), long = slice(lo - 0.1, lo))
-#         m = mask_pixel.values[0][0]  
-#         return m
-#     else:
-#         print("Please provide masks of type xarray dataset, not {}".format(type(mask)))
-#         return
-# =============================================================================
 
 def get_mask_value(lat, lon, mask):
     """Get value of mask at input lat / lon position
@@ -147,6 +143,14 @@ def get_mask_value(lat, lon, mask):
     return float(mask.sel(lat=lat, long=lon, method='nearest'))
 
 def download_mask(regions_to_download = None):
+    """Downloads the htap mask from https://pyaerocom.met.no/pyaerocom-suppl.
+    
+    Parameters
+    ---------------
+    regions_to_download : List[str]
+        List containing the regions to download. 
+    
+    """
     #from urllib.request import urlopen
     from pyaerocom import const
     import requests
@@ -157,19 +161,20 @@ def download_mask(regions_to_download = None):
     bse_url = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
 
     for region in regions_to_download:
-        if region == "ESA":
+        if region == "EAS":
             filename = '{}htap.nc'.format(region)
+            file_out = os.path.join(path_out, '{}htap.0.1x0.1deg.nc'.format(region))
         else:
             filename = '{}htap.0.1x0.1deg.nc'.format(region)      
-            
+            file_out = os.path.join(path_out, filename)    
         url = os.path.join(bse_url, filename)
-        file_out = os.path.join(path_out, filename)
+        
         r = requests.get(url)
         open(file_out, 'wb').write(r.content) 
     return 
 
 if __name__ == '__main__':
-   print(load_region_mask_xr())
-   print(load_region_mask_iris())
-   #download_mask()
-   print('hello')
+   # print(load_region_mask_xr())
+   # print(load_region_mask_iris())
+   # download_mask()
+   # print('hello')
