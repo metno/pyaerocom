@@ -200,7 +200,7 @@ class ColocationSetup(BrowseDict):
         try:
             Filter(filter_name)
         except:
-            raise ValueError('Invalid input for filter_name')
+            raise ValueError('Invalid input for filter_name {}'.format(filter_name))
         self.save_coldata = save_coldata
         if save_coldata:
             if basedir_coldata is None:
