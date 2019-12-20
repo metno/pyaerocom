@@ -127,7 +127,7 @@ class Filter(BrowseDict):
         self.set_altitude_filter(alt_filter)
     
     def set_land_sea_filter(self, filter_name):
-        """Set default altitude filter"""
+        """Set default altitude filter."""
         if not filter_name in self.LAND_OCN_FILTERS:
             raise AttributeError('No such land sea filter: {}. Available '
                                  'filters are: {}'.format(filter_name, 
@@ -136,7 +136,7 @@ class Filter(BrowseDict):
         return         
         
     def set_altitude_filter(self, filter_name):
-        """Set default altitude filter"""
+        """Set default altitude filter."""
         if not filter_name in self.ALTITUDE_FILTERS:
             raise AttributeError('No such altitude filter: {}. Available '
                                  'filters are: {}'.format(filter_name, 
@@ -151,7 +151,7 @@ class Filter(BrowseDict):
         return 
     
     def set_region(self, region):
-        
+        """Sets default region, WORLD."""
         if isinstance(region, str):
             region = Region(region)
         if not isinstance(region, Region):
@@ -208,7 +208,8 @@ class Filter(BrowseDict):
         return data_obj.apply_latlon_filter(region_id=self.region_name)
 
     def _check_if_htap_region_are_available_and_download(self):
-        """ Checks if htap masks are available and downloades them if not.
+        """ Checks if htap masks are available and downloades the regions 
+        that is not. Usefull if someone accudentaly deletes one region. 
         """
         from pyaerocom import const
         path = const.FILTERMASKKDIR
@@ -320,9 +321,8 @@ if __name__=="__main__":
     import numpy as np
     #._check_if_htap_region_are_available_and_download()
     
-    f = Filter("EUR")
+    f = Filter("EAS")
 
-    """
     YEAR = 2010
     VAR = "od550aer"
     TS_TYPE = "daily"
@@ -336,16 +336,14 @@ if __name__=="__main__":
     obs_data = obs_reader.read()#.filter_by_meta(altitude=[0, 1000])
     
     f = Filter(name = 'EUROPE-noMOUNTAINS-OCN')
-    #model_data = f.apply(model_data)
-    #obs_data = f.apply(obs_data)
+    model_data = f.apply(model_data)
+    obs_data   = f.apply(obs_data)
     data_coloc_alt = pya.colocation.colocate_gridded_ungridded(model_data, obs_data, ts_type='monthly',
-                                                               filter_name='EUROPE-noMOUNTAINS-OCN',
+                                                               filter_name='EUR-noMOUNTAINS-OCN',
                                                                colocate_time=True)
     
     data_coloc_alt.plot_coordinates()#scatter(marker='o', mec='none', color='b', alpha=0.05);
-
+    plt.show()
     
     #data_coloc_alt.plot_station_coordinates()
     #plt.show()
-    
-    """
