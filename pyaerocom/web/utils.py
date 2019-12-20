@@ -175,7 +175,13 @@ def compute_model_average_and_diversity(cfg, var_name,
     
     dims = [data.time, dummy.coord('latitude'), dummy.coord('longitude')]
     avg = avg_fun(loaded, axis=0)
-    delta_textor = np.std(np.asarray(loaded) / avg, axis=0) * 100
+    if avg_how == 'mean':
+        delta_textor = np.std(np.asarray(loaded) / avg, axis=0) * 100
+    else:
+        ld = np.asarray(loaded)
+        q1 = np.quantile(ld, 0.25, axis=0)
+        q3 = np.quantile(ld, 0.75, axis=0)
+        delta_textor = (q3-q1) / avg * 100
     
     comment = ('AeroCom {} model (cf. attrs. from_models and from_vars for details)'
                .format(avg_how))
