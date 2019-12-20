@@ -17,6 +17,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   normalise_rows_col=None,
                   annot=True, num_digits=None, ax=None, 
                   figsize=(12,12), cbar=False, cbar_label="", 
+                  cbar_labelsize=None,
                   xticklabels=None, xtick_rot=45,
                   yticklabels=None, ytick_rot=45, 
                   xlabel=None, ylabel=None, 
@@ -142,6 +143,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
 
     cbar_kws['label'] = cbar_label
     
+    #cbar_kws['fontsize'] = 18
+    
     if annot is True:
         annot = df.values
 
@@ -230,7 +233,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     if ylabel is None:
         ylabel = ''
     ax.set_ylabel(ylabel, fontsize=labelsize)
-    
+    if cbar_labelsize is not None:
+        ax.figure.axes[-1].yaxis.label.set_size(cbar_labelsize)
     fig.tight_layout()
     
     return ax
