@@ -195,62 +195,62 @@ class ReadL2Data(ReadL2DataBase):
         self._HEIGHTSTEPNO = 24
 
         # variable names for the different retrievals
-        self.RETRIEVAL_READ_PARAMETERS = {}
-        self.RETRIEVAL_READ_PARAMETERS['sca'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['sca']['vars'] = {}
+        self.CODA_READ_PARAMETERS = {}
+        self.CODA_READ_PARAMETERS['sca'] = {}
+        self.CODA_READ_PARAMETERS['sca']['metadata'] = {}
+        self.CODA_READ_PARAMETERS['sca']['vars'] = {}
 
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_optical_properties/starttime'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_pcd/starttime'
+        self.CODA_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_pcd/starttime'
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_starttime'] = 'sca_pcd/starttime'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_mid_bins_qc_flag'] = 'sca_pcd/profile_pcd_mid_bins/processing_qc_flag'
+        self.CODA_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_mid_bins_qc_flag'] = 'sca_pcd/profile_pcd_mid_bins/processing_qc_flag'
 
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/qc_flag'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/profile_pcd_bins/processing_qc_flag'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][
+        self.CODA_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/profile_pcd_bins/processing_qc_flag'
+        self.CODA_READ_PARAMETERS['sca']['metadata'][
             self._LATITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/latitude'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][
+        self.CODA_READ_PARAMETERS['sca']['metadata'][
             self._LONGITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/longitude'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][
+        self.CODA_READ_PARAMETERS['sca']['metadata'][
             self._ALTITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/altitude'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['vars'][
+        self.CODA_READ_PARAMETERS['sca']['vars'][
             self._EC355NAME] = 'sca_optical_properties/sca_optical_properties/extinction'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['vars'][
+        self.CODA_READ_PARAMETERS['sca']['vars'][
             self._BS355NAME] = 'sca_optical_properties/sca_optical_properties/backscatter'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['vars'][self._LODNAME] = 'sca_optical_properties/sca_optical_properties/lod'
-        self.RETRIEVAL_READ_PARAMETERS['sca']['vars'][self._SRNAME] = 'sca_optical_properties/sca_optical_properties/sr'
+        self.CODA_READ_PARAMETERS['sca']['vars'][self._LODNAME] = 'sca_optical_properties/sca_optical_properties/lod'
+        self.CODA_READ_PARAMETERS['sca']['vars'][self._SRNAME] = 'sca_optical_properties/sca_optical_properties/sr'
 
-        self.RETRIEVAL_READ_PARAMETERS['ica'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['ica']['vars'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'][self._TIME_NAME] = 'ica_optical_properties/starttime'
+        self.CODA_READ_PARAMETERS['ica'] = {}
+        self.CODA_READ_PARAMETERS['ica']['metadata'] = {}
+        self.CODA_READ_PARAMETERS['ica']['vars'] = {}
+        self.CODA_READ_PARAMETERS['ica']['metadata'][self._TIME_NAME] = 'ica_optical_properties/starttime'
 
-        self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'][
+        self.CODA_READ_PARAMETERS['ica']['metadata'][
             self._LATITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/latitude'
-        self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'][
+        self.CODA_READ_PARAMETERS['ica']['metadata'][
             self._LONGITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/longitude'
-        self.RETRIEVAL_READ_PARAMETERS['ica']['metadata'][
+        self.CODA_READ_PARAMETERS['ica']['metadata'][
             self._ALTITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/altitude'
-        self.RETRIEVAL_READ_PARAMETERS['ica']['vars'][
+        self.CODA_READ_PARAMETERS['ica']['vars'][
             self._EC355NAME] = 'ica_optical_properties/ica_optical_properties/extinction'
-        self.RETRIEVAL_READ_PARAMETERS['ica']['vars'][
+        self.CODA_READ_PARAMETERS['ica']['vars'][
             self._BS355NAME] = 'ica_optical_properties/ica_optical_properties/backscatter'
-        self.RETRIEVAL_READ_PARAMETERS['ica']['vars'][self._LODNAME] = 'ica_optical_properties/ica_optical_properties/lod'
+        self.CODA_READ_PARAMETERS['ica']['vars'][self._LODNAME] = 'ica_optical_properties/ica_optical_properties/lod'
         # self.RETRIEVAL_READ_PARAMETERS['ica']['vars'][_CASENAME] = 'ica_optical_properties/ica_optical_properties/case'
 
-        self.RETRIEVAL_READ_PARAMETERS['mca'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['mca']['metadata'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['mca']['vars'] = {}
-        self.RETRIEVAL_READ_PARAMETERS['mca']['metadata'][self._TIME_NAME] = 'mca_optical_properties/starttime'
-        self.RETRIEVAL_READ_PARAMETERS['mca']['metadata'][
+        self.CODA_READ_PARAMETERS['mca'] = {}
+        self.CODA_READ_PARAMETERS['mca']['metadata'] = {}
+        self.CODA_READ_PARAMETERS['mca']['vars'] = {}
+        self.CODA_READ_PARAMETERS['mca']['metadata'][self._TIME_NAME] = 'mca_optical_properties/starttime'
+        self.CODA_READ_PARAMETERS['mca']['metadata'][
             self._LATITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/latitude'
-        self.RETRIEVAL_READ_PARAMETERS['mca']['metadata'][
+        self.CODA_READ_PARAMETERS['mca']['metadata'][
             self._LONGITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/longitude'
-        self.RETRIEVAL_READ_PARAMETERS['mca']['metadata'][
+        self.CODA_READ_PARAMETERS['mca']['metadata'][
             self._ALTITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/altitude'
-        self.RETRIEVAL_READ_PARAMETERS['mca']['vars'][
+        self.CODA_READ_PARAMETERS['mca']['vars'][
             self._EC355NAME] = 'mca_optical_properties/mca_optical_properties/extinction'
-        self.RETRIEVAL_READ_PARAMETERS['mca']['vars'][self._LODNAME] = 'mca_optical_properties/mca_optical_properties/lod'
+        self.CODA_READ_PARAMETERS['mca']['vars'][self._LODNAME] = 'mca_optical_properties/mca_optical_properties/lod'
         # DATA_COLNAMES[_MCA_CASENAME] = 'mca_optical_properties/mca_optical_properties/case'
 
         GROUP_DELIMITER = '/'
@@ -269,20 +269,6 @@ class ReadL2Data(ReadL2DataBase):
         self.INDEX_DICT.update({self._SRNAME: self._SRINDEX})
         self.INDEX_DICT.update({self._LATBOUNDSNAME: self._LATBOUNDINDEX})
         self.INDEX_DICT.update({self._LONBOUNDSNAME: self._LONBOUNDINDEX})
-        # INDEX_DICT = {}
-        # INDEX_DICT.update({_LATITUDENAME: _LATINDEX})
-        # INDEX_DICT.update({_LONGITUDENAME: _LONINDEX})
-        # INDEX_DICT.update({_ALTITUDENAME: _ALTITUDEINDEX})
-        # INDEX_DICT.update({_TIME_NAME: _TIMEINDEX})
-        # INDEX_DICT.update({_EC355NAME: _EC355INDEX})
-        # INDEX_DICT.update({_BS355NAME: _BS355INDEX})
-        # INDEX_DICT.update({_LODNAME: _LODINDEX})
-        # INDEX_DICT.update({_SRNAME: _SRINDEX})
-        # INDEX_DICT.update({_ICA_EC355NAME: _ICA_EC355INDEX})
-        # INDEX_DICT.update({_ICA_BS355NAME: _ICA_BS355INDEX})
-        # INDEX_DICT.update({_ICA_LODNAME: _ICA_LODINDEX})
-        # INDEX_DICT.update({_MCA_EC355NAME: _MCA_EC355INDEX})
-        # INDEX_DICT.update({_MCA_LODNAME: _MCA_LODINDEX})
 
         # dictionary to store array sizes of an element in self.data
         # SIZE_DICT = {}
@@ -300,8 +286,8 @@ class ReadL2Data(ReadL2DataBase):
         self.NAN_DICT.update({self._SRNAME: -1.})
         self.NAN_DICT.update({self._QANAME: -1.})
 
-        self.PROVIDES_VARIABLES = list(self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'].keys())
-        self.PROVIDES_VARIABLES.extend(self.RETRIEVAL_READ_PARAMETERS['sca']['vars'].keys())
+        self.PROVIDES_VARIABLES = list(self.CODA_READ_PARAMETERS['sca']['metadata'].keys())
+        self.PROVIDES_VARIABLES.extend(self.CODA_READ_PARAMETERS['sca']['vars'].keys())
 
         # these are the variable specific attributes written into a netcdf file
         self.NETCDF_VAR_ATTRIBUTES[self._BS355NAME] = {}
@@ -322,6 +308,11 @@ class ReadL2Data(ReadL2DataBase):
 
         self.SUPPORTED_SUFFIXES.append('.DBL')
         self.RETRIEVAL_READ = ''
+
+        # number of points found in the files read
+        self._point_no_found = 0
+        # number of points that passed the quality flag
+        self._point_no_with_good_quality = 0
 
 
         if loglevel is not None:
@@ -625,11 +616,11 @@ class ReadL2Data(ReadL2DataBase):
         >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/AE_TD01_ALD_U_N_2A_20190719T152159021_005472012_005245_0001/AE_TD01_ALD_U_N_2A_20190719T152159021_005472012_005245_0001.DBL'
         >>> # read returning a ndarray
         >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
-        >>> test=((filedata_numpy[:,obj._QAINDEX].astype(np.int)))
-        >>> time_as_numpy_datetime64 = filedata_numpy[0,obj._TIMEINDEX].astype('datetime64[s]')
+        >>> test=((data_numpy[:,obj._QAINDEX].astype(np.int)))
+        >>> time_as_numpy_datetime64 = data_numpy[0,obj._TIMEINDEX].astype('datetime64[s]')
 
         >>> print('time: {}'.format(time_as_numpy_datetime64))
-        >>> print('latitude: {}'.format(filedata_numpy[1,obj._LATINDEX]))
+        >>> print('latitude: {}'.format(data_numpy[1,obj._LATINDEX]))
         >>> # read returning a dictionary
         >>> filedata = obj.read_file(filename, vars_to_retrieve=['ec355aer'])
         >>> print('time: {}'.format(filedata['time'][0].astype('datetime64[s]')))
@@ -665,15 +656,15 @@ class ReadL2Data(ReadL2DataBase):
             vars_to_read_in = vars_to_retrieve.copy()
             if vars_to_retrieve is None:
                 # read all variables
-                vars_to_read_in = list(self.RETRIEVAL_READ_PARAMETERS[retrieval]['vars'].keys())
-            vars_to_read_in.extend(list(self.RETRIEVAL_READ_PARAMETERS[retrieval]['metadata'].keys()))
+                vars_to_read_in = list(self.CODA_READ_PARAMETERS[retrieval]['vars'].keys())
+            vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[retrieval]['metadata'].keys()))
             #get rid of duplicates
             vars_to_read_in = list(set(vars_to_read_in))
 
             # read data time
             # do that differently since its only store once per profile
             coda_groups_to_read = (
-                self.RETRIEVAL_READ_PARAMETERS[retrieval]['metadata'][self._TIME_NAME].split(self.GROUP_DELIMITER))
+                self.CODA_READ_PARAMETERS[retrieval]['metadata'][self._TIME_NAME].split(self.GROUP_DELIMITER))
 
             file_data[self._TIME_NAME] = coda.fetch(product,
                                                 coda_groups_to_read[0],
@@ -697,9 +688,9 @@ class ReadL2Data(ReadL2DataBase):
 
                 self.logger.info('reading var: {}'.format(var))
                 try:
-                    groups = self.RETRIEVAL_READ_PARAMETERS[retrieval]['vars'][var].split(self.GROUP_DELIMITER)
+                    groups = self.CODA_READ_PARAMETERS[retrieval]['vars'][var].split(self.GROUP_DELIMITER)
                 except KeyError:
-                    groups = self.RETRIEVAL_READ_PARAMETERS[retrieval]['metadata'][var].split(self.GROUP_DELIMITER)
+                    groups = self.CODA_READ_PARAMETERS[retrieval]['metadata'][var].split(self.GROUP_DELIMITER)
 
                 if len(groups) == 3:
                     file_data[var] = {}
@@ -732,7 +723,7 @@ class ReadL2Data(ReadL2DataBase):
                         # if there's no valid extinction in the profile, add the profile's time
                         # to the ones that are skipped during the conversion to a numpy array
                         if np.sum(file_data[var+'_anded'][key]) == 0:
-                            print(file_data[var][key])
+                            # print(file_data[var][key])
                             times_to_skip.append(key)
 
             coda.close(product)
@@ -749,6 +740,7 @@ class ReadL2Data(ReadL2DataBase):
                     # if _time in times_to_skip:
                     if np.sum(np.isin(times_to_skip,file_data['time'][idx])) > 0:
                         self.logger.info('skipped time {} due to no valid measurement'.format(_time.astype('datetime64[ms]')))
+                        self._point_no_found += len(file_data[self._QANAME][file_data[self._TIME_NAME][idx]])
                         continue
                     else:
                         pass
@@ -758,13 +750,22 @@ class ReadL2Data(ReadL2DataBase):
                     for _index in range(len(file_data[self._QANAME][file_data[self._TIME_NAME][idx]])):
                         # this works because all variables have to have the same size
                         # (aka same number of height levels)
+
+                        #check the quality flags
+                        if file_data[self._QANAME+'_anded'][file_data[self._TIME_NAME][idx]][_index] == 0:
+                            continue
+
                         # This loop could be avoided using numpy index slicing
                         # do that in case we need more optimisations
+                        # maybe only when the general logic has been working
+
                         data[index_pointer, self._TIMEINDEX] = _time
                         for var in vars_to_read_in:
                             # time is the index, so skip it here
-                            if var == self._TIME_NAME:
+                            if var == self._TIME_NAME or \
+                                var == 'test_sca_pcd_mid_bins_qc_flag':
                                 continue
+                                # var == self._QANAME or \
                             # longitudes are 0 based for Aeolus, but -180 based for model data
                             # adjust Aeolus to model data
                             if var == self._LONGITUDENAME:
@@ -773,36 +774,14 @@ class ReadL2Data(ReadL2DataBase):
                                 if file_data[var][file_data[self._TIME_NAME][idx]][_index] > 180.:
                                     data[index_pointer, self.INDEX_DICT[var]] = \
                                         file_data[var][file_data[self._TIME_NAME][idx]][_index] - 360.
-                            # elif var == self._QANAME:
-                                # quality index
-                                # unfortunately the quality index is coded bit wise:
-                                # QC information about processing
-                                # Processing_QC_Flag
-                                # Bit packed quality field
-                                # Bit 1: Extinction; data valid 1, otherwise 0
-                                # Bit 2: Backscatter; data valid 1, otherwise 0
-                                # Bit 3: Mie SNR; data valid 1, otherwise 0
-                                # Bit 4: Rayleigh SNR; data valid 1, otherwise 0
-                                # Bit 5: Extinction error bar; data valid 1, otherwise 0
-                                # Bit 6: Backscatter error bar; data valid 1, otherwise 0
-                                # Bit 7: cumulative LOD; data valid 1, otherwise 0
-                                # Bit 8: Spare
-                                # or
-                                # Mid_Processing_QC_Flag
-                                # QC information about processing
-                                # Bit packed quality field
-                                # Bit 1: Extinction; data valid 1, otherwise 0
-                                # Bit 2: Backscatter; data valid 1, otherwise 0
-                                # Bit 3: BER; data valid 1, otherwise 0
-                                # Bit 4: Mie SNR; data valid 1, otherwise 0
-                                # Bit 5: Rayleigh SNR; data valid 1, otherwise 0
-                                # Bit 6: Extinction error bar; data valid 1, otherwise 0
-                                # Bit 7: Backscatter error bar; data valid 1, otherwise 0
-                                # Bit 8: Cumulative LOD; data valid 1, otherwise 0
-                                # pass
                             else:
-                                data[index_pointer, self.INDEX_DICT[var]] = \
-                                    file_data[var][file_data['time'][idx]][_index]
+                                try:
+                                    data[index_pointer, self.INDEX_DICT[var]] = \
+                                        file_data[var][file_data['time'][idx]][_index]
+                                except KeyError:
+                                    # the data has not been forseen to be used
+                                    continue
+                                    # pass
                             # put negative values to np.nan if the variable is not a metadata variable
                             if data[index_pointer, self.INDEX_DICT[var]] == self.NAN_DICT[var]:
                                 data[index_pointer, self.INDEX_DICT[var]] = np.nan
@@ -817,11 +796,12 @@ class ReadL2Data(ReadL2DataBase):
                 # return only the needed elements...
                 file_data = data[0:index_pointer]
 
+        self._point_no_with_good_quality += index_pointer
         end_time = time.perf_counter()
         elapsed_sec = end_time - start
         temp = 'time for single file read [s]: {:.3f}'.format(elapsed_sec)
         self.logger.info(temp)
-        # self.logger.info('{} points read'.format(index_pointer))
+        self.logger.info('{} points read; {} were valid'.format(self._point_no_found,self._point_no_with_good_quality))
         self.RETRIEVAL_READ = read_retrieval
         return file_data
 
@@ -1012,6 +992,7 @@ class ReadL2Data(ReadL2DataBase):
         ret_data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
         index_counter = 0
         cut_flag = True
+        matching_indexes = []
         if location is not None:
             if isinstance(location, list):
                 # parameter is a list
@@ -1190,11 +1171,11 @@ class ReadL2Data(ReadL2DataBase):
         >>> os.environ['coda_definition']='/lustre/storea/project/aerocom/aerocom1/adm_calipso_test/'
         >>> # read returning a ndarray
         >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
-        >>> time_as_numpy_datetime64 = filedata_numpy[:,obj._timeindex].astype('datetime64[s]')
+        >>> time_as_numpy_datetime64 = data_numpy[:,obj._timeindex].astype('datetime64[s]')
         >>> import numpy as np
         >>> unique_times = np.unique(time_as_numpy_datetime64)
-        >>> ec355data = filedata_numpy[:,obj._ec355index]
-        >>> altitudedata = filedata_numpy[:,obj._altitudeindex]
+        >>> ec355data = data_numpy[:,obj._ec355index]
+        >>> altitudedata = data_numpy[:,obj._altitudeindex]
 
 
         """
@@ -1298,19 +1279,10 @@ class ReadL2Data(ReadL2DataBase):
     ###################################################################################
 
     def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc',
-                         global_attributes=None, vars_to_read=['ec355aer'],
-                         data_to_write=None):
+                         global_attributes=None, vars_to_write=None,
+                         data_to_write=None, gridded=False):
 
         """method to store the file contents in a very basic netcdf file
-        >>> import read_aeolus_l2a_data
-        >>> obj = read_aeolus_l2a_data.ReadAeolusL2aData(verbose=True)
-        >>> import os
-        >>> os.environ['CODA_DEFINITION']='/lustre/storeA/project/aerocom/aerocom1/ADM_CALIPSO_TEST/'
-        >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
-        >>> # read returning a ndarray
-        >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
-        >>> obj.ndarr2data(filedata_numpy)
-        >>> obj.to_netcdf_simple()
 
         Parameters:
         ----------
@@ -1318,40 +1290,126 @@ class ReadL2Data(ReadL2DataBase):
             dictionary with things to put into the global attributes of a netcdf file
 
         """
-
+        import time
         start_time = time.perf_counter()
         import xarray as xr
         import pandas as pd
         import numpy as np
 
-        vars_to_read_in = vars_to_read.copy()
-        if isinstance(vars_to_read_in, str):
-            vars_to_read_in = [vars_to_read_in]
+        vars_to_write_out = vars_to_write.copy()
+        if isinstance(vars_to_write_out, str):
+            vars_to_write_out = [vars_to_write_out]
 
-        if data_to_write is None:
-            _data = self.data
+        if not gridded:
+            if netcdf_filename is None:
+                netcdf_filename = '/tmp/to_netcdf_simple.nc'
+            if data_to_write is None:
+                _data = self.data
+            else:
+                try:
+                    _data = data_to_write._data
+                except AttributeError:
+                    _data = data_to_write
+
+            # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata'].keys()))
+            vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[self.RETRIEVAL_READ[0]]['metadata'].keys()))
+
+            datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
+            # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[ms]'))
+            # pointnumber = np.arange(0, len(datetimedata))
+            bounds_dim_name = 'bounds'
+            point_dim_name = 'point'
+            level_dim_name = self._LEVELSNAME
+            ds = xr.Dataset()
+
+            # time and potentially levels are special variables that needs special treatment
+            ds[self._TIME_NAME] = (point_dim_name), datetimedata
+            skip_vars = [self._TIME_NAME, 'test_sca_pcd_mid_bins_qc_flag']
+            if level_dim_name in vars_to_write_out:
+                ds[level_dim_name] = np.arange(self._LEVELSSIZE)
+                skip_vars.extend([self._LEVELSNAME])
+
+            for var in vars_to_write_out:
+                if var in skip_vars:
+                    continue
+                # 1D data
+                if var not in self.SIZE_DICT:
+                    ds[var] = (point_dim_name), _data[:, self.INDEX_DICT[var]]
+                else:
+                    # 2D data: here: bounds
+                    ds[var] = ((point_dim_name, bounds_dim_name),
+                               _data[:, self.INDEX_DICT[var]:self.INDEX_DICT[var] + self.SIZE_DICT[var]])
+
+                # remove _FillVar attribute for coordinate variables as CF requires it
+                if var in self.COORDINATE_NAMES:
+                    ds[var].encoding['_FillValue'] = None
+
+                # add predefined attributes
+                try:
+                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+
+                except KeyError:
+                    pass
+
         else:
-            _data = data_to_write
+            # write gridded data to netcdf
+            if netcdf_filename is None:
+                netcdf_filename = '/tmp/to_netcdf_simple_gridded.nc'
+            if data_to_write is None:
+                _data = self.gridded_data
+            else:
+                _data = data_to_write
 
-        vars_to_read_in.extend(list(self.RETRIEVAL_READ_PARAMETERS[self.RETRIEVAL_READ[0]]['metadata'].keys()))
+            bounds_dim_name = 'bounds'
+            time_dim_name = 'time'
+            lat_dim_name = 'latitude'
+            lon_dim_name = 'longitude'
 
-        datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
-        pointnumber = np.arange(0, len(datetimedata))
-        ds = xr.Dataset()
-        ds.coords['point'] = pointnumber
-        # time is a special variable that needs special treatment
-        ds['time'] = ('point'), datetimedata
-        for var in vars_to_read_in:
-            if var == self._TIME_NAME:
-                continue
-            ds[var] = ('point'), _data[:, self.INDEX_DICT[var]]
-            try:
-                for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
-                    ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+            ds = xr.Dataset()
 
-            except KeyError:
-                pass
+            # coordinate variables need special treatment
 
+            ds[time_dim_name] = (time_dim_name), [np.datetime64(_data[time_dim_name], 'D')]
+            ds[lat_dim_name] = (lat_dim_name), _data[lat_dim_name],
+            ds[lon_dim_name] = (lon_dim_name), _data[lon_dim_name]
+
+            for var in vars_to_write_out:
+                if var == self._TIME_NAME:
+                    continue
+                # 1D data
+                # 3D data
+                ds[var + '_mean'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['mean'], (
+                len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+                ds[var + '_numobs'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['numobs'], (
+                len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])))
+
+                # remove _FillVar attribute for coordinate variables as CF requires it
+
+            vars_to_write_out.extend([time_dim_name, lat_dim_name, lon_dim_name])
+
+            for var in ds:
+                # add predifined attributes
+                try:
+                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+
+                except KeyError:
+                    pass
+
+            for var in ds.coords:
+                if var in self.COORDINATE_NAMES:
+                    ds[var].encoding['_FillValue'] = None
+
+                # add predifined attributes
+                try:
+                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+
+                except KeyError:
+                    pass
+
+        # add potential global attributes
         try:
             for name in global_attributes:
                 ds.attrs[name] = global_attributes[name]
@@ -1366,6 +1424,77 @@ class ReadL2Data(ReadL2DataBase):
         self.logger.info(temp)
         temp = 'file written: {}'.format(netcdf_filename)
         self.logger.info(temp)
+
+    ###################################################################################
+    # def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc',
+    #                      global_attributes=None, vars_to_read=['ec355aer'],
+    #                      data_to_write=None):
+    #
+    #     """method to store the file contents in a very basic netcdf file
+    #     >>> import read_aeolus_l2a_data
+    #     >>> obj = read_aeolus_l2a_data.ReadAeolusL2aData(verbose=True)
+    #     >>> import os
+    #     >>> os.environ['CODA_DEFINITION']='/lustre/storeA/project/aerocom/aerocom1/ADM_CALIPSO_TEST/'
+    #     >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
+    #     >>> # read returning a ndarray
+    #     >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
+    #     >>> obj.ndarr2data(data_numpy)
+    #     >>> obj.to_netcdf_simple()
+    #
+    #     Parameters:
+    #     ----------
+    #         global_attributes : dict
+    #         dictionary with things to put into the global attributes of a netcdf file
+    #
+    #     """
+    #
+    #     start_time = time.perf_counter()
+    #     import xarray as xr
+    #     import pandas as pd
+    #     import numpy as np
+    #
+    #     vars_to_read_in = vars_to_read.copy()
+    #     if isinstance(vars_to_read_in, str):
+    #         vars_to_read_in = [vars_to_read_in]
+    #
+    #     if data_to_write is None:
+    #         _data = self.data
+    #     else:
+    #         _data = data_to_write
+    #
+    #     vars_to_read_in.extend(list(self.RETRIEVAL_READ_PARAMETERS[self.RETRIEVAL_READ[0]]['metadata'].keys()))
+    #
+    #     datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
+    #     pointnumber = np.arange(0, len(datetimedata))
+    #     ds = xr.Dataset()
+    #     ds.coords['point'] = pointnumber
+    #     # time is a special variable that needs special treatment
+    #     ds['time'] = ('point'), datetimedata
+    #     for var in vars_to_read_in:
+    #         if var == self._TIME_NAME:
+    #             continue
+    #         ds[var] = ('point'), _data[:, self.INDEX_DICT[var]]
+    #         try:
+    #             for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
+    #                 ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
+    #
+    #         except KeyError:
+    #             pass
+    #
+    #     try:
+    #         for name in global_attributes:
+    #             ds.attrs[name] = global_attributes[name]
+    #     except:
+    #         pass
+    #
+    #     ds.to_netcdf(netcdf_filename)
+    #
+    #     end_time = time.perf_counter()
+    #     elapsed_sec = end_time - start_time
+    #     temp = 'time for netcdf write [s]: {:.3f}'.format(elapsed_sec)
+    #     self.logger.info(temp)
+    #     temp = 'file written: {}'.format(netcdf_filename)
+    #     self.logger.info(temp)
 
     ###################################################################################
 
@@ -1717,7 +1846,7 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
     def to_netcdf_data(self,filename, coda_data, grouping='names', verbose=False):
-        """method to writye coda data into a netcdf file
+        """method to write coda data into a netcdf file
 
         Since coda data is has a hierarchy, the user may choose if the data is written into
         netcdf file using groups (netcdf4), or a flat (netcdf4 classic model) netcdf file
@@ -1955,11 +2084,11 @@ class ReadL2Data(ReadL2DataBase):
         >>> os.environ['coda_definition']='/lustre/storea/project/aerocom/aerocom1/adm_calipso_test/'
         >>> # read returning a ndarray
         >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
-        >>> time_as_numpy_datetime64 = filedata_numpy[:,obj._timeindex].astype('datetime64[s]')
+        >>> time_as_numpy_datetime64 = data_numpy[:,obj._timeindex].astype('datetime64[s]')
         >>> import numpy as np
         >>> unique_times = np.unique(time_as_numpy_datetime64)
-        >>> ec355data = filedata_numpy[:,obj._ec355index]
-        >>> altitudedata = filedata_numpy[:,obj._altitudeindex]
+        >>> ec355data = data_numpy[:,obj._ec355index]
+        >>> altitudedata = data_numpy[:,obj._altitudeindex]
 
 
         """
@@ -2323,11 +2452,11 @@ if __name__ == '__main__':
             obj = ReadL2Data(verbose=True)
             # read sca retrieval data
             vars_to_read = options['variables'].copy()
-            filedata_numpy = obj.read_file(filename, vars_to_retrieve=vars_to_read, return_as='numpy',
-                                           read_retrieval=options['retrieval'])
-            obj.ndarr2data(filedata_numpy)
+            data_numpy = obj.read_file(filename, vars_to_retrieve=vars_to_read, return_as='numpy',
+                                       read_retrieval=options['retrieval'])
+            # obj.ndarr2data(filedata_numpy)
             # read additional data
-            ancilliary_data = obj.read_data_fields(filename, fields_to_read=['mph'])
+            # ancilliary_data = obj.read_data_fields(filename, fields_to_read=['mph'])
             if temp_file_flag:
                 obj.logger.info('removing temp file {}'.format(filename))
                 os.remove(filename)
@@ -2355,6 +2484,14 @@ if __name__ == '__main__':
                     obj = None
                     continue
 
+            if 'outfile' in options or 'gridfile' in options or 'outdir' in options:
+                global_attributes = {}
+                global_attributes['input files'] = ','.join(obj.files_read)
+                global_attributes[
+                    'info'] = 'file created by pyaerocom.io.read_aeolus_l2a_data ' + obj.__version__ + ' (https://github.com/metno/pyaerocom) at ' + \
+                              np.datetime64('now').astype('str')
+                global_attributes['quality'] = 'quality flags for extinction applied'
+
             # single outfile
             if 'outfile' in options:
                 if len(options['files']) == 1:
@@ -2365,7 +2502,9 @@ if __name__ == '__main__':
                         else:
                             sys.stderr.write('Error: path {} exists'.format(options['outfile']))
                     else:
-                        obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
+                        obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
+                                     global_attributes=global_attributes, vars_to_write=vars_to_read)
+                        # obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
                 else:
                     sys.stderr.write("error: multiple input files, but only on output file given\n"
                                      "Please use the --outdir option instead\n")
