@@ -59,7 +59,8 @@ class Filter(BrowseDict):
     LAND_OCN_FILTERS = ['LAND', 'OCN']    
 
     NO_FILTER_NAME = 'WORLD-wMOUNTAINS'
-    def __init__(self, name=None, region=None, altitude_filter=None, land_ocn = None, **kwargs):
+    def __init__(self, name=None, region=None, altitude_filter=None,
+                 land_ocn=None, **kwargs):
         # default name (i.e. corresponds to no filtering)
         self._name = self.NO_FILTER_NAME
         self._region = None
@@ -234,7 +235,7 @@ class Filter(BrowseDict):
                 reg = temp.split('/')[-1]
                 available_regions.append(reg)
         
-            for reg in pya.const.HTAP_REGIONS:
+            for reg in const.HTAP_REGIONS:
                 if not reg in available_regions:
                     missing_reg.append(reg)
             
