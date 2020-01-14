@@ -361,7 +361,7 @@ def calc_slope(ungridded, region, period, var):
     for station in stations['stats']:
         #date = station['dtime']
         ts = station[var]
-        s_monthly = convert_data(ts.values, var)
+        #s_monthly = convert_data(ts.values, var)
         # not pandas series now may need to convert it back to that
         s_monthly = ts
         # input to compute_trends_current period is supposed to be a list.
