@@ -473,7 +473,10 @@ class ReadL2DataBase(ReadUngriddedBase):
             if data_to_write is None:
                 _data = self.data
             else:
-                _data = data_to_write._data
+                try:
+                    _data = data_to_write._data
+                except AttributeError:
+                    _data = data_to_write
 
             # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata'].keys()))
             vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]['metadata'].keys()))
