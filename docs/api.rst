@@ -20,28 +20,28 @@ Ungridded data
 .. automodule:: pyaerocom.ungriddeddata
    :members:
    :undoc-members:
-
+   
 Colocated data
 ^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocateddata
    :members:
    :undoc-members:
-
+   
 Station data
 ^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.stationdata
    :members:
    :undoc-members:
-
+   
 Other data classes
 ^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.vertical_profile
    :members:
    :undoc-members:
-
+   
 Metadata and vocabulary standards
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -49,7 +49,7 @@ Metadata and vocabulary standards
    :members:
    :undoc-members:
    
-Colocation of data
+Colocation routines
 -------------------
 
 This module contains high and low-level methods and engines to perform colocation.
@@ -67,13 +67,13 @@ Low-level colocation methods
 .. automodule:: pyaerocom.colocation
    :members:
    :undoc-members:
-
+   
 .. _reading: 
 
 .. note::
 
 	All reading routines are part of the :mod:`pyaerocom.io` sub-package (cf. :ref:`io`)
-
+	
 Reading of gridded data
 -----------------------
 
@@ -182,7 +182,7 @@ EBAS
    :undoc-members:
    :inherited-members:
    :show-inheritance:
-
+   
 EBAS (low level)
 """"""""""""""""
 
@@ -193,11 +193,11 @@ EBAS (low level)
 .. automodule:: pyaerocom.io.ebas_file_index
    :members:
    :undoc-members:
-
+   
 .. automodule:: pyaerocom.io.ebas_varinfo
    :members:
    :undoc-members:
-
+   
 .. _io: 
 
 Further I/O features
@@ -228,22 +228,21 @@ Iris helpers
 .. automodule:: pyaerocom.io.iris_io
    :members:
    :undoc-members:
-
-
+   
 I/O utils
 ^^^^^^^^^
 
 .. automodule:: pyaerocom.io.utils
    :members:
    :undoc-members:
-   
+
 I/O helpers
 ^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.helpers
    :members:
    :undoc-members:
-
+   
 Regions and  data filtering
 ----------------------------
 
@@ -260,7 +259,7 @@ Filter class
 .. automodule:: pyaerocom.filter
    :members:
    :undoc-members:
-  
+   
 Conversion of vertical coordinates
 ----------------------------------
 
@@ -291,13 +290,6 @@ Time-series plots
 ^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.plot.plotseries
-   :members:
-   :undoc-members:
-   
-Site location plots
-^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.plotsitelocation
    :members:
    :undoc-members:   
    

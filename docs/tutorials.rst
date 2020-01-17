@@ -9,12 +9,12 @@ In this section you can find example tutorial notebooks for pyaerocom.
   You can find in all notebooks in the `pyaerocom-tutorials repository
   <https://github.com/metno/pyaerocom-tutorials/tree/master/notebooks>`__.
 
-Pyaerocom API flowchart
------------------------
+Pyaerocom API flowchart (simplified)
+------------------------------------
 
 The following flowchart illustrates the minimal workflow to create standard output in pyaerocom based on a user query (that typically comprises a model ID and observation ID as well as one (or more) variable(s) of interest.
 
-.. image:: pyaerocom_basic_flowchart.png
+.. image:: ../suppl/pyaerocom_basic_flowchart.png
   :width: 800px
   :align: center
 
@@ -38,6 +38,8 @@ The following "Getting started" tutorial introduces the individual features disp
 .. include:: tut06_intro_UngriddedData_and_StationData_classes.rst
 
 .. include:: tut07_intro_colocation.rst
+
+.. include:: tut08_trends_computation.rst
 
 
 Further tutorials
