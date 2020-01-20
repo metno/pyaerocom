@@ -141,3 +141,6 @@ docs/tut1*.rst
 
 # Issues directory
 issues/
+
+# broken docs (updated in Jan 2020)
+docs_BROKEN

@@ -514,7 +514,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     #crop time
     gridded_data = regfilter.apply(gridded_data)
-    #gridded_data.crop(time_range=(start, stop))
+    if start > grid_start or stop < grid_stop:
+        gridded_data = gridded_data.crop(time_range=(start, stop))
     
     if regrid_res_deg is not None:
         gridded_data = gridded_data.regrid(lat_res_deg=regrid_res_deg,
