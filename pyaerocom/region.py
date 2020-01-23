@@ -7,10 +7,10 @@ from os.path import join, exists
 from ast import literal_eval
 from collections import OrderedDict as od
 from configparser import ConfigParser
-
+import numpy as np
 #from pyaerocom import Config
 #const = Config()
-from pyaerocom import __dir__
+#from pyaerocom import __dir__
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 class Region(BrowseDict):
@@ -124,6 +124,7 @@ class Region(BrowseDict):
             if default region with ID specified by input parameter ``name`` 
             cannot be found in regions.ini file
         """
+        from pyaerocom import __dir__
         name = name.upper()
         fpath = join(__dir__, "data", "regions.ini")
         if not exists(fpath):
@@ -200,26 +201,37 @@ class Region(BrowseDict):
         lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
         return lat_ok * lon_ok
     
-    def plot(self):
+    def plot(self, ax=None):
         """
+        
         Returns
-        --------------
+        -------
         ax 
-            Plot of masked regions
+            Map plot indicating region
         """
-        if not self.is_htap:
-            raise NotImplementedError("Comming soon ... ")
-    
+        from cartopy.mpl.geoaxes import GeoAxes
         from pyaerocom.plot.mapping import init_map
+        if ax is None:
+            ax = init_map()
+        if not isinstance(ax, GeoAxes):
+            raise ValueError('Invalid input for ax: need cartopy GeoAxes..')
+        if not self.is_htap:
+            return ax
+            #raise NotImplementedError('Coming soon')
+            
         from pyaerocom.land_sea_mask import load_region_mask_xr
         
-        ax = init_map()
+        
         ax.axes.set_xlabel('Longitude')
         ax.axes.set_ylabel('Latitude')
         ax.axes.set_title("Region name: {}".format(self.name))
-        d = load_region_mask_xr(region_id=self.name)
-        d.plot(ax=ax)    
-        # ax add geoaxes 
+        mask = load_region_mask_xr(region_id=self.name)
+        #import numpy as np
+        data = mask.data 
+        data[data==0]=np.nan
+        mask.data = data
+        
+        mask.plot(ax=ax)
         return ax        
     
     def __contains__(self, val):
@@ -266,7 +278,7 @@ def get_all_default_region_ids(use_all_in_ini=False):
     if not use_all_in_ini:
         from pyaerocom import const
         return const.OLD_AEROCOM_REGIONS
-    
+    from pyaerocom import __dir__
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
         raise IOError("File conventions ini file could not be found: %s"
@@ -302,7 +314,7 @@ def get_all_default_regions(use_all_in_ini=False):
         for region in const.OLD_AEROCOM_REGIONS:
             all_regions[region] = Region(region)
         return all_regions
-            
+    from pyaerocom import __dir__      
     fpath = join(__dir__, "data", "regions.ini")
     if not exists(fpath):
         raise IOError("File conventions ini file could not be found: %s"
@@ -401,8 +413,20 @@ def valid_region(name):
     return False
 
 if __name__=="__main__":
-
+    import matplotlib.pyplot as plt
+    plt.close('all')
     r = Region("EUR")
+    ax = r.plot()
+    
+    import numpy as np
+    from pyaerocom.land_sea_mask import load_region_mask_xr
+    
+    mask = load_region_mask_xr(region_id=['EUR', 'PAN'])
+    
+    raise Exception
+    
+    
+    
     print(r.is_htap)
     r.import_default("EUROPE")
         
