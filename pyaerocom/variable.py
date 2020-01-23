@@ -479,7 +479,8 @@ class Variable(object):
             aliases = _read_alias_ini(ap)
             if var_name in aliases:
                 var_name = aliases[var_name]
-                return cfg[var_name]
+                if var_name in cfg:
+                    return cfg[var_name]
             
             var_name=_check_alias_family(var_name, ap)
             return cfg[var_name]
@@ -525,6 +526,10 @@ class Variable(object):
                 var_info = self._get_var_info(var_name, cfg)
             except VariableDefinitionError:
                 var_info = {} 
+            except Exception as e:
+                #var_info = self._get_var_info(var_name, cfg)
+                raise Exception('Unexpected error accessing variable {}: {}'
+                                .format(var_name, repr(e)))
                 
         for key in self.keys():
             if key in self.ALT_NAMES:
@@ -802,5 +807,5 @@ if __name__=="__main__":
     
     import pyaerocom as pya
     
-    pya.const.VARS.od5503Ddryaer
-    pya.const.VARS.sc550dryaer
+    var = pya.const.VARS['sconcdu']
+    #pya.const.VARS.find('od*aer')
