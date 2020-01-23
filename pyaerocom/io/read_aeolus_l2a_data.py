@@ -75,7 +75,7 @@ class ReadL2Data(ReadL2DataBase):
     """
 
     _FILEMASK = '*.DBL'
-    __version__ = "0.1"
+    __version__ = "0.11"
     DATA_ID = const.AEOLUS_NAME
     # Flag if the dataset contains all years or not
     DATASET_IS_YEARLY = False
@@ -203,7 +203,20 @@ class ReadL2Data(ReadL2DataBase):
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_optical_properties/starttime'
         self.CODA_READ_PARAMETERS['sca']['metadata'][self._TIME_NAME] = 'sca_pcd/starttime'
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_starttime'] = 'sca_pcd/starttime'
-        self.CODA_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_mid_bins_qc_flag'] = 'sca_pcd/profile_pcd_mid_bins/processing_qc_flag'
+        # test data to be read
+        # self.CODA_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_mid_bins_qc_flag'] = \
+        #     'sca_pcd/profile_pcd_mid_bins/processing_qc_flag'
+        self.CODA_READ_PARAMETERS['sca']['metadata']['rayleigh_geolocation_height'] = \
+            'geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/altitude_of_height_bin'
+        self.CODA_READ_PARAMETERS['sca']['metadata']['rayleigh_geolocation_lat'] = \
+            'geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/latitude_of_height_bin'
+        self.CODA_READ_PARAMETERS['sca']['metadata']['rayleigh_geolocation_lon'] = \
+            'geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/longitude_of_height_bin'
+
+        # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/longitude_of_height_bin
+        # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/latitude_of_height_bin
+        # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/altitude_of_height_bin
+
 
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/qc_flag'
         self.CODA_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/profile_pcd_bins/processing_qc_flag'
@@ -301,6 +314,9 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME][
             'standard_name'] = 'volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles'
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME]['units'] = '1/Mm'
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['long_name'] = 'aeolus quality flag'
+        self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['units'] = '1'
 
         TEX_UNITS = {}
         TEX_UNITS[self._EC355NAME] = r'$10^{-6} \cdot m^{-1}$'
@@ -692,8 +708,11 @@ class ReadL2Data(ReadL2DataBase):
                 except KeyError:
                     groups = self.CODA_READ_PARAMETERS[retrieval]['metadata'][var].split(self.GROUP_DELIMITER)
 
-                if len(groups) == 3:
-                    file_data[var] = {}
+                file_data[var] = {}
+                group_depth = len(groups)
+
+                print("group length {}:".format(group_depth))
+                if group_depth == 3:
                     for idx, key in enumerate(file_data[self._TIME_NAME]):
                         file_data[var][key] = coda.fetch(product,
                                                      groups[0],
@@ -702,18 +721,31 @@ class ReadL2Data(ReadL2DataBase):
                                                      -1,
                                                      groups[2])
 
-                elif len(groups) == 2:
-                    file_data[var] = {}
+                elif group_depth == 4:
+                    for idx, key in enumerate(file_data[self._TIME_NAME]):
+                        file_data[var][key] = coda.fetch(product,
+                                                     groups[0],
+                                                     idx,
+                                                      groups[1],
+                                                         0,
+                                                      groups[2],
+                                                     -1,
+                                                     groups[3])
+
+                elif group_depth == 2:
                     for idx, key in enumerate(file_data[self._TIME_NAME]):
                         file_data[var][key] = coda.fetch(product,
                                                          groups[0],
                                                          -1,
                                                          groups[1])
-                else:
-                    file_data[var] = {}
+                elif group_depth == 1:
                     for idx, key in enumerate(file_data[self._TIME_NAME]):
                         file_data[var][key] = coda.fetch(product,
                                                          groups[0])
+
+                else:
+                    pass
+
 
                 if var == self._QANAME:
                     file_data[var+'_anded'] = {}
@@ -803,6 +835,7 @@ class ReadL2Data(ReadL2DataBase):
         self.logger.info(temp)
         self.logger.info('{} points read; {} were valid'.format(self._point_no_found,self._point_no_with_good_quality))
         self.RETRIEVAL_READ = read_retrieval
+        self.files_read.append(filename)
         return file_data
 
     ###################################################################################
@@ -1772,18 +1805,30 @@ class ReadL2Data(ReadL2DataBase):
         root_field_names = coda.get_field_names(coda_handle)
         coda_data = {}
         ret_data = {}
+        mph_fieldnames = coda.get_field_names(coda_handle, 'mph')
 
         for root_field_name in root_field_names:
             if root_field_name in fields_to_read:
-                coda_data[root_field_name] = coda.fetch(coda_handle, root_field_name)
-                if isinstance(coda_data[root_field_name],coda.codapython.Record):
-                    ret_data[root_field_name] = self.codarecord2pythonstruct(coda_data[root_field_name])
+                if root_field_name == 'mph':
+                    # the were cases were coda.fetch(coda_handle, root_field_name) did not work.
+                    # read field by field and handle coda.CodacError on that basis
+                    ret_data[root_field_name] = {}
+                    for fieldname in mph_fieldnames:
+                        print(fieldname)
+                        try:
+                            ret_data[root_field_name][fieldname] = coda.fetch(coda_handle, root_field_name, fieldname)
+                        except coda.CodacError:
+                            continue
                 else:
-                    ret_data[root_field_name] = []
-                    for index, name in enumerate(coda_data[root_field_name]):
-                        dummy = self.codarecord2pythonstruct(name)
-                        ret_data[root_field_name].append(dummy)
-                        # ret_data[root_field_name].append(self.codarecord2pythonstruct(name))
+                    coda_data[root_field_name] = coda.fetch(coda_handle, root_field_name)
+                    if isinstance(coda_data[root_field_name],coda.codapython.Record):
+                        ret_data[root_field_name] = self.codarecord2pythonstruct(coda_data[root_field_name])
+                    else:
+                        ret_data[root_field_name] = []
+                        for index, name in enumerate(coda_data[root_field_name]):
+                            dummy = self.codarecord2pythonstruct(name)
+                            ret_data[root_field_name].append(dummy)
+                            # ret_data[root_field_name].append(self.codarecord2pythonstruct(name))
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start
@@ -2070,25 +2115,13 @@ class ReadL2Data(ReadL2DataBase):
 
 
     ###################################################################################
-    def plot_profile_v2(self, plotfilename, vars_to_plot = ['ec355aer'], retrieval_name=None,
+    def plot_profile_v2(self, plotfilename, data_to_plot=None, vars_to_plot = ['ec355aer'], retrieval_name=None,
                         title=None,
                         plot_range=(0.,2000.),
                         plot_nbins=20.,
                         linear_time=False):
         """plot sample profile plot
 
-        >>> import read_aeolus_l2a_data
-        >>> filename = '/lustre/storeb/project/fou/kl/admaeolus/data.rev.2a02/ae_oper_ald_u_n_2a_20181201t033526026_005423993_001590_0001.dbl'
-        >>> obj = read_aeolus_l2a_data.readaeolusl2adata(verbose=true)
-        >>> import os
-        >>> os.environ['coda_definition']='/lustre/storea/project/aerocom/aerocom1/adm_calipso_test/'
-        >>> # read returning a ndarray
-        >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
-        >>> time_as_numpy_datetime64 = data_numpy[:,obj._timeindex].astype('datetime64[s]')
-        >>> import numpy as np
-        >>> unique_times = np.unique(time_as_numpy_datetime64)
-        >>> ec355data = data_numpy[:,obj._ec355index]
-        >>> altitudedata = data_numpy[:,obj._altitudeindex]
 
 
         """
@@ -2098,8 +2131,17 @@ class ReadL2Data(ReadL2DataBase):
         from matplotlib.ticker import MaxNLocator
 
         from scipy import interpolate
+
+        if data_to_plot is None:
+            data_to_plot = self.data
+        else:
+            try:
+                _data = data_to_plot._data
+            except AttributeError:
+                _data = data_to_plot
+
         # read returning a ndarray
-        times = self.data[:,obj._TIMEINDEX]
+        times = _data[:,obj._TIMEINDEX]
         times_no = len(times)
         plot_data = {}
         plot_data_masks = {}
@@ -2116,12 +2158,12 @@ class ReadL2Data(ReadL2DataBase):
 
         for data_var in vars_to_plot_arr:
             # plot_data[data_var] = \
-            #     self.data[:, self.INDEX_DICT[data_var]]
-            plot_data_masks[data_var] = np.isnan(self.data[:, self.INDEX_DICT[data_var]])
+            #     _data[:, self.INDEX_DICT[data_var]]
+            plot_data_masks[data_var] = np.isnan(_data[:, self.INDEX_DICT[data_var]])
 
         # in case of a cut out area, there might not be all the height steps
-        # in self.data (since the Aeolus line of sight is tilted 35 degrees)
-        # or due to the fact the the slection removes points where longitude or
+        # in _data (since the Aeolus line of sight is tilted 35 degrees)
+        # or due to the fact the the selection removes points where longitude or
         # latitude are NaN
         # unfortunately the number of height steps per time code is not necessarily equal
         # to self._HEIGHTSTEPNO anymore
@@ -2148,14 +2190,14 @@ class ReadL2Data(ReadL2DataBase):
             out_arr = np.zeros([time_step_no, target_height_no])
             out_arr[:] = np.nan
             for time_step_idx, unique_time in enumerate(unique_times):
-                var_data = self.data[time_index_dict[unique_time],self.INDEX_DICT[var]]
+                var_data = _data[time_index_dict[unique_time],self.INDEX_DICT[var]]
                 # scipy.interpolate cannot cope with nans in the data
                 # work only on profiles with a nansum > 0
 
 
                 nansum = np.nansum(var_data)
                 if nansum > 0:
-                    height_data = self.data[time_index_dict[unique_time],self.INDEX_DICT['altitude']]
+                    height_data = _data[time_index_dict[unique_time],self.INDEX_DICT['altitude']]
                     if np.isnan(np.sum(var_data)):
                         height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
                         var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
@@ -2265,7 +2307,9 @@ if __name__ == '__main__':
     # parser.add_argument("--readpaths", help="read listed rootpaths of DBL file. Can be comma separated",
     #                     default='mph,sca_optical_properties')
     parser.add_argument("-o", "--outfile", help="output file")
-    parser.add_argument("--outdir", help="output directory; the filename will be extended with the string '.nc'")
+    parser.add_argument("--outdir",
+                        help="output directory; the filename will be extended with the string '.nc'; defaults to './'",
+                        default='./')
     parser.add_argument("--logfile", help="logfile; defaults to /home/jang/tmp/aeolus2netcdf.log",
                         default="/home/jang/tmp/aeolus2netcdf.log")
     parser.add_argument("-O", "--overwrite", help="overwrite output file", action='store_true')
@@ -2290,8 +2334,8 @@ if __name__ == '__main__':
     parser.add_argument("--variables", help="comma separated list of variables to write; default: ec355aer,bs355aer",
                         default='ec355aer')
     parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca", default='sca')
-    # parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
-    #                     action='store_true')
+    parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
+                        action='store_true')
     parser.add_argument("--modeloutdir", help="directory for colocated model files; will have a similar filename as input file",
                         default=os.path.join(os.environ['HOME'], 'tmp'))
     parser.add_argument("--topofile", help="topography file; defaults to {}.".format(default_topo_file),
@@ -2299,10 +2343,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # if args.netcdfcolocate:
-    #     options['netcdfcolocate'] = True
-    # else:
-    #     options['netcdfcolocate'] = False
+    if args.netcdfcolocate:
+        options['netcdfcolocate'] = True
+    else:
+        options['netcdfcolocate'] = False
 
     # if args.filemask:
     #     options['filemask'] = args.filemask
@@ -2417,6 +2461,7 @@ if __name__ == '__main__':
     import tarfile
 
     bbox = None
+    global_attributes = None
 
     if 'files' not in options:
         options['files'] = glob.glob(options['dir']+'/**/'+options['filemask'], recursive=True)
@@ -2456,7 +2501,7 @@ if __name__ == '__main__':
                                        read_retrieval=options['retrieval'])
             # obj.ndarr2data(filedata_numpy)
             # read additional data
-            # ancilliary_data = obj.read_data_fields(filename, fields_to_read=['mph'])
+            ancilliary_data = obj.read_data_fields(filename, fields_to_read=['mph'])
             if temp_file_flag:
                 obj.logger.info('removing temp file {}'.format(filename))
                 os.remove(filename)
@@ -2485,7 +2530,10 @@ if __name__ == '__main__':
                     continue
 
             if 'outfile' in options or 'gridfile' in options or 'outdir' in options:
-                global_attributes = {}
+                # if not global_attributes:
+                #     global_attributes = {}
+                global_attributes = ancilliary_data['mph']
+                global_attributes['Aeolus_Retrieval'] = obj.RETRIEVAL_READ
                 global_attributes['input files'] = ','.join(obj.files_read)
                 global_attributes[
                     'info'] = 'file created by pyaerocom.io.read_aeolus_l2a_data ' + obj.__version__ + ' (https://github.com/metno/pyaerocom) at ' + \
@@ -2498,13 +2546,14 @@ if __name__ == '__main__':
                     # write netcdf
                     if os.path.exists(options['outfile']):
                         if options['overwrite']:
+                            obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
+                                     global_attributes=global_attributes, vars_to_write=vars_to_read)
                             obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
                         else:
                             sys.stderr.write('Error: path {} exists'.format(options['outfile']))
                     else:
                         obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
                                      global_attributes=global_attributes, vars_to_write=vars_to_read)
-                        # obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
                 else:
                     sys.stderr.write("error: multiple input files, but only on output file given\n"
                                      "Please use the --outdir option instead\n")
@@ -2513,10 +2562,15 @@ if __name__ == '__main__':
             if 'outdir' in options:
                 outfile_name = os.path.join(options['outdir'], os.path.basename(filename) + '.nc')
                 obj.logger.info('writing file {}'.format(outfile_name))
-                global_attributes = ancilliary_data['mph']
-                global_attributes['Aeolus_Retrieval'] = obj.RETRIEVAL_READ
-                obj.to_netcdf_simple(outfile_name, global_attributes=global_attributes,
-                                     vars_to_read=vars_to_read)
+                if os.path.exists(outfile_name):
+                    if options['overwrite']:
+                        obj.to_netcdf_simple(netcdf_filename=outfile_name, data_to_write=data_numpy,
+                                             global_attributes=global_attributes, vars_to_write=vars_to_read)
+                    else:
+                        sys.stderr.write('Error: file {} exists'.format(options['outfile']))
+                else:
+                    obj.to_netcdf_simple(netcdf_filename=outfile_name, data_to_write=data_numpy,
+                                         global_attributes=global_attributes, vars_to_write=vars_to_read)
 
 
             # work with emep data and do some colocation
@@ -2616,7 +2670,7 @@ if __name__ == '__main__':
                 obj.logger.info('profile plot file: {}'.format(plotfilename))
                 # title = '{} {}'.format(options['retrieval'], os.path.basename(filename))
                 title = '{}'.format(os.path.basename(filename))
-                obj.plot_profile_v2(plotfilename, title=title,
+                obj.plot_profile_v2(plotfilename, title=title, data_to_plot=data_numpy,
                                     retrieval_name=options['retrieval'],
                                     plot_range=(0.,200.))
 
