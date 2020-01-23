@@ -64,7 +64,9 @@ def get_topo_data(lat0, lon0, lat1=None, lon1=None, topo_dataset='srtm',
         
     try:
         access = geonum.TopoDataAccess(topo_dataset, local_path=topodata_loc)
-        return access.get_data(lat0, lon0, lat1, lon1)
+        topodata = access.get_data(lat0, lon0, lat1, lon1)
+        
+        return topodata
     except Exception as e:
         if try_etopo1 and not topo_dataset=='etopo1':
             print_log.warning('Failed to access topography data for {}. '
