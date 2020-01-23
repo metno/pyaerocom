@@ -1,9 +1,3 @@
-NEWS
-====
-
-- **October 2019**: Release of version 0.8.0 (available via *conda-forge* and *PyPi*)
-- **April 2019**: AeroCom has a new web : We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments (in parallel with the IDL processing displayed in the Phase 2 interface). The new online interface can be found at: `https://aerocom-evaluation.met.no <https://aerocom-evaluation.met.no/>`__.
-
 About
 =====
 
