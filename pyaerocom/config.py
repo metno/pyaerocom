@@ -229,6 +229,17 @@ class Config(object):
     ERA5_SURFTEMP_FILENAME = 'era5.msl.t2m.201001-201012.nc'
 
     _LUSTRE_CHECK_PATH = '/project/aerocom/aerocom1/'
+    
+    @property
+    def has_access_users_database(self):
+        chk_dir = self._check_subdirs_cfg['users-db']
+        chk_paths = [os.path.join('/metno/aerocom_users_database/', chk_dir),
+                     os.path.join(self.HOMEDIR, '/aerocom_users_database/', chk_dir)]
+        for p in chk_paths:
+            if self._check_access(p):
+                return True
+        return False
+        
     def __init__(self, basedir=None,
                  output_dir=None, config_file=None, 
                  cache_dir=None, colocateddata_dir=None,
@@ -360,11 +371,35 @@ class Config(object):
         return self._check_access(os.path.join(basedir,
                                                self._check_subdirs_cfg[env_id]))
 
+    def _check_basedir_environment(self, basedir):
+        """Check if input basedir can be linked with one of the supported databases
+        
+        Note
+        ----
+        Does not check if the path actually exists.
+        """
+        basedir = os.path.normpath(basedir)
+        import pathlib
+        new = pathlib.Path(basedir)
+        last = new.parts[-1]
+        for search_dir, env_id in self._DB_SEARCH_SUBDIRS.items():
+            if pathlib.Path(search_dir).parts[0] == last:
+                check = os.path.join(*new.parts[:-1], search_dir)
+                if self._check_access(check):
+                    self.print_log.info('Input path {} was identified to be '
+                                   'connected with database {} and will be '
+                                   'updated to {}'.format(basedir, env_id, check))
+                    return check
+        return basedir
+    
     def _infer_config_from_basedir(self, basedir):
+        
+        basedir = os.path.normpath(basedir)
         for env_id, chk_sub in self._check_subdirs_cfg.items():
             chkdir =  os.path.join(basedir, chk_sub)
             if self._check_access(chkdir):
                 return (self._config_files[env_id], env_id)
+        
         raise FileNotFoundError('Could not infer environment configuration '
                                 'for input directory: {}'.format(basedir))
         
@@ -389,6 +424,7 @@ class Config(object):
             if self._LUSTRE_CHECK_PATH in path and self._check_access(path):
                 return True
         return False
+    
     @property
     def ALL_DATABASE_IDS(self):
         '''ID's of available database configurations'''
@@ -534,6 +570,8 @@ class Config(object):
             raise FileNotFoundError('Cannot change data base directory. '
                                     'Input directory does not exist')
             
+        value = self._check_basedir_environment(value)
+            
         self._obsbasedir = value
         self._modelbasedir = value
         
@@ -546,6 +584,14 @@ class Config(object):
             self.print_log.warning('Failed to infer path environment for '
                                    'input dir {}. No search paths will be added'
                                    .format(value))
+            
+    def connect_database(self, location):
+        if not self._check_access(location):
+            raise FileNotFoundError('Cannot add {}: location does not exist')
+            
+        raise NotImplementedError
+        
+            
     @property
     def DIR_INI_FILES(self):
         """Directory containing configuration files"""
@@ -842,16 +888,6 @@ class Config(object):
 
 if __name__=="__main__":
     import pyaerocom as pya
-
-    print(pya.const.OUTPUTDIR)
-    print(pya.const.COLOCATEDDATADIR)
-    print(pya.const.CACHEDIR)
-
-    pya.const.BASEDIR = '/home/jonasg/'
-    pya.const.BASEDIR = '/home/jonasg/MyPyaerocom/pyaerocom-testdata/'
     
-    print(pya.const.has_access_lustre)
-    
-    fp = pya.const.ERA5_SURFTEMP_FILE
-    
+    pya.const.BASEDIR = '/lustre/'
     
