@@ -1,32 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jul 24 11:07:06 2018
 
-@author: jonasg
-"""
 import os
 try:
     from ConfigParser import ConfigParser
 except: 
     from configparser import ConfigParser
 
-from pyaerocom import __dir__, logger
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io import EbasSQLRequest
 
 class EbasVarInfo(BrowseDict):
-    """EBAS I/O variable information for Aerocom
+    """EBAS IO variable information for Aerocom
     
-    See `variables.ini <https://github.com/metno/pyaerocom/blob/master/
-    pyaerocom/data/variables.ini>`__ file for an overview of currently available 
-    default variables.
-    
-    Attributes
-    ----------
-    var_name : str
-        Aerocom variable name
-    
+    ToDo
+    ----
+    Complete documentation
     """
     def __init__(self, var_name="abs550aer", init=True, **kwargs):
         self.var_name = var_name
@@ -62,15 +52,16 @@ class EbasVarInfo(BrowseDict):
     
     @staticmethod
     def PROVIDES_VARIABLES():
+        """List specifying provided variables"""
         data = EbasVarInfo.open_config()
         return [k for k in data.keys()]
         
     @staticmethod
     def open_config():
+        from pyaerocom import __dir__
         fpath = os.path.join(__dir__, "data", "ebas_config.ini")
         if not os.path.exists(fpath):
-            raise IOError("Ebas config file could not be found: %s"
-                          %fpath)
+            raise IOError("Ebas config file could not be found: {}".format(fpath))
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
         return conf_reader
@@ -79,7 +70,7 @@ class EbasVarInfo(BrowseDict):
         for section, item in conf_reader.items():
             if 'aliases' in item:
                 if varname in [x.strip() for x in item['aliases'].split(',')]:
-                    logger.warning('Found alias match ({}) for variable {}, '
+                    const.logger.warning('Found alias match ({}) for variable {}, '
                                    'Note that searching for aliases slows down '
                                    'things, thus, please consider using the '
                                    'actual aerocom variable '
@@ -154,7 +145,7 @@ class EbasVarInfo(BrowseDict):
         
         Parameters
         ----------
-        **constraints
+        constraints
             request constraints deviating from default. For details on 
             parameters see :class:`EbasSQLRequest`
             
@@ -165,20 +156,7 @@ class EbasVarInfo(BrowseDict):
             file names using instance of :func:`EbasFileIndex.get_file_names`.
         """
         variables = self.get_all_components()
-# =============================================================================
-#         if self.component is not None:
-#             variables.extend(self.component)
-#         if self.requires is not None:
-#             for aux_var in self.requires:
-#                 aux_info = EbasVarInfo(aux_var)
-#                 if aux_info.component is not None:
-#                     variables.extend(aux_info.component)
-#                 elif aux_info.requires is not None:
-#                     variables.extend(aux_info.requires)
-#         
-#         # remove duplicates
-#         variables = list(set(variables))
-# =============================================================================
+
         if len(variables) == 0:
             raise AttributeError('At least one component (Ebas variable name) '
                              'must be specified for retrieval of variable '

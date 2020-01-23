@@ -45,7 +45,6 @@ from pyaerocom.variable import Variable, is_3d
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
-                                         divide_cubes,
                                          subtract_cubes,
                                          add_cubes)
 from pyaerocom.helpers import (to_pandas_timestamp, 
@@ -186,8 +185,6 @@ class ReadGridded(object):
         #: the filenames in the data directory
         self._vars_2d = []
         self._vars_3d = []
-        
-        
         
         #: This object can be used to 
         self.browser = AerocomBrowser()
@@ -1002,21 +999,20 @@ class ReadGridded(object):
         """Compute auxiliary variable
         
         Like :func:`read_var` but for auxiliary variables 
-        (cf. :attr:`AUX_REQUIRES`)
+        (cf. AUX_REQUIRES)
         
         Parameters
         ----------
         var_name : str
             variable that are supposed to be read
-        start : :obj:`Timestamp` or :obj:`str`, optional
+        start : Timestamp or str, optional
             start time of data import (if valid input, then the current 
             :attr:`start` will be overwritten)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
-            stop time of data import (if valid input, then the current 
-            :attr:`start` will be overwritten)
+        stop : Timestamp or str, optional
+            stop time of data import
         ts_type : str
             string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            hourly, 3hourly, daily, monthly). If None, prioritised 
             of the available resolutions is used
         experiment : str
             name of experiment (only relevant if this dataset contains more 
@@ -1025,8 +1021,7 @@ class ReadGridded(object):
             valid AeroCom vertical info string encoded in name (e.g. Column,
             ModelLevel)
         flex_ts_type : bool
-            if True and if applicable,start=None, stop=None,
-                 ts_type=None, flex_ts_type=True then another ts_type is used in case 
+            if True and if applicable, then another ts_type is used in case 
             the input ts_type is not available for this variable
         prefer_longer : bool
             if True and applicable, the ts_type resulting in the longer time
@@ -1089,15 +1084,15 @@ class ReadGridded(object):
         ----------
         vars_to_read : list
             list of variables that is supposed to be read
-        start : :obj:`Timestamp` or :obj:`str`, optional
+        start : Timestamp or str, optional
             start time of data import (if valid input, then the current 
-            :attr:`start` will be overwritten)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
+            start will be overwritten)
+        stop : Timestamp or str, optional
             stop time of data import (if valid input, then the current 
             :attr:`start` will be overwritten)
         ts_type : str
             string specifying temporal resolution (choose from 
-            "hourly", "3hourly", "daily", "monthly"). If None, prioritised 
+            hourly, 3hourly, daily, monthly). If None, prioritised 
             of the available resolutions is used
         experiment : str
             name of experiment (only relevant if this dataset contains more 
@@ -1106,8 +1101,7 @@ class ReadGridded(object):
             valid AeroCom vertical info string encoded in name (e.g. Column,
             ModelLevel)
         flex_ts_type : bool
-            if True and if applicable,start=None, stop=None,
-                 ts_type=None, flex_ts_type=True then another ts_type is used in case 
+            if True and if applicable, then another ts_type is used in case 
             the input ts_type is not available for this variable
         
         Returns
@@ -1119,7 +1113,6 @@ class ReadGridded(object):
         ------
         DataCoverageError
             if no match can be found
-            
         """
         if isinstance(vars_to_read, str):
             vars_to_read = [vars_to_read]
@@ -1876,14 +1869,11 @@ class ReadGriddedMulti(object):
             if not data_id in self.readers:
                 self.readers[data_id] = ReadGridded(data_id)
             reader = self.readers[data_id]
-# =============================================================================
-#             if not data_id in self.data:
-#                 self.data[data_id] = {}
-# =============================================================================
+            out[data_id] = {}
             for var in vars_to_retrieve:
                 try:
                     data = reader.read_var(var, start, stop, ts_type, **kwargs)
-                    out[var] = data
+                    out[data_id][var] = data
                     #self.data[data_id][var] = data
                 except Exception as e:
                     const.print_log.exception('Failed to read data of {}\n'

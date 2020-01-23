@@ -6,7 +6,6 @@ I/O helper methods of the pyaerocom package
 from datetime import datetime
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
-from pyaerocom import __dir__
 import os
 from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
 
@@ -236,6 +235,7 @@ def search_names(update_inifile=True, check_nc_file=True):
                     names.append(item)
     names = sorted(od.fromkeys(names))
     if update_inifile:
+        from pyaerocom import __dir__
         fpath = os.path.join(__dir__, "data", "names.txt")
         f = open(fpath, "w") 
         for name in names:
@@ -245,6 +245,7 @@ def search_names(update_inifile=True, check_nc_file=True):
 
 def get_all_names():
     """Try to import all model IDs from file names.txt in data directory"""
+    from pyaerocom import __dir__
     try:
         with open(os.path.join(__dir__, "data", "names.txt")) as f:
             names = f.read().splitlines()

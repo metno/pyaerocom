@@ -164,9 +164,18 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         # Store the meta data. 
                         s[key] = station_group[key].values[0]
                 
-            # Since no altitude is provided in the files. Geodesy is used to approximate 
-            # altitude based on latitude and longitude. 
-            s["altitude"] = geodesy.get_topo_altitude(lat=s.latitude, lon=s.longitude)
+# =============================================================================
+#             # Since no altitude is provided in the files. Geodesy is used to approximate 
+#             # altitude based on latitude and longitude. 
+#             try:
+#                 s["altitude"] = geodesy.get_topo_altitude(lat=s.latitude, 
+#                                                           lon=s.longitude)
+#             except ValueError as e:
+#                 s['altitude'] = np.nan 
+#                 from pyaerocom import const
+#                 const.logger.warning('Failed to access altitude for {}'
+#                                      .format(name))
+# =============================================================================
             # Added the created station to the station list.
             station_list.append(s)
         return station_list

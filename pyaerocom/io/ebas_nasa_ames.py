@@ -270,11 +270,10 @@ class EbasFlagCol(object):
         EBAS column definition information for flag column (from file header)
     raw_data : ndarray
         raw flag column (containing X-digit floating point numbers)
-    decoded : ndarray
         
     """
     from pyaerocom import const
-    FLAG_INFO = const.EBAS_FLAG_INFO
+    _FLAG_INFO = const.EBAS_FLAG_INFO
     def __init__(self, raw_data, info, interpret_on_init=True):
         if not raw_data.ndim == 1:
             raise AttributeError("Need one dimensional numpy array for flag "
@@ -288,6 +287,11 @@ class EbasFlagCol(object):
         if interpret_on_init:
             self.decode()
             
+    @property
+    def FLAG_INFO(self):
+        """Detailed information about EBAS flag definitions"""
+        return self._FLAG_INFO
+    
     @property
     def decoded(self):
         """Nx3 numpy array containing decoded flag columns"""
