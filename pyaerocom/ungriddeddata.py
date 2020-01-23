@@ -382,6 +382,13 @@ class UngriddedData(object):
         return sorted(list(dict.fromkeys(self.station_name)))
     
     @property
+    def nonunique_station_names(self):
+        """List of station names that occur more than once in metadata"""
+        import collections
+        lst = self.station_name
+        return [item for item, count in collections.Counter(lst).items() if count > 1]
+    
+    @property
     def time(self):
         """Time dimension of data"""
         raise NotImplementedError
