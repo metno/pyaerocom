@@ -42,9 +42,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                copy_coords_cube,
                                make_dummy_cube_latlon,
                                check_coord_circular,
-                               extract_latlon_dataarray,
-                               lists_to_tuple_list, 
-                               tuple_list_to_lists)
+                               extract_latlon_dataarray)
 
 from pyaerocom.mathutils import closest_index
 from pyaerocom.stationdata import StationData
@@ -1004,11 +1002,11 @@ class GriddedData(object):
                                       'sampling points as input')
         for coord, vals in coords.items():
             if coord in ('lat', 'latitude'):
-                if isinstance(vals, str):
+                if isinstance(vals, str) or isnumeric(vals):
                     vals = [vals]
                 lat = vals
             elif coord in ('lon', 'longitude'):
-                if isinstance(vals, str):
+                if isinstance(vals, str) or isnumeric(vals):
                     vals = [vals]
                 lon = vals
         if lat is None or lon is None:
@@ -2510,25 +2508,4 @@ if __name__=='__main__':
 
     # print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
-    data = data.filter_region(region_id  = 'EUROPE-noMONTAINS-LAND')
-    data.quickplot_map()
-    plt.show()
-    print(' Here  ')
-    #ts = data.get_area_weighted_timeseries()
-    
-
-# =============================================================================
-#     data.downscale_time('monthly')
-#     
-#     t1 = data.to_time_series(longitude=[30], latitude=[40],
-#                              vert_scheme='max')
-#     
-#     t2 = data.to_time_series(longitude=[30], latitude=[40],
-#                              vert_scheme='surface')
-#     
-#     t3 = data.to_time_series(longitude=[30], latitude=[40],
-#                              vert_scheme='mean')
-#     
-#     ax = t1.plot_timeseries('ec532aer')
-# 
-# =============================================================================
+    ts = data.to_time_series(latitude=51.35, longitude=12.44)
