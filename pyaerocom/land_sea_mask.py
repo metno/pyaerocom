@@ -46,7 +46,7 @@ def load_region_mask_xr(region_id='PAN'):
             fil =  glob.glob( os.path.join( path, '{}*.nc'.format(region_id)))[0]
             masks = xr.open_dataset(fil)[region_id+'htap']
         else:
-            raise ValueError("Not a valids region.")
+            raise ValueError("Not a valid region.")
     return masks
 
 def load_region_mask_iris(region_id='PAN'):
