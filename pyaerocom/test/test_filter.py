@@ -64,15 +64,19 @@ def test_filter_colocateddata():
 
 @lustre_unavail
 def test_filter_ungriddeddata():
-    obs_id = 'AeronetSunV2Lev2.daily'
+    obs_id = 'AeronetSunV3Lev2.daily'
     obs_reader = pya.io.ReadUngridded(obs_id, 'od500aer')
     obs_data = obs_reader.read()
-    
-    stations = 154
-    f = pya.Filter(name = 'EUROPE-noMOUNTAINS')
-    data = f.apply(obs_data) 
-    gg = data.to_station_data_all()
-    assert len(gg['station_name']) + len(gg['failed']) == stations
+
+    f1 = pya.Filter(name = 'EUROPE-noMOUNTAINS')
+    f2 = pya.Filter(name = 'EUROPE-noMOUNTAINS-OCN')
+    f3 = pya.Filter(name = 'EUROPE-noMOUNTAINS-LAND')
+
+    #gg = data.to_station_data_all()
+    assert len(f1.apply(obs_data).unique_station_names) == 170
+    assert len(f2.apply(obs_data).unique_station_names) == 29
+    assert len(f3(obs_data).unique_station_names) == 138
 
 if __name__ == '__main__':
-    test_filter_colocateddata()
+    #test_filter_colocateddata()
+    test_filter_ungriddeddata()

@@ -388,7 +388,16 @@ def test_ungriddeddata():
     data = reader.read()  # read all variables
     assert len(data.station_name) == 890
     assert data.shape == (416243, 12) 
-
+    assert data.contains_vars == ['concso2', 'concso4', 'concso4pr', 'pr', 'wetso4']
+    assert data.contains_instruments == ['3_stage_filterpack', 'passive_sampler',
+                                         'abs_solution', 'monitor', 'filter_1pack',
+                                         'filterpack', '2_stage_filterpack',
+                                         'filter_denuder_sampler', 'IMPROVE_PM2.5',
+                                         'filter-1pack', 'filter_3pack', 
+                                         'filter_2pack', 'pm10_sampler', 
+                                         'filter-3pack', 'wet only', 'bulk', 
+                                         'bulk ', 'wet-only']
+    
 @lustre_unavail
 def test_reading_routines():
     """
@@ -507,8 +516,12 @@ if __name__ == "__main__":
     # TODO test article on hold 
     #test_reading_routines()
     #test_unitconversion_wetdep()
-    reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-    data = reader.read()  # read all variables
-    print(data.shape)
-    print(len(data.station_name))
+    data = test_ungriddeddata()
+    
+# =============================================================================
+#     reader = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
+#     data = reader.read()  # read all variables
+#     print(data.shape)
+#     print(len(data.station_name))
+# =============================================================================
 # =============================================================================

@@ -33,7 +33,7 @@ def test_revision_dates():
                             ['AeronetSunV3Lev2.daily', '20190920'], 
                             ['DMS_AMS_CVO', '20190807'], 
                             ['EARLINET', '20190129'], 
-                            ['EBASMC', '20191001'], 
+                            ['EBASMC', '20191218'], 
                             ['GAWTADsubsetAasEtAl', '20190522']])
 
     

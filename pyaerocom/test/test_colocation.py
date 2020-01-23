@@ -48,6 +48,7 @@ def test_colocate_gridded_ungridded_default(modis_data, aeronet_data):
              'refdata_std': 0.24190694442558214, 
              'data_mean': 0.21707663503434954, 
              'data_std': 0.2640279860471867, 
+             'weighted':False,
              'rms': 0.14676859292764524, 
              'R': 0.8371045991138515, 
              'R_spearman': 0.8008437094410961, 
@@ -88,6 +89,7 @@ def test_colocate_gridded_ungridded_custom(modis_data, aeronet_data):
              'refdata_std': 0.18818580038766464, 
              'data_mean': 0.21129443314225607, 
              'data_std': 0.19777726159168757, 
+             'weighted':False,
              'rms': 0.08594528034591596, 
              'R': 0.9035961859420195, 
              'R_spearman': 0.8441011217929901, 
@@ -115,5 +117,6 @@ if __name__ == '__main__':
     import pyaerocom as pya
     sat = _load_modis6aqua_aod_2010()
     obs = _load_aeronet_sunv3()
-
+    
+    test_colocate_gridded_ungridded_default(sat, obs)
     test_colocate_gridded_ungridded_custom(sat, obs)
