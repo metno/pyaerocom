@@ -1231,123 +1231,6 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
 
-    def plot_profile(self, plotfilename, vars_to_plot = ['ec355aer'], title=None,
-                     linear_time=False):
-        """plot sample profile plot
-
-        >>> import read_aeolus_l2a_data
-        >>> filename = '/lustre/storeb/project/fou/kl/admaeolus/data.rev.2a02/ae_oper_ald_u_n_2a_20181201t033526026_005423993_001590_0001.dbl'
-        >>> obj = read_aeolus_l2a_data.readaeolusl2adata(verbose=true)
-        >>> import os
-        >>> os.environ['coda_definition']='/lustre/storea/project/aerocom/aerocom1/adm_calipso_test/'
-        >>> # read returning a ndarray
-        >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
-        >>> time_as_numpy_datetime64 = data_numpy[:,obj._timeindex].astype('datetime64[s]')
-        >>> import numpy as np
-        >>> unique_times = np.unique(time_as_numpy_datetime64)
-        >>> ec355data = data_numpy[:,obj._ec355index]
-        >>> altitudedata = data_numpy[:,obj._altitudeindex]
-
-
-        """
-        import matplotlib.pyplot as plt
-        from scipy import interpolate
-        # read returning a ndarray
-        times = self.data[:,obj._TIMEINDEX]
-        times_no = len(times)
-        plot_data = {}
-        plot_data_masks = {}
-        unique_times = np.unique(times)
-        time_step_no = len(unique_times)
-        vars_to_plot_arr = ['altitude']
-        vars_to_plot_arr.extend(vars_to_plot)
-        height_step_no = self._HEIGHTSTEPNO
-
-        target_height_no = 2001
-        target_heights = np.arange(0,target_height_no)*10
-        target_heights = np.flip(target_heights)
-        target_x = np.arange(0,time_step_no)
-
-        for data_var in vars_to_plot_arr:
-            # plot_data[data_var] = \
-            #     self.data[:, self.INDEX_DICT[data_var]]
-            plot_data_masks[data_var] = np.isnan(self.data[:, self.INDEX_DICT[data_var]])
-
-        # in case of a cut out area, there might not be all the height steps
-        # in self.data (since the Aeolus line of sight is tilted 35 degrees)
-        # or due to the fact the the slection removes points where longitude or
-        # latitude are NaN
-        # unfortunately the number of height steps per time code is not necessarily equal
-        # to self._HEIGHTSTEPNO anymore
-        # e.g. due to an area based selection or due to NaNs in the profile
-        # we therefore have to go through the times and look for changes
-
-        idx_time = times[0]
-        time_cut_start_index = 0
-        time_cut_end_index = 0
-        time_index_dict = {}
-        for idx, time in enumerate(times):
-            if time == idx_time:
-                time_cut_end_index = idx
-            else:
-                time_cut_end_index = idx
-                time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index )
-                time_cut_start_index = idx
-                idx_time = time
-        time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index + 1)
-
-        for var in vars_to_plot:
-            # this loop has not been optimised for several variables
-            out_arr = np.zeros([time_step_no, target_height_no])
-            out_arr[:] = np.nan
-            for time_step_idx, unique_time in enumerate(unique_times):
-                var_data = self.data[time_index_dict[unique_time],self.INDEX_DICT[var]]
-                # scipy.interpolate cannot cope with nans in the data
-                # work only on profiles with a nansum > 0
-
-                nansum = np.nansum(var_data)
-                if nansum > 0:
-                    height_data = self.data[time_index_dict[unique_time],self.INDEX_DICT['altitude']]
-                    if np.isnan(np.sum(var_data)):
-                        height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
-                        var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
-
-
-                    f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
-                    interpolated = f(target_heights)
-                    out_arr[time_step_idx,:] = interpolated
-                elif nansum == 0:
-                    # set all heights of the plotted profile to 0 since nothing was detected
-                    out_arr[time_step_idx,:] = 0.
-
-            # enable TeX
-            # plt.rc('text', usetex=True)
-            # plt.rc('font', family='serif')
-            fig, _axs = plt.subplots(nrows=1, ncols=1)
-            fig.subplots_adjust(hspace=0.3)
-            try:
-                axs = _axs.flatten()
-            except:
-                axs = [_axs]
-            plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap='jet', vmin=2., vmax=2000.)
-            plot_simple2.axes.set_xlabel('time step number')
-            plot_simple2.axes.set_ylabel('height [km]')
-            yticklabels = plot_simple2.axes.set_yticklabels(['0','5', '10', '15', '20'])
-            if title:
-                plot_simple2.axes.set_title(title, fontsize='small')
-            else:
-                plot_simple2.axes.set_title('title')
-            #plot_simple2.axes.set_aspect(0.05)
-            # plt.show()
-            clb = plt.colorbar(plot_simple2, ax=axs[0], orientation='horizontal',
-                               pad=0.2, aspect=30, anchor=(0.5, 0.8))
-            clb.ax.set_title('{} [{}]'.format(var, self.TEX_UNITS[var]), fontsize='small')
-
-            plt.savefig(plotfilename, dpi=300)
-            plt.close()
-            # print('test')
-
-    ###################################################################################
 
     def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc',
                          global_attributes=None, vars_to_write=None,
@@ -1384,6 +1267,7 @@ class ReadL2Data(ReadL2DataBase):
 
             # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata'].keys()))
             vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[self.RETRIEVAL_READ[0]]['metadata'].keys()))
+            vars_to_write_out.append(self._UPPERALTITUDENAME)
 
             datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
             # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[ms]'))
@@ -2195,12 +2079,16 @@ class ReadL2Data(ReadL2DataBase):
         plot_data_masks = {}
         unique_times = np.unique(times)
         time_step_no = len(unique_times)
-        vars_to_plot_arr = ['altitude']
+        vars_to_plot_arr = [self._ALTITUDENAME]
         vars_to_plot_arr.extend(vars_to_plot)
-        height_step_no = self._HEIGHTSTEPNO
+        filling_zero_val = 0.
+        plotting_zero_val = np.nan
 
         target_height_no = 2001
-        target_heights = np.arange(0,target_height_no)*10
+        intermediate_height_no = 50
+        # height step size in m for plotting
+        height_step_size = 10.
+        target_heights = np.arange(0,target_height_no)*height_step_size
         #target_heights = np.flip(target_heights)
         target_x = np.arange(0,time_step_no)
 
@@ -2209,11 +2097,9 @@ class ReadL2Data(ReadL2DataBase):
             #     _data[:, self.INDEX_DICT[data_var]]
             plot_data_masks[data_var] = np.isnan(_data[:, self.INDEX_DICT[data_var]])
 
-        # in case of a cut out area, there might not be all the height steps
-        # in _data (since the Aeolus line of sight is tilted 35 degrees)
-        # or due to the fact the the selection removes points where longitude or
-        # latitude are NaN
-        # unfortunately the number of height steps per time code is not necessarily equal
+        # because of height individual quality flags, there will never be all the height steps
+        # of a profile in _data.
+        # Therefore the number of height steps per time code is not necessarily equal
         # to self._HEIGHTSTEPNO anymore
         # e.g. due to an area based selection or due to NaNs in the profile
         # we therefore have to go through the times and look for changes
@@ -2223,6 +2109,12 @@ class ReadL2Data(ReadL2DataBase):
         time_cut_end_index = 0
         time_index_dict = {}
 
+        # reconstruct the aeolus profile to cover all height steps so that the nearest neighbour interpolation
+        # used for the plot is correct.
+        # unfortunately we don't even know all the height levels in the profile because they
+        # might not be retrievable or the lower height might be NaN
+        # interpolate the existing time steps to a 250m grid (assuming this 250m as the minimum height)
+
         for idx, time in enumerate(times):
             if time == idx_time:
                 time_cut_end_index = idx
@@ -2231,6 +2123,8 @@ class ReadL2Data(ReadL2DataBase):
                 time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index )
                 time_cut_start_index = idx
                 idx_time = time
+
+
         time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index + 1)
 
         for var in vars_to_plot:
@@ -2242,17 +2136,44 @@ class ReadL2Data(ReadL2DataBase):
                 # scipy.interpolate cannot cope with nans in the data
                 # work only on profiles with a nansum > 0
 
-
                 nansum = np.nansum(var_data)
                 if nansum > 0:
-                    height_data = _data[time_index_dict[unique_time],self.INDEX_DICT['altitude']]
+                    height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._ALTITUDENAME]]
+                    lower_height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._UPPERALTITUDENAME]]
                     if np.isnan(np.sum(var_data)):
                         height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+                        lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
                         var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
 
+                    # add some point around the altitude edges to make the finer nearest neighbour interpolation
+                    plot_heights_temp = np.zeros(intermediate_height_no)
+                    plot_val_temp = np.zeros(intermediate_height_no)
+                    temp_height_index = 0
+                    for height_level in range(len(height_data)):
+                        if np.isnan(lower_height_data[height_level]):
+                            plot_heights_temp[temp_height_index] = height_data[height_level] - 250. - height_step_size
+                            plot_heights_temp[temp_height_index + 1] = height_data[height_level] - 250.
+                        else:
+                            plot_heights_temp[temp_height_index] = lower_height_data[height_level] - height_step_size
+                            plot_heights_temp[temp_height_index + 1] = lower_height_data[height_level]
 
+                        plot_val_temp[temp_height_index] = filling_zero_val
+                        plot_val_temp[temp_height_index + 1] = var_data[height_level]
+                        temp_height_index += 2
+
+                        plot_heights_temp[temp_height_index] = height_data[height_level]
+                        plot_val_temp[temp_height_index] = var_data[height_level]
+                        temp_height_index += 1
+                        plot_heights_temp[temp_height_index] = height_data[height_level] + height_step_size
+                        plot_val_temp[temp_height_index] = filling_zero_val
+
+                        temp_height_index += 1
+
+                    plot_heights_temp = plot_heights_temp[0:temp_height_index]
+                    plot_val_temp = plot_val_temp[0:temp_height_index]
                     try:
-                        f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
+                        # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
+                        f = interpolate.interp1d(plot_heights_temp, plot_val_temp, kind='nearest', bounds_error=False, fill_value=np.nan)
                         interpolated = f(target_heights)
                         out_arr[time_step_idx,:] = interpolated
                     except ValueError:
