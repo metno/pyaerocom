@@ -154,8 +154,14 @@ class ReadL2Data(ReadL2DataBase):
         self._LONBOUNDSNAME = 'lon_bnds'
         self._LONBOUNDSSIZE = 4
 
+        self._UPPERALTITUDENAME = 'lower_altitude'
+
+        self._RAYLEIGHLATNAME = 'rayleigh_lat'
+        self._RAYLEIGHLONNAME = 'rayleigh_lon'
+        self._RAYLEIGHALTITUDENAME = 'rayleigh_altitude'
+
         self.COORDINATE_NAMES = [self._LATITUDENAME, self._LONGITUDENAME, self._ALTITUDENAME,
-                            self._LATBOUNDSNAME, self._LONBOUNDSNAME]
+                            self._LATBOUNDSNAME, self._LONBOUNDSNAME, self._UPPERALTITUDENAME]
 
         self._QAINDEX = UngriddedData._DATAFLAGINDEX
         self._TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
@@ -167,7 +173,12 @@ class ReadL2Data(ReadL2DataBase):
         self._DISTINDEX = self._RADLATINDEX + 2
         self._LODINDEX =  self._RADLATINDEX + 3
         self._SRINDEX = self._RADLATINDEX + 4
-        self._COLNO = self._SRINDEX + 1 
+        self._RAYLEIGHLATINDEX = self._SRINDEX + 1
+        self._RAYLEIGHLONINDEX = self._RAYLEIGHLATINDEX + 1
+        self._RAYLEIGHALTITUDEINDEX = self._RAYLEIGHLONINDEX + 1
+
+        self._UPPERALTITUDEINDEX = self._RAYLEIGHALTITUDEINDEX + 1
+        self._COLNO = self._UPPERALTITUDEINDEX + 1
 
 
         # self._EC355INDEX = 4
@@ -206,11 +217,11 @@ class ReadL2Data(ReadL2DataBase):
         # test data to be read
         # self.CODA_READ_PARAMETERS['sca']['metadata']['test_sca_pcd_mid_bins_qc_flag'] = \
         #     'sca_pcd/profile_pcd_mid_bins/processing_qc_flag'
-        self.CODA_READ_PARAMETERS['sca']['metadata']['rayleigh_geolocation_height'] = \
+        self.CODA_READ_PARAMETERS['sca']['metadata'][self._RAYLEIGHALTITUDENAME] = \
             'geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/altitude_of_height_bin'
-        self.CODA_READ_PARAMETERS['sca']['metadata']['rayleigh_geolocation_lat'] = \
+        self.CODA_READ_PARAMETERS['sca']['metadata'][self._RAYLEIGHLATNAME] = \
             'geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/latitude_of_height_bin'
-        self.CODA_READ_PARAMETERS['sca']['metadata']['rayleigh_geolocation_lon'] = \
+        self.CODA_READ_PARAMETERS['sca']['metadata'][self._RAYLEIGHLONNAME] = \
             'geolocation/measurement_geolocation/rayleigh_geolocation_height_bin/longitude_of_height_bin'
 
         # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/longitude_of_height_bin
@@ -227,9 +238,13 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS['sca']['metadata'][
             self._ALTITUDENAME] = 'sca_optical_properties/geolocation_middle_bins/altitude'
         self.CODA_READ_PARAMETERS['sca']['vars'][
-            self._EC355NAME] = 'sca_optical_properties/sca_optical_properties/extinction'
+            self._EC355NAME] = 'sca_optical_properties/sca_optical_properties_mid_bins/extinction'
+        # self.CODA_READ_PARAMETERS['sca']['vars'][
+        #     self._EC355NAME] = 'sca_optical_properties/sca_optical_properties/extinction'
         self.CODA_READ_PARAMETERS['sca']['vars'][
-            self._BS355NAME] = 'sca_optical_properties/sca_optical_properties/backscatter'
+            self._BS355NAME] = 'sca_optical_properties/sca_optical_properties_mid_bins/backscatter'
+        # self.CODA_READ_PARAMETERS['sca']['vars'][
+        #     self._BS355NAME] = 'sca_optical_properties/sca_optical_properties/backscatter'
         self.CODA_READ_PARAMETERS['sca']['vars'][self._LODNAME] = 'sca_optical_properties/sca_optical_properties/lod'
         self.CODA_READ_PARAMETERS['sca']['vars'][self._SRNAME] = 'sca_optical_properties/sca_optical_properties/sr'
 
@@ -274,6 +289,7 @@ class ReadL2Data(ReadL2DataBase):
         self.INDEX_DICT.update({self._LATITUDENAME: self._LATINDEX})
         self.INDEX_DICT.update({self._LONGITUDENAME: self._LONINDEX})
         self.INDEX_DICT.update({self._ALTITUDENAME: self._ALTITUDEINDEX})
+        self.INDEX_DICT.update({self._UPPERALTITUDENAME: self._UPPERALTITUDEINDEX})
         self.INDEX_DICT.update({self._TIME_NAME: self._TIMEINDEX})
         self.INDEX_DICT.update({self._EC355NAME: self._DATAINDEX01})
         self.INDEX_DICT.update({self._BS355NAME: self._DATAINDEX01})
@@ -282,6 +298,10 @@ class ReadL2Data(ReadL2DataBase):
         self.INDEX_DICT.update({self._SRNAME: self._SRINDEX})
         self.INDEX_DICT.update({self._LATBOUNDSNAME: self._LATBOUNDINDEX})
         self.INDEX_DICT.update({self._LONBOUNDSNAME: self._LONBOUNDINDEX})
+        self.INDEX_DICT.update({self._RAYLEIGHLATNAME: self._RAYLEIGHLATINDEX})
+        self.INDEX_DICT.update({self._RAYLEIGHLONNAME: self._RAYLEIGHLONINDEX})
+        self.INDEX_DICT.update({self._RAYLEIGHALTITUDENAME: self._RAYLEIGHALTITUDEINDEX})
+
 
         # dictionary to store array sizes of an element in self.data
         # SIZE_DICT = {}
@@ -293,6 +313,10 @@ class ReadL2Data(ReadL2DataBase):
         self.NAN_DICT.update({self._LATITUDENAME: -1.E-6})
         self.NAN_DICT.update({self._LONGITUDENAME: -1.E-6})
         self.NAN_DICT.update({self._ALTITUDENAME: -1.})
+        self.NAN_DICT.update({self._UPPERALTITUDENAME: -1.})
+        self.NAN_DICT.update({self._RAYLEIGHLATNAME: -1.E-6})
+        self.NAN_DICT.update({self._RAYLEIGHLONNAME: -1.E-6})
+        self.NAN_DICT.update({self._RAYLEIGHALTITUDENAME: -1.})
         self.NAN_DICT.update({self._EC355NAME: -1.E6})
         self.NAN_DICT.update({self._BS355NAME: -1.E6})
         self.NAN_DICT.update({self._LODNAME: -1.})
@@ -318,9 +342,15 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['long_name'] = 'aeolus quality flag'
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['units'] = '1'
 
-        TEX_UNITS = {}
-        TEX_UNITS[self._EC355NAME] = r'$10^{-6} \cdot m^{-1}$'
-        TEX_UNITS[self._BS355NAME] = ''
+        self.NETCDF_VAR_ATTRIBUTES[self._UPPERALTITUDENAME] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._UPPERALTITUDENAME]['long_name'] = 'lower altitude'
+        self.NETCDF_VAR_ATTRIBUTES[self._UPPERALTITUDENAME]['standard_name'] = 'altitude'
+        self.NETCDF_VAR_ATTRIBUTES[self._UPPERALTITUDENAME]['units'] = 'm'
+
+
+        self.TEX_UNITS = {}
+        self.TEX_UNITS[self._EC355NAME] = r'$10^{-6} \cdot m^{-1}$'
+        self.TEX_UNITS[self._BS355NAME] = ''
 
         self.SUPPORTED_SUFFIXES.append('.DBL')
         self.RETRIEVAL_READ = ''
@@ -674,6 +704,7 @@ class ReadL2Data(ReadL2DataBase):
                 # read all variables
                 vars_to_read_in = list(self.CODA_READ_PARAMETERS[retrieval]['vars'].keys())
             vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[retrieval]['metadata'].keys()))
+            vars_to_read_in.append(self._UPPERALTITUDENAME)
             #get rid of duplicates
             vars_to_read_in = list(set(vars_to_read_in))
 
@@ -699,7 +730,7 @@ class ReadL2Data(ReadL2DataBase):
             # read data in a simple dictionary
             for var in vars_to_read_in:
                 # time has been read already
-                if var in [self._TIME_NAME, 'test_sca_pcd_starttime']:
+                if var in [self._TIME_NAME, 'test_sca_pcd_starttime', self._UPPERALTITUDENAME]:
                     continue
 
                 self.logger.info('reading var: {}'.format(var))
@@ -758,6 +789,12 @@ class ReadL2Data(ReadL2DataBase):
                             # print(file_data[var][key])
                             times_to_skip.append(key)
 
+            # add upper_altitude to data...
+            var = self._UPPERALTITUDENAME
+            file_data[var] = {}
+            for idx, key in enumerate(file_data[self._TIME_NAME]):
+                file_data[var][key] = file_data[self._ALTITUDENAME][key][1:]
+
             coda.close(product)
 
             if return_as == 'numpy':
@@ -785,6 +822,7 @@ class ReadL2Data(ReadL2DataBase):
 
                         #check the quality flags
                         if file_data[self._QANAME+'_anded'][file_data[self._TIME_NAME][idx]][_index] == 0:
+                            #set value to NaN
                             continue
 
                         # This loop could be avoided using numpy index slicing
@@ -814,6 +852,7 @@ class ReadL2Data(ReadL2DataBase):
                                     # the data has not been forseen to be used
                                     continue
                                     # pass
+
                             # put negative values to np.nan if the variable is not a metadata variable
                             if data[index_pointer, self.INDEX_DICT[var]] == self.NAN_DICT[var]:
                                 data[index_pointer, self.INDEX_DICT[var]] = np.nan
@@ -1124,30 +1163,21 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
 
-    def select_bbox(self, bbox=None):
+    def select_bbox(self, data=None, bbox=None):
         """method to return all points of self.data laying within a certain latitude and longitude range
 
         This method will likely never be used by a user, but serves as helper method for the colocate method
 
         EXAMPLE
         =======
-        >>> import logging
-        >>> import read_aeolus_l2a_data
-        >>> obj = read_aeolus_l2a_data.ReadAeolusL2aData(loglevel=logging.DEBUG)
-        >>> obj.read(vars_to_retrieve=['ec355aer'])
-        >>> bbox = (-62.,-61.,7.,8.)
-        >>> result = obj.select_bbox(bbox)
-        >>> import numpy as np
-        >>> print('min distance: {:.3f} km'.format(np.nanmin(obj.data[:, obj._DISTINDEX])))
-        >>> print('max distance: {:.3f} km'.format(np.nanmax(obj.data[:, obj._DISTINDEX])))
-
 
         """
         start = time.perf_counter()
 
-        # ret_data = np.empty([self._ROWNO, self._COLNO], dtype=np.float_)
-        # index_counter = 0
-        # cut_flag = True
+        lat_min = -90.
+        lat_max = 90.
+        lon_min = -180.
+        lon_max = 360.
 
         if bbox is not None:
             logging.info(bbox)
@@ -1156,9 +1186,17 @@ class ReadL2Data(ReadL2DataBase):
             lon_min = bbox[2]
             lon_max = bbox[3]
 
+        if data is None:
+            _data = self.data
+        else:
+            try:
+                _data = data._data
+            except AttributeError:
+                _data = data
+
             # remove NaNs at this point
-            matching_indexes = np.where(np.isfinite(self.data[:, self._LATINDEX]))
-            ret_data = self.data[matching_indexes[0], :]
+            matching_indexes = np.where(np.isfinite(_data[:, self._LATINDEX]))
+            ret_data = _data[matching_indexes[0], :]
 
             # np.where can unfortunately only work with a single criterion
             matching_indexes = np.where(ret_data[:, self._LATINDEX] <= lat_max)
@@ -1193,123 +1231,6 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
 
-    def plot_profile(self, plotfilename, vars_to_plot = ['ec355aer'], title=None,
-                     linear_time=False):
-        """plot sample profile plot
-
-        >>> import read_aeolus_l2a_data
-        >>> filename = '/lustre/storeb/project/fou/kl/admaeolus/data.rev.2a02/ae_oper_ald_u_n_2a_20181201t033526026_005423993_001590_0001.dbl'
-        >>> obj = read_aeolus_l2a_data.readaeolusl2adata(verbose=true)
-        >>> import os
-        >>> os.environ['coda_definition']='/lustre/storea/project/aerocom/aerocom1/adm_calipso_test/'
-        >>> # read returning a ndarray
-        >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
-        >>> time_as_numpy_datetime64 = data_numpy[:,obj._timeindex].astype('datetime64[s]')
-        >>> import numpy as np
-        >>> unique_times = np.unique(time_as_numpy_datetime64)
-        >>> ec355data = data_numpy[:,obj._ec355index]
-        >>> altitudedata = data_numpy[:,obj._altitudeindex]
-
-
-        """
-        import matplotlib.pyplot as plt
-        from scipy import interpolate
-        # read returning a ndarray
-        times = self.data[:,obj._TIMEINDEX]
-        times_no = len(times)
-        plot_data = {}
-        plot_data_masks = {}
-        unique_times = np.unique(times)
-        time_step_no = len(unique_times)
-        vars_to_plot_arr = ['altitude']
-        vars_to_plot_arr.extend(vars_to_plot)
-        height_step_no = self._HEIGHTSTEPNO
-
-        target_height_no = 2001
-        target_heights = np.arange(0,target_height_no)*10
-        target_heights = np.flip(target_heights)
-        target_x = np.arange(0,time_step_no)
-
-        for data_var in vars_to_plot_arr:
-            # plot_data[data_var] = \
-            #     self.data[:, self.INDEX_DICT[data_var]]
-            plot_data_masks[data_var] = np.isnan(self.data[:, self.INDEX_DICT[data_var]])
-
-        # in case of a cut out area, there might not be all the height steps
-        # in self.data (since the Aeolus line of sight is tilted 35 degrees)
-        # or due to the fact the the slection removes points where longitude or
-        # latitude are NaN
-        # unfortunately the number of height steps per time code is not necessarily equal
-        # to self._HEIGHTSTEPNO anymore
-        # e.g. due to an area based selection or due to NaNs in the profile
-        # we therefore have to go through the times and look for changes
-
-        idx_time = times[0]
-        time_cut_start_index = 0
-        time_cut_end_index = 0
-        time_index_dict = {}
-        for idx, time in enumerate(times):
-            if time == idx_time:
-                time_cut_end_index = idx
-            else:
-                time_cut_end_index = idx
-                time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index )
-                time_cut_start_index = idx
-                idx_time = time
-        time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index + 1)
-
-        for var in vars_to_plot:
-            # this loop has not been optimised for several variables
-            out_arr = np.zeros([time_step_no, target_height_no])
-            out_arr[:] = np.nan
-            for time_step_idx, unique_time in enumerate(unique_times):
-                var_data = self.data[time_index_dict[unique_time],self.INDEX_DICT[var]]
-                # scipy.interpolate cannot cope with nans in the data
-                # work only on profiles with a nansum > 0
-
-                nansum = np.nansum(var_data)
-                if nansum > 0:
-                    height_data = self.data[time_index_dict[unique_time],self.INDEX_DICT['altitude']]
-                    if np.isnan(np.sum(var_data)):
-                        height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
-                        var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
-
-
-                    f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
-                    interpolated = f(target_heights)
-                    out_arr[time_step_idx,:] = interpolated
-                elif nansum == 0:
-                    # set all heights of the plotted profile to 0 since nothing was detected
-                    out_arr[time_step_idx,:] = 0.
-
-            # enable TeX
-            # plt.rc('text', usetex=True)
-            # plt.rc('font', family='serif')
-            fig, _axs = plt.subplots(nrows=1, ncols=1)
-            fig.subplots_adjust(hspace=0.3)
-            try:
-                axs = _axs.flatten()
-            except:
-                axs = [_axs]
-            plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap='jet', vmin=2., vmax=2000.)
-            plot_simple2.axes.set_xlabel('time step number')
-            plot_simple2.axes.set_ylabel('height [km]')
-            yticklabels = plot_simple2.axes.set_yticklabels(['0','5', '10', '15', '20'])
-            if title:
-                plot_simple2.axes.set_title(title, fontsize='small')
-            else:
-                plot_simple2.axes.set_title('title')
-            #plot_simple2.axes.set_aspect(0.05)
-            # plt.show()
-            clb = plt.colorbar(plot_simple2, ax=axs[0], orientation='horizontal',
-                               pad=0.2, aspect=30, anchor=(0.5, 0.8))
-            clb.ax.set_title('{} [{}]'.format(var, self.TEX_UNITS[var]), fontsize='small')
-
-            plt.savefig(plotfilename, dpi=300)
-            plt.close()
-            # print('test')
-
-    ###################################################################################
 
     def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc',
                          global_attributes=None, vars_to_write=None,
@@ -1346,6 +1267,7 @@ class ReadL2Data(ReadL2DataBase):
 
             # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata'].keys()))
             vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[self.RETRIEVAL_READ[0]]['metadata'].keys()))
+            vars_to_write_out.append(self._UPPERALTITUDENAME)
 
             datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
             # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[ms]'))
@@ -1357,7 +1279,7 @@ class ReadL2Data(ReadL2DataBase):
 
             # time and potentially levels are special variables that needs special treatment
             ds[self._TIME_NAME] = (point_dim_name), datetimedata
-            skip_vars = [self._TIME_NAME, 'test_sca_pcd_mid_bins_qc_flag']
+            skip_vars = [self._TIME_NAME, 'test_sca_pcd_mid_bins_qc_flag',]
             if level_dim_name in vars_to_write_out:
                 ds[level_dim_name] = np.arange(self._LEVELSSIZE)
                 skip_vars.extend([self._LEVELSNAME])
@@ -1993,28 +1915,33 @@ class ReadL2Data(ReadL2DataBase):
 
     ###################################################################################
 
-    def plot_location_map(self, plotfilename, bbox=None, himalaya_flag=None, title=None,
-                          plot_time = True):
+    def plot_location_map(self, plotfilename, data=None, bbox=None, himalaya_flag=None, title=None,
+                          plot_time = True, arcgis_background=False):
         """small routine to plot the satellite track on a map
 
-        >>> import matplotlib.pyplot as plt
-        >>> from mpl_toolkits.basemap import Basemap
-        >>> lats=obj.data[:,obj._LATINDEX]
-        >>> lons=obj.data[:,obj._LONINDEX]
-        >>> m = Basemap(projection='merc',lon_0=0)
-        >>> x, y = m(lons,lats)
-        >>> m.drawmapboundary(fill_color='#99ffff')
-        >>> m.fillcontinents(color='#cc9966',lake_color='#99ffff')
-        >>> m.scatter(x,y,3,marker='o',color='k')
-        >>> plt.show()
+
         """
 
         import matplotlib.pyplot as plt
         from mpl_toolkits.basemap import Basemap
         import numpy as np
 
-        lats = self.data[:,self._LATINDEX]
-        lons = self.data[:,self._LONINDEX]
+        if data is None:
+            _data = self.data
+        else:
+            try:
+                _data = data._data
+            except AttributeError:
+                _data = data
+
+        lats = _data[:,self._LATINDEX]
+        lons = _data[:,self._LONINDEX]
+        max_index=len(lats)
+        min_index=0
+        if max_index == 0:
+            self.logger.info('plotmap: no points to plot! Returning.')
+            return
+
 
         if bbox:
             pass
@@ -2074,10 +2001,13 @@ class ReadL2Data(ReadL2DataBase):
         m.drawparallels(np.arange(-90, 120, 30), labels=[1, 1, 0, 0], fontsize=10)
         # axis = plt.axis([LatsToPlot.min(), LatsToPlot.max(), LonsToPlot.min(), LonsToPlot.max()])
         ax = plot.axes
-        # m.drawcoastlines()
-        # m.etopo()
-        # m.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 1500, verbose= True)
-        m.arcgisimage(service='World_Shaded_Relief', xpixels = 1500, verbose= True)
+        if arcgis_background:
+            # m.arcgisimage(service='ESRI_Imagery_World_2D', xpixels = 1500, verbose= True)
+            m.arcgisimage(service='World_Shaded_Relief', xpixels = 1500, verbose= True)
+        else:
+            m.drawcoastlines()
+            # m.etopo()
+
         if bbox is not None:
             m.drawcountries()
             # m.drawrivers()
@@ -2088,26 +2018,28 @@ class ReadL2Data(ReadL2DataBase):
                 plot=m.plot(x, y, 4, marker='.', color='b')
 
         if title:
-            plt.title(title,fontsize='small')
+            plt.title(title,fontsize='xx-small')
 
         if plot_time:
             # plot 2 time stamps next to 2 dots to make the times clear
-            min_index = 30
-            max_index = -30
-            time_str = self.data[min_index, self._TIMEINDEX].astype('datetime64[s]')
-            x,y = m(self.data[min_index, self._LONINDEX], self.data[min_index, self._LATINDEX])
+
+            min_index = np.int(np.floor_divide(len(lats),10.))
+            max_index = np.int(len(lats) - min_index)
+            time_str = _data[min_index, self._TIMEINDEX].astype('datetime64[s]')
+            x,y = m(_data[min_index, self._LONINDEX], _data[min_index, self._LATINDEX])
             # plt.annotate(time_str, xy=(x, y),  xycoords='data', color='k')
             plt.annotate(time_str, xy=(x, y),
                          xycoords='data',
                          color='k',
-                         fontsize='small')
-            time_str = self.data[max_index, self._TIMEINDEX].astype('datetime64[s]')
-            x,y = m(self.data[max_index, self._LONINDEX], self.data[max_index, self._LATINDEX])
+                         fontsize='xx-small',
+                         ha='center')
+            time_str = _data[max_index, self._TIMEINDEX].astype('datetime64[s]')
+            x,y = m(_data[max_index, self._LONINDEX], _data[max_index, self._LATINDEX])
             plt.annotate(time_str, xy=(x, y),
                          xycoords='data',
                          color='k',
-                         fontsize='small')
-            pass
+                         fontsize='xx-small',
+                         ha='center')
 
 
         plt.savefig(plotfilename, dpi=300)
@@ -2133,7 +2065,7 @@ class ReadL2Data(ReadL2DataBase):
         from scipy import interpolate
 
         if data_to_plot is None:
-            data_to_plot = self.data
+            _data = self.data
         else:
             try:
                 _data = data_to_plot._data
@@ -2147,12 +2079,16 @@ class ReadL2Data(ReadL2DataBase):
         plot_data_masks = {}
         unique_times = np.unique(times)
         time_step_no = len(unique_times)
-        vars_to_plot_arr = ['altitude']
+        vars_to_plot_arr = [self._ALTITUDENAME]
         vars_to_plot_arr.extend(vars_to_plot)
-        height_step_no = self._HEIGHTSTEPNO
+        filling_zero_val = 0.
+        plotting_zero_val = np.nan
 
         target_height_no = 2001
-        target_heights = np.arange(0,target_height_no)*10
+        intermediate_height_no = 50
+        # height step size in m for plotting
+        height_step_size = 10.
+        target_heights = np.arange(0,target_height_no)*height_step_size
         #target_heights = np.flip(target_heights)
         target_x = np.arange(0,time_step_no)
 
@@ -2161,11 +2097,9 @@ class ReadL2Data(ReadL2DataBase):
             #     _data[:, self.INDEX_DICT[data_var]]
             plot_data_masks[data_var] = np.isnan(_data[:, self.INDEX_DICT[data_var]])
 
-        # in case of a cut out area, there might not be all the height steps
-        # in _data (since the Aeolus line of sight is tilted 35 degrees)
-        # or due to the fact the the selection removes points where longitude or
-        # latitude are NaN
-        # unfortunately the number of height steps per time code is not necessarily equal
+        # because of height individual quality flags, there will never be all the height steps
+        # of a profile in _data.
+        # Therefore the number of height steps per time code is not necessarily equal
         # to self._HEIGHTSTEPNO anymore
         # e.g. due to an area based selection or due to NaNs in the profile
         # we therefore have to go through the times and look for changes
@@ -2175,6 +2109,12 @@ class ReadL2Data(ReadL2DataBase):
         time_cut_end_index = 0
         time_index_dict = {}
 
+        # reconstruct the aeolus profile to cover all height steps so that the nearest neighbour interpolation
+        # used for the plot is correct.
+        # unfortunately we don't even know all the height levels in the profile because they
+        # might not be retrievable or the lower height might be NaN
+        # interpolate the existing time steps to a 250m grid (assuming this 250m as the minimum height)
+
         for idx, time in enumerate(times):
             if time == idx_time:
                 time_cut_end_index = idx
@@ -2183,6 +2123,8 @@ class ReadL2Data(ReadL2DataBase):
                 time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index )
                 time_cut_start_index = idx
                 idx_time = time
+
+
         time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index + 1)
 
         for var in vars_to_plot:
@@ -2194,17 +2136,44 @@ class ReadL2Data(ReadL2DataBase):
                 # scipy.interpolate cannot cope with nans in the data
                 # work only on profiles with a nansum > 0
 
-
                 nansum = np.nansum(var_data)
                 if nansum > 0:
-                    height_data = _data[time_index_dict[unique_time],self.INDEX_DICT['altitude']]
+                    height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._ALTITUDENAME]]
+                    lower_height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._UPPERALTITUDENAME]]
                     if np.isnan(np.sum(var_data)):
                         height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+                        lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
                         var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
 
+                    # add some point around the altitude edges to make the finer nearest neighbour interpolation
+                    plot_heights_temp = np.zeros(intermediate_height_no)
+                    plot_val_temp = np.zeros(intermediate_height_no)
+                    temp_height_index = 0
+                    for height_level in range(len(height_data)):
+                        if np.isnan(lower_height_data[height_level]):
+                            plot_heights_temp[temp_height_index] = height_data[height_level] - 250. - height_step_size
+                            plot_heights_temp[temp_height_index + 1] = height_data[height_level] - 250.
+                        else:
+                            plot_heights_temp[temp_height_index] = lower_height_data[height_level] - height_step_size
+                            plot_heights_temp[temp_height_index + 1] = lower_height_data[height_level]
 
+                        plot_val_temp[temp_height_index] = filling_zero_val
+                        plot_val_temp[temp_height_index + 1] = var_data[height_level]
+                        temp_height_index += 2
+
+                        plot_heights_temp[temp_height_index] = height_data[height_level]
+                        plot_val_temp[temp_height_index] = var_data[height_level]
+                        temp_height_index += 1
+                        plot_heights_temp[temp_height_index] = height_data[height_level] + height_step_size
+                        plot_val_temp[temp_height_index] = filling_zero_val
+
+                        temp_height_index += 1
+
+                    plot_heights_temp = plot_heights_temp[0:temp_height_index]
+                    plot_val_temp = plot_val_temp[0:temp_height_index]
                     try:
-                        f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
+                        # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
+                        f = interpolate.interp1d(plot_heights_temp, plot_val_temp, kind='nearest', bounds_error=False, fill_value=np.nan)
                         interpolated = f(target_heights)
                         out_arr[time_step_idx,:] = interpolated
                     except ValueError:
@@ -2235,15 +2204,15 @@ class ReadL2Data(ReadL2DataBase):
 
             # plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap='jet', vmin=2., vmax=2000.)
             plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap=cmap, norm=norm)
-            plot_simple2.axes.set_xlabel('time step number')
+            plot_simple2.axes.set_xlabel('time step number',fontsize='small')
 
-            plot_simple2.axes.set_ylabel('height [km]')
+            plot_simple2.axes.set_ylabel('height [km]',fontsize='small')
             yticks = plot_simple2.axes.get_yticks()
 
             yticklabels = plot_simple2.axes.set_yticklabels(yticks/100.)
             # yticklabels = plot_simple2.axes.set_yticklabels(['0','5', '10', '15', '20'])
             if title:
-                plot_simple2.axes.set_title(title, fontsize='small')
+                plot_simple2.axes.set_title(title, fontsize='xx-small')
             else:
                 plot_simple2.axes.set_title('title')
             #plot_simple2.axes.set_aspect(0.05)
@@ -2251,9 +2220,9 @@ class ReadL2Data(ReadL2DataBase):
             clb = plt.colorbar(plot_simple2, ax=axs[0], orientation='horizontal',
                                pad=0.2, aspect=30, anchor=(0.5, 0.8))
             if retrieval_name:
-                clb.ax.set_title('{} [{}] {} retrieval'.format(var, self.TEX_UNITS[var], retrieval_name), fontsize='small')
+                clb.ax.set_title('{} [{}] {} retrieval'.format(var, self.TEX_UNITS[var], retrieval_name), fontsize='xx-small')
             else:
-                clb.ax.set_title('{} [{}]'.format(var, self.TEX_UNITS[var]), fontsize='small')
+                clb.ax.set_title('{} [{}]'.format(var, self.TEX_UNITS[var]), fontsize='xx-small')
 
             fig.tight_layout()
             # put the start and end time as string on the plot
@@ -2509,24 +2478,24 @@ if __name__ == '__main__':
             # apply emep options for cal / val
             if options['emepflag']:
                 bbox = [options['latmin'], options['latmax'],options['lonmin'],options['lonmax']]
-                tmp_data = obj.select_bbox(bbox)
+                tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
                 if len(tmp_data) > 0:
-                    obj.data = tmp_data
+                    data_numpy = tmp_data
                     obj.logger.info('file {} contains {} points in emep area! '.format(filename, len(tmp_data)))
                 else:
                     obj.logger.info('file {} contains no data in emep area! '.format(filename))
-                    obj = None
+                    data_numpy = None
                     continue
 
             if options['himalayas']:
                 bbox = [options['latmin'], options['latmax'],options['lonmin'],options['lonmax']]
-                tmp_data = obj.select_bbox(bbox)
+                tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
                 if len(tmp_data) > 0:
-                    obj.data = tmp_data
+                    data_numpy = tmp_data
                     obj.logger.info('file {} contains {} points in himalaya area! '.format(filename, len(tmp_data)))
                 else:
                     obj.logger.info('file {} contains no data in himalaya area! '.format(filename))
-                    obj = None
+                    data_numpy = None
                     continue
 
             if 'outfile' in options or 'gridfile' in options or 'outdir' in options:
@@ -2547,19 +2516,18 @@ if __name__ == '__main__':
                     if os.path.exists(options['outfile']):
                         if options['overwrite']:
                             obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                     global_attributes=global_attributes, vars_to_write=vars_to_read)
-                            obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
+                                     global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
                         else:
                             sys.stderr.write('Error: path {} exists'.format(options['outfile']))
                     else:
                         obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                     global_attributes=global_attributes, vars_to_write=vars_to_read)
+                                     global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
                 else:
                     sys.stderr.write("error: multiple input files, but only on output file given\n"
                                      "Please use the --outdir option instead\n")
 
             # outdir
-            if 'outdir' in options:
+            if 'outdir' in options and 'outfile' not in options:
                 outfile_name = os.path.join(options['outdir'], os.path.basename(filename) + '.nc')
                 obj.logger.info('writing file {}'.format(outfile_name))
                 if os.path.exists(outfile_name):
@@ -2586,8 +2554,8 @@ if __name__ == '__main__':
 
                 #truncate Aeolus times to hour
 
-                aeolus_times_rounded = obj.data[:,obj._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
-                aeolus_times = obj.data[:,obj._TIMEINDEX].astype('datetime64[s]')
+                aeolus_times_rounded = data_numpy[:,obj._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
+                aeolus_times = data_numpy[:,obj._TIMEINDEX].astype('datetime64[s]')
                 unique_aeolus_times, unique_aeolus_time_indexes = np.unique(aeolus_times, return_index=True)
                 aeolus_profile_no = len(unique_aeolus_times)
                 # aeolus_profile_no = int(len(aeolus_times)/obj._HEIGHTSTEPNO)
@@ -2629,9 +2597,9 @@ if __name__ == '__main__':
 
                         data_idx_arr = np.arange(data_idx_end - data_idx) + data_idx
 
-                        aeolus_lat = np.nanmean(obj.data[data_idx_arr, obj._LATINDEX])
-                        aeolus_lon = np.nanmean(obj.data[data_idx_arr, obj._LONINDEX])
-                        aeolus_altitudes = obj.data[data_idx_arr, obj._ALTITUDEINDEX]
+                        aeolus_lat = np.nanmean(data_numpy[data_idx_arr, obj._LATINDEX])
+                        aeolus_lon = np.nanmean(data_numpy[data_idx_arr, obj._LONINDEX])
+                        aeolus_altitudes = data_numpy[data_idx_arr, obj._ALTITUDEINDEX]
                         diff_dummy = nc_latitudes - aeolus_lat
                         min_lat_index = np.argmin(np.abs(diff_dummy))
                         diff_dummy = nc_longitudes - aeolus_lon
@@ -2639,7 +2607,7 @@ if __name__ == '__main__':
 
                         nc_data_idx = aeolus_profile_index * nc_lev_no
                         nc_index_arr = np.arange(nc_lev_no) + nc_data_idx
-                        nc_colocated_data[nc_index_arr,obj._EC355INDEX] = \
+                        nc_colocated_data[nc_index_arr,obj.INDEX_DICT[obj._EC355NAME]] = \
                             nc_data['EXT_350nm'].data[nc_ts_no,:,min_lat_index,min_lon_index]
                         # nc_data['EXT_350nm'].data[nc_ts_no,:,min_lat_index,min_lon_index].reshape(nc_lev_no)
                         nc_colocated_data[nc_index_arr,obj._ALTITUDEINDEX] = \
@@ -2651,7 +2619,7 @@ if __name__ == '__main__':
                             nc_data['lon'].data[min_lon_index]
                             # nc_data['Z_MID'].data[nc_ts_no,:,min_lat_index,min_lon_index].reshape(nc_lev_no)
                         nc_colocated_data[nc_index_arr,obj._TIMEINDEX] = \
-                            obj.data[data_idx, obj._TIMEINDEX]
+                            data_numpy[data_idx, obj._TIMEINDEX]
 
                 end_time = time.perf_counter()
                 elapsed_sec = end_time - start_time
@@ -2660,7 +2628,9 @@ if __name__ == '__main__':
                     obj.logger.info(temp)
                     obj.logger.info('{} is colocated model output directory'.format(options['modeloutdir']))
                     model_file_name = os.path.join(options['modeloutdir'], os.path.basename(filename) + '.colocated.nc')
-                    obj.to_netcdf_simple(model_file_name, data_to_write=nc_colocated_data)
+                    # obj.to_netcdf_simple(model_file_name, data_to_write=nc_colocated_data)
+                    obj.to_netcdf_simple(netcdf_filename=model_file_name, data_to_write=nc_colocated_data,
+                                         vars_to_write=vars_to_read)
                 pass
 
             #plot the profile
@@ -2679,7 +2649,7 @@ if __name__ == '__main__':
                 plotmapfilename = os.path.join(options['outdir'], os.path.basename(filename) + '.map.png')
                 obj.logger.info('map plot file: {}'.format(plotmapfilename))
                 #title = os.path.basename(filename)
-                obj.plot_location_map(plotmapfilename, bbox=bbox, title=os.path.basename(filename))
+                obj.plot_location_map(plotmapfilename, data=data_numpy, bbox=bbox, title=os.path.basename(filename))
                 # obj.plot_location_map(plotmapfilename)
 
 
