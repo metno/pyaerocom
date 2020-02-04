@@ -372,7 +372,8 @@ class ReadCoLocationData(ReadL2Data):
                                  optimised_time=True,
                                  plot_orbit_info=True,
                                  plot_stat_info=True,
-                                 zero_to_nans=False,):
+                                 zero_to_nans=False,
+                                 colorbar='coolwarm'):
 
         """plot sample profile plot with
         all time steps found in data dict regardless in which dict
@@ -394,7 +395,7 @@ class ReadCoLocationData(ReadL2Data):
         from matplotlib.colors import BoundaryNorm
         from matplotlib.ticker import MaxNLocator
 
-        filling_zero_val = 0.
+        filling_zero_val = -1.E6
         intermediate_height_no = 50
         # height step size in meters for plotting
         height_step_size = 10.
@@ -629,12 +630,16 @@ class ReadCoLocationData(ReadL2Data):
 
                     # plot_data[data_name] = plot_out_arr.copy()
 
+
+                # now remove the very negative values used to make the interpolation work
+                plot_out_arr[np.where(plot_out_arr == filling_zero_val)] = np.nan
+
                 self.logger.info('{} time steps matched'.format(matched_indexes))
                 # levels = MaxNLocator(nbins=15).tick_values(np.nanmin(out_arr), np.nanmax(out_arr))
                 # levels = MaxNLocator(nbins=20).tick_values(0., 2000.)
                 levels = MaxNLocator(nbins=plot_nbins).tick_values(plot_range[0], plot_range[1])
                 # cmap = plt.get_cmap('PiYG')
-                cmap = plt.get_cmap('autumn_r')
+                cmap = plt.get_cmap(colorbar)
                 norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
 
                 if zero_to_nans:
@@ -1011,7 +1016,8 @@ if __name__ == '__main__':
     if 'plotfile' in options:
         obj.logger.info('plotting profile to file: {}...'.format(options['plotfile']))
         obj.plot_profile_independent(data_dict, options['plotfile'], retrieval_name=options['retrieval'],
-                                     plot_range=(0., 200.),
+                                     plot_range=(-200., 200.),
+                                     plot_nbins=40,
                                      zero_to_nans=options['zerotonans'])
         obj.logger.info('plotting done')
 
