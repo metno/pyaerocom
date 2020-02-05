@@ -15,52 +15,23 @@ TEST_VARS = ['od550aer', 'ang4487aer']
     
 def make_dataset():
     r = ReadAeronetSunV3()
-    return r.read(file_pattern='G*', 
+    #return r.read(vars_to_retrieve=TEST_VARS)
+    return r.read(file_pattern='Tu*', 
                   vars_to_retrieve=TEST_VARS)
 
 @lustre_unavail
 @pytest.fixture(scope='session')
 def aeronetsunv3lev2_subset():
     return make_dataset()
-
-@lustre_unavail
-def test_shape_ungridded(aeronetsunv3lev2_subset):
-    assert aeronetsunv3lev2_subset.shape == (63170, 12)
     
 @lustre_unavail
 def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
-    assert len(aeronetsunv3lev2_subset.metadata) == 29
-    assert len(aeronetsunv3lev2_subset.unique_station_names) == 29
+    assert len(aeronetsunv3lev2_subset.metadata) == 9
+    assert len(aeronetsunv3lev2_subset.unique_station_names) == 9
     
-    assert aeronetsunv3lev2_subset.unique_station_names == ['GISS',
-                                         'GORDO_rest',
-                                         'GOT_Seaprism',
-                                         'GSFC',
-                                         'Gageocho_Station',
-                                         'Gainesville_Airport',
-                                         'Gaithersburg',
-                                         'Galata_Platform',
-                                         'Gandhi_College',
-                                         'Gangneung_WNU',
-                                         'Georgia_Tech',
-                                         'Glasgow_MO',
-                                         'Gloria',
-                                         'Gobabeb',
-                                         'Goldstone',
-                                         'Gorongosa',
-                                         'Gosan_SNU',
-                                         'Gotland',
-                                         'Gozo',
-                                         'Graciosa',
-                                         'Granada',
-                                         'Grand_Forks',
-                                         'Granite_Island',
-                                         'Grizzly_Bay',
-                                         'Guadeloup',
-                                         'Gual_Pahari',
-                                         'Guam',
-                                         'Gustav_Dalen_Tower',
-                                         'Gwangju_GIST']
+    names = ['Tucson', 'Tucuman', 'Tudor_Hill', 'Tukurui', 'Tunis_Carthage', 
+             'Tuxtla_Gutierrez', 'Tuz_Golu', 'Tuz_Golu_2', 'Tuz_Golu_3']
+    assert aeronetsunv3lev2_subset.unique_station_names == names
 
 @lustre_unavail
 def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
@@ -71,16 +42,18 @@ def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
         if not 'od550aer' in stat:
             no_odcount += 1
             continue
-        mean = np.mean(stat.od550aer)
+        td = stat.od550aer[:100]
+        mean = np.mean(td)
         if np.isnan(mean):
             no_odcount += 1
             continue
         mean_vals.append(mean)
-        std_vals.append(np.std(stat.od550aer))
-    assert no_odcount == 5
+        std_vals.append(np.std(td))
+    assert no_odcount == 0
+    should_be = [0.1835, 0.0904]
     npt.assert_allclose(actual=[np.mean(mean_vals), 
                                 np.mean(std_vals)],
-                        desired=[0.209, 0.149], atol=1e-2)
+                        desired=should_be, atol=1e-2)
     
 @lustre_unavail
 def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
@@ -91,16 +64,18 @@ def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
         if not 'ang4487aer' in stat:
             no_odcount += 1
             continue
-        mean = np.mean(stat.ang4487aer)
+        td = stat.ang4487aer[:100]
+        mean = np.mean(td)
         if np.isnan(mean):
             no_odcount += 1
             continue
         mean_vals.append(mean)
-        std_vals.append(np.std(stat.ang4487aer))
-    assert no_odcount == 1
-    npt.assert_allclose(actual=[np.mean(mean_vals), 
-                                np.mean(std_vals)],
-                        desired=[1.202, 0.337], atol=1e-2)
+        std_vals.append(np.std(td))
+    assert no_odcount == 0
+    got = [np.mean(mean_vals), np.mean(std_vals)]
+    should_be = [1.1695, 0.2280]
+    npt.assert_allclose(actual=got,
+                        desired=should_be, atol=1e-2)
     
 @lustre_unavail
 def test_load_berlin():
@@ -138,4 +113,7 @@ if __name__=="__main__":
     
     test_load_berlin()
     aeronetsunv3lev2_subset = make_dataset()
-    test_shape_ungridded(aeronetsunv3lev2_subset)
+    test_meta_blocks_ungridded(aeronetsunv3lev2_subset)
+    test_od550aer_meanval_stats(aeronetsunv3lev2_subset)
+    test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset)
+    test_load_berlin()
