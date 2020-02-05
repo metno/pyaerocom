@@ -830,6 +830,7 @@ class ReadL2Data(ReadL2DataBase):
                         # maybe only when the general logic has been working
 
                         data[index_pointer, self._TIMEINDEX] = _time
+                        data_nan_flag = False
                         for var in vars_to_read_in:
                             # time is the index, so skip it here
                             if var == self._TIME_NAME or \
@@ -856,8 +857,12 @@ class ReadL2Data(ReadL2DataBase):
                             # put negative values to np.nan if the variable is not a metadata variable
                             if data[index_pointer, self.INDEX_DICT[var]] == self.NAN_DICT[var]:
                                 data[index_pointer, self.INDEX_DICT[var]] = np.nan
+                                data_nan_flag = True
 
-                        index_pointer += 1
+                        if not data_nan_flag:
+                            index_pointer += 1
+                            data_nan_flag = False
+
                         if index_pointer >= self._ROWNO:
                             # add another array chunk to self.data
                             data = np.append(data, np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float_),
@@ -865,6 +870,8 @@ class ReadL2Data(ReadL2DataBase):
                             self._ROWNO += self._CHUNKSIZE
 
                 # return only the needed elements...
+                if np.isnan(data[index_pointer, self.INDEX_DICT[var]]):
+                    index_pointer -= 1
                 file_data = data[0:index_pointer]
 
         self._point_no_with_good_quality += index_pointer
@@ -2137,49 +2144,124 @@ class ReadL2Data(ReadL2DataBase):
                 # work only on profiles with a nansum > 0
 
                 nansum = np.nansum(var_data)
-                if nansum > 0:
-                    height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._ALTITUDENAME]]
-                    lower_height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._UPPERALTITUDENAME]]
+
+                if nansum > 0 and len(var_data) > 1:
+                    height_data = _data[time_index_dict[unique_time], self.INDEX_DICT[self._ALTITUDENAME]]
                     if np.isnan(np.sum(var_data)):
+                        # lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
                         height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
-                        lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
                         var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
 
-                    # add some point around the altitude edges to make the finer nearest neighbour interpolation
-                    plot_heights_temp = np.zeros(intermediate_height_no)
-                    plot_val_temp = np.zeros(intermediate_height_no)
-                    temp_height_index = 0
-                    for height_level in range(len(height_data)):
-                        if np.isnan(lower_height_data[height_level]):
-                            plot_heights_temp[temp_height_index] = height_data[height_level] - 250. - height_step_size
-                            plot_heights_temp[temp_height_index + 1] = height_data[height_level] - 250.
-                        else:
-                            plot_heights_temp[temp_height_index] = lower_height_data[height_level] - height_step_size
-                            plot_heights_temp[temp_height_index + 1] = lower_height_data[height_level]
+                    if len(height_data) < 10.:
+                        try:
+                            lower_height_data = _data[time_index_dict[unique_time], self.INDEX_DICT[self._UPPERALTITUDENAME]]
+                        except TypeError:
+                            pass
 
-                        plot_val_temp[temp_height_index] = filling_zero_val
-                        plot_val_temp[temp_height_index + 1] = var_data[height_level]
-                        temp_height_index += 2
+                        if np.isnan(np.sum(var_data)):
+                            lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
 
-                        plot_heights_temp[temp_height_index] = height_data[height_level]
-                        plot_val_temp[temp_height_index] = var_data[height_level]
-                        temp_height_index += 1
-                        plot_heights_temp[temp_height_index] = height_data[height_level] + height_step_size
-                        plot_val_temp[temp_height_index] = filling_zero_val
+                        # make sure that gaps in the input profile are also present in the profile created by
+                        # a nearest neighbour interpolation (used for better looking plots)
+                        plot_heights_temp = np.zeros(intermediate_height_no)
+                        plot_val_temp = np.zeros(intermediate_height_no)
+                        temp_height_index = 0
+                        zero_filled_flag = False
+                        # note that the order of heights is from top to bottom
+                        for height_level in range(len(height_data)):
+                            # if the former height level has been surrounded by filling_zero_val
+                            # we also have to surround the actual height with filling_zero_val
+                            # to make the nearest neighbour interpolation right
+                            if zero_filled_flag:
+                                zero_filled_flag = False
+                                plot_heights_temp[temp_height_index] = height_data[height_level] + height_step_size
+                                plot_val_temp[temp_height_index] = filling_zero_val
+                                temp_height_index += 1
 
-                        temp_height_index += 1
+                            plot_heights_temp[temp_height_index] = height_data[height_level]
+                            plot_val_temp[temp_height_index] = var_data[height_level]
+                            temp_height_index += 1
+                            # if the height is not the same as the lower height in the profile
+                            # we want to extend the profile before interpolation
+                            if lower_height_data[height_level] in height_data:
+                                plot_heights_temp[temp_height_index] = lower_height_data[
+                                                                           height_level] + height_step_size / 10.
+                                plot_val_temp[temp_height_index] = var_data[height_level]
+                                temp_height_index += 1
+                            else:
+                                plot_heights_temp[temp_height_index] = lower_height_data[height_level]
+                                plot_val_temp[temp_height_index] = var_data[height_level]
+                                temp_height_index += 1
+                                if height_level < len(height_data) - 1:
+                                    plot_heights_temp[temp_height_index] = lower_height_data[
+                                                                               height_level] - height_step_size / 10.
+                                    plot_val_temp[temp_height_index] = filling_zero_val
+                                    temp_height_index += 1
+                                    zero_filled_flag = True
 
-                    plot_heights_temp = plot_heights_temp[0:temp_height_index]
-                    plot_val_temp = plot_val_temp[0:temp_height_index]
-                    try:
-                        # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
-                        f = interpolate.interp1d(plot_heights_temp, plot_val_temp, kind='nearest', bounds_error=False, fill_value=np.nan)
-                        interpolated = f(target_heights)
-                        out_arr[time_step_idx,:] = interpolated
-                    except ValueError:
-                        #out_arr is np.nan already
+                        plot_heights_temp = plot_heights_temp[0:temp_height_index]
+                        plot_val_temp = plot_val_temp[0:temp_height_index]
+                        height_data = plot_heights_temp[0:temp_height_index]
+                        var_data = plot_val_temp[0:temp_height_index]
                         pass
 
+                    try:
+                        # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False,
+                        #                          fill_value=0.)
+                        f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False,
+                                                 fill_value=np.nan)
+                        interpolated = f(target_heights)
+                        out_arr[time_step_idx, :] = interpolated
+                    except ValueError:
+
+                        # this happens when height_data and var_data have only one entry
+                        # set out_arr[time_step_idx,:] to NaN in this case for now
+                        # breakpoint()
+                        out_arr[time_step_idx, :] = np.nan
+
+                # if nansum > 0:
+                #     height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._ALTITUDENAME]]
+                #     lower_height_data = _data[time_index_dict[unique_time],self.INDEX_DICT[self._UPPERALTITUDENAME]]
+                #     if np.isnan(np.sum(var_data)):
+                #         height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+                #         lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+                #         var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+                #
+                #     # add some point around the altitude edges to make the finer nearest neighbour interpolation
+                #     plot_heights_temp = np.zeros(intermediate_height_no)
+                #     plot_val_temp = np.zeros(intermediate_height_no)
+                #     temp_height_index = 0
+                #     for height_level in range(len(height_data)):
+                #         if np.isnan(lower_height_data[height_level]):
+                #             plot_heights_temp[temp_height_index] = height_data[height_level] - 250. - height_step_size
+                #             plot_heights_temp[temp_height_index + 1] = height_data[height_level] - 250.
+                #         else:
+                #             plot_heights_temp[temp_height_index] = lower_height_data[height_level] - height_step_size
+                #             plot_heights_temp[temp_height_index + 1] = lower_height_data[height_level]
+                #
+                #         plot_val_temp[temp_height_index] = filling_zero_val
+                #         plot_val_temp[temp_height_index + 1] = var_data[height_level]
+                #         temp_height_index += 2
+                #
+                #         plot_heights_temp[temp_height_index] = height_data[height_level]
+                #         plot_val_temp[temp_height_index] = var_data[height_level]
+                #         temp_height_index += 1
+                #         plot_heights_temp[temp_height_index] = height_data[height_level] + height_step_size
+                #         plot_val_temp[temp_height_index] = filling_zero_val
+                #
+                #         temp_height_index += 1
+                #
+                #     plot_heights_temp = plot_heights_temp[0:temp_height_index]
+                #     plot_val_temp = plot_val_temp[0:temp_height_index]
+                #     try:
+                #         # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False, fill_value=np.nan)
+                #         f = interpolate.interp1d(plot_heights_temp, plot_val_temp, kind='nearest', bounds_error=False, fill_value=np.nan)
+                #         interpolated = f(target_heights)
+                #         out_arr[time_step_idx,:] = interpolated
+                #     except ValueError:
+                #         #out_arr is np.nan already
+                #         pass
+                #
                 elif nansum == 0:
                     # set all heights of the plotted profile to 0 since nothing was detected
                     out_arr[time_step_idx,:] = 0.
@@ -2200,6 +2282,260 @@ class ReadL2Data(ReadL2DataBase):
             # cmap = plt.get_cmap('jet')
             # cmap = plt.get_cmap('YlOrRd')
             cmap = plt.get_cmap('autumn_r')
+            norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
+
+            # plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap='jet', vmin=2., vmax=2000.)
+            plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap=cmap, norm=norm)
+            plot_simple2.axes.set_xlabel('time step number',fontsize='small')
+
+            plot_simple2.axes.set_ylabel('height [km]',fontsize='small')
+            yticks = plot_simple2.axes.get_yticks()
+
+            yticklabels = plot_simple2.axes.set_yticklabels(yticks/100.)
+            # yticklabels = plot_simple2.axes.set_yticklabels(['0','5', '10', '15', '20'])
+            if title:
+                plot_simple2.axes.set_title(title, fontsize='xx-small')
+            else:
+                plot_simple2.axes.set_title('title')
+            #plot_simple2.axes.set_aspect(0.05)
+            # plt.show()
+            clb = plt.colorbar(plot_simple2, ax=axs[0], orientation='horizontal',
+                               pad=0.2, aspect=30, anchor=(0.5, 0.8))
+            if retrieval_name:
+                clb.ax.set_title('{} [{}] {} retrieval'.format(var, self.TEX_UNITS[var], retrieval_name), fontsize='xx-small')
+            else:
+                clb.ax.set_title('{} [{}]'.format(var, self.TEX_UNITS[var]), fontsize='xx-small')
+
+            fig.tight_layout()
+            # put the start and end time as string on the plot
+            # plt.text(0.001, 0.02, '{}'.format(unique_times[0].astype('datetime64[s]')), transform=axs[0].transAxes, fontsize=12)
+            plt.annotate('start={}'.format(unique_times[0].astype('datetime64[s]')),
+                         (0.05, 0.27),
+                         xycoords='figure fraction',
+                         fontsize=9,
+                         horizontalalignment='left')
+            plt.annotate('end={}'.format(unique_times[-1].astype('datetime64[s]')),
+                         (0.98, 0.27),
+                         xycoords='figure fraction',
+                         fontsize=9,
+                         horizontalalignment='right')
+            plt.annotate('max val={0:.2f}'.format(np.nanmax(out_arr)),
+                         (0.98, 0.24),
+                         xycoords='figure fraction',
+                         fontsize=9,
+                         horizontalalignment='right')
+            plt.annotate('median val={0:.2f}'.format(np.nanmedian(out_arr)),
+                         (0.05, 0.24),
+                         xycoords='figure fraction',
+                         fontsize=9,
+                         horizontalalignment='left')
+
+            plt.savefig(plotfilename, dpi=300)
+            plt.close()
+            # print('test')
+
+    ###################################################################################
+    def plot_profile_v3(self, plotfilename, data_to_plot=None, vars_to_plot = ['ec355aer'], retrieval_name=None,
+                        title=None,
+                        plot_range=(0.,2000.),
+                        plot_nbins=20.,
+                        colorbar='coolwarm',
+                        linear_time=False):
+        """plot sample profile plot
+
+
+
+        """
+        import matplotlib.pyplot as plt
+        import matplotlib
+        from matplotlib.colors import BoundaryNorm
+        from matplotlib.ticker import MaxNLocator
+
+        from scipy import interpolate
+
+        if data_to_plot is None:
+            _data = self.data
+        else:
+            try:
+                _data = data_to_plot._data
+            except AttributeError:
+                _data = data_to_plot
+
+        # read returning a ndarray
+        times = _data[:,obj._TIMEINDEX]
+        times_no = len(times)
+        plot_data = {}
+        plot_data_masks = {}
+        unique_times = np.unique(times)
+        time_step_no = len(unique_times)
+        vars_to_plot_arr = [self._ALTITUDENAME]
+        vars_to_plot_arr.extend(vars_to_plot)
+        filling_zero_val = 0.
+        filling_zero_val = -1.E6
+        plotting_zero_val = np.nan
+
+        target_height_no = 2001
+        intermediate_height_no = 50
+        # height step size in m for plotting
+        height_step_size = 10.
+        target_heights = np.arange(0, target_height_no)*height_step_size
+        #target_heights = np.flip(target_heights)
+        target_x = np.arange(0,time_step_no)
+
+        for data_var in vars_to_plot_arr:
+            # plot_data[data_var] = \
+            #     _data[:, self.INDEX_DICT[data_var]]
+            plot_data_masks[data_var] = np.isnan(_data[:, self.INDEX_DICT[data_var]])
+
+        # because of height individual quality flags, there will never be all the height steps
+        # of a profile in _data.
+        # Therefore the number of height steps per time code is not necessarily equal
+        # to self._HEIGHTSTEPNO anymore
+        # e.g. due to an area based selection or due to NaNs in the profile
+        # we therefore have to go through the times and look for changes
+
+        idx_time = times[0]
+        time_cut_start_index = 0
+        time_cut_end_index = 0
+        time_index_dict = {}
+
+        # reconstruct the aeolus profile to cover all height steps so that the nearest neighbour interpolation
+        # used for the plot is correct.
+        # unfortunately we don't even know all the height levels in the profile because they
+        # might not be retrievable or the lower height might be NaN
+        # interpolate the existing time steps to a 250m grid (assuming this 250m as the minimum height)
+
+        for idx, time in enumerate(times):
+            if time == idx_time:
+                time_cut_end_index = idx
+            else:
+                time_cut_end_index = idx
+                time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index )
+                time_cut_start_index = idx
+                idx_time = time
+
+
+        time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index + 1)
+
+        for var in vars_to_plot:
+            # this loop has not been optimised for several variables
+            out_arr = np.zeros([time_step_no, target_height_no])
+            out_arr[:] = np.nan
+            for time_step_idx, unique_time in enumerate(unique_times):
+                var_data = _data[time_index_dict[unique_time],self.INDEX_DICT[var]]
+                # scipy.interpolate cannot cope with nans in the data
+                # work only on profiles with a nansum > 0
+
+                nansum = np.nansum(var_data)
+                # if np.isnan(nansum):
+                #     self.logger.info('time index {} nansum is NaN:'.format(time_step_idx))
+                #     # potentially remove profile time...
+                # if time_step_idx == 75:
+                #     self.logger.info('time index {} nansum is NaN:'.format(time_step_idx))
+
+                # if nansum > 0:
+                if np.isfinite(nansum):
+                    # if nansum > 0 and len(var_data) > 1:
+                    height_data = _data[time_index_dict[unique_time], self.INDEX_DICT[self._ALTITUDENAME]]
+                    if np.isnan(np.sum(var_data)):
+                        # lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+                        height_data = height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+                        var_data = var_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+
+                    if len(height_data) < 10.:
+                        try:
+                            lower_height_data = _data[time_index_dict[unique_time], self.INDEX_DICT[self._UPPERALTITUDENAME]]
+                        except TypeError:
+                            pass
+
+                        if np.isnan(np.sum(var_data)):
+                            lower_height_data = lower_height_data[~plot_data_masks[var][time_index_dict[unique_time]]]
+
+                        # make sure that gaps in the input profile are also present in the profile created by
+                        # a nearest neighbour interpolation (used for better looking plots)
+                        plot_heights_temp = np.zeros(intermediate_height_no)
+                        plot_val_temp = np.zeros(intermediate_height_no)
+                        temp_height_index = 0
+                        zero_filled_flag = False
+                        # note that the order of heights is from top to bottom
+                        for height_level in range(len(height_data)):
+                            # if the former height level has been surrounded by filling_zero_val
+                            # we also have to surround the actual height with filling_zero_val
+                            # to make the nearest neighbour interpolation right
+                            if zero_filled_flag:
+                                zero_filled_flag = False
+                                plot_heights_temp[temp_height_index] = height_data[height_level] + height_step_size
+                                plot_val_temp[temp_height_index] = filling_zero_val
+                                temp_height_index += 1
+
+                            plot_heights_temp[temp_height_index] = height_data[height_level]
+                            plot_val_temp[temp_height_index] = var_data[height_level]
+                            temp_height_index += 1
+                            # if the height is not the same as the lower height in the profile
+                            # we want to extend the profile before interpolation
+                            if lower_height_data[height_level] in height_data:
+                                plot_heights_temp[temp_height_index] = lower_height_data[
+                                                                           height_level] + height_step_size / 10.
+                                plot_val_temp[temp_height_index] = var_data[height_level]
+                                temp_height_index += 1
+                            else:
+                                plot_heights_temp[temp_height_index] = lower_height_data[height_level]
+                                plot_val_temp[temp_height_index] = var_data[height_level]
+                                temp_height_index += 1
+                                if height_level < len(height_data) - 1:
+                                    plot_heights_temp[temp_height_index] = lower_height_data[
+                                                                               height_level] - height_step_size / 10.
+                                    plot_val_temp[temp_height_index] = filling_zero_val
+                                    temp_height_index += 1
+                                    zero_filled_flag = True
+
+                        plot_heights_temp = plot_heights_temp[0:temp_height_index]
+                        plot_val_temp = plot_val_temp[0:temp_height_index]
+                        height_data = plot_heights_temp[0:temp_height_index]
+                        var_data = plot_val_temp[0:temp_height_index]
+                        pass
+
+                    try:
+                        # f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False,
+                        #                          fill_value=0.)
+                        f = interpolate.interp1d(height_data, var_data, kind='nearest', bounds_error=False,
+                                                 fill_value=np.nan)
+                        interpolated = f(target_heights)
+                        out_arr[time_step_idx, :] = interpolated
+                    except ValueError:
+
+                        # this happens when height_data and var_data have only one entry
+                        # set out_arr[time_step_idx,:] to NaN in this case for now
+                        # breakpoint()
+                        out_arr[time_step_idx, :] = np.nan
+
+                elif nansum == 0:
+                    # set all heights of the plotted profile to 0 since nothing was detected
+                    out_arr[time_step_idx,:] = 0.
+
+
+                # elif len(var_data) == 1:
+                #     pass
+
+            # now remove the very negative values used to make the interpolation work
+            out_arr[np.where(out_arr == filling_zero_val)] = np.nan
+            # enable TeX
+            # plt.rc('text', usetex=True)
+            # plt.rc('font', family='serif')
+            fig, _axs = plt.subplots(nrows=1, ncols=1)
+            fig.subplots_adjust(hspace=0.3)
+            try:
+                axs = _axs.flatten()
+            except:
+                axs = [_axs]
+
+            # levels = MaxNLocator(nbins=15).tick_values(np.nanmin(out_arr), np.nanmax(out_arr))
+            levels = MaxNLocator(nbins=plot_nbins).tick_values(plot_range[0],plot_range[1])
+            # cmap = plt.get_cmap('PiYG')
+            # cmap = plt.get_cmap('jet')
+            # cmap = plt.get_cmap('YlOrRd')
+            # cmap = plt.get_cmap('coolwarm')
+            cmap = plt.get_cmap(colorbar)
             norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
 
             # plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap='jet', vmin=2., vmax=2000.)
@@ -2640,9 +2976,13 @@ if __name__ == '__main__':
                 obj.logger.info('profile plot file: {}'.format(plotfilename))
                 # title = '{} {}'.format(options['retrieval'], os.path.basename(filename))
                 title = '{}'.format(os.path.basename(filename))
-                obj.plot_profile_v2(plotfilename, title=title, data_to_plot=data_numpy,
+                obj.plot_profile_v3(plotfilename, title=title, data_to_plot=data_numpy,
                                     retrieval_name=options['retrieval'],
-                                    plot_range=(0.,200.))
+                                    plot_range=(-200,200.),
+                                    plot_nbins=40)
+                # obj.plot_profile_v3(plotfilename, title=title, data_to_plot=data_numpy,
+                #                                     retrieval_name=options['retrieval'],
+                #                                     plot_range=(0.,200.))
 
             #plot the map
             if options['plotmap']:
