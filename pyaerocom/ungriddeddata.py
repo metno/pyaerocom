@@ -18,8 +18,9 @@ from pyaerocom.helpers import (same_meta_dict,
 
 from pyaerocom.metastandards import StationMetaData
 
-from pyaerocom.land_sea_mask import (load_region_mask_xr, available_region_mask, 
-                                     get_mask_value)
+from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
+                                             available_region_masks,
+                                             get_mask_value)
 
 class UngriddedData(object):
     """Class representing ungridded data
@@ -1223,7 +1224,8 @@ class UngriddedData(object):
         invert_mask : 
         """
         if region_id is None:
-            raise ValueError("Specify a region_id. Available regions: {}.".format(available_region_mask()))
+            raise ValueError("Specify a region_id. Available regions: {}."
+                             .format(available_region_masks()))
 
         # 1. find matches -> list of meta indices that are in region
         # 2. Get total number of datapoints -> defines shape of output UngriddedData
@@ -1251,7 +1253,7 @@ class UngriddedData(object):
                 del ungridded.metadata[key]
                 meta_indecies.pop(key) 
                 
-                if len(self.vars_to_retrieve) == 1 and isinstance(self.vars_to_retrieve, list):
+                if len(self.contains_vars) == 1 and isinstance(self.contains_vars, list):
                     indexes_to_drop.append(self.meta_idx[key][self.vars_to_retrieve[0]]) # update to vars to read.
                 else:
                     raise NotImplementedError("Not filtering for ungridded data object containing "+
@@ -2448,7 +2450,7 @@ class UngriddedData(object):
     @property
     def vars_to_retrieve(self):
         logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
-                                          "deprectated. Please use attr "
+                                          "deprecated. Please use attr "
                                           "contains_vars instead"))
         return self.contains_vars
     
