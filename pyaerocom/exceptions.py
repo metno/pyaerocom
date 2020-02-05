@@ -47,6 +47,9 @@ class CoordinateNotFoundError(CoordinateError):
 class CoordinateNameError(CoordinateError):
     pass
 
+class DataRetrievalError(IOError):
+    pass
+
 class DataCoverageError(ValueError):
     pass
 
