@@ -9,8 +9,7 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
-from pyaerocom.land_sea_mask import (load_region_mask_xr, get_mask_value, 
-                                     available_region_mask)
+from pyaerocom.helpers_landsea_masks import (load_region_mask_xr, get_mask_value)
 
 import numpy as np
 import pandas as pd
