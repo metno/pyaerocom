@@ -280,15 +280,9 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     
-    file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
+    #file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
     
-    reader = ReadAeronetSunV3('AeronetSunV3Lev2.AP')
-    files = reader.get_file_list()
+    reader = ReadAeronetSunV3()
+    reader.read('od550aer')
     
     
-    for i, f in enumerate(files):
-        if f==file:
-            rf = [files[i-1], files[i]]
-            break
-            
-    data = reader.read('od550aer', files=rf)

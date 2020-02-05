@@ -31,7 +31,7 @@ class ReadUngriddedBase(abc.ABC):
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.07'
+    __baseversion__ = '0.08'
     
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -161,6 +161,8 @@ class ReadUngriddedBase(abc.ABC):
         using :func:`get_obsnetwork_dir` (which uses the information in 
         ``pyaerocom.const``).
         """
+        if self._dataset_path is not None and os.path.exists(self._dataset_path):
+            return self._dataset_path
         return get_obsnetwork_dir(self.DATA_ID)
         
     @abc.abstractmethod
@@ -214,7 +216,7 @@ class ReadUngriddedBase(abc.ABC):
 
     ### Concrete implementations of methods that are the same for all (or most)
     # of the derived reading classes
-    def __init__(self, dataset_to_read=None):
+    def __init__(self, dataset_to_read=None, dataset_path=None):
         self.data = None #object that holds the loaded data
         self.files = []
         # list that will be updated in read method to store all files that
@@ -223,6 +225,8 @@ class ReadUngriddedBase(abc.ABC):
         # method read_file is called, and in case of an Exception, append the
         # corresponding file path to this list.
         self.read_failed = []
+        
+        self._dataset_path = dataset_path
         
         #: Class own instance of logger class
         self.logger = logging.getLogger(__name__)

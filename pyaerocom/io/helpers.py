@@ -181,7 +181,8 @@ def get_obsnetwork_dir(obs_id):
         if directory does not exist
     """
     if not obs_id in const.OBS_IDS:
-        raise ValueError("Observation network ID {} does not exist".format(obs_id))
+        raise ValueError("Observation network ID {} does not exist"
+                         .format(obs_id))
         
     data_dir = const.OBSCONFIG[obs_id]['PATH']
     if not os.path.exists(data_dir):
