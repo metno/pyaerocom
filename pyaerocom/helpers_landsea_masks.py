@@ -180,31 +180,6 @@ def load_region_mask_iris(*regions):
     #out.attributes['long_name'] = name
     return out
 
-def get_mask(lat, lon, mask):
-    """
-    Parameters 
-    -----------
-    lat : float
-        latitude 
-        
-    lon : float
-        longitude 
-        
-    mask : xarray.Dataset  
-        Dataset contaning mask values. 
-        
-    Returns
-    -------
-    float 
-        pixel mask is either zero or 1
-    
-    """
-    from pyaerocom import const
-    const.print_log.warning(DeprecationWarning('This method is deprecated! '
-                                               'Use get_mask_value instead'))
-    raise NotImplementedError('This method is deprecated. Please refactor...')
-    #return get_mask_value(lat, lon, mask)
-
 def get_mask_value(lat, lon, mask):
     """Get value of mask at input lat / lon position
     
@@ -237,7 +212,8 @@ if __name__ == '__main__':
     mask_xr = load_region_mask_xr(*masks)
     mask_iris = load_region_mask_iris(*masks)
       
-    print(available_region_masks())
+    
+    
            
            
            
