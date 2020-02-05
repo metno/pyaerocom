@@ -173,6 +173,8 @@ class Config(object):
     OLD_AEROCOM_REGIONS = ['EUROPE', 'WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
                        'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
     
+    URL_HTAP_MASKS = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
+    
     HTAP_REGIONS = ['PAN', 'EAS', 'NAF', 'MDE', 'LAND', 
                     'SAS', 'SPO', 'OCN',  'SEA', 'RBU', 
                     'EEUROPE', 'NAM', 'WEUROPE', 'SAF', 
