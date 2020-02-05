@@ -219,7 +219,7 @@ class Region(BrowseDict):
             return ax
             #raise NotImplementedError('Coming soon')
             
-        from pyaerocom.land_sea_mask import load_region_mask_xr
+        from pyaerocom.helpers_landsea_masks import load_region_mask_xr
         
         
         ax.axes.set_xlabel('Longitude')
@@ -419,7 +419,7 @@ if __name__=="__main__":
     ax = r.plot()
     
     import numpy as np
-    from pyaerocom.land_sea_mask import load_region_mask_xr
+    from pyaerocom.helpers_landsea_masks import load_region_mask_xr
     
     mask = load_region_mask_xr(region_id=['EUR', 'PAN'])
     
