@@ -363,7 +363,31 @@ def infer_time_resolution(time_stamps):
             return tp
     raise ValueError('Could not infer time resolution')
 
-def get_tot_number_of_seconds(ts_type, dtime = None):
+def get_tot_number_of_seconds(ts_type, dtime=None):
+    """Get total no. of seconds for a given frequency
+    
+    ToDo
+    ----
+    This method needs revision and can be solved simpler probably
+    
+    Parameters
+    ----------
+    ts_type : str or TsType
+        frequency for which number of seconds is supposed to be retrieved
+    dtime : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Raises
+    ------
+    AttributeError
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
     from pyaerocom.tstype import TsType
 
     ts_tpe = TsType(ts_type)
@@ -372,13 +396,14 @@ def get_tot_number_of_seconds(ts_type, dtime = None):
         if dtime is None:
             raise AttributeError('For frequncies larger than or eq. monthly you' +
                                  ' need to provide dtime in order to compute the number of second.')
-        else:
-            # find seconds from dtime
-            # TODO generalize this
-            days_in_month = dtime.dt.daysinmonth
-            if ts_type == 'monthly':
-                monthly_to_sec = days_in_month*24*60*60
-            return monthly_to_sec
+        if not ts_type == 'monthly':
+            raise NotImplementedError('Can only handle monthly so far...')
+
+        # find seconds from dtime
+        # TODO generalize this
+        days_in_month = dtime.dt.daysinmonth
+        
+        return days_in_month*24*60*60
     else:
         return TS_TYPE_SECS[ts_type]
 
