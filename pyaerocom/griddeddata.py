@@ -17,7 +17,7 @@ import pandas as pd
 import pyaerocom as pya
 
 from pyaerocom import const, logger, print_log
-from pyaerocom.land_sea_mask import load_region_mask_iris
+from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 
 from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
@@ -1240,55 +1240,7 @@ class GriddedData(object):
             first_highest_idx = self[0, :, :, last_lev_idx].data
             if np.nanmean(first_lowest_idx) > np.nanmean(first_highest_idx):
                 return 0
-            return last_lev_idx
-    
-    def filter_region(self, region_id=None, thresh_coast=0.5, inplace=False):
-        """
-        TODO. Write documentation.
-        
-        Update this to know if its a htap region.
-        Should take EUROPE-noMountains-LAND/OCN as input.
-        """
-        
-        if region_id:
-
-            mask_iris = load_region_mask_iris(region_id=region_id)
-
-            # Reads mask to griddedata
-            mask  = pya.GriddedData(mask_iris)
-            mask = mask.regrid(self.cube)
-            
-            npm = mask.cube.data
-            
-            if np.ma.is_masked(npm):
-                npm = npm.data
-
-            # Apply threshold on coast
-            thresh_coast=0.5
-
-            thresh_mask = npm > thresh_coast
-            npm[thresh_mask] = 0
-            npm[~thresh_mask] = 1
-            
-            #griddeddata = self.copy()
-            
-            try:
-                if inplace:
-                    griddeddata = self
-                else:
-                    griddeddata = self.copy()
-                #example = ma.array([1, 2, 3], mask = [0, 1, 0])
-                
-                # UPDATE MASK WITH REGIONAL MASK.
-                griddeddata.cube.data[:, npm.astype(bool)] = np.nan
-                griddeddata.metadata['region'] = region_id
-
-            except MemoryError:
-                raise NotImplementedError(" Comming soon... ")
-
-            return griddeddata
-        else:
-            raise ValueError("Please provide a region id. Available region id's are {}.".format())
+            return last_lev_idx   
     
     def to_time_series_single_coord(self, latitude, longitude):
         """Make time series dictionary of single location using neirest coordinate
@@ -1603,7 +1555,87 @@ class GriddedData(object):
         self._check_lonlat_bounds()
         self._area_weights = area_weights(self.grid)
         return self.area_weights
-                
+        
+    def filter_altitude(self, alt_range=None):
+        """Currently dummy method that makes life easier in :class:`Filter`
+        
+        Returns
+        -------
+        GriddedData
+            current instance
+        """
+        const.logger.info('Altitude filtering is not applied in GriddedData '
+                          'and will be skipped')
+        return self
+    
+    def filter_region(self, region_id, inplace=False, **kwargs):
+        """Filter region based on ID
+        
+        This works both for rectangular regions and mask regions
+        
+        Parameters
+        -----------
+        region_id : str
+            name of region
+        inplace : bool
+            if True, the current data object is modified, else a new object 
+            is returned
+        **kwargs
+            additional keyword args passed to :func:`apply_region_mask` if 
+            input region is a mask.
+        
+        Returns
+        -------
+        GriddedData
+            filtered data object
+        """
+        if region_id in const.HTAP_REGIONS:
+            return self.apply_region_mask(region_id, inplace=inplace, **kwargs)
+        return self.crop(region=region_id)
+        
+        
+    def apply_region_mask(self, region_id, thresh_coast=0.5, inplace=False):
+        """Apply a masked region filter
+        """
+        
+        if not region_id in const.HTAP_REGIONS:
+            raise ValueError('Invalid input for region_id: {}, choose from: {}'
+                             .format(region_id, const.HTAP_REGIONS))
+
+        # get Iris mask
+        mask_iris = load_region_mask_iris(region_id)
+
+        # Reads mask to griddedata
+        mask  = pya.GriddedData(mask_iris, convert_unit_on_init=False)
+        mask = mask.regrid(self.cube)
+        
+        npm = mask.cube.data
+        
+        if np.ma.is_masked(npm):
+            npm = npm.data
+
+        thresh_mask = npm > thresh_coast
+        npm[thresh_mask] = 0
+        npm[~thresh_mask] = 1
+        
+        #griddeddata = self.copy()
+        
+        try:
+            if inplace:
+                griddeddata = self
+            else:
+                griddeddata = self.copy()
+            #example = ma.array([1, 2, 3], mask = [0, 1, 0])
+            
+            # UPDATE MASK WITH REGIONAL MASK.
+            griddeddata.cube.data[:, npm.astype(bool)] = np.nan
+            griddeddata.metadata['region'] = region_id
+
+        except MemoryError:
+            raise NotImplementedError("Coming soon... ")
+
+        return griddeddata
+        
     def crop(self, lon_range=None, lat_range=None, 
              time_range=None, region=None):
         """High level function that applies cropping along multiple axes
@@ -2508,4 +2540,9 @@ if __name__=='__main__':
 
     # print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
-    ts = data.to_time_series(latitude=51.35, longitude=12.44)
+
+    f1 = pya.Filter('LAND-noMOUNTAINS-LAND')
+    
+    subset = f1(data)
+    
+    subset.quickplot_map()
