@@ -119,7 +119,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result['data_std'] = np.nanstd(data)
     result['weighted'] = ws
 
-    if not num_points > min_num_valid:
+    if not num_points >= min_num_valid:
         if lowlim is not None:
             valid = np.logical_and(data>lowlim, ref_data>lowlim)
             data = data[valid]
