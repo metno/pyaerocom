@@ -54,6 +54,21 @@ def test_get_mask_value():
     assert lsm.get_mask_value(50, 5, mask)
     assert not lsm.get_mask_value(50, 15, mask)
 
+def test_check_all_htap_available():
+    should_be =['EAShtap.0.1x0.1deg.nc', 'EEUROPEhtap.0.1x0.1deg.nc', 
+                'EURhtap.0.1x0.1deg.nc', 'LANDhtap.0.1x0.1deg.nc', 
+                'MCAhtap.0.1x0.1deg.nc', 'MDEhtap.0.1x0.1deg.nc', 
+                'NAFhtap.0.1x0.1deg.nc', 'NAMhtap.0.1x0.1deg.nc', 
+                'NPOhtap.0.1x0.1deg.nc', 'OCNhtap.0.1x0.1deg.nc', 
+                'PANhtap.0.1x0.1deg.nc', 'RBUhtap.0.1x0.1deg.nc', 
+                'SAFhtap.0.1x0.1deg.nc', 'SAMhtap.0.1x0.1deg.nc', 
+                'SAShtap.0.1x0.1deg.nc', 'SEAhtap.0.1x0.1deg.nc', 
+                'SPOhtap.0.1x0.1deg.nc', 'USAhtap.0.1x0.1deg.nc', 
+                'WEUROPEhtap.0.1x0.1deg.nc']
+    
+    files = lsm.check_all_htap_available()
+    assert sorted([os.path.basename(x) for x in files]) == should_be
+
 if __name__ == '__main__':
     
     test_availabe_region_masks()
@@ -63,4 +78,5 @@ if __name__ == '__main__':
     test_get_htap_mask_files()
     test_load_region_mask_xr()
     test_load_region_mask_iris()
+    test_check_all_htap_available()
     
