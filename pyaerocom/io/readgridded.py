@@ -515,6 +515,10 @@ class ReadGridded(object):
         DataCoverageError
             if no valid files could be found
         """
+        if self.data_dir is None:
+            raise AttributeError('Cannot search files since :attr:`data_dir` '
+                                 'is not assigned')
+            
         result = []
         files_ignored = []
         # get all netcdf files in folder
