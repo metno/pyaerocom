@@ -9,7 +9,7 @@ from pyaerocom import logger, const, print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, StationNotFoundError)
-from pyaerocom import StationData
+from pyaerocom import StationData, Region
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
@@ -1213,7 +1213,44 @@ class UngriddedData(object):
                 
         return (meta_matches, totnum)
     
-    def filter_region(self, region_id=None, invert=False, inplace=False):
+    def filter_altitude(self, alt_range):
+        """Filter altitude range
+        
+        Parameters
+        ----------
+        alt_range : list or tuple
+            2-element list specifying altitude range to be filtered in m
+            
+        Returns
+        -------
+        UngriddedData
+            filtered data object
+        """
+        return self.filter_by_meta(altitude=alt_range)
+    
+    def filter_region(self, region_id, **kwargs):
+        """Filter object by a certain region
+        
+        Parameters
+        ----------
+        region_id : str
+            name of region (must be valid AeroCom region name or HTAP region)
+            
+        Returns
+        -------
+        UngriddedData
+            filtered data object (containing only stations that fall into 
+            input region)
+            
+        
+        """
+        if region_id in const.HTAP_REGIONS:
+            return self.apply_region_mask(region_id)
+        region = Region(region_id)
+        return self.filter_by_meta(longitude=region.lon_range, 
+                                   latitude=region.lat_range)
+        
+    def apply_region_mask(self, region_id=None):
         """
         TODO : Write documentations
         
@@ -1221,100 +1258,33 @@ class UngriddedData(object):
         ----------
         region_id : str or list (of strings)
             ID of region or IDs of multiple regions to be combined
-        invert_mask : 
         """
-        if region_id is None:
-            raise ValueError("Specify a region_id. Available regions: {}."
-                             .format(available_region_masks()))
-
+        if not region_id in const.HTAP_REGIONS:
+            raise ValueError('Invalid input for region_id: {}, choose from: {}'
+                             .format(region_id, const.HTAP_REGIONS))
+        
         # 1. find matches -> list of meta indices that are in region
         # 2. Get total number of datapoints -> defines shape of output UngriddedData
         # 3. Create 
         
-        ungridded = self.copy()
+        mask = load_region_mask_xr(region_id)   
         
-        # TOTNUM = 'find out'
-        # ungridded = UngriddedData(num_points=TOTNUM)
-        
-        data          = ungridded._data
-        _metadata     = ungridded.metadata
-        meta_indecies = ungridded.meta_idx
-        
-        mask = load_region_mask_xr(region_id=region_id)   
-        indexes_to_drop = []
-        
-        for key, meta in _metadata.copy().items():
-            lat = meta['latitude']
-            lon = meta['longitude']
-        
-            mask_pixel = get_mask_value(lat, lon, mask)
+        meta_matches = []
+        totnum = 0
+        for meta_idx, meta in self.metadata.items():
+            lon, lat = meta['longitude'], meta['latitude']
             
-            if mask_pixel < 1:
-                del ungridded.metadata[key]
-                meta_indecies.pop(key) 
-                
-                if len(self.contains_vars) == 1 and isinstance(self.contains_vars, list):
-                    indexes_to_drop.append(self.meta_idx[key][self.vars_to_retrieve[0]]) # update to vars to read.
-                else:
-                    raise NotImplementedError("Not filtering for ungridded data object containing "+
-                                              "several variables. Current vars to retrieve {}".format(self.vars_to_retrieve))
-        rem = np.concatenate(indexes_to_drop)
-        data = np.delete(data, rem, axis = 0)
-
-        totnum_new = len(data)
-        meta_matches = meta_indecies
-
-        new = UngriddedData(num_points=totnum_new)
-        # loop over old meta_idx and extract data and create new meta_idx in 
-        # output data object
-        meta_idx_new = 0
-        data_idx_new = 0
+            mask_val = get_mask_value(lat, lon, mask)
+            if mask_val >= 1: # coordinate is in mask
+                meta_matches.append(meta_idx)
+                for var in meta['variables']:
+                    totnum += len(self.meta_idx[meta_idx][var])
         
-        for meta_idx in meta_matches:
-            meta = self.metadata[meta_idx]
-            new.metadata[meta_idx_new] = meta
-            new.meta_idx[meta_idx_new] = od()
-            
-            for var in meta['variables']:
-                indices = self.meta_idx[meta_idx][var]
-                totnum = len(indices)
-
-                stop = data_idx_new + totnum
-                
-                new._data[data_idx_new:stop, :] = self._data[indices, :]
-                new.meta_idx[meta_idx_new][var] = np.arange(data_idx_new,
-                                                            stop)
-                new.var_idx[var] = self.var_idx[var]
-                data_idx_new += totnum
-            
-            meta_idx_new += 1
-
-        if meta_idx_new == 0 or data_idx_new == 0:
-            raise DataExtractionError('Filtering results in empty data object')
-        
-        new._data = new._data[:data_idx_new]
-        
-        # write history of filtering applied 
-        new.filter_hist.update(self.filter_hist)
+        new = self._new_from_meta_blocks(meta_matches, totnum)
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
-        new.filter_hist[int(time_str)] = 'filter region'
-        new.data_revision.update(self.data_revision)
-        
-        if len(list(ungridded.metadata.keys())) == 0:
-            raise ValueError("Applying filter leaves no data.")
-        
-        if inplace:
-            self._data = ungridded._data
-            self.metadata = ungridded.metadata
-            #print(len(self.metadata))
-            return self
-        else:
-            #ungr = self.copy()
-            #ungr._data = np.delete(data, rem, axis = 0)
-            # print(len(ungr.metadata))
-            return ungridded
-        
-        
+        new.filter_hist[int(time_str)] = 'Applied mask {}'.format(region_id)
+        new._check_index()
+        return new
     
     def apply_filters(self, var_outlier_ranges=None, **filter_attributes):
         """Extended filtering method
@@ -1420,8 +1390,7 @@ class UngriddedData(object):
         ...                                     altitude=[0, 1000])
         """
         
-        meta_idx_new = 0.0
-        data_idx_new = 0
+        
     
         if 'variables' in filter_attributes:
             raise NotImplementedError('Cannot yet filter by variables')
@@ -1435,11 +1404,22 @@ class UngriddedData(object):
             const.print_log.info('Input filters {} result in unchanged data '
                                  'object'.format(filter_attributes))
             return self
+        new = self._new_from_meta_blocks(meta_matches, totnum_new)
+        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
+        new.filter_hist[int(time_str)] = filter_attributes
+        return new
+        
+    def _new_from_meta_blocks(self, meta_indices, totnum_new):
         # make a new empty object with the right size (totnum_new)
+        
         new = UngriddedData(num_points=totnum_new)
+        
+        meta_idx_new = 0.0
+        data_idx_new = 0
+        
         # loop over old meta_idx and extract data and create new meta_idx in 
         # output data object
-        for meta_idx in meta_matches:
+        for meta_idx in meta_indices:
             meta = self.metadata[meta_idx]
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = od()
@@ -1463,8 +1443,6 @@ class UngriddedData(object):
         
         # write history of filtering applied 
         new.filter_hist.update(self.filter_hist)
-        time_str = datetime.now().strftime('%Y%m%d%H%M%S')
-        new.filter_hist[int(time_str)] = filter_attributes
         new.data_revision.update(self.data_revision)
         
         return new
@@ -2331,7 +2309,7 @@ class UngriddedData(object):
                               markersize=markersize, 
                               legend=legend,
                               fontsize_base=fontsize_base, **kwargs)
-        region = f._region
+        region = f.region
         ax.set_xlim(region.lon_range_plot)
         ax.set_ylim(region.lat_range_plot)
     
