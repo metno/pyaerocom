@@ -202,9 +202,18 @@ def get_mask_value(lat, lon, mask):
                          .format(type(mask)))
     return float(mask.sel(lat=lat, long=lon, method='nearest'))
 
-
+def check_all_htap_available():
+    """Check for missing HTAP masks on local computer and download 
+    """
+    return get_htap_mask_files(*available_region_masks())
+     
 
 if __name__ == '__main__':
+    files = check_all_htap_available()
+    
+    print(sorted([os.path.basename(x) for x in files]))
+    
+    raise Exception
     masks  =['NAF', 'MDE', 'PAN', 'EAS']
     for file in get_htap_mask_files(*masks):
         print(file)
