@@ -108,21 +108,6 @@ def unit_conversion_fac(from_unit, to_unit):
         raise UnitConversionError('Failed to convert unit from {} to {}'
                                   .format(from_unit, to_unit))
 
-# keep 
-def get_tot_number_of_seconds(ts_type, dtime = None):
-    from pyaerocom.tstype import TsType
-    ts_tpe = TsType(ts_type)
-    
-    if ts_tpe >= TsType('montly'):
-        if dtime is None:
-            raise AttributeError('For frequncies larger than or eq. monthly you'+
-                                 'need to provide dtime in order to compute the number of second.  ')
-        else:
-            # find seconds from dtime 
-            return None
-    else:
-        return TS_TYPE_SECS[ts_type]
-
 def convert_unit(data, from_unit, to_unit, var_name=None):
     """Convert unit of data 
     
@@ -154,7 +139,6 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
     if conv_fac != 1:
         data *= conv_fac
     return data
-
 
 def convert_unit_back(data, from_unit, to_unit, var_name=None):
     """Convert unit of data 
