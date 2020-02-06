@@ -407,7 +407,7 @@ class ReadEarlinet(ReadUngriddedBase):
     
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
              last_file=None, read_err=None, remove_outliers=True,
-             file_pattern=None):
+             pattern=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -427,7 +427,7 @@ class ReadEarlinet(ReadUngriddedBase):
         read_err : bool
             if True, uncertainty data is also read (where available). If 
             unspecified (None), then the default is used (cf. :attr:`READ_ERR`)
-         file_pattern : str, optional
+         pattern : str, optional
             string pattern for file search (cf :func:`get_file_list`)
             
         Returns
@@ -439,12 +439,13 @@ class ReadEarlinet(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
+        
         if read_err is None:
             read_err = self.READ_ERR
             
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list(vars_to_retrieve, file_pattern=file_pattern)
+                self.get_file_list(vars_to_retrieve, pattern=pattern)
             files = self.files
     
         if first_file is None:
@@ -611,7 +612,7 @@ class ReadEarlinet(ReadUngriddedBase):
         return self.exclude_files
     
     #TODO: check performance (it is usually slow...)
-    def get_file_list(self, vars_to_retrieve=None, file_pattern=None):
+    def get_file_list(self, vars_to_retrieve=None, pattern=None):
         """Perform recusive file search for all input variables
         
         Note
@@ -623,6 +624,8 @@ class ReadEarlinet(ReadUngriddedBase):
         ----------
         vars_to_retrieve : list
             list of variables to retrieve
+        pattern : str, optional
+            file name pattern applied to search
         
         Returns
         -------
@@ -644,29 +647,30 @@ class ReadEarlinet(ReadUngriddedBase):
                 raise VarNotAvailableError('Input variable {} is not supported'
                                            .format(var))
             
-            pattern = self.VAR_PATTERNS_FILE[var]
-            if file_pattern is not None:
-                if '/' in pattern:
+            _pattern = self.VAR_PATTERNS_FILE[var]
+            if pattern is not None:
+                if '/' in _pattern:
                     raise NotImplementedError('Cannot apply file pattern to '
                                               'wildcard path mask including / ')
-                elif '.' in file_pattern:
+                elif '.' in pattern:
                     raise NotImplementedError('filetype delimiter . not '
                                               'supported')
-                spl = pattern.split('.')
+                spl = _pattern.split('.')
                 if not '*' in spl[0]:
-                    raise AttributeError('Invalid file pattern: {}'.format(pattern))
-                spl[0] = spl[0].replace('*', file_pattern)
-                pattern = '.'.join(spl)
+                    raise AttributeError('Invalid file pattern: {}'
+                                         .format(_pattern))
+                spl[0] = spl[0].replace('*', pattern)
+                _pattern = '.'.join(spl)
                 
-            patterns.append(pattern)
+            patterns.append(_pattern)
             
         matches = []
         for root, dirnames, files in os.walk(self.DATASET_PATH):
             paths = [os.path.join(root, f) for f in files]
-            for pattern in patterns:
+            for _pattern in patterns:
                 for path in paths:
                     file = os.path.basename(path)
-                    if not fnmatch.fnmatch(file, pattern):
+                    if not fnmatch.fnmatch(file, _pattern):
                         continue
                     elif file in exclude:
                         self.excluded_files.append(path)
