@@ -71,7 +71,13 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                       'wetso4':    ('kg S/ha', 'kg m-2'),  #  s-1
                       'concso4pr': ('mg S/L',   'g m-3')
                       }
-
+    
+    VAR_UNITS_READ={}
+    VAR_UNITS_READ['concso2'] = 'ug m-3'
+    VAR_UNITS_READ['concso4'] = 'ug m-3'
+    VAR_UNITS_READ['pr']       = 'mm'
+    VAR_UNITS_READ['wetso4']   = 'kg m-2 s-1'
+    VAR_UNITS_READ['concso4pr'] = 'g m-3' # Removed sulphur from VAR_UNITS_READ mgS/L
     #: :obj: `list` of :obj: `str` 
     #: List containing all the variables available in this data set.
     PROVIDES_VARIABLES = list(VARS_TO_FILES.keys())
@@ -79,31 +85,36 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
     
-    #def __init__(self):
-        #print("hello update ")
-        #super(ReadUngriddedBase).__init__(dataset_to_read = DATA_ID)
-    
     @property
     def DEFAULT_VARS(self):
+        """Default variables (wrapper for :attr:`PROVIDES_VARIABLES`)"""
         return self.PROVIDES_VARIABLES
 
     def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
-        """ Read one GawTadSubsetAasEtAl file.
-        One file contains all stations for one variable. Special case, not 
-        AEROCOM convention. 
+        """ Read one GawTadSubsetAasEtAl file
+        
+        ToDo
+        ----
+        Could be more efficient...
+        
+        Note
+        ----
+        One file contains all stations for one variable. This is unctypical 
+        for ground based observations since the data files are typically by 
+        station.
 
         Parameters
         ----------
         filename : str
             absolute path to filename to read
 
-        vars_to_retrieve : :obj:`list` of `str`, :obj: `str`:, optional,
+        vars_to_retrieve : list or str, optional
             list containing variable IDs that are supposed to be read. 
             
         Returns
         -------
-        station_list : List[StationData]
-            List of dictionary-like object containing data
+        station_list : list
+            list of `StationData` objects containing data
         """
         station_list = []
         df = pd.read_csv(filename, sep=",", low_memory=False)
@@ -119,7 +130,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
 
         # Looping over every station:
         for name, station_group in grouped:
-            station_group = station_group.drop_duplicates(subset='dtime', keep='first')  # Drops duplacate rows 
+            station_group = station_group.drop_duplicates(subset='dtime', 
+                                                          keep='first')  # Drops duplacate rows 
          
             s = StationData()
             # Meta data
@@ -149,8 +161,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         s[var] = convert_unit(data=values, from_unit = from_unit, 
                                              to_unit = to_unit, var_name = var)
                         if var == 'wetso4':
-                            s[var] = s[var]/get_tot_number_of_seconds(ts_type = 'monthly', 
-                                                 dtime = station_group['dtime'])
+                            numsecs = get_tot_number_of_seconds(ts_type='monthly', 
+                                                                dtime=station_group['dtime'])
+                            s[var] = s[var]/numsecs
                     else:
                         # This should only be true for
                         s[var] = pd.to_numeric(station_group[key],
@@ -202,14 +215,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         """
 
         files = self.get_file_list()
-
-        unit={}
-        unit['concso2'] = 'ug m-3'
-        unit['concso4'] = 'ug m-3'
-        unit['pr']       = 'mm'
-        unit['wetso4']   = 'kg m-2 s-1'
-        unit['concso4pr'] = 'g m-3' # Removed sulphur from unit mgS/L
-
+        
+        unit = self.VAR_UNITS_READ
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -303,6 +310,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         return data_obj
  
 def _check_line_endings(filename):
+    """File that checks all line endings in an ascii file (not in use)"""
     ll = None
     wrong_endings = {}
     with open(filename, 'r') as f:
@@ -322,10 +330,7 @@ def _check_line_endings(filename):
     return wrong_endings
 
 if __name__ == "__main__":
-     from pyaerocom import change_verbosity
-     import matplotlib.pyplot as plt
-     #change_verbosity('info')
-     #V = "concso4pr"
+
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
      V = ['concso2']
      ungridded = aa.read(V)
@@ -333,33 +338,6 @@ if __name__ == "__main__":
      abington = ungridded.to_station_data('K-puszta', V)
      abington.plot_timeseries(V[0])
      plt.show()
-     #plt.show()
-     #dataString = aa.read("concso4")
-     #dataString.plot_station_coordinates(markersize=12, color='lime')
-     #print(dataString.station_name)
-     #abington = dataString.to_station_data("Abington", 'concso4')
-     #abington.plot_timeseries('concso4')
-     #plt.show()
      
-     #dataList =  aa.read(["concso2","concso4"])
-     #dataList.plot_station_coordinates(markersize=12, color='red')
-     #plt.show()
-
-     #sprint(ungridded.metadata[2.0])
-     #when = ungridded.meta_idx[2.0]['concso2']
-     #print(ungridded._data[when[0]:when[-1], ungridded._DATAINDEX])
-
-     #dataNone.plot_station_coordinates('wetso4', color='lime')
-     #plt.show()
-     #ax.figure.savefig('/home/hannas/Desktop/test_stations_aasetal.png')
-     #print(ungridded._data[0, :]) #:250
-     #print(ungridded.unique_station_names)
-     #print(ungridded.metadata[0])
-
-
-     #stat = ungridded.to_station_data('Abington', "concso4")
-     #stat.plot_timeseries("concso4", ax = ax)
-     #plt.show()
-     #ax = ungridded.plot_station_timeseries('Abington', 'concso2')
      
 
