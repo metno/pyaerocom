@@ -2540,6 +2540,8 @@ class ReadL2Data(ReadL2DataBase):
 
             # plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap='jet', vmin=2., vmax=2000.)
             plot_simple2 = axs[0].pcolormesh(out_arr.transpose(), cmap=cmap, norm=norm)
+            clb = plt.colorbar(plot_simple2, ax=axs[0], orientation='horizontal',
+                               pad=0.2, aspect=30, anchor=(0.5, 0.8))
             plot_simple2.axes.set_xlabel('time step number',fontsize='small')
 
             plot_simple2.axes.set_ylabel('height [km]',fontsize='small')
@@ -2553,14 +2555,12 @@ class ReadL2Data(ReadL2DataBase):
                 plot_simple2.axes.set_title('title')
             #plot_simple2.axes.set_aspect(0.05)
             # plt.show()
-            clb = plt.colorbar(plot_simple2, ax=axs[0], orientation='horizontal',
-                               pad=0.2, aspect=30, anchor=(0.5, 0.8))
             if retrieval_name:
                 clb.ax.set_title('{} [{}] {} retrieval'.format(var, self.TEX_UNITS[var], retrieval_name), fontsize='xx-small')
             else:
                 clb.ax.set_title('{} [{}]'.format(var, self.TEX_UNITS[var]), fontsize='xx-small')
 
-            fig.tight_layout()
+            # fig.tight_layout()
             # put the start and end time as string on the plot
             # plt.text(0.001, 0.02, '{}'.format(unique_times[0].astype('datetime64[s]')), transform=axs[0].transAxes, fontsize=12)
             plt.annotate('start={}'.format(unique_times[0].astype('datetime64[s]')),
