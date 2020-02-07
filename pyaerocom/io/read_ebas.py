@@ -1248,6 +1248,7 @@ class ReadEbas(ReadUngriddedBase):
                 if not var in data_obj.var_idx:
                     var_count_glob += 1
                     var_idx = var_count_glob
+                    data_obj.var_idx[var] = var_idx
                 else:
                     var_idx = data_obj.var_idx[var]
                 
@@ -1281,12 +1282,14 @@ class ReadEbas(ReadUngriddedBase):
                 metadata[meta_key]['var_info'][var].update(var_info)
                 meta_idx[meta_key][var] = np.arange(start, stop)
 
-                if not var in data_obj.var_idx:
-                    data_obj.var_idx[var] = var_idx
+# =============================================================================
+#                 if not var in data_obj.var_idx:
+#                     data_obj.var_idx[var] = var_idx
+# =============================================================================
                     
             metadata[meta_key]['variables'] = append_vars
             idx += totnum  
-            meta_key = meta_key + 1.
+            meta_key += 1
         
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
