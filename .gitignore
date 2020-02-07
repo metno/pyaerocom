@@ -145,3 +145,6 @@ issues/
 # broken docs (updated in Jan 2020)
 docs_BROKEN
 sorted_out
+
+# save pycharm run configs, but nothing else from pycharm
+!.idea/runConfigurations
