@@ -186,7 +186,7 @@ class UngriddedData(object):
                 if len(indices) == 0:
                     continue # no data assigned for this metadata index
                 
-                assert var in meta['variables'] or var in meta['var_info'], \
+                assert var in meta['var_info'], \
                     ('Var {} is indexed in meta_idx[{}] but not in metadata[{}]'
                      .format(var, idx, idx))
                 
@@ -655,9 +655,14 @@ class UngriddedData(object):
             except:
                 print_log.warning('Data revision could not be accessed')
         sd.data_revision = rev
-        if not 'variables' in val or val['variables'] in (None, []):
-            raise VarNotAvailableError('Metablock does not contain variable '
-                                       'information')
+        try:
+            vars_avail = list(val['var_info'].keys())
+        except KeyError:
+            if not 'variables' in val or val['variables'] in (None, []):
+                raise VarNotAvailableError('Metablock does not contain variable '
+                                           'information')
+            vars_avail = val['variables']
+        
         for k in check_keys:
             if k in val:
                 sd[k] = val[k]
@@ -676,10 +681,10 @@ class UngriddedData(object):
         # if no input variables are provided, use the ones that are available
         # for this metadata block
         if vars_to_convert is None:
-            vars_to_convert = val['variables']
+            vars_to_convert = vars_avail
         
         # find overlapping variables (ignore all other ones)
-        vars_avail = np.intersect1d(vars_to_convert, val['variables']) 
+        vars_avail = np.intersect1d(vars_to_convert, vars_avail) 
         if not len(vars_avail) >= 1:
             raise VarNotAvailableError('None of the input variables matches, '
                                        'or station does not contain data. {}'
