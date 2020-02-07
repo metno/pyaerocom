@@ -88,6 +88,11 @@ class StationData(StationMetaData):
         """
         return const.make_default_vert_grid()
     
+    @property
+    def vars_available(self):
+        """Number of variables available in this data object"""
+        return list(self.var_info.keys())
+    
     def has_var(self, var_name):
         """Checks if input variable is available in data object
 
