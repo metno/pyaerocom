@@ -96,6 +96,8 @@ class Config(object):
     
     #: EBAS name
     EBAS_MULTICOLUMN_NAME = 'EBASMC'
+    EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
+    EBAS_DB_LOCAL_CACHE = True
     
     #: EEA nmea
     EEA_NAME = 'EEAAQeRep'
@@ -593,18 +595,53 @@ class Config(object):
             
         raise NotImplementedError
         
-            
     @property
     def DIR_INI_FILES(self):
         """Directory containing configuration files"""
         from pyaerocom import __dir__
         return os.path.join(__dir__, 'data')
     
+    def _check_ebas_db_local_vs_remote(self, loc_remote, loc_local):
+        
+        if os.path.exists(loc_remote): # remote exists
+    
+            if os.path.exists(loc_local):
+                chtremote = os.path.getmtime(loc_remote)
+                chtlocal = os.path.getmtime(loc_local)
+                if chtlocal == chtremote:
+                    return loc_local
+                
+            # changing time differs -> try to copy to local and if that
+            # fails, use remote location
+            try:
+                import shutil
+                from time import time
+                t0 = time()
+                shutil.copy2(loc_remote, loc_local)
+                self.print_log.info('Copied EBAS SQL database to {}\n'
+                                    'Elapsed time: {:.3f} s'
+                                    .format(loc_local, time() - t0))
+                
+                return loc_local
+            except Exception as e:
+                self.print_log.warning('Failed to copy EBAS SQL database. '
+                                       'Reason: {}'.format(repr(e)))
+                return loc_remote
+        return loc_remote
+        
+                    
+                    
+    
     @property
     def EBASMC_SQL_DATABASE(self):
         """Path to EBAS SQL database"""
-        return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 
-                                'ebas_file_index.sqlite3')
+        dbname = self.EBAS_SQL_DB_NAME
+        loc_remote = os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], dbname)
+        if self.EBAS_DB_LOCAL_CACHE:
+            loc_local = os.path.join(self.CACHEDIR, dbname)
+            return self._check_ebas_db_local_vs_remote(loc_remote, loc_local)
+                
+        return loc_remote
         
     @property
     def EBASMC_DATA_DIR(self):
@@ -892,4 +929,8 @@ if __name__=="__main__":
     import pyaerocom as pya
     
     pya.const.BASEDIR = '/lustre/'
+    
+    ebassql = pya.const.EBASMC_SQL_DATABASE
+    
+    pya.io.ReadEbas().read('absc550aer')
     
