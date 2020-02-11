@@ -19,11 +19,10 @@ from pyaerocom.helpers import (same_meta_dict,
 from pyaerocom.metastandards import StationMetaData
 
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
-                                             available_region_masks,
                                              get_mask_value)
 
 class UngriddedData(object):
-    """Class representing ungridded data
+    """Class representing point-cloud data (ungridded)
     
     The data is organised in a 2-dimensional numpy array where the first index 
     (rows) axis corresponds to individual measurements (i.e. one timestamp of 
@@ -55,9 +54,6 @@ class UngriddedData(object):
     
     Attributes
     ----------
-    _data : ndarray
-        (private) numpy array of dtype np.float64 initially of shape (10000,8)
-        data point array
     metadata : dict
         dictionary containing meta information about the data. Keys are 
         floating point numbers corresponding to each station, values are 
@@ -67,7 +63,10 @@ class UngriddedData(object):
         correspond to metadata key (float -> station, see :attr:`metadata`) and 
         values are dictionaries containing keys specifying variable name and 
         corresponding values are arrays or lists, specifying indices (rows) of 
-        these station / variable information in :attr:`_data`.
+        these station / variable information in :attr:`_data`. Note: this 
+        information is redunant and is there to accelarate station data 
+        extraction since the data index matches for a given metadata block 
+        do not need to be searched in the underlying numpy array.
     var_idx : dict
         mapping of variable name (keys, e.g. od550aer) to numerical variable 
         index of this variable in data numpy array (in column specified by
@@ -640,8 +639,8 @@ class UngriddedData(object):
         # may or may not be defined in metadata block
         check_keys = ['instrument_name', 'filename', 'revision_date',
                       'station_name_orig']
+        
         sd = StationData()
-    
         val = self.metadata[meta_idx]
         
         # TODO: make sure in reading classes that data_revision is assigned
@@ -687,8 +686,7 @@ class UngriddedData(object):
         vars_avail = np.intersect1d(vars_to_convert, vars_avail) 
         if not len(vars_avail) >= 1:
             raise VarNotAvailableError('None of the input variables matches, '
-                                       'or station does not contain data. {}'
-                                       .format(val['variables']))
+                                       'or station does not contain data.')
         # init helper boolean that is set to True if valid data can be found
         # for at least one of the input variables
         FOUND_ONE = False
