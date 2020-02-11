@@ -478,8 +478,12 @@ if __name__=="__main__":
 
     reader = ReadUngridded()
     
-    data = reader.read('EBASMC', 
-                       vars_to_retrieve=['conctc', 'concoa', 'concbc', 'conceqbc'])
+    data = reader.read('AeronetSunV3Lev2.daily', 'od550aer')
+    
+# =============================================================================
+#     data = reader.read('EBASMC', 
+#                        vars_to_retrieve=['conctc', 'concoa', 'concbc', 'conceqbc'])
+# =============================================================================
     
     
 # =============================================================================

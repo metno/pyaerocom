@@ -218,6 +218,7 @@ class ReadUngriddedBase(abc.ABC):
     # of the derived reading classes
     def __init__(self, dataset_to_read=None, dataset_path=None):
         self.data = None #object that holds the loaded data
+        
         self.files = []
         # list that will be updated in read method to store all files that
         # could not be read. It is the responsibility of developers of derived
@@ -237,7 +238,7 @@ class ReadUngriddedBase(abc.ABC):
                 raise AttributeError("Dataset {} not supported by this "
                                      "interface".format(dataset_to_read))
             self.DATA_ID = dataset_to_read
-    
+            
     @property
     def REVISION_FILE(self):
         """Name of revision file located in data directory"""
