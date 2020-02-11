@@ -43,7 +43,7 @@ def test_filter_griddeddata(data_tm5):
     
     means = [np.nanmean(m_land.cube.data), np.nanmean(m_ocn.cube.data),
              np.nanmean(m_all.cube.data)]
-    assert np.testing.assert_allclose(means, [0.16616775, 0.1314668, 0.13605888])
+    np.testing.assert_allclose(means, [0.16616775, 0.1314668, 0.13605888])
 
 @lustre_unavail
 def test_filter_ungriddeddata(aeronetsunv3lev2_subset):
@@ -55,9 +55,14 @@ def test_filter_ungriddeddata(aeronetsunv3lev2_subset):
     f3 = Filter(name = 'NAMERICA-noMOUNTAINS-LAND')
 
     #gg = data.to_station_data_all()
-    assert len(f1.apply(obs_data).unique_station_names) == 5
-    assert len(f2.apply(obs_data).unique_station_names) == 29
-    assert len(f3(obs_data).unique_station_names) == 3
+    assert len(f1.apply(obs_data).unique_station_names) == 2
+    try:
+        f2.apply(obs_data).unique_station_names
+    except Exception as e:
+        from pyaerocom.exceptions import DataExtractionError
+        assert isinstance(e, DataExtractionError)
+    assert len(f3(obs_data).unique_station_names) == 2
+    
     
 @lustre_unavail
 def test_filter_colocateddata():
