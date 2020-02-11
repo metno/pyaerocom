@@ -23,6 +23,8 @@
 
 """
 main program with a command line interface for pyaerocom
+
+OUTDATED
 """
 
 import argparse
