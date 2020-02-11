@@ -47,7 +47,8 @@ class CacheHandlerUngridded(object):
     
     def __init__(self, reader=None, cache_dir=None, **kwargs):
         self._reader = None
-        self.reader = reader
+        if reader is not None:
+            self.reader = reader
         
         self.loaded_data = {}
         
@@ -217,6 +218,18 @@ class CacheHandlerUngridded(object):
                     .format(self.dataset_to_read))
         return True
     
+    def delete_all_cache_files(self):
+        """
+        Deletes all pickled data objects in cache directory
+        
+        If not set differently, the cache directory is the pyaerocom default, 
+        accessible via :attr:`pyaerocom.const.CACHEDIR`.
+
+        """
+        for fp in glob.glob('{}/*.pkl'.format(self.cache_dir)):
+            os.remove(fp)
+            const.print_log.info('Deleted {}'.format(fp))
+            
     def write(self, data, var_name=None):
         """Write single-variable instance of UngriddedData to cache
         
@@ -283,24 +296,7 @@ class CacheHandlerUngridded(object):
         return 'Cache handler for {}'.format(self.reader.data_id)
     
 if __name__ == "__main__":
-    import pyaerocom as pya
     
-    import matplotlib.pyplot as plt
-    plt.close('all')
-
-    r = pya.io.ReadAeronetSunV3()
+    ch = CacheHandlerUngridded()
     
-    data = r.read(vars_to_retrieve=['od550aer', 'ang4487aer'],
-                  file_pattern='Bo*')
-    
-    aod = data.extract_var('od550aer')
-    
-    cache = CacheHandlerUngridded(r)
-    
-    cache.write(aod)
-    
-    r = pya.io.ReadUngridded()
-    r.read('AeronetSunV3Lev2.daily', 
-           vars_to_retrieve=['od550aer', 'ang4487aer'],
-           file_pattern='Bo*')
-    
+    ch.delete_all_cache_files()
