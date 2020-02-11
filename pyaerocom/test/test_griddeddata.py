@@ -11,27 +11,15 @@ import os
 import numpy.testing as npt
 from datetime import datetime
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
-from pyaerocom.io.test.test_readgridded import reader_reanalysis
 from pyaerocom import GriddedData
 
 
 TESTLATS =  [-10, 20]
 TESTLONS =  [-120, 69]
 
-### Helpers that may be used in __main__ for testing    
-def _load_tm5_2010_monthly():
-    fp = '/lustre/storeA/project/aerocom/aerocom-users-database/AEROCOM-PHASE-III/TM5_AP3-CTRL2016/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc'
-    return GriddedData(fp)
-    
-### fixtures
-@lustre_unavail
-@pytest.fixture(scope='session')
-def data_tm5():
-    return _load_tm5_2010_monthly()
-
 ### tests
 @lustre_unavail
-def test_cams_rean_basic_properties(data_tm5):
+def test_basic_properties(data_tm5):
     
     data =  data_tm5
     from iris.cube import Cube
@@ -42,7 +30,9 @@ def test_cams_rean_basic_properties(data_tm5):
     assert len(data.time.points) == 12
     assert data.data_id == 'TM5_AP3-CTRL2016'
     ff = ['aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc']
-    assert [os.path.basename(x) for x in data.from_files] == ff
+    files = [os.path.basename(x) for x in data.from_files]
+    print(files)
+    assert files == ff
     assert data.shape == (12, 90, 120)
     assert data.lat_res == 2.0
     assert data.lon_res == 3.0

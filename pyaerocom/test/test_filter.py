@@ -10,11 +10,7 @@ import pytest
 
 
 from pyaerocom.filter import Filter
-from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
-
-# Fixtures from other tests
-from pyaerocom.io.test.test_read_aeronet_sunv3 import aeronetsunv3lev2_subset
-from pyaerocom.test.test_griddeddata import data_tm5
+from pyaerocom.test.settings import lustre_unavail
 
 def test_Filter_init():
     assert Filter('EUROPE').name == 'EUROPE-wMOUNTAINS'
@@ -31,7 +27,7 @@ def test_filter_attributes():
 @lustre_unavail
 def test_filter_griddeddata(data_tm5):
     
-    model = data_tm5
+    model = data_tm5.copy()
     f1 = Filter('EUROPE-noMOUNTAINS-LAND') # europe only land
     f2 = Filter('EUROPE-noMOUNTAINS-OCN') # europe only ocean
     f3 = Filter('EUROPE') # europe total

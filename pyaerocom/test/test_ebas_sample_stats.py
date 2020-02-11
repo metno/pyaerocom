@@ -6,19 +6,9 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
-import pytest
 import numpy.testing as npt
 import numpy as np
 from pyaerocom.test.settings import lustre_unavail
-from pyaerocom.io import ReadEbas
-
-def _make_data():
-    r = ReadEbas()
-    return r.read('scatc550aer', station_names='Jungfrau*')
-
-@pytest.fixture(scope='module')
-def data_scat_jungfraujoch():
-    return _make_data()
 
 @lustre_unavail
 def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
@@ -130,19 +120,6 @@ def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
     npt.assert_allclose(vals, [4.37, 3.48, 0.46, 11.93], rtol=1e-1)
     
 if __name__=="__main__":
-   # pya.change_verbosity('info')
-    #import sys
-    d = _make_data()
-    test_ungriddeddata_jungfraujoch(d)
-    test_scat_jungfraujoch(d)
-    test_scat_jungfraujoch_lev3(d)
-    
-    test_scat_jungfraujoch_subset(d)
-# =============================================================================
-#     
-#     d = _make_data()
-#     stat = d.to_station_data('Jung*', start=2008, stop=2011, freq='monthly')
-#     stat.plot_timeseries('scatc550aer')
-#     
-# =============================================================================
-    #pytest.main(sys.argv)
+
+    import sys, pytest 
+    pytest.main(sys.argv)

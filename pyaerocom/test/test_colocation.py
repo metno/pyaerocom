@@ -6,13 +6,13 @@ Created on Mon Nov 25 15:27:28 2019
 @author: jonasg
 """
 import pytest
-import numpy as np
+#import numpy as np
 import numpy.testing as npt
 
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.colocation import colocate_gridded_ungridded
-from pyaerocom.io.test.test_read_aeronet_sunv3 import aeronetsunv3lev2_subset
-from pyaerocom.test.test_griddeddata import data_tm5
+#from pyaerocom.io.test.test_read_aeronet_sunv3 import aeronetsunv3lev2_subset
+#from pyaerocom.test.test_griddeddata import data_tm5
 
 @lustre_unavail
 def test_colocate_gridded_ungridded_default(data_tm5, aeronetsunv3lev2_subset):
@@ -84,4 +84,5 @@ def test_colocate_gridded_ungridded_custom(data_tm5, aeronetsunv3lev2_subset):
 if __name__ == '__main__':
     
     pytest.main(['./test_colocation.py'])
+    pytest.main(['./test_griddeddata.py'])
     

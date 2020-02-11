@@ -89,11 +89,12 @@ from .read_aeronet_sunv3 import ReadAeronetSunV3
 from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
 from .read_gaw import ReadGAW
-from .read_aasetal import ReadSulphurAasEtAl
+from .read_aasetal import ReadAasEtal
 
 from .readgridded import ReadGridded, ReadGriddedMulti
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
+
 if geopy_available() and coda_available():
     # the coda and geopy libraries are needed to read l2 data of the supported satellites
     # Aeolus and Sentinel5P

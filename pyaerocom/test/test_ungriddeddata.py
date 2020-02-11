@@ -9,7 +9,6 @@ import numpy as np
 import numpy.testing as npt
 from pyaerocom import UngriddedData
 from pyaerocom.test.settings import lustre_unavail
-from pyaerocom.io.test.test_read_aeronet_sunv3 import aeronetsunv3lev2_subset
 from pyaerocom.exceptions import DataCoverageError
 
 def test_init_shape():

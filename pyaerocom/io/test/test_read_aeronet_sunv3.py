@@ -6,24 +6,9 @@ Created on Mon Jul  9 14:14:29 2018
 import numpy.testing as npt
 import numpy as np
 import os
-import pytest
 from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
-
-
-TEST_VARS = ['od550aer', 'ang4487aer']
-    
-def make_dataset():
-    r = ReadAeronetSunV3()
-    #return r.read(vars_to_retrieve=TEST_VARS)
-    return r.read(file_pattern='Tu*', 
-                  vars_to_retrieve=TEST_VARS)
-
-@lustre_unavail
-@pytest.fixture(scope='session')
-def aeronetsunv3lev2_subset():
-    return make_dataset()
-    
+        
 @lustre_unavail
 def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
     assert len(aeronetsunv3lev2_subset.metadata) == 9
@@ -110,10 +95,5 @@ def test_load_berlin():
     
     
 if __name__=="__main__":
-    
-    test_load_berlin()
-    aeronetsunv3lev2_subset = make_dataset()
-    test_meta_blocks_ungridded(aeronetsunv3lev2_subset)
-    test_od550aer_meanval_stats(aeronetsunv3lev2_subset)
-    test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset)
-    test_load_berlin()
+    import sys, pytest
+    pytest.main(sys.argv)

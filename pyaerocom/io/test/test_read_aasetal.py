@@ -15,7 +15,7 @@ import pandas as pd
 import os
 
 from pyaerocom.test.settings import lustre_unavail
-from pyaerocom.io.read_aasetal import ReadSulphurAasEtAl
+from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.units_helpers import convert_unit
 
 VARUNITS = {
@@ -33,15 +33,6 @@ DATA_DIR = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/GA
 FILENAMES = ['monthly_so2.csv', 'monthly_so4_aero.csv', 'monthly_so4_precip.csv']
 
 VARS = ['concso2', 'concso4', 'concso4pr', 'pr', 'wetso4']
-
-
-@lustre_unavail
-@pytest.fixture(scope='session')
-def aasetal_data():
-    reader = ReadSulphurAasEtAl(DATA_ID)
-    # that's quite time consuming, so keep it for possible usage in other 
-    # tests
-    return reader.read()  # read all variables
     
 @lustre_unavail
 def test_data_files():
@@ -51,7 +42,7 @@ def test_data_files():
    
 @lustre_unavail
 def test__get_time_stamps():
-    reader = ReadSulphurAasEtAl()
+    reader = ReadAasEtal()
     fp = os.path.join(DATA_DIR, FILENAMES[0])
     df = pd.read_csv(fp, sep=",", low_memory=False)
     timestamps = reader._get_time_stamps(df[:10])
@@ -61,7 +52,7 @@ def test__get_time_stamps():
     
 @lustre_unavail
 def test_reader():
-    reader = ReadSulphurAasEtAl(DATA_ID)
+    reader = ReadAasEtal(DATA_ID)
     assert reader.DATA_ID == DATA_ID
     assert reader.DATASET_PATH == DATA_DIR
     assert reader.PROVIDES_VARIABLES == ['concso2', 'concso4', 'pr', 
@@ -119,7 +110,7 @@ testdata = [
 def test_reading_routines(aasetal_data, filenum, station_name, colname, 
                           var_name):
     
-    UNITCONVERSION = ReadSulphurAasEtAl().UNITCONVERSION
+    UNITCONVERSION = ReadAasEtal().UNITCONVERSION
     
     files = [os.path.join(DATA_DIR, x) for x in FILENAMES]
     
@@ -146,6 +137,6 @@ def test_reading_routines(aasetal_data, filenum, station_name, colname,
     npt.assert_almost_equal(should_be, actual)
 
 if __name__ == "__main__":
-    reader = ReadSulphurAasEtAl(DATA_ID)
-    
-    pytest.main(['test_read_aasetal.py'])
+    import sys
+    #from pyaerocom.test.conftest import aasetal_data
+    pytest.main(sys.argv)
