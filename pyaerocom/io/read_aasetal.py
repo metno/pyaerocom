@@ -4,6 +4,7 @@ import pandas as pd
 #from datetime import datetime
 from collections import OrderedDict
 
+from pyaerocom import const
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -12,7 +13,7 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.units_helpers import convert_unit
 from pyaerocom.helpers import get_tot_number_of_seconds
 
-class ReadSulphurAasEtAl(ReadUngriddedBase):
+class ReadAasEtal(ReadUngriddedBase):
     """Read subset of GAW-TAD-EANET data related to Aas et al., 2019
     
     Paper URL: https://www.nature.com/articles/s41598-018-37304-0
@@ -85,6 +86,7 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
     #: List containing all the variables available in this data set.
     PROVIDES_VARIABLES = list(VARS_TO_FILES.keys())
     
+    
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
     
@@ -93,6 +95,12 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         """Default variables (wrapper for :attr:`PROVIDES_VARIABLES`)"""
         return self.PROVIDES_VARIABLES
 
+    def _get_time_stamps(self, df):
+        tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
+        dates_alt = [tconv(yr, m) for yr, m in
+                     zip(df.year.values, df.month.values)]
+        return np.asarray(dates_alt)
+    
     def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
         """ Read one GawTadSubsetAasEtAl file
         
@@ -122,11 +130,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         station_list = []
         df = pd.read_csv(filename, sep=",", low_memory=False)
         # Converting month and year. 
-        tconv = lambda yr, m : np.datetime64('{:04d}-{:02d}-{:02d}'.format(yr, m, 1), 's')
-        dates_alt = [tconv(yr, m) for yr, m in
-                     zip(df.year.values, df.month.values)]
-        df['dtime'] = np.array(dates_alt)
 
+        df['dtime'] = self._get_time_stamps(df)
+        
         # array av numpy.datetime64
         df.rename(columns= {"Sampler":"instrument_name"}, inplace=True)
         grouped = df.groupby(by = "station_name")
@@ -135,7 +141,9 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
         for name, station_group in grouped:
             station_group = station_group.drop_duplicates(subset='dtime', 
                                                           keep='first')  # Drops duplacate rows 
-         
+            
+            tvals = station_group['dtime']
+            
             stat = StationData()
             # Meta data
             stat['station_name'] = name
@@ -167,9 +175,10 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                         
                         if var == 'wetso4':
                             # TODO: quite hard coded...
-                            numsecs = get_tot_number_of_seconds(ts_type='monthly', 
-                                                                dtime=station_group['dtime'])
-                            stat[var] = stat[var]/numsecs
+                            numsecs = get_tot_number_of_seconds(ts_type=self.TS_TYPE, 
+                                                                dtime=tvals)
+                            stat[var] = stat[var] / numsecs
+                            
                             to_unit = 'kg m-2 s-1'
                     else:
                         to_unit = key.split('_')[-1]
@@ -279,7 +288,8 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                 if (idx + totnum) >= data_obj._ROWNO:
                     # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
-                    
+                
+                metadata[meta_key]['var_info'] = OrderedDict()
                 for var_count, var in enumerate(temp_vars):
 
                     values = stat[var]
@@ -293,7 +303,6 @@ class ReadSulphurAasEtAl(ReadUngriddedBase):
                     else:
                         var_idx = data_obj.var_idx[var]
 
-                    metadata[meta_key]['var_info'] = OrderedDict()
                     metadata[meta_key]['var_info'][var] = stat['var_info'][var]
 
                     data_obj._data[start:stop, data_obj._LATINDEX] = stat['latitude']
@@ -337,23 +346,20 @@ def _check_line_endings(filename):
             prev = spl
     return wrong_endings
 
+class ReadSulphurAasEtAl(ReadAasEtal):
+    """Old name of :class:`ReadAasEtal`."""
+
+    def __init__(self, *args, **kwargs):
+        super(ReadAasEtal, self).__init__(*args, **kwargs)
+        msg = ('You are using an old name for class ReadAasEtal')
+        const.print_log.warning(DeprecationWarning(msg))
+        
 if __name__ == "__main__":
 
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
      
      all_vars = ['concso2', 'concso4', 'pr', 'wetso4', 'concso4pr']
-     data = aa.read()
+     data = aa.read('wetso4')
      
-     for stat in data.unique_station_names:
-         try:
-             sd = data.to_station_data(stat, vars_to_convert=all_vars)
-             print('WOHOOOOOOOOOO', stat)
-             break
-         except:
-             pass
-    
-     
-     
-     
-     
-
+     for k, m in data.metadata.items():
+         print(m['var_info']['pr']['units'])
