@@ -8,7 +8,6 @@ Created on Mon Sep 2 08:47:56 2019
 """
 import pandas as pd
 import cf_units
-from pyaerocom.helpers import TS_TYPE_SECS
 
 # 1. DEFINITION OF MOLAR MASSES
 
