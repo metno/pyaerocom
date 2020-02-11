@@ -124,6 +124,12 @@ def test_to_time_series(data_tm5):
     npt.assert_array_equal(lons_actual, lonsm)
     npt.assert_allclose(means_actual, [0.101353, 0.270886], rtol=TEST_RTOL)
 
+def test_change_baseyear(data_tm5):
+    cp = data_tm5.copy()
+    cp.change_base_year(901)
+    
+    assert str(cp.time.units) == 'days since 901-01-01 00:00'
+    
 if __name__=="__main__":
     
     pytest.main(['test_griddeddata.py'])
