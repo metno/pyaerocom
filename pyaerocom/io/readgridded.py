@@ -1715,6 +1715,8 @@ class ReadGridded(object):
         if not var_name in self.data:
             return self.read_var(var_name)
         #return self.data[var_name]
+    def __repr__(self):
+        return self.__str__()
     
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
