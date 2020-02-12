@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Aug 16 09:03:31 2018
-
-@author: jonasg
-"""
 
 import numpy as np
       
-from pyaerocom import print_log, const
+from pyaerocom import const
 from pyaerocom.region import Region
 
 class Filter(object):
@@ -16,7 +11,9 @@ class Filter(object):
     
     Note
     ----
-    BETA version (currently being tested)
+    - BETA version (currently being tested)
+    - Can only filter spatially
+    - Might be renamed to RegionFilter at some point in the future
     
     Todo
     ----
@@ -177,19 +174,6 @@ class Filter(object):
                 'alt_range' :   self.alt_range, 
                 'land_sea'  :   self.land_ocn}
     
-    def _apply_ungridded(self, data_obj):
-        """Apply filter to instance of class :class:`UngriddedData`
-        """
-        return data_obj.filter_by_meta(longitude=self.lon_range,
-                                       latitude=self.lat_range,
-                                       altitude=self.alt_range)
-    
-    def _apply_colocated(self, data_obj):
-        print_log.warning('Applying regional cropping in ColocatedData using Filter '
-                       'class. Note that this does not yet include potential '
-                       'cropping in the vertical dimension. Coming soon...')
-        return data_obj.apply_latlon_filter(region_id=self.region_name)
-    
     def apply(self, data_obj):
         """Apply filter to data object
         
@@ -225,30 +209,36 @@ class Filter(object):
     
 if __name__=="__main__":
     import pyaerocom as pya
+    import matplotlib.pyplot as plt
+    
+    plt.close('all')
     
     f = Filter("LAND-noMOUNTAINS-EUROPE")
     
-    print(f.name)
-    print(f.region)
-    
-    print(f.to_dict())
-    
     obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
     
-# =============================================================================
-#     subset = obsdata.filter_by_meta(longitude=[0, 50], latitude=[30, 60])
-#     
-#     subset.plot_station_coordinates()
-#     
-# =============================================================================
-    subset = f.apply(obsdata)
+    coldata = pya.colocation.colocate_gridded_ungridded(modeldata, 
+                                                        obsdata,
+                                                        apply_time_resampling_constraints=False,
+                                                        ts_type='daily',
+                                                        filter_name='WORLD-wMOUNTAINS')
     
-    subset.plot_station_coordinates()
+    coldataf = f(coldata)
     
+    pya.plot.mapping.plot_nmb_map_colocateddata(coldataf)
+    coldataf.plot_scatter()
     
-    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
+    obsf = f(obsdata)
     
-    filtered = f(data)
+    modf = f(modeldata)
     
-    filtered.quickplot_map()
+    coldataf1 = pya.colocation.colocate_gridded_ungridded(modf, 
+                                                          obsf,
+                                                          apply_time_resampling_constraints=False,
+                                                          ts_type='daily',
+                                                          filter_name='WORLD-wMOUNTAINS')
+    
+    pya.plot.mapping.plot_nmb_map_colocateddata(coldataf1)
+    coldataf1.plot_scatter()
     

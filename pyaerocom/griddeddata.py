@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Pyaerocom GriddedData class
-"""
-
 import os
 from collections import OrderedDict as od
 import iris

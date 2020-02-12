@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Mathematical low level utility methods ofcd pyaerocom
+Mathematical low level utility methods of pyaerocom
 """
 
 import numpy as np
@@ -14,32 +14,124 @@ in_range = lambda x, low, high: low <= x <= high
 ### OTHER FUNCTIONS
 
 def weighted_sum(data, weights):
-    """Compute weighted sum using numpy dot product"""
+    """Compute weighted sum using numpy dot product
+    
+    Parameters
+    ----------
+    data : ndarray
+        data array that is supposed to be summed up
+    weights : ndarray
+        array containing weights for each point in `data`
+        
+    Returns 
+    -------
+    float
+        weighted sum of values in input array
+    """
     return np.dot(data, weights)
 
 def sum(data, weights=None):
-    """Summing operation with option to perform weighted sum"""
+    """Summing operation with option to perform weighted sum
+    
+    Parameters
+    ----------
+    data : ndarray
+        data array that is supposed to be summed up
+    weights : ndarray, optional
+        array containing weights for each point in `data`
+        
+    Returns
+    -------
+    float or int 
+        sum of values in input array
+    """
     if weights is None:
         return np.sum(data)
     return weighted_sum(data, weights)
 
-def weighted_mean(x, w):
-    """Weighted Mean"""
-    return np.sum(x * w) / np.sum(w)
+def weighted_mean(data, weights):
+    """Compute weighted mean
+    
+    Parameters
+    ----------
+    data : ndarray
+        data array that is supposed to be averaged
+    weights : ndarray
+        array containing weights for each point in `data`
+        
+    Returns
+    -------
+    float or int 
+        weighted mean of data array
+    """
+    return np.sum(data * weights) / np.sum(weights)
 
-def weighted_cov(x, y, w):
-    """Weighted Covariance"""
-    return np.sum(w * (x - weighted_mean(x, w)) * (y - weighted_mean(y, w))) / np.sum(w)
+def weighted_cov(ref_data, data, weights):
+    """Compute weighted covariance
+    
+    Parameters
+    ----------
+    data_ref : ndarray
+        x data
+    data : ndarray
+        y data
+    weights : ndarray
+        array containing weights for each point in `data`
+        
+    Returns
+    -------
+    float
+        covariance
+    """
+    avgx = weighted_mean(ref_data, weights)
+    avgy = weighted_mean(data, weights)
+    return np.sum(weights * (ref_data - avgx) * (data - avgy)) / np.sum(weights)
 
-def weighted_corr(x, y, w):
-    """Weighted Correlation"""
-    return weighted_cov(x, y, w) / np.sqrt(weighted_cov(x, x, w) * weighted_cov(y, y, w))
+def weighted_corr(ref_data, data, weights):
+    """Compute weighted correlation
+    
+    Parameters
+    ----------
+    data_ref : ndarray
+        x data
+    data : ndarray
+        y data
+    weights : ndarray
+        array containing weights for each point in `data`
+        
+    Returns
+    -------
+    float
+       weighted correlation coefficient
+    """
+    wcovxy = weighted_cov(ref_data, data, weights)
+        
+    wcovxx = weighted_cov(ref_data, ref_data, weights)
+    wcovyy = weighted_cov(data, data, weights)
+    wsigmaxy = np.sqrt(wcovxx * wcovyy)
+    return wcovxy / wsigmaxy
 
-def corr(x, y, w=None):
-    """Compute correlation coefficient"""
-    if w is None:
-        return pearsonr(x, y)[0]
-    return weighted_corr(x, y, w)
+def corr(ref_data, data, weights=None):
+    """Compute correlation coefficient
+    
+    Parameters
+    ----------
+    data_ref : ndarray
+        x data
+    data : ndarray
+        y data
+    weights : ndarray, optional
+        array containing weights for each point in `data`
+        
+    Returns
+    -------
+    float
+       correlation coefficient
+    """
+    if weights is None:
+        return pearsonr(ref_data, data)[0]
+    return weighted_corr(ref_data, data, weights)
+
 
 def calc_statistics(data, ref_data, lowlim=None, highlim=None,
                     min_num_valid=5, weights=None):
@@ -704,10 +796,9 @@ if __name__ == "__main__":
     c1 = calc_statistics(mod, obs)
     c2 = calc_statistics(mod, obs, weights=weights)
     
-    assert c1['nmb'] == 0
-    assert c1['mnmb'] == 0
-    assert c1['R'] == 1
+    wm = weighted_mean(mod, weights)
     
-    assert c2['nmb'] == 0
-    assert c2['mnmb'] == 0
-    assert c2['R'] == 1
+    print(wm)
+    
+    wcov = weighted_cov(obs, mod, weights)
+    print(wcov)

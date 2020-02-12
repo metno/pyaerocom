@@ -5,11 +5,14 @@ from datetime import datetime
 from collections import OrderedDict as od
 import fnmatch
 import pandas as pd
-from pyaerocom import logger, const, print_log
+from pyaerocom import const
+logger = const.logger
+print_log = const.print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, StationNotFoundError)
-from pyaerocom import StationData, Region
+from pyaerocom.stationdata import StationData
+from pyaerocom.region import Region
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,

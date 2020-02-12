@@ -8,7 +8,8 @@ Created on Tue Nov 19 16:44:18 2019
 import cf_units
 import numpy as np
 import os
-from pyaerocom import const, GriddedData
+from pyaerocom import const
+from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
 from pyaerocom.web import AerocomEvaluation
 

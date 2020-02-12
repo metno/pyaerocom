@@ -20,7 +20,9 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    update_menu_evaluation_iface, 
                                    make_info_table_evaluation_iface, 
                                    read_json, write_json)
-from pyaerocom import ColocationSetup, ColocatedData, Colocator
+
+from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom.colocateddata import ColocatedData
 
 #from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
 from pyaerocom.exceptions import DataDimensionError

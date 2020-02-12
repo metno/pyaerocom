@@ -856,29 +856,23 @@ if __name__=='__main__':
     plt.close('all')
     
     
-    obs = 'AeronetSunV3Lev2.daily'
-    obsvar = 'od550aer'
-    modvar = 'od550aer'
-    mod = 'ECHAM6.3-SALSA2.0-met2010_AP3-CTRL'
+    model_id='NorESM2-met2010_AP3-CTRL'
+    obs_id = 'EBASMC'
     
-    start=2010
+    modelreader = pya.io.ReadGridded(model_id)
+    modeldata = modelreader.read_var('sconcso4', start=2010, ts_type='monthly')
+
+    modeldata.resample_time('yearly').quickplot_map()
     
-    r = pya.io.ReadUngridded()
-    obsdata = r.read(obs,
-                     vars_to_retrieve=obsvar)
-        
+    #obsdata = pya.io.ReadUngridded().read(obs_id, 'concso4').set_flags_nan()
     
-    modeldata = pya.io.ReadGridded(mod).read_var(modvar, start=start)
-    col0 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
-                                                      ts_type='monthly',
-                                                      var_ref=obsvar,
-                                                      use_climatology_ref=True)
+    obsdata1 = pya.io.ReadUngridded().read('GAWTADsubsetAasEtAl', 'concso4')
     
-    col0.plot_scatter()
+    coldata2 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata1, ts_type='monthly', var_ref='concso4',
+                                                     use_climatology_ref=True,
+                                                     filter_name='WORLD-wMOUNTAINS') 
     
-    col1 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
-                                                     ts_type='monthly',
-                                                     var_ref=obsvar,
-                                                     use_climatology_ref=False)
+    coldata2.plot_scatter()
     
-    col1.plot_scatter()
+
+    

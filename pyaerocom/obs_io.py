@@ -8,7 +8,7 @@ Note
 Some settings like paths etc can be found in :mod:`pyaerocom.config.py`
 """
 #: Wavelength tolerance for observations if data for required wavelength
-        #: is not available
+#: is not available
 OBS_WAVELENGTH_TOL_NM = 10.0
         
 #: This boolean can be used to enable / disable the former (i.e. use

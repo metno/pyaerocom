@@ -16,19 +16,20 @@ import os
 import traceback
 
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
-from pyaerocom import Filter, const
+from pyaerocom import const, print_log
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                get_lowest_resolution, start_stop)
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded,
                                   correct_model_stp_coldata)
-from pyaerocom import ColocatedData, print_log
+from pyaerocom.colocateddata import ColocatedData
+
+from pyaerocom.filter import Filter
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
-                                  TemporalResolutionError,
-                                  VarNotAvailableError)
+                                  TemporalResolutionError)
                    
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison

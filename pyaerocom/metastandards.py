@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Jan 28 13:26:36 2019
-
-@author: jonasg
-"""
 import os
 import numpy as np
 from pyaerocom._lowlevel_helpers import BrowseDict
