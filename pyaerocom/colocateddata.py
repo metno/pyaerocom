@@ -826,7 +826,32 @@ class ColocatedData(object):
         raise IOError('Failed to import file {}. File type is not supported '
                       .format(os.path.basename(file_path)))
     
+    def filter_altitude(self, alt_range, inplace=False):
+        if not self._check_latlon_coords():
+            raise NotImplementedError('Altitude filtering for data with '
+                                      'lat and lon dimension is not yet '
+                                      'supported')
+        filtered = self._filter_altitude_2d(self.data, alt_range)
+        filtered.attrs['alt_range'] = alt_range
+        if inplace:
+            self.data = filtered
+            
+            return self
+        return ColocatedData(filtered)
     
+    @staticmethod
+    def _filter_altitude_2d(arr, alt_range):
+        if not 'station_name' in arr.dims:
+            raise DataDimensionError('Cannot filter region, require dimension '
+                                      'station_name')
+        if not list(arr.dims).index('station_name') == 2:
+            raise DataDimensionError('station_name must be 3. dimensional index')
+            
+        mask = np.logical_and(arr.altitude > alt_range[0], 
+                              arr.altitude < alt_range[1])
+        
+        filtered = arr[:,:,mask]
+        return filtered
         
     def _check_latlon_coords(self):
         _check = ('latitude', 'longitude')
@@ -840,14 +865,14 @@ class ColocatedData(object):
             return False
         return True
         
+    @staticmethod
+    def _filter_latlon_2d(arr, lat_range, lon_range):
         
-    def _filter_latlon_2d(self, lat_range, lon_range):
-        
-        if not 'station_name' in self.dims:
+        if not 'station_name' in arr.dims:
             raise DataDimensionError('Cannot filter region, require dimension '
                                       'station_name')
-        arr = self.data
-        if not list(self.dims).index('station_name') == 2:
+        
+        if not list(arr.dims).index('station_name') == 2:
             raise DataDimensionError('station_name must be 3. dimensional index')
             
         mask = (np.logical_and(arr.longitude > lon_range[0], 
@@ -857,28 +882,17 @@ class ColocatedData(object):
         
         return arr[:,:,mask]
     
-    def _filter_latlon_3d(self, lat_range, lon_range):
+    @staticmethod
+    def _filter_latlon_3d(arr, lat_range, lon_range):
         if not isinstance(lat_range, slice):
             lat_range = slice(lat_range[0], lat_range[1])
         if not isinstance(lon_range, slice):
             lon_range = slice(lon_range[0], lon_range[1])
             
-        return self.data.sel(dict(latitude=lat_range, longitude=lon_range))
+        return arr.sel(dict(latitude=lat_range, longitude=lon_range))
     
-    def calc_nmb_array(self):
-        """Calculate data array with normalised bias (NMB) values
-        
-        Returns
-        -------
-        DataArray
-            NMBs at each coordinate
-        """
-        _arr = self.data
-        mod, obs = _arr[1], _arr[0]
-        return (mod - obs).sum('time') / obs.sum('time') 
-        
     def apply_latlon_filter(self, lat_range=None, lon_range=None, 
-                            region_id=None):
+                            region_id=None, inplace=False):
         """Apply regional filter 
         
         Returns new object filtered for input coordinate range
@@ -894,7 +908,8 @@ class ColocatedData(object):
             also lat_range need to be specified, else, region_id is checked 
             against AeroCom default regions (and used if applicable)
         region_id : str
-            name of region to be applied 
+            name of region to be applied. If provided (i.e. not None) then 
+            input args `lat_range` and `lon_range` are ignored
         
         Returns
         -------
@@ -904,21 +919,11 @@ class ColocatedData(object):
         is_2d = self._check_latlon_coords()
         if valid_region(region_id):
             reg = Region(region_id)
-            if lon_range is not None and lon_range != reg.lon_range:
-                raise ValueError('Conflict: receieved region ID {}, which has '
-                                 'a different longitude range ({}) than input '
-                                 'lon_range {}'
-                                 .format(region_id, reg.lon_range, lon_range))
-            if lat_range is not None and lat_range != reg.lat_range:
-                raise ValueError('Conflict: receieved region ID {}, which has '
-                                 'a different longitude range ({}) than input '
-                                 'lat_range {}'
-                                 .format(region_id, reg.lat_range, lat_range))
             lon_range = reg.lon_range
             lat_range = reg.lat_range
             region_id = reg.name
             
-        if lon_range is None and lat_range is None:
+        if any(x is None for x in (lon_range, lat_range)):
             raise ValueError('Need either lon_range or lat_range or valid '
                              'region_id')
         if lon_range is None:
@@ -943,9 +948,9 @@ class ColocatedData(object):
             lon_range[1] = lonr[1]
             
         if is_2d:
-            filtered = self._filter_latlon_2d(lat_range, lon_range)
+            filtered = self._filter_latlon_2d(self.data, lat_range, lon_range)
         else:
-            filtered = self._filter_latlon_3d(lat_range, lon_range)
+            filtered = self._filter_latlon_3d(self.data, lat_range, lon_range)
             
         if not isinstance(region_id, str):
             region_id = 'CUSTOM'
@@ -958,9 +963,31 @@ class ColocatedData(object):
         filtered.attrs['region'] = region_id
         filtered.attrs['lon_range'] = lon_range
         filtered.attrs['lat_range'] = lat_range
-    
+        if inplace:
+            self.data = filtered
+            return self
         return ColocatedData(filtered)
+    
+    def apply_region_mask(self, region_id, inplace=False):
         
+        data = self if inplace else self.copy()
+        
+        mask = load_region_mask_xr(region_id)
+        
+        if data.ndim == 4:
+            data = data.flatten_latlondim_station_name()
+        arr = data.data
+        drop_idx = []
+        for (lat, lon, stat) in data._iter_stats():
+            
+            if get_mask_value(lat, lon, mask) < 1:
+                drop_idx.append(stat)
+
+        if len(drop_idx) > 0:
+            arr = arr.drop(dim='station_name', labels=drop_idx)
+        data.data = arr  
+        return data
+    
     def filter_region(self, region_id, inplace=False):
         """Filter object by region
         
@@ -977,32 +1004,23 @@ class ColocatedData(object):
         ColocatedData
             filtered data object
         """
-        if inplace:
-            data = self
-        else:
-            data = self.copy()
+        if region_id in const.HTAP_REGIONS:
+            return self.apply_region_mask(region_id, inplace)
         
-        mask = load_region_mask_xr(region_id=region_id)
+        return self.apply_latlon_filter(region_id=region_id, inplace=inplace)
+     
+    def calc_nmb_array(self):
+        """Calculate data array with normalised bias (NMB) values
         
-        if data.ndim == 4:
-            data = data.flatten_latlondim_station_name()
-        arr = data.data
-        drop_idx = []
-        print(data.shape)
-        for (lat, lon, stat) in data._iter_stats():
-            
-            if get_mask_value(lat, lon, mask) < 1:
-                drop_idx.append(stat)
-# =============================================================================
-#                 data = data.drop(dim='station_name', 
-#                                  labels=str(station.station_name.values))
-# =============================================================================
-        if len(drop_idx) > 0:
-            arr = arr.drop(dim='station_name', labels=drop_idx)
-        data.data = arr  
-        print(data.shape)
-        return data
-        
+        Returns
+        -------
+        DataArray
+            NMBs at each coordinate
+        """
+        _arr = self.data
+        mod, obs = _arr[1], _arr[0]
+        return (mod - obs).sum('time') / obs.sum('time') 
+    
     def plot_coordinates(self, marker='x', markersize=12, fontsize_base=10, 
                          **kwargs):
         
