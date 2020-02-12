@@ -28,14 +28,18 @@
 
 import os, fnmatch, re
 from collections import OrderedDict as od
+
 import numpy as np
 import xarray
+
 from pyaerocom import const
 from pyaerocom.units_helpers import unit_conversion_fac
 from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom import StationData, VerticalProfile, Variable
-from pyaerocom import UngriddedData
+from pyaerocom.stationdata import StationData
+from pyaerocom.vertical_profile import VerticalProfile
+from pyaerocom.variable import Variable
+from pyaerocom.ungriddeddata import UngriddedData
         
 # TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
 # use station_id instead... would require more flexible iterator in 

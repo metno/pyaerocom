@@ -31,8 +31,8 @@ from pyaerocom.mathutils import (compute_scatc550dryaer,
                                  compute_ang4470dryaer_from_dry_scat)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _print_read_info
-from pyaerocom import StationData
-from pyaerocom import UngriddedData
+from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile

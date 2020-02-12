@@ -39,7 +39,7 @@ import re
 from pyaerocom import const
 from pyaerocom.mathutils import (calc_ang4487aer, calc_od550aer)
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom import StationData
+from pyaerocom.stationdata import StationData
 
 class ReadAeronetSunV2(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data

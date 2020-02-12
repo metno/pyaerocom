@@ -3,11 +3,14 @@
 """
 Caching class for reading and writing of ungridded data Cache objects
 """
-from pyaerocom import const, logger, UngriddedData
+import glob, os, pickle
+
+from pyaerocom import const
+from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.exceptions import (AerocomConnectionError, CacheReadError,
                                   CacheWriteError)
 
-import glob, os, pickle
+
 
 # TODO: Write data attribute list contains_vars in header of pickled file and
 # check if variables match the request
@@ -34,7 +37,7 @@ class CacheHandlerUngridded(object):
         CACHE_DIR = const.CACHEDIR
     except:
         CACHE_DIR = None
-        logger.exception('Pyaerocom cache directory is not defined')
+        const.logger.exception('Pyaerocom cache directory is not defined')
     #: Cache file header keys that are checked (and required unchanged) when
     #: reading a cache file
     CACHE_HEAD_KEYS = ['pyaerocom_version',
@@ -171,11 +174,11 @@ class CacheHandlerUngridded(object):
         try:
             fp = self.file_path(var_name)
         except FileNotFoundError as e:
-            logger.warning(repr(e))
+            const.logger.warning(repr(e))
             return False
         
         if not os.path.isfile(fp):
-            logger.info('No cache file available for {}, {}'
+            const.logger.info('No cache file available for {}, {}'
                         .format(self.dataset_to_read, var_name))
             return False
     
@@ -190,12 +193,12 @@ class CacheHandlerUngridded(object):
         except Exception as e:
             ok = False
             delete_existing = True
-            logger.exception('File error in cached data file {}. File will '
+            const.logger.exception('File error in cached data file {}. File will '
                              'be removed and data reloaded'
                              'Error: {}'.format(fp, repr(e)))
         if not ok:
             # TODO: Should we delete the cache file if it is outdated ???
-            logger.info('Aborting reading cache file {}. Aerocom database '
+            const.logger.info('Aborting reading cache file {}. Aerocom database '
                         'or pyaerocom version has changed compared to '
                         'cached version'
                         .format(self.file_name(var_name)))
@@ -214,7 +217,7 @@ class CacheHandlerUngridded(object):
                             .format(type(data)))
             
         self.loaded_data[var_name] = data
-        logger.info('Successfully loaded data for {} from Cache'
+        const.logger.info('Successfully loaded data for {} from Cache'
                     .format(self.dataset_to_read))
         return True
     
@@ -270,7 +273,7 @@ class CacheHandlerUngridded(object):
             data = data.extract_var(var_name)
             
         fp = self.file_path(var_name)
-        logger.info('Writing cache file: {}'.format(fp))
+        const.logger.info('Writing cache file: {}'.format(fp))
         success = True
         # OutHandle = gzip.open(c__cache_file, 'wb') # takes too much time
         out_handle = open(fp, 'wb')
@@ -289,7 +292,7 @@ class CacheHandlerUngridded(object):
             out_handle.close()
             if not success:
                 os.remove(self.file_path)
-        logger.info('Successfully wrote {} data ({}) to disk!'
+        const.logger.info('Successfully wrote {} data ({}) to disk!'
                     .format(var_name, self.reader.data_id))
         
     def __str__(self):

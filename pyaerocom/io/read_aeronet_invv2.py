@@ -39,7 +39,7 @@ import pandas as pd
 from pyaerocom import const
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.mathutils import calc_abs550aer, calc_od550aer
-from pyaerocom import StationData
+from pyaerocom.stationdata import StationData
 
 class ReadAeronetInvV2(ReadAeronetBase):
     """Interface for reading Aeronet inversion V2 Level 1.5 and 2.0 data

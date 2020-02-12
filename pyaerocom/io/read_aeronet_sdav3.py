@@ -44,7 +44,7 @@ from pyaerocom.mathutils import (calc_od550aer,
                                  calc_od550gt1aer,
                                  calc_od550lt1aer)
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom import StationData
+from pyaerocom.stationdata import StationData
 
 class ReadAeronetSdaV3(ReadAeronetBase):
     """Interface for reading Aeronet Sun SDA V3 Level 1.5 and 2.0 data
