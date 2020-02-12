@@ -261,7 +261,7 @@ Filter class
 Land / Sea masks
 ^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.helpers_land_sea_masks
+.. automodule:: pyaerocom.helpers_landsea_masks
    :members:
    :undoc-members:
 
