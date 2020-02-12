@@ -20,7 +20,6 @@ Official website of Pyaerocom, a Python package containing reading, post analysi
    readme
    tutorials
    api
-   api_testsuite
 
 Indices and tables
 ==================

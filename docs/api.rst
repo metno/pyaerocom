@@ -52,8 +52,6 @@ Metadata and vocabulary standards
 Colocation routines
 -------------------
 
-This module contains high and low-level methods and engines to perform colocation.
-
 Automatic colocation engine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -260,12 +258,61 @@ Filter class
    :members:
    :undoc-members:
    
+Land / Sea masks
+^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.helpers_land_sea_masks
+   :members:
+   :undoc-members:
+
+Time and frequencies
+--------------------
+
+Handling of time frequencies
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.tstype
+   :members:
+   :undoc-members:
+   
+Temporal resampling
+^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.time_resampler
+   :members:
+   :undoc-members:
+
+Global constants
+^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.time_config
+   :members:
+   :undoc-members:
+   
 Conversion of vertical coordinates
 ----------------------------------
 
 .. automodule:: pyaerocom.vert_coords
    :members:
    :undoc-members:
+   
+Trends computation
+------------------
+
+Trends engine
+^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.trends_engine
+   :members:
+   :undoc-members:
+   
+Helper methods
+^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.trends_helpers
+   :members:
+   :undoc-members:
+   
 
 Plotting / Visualisation
 -------------------------
