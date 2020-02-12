@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from copy import deepcopy
+from collections import OrderedDict as od
+
+
 
 import pandas as pd
 import numpy as np
 import xarray as xray
-from pyaerocom import VerticalProfile, logger, const
+from pyaerocom import logger, const
 
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
+                                  DataCoverageError,
                                   DataExtractionError, DataDimensionError,
                                   UnitConversionError, DataUnitError,
                                   TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr, 
                                          BrowseDict)
 from pyaerocom.metastandards import StationMetaData
+from pyaerocom.vertical_profile import VerticalProfile
 from pyaerocom.tstype import TsType
 from pyaerocom.time_resampler import TimeResampler
+from pyaerocom.trends_engine import TrendsEngine
+from pyaerocom.trends_helpers import _make_mobs_dataframe
 from pyaerocom.helpers import isnumeric, isrange, calc_climatology
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
@@ -159,7 +166,7 @@ class StationData(StationMetaData):
         if not self.has_var(var_name):
             raise VarNotAvailableError('No such variables {} in StationData'
                                        .format(var_name))
-        from pyaerocom.trends_helpers import compute_trends_station
+        #from pyaerocom.trends_helpers import compute_trends_station
         return compute_trends_station(self, var_name, start_year, stop_year, 
                                       season, slope_confidence, **alt_range)
         
@@ -1051,7 +1058,7 @@ class StationData(StationMetaData):
         if ts_type < TsType(clim_freq): #current resolution is lower than input climatological freq
             supported = list(const.CLIM_MIN_COUNT.keys())
             if str(ts_type) in supported:
-                clim_freq = ts_type
+                clim_freq = str(ts_type)
             else: # use monthly
                 clim_freq = 'monthly'
         
@@ -1415,7 +1422,8 @@ class StationData(StationMetaData):
     def plot_timeseries(self, var_name, freq=None, resample_how='mean', 
                         add_overlaps=False, legend=True, tit=None, 
                         **kwargs):
-        """Plot timeseries for variable
+        """
+        Plot timeseries for variable
         
         Note
         ----
@@ -1456,7 +1464,7 @@ class StationData(StationMetaData):
         ValueError
             if length of data array does not equal the length of the time array
         """
-        import matplotlib.pyplot as plt
+        
         if 'ts_type' in kwargs:
             freq = kwargs.pop('ts_type')
         if 'label' in kwargs:
@@ -1567,7 +1575,66 @@ class StationData(StationMetaData):
             s += series
     
         return s
+
+def compute_trends_station(station, var_name, start_year=None, 
+                           stop_year=None, season=None, slope_confidence=0.68,
+                           **alt_range):
+    """Method to compute trends for a :class:`StationData` object
     
+    Note
+    ----
+    This method is badly designed and will be outsourced at some point. 
+    Please do not use and use :func:`StationData.compute_trend` directly 
+    (which will need to be rewritten as well, as it uses this method at the 
+    moment...)
+    
+    No docstring because you shouldn't use this method!
+    """
+    # load additional information about data source (if applicable)
+    if not 'trends' in station:
+        station['trends'] = od()
+    tr = station['trends']
+    if not var_name in tr:
+        station['trends'][var_name] = trv = TrendsEngine(var_name)
+    else:
+        trv = station['trends'][var_name]
+
+    freq = station.get_var_ts_type(var_name)
+    
+    ts_types = const.GRID_IO.TS_TYPES
+    
+    if not trv.has_daily:
+        if not freq in ts_types or (ts_types.index(freq) <= ts_types.index('daily')):
+            trv['daily'] = station.to_timeseries(var_name, freq='daily', **alt_range)
+    # monthly is mandatory
+    if not trv.has_monthly:
+        if freq in ts_types and ts_types.index(freq) > ts_types.index('monthly'):
+            raise TemporalResolutionError('Need monthly or higher')
+        ms = station.to_timeseries(var_name, freq='monthly', **alt_range)
+        trv['monthly'] = ms
+    else:
+        ms = trv['monthly']
+        
+    if len(ms) == 0 or all(np.isnan(ms)):
+        raise DataCoverageError('Failed to retrieve monthly timeseries for '
+                                '{} ({})'.format(station.station_name,
+                                 var_name))
+      
+    if trv._mobs is None:
+        trv._mobs = _make_mobs_dataframe(ms)
+    
+    result = trv.compute_trend(start_year, stop_year, season, 
+                               slope_confidence)
+    
+    try:
+        trv.meta.update(station.get_meta(add_none_vals=True))
+    except MetaDataError:
+        trv.meta.update(station.get_meta(force_single_value=False,
+                                         add_none_vals=True))
+    if var_name in station.var_info:
+        trv.meta.update(station.var_info[var_name])
+    return result
+
 if __name__=="__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
