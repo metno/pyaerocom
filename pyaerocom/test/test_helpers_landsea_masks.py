@@ -15,10 +15,10 @@ import pyaerocom.helpers_landsea_masks as lsm
 TEST_REGIONS = const.HTAP_REGIONS[:2]
 
 def test_availabe_region_masks():
-    assert lsm.available_region_masks() == ['PAN', 'EAS', 'NAF', 'MDE', 'LAND', 
-                                            'SAS', 'SPO', 'OCN', 'SEA', 'RBU', 
-                                            'EEUROPE', 'NAM', 'WEUROPE', 'SAF', 
-                                            'USA', 'SAM', 'EUR', 'NPO', 'MCA']
+    assert lsm.available_htap_masks() == ['PAN', 'EAS', 'NAF', 'MDE', 'LAND', 
+                                          'SAS', 'SPO', 'OCN', 'SEA', 'RBU', 
+                                          'EEUROPE', 'NAM', 'WEUROPE', 'SAF', 
+                                          'USA', 'SAM', 'EUR', 'NPO', 'MCA']
     
 def test_download_htap_masks():
     

@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct  9 13:01:34 2019
+Helper methods for access of and working with land/sea masks. pyaerocom 
+provides automatic access to HTAP land sea masks from this URL:
+    
+https://pyaerocom.met.no/pyaerocom-suppl
+
+Filtering by these masks is implemented in :class:`Filter` and all relevant 
+data classes (i.e. :class:`GriddedData`, :class:`UngriddedData`, 
+:class:`ColocatedData`).
 """
 
 import os 
@@ -16,17 +23,21 @@ from pyaerocom import const
 from pyaerocom.helpers import numpy_to_cube
 from pyaerocom.exceptions import DataRetrievalError
 
-def available_region_masks():
+def available_htap_masks():
     """
+    List of HTAP mask names
+    
     Returns
     ----------
-    arr : List[str]
+    list
         Returns a list of available htap region masks.
     """
     return const.HTAP_REGIONS
 
 def download_htap_masks(regions_to_download=None):
-    """Downloads the htap mask from https://pyaerocom.met.no/pyaerocom-suppl.
+    """Download HTAP mask 
+    
+    URL: https://pyaerocom.met.no/pyaerocom-suppl.
     
     Parameters
     -----------
@@ -35,8 +46,9 @@ def download_htap_masks(regions_to_download=None):
     
     Returns
     -------
-    List of file paths that point to the mask files that were successfully 
-    downloaded
+    list
+        List of file paths that point to the mask files that were successfully 
+        downloaded
     
     Raises
     ------
@@ -123,14 +135,14 @@ def load_region_mask_xr(*regions):
     """Load boolean mask for input regions (as xarray.DataArray)  
     
     Parameters
-    ------------------
+    -----------
     *regions
         regions that are supposed to be loaded and merged (just use string, 
         no list or similar)
     
     Returns
     ---------
-    mask : xarray.DataArray 
+    xarray.DataArray 
         boolean mask for input region(s)
     """    
     masks = None
@@ -158,9 +170,8 @@ def load_region_mask_iris(*regions):
     
     Returns
     ---------
-    mask : xarray.DataArray containing the masks. 
-
-    Load : each cube seperatly and merge then after updating var_name
+    iris.cube.Cube 
+        cube representing merged mask from input regions
     """
     cubes = []
     names = []
@@ -203,9 +214,10 @@ def get_mask_value(lat, lon, mask):
     return float(mask.sel(lat=lat, long=lon, method='nearest'))
 
 def check_all_htap_available():
-    """Check for missing HTAP masks on local computer and download 
     """
-    return get_htap_mask_files(*available_region_masks())
+    Check for missing HTAP masks on local computer and download 
+    """
+    return get_htap_mask_files(*available_htap_masks())
      
 
 if __name__ == '__main__':
