@@ -28,6 +28,7 @@ def _init_logger():
 
 def change_verbosity(new_level='debug', log=None):
     if log is None:
+        from pyaerocom import logger
         log = logger
     if isinstance(new_level, str):
         if not new_level in LOGLEVELS:
