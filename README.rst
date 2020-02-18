@@ -1,3 +1,6 @@
+.. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
+    :target: https://github.com/metno/pyaerocom/
+
 About
 =====
 
