@@ -1,8 +1,4 @@
-NEWS
-====
-
-- **October 2019**: Release of version 0.8.0 (available via *conda-forge* and *PyPi*)
-- **April 2019**: AeroCom has a new web : We are happy to announce that pyaerocom is now used for the processing of the recent and upcoming AeroCom experiments (in parallel with the IDL processing displayed in the Phase 2 interface). The new online interface can be found at: `https://aerocom-evaluation.met.no <https://aerocom-evaluation.met.no/>`__.
+|CI|
 
 About
 =====
@@ -161,3 +157,5 @@ Remark for Windows users
 
 pyaerocom is not tested on Windows systems and may only work in parts and thus some features may not work on Windows machines at the moment. In particular, features that rely on and are built upon access to the AeroCom database servers and automatic database path navigation. This includes the automised reading of gridded and ungridded data using either of the pre-defined path infrastuctures (e.g. check out `paths.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths.ini>`__ or `paths_user_server.ini <https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/paths_user_server.ini>`__).
 However, you may still define file locations in your Python scripts yourself and use the more low-level features for reading the data. Windows support will be provided soon. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
+
+.. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
