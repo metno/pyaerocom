@@ -41,8 +41,8 @@ def test__get_pandas_freq_and_loffset():
 
 
 def _make_timeseries_synthetic():
-    from pandas import Series, period_range
-    idx = period_range(start=2000, periods=90, freq='D')
+    from pandas import Series, date_range
+    idx = date_range(start="2000",periods=90, freq='D')
     vals = np.arange(len(idx))
     
     return  Series(vals, idx)
