@@ -41,18 +41,19 @@ def test__get_pandas_freq_and_loffset():
 
 
 def _make_timeseries_synthetic():
-    from pandas import Series, DatetimeIndex
-    idx = DatetimeIndex(freq='D', start='2000', periods=90)
+    from pandas import Series, period_range
+    idx = period_range(start=2000, periods=90, freq='D')
     vals = np.arange(len(idx))
     
     return  Series(vals, idx)
 
 @pytest.fixture(scope='module')
 def timeseries_synthetic():
-    return _make_timeseries_synthetic()\
+    return _make_timeseries_synthetic()
 
 def test_resample_timeseries(timeseries_synthetic):
-    s1 = helpers.resample_timeseries(timeseries_synthetic, 'monthly')
+    s1 = helpers.resample_timeseries(timeseries_synthetic, 
+                                     'monthly')
     
     assert len(s1) == 3
     for time in s1.index:
@@ -118,6 +119,9 @@ def test_get_time_rng_constraint():
 
 
 if __name__=="__main__":
+    
+    import pandas as pd
+    
     
     test_get_standarad_name()
     test_get_standard_unit()
