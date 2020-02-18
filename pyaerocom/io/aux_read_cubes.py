@@ -84,7 +84,7 @@ def merge_meta_cubes(cube1, cube2):
         return merge_dicts(cube1.attributes,
                            cube2.attributes)
     except Exception as e:
-        print_log.warning('Failed to merge Cube metadata. Error: {}'
+        print_log.warning('WARNING: Failed to merge Cube metadata. Error: {}'
                           .format(repr(e)))
         return {'NOTE'  : 'MERGE_FAILED',
                 'meta1' : cube1.attributes, 
