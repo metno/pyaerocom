@@ -1,5 +1,3 @@
-![CI](https://github.com/metno/pyaerocom/workflows/CI/badge.svg)
-
 About
 =====
 
