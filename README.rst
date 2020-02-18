@@ -159,3 +159,4 @@ pyaerocom is not tested on Windows systems and may only work in parts and thus s
 However, you may still define file locations in your Python scripts yourself and use the more low-level features for reading the data. Windows support will be provided soon. Please let us know if you intend to use pyaerocom on a Windows machine so that we can consider adjusting our priorities, or also if you have any questions related to the usage.
 
 .. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
+   :target: https://github.com/metno/pyaerocom/actions
