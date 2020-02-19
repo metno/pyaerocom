@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Config file for AeroCom PhaseIII test project
-"""
-
-
 import iris
 import numpy as np
 from pyaerocom import print_log
