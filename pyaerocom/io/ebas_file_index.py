@@ -209,10 +209,20 @@ class EbasFileIndex(object):
     def __init__(self, database=None):
         if database is None:
             database = const.EBASMC_SQL_DATABASE
-        if not os.path.exists(database):
-            raise IOError("SQLite database file does not exist")
-        self.database = database
+        self._database = database
        
+    @property
+    def database(self):
+        """Path to ebas_file_index.sqlite3 file"""
+        db = self._database
+        if db is None or not os.path.exists(db):
+            raise IOError("EBAS SQLite database file could not be located but "
+                          "is needed in EbasFileIndex class")
+        return db
+            
+    @database.setter
+    def database(self, val):
+        self._database = val
         
     @property
     def ALL_STATION_NAMES(self):
@@ -442,6 +452,7 @@ class EbasFileIndex(object):
         if not isinstance(request, str):
             raise IOError("Invalid input: Need instance of class "
                           "EbasSQLRequest or SQL request string for query")
+        con = None
         try:
             con = sqlite3.connect(self.database)
             cur = con.cursor()
@@ -487,8 +498,6 @@ class EbasFileIndex(object):
         return names
             
 if __name__=="__main__":
-    from pyaerocom.io import EbasNasaAmesFile
-    from os.path import join
     
     dbfile = const.EBASMC_SQL_DATABASE
     
