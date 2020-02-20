@@ -4,7 +4,7 @@
 This module contains scatter plot routines for Aerocom data.
 """
 
-from pyaerocom import const, BASEMAP_AVAILABLE
+from pyaerocom import const#, BASEMAP_AVAILABLE
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -122,7 +122,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
     
     # TODO: review basemap dependency
     basemap_flag=False
-    if basemap_flag and BASEMAP_AVAILABLE:
+    if basemap_flag and const.BASEMAP_AVAILABLE:
         m = Basemap(projection='cyl', llcrnrlat=lat_low, urcrnrlat=lat_high,
                     llcrnrlon=lon_low, urcrnrlon=lon_high, resolution='c', fix_aspect=False)
 

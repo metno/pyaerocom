@@ -13,7 +13,7 @@ UNDER DEVELOPMENT -> NOT READY YET
 
 """
 
-from pyaerocom import GEONUM_AVAILABLE, const
+from pyaerocom import const
 from pyaerocom.exceptions import (CoordinateNameError, CoordinateError,
                                   VariableNotFoundError,
                                   VariableDefinitionError,
@@ -159,7 +159,7 @@ def pressure2altitude(p, *args, **kwargs):
     -------
     altitudes in m corresponding to input pressure levels in defined atmosphere
     """
-    if not GEONUM_AVAILABLE:
+    if not const.GEONUM_AVAILABLE:
         raise ModuleNotFoundError('Feature disabled: need geonum library')
     from geonum import atmosphere as atm
     return atm.pressure2altitude(p, *args, **kwargs)

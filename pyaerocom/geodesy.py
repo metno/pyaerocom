@@ -6,7 +6,7 @@ Module for geographical calculations
 This module contains low-level methods to perform geographical calculations, 
 (e.g. distance between two coordinates)
 """
-from pyaerocom import GEONUM_AVAILABLE
+from pyaerocom import const
 from pyaerocom import print_log, logger
 import numpy as np
 import os
@@ -51,12 +51,11 @@ def get_topo_data(lat0, lon0, lat1=None, lon1=None, topo_dataset='srtm',
     ValueError
         if altitude data cannot be accessed
     """
-    if not GEONUM_AVAILABLE:
+    if not const.GEONUM_AVAILABLE:
         raise ModuleNotFoundError('Feature disabled: geonum library is not '
                                   'installed')
     import geonum
     if topodata_loc is None:
-        from pyaerocom import const
         if topo_dataset in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS[topo_dataset]):
             topodata_loc = const.SUPPLDIRS[topo_dataset]    
             print_log.info('Found default location for {} topodata at\n{}'
@@ -145,10 +144,10 @@ def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None,
     float
         distance between points in km
     """
-    if not GEONUM_AVAILABLE and auto_altitude_srtm:
+    if not const.GEONUM_AVAILABLE and auto_altitude_srtm:
         raise ModuleNotFoundError('Require Geonum library for accessing '
                                   'topographic altitude using SRTM database')
-    if GEONUM_AVAILABLE:
+    if const.GEONUM_AVAILABLE:
         import geonum
         p0 = geonum.GeoPoint(lat0, lon0, alt0, 
                              auto_topo_access=auto_altitude_srtm)
