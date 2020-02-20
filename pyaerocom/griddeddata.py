@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
 from collections import OrderedDict as od
+
+import os
+
 import iris
 from iris.analysis.cartography import area_weights
 from iris.analysis import MEAN
 from iris.exceptions import UnitConversionError
-from pandas import Timestamp, Series
 import numpy as np
 import pandas as pd
-
-import pyaerocom as pya
+from pathlib import Path
 
 from pyaerocom import const, logger, print_log
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
@@ -616,6 +616,21 @@ class GriddedData(object):
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return 'time' in self.dimcoord_names
     
+    def _read_netcdf(self, input, var_name, perform_fmt_checks):
+        from pyaerocom.io.iris_io import load_cube_custom
+        self.grid = load_cube_custom(input, var_name,
+                                     perform_fmt_checks=perform_fmt_checks)
+        if not 'from_files' in self.metadata:
+            self.metadata['from_files'] = []
+        elif not isinstance(self.metadata["from_files"], list):
+            self.metadata["from_files"] = [self.metadata["from_files"]]
+        self.metadata["from_files"].append(input)
+        try:
+            from pyaerocom.io.helpers import get_metadata_from_filename
+            self.update_meta(**get_metadata_from_filename(input))
+        except:
+            logger.warning('Failed to access metadata from filename')
+            
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
         
@@ -627,26 +642,16 @@ class GriddedData(object):
             variable name that is extracted if `input` is a file path . Irrelevant
             if `input` is preloaded Cube
         perform_fmt_checks : bool, optional
-            perform formatting checks based on information in filenames
+            perform formatting checks based on information in filenames. Only 
+            relevant if input is a file
     
         """
         if isinstance(input, iris.cube.Cube):
             self.grid = input #instance of Cube
-            
+        elif isinstance(input, Path) and input.exists():
+            self._read_netcdf(str(input), var_name, perform_fmt_checks)
         elif isinstance(input, str) and os.path.exists(input):
-            from pyaerocom.io.iris_io import load_cube_custom
-            self.grid = load_cube_custom(input, var_name,
-                                         perform_fmt_checks=perform_fmt_checks)
-            if not 'from_files' in self.metadata:
-                self.metadata['from_files'] = []
-            elif not isinstance(self.metadata["from_files"], list):
-                self.metadata["from_files"] = [self.metadata["from_files"]]
-            self.metadata["from_files"].append(input)
-            try:
-                from pyaerocom.io.helpers import get_metadata_from_filename
-                self.update_meta(**get_metadata_from_filename(input))
-            except:
-                logger.warning('Failed to access metadata from filename')
+            self._read_netcdf(input, var_name, perform_fmt_checks)
         else:
             raise IOError('Failed to load input: {}'.format(input))
         
@@ -1042,7 +1047,7 @@ class GriddedData(object):
             
             vals = data_np[:, sidx]
             
-            data[var] = Series(vals, index=times)
+            data[var] = pd.Series(vals, index=times)
             for meta_key, meta_val in meta_iter.items():
                 data[meta_key] = meta_val[sidx]
             for meta_key, meta_val in meta_glob.items():
@@ -1113,7 +1118,7 @@ class GriddedData(object):
             data.var_info[var] = {'units':self.units}
             vals = arr[:, i, j]
             
-            data[var] = Series(vals, index=times)
+            data[var] = pd.Series(vals, index=times)
             for meta_key, meta_val in meta_iter.items():
                 data[meta_key] = meta_val[i]
             for meta_key, meta_val in meta_glob.items():
@@ -1273,7 +1278,7 @@ class GriddedData(object):
 #         return {'latitude'      : latitude,
 #                 'longitude'     : longitude,
 #                 'name'          : self.name,
-#                 self.var_name   : Series(data, times)}
+#                 self.var_name   : pd.Series(data, times)}
 # =============================================================================
         
     def _closest_time_idx(self, t):
@@ -1604,11 +1609,12 @@ class GriddedData(object):
         # Reads mask to griddedata
         mask  = pya.GriddedData(mask_iris, convert_unit_on_init=False)
         mask = mask.regrid(self.cube)
-        
+
+        mask.quickplot_map(vmin=0, vmax=1)
         npm = mask.cube.data
         
-        if np.ma.is_masked(npm):
-            npm = npm.data
+        if isinstance(npm, np.ma.core.MaskedArray):
+            npm = npm.filled(np.nan)
 
         thresh_mask = npm > thresh_coast
         npm[thresh_mask] = 0
@@ -1621,7 +1627,6 @@ class GriddedData(object):
                 griddeddata = self
             else:
                 griddeddata = self.copy()
-            #example = ma.array([1, 2, 3], mask = [0, 1, 0])
             
             # UPDATE MASK WITH REGIONAL MASK.
             griddeddata.cube.data[:, npm.astype(bool)] = np.nan
@@ -1704,9 +1709,9 @@ class GriddedData(object):
             return GriddedData(data, **suppl)
         else:
             if all(isinstance(x, str) for x in time_range):
-                time_range = (Timestamp(time_range[0]),
-                              Timestamp(time_range[1]))
-            if all(isinstance(x, Timestamp) for x in time_range):
+                time_range = (pd.Timestamp(time_range[0]),
+                              pd.Timestamp(time_range[1]))
+            if all(isinstance(x, pd.Timestamp) for x in time_range):
                 logger.info("Cropping along time axis based on Timestamps")
                 time_constraint = get_time_rng_constraint(*time_range)
                 try:
@@ -1752,7 +1757,7 @@ class GriddedData(object):
             d = self
         vals = d.area_weighted_mean()
          
-        stat[self.var_name] = Series(vals, d.time_stamps())
+        stat[self.var_name] = pd.Series(vals, d.time_stamps())
         return stat
         
     # redefined methods from iris.Cube class. This includes all Cube 
@@ -2508,7 +2513,7 @@ class GriddedData(object):
             vals = sub.grid.data
             #sub = self.grid[:, lat_idx, lon_idx]
             # first slice, then access data
-            data = Series(vals, index=times)
+            data = pd.Series(vals, index=times)
             result.append({'latitude'   :   lat,
                            'longitude'  :   lon,
                            'name'       :   self.name, 
@@ -2535,9 +2540,9 @@ if __name__=='__main__':
     plt.close("all")
 
     # print("uses last changes ")
-    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer')
+    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)#.resample_time('yearly')
 
-    f1 = pya.Filter('LAND-noMOUNTAINS-LAND')
+    f1 = pya.Filter('LAND')
     
     subset = f1(data)
     
