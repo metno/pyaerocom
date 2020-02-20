@@ -21,7 +21,7 @@ str2bool = lambda val: val.lower() in ('true', '1', 't', 'yes')
 class VarNameInfo(object):
     """This class can be used to retrieve information from variable names"""
     _VALID_WVL_RANGE = [100, 2000]
-    _VALID_WVL_IDS = ['od', 'abs', 'ec', 'scatc', 'absc', 'bscatc', 'ssa']
+    _VALID_WVL_IDS = ['od', 'abs', 'ec', 'sc', 'ac', 'bsc', 'ssa']
     PATTERNS = {'od' : r'od\d+aer'}
     def __init__(self, var_name):
         self.var_name = var_name.lower()
@@ -202,6 +202,14 @@ def _check_alias_family(var_name, parser):
                                   'belonging to either of the available alias '
                                   'variable families')
 
+# =============================================================================
+# import functools
+# def lowercase(func):
+#     @functools.wraps(func)
+#     def wrapper():
+#         return func().lower()
+#     return wrapper
+# =============================================================================
 class Variable(object):
     """Interface that specifies default settings for a variable
     
@@ -225,14 +233,11 @@ class Variable(object):
     Attributes
     ----------
     var_name : str
+        input variable name
+    var_name_aerocom : str
         AEROCOM variable name (see e.g. `AEROCOM protocol 
         <http://aerocom.met.no/protocol_table.html>`__ for a list of 
         available variables)
-    var_name_alt : str
-        Alternative variable name that is searched for in variables.ini file
-        to find variable information. Is e.g. set to scatc550aer if input 
-        is scatc550dryaer. This means, that if scatc550dryaer is not explictely
-        defined in
     is_3d : bool
         flag that indicates if variable is 3D
     is_dry : bool
@@ -297,7 +302,8 @@ class Variable(object):
                 'map_cbar_levels': literal_eval_list,
                 'map_cbar_ticks': literal_eval_list}
     
-    ALT_NAMES = {'units' : 'unit'}  
+    #maybe used in config -> what should be the name
+    ALT_NAMES = {'unit' : 'units'}  
     
     RH_MAX_DRY = 0.4
     
@@ -312,34 +318,31 @@ class Variable(object):
                       'map_cbar_levels',
                       'map_cbar_ticks']
     
+    @staticmethod
+    def _check_input_var_name(var_name):
+        var_name = var_name.lower()
+        if '3d' in var_name:
+            var_name = var_name.replace('3d','')
+# =============================================================================
+#         if 'dry' in var_name:
+#             var_name = var_name.replace('dry', '')
+# =============================================================================
+        return var_name
+    
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         #save orig. input for whatever reasons
         self._var_name_input = var_name 
-        self.is_3d = False
-        self.is_dry = False
-        
-        var_name = var_name.lower()
-        var_name_alt = None
-        if '3d' in var_name:
-            logger.info('Variable name {} contains 3d. Activating flag is_3d '
-                        'and removing from var_name string'.format(var_name))
-            var_name_alt = var_name.replace('3d','')
-            self.is_3d = True
-        if 'dry' in var_name:
-            self.is_dry = True
-            if isinstance(var_name_alt, str):
-                var_name_alt = var_name_alt.replace('dry', '')
-            else:
-                var_name_alt = var_name.replace('dry', '')
-            
-        self.var_name = var_name
-        self.var_name_alt = var_name_alt #alternative var_name
+
+        # var_name in lowercase and cleaned up (3d and dry removed if applicable)
+        self.var_name = var_name = self._check_input_var_name(var_name)
+        self._var_name_aerocom = None
+    
         self.standard_name = None
-        self.units = '1'
+        self.units = None
         self.default_vert_code = None
         #self.aliases = []
         self.wavelength_nm = None
-        self.dry_rh_max = None
+        self.dry_rh_max = 40
         self.dimensions = None
         self.minimum = -9e30
         self.maximum = 9e30
@@ -359,19 +362,41 @@ class Variable(object):
         self.map_vmin = None
         self.map_vmax = None
         self.map_c_under = None
-        self.map_c_over = None
+        self.map_c_over = 'r'
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
         # imports default information and, on top, variable information (if 
         # applicable)
         if init:
-            self.parse_from_ini(var_name, 
-                                var_name_alt=self.var_name_alt,
-                                cfg=cfg) 
+            self.parse_from_ini(var_name, cfg=cfg) 
         
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
+    
+    @property
+    def var_name_aerocom(self):
+        vna = self._var_name_aerocom
+        return self.var_name if vna is None else vna
+    
+    @property
+    def var_name_input(self):
+        """Input variable (in lowercase)"""
+        return self._var_name_input.lower()
+    
+    @property
+    def is_3d(self):
+        """True if str '3d' is contained in :attr:`var_name_input`"""
+        return True if '3d' in self.var_name_input else False
+    
+    @property
+    def is_dry(self):
+        """True if str 'dry' is contained in :attr:`var_name_input`"""
+        return True if 'dry' in self.var_name_input else False
+    
+    @property
+    def is_alias(self):
+        return True if self.var_name != self.var_name_aerocom else False
     
     @property
     def unit(self):
@@ -446,49 +471,17 @@ class Variable(object):
     def keys(self):
         return list(self.__dict__.keys())
     
-    def _get_var_info(self, var_name, cfg):
-        """Get variable info for input var name
-        
-        Parameters
-        ----------
-        var_name : str
-            variable name to be searched
-        cfg 
-            config parser
-        
-        Returns
-        -------
-        dict
-            dictionary with variable info extracted from parser
-        
-        Raises
-        ------
-        VariableDefinitionError
-            if no match could be found
-        """
-        if var_name.lower() == 'default':
-            return cfg['DEFAULT']
-        if var_name is not None:
-            # input variable name is known
-            if var_name in cfg:
-                logger.info("Found default configuration for variable "
-                            "{}".format(var_name))
-                return cfg[var_name]
-                
-            ap = parse_aliases_ini()
-            aliases = _read_alias_ini(ap)
-            if var_name in aliases:
-                var_name = aliases[var_name]
-                if var_name in cfg:
-                    return cfg[var_name]
+    @staticmethod
+    def _check_aliases(var_name):
             
-            var_name=_check_alias_family(var_name, ap)
-            return cfg[var_name]
+        ap = parse_aliases_ini()
+        aliases = _read_alias_ini(ap)
+        if var_name in aliases:
+            return aliases[var_name]
+        return _check_alias_family(var_name, ap)
             
-        raise VariableDefinitionError('No match could be found for variable {} '
-                                      .formar(var_name))
                         
-    def parse_from_ini(self, var_name=None, var_name_alt=None, cfg=None):
+    def parse_from_ini(self, var_name=None, cfg=None):
         """Import information about default region
         
         Parameters
@@ -513,61 +506,39 @@ class Variable(object):
         """
         if cfg is None:
             cfg = self.read_config()
-        default = cfg['DEFAULT']
-    
-        var_info = None
-        if var_name_alt is not None:
-            try:
-                var_info = self._get_var_info(var_name_alt, cfg)
-            except VariableDefinitionError:
-                pass
-        if var_info is None:
-            try:
-                var_info = self._get_var_info(var_name, cfg)
-            except VariableDefinitionError:
-                var_info = {} 
-            except Exception as e:
-                #var_info = self._get_var_info(var_name, cfg)
-                raise Exception('Unexpected error accessing variable {}: {}'
-                                .format(var_name, repr(e)))
-                
-        for key in self.keys():
-            if key in self.ALT_NAMES:
-                if self.ALT_NAMES[key] in var_info:
-                    self._add(key, var_info[self.ALT_NAMES[key]])
-            elif key in var_info:
-                self._add(key, var_info[key])
-            elif key in default:
-                self._add(key, default[key])
-             
-        self.var_name = var_name
-# =============================================================================
-#         if var_name is not None and var_name != 'DEFAULT':
-#             # input variable name is known
-#             if var_name in cfg:
-#                 logger.info("Found default configuration for variable "
-#                             "{}".format(var_name))
-#                 var_info = cfg[var_name]
-#                 #self.var_name = var_name
-#             elif isinstance(var_name_alt, str) and var_name_alt in cfg:
-#                 var_info = cfg[var_name_alt]
-#             else:
-#                 ap = parse_aliases_ini()
-#                 aliases = _read_alias_ini(ap)
-#                 if var_name in aliases:
-#                     var_name = aliases[var_name]
-#                     var_info = cfg[var_name]
-#                 else :
-#                     try:
-#                         var_name=_check_alias_family(var_name, ap)
-#                         var_info = cfg[var_name]
-#                     except VariableDefinitionError:
-#                     
-#                         logger.warning("No default configuration available for "
-#                                        "variable {}. Using DEFAULT settings"
-#                                        .format(var_name))
-# =============================================================================
         
+        if not var_name in cfg:
+            try:
+                var_name = self._check_aliases(var_name)
+            except VariableDefinitionError:
+                logger.info('Unknown input variable {}'.format(var_name))
+                return
+            self._var_name_aerocom = var_name
+        
+        var_info = cfg[var_name]
+        # this variable should import settings from another variable
+        if 'use' in var_info:
+            use = var_info['use']
+            if not use in cfg:
+                raise VariableDefinitionError('Input variable {} depends on {} '
+                                              'which is not available in '
+                                              'variables.ini.'
+                                              .format(var_name, use))
+            self.parse_from_ini(use, cfg)
+        
+        for key, val in var_info.items():
+            if key in self.ALT_NAMES:
+                key = self.ALT_NAMES[key]
+            self._add(key, val)
+            
+# =============================================================================
+#         for key in self.keys():
+#             if key in self.ALT_NAMES:
+#                 if self.ALT_NAMES[key] in var_info:
+#                     self._add(key, var_info[self.ALT_NAMES[key]])
+#             elif key in var_info:
+#                 self._add(key, var_info[key])
+# =============================================================================
     
     def _add(self, key, val):
         if key in self._TYPE_CONV:
@@ -575,9 +546,8 @@ class Variable(object):
                 val = self._TYPE_CONV[key](val)
             except:
                 pass
-        elif key == 'units':
-            if val == 'None':
-                val = '1'
+        elif key == 'units' and val == 'None':
+            val = '1'
         if val == 'None':
             val = None
         self[key] = val
@@ -593,6 +563,13 @@ class Variable(object):
                .format(self.var_name, self.standard_name, 
                        self.unit))
    
+    def __eq__(self, other):
+        if isinstance(other, str):
+            other = Variable(other)
+        elif not isinstance(other, Variable):
+            raise TypeError('Can only compare with str or other Variable instance')
+        return True if other.var_name_aerocom == self.var_name_aerocom else False
+    
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
@@ -650,8 +627,8 @@ class VarCollection(object):
         """
         if self._all_vars is None:
             all_vars = [k.lower() for k in self._cfg_parser.keys()]
-            all_vars.extend(list(_read_alias_ini()))
-            self._all_vars=all_vars
+            #all_vars.extend(list(_read_alias_ini()))
+            self._all_vars = all_vars
         return self._all_vars
     
     @property
@@ -758,31 +735,35 @@ class VarCollection(object):
         Variable od550aer
         """
         #make sure to be in the right namespace
-        if var_name in self:
-            return Variable(var_name, cfg=self._cfg_parser)
-    
-        low = var_name.lower()
-        check = low.replace('3d','').replace('dry', '')
-        
-        if not check in self:
-            try:
-                _check_alias_family(check, parser=self._alias_parser)
-            except VariableDefinitionError:    
-                raise VariableDefinitionError("No default configuration "
-                                              "available for variable {}"
-                                              .format(var_name))
-        return Variable(var_name, cfg=self._cfg_parser)
-        
-        
-    def __str__(self):
+        var = Variable(var_name, cfg=self._cfg_parser)
+        if not var.var_name_aerocom in self:
+            raise VariableDefinitionError('Error (VarCollection): input variable '
+                                          '{} is not supported'.format(var_name))
+        return var
+       
+    def __repr__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = '\n{}\n{}\n{}'.format(len(head)*"-", head, len(head)*"-")
         for v in self.all_vars:
             s += '\n{}'.format(v)
-       
         return s   
-  
+    
+    def __str__(self):
+        return self.var_name
+          
 def get_variable(var_name):
+    """
+    Get a certain variable
+
+    Parameters
+    ----------
+    var_name : str
+        variable name
+
+    Returns
+    -------
+    Variable
+    """
     from pyaerocom import const
     return const.VARS[var_name]
 
@@ -804,8 +785,12 @@ def all_var_names():
     return [k for k in Variable.read_config().keys()]
 
 if __name__=="__main__":
-    
     import pyaerocom as pya
+    #res = pya.const.VARS.find('od*aer')
+    v1 = pya.const.VARS['scatc550dryaer']
+    v0 = pya.const.VARS['scatc550aer']
     
-    var = pya.const.VARS['sconcdu']
-    #pya.const.VARS.find('od*aer')
+    print(v0 == v1)
+    var = pya.const.VARS['blaaa']
+    
+    print(var)
