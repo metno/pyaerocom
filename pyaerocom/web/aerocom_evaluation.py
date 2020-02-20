@@ -228,7 +228,7 @@ class AerocomEvaluation(object):
     
     @property
     def exp_dir(self):
-        """Project directory"""
+        """Experiment directory"""
         return os.path.join(self.proj_dir, self.exp_id)
     
     @property
