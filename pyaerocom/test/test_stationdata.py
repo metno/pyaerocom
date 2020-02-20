@@ -7,20 +7,18 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import pytest
 import numpy as np
-import numpy.testing as npt
-from pyaerocom.test import settings
-import pyaerocom.exceptions as exc
+from pyaerocom.conftest import DATA_ACCESS, TEST_RTOL
 from cf_units import Unit
 
-RTOL = settings.TEST_RTOL
+RTOL = TEST_RTOL
 
 @pytest.fixture
 def stat1():
-    return settings.DATA_ACCESS['station_data1']
+    return DATA_ACCESS['station_data1']
 
 @pytest.fixture
 def stat2():
-    return settings.DATA_ACCESS['station_data2']
+    return DATA_ACCESS['station_data2']
 
 def test_default_vert_grid(stat1):
     grid = stat1.default_vert_grid
@@ -46,30 +44,5 @@ def test_check_var_unit_aerocom(stat1):
 
     
 if __name__=="__main__":
-    STAT1 = settings.DATA_ACCESS['station_data1']
-    STAT2 = settings.DATA_ACCESS['station_data2']
-    
-    stat1 = STAT1
-    stat2 = STAT2
-    
-    ec_mean =  np.mean(stat1.ec550aer)
-    try:
-        stat1.check_unit('ec550aer')
-    except exc.DataUnitError:
-        from pyaerocom import Variable
-        stat1.convert_unit('ec550aer', Variable('ec550aer').units)
-    
-    from pyaerocom.units_helpers import unit_conversion_fac
-    
-    fac = unit_conversion_fac('m-1', '1/Mm')
-    print(stat1)
-    
-    npt.assert_allclose(ec_mean * fac,
-                        stat1.ec550aer.mean(), 
-                        rtol=RTOL)
-    
-    merged = stat1.merge_other(stat2, 'ec550aer')
-    print(merged)
-    
-    
-    
+    import sys
+    pytest.main(sys.argv)
