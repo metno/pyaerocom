@@ -917,7 +917,11 @@ class UngriddedData(object):
         """
         for k, v in str_f.items():
             if not k in meta or not meta[k] == v:
-                return False
+                if '*' in v:
+                    if not fnmatch.fnmatch(meta[k], v):
+                        return False
+                else:
+                    return False
         for k, v in list_f.items():
             if not k in meta or not meta[k] in v:
                 return False
@@ -1318,9 +1322,12 @@ class UngriddedData(object):
         UngriddedData
             filtered data object
         """
+        data = self
+        
         remove_outliers = False
         set_flags_nan = False
         extract_vars = None
+        region_id = None
         if 'remove_outliers' in filter_attributes:
             remove_outliers = filter_attributes.pop('remove_outliers')
         if 'set_flags_nan' in filter_attributes:
@@ -1330,12 +1337,16 @@ class UngriddedData(object):
             if isinstance(extract_vars, str):
                 extract_vars = [extract_vars]
             for var in extract_vars:
-                if not var in self.contains_vars:
+                if not var in data.contains_vars:
                     raise VarNotAvailableError('No such variable {} in '
                                                'UngriddedData object. '
                                                'Available vars: {}'
                                                .format(var, self.contains_vars))
-        data = self.filter_by_meta(**filter_attributes)
+        if 'region_id' in filter_attributes:
+            region_id = filter_attributes.pop('region_id')
+           
+        if len(filter_attributes) > 0:
+            data = data.filter_by_meta(**filter_attributes)
         
         if extract_vars is not None:
             data = data.extract_vars(extract_vars)
@@ -1359,6 +1370,8 @@ class UngriddedData(object):
                                     'UngriddedData object, since it does not '
                                     'contain flag information')
             data = data.set_flags_nan(inplace=True)
+        if region_id:
+            data = data.filter_region(region_id)
         return data
     
     def filter_by_meta(self, **filter_attributes):
