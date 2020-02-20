@@ -6,7 +6,7 @@ Created on Mon Feb  4 10:36:15 2019
 @author: jonasg
 """
 from pyaerocom import geodesy
-from pyaerocom.test.settings import geonum_unavail, etopo1_unavail
+from pyaerocom.conftest import geonum_unavail, etopo1_unavail
 import numpy.testing as npt
 
 

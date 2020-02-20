@@ -6,7 +6,7 @@ Created on Mon Jul  9 14:14:29 2018
 import numpy.testing as npt
 import numpy as np
 import os
-from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
+from pyaerocom.conftest import TEST_RTOL, lustre_unavail
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
     
 @lustre_unavail

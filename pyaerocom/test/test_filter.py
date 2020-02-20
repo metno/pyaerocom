@@ -5,12 +5,11 @@ Created on Tue Dec  3 14:03:55 2019
 
 @author: hannas
 """
-import numpy as np
 import pytest
-
+import numpy as np
 
 from pyaerocom.filter import Filter
-from pyaerocom.test.settings import lustre_unavail
+from pyaerocom.conftest import lustre_unavail
 
 def test_Filter_init():
     assert Filter('EUROPE').name == 'EUROPE-wMOUNTAINS'
@@ -28,7 +27,9 @@ def test_filter_attributes():
 def test_filter_griddeddata(data_tm5):
     
     model = data_tm5.copy()
-    f1 = Filter('EUROPE-noMOUNTAINS-LAND') # europe only land
+    
+    #f1 = Filter('EUROPE-noMOUNTAINS-LAND') # europe only land
+    f1 = Filter('WORLD-noMOUNTAINS-LAND') # europe only land
     f2 = Filter('EUROPE-noMOUNTAINS-OCN') # europe only ocean
     f3 = Filter('EUROPE') # europe total
     
@@ -72,7 +73,6 @@ def test_filter_colocateddata():
 #     assert data_coloc.data.sum().values - 111340.31777193633 < 0.001
 # =============================================================================
 
-
-
 if __name__ == '__main__':
+
     pytest.main(['test_filter.py'])

@@ -10,7 +10,7 @@ import pytest
 import os
 import numpy.testing as npt
 from datetime import datetime
-from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
+from pyaerocom.conftest import TEST_RTOL, testdata_unavail
 from pyaerocom import GriddedData
 
 
@@ -18,7 +18,7 @@ TESTLATS =  [-10, 20]
 TESTLONS =  [-120, 69]
 
 ### tests
-@lustre_unavail
+@testdata_unavail
 def test_basic_properties(data_tm5):
     
     data =  data_tm5
@@ -37,7 +37,7 @@ def test_basic_properties(data_tm5):
     assert data.lat_res == 2.0
     assert data.lon_res == 3.0
     
-@lustre_unavail
+@testdata_unavail
 def test_longitude(data_tm5):
     """Test if longitudes are defined right"""
     assert str(data_tm5.longitude.units) == 'degrees'
@@ -47,7 +47,7 @@ def test_longitude(data_tm5):
     vals = [lons.min(), lons.max()]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
     
-@lustre_unavail
+@testdata_unavail
 def test_latitude(data_tm5):
     """test latitude array"""
     assert str(data_tm5.latitude.units) == 'degrees'
@@ -56,7 +56,7 @@ def test_latitude(data_tm5):
     vals = [lats.min(), lats.max()]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
 
-@lustre_unavail    
+@testdata_unavail    
 def test_time(data_tm5):
     """Test time dimension access and values"""
     time = data_tm5.time
@@ -68,7 +68,7 @@ def test_time(data_tm5):
     assert nominal_eq == vals_eq
 
 
-@lustre_unavail
+@testdata_unavail
 def test_resample_time(data_tm5):
     data = data_tm5
     
@@ -80,7 +80,7 @@ def test_resample_time(data_tm5):
     mean_vals = [data.mean(), yearly.mean()]
     npt.assert_allclose(actual=mean_vals,
                         desired=[0.11865, 0.11865], rtol=TEST_RTOL)
-@lustre_unavail
+@testdata_unavail
 def test_interpolate(data_tm5):
     data = data_tm5
     
@@ -95,7 +95,7 @@ def test_interpolate(data_tm5):
                         desired=desired, 
                         rtol=TEST_RTOL)
     
-@lustre_unavail
+@testdata_unavail
 def test_to_time_series(data_tm5):
     
     latsm = [-9, 21]

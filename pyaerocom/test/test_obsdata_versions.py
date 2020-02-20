@@ -10,7 +10,7 @@ import pytest
 import numpy.testing as npt
 from pyaerocom.io import ReadUngridded
 
-from pyaerocom.test.settings import lustre_unavail
+from pyaerocom.conftest import lustre_unavail
 
 @lustre_unavail
 def test_revision_dates():
@@ -40,4 +40,3 @@ def test_revision_dates():
 if __name__=="__main__":
     import sys
     pytest.main(sys.argv)
-    #stat.plot_timeseries('scatc550aer')

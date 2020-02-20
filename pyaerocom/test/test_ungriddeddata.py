@@ -8,7 +8,7 @@ Created on Thu Apr 12 14:45:43 2018
 import numpy as np
 import numpy.testing as npt
 from pyaerocom import UngriddedData
-from pyaerocom.test.settings import lustre_unavail
+from pyaerocom.conftest import lustre_unavail
 from pyaerocom.exceptions import DataCoverageError
 
 def test_init_shape():

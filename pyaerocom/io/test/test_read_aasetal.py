@@ -14,7 +14,7 @@ import numpy.testing as npt
 import pandas as pd
 import os
 
-from pyaerocom.test.settings import lustre_unavail
+from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.units_helpers import convert_unit
 

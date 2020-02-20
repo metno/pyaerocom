@@ -3,7 +3,7 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
-from pyaerocom.test.settings import lustre_unavail
+from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io import ReadUngridded
 
 def test_supported():

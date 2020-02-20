@@ -8,7 +8,7 @@ Created on Mon Jul  9 14:14:29 2018
 import pytest
 import numpy.testing as npt
 from pandas import Timestamp, DataFrame
-from pyaerocom.test.settings import TEST_RTOL, lustre_unavail
+from pyaerocom.conftest import TEST_RTOL, lustre_unavail
 from pyaerocom.io.readgridded import ReadGridded
 
 START = "1-1-2003"

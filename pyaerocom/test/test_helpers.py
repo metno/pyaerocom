@@ -7,7 +7,7 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import numpy as np
 import pytest
-from pyaerocom.test.settings import DATA_ACCESS
+from pyaerocom.conftest import DATA_ACCESS
 #import numpy.testing as npt
 from pyaerocom import helpers
 

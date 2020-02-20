@@ -9,7 +9,7 @@ Created on Wed May 15 11:05:50 2019
 import pytest
 import numpy.testing as npt
 import numpy as np
-from pyaerocom.test.settings import lustre_unavail, TEST_RTOL, test_not_working
+from pyaerocom.conftest import lustre_unavail, TEST_RTOL, test_not_working
 from pyaerocom.io import ReadGAW
 
 def _make_data():
