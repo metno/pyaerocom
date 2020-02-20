@@ -386,11 +386,27 @@ class ReadUngriddedBase(abc.ABC):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-        if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):
-            raise AttributeError("One or more of the desired variables is not "
-                                 "supported by this dataset.")
-        
-        
+        # first, check if input variables are alias names, and replace
+        for i, var in enumerate(vars_to_retrieve):
+            try:
+                _var = const.VARS[var]
+                if _var.is_alias:
+                    var_name = _var.var_name_aerocom
+                    vars_to_retrieve[i] = var_name
+                    const.print_log.warning('Detected and replaced alias '
+                                            'variable name {} for AeroCom '
+                                            'variable {} in vars_to_retrieve. '
+                                            'Please use AeroCom variable names.'
+                                            .format(var, var_name))
+            except Exception as e:
+                const.print_log.warn('Failed to check {} for aliases. Reason: {}'
+                                     .format(var, repr(e)))
+                
+# =============================================================================
+#         if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):
+#             raise AttributeError("One or more of the desired variables is not "
+#                                  "supported by this dataset.")
+# =============================================================================
         repeat = True
         while repeat:
             repeat, vars_to_retrieve = self._add_additional_vars(vars_to_retrieve)
