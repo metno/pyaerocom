@@ -3,10 +3,9 @@
 from copy import deepcopy
 from collections import OrderedDict as od
 
-
-
-import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import xarray as xray
 from pyaerocom import logger, const
 
