@@ -24,10 +24,10 @@ import fnmatch
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
-from pyaerocom.mathutils import (compute_scatc550dryaer, 
-                                 compute_scatc440dryaer,
-                                 compute_scatc700dryaer,
-                                 compute_absc550dryaer,
+from pyaerocom.mathutils import (compute_sc550dryaer, 
+                                 compute_sc440dryaer,
+                                 compute_sc700dryaer,
+                                 compute_ac550dryaer,
                                  compute_ang4470dryaer_from_dry_scat)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _print_read_info
@@ -71,8 +71,8 @@ class ReadEbasOptions(BrowseDict):
     keep_aux_vars : bool
         if True, auxiliary variables required for computed variables will be 
         written to the :class:`UngriddedData` object created in 
-        :func:`ReadEbas.read` (e.g. if scatc550dryaer is requested, this 
-        requires reading of scatc550aer and scatcrh. The latter 2 will be 
+        :func:`ReadEbas.read` (e.g. if sc550dryaer is requested, this 
+        requires reading of sc550aer and scrh. The latter 2 will be 
         written to the data object if this parameter evaluates to True)
     log_read_stats : bool
         It True, the number of data points that is removed per station (
@@ -131,7 +131,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.28_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.29_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -146,8 +146,8 @@ class ReadEbas(ReadUngriddedBase):
                       #'Trollhaugen'    : 'Troll'}
     # TODO: check and redefine 
     #: default variables for read method
-    DEFAULT_VARS = ['absc550aer', # light absorption coefficient
-                    'scatc550aer'] # light scattering coefficient
+    DEFAULT_VARS = ['ac550aer', # light absorption coefficient
+                    'sc550aer'] # light scattering coefficient
     
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1mn'  :   'minutely',
@@ -162,29 +162,29 @@ class ReadEbas(ReadUngriddedBase):
                      'mo'   :   'monthly'}
     
     
-    AUX_REQUIRES = {'scatc550dryaer'    :   ['scatc550aer',
-                                             'scatcrh'],
-                    'scatc440dryaer'    :   ['scatc440aer',
-                                             'scatcrh'],
-                    'scatc700dryaer'    :   ['scatc700aer',
-                                             'scatcrh'],
-                    'absc550dryaer'     :   ['absc550aer',
-                                             'abscrh'],
-                    'ang4470dryaer'     :   ['scatc440dryaer',
-                                             'scatc700dryaer']}
+    AUX_REQUIRES = {'sc550dryaer'    :   ['sc550aer',
+                                          'scrh'],
+                    'sc440dryaer'    :   ['sc440aer',
+                                          'scrh'],
+                    'sc700dryaer'    :   ['sc700aer',
+                                          'scrh'],
+                    'ac550dryaer'    :   ['ac550aer',
+                                          'acrh'],
+                    'ang4470dryaer'  :   ['sc440dryaer',
+                                          'sc700dryaer']}
     
     # Specifies which metainformation is supposed to be migrated to computed
     # variable
-    AUX_USE_META = {'scatc550dryaer'    :   'scatc550aer',
-                    'scatc440dryaer'    :   'scatc440aer',
-                    'scatc700dryaer'    :   'scatc700aer',
-                    'absc550dryaer'     :   'absc550aer'}
+    AUX_USE_META = {'sc550dryaer'    :   'sc550aer',
+                    'sc440dryaer'    :   'sc440aer',
+                    'sc700dryaer'    :   'sc700aer',
+                    'ac550dryaer'     :   'ac550aer'}
     
-    AUX_FUNS = {'scatc440dryaer'    :   compute_scatc440dryaer,
-                'scatc550dryaer'    :   compute_scatc550dryaer,
-                'scatc700dryaer'    :   compute_scatc700dryaer,
-                'absc550dryaer'     :   compute_absc550dryaer,
-                'ang4470dryaer'     :   compute_ang4470dryaer_from_dry_scat}
+    AUX_FUNS = {'sc440dryaer'    :   compute_sc440dryaer,
+                'sc550dryaer'    :   compute_sc550dryaer,
+                'sc700dryaer'    :   compute_sc700dryaer,
+                'ac550dryaer'    :   compute_ac550dryaer,
+                'ang4470dryaer'  :   compute_ang4470dryaer_from_dry_scat}
     
     
     IGNORE_WAVELENGTH = ['conceqbc']
@@ -208,11 +208,11 @@ class ReadEbas(ReadUngriddedBase):
         #self.opts = ReadEbasOptions()
         #: loaded instances of aerocom variables (instances of 
         #: :class:`Variable` object, is written in get_file_list
-        self.loaded_aerocom_vars = {}
+        self._loaded_aerocom_vars = {}
         
         #: loaded instances of variables in EBAS namespace (instances of 
         #: :class:`EbasVarInfo` object, is updated in read_file
-        self.loaded_ebas_vars = {}
+        self._loaded_ebas_vars = {}
         
         self._filelog = None
         
@@ -387,21 +387,39 @@ class ReadEbas(ReadUngriddedBase):
             raise FileNotFoundError('No EBAS data files could be found for '
                                     'stations {}'.format(stats_or_patterns))
         return list(dict.fromkeys(stats).keys())
+      
+    def _precheck_vars_to_retrieve(self, vars_to_retrieve):
+        """
+        Make sure input variables are supported and are only provided once
+
+        Parameters
+        ----------
+        vars_to_retrieve : list, or similar
+            make sure input variable names are in AeroCom convention
+
+        Raises
+        ------
+        ValueError
+            if the same variable is input more than one time
+        VariableDefinitionError
+            if one of the input variables is not supported
+            
+        Returns
+        -------
+        list
+            list of variables to be retrieved
+        """
+        out = []
+        for var in vars_to_retrieve:
+            name = self.var_info(var).var_name_aerocom
+            if name in out:
+                raise ValueError('Variable {} is input more than once in {}'
+                                 .format(var, vars_to_retrieve))
+            out.append(name)
+        return out
     
     def get_file_list(self, vars_to_retrieve=None, **constraints):
         """Get list of files for all variables to retrieve
-        
-        Note
-        ----
-        Other than in other implementations of the base class, this 
-        implementation returns a dictionary containing file lists for each 
-        of the specified variables. This is because in EBAS, some of the 
-        variables require additional specifications to the variable name, such
-        as the EBAS matrix or the instrument used. For instance, the EBAS
-        variable *sulphate_total* specifies either sulfate concentrations in
-        precipitable water (EBAS matrix: precip) or in air (e.g. matrix aerosol,
-        pm1, pm10 ...)
-        
         
         Parameters
         ----------
@@ -426,6 +444,9 @@ class ReadEbas(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
             
+        # make sure variable names are input correctly
+        vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
+        
         self.logger.info('Fetching data files. This might take a while...')
         
         db = self.file_index
@@ -434,19 +455,12 @@ class ReadEbas(ReadUngriddedBase):
         const.print_log.info('Retrieving EBAS files for variables\n{}'
                              .format(vars_to_retrieve))
         for var in vars_to_retrieve:
-            if not var in self.PROVIDES_VARIABLES:
-                raise AttributeError('No such variable {}'.format(var))
-            info = EbasVarInfo(var)
-            self.loaded_ebas_vars[var] = info
-
+            info = self.get_ebas_var(var)
+            
             if 'station_names' in constraints:
                 stat_matches = self.find_station_matches(constraints['station_names'])
                 constraints['station_names'] = stat_matches
-# =============================================================================
-#             if not 'data_level' in constraints:
-#                 constraints['data_level'] = self.opts.data_level
-# =============================================================================
-
+                
             req = info.make_sql_request(**constraints)
             
             const.logger.info('Retrieving EBAS file list for request:\n{}'
@@ -487,7 +501,7 @@ class ReadEbas(ReadUngriddedBase):
         Parameters
         -----------
         ebas_var_info : EbasVarInfo
-            EBAS variable information (e.g. for absc550aer)
+            EBAS variable information (e.g. for ac550aer)
         data : EbasNasaAmesFile
             loaded EBAS file data
         
@@ -538,7 +552,7 @@ class ReadEbas(ReadUngriddedBase):
         """Find best match of data column for variable in multiple columns
         
         This method is supposed to be used in case no unique match can be 
-        found for a given variable. For instance, if ``absc550aer``
+        found for a given variable. For instance, if ``ac550aer``
         
         """
         var = ebas_var_info.var_name
@@ -778,7 +792,7 @@ class ReadEbas(ReadUngriddedBase):
         For each of the input variables, try to find one or more matches in the 
         input NASA Ames file (loaded data object). If more than one match 
         occurs, identify the best one (an example here is: user wants 
-        scatc550aer and file contains scattering coefficients at 530 nm and 
+        sc550aer and file contains scattering coefficients at 530 nm and 
         580 nm: in this case the 530 nm column will be used, cf. also accepted
         wavelength tolerance for reading of wavelength dependent variables
         :attr:`wavelength_tol_nm`).
@@ -801,12 +815,10 @@ class ReadEbas(ReadUngriddedBase):
         # Loop over all variables that are supposed to be read
         for var in vars_to_read:
             # get corresponding EBAS variable info ...
-            ebas_var_info = self.loaded_ebas_vars[var]
+            ebas_var_info = self.get_ebas_var(var)
             # ... and AeroCom variable definition
-            if not var in self.loaded_aerocom_vars:
-                self.loaded_aerocom_vars[var] = var_info = const.VARS[var]
-            else:
-                var_info = self.loaded_aerocom_vars[var]
+            var_info = self.var_info(var)
+            
             # Find all columns in file that match the current variable 
             # There may be multiple matches, e.g. because the variable may
             # be sampled at different wavelenghts or there may be different 
@@ -849,10 +861,16 @@ class ReadEbas(ReadUngriddedBase):
         for var, cols in var_cols.items():
             if len(cols) > 1:
                 col = self._find_best_data_column(cols, 
-                                                  self.loaded_ebas_vars[var],
+                                                  self.get_ebas_var(var),
                                                   file)
                 var_cols[var] = col
         return var_cols
+    
+    def get_ebas_var(self, var_name):
+        """Get instance of :class:`EbasVarInfo` for input AeroCom variable"""
+        if not var_name in self._loaded_ebas_vars:
+            self._loaded_ebas_vars[var_name] = EbasVarInfo(var_name)
+        return self._loaded_ebas_vars[var_name]
     
     def read_file(self, filename, vars_to_retrieve=None, _vars_to_read=None, 
                   _vars_to_compute=None):
@@ -880,14 +898,14 @@ class ReadEbas(ReadUngriddedBase):
         else:
             vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
         
-        for var in vars_to_read:
-            if not var in self.loaded_ebas_vars:
-                self.loaded_ebas_vars[var] = EbasVarInfo(var)
-            
-            if self.loaded_ebas_vars[var].requires is not None:
-                for aux_var in self.loaded_ebas_vars[var].requires:
-                    if not aux_var in self.loaded_ebas_vars:
-                        self.loaded_ebas_vars[aux_var] = EbasVarInfo(aux_var)  
+# =============================================================================
+#         for var in vars_to_read:
+#             info = self.get_ebas_var(var)
+#             if info.requires is not None:
+#                 for aux_var in info.requires:
+#                     if not aux_var in self._loaded_ebas_vars:
+#                         self._loaded_ebas_vars[aux_var] = EbasVarInfo(aux_var)  
+# =============================================================================
             
         file = EbasNasaAmesFile(filename)
         
@@ -913,7 +931,7 @@ class ReadEbas(ReadUngriddedBase):
             if self.eval_flags:
                 invalid = ~file.flag_col_info[_col.flag_col].valid
                 data_out.data_flagged[var] = invalid
-            sf = self.loaded_ebas_vars[var].scale_factor
+            sf = self.get_ebas_var(var).scale_factor
             if sf != 1:
                 data *= sf
                 data_out['var_info'][var]['scale_factor'] = sf
@@ -978,12 +996,11 @@ class ReadEbas(ReadUngriddedBase):
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
         
-            
         return data_out
     
     def _convert_varunit_stationdata(self, sd, var):
         from_unit = sd.var_info[var]['units']
-        to_unit = self.loaded_aerocom_vars[var]['units']
+        to_unit = self.var_info(var)['units']
         if from_unit != to_unit:
             sd.convert_unit(var, to_unit)    
         return sd
@@ -1019,10 +1036,7 @@ class ReadEbas(ReadUngriddedBase):
             if not var in data: # variable could not be computed -> ignore
                 continue
             
-            if not var in self.loaded_ebas_vars:
-                self.loaded_ebas_vars[var] = EbasVarInfo(var)
-            
-            data.var_info[var] = self.loaded_ebas_vars[var]
+            data.var_info[var] = self.get_ebas_var(var) #self._loaded_ebas_vars[var]
 
             if var in self.AUX_USE_META:
                 to_dict = data['var_info'][var]
@@ -1049,9 +1063,9 @@ class ReadEbas(ReadUngriddedBase):
     
     def var_info(self, var_name):
         """Aerocom variable info for input var_name"""
-        if not var_name in self.loaded_aerocom_vars:
-            self.loaded_aerocom_vars[var_name] = const.VARS[var_name]
-        return self.loaded_aerocom_vars[var_name]
+        if not var_name in self._loaded_aerocom_vars:
+            self._loaded_aerocom_vars[var_name] = const.VARS[var_name]
+        return self._loaded_aerocom_vars[var_name]
     
     def read(self, vars_to_retrieve=None, first_file=None, 
              last_file=None, multiproc=False, files=None, **constraints):
@@ -1099,6 +1113,8 @@ class ReadEbas(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         
+        vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
+        
         if self.keep_aux_vars:
             (vars_to_read, 
              vars_to_compute) = self.check_vars_to_retrieve(vars_to_retrieve)
@@ -1128,25 +1144,7 @@ class ReadEbas(ReadUngriddedBase):
         else:
             raise NotImplementedError('Coming soon...')
         data.clear_meta_no_data()
-# =============================================================================
-#             from multiprocessing import Pool, Manager, cpu_count
-#             from functools import partial
-#             num_proc = cpu_count()
-#             func = partial(self._append_read_files, 
-#                            vars_to_retrieve=vars_to_retrieve,
-#                            files_contain=files_contain,
-#                            constraints=constraints)
-#             lists = np.array_split(files, num_proc)
-#             with Manager() as manager:
-#                 result = manager.list()
-#                 p = Pool(processes=num_proc)
-#                 for sub in lists:
-#                     p.apply_async(func, (sub, result))
-#                 p.close()
-#                 p.join()
-#             
-#             data = result
-# =============================================================================
+
         return data
     
     def _read_files(self, files, vars_to_retrieve, files_contain, constraints):
@@ -1281,11 +1279,6 @@ class ReadEbas(ReadUngriddedBase):
                 metadata[meta_key]['var_info'][var] = od()
                 metadata[meta_key]['var_info'][var].update(var_info)
                 meta_idx[meta_key][var] = np.arange(start, stop)
-
-# =============================================================================
-#                 if not var in data_obj.var_idx:
-#                     data_obj.var_idx[var] = var_idx
-# =============================================================================
                     
             metadata[meta_key]['variables'] = append_vars
             idx += totnum  
@@ -1304,11 +1297,7 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     
     r = ReadEbas()
-    #files = ['/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20060101020000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20070101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20080101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20080618090000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.28w.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20090101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20090107070000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20100101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20100101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20110101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20110101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20120101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20120101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.32w.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130813000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.9d.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20130822000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.4mo.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20140101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20140101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.8w.1h.ES08L_RadianceResearch_PSAP-3W_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20150101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20160101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20170101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1mo.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20170131160000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.11mo.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas', '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/ES0020U.20180101000000.20190424080000.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.ES08L_Thermo_5012_UGR.ES08L_abs_coef.lev2.nas']
-    #files = r.get_file_list('absc550aer', station_names='Granada')
-    data = r.read('concso4')
+    files = r.get_file_list(['scatc550dryaer', 'ac550dryaer'])
     
-    
-
-    
-    
+    data = r.read(['scatc550dryaer', 'scatc550aer'], station_names='Jungfrau*')
+    print(data)
