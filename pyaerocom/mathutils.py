@@ -583,18 +583,18 @@ def compute_ang4470dryaer_from_dry_scat(data):
     ----------
     StationData or dict
         data containing dry scattering coefficients at 440 and 700 nm
-        (i.e. keys scatc440dryaer and scatc700dryaer)
+        (i.e. keys sc440dryaer and sc700dryaer)
     
     Returns
     -------
     StationData or dict
         extended data object containing angstrom exponent
     """
-    return compute_angstrom_coeff(data['scatc440dryaer'],
-                                  data['scatc700dryaer'],
+    return compute_angstrom_coeff(data['sc440dryaer'],
+                                  data['sc700dryaer'],
                                   440, 700)
 
-def compute_scatc550dryaer(data):
+def compute_sc550dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
     
     Cf. :func:`_compute_dry_helper`
@@ -607,15 +607,15 @@ def compute_scatc550dryaer(data):
     Returns
     -------
     dict 
-        modified data object containing new column scatc550dryaer
+        modified data object containing new column sc550dryaer
     
     """
-    rh_max= const.VARS['scatc550dryaer'].dry_rh_max
-    return _compute_dry_helper(data, data_colname='scatc550aer', 
-                               rh_colname='scatcrh', 
+    rh_max= const.VARS['sc550dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='sc550aer', 
+                               rh_colname='scrh', 
                                rh_max_percent=rh_max)
     
-def compute_scatc440dryaer(data):
+def compute_sc440dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
     
     Cf. :func:`_compute_dry_helper`
@@ -628,15 +628,15 @@ def compute_scatc440dryaer(data):
     Returns
     -------
     dict 
-        modified data object containing new column scatc550dryaer
+        modified data object containing new column sc550dryaer
     
     """
-    rh_max= const.VARS['scatc440dryaer'].dry_rh_max
-    return _compute_dry_helper(data, data_colname='scatc440aer', 
-                               rh_colname='scatcrh', 
+    rh_max= const.VARS['sc440dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='sc440aer', 
+                               rh_colname='scrh', 
                                rh_max_percent=rh_max)
 
-def compute_scatc700dryaer(data):
+def compute_sc700dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
     
     Cf. :func:`_compute_dry_helper`
@@ -649,15 +649,15 @@ def compute_scatc700dryaer(data):
     Returns
     -------
     dict 
-        modified data object containing new column scatc550dryaer
+        modified data object containing new column sc550dryaer
     
     """
-    rh_max= const.VARS['scatc700dryaer'].dry_rh_max
-    return _compute_dry_helper(data, data_colname='scatc700aer', 
-                               rh_colname='scatcrh', 
+    rh_max= const.VARS['sc700dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='sc700aer', 
+                               rh_colname='scrh', 
                                rh_max_percent=rh_max)
     
-def compute_absc550dryaer(data):
+def compute_ac550dryaer(data):
     """Compute aerosol dry absorption coefficent applying RH threshold
     
     Cf. :func:`_compute_dry_helper`
@@ -670,12 +670,12 @@ def compute_absc550dryaer(data):
     Returns
     -------
     dict 
-        modified data object containing new column scatc550dryaer
+        modified data object containing new column sc550dryaer
     
     """
-    rh_max= const.VARS['absc550dryaer'].dry_rh_max
-    return _compute_dry_helper(data, data_colname='absc550aer', 
-                               rh_colname='abscrh', 
+    rh_max= const.VARS['ac550dryaer'].dry_rh_max
+    return _compute_dry_helper(data, data_colname='ac550aer', 
+                               rh_colname='acrh', 
                                rh_max_percent=rh_max)
     
 def _compute_dry_helper(data, data_colname, rh_colname, 
