@@ -1,0 +1,39 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - uses: s-weigand/setup-conda@v1.0.2
+    - name: Conda info
+      run: | 
+        conda --version
+        which python
+    - name: Display current environments
+      run: conda info --envs
+    - name: Update environment
+      run: |
+        conda env update -n base -f ./pyaerocom_env.yml
+    - name: Install pytest
+      run: | 
+        conda install pytest
+        conda info --envs
+        conda list pytest
+        which python
+    - name: Install pyaerocom
+      run: python ./setup.py install
+    - name: Display current branch
+      run: git branch
+    - name: Run pytest
+      run: pytest
