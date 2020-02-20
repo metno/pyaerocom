@@ -9,7 +9,7 @@ UNDER DEVELOPMENT
 OBS_SOURCES = {
 
 'EBAS-Lev3'         :   dict(obs_id='EBASMC', 
-                             obs_vars=['absc550aer', 'scatc550dryaer'], 
+                             obs_vars=['ac550aer', 'sc550dryaer'], 
                              vert_scheme='surface',
                              obs_vert_type='Surface'),
         
@@ -58,8 +58,8 @@ OBS_DEFAULTS = {
                              'od550gt1aer'       :  'AeronetSDA',
                              'abs550aer'         :  'AeronetInv'},
                          
-        'Surface'       :   {'absc550aer'        :  'EBAS-Lev3',
-                             'scatc550dryaer'    :  'EBAS-Lev3'},
+        'Surface'       :   {'ac550aer'        :  'EBAS-Lev3',
+                             'sc550dryaer'    :  'EBAS-Lev3'},
 }
                 
 def get_default_obsnetwork(var_name, vert_which=None):
