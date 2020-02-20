@@ -43,23 +43,6 @@ def _init_supplemental():
     from os.path import abspath, dirname
     return (get_distribution('pyaerocom').version, abspath(dirname(__file__)))
 
-def check_requirements(logger):
-    GEONUM_AVAILABLE = True
-    BASEMAP_AVAILABLE = True
-    try:
-        import geonum
-    except:
-        GEONUM_AVAILABLE = False
-        logger.warning('geonum library is not installed. Some features will not '
-                    'be available (e.g. conversion of pressure to altitude')
-    try:
-        from mpl_toolkits.basemap import Basemap
-    except:
-        BASEMAP_AVAILABLE = False
-        logger.warning('basemap extension library is not installed (or cannot be '
-                    'imported. Some features will not be available')
-    return (GEONUM_AVAILABLE, BASEMAP_AVAILABLE)
-
 LOGLEVELS = {'debug': 10,
              'info': 20,
              'warning': 30,

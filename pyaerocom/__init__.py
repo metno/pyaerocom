@@ -1,11 +1,8 @@
 from ._init_helpers import (_init_supplemental, _init_logger, 
-                            check_requirements, LOGLEVELS, change_verbosity)
+                            LOGLEVELS, change_verbosity)
 __version__, __dir__ = _init_supplemental()
 
 logger, print_log = _init_logger()
-
-(GEONUM_AVAILABLE, 
- BASEMAP_AVAILABLE) = check_requirements(logger)
 
 # Imports
 from . import _lowlevel_helpers

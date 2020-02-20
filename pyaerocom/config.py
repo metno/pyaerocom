@@ -192,6 +192,7 @@ class Config(object):
     SERVER_CHECK_TIMEOUT = 1 #0.1 #s
     
     _outhomename = 'MyPyaerocom'
+    _testdatadirname = 'testdata-minimal'
 
     from pyaerocom import __dir__
     _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
@@ -452,6 +453,12 @@ class Config(object):
         return self._outputdir
     
     @property
+    def _TESTDATADIR(self):
+        """Directory where testdata is stored (only for automated testing)"""
+        return os.path.join(self.OUTPUTDIR, self._testdatadirname)
+        
+    
+    @property
     def FILTERMASKKDIR(self):
         if not check_write_access(self._filtermaskdir):
             outdir = self.OUTPUTDIR
@@ -588,18 +595,65 @@ class Config(object):
             self.print_log.warning('Failed to infer path environment for '
                                    'input dir {}. No search paths will be added'
                                    .format(value))
-            
+    
+    @property
+    def DIR_INI_FILES(self):
+        """Directory containing configuration files"""
+        from pyaerocom import __dir__
+        return os.path.join(__dir__, 'data')
+    
+    @property
+    def ETOPO1_AVAILABLE(self):
+        """
+        Boolean specifying if access to ETOPO1 dataset is provided
+
+        Returns
+        -------
+        bool
+        """
+        if 'etopo1' in self.SUPPLDIRS and os.path.exists(self.SUPPLDIRS['etopo1']):
+            return True
+        return False
+    
+    @property
+    def GEONUM_AVAILABLE(self):
+        """
+        Boolean specifying if geonum library is installed
+
+        Returns
+        -------
+        bool
+
+        """
+        try:
+            import geonum
+            return True
+        except ModuleNotFoundError:
+            return False
+    
+    @property
+    def BASEMAP_AVAILABLE(self):
+        """
+        Boolean specifying if basemap library is installed
+
+        Returns
+        -------
+        bool
+
+        """
+        try:
+            from mpl_toolkits.basemap import Basemap
+            return True
+        except ModuleNotFoundError:
+            return False
+        
     def connect_database(self, location):
         if not self._check_access(location):
             raise FileNotFoundError('Cannot add {}: location does not exist')
             
         raise NotImplementedError
         
-    @property
-    def DIR_INI_FILES(self):
-        """Directory containing configuration files"""
-        from pyaerocom import __dir__
-        return os.path.join(__dir__, 'data')
+    
     
     def _check_ebas_db_local_vs_remote(self, loc_remote, loc_local):
         
@@ -629,13 +683,13 @@ class Config(object):
                 return loc_remote
         return loc_remote
         
-                    
-                    
-    
+
     @property
     def EBASMC_SQL_DATABASE(self):
         """Path to EBAS SQL database"""
         dbname = self.EBAS_SQL_DB_NAME
+        if not 'EBASMC' in self.OBSCONFIG:
+            return None
         loc_remote = os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], dbname)
         if self.EBAS_DB_LOCAL_CACHE:
             loc_local = os.path.join(self.CACHEDIR, dbname)
@@ -932,5 +986,5 @@ if __name__=="__main__":
     
     ebassql = pya.const.EBASMC_SQL_DATABASE
     
-    pya.io.ReadEbas().read('absc550aer')
+    pya.io.ReadEbas()
     
