@@ -10,24 +10,53 @@ except:
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.io import EbasSQLRequest
+from pyaerocom.exceptions import VarNotAvailableError
 
 class EbasVarInfo(BrowseDict):
-    """EBAS IO variable information for Aerocom
+    """Interface for mapping between EBAS variable information and AeroCom
     
-    ToDo
-    ----
-    Complete documentation
+    For more information about EBAS variable and data information see 
+    `EBAS website <http://ebas.nilu.no/>`__.
+    
+    Attributes
+    ----------
+    var_name : str
+        AeroCom variable name
+    component : list
+        list of EBAS variable / component names that are mapped to 
+        :attr:`var_name`
+    matrix : list, optional
+        list of EBAS matrix values that are accepted, default is None, i.e. 
+        all available matrices are used
+    instrument : list, optional
+        list of all instruments that are accepted for this variable
+    requires : list, optional
+        for variables that are computed and not directly available in EBAS. 
+        Provided as list of (AeroCom) variables that are required to 
+        compute :attr:`var_name` (e.g. for `sc550dryaer` this would be 
+        `[sc550aer,scrh]`).
+    scale_factor : float, optional
+        multiplicative scale factor that is applied in order to convert 
+        EBAS variable into AeroCom variable (e.g. 1.4 for conversion of 
+        EBAS OC measurement to AeroCom concoa variable)
+    old_name : str
+        old variable name (refers to outdated conventions, currently not used)
+        
+    Parameters
+    ----------
+    var_name : str
+        AeroCom variable name
+    init : bool
+        if True, EBAS configuration for input variable is retrieved from 
+        data file ebas_config.ini (if possible)
+    **kwargs
+        additional keyword arguments (currently not used)
+    
     """
-    def __init__(self, var_name="abs550aer", init=True, **kwargs):
+    
+    def __init__(self, var_name, init=True, **kwargs):
         self.var_name = var_name
         
-        #: aliases
-        self.aliases = []
-        
-        #: old variable name
-        self.old_name = None
-        
-        #: list of variable / component names (EBAS side)
         self.component = None
         
         #: list of matrix names (EBAS side, optional)
@@ -44,6 +73,9 @@ class EbasVarInfo(BrowseDict):
         
         #: scale factor for conversion to Aerocom units
         self.scale_factor = 1
+        
+        #: old variable name
+        self.old_name = None
         
         #imports default information and, on top, variable information (if 
         # applicable)
@@ -66,66 +98,59 @@ class EbasVarInfo(BrowseDict):
         conf_reader.read(fpath)
         return conf_reader
     
-    def _check_aliases(self, varname, conf_reader):
-        for section, item in conf_reader.items():
-            if 'aliases' in item:
-                if varname in [x.strip() for x in item['aliases'].split(',')]:
-                    const.logger.warning('Found alias match ({}) for variable {}, '
-                                   'Note that searching for aliases slows down '
-                                   'things, thus, please consider using the '
-                                   'actual aerocom variable '
-                                   'name'.format(varname, section))
-                    return section
-        raise IOError('No alias match could be found for variable {}'.format(varname))
-        
+    @property
+    def var_name_aerocom(self):
+        """Variable name in AeroCom convention"""
+        return const.VARS[self.var_name].var_name_aerocom
+    
     def parse_from_ini(self, var_name=None, conf_reader=None):
-        """Import information about default region
+        """
+        Parse EBAS info for input AeroCom variable (works also for aliases)
         
         Parameters
         ----------
         var_name : str
-            strind ID of region (must be specified in `regions.ini <https://
-            github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini>`__ 
-            file)
+            AeroCom variable name
         conf_reader : ConfigParser
             open config parser object
+        
+        Raises
+        ------
+        VarNotAvailableError
+            if variable is not supported
             
         Returns
         -------
         bool
             True, if default could be loaded, False if not
-        
-        Raises
-        ------
-        IOError
-            if regions.ini file does not exist
-
-        
         """
         if conf_reader is None:
             conf_reader = self.open_config()
         
         if not var_name in conf_reader:
-            try:
-                var_name = self._check_aliases(var_name, conf_reader)
-            except Exception as e:
-                raise IOError("No variable information  found for {} "
-                              "(including aliases): Error: {}".format(var_name,
-                               repr(e)))
+            # this will raise Variable
+            var_name = const.VARS[var_name].var_name_aerocom
+# =============================================================================
+#             const.print_log.warning('Updating variable name {} to {}'
+#                                     .format(self.var_name, var_name))
+#             self.var_name = var_name
+# =============================================================================
+            if not var_name in conf_reader:
+                raise VarNotAvailableError('Variable {} is not available in '
+                                           'EBAS interface'.format(var_name))
+            
         var_info = conf_reader[var_name]
         for key in self.keys():
             if key in var_info:
                 val = var_info[key]
                 if key in ('var_name', 'old_name') :
                     self[key] = val
-                elif key =='scale_factor':
+                elif key == 'scale_factor':
                     self[key] = float(val.split('#')[0].strip())
                 else:
                     self[key] = list(dict.fromkeys([x for x in val.split(',')]))
+        self.var_name=var_name
         
-        if self.old_name is not None:
-            self.aliases.append(self.old_name)
-    
     def to_dict(self):
         """Convert into dictionary"""
         d = {}
