@@ -10,6 +10,7 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import list_to_shortstr
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
+from pyaerocom.exceptions import DataSourceError
 # TODO: Proposal: include attribute ts_type that is by default undefined but 
 # may be set to either of the defined 
 class ReadUngriddedBase(abc.ABC):
@@ -157,7 +158,8 @@ class ReadUngriddedBase(abc.ABC):
     def DATASET_PATH(self):
         """Path to datafiles of specified dataset 
         
-        Is retrieved automatically based on network ID (:attr:`DATA_ID`)
+        Is retrieved automatically (if not specified explicitely on class 
+        instantiation), based on network ID (:attr:`DATA_ID`)
         using :func:`get_obsnetwork_dir` (which uses the information in 
         ``pyaerocom.const``).
         """
@@ -570,9 +572,9 @@ class ReadUngriddedBase(abc.ABC):
                                               pattern)))
         if not len(files) > 0:
             all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
-            raise IOError("No files could be detected matching file mask {} "
-                          "in dataset {}, files in folder {}:\nFiles in "
-                          "folder:{}".format(pattern, 
+            raise DataSourceError('No files could be detected matching file '
+                                  'mask {} in dataset {}, files in folder {}:\n'
+                                  'Files in folder:{}'.format(pattern, 
                                   self.dataset_to_read,
                                   self.DATASET_PATH,
                                   all_str))
