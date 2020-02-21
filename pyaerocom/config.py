@@ -51,7 +51,6 @@ try:
 except: 
     from configparser import ConfigParser
     
-
 class Config(object):
     """Class containing relevant paths for read and write routines
     
@@ -96,8 +95,6 @@ class Config(object):
     
     #: EBAS name
     EBAS_MULTICOLUMN_NAME = 'EBASMC'
-    EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
-    EBAS_DB_LOCAL_CACHE = True
     
     #: EEA nmea
     EEA_NAME = 'EEAAQeRep'
@@ -111,6 +108,13 @@ class Config(object):
     #: DMS
     DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
 
+    #: name of EBAS sqlite database
+    EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
+    
+    #: boolean specifying wheter EBAS DB is copied to local cache for faster 
+    #: access, defaults to True
+    EBAS_DB_LOCAL_CACHE = True
+    
     #: Lowest possible year in data
     MIN_YEAR = 0
     #: Highest possible year in data
@@ -234,16 +238,6 @@ class Config(object):
     ERA5_SURFTEMP_FILENAME = 'era5.msl.t2m.201001-201012.nc'
 
     _LUSTRE_CHECK_PATH = '/project/aerocom/aerocom1/'
-    
-    @property
-    def has_access_users_database(self):
-        chk_dir = self._check_subdirs_cfg['users-db']
-        chk_paths = [os.path.join('/metno/aerocom_users_database/', chk_dir),
-                     os.path.join(self.HOMEDIR, '/aerocom_users_database/', chk_dir)]
-        for p in chk_paths:
-            if self._check_access(p):
-                return True
-        return False
         
     def __init__(self, basedir=None,
                  output_dir=None, config_file=None, 
@@ -272,7 +266,7 @@ class Config(object):
         self._coords = None
         
         # Attributes that are used to store search directories
-        self.OBSCONFIG = od()
+        self.OBSLOCS_UNGRIDDED = od()
         self.SUPPLDIRS = od()
         self.MODELDIRS = []
         
@@ -319,7 +313,7 @@ class Config(object):
                                        .format(repr(e)))
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
-
+        
     def _check_input_basedir_and_config_file(self, basedir, config_file):
         if config_file is not None and not os.path.exists(config_file):
             self.print_log.warning('Ignoring input config_file {} since it '
@@ -339,7 +333,7 @@ class Config(object):
                         basedir=None # config_file is None and basedir is None
 
         return basedir, config_file
-
+    
     @property
     def _config_ini(self):
         # for backwards compatibility
@@ -421,7 +415,17 @@ class Config(object):
 
                         return (basedir, self._config_files[cfg_id])
         raise FileNotFoundError('Could not find base directory for lustre')
-
+    
+    @property
+    def has_access_users_database(self):
+        chk_dir = self._check_subdirs_cfg['users-db']
+        chk_paths = [os.path.join('/metno/aerocom_users_database/', chk_dir),
+                     os.path.join(self.HOMEDIR, '/aerocom_users_database/', chk_dir)]
+        for p in chk_paths:
+            if self._check_access(p):
+                return True
+        return False
+    
     @property
     def has_access_lustre(self):
         """Boolean specifying whether MetNO AeroCom server is accessible"""
@@ -688,9 +692,9 @@ class Config(object):
     def EBASMC_SQL_DATABASE(self):
         """Path to EBAS SQL database"""
         dbname = self.EBAS_SQL_DB_NAME
-        if not 'EBASMC' in self.OBSCONFIG:
+        if not 'EBASMC' in self.OBSLOCS_UNGRIDDED:
             return None
-        loc_remote = os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], dbname)
+        loc_remote = os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], dbname)
         if self.EBAS_DB_LOCAL_CACHE:
             loc_local = os.path.join(self.CACHEDIR, dbname)
             return self._check_ebas_db_local_vs_remote(loc_remote, loc_local)
@@ -700,27 +704,22 @@ class Config(object):
     @property
     def EBASMC_DATA_DIR(self):
         """Data directory of EBAS multicolumn files"""
-        return os.path.join(self.OBSCONFIG["EBASMC"]["PATH"], 'data/')
+        return os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], 'data/')
     
     @property
     def EBAS_FLAGS_FILE(self):
         from pyaerocom import __dir__
         return os.path.join(__dir__, 'data', 'ebas_flags.csv')
-    
+
     @property
-    def OBSDIRS(self):
-        """Direcories of observation networks"""
-        return [x["PATH"] for x in self.OBSCONFIG.values()]
-    
-    @property 
-    def OBS_START_YEARS(self):
-        """Start years of observation networks"""
-        return [x["START_YEAR"] for x in self.OBSCONFIG.values()]
-    
-    @property
-    def OBS_IDS(self):
+    def OBS_IDS_UNGRIDDED(self):
         """List of all IDs of observations"""
-        return [x for x in self.OBSCONFIG.keys()]
+        return [x for x in self.OBSLOCS_UNGRIDDED.keys()]
+    
+    @property
+    def OBSDIRS_UNGRIDDED(self):
+        """List of all IDs of observations"""
+        return [x for x in self.OBSLOCS_UNGRIDDED.values()]
     
     @property
     def ERA5_SURFTEMP_FILE(self):
@@ -795,7 +794,7 @@ class Config(object):
                           %config_file)
 
         if init_obs_locations:
-            self.OBSCONFIG = od()
+            self.OBSLOCS_UNGRIDDED = od()
         if init_model_locations:
             self.MODELDIRS = []
 
@@ -831,17 +830,8 @@ class Config(object):
             for name, path in cr['supplfolders'].items():
                 self.SUPPLDIRS[name] = path
 
-        #Read directories for observation location
-        if cr.has_section('obsfolders'):
-            ocfg = cr['obsfolders']
-            if 'BASEDIR' in ocfg:
-                if not keep_basedirs or not self._check_access(self._obsbasedir):
-                    _dir = cr['obsfolders']['BASEDIR']
-                    if '$HOME' in _dir:
-                        _dir = _dir.replace('$HOME', os.path.expanduser('~'))
-                    self._obsbasedir = _dir
         try:
-            self._init_obsconfig(cr)
+            self._init_obsconfig(cr, keep_basedirs)
         except Exception as e:
             self.print_log.exception('Failed to initiate obs config. '
                                      'Error: {}'.format(repr(e)))
@@ -886,12 +876,28 @@ class Config(object):
                 self[name_str] =  ID
                 names_cfg.append(name_str)
         return names_cfg
-            
-    def _init_obsconfig(self, cr):
+    
+    def add_search_dirs(self, *dirs):
+        for loc in dirs:
+            if not isinstance(loc, str) or not os.path.exists(loc):
+                raise FileNotFoundError("Invalid input ({}), need strings to valid "
+                                        "path locations".format(loc))
+                
+    def _init_obsconfig(self, cr, keep_basedirs):
         
+        #Read directories for observation location
+        if cr.has_section('obsfolders'):
+            ocfg = cr['obsfolders']
+            if 'BASEDIR' in ocfg:
+                if not keep_basedirs or not self._check_access(self._obsbasedir):
+                    _dir = cr['obsfolders']['BASEDIR']
+                    if '$HOME' in _dir:
+                        _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+                    self._obsbasedir = _dir
+                    
         names_cfg = self._add_obsnames_config(cr)
         
-        OBSCONFIG = self.OBSCONFIG
+        OBSLOCS_UNGRIDDED = self.OBSLOCS_UNGRIDDED
         if cr.has_section('obsfolders'):
             for obsname, path in cr['obsfolders'].items():
                 if obsname.lower() == 'basedir':
@@ -901,20 +907,23 @@ class Config(object):
                     ID = self.__dict__[name_str]
                 else:
                     ID = self._add_obsname(obsname)
-                OBSCONFIG[ID] = {}
+                OBSLOCS_UNGRIDDED[ID] = {}
                 p = path.replace('${BASEDIR}', self._obsbasedir)
                 p = p.replace('$HOME', os.path.expanduser('~'))
-                OBSCONFIG[ID]['PATH'] = p
+                OBSLOCS_UNGRIDDED[ID] = p
 
-        if cr.has_section('obsstartyears'):
-            for obsname, year in cr['obsstartyears'].items():
-                NAME = '{}_NAME'.format(obsname.upper())
-                if NAME in self.__dict__:
-                    ID = self.__dict__[NAME]
-                    if ID in OBSCONFIG.keys():
-                        OBSCONFIG[ID]['START_YEAR'] = year
+        # NOT USED AND THUS DEPRECATED
+# =============================================================================
+#         if cr.has_section('obsstartyears'):
+#             for obsname, year in cr['obsstartyears'].items():
+#                 NAME = '{}_NAME'.format(obsname.upper())
+#                 if NAME in self.__dict__:
+#                     ID = self.__dict__[NAME]
+#                     if ID in OBSLOCS_UNGRIDDED.keys():
+#                         OBSLOCS_UNGRIDDED[ID]['START_YEAR'] = year
+# =============================================================================
 
-        self.OBSCONFIG = OBSCONFIG
+        self.OBSLOCS_UNGRIDDED = OBSLOCS_UNGRIDDED
     
     def add_data_source(self, data_dir, name=None):
         """Add a network to the data search structure
@@ -940,7 +949,7 @@ class Config(object):
         elif not os.path.exists(data_dir):
             raise ValueError('Input data directory does not exist')
         self[name_str] =  name
-        self.OBSCONFIG[name] = {'PATH' : data_dir}
+        self.OBSLOCS_UNGRIDDED[name] = data_dir
         
     def short_str(self):
         """Deprecated method"""
@@ -965,7 +974,8 @@ class Config(object):
             else:
                 s += "\n%s: %s" %(k, v)
         return s
-
+    
+    ### DEPRECATED BUT STILL FUNCTIONAL CODE
     @property
     def OUT_BASEDIR(self):
         msg = 'Attribute OUT_BASEDIR is deprecated. Please use OUTPUTDIR instead'
@@ -978,13 +988,34 @@ class Config(object):
         msg=('Attr. was renamed (but still works). Please us CACHEDIR instead')
         self.print_log.warning(DeprecationWarning(msg))
         return self.CACHEDIR
-
+    
+    @property
+    def OBSDIRS(self):
+        msg = 'Attr. OBSDIRS is deprecated, use OBSDIRS_UNGRIDDED instead'
+        self.print_log.warning(DeprecationWarning(msg))
+        return self.OBSDIRS_UNGRIDDED
+    
+    @property
+    def OBS_IDS(self):
+        msg = 'Attr. OBS_IDS is deprecated, use OBS_IDS_UNGRIDDED instead'
+        self.print_log.warning(DeprecationWarning(msg))
+        return self.OBS_IDS_UNGRIDDED
+    
+    @property
+    def OBSCONFIG(self):
+        msg = ('Attr. OBSCONFIG is deprecated, use OBSLOCS_UNGRIDDED instead. '
+               'Note that the latter maps ids with paths directly and has no '
+               '{"PATH":<loc>} style entries')
+        self.print_log.warning(DeprecationWarning(msg))
+        cfg = {}
+        for obsid, path in self.OBSLOCS_UNGRIDDED.items():
+            cfg[obsid] = {'PATH':path}
+        return cfg
+    
 if __name__=="__main__":
     import pyaerocom as pya
     
     pya.const.BASEDIR = '/lustre/'
     
-    ebassql = pya.const.EBASMC_SQL_DATABASE
-    
-    pya.io.ReadEbas()
+    print(pya.const.OBSCONFIG)
     
