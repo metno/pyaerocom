@@ -149,4 +149,14 @@ def data_scat_jungfraujoch():
     
 if __name__=="__main__":
     import sys
-    pytest.main(sys.argv)
+    import pyaerocom as pya
+    #pytest.main(sys.argv)
+
+    ddir = '/home/jonasg/MyPyaerocom/testdata-minimal/obsdata/AeronetSunV3Lev2.daily/'
+    
+    const.add_ungridded_obs('AERONETSunSubset', ddir, 
+                            reader=pya.io.ReadAeronetSunV3,
+                            check_read=True)
+    
+    data = pya.io.ReadUngridded().read('AERONETSunSubset', 'od550aer')
+    data.plot_station_coordinates()

@@ -109,6 +109,7 @@ class NotInFileError(IOError):
 
 class ResamplingError(ValueError):
     pass
+
 class StationNotFoundError(AttributeError):
     pass
 
@@ -127,6 +128,7 @@ class UnitConversionError(ValueError):
 class UnresolvableTimeDefinitionError(DataDimensionError, NetcdfError):
     """Is raised if time definition in NetCDF file is wrong and cannot be corrected"""
     pass
+
 class VarNotAvailableError(DataCoverageError):
     pass
 
