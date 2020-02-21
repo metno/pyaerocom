@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 
 from pyaerocom.filter import Filter
-from pyaerocom.conftest import lustre_unavail
+from pyaerocom.conftest import lustre_unavail, testdata_unavail
 
 def test_Filter_init():
     assert Filter('EUROPE').name == 'EUROPE-wMOUNTAINS'
@@ -23,25 +23,21 @@ def test_filter_attributes():
     assert not f.region.is_htap
     
 
-@lustre_unavail
-def test_filter_griddeddata(data_tm5):
+@testdata_unavail
+@pytest.mark.parametrize('filter_name, mean',[
+    ('EUROPE-noMOUNTAINS-LAND', 0.16616775),
+    ('EUROPE-noMOUNTAINS-OCN', 0.1314668),
+    ('EUROPE', 0.13605888)
+    ])
+def test_filter_griddeddata(data_tm5, filter_name, mean):
     
     model = data_tm5.copy()
-    
-    #f1 = Filter('EUROPE-noMOUNTAINS-LAND') # europe only land
-    f1 = Filter('WORLD-noMOUNTAINS-LAND') # europe only land
-    f2 = Filter('EUROPE-noMOUNTAINS-OCN') # europe only ocean
-    f3 = Filter('EUROPE') # europe total
-    
-    m_land = f1.apply(model)
-    m_ocn  = f2.apply(model)
-    m_all  = f3.apply(model)
 
-    
-    means = [np.nanmean(m_land.cube.data), np.nanmean(m_ocn.cube.data),
-             np.nanmean(m_all.cube.data)]
-    np.testing.assert_allclose(means, [0.16616775, 0.1314668, 0.13605888])
+    f = Filter(filter_name) # europe only land
 
+    subset = f.apply(model)
+    np.testing.assert_allclose(np.nanmean(subset.cube.data), mean)
+    
 @lustre_unavail
 def test_filter_ungriddeddata(aeronetsunv3lev2_subset):
     
@@ -74,5 +70,5 @@ def test_filter_colocateddata():
 # =============================================================================
 
 if __name__ == '__main__':
-
-    pytest.main(['test_filter.py'])
+    import sys
+    pytest.main(sys.argv)
