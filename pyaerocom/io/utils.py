@@ -9,6 +9,13 @@ from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom.io.readungridded import ReadUngridded
 from pyaerocom import const, change_verbosity
 
+def get_ungridded_reader(obs_id):
+    
+    for reader in ReadUngridded.SUPPORTED:
+        if obs_id in reader.SUPPORTED_DATASETS:
+            return reader
+    raise ValueError('No ungridded reader found that supports {}'.format(obs_id))
+    
 def browse_database(model_or_obs, verbose=False):
     """Browse Aerocom database using model or obs ID (or wildcard)
     
@@ -22,6 +29,11 @@ def browse_database(model_or_obs, verbose=False):
     verbose : bool
         if True, verbosity level will be set to debug, else to critical
         
+    Returns
+    -------
+    list 
+        list with data_ids of all matches
+        
     Example
     -------
     >>> import pyaerocom as pya
@@ -33,6 +45,7 @@ def browse_database(model_or_obs, verbose=False):
     Available variables: ['abs550aer', 'ang4487aer', 'clt', 'landseamask', 'od550aer', 'od550dust', 'od550gt1aer', 'od550lt1aer', 'pixelcount']
     Available years: [2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012]
     Available time resolutions ['daily']
+    
     """
     if not verbose:
         change_verbosity('critical')
@@ -59,6 +72,7 @@ def browse_database(model_or_obs, verbose=False):
         except Exception as e:
             print('Reading failed for {}. Error: {}'.format(match,
                   repr(e)))
+    return matches
     
 
 if __name__=='__main__':
