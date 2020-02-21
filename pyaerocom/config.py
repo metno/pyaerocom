@@ -34,22 +34,23 @@
 """
 Provides access to pyaerocom specific configuration values
 """
-
+from time import time
 import numpy as np
 import os
 import getpass
 from collections import OrderedDict as od
+from pathlib import Path
+
 import pyaerocom.obs_io as obs_io
 from pyaerocom.grid_io import GridIO
 from pyaerocom._lowlevel_helpers import (list_to_shortstr, 
                                          chk_make_subdir,
                                          check_dir_access,
                                          check_write_access)
+
+from pyaerocom.exceptions import DeprecationError
 from pyaerocom.variable import VarCollection
-try:
-    from ConfigParser import ConfigParser
-except: 
-    from configparser import ConfigParser
+from configparser import ConfigParser
     
 class Config(object):
     """Class containing relevant paths for read and write routines
@@ -244,20 +245,21 @@ class Config(object):
                  cache_dir=None, colocateddata_dir=None,
                  write_fileio_err_log=True, 
                  activate_caching=True):
-        
+        t0 = time()
         # Loggers
         from pyaerocom import print_log, logger
         self.print_log = print_log
         self.logger = logger
         
         # Directories
-        self._modelbasedir = None
-        self._obsbasedir = None
         self._cachedir = cache_dir
         self._outputdir = output_dir
 
         self._colocateddatadir = colocateddata_dir
         self._filtermaskdir = None
+        self._local_tmp_dir = None
+        self._confirmed_access = []
+        self._rejected_access = []
         
         # Options
         self._caching_active = activate_caching
@@ -268,7 +270,7 @@ class Config(object):
         # Attributes that are used to store search directories
         self.OBSLOCS_UNGRIDDED = od()
         self.SUPPLDIRS = od()
-        self.MODELDIRS = []
+        self._search_dirs = []
         
         self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
         
@@ -279,13 +281,8 @@ class Config(object):
         self.GRID_IO = GridIO()
         self.logger.info('Initiating pyaerocom configuration')
 
-        # If this is False and a config_file is specified and / or can be
-        # inferred, then existing base directories are ignored, else they are
-        # kept (cf. method read_config)
-        keep_basedirs = False
-
         # checks and validates / invalidates input basedir and config_file
-        # if both are
+        # if both are provided
         (basedir,
          config_file) = self._check_input_basedir_and_config_file(basedir,
                                                                   config_file)
@@ -293,26 +290,19 @@ class Config(object):
         if not isinstance(config_file, str) or not os.path.exists(config_file):
             self.logger.info('Checking database access...')
             try:
-                _basedir, config_file = self.infer_basedir_and_config()
+                basedir, config_file = self.infer_basedir_and_config()
             except FileNotFoundError:
-                _basedir = None
-            if basedir is None:
-                basedir = _basedir
-
-        if basedir is not None: # it passed the check and exists
-            self._modelbasedir = basedir
-            self._obsbasedir = basedir
-            keep_basedirs = True
-
-
+                pass
+        
         if config_file is not None:
             try:
-                self.read_config(config_file, keep_basedirs)
+                self.read_config(config_file, basedir=basedir)
             except Exception as e:
                 self.print_log.warning("Failed to read config. Error: {}"
                                        .format(repr(e)))
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
+        self.logger.info("ELAPSED TIME Config.__init__: {:.5f} s".format(time()-t0))
         
     def _check_input_basedir_and_config_file(self, basedir, config_file):
         if config_file is not None and not os.path.exists(config_file):
@@ -339,7 +329,7 @@ class Config(object):
         # for backwards compatibility
         return self._config_ini_lustre
     
-    def _check_access(self, loc):
+    def _check_access(self, loc, timeout=None):
         """Uses multiprocessing approach to check if location can be accessed
 
         Parameters
@@ -352,10 +342,25 @@ class Config(object):
         bool
             True, if location is accessible, else False
         """
+        if loc is None:
+            return False
+        loc = str(Path(loc)) # make sure the path is set correctly
+        if loc in self._confirmed_access:
+            return True
+        elif loc in self._rejected_access:
+            self.print_log.warning('Attempting access to location {}, which '
+                                   'has been checked before and failed. This '
+                                   'may slow things down.'.format(loc))
         
+        if timeout is None:
+            timeout = self.SERVER_CHECK_TIMEOUT
         
         self.logger.info('Checking access to: {}'.format(loc))
-        return check_dir_access(loc, timeout=self.SERVER_CHECK_TIMEOUT)
+        if check_dir_access(loc, timeout=timeout):
+            self._confirmed_access.append(loc)
+            return True
+        self._rejected_access.append(loc)
+        return False
     
     def _basedirs_search_db(self):
         return [self.ROOTDIR, self.HOMEDIR]
@@ -414,7 +419,8 @@ class Config(object):
                     if self._check_access(_chk_dir):
 
                         return (basedir, self._config_files[cfg_id])
-        raise FileNotFoundError('Could not find base directory for lustre')
+        raise FileNotFoundError('Could not find access to any registered '
+                                'database')
     
     @property
     def has_access_users_database(self):
@@ -429,7 +435,7 @@ class Config(object):
     @property
     def has_access_lustre(self):
         """Boolean specifying whether MetNO AeroCom server is accessible"""
-        for path in self.MODELDIRS:
+        for path in self._search_dirs:
             if self._LUSTRE_CHECK_PATH in path and self._check_access(path):
                 return True
         return False
@@ -457,6 +463,26 @@ class Config(object):
         return self._outputdir
     
     @property
+    def DATA_SEARCH_DIRS(self):
+        """
+        Directories which pyaerocom will consider for data access
+        
+        Note
+        ----
+        This corresponds to directories considered for searching gridded 
+        data (e.g. models and level 3 satellite products).  Please 
+        see :attr:`OBSLOCS_UNGRIDDED` for available data directories 
+        for reading of ungridded data.
+
+        Returns
+        -------
+        list
+            list of directories
+
+        """
+        return self._search_dirs
+    
+    @property
     def _TESTDATADIR(self):
         """Directory where testdata is stored (only for automated testing)"""
         return os.path.join(self.OUTPUTDIR, self._testdatadirname)
@@ -476,7 +502,19 @@ class Config(object):
             outdir = self.OUTPUTDIR
             self._colocateddatadir = chk_make_subdir(outdir, 'colocated_data')
         return self._colocateddatadir
-
+    
+    @property
+    def LOCAL_TMP_DIR(self):
+        """Local TEMP directory"""
+        if not self._check_access(self._local_tmp_dir):
+            self.print_log.warning('const.LOCAL_TMP_DIR is not set or does '
+                                   'not exist.')
+        return self._local_tmp_dir
+    
+    @LOCAL_TMP_DIR.setter
+    def LOCAL_TMP_DIR(self, val):
+        self._local_tmp_dir = val
+        
     @property
     def CACHEDIR(self):
         """Cache directory for UngriddedData objects"""
@@ -539,66 +577,39 @@ class Config(object):
             self.print_log.info('Failed to access LOGFILESDIR: {}'
                            'Deactivating file logging'.format(repr(e)))
             self.WRITE_FILEIO_ERR_LOG = False
-            
-       
-    @property
-    def MODELBASEDIR(self):
-        """Base directory of model data
-        
-        If changed, all relevant subdirectories are updated as well.
-        """
-        return self._modelbasedir
-    
-    @MODELBASEDIR.setter
-    def MODELBASEDIR(self, value):
-        if not os.path.exists(value):
-            raise IOError('Input directory does not exist')
-        self._modelbasedir = value
-        self.reload()
-    
-    @property
-    def OBSBASEDIR(self):
-        """Base directory of model data"""
-        return self._obsbasedir
-    
-    @OBSBASEDIR.setter
-    def OBSBASEDIR(self, value):
-        if not os.path.exists(value):
-            raise IOError('Input directory does not exist')
-        self._obsbasedir = value
-        self.reload()
     
     @property 
     def BASEDIR(self):
-        """Base directory of data
-        
-        Note
-        ----
-        If this attribute is changed it changes both, :attr:`MODELBASEDIR` and
-        :attr:`OBSBASEDIR`.
+        """DEPRECATED since v0.9.0: Base directory of data
         """
-        return self._modelbasedir
+        msg=('BASEDIR attribute is deprecated, please see attrs. '
+             'DATA_SEARCH_DIRS for available search directories and '
+             'method add_data_search_dir for adding new locations')
+        raise DeprecationError(msg)
+        #return self._modelbasedir
     
-    @BASEDIR.setter
-    def BASEDIR(self, value):
-        if not self._check_access(value):
-            raise FileNotFoundError('Cannot change data base directory. '
-                                    'Input directory does not exist')
-            
-        value = self._check_basedir_environment(value)
-            
-        self._obsbasedir = value
-        self._modelbasedir = value
-        
-        try:
-            config_file, env_id = self._infer_config_from_basedir(value)
-            self.print_log.info('Adding paths for {} with root at {}'
-                                .format(env_id, value))
-            self.read_config(config_file, keep_basedirs=True)
-        except FileNotFoundError:
-            self.print_log.warning('Failed to infer path environment for '
-                                   'input dir {}. No search paths will be added'
-                                   .format(value))
+# =============================================================================
+#     @BASEDIR.setter
+#     def BASEDIR(self, value):
+#         if not self._check_access(value):
+#             raise FileNotFoundError('Cannot change data base directory. '
+#                                     'Input directory does not exist')
+#             
+#         value = self._check_basedir_environment(value)
+#             
+#         self._obsbasedir = value
+#         self._modelbasedir = value
+#         
+#         try:
+#             config_file, env_id = self._infer_config_from_basedir(value)
+#             self.print_log.info('Adding paths for {} with root at {}'
+#                                 .format(env_id, value))
+#             self.read_config(config_file, keep_basedirs=True)
+#         except FileNotFoundError:
+#             self.print_log.warning('Failed to infer path environment for '
+#                                    'input dir {}. No search paths will be added'
+#                                    .format(value))
+# =============================================================================
     
     @property
     def DIR_INI_FILES(self):
@@ -738,15 +749,44 @@ class Config(object):
                          self.DEFAULT_VERT_GRID_DEF['upper'] - offs,
                          step)
         
-    def add_data_search_dir(self, loc):
-        """Add new search directory for database browsing"""
-        if not self._check_access(loc):
-            raise FileNotFoundError('Input location {} could not be accessed'
-                                    .format(loc))
-        self.MODELDIRS.append(loc)
+    def add_data_search_dir(self, *dirs):
+        """Add data search directories for database browsing"""
+        for loc in dirs:
+            if not self._check_access(loc):
+                raise FileNotFoundError('Input location {} could not be accessed'
+                                        .format(loc))
+            self._search_dirs.append(loc)
+      
+    def add_ungridded_obs(self, obs_id, data_dir, reader=None):
+        """Add a network to the data search structure
         
+        Parameters
+        ----------
+        obs_id : str
+            name of network. E.g. MY_OBS or EBASMC
+        data_dir : str
+            directory where data files are stored
+        reader : pyaerocom.io.ReadUngriddedBase, optional
+            reading class used to import these data. If `obs_id` is known
+            (e.g. EBASMC), then this 
+            
+        Raises
+        ------
+        AttributeError
+            if the network name is already reserved in :attr:`OBSLOCS_UNGRIDDED`
+        ValueError
+            if the data directory does not exist
+        """
+        if obs_id in self.OBSLOCS_UNGRIDDED:
+            raise AttributeError('Network with ID {} is already registered at '
+                                 '{}'.format(obs_id, self.OBSLOCS_UNGRIDDED[obs_id]))
+        elif not self._check_access(data_dir):
+            raise ValueError('Input data directory cannot be accessed')
+        self.OBSLOCS_UNGRIDDED[obs_id] = data_dir
+          
     def change_database(self, database_name='metno', keep_root=False):
-        '''Changes the path setup for a specific data environment
+        """
+        Changes the path setup for a specific data environment
         
         Parameters
         ----------
@@ -758,7 +798,8 @@ class Config(object):
             corresponding ini files are set relative to current :attr:`BASEDIR`.
             Else, :attr:`BASEDIR` is updated using the specifications 
             provided in the corresponding ini file.
-        '''
+        """
+        raise NotImplementedError('This method is deprecated since v090 ...')
         if not database_name in self.ALL_DATABASE_IDS:
             raise ValueError('Unkown database name {}. Please choose from '
                              '{}'.format(database_name, self.ALL_DATABASE_IDS))
@@ -783,86 +824,162 @@ class Config(object):
     def reload(self, keep_basedirs=True):
         """Reload config file (for details see :func:`read_config`)"""
         self.read_config(self.last_config_file, keep_basedirs)
+     
+    def read_config(self, config_file, basedir=None,
+                    init_obslocs_ungridded=False,
+                    init_data_search_dirs=False):
+        #Read and import paths from ini file
         
-    def read_config(self, config_file, keep_basedirs=True,
-                    init_obs_locations=False,
-                    init_model_locations=False):
-        """Read and import paths from ini file"""
         if not os.path.isfile(config_file):
             raise IOError("Configuration file paths.ini at %s does not exist "
                           "or is not a file"
                           %config_file)
-
-        if init_obs_locations:
+            
+        if init_obslocs_ungridded:
             self.OBSLOCS_UNGRIDDED = od()
-        if init_model_locations:
-            self.MODELDIRS = []
-
+        if init_data_search_dirs:
+            self._search_dirs = []
+        
         cr = ConfigParser()
         cr.read(config_file)
         #init base directories for Model data
         if cr.has_section('modelfolders'):
-            mcfg = cr['modelfolders']
-            # check and update model base directory if applicable
-            if 'BASEDIR' in mcfg:
-                if not keep_basedirs or not self._check_access(self._modelbasedir):
-                    _dir = mcfg['BASEDIR']
-                    if '$HOME' in _dir:
-                        _dir = _dir.replace('$HOME', os.path.expanduser('~'))
-
-                    self._modelbasedir = _dir
-
-            # load model paths if applicable
-            if self._check_access(self._modelbasedir) and 'dir' in mcfg:
-                mdirs = (mcfg['dir'].
-                         replace('${BASEDIR}', self._modelbasedir).
-                         replace('\n','').split(','))
-                for mdir in mdirs:
-                    # make sure to not add multiple times the same location
-                    if not mdir in self.MODELDIRS:
-                        self.MODELDIRS.append(mdir)
-
+           self._add_searchdirs(cr, basedir)
+        
+        if cr.has_section('obsfolders'):
+            self._add_obsconfig(cr, basedir)
+            
         if cr.has_section('outputfolders'):
-            self._init_output_folders_from_cfg(cr['outputfolders'],
-                                               keep_basedirs)
+            self._init_output_folders_from_cfg(cr)
 
         if cr.has_section('supplfolders'):
             for name, path in cr['supplfolders'].items():
                 self.SUPPLDIRS[name] = path
-
-        try:
-            self._init_obsconfig(cr, keep_basedirs)
-        except Exception as e:
-            self.print_log.exception('Failed to initiate obs config. '
-                                     'Error: {}'.format(repr(e)))
+        
         cr.clear()
         self.GRID_IO.load_aerocom_default()
         self.last_config_file = config_file
     
-    def _init_output_folders_from_cfg(self, cfg, keep_basedirs):
-        if 'CACHEDIR' in cfg:
-            if not keep_basedirs or not self._check_access(self._cachedir):
-                self._cachedir = cfg['CACHEDIR']
+    def _resolve_basedir(self, locs, chk_dirs):
+        repl = '${BASEDIR}'
+        for loc in locs:
+            if repl in loc:
+                for chk_dir in chk_dirs:
+                    chk = Path(loc.replace(repl, chk_dir))
+                    if self._check_access(chk):
+                        return chk_dir
+        raise FileNotFoundError('Could not confirm any directory...')
+        
+    def _add_searchdirs(self, cr, basedir=None):
+        
+        t0 = time()
+        
+        chk_dirs = []  
+        if basedir is not None and self._check_access(basedir):
+            chk_dirs.append(basedir)
+        
+        mcfg = cr['modelfolders']
+    
+        # check and update model base directory if applicable
+        if 'BASEDIR' in mcfg:
+            _dir = mcfg['BASEDIR']
+            if '${HOME}' in _dir:
+                _dir = _dir.replace('${HOME}', os.path.expanduser('~'))
+            if not _dir in chk_dirs and self._check_access(_dir):
+                chk_dirs.append(_dir)
+        if len(chk_dirs) == 0:
+            return False
+        
+        # get all locations defined in config file as list
+        locs = (mcfg['dir'].replace('\n','').split(','))
+        
+        # find first location that contains BASEDIR to determine 
+        basedir = str(self._resolve_basedir(locs, chk_dirs))
+            
+        for loc in locs:
+            candidate = loc.replace('${BASEDIR}', basedir)
+            if not candidate in self._search_dirs:
+                self._search_dirs.append(candidate)
+        self.logger.info("ELAPSED TIME _add_searchdirs: {:.5f} s".format(time()-t0))
+        return True 
+           
+    def _add_obsconfig(self, cr, basedir=None):
+        t0 = time()
+        chk_dirs = []  
+        if basedir is not None and self._check_access(basedir):
+            chk_dirs.append(basedir)
+        
+        cfg = cr['obsfolders']
+    
+        # check and update model base directory if applicable
+        if 'BASEDIR' in cfg:
+            _dir = cfg['BASEDIR']
+            if '${HOME}' in _dir:
+                _dir = _dir.replace('${HOME}', os.path.expanduser('~'))
+            if not _dir in chk_dirs and self._check_access(_dir):
+                chk_dirs.append(_dir)
+        if len(chk_dirs) == 0:
+            return False
+        
+        names_cfg = self._add_obsnames_config(cr)
+        
+        candidates = {}
+        dirconfirmed = None
+        repl = '${BASEDIR}'
+        if cr.has_section('obsfolders'):
+            for obsname, path in cr['obsfolders'].items():
+                if obsname.lower() == 'basedir':
+                    continue
+                name_str = '{}_NAME'.format(obsname.upper())
+                if name_str in names_cfg:
+                    ID = self.__dict__[name_str]
+                else:
+                    ID = self._add_obsname(obsname)
+                candidates[ID] = path
+                # candidate for checking access
+                if dirconfirmed is None and repl in path:
+                    for chk_dir in chk_dirs:
+                        chk = Path(path.replace(repl, chk_dir))
+                        if self._check_access(chk):
+                            dirconfirmed = str(chk)
+        
+        for name, loc in candidates.items():
+            if repl in loc:
+                if dirconfirmed is not None:
+                
+                    loc = loc.replace('${BASEDIR}', dirconfirmed)
+                    loc = loc.replace('${HOME}', os.path.expanduser('~'))
+                else: 
+                    #skip this entry
+                    continue
+    
+            self.OBSLOCS_UNGRIDDED[name] = loc
+        self.logger.info("ELAPSED TIME _add_obsconfig: {:.5f} s".format(time()-t0))
+        
+    def _init_output_folders_from_cfg(self, cr):
+        t0 = time()
+        cfg = cr['outputfolders']
+        if 'CACHEDIR' in cfg and not self._check_access(self._cachedir):
+            self._cachedir = cfg['CACHEDIR']
 
-        if 'OUTPUTDIR' in cfg:
-            if not keep_basedirs or not self._check_access(self._outputdir):
-                self._outputdir = cfg['OUTPUTDIR']
+        if 'OUTPUTDIR' in cfg and not self._check_access(self._outputdir):
+            self._outputdir = cfg['OUTPUTDIR']
 
-        if 'COLOCATEDDATADIR' in cfg:
-            if not keep_basedirs or not self._check_access(self._colocateddatadir):
-                self._colocateddatadir = cfg['COLOCATEDDATADIR']
+        if 'COLOCATEDDATADIR' in cfg and not self._check_access(self._colocateddatadir):
+            self._colocateddatadir = cfg['COLOCATEDDATADIR']
 
         if 'LOCALTMPDIR' in cfg:
             _dir = cfg['LOCALTMPDIR']
-            # expand $HOME
-            if '$HOME' in _dir:
-                _dir = _dir.replace('$HOME', os.path.expanduser('~'))
+            # expand ${HOME}
+            if '${HOME}' in _dir:
+                _dir = _dir.replace('${HOME}', os.path.expanduser('~'))
             if '${USER}' in _dir:
                 _dir = _dir.replace('${USER}', getpass.getuser())
-            local_tmp_dir = _dir
-
-            self.LOCAL_TMP_DIR = local_tmp_dir
-
+        
+            self._local_tmp_dir = _dir
+        
+        self.logger.info("ELAPSED TIME init outputdirs: {:.5f} s".format(time()-t0))
+        
     def _add_obsname(self, name):
         name_str = '{}_NAME'.format(name.upper())
         self[name_str] =  name
@@ -876,80 +993,6 @@ class Config(object):
                 self[name_str] =  ID
                 names_cfg.append(name_str)
         return names_cfg
-    
-    def add_search_dirs(self, *dirs):
-        for loc in dirs:
-            if not isinstance(loc, str) or not os.path.exists(loc):
-                raise FileNotFoundError("Invalid input ({}), need strings to valid "
-                                        "path locations".format(loc))
-                
-    def _init_obsconfig(self, cr, keep_basedirs):
-        
-        #Read directories for observation location
-        if cr.has_section('obsfolders'):
-            ocfg = cr['obsfolders']
-            if 'BASEDIR' in ocfg:
-                if not keep_basedirs or not self._check_access(self._obsbasedir):
-                    _dir = cr['obsfolders']['BASEDIR']
-                    if '$HOME' in _dir:
-                        _dir = _dir.replace('$HOME', os.path.expanduser('~'))
-                    self._obsbasedir = _dir
-                    
-        names_cfg = self._add_obsnames_config(cr)
-        
-        OBSLOCS_UNGRIDDED = self.OBSLOCS_UNGRIDDED
-        if cr.has_section('obsfolders'):
-            for obsname, path in cr['obsfolders'].items():
-                if obsname.lower() == 'basedir':
-                    continue
-                name_str = '{}_NAME'.format(obsname.upper())
-                if name_str in names_cfg:
-                    ID = self.__dict__[name_str]
-                else:
-                    ID = self._add_obsname(obsname)
-                OBSLOCS_UNGRIDDED[ID] = {}
-                p = path.replace('${BASEDIR}', self._obsbasedir)
-                p = p.replace('$HOME', os.path.expanduser('~'))
-                OBSLOCS_UNGRIDDED[ID] = p
-
-        # NOT USED AND THUS DEPRECATED
-# =============================================================================
-#         if cr.has_section('obsstartyears'):
-#             for obsname, year in cr['obsstartyears'].items():
-#                 NAME = '{}_NAME'.format(obsname.upper())
-#                 if NAME in self.__dict__:
-#                     ID = self.__dict__[NAME]
-#                     if ID in OBSLOCS_UNGRIDDED.keys():
-#                         OBSLOCS_UNGRIDDED[ID]['START_YEAR'] = year
-# =============================================================================
-
-        self.OBSLOCS_UNGRIDDED = OBSLOCS_UNGRIDDED
-    
-    def add_data_source(self, data_dir, name=None):
-        """Add a network to the data search structure
-        
-        Parameters
-        ----------
-        name : str
-            name of network 
-        data_dir : str
-            directory where data files are stored
-        
-        Raises
-        ------
-        AttributeError
-            if the network name is already reserved 
-        ValueError
-            if the data directory does not exist
-        """
-        raise NotImplementedError('Coming soon... need some refactoring before')
-        name_str = '{}_NAME'.format(name.upper())
-        if name_str in self.__dict__.keys():
-            raise AttributeError('Network with ID {} does already exist'.format(name_str))
-        elif not os.path.exists(data_dir):
-            raise ValueError('Input data directory does not exist')
-        self[name_str] =  name
-        self.OBSLOCS_UNGRIDDED[name] = data_dir
         
     def short_str(self):
         """Deprecated method"""
@@ -1012,10 +1055,15 @@ class Config(object):
             cfg[obsid] = {'PATH':path}
         return cfg
     
+    @property
+    def MODELDIRS(self):
+        msg = 'Attr. MODELDIRS is deprecated, use DATA_SEARCH_DIRS instead'
+        self.print_log.warning(DeprecationWarning(msg))
+        return self.DATA_SEARCH_DIRS
+    
 if __name__=="__main__":
     import pyaerocom as pya
     
-    pya.const.BASEDIR = '/lustre/'
+    print(pya.const._confirmed_access)
     
-    print(pya.const.OBSCONFIG)
-    
+    print(pya.const.has_access_lustre)
