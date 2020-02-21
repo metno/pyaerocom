@@ -48,7 +48,7 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
                                          check_dir_access,
                                          check_write_access)
 
-from pyaerocom.exceptions import DeprecationError
+from pyaerocom.exceptions import DeprecationError, DataSourceError
 from pyaerocom.variable import VarCollection
 from configparser import ConfigParser
     
@@ -757,7 +757,7 @@ class Config(object):
                                         .format(loc))
             self._search_dirs.append(loc)
       
-    def add_ungridded_obs(self, obs_id, data_dir, reader=None):
+    def add_ungridded_obs(self, obs_id, data_dir, reader=None, check_read=False):
         """Add a network to the data search structure
         
         Parameters
@@ -768,7 +768,7 @@ class Config(object):
             directory where data files are stored
         reader : pyaerocom.io.ReadUngriddedBase, optional
             reading class used to import these data. If `obs_id` is known
-            (e.g. EBASMC), then this 
+            (e.g. EBASMC) this is not needed.
             
         Raises
         ------
@@ -782,8 +782,41 @@ class Config(object):
                                  '{}'.format(obs_id, self.OBSLOCS_UNGRIDDED[obs_id]))
         elif not self._check_access(data_dir):
             raise ValueError('Input data directory cannot be accessed')
+        if reader is None:
+            from pyaerocom.io.utils import get_ungridded_reader
+            reader =  get_ungridded_reader(obs_id)
+        
+        if not obs_id in reader.SUPPORTED_DATASETS:
+            reader.SUPPORTED_DATASETS.append(obs_id)
         self.OBSLOCS_UNGRIDDED[obs_id] = data_dir
-          
+        if check_read:
+            self._check_obsreader(obs_id, data_dir, reader)
+         
+    def _check_obsreader(self, obs_id, data_dir, reader):
+        """
+        Check if files can be accessed when registering new dataset
+
+        Parameters
+        ----------
+        obs_id : str
+            name of obsnetwork
+        data_dir : str
+            directory containing data files
+        reader : ReadUngriddedBase
+            reading interface
+        """
+        check = reader(obs_id)
+        path = check.DATASET_PATH 
+        assert path == data_dir
+        try:
+            check.get_file_list()
+        except DataSourceError:
+            if 'renamed' in os.listdir(data_dir):
+                chk_dir = os.path.join(data_dir, 'renamed')
+                self.OBSLOCS_UNGRIDDED.pop(obs_id)
+                self.add_ungridded_obs(obs_id, chk_dir, reader, 
+                                       check_read=True)
+                
     def change_database(self, database_name='metno', keep_root=False):
         """
         Changes the path setup for a specific data environment
@@ -894,7 +927,10 @@ class Config(object):
         locs = (mcfg['dir'].replace('\n','').split(','))
         
         # find first location that contains BASEDIR to determine 
-        basedir = str(self._resolve_basedir(locs, chk_dirs))
+        try:
+            basedir = str(self._resolve_basedir(locs, chk_dirs))
+        except FileNotFoundError:
+            basedir = None
             
         for loc in locs:
             candidate = loc.replace('${BASEDIR}', basedir)
@@ -1063,7 +1099,4 @@ class Config(object):
     
 if __name__=="__main__":
     import pyaerocom as pya
-    
-    print(pya.const._confirmed_access)
-    
-    print(pya.const.has_access_lustre)
+    print(pya.const)
