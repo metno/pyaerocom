@@ -65,6 +65,9 @@ class DataSourceError(ValueError):
 class DataUnitError(ValueError):
     pass
 
+class DeprecationError(AttributeError, ValueError):
+    pass
+
 class DimensionOrderError(DataDimensionError):
     pass
 
