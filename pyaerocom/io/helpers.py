@@ -218,7 +218,7 @@ def search_names(update_inifile=True, check_nc_file=True):
         can be detected in the corresponding renamed sub directory
     """
     names = []
-    for mdir in const.MODELDIRS:
+    for mdir in const.DATA_SEARCH_DIRS:
         print("\n%s\n" %mdir)
         sub = os.listdir(mdir)
         for item in sub:

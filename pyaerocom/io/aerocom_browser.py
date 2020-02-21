@@ -93,7 +93,7 @@ class AerocomBrowser(BrowseDict):
                         if return_if_match:
                             return path
                 
-        for search_dir in const.MODELDIRS:
+        for search_dir in const.DATA_SEARCH_DIRS:
             # get the directories
             if os.path.isdir(search_dir):
                 #subdirs = listdir(search_dir)
