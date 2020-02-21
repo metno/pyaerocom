@@ -1607,10 +1607,10 @@ class GriddedData(object):
         mask_iris = load_region_mask_iris(region_id)
 
         # Reads mask to griddedata
-        mask  = pya.GriddedData(mask_iris, convert_unit_on_init=False)
+        mask  = GriddedData(mask_iris, convert_unit_on_init=False)
         mask = mask.regrid(self.cube)
 
-        mask.quickplot_map(vmin=0, vmax=1)
+        #mask.quickplot_map(vmin=0, vmax=1)
         npm = mask.cube.data
         
         if isinstance(npm, np.ma.core.MaskedArray):
