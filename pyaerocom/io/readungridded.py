@@ -227,13 +227,13 @@ class ReadUngridded(object):
         """
         if dataset_to_read in self._readers:
             return self._readers[dataset_to_read]
-        if not dataset_to_read in const.OBS_IDS:
+        if not dataset_to_read in const.OBS_IDS_UNGRIDDED:
             raise NetworkNotSupported("Network {} is not supported or data is "
                                       "not available on this machine"
                                       .format(dataset_to_read))
-        for cls in self.SUPPORTED:
-            if dataset_to_read in cls.SUPPORTED_DATASETS:
-                self._readers[dataset_to_read] = cls(dataset_to_read)
+        for _cls in self.SUPPORTED:
+            if dataset_to_read in _cls.SUPPORTED_DATASETS:
+                self._readers[dataset_to_read] = _cls(dataset_to_read)
                 return self._readers[dataset_to_read]
         raise NetworkNotImplemented("No reading class available yet for dataset "
                                     "{}".format(dataset_to_read))

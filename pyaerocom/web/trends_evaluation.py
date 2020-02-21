@@ -418,7 +418,7 @@ class TrendsEvaluation(object):
         ----------
         network_id : str
             Name of network (if you don't know the options, check 
-            `pyaerocom.const.OBS_IDS`)
+            `pyaerocom.const.OBS_IDS_UNGRIDDED`)
         vars_to_retrieve 
             str or list / tuple of strings specifying AEROCOM variables that are 
             supposed to be imported

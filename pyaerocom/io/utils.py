@@ -51,7 +51,7 @@ def browse_database(model_or_obs, verbose=False):
         return
     for match in matches:
         try:
-            if match in const.OBS_IDS:
+            if match in const.OBS_IDS_UNGRIDDED:
                 reader = ReadUngridded(match)
             else:
                 reader = ReadGridded(match)
