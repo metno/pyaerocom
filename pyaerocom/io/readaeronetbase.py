@@ -284,7 +284,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         for i, col in enumerate(cols):
             try:
                 wvl_str_col = self.infer_wavelength_colname(col)
-            except:
+            except Exception:
                 pass
             else:
                 wvl_col = float(wvl_str_col)
@@ -446,6 +446,8 @@ class ReadAeronetBase(ReadUngriddedBase):
                         from pyaerocom.exceptions import MetaDataError
                         raise MetaDataError('Metadata attr unit is deprecated, '
                                             'please use units')
+                    else:
+                        u = self.DEFAULT_UNIT
                 elif var in self.UNITS:
                     u = self.UNITS[var]
                 else:

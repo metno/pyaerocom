@@ -222,7 +222,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
                     try:
                         # e.g. lon, lat, altitude
                         val = float(val)
-                    except:
+                    except Exception:
                         pass
                     data_out[var].append(val)
                 
@@ -283,6 +283,6 @@ if __name__=="__main__":
     #file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
     
     reader = ReadAeronetSunV3()
-    reader.read('od550aer')
+    reader.read(['od550aer', 'od550csaer'])
     
     

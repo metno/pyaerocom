@@ -251,7 +251,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
                     try:
                         # e.g. lon, lat, altitude
                         val = float(val)
-                    except:
+                    except Exception:
                         pass
                     data_out[var].append(val)
 

@@ -205,7 +205,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
                     try:
                         # e.g. lon, lat, altitude
                         val = float(val)
-                    except:
+                    except Exception:
                         pass
                     data_out[var].append(val)
                     
@@ -260,6 +260,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
 if __name__=="__main__":
     read = ReadAeronetSdaV3()
     read.verbosity_level = 'debug'
+    
     
     first_ten = read.read(last_file=10)
     
