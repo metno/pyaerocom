@@ -144,7 +144,7 @@ class Region(BrowseDict):
                 else:
                     try:
                         val = int(val)
-                    except:
+                    except Exception:
                         pass
                 self[key] = val
         if self.lon_range_plot is None:
@@ -329,7 +329,7 @@ def get_all_default_regions(use_all_in_ini=False):
     return all_regions
   
 #: ToDO: check how to handle methods properly with HTAP regions...
-def get_regions_coord(lat, lon, **add_regions):
+def get_regions_coord(lat, lon, default_regs=None, **add_regions):
     """Get all regions that contain input coordinate
     
     Note
@@ -354,13 +354,14 @@ def get_regions_coord(lat, lon, **add_regions):
     """
      
     regs = []
-    all_regs = get_all_default_regions(use_all_in_ini=False)
+    if default_regs is None:
+        default_regs = get_all_default_regions(use_all_in_ini=False)
     for an, ar in add_regions.items():
         if isinstance(ar, Region):      
             if not ar.is_htap:
-                all_regs[an] = ar
+                default_regs[an] = ar
 
-    for rname, reg in all_regs.items():
+    for rname, reg in default_regs.items():
         if rname == 'WORLD':
             continue
         if reg.contains_coordinate(lat, lon):
@@ -369,7 +370,7 @@ def get_regions_coord(lat, lon, **add_regions):
         regs.append('WORLD')
     return regs
 
-def find_closest_region_coord(lat, lon, **add_regions):
+def find_closest_region_coord(lat, lon, default_regs=None, **add_regions):
     """Find region that has it's center closest to input coordinate
     
     Parameters
@@ -387,7 +388,8 @@ def find_closest_region_coord(lat, lon, **add_regions):
     str
         name of sqaure region
     """ 
-    regs = get_regions_coord(lat, lon, **add_regions)
+    regs = get_regions_coord(lat, lon, default_regs=default_regs, 
+                             **add_regions)
     
     if len(regs) == 1:
         return regs[0]
