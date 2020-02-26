@@ -293,7 +293,7 @@ class UngriddedData(object):
                 instr = info['instrument_name']
                 if instr is not None and not instr in instruments:
                     instruments.append(instr)
-            except:
+            except Exception:
                 pass
         return instruments        
     
@@ -326,7 +326,7 @@ class UngriddedData(object):
         for v in self.metadata.values():
             try:
                 vals.append(v['longitude'])
-            except:
+            except Exception:
                 vals.append(np.nan)
         return vals
 
@@ -341,7 +341,7 @@ class UngriddedData(object):
         for v in self.metadata.values():
             try:
                 vals.append(v['latitude'])
-            except:
+            except Exception:
                 vals.append(np.nan)
         return vals
 
@@ -356,7 +356,7 @@ class UngriddedData(object):
         for v in self.metadata.values():
             try:
                 vals.append(v['altitude'])
-            except:
+            except Exception:
                 vals.append(np.nan)
         return vals
 
@@ -371,7 +371,7 @@ class UngriddedData(object):
         for v in self.metadata.values():
             try:
                 vals.append(v['station_name'])
-            except:
+            except Exception:
                 vals.append(np.nan)
         return vals
 
@@ -654,7 +654,7 @@ class UngriddedData(object):
         else:
             try:
                 rev = self.data_revision[val['data_id']]
-            except:
+            except Exception:
                 print_log.warning('Data revision could not be accessed')
         sd.data_revision = rev
         try:
@@ -1533,6 +1533,7 @@ class UngriddedData(object):
         logger.info('Extracting dataset {} from data object'.format(data_id))
         return self.filter_by_meta(data_id=data_id)
     
+    
     def extract_var(self, var_name, check_index=True):
         """Split this object into single-var UngriddedData objects
         
@@ -1549,7 +1550,13 @@ class UngriddedData(object):
             new data object containing only input variable data
         """
         if not var_name in self.contains_vars:
-            raise VarNotAvailableError('No such variable {} in data'.format(var_name))
+            # try alias
+            _var = const.VARS[var_name].var_name_aerocom
+            if _var in self.contains_vars:
+                var_name = _var
+            else:
+                raise VarNotAvailableError('No such variable {} in data'
+                                           .format(var_name))
         elif len(self.contains_vars) == 1:
             const.print_log.info('Data object is already single variable. '
                                  'Returning copy')
@@ -1711,7 +1718,7 @@ class UngriddedData(object):
                     if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
                         same_indices[idx].append(meta_key)
                         found = True
-                except:
+                except Exception:
                     print()
             if not found:
                 meta_registered.append(meta)
@@ -1972,7 +1979,7 @@ class UngriddedData(object):
         int
             number of valid observations (all values that are not NaN)
         """
-        pass
+        raise NotImplementedError('Coming soon')
     
     def find_common_stations(self, other, check_vars_available=None,
                              check_coordinates=True, 
@@ -2050,7 +2057,7 @@ class UngriddedData(object):
                                          '({})'.format(var, name, 
                                                        meta['data_id']))
                             ok = False
-                    except: # attribute does not exist or is not iterable
+                    except Exception: # attribute does not exist or is not iterable
                         ok = False
             if ok and name in stations_other:
                 for meta_idx_other, meta_other in other.metadata.items():
@@ -2064,7 +2071,7 @@ class UngriddedData(object):
                                                      name, 
                                                      meta_other['data_id']))
                                         ok = False
-                                except: # attribute does not exist or is not iterable
+                                except Exception: # attribute does not exist or is not iterable
                                     ok = False
                         if ok and check_coordinates:
                             dlat = abs(meta['latitude']-meta_other['latitude'])
@@ -2303,7 +2310,7 @@ class UngriddedData(object):
         info_str += '_{}'.format(f.name)
         try:
             info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
-        except:
+        except Exception:
             info_str += '_AllTimes'
         if ts_type is not None:
             info_str += '_{}'.format(ts_type)
@@ -2392,7 +2399,7 @@ class UngriddedData(object):
     
     def __repr__(self):
         return ('{} <networks: {}; vars: {}; instruments: {};'
-                'No. of stations: {}'
+                'No. of metadata units: {}'
                 .format(type(self).__name__,self.contains_datasets,
                         self.contains_vars, self.contains_instruments,
                         len(self.metadata)))
