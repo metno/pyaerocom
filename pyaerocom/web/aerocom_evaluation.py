@@ -9,25 +9,23 @@ import simplejson
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
-from pyaerocom import __version__ as pyaerocom_version
-from pyaerocom.mathutils import calc_statistics
-from pyaerocom.region import (get_all_default_region_ids, 
-                              find_closest_region_coord,
-                              Region)
+
 from pyaerocom.io.helpers import save_dict_json
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
-                                   update_menu_evaluation_iface, 
-                                   make_info_table_evaluation_iface, 
                                    read_json, write_json)
+
+from pyaerocom.web.const import HEATMAP_FILENAME_EVAL_IFACE
+from pyaerocom.web.helpers_evaluation_iface import (
+    make_regions_json,
+    update_menu_evaluation_iface,
+    make_info_table_evaluation_iface,
+    compute_json_files_from_colocateddata,
+    delete_experiment_data_evaluation_iface)
 
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.colocateddata import ColocatedData
 
-#from pyaerocom.web.obs_config_default import OBS_SOURCES, OBS_DEFAULTS
-from pyaerocom.exceptions import DataDimensionError
-
-# ToDo: complete docstring
 class AerocomEvaluation(object):
     """Class for creating json files for Aerocom Evaluation interface
     
@@ -210,12 +208,12 @@ class AerocomEvaluation(object):
         self.var_order_menu = []
         
         self._valid_obs_vars = {}
-        if try_load_json and proj_id is not None:
+        if len(settings)==0 and try_load_json and proj_id is not None:
             try:
                 self.load_config(self.proj_id, self.exp_id, config_dir)
                 const.print_log.warn('Found and imported config file for {} / {}'
                                      .format(self.proj_id, self.exp_id))
-            except:
+            except Exception:
                 pass
         self.update(**settings)
         
@@ -354,7 +352,7 @@ class AerocomEvaluation(object):
             self[k] = v
         self.check_config()
         self.init_dirs()
-        self._update_custom_read_methods()
+        #self._update_custom_read_methods()
         
     def _set_obsconfig(self, val):
         cfg = {}
@@ -518,220 +516,214 @@ class AerocomEvaluation(object):
             
     def make_regions_json(self):
         """Creates file regions.ini for web interface"""
-        regs = {}
-        for regname in get_all_default_region_ids():
-            reg = Region(regname)
-            regs[regname] = r = {}
-            latr = reg.lat_range
-            r['minLat'] = latr[0]
-            r['maxLat'] = latr[1]
-            lonr = reg.lon_range
-            r['minLon'] = lonr[0]
-            r['maxLon'] = lonr[1]
-        save_dict_json(regs, self.regions_file)
-        return regs
+        return make_regions_json(self.regions_file)
     
-    def compute_json_files_from_colocateddata(self, coldata, obs_name=None, 
-                                              model_name=None):
+    def compute_json_files_from_colocateddata(self, coldata, obs_name, 
+                                              model_name):
         """Creates all json files for one ColocatedData object"""
-        if not isinstance(coldata, ColocatedData):
-            raise ValueError('Need ColocatedData object, got {}'
-                             .format(type(coldata)))
-        stats_dummy = {}
-        
-        use_weights = self.weighted_stats
-        for k in calc_statistics([1], [1]):
-            stats_dummy[k] = np.nan
-        
-        stacked = False
-        if 'altitude' in coldata.data.dims:
-            raise NotImplementedError('Cannot yet handle profile data')
-        if not 'station_name' in coldata.data.coords:
-            if not coldata.data.ndim == 4:
-                raise DataDimensionError('Invalid number of dimensions. '
-                                         'Need 4, got: {}'
-                                         .format(coldata.data.dims))
-            elif not 'latitude' in coldata.data.dims and 'longitude' in coldata.data.dims:
-                raise DataDimensionError('Need latitude and longitude '
-                                         'dimension. Got {}'
-                                         .format(coldata.data.dims))
-            coldata.data = coldata.data.stack(station_name=('latitude', 
-                                                            'longitude'))
-            stacked = True
-            
-        ts_types_order = const.GRID_IO.TS_TYPES
-        to_ts_types = ['daily', 'monthly', 'yearly']
-        
-        data_arrs = dict.fromkeys(to_ts_types)
-        jsdate = dict.fromkeys(to_ts_types)
-        
-        ts_type = coldata.meta['ts_type']
-        for freq in to_ts_types:
-            if ts_types_order.index(freq) < ts_types_order.index(ts_type):
-                data_arrs[freq] = None
-            elif ts_types_order.index(freq) == ts_types_order.index(ts_type):
-                data_arrs[freq] = coldata.data
-                
-                js = (coldata.data.time.values.astype('datetime64[s]') - 
-                      np.datetime64('1970', '[s]')).astype(int) * 1000
-                jsdate[freq] = js.tolist()
-                
-            else:
-                colstp = self.colocation_settings
-                _a = coldata.resample_time(to_ts_type=freq,
-                                     apply_constraints=colstp.apply_time_resampling_constraints, 
-                                     min_num_obs=colstp.min_num_obs,
-                                     colocate_time=colstp.colocate_time,
-                                     inplace=False).data
-                data_arrs[freq] = _a #= resample_time_dataarray(arr, freq=freq)
-                js = (_a.time.values.astype('datetime64[s]') - 
-                      np.datetime64('1970', '[s]')).astype(int) * 1000
-                jsdate[freq] = js.tolist()      
-        
-        #print(jsdate)
+        vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
+        return compute_json_files_from_colocateddata(
+                coldata, obs_name, model_name, self.weighted_stats,
+                self.colocation_settings, vert_code, self.out_dirs)
     
-        obs_id = coldata.meta['data_source'][0]
-        model_id = coldata.meta['data_source'][1]
-        
-        obs_var = coldata.meta['var_name'][0]
-        model_var = coldata.meta['var_name'][1]
-        
-        if obs_name is None:
-            obs_name = self.find_obs_name(obs_id, obs_var)
-            
-        if model_name is None:
-            model_name = self.find_model_name(model_id)
     
-        ts_objs = []
-        
-        map_data = []
-        scat_data = {}
-        hm_data = {}
-        
-        
-        #ts_type = coldata.meta['ts_type']
-        vert_code = self.get_vert_code(obs_name, obs_var)
-        
-        
-        # data used for heatmap display in interface
-        if stacked:    
-            hmd = ColocatedData(data_arrs[ts_type].unstack('station_name'))
-        else:
-            hmd = ColocatedData(data_arrs[ts_type])
-
-        for reg in get_all_default_region_ids():
-            filtered = hmd.apply_latlon_filter(region_id=reg)
-            stats = filtered.calc_statistics(use_area_weights=use_weights)
-            for k, v in stats.items():
-                if not k=='NOTE':
-                    v = np.float64(v)
-                stats[k] = v
-            
-            hm_data[reg] = stats
-        
-        self._write_heatmap_json(hm_data, obs_name, obs_var, vert_code, 
-                                 model_name, model_var)
-        
-        if vert_code == 'ModelLevel':
-            raise NotImplementedError('Coming soon...')
-        const.print_log.info('Computing json files for {} vs. {}'
-                             .format(model_name, obs_name))
-        for i, stat_name in enumerate(coldata.data.station_name.values):
-            _disp = ('{} - {} ({}) vs. {} ({})'
-                     .format(stat_name, model_name, 
-                             coldata.meta['var_name'][1],
-                             obs_name, coldata.meta['var_name'][0]))
-            has_data = False
-            ts_data = {}
-            ts_data['station_name'] = stat_name
-            ts_data['pyaerocom_version'] = pyaerocom_version
-            ts_data['obs_name'] = obs_name
-            ts_data['model_name'] = model_name
-            ts_data['obs_var'] = coldata.meta['var_name'][0]
-            ts_data['obs_unit'] = coldata.meta['var_units'][0]
-            ts_data['vert_code'] = vert_code
-            ts_data['obs_freq_src'] = coldata.meta['ts_type_src'][0]
-            ts_data['obs_revision'] = coldata.meta['revision_ref']
-            
-            ts_data['mod_var'] = coldata.meta['var_name'][1]
-            ts_data['mod_unit'] = coldata.meta['var_units'][1]
-            ts_data['mod_freq_src'] = coldata.meta['ts_type_src'][1]
-            
-            stat_lat = np.float64(coldata.data.latitude[i])
-            stat_lon = np.float64(coldata.data.longitude[i])
-            if 'altitude' in coldata.data.coords:
-                stat_alt = np.float64(coldata.data.altitude[i])
-            else:
-                stat_alt = np.nan
-            region = find_closest_region_coord(stat_lat, stat_lon)
-            
-            # station information for map view
-            map_stat = {'site'      : stat_name, 
-                        'lat'       : stat_lat, 
-                        'lon'       : stat_lon,
-                        'alt'       : stat_alt,
-                        'region'    : region}
-            
-            for tres, arr in data_arrs.items():
-                map_stat['{}_statistics'.format(tres)] = {}
-                if arr is None:
-                    ts_data['{}_date'.format(tres)] = []
-                    ts_data['{}_obs'.format(tres)] = []
-                    ts_data['{}_mod'.format(tres)] = []
-                    map_stat['{}_statistics'.format(tres)].update(stats_dummy)
-                    continue
-        
-                obs_vals = arr.sel(data_source=obs_id, 
-                                   station_name=stat_name).values
-
-                if all(np.isnan(obs_vals)):
-                    _disp += ': No obs data'
-                    ts_data['{}_date'.format(tres)] = []
-                    ts_data['{}_obs'.format(tres)] = []
-                    ts_data['{}_mod'.format(tres)] = []
-                    map_stat['{}_statistics'.format(tres)].update(stats_dummy)
-                    continue
-                has_data = True
-                mod_vals = arr.sel(data_source=model_id, 
-                                   station_name=stat_name).values
-                
-                if not len(jsdate[tres]) == len(obs_vals):
-                    raise Exception('Please debug...')
-                
-                ts_data['{}_date'.format(tres)] = jsdate[tres]
-                ts_data['{}_obs'.format(tres)] = obs_vals.tolist()
-                ts_data['{}_mod'.format(tres)] = mod_vals.tolist()
-                
-                station_statistics = calc_statistics(mod_vals, obs_vals)
-                for k, v in station_statistics.items():
-                    station_statistics[k] = np.float64(v)
-                map_stat['{}_statistics'.format(tres)] = station_statistics
-            
-            if has_data:
-                _disp += ': OK'
-                ts_objs.append(ts_data)
-                map_data.append(map_stat)
-                scat_data[str(stat_name)] = sc = {}
-                sc['obs'] = ts_data['monthly_obs']
-                sc['mod'] = ts_data['monthly_mod']
-                sc['region'] = region
-            const.print_log.info(_disp)
-        dirs = self.out_dirs
-    
-        map_name = self.get_json_mapname(obs_name, obs_var, model_name, 
-                                         model_var, vert_code)
-        
-        outfile_map =  os.path.join(dirs['map'], map_name)
-        with open(outfile_map, 'w') as f:
-            simplejson.dump(map_data, f, ignore_nan=True)
-        
-        outfile_scat =  os.path.join(dirs['scat'], map_name)
-        with open(outfile_scat, 'w') as f:
-            simplejson.dump(scat_data, f, ignore_nan=True)
-            
-        for ts_data in ts_objs:
-            #writes json file
-            self._write_stationdata_json(ts_data)
+# =============================================================================
+#         if not isinstance(coldata, ColocatedData):
+#             raise ValueError('Need ColocatedData object, got {}'
+#                              .format(type(coldata)))
+#         stats_dummy = {}
+#         
+#         use_weights = self.weighted_stats
+#         for k in calc_statistics([1], [1]):
+#             stats_dummy[k] = np.nan
+#         
+#         stacked = False
+#         if 'altitude' in coldata.data.dims:
+#             raise NotImplementedError('Cannot yet handle profile data')
+#         if not 'station_name' in coldata.data.coords:
+#             if not coldata.data.ndim == 4:
+#                 raise DataDimensionError('Invalid number of dimensions. '
+#                                          'Need 4, got: {}'
+#                                          .format(coldata.data.dims))
+#             elif not 'latitude' in coldata.data.dims and 'longitude' in coldata.data.dims:
+#                 raise DataDimensionError('Need latitude and longitude '
+#                                          'dimension. Got {}'
+#                                          .format(coldata.data.dims))
+#             coldata.data = coldata.data.stack(station_name=('latitude', 
+#                                                             'longitude'))
+#             stacked = True
+#             
+#         ts_types_order = const.GRID_IO.TS_TYPES
+#         to_ts_types = ['daily', 'monthly', 'yearly']
+#         
+#         data_arrs = dict.fromkeys(to_ts_types)
+#         jsdate = dict.fromkeys(to_ts_types)
+#         
+#         ts_type = coldata.meta['ts_type']
+#         for freq in to_ts_types:
+#             if ts_types_order.index(freq) < ts_types_order.index(ts_type):
+#                 data_arrs[freq] = None
+#             elif ts_types_order.index(freq) == ts_types_order.index(ts_type):
+#                 data_arrs[freq] = coldata.data
+#                 
+#                 js = (coldata.data.time.values.astype('datetime64[s]') - 
+#                       np.datetime64('1970', '[s]')).astype(int) * 1000
+#                 jsdate[freq] = js.tolist()
+#                 
+#             else:
+#                 colstp = self.colocation_settings
+#                 _a = coldata.resample_time(to_ts_type=freq,
+#                                      apply_constraints=colstp.apply_time_resampling_constraints, 
+#                                      min_num_obs=colstp.min_num_obs,
+#                                      colocate_time=colstp.colocate_time,
+#                                      inplace=False).data
+#                 data_arrs[freq] = _a #= resample_time_dataarray(arr, freq=freq)
+#                 js = (_a.time.values.astype('datetime64[s]') - 
+#                       np.datetime64('1970', '[s]')).astype(int) * 1000
+#                 jsdate[freq] = js.tolist()      
+#         
+#         #print(jsdate)
+#     
+#         obs_id = coldata.meta['data_source'][0]
+#         model_id = coldata.meta['data_source'][1]
+#         
+#         obs_var = coldata.meta['var_name'][0]
+#         model_var = coldata.meta['var_name'][1]
+#         
+#         if obs_name is None:
+#             obs_name = self.find_obs_name(obs_id, obs_var)
+#             
+#         if model_name is None:
+#             model_name = self.find_model_name(model_id)
+#     
+#         ts_objs = []
+#         
+#         map_data = []
+#         scat_data = {}
+#         hm_data = {}
+#         
+# 
+#         vert_code = self.get_vert_code(obs_name, obs_var)
+#         
+#         # data used for heatmap display in interface
+#         if stacked:    
+#             hmd = ColocatedData(data_arrs[ts_type].unstack('station_name'))
+#         else:
+#             hmd = ColocatedData(data_arrs[ts_type])
+# 
+#         for reg in get_all_default_region_ids():
+#             filtered = hmd.filter_region(region_id=reg)
+#             stats = filtered.calc_statistics(use_area_weights=use_weights)
+#             for k, v in stats.items():
+#                 if not k=='NOTE':
+#                     v = np.float64(v)
+#                 stats[k] = v
+#             
+#             hm_data[reg] = stats
+#         add_entry_heatmap_json(self._heatmap_file, hm_data, obs_name, obs_var, vert_code, 
+#                                model_name, model_var)
+#         
+#         if vert_code == 'ModelLevel':
+#             raise NotImplementedError('Coming soon...')
+#         const.print_log.info('Computing json files for {} vs. {}'
+#                              .format(model_name, obs_name))
+#         for i, stat_name in enumerate(coldata.data.station_name.values):
+#             _disp = ('{} - {} ({}) vs. {} ({})'
+#                      .format(stat_name, model_name, 
+#                              coldata.meta['var_name'][1],
+#                              obs_name, coldata.meta['var_name'][0]))
+#             has_data = False
+#             ts_data = {}
+#             ts_data['station_name'] = stat_name
+#             ts_data['pyaerocom_version'] = pyaerocom_version
+#             ts_data['obs_name'] = obs_name
+#             ts_data['model_name'] = model_name
+#             ts_data['obs_var'] = coldata.meta['var_name'][0]
+#             ts_data['obs_unit'] = coldata.meta['var_units'][0]
+#             ts_data['vert_code'] = vert_code
+#             ts_data['obs_freq_src'] = coldata.meta['ts_type_src'][0]
+#             ts_data['obs_revision'] = coldata.meta['revision_ref']
+#             
+#             ts_data['mod_var'] = coldata.meta['var_name'][1]
+#             ts_data['mod_unit'] = coldata.meta['var_units'][1]
+#             ts_data['mod_freq_src'] = coldata.meta['ts_type_src'][1]
+#             
+#             stat_lat = np.float64(coldata.data.latitude[i])
+#             stat_lon = np.float64(coldata.data.longitude[i])
+#             if 'altitude' in coldata.data.coords:
+#                 stat_alt = np.float64(coldata.data.altitude[i])
+#             else:
+#                 stat_alt = np.nan
+#             region = find_closest_region_coord(stat_lat, stat_lon)
+#             
+#             # station information for map view
+#             map_stat = {'site'      : stat_name, 
+#                         'lat'       : stat_lat, 
+#                         'lon'       : stat_lon,
+#                         'alt'       : stat_alt,
+#                         'region'    : region}
+#             
+#             for tres, arr in data_arrs.items():
+#                 map_stat['{}_statistics'.format(tres)] = {}
+#                 if arr is None:
+#                     ts_data['{}_date'.format(tres)] = []
+#                     ts_data['{}_obs'.format(tres)] = []
+#                     ts_data['{}_mod'.format(tres)] = []
+#                     map_stat['{}_statistics'.format(tres)].update(stats_dummy)
+#                     continue
+#         
+#                 obs_vals = arr.sel(data_source=obs_id, 
+#                                    station_name=stat_name).values
+# 
+#                 if all(np.isnan(obs_vals)):
+#                     _disp += ': No obs data'
+#                     ts_data['{}_date'.format(tres)] = []
+#                     ts_data['{}_obs'.format(tres)] = []
+#                     ts_data['{}_mod'.format(tres)] = []
+#                     map_stat['{}_statistics'.format(tres)].update(stats_dummy)
+#                     continue
+#                 has_data = True
+#                 mod_vals = arr.sel(data_source=model_id, 
+#                                    station_name=stat_name).values
+#                 
+#                 if not len(jsdate[tres]) == len(obs_vals):
+#                     raise Exception('Please debug...')
+#                 
+#                 ts_data['{}_date'.format(tres)] = jsdate[tres]
+#                 ts_data['{}_obs'.format(tres)] = obs_vals.tolist()
+#                 ts_data['{}_mod'.format(tres)] = mod_vals.tolist()
+#                 
+#                 station_statistics = calc_statistics(mod_vals, obs_vals)
+#                 for k, v in station_statistics.items():
+#                     station_statistics[k] = np.float64(v)
+#                 map_stat['{}_statistics'.format(tres)] = station_statistics
+#             
+#             if has_data:
+#                 _disp += ': OK'
+#                 ts_objs.append(ts_data)
+#                 map_data.append(map_stat)
+#                 scat_data[str(stat_name)] = sc = {}
+#                 sc['obs'] = ts_data['monthly_obs']
+#                 sc['mod'] = ts_data['monthly_mod']
+#                 sc['region'] = region
+#             const.print_log.info(_disp)
+#         dirs = self.out_dirs
+#     
+#         map_name = get_json_mapname(obs_name, obs_var, model_name, 
+#                                     model_var, vert_code)
+#         
+#         outfile_map =  os.path.join(dirs['map'], map_name)
+#         with open(outfile_map, 'w') as f:
+#             simplejson.dump(map_data, f, ignore_nan=True)
+#         
+#         outfile_scat =  os.path.join(dirs['scat'], map_name)
+#         with open(outfile_scat, 'w') as f:
+#             simplejson.dump(scat_data, f, ignore_nan=True)
+#             
+#         for ts_data in ts_objs:
+#             #writes json file
+#             _write_stationdata_json(ts_data, dirs)
+# =============================================================================
          
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
@@ -742,7 +734,7 @@ class AerocomEvaluation(object):
     
     @property
     def _heatmap_file(self):
-        return os.path.join(self.out_dirs['hm'], 'glob_stats.json')
+        return os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE)
     
     def update_heatmap_json(self):
         fp = self._heatmap_file
@@ -775,96 +767,13 @@ class AerocomEvaluation(object):
                         modvar = minfo['var']
                         if not modvar in hm[var][obs][vc][mod]:
                             hm[var][obs][vc][mod][modvar] = {}
-                        try:
-                            hm_data = data[var][obs][vc][mod][modvar]
-                        except Exception as e:
-                            print(repr(e))
-                            raise Exception
+                        
+                        hm_data = data[var][obs][vc][mod][modvar]
                         hm[var][obs][vc][mod][modvar] = hm_data
                             
-                            
-# =============================================================================
-#         new = sort_dict_by_name(data, pref_list=self.var_order_menu)
-#         new_sorted = {}
-#         for var, obs_dict in new.items():
-#             sorted_obs = sort_dict_by_name(obs_dict)
-#             new_sorted[var] = sorted_obs
-#             for obs_name, vert_codes in sorted_obs.items():
-#                 vert_codes_sorted = sort_dict_by_name(vert_codes)
-#                 new_sorted[var][obs_name] = vert_codes_sorted
-#                 for vert_code, models in vert_codes_sorted.items():
-#                     models_sorted = sort_dict_by_name(models)
-#                     new_sorted[var][obs_name][vert_code] = models_sorted
-# =============================================================================
         with open(fp, 'w') as f:
             simplejson.dump(hm, f, ignore_nan=True)
-        
-    def _write_heatmap_json(self, result, obs_name, obs_var, vert_code, 
-                            model_name, model_var):
-        fp = self._heatmap_file
-        if os.path.exists(fp):
-            try:
-                with open(fp, 'r') as f:
-                    current = simplejson.load(f)
-            except Exception as e:
-                raise Exception('Fatal: could not open existing json file: {}. '
-                                'Reason: {}'.format(fp, repr(e)))
-        else:
-            current = {}
-        if not obs_var in current:
-            current[obs_var] = {}
-        ov = current[obs_var]
-        if not obs_name in ov:
-            ov[obs_name] = {}
-        on = ov[obs_name]
-        if not vert_code in on:
-            on[vert_code] = {}
-        ovc = on[vert_code]
-        if not model_name in ovc:
-            ovc[model_name] = {}
-        mn = ovc[model_name]
-        if model_var in mn:
-            const.print_log.info('Overwriting existing heatmap statistics for '
-                                 'model {}/{} ({}, {}, {}) in glob_stats.json'
-                                 .format(model_name, model_var, obs_var, obs_name, 
-                                         vert_code))
-        mn[model_var] = result
-        with open(fp, 'w') as f:
-            simplejson.dump(current, f, ignore_nan=True)
-        
-    def _write_stationdata_json(self, ts_data):
-        
-        filename = self.get_stationfile_name(ts_data['station_name'], 
-                                             ts_data['obs_name'],
-                                             ts_data['obs_var'],
-                                             ts_data['vert_code'])
-    
-        fp = os.path.join(self.out_dirs['ts'], filename)
-        if os.path.exists(fp):
-            try:
-                with open(fp, 'r') as f:
-                    current = simplejson.load(f)
-            except Exception as e:
-                raise Exception('Fatal: could not open existing json file: {}. '
-                                'Reason: {}'.format(fp, repr(e)))
-        else:
-            current = {}
-        current[ts_data['model_name']] = ts_data
-        with open(fp, 'w') as f:
-            simplejson.dump(current, f, ignore_nan=True)
-            
-    def get_stationfile_name(self, station_name, obs_name, obs_var, vert_code):
-        """Get name of station timeseries file"""
-        return ('{}_OBS-{}:{}_{}.json'
-                .format(station_name, obs_name, obs_var, vert_code))
-    
-    
-    def get_json_mapname(self, obs_name, obs_var, model_name, model_var, 
-                           vert_code):
-        """Get name base name of json file""" 
-        return ('OBS-{}:{}_{}_MOD-{}:{}.json'
-                .format(obs_name, obs_var, vert_code, model_name, model_var))
-    
+      
     def find_coldata_files(self, model_name, obs_name, var_name=None):
         """Find colocated data files for a certain model/obs/var combination
         
@@ -893,11 +802,15 @@ class AerocomEvaluation(object):
                     match = (m['data_source'][0] == obs_name and
                              m['data_source'][1] == model_name)
                     if var_name is not None:
+                        try:
+                            var_name = self.model_config[model_name]['model_use_vars'][var_name]
+                        except:
+                            pass
                         if not m['var_name'] == var_name:
                             match = False
                     if match:
                         files.append(os.path.join(coldata_dir, fname))
-                except:
+                except Exception:
                     const.print_log.warning('Invalid file {} in coldata dir'
                                             .format(fname))
 
@@ -1333,7 +1246,8 @@ class AerocomEvaluation(object):
         data = col.read_ungridded(vars_to_read)
         return data
         
-    def _info_from_map_file(self, filename):
+    @staticmethod
+    def _info_from_map_file(filename):
         f = filename
         obs_info = f.split('OBS-')[1].split('_MOD')[0].split('_')
         obs_name, obs_var = obs_info[0].split(':')
@@ -1390,7 +1304,7 @@ class AerocomEvaluation(object):
         
         try:
             name, tp, cat = self.var_mapping[obs_var]
-        except:
+        except Exception:
             name, tp, cat = obs_var, 'UNDEFINED', 'UNDEFINED'
             self._log.warning('Missing menu name definition for var {}. '
                               'Using variable name'.format(obs_var))
@@ -1456,7 +1370,6 @@ class AerocomEvaluation(object):
         exp_name : str, optional
             name experiment, if None, then this project is used
         """
-        from pyaerocom.web.helpers import delete_experiment_data_evaluation_iface
         if proj_id is None:
             proj_id = self.proj_id
         if exp_id is None:
@@ -1526,7 +1439,7 @@ class AerocomEvaluation(object):
             return
         try:
             data = read_json(fp)
-        except:
+        except Exception:
             const.print_log.exception('FATAL: detected corrupt json file: {}. '
                                       'Removing file...'.format(fp))
             os.remove(fp)
