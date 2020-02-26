@@ -33,9 +33,11 @@
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
 
+import fnmatch
 from glob import glob
 import os
 from collections import OrderedDict as od
+
 import numpy as np
 import pandas as pd
 import iris
@@ -47,16 +49,19 @@ from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          subtract_cubes,
                                          add_cubes)
+
 from pyaerocom.helpers import (to_pandas_timestamp, 
                                sort_ts_types,
                                get_highest_resolution)
+
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
                                   FileConventionError,
                                   IllegalArgumentError, 
                                   TemporalResolutionError,
-                                  VarNotAvailableError)
+                                  VarNotAvailableError, 
+                                  VariableDefinitionError)
 
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
@@ -189,12 +194,15 @@ class ReadGridded(object):
         #: This object can be used to 
         self.browser = AerocomBrowser()
         
-        self._aux_avail = None
-        
         # these can be filled using method add_aux_compute and they will not 
         # affect global settings of the reader class
         self._aux_requires = {}
         self._aux_funs = {}
+        
+        #: quick access to variables that can be computed (will be filled and 
+        #: handles automatically)
+        self._aux_avail = {}
+        
         
         self.ignore_vert_code = False
         if data_dir is not None:
@@ -206,15 +214,12 @@ class ReadGridded(object):
                 self.search_all_files()
             except DataCoverageError as e:
                 print_log.warning(repr(e))
-
-    def reinit(self):
-        """Reinit everything that is loaded specific to data_dir"""
-        self.file_info = None
-        self._vars_2d = []
-        self._vars_3d =[]
-      
+  
     @property
     def data_id(self):
+        """
+        Data ID of dataset
+        """
         return self._data_id
     
     @data_id.setter
@@ -227,7 +232,9 @@ class ReadGridded(object):
         
     @property
     def data_dir(self):
-        """Directory of data files"""
+        """
+        Directory where data files are located
+        """
         return self._data_dir
     
     @data_dir.setter
@@ -240,14 +247,18 @@ class ReadGridded(object):
             
     @property
     def years_avail(self):
-        """Available years"""
+        """
+        Years available in dataset
+        """
         if self.file_info is None:
             self.search_all_files()
         return sorted(self.file_info.year.unique())
     
     @property
     def years(self):
-        """Available years"""
+        """
+        Wrapper for :attr:`years_available`
+        """
         print_log.warning(DeprecationWarning('Attr. "years" is deprecated '
                                              '(but still works). Please use '
                                              '"years_avail" instead.'))
@@ -255,14 +266,18 @@ class ReadGridded(object):
     
     @property
     def experiments(self):
-        """List of all experiments that are available in this dataset"""
+        """
+        List of all experiments that are available in this dataset
+        """
         if self.file_info is None:
             self.search_all_files()
         return sorted(self.file_info.experiment.unique())
     
     @property
     def files(self):
-        """List  of data files"""
+        """
+        List of data files
+        """
         if self.file_info is None:
             self.search_all_files()
         return [os.path.join(self.data_dir, x) for x in 
@@ -274,39 +289,18 @@ class ReadGridded(object):
         return self.file_info.ts_type.unique()
     
     @property
-    def vars(self):
+    def vars_filename(self):
         return sorted(self._vars_2d + self._vars_3d)
     
     @property
+    def vars(self):
+        from pyaerocom.exceptions import DeprecationError
+        raise DeprecationError('Attribute vars is deprecated in ReadGridded. '
+                               'Please use vars_filename instead')
+    @property
     def vars_provided(self):
-        """Variables provided by this interface"""
-        v = []
-        v.extend(self.vars)
-        
-        self._aux_avail = []
-        for aux_var in self.AUX_REQUIRES.keys():
-            try:
-                self._get_aux_vars_and_fun(aux_var)
-                if not aux_var in v:
-                    v.append(aux_var)
-                self._aux_avail.append(aux_var)
-            except: #this auxiliary variable cannot be computed
-                pass
-        for aux_var in self._aux_requires.keys():
-            try:
-                self._get_aux_vars_and_fun(aux_var)
-                if not aux_var in v:
-                    v.append(aux_var)
-                self._aux_avail.append(aux_var)
-            except: #this auxiliary variable cannot be computed
-                pass
-        #v.extend(self.AUX_REQUIRES.keys())
-        #also add standard names of 3D variables if not already in list
-        for var in self._vars_3d:
-            var = var.lower().replace('3d','')
-            if not var in v:
-                v.append(var)
-        return v
+        """Variables provided by this dataset"""
+        return self._get_vars_provided()
     
     @property
     def file_type(self):
@@ -366,6 +360,194 @@ class ReadGridded(object):
             
         return to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
     
+    def reinit(self):
+        """Reinit everything that is loaded specific to data_dir"""
+        self.file_info = None
+        self._vars_2d = []
+        self._vars_3d =[]
+    
+    def _get_vars_provided(self):
+        _vars = []
+        _vars.extend(self.vars_filename)
+
+        for aux_var in self.AUX_REQUIRES.keys():
+            if '*' in aux_var:
+                continue
+            elif not aux_var in _vars and self.check_compute_var(aux_var):
+                _vars.append(aux_var)
+        for aux_var in self._aux_requires.keys():
+            if '*' in aux_var:
+                continue
+            elif not aux_var in _vars and self.check_compute_var(aux_var):
+                _vars.append(aux_var)
+        
+        #also add standard names of 3D variables if not already in list
+        for var in self._vars_3d:
+            var = var.lower().replace('3d','')
+            if not var in _vars:
+                _vars.append(var)
+        return _vars
+    
+    def _check_aux_compute_access(self, var_name):
+        """Check if input var_name can be computed 
+        
+        Note
+        ----
+        Does not check variable families (e.g. conc*) which is done via
+        :func:`_check_var_match_pattern`. Only checks entries in 
+        :attr:`AUX_REQUIRES` and :attr:`aux_requires`.
+        
+        Parameters
+        ----------
+        var_name : str
+            input variable name that is supposed to be checked
+        
+        Returns
+        -------
+        bool 
+            True, if variable can be computed, else False
+        """
+        if (var_name in self._aux_requires and 
+            var_name in self._aux_funs):
+            vars_req = self._aux_requires[var_name]
+            fun = self._aux_funs[var_name]
+        elif (var_name in self.AUX_REQUIRES and 
+              var_name in self.AUX_FUNS):
+            vars_req = self.AUX_REQUIRES[var_name]
+            fun = self.AUX_FUNS[var_name]
+        else:
+            return False
+          
+        for i, var in enumerate(vars_req):
+            try:
+                # the variable might be updated in _check_var_avail
+                vars_req[i] = self._check_var_avail(var) 
+            except VarNotAvailableError:
+                return False
+        
+        self._aux_avail[var_name] = (vars_req, fun)
+        return True
+        
+    def _check_var_match_pattern(self, var_name):
+        vars_found = []
+        for pattern in self.registered_var_patterns:
+            if fnmatch.fnmatch(var_name, pattern):
+                vars_required = self.AUX_REQUIRES[pattern]
+                for addvar in vars_required:
+                    
+                    if not '*' in addvar:
+                        vars_found.append(addvar)
+                    else:
+                        _addvar = var_name
+                        spl1 = pattern.split('*')
+                        spl2 = addvar.split('*')
+                        if len(spl1) != len(spl2):
+                            raise AttributeError('variable patterns in '
+                                                 'AUX_REQUIRES and corresponding '
+                                                 'values (with * in name) need '
+                                                 'to have the same number of '
+                                                 'wildcard delimiters')
+                        for i, substr in enumerate(spl1):
+                            if bool(substr):
+                                _addvar = _addvar.replace(substr, spl2[i])
+                        vars_found.append(_addvar)
+                
+                if len(vars_found) == len(vars_required):
+                    all_ok = True
+                    vars_to_read = []
+                    for var in vars_found:
+                        try:
+                            vars_to_read.append(self._check_var_avail(var))
+                        except VarNotAvailableError:
+                            all_ok = False
+                            break
+                        
+                    if all_ok:
+                        fun = self.AUX_FUNS[pattern]
+                        self.add_aux_compute(var_name, 
+                                             vars_required=vars_to_read,
+                                             fun=fun)
+                        self._aux_avail[var_name] = (vars_to_read, fun)    
+                        return True
+        return False
+    
+    def _get_aux_vars_and_fun(self, var_to_compute):
+        """Helper that searches auxiliary variables for computation of input var
+        
+        Parameters
+        ----------
+        var_to_compute : str
+            one of the auxiliary variables that is supported by this interface
+            (cf. :attr:`AUX_REQUIRES`)
+        
+        Raises 
+        ------
+        VarNotAvailableError
+            if one of the required variables for computation is not available 
+            in the data
+            
+        Returns 
+        -------
+        list
+            list of variables that are used as input for computation method 
+            of input variable
+        callable 
+            function that is used to compute input variable 
+        """
+        
+        if not var_to_compute in self._aux_avail:
+            if not self.check_compute_var(var_to_compute):
+                raise VarNotAvailableError('Variable {} cannot be computed'
+                                           .format(var_to_compute))
+        return self._aux_avail[var_to_compute]
+    
+    def check_compute_var(self, var_name):
+        """Check if variable name belongs to family that can be computed
+        
+        For instance, if input var_name is `concdust` this method will check
+        :attr:`AUX_REQUIRES` to see if there is a variable family pattern
+        (`conc*`) defined that specifies how to compute these variables. If 
+        a match is found, the required variables and computation method is 
+        added via :func:`add_aux_compute`.
+
+        
+        Parameters
+        -----------
+        var_name : str
+            variable name to be checked
+        
+        Returns
+        -------
+        bool
+            True if match is found, else False
+        """
+        
+        if '*' in var_name:
+            raise VariableDefinitionError('Invalid variable name {}. Must not '
+                                          'contain *'.format(var_name))
+        if var_name in self._aux_avail:
+            
+            return True
+        elif self._check_aux_compute_access(var_name):
+            return True
+        return self._check_var_match_pattern(var_name)
+    
+    def _check_var_avail(self, var):
+        if var in self.vars_filename:
+            return var
+        
+        if var in self.AUX_ALT_VARS:
+            for alt_var in list(self.AUX_ALT_VARS[var]):
+                if alt_var in self.vars_filename:
+                    return alt_var
+            
+        v = const.VARS[var]
+    
+        for alias in v.aliases:
+            if alias in self.vars_filename:
+                return alias
+        raise VarNotAvailableError('Var {} is not available in data...')
+        
     def has_var(self, var_name):
         """Check if variable is available
         
@@ -378,13 +560,28 @@ class ReadGridded(object):
         -------
         bool
         """
-        provided = self.vars_provided
-        if var_name in provided or self.check_compute_var(var_name):
+        # vars_provided includes variables that can be read and variables that
+        # can be computed. It does not consider variable families that may be
+        # able to be computed or alias matches
+        avail = self.vars_provided
+        if var_name in avail:
             return True
-        var = const.VARS[var_name]
+        try:
+            var = const.VARS[var_name]
+        except VariableDefinitionError as e:
+            const.print_log.warn(repr(e))
+            return False
+        
+        if self.check_compute_var(var_name): 
+            return True
+        
         for alias in var.aliases:
-            if alias in provided:
+            if alias in avail:
                 return True
+        
+        if var.is_alias and var.var_name_aerocom in avail:
+            return True
+        
         return False
     
     def _get_years_to_load(self, start=None, stop=None):
@@ -484,7 +681,7 @@ class ReadGridded(object):
             try:
                 self.file_convention.from_file(os.path.basename(file))
                 return
-            except:
+            except Exception:
                 pass
         
         raise FileNotFoundError('None of the available files in {} matches a '
@@ -881,120 +1078,6 @@ class ReadGridded(object):
         """        
         return concatenate_iris_cubes(cubes, error_on_mismatch=True)
     
-# =============================================================================
-#     def _get_aux_fun(self, var_to_compute):
-#         """Get method used to compute input variable
-#         
-#         Parameters
-#         ----------
-#         var_to_compute : str
-#             variable to be computed
-#         
-#         Returns
-#         -------
-#         callable
-#             method that is used to compute variable
-#         
-#         Raises
-#         ------
-#         AttributeError
-#             if no function is defined for that variable name
-#         """
-#         if var_to_compute in self.AUX_FUNS:
-#             return self.AUX_FUNS[var_to_compute]
-#         elif var_to_compute in self._aux_funs:
-#             return self._aux_funs[var_to_compute]
-#         raise AttributeError('No method found for computation of {}'
-#                              .format(var_to_compute))
-#         
-#     def _get_aux_vars(self, var_to_compute):
-#         """Helper that searches auxiliary variables for computation of input var
-#         
-#         Parameters
-#         ----------
-#         var_to_compute : str
-#             one of the auxiliary variables that is supported by this interface
-#             (cf. :attr:`AUX_REQUIRES`)
-#         
-#         Returns 
-#         -------
-#         list
-#             list of variables that are used as input for computation method 
-#             of input variable (cf. :attr:`AUX_FUNS`)
-#             
-#         Raises 
-#         ------
-#         VarNotAvailableError
-#             if one of the required variables for computation is not available 
-#             in the data
-#         """
-#         if var_to_compute in self._aux_requires:
-#             vars_req = self._aux_requires[var_to_compute]
-#         elif var_to_compute in self.AUX_REQUIRES:
-#             vars_req = self.AUX_REQUIRES[var_to_compute]
-#         
-#         vars_to_read = []
-#         for var in vars_req:
-#             found = 0
-#             if var in self.vars:
-#                 found = 1
-#                 vars_to_read.append(var)
-#             elif var in self.AUX_ALT_VARS:
-#                 for alt_var in list(self.AUX_ALT_VARS[var]):
-#                     if alt_var in self.vars:
-#                         found = 1
-#                         vars_to_read.append(alt_var)
-#                         break
-#             if not found:
-#                 raise VarNotAvailableError('Cannot compute {}, since {} '
-#                                            '(req. for computation) is not '
-#                                            'available in data'
-#                                            .format(var_to_compute, 
-#                                                    var))
-#         return vars_to_read
-# =============================================================================
-    
-    def _get_aux_vars_and_fun(self, var_to_compute):
-        """Helper that searches auxiliary variables for computation of input var
-        
-        Parameters
-        ----------
-        var_to_compute : str
-            one of the auxiliary variables that is supported by this interface
-            (cf. :attr:`AUX_REQUIRES`)
-        
-        Returns 
-        -------
-        list
-            list of variables that are used as input for computation method 
-            of input variable (cf. :attr:`AUX_FUNS`)
-            
-        Raises 
-        ------
-        VarNotAvailableError
-            if one of the required variables for computation is not available 
-            in the data
-        """
-        if (var_to_compute in self._aux_requires and 
-            var_to_compute in self._aux_funs):
-            vars_req = self._aux_requires[var_to_compute]
-            fun = self._aux_funs[var_to_compute]
-        elif (var_to_compute in self.AUX_REQUIRES and 
-              var_to_compute in self.AUX_FUNS):
-            vars_req = self.AUX_REQUIRES[var_to_compute]
-            fun = self.AUX_FUNS[var_to_compute]
-        
-        vars_to_read = []
-        for var in vars_req:
-            try:
-                vars_to_read.append(self._check_var_avail(var))
-            except VarNotAvailableError:
-                raise VarNotAvailableError('Cannot compute {}, since {} '
-                                           '(req. for computation) is not '
-                                           'available in data'
-                                           .format(var_to_compute, var))
-        return (vars_to_read, fun)
-    
     
     def compute_var(self, var_name, start=None, stop=None, ts_type=None, 
                     experiment=None, vert_which=None, flex_ts_type=True, 
@@ -1077,6 +1160,7 @@ class ReadGridded(object):
         data = GriddedData(cube, data_id=self.data_id, 
                            ts_type=data[0].ts_type,
                            computed=True)
+        data.reader = self
         return data
     
     def find_common_ts_type(self, vars_to_read, start=None, stop=None,
@@ -1185,107 +1269,115 @@ class ReadGridded(object):
                              'object')
         self._aux_requires[var_name] = vars_required
         self._aux_funs[var_name] = fun
+        if not self._check_aux_compute_access(var_name):
+            raise DataCoverageError('Failed to confirm access to auxiliary '
+                                    'variable {} from {}'
+                                    .format(var_name, vars_required))
     
-    def check_compute_var(self, var_name):
-        """Check if variable name belongs to family that can be computed
+    @property
+    def registered_var_patterns(self):
+        """
+        List of string patterns for computation of variables
         
-        For instance, if input var_name is `concdust` this method will check
-        :attr:`AUX_REQUIRES` to see if there is a variable family pattern
-        (`conc*`) defined that specifies how to compute these variables. If 
-        a match is found, the required variables and computation method is 
-        added via :func:`add_aux_compute`.
-        
-        Note
-        ----
-        BETA version, use with care
-        
-        Parameters
-        -----------
-        var_name : str
-            variable name to be checked
-        
+        The information is extracted from :attr:`AUX_REQUIRES`
+
         Returns
         -------
-        bool
-            True if match is found, else False
+        list
+            list of variable patterns
+
+        """
+        return [x for x in self.AUX_REQUIRES if '*' in x]
+               
+    def _get_var_to_read(self, var_name: str) -> str:
+        """
+        Get variable to read
+        
+        The logical order of inferring the variable to read is:
+            
+            1. Check if input variable name as is, is available in filename
+            2. If not, check if an old version of that name is available 
+            3. If not, check if an alias name of input name is available 
+            4. If not, check if input variable is an alias and if AeroCom \
+                variable name is available instead (e.g. input od550csaer \
+                not available, but od550aer is available)
+
+        Parameters
+        ----------
+        var_name : str
+            name of variable that is supposed to be read
+            
+        Raises
+        ------
+        VarNotAvailableError
+            if no match can be found
+        VariableDefinitionError
+            if input variable is not defined
+            
+        Returns
+        -------
+        str
+            name of variable match found
         """
         
-        if '*' in var_name:
-            from pyaerocom.exceptions import VariableDefinitionError
-            raise VariableDefinitionError('Invalid variable name {}. Must not '
-                                          'contain *'.format(var_name))
-        found = False
-        if var_name in self.AUX_REQUIRES:
-            found = True
-        elif var_name in self._aux_requires:
-            found = True
-        else:
-            import fnmatch
-            patterns = [x for x in self.AUX_REQUIRES if '*' in x]
-            vars_found = []
-            for pattern in patterns:
-                if fnmatch.fnmatch(var_name, pattern):
-                    vars_required = self.AUX_REQUIRES[pattern]
-                    for addvar in vars_required:
-                        
-                        if not '*' in addvar:
-                            vars_found.append(addvar)
-                        else:
-                            _addvar = var_name
-                            spl1 = pattern.split('*')
-                            spl2 = addvar.split('*')
-                            if len(spl1) != len(spl2):
-                                raise AttributeError('variable patterns in '
-                                                     'AUX_REQUIRES and corresponding '
-                                                     'values (with * in name) need '
-                                                     'to have the same number of '
-                                                     'wildcard delimiters')
-                            for i, substr in enumerate(spl1):
-                                if bool(substr):
-                                    _addvar = _addvar.replace(substr, spl2[i])
-                            vars_found.append(_addvar)
-                    
-                    if len(vars_found) == len(vars_required):
-                        all_ok = True
-                        vars_to_read = []
-                        for var in vars_found:
-                            try:
-                                vars_to_read.append(self._check_var_avail(var))
-                            except VarNotAvailableError:
-                                all_ok = False
-                                break
-                            
-                        if all_ok:
-                            self.add_aux_compute(var_name, 
-                                                 vars_required=vars_to_read,
-                                                 fun=self.AUX_FUNS[pattern])
-                                
-                            found=True
-# =============================================================================
-#         if found:
-#             try:
-#                 self._get_aux_vars_and_fun(var_name)
-#             except VarNotAvailableError:
-#                 found = False
-# =============================================================================
-        return found
-    
-    def _check_var_avail(self, var):
-        if var in self.vars:
-            return var
+        if var_name in self.vars_filename:
+            return var_name  
         
-        if var in self.AUX_ALT_VARS:
-            for alt_var in list(self.AUX_ALT_VARS[var]):
-                if alt_var in self.vars:
-                    return alt_var
-            
-        v = const.VARS[var]
-    
-        for alias in v.aliases:
-            if alias in self.vars:
+        # e.g. user asks for od550aer but files contain only 3d var od5503daer
+        # if not var_to_read in self.vars_filename: 
+        for var in self._vars_3d:
+            if Variable(var).var_name == var_name:
+                return var
+        
+        # get instance of Variable class
+        var = const.VARS[var_name]
+        
+        # If the input variable has aliases, check if one of these aliases is
+        # provided in the dataset
+        for alias in var.aliases:
+            if alias in self.vars_filename:
+                const.print_log.info('Did not find {} field but {}. '
+                                     'Using the latter instead'
+                                     .format(var_name, alias))
                 return alias
-        raise VarNotAvailableError('Var {} is not available in data...')
-            
+        
+        # Finally, if still no match could be found, check if input variable 
+        # is an alias and see if the corresponding AeroCom variable name is 
+        # available in dataset
+        if var.is_alias and var.var_name_aerocom in self.vars_filename:
+            return var.var_name_aerocom
+        
+        raise VarNotAvailableError('Variable {} could not be found'
+                                   .format(var_name))
+    
+    def _eval_vert_which_and_ts_type(self, var_name, vert_which, ts_type):
+        if all(x=='' for x in self.file_info.vert_code.values):
+                const.print_log.info('Deactivating file search by vertical '
+                               'code for {}, since filenames do not include '
+                               'information about vertical code (probably '
+                               'AeroCom 2 convention)'.format(self.data_id))
+                vert_which = None
+                
+        if isinstance(vert_which, dict):
+            try:
+                vert_which = vert_which[var_name]
+            except Exception:
+                const.print_log.info('Setting vert_which to None, since input '
+                                     'dict {} does not contain input variable '
+                                     '{}'.format(vert_which, var_name))
+                vert_which = None
+                
+        if isinstance(ts_type, dict):
+            try:
+                ts_type = ts_type[var_name]
+            except Exception:
+                const.print_log.info('Setting ts_type to None, since input '
+                                     'dict {} does not contain specification '
+                                     'variable to read {}'.format(ts_type, 
+                                                                  var_name))
+                ts_type = None
+        return vert_which, ts_type
+    
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, vert_which=None, 
@@ -1362,62 +1454,33 @@ class ReadGridded(object):
         VarNotAvailableError
             if specified ts_type is not supported
         """
+        # user has provided input that specified how the input variable 
+        # is supposed to be computed. In this case, the variable will be 
+        # computed even if it is directly available in a file, i.e. it 
+        # could be read.
         if aux_vars is not None:
             self.add_aux_compute(var_name, aux_vars, aux_fun)
         
-        if all(x=='' for x in self.file_info.vert_code.values):
-                print_log.info('Deactivating file search by vertical '
-                               'code for {}, since filenames do not include '
-                               'information about vertical code (probably '
-                               'AeroCom 2 convention)'.format(self.data_id))
-                vert_which = None
-                
-        if isinstance(ts_type, dict):
-            try:
-                ts_type = ts_type[var_name]
-            except:
-                const.print_log.info('Setting ts_type to None, since input '
-                                     'dict {} does not contain specification '
-                                     'variable to read {}'.format(ts_type, 
-                                                                  var_name))
-                ts_type = None
-                
-        #ts_type = self._check_ts_type(ts_type)
-        var_to_read = None
+        vert_which, ts_type =  self._eval_vert_which_and_ts_type(var_name,
+                                                                 vert_which, 
+                                                                 ts_type)        
+
         # this input variable was explicitely set to be computed, in which 
         # case reading of that variable is ignored even if a file exists for 
         # that
-        do_compute = (var_name in self._aux_requires and 
-                      self.check_compute_var(var_name))
-        if not do_compute:
-            if var_name in self.vars:
-                var_to_read = var_name  
-            else:
-                # e.g. user asks for od550aer but files contain only 3d var od5503daer
-                #if not var_to_read in self.vars: 
-                for var in self._vars_3d:
-                    if Variable(var).var_name == var_name:
-                        var_to_read = var
-                if var_to_read is None:
-                    for alias in const.VARS[var_name].aliases:
-                        if alias in self.vars:
-                            const.print_log.info('Did not find {} field but {}. '
-                                                 'Using the latter instead'
-                                                 .format(var_name, alias))
-                            var_to_read = alias
+        if var_name in self._aux_requires and self.check_compute_var(var_name):
+            return self.compute_var(var_name=var_name, 
+                                    start=start, stop=stop, 
+                                    ts_type=ts_type, 
+                                    experiment=experiment, 
+                                    vert_which=vert_which,
+                                    flex_ts_type=flex_ts_type, 
+                                    prefer_longer=prefer_longer)
+            
         
-        if isinstance(vert_which, dict):
-            try:
-                vert_which = vert_which[var_name]
-            except:
-                const.print_log.info('Setting vert_which to None, since input '
-                                     'dict {} does not contain specification '
-                                     'variable to read {}'.format(vert_which, 
-                                                                  var_name))
-                vert_which = None
-                
-        if var_to_read is not None: # variable can be read directly
-            data = self._load_var(var_name=var_to_read, 
+        try:
+            var_to_read = self._get_var_to_read(var_name)
+            return self._load_var(var_name=var_to_read, 
                                   ts_type=ts_type, 
                                   start=start, stop=stop,
                                   experiment=experiment, 
@@ -1426,35 +1489,19 @@ class ReadGridded(object):
                                   prefer_longer=prefer_longer,
                                   **kwargs)
         
-        elif self.check_compute_var(var_name):
-            data = self.compute_var(var_name=var_name, 
-                                    start=start, stop=stop, 
-                                    ts_type=ts_type, 
-                                    experiment=experiment, 
-                                    vert_which=vert_which,
-                                    flex_ts_type=flex_ts_type, 
-                                    prefer_longer=prefer_longer)
+        except VarNotAvailableError:
+            if self.check_compute_var(var_name):
+                return self.compute_var(var_name=var_name, 
+                                        start=start, stop=stop, 
+                                        ts_type=ts_type, 
+                                        experiment=experiment, 
+                                        vert_which=vert_which,
+                                        flex_ts_type=flex_ts_type, 
+                                        prefer_longer=prefer_longer)
 
-# =============================================================================
-#                                     vars_to_read=self._aux_requires[var_name],
-#                                     aux_fun=self._aux_funs[var_name])
-#             
-# =============================================================================
-        else:
-            raise VarNotAvailableError("Error: variable {} not available in "
-                                       "files and can also not be computed."
-                                       .format(var_name))
-# =============================================================================
-#         
-#         if var_name in self.data:
-#             self.logger.warning("Warning: Data for variable {} already exists "
-#                            "and will be overwritten".format(var_name))
-# =============================================================================
-        
-        data.reader = self
-        #self.data[var_name] = data
-        
-        return data
+        raise VarNotAvailableError("Error: variable {} not available in "
+                                    "files and can also not be computed."
+                                    .format(var_name))
         
                 
     def read(self, vars_to_retrieve=None, start=None, stop=None, ts_type=None, 
@@ -1462,7 +1509,7 @@ class ReadGridded(object):
              prefer_longer=False, require_all_vars_avail=False, **kwargs):
         """Read all variables that could be found 
         
-        Reads all variables that are available (i.e. in :attr:`vars`)
+        Reads all variables that are available (i.e. in :attr:`vars_filename`)
         
         Parameters
         ----------
@@ -1520,7 +1567,7 @@ class ReadGridded(object):
                                                        'instead'))
             vars_to_retrieve = kwargs['var_names']
         if vars_to_retrieve is None:
-            vars_to_retrieve = self.vars
+            vars_to_retrieve = self.vars_filename
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         elif not isinstance(vars_to_retrieve, list):
@@ -1645,12 +1692,12 @@ class ReadGridded(object):
                            data_id=self.data_id, 
                            ts_type=ts_type,
                            concatenated=is_concat)
-        
+        data.reader = self
         # crop cube in time (if applicable)
         if not start == 9999:
             try:
                 data = self._check_crop_time(data, start, stop)
-            except:
+            except Exception:
                 const.print_log.exception('Failed to crop time dimension in {}. '
                                           '(start: {}, stop: {})'
                                           .format(data, start, stop))
@@ -1733,7 +1780,7 @@ class ReadGridded(object):
                                                 self.experiments,
                                                 self.years_avail,
                                                 self.ts_types,
-                                                self.vars))
+                                                self.vars_provided))
 # =============================================================================
 #         if self.data:
 #             s += "\nLoaded GriddedData objects:\n"
@@ -1906,14 +1953,9 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = ReadGridded('NorESM2-met2010_AP3-CTRL')
+    r = ReadGridded('NorESM2_lightNFHISTnorpddmsbcsdyn_f09_mg17_20200129')
     
-    print(r)
+    print(r.has_var('concso2'))
     
-    
-    
-    wet = r.read_var('wetdust', start=2010, ts_type='monthly')
-    
-    wet.quickplot_map()
     
     
