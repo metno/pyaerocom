@@ -23,9 +23,11 @@ from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.io import ReadGridded
 from pyaerocom.web.var_groups import var_groups
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
-                                   update_menu_trends_iface,
-                                   get_all_config_files_trends_iface)
-from pyaerocom.exceptions import DataCoverageError, MetaDataError
+                                   read_json)
+from pyaerocom.web.helpers_trends_iface import (update_menu_trends_iface,
+                                                get_all_config_files_trends_iface)
+
+from pyaerocom.exceptions import DataCoverageError
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 import simplejson
@@ -313,7 +315,7 @@ class TrendsEvaluation(object):
         for p in self.periods:
             try:
                 start, stop = _years_from_periodstr(p)
-            except:
+            except Exception:
                 raise ValueError('Invalid input for period: {}. '
                                  'Need string in format "2010-2019"'.format(p))
         
@@ -403,7 +405,7 @@ class TrendsEvaluation(object):
                 if len(vars_avail) > 0:
                     maccess[model_name] = dict(model_id=model_id,
                                                vars_avail=vars_avail)
-            except:
+            except Exception:
                 self._log.warning('Model {} does not provide any of the req. '
                                   'variables {}'.format(model_name, 
                                                         vars_to_retrieve))
@@ -675,7 +677,7 @@ class TrendsEvaluation(object):
                     raise FileNotFoundError('No config {} in {}'.format(name, 
                                             self.config_dir))
                 file = files[name]
-            except:
+            except Exception:
                 pass
         else:
             try:
@@ -684,7 +686,7 @@ class TrendsEvaluation(object):
                     raise FileNotFoundError('No config {} in current '
                                             'directory'.format(name))
                 file = files[name]
-            except:
+            except Exception:
                 pass
         if file is None:
             raise FileNotFoundError('Could not find a valid configuration file')
@@ -695,8 +697,11 @@ class TrendsEvaluation(object):
                 
     def from_json(self, config_file):
         """Load configuration from json config file"""
-        with open(config_file, 'r') as f:
-            current = simplejson.load(f)
+# =============================================================================
+#         with open(config_file, 'r') as f:
+#             current = simplejson.load(f)
+# =============================================================================
+        current = read_json(config_file)
         self.update(**current)  
     
     def to_dict(self):
@@ -764,7 +769,7 @@ class TrendsEvaluation(object):
                             there = True
                             break
                     print('data files (json) exist: {}'.format(there))
-                except:
+                except Exception:
                     print('Failed to check for existing runs for ID {}'.format(run))
             print()
             
@@ -863,10 +868,15 @@ class TrendsEvaluation(object):
             covered
         """
         res = {}
-        for f in self.all_map_files:
-            with open(os.path.join(self.out_dirs['map'], f), 'r') as fp:
-                current = simplejson.load(fp)
-                res[f] = list(current[0]['all'].keys())
+        for fname in self.all_map_files:
+            fpath = os.path.join(self.out_dirs['map'], fname)
+            current = read_json(fpath)
+            res[fname] = list(current[0]['all'].keys())
+# =============================================================================
+#             with open(os.path.join(self.out_dirs['map'], fname), 'r') as fp:
+#                 current = simplejson.load(fp)
+#                 res[fname] = list(current[0]['all'].keys())
+# =============================================================================
         return res
     
     def get_obsvar_name_and_type(self, obs_var):
@@ -886,7 +896,7 @@ class TrendsEvaluation(object):
         """
         try:
             name, tp, cat = self.var_mapping[obs_var]
-        except:
+        except Exception:
             name, tp, cat = obs_var, 'UNDEFINED', 'UNDEFINED'
             self._log.warning('Missing menu name definition for var {}. '
                               'Using variable name'.format(obs_var))
@@ -922,7 +932,7 @@ class TrendsEvaluation(object):
                 regs[reg_name] = Region(name=reg_name, 
                                         lat_range=info['lat_range'],
                                         lon_range=info['lon_range'])
-            except:
+            except Exception:
                 self._log.warning('Failed to add region {}: {}'
                                   .format(reg_name, info))
         self.regions = regs
@@ -1062,7 +1072,7 @@ class TrendsEvaluation(object):
                 
         try:
             stat[var_name].ix[vals_invalid.index] = np.nan
-        except:
+        except Exception:
             pass
         
         if not len(stat[var_name]) == len0:
@@ -1078,7 +1088,7 @@ class TrendsEvaluation(object):
         vardata = {}
         try:
             vardata['data_revision'] = station.data_revision
-        except:
+        except Exception:
             vardata['data_revision'] = None
         vardata['pyaerocom_version'] = __version__
         vardata['data_overlap'] = False
@@ -1099,7 +1109,7 @@ class TrendsEvaluation(object):
                                 .format(k))
             try: # longitude, latitude and altitude are @property decorators in StationData
                 val = station[k]
-            except:   
+            except Exception:   
                 if k in var_info:
                     val = var_info[k]
             if isinstance(val, (list, tuple)):
@@ -1119,7 +1129,7 @@ class TrendsEvaluation(object):
             try:
                 wvl = '{} nm'.format(const.VARS[var_name].wavelength_nm)
                 vardata['wavelength'] = wvl
-            except:
+            except Exception:
                 pass
         ts_types = self.TS_TYPES
         if freq in ts_types:
