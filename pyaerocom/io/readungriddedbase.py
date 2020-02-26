@@ -10,6 +10,7 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import list_to_shortstr
 from pyaerocom.io.helpers import get_obsnetwork_dir
 from pyaerocom import LOGLEVELS
+from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.exceptions import DataSourceError
 # TODO: Proposal: include attribute ts_type that is by default undefined but 
 # may be set to either of the defined 
@@ -271,7 +272,7 @@ class ReadUngriddedBase(abc.ABC):
             if os.path.isfile(revision_file):
                 with open(revision_file, 'rt') as in_file:
                     rev = in_file.readline().strip()
-        except:
+        except Exception:
             pass
         self._data_revision = rev
         return rev
@@ -354,7 +355,32 @@ class ReadUngriddedBase(abc.ABC):
         # order
         vars_to_retrieve = added_vars + vars_to_retrieve
         return (changed, vars_to_retrieve)
-                
+
+    def var_supported(self, var_name):
+        """
+        Check if input variable is supported
+
+        Parameters
+        ----------
+        var_name : str
+            AeroCom variable name or alias
+            
+        Raises
+        ------
+        VariableDefinitionError
+            if input variable is not supported by pyaerocom
+            
+        Returns
+        -------
+        bool
+            True, if variable is supported by this interface, else False
+
+        """
+        if (var_name in self.PROVIDES_VARIABLES or 
+            const.VARS[var_name].var_name_aerocom in self.PROVIDES_VARIABLES):
+            return True
+        return False
+    
     def check_vars_to_retrieve(self, vars_to_retrieve):
         """Separate variables that are in file from those that are computed
         
@@ -389,21 +415,8 @@ class ReadUngriddedBase(abc.ABC):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         # first, check if input variables are alias names, and replace
-        for i, var in enumerate(vars_to_retrieve):
-            try:
-                _var = const.VARS[var]
-                if _var.is_alias:
-                    var_name = _var.var_name_aerocom
-                    vars_to_retrieve[i] = var_name
-                    const.print_log.warning('Detected and replaced alias '
-                                            'variable name {} for AeroCom '
-                                            'variable {} in vars_to_retrieve. '
-                                            'Please use AeroCom variable names.'
-                                            .format(var, var_name))
-            except Exception as e:
-                const.print_log.warn('Failed to check {} for aliases. Reason: {}'
-                                     .format(var, repr(e)))
-                
+        vars_to_retrieve = varlist_aerocom(vars_to_retrieve)
+        
 # =============================================================================
 #         if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):
 #             raise AttributeError("One or more of the desired variables is not "
@@ -458,6 +471,8 @@ class ReadUngriddedBase(abc.ABC):
         dict
             updated data object now containing also computed variables
         """
+        if not 'var_info' in data:
+            data['var_info'] = {}
         for var in vars_to_compute:
             required = self.AUX_REQUIRES[var]
             missing = []
@@ -467,15 +482,8 @@ class ReadUngriddedBase(abc.ABC):
                     
             if len(missing) == 0:
                 data[var] = self.AUX_FUNS[var](data)
-                try:
-                    data['contains_vars'].append(var)
-                except KeyError:
-                    data['contains_vars'] = [var]
-# =============================================================================
-#             else:
-#                 data['var_info'][var]['missing'] = {'num' : len(data.dtime),
-#                                                     'vars': missing}
-# =============================================================================
+                data['var_info'][var] = {'computed' : True}
+
         return data
     
     def remove_outliers(self, data, vars_to_retrieve, **valid_rng_vars):

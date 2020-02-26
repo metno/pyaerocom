@@ -236,7 +236,7 @@ class ReadEarlinet(ReadUngriddedBase):
             else:
                 try:
                     _meta = data_in.attrs[v]
-                except:
+                except Exception:
                     _meta = None
             data_out[k] = _meta
                 
@@ -268,7 +268,7 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out['dtime'] = [dtime]
         data_out['stopdtime'] = [stop]
         data_out['has_zdust'] = False
-        contains_vars = []
+        #contains_vars = []
         
         for var in vars_to_read:
             data_out['var_info'][var] = od()
@@ -401,12 +401,12 @@ class ReadEarlinet(ReadUngriddedBase):
                 data_out[var] = profile
                 
             
-            contains_vars.append(var)
+            #contains_vars.append(var)
             data_out['var_info'][var].update(unit_ok=unit_ok, 
                                              err_read=err_read,
                                              outliers_removed=outliers_removed)
             
-        data_out['contains_vars'] = contains_vars
+        #data_out['contains_vars'] = contains_vars
         return (data_out)
     
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
@@ -487,7 +487,7 @@ class ReadEarlinet(ReadUngriddedBase):
                                       vars_to_retrieve=vars_to_retrieve,
                                       read_err=read_err, 
                                       remove_outliers=remove_outliers)
-                if not any([var in stat.contains_vars for var in 
+                if not any([var in stat.vars_available for var in 
                             vars_to_retrieve]):
                     self.logger.info("Station {} contains none of the desired "
                                      "variables. Skipping station..."
@@ -516,7 +516,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 
                 # Is floating point single value
                 time = stat.dtime[0]
-                for var in stat.contains_vars:
+                for var in stat.vars_available:
                     if not var in data_obj.var_idx:
                         VAR_IDX +=1
                         data_obj.var_idx[var] = VAR_IDX

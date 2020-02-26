@@ -671,7 +671,7 @@ class ReadEbas(ReadUngriddedBase):
         # altitude of station
         try:
             altitude = float(meta['station_altitude'].split(' ')[0])
-        except:
+        except Exception:
             altitude = np.nan
         try:
             meas_height = float(meta['measurement_height'].split(' ')[0])
@@ -707,7 +707,7 @@ class ReadEbas(ReadUngriddedBase):
         if 'data_level' in meta:
             try:
                 lev = int(meta['data_level'])
-            except:
+            except Exception:
                 pass
         
         data_out['station_setting'] = setting
@@ -980,7 +980,7 @@ class ReadEbas(ReadUngriddedBase):
             if self.opts.convert_units:
                 try:
                     data_out = self._convert_varunit_stationdata(data_out, var)
-                except:
+                except Exception:
                     raise
             if self.log_read_stats:
                 info = data_out['var_info'][var]
@@ -1036,7 +1036,7 @@ class ReadEbas(ReadUngriddedBase):
             if not var in data: # variable could not be computed -> ignore
                 continue
             
-            data.var_info[var] = self.get_ebas_var(var) #self._loaded_ebas_vars[var]
+            data.var_info[var].update(self.get_ebas_var(var)) #self._loaded_ebas_vars[var]
 
             if var in self.AUX_USE_META:
                 to_dict = data['var_info'][var]
@@ -1121,12 +1121,13 @@ class ReadEbas(ReadUngriddedBase):
             for var in vars_to_read:
                 if not var in vars_to_retrieve:
                     vars_to_retrieve.append(var)
-        
         if files is None:
             self.get_file_list(vars_to_retrieve, **constraints)
             files = self.files
             files_contain = self.files_contain
         else:
+            if isinstance(files, str): #single file
+                files = [files]
             files_contain = [vars_to_retrieve]*len(files)
             
     
@@ -1297,7 +1298,7 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     
     r = ReadEbas()
-    files = r.get_file_list(['scatc550dryaer', 'ac550dryaer'])
+    files = r.get_file_list(['sc550dryaer'])
     
-    data = r.read(['scatc550dryaer', 'scatc550aer'], station_names='Jungfrau*')
+    data = r.read(['sc550dryaer'], files=files[0])
     print(data)
