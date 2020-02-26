@@ -9,7 +9,7 @@ Created on Fri Nov 16 10:31:09 2018
 try:
     import ipywidgets
     ipw_avail = True
-except:
+except Exception:
     ipw_avail = False
     
 if ipw_avail:

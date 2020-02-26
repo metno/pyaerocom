@@ -14,5 +14,5 @@ def ProgressBarLabelled(num, label=''):
         l = ipw.Label(label)
         display(ipw.HBox([l, f]))
         return f
-    except:
+    except Exception:
         pass
