@@ -63,7 +63,7 @@ def main():
     
     import pyaerocom as pya
 
-    cfg_avail = pya.web.helpers.get_all_config_files_evaluation_iface(args.config_dir)
+    cfg_avail = pya.web.helpers_evaluation_iface.get_all_config_files_evaluation_iface(args.config_dir)
     
     if len(cfg_avail) == 0:
         raise FileNotFoundError('Could not find any valid configuration files '

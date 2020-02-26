@@ -95,7 +95,7 @@ def compute_model_average_and_diversity(cfg, var_name,
     for mname in model_names:
         try:
             _model_names.append(cfg.get_model_name(mname))
-        except:
+        except Exception:
             print('No such model in AerocomEvaluation class: {}'.format(mname))
             
     model_names = _model_names

@@ -3,7 +3,7 @@
 """
 Config file for registered AeroCom observations datasets and variables
 
-UNDER DEVELOPMENT
+UNDER DEVELOPMENT -> CURRENTLY NOT USED
 """
 
 OBS_SOURCES = {
