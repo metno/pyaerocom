@@ -322,7 +322,7 @@ def numbers_in_str(input_string):
                 c_num = char
             elif IN_NUM:
                 c_num += char
-        except:
+        except Exception:
             if IN_NUM:
                 numbers.append(c_num)
             IN_NUM=False
@@ -570,7 +570,7 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
         # now replace all values with NaNs that are below the global lower threshold
         below_thresh = result < const.VARS[var_name]['minimum']
         result[below_thresh] = np.nan
-    except:
+    except Exception:
         logger.warning("Could not access lower limit from global settings for "
                        "variable {}".format(var_name))
     

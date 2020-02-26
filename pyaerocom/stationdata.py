@@ -191,7 +191,7 @@ class StationData(StationMetaData):
         to_unit = const.VARS[var_name].units
         try:
             self.check_unit(var_name, to_unit)
-        except:
+        except Exception:
             try:
                 self.convert_unit(var_name, to_unit)
             except UnitConversionError as e:
@@ -908,7 +908,7 @@ class StationData(StationMetaData):
                 ts_type = infer_time_resolution(s.index)
                 self.var_info[var_name]['ts_type'] = ts_type
                 return ts_type
-            except:
+            except Exception:
                 pass #Raise standard error
         raise MetaDataError('Could not access ts_type for {}'.format(var_name))
         
@@ -1476,7 +1476,7 @@ class StationData(StationMetaData):
                 try:
                     ts_type = self.get_var_ts_type(var_name)
                     lbl += ' ({})'.format(ts_type)
-                except:
+                except Exception:
                     pass
         if not 'ax' in kwargs:
             if 'figsize' in kwargs:
@@ -1495,7 +1495,7 @@ class StationData(StationMetaData):
             try:
                 tit = self.get_meta(force_single_value=True, 
                                     quality_check=False)['station_name']    
-            except:
+            except Exception:
                 tit = 'Failed to retrieve station_name'
         s = self.to_timeseries(var_name, freq, resample_how)
         
@@ -1505,7 +1505,7 @@ class StationData(StationMetaData):
             try:
                 from pyaerocom.helpers import resample_timeseries
                 so = resample_timeseries(so, freq, how=resample_how)
-            except:
+            except Exception:
                 pass
             if var_name in self.overlap:
                 ax.plot(so, '--', lw=1, c='r', 
@@ -1519,7 +1519,7 @@ class StationData(StationMetaData):
                 u = self.var_info[var_name]['units']
                 if u is not None and not u in [1, '1']:
                     ylabel += ' [{}]'.format(u)
-        except:
+        except Exception:
             logger.warning('Failed to access unit information for variable {}'
                            .format(var_name))
         ax.set_ylabel(ylabel)

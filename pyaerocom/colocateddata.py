@@ -288,7 +288,7 @@ class ColocatedData(object):
             if dims.index('data_source') == 0 and dims.index('time') == 1:
                 return True
             raise Exception
-        except:
+        except Exception:
             return False
     
     def resample_time(self, to_ts_type, how='mean',
@@ -956,7 +956,7 @@ class ColocatedData(object):
             region_id = 'CUSTOM'
         try:
             alt_info = filtered.attrs['filter_name'].split('-', 1)[-1]
-        except:
+        except Exception:
             alt_info = 'CUSTOM'
         
         filtered.attrs['filter_name'] = '{}-{}'.format(region_id, alt_info)
@@ -1044,7 +1044,7 @@ class ColocatedData(object):
         try:
             data_str = str(self.data)
             s += '\nData: {}'.format(data_str)
-        except:
+        except Exception:
             pass
         return s
     

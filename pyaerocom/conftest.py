@@ -67,7 +67,7 @@ def check_access_testdata(basedir, test_paths):
             if _download_test_data(const.OUTPUTDIR):
                 if _check_access_testdata(basedir, test_paths):
                     return True
-        except:
+        except Exception:
             pass
         return False
     return True

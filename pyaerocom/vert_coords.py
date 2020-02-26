@@ -462,7 +462,7 @@ class AltitudeAccess(object):
                     self[coord] = d.search_other(coord, 
                                                  require_same_shape=False)
                     print('Adding coord {}'.format(coord))
-                except:
+                except Exception:
                     all_ok = False
         return all_ok
     
@@ -476,7 +476,7 @@ class AltitudeAccess(object):
             try:
                 self._check_var_in_data_obj(var_name=var)
                 return var
-            except:
+            except Exception:
                 pass
         raise VariableNotFoundError()
         
@@ -601,7 +601,7 @@ class AltitudeAccess(object):
 #             for aux_opt in self.ADD_FILE_OPT[add_var]:
 #                 try:
 #                     _opt[aux_opt] = self._find_and_read_add_var(aux_opt)
-#                 except:
+#                 except Exception:
 #                     pass
 #         
 #         self._check_altitude_access(add_var_data, 

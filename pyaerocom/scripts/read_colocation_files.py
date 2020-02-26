@@ -227,7 +227,7 @@ class ReadCoLocationData(ReadL2Data):
         # fig.subplots_adjust(hspace=0.3)
         try:
             axs = _axs.flatten()
-        except:
+        except Exception:
             axs = [_axs]
 
         plot_handle = []
@@ -408,7 +408,7 @@ class ReadCoLocationData(ReadL2Data):
         # fig.subplots_adjust(hspace=0.3)
         try:
             axs = _axs.flatten()
-        except:
+        except Exception:
             axs = [_axs]
 
         plot_handle = []

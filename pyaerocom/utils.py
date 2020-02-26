@@ -100,7 +100,7 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
                                 dim_names = [d.name() for d in data.grid.dim_coords]
                                 sub_res.extend([data.ndim, dim_names, data.shape, True])
 
-                            except:
+                            except Exception:
                                 sub_res.extend([None, None, None, False])
                             result.append(sub_res)
 

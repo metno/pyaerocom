@@ -88,15 +88,12 @@ class DataSource(BrowseDict):
         """Wrapper for :func:`_parse_source_info_from_ini`"""
         try:
             self._parse_source_info_from_ini()
-        except:
+        except Exception:
             pass
         
     def _parse_source_info_from_ini(self):
         """Parse source info from ini file"""
-        try:
-            from ConfigParser import ConfigParser
-        except:
-            from configparser import ConfigParser
+        from configparser import ConfigParser
         cfg = ConfigParser()
         file = os.path.join(const.DIR_INI_FILES, self._ini_file_name)
         if not os.path.exists(file):

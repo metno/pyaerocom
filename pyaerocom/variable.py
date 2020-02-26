@@ -6,10 +6,7 @@ This module contains functionality related to regions in pyaerocom
 import os
 from ast import literal_eval
 import re, fnmatch
-try:
-    from ConfigParser import ConfigParser
-except: 
-    from configparser import ConfigParser
+from configparser import ConfigParser
 from pyaerocom import __dir__, logger
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
@@ -28,7 +25,7 @@ class VarNameInfo(object):
         self._nums = []
         try:
             self._nums = self._numbers_in_string(var_name)
-        except:
+        except Exception:
             pass
      
     @staticmethod
@@ -338,7 +335,7 @@ class Variable(object):
         self._var_name_aerocom = None
     
         self.standard_name = None
-        self.units = None
+        self.units = 1
         self.default_vert_code = None
         #self.aliases = []
         self.wavelength_nm = None
@@ -544,7 +541,7 @@ class Variable(object):
         if key in self._TYPE_CONV:
             try:
                 val = self._TYPE_CONV[key](val)
-            except:
+            except Exception:
                 pass
         elif key == 'units' and val == 'None':
             val = '1'

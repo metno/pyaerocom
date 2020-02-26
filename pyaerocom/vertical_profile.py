@@ -175,12 +175,12 @@ class VerticalProfile(object):
         ylab = 'Altitude'
         try:
             xlab += ' [{}]'.format(self.var_info[self.var_name]['units'])
-        except:
+        except Exception:
             pass
         
         try:
             ylab += ' [{}]'.format(self.var_info['altitude']['units'])
-        except:
+        except Exception:
             pass
         ax.set_xlabel(xlab)
         ax.set_ylabel(ylab)

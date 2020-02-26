@@ -144,7 +144,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         if harmonise_units and not gridded_data.units == gridded_data_ref.units:
             try:
                 gridded_data_ref.convert_unit(gridded_data.units)
-            except:
+            except Exception:
                 raise DataUnitError('Failed to merge data unit of reference '
                                     'gridded data object ({}) to data unit '
                                     'of gridded data object ({})'
@@ -604,7 +604,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                 logger.exception(repr(e))
         try:
             unit = obs_stat['var_info'][var_ref]['units']
-        except:
+        except Exception:
             unit = None
         if not unit == ungridded_unit:
             raise ValueError('Cannot perform colocation. Ungridded data '
@@ -685,12 +685,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     
     try:
         revision = ungridded_data.data_revision[dataset_ref]
-    except: 
+    except Exception: 
         try:
             revision = ungridded_data._get_data_revision_helper(dataset_ref)
         except MetaDataError:
             revision = 'MULTIPLE'
-        except:
+        except Exception:
             revision = 'n/a'
             
     files = [os.path.basename(x) for x in gridded_data.from_files]

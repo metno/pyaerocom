@@ -207,13 +207,13 @@ class TrendsEngine(object):
         try:
             td = result['slp']
             td_err = result['slp_err']
-        except:
+        except Exception:
             td = None
             td_err = None
         try:
             tp = result['slp_{}'.format(start_period)]
             tp_err = result['slp_{}_err'.format(start_period)]
-        except:
+        except Exception:
             tp = None
             tp_err = None
         pval = result['pval']
@@ -222,16 +222,16 @@ class TrendsEngine(object):
         try:
             tdstr = (r'$\mathcal{{T}}_{{{}}}: {:.2f}\,\pm\,{:.2f}\,\%/yr$'
                      .format(start_data, td, td_err))
-        except: 
+        except Exception: 
             pass
         try:
             tpstr = (r'$\mathcal{{T}}_{{{}}}: \mathbf{{{:.2f}\,\pm\,{:.2f}\,\%/yr}}$'
                      .format(start_period, tp, tp_err))
-        except:
+        except Exception:
             pass
         try:
             tpstr += '; pval: {:.1e}'.format(pval)
-        except:
+        except Exception:
             tdstr += '; pval: {:.1e}'.format(pval)
         return (s_data, s_period, td, tp, tdstr, tpstr)
     
@@ -430,7 +430,7 @@ class TrendsEngine(object):
             tit += self.meta['station_name']
             try:
                 self.meta.load_dataset_info()
-            except:
+            except Exception:
                 pass
             dsinfo = self.meta.dataset_str()
             if dsinfo is not None:

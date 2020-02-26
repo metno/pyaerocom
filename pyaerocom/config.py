@@ -584,7 +584,8 @@ class Config(object):
         """
         msg=('BASEDIR attribute is deprecated, please see attrs. '
              'DATA_SEARCH_DIRS for available search directories and '
-             'method add_data_search_dir for adding new locations')
+             'method add_data_search_dir for adding new locations. You can '
+             'still use the setter method for adding a database location')
         raise DeprecationError(msg)
         #return self._modelbasedir
     

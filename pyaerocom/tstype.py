@@ -42,7 +42,7 @@ class TsType(object):
     def mulfac(self, value):
         try:
             self._mulfac = int(value)
-        except:
+        except Exception:
             raise ValueError('mulfac needs to be int or convertible to int')
 
     @property

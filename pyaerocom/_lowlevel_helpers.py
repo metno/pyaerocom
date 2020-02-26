@@ -30,7 +30,7 @@ def check_dir_access(path, timeout=0.1):
         try:
             future.result(timeout)
             return True
-        except:
+        except Exception:
             return False
     return try_ls(path, timeout)
 
@@ -58,14 +58,14 @@ def check_write_access(path, timeout=0.1):
             os.mkdir(test)
             os.rmdir(test)
             return True
-        except:
+        except Exception:
             return False    
         
     def run_timeout(path, timeout):
         future = pool.submit(_test_write_access, path)
         try:
             return future.result(timeout)
-        except:
+        except Exception:
             return False
     return run_timeout(path, timeout)
 
@@ -224,7 +224,7 @@ def list_to_shortstr(lst, indent=0, name=None):
             try:
                 ndigits = -1*np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
                 lout.append('{:.{}f}'.format(val, ndigits))
-            except:
+            except Exception:
                 lout.append(val)
         return lout
     if name is None:

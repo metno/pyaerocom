@@ -173,7 +173,7 @@ class GriddedData(object):
         """AeroCom variable name"""
         try:
             return const.VARS[self.var_name].var_name
-        except:
+        except Exception:
             return None
     
     @property
@@ -182,7 +182,7 @@ class GriddedData(object):
         if not self.var_name in const.VARS:
             try:
                 return const.VARS[self.var_name_aerocom]
-            except:
+            except Exception:
                 raise VariableDefinitionError('No default access available for '
                                               'variable {}'.format(self.var_name))
         return const.VARS[self.var_name]
@@ -217,7 +217,7 @@ class GriddedData(object):
             if var.has_unit and var.units == self.units:
                 return True
             return False
-        except:
+        except Exception:
             return False
       
     @property
@@ -446,7 +446,7 @@ class GriddedData(object):
         try:
             dtype_appr = 'datetime64[{}]'.format(TS_TYPE_TO_NUMPY_FREQ[self.ts_type])
             t=t.astype(dtype_appr)
-        except:
+        except Exception:
             logger.exception('Failed to round start time {} to beginning of '
                              'frequency {}'.format(t, self.ts_type))
         return t.astype('datetime64[us]')
@@ -465,7 +465,7 @@ class GriddedData(object):
             t = t.astype(dtype_appr) + np.timedelta64(1, unit=freq)
             t = t.astype('datetime64[us]') - np.timedelta64(1,unit='us')
             return t
-        except:
+        except Exception:
             logger.exception('Failed to round start time {} to beggining of '
                              'frequency {}'.format(t, self.ts_type))
             return t.astype('datetime64[us]')
@@ -628,7 +628,7 @@ class GriddedData(object):
         try:
             from pyaerocom.io.helpers import get_metadata_from_filename
             self.update_meta(**get_metadata_from_filename(input))
-        except:
+        except Exception:
             logger.warning('Failed to access metadata from filename')
             
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
@@ -1028,7 +1028,7 @@ class GriddedData(object):
                     if not len(meta_val) == len(lon):
                         raise ValueError
                     meta_iter[meta_key] = meta_val
-                except:
+                except Exception:
                     meta_glob[meta_key] = meta_val
         
         result = []      
@@ -1104,7 +1104,7 @@ class GriddedData(object):
                     if not len(meta_val) == len(lons):
                         raise ValueError
                     meta_iter[meta_key] = meta_val
-                except:
+                except Exception:
                     meta_glob[meta_key] = meta_val
             
         for i, lat in enumerate(lats):
@@ -1231,7 +1231,7 @@ class GriddedData(object):
             else:
                 # vertical coordinate values decrease with altitude -> find highest value (e.g. pressure)
                 return np.argmax(self.grid.dim_coords[3].points)
-        except:
+        except Exception:
             if not const.GRID_IO.INFER_SURFACE_LEVEL:
                 raise DataExtractionError('Cannot infer surface level since '
                                           'global option INFER_SURFACE_LEVEL in'
@@ -1716,7 +1716,7 @@ class GriddedData(object):
                 time_constraint = get_time_rng_constraint(*time_range)
                 try:
                     self.cube.coord("time").bounds = None
-                except:
+                except Exception:
                     pass
                 data = data.extract(time_constraint)
             elif all(isinstance(x, int) for x in time_range):
@@ -1806,7 +1806,7 @@ class GriddedData(object):
                 f = self.from_files[0]
                 fconv = FileConventionRead().from_file(f)
                 vert_code = fconv.get_info_from_file(f)['vert_code']
-            except:
+            except Exception:
                 pass
 
         if vert_code is None:
@@ -2160,18 +2160,18 @@ class GriddedData(object):
                 try:
                     t = to_pandas_timestamp(time_idx).to_datetime64()
                     time_idx = np.argmin(abs(self.time_stamps() - t))
-                except:
+                except Exception:
                     raise ValueError('Failed to interpret input time stamp')
             
             data = self[time_idx]
             try:
                 t = cftime_to_datetime64(self.time[time_idx])[0]
                 tstr = datetime2str(t, self.ts_type)
-            except:
+            except Exception:
                 try:
                     tstr = datetime2str(self.time_stamps()[time_idx], 
                                         self.ts_type)
-                except:
+                except Exception:
                     print_log.warning('Failed to retrieve ts_type in '
                                       'GriddedData {}'.format(repr(self)))
         else:
@@ -2332,7 +2332,7 @@ class GriddedData(object):
                 cube = load_cube_custom(file, var_name=var_name,
                                         perform__fmt_checks=False)
                 return GriddedData(cube, from_files=file)
-            except:
+            except Exception:
                 pass
         if var_name in self.reader.vars_provided:
             return self.reader.read_var(var_name,
@@ -2414,7 +2414,7 @@ class GriddedData(object):
             try:
                 which = self._check_coordinate_access(indices_or_attr)
                 return self.grid.coord(**which)
-            except:
+            except Exception:
                 raise AttributeError("GriddedData object has no "
                                      "attribute {}"
                                      .format(indices_or_attr))
