@@ -685,25 +685,30 @@ class Colocator(ColocationSetup):
         var_matches = self._find_var_matches(obs_vars, model_reader,
                                              var_name)
         
+        # get list of unique observation variables
+        obs_vars = np.unique(list(var_matches.values())).tolist()
+        
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
-            
+        
         if self.read_opts_ungridded is not None:
             ropts = self.read_opts_ungridded
         else:
             ropts = {}
+            
+        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                                   vars_to_retrieve=obs_vars,
+                                   **ropts)
         
+        # ToDo: consider removing outliers already here.
+        if 'obs_filters' in self:
+            remaining_filters = self._eval_obs_filters()
+            obs_data = obs_data.apply_filters(**remaining_filters)
+                
         data_objs = {}
         for model_var, obs_var in var_matches.items():
             
-            obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                   vars_to_retrieve=obs_var,
-                                   **ropts)
-        
-            # ToDo: consider removing outliers already here.
-            if 'obs_filters' in self:
-                remaining_filters = self._eval_obs_filters()
-                obs_data = obs_data.apply_filters(**remaining_filters)
+            
             
             ts_type = self.ts_type
             start, stop = start_stop(self.start, self.stop)

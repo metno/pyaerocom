@@ -1085,8 +1085,7 @@ class StationData(StationMetaData):
         try:
             new.update(self.get_meta())
         except MetaDataError:
-            const.print_log.warning('Failed to retrieve metadata in '
-                                    'StationData')
+            new.update(self.get_meta(force_single_value=False))
 
         new[var_name] = clim['data']
         vi = {}
