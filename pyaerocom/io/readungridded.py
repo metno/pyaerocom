@@ -34,7 +34,8 @@
 # MA 02110-1301, USA
 import os, logging
 
-from pyaerocom.exceptions import NetworkNotImplemented, NetworkNotSupported
+from pyaerocom.exceptions import (DataRetrievalError, 
+                                  NetworkNotImplemented, NetworkNotSupported)
 from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
@@ -49,6 +50,7 @@ from pyaerocom.io.read_gaw import ReadGAW
 
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.helpers import varlist_aerocom
 
 from pyaerocom import const, print_log
 
@@ -272,6 +274,7 @@ class ReadUngridded(object):
             # Note: self.vars_to_retrieve may be None as well, then
             # default variables of each network are read
             vars_to_retrieve = self.vars_to_retrieve 
+        vars_to_retrieve = varlist_aerocom(vars_to_retrieve)
         
         reader = self.get_reader(dataset_to_read)
         
@@ -283,16 +286,19 @@ class ReadUngridded(object):
         # Since this interface enables to load multiple datasets, each of 
         # which support a number of variables, here, only the variables are 
         # considered that are supported by the dataset
-        vars_available = [var for var in vars_to_retrieve if var in 
-                          reader.PROVIDES_VARIABLES]
-        
+        vars_available = [var for var in vars_to_retrieve if
+                          reader.var_supported(var)]
+        if len(vars_available) == 0:
+            raise DataRetrievalError('None of the input variables ({}) is '
+                                     'supported by {} interface'
+                                     .format(vars_to_retrieve, dataset_to_read))
         cache = CacheHandlerUngridded(reader)
         if not self.ignore_cache:
             # initate cache handler    
             for var in vars_available:
                 try:
                     cache.check_and_load(var_name=var)
-                except:
+                except Exception:
                     self.logger.exception('Fatal: compatibility error between '
                                           'old cache file {} and current version '
                                           'of code ')
@@ -355,7 +361,12 @@ class ReadUngridded(object):
         data = UngriddedData()
         for ds in self.datasets_to_read:
             self.logger.info('Reading {} data'.format(ds))
-            data.append(self.read_dataset(ds, vars_to_retrieve, **kwargs))
+            try:
+                data.append(self.read_dataset(ds, vars_to_retrieve, **kwargs))
+            except DataRetrievalError as e:
+                print_log.exception('Failed to read {}. Reason: {}'
+                                    .format(ds, repr(e)))
+                
             self.logger.info('Successfully imported {} data'.format(ds))
         return data
     
@@ -444,7 +455,7 @@ class ReadUngridded(object):
                                        .format(dataset_to_read))
                         cache_hit_flag = True
                         data = cache.loaded_data
-            except:
+            except Exception:
                 self.logger.exception('Fatal: compatibility error between old '
                                       'cache file and current version of code ')
                 cache_hit_flag = False
@@ -478,7 +489,7 @@ if __name__=="__main__":
 
     reader = ReadUngridded()
     
-    data = reader.read('AeronetSunV3Lev2.daily', 'od550aer')
+    data = reader.read('EBASMC', ['absc550aer', 'scatc550dryaer'])
     
 # =============================================================================
 #     data = reader.read('EBASMC', 

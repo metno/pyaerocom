@@ -35,7 +35,7 @@ class CacheHandlerUngridded(object):
     #: Directory of cache files
     try:
         CACHE_DIR = const.CACHEDIR
-    except:
+    except Exception:
         CACHE_DIR = None
         const.logger.exception('Pyaerocom cache directory is not defined')
     #: Cache file header keys that are checked (and required unchanged) when
@@ -72,7 +72,7 @@ class CacheHandlerUngridded(object):
                 val = val.get_reader()
                 if not isinstance(val, ReadUngriddedBase):
                     raise TypeError('Invalid input for reader')
-            except:
+            except Exception:
                 raise TypeError('Invalid input for reader')
         self._reader = val
         self.loaded_data = {}
