@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-try:
-    from ConfigParser import ConfigParser
-except: 
-    from configparser import ConfigParser
+from configparser import ConfigParser
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict

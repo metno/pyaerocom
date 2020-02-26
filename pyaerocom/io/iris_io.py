@@ -112,7 +112,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
 #             # function terminates, else, the retrieval is done file by file.
 #             # ... Maybe!
 #             return (cubes, files)
-#         except:
+#         except Exception:
 #             pass
 # =============================================================================
     cubes = []
@@ -219,7 +219,7 @@ def load_cube_custom(file, var_name=None, file_convention=None,
         try:
             if grid_io.DEL_TIME_BOUNDS:
                 cube.coord("time").bounds = None
-        except:
+        except Exception:
             logger.warning("Failed to access time coordinate in GriddedData")
             
         if grid_io.SHIFT_LONS:
@@ -361,13 +361,13 @@ def check_time_coordOLD(cube, ts_type, year):
     try:
         try:
             t = cube.coord("time")
-        except:
+        except Exception:
             raise AttributeError("Cube does not contain time dimension")
         if not isinstance(t, iris.coords.DimCoord):
             raise AttributeError("Time is not a DimCoord instance")
         try:
             cftime_to_datetime64(0, cfunit=t.units)
-        except:
+        except Exception:
             raise ValueError("Could not convert time unit string")
 # =============================================================================
 #         tres_np = TSTR_TO_NP_TD[ts_type]
@@ -428,7 +428,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
     if file_convention is None:
         try:
             file_convention = FileConventionRead(from_file=file)
-        except:
+        except Exception:
             pass
     
     if not isinstance(file_convention, FileConventionRead):
@@ -439,7 +439,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
     finfo = file_convention.get_info_from_file(file)
     try:
         ts_type = TsType(finfo['ts_type'])
-    except:
+    except Exception:
         raise FileConventionError('Invalid ts_type in file: {}'
                                   .format(ts_type))
     year = finfo['year']
@@ -450,7 +450,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
         check_time_coord(cube, ts_type, year)
     except UnresolvableTimeDefinitionError as e:
         raise UnresolvableTimeDefinitionError(repr(e))
-    except:
+    except Exception:
         msg = ("Invalid time dimension coordinate in file {}. " 
                .format(os.path.basename(file)))
         logger.warning(msg)
@@ -461,7 +461,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
                 cube = correct_time_coord(cube, 
                                           ts_type=finfo["ts_type"],
                                           year=finfo["year"]) 
-            except:
+            except Exception:
                 pass
         if const.WRITE_FILEIO_ERR_LOG:
             add_file_to_log(file, 'Invalid time dimension')
@@ -501,13 +501,13 @@ def check_time_coord(cube, ts_type, year):
         ts_type = TsType(ts_type)
     try:
         t = cube.coord("time")
-    except:
+    except Exception:
         raise AttributeError("Cube does not contain time dimension")
     if not isinstance(t, iris.coords.DimCoord):
         raise AttributeError("Time is not a DimCoord instance")
     try:
         cftime_to_datetime64(0, cfunit=t.units)
-    except:
+    except Exception:
         raise ValueError("Could not convert time unit string")
         
     freq = ts_type.to_pandas_freq()
@@ -603,7 +603,7 @@ def correct_time_coord(cube, ts_type, year):
     #tcoord_dim = cube.coord_dims('time')
     try:
         cube.remove_coord('time')
-    except:
+    except Exception:
         pass
     cube.add_dim_coord(tcoord, tindex_cube)
     return cube

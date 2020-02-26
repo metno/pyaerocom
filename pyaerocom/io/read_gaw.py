@@ -178,7 +178,7 @@ class ReadGAW(ReadUngriddedBase):
         data_out['filename'] = meta[1].strip()
         try:
             data_out['data_version'] = int(meta[5].strip())
-        except:
+        except Exception:
             data_out['data_version'] = None
         data_out['ts_type'] = meta[19].strip().replace(' ', '_')
         data_out['PI_email'] = meta[16].strip().replace(' ', '_')

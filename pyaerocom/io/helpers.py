@@ -61,14 +61,14 @@ def read_ebas_flags_file(ebas_flags_csv):
             num = int(spl[0].strip())
             try:
                 val_str = spl[-1][1:-1]
-            except:
+            except Exception:
                 raise IOError('Failed to read flag information in row {} '
                               '(Check if entries in ebas_flags.csv are quoted)'
                               .format(line))
             info_str = ','.join(spl[1:-1])
             try:
                 info_str = info_str[1:-1]
-            except:
+            except Exception:
                 raise IOError('Failed to read flag information in row {} '
                               '(Check if entries in ebas_flags.csv are quoted)'
                               .format(line))
@@ -91,7 +91,7 @@ def add_file_to_log(filepath, err_msg):
             model_or_obs_id = spl[-2]
         else:
             model_or_obs_id = spl[-1]
-    except:
+    except Exception:
         model_or_obs_id = 'others'
     try:
         logdir = const.LOGFILESDIR
@@ -251,10 +251,10 @@ def get_all_names():
         with open(os.path.join(__dir__, "data", "names.txt")) as f:
             names = f.read().splitlines()
         f.close()
-    except:
+    except Exception:
         try:
             names = search_names()
-        except:
+        except Exception:
             raise Exception("Failed to access model IDs")
     return names
     

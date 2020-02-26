@@ -226,7 +226,7 @@ class NasaAmesHeader(object):
         for k, v in kwargs.items():
             try:
                 self[k] = v
-            except:
+            except Exception:
                 logger.warning("Invalid attribute: {}".format(k))
                     
             
@@ -515,7 +515,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         """
         try: #statistics is defined globally
             stats_glob = self.statistics 
-        except: #statistics is not defined globally
+        except Exception: #statistics is not defined globally
             stats_glob = None
             
         if isinstance(wavelength_nm, str):
@@ -526,7 +526,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             if not len(wavelength_nm) == 2:
                 raise Exception
             wvl_rng = True
-        except:
+        except Exception:
             wvl_rng = False
         
         if statistics is not None:
@@ -539,7 +539,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                 data_level_glob = float(self.data_level)
                 if not data_level_glob:
                     raise Exception #is undefined
-            except:
+            except Exception:
                 data_level_glob = None
         cols = []
         for i, colinfo in enumerate(self.var_defs):
@@ -554,7 +554,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     else:
                         if not wvl == wavelength_nm:
                             continue
-                except: #column does not contain wavelength information (skip)
+                except Exception: #column does not contain wavelength information (skip)
                     continue
             if statistics is not None:
                 if 'statistics' in colinfo:
@@ -654,7 +654,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             idx_err_high = self._find_col(var_name, 
                                           statistics=self.ERR_HIGH_STATS,
                                           **kwargs)
-        except:
+        except Exception:
             idx_err_high, idx_err_low = None, None
             print('Could not find percentile columns')
             

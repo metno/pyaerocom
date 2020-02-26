@@ -39,7 +39,7 @@ def get():
     """
     try:
         from ConfigParser import ConfigParser
-    except: 
+    except Exception: 
         from configparser import ConfigParser
     from collections import OrderedDict
     from os.path import join, exists

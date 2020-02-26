@@ -8,10 +8,7 @@ from os.path import join, exists, basename, splitext
 from pyaerocom import const
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import FileConventionError
-try:
-    from ConfigParser import ConfigParser
-except: 
-    from configparser import ConfigParser
+from configparser import ConfigParser
 
 class FileConventionRead(object):
     """Class that represents a file naming convention for reading Aerocom files
@@ -58,7 +55,7 @@ class FileConventionRead(object):
         else:
             try:
                 self.import_default(self.name) 
-            except:
+            except Exception:
                 pass
       
     @property
@@ -144,7 +141,7 @@ class FileConventionRead(object):
         # phase 3 file naming convention
         try:
             info["year"] = int(spl[self.year_pos])
-        except:
+        except Exception:
             msg = ("Failed to extract year information from file {} "
                    "using file convention Aerocom 3".format(basename(file), 
                                                             self.name))
@@ -174,20 +171,20 @@ class FileConventionRead(object):
                                                          self.name, repr(e)))
         try:
             info["ts_type"] = spl[self.ts_pos]
-        except:
+        except Exception:
             raise FileConventionError('Failed to extract ts_type from '
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
         try:
             info["vert_code"] = spl[self.vert_pos]
-        except:
+        except Exception:
             raise FileConventionError('Failed to extract vert_code from '
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
             
         try:
             info["data_id"] = self.file_sep.join(spl[self.data_id_pos:self.var_pos])
-        except:
+        except Exception:
             raise FileConventionError('Failed to extract model name from '
                                       'file {} using file convention {}' 
                                       .format(basename(file), self.name))
@@ -215,21 +212,21 @@ class FileConventionRead(object):
             spl = splitext(basename(file))[0].split(self.file_sep)
         try:
             info["year"] = int(spl[self.year_pos])
-        except:
+        except Exception:
             raise FileConventionError('Failed to extract year information '
                                       'from file {} using file '
                                       'convention {}' 
                                       .format(basename(file), self.name))
         try:
             info["var_name"] = spl[self.var_pos]
-        except:
+        except Exception:
             raise FileConventionError('Failed to extract variable information '
                                       'from file {} using file '
                                       'convention {}' 
                                       .format(basename(file), self.name))
         try:
             info["ts_type"] = spl[self.ts_pos]
-        except:
+        except Exception:
             raise FileConventionError('Failed to extract ts_type '
                                       'from file {} using file '
                                       'convention {}' 
@@ -237,7 +234,7 @@ class FileConventionRead(object):
 
         try:
             info['data_id'] = '.'.join(spl[self.data_id_pos:self.ts_pos])
-        except:
+        except Exception:
             raise FileConventionError('Failed to extract name '
                                       'from file {} using file '
                                       'convention {}' 
@@ -352,7 +349,7 @@ class FileConventionRead(object):
             if key in self.__dict__:
                 try:
                     val = int(val)
-                except:
+                except Exception:
                     pass
                 self.__dict__[key] = val
                 
