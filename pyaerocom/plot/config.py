@@ -8,13 +8,7 @@ from matplotlib.pyplot import get_cmap
     
 from pyaerocom._lowlevel_helpers import BrowseDict
 from warnings import warn
-# =============================================================================
-# try:
-#     from cmocean.cm import amp
-#     _cmap_lighttheme = amp
-# except:
-#     
-# =============================================================================
+
 _cmap_lighttheme = "Blues"
 
 DEFAULT_THEME = "light"
@@ -123,15 +117,7 @@ class ColorTheme(object):
             raise ValueError("Default theme with name %s is not available. "
                              "Choose from %s" %_COLOR_THEMES)
         self.from_dict(_COLOR_THEMES[theme_name])
-        # make sure the colormap is loaded since the current cmap might be a 
-        # string
-# =============================================================================
-#         try:
-#             self.cmap_map = get_cmap(self.cmap_map)
-#         except:
-#             pass
-# =============================================================================
-            
+    
     def from_dict(self, info_dict):
         """Import theme information from dictionary
         

@@ -39,7 +39,7 @@ def custom_mpl(mpl_rcparams=None, default_large=True, **kwargs):
     for k, v in default.items():
         try:
             mpl_rcparams[k] = kwargs[k]
-        except:
+        except Exception:
             mpl_rcparams[k] = v
     return mpl_rcparams
 

@@ -49,7 +49,7 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
             try:
                 from geonum.helpers import shifted_color_map
                 cmap = shifted_color_map(vmin, vmax, cmap)
-            except:
+            except Exception:
                 logger.warning('cannot shift colormap, need geonum installation')
         return cmap
     return get_cmap(color_theme.cmap_map)
@@ -267,7 +267,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             data.reorder_dimensions_tseries()
             try:
                 data = data[0]
-            except:
+            except Exception:
                 print()
                 data = data[0]
         lons = data.longitude.points

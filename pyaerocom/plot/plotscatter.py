@@ -61,12 +61,12 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         x_vals = np.asarray(x_vals)
     try:
         var = const.VARS[var_name]
-    except:
+    except Exception:
         var = const.VARS.DEFAULT
     
     try:
         var_ref = const.VARS[var_name_ref]
-    except:
+    except Exception:
         var_ref = const.VARS.DEFAULT
 
     if loglog is None:
@@ -103,7 +103,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         title = start_stop_str(start, stop, ts_type)
         if ts_type is not None:
             title += ' ({})'.format(ts_type)
-    except:
+    except Exception:
         title = ''
     
     if not loglog:
