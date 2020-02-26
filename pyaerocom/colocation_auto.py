@@ -18,7 +18,8 @@ import traceback
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import const, print_log
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
-                               get_lowest_resolution, start_stop)
+                               get_lowest_resolution, start_stop,
+                               varlist_aerocom)
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded,
@@ -200,7 +201,7 @@ class ColocationSetup(BrowseDict):
             obs_vars = [obs_vars]
         try:
             Filter(filter_name)
-        except:
+        except Exception:
             raise ValueError('Invalid input for filter_name {}'.format(filter_name))
         self.save_coldata = save_coldata
         if save_coldata:
@@ -211,7 +212,6 @@ class ColocationSetup(BrowseDict):
                 os.mkdir(basedir_coldata)
         
         self.obs_vars = obs_vars
-        self.obs_vars_rename = {}
         self.obs_vert_type = obs_vert_type
         self.model_vert_type_alt = model_vert_type_alt
         self.read_opts_ungridded = read_opts_ungridded
@@ -351,7 +351,7 @@ class Colocator(ColocationSetup):
                 self.data[self.model_id] = self._run_gridded_ungridded(var_name)
             else:
                 self.data[self.model_id] = self._run_gridded_gridded(var_name)
-        except:
+        except Exception:
             msg = ('Failed to perform analysis: {}\n'
                    .format(traceback.format_exc()))
             const.print_log.warning(msg)
@@ -388,7 +388,7 @@ class Colocator(ColocationSetup):
         model_reader.add_aux_compute(var_name=model_var, **info)
         return True
     
-    def _find_var_matches(self, obs_vars, model_reader, var_name=None):
+    def _find_var_matches_OLD(self, obs_vars, model_reader, var_name=None):
         """Find variable matches in model data for input obs variables"""
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
@@ -446,6 +446,55 @@ class Colocator(ColocationSetup):
                                     .format(self.model_id, 
                                             self.obs_id, 
                                             self.obs_vars))
+        return var_matches
+    
+    def _check_model_add_var(self, var_name, model_reader, var_matches):
+        if isinstance(self.model_add_vars, dict) and var_name in self.model_add_vars: #observation variable
+            add_var = self.model_add_vars[var_name]
+            self._check_add_model_read_aux(add_var, model_reader)    
+            if model_reader.has_var(add_var):
+                var_matches[add_var] = var_name
+        return var_matches
+    
+    def _find_var_matches(self, obs_vars, model_reader, var_name=None):
+        """Find variable matches in model data for input obs variables"""
+        if isinstance(obs_vars, str):
+            obs_vars = [obs_vars]
+        
+        # dictionary that will map input variable names (values) with model
+        # variables (keys)
+        var_matches = {}
+        
+        muv = self.model_use_vars if isinstance(self.model_use_vars, dict) else {}
+            
+        for obs_var in obs_vars:
+            if obs_var in muv:
+                model_var = muv[obs_var]
+            else:
+                model_var = obs_var
+                
+            self._check_add_model_read_aux(model_var, model_reader)
+                
+            if model_reader.has_var(model_var):
+                var_matches[model_var] = obs_var
+                
+            var_matches = self._check_model_add_var(obs_var, model_reader, 
+                                                    var_matches)
+        
+        if var_name is not None:
+            _var_matches = {}
+            for mvar, ovar in var_matches.items():
+                if mvar in var_name or ovar in var_name:
+                    _var_matches[mvar] = ovar
+            var_matches = _var_matches
+                
+        if len(var_matches) == 0:
+            
+            raise DataCoverageError('No variable matches between '
+                                    '{} and {} for input vars: {}'
+                                    .format(self.model_id, 
+                                            self.obs_id, 
+                                            obs_vars))
         return var_matches
     
     def read_model_data(self, var_name, **kwargs):
@@ -516,7 +565,7 @@ class Colocator(ColocationSetup):
                 low, high=None, None
                 try:
                     low, high = self.var_ref_outlier_ranges[var]
-                except:
+                except Exception:
                     pass
                     
                 obs_data.remove_outliers(var, inplace=True, 
@@ -613,16 +662,21 @@ class Colocator(ColocationSetup):
         if self._log:
             self._write_log('WRITE: {}\n'.format(savename))
             print_log.info('Writing file {}'.format(savename))
-            
+           
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         model_reader = ReadGridded(self.model_id)
         
         obs_reader = ReadUngridded(self.obs_id)
-    
-        obs_vars_supported = obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES
+            
+        _oreader = obs_reader.get_reader(self.obs_id)
 
-        obs_vars = list(np.intersect1d(self.obs_vars, obs_vars_supported))
+        obs_vars = []
+        for var in varlist_aerocom(self.obs_vars):
+            if _oreader.var_supported(var):
+                obs_vars.append(var)
+            
+        #flist(np.intersect1d(self.obs_vars, obs_vars_supported))
         
         if len(obs_vars) == 0:
             raise DataCoverageError('No observation variable matches found for '
@@ -631,25 +685,25 @@ class Colocator(ColocationSetup):
         var_matches = self._find_var_matches(obs_vars, model_reader,
                                              var_name)
         
+        if self.remove_outliers:
+            self._update_var_outlier_ranges(var_matches)
+            
         if self.read_opts_ungridded is not None:
             ropts = self.read_opts_ungridded
         else:
             ropts = {}
-        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                   vars_to_retrieve=obs_vars,
-                                   **ropts)
         
-        # ToDo: consider removing outliers already here.
-        if 'obs_filters' in self:
-            remaining_filters = self._eval_obs_filters()
-            obs_data = obs_data.apply_filters(**remaining_filters)
-            
-        if self.remove_outliers:
-            self._update_var_outlier_ranges(var_matches)
-                            
-        #all_ts_types = const.GRID_IO.TS_TYPES
         data_objs = {}
         for model_var, obs_var in var_matches.items():
+            
+            obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                                   vars_to_retrieve=obs_var,
+                                   **ropts)
+        
+            # ToDo: consider removing outliers already here.
+            if 'obs_filters' in self:
+                remaining_filters = self._eval_obs_filters()
+                obs_data = obs_data.apply_filters(**remaining_filters)
             
             ts_type = self.ts_type
             start, stop = start_stop(self.start, self.stop)
@@ -798,6 +852,7 @@ class Colocator(ColocationSetup):
 # =============================================================================
         
         var_matches = self._find_var_matches(obs_vars, model_reader, var_name)
+            
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
         
