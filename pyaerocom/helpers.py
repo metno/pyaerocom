@@ -12,7 +12,8 @@ import xarray as xray
 
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
-                                  DataDimensionError)
+                                  DataDimensionError,
+                                  VariableDefinitionError)
 from pyaerocom import logger, const
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
@@ -36,6 +37,24 @@ STR_TO_IRIS = dict(count       = iris.analysis.COUNT,
                    linear      = iris.analysis.Linear,
                    areaweighted= iris.analysis.AreaWeighted)
 
+def varlist_aerocom(varlist):
+    
+    if isinstance(varlist, str):
+        varlist = [varlist]
+    elif not isinstance(varlist, list):
+        raise ValueError('Need string or list')
+    output = []
+    for var in varlist:
+        try:
+            _var = const.VARS[var].var_name_aerocom
+            if not _var in output:
+                output.append(_var)
+        except VariableDefinitionError as e:
+            const.print_log.warn(repr(e))
+    if len(output) == 0:
+        raise ValueError('None of the input variables appears to be valid')
+    return output
+        
 def delete_all_coords_cube(cube, inplace=True):
     """Delete all coordinates of an iris cube
     
@@ -352,7 +371,7 @@ def infer_time_resolution(time_stamps):
     if not isinstance(time_stamps, pd.DatetimeIndex):
         try:
             time_stamps = pd.DatetimeIndex(time_stamps)
-        except:
+        except Exception:
             raise ValueError('Could not infer time resolution: failed to '
                              'convert input to pandas.DatetimeIndex')
     vals = time_stamps.values
@@ -717,7 +736,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
                     _data_err[:, i] = np.interp(vert_grid, 
                                                 stat['altitude'], 
                                                 stat.data_err[var_name])
-                except:
+                except Exception:
                     pass
         _coords = {'time'     : tidx,
                    'altitude' : vert_grid}
@@ -1068,7 +1087,7 @@ def is_year(val):
         if -2000 < int(val) < 10000:
             return True
         raise Exception
-    except:
+    except Exception:
         return False
   
 def _check_climatology_timestamp(t):
@@ -1257,7 +1276,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
         times, cfunit = times.points, times.units
     try:
         len(times)
-    except:
+    except Exception:
         times = [times]
     if isinstance(cfunit, str):
         if calendar is None:
@@ -1477,7 +1496,7 @@ def get_time_rng_constraint(start, stop):
 
 if __name__=="__main__":
     
-    idx = make_datetime_index(2010, 2011, '3hourly')
+    idx = make_datetime_index(2010, 2011, 'hourly')
     print(get_lowest_resolution('yearly', 'daily', 'monthly'))
     print(get_highest_resolution('yearly', 'daily', 'monthly'))
     
@@ -1485,3 +1504,5 @@ if __name__=="__main__":
                                  np.datetime64('2010-01-02'),
                                  np.datetime64('2010-01-05'),
                                  np.datetime64('2010-10-15')]))
+    
+    print(varlist_aerocom(['od550aer', 'od550csaer']))
