@@ -35,7 +35,7 @@ def test_ReadGridded_class_empty():
     except AttributeError:
         failed = True
     assert failed
-    assert r.vars == []  
+    assert r.vars_filename == []  
     
 @lustre_unavail    
 def test_file_info(reader_reanalysis):

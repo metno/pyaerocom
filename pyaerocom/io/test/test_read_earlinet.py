@@ -3,6 +3,7 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
+import pytest
 import numpy.testing as npt
 import numpy as np
 import os
@@ -86,8 +87,7 @@ def test_read_ungridded():
     
 if __name__=="__main__":
 
-    test_all_files_exist()
-    test_first_file()
-    test_read_ungridded()
+    import sys
+    pytest.main(sys.argv)
 
 
