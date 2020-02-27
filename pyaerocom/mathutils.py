@@ -566,14 +566,6 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
                                                     angstrom_coeff=ang)
             result[mask] = replace
     
-    try:
-        # now replace all values with NaNs that are below the global lower threshold
-        below_thresh = result < const.VARS[var_name]['minimum']
-        result[below_thresh] = np.nan
-    except Exception:
-        logger.warning("Could not access lower limit from global settings for "
-                       "variable {}".format(var_name))
-    
     return result
 
 def compute_ang4470dryaer_from_dry_scat(data):
