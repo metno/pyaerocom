@@ -660,11 +660,15 @@ class Colocator(ColocationSetup):
         coldata.to_netcdf(out_dir, savename=savename)
         self.file_status[savename] = 'saved'
         if self._log:
-            self._write_log('WRITE: {}\n'.format(savename))
-            print_log.info('Writing file {}'.format(savename))
+            msg = 'WRITE: {}\n'.format(savename)
+            self._write_log(msg)
+            print_log.info(msg)
            
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
+        print_log.info('PREPARING colocation of {} vs. {}'
+                       .format(self.model_id, self.obs_id))
+    
         model_reader = ReadGridded(self.model_id)
         
         obs_reader = ReadUngridded(self.obs_id)
@@ -685,6 +689,11 @@ class Colocator(ColocationSetup):
         var_matches = self._find_var_matches(obs_vars, model_reader,
                                              var_name)
         
+        print_log.info('The following variable combinations will be colocated\n'
+                       'MODEL-VAR\tOBS-VAR')
+        for key, val in var_matches.items():
+            print_log.info('{}\t{}'.format(key, val))
+            
         # get list of unique observation variables
         obs_vars = np.unique(list(var_matches.values())).tolist()
         
@@ -695,7 +704,7 @@ class Colocator(ColocationSetup):
             ropts = self.read_opts_ungridded
         else:
             ropts = {}
-            
+        
         obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
                                    vars_to_retrieve=obs_vars,
                                    **ropts)
@@ -707,8 +716,6 @@ class Colocator(ColocationSetup):
                 
         data_objs = {}
         for model_var, obs_var in var_matches.items():
-            
-            
             
             ts_type = self.ts_type
             start, stop = start_stop(self.start, self.stop)
