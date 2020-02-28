@@ -341,36 +341,6 @@ class ReadL2Data(ReadL2DataBase):
         # field name whose size determines the number of time steps in a product
         self.TSSIZENAME=self._TIME_OFFSET_NAME
 
-        # some gridding constants
-        self.MIN_LAT = -90.
-        self.MAX_LAT = 90.
-        self.MIN_LON = -180.
-        self.MAX_LON = 180.
-        # supported grids
-        self.SUPPORTED_GRIDS['CAMS50'] = {}
-        self.SUPPORTED_GRIDS['CAMS50']['grid_dist_lon'] = 0.25
-        self.SUPPORTED_GRIDS['CAMS50']['grid_dist_lat'] = 0.125
-        self.SUPPORTED_GRIDS['1x1'] = {}
-        self.SUPPORTED_GRIDS['1x1']['grid_dist_lon'] = 1.
-        self.SUPPORTED_GRIDS['1x1']['grid_dist_lat'] = 1.
-        self.SUPPORTED_GRIDS['0.5x0.5'] = {}
-        self.SUPPORTED_GRIDS['0.5x0.5']['grid_dist_lon'] = 0.5
-        self.SUPPORTED_GRIDS['0.5x0.5']['grid_dist_lat'] = 0.5
-        self.SUPPORTED_GRIDS['0.1x0.1'] = {}
-        self.SUPPORTED_GRIDS['0.1x0.1']['grid_dist_lon'] = 0.1
-        self.SUPPORTED_GRIDS['0.1x0.1']['grid_dist_lat'] = 0.1
-
-        for grid_name in self.SUPPORTED_GRIDS:
-            self.SUPPORTED_GRIDS[grid_name]['grid_lats'] = \
-                np.arange(self.MIN_LAT + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'] / 2., 
-                          self.MAX_LAT + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'] / 2., 
-                          self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'])
-            self.SUPPORTED_GRIDS[grid_name]['grid_lons'] = \
-                np.arange(self.MIN_LON + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'] / 2., 
-                          self.MAX_LON + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'] / 2., 
-                          self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'])
-
-
 
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
@@ -971,53 +941,6 @@ class ReadL2Data(ReadL2DataBase):
             super().to_grid(data=None, vars=None, gridtype=gridtype, engine='python', return_data_for_gridding=False)
     ###################################################################################
 
-    def _to_grid_grid_init(self,gridtype='1x1',vars=None,init_time=None):
-        """small helper routine to init the grid data struct"""
-
-        import numpy as np
-
-        start_time = time.perf_counter()
-        grid_data_prot = {}
-        gridded_var_data = {}
-        data_for_gridding = {}
-
-        if gridtype in self.SUPPORTED_GRIDS:
-            temp = 'starting simple gridding for {} grid...'.format(gridtype)
-            self.logger.info(temp)
-
-            grid_array_prot = np.full((self.SUPPORTED_GRIDS[gridtype]['grid_lats'].size,
-                                       self.SUPPORTED_GRIDS[gridtype]['grid_lons'].size), np.nan)
-            # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
-            for grid_lat in self.SUPPORTED_GRIDS[gridtype]['grid_lats']:
-                grid_data_prot[grid_lat] = {}
-                for grid_lon in self.SUPPORTED_GRIDS[gridtype]['grid_lons']:
-                    grid_data_prot[grid_lat][grid_lon] = {}
-
-            pass
-        else:
-            temp = 'Error: Unknown grid: {}'.format(gridtype)
-            return
-
-        end_time = time.perf_counter()
-        elapsed_sec = end_time - start_time
-        temp = 'time for global {} gridding with python data types [s] init: {:.3f}'.format(gridtype, elapsed_sec)
-        self.logger.info(temp)
-
-        # predefine the output data dict
-        for var in vars:
-            data_for_gridding[var] = grid_data_prot.copy()
-            gridded_var_data['latitude'] = self.SUPPORTED_GRIDS[gridtype]['grid_lats']
-            gridded_var_data['longitude'] = self.SUPPORTED_GRIDS[gridtype]['grid_lons']
-            gridded_var_data['time'] = init_time
-
-            gridded_var_data[var] = {}
-            gridded_var_data[var]['mean'] = grid_array_prot.copy()
-            gridded_var_data[var]['stddev'] = grid_array_prot.copy()
-            gridded_var_data[var]['numobs'] = grid_array_prot.copy()
-
-
-        return data_for_gridding, \
-               gridded_var_data,
 
     #####################################################################################
 
