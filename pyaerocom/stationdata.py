@@ -1293,6 +1293,24 @@ class StationData(StationMetaData):
         return s
     
     def select_altitude(self, var_name, altitudes):
+        """Extract variable data within certain altitude range
+        
+        Note
+        ----
+        Beta version
+        
+        Parameters
+        ----------
+        var_name : str
+            name of variable for which metadata is supposed to be extracted
+        altitudes : list
+            altitude range in m, e.g. [0, 1000]
+        
+        Returns
+        -------
+        pandas. Series or xarray.DataArray
+            data object within input altitude range
+        """
         
         data = self[var_name]
         
@@ -1332,9 +1350,9 @@ class StationData(StationMetaData):
                                   '{} ({}) is not supported'
                                   .format(var_name, type(data)))
         
-        
     def to_timeseries(self, var_name, freq=None, resample_how='mean', 
-                      apply_constraints=None, min_num_obs=None, **kwargs):
+                      apply_constraints=None, min_num_obs=None, 
+                      **kwargs):
         """Get pandas.Series object for one of the data columns
         
         Parameters
@@ -1397,7 +1415,7 @@ class StationData(StationMetaData):
         
         if not isinstance(data, pd.Series):
             data = self._to_ts_helper(var_name)
-
+        
         if freq is not None:
             resampler = TimeResampler(data)
             try:
@@ -1418,8 +1436,7 @@ class StationData(StationMetaData):
         return data
     
     def plot_timeseries(self, var_name, freq=None, resample_how='mean', 
-                        add_overlaps=False, legend=True, tit=None, 
-                        **kwargs):
+                        add_overlaps=False, legend=True, tit=None, **kwargs):
         """
         Plot timeseries for variable
         
@@ -1647,5 +1664,8 @@ if __name__=="__main__":
     
     print(empty.var_info['bla']['blub'])
     print(empty_copy.var_info['bla']['blub'])
+    
+    for var in set('abc', 'bl'):
+        print(var)
     
     
