@@ -155,13 +155,15 @@ class ReadL2Data(ReadL2DataBase):
         self._LONBOUNDSSIZE = 4
 
         self._UPPERALTITUDENAME = 'lower_altitude'
+        self._ALTBOUNDSNAME = 'alt_bnds'
 
         self._RAYLEIGHLATNAME = 'rayleigh_lat'
         self._RAYLEIGHLONNAME = 'rayleigh_lon'
         self._RAYLEIGHALTITUDENAME = 'rayleigh_altitude'
 
         self.COORDINATE_NAMES = [self._LATITUDENAME, self._LONGITUDENAME, self._ALTITUDENAME,
-                            self._LATBOUNDSNAME, self._LONBOUNDSNAME, self._UPPERALTITUDENAME]
+                                 self._LATBOUNDSNAME, self._LONBOUNDSNAME,
+                                 self._UPPERALTITUDENAME, self._ALTBOUNDSNAME, self._TIME_NAME]
 
         self._QAINDEX = UngriddedData._DATAFLAGINDEX
         self._TIME_OFFSET_INDEX = UngriddedData._TRASHINDEX
@@ -179,27 +181,6 @@ class ReadL2Data(ReadL2DataBase):
 
         self._UPPERALTITUDEINDEX = self._RAYLEIGHALTITUDEINDEX + 1
         self._COLNO = self._UPPERALTITUDEINDEX + 1
-
-
-        # self._EC355INDEX = 4
-        # self._BS355INDEX = 5
-        # self._SRINDEX = 6
-        # self._LODINDEX = 7
-        # _SCA_EC355INDEX = 4
-        # _SCA_BS355INDEX = 5
-        # _SCA_SRINDEX = 6
-        # _SCA_LODINDEX = 7
-        # for distance calculations we need the location in radians
-        # so store these for speed in self.data
-        # the following indexes indicate the column where that is stored
-        # ICA
-        # _ICA_EC355INDEX = 11
-        # _ICA_BS355INDEX = 12
-        # _ICA_LODINDEX = 13
-        # MCA
-        # _MCA_EC355INDEX = 14
-        # _MCA_LODINDEX = 15
-        # _MCA_CLIMBERINDEX = 16
 
         self._ROWNO = 100000
         self._CHUNKSIZE = 10000
@@ -338,6 +319,24 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME][
             'standard_name'] = 'volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles'
         self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME]['units'] = '1/Mm'
+
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_mean'] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_mean']['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_mean']['long_name'] = 'extinction @ 355nm'
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_mean'][
+            'standard_name'] = 'volume_extinction_coefficient_in_air_due_to_ambient_aerosol_particles'
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_mean']['units'] = '1/Mm'
+
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_numobs'] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_numobs']['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_numobs']['long_name'] = 'number of observations of extinction @ 355nm'
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_numobs']['units'] = '1'
+
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_stddev'] = {}
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_stddev']['_FillValue'] = np.nan
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_stddev']['long_name'] = 'standard deviation of extinction @ 355nm'
+        self.NETCDF_VAR_ATTRIBUTES[self._EC355NAME+'_stddev']['units'] = '1/Mm'
+
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['long_name'] = 'aeolus quality flag'
         self.NETCDF_VAR_ATTRIBUTES[self._QANAME]['units'] = '1'
@@ -360,6 +359,27 @@ class ReadL2Data(ReadL2DataBase):
         # number of points that passed the quality flag
         self._point_no_with_good_quality = 0
 
+        # minimal number of observations needed for gridding
+        self.MIN_VAL_NO_FOR_GRIDDING = 1
+
+        #association of EMEP variable names with aeolus variable names
+        self.EMEP_VAR_NAME_DICT = {}
+        self.EMEP_VAR_NAME_DICT[self._TIME_NAME] = 'time'
+        self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME] = 'lon'
+        self.EMEP_VAR_NAME_DICT[self._LATITUDENAME] = 'lat'
+        self.EMEP_VAR_NAME_DICT[self._ALTITUDENAME] = 'Z_MID'
+        self.EMEP_VAR_NAME_DICT[self._EC355NAME] = 'EXT_350nm'
+
+        # self.EMEP_VAR_NAME_DICT[self._TIME_NAME] = 'EXT_350nm'
+
+        # needed EMEP data variable names for gridding
+        self.EMEP_VARS_TO_COPY_FOR_GRIDDING = [self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME],
+                                               self.EMEP_VAR_NAME_DICT[self._LATITUDENAME],
+                                               self.EMEP_VAR_NAME_DICT[self._ALTITUDENAME],
+                                               self.EMEP_VAR_NAME_DICT[self._TIME_NAME],
+                                               ]
+        # variable name of the topography in the topography file
+        self.EMEP_TOPO_FILE_VAR_NAME = 'topography'
 
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
@@ -1261,6 +1281,16 @@ class ReadL2Data(ReadL2DataBase):
         if isinstance(vars_to_write_out, str):
             vars_to_write_out = [vars_to_write_out]
 
+        bounds_dim_name = 'bounds'
+        point_dim_name = 'point'
+        lev_dim_name = self._LEVELSNAME
+        lev_dim_bnds_name = self._ALTBOUNDSNAME
+        time_dim_name = self._TIME_NAME
+        lat_dim_name = self._LATITUDENAME
+        lat_dim_bnds_name = self._LATBOUNDSNAME
+        lon_dim_name = self._LONGITUDENAME
+        lon_dim_bnds_name = self._LONBOUNDSNAME
+
         if not gridded:
             if netcdf_filename is None:
                 netcdf_filename = '/tmp/to_netcdf_simple.nc'
@@ -1279,17 +1309,14 @@ class ReadL2Data(ReadL2DataBase):
             datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[s]'))
             # datetimedata = pd.to_datetime(_data[:, self._TIMEINDEX].astype('datetime64[ms]'))
             # pointnumber = np.arange(0, len(datetimedata))
-            bounds_dim_name = 'bounds'
-            point_dim_name = 'point'
-            level_dim_name = self._LEVELSNAME
             ds = xr.Dataset()
 
             # time and potentially levels are special variables that needs special treatment
-            ds[self._TIME_NAME] = (point_dim_name), datetimedata
-            skip_vars = [self._TIME_NAME, 'test_sca_pcd_mid_bins_qc_flag',]
-            if level_dim_name in vars_to_write_out:
-                ds[level_dim_name] = np.arange(self._LEVELSSIZE)
-                skip_vars.extend([self._LEVELSNAME])
+            ds[time_dim_name] = (point_dim_name), datetimedata
+            skip_vars = [time_dim_name, 'test_sca_pcd_mid_bins_qc_flag',]
+            if lev_dim_name in vars_to_write_out:
+                ds[lev_dim_name] = np.arange(self._LEVELSSIZE)
+                skip_vars.extend([lev_dim_name])
 
             for var in vars_to_write_out:
                 if var in skip_vars:
@@ -1315,7 +1342,7 @@ class ReadL2Data(ReadL2DataBase):
                     pass
 
         else:
-            # write gridded data to netcdf
+            # write gridded 3d data to netcdf
             if netcdf_filename is None:
                 netcdf_filename = '/tmp/to_netcdf_simple_gridded.nc'
             if data_to_write is None:
@@ -1323,51 +1350,52 @@ class ReadL2Data(ReadL2DataBase):
             else:
                 _data = data_to_write
 
-            bounds_dim_name = 'bounds'
-            time_dim_name = 'time'
-            lat_dim_name = 'latitude'
-            lon_dim_name = 'longitude'
+                # gridded
+                pass
+                time_dim_name = self._TIME_NAME
+                lat_dim_name = self._LATITUDENAME
+                lon_dim_name = self._LONGITUDENAME
+                alt_dim_name = self._ALTITUDENAME
+                lev_dim_name = self._LEVELSNAME
+                altbnds_dim_name = 'bnds_2'
 
-            ds = xr.Dataset()
+                ds = xr.Dataset()
 
-            # coordinate variables need special treatment
+                # ds[time_dim_name] = np.array(np.mean(_data[time_dim_name]).astype('datetime64[s]'))
+                ds[time_dim_name] = (time_dim_name), _data[time_dim_name]
+                ds[lat_dim_name] = (lat_dim_name), _data[lat_dim_name],
+                ds[lon_dim_name] = (lon_dim_name), _data[lon_dim_name]
+                ds[lev_dim_name] = (lev_dim_name), np.arange(_data[alt_dim_name].shape[1])
+                ds[alt_dim_name] = (time_dim_name, lev_dim_name, lat_dim_name, lon_dim_name), _data[alt_dim_name]
+                # ds[self._ALTBOUNDSNAME] = (alt_dim_name, altbnds_dim_name), _data[self._ALTBOUNDSNAME]
 
-            ds[time_dim_name] = (time_dim_name), [np.datetime64(_data[time_dim_name], 'D')]
-            ds[lat_dim_name] = (lat_dim_name), _data[lat_dim_name],
-            ds[lon_dim_name] = (lon_dim_name), _data[lon_dim_name]
+                # for var in vars_to_write_out:
+                vars_to_write_out = data_to_write.keys()
+                for var in vars_to_write_out:
+                    if var in self.COORDINATE_NAMES:
+                        # if var == self._TIME_NAME:
+                        continue
+                    # 3D data
+                    ds[var + '_mean'] = (time_dim_name, lev_dim_name, lat_dim_name, lon_dim_name), _data[var]['mean']
+                    ds[var + '_numobs'] = (time_dim_name, lev_dim_name, lat_dim_name, lon_dim_name), _data[var]['numobs']
+                    ds[var + '_stddev'] = (time_dim_name, lev_dim_name, lat_dim_name, lon_dim_name), _data[var]['stddev']
 
-            for var in vars_to_write_out:
-                if var == self._TIME_NAME:
-                    continue
-                # 1D data
-                # 3D data
-                ds[var + '_mean'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['mean'], (
-                len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])))
-                ds[var + '_numobs'] = (time_dim_name, lat_dim_name, lon_dim_name), np.reshape(_data[var]['numobs'], (
-                len(ds[time_dim_name]), len(_data[lat_dim_name]), len(_data[lon_dim_name])))
-
-                # remove _FillVar attribute for coordinate variables as CF requires it
-
-            vars_to_write_out.extend([time_dim_name, lat_dim_name, lon_dim_name])
-
-            for var in ds:
+            # add attributes to variables
+            for var in ds.variables:
                 # add predifined attributes
+                # print('var {}'.format(var))
                 try:
                     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
                         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
-
                 except KeyError:
                     pass
 
-            for var in ds.coords:
-                if var in self.COORDINATE_NAMES:
-                    ds[var].encoding['_FillValue'] = None
-
-                # add predifined attributes
+            # remove _FillValue attribute from coordinate variables since that
+            # is forbidden by CF convention
+            # unfortunately this does not work for level 3 data where the var name == dim name for some reason
+            for var in self.COORDINATE_NAMES:
                 try:
-                    for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
-                        ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
-
+                    del ds[var].encoding['_FillValue']
                 except KeyError:
                     pass
 
@@ -1378,6 +1406,8 @@ class ReadL2Data(ReadL2DataBase):
         except:
             pass
 
+        # temp = 'writing file: {}'.format(netcdf_filename)
+        # self.logger.info(temp)
         ds.to_netcdf(netcdf_filename)
 
         end_time = time.perf_counter()
@@ -2589,10 +2619,494 @@ class ReadL2Data(ReadL2DataBase):
             # print('test')
 
     ###################################################################################
+    def to_grid(self, data=None, vars=None, gridtype='1x1', engine='python', return_data_for_gridding=False,
+                grid_heights=None, grid_heights_low=None, grid_heights_high=None, grid_field=None, levelno=20):
+        """3d gridding routine that uses the 2d gridding from the super class for level wise 2d gridding
 
+        input data is a 2d numpy array
+        """
+
+        if data is None:
+            _data = self.data
+        else:
+            _data = data
+
+        if grid_heights is not None:
+            # user defined middle points
+            # pass this for now
+            pass
+        else:
+            if grid_heights_low is None:
+                grid_heights_low = np.arange(levelno+1) * 1000.
+            if grid_heights_high is None:
+                grid_heights_high = (np.arange(levelno+1) + 1) * 1000.
+
+        if gridtype not in self.SUPPORTED_GRIDS:
+            temp = 'Error: Unknown grid: {}'.format(gridtype)
+            self.logger.error(temp)
+            return
+        lat_verbose_flag = False
+
+        if engine == 'python':
+            grid_heights=grid_heights_low[:-1] + (grid_heights_low[1:]-grid_heights_low[:-1])/2
+            data_for_gridding, gridded_var_data = \
+                self._to_grid_grid_init(gridtype=gridtype, vars=vars ,levels=grid_heights,
+                                        init_time=np.mean(_data[:,self._TIMEINDEX]))
+
+            gridded_var_data[self._ALTBOUNDSNAME] = np.transpose(np.array(
+                [grid_heights_low[0:len(grid_heights)], grid_heights_high[0:len(grid_heights)]]))
+            grid_lats = self.SUPPORTED_GRIDS[gridtype]['grid_lats']
+            grid_lons = self.SUPPORTED_GRIDS[gridtype]['grid_lons']
+            grid_dist_lat = self.SUPPORTED_GRIDS[gridtype]['grid_dist_lat']
+            grid_dist_lon = self.SUPPORTED_GRIDS[gridtype]['grid_dist_lon']
+
+            start_time = time.perf_counter()
+            matching_points = 0
+            neg_points = 0
+            # predefine the output data dict
+            # data_for_gridding = {}
+            matched_heights = 0
+            matched_longitudes = 0
+            matched_latitudes = 0
+            match_lon_data = []
+            match_lat_data = []
+
+            for height_idx, grid_height in enumerate(grid_heights_low):
+                diff_height = _data[:,self._ALTITUDEINDEX] - grid_height
+                max_allowed_height_dist = grid_heights_high[height_idx] - grid_height
+                # height_match_indexes = np.squeeze(np.where(diff_height <= max_allowed_height_dist))
+                height_match_indexes = np.where((diff_height <= max_allowed_height_dist) & (diff_height > 0.))[0]
+                matched_heights += height_match_indexes.size
+                if height_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                    continue
+                print('height: {}, matched indexes: {}'.format(grid_height, height_match_indexes.size))
+                # data_temp = _data[height_match_indexes,:]
+                for lat_idx, grid_lat in enumerate(grid_lats):
+                    diff_lat = np.absolute((_data[height_match_indexes,self._LATINDEX] - grid_lat))
+                    lat_match_indexes = np.where(diff_lat <= (grid_dist_lat/2.))[0]
+                    matched_latitudes += lat_match_indexes.size
+                    if lat_verbose_flag:
+                        print('lat: {}, matched indexes: {}'.format(grid_lat, lat_match_indexes.size))
+                    if lat_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                        continue
+                    # simplify code for readability
+                    match_indexes = height_match_indexes[lat_match_indexes]
+                    match_lat_data.extend(_data[match_indexes,self._LATINDEX])
+
+                    for lon_idx, grid_lon in enumerate(grid_lons):
+                        # diff_lon = np.absolute((_data[match_indexes, self._LONINDEX] - grid_lon))
+                        # lon_match_indexes = np.squeeze(np.where(diff_lon <= (grid_dist_lon/2.)))
+                        # lon_match_indexes = np.where(diff_lon <= (grid_dist_lon/2.))[0]
+
+                        lon_match_indexes = np.where((_data[match_indexes, self._LONINDEX] > (grid_lon - grid_dist_lon/2.))
+                                                      & (_data[match_indexes, self._LONINDEX] <= (grid_lon + grid_dist_lon/2.)))[0]
+
+                        matched_longitudes += lon_match_indexes.size
+                        if lon_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                            continue
+                        match_indexes = match_indexes[lon_match_indexes]
+                        # print('lon {}, matched {}'.format(grid_lon, _data[match_indexes, self._LONINDEX]))
+                        match_lon_data.extend(_data[match_indexes, self._LONINDEX])
+
+
+                        for var in vars:
+                            less_than_zero_indexes = np.where(_data[match_indexes,self.INDEX_DICT[var]] > 0.)[0]
+                            neg_points += (match_indexes.size - less_than_zero_indexes.size)
+                            if less_than_zero_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                                continue
+
+                            if return_data_for_gridding:
+                                data_for_gridding[var][grid_lat][grid_lon][height_idx] = \
+                                    np.array(_data[self._LONGITUDENAME].data[match_indexes[less_than_zero_indexes]])
+
+                            if less_than_zero_indexes.size == 1:
+                                try:
+                                    gridded_var_data[var]['mean'][lat_idx, lon_idx, height_idx] = \
+                                        _data[match_indexes[less_than_zero_indexes], self.INDEX_DICT[var]]
+                                    gridded_var_data[var]['stddev'][lat_idx, lon_idx, height_idx] = 0.
+                                    gridded_var_data[var]['numobs'][lat_idx, lon_idx, height_idx] = 1.
+                                    matching_points += 1
+                                except ValueError:
+                                    pass
+                            else:
+                                try:
+                                    gridded_var_data[var]['mean'][lat_idx, lon_idx, height_idx] = \
+                                        np.nanmean(_data[match_indexes[less_than_zero_indexes], self.INDEX_DICT[var]])
+                                    gridded_var_data[var]['stddev'][lat_idx, lon_idx, height_idx] = \
+                                        np.nanstd(_data[match_indexes[less_than_zero_indexes], self.INDEX_DICT[var]])
+                                    gridded_var_data[var]['numobs'][lat_idx, lon_idx, height_idx] = \
+                                        _data[match_indexes[less_than_zero_indexes], self.INDEX_DICT[var]].size
+                                    matching_points = matching_points + \
+                                                      _data[match_indexes[less_than_zero_indexes], self.INDEX_DICT[var]].size
+                                except IndexError:
+                                    continue
+
+            end_time = time.perf_counter()
+            elapsed_sec = end_time - start_time
+            temp = 'time for global {} gridding with python data types [s]: {:.3f}'.format(gridtype, elapsed_sec)
+            self.logger.info(temp)
+            temp = 'matched {} points out of {} existing points to grid'.format(matching_points, _data.shape[0])
+            self.logger.info(temp)
+            temp = '{} points were negative'.format(neg_points)
+
+            self.logger.info(temp)
+            temp = 'matched heights: {}; matched latitudes {}; matched longitude {}'.format(
+                matched_heights, matched_latitudes, matched_longitudes)
+            self.logger.info(temp)
+            if return_data_for_gridding:
+                self.logger.info('returning also data_for_gridding...')
+                return gridded_var_data, data_for_gridding
+            else:
+                return gridded_var_data
+
+        else:
+            pass
 
     ###################################################################################
 
+    def _to_grid_grid_init(self,gridtype=None,vars=None,init_time=None,
+                           levelno=None, levels=None,
+                           latitudes=None, latno=None,
+                           longitudes=None, lonno=None,
+                           times=None, timeno=None,
+                           return_gridding_data_struct=False):
+        """small helper routine to init the 3d grid data struct"""
+
+        import numpy as np
+        grid_data_prot = {}
+        gridded_var_data = {}
+        data_for_gridding = {}
+
+
+        try:
+            dummy = levels.any()
+            if dummy:
+                levelno = len(levels)
+            else:
+                levels = np.arange(levelno)
+        except AttributeError:
+            levels = np.arange(levelno)
+
+        if latitudes.any():
+            latno = len(latitudes)
+
+        if longitudes.any():
+            lonno = len(longitudes)
+
+        try:
+            timeno = len(times)
+        except:
+            pass
+
+        if levelno is None or levelno == 1 or levelno == 0:
+            super()._to_grid_grid_init(gridtype=gridtype,vars=vars,init_time=init_time)
+        else:
+
+            import time
+
+            start_time = time.perf_counter()
+
+            # predifined static grid, one time step
+            if gridtype in self.SUPPORTED_GRIDS:
+                temp = 'starting simple gridding for {} grid...'.format(gridtype)
+                self.logger.info(temp)
+
+                latitudes = self.SUPPORTED_GRIDS[gridtype]['grid_lats']
+                longitudes = self.SUPPORTED_GRIDS[gridtype]['grid_lons']
+                grid_array_prot = np.full((self.SUPPORTED_GRIDS[gridtype]['grid_lats'].size,
+                                           self.SUPPORTED_GRIDS[gridtype]['grid_lons'].size,
+                                           levelno), np.nan)
+                # organise the data in a nested python dict like dict_data[level][grid_lat][grid_lon]=np.ndarray
+                for grid_lat in self.SUPPORTED_GRIDS[gridtype]['grid_lats']:
+                    grid_data_prot[grid_lat] = {}
+                    for grid_lon in self.SUPPORTED_GRIDS[gridtype]['grid_lons']:
+                        grid_data_prot[grid_lat][grid_lon] = {}
+
+                pass
+            else:
+                # model grid; just dimensions
+                temp = 'starting simple gridding for given grid with dims ({},{},{})...'.format(levelno, latno, lonno)
+                self.logger.info(temp)
+
+                grid_array_prot = np.full((timeno, levelno, latno, lonno,), np.nan)
+                # organise the data in a nested python dict like dict_data[level][grid_lat][grid_lon]=np.ndarray
+                if return_gridding_data_struct:
+                    for time in times:
+                        grid_data_prot[time] = {}
+                        for grid_lat in latitudes:
+                            grid_data_prot[time][grid_lat] = {}
+                            for grid_lon in longitudes:
+                                grid_data_prot[time][grid_lat][grid_lon] = {}
+                                for level in levels:
+                                    grid_data_prot[time][grid_lat][grid_lon][level] = {}
+
+            end_time = time.perf_counter()
+            elapsed_sec = end_time - start_time
+            temp = 'time for global {} gridding with python data types [s] init: {:.3f}'.format(gridtype, elapsed_sec)
+            self.logger.info(temp)
+
+            # predefine the output data dict
+            if latitudes.any():
+                gridded_var_data[self._LATITUDENAME] = latitudes
+            if longitudes.any():
+                gridded_var_data[self._LONGITUDENAME] = longitudes
+            # th exact levels are not known at this point, just the number
+            if levels.any():
+                gridded_var_data[self._ALTITUDENAME] = levels
+            try:
+                gridded_var_data[self._TIME_NAME] = times
+            except:
+                gridded_var_data[self._TIME_NAME] = init_time
+            for var in vars:
+                data_for_gridding[var] = grid_data_prot.copy()
+                gridded_var_data[var] = {}
+                gridded_var_data[var]['mean'] = grid_array_prot.copy()
+                gridded_var_data[var]['stddev'] = grid_array_prot.copy()
+                gridded_var_data[var]['numobs'] = grid_array_prot.copy()
+
+        if return_gridding_data_struct:
+            return data_for_gridding, \
+                   gridded_var_data,
+        else:
+            return gridded_var_data
+
+    ###################################################################################
+    def read_model_file(self, file_name, topofile=None, vars_to_keep=None):
+        """method to read a EMEP model file for colocation using xarray
+
+        :param filename:
+        file to read
+        :param topofile:
+        topography file; heights will be added to altitudes if provided
+        """
+        pass
+        import xarray as xr
+
+        if topofile is not None:
+            # read topography since that needs to be added to the ground following height of the model
+            self.logger.info('reading topography file {}'.format(options['topofile']))
+            topo_data = xr.open_dataset(options['topofile'])
+            topo_altitudes = np.squeeze(topo_data[self.EMEP_TOPO_FILE_VAR_NAME])
+            topo_data.close()
+
+        if not os.path.exists(file_name):
+            obj.logger.info('file does not exist: {}. skipping colocation ...'.format(file_name))
+            return False
+        # read netcdf file if it has not yet been loaded
+        obj.logger.info('reading model file {}'.format(file_name))
+        nc_data = xr.open_dataset(file_name)
+        nc_data[self._LATITUDENAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._LATITUDENAME]]
+        nc_data[self._LONGITUDENAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME]]
+        nc_data[self._TIME_NAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._TIME_NAME]]
+        nc_data[self._ALTITUDENAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._ALTITUDENAME]]
+
+        if topofile is not None:
+            # topography needs to be added to all the heighlevels and time steps
+            for time_idx, _time in enumerate(nc_data[self.EMEP_VAR_NAME_DICT[self._TIME_NAME]]):
+                for level_idx, level in enumerate(nc_data['lev']):
+                    nc_data[self._ALTITUDENAME][time_idx,level_idx,:,:] += topo_altitudes
+        # nc_times = nc_data.time.data.astype('datetime64[h]')
+        # nc_latitudes = nc_data['lat'].data
+        # nc_longitudes = nc_data['lon'].data
+        # nc_lev_no = len(nc_data['lev'])
+        return nc_data
+
+    ###################################################################################
+    def to_model_grid(self, data=None, vars=None, engine='python', return_data_for_gridding=False,
+                model_data=None):
+        """3d gridding routine according to a model level, lat, lon grid (one time step)
+
+        input data is a 2d numpy array with the aeolus data
+        model_data is a xarray.Dataset object containing the model data
+
+        """
+
+        if data is None:
+            _data = self.data
+        else:
+            _data = data
+
+        if engine == 'python':
+            import time
+            lat_verbose_flag = False
+
+            model_levelno = model_data[self._ALTITUDENAME].shape[1]
+            ts_no = len(model_data[self.EMEP_VAR_NAME_DICT[self._TIME_NAME]])
+            lat_no = len(model_data[self.EMEP_VAR_NAME_DICT[self._LATITUDENAME]])
+            lon_no = len(model_data[self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME]])
+            grid_lats = model_data[self.EMEP_VAR_NAME_DICT[self._LATITUDENAME]].data
+            grid_lons = model_data[self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME]].data
+            grid_dist_lat_arr = model_data[self.EMEP_VAR_NAME_DICT[self._LATITUDENAME]].data[1:] - \
+                                model_data[self.EMEP_VAR_NAME_DICT[self._LATITUDENAME]].data[:-1]
+            grid_dist_lon_arr = model_data[self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME]].data[1:] - \
+                                model_data[self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME]].data[:-1]
+            grid_dist_lat = grid_dist_lat_arr[0]
+            grid_dist_lon = grid_dist_lon_arr[0]
+            model_times = model_data[self.EMEP_VAR_NAME_DICT[self._TIME_NAME]].data
+
+            # data_for_gridding_temp, gridded_var_data_temp = \
+            if return_data_for_gridding:
+                gridded_var_data_temp, gridded_var_data_temp = \
+                    self._to_grid_grid_init(vars=vars ,levelno=model_levelno,
+                                            latitudes=grid_lats, longitudes=grid_lons,
+                                            times=model_times, return_gridding_data_struct=True)
+            else:
+                gridded_var_data_temp = \
+                    self._to_grid_grid_init(vars=vars ,levelno=model_levelno,
+                                            latitudes=grid_lats, longitudes=grid_lons,
+                                            times=model_times, return_gridding_data_struct=False)
+
+            gridded_var_data = gridded_var_data_temp
+            gridded_var_data[self._ALTITUDENAME] = model_data[self._ALTITUDENAME].data.copy()
+
+            data_for_gridding = {}
+
+
+            start_time = time.perf_counter()
+            obs_times = _data[:,self._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
+            max_time_diff = np.timedelta64(1,'h')
+
+            matching_points = 0
+            neg_points = 0
+            matched_times = 0
+            matched_heights = 0
+            matched_longitudes = 0
+            matched_latitudes = 0
+            for time_idx, _time in enumerate(model_times):
+                match_lon_data = []
+                match_lat_data = []
+                match_time_data = []
+                match_height_data = []
+                diff_time = obs_times - _time.astype('datetime64[h]')
+                # time_match_indexes = np.where(np.absolute(diff_time <= max_time_diff/2.))[0]
+                # time_match_indexes = np.where((diff_time > max_time_diff/-2.) & (diff_time <= max_time_diff/2.))[0]
+                # the following works due to the earlier rounding to an hour of obs_times
+                time_match_indexes = np.where(diff_time == np.timedelta64(0,'h'))[0]
+                if lat_verbose_flag:
+                    print('model time: {}, matched indexes: {}'.format(_time.astype('datetime64[h]'), time_match_indexes.size))
+                diff_time = None
+                if time_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                    continue
+                matched_times += time_match_indexes.size
+                match_indexes = time_match_indexes
+                match_time_data.extend(_data[match_indexes, self._TIMEINDEX])
+
+                for lat_idx, grid_lat in enumerate(grid_lats):
+                    # diff_lat = np.absolute((_data[match_indexes, self._LATINDEX] - grid_lat))
+                    # lat_match_indexes = np.where(diff_lat <= (grid_dist_lat / 2.))[0]
+                    lat_min = grid_lat - grid_dist_lat / 2.
+                    lat_max = grid_lat + grid_dist_lat / 2.
+                    lat_match_indexes = np.where((_data[time_match_indexes, self._LATINDEX] > lat_min) &
+                                                 (_data[time_match_indexes, self._LATINDEX] <= lat_max))[0]
+                    # diff_lat = None
+                    if lat_verbose_flag:
+                        print('lat: {}, matched indexes: {}'.format(grid_lat, lat_match_indexes.size))
+                    if lat_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                        continue
+                    matched_latitudes += lat_match_indexes.size
+                    # simplify code for readability
+                    lat_match_indexes = time_match_indexes[lat_match_indexes]
+                    match_lat_data.extend(_data[lat_match_indexes, self._LATINDEX])
+
+                    for lon_idx, grid_lon in enumerate(grid_lons):
+                        # diff_lon = np.absolute((_data[match_indexes, self._LONINDEX] - grid_lon))
+                        # lon_match_indexes = np.where(diff_lon <= (grid_dist_lon / 2.))[0]
+                        lon_min = grid_lon - grid_dist_lon / 2.
+                        lon_max = grid_lon + grid_dist_lon / 2.
+                        lon_match_indexes = np.where((_data[lat_match_indexes, self._LONINDEX] > lon_min) &
+                                                     (_data[lat_match_indexes, self._LONINDEX] <= lon_max))[0]
+                        # diff_lon = None
+
+                        if lon_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                            continue
+                        matched_longitudes += lon_match_indexes.size
+                        lon_match_indexes = lat_match_indexes[lon_match_indexes]
+                        match_lon_data.extend(_data[lon_match_indexes, self._LONINDEX])
+
+                        if lat_verbose_flag:
+                            print('lon {}, matched {}'.format(grid_lon, _data[lon_match_indexes, self._LONINDEX]))
+                            print('lat {}, lon {}, heights {}'.format(
+                                _data[lon_match_indexes, self._LATINDEX], _data[lon_match_indexes, self._LONINDEX],
+                                _data[lon_match_indexes,self._ALTITUDEINDEX]))
+
+                        model_height = model_data[self.EMEP_VAR_NAME_DICT[self._ALTITUDENAME]].data[time_idx,:, lat_idx, lon_idx]
+                        mean_idx = {}
+
+                        for match_idx, _height in enumerate(_data[lon_match_indexes,self._ALTITUDEINDEX]):
+                            diff_height_to_model = np.absolute(model_height - _height)
+                            lowest_idx = np.where(diff_height_to_model == np.amin(diff_height_to_model))[0]
+                            if lat_verbose_flag:
+                                print("lowest height distance: {} m".format(diff_height_to_model[lowest_idx]))
+                            # lowest_idx = height index of model
+                            # height_idx = index of satellite data
+                            try:
+                                mean_idx[lowest_idx[0]].append(lon_match_indexes[match_idx])
+                            except:
+                                mean_idx[lowest_idx[0]] = [lon_match_indexes[match_idx]]
+
+                        # now apply the height index array to the variables and calculate the height means
+                        for idx in mean_idx:
+                            data_indexes = np.array(mean_idx[idx])
+                            for var in vars:
+                                greater_than_zero_indexes = np.where(_data[data_indexes,self.INDEX_DICT[var]] > 0.)[0]
+                                neg_points += (data_indexes.size - greater_than_zero_indexes.size)
+                                if greater_than_zero_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
+                                    continue
+                                greater_than_zero_indexes = lon_match_indexes[greater_than_zero_indexes]
+                                # if return_data_for_gridding:
+                                #     if not isinstance(data_for_gridding[var], dict):
+                                #         data_for_gridding[var] = data_for_gridding_temp.copy()
+                                #         data_for_gridding[var][_time][grid_lat][grid_lon][height_idx] = \
+                                #             _data[data_indexes[greater_than_zero_indexes], self.INDEX_DICT[var]]
+
+                                if greater_than_zero_indexes.size == 1:
+                                    try:
+                                        gridded_var_data[var]['mean'][time_idx, idx, lat_idx, lon_idx] = \
+                                            _data[greater_than_zero_indexes, self.INDEX_DICT[var]]
+                                        gridded_var_data[var]['stddev'][time_idx, idx, lat_idx, lon_idx] = np.nan
+                                        gridded_var_data[var]['numobs'][time_idx, idx, lat_idx, lon_idx] = 1.
+                                        matching_points += 1
+                                        if lat_verbose_flag:
+                                            print('val: {}'.format(_data[greater_than_zero_indexes, self.INDEX_DICT[var]]))
+                                    except ValueError:
+                                        pass
+                                else:
+                                    try:
+                                        gridded_var_data[var]['mean'][time_idx, idx, lat_idx, lon_idx] = \
+                                            np.nanmean(_data[greater_than_zero_indexes, self.INDEX_DICT[var]])
+                                        gridded_var_data[var]['stddev'][time_idx, idx, lat_idx, lon_idx] = \
+                                            np.nanstd(_data[greater_than_zero_indexes, self.INDEX_DICT[var]])
+                                        gridded_var_data[var]['numobs'][time_idx, idx, lat_idx, lon_idx] = \
+                                            greater_than_zero_indexes.size
+                                        matching_points = matching_points + greater_than_zero_indexes.size
+                                        if lat_verbose_flag:
+                                            print('val: {}'.format(
+                                                _data[greater_than_zero_indexes, self.INDEX_DICT[var]]))
+
+                                    except IndexError:
+                                        continue
+
+            end_time = time.perf_counter()
+            elapsed_sec = end_time - start_time
+            temp = 'time for gridding to model grid with python data types [s]: {:.3f}'.format(elapsed_sec)
+            self.logger.info(temp)
+            temp = 'matched {} points out of {} existing points to grid'.format(matching_points, _data.shape[0])
+            self.logger.info(temp)
+            temp = '{} points were negative'.format(neg_points)
+            self.logger.info(temp)
+            # temp = 'matched heights: {}; matched latitudes {}; matched longitude {}'.format(
+            #     matched_heights, matched_latitudes, matched_longitudes)
+            # self.logger.info(temp)
+            if return_data_for_gridding:
+                self.logger.info('returning also data_for_gridding...')
+                return gridded_var_data, data_for_gridding
+            else:
+                return gridded_var_data
+
+        else:
+            pass
+
+    ###################################################################################
     # def
 
 if __name__ == '__main__':
@@ -2601,6 +3115,12 @@ if __name__ == '__main__':
     import argparse
     options = {}
     default_topo_file = '/lustre/storeB/project/fou/kl/admaeolus/EMEP.topo/MACC14_topo_v1.nc'
+
+    obj = ReadL2Data(verbose=True)
+    SUPPORTED_GRIDS = obj.SUPPORTED_GRIDS.keys()
+    DEFAULT_GRID = 'MODEL'
+
+    netcdf_indir = '/lustre/storeB/project/fou/kl/admaeolus/EMEPmodel'
 
     parser = argparse.ArgumentParser(
         description='command line interface to aeolus2netcdf.py\n\n\n')
@@ -2639,12 +3159,21 @@ if __name__ == '__main__':
     parser.add_argument("--variables", help="comma separated list of variables to write; default: ec355aer,bs355aer",
                         default='ec355aer')
     parser.add_argument("--retrieval", help="retrieval to read; supported: sca, ica, mca; default: sca", default='sca')
-    parser.add_argument("--netcdfcolocate", help="flag to add colocation with a netcdf file",
+    parser.add_argument("--netcdfcolocate", help="flag to add L2 colocation with a netcdf file",
                         action='store_true')
+    parser.add_argument("--gridfile", help="grid data and write it to given output file (L3 in netcdf).")
+    parser.add_argument("--gridname",
+                        help="name of the grid used for gridding. Supported grids are {}, defaults to {}. "
+                             "MODEL means gridding to model altitude field".format(','.join(SUPPORTED_GRIDS),DEFAULT_GRID),
+                        default=DEFAULT_GRID)
     parser.add_argument("--modeloutdir", help="directory for colocated model files; will have a similar filename as input file",
                         default=os.path.join(os.environ['HOME'], 'tmp'))
     parser.add_argument("--topofile", help="topography file; defaults to {}.".format(default_topo_file),
                         default=default_topo_file)
+    parser.add_argument("--modelindir", help="model directory for reading; defaults to {}.".format(netcdf_indir),
+                        default=netcdf_indir)
+
+    parser.add_argument("--aeoluslistfile", help="text file with input files from aeolus.".format(netcdf_indir))
 
     args = parser.parse_args()
 
@@ -2653,8 +3182,22 @@ if __name__ == '__main__':
     else:
         options['netcdfcolocate'] = False
 
-    # if args.filemask:
-    #     options['filemask'] = args.filemask
+    if args.aeoluslistfile:
+        options['aeoluslistfile'] = args.aeoluslistfile
+
+    if args.modelindir:
+        options['modelindir'] = args.modelindir
+
+    if args.gridfile:
+        options['gridfile'] = args.gridfile
+
+    if args.gridname:
+        options['gridname'] = args.gridname
+        if options['gridname'] == 'MODEL':
+            INTERPOL_TO_MODEL_GRID_FLAG = True
+        else:
+            INTERPOL_TO_MODEL_GRID_FLAG = False
+
 
     try:
         if args.retrieval:
@@ -2751,7 +3294,7 @@ if __name__ == '__main__':
         options['outfile'] = args.outfile
 
     if args.codadef:
-            options['codadef'] = args.codadef
+        options['codadef'] = args.codadef
 
     if args.topofile:
         options['topofile'] = args.topofile
@@ -2769,9 +3312,14 @@ if __name__ == '__main__':
     global_attributes = None
 
     if 'files' not in options:
-        options['files'] = glob.glob(options['dir']+'/**/'+options['filemask'], recursive=True)
+        if 'aeoluslistfile' not in options:
+            options['files'] = glob.glob(options['dir']+'/**/'+options['filemask'], recursive=True)
+        else:
+            options['files'] = []
+            with open(options['aeoluslistfile']) as fh:
+                options['files'] = [line.rstrip('\n') for line in fh]
 
-    for filename in options['files']:
+    for file_idx, filename in enumerate(options['files']):
         print(filename)
         suffix = pathlib.Path(filename).suffix
         temp_file_flag = False
@@ -2802,196 +3350,248 @@ if __name__ == '__main__':
             obj = ReadL2Data(verbose=True)
             # read sca retrieval data
             vars_to_read = options['variables'].copy()
-            data_numpy = obj.read_file(filename, vars_to_retrieve=vars_to_read, return_as='numpy',
+            data_numpy_tmp = obj.read_file(filename, vars_to_retrieve=vars_to_read, return_as='numpy',
                                        read_retrieval=options['retrieval'])
             # obj.ndarr2data(filedata_numpy)
             # read additional data
+            if file_idx > 0:
+                # append data_numpy_tmp to data_numpy
+                data_numpy = np.append(data_numpy, data_numpy_tmp, axis=0)
+            else:
+                data_numpy = data_numpy_tmp
+
             ancilliary_data = obj.read_data_fields(filename, fields_to_read=['mph'])
             if temp_file_flag:
                 obj.logger.info('removing temp file {}'.format(filename))
                 os.remove(filename)
 
-            # apply emep options for cal / val
-            if options['emepflag']:
-                bbox = [options['latmin'], options['latmax'],options['lonmin'],options['lonmax']]
-                tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
-                if len(tmp_data) > 0:
-                    data_numpy = tmp_data
-                    obj.logger.info('file {} contains {} points in emep area! '.format(filename, len(tmp_data)))
+    # apply emep options for cal / val
+    if options['emepflag']:
+        bbox = [options['latmin'], options['latmax'],options['lonmin'],options['lonmax']]
+        tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
+        if len(tmp_data) > 0:
+            data_numpy = tmp_data
+            obj.logger.info('file {} contains {} points in emep area! '.format(filename, len(tmp_data)))
+        else:
+            obj.logger.info('file {} contains no data in emep area! '.format(filename))
+            data_numpy = None
+            # continue
+
+    if options['himalayas']:
+        bbox = [options['latmin'], options['latmax'],options['lonmin'],options['lonmax']]
+        tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
+        if len(tmp_data) > 0:
+            data_numpy = tmp_data
+            obj.logger.info('file {} contains {} points in himalaya area! '.format(filename, len(tmp_data)))
+        else:
+            obj.logger.info('file {} contains no data in himalaya area! '.format(filename))
+            data_numpy = None
+            # continue
+
+    if 'outfile' in options or 'gridfile' in options or 'outdir' in options:
+        # if not global_attributes:
+        #     global_attributes = {}
+        global_attributes = ancilliary_data['mph']
+        global_attributes['Aeolus_Retrieval'] = obj.RETRIEVAL_READ
+        global_attributes['input files'] = ','.join(obj.files_read)
+        global_attributes[
+            'info'] = 'file created by pyaerocom.io.read_aeolus_l2a_data ' + obj.__version__ + ' (https://github.com/metno/pyaerocom) at ' + \
+                      np.datetime64('now').astype('str')
+        global_attributes['quality'] = 'quality flags for extinction applied'
+
+    # single outfile
+    if 'outfile' in options:
+        if len(options['files']) == 1:
+            # write netcdf
+            if os.path.exists(options['outfile']):
+                if options['overwrite']:
+                    obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
+                                         global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
                 else:
-                    obj.logger.info('file {} contains no data in emep area! '.format(filename))
-                    data_numpy = None
-                    continue
-
-            if options['himalayas']:
-                bbox = [options['latmin'], options['latmax'],options['lonmin'],options['lonmax']]
-                tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
-                if len(tmp_data) > 0:
-                    data_numpy = tmp_data
-                    obj.logger.info('file {} contains {} points in himalaya area! '.format(filename, len(tmp_data)))
-                else:
-                    obj.logger.info('file {} contains no data in himalaya area! '.format(filename))
-                    data_numpy = None
-                    continue
-
-            if 'outfile' in options or 'gridfile' in options or 'outdir' in options:
-                # if not global_attributes:
-                #     global_attributes = {}
-                global_attributes = ancilliary_data['mph']
-                global_attributes['Aeolus_Retrieval'] = obj.RETRIEVAL_READ
-                global_attributes['input files'] = ','.join(obj.files_read)
-                global_attributes[
-                    'info'] = 'file created by pyaerocom.io.read_aeolus_l2a_data ' + obj.__version__ + ' (https://github.com/metno/pyaerocom) at ' + \
-                              np.datetime64('now').astype('str')
-                global_attributes['quality'] = 'quality flags for extinction applied'
-
-            # single outfile
-            if 'outfile' in options:
-                if len(options['files']) == 1:
-                    # write netcdf
-                    if os.path.exists(options['outfile']):
-                        if options['overwrite']:
-                            obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
+                    sys.stderr.write('Error: path {} exists'.format(options['outfile']))
+            else:
+                obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
                                      global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
-                        else:
-                            sys.stderr.write('Error: path {} exists'.format(options['outfile']))
-                    else:
-                        obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                     global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
-                else:
-                    sys.stderr.write("error: multiple input files, but only on output file given\n"
-                                     "Please use the --outdir option instead\n")
+        else:
+            sys.stderr.write("error: multiple input files, but only on output file given\n"
+                             "Please use the --outdir option instead\n")
 
-            # outdir
-            if 'outdir' in options and 'outfile' not in options:
-                outfile_name = os.path.join(options['outdir'], os.path.basename(filename) + '.nc')
-                obj.logger.info('writing file {}'.format(outfile_name))
-                if os.path.exists(outfile_name):
-                    if options['overwrite']:
-                        obj.to_netcdf_simple(netcdf_filename=outfile_name, data_to_write=data_numpy,
-                                             global_attributes=global_attributes, vars_to_write=vars_to_read)
-                    else:
-                        sys.stderr.write('Error: file {} exists'.format(options['outfile']))
-                else:
-                    obj.to_netcdf_simple(netcdf_filename=outfile_name, data_to_write=data_numpy,
-                                         global_attributes=global_attributes, vars_to_write=vars_to_read)
+    # outdir
+    # if 'outdir' in options and 'outfile' not in options:
+    #     outfile_name = os.path.join(options['outdir'], os.path.basename(filename) + '.nc')
+    #     obj.logger.info('writing file {}'.format(outfile_name))
+    #     if os.path.exists(outfile_name):
+    #         if options['overwrite']:
+    #             obj.to_netcdf_simple(netcdf_filename=outfile_name, data_to_write=data_numpy,
+    #                                  global_attributes=global_attributes, vars_to_write=vars_to_read)
+    #         else:
+    #             sys.stderr.write('Error: file {} exists'.format(options['outfile']))
+    #     else:
+    #         obj.to_netcdf_simple(netcdf_filename=outfile_name, data_to_write=data_numpy,
+    #                              global_attributes=global_attributes, vars_to_write=vars_to_read)
+    #
 
+    # work with emep data and do some colocation
+    if options['netcdfcolocate']:
+        start_time = time.perf_counter()
 
-            # work with emep data and do some colocation
-            if options['netcdfcolocate']:
-                start_time = time.perf_counter()
-
-                netcdf_indir = '/lustre/storeB/project/fou/kl/admaeolus/EMEPmodel'
-                import xarray as xr
-                # read topography since that needs to be added to the ground following height of the model
-                obj.logger.info('reading topography file {}'.format(options['topofile']))
-                topo_data = xr.open_dataset(options['topofile'])
+        netcdf_indir = '/lustre/storeB/project/fou/kl/admaeolus/EMEPmodel'
+        import xarray as xr
+        # read topography since that needs to be added to the ground following height of the model
+        obj.logger.info('reading topography file {}'.format(options['topofile']))
+        topo_data = xr.open_dataset(options['topofile'])
 
 
-                #truncate Aeolus times to hour
+        #truncate Aeolus times to hour
 
-                aeolus_times_rounded = data_numpy[:,obj._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
-                aeolus_times = data_numpy[:,obj._TIMEINDEX].astype('datetime64[s]')
-                unique_aeolus_times, unique_aeolus_time_indexes = np.unique(aeolus_times, return_index=True)
-                aeolus_profile_no = len(unique_aeolus_times)
-                # aeolus_profile_no = int(len(aeolus_times)/obj._HEIGHTSTEPNO)
-                last_netcdf_file = ''
-                for time_idx in range(len(unique_aeolus_time_indexes)):
-                    ae_year, ae_month, ae_dummy = \
-                        aeolus_times[unique_aeolus_time_indexes[time_idx]].astype('str').split('-')
-                    ae_day, ae_dummy = ae_dummy.split('T')
-                    netcdf_infile = 'CWF_12ST-{}{}{}_hourInst.nc'.format(ae_year, ae_month, ae_day)
-                    netcdf_infile = os.path.join(netcdf_indir, netcdf_infile)
-                    if not os.path.exists(netcdf_infile):
-                        obj.logger.info('file does not exist: {}. skipping colocation ...'.format(netcdf_infile))
-                        continue
-                    # read netcdf file if it has not yet been loaded
-                    if netcdf_infile != last_netcdf_file:
-                        obj.logger.info('reading and co-locating on model file {}'.format(netcdf_infile))
-                        last_netcdf_file = netcdf_infile
-                        nc_data = xr.open_dataset(netcdf_infile)
-                        nc_times = nc_data.time.data.astype('datetime64[h]')
-                        nc_latitudes = nc_data['lat'].data
-                        nc_longitudes = nc_data['lon'].data
-                        nc_lev_no = len(nc_data['lev'])
-                        nc_colocated_data = np.zeros([aeolus_profile_no * nc_lev_no, obj._COLNO], dtype=np.float_)
+        aeolus_times_rounded = data_numpy[:,obj._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
+        aeolus_times = data_numpy[:,obj._TIMEINDEX].astype('datetime64[s]')
+        unique_aeolus_times, unique_aeolus_time_indexes = np.unique(aeolus_times, return_index=True)
+        aeolus_profile_no = len(unique_aeolus_times)
+        # aeolus_profile_no = int(len(aeolus_times)/obj._HEIGHTSTEPNO)
+        last_netcdf_file = ''
+        for time_idx in range(len(unique_aeolus_time_indexes)):
+            ae_year, ae_month, ae_dummy = \
+                aeolus_times[unique_aeolus_time_indexes[time_idx]].astype('str').split('-')
+            ae_day, ae_dummy = ae_dummy.split('T')
+            file_name = 'CWF_12ST-{}{}{}_hourInst.nc'.format(ae_year, ae_month, ae_day)
+            file_name = os.path.join(netcdf_indir, file_name)
+            if not os.path.exists(file_name):
+                obj.logger.info('file does not exist: {}. skipping colocation ...'.format(file_name))
+                continue
+            # read netcdf file if it has not yet been loaded
+            if file_name != last_netcdf_file:
+                obj.logger.info('reading and co-locating on model file {}'.format(file_name))
+                last_netcdf_file = file_name
+                nc_data = xr.open_dataset(file_name)
+                nc_times = nc_data.time.data.astype('datetime64[h]')
+                nc_latitudes = nc_data['lat'].data
+                nc_longitudes = nc_data['lon'].data
+                nc_lev_no = len(nc_data['lev'])
+                nc_colocated_data = np.zeros([aeolus_profile_no * nc_lev_no, obj._COLNO], dtype=np.float_)
 
-                    # locate current rounded Aeolus time in netcdf file
-                    nc_ts_no = np.where(nc_times == unique_aeolus_times[time_idx].astype('datetime64[h]'))
-                    if len(nc_ts_no) != 1:
-                        # something is wrong here!
-                        pass
-
-                    # locate current profile's location index in lats and lons
-                    # Has to be done on original aeolus data
-                    for aeolus_profile_index in range(aeolus_profile_no):
-                        data_idx = unique_aeolus_time_indexes[aeolus_profile_index]
-                        try:
-                            data_idx_end = unique_aeolus_time_indexes[aeolus_profile_index+1]
-                        except:
-                            data_idx_end = len(aeolus_times)
-
-                        data_idx_arr = np.arange(data_idx_end - data_idx) + data_idx
-
-                        aeolus_lat = np.nanmean(data_numpy[data_idx_arr, obj._LATINDEX])
-                        aeolus_lon = np.nanmean(data_numpy[data_idx_arr, obj._LONINDEX])
-                        aeolus_altitudes = data_numpy[data_idx_arr, obj._ALTITUDEINDEX]
-                        diff_dummy = nc_latitudes - aeolus_lat
-                        min_lat_index = np.argmin(np.abs(diff_dummy))
-                        diff_dummy = nc_longitudes - aeolus_lon
-                        min_lon_index = np.argmin(np.abs(diff_dummy))
-
-                        nc_data_idx = aeolus_profile_index * nc_lev_no
-                        nc_index_arr = np.arange(nc_lev_no) + nc_data_idx
-                        nc_colocated_data[nc_index_arr,obj.INDEX_DICT[obj._EC355NAME]] = \
-                            nc_data['EXT_350nm'].data[nc_ts_no,:,min_lat_index,min_lon_index]
-                        # nc_data['EXT_350nm'].data[nc_ts_no,:,min_lat_index,min_lon_index].reshape(nc_lev_no)
-                        nc_colocated_data[nc_index_arr,obj._ALTITUDEINDEX] = \
-                            nc_data['Z_MID'].data[nc_ts_no,:,min_lat_index,min_lon_index] + \
-                            topo_data['topography'].data[0,min_lat_index,min_lon_index]
-                        nc_colocated_data[nc_index_arr,obj._LATINDEX] = \
-                            nc_data['lat'].data[min_lat_index]
-                        nc_colocated_data[nc_index_arr,obj._LONINDEX] = \
-                            nc_data['lon'].data[min_lon_index]
-                            # nc_data['Z_MID'].data[nc_ts_no,:,min_lat_index,min_lon_index].reshape(nc_lev_no)
-                        nc_colocated_data[nc_index_arr,obj._TIMEINDEX] = \
-                            data_numpy[data_idx, obj._TIMEINDEX]
-
-                end_time = time.perf_counter()
-                elapsed_sec = end_time - start_time
-                temp = 'time for colocation all time steps [s]: {:.3f}'.format(elapsed_sec)
-                if 'nc_colocated_data' in locals():
-                    obj.logger.info(temp)
-                    obj.logger.info('{} is colocated model output directory'.format(options['modeloutdir']))
-                    model_file_name = os.path.join(options['modeloutdir'], os.path.basename(filename) + '.colocated.nc')
-                    # obj.to_netcdf_simple(model_file_name, data_to_write=nc_colocated_data)
-                    obj.to_netcdf_simple(netcdf_filename=model_file_name, data_to_write=nc_colocated_data,
-                                         vars_to_write=vars_to_read)
+            # locate current rounded Aeolus time in netcdf file
+            nc_ts_no = np.where(nc_times == unique_aeolus_times[time_idx].astype('datetime64[h]'))
+            if len(nc_ts_no) != 1:
+                # something is wrong here!
                 pass
 
-            #plot the profile
-            if options['plotprofile']:
-                plotfilename = os.path.join(options['outdir'], os.path.basename(filename)
-                                            + '.'+options['retrieval']+'.profile.png')
-                obj.logger.info('profile plot file: {}'.format(plotfilename))
-                # title = '{} {}'.format(options['retrieval'], os.path.basename(filename))
-                title = '{}'.format(os.path.basename(filename))
-                obj.plot_profile_v3(plotfilename, title=title, data_to_plot=data_numpy,
-                                    retrieval_name=options['retrieval'],
-                                    plot_range=(-200,200.),
-                                    plot_nbins=40)
-                # obj.plot_profile_v3(plotfilename, title=title, data_to_plot=data_numpy,
-                #                                     retrieval_name=options['retrieval'],
-                #                                     plot_range=(0.,200.))
+            # locate current profile's location index in lats and lons
+            # Has to be done on original aeolus data
+            for aeolus_profile_index in range(aeolus_profile_no):
+                data_idx = unique_aeolus_time_indexes[aeolus_profile_index]
+                try:
+                    data_idx_end = unique_aeolus_time_indexes[aeolus_profile_index+1]
+                except:
+                    data_idx_end = len(aeolus_times)
 
-            #plot the map
-            if options['plotmap']:
-                plotmapfilename = os.path.join(options['outdir'], os.path.basename(filename) + '.map.png')
-                obj.logger.info('map plot file: {}'.format(plotmapfilename))
-                #title = os.path.basename(filename)
-                obj.plot_location_map(plotmapfilename, data=data_numpy, bbox=bbox, title=os.path.basename(filename))
-                # obj.plot_location_map(plotmapfilename)
+                data_idx_arr = np.arange(data_idx_end - data_idx) + data_idx
 
+                aeolus_lat = np.nanmean(data_numpy[data_idx_arr, obj._LATINDEX])
+                aeolus_lon = np.nanmean(data_numpy[data_idx_arr, obj._LONINDEX])
+                aeolus_altitudes = data_numpy[data_idx_arr, obj._ALTITUDEINDEX]
+                diff_dummy = nc_latitudes - aeolus_lat
+                min_lat_index = np.argmin(np.abs(diff_dummy))
+                diff_dummy = nc_longitudes - aeolus_lon
+                min_lon_index = np.argmin(np.abs(diff_dummy))
+
+                nc_data_idx = aeolus_profile_index * nc_lev_no
+                nc_index_arr = np.arange(nc_lev_no) + nc_data_idx
+                nc_colocated_data[nc_index_arr,obj.INDEX_DICT[obj._EC355NAME]] = \
+                    nc_data['EXT_350nm'].data[nc_ts_no,:,min_lat_index,min_lon_index]
+                # nc_data['EXT_350nm'].data[nc_ts_no,:,min_lat_index,min_lon_index].reshape(nc_lev_no)
+                nc_colocated_data[nc_index_arr,obj._ALTITUDEINDEX] = \
+                    nc_data['Z_MID'].data[nc_ts_no,:,min_lat_index,min_lon_index] + \
+                    topo_data['topography'].data[0,min_lat_index,min_lon_index]
+                nc_colocated_data[nc_index_arr,obj._LATINDEX] = \
+                    nc_data['lat'].data[min_lat_index]
+                nc_colocated_data[nc_index_arr,obj._LONINDEX] = \
+                    nc_data['lon'].data[min_lon_index]
+                # nc_data['Z_MID'].data[nc_ts_no,:,min_lat_index,min_lon_index].reshape(nc_lev_no)
+                nc_colocated_data[nc_index_arr,obj._TIMEINDEX] = \
+                    data_numpy[data_idx, obj._TIMEINDEX]
+
+        end_time = time.perf_counter()
+        elapsed_sec = end_time - start_time
+        temp = 'time for colocation all time steps [s]: {:.3f}'.format(elapsed_sec)
+        if 'nc_colocated_data' in locals():
+            obj.logger.info(temp)
+            obj.logger.info('{} is colocated model output directory'.format(options['modeloutdir']))
+            model_file_name = os.path.join(options['modeloutdir'], os.path.basename(filename) + '.colocated.nc')
+            # obj.to_netcdf_simple(model_file_name, data_to_write=nc_colocated_data)
+            obj.to_netcdf_simple(netcdf_filename=model_file_name, data_to_write=nc_colocated_data,
+                                 vars_to_write=vars_to_read)
+        pass
+
+    #plot the profile
+    if options['plotprofile']:
+        plotfilename = os.path.join(options['outdir'], os.path.basename(filename)
+                                    + '.'+options['retrieval']+'.profile.png')
+        obj.logger.info('profile plot file: {}'.format(plotfilename))
+        # title = '{} {}'.format(options['retrieval'], os.path.basename(filename))
+        title = '{}'.format(os.path.basename(filename))
+        obj.plot_profile_v3(plotfilename, title=title, data_to_plot=data_numpy,
+                            retrieval_name=options['retrieval'],
+                            plot_range=(-200,200.),
+                            plot_nbins=40)
+        # obj.plot_profile_v3(plotfilename, title=title, data_to_plot=data_numpy,
+        #                                     retrieval_name=options['retrieval'],
+        #                                     plot_range=(0.,200.))
+
+    #plot the map
+    if options['plotmap']:
+        plotmapfilename = os.path.join(options['outdir'], os.path.basename(filename) + '.map.png')
+        obj.logger.info('map plot file: {}'.format(plotmapfilename))
+        #title = os.path.basename(filename)
+        obj.plot_location_map(plotmapfilename, data=data_numpy, bbox=bbox, title=os.path.basename(filename))
+        # obj.plot_location_map(plotmapfilename)
+
+    # write L3 gridded data
+    if 'gridfile' in options:
+        import xarray as xr
+        vars_to_copy = [obj._ALTITUDENAME, obj._LONGITUDENAME, obj._LATITUDENAME, '']
+        vars_to_read = options['variables'].copy()
+        netcdf_indir = options['modelindir']
+        aeolus_times_rounded = data_numpy[:, obj._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
+        aeolus_times = data_numpy[:, obj._TIMEINDEX].astype('datetime64[s]')
+        unique_aeolus_times, unique_aeolus_time_indexes = np.unique(aeolus_times, return_index=True)
+        aeolus_profile_no = len(unique_aeolus_times)
+        # aeolus_profile_no = int(len(aeolus_times)/obj._HEIGHTSTEPNO)
+        last_netcdf_file = ''
+        for time_idx in range(len(unique_aeolus_time_indexes)):
+            ae_year, ae_month, ae_dummy = \
+                aeolus_times[unique_aeolus_time_indexes[time_idx]].astype('str').split('-')
+            ae_day, ae_dummy = ae_dummy.split('T')
+            file_name = 'CWF_12ST-{}{}{}_hourInst.nc'.format(ae_year, ae_month, ae_day)
+            file_name = os.path.join(netcdf_indir, file_name)
+            if not os.path.exists(file_name):
+                obj.logger.info('file does not exist: {}. skipping colocation ...'.format(file_name))
+                continue
+            # read netcdf file if it has not yet been loaded
+            if file_name != last_netcdf_file:
+                obj.logger.info('reading and preparing model data for gridding file {}'.format(file_name))
+                # read model file
+                if len(last_netcdf_file) == 0:
+                    model_data_temp = obj.read_model_file(file_name, topofile=options['topofile'])
+                    model_data = model_data_temp
+                else:
+                    model_data = xr.concat([model_data, model_data_temp], obj._TIME_NAME, data_vars='minimal')
+                last_netcdf_file = file_name
+
+        if INTERPOL_TO_MODEL_GRID_FLAG:
+            # grid to model grid with altitude being a 4d field
+            gridded_var_data = obj.to_model_grid(data=data_numpy, vars=vars_to_read,
+                                                 model_data=model_data)
+        else:
+            # grid to static grid
+            gridded_var_data = obj.to_grid(data=data_numpy, vars=vars_to_read,
+                                           gridtype=options['gridname'])
+
+        obj.to_netcdf_simple(netcdf_filename=options['gridfile'],
+                             vars_to_write=vars_to_read,
+                             global_attributes=global_attributes,
+                             data_to_write=gridded_var_data,
+                             gridded=True)
 
 
 
