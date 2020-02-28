@@ -132,11 +132,11 @@ class ReadGridded(object):
 
         
     """
-    AUX_REQUIRES = {'ang4487aer'    : ['od440aer', 'od870aer'],
-                    'od550gt1aer'   : ['od550aer', 'od550lt1aer'],
-                    'wetoa'         : ['wetpoa', 'wetsoa'],
-                    'dryoa'         : ['drypoa', 'drysoa'],
-                    'conc*'         : ['mmr*', 'rho'],
+    AUX_REQUIRES = {'ang4487aer'    : ('od440aer', 'od870aer'),
+                    'od550gt1aer'   : ('od550aer', 'od550lt1aer'),
+                    'wetoa'         : ('wetpoa', 'wetsoa'),
+                    'dryoa'         : ('drypoa', 'drysoa'),
+                    'conc*'         : ('mmr*', 'rho'),
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
@@ -417,15 +417,16 @@ class ReadGridded(object):
             fun = self.AUX_FUNS[var_name]
         else:
             return False
-          
+        vars_to_read = []
         for i, var in enumerate(vars_req):
             try:
                 # the variable might be updated in _check_var_avail
-                vars_req[i] = self._check_var_avail(var) 
+                vars_to_read.append(self._check_var_avail(var))
             except VarNotAvailableError:
                 return False
-        
-        self._aux_avail[var_name] = (vars_req, fun)
+        if not len(vars_to_read) == len(vars_req):
+            return False
+        self._aux_avail[var_name] = (vars_to_read, fun)
         return True
         
     def _check_var_match_pattern(self, var_name):
@@ -537,7 +538,7 @@ class ReadGridded(object):
             return var
         
         if var in self.AUX_ALT_VARS:
-            for alt_var in list(self.AUX_ALT_VARS[var]):
+            for alt_var in self.AUX_ALT_VARS[var]:
                 if alt_var in self.vars_filename:
                     return alt_var
             
@@ -546,7 +547,8 @@ class ReadGridded(object):
         for alias in v.aliases:
             if alias in self.vars_filename:
                 return alias
-        raise VarNotAvailableError('Var {} is not available in data...')
+        raise VarNotAvailableError('Var {} is not available in data...'
+                                   .format(var))
         
     def has_var(self, var_name):
         """Check if variable is available
