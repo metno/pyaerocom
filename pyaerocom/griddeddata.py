@@ -469,7 +469,7 @@ class GriddedData(object):
             logger.exception('Failed to round start time {} to beggining of '
                              'frequency {}'.format(t, self.ts_type))
             return t.astype('datetime64[us]')
-    
+        
     @property
     def cube(self):
         """Instance of underlying cube object"""
@@ -682,7 +682,7 @@ class GriddedData(object):
 #                               'large ({} GB)'.format(self.name, self._size_GB))
 # =============================================================================
         self.grid.convert_units(new_unit)
-        
+      
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
         
@@ -696,6 +696,47 @@ class GriddedData(object):
         if self.has_time_dim:    
             return cftime_to_datetime64(self.time)
 
+    def years_avail(self):
+        """
+        TODO: WRITE DOCSTRING
+
+        Returns
+        -------
+        list
+            DESCRIPTION.
+
+        """
+        toyear = lambda x: int(str(x.astype('datetime64[Y]')))
+        
+        return [x for x in set(map(toyear, self.time_stamps()))]
+    
+    def split_years(self, years=None):
+        """
+        TODO: WRITE DOCSTRING
+
+        Parameters
+        ----------
+        years : TYPE, optional
+            DESCRIPTION. The default is None.
+
+        Yields
+        ------
+        TYPE
+            DESCRIPTION.
+
+        """
+        
+        from pyaerocom.helpers import start_stop_from_year
+        if years is None:
+            years = self.years_avail()
+        if len(years) == 1:
+            const.print_log.info('Nothing to split... GriddedData contains '
+                                 'only {}'.format(years[0]))
+            yield self
+        for year in years:
+            start, stop = start_stop_from_year(year)
+            yield self.crop(time_range=(start, stop))
+            
     def check_coord_order(self):
         """Wrapper for :func:`check_dimcoords_tseries`"""
         logger.warning(DeprecationWarning('Method was renamed, please use '
@@ -1809,7 +1850,7 @@ class GriddedData(object):
             except Exception:
                 pass
 
-        if vert_code is None:
+        if vert_code in (None, ''):
             raise ValueError('Please provide input vert_code')
 
         if data_id is None:
@@ -1817,7 +1858,12 @@ class GriddedData(object):
         if var_name is None:
             var_name = self.var_name
         if year is None:
-            year = str(pd.Timestamp(self.start).year)
+            start = pd.Timestamp(self.start).year
+            stop = pd.Timestamp(self.stop).year
+            if stop > start:
+                raise ValueError('Cannot create AeroCom savename for multiyear '
+                                 'data... please split first')
+            year = str(start)
         else:
             year = str(year)
         if ts_type is None:
@@ -1887,6 +1933,17 @@ class GriddedData(object):
                 meta_out[k] = v
         self.cube.attributes = meta_out
         
+    def _to_netcdf_aerocom(self, out_dir, **kwargs):
+        
+        years = self.years_avail()
+        outpaths = []
+        for subset in self.split_years(years):
+            savename = subset.aerocom_savename(**kwargs)
+            fp = os.path.join(out_dir, savename)
+            iris.save(self.grid, fp)
+            outpaths.append(fp)
+        return outpaths
+    
     def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save as netcdf file
         
@@ -1902,15 +1959,18 @@ class GriddedData(object):
             
         Returns
         -------
-        str
-            file path
+        list
+            list of output files created
         """
         self._check_meta_netcdf()
         if savename is None:
-            savename = self.aerocom_savename(**kwargs)
+            return self._to_netcdf_aerocom(out_dir, **kwargs)
+        
+        savename = subset.aerocom_savename(**kwargs)
         fp = os.path.join(out_dir, savename)
         iris.save(self.grid, fp)
-        return fp
+            
+        return [fp]
         
     def interpolate(self, sample_points=None, scheme="nearest", 
                     collapse_scalar=True, **coords):
@@ -2540,10 +2600,15 @@ if __name__=='__main__':
     plt.close("all")
 
     # print("uses last changes ")
-    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)#.resample_time('yearly')
-
-    f1 = pya.Filter('LAND')
+    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', 
+                                                          start=2009,
+                                                          stop=2013)
     
-    subset = f1(data)
+    print(data.years_avail())
     
-    subset.quickplot_map()
+    outdir = '/home/jonasg/MyPyaerocom/TEST_TO_NETCDF/'
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+        
+    data.to_netcdf(out_dir=outdir, vert_code='Column')
+    
