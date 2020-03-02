@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
                     
 def main(): 
+    from warnings import filterwarnings
     from argparse import ArgumentParser
     import os, sys
 
@@ -35,10 +36,11 @@ def main():
     p.add_argument('-c', '--clear', action='store_true',
                    help='Delete (potentially) existing json files before rerun')
     p.add_argument('-p', '--print_config', action='store_true',
-                   help='print configuration (no analysis is run')
+                   help='print configuration (no analysis is run)')
     p.add_argument('--delete', action='store_true',
-                   help='print configuration (no analysis is run')
-    
+                   help='Remove an experiment from the web (deletes all json files associated)')
+    p.add_argument('--warnings', action='store_true', 
+                   help='Display python warnings')
     
     args = p.parse_args()
     if args.exceptions:
@@ -57,6 +59,8 @@ def main():
         onlyjson = True
     else:
         onlyjson = None
+    if not args.warnings:
+        filterwarnings('ignore')
         
     if not os.path.exists(args.config_dir):
         raise FileNotFoundError('No such file or directory: {}'.format(args.config_dir))
@@ -87,7 +91,7 @@ def main():
     if args.print_config:
         print(ae)
         sys.exit()
-    
+
     if args.model_name is not None:
         if len(ae.find_model_matches(args.model_name)) == 0:
         #if not args.model_name in list(ae.model_config):

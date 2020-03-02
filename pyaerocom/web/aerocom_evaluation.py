@@ -929,7 +929,7 @@ class AerocomEvaluation(object):
         """
         if self.colocation_settings['reanalyse_existing']:
             self.delete_all_colocateddata_files(model_name, obs_name)
-            
+          
         col = Colocator()
         col.update(**self.colocation_settings)
         
@@ -1149,6 +1149,7 @@ class AerocomEvaluation(object):
             obs_list = list(self.obs_config)
         else:
             obs_list = self.find_obs_matches(obs_name)
+            
         self._log.info(self.info_string_evalrun(obs_list, model_list))
         
         self._update_custom_read_methods()
@@ -1168,7 +1169,7 @@ class AerocomEvaluation(object):
                 if model_name in self.model_ignore:
                     self._log.info('Skipping model {}'.format(model_name))
                     continue
-                
+
                 if not self.only_json:
                     col = self.run_colocation(model_name, obs_name, var_name)
                 else:
