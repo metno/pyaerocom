@@ -1938,9 +1938,10 @@ class GriddedData(object):
         years = self.years_avail()
         outpaths = []
         for subset in self.split_years(years):
+            subset._check_meta_netcdf()
             savename = subset.aerocom_savename(**kwargs)
             fp = os.path.join(out_dir, savename)
-            iris.save(self.grid, fp)
+            iris.save(subset.grid, fp)
             outpaths.append(fp)
         return outpaths
     
@@ -1962,11 +1963,11 @@ class GriddedData(object):
         list
             list of output files created
         """
-        self._check_meta_netcdf()
-        if savename is None:
-            return self._to_netcdf_aerocom(out_dir, **kwargs)
         
-        savename = subset.aerocom_savename(**kwargs)
+        if savename is None: #use AeroCom convention
+            return self._to_netcdf_aerocom(out_dir, **kwargs)
+        self._check_meta_netcdf()
+        savename = self.aerocom_savename(**kwargs)
         fp = os.path.join(out_dir, savename)
         iris.save(self.grid, fp)
             
