@@ -73,7 +73,7 @@ def check_access_testdata(basedir, test_paths):
         return False
     return True
     
-                                  
+INIT_TESTDATA = True                            
 TEST_RTOL = 1e-4
 
 DATA_ACCESS = DataAccess()
@@ -91,7 +91,7 @@ ADD_PATHS = {
     'AeronetSunV3L2Subset'  : 'obsdata/AeronetSunV3Lev2.daily/',
     'AeronetSDAV3L2Subset'  : 'obsdata/AeronetSDAV3Lev2.daily/',
     'AeronetInvV3L2Subset'  : 'obsdata/AeronetInvV3Lev2.daily/',
-    'EBASSubset'            : 'obsdata/EBASMultiColumn/'
+    #'EBASSubset'            : 'obsdata/EBASMultiColumn/'
     
 }
 
@@ -130,17 +130,18 @@ TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
 
 # checks if testdata-minimal is available and if not, tries to download it 
 # automatically into ~/MyPyaerocom/testdata-minimal
-TESTDATA_AVAIL = check_access_testdata(TESTDATADIR, TEST_PATHS)
-
-if TESTDATA_AVAIL:
-    try:
-        _init_testdata(const)
-    except Exception:
-        from traceback import format_exc
-        raise ValueError('FATAL: Failed to initiate testdata. Traceback:\n'
-                         .format(format_exc()))
-    TESTDATA_AVAIL = False
+if INIT_TESTDATA:
+    TESTDATA_AVAIL = check_access_testdata(TESTDATADIR, TEST_PATHS)
     
+    if TESTDATA_AVAIL:
+        try:
+            _init_testdata(const)
+        except Exception:
+            raise ValueError('FATAL: Failed to initiate testdata. Traceback:\n'
+                             .format(format_exc()))
+            TESTDATA_AVAIL = False
+else:
+    TESTDATA_AVAIL = False   
 # skipif marker that is True if no access to metno PPI is provided 
 # (some tests are skipped in this case)
 lustre_unavail = pytest.mark.skipif(not const.has_access_lustre,
