@@ -9,8 +9,10 @@ Created on Tue Mar  3 12:58:34 2020
 
 import pytest
 from pyaerocom import const
+from pyaerocom.conftest import testdata_unavail
 from pyaerocom.io.aerocom_browser import AerocomBrowser
 
+@testdata_unavail
 @pytest.mark.parametrize('searchstr,endswith',
                          [('TM5*TEST', 'modeldata/TM5-met2010_CTRL-TEST/renamed'),
                           ('AeronetSunV3L2Subset', 'obsdata/AeronetSunV3Lev2.daily/renamed'),
