@@ -13,10 +13,10 @@ from pyaerocom.conftest import testdata_unavail
 from pyaerocom.io.aerocom_browser import AerocomBrowser
 
 @testdata_unavail
-@pytest.mark.parametrize('searchstr,endswith',
-                         [('TM5*TEST', 'modeldata/TM5-met2010_CTRL-TEST/renamed'),
-                          ('AeronetSunV3L2Subset', 'obsdata/AeronetSunV3Lev2.daily/renamed'),
-                          ('EBASSubset', 'obsdata/EBASMultiColumn')])
+@pytest.mark.parametrize('searchstr,endswith', [
+    ('TM5*TEST', 'modeldata/TM5-met2010_CTRL-TEST/renamed'),
+    ('AeronetSunV3L2Subset', 'obsdata/AeronetSunV3Lev2.daily/renamed')
+    ])
 def test_find_data_dir(searchstr, endswith):
     browser = AerocomBrowser()
     

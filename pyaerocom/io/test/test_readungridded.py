@@ -9,7 +9,24 @@ from pyaerocom.io import ReadUngridded
 
 def test_supported():
     supported_datasets =ReadUngridded().supported_datasets
-    assert len(supported_datasets) == 21
+    print(supported_datasets)
+    assert len(supported_datasets) >= 17
+    assert all(x in supported_datasets for x in ['AeronetInvV3Lev2.daily', 
+                                                 'AeronetInvV3Lev1.5.daily', 
+                                                 'AeronetInvV2Lev2.daily', 
+                                                 'AeronetInvV2Lev1.5.daily', 
+                                                 'AeronetSDAV2Lev2.daily', 
+                                                 'AeronetSDAV3Lev1.5.daily', 
+                                                 'AeronetSDAV3Lev2.daily', 
+                                                 'AeronetSunV2Lev2.daily', 
+                                                 'AeronetSunV2Lev2.AP', 
+                                                 'AeronetSunV3Lev1.5.daily', 
+                                                 'AeronetSunV3Lev1.5.AP', 
+                                                 'AeronetSunV3Lev2.daily', 
+                                                 'AeronetSunV3Lev2.AP', 
+                                                 'EARLINET', 'EBASMC', 
+                                                 'DMS_AMS_CVO', 
+                                                 'GAWTADsubsetAasEtAl'])
 
 @lustre_unavail
 def test_basic_attributes():
