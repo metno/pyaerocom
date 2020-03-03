@@ -253,8 +253,8 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     
     # NMB, MNMB and FGE are constrained to positive values, thus negative
     # values need to be removed
-    neg_ref = ref_data < 0
-    neg_data = data < 0
+    neg_ref = ref_data <= 0
+    neg_data = data <= 0
     
     use_indices = ~(neg_data + neg_ref)
     
