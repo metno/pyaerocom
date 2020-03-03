@@ -23,15 +23,7 @@ class AerocomBrowser(BrowseDict):
     :func:`browse`, the only difference is, that the :func:`find_matches` adds
     the search result (a list with strings) to 
     
-    """
-# =============================================================================
-#     def __getitem__(self, name_or_pattern):
-#         try:
-#             return super(AerocomBrowser, self).__getitem__(name_or_pattern)
-#         except KeyError:
-#             raise Exception
-# =============================================================================
-            
+    """            
     def _browse(self, name_or_pattern, ignorecase=True, return_if_match=True):
         """Search all Aerocom data directories that match input name or pattern
         
