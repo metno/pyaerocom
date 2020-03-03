@@ -22,7 +22,7 @@ from pyaerocom.test.synthetic_data import DataAccess
 
 def _download_test_data(basedir=None):
     print("TEMP OUTPUT: DOWNLOADING TESTDATA")
-    raise Exception('Temporarily disabled...')
+    #raise Exception('Temporarily disabled...')
     if basedir is None:
         basedir = const.OUTPUTDIR
    
