@@ -109,7 +109,7 @@ _UNGRIDDED_READERS = {
     'AeronetSunV3L2Subset'  : ReadAeronetSunV3,
     'AeronetSDAV3L2Subset'  : ReadAeronetSdaV3,
     'AeronetInvV3L2Subset'  : ReadAeronetInvV3,
-    'EBASSubset'            : ReadEbas
+    #'EBASSubset'            : ReadEbas
 }
 
 def _init_testdata(const):
@@ -117,9 +117,11 @@ def _init_testdata(const):
         ddir = str(TESTDATADIR.joinpath(relpath))
         if name in _UNGRIDDED_READERS:
             reader = _UNGRIDDED_READERS[name]
+            
             const.add_ungridded_obs(name, ddir, 
                                     reader=reader,
                                     check_read=True)
+            
         else:
             const.add_data_search_dir(ddir)
     
@@ -131,7 +133,13 @@ TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
 TESTDATA_AVAIL = check_access_testdata(TESTDATADIR, TEST_PATHS)
 
 if TESTDATA_AVAIL:
-    _init_testdata(const)
+    try:
+        _init_testdata(const)
+    except Exception:
+        from traceback import format_exc
+        raise ValueError('FATAL: Failed to initiate testdata. Traceback:\n'
+                         .format(format_exc()))
+    TESTDATA_AVAIL = False
     
 # skipif marker that is True if no access to metno PPI is provided 
 # (some tests are skipped in this case)
@@ -187,15 +195,5 @@ def data_scat_jungfraujoch():
 if __name__=="__main__":
     import sys
     import pyaerocom as pya
-    #pytest.main(sys.argv)
     
-    
-    ddir = '/home/jonasg/MyPyaerocom/testdata-minimal/obsdata/AeronetSunV3Lev2.daily/'
-    
-    
-    const.add_ungridded_obs('AERONETSunSubset', ddir, 
-                            reader=pya.io.ReadAeronetSunV3,
-                            check_read=True)
-    
-    data = pya.io.ReadUngridded().read('AERONETSunSubset', 'od550aer')
-    data.plot_station_coordinates()
+    ebas_db = const.EBASMC_SQL_DATABASE
