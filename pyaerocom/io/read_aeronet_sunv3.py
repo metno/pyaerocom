@@ -244,9 +244,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
                     val = np.float_(dummy_arr[idx])
                     if val == self.NAN_VAL: 
                         val = np.nan
-                    elif val < self.NAN_VAL:
-                        raise Exception('Developers: please debug')
                     data_out[var].append(val)
+                    
                 pl = dummy_arr
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
