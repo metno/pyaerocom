@@ -212,7 +212,21 @@ class AerocomDataID(object):
         self._values = self._eval_data_id(val)
         self._data_id = val
     
+    @property
+    def values(self):
+        if self._values is not None:
+            return self._values
+        raise AttributeError('Meta value list is not set.')
     
+    @values.setter
+    def values(self, val):
+        if not isinstance(val, list) or not len(val) == len(self.KEYS):
+            raise ValueError('Invalid input: need list of length {}'
+                             .format(len(self.KEYS)))
+        # this will first create a data_id string from input values and 
+        # then call setter method to make sure the input is correct.
+        self.data_id = self.from_values(val)
+        
     def to_dict(self):
         """Convert data_id to dictionary
         
@@ -312,29 +326,33 @@ class AerocomDataID(object):
         if not isinstance(val, str):
             raise ValueError('Invalid input for data_id. Need str. Got {}'
                              .format(val))
-            
+        
+        values = [''] * len(self.KEYS)
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
-            raise ValueError('Invalid data ID {}. Need format '
+            const.logger.warning('Invalid data ID {}. Need format '
                                  '<model-name>_<meteo-config>_<eperiment-name>'
-                                 .format(self._data_id))
-        values = []
-        for subset in spl:
-            values.extend(subset.split(self.SUBDELIM))
-        if not len(values) == len(self.KEYS):
-            raise ValueError('Failed to extract information from data ID'
-                             .format(self._data_id))
-        
-        info = dict(zip(self.KEYS, values)) 
-        meteo = info['meteo']
-        if not meteo.startswith('met'):
-            raise ValueError('Meteo config string needs to start with met')
-        
-        try:
-            meteo.split('met')[-1]
-        except Exception:
-            raise ValueError('Invalid meteo config string: {}'
-                             'Needs to be met<year>'.format(meteo))    
+                                 .format(val))
+            values[0] = val
+            return values
+            
+        sub = spl[0].split(self.SUBDELIM)
+        if len(sub) == 2:
+            values[0] = sub[0] #model_name
+            
+            meteo = sub[1]
+            if meteo.startswith('met'):
+                values[1] = meteo #meteo_config
+            else:
+                const.print_log.warning('Meteorology config substring in '
+                                        'data_id {} needs to start with met. '
+                                        .format(meteo))
+        sub = spl[1].split(self.SUBDELIM)
+        if len(sub) == 2:
+            values[2] = sub[0]
+            values[3] = sub[1]
+        else:
+            values[2] = spl 
         return values
     
     def __eq__(self, other):
