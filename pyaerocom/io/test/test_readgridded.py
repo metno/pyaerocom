@@ -40,7 +40,7 @@ def test_ReadGridded_class_empty():
 @lustre_unavail    
 def test_file_info(reader_reanalysis):
     assert isinstance(reader_reanalysis.file_info, DataFrame)
-    assert len(reader_reanalysis.file_info.columns) == 11, 'Mismatch colnum file_info (df)'
+    assert len(reader_reanalysis.file_info.columns) == 12, 'Mismatch colnum file_info (df)'
 
 @lustre_unavail    
 def test_years_available(reader_reanalysis):
@@ -88,17 +88,6 @@ def test_read_vars(reader_reanalysis):
             sum(data[2].shape)]
     nominal = [3, 2307, 2307, 2307]
     npt.assert_array_equal(vals, nominal)
-    # this was removed as mean values of GriddedData objects should not be
-    # tested here
-# =============================================================================
-#     vals = [data[0][1825].mean(), 
-#             data[1][1825].mean(), 
-#             data[2][1825].mean()]
-#     #nominal = [0.11754113, 0.09734518, 0.06728536]
-#     # updated on 25.11.2019 since now by default area weighted mean is used
-#     nominal = [0.14793, 0.12195, 0.08345]
-#     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
-# =============================================================================
     
 
     

@@ -5,20 +5,10 @@ Created on Wed Feb 19 15:28:03 2020
 
 @author: jonasg
 """
-
-
-import pytest, sys
+import pytest
 from pyaerocom import const
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 
-# =============================================================================
-# TESTDATA = [
-#     ('sc550aer', ['aerosol_light_scattering_coefficient'], 
-#                  ['aerosol', 'pm10'], None, None, None, 1),
-#     ('sc550dryaer', None, None, None, None, ['sc550aer', 'scrh'], 1),
-# ]
-# 
-# =============================================================================
 TESTDATA = [('DEFAULT', None, None, None, None, None, 1), 
             ('sc550aer', ['aerosol_light_scattering_coefficient'], 
              ['aerosol', 'pm10'], None, None, None, 1.0), 
@@ -141,6 +131,7 @@ if __name__=='__main__':
         return (var_name, var.component, var.matrix, var.instrument, 
                 var.statistics, var.requires, var.scale_factor)
     from time import time
+    import sys
     t0 =time()
     pytest.main(sys.argv)    
     print(time()-t0)

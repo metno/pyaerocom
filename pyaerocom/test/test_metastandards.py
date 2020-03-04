@@ -64,58 +64,38 @@ def test_stationmetadata():
         'website'
         ]
     
-def test_aerocomdataid_invalid():
-    try:
-        mst.AerocomDataID('Blaaa')
-    except ValueError as e:
-        assert str(e) == 'Invalid data ID None. Need format <model-name>_<meteo-config>_<eperiment-name>'
+@pytest.mark.parametrize('data_id,values,test_addstuff', [
+    ('NorESM2-met2010_AP3-CTRL', ['NorESM2', 'met2010', 'AP3', 'CTRL'], True),
+    ('Blaaa', ['Blaaa', '', '', ''], False),
+    ('Bla-blub2010_blablub-bla', ['Bla', '', 'blablub', 'bla'], False),
+    ('Bla-met2042_blablub-bla', ['Bla', 'met2042', 'blablub', 'bla'], False)
+    
+     ])     
+def test_aerocomdataid(data_id, values, test_addstuff):
+    
+    data_id = mst.AerocomDataID(data_id)
+    
+    assert data_id.values == values
+    
+    if test_addstuff:
+        dd = data_id.to_dict()
         
-    try:
-        mst.AerocomDataID('Bla-blub2010_blablub-bla')
-    except ValueError as e:
-        assert str(e) == 'Meteo config string needs to start with met'
+        assert dd['model_name'] == values[0]
+        assert dd['meteo'] == values[1]
+        assert dd['experiment'] == values[2]
+        assert dd['perturbation'] == values[3]
         
-def test_aerocomdataid_valid():
-    
-    data_id = mst.AerocomDataID('NorESM2-met2010_CTRL-AP3')
-
-    dd = data_id.to_dict()
-    
-    assert dd['model_name'] == 'NorESM2'
-    assert dd['meteo'] == 'met2010'
-    assert dd['experiment'] == 'CTRL'
-    assert dd['perturbation'] == 'AP3'
-    
-    data_id1 = mst.AerocomDataID(**dd)
-    
-    assert data_id1 == str(data_id)
-    assert data_id1 == data_id
-    assert data_id1 == 'NorESM2-met2010_CTRL-AP3'
-    
-    assert mst.AerocomDataID(**dd) == mst.AerocomDataID.from_dict(dd)
-    
+        data_id1 = mst.AerocomDataID(**dd)
+        
+        assert data_id1 == str(data_id)
+        assert data_id1 == data_id
+        assert data_id1 == 'NorESM2-met2010_AP3-CTRL'
+        
+        assert mst.AerocomDataID(**dd) == mst.AerocomDataID.from_dict(dd)
+        
 if __name__=='__main__':
     import sys
     pytest.main(sys.argv)
-    
-    
-    meta=mst.StationMetaData()
-    
-# =============================================================================
-#     data_ids = ['AeronetSunV3Lev2.daily', 'EBASMC', 'EARLINET']
-#     keystr = ('data_id,dataset_name,data_product,data_version,'
-#               'data_level,revision_date,stat_merge_pref_attr')
-#     
-#     results = []
-#     for data_id in data_ids:
-#         print(data_id)
-#         res = []
-#         for key in keystr.split(','):
-#             ds = mst.DataSource(data_id=data_id)
-#             res.append(ds[key])
-#             
-#         results.append(tuple(res))
-# =============================================================================
             
         
     
