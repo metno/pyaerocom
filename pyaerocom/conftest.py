@@ -72,7 +72,20 @@ def check_access_testdata(basedir, test_paths):
             pass
         return False
     return True
-    
+
+def _init_testdata(const):
+    for name, relpath in ADD_PATHS.items():
+        ddir = str(TESTDATADIR.joinpath(relpath))
+        if name in _UNGRIDDED_READERS:
+            reader = _UNGRIDDED_READERS[name]
+            
+            const.add_ungridded_obs(name, ddir, 
+                                    reader=reader,
+                                    check_read=True)
+            
+        else:
+            const.add_data_search_dir(ddir)
+            
 INIT_TESTDATA = True                            
 TEST_RTOL = 1e-4
 
@@ -87,11 +100,11 @@ TESTDATADIR = Path(const._TESTDATADIR)
 # Paths to be added to pya.const. All relative to BASEDIR
 ADD_PATHS = {
     
-    'MODELS'                : 'modeldata/',
-    'AeronetSunV3L2Subset'  : 'obsdata/AeronetSunV3Lev2.daily/',
-    'AeronetSDAV3L2Subset'  : 'obsdata/AeronetSDAV3Lev2.daily/',
-    'AeronetInvV3L2Subset'  : 'obsdata/AeronetInvV3Lev2.daily/',
-    #'EBASSubset'            : 'obsdata/EBASMultiColumn/'
+    'MODELS'                : 'modeldata',
+    'AeronetSunV3L2Subset.daily'  : 'obsdata/AeronetSunV3Lev2.daily/renamed',
+    'AeronetSDAV3L2Subset.daily'  : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
+    'AeronetInvV3L2Subset.daily'  : 'obsdata/AeronetInvV3Lev2.daily/renamed',
+    'EBASSubset'            : 'obsdata/EBASMultiColumn'
     
 }
 
@@ -106,24 +119,13 @@ TEST_PATHS.update(ADD_PATHS)
 
 
 _UNGRIDDED_READERS = {
-    'AeronetSunV3L2Subset'  : ReadAeronetSunV3,
-    'AeronetSDAV3L2Subset'  : ReadAeronetSdaV3,
-    'AeronetInvV3L2Subset'  : ReadAeronetInvV3,
-    #'EBASSubset'            : ReadEbas
+    'AeronetSunV3L2Subset.daily'  : ReadAeronetSunV3,
+    'AeronetSDAV3L2Subset.daily'  : ReadAeronetSdaV3,
+    'AeronetInvV3L2Subset.daily'  : ReadAeronetInvV3,
+    'EBASSubset'            : ReadEbas
 }
 
-def _init_testdata(const):
-    for name, relpath in ADD_PATHS.items():
-        ddir = str(TESTDATADIR.joinpath(relpath))
-        if name in _UNGRIDDED_READERS:
-            reader = _UNGRIDDED_READERS[name]
-            
-            const.add_ungridded_obs(name, ddir, 
-                                    reader=reader,
-                                    check_read=True)
-            
-        else:
-            const.add_data_search_dir(ddir)
+
     
 TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
 
@@ -182,10 +184,9 @@ def aasetal_data():
 
 @pytest.fixture(scope='session')
 def aeronetsunv3lev2_subset():
-    r = ReadAeronetSunV3()
+    r = ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
     #return r.read(vars_to_retrieve=TEST_VARS)
-    return r.read(file_pattern='Tu*', 
-                  vars_to_retrieve=TEST_VARS_AERONET)
+    return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
 
 @pytest.fixture(scope='session')
@@ -197,4 +198,7 @@ if __name__=="__main__":
     import sys
     import pyaerocom as pya
     
-    ebas_db = const.EBASMC_SQL_DATABASE
+    reader = pya.io.ReadEbas('EBASSubset')
+    
+    db = reader.sqlite_database_file
+    print(db)
