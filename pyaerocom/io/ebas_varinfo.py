@@ -236,6 +236,9 @@ def check_all_variables():
         if one of the variable definitions in the ini file is not according to
         requirements
     """
+    # TODO: check this method...
+    raise NotImplementedError('This method needs review and should be moved '
+                              'into another module...')
     from pyaerocom.io import EbasFileIndex
     all_vars = EbasVarInfo.PROVIDES_VARIABLES()
     db = EbasFileIndex()

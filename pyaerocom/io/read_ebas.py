@@ -30,7 +30,7 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_ac550dryaer,
                                  compute_ang4470dryaer_from_dry_scat)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.io.helpers import _print_read_info
+from pyaerocom.io.helpers import _print_read_info, _check_ebas_db_local_vs_remote
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
@@ -131,14 +131,25 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.29_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.30_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
     
+    #: Name of subdirectory containing data files (relative to 
+    #: DATASET_PATH)
+    FILE_SUBDIR_NAME = 'data'
+    
+    #: Name of sqlite database file
+    SQL_DB_NAME = 'ebas_file_index.sqlite3'
+    
     
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.EBAS_MULTICOLUMN_NAME]
+    
+    #: For the following data IDs, the sqlite database file will be cached if
+    #: const.EBAS_DB_LOCAL_CACHE is True
+    CACHE_SQLITE_FILE = [const.EBAS_MULTICOLUMN_NAME]
     
     TS_TYPE = 'undefined'
     
@@ -178,7 +189,7 @@ class ReadEbas(ReadUngriddedBase):
     AUX_USE_META = {'sc550dryaer'    :   'sc550aer',
                     'sc440dryaer'    :   'sc440aer',
                     'sc700dryaer'    :   'sc700aer',
-                    'ac550dryaer'     :   'ac550aer'}
+                    'ac550dryaer'    :   'ac550aer'}
     
     AUX_FUNS = {'sc440dryaer'    :   compute_sc440dryaer,
                 'sc550dryaer'    :   compute_sc550dryaer,
@@ -202,7 +213,6 @@ class ReadEbas(ReadUngriddedBase):
     
         super(ReadEbas, self).__init__(dataset_to_read)
         
-        #ReadUngriddedBase.__init__(self, dataset_to_read)
         self.opts = ReadEbasOptions()
         
         #self.opts = ReadEbasOptions()
@@ -214,13 +224,14 @@ class ReadEbas(ReadUngriddedBase):
         #: :class:`EbasVarInfo` object, is updated in read_file
         self._loaded_ebas_vars = {}
         
+        self._file_dir = None
         self._filelog = None
         
         self.files_failed = []
         self._read_stats_log = BrowseDict()
         
         #: SQL database interface class used to retrieve file paths for vars
-        self.file_index = EbasFileIndex()
+        self.file_index = EbasFileIndex(self.sqlite_database_file)
         self.sql_requests = []
         
         #: original file lists retrieved for each variable individually using
@@ -253,6 +264,18 @@ class ReadEbas(ReadUngriddedBase):
             self._filelog = logger
         return self._filelog
     
+    @property
+    def file_dir(self):
+        """Directory containing EBAS NASA Ames files"""
+        if self._file_dir is not None:
+            return self._file_dir
+        return os.path.join(self.DATASET_PATH, self.FILE_SUBDIR_NAME)
+    
+    @file_dir.setter
+    def file_dir(self, val):
+        if isinstance(val, str):
+            self._file_dir = val
+            
     @property
     def FILE_REQUEST_OPTS(self):
         """List of options for file retrieval"""
@@ -307,7 +330,19 @@ class ReadEbas(ReadUngriddedBase):
     def eval_flags(self):
         """Boolean specifying whether to use EBAS flag columns"""
         return self.opts.eval_flags
-
+    
+    
+    @property
+    def sqlite_database_file(self):
+        """Path to EBAS SQL database"""
+        dbname = self.SQL_DB_NAME
+        loc_remote = os.path.join(self.DATASET_PATH, dbname)
+        if self.DATA_ID in self.CACHE_SQLITE_FILE and const.EBAS_DB_LOCAL_CACHE:
+            loc_local = os.path.join(const.CACHEDIR, dbname)
+            return _check_ebas_db_local_vs_remote(loc_remote, loc_local)
+                
+        return loc_remote
+    
     def _merge_lists(self, lists_per_var):
         """Merge dictionary of lists for each variable into one list
         
@@ -454,6 +489,8 @@ class ReadEbas(ReadUngriddedBase):
         totnum = 0
         const.print_log.info('Retrieving EBAS files for variables\n{}'
                              .format(vars_to_retrieve))
+        # directory containing NASA Ames files
+        filedir = self.file_dir
         for var in vars_to_retrieve:
             info = self.get_ebas_var(var)
             
@@ -473,7 +510,7 @@ class ReadEbas(ReadUngriddedBase):
                 if file in self.IGNORE_FILES:
                     const.print_log.info('Ignoring flagged file {}'.format(file))
                     continue
-                paths.append(os.path.join(const.EBASMC_DATA_DIR, file))
+                paths.append(os.path.join(filedir, file))
             files_vars[var] = sorted(paths)
             num = len(paths)
             totnum += num
@@ -1298,6 +1335,8 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     
     r = ReadEbas()
+    
+    db = r.sqlite_database_file
     files = r.get_file_list(['sc550dryaer'])
     
     data = r.read(['sc550dryaer'], files=files[0])

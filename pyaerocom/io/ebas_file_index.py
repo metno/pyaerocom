@@ -207,17 +207,18 @@ class EbasFileIndex(object):
     Takes care of connection to database and execution of requests
     """
     def __init__(self, database=None):
-        if database is None:
-            database = const.EBASMC_SQL_DATABASE
-        self._database = database
-       
+        if database is not None:
+            self._database = database
+        else:
+            self._database = None
+        
     @property
     def database(self):
         """Path to ebas_file_index.sqlite3 file"""
         db = self._database
         if db is None or not os.path.exists(db):
-            raise IOError("EBAS SQLite database file could not be located but "
-                          "is needed in EbasFileIndex class")
+            raise AttributeError('EBAS SQLite database file could not be '
+                                 'located but is needed in EbasFileIndex class')
         return db
             
     @database.setter
@@ -499,7 +500,10 @@ class EbasFileIndex(object):
             
 if __name__=="__main__":
     
-    dbfile = const.EBASMC_SQL_DATABASE
+    from pyaerocom import ReadEbas
+    reader = ReadEbas()
+    
+    dbfile = reader.sq
     
     db = EbasFileIndex(dbfile)
     

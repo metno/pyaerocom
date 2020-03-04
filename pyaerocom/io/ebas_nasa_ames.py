@@ -13,7 +13,7 @@ from collections import OrderedDict as od
 from datetime import datetime
 from pyaerocom._lowlevel_helpers import str_underline, dict_to_str
 from pyaerocom.exceptions import TimeZoneError
-from pyaerocom import logger
+from pyaerocom import const
 
 class NasaAmesReadError(IOError):
     pass
@@ -227,7 +227,7 @@ class NasaAmesHeader(object):
             try:
                 self[k] = v
             except Exception:
-                logger.warning("Invalid attribute: {}".format(k))
+                const.logger.warning("Invalid attribute: {}".format(k))
                     
             
     def __getattr__(self, key):
@@ -272,8 +272,8 @@ class EbasFlagCol(object):
         raw flag column (containing X-digit floating point numbers)
         
     """
-    from pyaerocom import const
-    _FLAG_INFO = const.EBAS_FLAG_INFO
+    #from pyaerocom import const
+    #_FLAG_INFO = const.EBAS_FLAG_INFO
     def __init__(self, raw_data, info, interpret_on_init=True):
         if not raw_data.ndim == 1:
             raise AttributeError("Need one dimensional numpy array for flag "
@@ -290,7 +290,7 @@ class EbasFlagCol(object):
     @property
     def FLAG_INFO(self):
         """Detailed information about EBAS flag definitions"""
-        return self._FLAG_INFO
+        return const.ebas_flag_info
     
     @property
     def decoded(self):
@@ -765,7 +765,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             perform quality check after import (for details see 
             :func:`_quality_check`)
         """
-        logger.info("Reading NASA Ames file:\n{}".format(nasa_ames_file))
+        const.logger.info("Reading NASA Ames file:\n{}".format(nasa_ames_file))
         lc = 0 #line counter
         dc = 0 #data block line counter
         mc = 0 #meta block counter
@@ -778,13 +778,13 @@ class EbasNasaAmesFile(NasaAmesHeader):
             #print(lc, _NUM_FIXLINES, line)
             if IN_DATA: #in data block (end of file)
                 if dc == 0:
-                    logger.debug(line)
+                    const.logger.debug(line)
                 try:
                     data.append(tuple([float(x.strip()) for x in line.strip().split()]))
                     #data.append([float(x.strip()) for x in line.strip().split()])
                 except Exception as e:
                     data.append(_insert_invalid)
-                    logger.warning("Failed to read data row {}. "
+                    const.logger.warning("Failed to read data row {}. "
                                    "Error msg: {}".format(dc, repr(e)))
                 dc += 1
             elif lc < self._NUM_FIXLINES: #in header section (before column definitions)
@@ -802,7 +802,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     if lc in self._HEAD_ROWS_MANDATORY:
                         raise NasaAmesReadError("Fatal: {}".format(msg))
                     else:
-                        logger.warning(msg)
+                        const.logger.warning(msg)
             else: # behind header section and before data definition (contains column defs and meta info)
                 if mc == 0: # still in column definition
                     END_VAR_DEF = self._NUM_FIXLINES + self.num_cols_dependent - 1
@@ -810,7 +810,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     try:
                         self.var_defs.append(self._read_vardef_line(line))
                     except Exception as e:
-                        logger.warning(repr(e))
+                        const.logger.warning(repr(e))
                            
                 elif lc < END_VAR_DEF:
                     self.var_defs.append(self._read_vardef_line(line))
@@ -830,7 +830,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                                                         unit=self.time_unit))
                     if only_head:
                         return
-                    logger.debug("REACHED DATA BLOCK")
+                    const.logger.debug("REACHED DATA BLOCK")
                     _insert_invalid = tuple([np.nan]*self.col_num)
                     
                     
@@ -841,10 +841,10 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         key = name.strip().lower().replace(" ", "_")
                         self.meta[key] = val.strip()
                     except Exception as e:
-                        logger.warning("Failed to read line no. {}.\n{}\n"
+                        const.logger.warning("Failed to read line no. {}.\n{}\n"
                               "Error msg: {}\n".format(lc, line, repr(e)))
                 else:
-                    logger.debug("Ignoring line no. {}: {}".format(lc, line)) 
+                    const.logger.debug("Ignoring line no. {}: {}".format(lc, line)) 
                 mc += 1
             lc += 1
         
@@ -899,11 +899,11 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         idf, val = [x.strip() for x in sub]
                         data[idf.lower().replace(' ', '_')] = val
                     else:
-                        logger.warning("Could not interpret part of column "
+                        const.logger.warning("Could not interpret part of column "
                                        "definition in EBAS NASA Ames file: "
                                        "{}".format(item))
                 else: #unit
-                    logger.warning("Failed to interpret {}".format(item))
+                    const.logger.warning("Failed to interpret {}".format(item))
         
         return data
     
