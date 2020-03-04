@@ -1432,12 +1432,12 @@ class GriddedData(object):
         """
         if low is None:
             low = self.var_info.minimum
-            print_log.info('Setting {} outlier lower lim: {:.2f}'
-                           .format(self.var_name, low))
+            logger.info('Setting {} outlier lower lim: {:.2f}'
+                        .format(self.var_name, low))
         if high is None:
             high = self.var_info.maximum
-            print_log.info('Setting {} outlier upper lim: {:.2f}'
-                           .format(self.var_name, high))
+            logger.info('Setting {} outlier upper lim: {:.2f}'
+                        .format(self.var_name, high))
         mask = np.logical_or(self.grid.data < low,
                              self.grid.data > high)
         self.grid.data[mask] = np.nan
