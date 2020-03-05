@@ -90,6 +90,7 @@ from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
 from .read_gaw import ReadGAW
 from .read_aasetal import ReadAasEtal
+from .read_ghost import ReadGhost
 
 from .readgridded import ReadGridded, ReadGriddedMulti
 from .readungridded import ReadUngridded
