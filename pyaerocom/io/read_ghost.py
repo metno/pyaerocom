@@ -25,7 +25,6 @@ import glob
 import os
 import numpy as np
 import pandas as pd
-from time import time
 import xarray as xr
 
 import pyaerocom as pya
@@ -138,6 +137,14 @@ class ReadGhost(ReadUngriddedBase):
     def DEFAULT_VARS(self):
         return self.PROVIDES_VARIABLES
         
+    @property
+    def var_names_data_inv(self):
+        try:
+            return self._var_names_inv
+        except AttributeError:
+            self._var_names_inv ={v: k for k, v in self.VARNAMES_DATA.items()}
+            return self._var_names_inv
+    
     def get_file_list(self, vars_to_read=None, pattern=None):
         """
         Retrieve a list of files to read based on input variable names
@@ -152,12 +159,12 @@ class ReadGhost(ReadUngriddedBase):
         Raises
         ------
         ValueError
-            DESCRIPTION.
+            If no files can be found for any of the input variables.
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        list
+            list with file paths
 
         """
         if vars_to_read is None:
@@ -170,12 +177,11 @@ class ReadGhost(ReadUngriddedBase):
          
         files = []
         for var in vars_to_read:
-            try:
+            if var in self.VARNAMES_DATA:
                 # make sure to check for right variable, user may use either 
                 # AeroCom variable name or GHOST variable name
                 var = self.VARNAMES_DATA[var]
-            except KeyError:
-                pass
+    
             _dir = os.path.join(self.DATASET_PATH, var)
             _files = glob.glob('{}/{}'.format(_dir, pattern)) 
             if len(_files) == 0:
@@ -240,7 +246,8 @@ class ReadGhost(ReadUngriddedBase):
             except:
                 return 'undefined'
             
-    def read_file(self, filename, var_name=None, invalidate_flags=None):
+    def read_file(self, filename, var_to_read=None, invalidate_flags=None,
+                  var_to_write=None):
         """Read GHOST NetCDF data file
         
         Parameters
@@ -259,9 +266,16 @@ class ReadGhost(ReadUngriddedBase):
         if invalidate_flags is None:
             invalidate_flags = self.DEFAULT_FLAGS_INVALID
             
-        t00 = time()
-        if var_name is None:
-            var_name = self.get_meta_filename(filename)['var_name']
+        if var_to_read is None:
+            var_to_read = self.get_meta_filename(filename)['var_name']
+        elif var_to_read in self.VARNAMES_DATA:
+            if var_to_write is None:
+                var_to_read, var_to_write = self.VARNAMES_DATA[var_to_read], var_to_read
+            else:
+                var_to_read = self.VARNAMES_DATA[var_to_read]
+        
+        if var_to_write is None:
+            var_to_write = self.var_names_data_inv[var_to_read]
         
         ds = xr.open_dataset(filename)
         
@@ -281,7 +295,7 @@ class ReadGhost(ReadUngriddedBase):
             
         tvals = ds['time'].values
         
-        vardata = ds[var_name] #DataArray
+        vardata = ds[var_to_read] #DataArray
         varinfo = vardata.attrs
         # ToDo: it is important that station comes first since we use numpy 
         # indexing below and not xarray.isel or similar, due to performance 
@@ -320,18 +334,17 @@ class ReadGhost(ReadUngriddedBase):
                 meta[meta_key] = vals[idx]
                 
             #vardata = subset[var_name]
-            stat[var_name] = data_np[idx]
+            stat[var_to_write] = data_np[idx]
             
-            meta['var_info'][var_name] = {}
-            meta['var_info'][var_name].update(varinfo)
+            meta['var_info'][var_to_write] = {}
+            meta['var_info'][var_to_write].update(varinfo)
             
             # import flagdata (2D array with time and flag dimensions)
             #invalid = self._eval_flags(vardata, invalidate_flags)
             stat['data_flagged'] = {}
-            stat['data_flagged'][var_name] = invalid[idx]
+            stat['data_flagged'][var_to_write] = invalid[idx]
             stats.append(stat)
         
-        print('TOTAL: {:.6f} s'.format(time() - t00)) 
         return stats
     
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
@@ -387,17 +400,16 @@ class ReadGhost(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
         var_count_glob = -1
-        
-        vars_to_read = [self.VARNAMES_DATA[x] for x in vars_to_retrieve]
+        rename = self.var_names_data_inv
         for i, _file in enumerate(files):
             metafile = self.get_meta_filename(_file)
-            var_name = metafile['var_name']
+            var_to_read = metafile['var_name']
             begin = metafile['start']
             end = metafile['stop']
-            
-            if not var_name in vars_to_read:
-                continue
-            stats = self.read_file(_file, var_name=var_name)
+             
+            var_to_write = rename[var_to_read]
+            stats = self.read_file(_file, var_to_read=var_to_read,
+                                   var_to_write=var_to_write)
             
             if len(stats) == 0:
                 const.logger.info('File {} does not contain any of the input '
@@ -423,16 +435,16 @@ class ReadGhost(ReadUngriddedBase):
                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
                     data_obj.add_chunk(num_times)
                 
-                values = stat[var_name]
+                values = stat[var_to_write]
                 start = idx 
                 stop = start + num_times
                 
-                if not var_name in data_obj.var_idx:
+                if not var_to_write in data_obj.var_idx:
                     var_count_glob += 1
                     var_idx = var_count_glob
-                    data_obj.var_idx[var_name] = var_idx
+                    data_obj.var_idx[var_to_write] = var_idx
                 else:
-                    var_idx = data_obj.var_idx[var_name]
+                    var_idx = data_obj.var_idx[var_to_write]
                 
                 
                 #write common meta info for this station (data lon, lat and 
@@ -453,12 +465,12 @@ class ReadGhost(ReadUngriddedBase):
                 data_obj._data[start:stop, data_obj._DATAINDEX] = values
                 
                 # add invalid measurements
-                invalid = stat['data_flagged'][var_name]
+                invalid = stat['data_flagged'][var_to_write]
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = invalid
 
                 data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
                 
-                meta_idx[meta_key][var_name] = np.arange(start, stop)
+                meta_idx[meta_key][var_to_write] = np.arange(start, stop)
                     
                 idx += num_times
                 
@@ -470,8 +482,10 @@ if __name__ == '__main__':
     
     reader = ReadGhost()
     
-    files = reader.get_file_list('sconcso2')
+    files = reader.get_file_list('conco3')
     
-    data = reader.read('sconco3')
+    stats = reader.read_file(files[-1])
+    
+    data = reader.read('conco3', files=[files[-1]])
     
     
