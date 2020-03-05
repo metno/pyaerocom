@@ -85,6 +85,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             if ts_type in TS_TYPES:
                 self.TS_TYPES[self.DATA_ID] = ts_type
                 return ts_type
+        raise AttributeError('Failed to retrieve ts_type from DATA_ID')
         
     @property
     def TS_TYPE(self):
@@ -94,7 +95,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         except KeyError:
             try:
                 return self._ts_type_from_data_id()
-            except:
+            except AttributeError:
                 return 'undefined'
         
     @property
