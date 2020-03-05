@@ -655,7 +655,7 @@ class UngriddedData(object):
             try:
                 rev = self.data_revision[val['data_id']]
             except Exception:
-                print_log.warning('Data revision could not be accessed')
+                logger.warning('Data revision could not be accessed')
         sd.data_revision = rev
         try:
             vars_avail = list(val['var_info'].keys())
@@ -1218,7 +1218,7 @@ class UngriddedData(object):
         for meta_idx, meta in self.metadata.items():
             if self._check_filter_match(meta, *filters):
                 meta_matches.append(meta_idx)
-                for var in meta['variables']:
+                for var in meta['var_info']:
                     totnum += len(self.meta_idx[meta_idx][var])
                 
         return (meta_matches, totnum)
@@ -1287,7 +1287,7 @@ class UngriddedData(object):
             mask_val = get_mask_value(lat, lon, mask)
             if mask_val >= 1: # coordinate is in mask
                 meta_matches.append(meta_idx)
-                for var in meta['variables']:
+                for var in meta['var_info']:
                     totnum += len(self.meta_idx[meta_idx][var])
         
         new = self._new_from_meta_blocks(meta_matches, totnum)
@@ -1442,7 +1442,7 @@ class UngriddedData(object):
             meta = self.metadata[meta_idx]
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = od()
-            for var in meta['variables']:
+            for var in meta['var_info']:
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
 
