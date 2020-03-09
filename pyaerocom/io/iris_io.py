@@ -421,8 +421,6 @@ def make_datetimeindex_from_year(freq, year):
 
     return idx
 
-
-
 def _check_correct_time_dim(cube, file, file_convention=None):
     if file_convention is None:
         try:
