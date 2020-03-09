@@ -16,12 +16,13 @@ from traceback import format_exc
 from pyaerocom import const 
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal
-from pyaerocom.io import ReadAeronetSunV3
+from pyaerocom.io import ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3
 from pyaerocom.io import ReadEbas
 from pyaerocom.test.synthetic_data import DataAccess
 
 def _download_test_data(basedir=None):
     print("TEMP OUTPUT: DOWNLOADING TESTDATA")
+    #raise Exception('Temporarily disabled...')
     if basedir is None:
         basedir = const.OUTPUTDIR
    
@@ -71,8 +72,21 @@ def check_access_testdata(basedir, test_paths):
             pass
         return False
     return True
-    
-                                  
+
+def _init_testdata(const):
+    for name, relpath in ADD_PATHS.items():
+        ddir = str(TESTDATADIR.joinpath(relpath))
+        if name in _UNGRIDDED_READERS:
+            reader = _UNGRIDDED_READERS[name]
+            
+            const.add_ungridded_obs(name, ddir, 
+                                    reader=reader,
+                                    check_read=True)
+            
+        else:
+            const.add_data_search_dir(ddir)
+            
+INIT_TESTDATA = True                            
 TEST_RTOL = 1e-4
 
 DATA_ACCESS = DataAccess()
@@ -83,19 +97,53 @@ _URL_TESTDATA = 'https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.g
 # Testdata directory
 TESTDATADIR = Path(const._TESTDATADIR)
 
-# All relative to BASEDIR
-TEST_PATHS = {
+# Paths to be added to pya.const. All relative to BASEDIR
+ADD_PATHS = {
     
-    'tm5_od550aer_2010' : 'modeldata/tm5/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc'        
+    'MODELS'                : 'modeldata',
+    'AeronetSunV3L2Subset.daily'  : 'obsdata/AeronetSunV3Lev2.daily/renamed',
+    'AeronetSDAV3L2Subset.daily'  : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
+    'AeronetInvV3L2Subset.daily'  : 'obsdata/AeronetInvV3Lev2.daily/renamed',
+    'EBASSubset'            : 'obsdata/EBASMultiColumn'
+    
 }
 
+# Additional paths that have to exist (for sanity checking)
+TEST_PATHS = {
+    
+    'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc'
+    
+    }
+TEST_PATHS.update(ADD_PATHS)
+
+
+
+_UNGRIDDED_READERS = {
+    'AeronetSunV3L2Subset.daily'  : ReadAeronetSunV3,
+    'AeronetSDAV3L2Subset.daily'  : ReadAeronetSdaV3,
+    'AeronetInvV3L2Subset.daily'  : ReadAeronetInvV3,
+    'EBASSubset'            : ReadEbas
+}
+
+
+    
 TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
 
 
 # checks if testdata-minimal is available and if not, tries to download it 
 # automatically into ~/MyPyaerocom/testdata-minimal
-TESTDATA_AVAIL = check_access_testdata(TESTDATADIR, TEST_PATHS)
-
+if INIT_TESTDATA:
+    TESTDATA_AVAIL = check_access_testdata(TESTDATADIR, TEST_PATHS)
+    
+    if TESTDATA_AVAIL:
+        try:
+            _init_testdata(const)
+        except Exception:
+            raise ValueError('FATAL: Failed to initiate testdata. Traceback:\n'
+                             .format(format_exc()))
+            TESTDATA_AVAIL = False
+else:
+    TESTDATA_AVAIL = False   
 # skipif marker that is True if no access to metno PPI is provided 
 # (some tests are skipped in this case)
 lustre_unavail = pytest.mark.skipif(not const.has_access_lustre,
@@ -121,7 +169,7 @@ test_not_working = pytest.mark.skip(reason='Method raises Exception')
 # Example GriddedData object (TM5 model)
 @pytest.fixture(scope='session')
 def data_tm5():
-    fpath = TESTDATADIR.joinpath(TEST_PATHS['tm5_od550aer_2010'])
+    fpath = TESTDATADIR.joinpath(TEST_PATHS['tm5aod'])
     if not fpath.exists():
         raise Exception('Unexpected error, please debug')
     data = GriddedData(fpath)
@@ -136,10 +184,9 @@ def aasetal_data():
 
 @pytest.fixture(scope='session')
 def aeronetsunv3lev2_subset():
-    r = ReadAeronetSunV3()
+    r = ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
     #return r.read(vars_to_retrieve=TEST_VARS)
-    return r.read(file_pattern='Tu*', 
-                  vars_to_retrieve=TEST_VARS_AERONET)
+    return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
 
 @pytest.fixture(scope='session')
@@ -150,13 +197,8 @@ def data_scat_jungfraujoch():
 if __name__=="__main__":
     import sys
     import pyaerocom as pya
-    #pytest.main(sys.argv)
-
-    ddir = '/home/jonasg/MyPyaerocom/testdata-minimal/obsdata/AeronetSunV3Lev2.daily/'
     
-    const.add_ungridded_obs('AERONETSunSubset', ddir, 
-                            reader=pya.io.ReadAeronetSunV3,
-                            check_read=True)
+    reader = pya.io.ReadEbas('EBASSubset')
     
-    data = pya.io.ReadUngridded().read('AERONETSunSubset', 'od550aer')
-    data.plot_station_coordinates()
+    db = reader.sqlite_database_file
+    print(db)

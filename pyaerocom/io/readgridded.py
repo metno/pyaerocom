@@ -43,6 +43,7 @@ import pandas as pd
 import iris
 
 from pyaerocom import const, print_log, logger
+from pyaerocom.metastandards import AerocomDataID
 from pyaerocom.variable import Variable, is_3d
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
@@ -159,17 +160,6 @@ class ReadGridded(object):
 
     def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3", 
                  init=True):
-    
-# =============================================================================
-#         if not isinstance(data_id, str):
-#             if isinstance(data_id, list):
-#                 msg = ("Input for data_id is list. You might want to use "
-#                        "class ReadGriddedMulti for import?")
-#             else:
-#                 msg = ("Invalid input for data_id. Need str, got: %s"
-#                        %type(data_id))
-#             raise TypeError(msg)
-# =============================================================================
             
         self._data_dir = None
         
@@ -655,15 +645,35 @@ class ReadGridded(object):
             
     @staticmethod
     def _eval_data_id(data_id):
-        spl = data_id.split('_')
-        name, meteo = '',''
-        experiment = spl[-1]
-        if len(spl) > 1:
-            sspl = spl[0].split('-')
-            if len(sspl) > 1:
-                name = sspl[0]
-                meteo = sspl[-1]
-        return (name, meteo, experiment)
+        """
+        Extract meta information from data_id
+
+        Parameters
+        ----------
+        data_id : str
+            string specifying model and other relevant information. In the 
+            best case following AeroCom Phase III conventions, that is, 
+            following the template specified in :class:`AerocomDataID`.
+
+        Returns
+        -------
+        vals : list
+            list containing successfully extracted information from data_id
+        """
+        
+        vals = AerocomDataID(data_id).values
+        return vals
+# =============================================================================
+#         spl = data_id.split('_')
+#         name, meteo = '',''
+#         experiment = spl[-1]
+#         if len(spl) > 1:
+#             sspl = spl[0].split('-')
+#             if len(sspl) > 1:
+#                 name = sspl[0]
+#                 meteo = sspl[-1]
+#         return (name, meteo, experiment)
+# =============================================================================
     
     def _update_file_convention(self, files):
         """Update current file convention based on input files
@@ -764,10 +774,11 @@ class ReadGridded(object):
                     raise TemporalResolutionError('Invalid frequency {}'
                                                   .format(info["ts_type"]))
                 
-                name, meteo, experiment = self._eval_data_id(info['data_id']) 
+                (model, meteo, 
+                 experiment, pert) = self._eval_data_id(info['data_id']) 
                 result.append([var_name, info['year'], info['ts_type'], 
                                info['vert_code'], self.data_id, 
-                               name, meteo, experiment, 
+                               model, meteo, experiment, pert,
                                info['is_at_stations'],
                                _is_3d, os.path.basename(_file)])
                     
@@ -789,10 +800,13 @@ class ReadGridded(object):
         
         
         header = ['var_name', 'year', 'ts_type', 'vert_code', 'data_id', 'name',
-                  'meteo', 'experiment', 'is_at_stations', '3D', 'filename']
+                  'meteo', 'experiment', 'perturbation', 'is_at_stations', 
+                  '3D', 'filename']
+        
         df = pd.DataFrame(result, columns=header)
         df.sort_values(['var_name', 'year', 'ts_type', 'data_id', 'name',
-                        'meteo', 'experiment', 'is_at_stations', '3D'], 
+                        'meteo', 'experiment', 'perturbation', 
+                        'is_at_stations', '3D'], 
                         inplace=True)
         
         uv = df.vert_code.unique()
@@ -1160,7 +1174,7 @@ class ReadGridded(object):
         cube.var_name = var_name
         
         data = GriddedData(cube, data_id=self.data_id, 
-                           ts_type=data[0].ts_type,
+                           #ts_type=data[0].ts_type,
                            computed=True)
         data.reader = self
         return data
@@ -1651,6 +1665,43 @@ class ReadGridded(object):
         #self.loaded_cubes[var_name] = cubes
         return (cubes, loaded_files)
     
+    
+    def _get_meta_df(self, subset):
+        """Extract relevant meta information from file_info dataframe
+        
+        Parameters
+        ----------
+        subset : pd.DataFrame
+            subset of, or :attr:`file_info`
+            
+        Raises
+        ------
+        DataQueryError
+            if more than one time frequency is available in the dataframe
+        
+        Returns 
+        -------
+        
+        """
+        meta = {}
+        # check additional metadata
+        ts_types = subset.ts_type.unique()
+        
+        # sanity check
+        if len(ts_types) > 1:
+            raise DataQueryError('Fatal: subset contains more than one ts_type')
+        meta['ts_type'] = ts_types[0]
+        
+        mets = subset.meteo.unique()
+        meta['meteo'] = mets[0] if len(mets) == 1 else list(mets)
+        
+        exps = subset.experiment.unique()
+        meta['experiment'] = exps[0] if len(exps) == 1 else list(exps)
+        
+        perts = subset.perturbation.unique()
+        meta['perturbation'] = perts[0] if len(perts) == 1 else list(perts)
+        return meta
+        
     def _load_var(self, var_name, ts_type, start, stop,
                   experiment, vert_which, flex_ts_type, 
                   prefer_longer, **kwargs):
@@ -1669,12 +1720,7 @@ class ReadGridded(object):
                                    prefer_longer=prefer_longer)
         if len(subset) == 0:
             raise DataQueryError('Could not find file match for query')
-        ts_types = subset.ts_type.unique()
-        # sanity check
-        if len(ts_types) > 1:
-            raise DataQueryError('Fatal: subset contains more than one ts_type')
         
-        ts_type = ts_types[0]
         match_files = self._generate_file_paths(subset)
         (cube_list, 
          from_files) = self._load_files(match_files, var_name, **kwargs)
@@ -1689,11 +1735,12 @@ class ReadGridded(object):
         else:
             cube = cube_list[0]
         
+        meta = self._get_meta_df(subset)
         data = GriddedData(input=cube, 
                            from_files=from_files,
                            data_id=self.data_id, 
-                           ts_type=ts_type,
-                           concatenated=is_concat)
+                           concatenated=is_concat,
+                           **meta)
         data.reader = self
         # crop cube in time (if applicable)
         if not start == 9999:
@@ -1955,9 +2002,18 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     
-    r = ReadGridded('NorESM2_lightNFHISTnorpddmsbcsdyn_f09_mg17_20200129')
+    r = ReadGridded('ECMWF_CAMS_REAN')
     
-    print(r.has_var('concso2'))
+    r = ReadGridded('OsloCTM3v1.01-met2010_AP3-CTRL')
+    
+    print(r)
+    
+    od550aer = r.read_var('od550aer')
+    
+    ang4487aer = r.read_var('ang4487aer')
+    
+    
+    
     
     
     

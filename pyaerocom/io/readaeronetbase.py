@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from datetime import datetime
+from pyaerocom.time_config import TS_TYPES
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _print_read_info
@@ -78,13 +79,23 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         self._alt_var_cols = {}
     
+    def _ts_type_from_data_id(self):
+        if '.' in self.DATA_ID:
+            ts_type = self.DATA_ID.split('.')[-1]
+            if ts_type in TS_TYPES:
+                self.TS_TYPES[self.DATA_ID] = ts_type
+                return ts_type
+        
     @property
     def TS_TYPE(self):
         """Default implementation of string for temporal resolution"""
         try:
             return self.TS_TYPES[self.DATA_ID]
         except KeyError:
-            return 'undefined'
+            try:
+                return self._ts_type_from_data_id()
+            except:
+                return 'undefined'
         
     @property
     def col_index(self):
@@ -199,7 +210,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                             "not be found in file header".format(val))
         
     def _find_vars_pattern_based(self, mapping):
-        raise NotImplementedError
+        raise NotImplementedError('Coming soon... maybe... if needed')
         col_index = od()
         # find meta indices
         for key, val in self.META_NAMES_FILE.items():
@@ -219,11 +230,13 @@ class ReadAeronetBase(ReadUngriddedBase):
             if '*' in pattern:
                 import fnmatch
                 
-            for col_name, idx in mapping.items():
-                result = re.match(pattern, col_name)
-                if result is not None:
-                    if len(result.groups()) != 1:
-                        raise Exception('Found more than one match')
+# =============================================================================
+#             for col_name, idx in mapping.items():
+#                 result = re.match(pattern, col_name)
+#                 if result is not None:
+#                     if len(result.groups()) != 1:
+#                         raise Exception('Found more than one match')
+# =============================================================================
         return col_index
         
     def _find_vars_name_based(self, mapping, cols):

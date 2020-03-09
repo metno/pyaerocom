@@ -3,14 +3,61 @@
 """
 I/O helper methods of the pyaerocom package
 """
+from collections import OrderedDict as od
 from datetime import datetime
+import os
+import shutil
+from time import time
+
+
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
-import os
 from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
 
+def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
+    """
+    Check and if applicable, copy ebas_file_index.sqlite3 into cache dir
+    
+    Note
+    ----
+    This may speedup things if remote location is on a mounted server location.
+    Nothing the user should worry about in any case.
 
-from collections import OrderedDict as od
+    Parameters
+    ----------
+    loc_remote : str
+        remote location of ebas_file_index.sqlite3
+    loc_local : str
+        local (cached) location of ebas_file_index.sqlite3 
+
+    Returns
+    -------
+    str
+        valid location of ebas_file_index.sqlite3 that is supposed to be used
+
+    """
+    if os.path.exists(loc_remote): # remote exists
+        if os.path.exists(loc_local):
+            chtremote = os.path.getmtime(loc_remote)
+            chtlocal = os.path.getmtime(loc_local)
+            if chtlocal == chtremote:
+                return loc_local
+            
+        # changing time differs -> try to copy to local and if that
+        # fails, use remote location
+        try:
+            t0 = time()
+            shutil.copy2(loc_remote, loc_local)
+            const.print_log.info('Copied EBAS SQL database to {}\n'
+                                'Elapsed time: {:.3f} s'
+                                .format(loc_local, time() - t0))
+            
+            return loc_local
+        except Exception as e:
+            const.print_log.warning('Failed to copy EBAS SQL database. '
+                                   'Reason: {}'.format(repr(e)))
+            return loc_remote
+    return loc_remote
 
 def aerocom_savename(data_id, var_name, vert_code, year, ts_type):
     """Generate filename in AeroCom conventions

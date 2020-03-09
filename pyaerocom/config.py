@@ -110,7 +110,7 @@ class Config(object):
     DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
 
     #: name of EBAS sqlite database
-    EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
+    #EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
     
     #: boolean specifying wheter EBAS DB is copied to local cache for faster 
     #: access, defaults to True
@@ -668,58 +668,32 @@ class Config(object):
             raise FileNotFoundError('Cannot add {}: location does not exist')
             
         raise NotImplementedError
-        
     
-    
-    def _check_ebas_db_local_vs_remote(self, loc_remote, loc_local):
+# =============================================================================
+#     @property
+#     def EBASMC_SQL_DATABASE(self):
+#         """Path to EBAS SQL database"""
+#         dbname = self.EBAS_SQL_DB_NAME
+#         if not 'EBASMC' in self.OBSLOCS_UNGRIDDED:
+#             return None
+#         loc_remote = os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], dbname)
+#         if self.EBAS_DB_LOCAL_CACHE:
+#             loc_local = os.path.join(self.CACHEDIR, dbname)
+#             return self._check_ebas_db_local_vs_remote(loc_remote, loc_local)
+#                 
+#         return loc_remote
+# =============================================================================
         
-        if os.path.exists(loc_remote): # remote exists
-    
-            if os.path.exists(loc_local):
-                chtremote = os.path.getmtime(loc_remote)
-                chtlocal = os.path.getmtime(loc_local)
-                if chtlocal == chtremote:
-                    return loc_local
-                
-            # changing time differs -> try to copy to local and if that
-            # fails, use remote location
-            try:
-                import shutil
-                from time import time
-                t0 = time()
-                shutil.copy2(loc_remote, loc_local)
-                self.print_log.info('Copied EBAS SQL database to {}\n'
-                                    'Elapsed time: {:.3f} s'
-                                    .format(loc_local, time() - t0))
-                
-                return loc_local
-            except Exception as e:
-                self.print_log.warning('Failed to copy EBAS SQL database. '
-                                       'Reason: {}'.format(repr(e)))
-                return loc_remote
-        return loc_remote
-        
-
-    @property
-    def EBASMC_SQL_DATABASE(self):
-        """Path to EBAS SQL database"""
-        dbname = self.EBAS_SQL_DB_NAME
-        if not 'EBASMC' in self.OBSLOCS_UNGRIDDED:
-            return None
-        loc_remote = os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], dbname)
-        if self.EBAS_DB_LOCAL_CACHE:
-            loc_local = os.path.join(self.CACHEDIR, dbname)
-            return self._check_ebas_db_local_vs_remote(loc_remote, loc_local)
-                
-        return loc_remote
-        
-    @property
-    def EBASMC_DATA_DIR(self):
-        """Data directory of EBAS multicolumn files"""
-        return os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], 'data/')
+# =============================================================================
+#     @property
+#     def EBASMC_DATA_DIR(self):
+#         """Data directory of EBAS multicolumn files"""
+#         return os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], 'data/')
+# =============================================================================
     
     @property
     def EBAS_FLAGS_FILE(self):
+        """Location of CSV file specifying meaning of EBAS flags"""
         from pyaerocom import __dir__
         return os.path.join(__dir__, 'data', 'ebas_flags.csv')
 
@@ -840,11 +814,14 @@ class Config(object):
         self.read_config(self._config_files[database_name], 
                          keep_basedirs=keep_root)
         
-
-
-    @property    
-    def EBAS_FLAG_INFO(self):
-        """Information about EBAS flags
+    @property
+    def ebas_flag_info(self):
+        """Information about EBAS flags 
+        
+        Note
+        ----
+        Is loaded upon request -> cf. 
+        :attr:`pyaerocom.io.ebas_nasa_ames.EbasFlagCol.FLAG_INFO`
         
         Dictionary containing 3 dictionaries (keys: ```valid, values, info```) 
         that contain information about validity of each flag (```valid```), 
@@ -1100,4 +1077,4 @@ class Config(object):
     
 if __name__=="__main__":
     import pyaerocom as pya
-    print(pya.const)
+    #print(pya.const)

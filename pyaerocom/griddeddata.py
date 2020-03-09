@@ -698,13 +698,12 @@ class GriddedData(object):
 
     def years_avail(self):
         """
-        TODO: WRITE DOCSTRING
+        Generate list of years that are available in this dataset
 
         Returns
         -------
         list
-            DESCRIPTION.
-
+        
         """
         toyear = lambda x: int(str(x.astype('datetime64[Y]')))
         
@@ -712,17 +711,22 @@ class GriddedData(object):
     
     def split_years(self, years=None):
         """
-        TODO: WRITE DOCSTRING
+        Generator to split data object into individual years
+        
+        Note
+        ----
+        This is a generator method and thus should be looped over
 
         Parameters
         ----------
-        years : TYPE, optional
-            DESCRIPTION. The default is None.
+        years : list, optional
+            List of years that should be excluded. If None, it uses output
+            from :func:`years_avail`.
 
         Yields
         ------
-        TYPE
-            DESCRIPTION.
+        GriddedData
+            single year data object
 
         """
         
@@ -1428,12 +1432,12 @@ class GriddedData(object):
         """
         if low is None:
             low = self.var_info.minimum
-            print_log.info('Setting {} outlier lower lim: {:.2f}'
-                           .format(self.var_name, low))
+            logger.info('Setting {} outlier lower lim: {:.2f}'
+                        .format(self.var_name, low))
         if high is None:
             high = self.var_info.maximum
-            print_log.info('Setting {} outlier upper lim: {:.2f}'
-                           .format(self.var_name, high))
+            logger.info('Setting {} outlier upper lim: {:.2f}'
+                        .format(self.var_name, high))
         mask = np.logical_or(self.grid.data < low,
                              self.grid.data > high)
         self.grid.data[mask] = np.nan

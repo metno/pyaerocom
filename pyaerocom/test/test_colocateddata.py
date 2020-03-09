@@ -5,6 +5,7 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
+import pytest
 import numpy as np
 import numpy.testing as npt
 from pandas import Timestamp

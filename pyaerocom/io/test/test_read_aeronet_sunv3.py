@@ -3,65 +3,13 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
+import pytest
 import numpy.testing as npt
 import numpy as np
 import os
-from pyaerocom.conftest import TEST_RTOL, lustre_unavail
+from pyaerocom.conftest import TEST_RTOL, testdata_unavail, lustre_unavail
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
-        
-@lustre_unavail
-def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
-    assert len(aeronetsunv3lev2_subset.metadata) == 9
-    assert len(aeronetsunv3lev2_subset.unique_station_names) == 9
-    
-    names = ['Tucson', 'Tucuman', 'Tudor_Hill', 'Tukurui', 'Tunis_Carthage', 
-             'Tuxtla_Gutierrez', 'Tuz_Golu', 'Tuz_Golu_2', 'Tuz_Golu_3']
-    assert aeronetsunv3lev2_subset.unique_station_names == names
-
-@lustre_unavail
-def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
-    no_odcount = 0
-    mean_vals = []
-    std_vals = []
-    for stat in aeronetsunv3lev2_subset:
-        if not 'od550aer' in stat:
-            no_odcount += 1
-            continue
-        td = stat.od550aer[:100]
-        mean = np.mean(td)
-        if np.isnan(mean):
-            no_odcount += 1
-            continue
-        mean_vals.append(mean)
-        std_vals.append(np.std(td))
-    assert no_odcount == 0
-    should_be = [0.1835, 0.0904]
-    npt.assert_allclose(actual=[np.mean(mean_vals), 
-                                np.mean(std_vals)],
-                        desired=should_be, atol=1e-2)
-    
-@lustre_unavail
-def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
-    no_odcount = 0
-    mean_vals = []
-    std_vals = []
-    for stat in aeronetsunv3lev2_subset:
-        if not 'ang4487aer' in stat:
-            no_odcount += 1
-            continue
-        td = stat.ang4487aer[:100]
-        mean = np.mean(td)
-        if np.isnan(mean):
-            no_odcount += 1
-            continue
-        mean_vals.append(mean)
-        std_vals.append(np.std(td))
-    assert no_odcount == 0
-    got = [np.mean(mean_vals), np.mean(std_vals)]
-    should_be = [1.1695, 0.2280]
-    npt.assert_allclose(actual=got,
-                        desired=should_be, atol=1e-2)
-    
+            
 @lustre_unavail
 def test_load_berlin():
     dataset = ReadAeronetSunV3()
@@ -91,9 +39,50 @@ def test_load_berlin():
     nominal = [0.224297, 0.178662, 0.148119, 1.967039]
     npt.assert_allclose(actual=first_vals, desired=nominal, rtol=TEST_RTOL)
     
+
+@testdata_unavail
+@pytest.fixture(scope='module')
+def reader():
+    return ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
+
+@testdata_unavail
+def test_get_file_list(reader):
+    assert len(reader.get_file_list()) == 22
+
+@testdata_unavail
+def test_read_file(reader):
+    from pyaerocom.stationdata import StationData
+    file = reader.files[-3]
+    assert os.path.basename(file) == 'Thessaloniki.lev30'
+    data = reader.read_file(file)
+    assert isinstance(data, StationData)
+    assert data.latitude[0] == 40.63
+    assert data.longitude[0] == 22.96
+    assert data.station_name[0] == 'Thessaloniki'
+    assert all(x in data for x in ['od550aer', 'ang4487aer'])
     
+    actual = [data['od550aer'][:10].mean(), data['ang4487aer'][:10].mean()]
+    desired = [0.287, 1.787]
+    npt.assert_allclose(actual, desired, rtol=1e-3)
+    
+
+@testdata_unavail
+def test_read(reader):
+    from pyaerocom.ungriddeddata import UngriddedData
+    files = reader.files[2:4]
+    assert all(os.path.basename(x) in ('Agoufou.lev30', 'Alta_Floresta.lev30')
+               for x in files)
+    data = reader.read(files=files)
+    
+    assert isinstance(data, UngriddedData)
+    assert data.unique_station_names == ['Agoufou', 'Alta_Floresta']
+    assert data.contains_vars == ['od550aer', 'ang4487aer']
+    assert data.contains_instruments == ['sun_photometer']
+    assert data.shape == (11990, 12)
+    npt.assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 0.676, 
+                        rtol=1e-3)
     
     
 if __name__=="__main__":
-    import sys, pytest
+    import sys
     pytest.main(sys.argv)

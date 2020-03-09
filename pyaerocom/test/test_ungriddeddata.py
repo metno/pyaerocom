@@ -8,7 +8,7 @@ Created on Thu Apr 12 14:45:43 2018
 import numpy as np
 import numpy.testing as npt
 from pyaerocom import UngriddedData
-from pyaerocom.conftest import lustre_unavail
+from pyaerocom.conftest import testdata_unavail
 from pyaerocom.exceptions import DataCoverageError
 
 def test_init_shape():
@@ -59,7 +59,7 @@ def test_coordinate_access():
     npt.assert_array_equal(c['longitude'], lons)
     npt.assert_array_equal(c['altitude'], alts)
     
-@lustre_unavail
+@testdata_unavail
 def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
     
