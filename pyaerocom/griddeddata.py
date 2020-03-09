@@ -15,7 +15,6 @@ from pathlib import Path
 from pyaerocom import const, logger, print_log
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 
-from pyaerocom.io.iris_io import correct_time_coord
 from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
                                   DataExtractionError,
@@ -478,7 +477,7 @@ class GriddedData(object):
             data = self
         else: 
             data = self.copy()
-        
+        from pyaerocom.io.iris_io import correct_time_coord
         data.cube = correct_time_coord(data.cube, data.ts_type, new_year)
         return data
         
