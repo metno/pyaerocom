@@ -24,7 +24,6 @@ from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
 
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom.tstype import TsType
-from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
 
