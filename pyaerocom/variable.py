@@ -6,7 +6,10 @@ This module contains functionality related to regions in pyaerocom
 import os
 from ast import literal_eval
 import re, fnmatch
-from configparser import ConfigParser
+try:
+    from ConfigParser import ConfigParser
+except: 
+    from configparser import ConfigParser
 from pyaerocom import __dir__, logger
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
@@ -25,7 +28,7 @@ class VarNameInfo(object):
         self._nums = []
         try:
             self._nums = self._numbers_in_string(var_name)
-        except Exception:
+        except:
             pass
      
     @staticmethod
@@ -148,6 +151,11 @@ def parse_aliases_ini():
     parser = ConfigParser()
     parser.read(fpath)
     return parser
+
+
+def emep_variable_path():
+    """Returns path to emep variable mapping"""
+    return os.path.join(__dir__, "data", "emep_vars.sh")
 
 def _read_alias_ini(parser=None):
     """Read all alias definitions from aliases.ini file and return as dict
@@ -335,7 +343,7 @@ class Variable(object):
         self._var_name_aerocom = None
     
         self.standard_name = None
-        self.units = 1
+        self.units = None
         self.default_vert_code = None
         #self.aliases = []
         self.wavelength_nm = None
@@ -541,7 +549,7 @@ class Variable(object):
         if key in self._TYPE_CONV:
             try:
                 val = self._TYPE_CONV[key](val)
-            except Exception:
+            except:
                 pass
         elif key == 'units' and val == 'None':
             val = '1'
