@@ -15,6 +15,7 @@ from pathlib import Path
 from pyaerocom import const, logger, print_log
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 
+from pyaerocom.io.iris_io import correct_time_coord
 from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
                                   DataExtractionError,
@@ -411,31 +412,76 @@ class GriddedData(object):
     def base_year(self, val):
         self.change_base_year(val)
             
-    def change_base_year(self, new_year):
-        """Changes base year of time dimension 
+# =============================================================================
+#     def change_base_year_OLD(self, new_year):
+#         """Changes base year of time dimension 
+#         
+#         Relevant, e.g. for climatological analyses
+#         
+#         Parameters
+#         -----------
+#         new_year : int 
+#             new base year (can also be other than integer if it is convertible)
+#         """
+#         if not self.has_time_dim:
+#             raise DataDimensionError('Data object has no time dimension ... ')
+#         if isinstance(new_year, str):
+#             try:
+#                 new_year = int(new_year)
+#                 if not new_year > -2000 and new_year < 20000:
+#                     raise ValueError('Need value between -2000 and 20000')
+#             except Exception as e:
+#                 raise ValueError(repr(e))
+#         from cf_units import Unit
+#         startyr = int(str(self.start.astype('datetime64[Y]')))
+#         diff = new_year - startyr
+#         u = self.time.units
+#         origin = u.utime().origin.year
+#         origin_new = u.utime().origin.year + diff
+#         self.time.units = Unit(u.origin.replace(str(origin), 
+#                                                 str(origin_new)), 
+#                                 calendar=u.calendar)
+# =============================================================================
         
-        Relevant, e.g. for climatological analyses
+    def change_base_year(self, new_year, inplace=True):
+        """
+        Changes base year of time dimension 
+         
+        Relevant, e.g. for climatological analyses.
         
+        ToDo
+        ----
+        Account for leap years.
+        
+        Note
+        ----
+        This method does not account for offsets arising from leap years (
+        affecting daily or higher resolution data). 
+        It is thus recommended to use this method with care. E.g. if you use 
+        this method on a 2016 daily data object, containing a calendar that
+        supports leap years, you'll end up with 366 time stamps also in the new
+        data object.
+         
         Parameters
         -----------
         new_year : int 
             new base year (can also be other than integer if it is convertible)
+        inplace : bool
+            if True, modify this object, else, use a copy
+            
+        Returns
+        -------
+        GriddedData
+            modified data object
         """
-        if not self.has_time_dim:
-            raise DataDimensionError('Data object has no time dimension ... ')
-        if isinstance(new_year, str):
-            try:
-                new_year = int(new_year)
-                if not new_year > -2000 and new_year < 20000:
-                    raise ValueError('Need value between -2000 and 20000')
-            except Exception as e:
-                raise ValueError(repr(e))
-        from cf_units import Unit
-        u = self.time.units
+        if inplace:
+            data = self
+        else: 
+            data = self.copy()
         
-        self.time.units = Unit(u.origin.replace(str(u.utime().origin.year), 
-                                                str(new_year)), 
-                                calendar=u.calendar)
+        data.cube = correct_time_coord(data.cube, data.ts_type, new_year)
+        return data
+        
     @property
     def start(self):
         """Start time of dataset as datetime64 object"""
