@@ -487,7 +487,7 @@ class ColocatedData(object):
         Parameters
         ----------
         **kwargs
-            keyword args passed to :func:`pyaerocom.plot.plotscatter_new.plot_scatter`
+            keyword args passed to :func:`pyaerocom.plot.plotscatter.plot_scatter`
             
         Returns
         -------
