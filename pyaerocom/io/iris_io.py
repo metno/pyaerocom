@@ -559,9 +559,7 @@ def correct_time_coord(cube, ts_type, year):
         is e.g. encrypted in the filename of a NetCDF file and may be 
         accessed using :class:`pyaerocom.io.FileConventionRead`
     year : int
-        interger specifying year of observation, e.g. 2017
-    tindex_cube : int
-        index of time dimension in Cube
+        interger specifying start year, e.g. 2017
     
     Returns
     -------
