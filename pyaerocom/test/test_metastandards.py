@@ -67,7 +67,7 @@ def test_stationmetadata():
 @pytest.mark.parametrize('data_id,values,test_addstuff', [
     ('NorESM2-met2010_AP3-CTRL', ['NorESM2', 'met2010', 'AP3', 'CTRL'], True),
     ('Blaaa', ['Blaaa', '', '', ''], False),
-    ('Bla-blub2010_blablub-bla', ['Bla', '', 'blablub', 'bla'], False),
+    ('Bla-blub2010_blablub-bla', ['Bla-blub2010', '', 'blablub', 'bla'], False),
     ('Bla-met2042_blablub-bla', ['Bla', 'met2042', 'blablub', 'bla'], False)
     
      ])     
