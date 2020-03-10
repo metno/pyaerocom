@@ -336,7 +336,7 @@ class AerocomDataID(object):
             values[0] = val
             return values
             
-        sub = spl[0].split(self.SUBDELIM)
+        sub = spl[0].split(self.SUBDELIM, 1)
         if len(sub) == 2:
             values[0] = sub[0] #model_name
             
@@ -347,12 +347,16 @@ class AerocomDataID(object):
                 const.print_log.warning('Meteorology config substring in '
                                         'data_id {} needs to start with met. '
                                         .format(meteo))
-        sub = spl[1].split(self.SUBDELIM)
+                values[0] = spl[0]
+        else:
+            values[0] = spl[0]
+            
+        sub = spl[1].split(self.SUBDELIM, 1)
         if len(sub) == 2:
             values[2] = sub[0]
             values[3] = sub[1]
         else:
-            values[2] = spl 
+            values[2] = spl[1]
         return values
     
     def __eq__(self, other):
