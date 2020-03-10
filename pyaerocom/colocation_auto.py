@@ -793,7 +793,11 @@ class Colocator(ColocationSetup):
                         os.remove(os.path.join(out_dir, savename))
                         
             try:
-                by=None
+                try:
+                    by=self.update_baseyear_gridded
+                    stop=None
+                except:
+                    by=None
                 if self.model_use_climatology:
                     by=start.year
                 coldata = colocate_gridded_ungridded(
