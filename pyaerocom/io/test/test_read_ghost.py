@@ -26,25 +26,142 @@ import pytest
 import os
 from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io.read_ghost import ReadGhost
-
-def test_provides_variables():
-    assert ReadGhost.PROVIDES_VARIABLES == ['concpm10', 'concpm25', 'concco', 
-                                            'concno', 'concno2', 'conco3', 
-                                            'concso2']
+import numpy as np
     
-@pytest.fixture(scope='module', params=['GHOST.daily', 'GHOST.hourly'])
-def reader(request):
-    yield ReadGhost(request.param)
+@pytest.fixture(scope='module')
+def ghost_daily():
+    return ReadGhost('GHOST.daily')
+
+@pytest.fixture(scope='module')
+def ghost_hourly():
+    return ReadGhost('GHOST.hourly')
 
 @lustre_unavail
-@pytest.mark.parametrize('var,filenum,lastfilename',[
-    ('sconco3',24,'sconco3_201912.nc'),
-    ])
-def test_get_file_list(reader, var, filenum, lastfilename):
-    files = reader.get_file_list(var)
-    assert len(files) == filenum
-    assert os.path.basename(files[-1]) == lastfilename
+class TestReadGhost(object):
+    PROVIDES_VARIABLES = ['concpm10', 'concpm25', 'concco', 'concno', 'concno2', 
+                          'conco3', 'concso2']
+    
+    INVDICT = {'pm10': 'concpm10', 
+               'pm2p5': 'concpm25', 
+               'sconcco': 'concco', 
+               'sconcno': 'concno', 
+               'sconcno2': 'concno2', 
+               'sconco3': 'conco3', 
+               'sconcso2': 'concso2'}
 
+    DEFAULT_VAR = 'conco3'
+    DEFAULT_SITE = None
+    
+    fixture_names = ('ghost_daily', 'ghost_hourly')
+    
+    # cf.: https://hackebrot.github.io/pytest-tricks/fixtures_as_class_attributes/
+    @pytest.fixture(autouse=True)
+    def auto_injector_fixture(self, request):
+        for name in self.fixture_names:
+            setattr(self, name, request.getfixturevalue(name))
+    
+    @property
+    def default_reader(self):
+        """Just a convenience thing used in tests below that would be redundant
+        if applied to daily and hourly"""
+        return self.get_reader('ghost_daily')
+    
+    def get_reader(self, fixture_name):
+        return getattr(self, fixture_name)
+    
+    def test_meta_keys(self):
+        assert len(self.default_reader.META_KEYS) == 143
+        
+    @pytest.mark.parametrize('fixture_name', ['ghost_daily', 'ghost_hourly'])
+    def test_PROVIDES_VARIABLES(self, fixture_name):
+        reader = self.get_reader(fixture_name)
+        assert reader.PROVIDES_VARIABLES == self.PROVIDES_VARIABLES
+    
+    def test_var_names_data_inv(self):
+        invdict = self.default_reader.var_names_data_inv
+        assert isinstance(invdict, dict)
+        for key, val in invdict.items():
+            assert self.INVDICT[key] == val
+        
+    @pytest.mark.parametrize(
+        'fixture_name,vars_to_read,pattern,filenum,lastfilename', [
+        ('ghost_daily','conco3',None,24,'sconco3_201912.nc'),
+        ('ghost_hourly','conco3',None,24,'sconco3_201912.nc'),
+        ('ghost_daily','concpm10',None,24,'pm10_201912.nc'),
+        ('ghost_daily','conco3','*201810.nc',1,'sconco3_201810.nc'),
+        ])
+    def test_get_file_list(self, fixture_name, vars_to_read, pattern, filenum, 
+                           lastfilename):
+        files = self.get_reader(fixture_name).get_file_list(
+                vars_to_read=vars_to_read, 
+                pattern=pattern)
+        
+        assert len(files) == filenum
+        assert os.path.basename(files[-1]) == lastfilename
+      
+    def test__ts_type_from_data_id(self):
+        assert self.get_reader('ghost_daily')._ts_type_from_data_id() == 'daily'
+        
+    @pytest.mark.parametrize('fixture_name,val', [
+            ('ghost_daily', 'daily'), 
+            ('ghost_hourly', 'hourly')
+        ])
+    def test_TS_TYPE(self, fixture_name, val):
+        assert self.get_reader(fixture_name).TS_TYPE == val
+        
+    def test_get_meta_filename(self):
+        import pandas as pd
+        meta = self.default_reader.get_meta_filename('pm10_201910.nc')
+        per = pd.Period(freq='M', year=2019, month=10)
+        desired = dict(var_name='pm10',
+                       start=per.start_time,
+                       stop=per.end_time)
+        for key, val in meta.items():
+            assert desired[key] == val
+    
+    def test__eval_flags_slice(self):
+        import xarray as xr
+        reader = self.default_reader
+        file = reader.files[-1]        
+        assert os.path.basename(file) == 'sconco3_201810.nc'
+        ds = xr.open_dataset(file).isel(station=slice(10, 15))
+        
+        flagvar = 'qa'
+        numvalid = 142
+        shape = (5,31)
+        
+        assert 'sconco3' in ds
+        assert ds['sconco3'].shape == shape
+        assert flagvar in reader.FLAG_DIMNAMES
+        
+        flagvar_dimname = reader.FLAG_DIMNAMES[flagvar]
+        
+        assert flagvar_dimname in ds.dims
+        
+        flags = ds[flagvar]
+        
+        invalidate = reader.DEFAULT_FLAGS_INVALID[flagvar]
+        
+        slice_dim = flags.dims.index(flagvar_dimname)
+        valid = np.apply_along_axis(reader._eval_flags_slice,
+                                    slice_dim, flags.values,
+                                    invalidate)
+        assert valid.ndim == 2
+        assert valid.shape == shape
+        assert valid.sum() == numvalid
+    
+    @pytest.mark.parametrize('fixture_name,statnum', [
+        ('ghost_daily', 2057),
+        ])
+    def test_read_file(self, fixture_name, statnum, first_stat_name):
+        reader = self.get_reader(fixture_name)
+        data = reader.read_file(reader.files[-1])
+        assert isinstance(data, list)
+        assert len(data) == statnum
+        assert isinstance(data[0], dict)
+        
+        
+ 
 # =============================================================================
 # @lustre_unavail
 # def test_read_file(reader):

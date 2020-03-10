@@ -87,7 +87,7 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore 
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.2'
+    __version__ = '0.0.4'
     
     _FILEMASK = '*.nc'
     
@@ -145,6 +145,17 @@ class ReadGhost(ReadUngriddedBase):
             self._var_names_inv ={v: k for k, v in self.VARNAMES_DATA.items()}
             return self._var_names_inv
     
+    @property
+    def TS_TYPE(self):
+        """Default implementation of string for temporal resolution"""
+        try:
+            return self.TS_TYPES[self.DATA_ID]
+        except KeyError:
+            try:
+                return self._ts_type_from_data_id()
+            except:
+                return 'undefined'
+            
     def get_file_list(self, vars_to_read=None, pattern=None):
         """
         Retrieve a list of files to read based on input variable names
@@ -210,7 +221,7 @@ class ReadGhost(ReadUngriddedBase):
 
         per = pd.Period(freq='M', year=int(time[:4]), month=int(time[-2:]))
         return dict(var_name=var, start=per.start_time, 
-                    stop=per.end_time, ts_type=None)
+                    stop=per.end_time)
     
     @staticmethod
     def _eval_flags_slice(slc, invalid_flags):
@@ -235,16 +246,6 @@ class ReadGhost(ReadUngriddedBase):
                 return ts_type
         raise AttributeError('Failed to retrieve ts_type from DATA_ID')
         
-    @property
-    def TS_TYPE(self):
-        """Default implementation of string for temporal resolution"""
-        try:
-            return self.TS_TYPES[self.DATA_ID]
-        except KeyError:
-            try:
-                return self._ts_type_from_data_id()
-            except:
-                return 'undefined'
             
     def read_file(self, filename, var_to_read=None, invalidate_flags=None,
                   var_to_write=None):
@@ -297,9 +298,10 @@ class ReadGhost(ReadUngriddedBase):
         
         vardata = ds[var_to_read] #DataArray
         varinfo = vardata.attrs
+        
         # ToDo: it is important that station comes first since we use numpy 
         # indexing below and not xarray.isel or similar, due to performance 
-        # issues. This may will need to be updated in case of profile data.
+        # issues. This may need to be updated in case of profile data.
         assert vardata.dims == ('station', 'time')
         data_np = vardata.values
         
@@ -348,7 +350,7 @@ class ReadGhost(ReadUngriddedBase):
         return stats
     
     def read(self, vars_to_retrieve=None, files=None, first_file=None, 
-             last_file=None, pattern=None, check_time=True):
+             last_file=None, pattern=None, check_time=True, **kwargs):
         """Read data files into `UngriddedData` object
         
         Parameters
@@ -401,7 +403,9 @@ class ReadGhost(ReadUngriddedBase):
         meta_idx = data_obj.meta_idx
         var_count_glob = -1
         rename = self.var_names_data_inv
-        for i, _file in enumerate(files):
+        from tqdm import tqdm
+        for i in tqdm(range(len(files))):
+            _file = files[i]
             metafile = self.get_meta_filename(_file)
             var_to_read = metafile['var_name']
             begin = metafile['start']
@@ -409,7 +413,7 @@ class ReadGhost(ReadUngriddedBase):
              
             var_to_write = rename[var_to_read]
             stats = self.read_file(_file, var_to_read=var_to_read,
-                                   var_to_write=var_to_write)
+                                   var_to_write=var_to_write, **kwargs)
             
             if len(stats) == 0:
                 const.logger.info('File {} does not contain any of the input '
@@ -420,6 +424,11 @@ class ReadGhost(ReadUngriddedBase):
                 meta_key += 1
                 meta_idx[meta_key] = {}
                 metadata[meta_key] = meta = stat['meta']
+                metadata[meta_key]['data_id'] = self.DATA_ID
+                statname = metadata[meta_key]['station_name']
+                if '/' in statname:
+                    statname = statname.replace('/','-')
+                metadata[meta_key]['station_name'] = statname
                 
                 times = stat['time'].astype('datetime64[s]')
                 timenums = np.float64(times)
@@ -479,13 +488,20 @@ class ReadGhost(ReadUngriddedBase):
         return data_obj
 
 if __name__ == '__main__':
+    import pyaerocom as pya
     
     reader = ReadGhost()
     
-    files = reader.get_file_list('conco3')
+    data = reader.read('conco3')
     
-    stats = reader.read_file(files[-1])
+    files = reader.get_file_list('concpm10')
     
-    data = reader.read('conco3', files=[files[-1]])
+    import xarray as xr
+    
+    ds0 = xr.open_dataset(files[0])
+    ds0['pm10'][0].plot()
+    
+    ds1 = xr.open_dataset(files[-1])
+    ds1['pm10'][0].plot()
     
     
