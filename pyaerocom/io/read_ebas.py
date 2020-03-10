@@ -19,7 +19,6 @@
 # MA 02110-1301, USA
 
 import os, re
-from datetime import datetime
 import fnmatch
 import numpy as np
 from collections import OrderedDict as od
@@ -30,7 +29,7 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_ac550dryaer,
                                  compute_ang4470dryaer_from_dry_scat)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.io.helpers import _print_read_info, _check_ebas_db_local_vs_remote
+from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
@@ -38,6 +37,7 @@ from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.exceptions import NotInFileError, EbasFileError
 from pyaerocom._lowlevel_helpers import BrowseDict
+from tqdm import tqdm
 
 class ReadEbasOptions(BrowseDict):
     """Options for EBAS reading routine
@@ -131,7 +131,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.30_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.31_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -771,10 +771,10 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not 'wavelength' in colinfo:
-                const.print_log.warn('Ignoring column {}\n{}\nVar {}: column '
-                                     'misses wavelength specification!'
-                                     .format(colnum, colinfo, 
-                                             var_info.var_name))
+                const.logger.warn('Ignoring column {}\n{}\nVar {}: column '
+                                  'misses wavelength specification!'
+                                  .format(colnum, colinfo, 
+                                          var_info.var_name))
                 continue
             wvl_col = colinfo.get_wavelength_nm()
             # wavelength is in tolerance range
@@ -804,10 +804,10 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not 'wavelength' in colinfo:
-                const.print_log.warn('Ignoring column {} ({}) in EBAS file for '
-                                     'reading var {}: column misses wavelength '
-                                     'specification'
-                                     .format(colnum, colinfo, var_info))
+                const.logger.warn('Ignoring column {} ({}) in EBAS file for '
+                                  'reading var {}: column misses wavelength '
+                                  'specification'
+                                  .format(colnum, colinfo, var_info))
                 continue
             wvl_col = colinfo.get_wavelength_nm()
             # wavelength is in tolerance range
@@ -1207,23 +1207,29 @@ class ReadEbas(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
     
-        num_files = len(files)
-        disp_each = int(num_files*0.1)
-        if disp_each < 1:
-            disp_each = 1
+# =============================================================================
+#         num_files = len(files)
+#         disp_each = int(num_files*0.1)
+#         if disp_each < 1:
+#             disp_each = 1
+# =============================================================================
          
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
-        last_t = datetime.now()
-        for i, _file in enumerate(files):
-            if i%disp_each == 0:
-                last_t = _print_read_info(i, disp_each, num_files, 
-                                          last_t, type(self).__name__,
-                                          const.print_log)
+        const.print_log.info('Reading EBAS data')
+        for i in tqdm(range(len(files))):
+            _file = files[i]
+            contains = files_contain[i]
+# =============================================================================
+#             if i%disp_each == 0:
+#                 last_t = _print_read_info(i, disp_each, num_files, 
+#                                           last_t, type(self).__name__,
+#                                           const.print_log)
+# =============================================================================
             try:
                 station_data = self.read_file(_file, 
-                                              vars_to_retrieve=files_contain[i])
+                                              vars_to_retrieve=contains)
                 
             except (NotInFileError, EbasFileError) as e:
                 self.files_failed.append(_file)
@@ -1338,6 +1344,7 @@ if __name__=="__main__":
     
     db = r.sqlite_database_file
     files = r.get_file_list(['sc550dryaer'])
+   
+    r.read('sc550dryaer')
     
-    data = r.read(['sc550dryaer'], files=files[0])
-    print(data)
+    
