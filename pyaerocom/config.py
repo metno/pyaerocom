@@ -258,6 +258,7 @@ class Config(object):
         self._colocateddatadir = colocateddata_dir
         self._filtermaskdir = None
         self._local_tmp_dir = None
+        self._downloaddatadir = None
         self._confirmed_access = []
         self._rejected_access = []
         
@@ -506,15 +507,39 @@ class Config(object):
     @property
     def LOCAL_TMP_DIR(self):
         """Local TEMP directory"""
+        if self._local_tmp_dir is None:
+            self._local_tmp_dir = '{}/tmp'.format(self.OUTPUTDIR)
         if not self._check_access(self._local_tmp_dir):
-            self.print_log.warning('const.LOCAL_TMP_DIR is not set or does '
-                                   'not exist.')
+            try:
+                os.mkdir(self._local_tmp_dir)
+            except Exception:
+                raise FileNotFoundError('const.LOCAL_TMP_DIR {} is not set or '
+                                        'does not exist and cannot be created')
         return self._local_tmp_dir
     
     @LOCAL_TMP_DIR.setter
     def LOCAL_TMP_DIR(self, val):
         self._local_tmp_dir = val
+
+    @property        
+    def DOWNLOAD_DATADIR(self):
+        """Directory where data is downloaded into"""
+        if self._downloaddatadir is None:
+            self._downloaddatadir = chk_make_subdir(self.OUTPUTDIR, 'data')
+        return self._downloaddatadir
         
+    @DOWNLOAD_DATADIR.setter
+    def DOWNLOAD_DATADIR(self, val):
+        if not isinstance(val, str):
+            raise ValueError('Please provide str')
+        elif not os.path.exists(val):
+            try:
+                os.mkdir(val)
+            except Exception:
+                raise IOError('Input directory {} does not exist and can '
+                              'also not be created'.format(val))
+        self._downloaddatadir =  val
+                
     @property
     def CACHEDIR(self):
         """Cache directory for UngriddedData objects"""
@@ -1078,3 +1103,4 @@ class Config(object):
 if __name__=="__main__":
     import pyaerocom as pya
     #print(pya.const)
+    print(pya.const.LOCAL_TMP_DIR)
