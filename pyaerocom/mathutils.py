@@ -3,13 +3,16 @@
 """
 Mathematical low level utility methods of pyaerocom
 """
-
+import cf_units
 import numpy as np
+
 from pyaerocom import const, logger
 from scipy.stats import pearsonr, spearmanr, kendalltau
 
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
+
+
 
 ### OTHER FUNCTIONS
 
@@ -707,6 +710,28 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     
     return vals
     
+def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, 
+                  to_unit=None):
+    if mmol_air is None:
+        from pyaerocom.molmasses import get_molmass
+        mmol_air = get_molmass('air_dry')
+        
+    Rspecific = 287.058 # J kg-1 K-1
+    
+    conversion_fac = 1/cf_units.Unit('mol mol-1').convert(1, vmr_unit)
+# =============================================================================
+#     if conversion_fac != 1:
+#         data *= conversion_fac #/ conversion_fac
+# =============================================================================
+    airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
+    mulfac = mmol_var / mmol_air * airdensity # kg m-3
+    conc = data * mulfac # kg m-3
+    if to_unit is not None:
+        conversion_fac *= cf_units.Unit('kg m-3').convert(1, to_unit)
+    if not np.isclose(conversion_fac, 1, rtol=1e-7):
+        conc *= conversion_fac
+    return conc
+
 def exponent(num):
     """Get exponent of input number
         
