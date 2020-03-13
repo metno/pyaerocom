@@ -712,6 +712,34 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None, 
                   to_unit=None):
+    """
+    Convert volume mixing ratio (vmr) to mass concentration
+
+    Parameters
+    ----------
+    data : float or ndarray
+        array containing vmr values
+    p_pascal : float
+        pressure in Pa of input data
+    T_kelvin : float
+        temperature in K of input data
+    vmr_unit : str
+        unit of input data
+    mmol_var : float
+        molar mass of variable represented by input data
+    mmol_air : float, optional
+        Molar mass of air. Uses average density of dry air if None. 
+        The default is None.
+    to_unit : str, optional
+        Unit to which output data is converted. If None, output unit is 
+        kg m-3. The default is None.
+
+    Returns
+    -------
+    float or ndarray
+        input data converted to mass concentration
+        
+    """
     if mmol_air is None:
         from pyaerocom.molmasses import get_molmass
         mmol_air = get_molmass('air_dry')
