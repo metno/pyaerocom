@@ -382,6 +382,33 @@ def infer_time_resolution(time_stamps):
             return tp
     raise ValueError('Could not infer time resolution')
 
+
+def seconds_in_periods(timestamps, ts_type):
+    from pyaerocom.tstype import TsType
+    ts_type = TsType(ts_type)
+    
+    if isinstance(timestamps, np.datetime64):
+        timestamps = np.array([timestamps])
+        
+    if isinstance(timestamps, np.ndarray):
+        timestamps = [ to_pandas_timestamp(timestamp) for timestamp in timestamps]
+
+    seconds_in_day = 24*60*60
+    if ts_type >= TsType('monthly'):
+        if ts_type == TsType('monthly'):
+            days_in_months = np.array([ timestamp.days_in_month for timestamp in timestamps])
+            seconds = days_in_months * seconds_in_day
+            return seconds
+        if ts_type == TsType('daily'):
+            return seconds_in_day
+        else:
+            raise NotImplementedError('Only monthly and daily frequencies implemented.')
+    
+    days_in_year = np.array([ timestamp.days_in_year for timestamp in timestamps])
+    seconds = days_in_year * seconds_in_day
+    return seconds
+    
+
 def get_tot_number_of_seconds(ts_type, dtime=None):
     """Get total no. of seconds for a given frequency
     
@@ -421,7 +448,6 @@ def get_tot_number_of_seconds(ts_type, dtime=None):
         # find seconds from dtime
         # TODO generalize this
         days_in_month = dtime.dt.daysinmonth
-        
         return days_in_month*24*60*60
     else:
         return TS_TYPE_SECS[ts_type]
