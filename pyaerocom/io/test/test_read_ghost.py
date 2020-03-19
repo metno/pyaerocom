@@ -38,16 +38,26 @@ def ghost_hourly():
 
 @lustre_unavail
 class TestReadGhost(object):
-    PROVIDES_VARIABLES = ['concpm10', 'concpm25', 'concco', 'concno', 'concno2', 
-                          'conco3', 'concso2']
+    PROVIDES_VARIABLES = ['concpm10',
+                          'concpm25',
+                          'vmrco',
+                          'vmrno',
+                          'vmrno2',
+                          'vmro3',
+                          'vmrso2',
+                          'concco',
+                          'concno',
+                          'concno2',
+                          'conco3',
+                          'concso2']
     
     INVDICT = {'pm10': 'concpm10', 
                'pm2p5': 'concpm25', 
-               'sconcco': 'concco', 
-               'sconcno': 'concno', 
-               'sconcno2': 'concno2', 
-               'sconco3': 'conco3', 
-               'sconcso2': 'concso2'}
+               'sconcco': 'vmrco', 
+               'sconcno': 'vmrno', 
+               'sconcno2': 'vmrno2', 
+               'sconco3': 'vmro3', 
+               'sconcso2': 'vmrso2'}
 
     DEFAULT_VAR = 'conco3'
     DEFAULT_SITE = None
@@ -85,10 +95,10 @@ class TestReadGhost(object):
         
     @pytest.mark.parametrize(
         'fixture_name,vars_to_read,pattern,filenum,lastfilename', [
-        ('ghost_daily','conco3',None,24,'sconco3_201912.nc'),
-        ('ghost_hourly','conco3',None,24,'sconco3_201912.nc'),
+        ('ghost_daily','vmro3',None,24,'sconco3_201912.nc'),
+        ('ghost_hourly','vmro3',None,24,'sconco3_201912.nc'),
         ('ghost_daily','concpm10',None,24,'pm10_201912.nc'),
-        ('ghost_daily','conco3','*201810.nc',1,'sconco3_201810.nc'),
+        ('ghost_daily','vmro3','*201810.nc',1,'sconco3_201810.nc'),
         ])
     def test_get_file_list(self, fixture_name, vars_to_read, pattern, filenum, 
                            lastfilename):
@@ -150,14 +160,15 @@ class TestReadGhost(object):
         assert valid.shape == shape
         assert valid.sum() == numvalid
     
-    @pytest.mark.parametrize('fixture_name,statnum', [
-        ('ghost_daily', 2057),
+    @pytest.mark.parametrize('fixture_name,statnum,first_stat_name', [
+        ('ghost_daily', 2057, 'blaaaa'),
         ])
     def test_read_file(self, fixture_name, statnum, first_stat_name):
         reader = self.get_reader(fixture_name)
         data = reader.read_file(reader.files[-1])
         assert isinstance(data, list)
         assert len(data) == statnum
+        first_stat = data[0]
         assert isinstance(data[0], dict)
         
         

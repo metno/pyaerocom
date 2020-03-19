@@ -49,7 +49,7 @@ def test_years_available(reader_reanalysis):
 
 @lustre_unavail
 def test_data_dir(reader_reanalysis):
-    assert reader_reanalysis.data_dir == '/lustre/storeA/project/aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed'
+    assert reader_reanalysis.data_dir.endswith('aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed')
     
 @lustre_unavail    
 def test_read_var(reader_reanalysis):
