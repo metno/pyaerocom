@@ -203,20 +203,23 @@ class Config(object):
     _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
     _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
+    _config_ini_localdb = os.path.join(__dir__, 'data', 'paths_local_database.ini')
     
     # this dictionary links environment ID's with corresponding ini files
     _config_files = {
             'metno'            : _config_ini_lustre,
             'users-db'         : _config_ini_user_server,
-            'testdata'         : _config_ini_testdata
+            'testdata'         : _config_ini_testdata,
+            'local-db'         : _config_ini_localdb
     }
 
     # this dictionary links environment ID's with corresponding subdirectory
     # names that are required to exist in order to load this environment
     _check_subdirs_cfg = {
-            'metno'       : 'aerocom1',
+            'metno'       : 'aerocom',
             'users-db'    : 'AMAP',
             'testdata'    : 'modeldata',
+            'local-db'    : 'modeldata'
     }
 
     
@@ -228,11 +231,12 @@ class Config(object):
 
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = od()
-    _DB_SEARCH_SUBDIRS['lustre/storeA/project/aerocom'] = 'metno'
+    _DB_SEARCH_SUBDIRS['lustre/storeA/project'] = 'metno'
     #_DB_SEARCH_SUBDIRS['lustre/storeB/project/aerocom'] = 'metno'
     _DB_SEARCH_SUBDIRS['metno/aerocom_users_database'] = 'users-db'
     _DB_SEARCH_SUBDIRS['pyaerocom-testdata/'] = 'testdata'
     _DB_SEARCH_SUBDIRS['MyPyaerocom/pyaerocom-testdata'] = 'testdata'
+    _DB_SEARCH_SUBDIRS['MyPyaerocom/data'] = 'local-db'
 
     DONOTCACHEFILE = None
     
@@ -349,9 +353,12 @@ class Config(object):
         if loc in self._confirmed_access:
             return True
         elif loc in self._rejected_access:
-            self.print_log.warning('Attempting access to location {}, which '
-                                   'has been checked before and failed. This '
-                                   'may slow things down.'.format(loc))
+            return False
+# =============================================================================
+#             self.print_log.warning('Attempting access to location {}, which '
+#                                    'has been checked before and failed. This '
+#                                    'may slow things down.'.format(loc))
+# =============================================================================
         
         if timeout is None:
             timeout = self.SERVER_CHECK_TIMEOUT
@@ -889,7 +896,12 @@ class Config(object):
             self._init_output_folders_from_cfg(cr)
 
         if cr.has_section('supplfolders'):
+            if basedir is None and 'BASEDIR' in cr['supplfolders']:
+                basedir = cr['supplfolders']['BASEDIR'] 
+                
             for name, path in cr['supplfolders'].items():
+                if '${BASEDIR}' in path:
+                    path = path.replace('${BASEDIR}', basedir)
                 self.SUPPLDIRS[name] = path
         
         cr.clear()
@@ -980,18 +992,14 @@ class Config(object):
                     for chk_dir in chk_dirs:
                         chk = Path(path.replace(repl, chk_dir))
                         if self._check_access(chk):
-                            dirconfirmed = str(chk)
+                            dirconfirmed = str(chk_dir)
         
         for name, loc in candidates.items():
-            if repl in loc:
-                if dirconfirmed is not None:
+            if '${BASEDIR}' in loc and dirconfirmed is not None:
+                loc = loc.replace('${BASEDIR}', dirconfirmed)
+            if '${HOME}' in loc:
+                loc = loc.replace('${HOME}', os.path.expanduser('~'))
                 
-                    loc = loc.replace('${BASEDIR}', dirconfirmed)
-                    loc = loc.replace('${HOME}', os.path.expanduser('~'))
-                else: 
-                    #skip this entry
-                    continue
-    
             self.OBSLOCS_UNGRIDDED[name] = loc
         self.logger.info("ELAPSED TIME _add_obsconfig: {:.5f} s".format(time()-t0))
         
@@ -1104,3 +1112,5 @@ if __name__=="__main__":
     import pyaerocom as pya
     #print(pya.const)
     print(pya.const.LOCAL_TMP_DIR)
+    
+    pya.browse_datab
