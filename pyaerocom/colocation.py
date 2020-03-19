@@ -753,6 +753,7 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273, inplace=False):
     BETA version, quite unelegant coded (at 8pm 3 weeks before IPCC deadline), 
     but should do the job for 2010 monthly colocated data files (AND NOTHING
     ELSE)!
+    
     """
     if coldata.ndim != 3:
         raise NotImplementedError('Can only handle 3D coldata so far...')

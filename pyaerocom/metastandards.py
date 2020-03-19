@@ -344,7 +344,7 @@ class AerocomDataID(object):
             if meteo.startswith('met'):
                 values[1] = meteo #meteo_config
             else:
-                const.print_log.warning('Meteorology config substring in '
+                const.logger.warning('Meteorology config substring in '
                                         'data_id {} needs to start with met. '
                                         .format(meteo))
                 values[0] = spl[0]
