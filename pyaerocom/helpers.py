@@ -392,7 +392,9 @@ def seconds_in_periods(timestamps, ts_type):
         
     if isinstance(timestamps, np.ndarray):
         timestamps = [ to_pandas_timestamp(timestamp) for timestamp in timestamps]
-
+    
+    # From here on timestamps should be a numpy array containing pandas Timestamps
+    
     seconds_in_day = 24*60*60
     if ts_type >= TsType('monthly'):
         if ts_type == TsType('monthly'):
@@ -400,12 +402,18 @@ def seconds_in_periods(timestamps, ts_type):
             seconds = days_in_months * seconds_in_day
             return seconds
         if ts_type == TsType('daily'):
-            return seconds_in_day
+            return seconds_in_day * np.ones_like(timestamps)
         else:
-            raise NotImplementedError('Only monthly and daily frequencies implemented.')
-    
-    days_in_year = np.array([ timestamp.days_in_year for timestamp in timestamps])
-    seconds = days_in_year * seconds_in_day
+            raise NotImplementedError('Only yearly, monthly and daily frequencies implemented.')
+    elif ts_type == TsType('yearly'):
+        # raise NotImplementedError('Only monthly and daily frequencies implemented.')
+        days_in_year = []
+        for ts in timestamps:
+            if ts.year % 4 == 0:
+                days_in_year.append(366) #  Leap year
+            else:
+                days_in_year.append(365)
+        seconds = np.array(days_in_year) * seconds_in_day
     return seconds
     
 
