@@ -1,7 +1,7 @@
 variablelist=('abs550aer=AAOD_550nm' \
 'abs550bc=AAOD_EC_550nm' \
-'absc550aer=Abs_coeff' \
-'absc550dryaer=Abs_coeff' \
+'absc550aer=AbsCoeff' \
+'absc550dryaer=AbsCoeff' \
 'drybc=DDEP_EC_m2Grid' \
 'drydust=DDEP_DUST_m2Grid' \
 'drynh4=DDEP_NH4_f_m2Grid' \
@@ -10,9 +10,6 @@ variablelist=('abs550aer=AAOD_550nm' \
 'dryso2=DDEP_SO2_m2Grid' \
 'dryso4=DDEP_SO4_m2Grid' \
 'dryss=DDEP_SS_m2Grid' \
-'drysox=DDEP_SOX_m2Grid' \
-'dryoxn=DDEP_OXN_m2Grid' \
-'dryrdn=DDEP_RDN_m2Grid' \
 'ec550aer=EXT_550nm' \
 'ec550dryaer=EXTdry_550nm' \
 'emidust=DUST_flux' \
@@ -36,7 +33,6 @@ variablelist=('abs550aer=AAOD_550nm' \
 'mmrss=D3_mmr_SS' \
 'od350aer=AOD_350nm' \
 'od440aer=AOD_440nm' \
-'od550aer=AOD' \
 'od550aer=AOD_550nm' \
 'od550bc=AOD_EC_550nm' \
 'od550dust=AOD_DUST_550nm' \
@@ -52,29 +48,18 @@ variablelist=('abs550aer=AAOD_550nm' \
 'sconcbcf=SURF_ug_ECFINE' \
 'sconcdust=SURF_ug_DUST' \
 'sconchno3=SURF_ug_HNO3' \
-'sconchno3=SURF_ugN_HNO3' \
 'sconcnh3=SURF_ug_NH3' \
-'sconcnh3=SURF_ugN_NH3' \
 'sconcnh4=SURF_ug_NH4_F' \
-'sconcnh4=SURF_ugN_NH4_F' \
-'sconcno2=SURF_ugN_NO2' \
 'sconcno2=SURF_ug_NO2' \
-'sconcno3=SURF_ug_TNO3' \
-'sconcno=SURF_ugN_NO' \
+'sconcno3=SURF_ug_NO3' \
 'sconcno=SURF_ug_NO' \
 'sconcoac=SURF_ug_OMCOARSE' \
 'sconcoaf=SURF_ug_PART_OM_F' \
-'sconcpm10=SURF_ug_PM10' \
 'sconcpm10=SURF_ug_PM10_rh50' \
-'sconcpm10=SURF_ug_PM10rh50' \
-'sconcpm25=SURF_ug_PM25' \
 'sconcpm25=SURF_ug_PM25_rh50' \
-'sconcpm25=SURF_ug_PM25rh50' \
 'sconcrdn=SURF_ugN_RDN' \
 'sconcso2=SURF_ug_SO2' \
-'sconcso2=SURF_ugS_SO2' \
 'sconcso4=SURF_ug_SO4' \
-'sconcso4=SURF_ugS_SO4' \
 'sconcss=SURF_ug_SS' \
 'vmro32m=SURF_2MO3' \
 'vmro3max=SURF_MAXO3' \
@@ -90,4 +75,4 @@ variablelist=('abs550aer=AAOD_550nm' \
 'wetso4=WDEP_SO4' \
 'wetsox=WDEP_SOX' \
 'wetss=WDEP_SS' \
-'z3d=D3_Zmid')
+'z3d=Z_MID')
