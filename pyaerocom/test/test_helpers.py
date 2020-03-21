@@ -117,25 +117,53 @@ def test_get_lon_rng_constraint():
 def test_get_time_rng_constraint():
     pass   
 
+def test_seconds_in_periods():
+    
+    from numpy import datetime64
+    
+    seconds_in_day = 24*60*60
+    
+    # Leap year
+    ts = datetime64('2000-02-18')
+    seconds = helpers.seconds_in_periods(ts, 'monthly')
+    assert seconds == 29*seconds_in_day
+    
+    seconds = helpers.seconds_in_periods(ts, 'yearly')
+    assert seconds == 366*seconds_in_day
+
+
+    # February in non leap year
+    ts = datetime64('2001-02-18')
+    seconds = helpers.seconds_in_periods(ts, 'monthly')
+    assert seconds == 28*seconds_in_day
+
+    # Daily
+    seconds = helpers.seconds_in_periods(ts, 'daily')
+    assert seconds == seconds_in_day
+    
+    # Yearly non leap year
+    seconds = helpers.seconds_in_periods(ts, 'yearly')
+    assert seconds == 365*seconds_in_day
+
 
 if __name__=="__main__":
     
     import pandas as pd
     
+    test_seconds_in_periods()
+    # test_get_standarad_name()
+    # test_get_standard_unit()
+    # test_start_stop_from_year()
+    # test__get_pandas_freq_and_loffset()
+    # test_resample_timeseries(_make_timeseries_synthetic())
+    # test_same_meta_dict()
     
-    test_get_standarad_name()
-    test_get_standard_unit()
-    test_start_stop_from_year()
-    test__get_pandas_freq_and_loffset()
-    test_resample_timeseries(_make_timeseries_synthetic())
-    test_same_meta_dict()
     
+    # stat1 = DATA_ACCESS['station_data1']
+    # stat2 = DATA_ACCESS['station_data2']
     
-    stat1 = DATA_ACCESS['station_data1']
-    stat2 = DATA_ACCESS['station_data2']
-    
-    merged_ec = helpers.merge_station_data([stat1, stat2],
-                                           var_name='ec550aer')
+    # merged_ec = helpers.merge_station_data([stat1, stat2],
+    #                                        var_name='ec550aer')
     
     
     
