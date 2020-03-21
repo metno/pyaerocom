@@ -19,10 +19,11 @@ from pyaerocom.helpers import seconds_in_periods
 class ReadEMEP(object):
     
     
-    # TODO: Unit conversion - EMEP units not specified as per time unit
-    # TODO: 
-    
     def __init__(self, filepath, data_id=None, var_file=None):
+        """
+        var_file: path
+            Use alternative EMEP -> Aerocom variable mapping.
+        """
         
         self._filepath = filepath
         self._data_id = data_id
@@ -30,20 +31,21 @@ class ReadEMEP(object):
         
         try:
             open(filepath, 'r')
-            # open(var_file, 'r')
         except Exception as e:
             const.print_log.exception('File "{}" not found. Error message: {}'.format(filepath, self._filepath,
                                                        repr(e)))
 
-        #: dictionary containing information about additionally required variables
-        #: for each auxiliary variable (i.e. each variable that is not provided
-        #: by the original data but computed on import)
-        self.AUX_REQUIRES = {'depso4'     :   ['dryso4','wetso4']}
+        # dictionary containing information about additionally required variables
+        # for each auxiliary variable (i.e. each variable that is not provided
+        # by the original data but computed on import)
+        self.AUX_REQUIRES = {'depso4' : ['dryso4','wetso4'],
+                             'sconcbc' : ['sconcbcf', 'sconcbcc']}
 
 
-       #: Functions that are used to compute additional variables (i.e. one 
-       #: for each variable defined in AUX_REQUIRES)
-        self.AUX_FUNS = {'depso4'     :   add_cubes}
+       # Functions that are used to compute additional variables (i.e. one 
+       # for each variable defined in AUX_REQUIRES)
+        self.AUX_FUNS = {'depso4' : add_cubes,
+                         'sconcbc' : add_cubes}
     
     
     
@@ -56,21 +58,19 @@ class ReadEMEP(object):
                  ts_type=None, experiment=None, vert_which=None, 
                  flex_ts_type=True, prefer_longer=False, 
                  aux_vars=None, aux_fun=None, **kwargs):
-        """Read EMEP data, rename to Aerocom naming and return GriddedData object"""
+        """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
 
         var_map = self.map_aero_emep()
             
-        #: Variable need processing
         if var_name in self.AUX_REQUIRES:
             temp_cubes = []
             for aux_var in self.AUX_REQUIRES[var_name]:
-                temp_cubes.append(self.read_var(aux_var))
+                temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
             aux_func = self.AUX_FUNS[var_name]
             cube = aux_func(*temp_cubes)
             # cube.var_name = var_name
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
         else:
-            
             try:
                 emep_var = var_map[var_name]
             except KeyError as e:
@@ -85,42 +85,45 @@ class ReadEMEP(object):
             data.attrs['long_name'] = var_name
             
             if (EMEP_prefix in ['WDEP', 'DDEP']) and emep_var != 'WDEP_PREC':
-                data.attrs['units'] = 'mg/m2'
+                # Get rid of units (S, N f.e.) that cannot be handled with CF units
+                data.attrs['units'] = 'ug/m2' # Very hardcoded. Is this always true?
             gridded = GriddedData(data.to_iris(), var_name=var_name, ts_type=ts_type)
         
+            # Convert mg/m^2 (implicit per day, month or year) -> kg
+            if EMEP_prefix in ['WDEP', 'DDEP']:
+                # TODO: This is duplicated. Need better flow.
+                gridded.time.long_name = 'time' # quickplot_map expects time long name to be time.
+                self.implicit_to_explicit_rates(gridded, ts_type)
 
+        
+        # At this point a GriddedData object with name gridded should exist
                 
-            
-        # TODO: Figure out what the data_id should be for EMEP data
-        # gridded.metadata['data_id'] = data_id
         gridded.time.long_name = 'time' # quickplot_map expects time long name to be time.
         gridded.metadata['data_id'] = self._data_id
         # Remove unneccessary(?) metadata. Better way to do this?
-        del(gridded.metadata['current_date_first'])
-        del(gridded.metadata['current_date_last'])
 
+        try:
+            del(gridded.metadata['current_date_first'])
+            del(gridded.metadata['current_date_last'])
+        except KeyError as e:
+            const.print_log.exception('Metadata not available: {}'.format(repr(e)))
 
-
-        # Convert mg/m^2 (implicit per day, month or year) -> kg
-        if EMEP_prefix in ['WDEP', 'DDEP']:
-            # mg -> kg
-            gridded.to_xarray().values *= 10**-6
-            # day/month/year -> s
-            if TsType(ts_type) == TsType('monthly'):
-                timestamps = gridded.time_stamps()
-                seconds_in_month = seconds_in_periods(timestamps, ts_type)
-                for i in range(len(seconds_in_month)):
-                    gridded.to_xarray().isel(time=i).values /= seconds_in_month[i]
-                gridded.units = 'kg m-2 s-1'
-
-
-# =============================================================================
-#         gridded.var_name = var_name  # TODO: check that this is working
-#         # Replaced by passing var_name to GriddedData
-# 
-# =============================================================================
         return gridded
 
+
+    def implicit_to_explicit_rates(self, gridded, ts_type):
+        """
+        Convert implicit daily, monthly or yearly rates to per second.
+        And set units to 'kg m-2 s-1'.
+        """
+
+        gridded.to_xarray().values *= 10**-6  # ug -> kg
+        timestamps = gridded.time_stamps()
+        seconds_factor = seconds_in_periods(timestamps, ts_type)
+        for i in range(len(seconds_factor)):
+            gridded.to_xarray().isel(time=i).values /= seconds_factor[i]
+        gridded.units = 'kg m-2 s-1'
+        
 
     def read(self, vars_to_retrieve, start=None, stop=None,
              ts_type=None, **kwargs):
@@ -138,11 +141,12 @@ class ReadEMEP(object):
                                                        repr(e)))
         return tuple(data)
 
+
     def map_aero_emep(self):
         """Read variable mapping to dictionary: Aerocom -> EMEP"""
         variables = {}
         if not self._var_file:
-            self._var_file = emep_variable_path()    
+            self._var_file = emep_variable_path()
         with open(self._var_file, 'r') as var_file:
             for line in var_file.readlines():
                 var = line.split("'")[1]
@@ -154,16 +158,16 @@ class ReadEMEP(object):
 if __name__ == '__main__':
     
     basepath = '/home/eirikg/Desktop/pyaerocom/data/2020_AerocomHIST/'
-    
     file = '2010_GLOB1_2010met/Base_month.nc'
     var_file= basepath + 'vars_sorted.sh'
     filepath = '{}{}'.format(basepath, file)
 
-    # from pyaerocom.units_helpers import unit_conversion_fac_custom
-
 
     reader = ReadEMEP(filepath, var_file=var_file, data_id='EMEP')
-    sconcno = reader.read_var('sconcno', ts_type='monthly')
+    # Read variable that uses AUX_FUNS
+    depso4 = reader.read_var('depso4', ts_type='monthly')
+    # Read variable that uses unit conversions
+    wetso4 = reader.read_var('wetso4', ts_type='monthly')
 
     
 # =============================================================================
