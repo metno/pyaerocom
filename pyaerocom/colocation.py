@@ -444,6 +444,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
     
+    try:
+        gridded_data.check_dimcoords_tseries()
+    except DimensionOrderError:
+        gridded_data.reorder_dimensions_tseries()
+        
     var = gridded_data.var_name
     aerocom_var = gridded_data.var_name_aerocom
     if var_ref is None:
@@ -562,11 +567,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                    'time interval ({}-{})'
                                    .format(var_ref, start, stop))
     # make sure the gridded data is in the right dimension
-    try:
-        gridded_data.check_dimcoords_tseries()
-    except DimensionOrderError:
-        gridded_data.reorder_dimensions_tseries()
-    
     if gridded_data.ndim > 3:
         if vert_scheme is None:
             vert_scheme = 'mean'

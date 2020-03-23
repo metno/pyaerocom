@@ -1569,7 +1569,10 @@ class GriddedData(object):
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
         data.units = self.units
-        data.check_dimcoords_tseries()
+        try:
+            data.check_dimcoords_tseries()
+        except: 
+            data.reorder_dimensions_tseries()
         return data
         
     def resample_time(self, to_ts_type='monthly', how='mean', 
