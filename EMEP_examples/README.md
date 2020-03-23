@@ -1,3 +1,7 @@
+# compare_EMEP_aas.ipynb
+
+Run on NIRD/abisko. Read EMEP data and colocate with Aasetal.
+
 # EMEP_to_Aerocom.ipynb
 
 Convert one year of monthly resolution EMEP output to Aerocom format.
