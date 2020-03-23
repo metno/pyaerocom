@@ -45,6 +45,7 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
 @pytest.mark.skip(reason='No fixture for gridded observation data available yet')
 def test_colocate_gridded_gridded(mod, obs, addargs, **kwargs):
     pass
+
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)

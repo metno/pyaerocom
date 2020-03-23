@@ -475,15 +475,21 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
         gridded_data.base_year = update_baseyear_gridded
+    
+    grid_ts_type_src = gridded_data.ts_type
+    grid_ts_type = TsType(gridded_data.ts_type)
+    if isinstance(ts_type, str):
+        ts_type = TsType(ts_type)
+    if ts_type is None or grid_ts_type < ts_type:
+        ts_type = grid_ts_type
+    elif grid_ts_type > ts_type:
+        gridded_data = gridded_data.resample_time(str(ts_type))
+        grid_ts_type = ts_type
+        
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
-    
-    grid_ts_type = gridded_data.ts_type
-    
-    if ts_type is None or TsType(grid_ts_type) < TsType(ts_type):
-        ts_type = grid_ts_type
-    
+
     if start is None:
         start = grid_start
     else:
@@ -532,7 +538,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
     else:
-        col_freq = grid_ts_type#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
+        col_freq = str(grid_ts_type)#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
         obs_start = start
         obs_stop = stop
     # get timeseries from all stations in provided time resolution
@@ -545,6 +551,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             by_station_name=True,
             ignore_index=ignore_station_names,
             **kwargs)
+    
     
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
@@ -637,18 +644,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                       check_unit=True)
         
         # get grid and obs timeseries data (that may be sampled in arbitrary
-        # time resolution, particularly the obs data)
-# =============================================================================
-#         grid_ts = grid_stat[var]
-#         obs_ts = obs_stat[var_ref]
-# =============================================================================
-        
-        # resample to the colocation frequency
-# =============================================================================
-#         obs_ts1 = obs_ts.resample(col_freq).mean()
-#         grid_ts1 = grid_ts.resample(col_freq).mean()
-# =============================================================================
-        
+        # time resolution, particularly the obs data)        
         grid_ts2 = grid_stat.resample_time(
                     var, 
                     ts_type=col_freq,
@@ -700,7 +696,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'var_name'          :   [var_ref, var],
             'ts_type'           :   col_freq, # will be updated below if resampling
             'filter_name'       :   filter_name,
-            'ts_type_src'       :   [ts_type_src_ref, grid_ts_type],
+            'ts_type_src'       :   [ts_type_src_ref, grid_ts_type_src],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'var_units'         :   [ungridded_unit,
@@ -737,7 +733,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     data = ColocatedData(data=coldata, coords=coords, dims=dims, name=var,
                          attrs=meta)
     
-    if col_freq != ts_type:
+    if col_freq != str(ts_type):
         data = data.resample_time(to_ts_type=ts_type, 
                                   colocate_time=colocate_time,
                                   apply_constraints=apply_time_resampling_constraints,

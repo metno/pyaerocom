@@ -332,7 +332,7 @@ class ColocatedData(object):
                                 min_num_obs=min_num_obs, **kwargs)
         
         data_arr.attrs.update(col.meta)
-        data_arr.attrs['ts_type'] = to_ts_type
+        data_arr.attrs['ts_type'] = str(to_ts_type)
         
         col.data = data_arr
         col.data.attrs['colocate_time'] = colocate_time
