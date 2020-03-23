@@ -157,13 +157,13 @@ class ReadEMEP(object):
     
 if __name__ == '__main__':
     
-    basepath = '/home/eirikg/Desktop/pyaerocom/data/2020_AerocomHIST/'
-    file = '2010_GLOB1_2010met/Base_month.nc'
+    basepath = '/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_AerocomHIST/'
+    file = '2010_GLOB1_2010met/Base_month.nc' # 2010 emissions with 2010 meteorology
     var_file= basepath + 'vars_sorted.sh'
     filepath = '{}{}'.format(basepath, file)
 
-
-    reader = ReadEMEP(filepath, var_file=var_file, data_id='EMEP')
+    # Create reader using 
+    reader = ReadEMEP(filepath, data_id='EMEP')
     # Read variable that uses AUX_FUNS
     depso4 = reader.read_var('depso4', ts_type='monthly')
     # Read variable that uses unit conversions
