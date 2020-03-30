@@ -507,7 +507,7 @@ class ReadGhost(ReadUngriddedBase):
         
         files = files[first_file:last_file]
         
-        data_obj = UngriddedData()
+        data_obj = UngriddedData(num_points=100000)
         
         meta_key = -1.0
         idx = 0
@@ -538,7 +538,7 @@ class ReadGhost(ReadUngriddedBase):
             vars_to_add = list(np.intersect1d(vars_to_retrieve, vars_avail))
             if len(vars_to_add) == 0:
                 continue
-            
+            chunksize = 100000
             for stat in stats:
                 meta_key += 1
                 meta_idx[meta_key] = {}
@@ -567,7 +567,7 @@ class ReadGhost(ReadUngriddedBase):
                 #check if size of data object needs to be extended
                 if (idx + totnum) >= data_obj._ROWNO:
                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                    data_obj.add_chunk(totnum)
+                    data_obj.add_chunk(chunksize)
                 
                 for i, var_to_write in enumerate(vars_to_add):
                     values = stat[var_to_write]

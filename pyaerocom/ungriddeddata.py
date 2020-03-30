@@ -115,15 +115,17 @@ class UngriddedData(object):
     _LAT_OFFSET = np.float(90.)
     
     STANDARD_META_KEYS = list(StationMetaData().keys())
-    def __init__(self, num_points=None, add_cols=None, chunksize=_CHUNKSIZE):
+    def __init__(self, num_points=None, add_cols=None, chunksize=None):
 
         self._index = self._init_index(add_cols)
         if num_points is None:
             num_points = self._ROWNO
         else:
             self._ROWNO = num_points
-
-        self._CHUNKSIZE = chunksize
+        
+        if chunksize is None:
+            chunksize = self._CHUNKSIZE
+        self._chunksize = chunksize
 
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([num_points, self._COLNO]) * np.nan
@@ -399,7 +401,7 @@ class UngriddedData(object):
     @time.setter
     def time(self, value):
         raise AttributeError("Time array cannot be changed")
-        
+      
     def last_filter_applied(self):
         """Returns the last filter that was applied to this dataset
         
@@ -419,8 +421,8 @@ class UngriddedData(object):
             minimum chunksize specified in attribute ``_CHUNKSIZE``, then the
             latter is used.
         """
-        if size is None or size < self._CHUNKSIZE:
-            size = self._CHUNKSIZE
+        if size is None or size < self._chunksize:
+            size = self._chunksize
         chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += size
