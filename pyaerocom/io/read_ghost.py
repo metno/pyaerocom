@@ -114,7 +114,7 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore 
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.5'
+    __version__ = '0.0.6'
     
     _FILEMASK = '*.nc'
     
@@ -507,7 +507,7 @@ class ReadGhost(ReadUngriddedBase):
         
         files = files[first_file:last_file]
         
-        data_obj = UngriddedData(num_points=100000)
+        data_obj = UngriddedData(num_points=1000000)
         
         meta_key = -1.0
         idx = 0
@@ -538,7 +538,7 @@ class ReadGhost(ReadUngriddedBase):
             vars_to_add = list(np.intersect1d(vars_to_retrieve, vars_avail))
             if len(vars_to_add) == 0:
                 continue
-            chunksize = 100000
+            chunksize = 500000
             for stat in stats:
                 meta_key += 1
                 meta_idx[meta_key] = {}
