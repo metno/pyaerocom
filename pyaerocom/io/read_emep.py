@@ -11,10 +11,11 @@ import sys
 import pyaerocom as pya
 from pyaerocom import const, print_log, logger
 from pyaerocom.io.aux_read_cubes import add_cubes
-from pyaerocom.variable import emep_variable_path
+from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.tstype import TsType
 from pyaerocom.helpers import seconds_in_periods
+
 
 class ReadEMEP(object):
     
@@ -60,7 +61,7 @@ class ReadEMEP(object):
                  aux_vars=None, aux_fun=None, **kwargs):
         """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
 
-        var_map = self.map_aero_emep()
+        var_map = get_emep_variables()
             
         if var_name in self.AUX_REQUIRES:
             temp_cubes = []
@@ -125,7 +126,7 @@ class ReadEMEP(object):
         gridded.units = 'kg m-2 s-1'
         
 
-    def read(self, vars_to_retrieve, start=None, stop=None,
+    def read(self, vars_to_retrieve, data_id=None, start=None, stop=None,
              ts_type=None, **kwargs):
         
         if isinstance(vars_to_retrieve, str):
@@ -140,19 +141,6 @@ class ReadEMEP(object):
                             'Error message: {}'.format(self._filepath,
                                                        repr(e)))
         return tuple(data)
-
-
-    def map_aero_emep(self):
-        """Read variable mapping to dictionary: Aerocom -> EMEP"""
-        variables = {}
-        if not self._var_file:
-            self._var_file = emep_variable_path()
-        with open(self._var_file, 'r') as var_file:
-            for line in var_file.readlines():
-                var = line.split("'")[1]
-                aer_var, emep_var = var.split('=')
-                variables[aer_var] = emep_var
-        return variables        
     
     
 if __name__ == '__main__':
