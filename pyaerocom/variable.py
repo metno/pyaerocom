@@ -185,11 +185,6 @@ def parse_emep_variables_ini(fpath=None):
     return parser
 
 
-def emep_variable_path():
-    """Returns path to emep variable mapping"""
-    return os.path.join(__dir__, "data", "emep_vars.sh")
-
-
 def _read_alias_ini(parser=None):
     """Read all alias definitions from aliases.ini file and return as dict
     
