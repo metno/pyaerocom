@@ -12,14 +12,14 @@ from pyaerocom.conftest import testdata_unavail
 from pyaerocom.exceptions import DataCoverageError
 
 def test_init_shape():
-    npt.assert_array_equal(UngriddedData().shape, (10000, 12))
+    npt.assert_array_equal(UngriddedData().shape, (100000, 12))
     
     d1 = UngriddedData(num_points=2, add_cols=['bla', 'blub'])
     npt.assert_array_equal(d1.shape, (2, 14))
     
     d1.add_chunk(1112)
     
-    npt.assert_array_equal(d1.shape, (1114, 14))
+    npt.assert_array_equal(d1.shape, (100002, 14))
     
 
 def test_coordinate_access():
@@ -64,5 +64,5 @@ def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
     
 if __name__=="__main__":
-    test_init_shape()
-    test_coordinate_access()
+    import sys, pytest
+    pytest.main(sys.argv)

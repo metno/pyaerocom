@@ -8,6 +8,7 @@ Created on Mon May 13 11:24:39 2019
 @author: jonasg
 """
 import numpy as np
+import pandas as pd
 from pyaerocom import StationData, UngriddedData
 
 def _make_station_data1():
@@ -29,12 +30,14 @@ def _make_station_data1():
              
     stat.update(d)
     
-    START = '2000'
+    START = '2003'
     NUM_YEARS = 5
     NUM = NUM_YEARS * 12
-    stat.dtime = np.datetime64(START) + np.arange(NUM).astype('timedelta64[M]')
+    idx = np.datetime64(START) + np.arange(NUM).astype('timedelta64[M]')
+    
+    stat.dtime = pd.DatetimeIndex(idx).shift(14, 'D')
 
-    stat.ec550aer = np.random.random_sample(NUM) -.5
+    stat.ec550aer = np.ones(NUM)*30
     stat.od550aer = np.ones(NUM)
     
     stat.var_info['ec550aer'] = {'units' : 'm-1'}
@@ -67,10 +70,12 @@ def _make_station_data2():
     
     stat.dtime = np.datetime64(START) + np.arange(NUM_DAYS).astype('timedelta64[D]')
 
-    stat.ec550aer = np.random.random_sample(NUM_DAYS) -.5
+    stat.ec550aer = np.ones(NUM_DAYS) -.5
     stat.od550aer = np.ones(NUM_DAYS)
-    stat.conco3 = np.arange(NUM_DAYS)
-    
+    stat.conco3 = np.ones(NUM_DAYS)
+    stat.conco3[20:50] = np.nan
+    stat.conco3[55:100] = 3
+    stat.ts_type = 'daily'
     stat.var_info['ec550aer'] = {'units' : 'Mm-1'}
     stat.var_info['od550aer'] = {'units' : '1'}
     stat.var_info['conco3']  = {'units' : 'ug m-3'}

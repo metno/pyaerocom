@@ -35,11 +35,6 @@ def test_isrange():
 def test_merge_station_data():
     pass
 
-def test__get_pandas_freq_and_loffset():
-    val = helpers._get_pandas_freq_and_loffset('monthly')
-    assert val == ('MS', '14D')
-
-
 def _make_timeseries_synthetic():
     from pandas import Series, date_range
     idx = date_range(start="2000",periods=90, freq='D')
@@ -53,7 +48,7 @@ def timeseries_synthetic():
 
 def test_resample_timeseries(timeseries_synthetic):
     s1 = helpers.resample_timeseries(timeseries_synthetic, 
-                                     'monthly')
+                                     'MS')
     
     assert len(s1) == 3
     for time in s1.index:
@@ -119,23 +114,8 @@ def test_get_time_rng_constraint():
 
 
 if __name__=="__main__":
-    
-    import pandas as pd
-    
-    
-    test_get_standarad_name()
-    test_get_standard_unit()
-    test_start_stop_from_year()
-    test__get_pandas_freq_and_loffset()
-    test_resample_timeseries(_make_timeseries_synthetic())
-    test_same_meta_dict()
-    
-    
-    stat1 = DATA_ACCESS['station_data1']
-    stat2 = DATA_ACCESS['station_data2']
-    
-    merged_ec = helpers.merge_station_data([stat1, stat2],
-                                           var_name='ec550aer')
+    import sys
+    pytest.main(sys.argv)
     
     
     
