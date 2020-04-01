@@ -472,10 +472,10 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     meta_glob['mod_unit'] = meta['var_units'][1]
     meta_glob['mod_freq_src'] = meta['ts_type_src'][1]
     
-    lats = coldata.data.latitude.values
-    lons = coldata.data.longitude.values
+    lats = coldata.data.latitude.values.astype(np.float64)
+    lons = coldata.data.longitude.values.astype(np.float64)
     if 'altitude' in coldata.data.coords:
-        alts = coldata.data.altitude.values
+        alts = coldata.data.altitude.values.astype(np.float64)
     else:
         alts = [np.nan]*len(lats)
         

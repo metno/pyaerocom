@@ -55,6 +55,7 @@ setup(
     description = ('Python tools for the Aerocom project'),
     long_description = readme,
     entry_points = {'console_scripts' : [
+            'pya=pyaerocom.scripts.cli:main',
             'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main',
             'pyaerotrends=pyaerocom.web.cli.main_trends_evaluation:main'
             ]},

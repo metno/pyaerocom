@@ -190,7 +190,8 @@ def unitconv_wet_depo_from_emep(data, time, ts_type = "monthly"):
 
     """
     # TODO add if time is not of correct pandas series convert 
-    # numpy ndarray to pandas series. Much better than having to remeber that the only thing thats a åandas seies.
+    # numpy ndarray to pandas series. Much better than having to remeber that 
+    #the only thing thats a åandas seies.
     # If time
 
     mm_so4 = 0.001*32.065 + 0.001*15.999*4 # in kg/mol

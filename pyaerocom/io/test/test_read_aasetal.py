@@ -14,6 +14,7 @@ import numpy.testing as npt
 import pandas as pd
 import os
 
+from pyaerocom import const
 from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.units_helpers import convert_unit
@@ -28,22 +29,24 @@ VARUNITS = {
 
 DATA_ID = 'GAWTADsubsetAasEtAl'
 
-DATA_DIR = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/PYAEROCOM/GAWTADSulphurSubset/data'
-
 FILENAMES = ['monthly_so2.csv', 'monthly_so4_aero.csv', 'monthly_so4_precip.csv']
 
 VARS = ['concso2', 'concso4', 'concso4pr', 'pr', 'wetso4']
-    
+  
+@lustre_unavail
+def DATA_DIR():
+    return const.OBSLOCS_UNGRIDDED[const.GAWTADSUBSETAASETAL_NAME]
+
 @lustre_unavail
 def test_data_files():
-    files = [os.path.join(DATA_DIR, x) for x in FILENAMES]
+    files = [os.path.join(DATA_DIR(), x) for x in FILENAMES]
     
     assert np.sum([os.path.exists(x) for x in files]) == 3
    
 @lustre_unavail
 def test__get_time_stamps():
     reader = ReadAasEtal()
-    fp = os.path.join(DATA_DIR, FILENAMES[0])
+    fp = os.path.join(DATA_DIR(), FILENAMES[0])
     df = pd.read_csv(fp, sep=",", low_memory=False)
     timestamps = reader._get_time_stamps(df[:10])
     
@@ -54,7 +57,7 @@ def test__get_time_stamps():
 def test_reader():
     reader = ReadAasEtal(DATA_ID)
     assert reader.DATA_ID == DATA_ID
-    assert reader.DATASET_PATH == DATA_DIR
+    assert reader.DATASET_PATH == DATA_DIR()
     assert reader.PROVIDES_VARIABLES == ['concso2', 'concso4', 'pr', 
                                          'wetso4', 'concso4pr']
     filenames = [os.path.basename(x) for x in reader.get_file_list()]
@@ -112,7 +115,7 @@ def test_reading_routines(aasetal_data, filenum, station_name, colname,
     
     UNITCONVERSION = ReadAasEtal().UNITCONVERSION
     
-    files = [os.path.join(DATA_DIR, x) for x in FILENAMES]
+    files = [os.path.join(DATA_DIR(), x) for x in FILENAMES]
     
     ungridded = aasetal_data
     

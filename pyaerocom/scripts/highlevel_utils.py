@@ -22,7 +22,13 @@ def clear_cache():
     for f in glob.glob('{}/*'.format(const.CACHEDIR)):
         os.remove(f)
         
-    
+def browse_database(search_str_or_pattern):
+    """
+    Wrapper for :func:`pyaerocom.browse_database`
+    """
+    from pyaerocom import browse_database
+    return browse_database(search_str_or_pattern)
+
 if __name__=='__main__':
     clear_cache()
     

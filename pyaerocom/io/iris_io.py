@@ -24,7 +24,6 @@ from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
 
 from pyaerocom.helpers import cftime_to_datetime64
 from pyaerocom.tstype import TsType
-from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
 
@@ -422,8 +421,6 @@ def make_datetimeindex_from_year(freq, year):
 
     return idx
 
-
-
 def _check_correct_time_dim(cube, file, file_convention=None):
     if file_convention is None:
         try:
@@ -559,9 +556,7 @@ def correct_time_coord(cube, ts_type, year):
         is e.g. encrypted in the filename of a NetCDF file and may be 
         accessed using :class:`pyaerocom.io.FileConventionRead`
     year : int
-        interger specifying year of observation, e.g. 2017
-    tindex_cube : int
-        index of time dimension in Cube
+        interger specifying start year, e.g. 2017
     
     Returns
     -------
