@@ -153,9 +153,42 @@ def parse_aliases_ini():
     return parser
 
 
+def get_emep_variables(parser=None):
+        """Read all variable definitions from emep_variables.ini file and return as dict
+    
+        Returns
+        -------
+        dict
+            keys are AEROCOM standard names of variable, values are EMEP
+            variables
+        """
+        if parser is None:
+            parser = parse_emep_variables_ini()
+        variables = {}
+        items = parser['emep_variables']
+        for var_name in items:
+            _variables = [x.strip() for x in items[var_name].strip().split(',')]
+            for variable in _variables:
+                variables[var_name] = variable
+        return variables
+
+    
+def parse_emep_variables_ini(fpath=None):
+    """Returns instance of ConfigParser to access information"""
+    if fpath is None:
+        fpath = os.path.join(__dir__, "data", "emep_variables.ini")
+    if not os.path.exists(fpath):
+        raise FileNotFoundError("FATAL: emep_variables.ini file could not be found "
+                        "at {}".format(fpath))
+    parser = ConfigParser()
+    parser.read(fpath)
+    return parser
+
+
 def emep_variable_path():
     """Returns path to emep variable mapping"""
     return os.path.join(__dir__, "data", "emep_vars.sh")
+
 
 def _read_alias_ini(parser=None):
     """Read all alias definitions from aliases.ini file and return as dict
