@@ -675,7 +675,7 @@ class StationData(StationMetaData):
         return ts_type
 
     def _update_var_timeinfo(self):
-
+        raise NotImplementedError('NEED REVISION')
         for var, info in self.var_info.items():
             data = self[var]
             if not isinstance(data, pd.Series):
@@ -691,35 +691,71 @@ class StationData(StationMetaData):
                 info['ts_type'] = self.ts_type
         self.ts_type = None
 
-    def _merge_vardata_2d(self, other, var_name):
-        """Merge 2D variable data (for details see :func:`merge_vardata`)"""
-        ts_type = self._ensure_same_var_ts_type_other(other, var_name)
-        
-        s0 = self.resample_time(var_name, ts_type=ts_type,
-                                inplace=True)[var_name].dropna()
-        s1 = other.resample_time(var_name, inplace=True,
-                                 ts_type=ts_type)[var_name].dropna()
-
-        info = other.var_info[var_name]
-        removed = None
-        if 'overlap' in info and info['overlap']:
-            raise NotImplementedError('Coming soon...')
-        
-        if len(s1) > 0: #there is data
+    def _regularize_ts_type(self, ts_type, ts_type1):
+# =============================================================================
+#         ts_type = self.get_var_ts_type(var_name)
+#         ts_type1 = other.get_var_ts_type(var_name)
+# =============================================================================
+        if ts_type != ts_type1:
+            from pyaerocom.helpers import get_lowest_resolution
+            ts_type = get_lowest_resolution(ts_type, ts_type1)
+        from pyaerocom.tstype import TsType
+        if not isinstance(ts_type, TsType):
+            _tt = TsType(ts_type)
+            if _tt.mulfac != 1:
+                ts_type = _tt.next_lower.val
+        return ts_type
+    
+    def _harmonise_ts_type(self, other, var_name):
+        tst_this = self.get_var_ts_type(var_name)
+        tst_other = other.get_var_ts_type(var_name)
+        is_ts_type = self._regularize_ts_type(tst_this, tst_other)
+    
+        if tst_this != is_ts_type:
+            self.resample_time(var_name, ts_type=is_ts_type, inplace=True)
+        if tst_other != is_ts_type:
+            other.resample_time(var_name, inplace=True,
+                                ts_type=is_ts_type)
+        return is_ts_type
+    
+    @staticmethod
+    def _merge_timeseries(s0, s1, check_overlaps):
+        if not check_overlaps:
+            return pd.concat([s0, s1], axis=0), None#, verify_integrity=True)
+        try:
+            return pd.concat([s0, s1], axis=0, verify_integrity=True), None
+        except ValueError:
             overlap = s0.index.intersection(s1.index)
-            if len(overlap) > 0:
-                removed = s1[overlap]
-                s1 = s1.drop(index=overlap, inplace=True)
-            #compute merged time series
-            s0 = pd.concat([s0, s1], verify_integrity=True)
-            
+            if not len(overlap) > 0:
+                return pd.concat([s0, s1], axis=0), None
+            removed = s1[overlap]
+            s1.drop(index=overlap, inplace=True)
+            return pd.concat([s0, s1], axis=0), removed
+                
+    def _merge_vardata_2d(self, other, var_name, is_ts_type=None,
+                          sort_index=True, check_overlaps=True):
+        """Merge 2D variable data (for details see :func:`merge_vardata`)"""
+        # the data can be irregular or ts_types between to objects can 
+        # be different (e.g. EBAS data)
+        if is_ts_type is None:
+            is_ts_type = self._harmonise_ts_type(other, var_name)
+
+        s0 = self.to_timeseries(var_name)#.dropna()
+        s1 = other.to_timeseries(var_name)
+        info = other.var_info[var_name]
+        
+        if len(s1) > 0: 
+            #there is data in the other object
+            s0, removed = self._merge_timeseries(s0, s1, check_overlaps)
+        
             # sort the concatenated series based on timestamps
-            s0.sort_index(inplace=True)
+            if sort_index:
+                s0.sort_index(inplace=True)
             self.merge_varinfo(other, var_name)
         
         # assign merged time series (overwrites previous one)
         self[var_name] = s0
-        self.dtime = s0.index.values
+        #self.dtime = s0.index.values
         
         if removed is not None:
             if var_name in self.overlap:
@@ -728,10 +764,9 @@ class StationData(StationMetaData):
                 self.overlap[var_name].sort_index(inplace=True)
             else:
                 self.overlap[var_name] = removed
-                
         return self
     
-    def merge_vardata(self, other, var_name):
+    def merge_vardata(self, other, var_name, **kwargs):
         """Merge variable data from other object into this object
         
         Note
@@ -782,9 +817,11 @@ class StationData(StationMetaData):
             raise NotImplementedError('Coming soon...')
             #return self._merge_vardata_3d(other, var_name)
         else:
-            return self._merge_vardata_2d(other, var_name)
+            return self._merge_vardata_2d(other, var_name, **kwargs)
 
-    def merge_other(self, other, var_name, **add_meta_keys):
+    def merge_other(self, other, var_name, is_ts_type=None, 
+                    sort_index=True, check_overlaps=True, check_coords=True,
+                    **add_meta_keys):
         """Merge other station data object
         
         Todo
@@ -800,15 +837,41 @@ class StationData(StationMetaData):
         var_name : str
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
-            
+        is_ts_type : str, optional
+            may be provided if sampling frequency is known and the same for 
+            both timeseries. This will result in a speedup of the processing.
+        sort_index : bool
+            if True, the index of the merged timeseries will be sorted, else 
+            not. Default is True.
+        check_overlaps : bool
+            if True the 2 timeseries are checked for overlaps in their 
+            timestamps and in case of overlapping data, the overlapping 
+            data from the other data object is removed and stored in 
+            :attr:`overlap`.
+        check_coords : bool
+            if True, lat/lon/alt coordinates are checked between both data 
+            object and an Exception is raised if they are not within
+            the distace range in km specified in :attr:`_COORD_MAX_VAR`.
+            Default is True.
+        **add_meta_keys
+            additional metadata keys that are supposed to be kept in the 
+            merged data object. Default keys that will be merged in any case
+            are the ones specified in :attr:`STANDARD_META_KEYS`.
+
         Returns
         -------
         StationData
             this object that has merged the other station
         """
         #self.merge_meta_same_station(other, **add_meta_keys)
-        self.merge_vardata(other, var_name)
-        self.merge_meta_same_station(other, **add_meta_keys)
+        self.merge_vardata(other, 
+                           var_name=var_name, 
+                           is_ts_type=is_ts_type,
+                           sort_index=sort_index, 
+                           check_overlaps=check_overlaps)
+        self.merge_meta_same_station(other, 
+                                     check_coords=check_coords,
+                                     **add_meta_keys)
 
         return self
         
@@ -843,12 +906,14 @@ class StationData(StationMetaData):
             raise AttributeError("No datacolumns could be found")
         return cols
     
-    def check_dtime(self):
-        """Checks if dtime attribute is array or list"""
-        if not any([isinstance(self.dtime, x) for x in [list, np.ndarray]]):
-            raise TypeError("dtime attribute is not iterable: {}".format(self.dtime))
-        elif not len(self.dtime) > 0:
-            raise AttributeError("No timestamps available")         
+# =============================================================================
+#     def check_dtime(self):
+#         """Checks if dtime attribute is array or list"""
+#         if not any([isinstance(self.dtime, x) for x in [list, np.ndarray]]):
+#             raise TypeError("dtime attribute is not iterable: {}".format(self.dtime))
+#         elif not len(self.dtime) > 0:
+#             raise AttributeError("No timestamps available")         
+# =============================================================================
     
     def to_dataframe(self):
         """Convert this object to pandas dataframe
@@ -887,19 +952,22 @@ class StationData(StationMetaData):
             cannot be found in :attr:`var_info`)
         """
         # make sure there exists a var_info dict for this variable
-        if not var_name in self.var_info:
-            self.var_info[var_name] = {}
+        if var_name in self.var_info and 'ts_type' in self.var_info[var_name]:
+            return self.var_info[var_name]['ts_type']
+        elif 'ts_type' in self:
+            return self['ts_type']
+# =============================================================================
+#         # use variable specific entry if available
+#         if 'ts_type' in self.var_info[var_name]:
+#             return TsType(self.var_info[var_name]['ts_type']).val
+#         elif isinstance(self.ts_type, str):
+#             # ensures validity and corrects for pandas strings
+#             ts_type = TsType(self.ts_type).val 
+#             self.var_info[var_name]['ts_type'] = ts_type
+#             return ts_type
+# =============================================================================
         
-        # use variable specific entry if available
-        if 'ts_type' in self.var_info[var_name]:
-            return TsType(self.var_info[var_name]['ts_type']).val
-        elif isinstance(self.ts_type, str):
-            # ensures validity and corrects for pandas strings
-            ts_type = TsType(self.ts_type).val 
-            self.var_info[var_name]['ts_type'] = ts_type
-            return ts_type
-        
-        if try_infer:
+        elif try_infer:
             const.print_log.warning('Trying to infer ts_type in StationData {} '
                             'for variable {}'.format(self.station_name, var_name))
             from pyaerocom.helpers import infer_time_resolution
@@ -1179,20 +1247,41 @@ class StationData(StationMetaData):
         outdata[var_name] = new
         outdata.var_info[var_name]['ts_type'] = to_ts_type.val
         outdata.var_info[var_name].update(resampler.last_setup)
-        # there is other variables that are not resampled
-        if len(outdata.var_info) > 1 and outdata.ts_type is not None:     
-            _tt = outdata.ts_type
-            outdata.ts_type = None
-            outdata.dtime = None
-            for var, info in outdata.var_info.items():
-                if not var == var_name:
-                    info['ts_type'] = _tt
-        else: #no other variables, update global class attributes
-            outdata.ts_type = to_ts_type.val
-            outdata.dtime = new.index.values
-            
+        
+        outdata = self._update_ts_types_other_vars(outdata, var_name, 
+                                                   to_ts_type)
+        
         return outdata
     
+    @staticmethod
+    def _update_ts_types_other_vars(outdata, var_name, to_ts_type):
+        # there is other variables that are not resampled
+        if not 'ts_type' in outdata or outdata['ts_type'] is None:
+            return outdata
+        elif len(outdata.var_info) == 1:
+            outdata.ts_type = to_ts_type.val
+            return outdata
+        
+        _tt = outdata.ts_type
+        outdata.ts_type = None
+        dtime = outdata.dtime
+        outdata.dtime = []
+        
+        for var, info in outdata.var_info.items():
+            if not var == var_name:
+                info['ts_type'] = _tt
+                try:
+                    _data = outdata[var]
+                    if not isinstance(_data, pd.Series) and len(_data) == len(dtime):
+                        outdata[var] = pd.Series(_data, dtime)
+                except Exception as e:
+                    const.print_log.warning('Failed to convert {} data in '
+                                            'StationData to pandas Series. '
+                                            'Reason: {}'.format(var, repr(e)))
+                    
+        return outdata
+            
+            
     def resample_timeseries(self, var_name, **kwargs):
         """Wrapper for :func:`resample_time` (for backwards compatibility)
         
@@ -1283,14 +1372,13 @@ class StationData(StationMetaData):
         elif not data.ndim == 1:
             raise NotImplementedError('Multi-dimensional data columns '
                                       'cannot be converted to time-series')
-        self.check_dtime()
-        if not len(data) == len(self.dtime):
-            raise ValueError("Mismatch between length of data array for "
-                             "variable {} (length: {}) and time array  "
-                             "(length: {}).".format(var_name, len(data), 
-                               len(self.dtime)))    
-        self[var_name] = s = pd.Series(data, index=self.dtime)
-        return s
+        try:
+            ser = pd.Series(data, index=self.dtime)
+        except ValueError as e:
+            raise ValueError('Failed to create pandas.Series from attrs. {} '
+                             'and dtime. Reason: {}'.format(var_name, repr(e)))    
+        self[var_name] = ser
+        return ser
     
     def select_altitude(self, var_name, altitudes):
         """Extract variable data within certain altitude range

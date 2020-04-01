@@ -20,6 +20,7 @@ from pyaerocom.helpers import (same_meta_dict,
                                isnumeric)
 
 from pyaerocom.metastandards import StationMetaData
+import tqdm
 
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
                                              get_mask_value)
@@ -87,10 +88,10 @@ class UngriddedData(object):
     __version__ = '0.21'
     
     #: inital total number of rows in dataarray
-    _ROWNO = 10000
+    _ROWNO = 100000
     #: default number of rows that are dynamically added if total number of 
     #: data rows is reached.
-    _CHUNKSIZE = 1000
+    _CHUNKSIZE = 100000
     
     #: The following indices specify what the individual rows of the datarray
     #: are reserved for. These may be expanded when creating an instance of 

@@ -118,7 +118,7 @@ class TimeResampler(object):
         """
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
-
+        to_freq = to_ts_type.to_pandas_freq() 
 # =============================================================================
 #         if not to_ts_type.val in self.FREQS_SUPPORTED:
 #             if to_ts_type.mulfac == 1:
@@ -140,7 +140,7 @@ class TimeResampler(object):
         if not apply_constraints:
             self.last_setup = dict(apply_constraints=False,
                                    min_num_obs=None)
-            return self.fun(self.input_data, freq=to_ts_type.val,
+            return self.fun(self.input_data, freq=to_freq,
                             how=how, **kwargs)
         elif from_ts_type is None:
             const.print_log.warn('Cannot apply time resampling constraints, '
@@ -149,8 +149,8 @@ class TimeResampler(object):
                                  .format(to_ts_type))
             self.last_setup = dict(apply_constraints=False,
                                    min_num_obs=None)
-            freq = to_ts_type.to_pandas_freq()
-            return self.fun(self.input_data, freq=freq,
+            #freq = to_ts_type.to_pandas_freq()
+            return self.fun(self.input_data, freq=to_freq,
                             how=how, **kwargs)
 
         if isinstance(from_ts_type, str):
@@ -172,8 +172,8 @@ class TimeResampler(object):
                               'of data, ignoring any resampling constraints')
             self.last_setup = dict(apply_constraints=False,
                                    min_num_obs=None)
-            freq = to_ts_type.to_pandas_freq()
-            return self.fun(self.input_data, freq=freq, how=how,
+            #freq = to_ts_type.to_pandas_freq()
+            return self.fun(self.input_data, freq=to_freq, how=how,
                             **kwargs)
 
         if min_num_obs is None:
