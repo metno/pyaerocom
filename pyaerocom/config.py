@@ -266,6 +266,7 @@ class Config(object):
         self._confirmed_access = []
         self._rejected_access = []
         
+        self._geonum_avail = None
         # Options
         self._caching_active = activate_caching
 
@@ -673,11 +674,13 @@ class Config(object):
         bool
 
         """
-        try:
-            import geonum
-            return True
-        except ModuleNotFoundError:
-            return False
+        if self._geonum_avail is None:    
+            try:
+                import geonum
+                self._geonum_avail = True
+            except ModuleNotFoundError:
+                self._geonum_avail = False
+        return self._geonum_avail
     
     @property
     def BASEMAP_AVAILABLE(self):
