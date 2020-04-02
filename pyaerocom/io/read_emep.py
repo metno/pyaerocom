@@ -40,13 +40,17 @@ class ReadEMEP(object):
         # for each auxiliary variable (i.e. each variable that is not provided
         # by the original data but computed on import)
         self.AUX_REQUIRES = {'depso4' : ['dryso4','wetso4'],
-                             'sconcbc' : ['sconcbcf', 'sconcbcc']}
+                             'sconcbc' : ['sconcbcf', 'sconcbcc'],
+                             'sconcno3' : ['sconcno3c', 'sconcno3f'],
+                             'sconctno3' : ['sconcno3', 'sconchno3']}
 
 
        # Functions that are used to compute additional variables (i.e. one 
        # for each variable defined in AUX_REQUIRES)
         self.AUX_FUNS = {'depso4' : add_cubes,
-                         'sconcbc' : add_cubes}
+                         'sconcbc' : add_cubes,
+                         'sconcno3' : add_cubes,
+                         'sconctno3' : add_cubes}
     
     
     
@@ -94,12 +98,16 @@ class ReadEMEP(object):
             if EMEP_prefix in ['WDEP', 'DDEP']:
                 # TODO: This is duplicated. Need better flow.
                 gridded.time.long_name = 'time' # quickplot_map expects time long name to be time.
+                gridded.time.standard_name = 'time'
+                gridded._update_coord_info()
                 self.implicit_to_explicit_rates(gridded, ts_type)
 
         
         # At this point a GriddedData object with name gridded should exist
                 
         gridded.time.long_name = 'time' # quickplot_map expects time long name to be time.
+        gridded.time.standard_name = 'time'
+        gridded._update_coord_info()
         gridded.metadata['data_id'] = self._data_id
         # Remove unneccessary(?) metadata. Better way to do this?
 
