@@ -36,7 +36,8 @@ def test_load_berlin():
     
     first_vals = [data[var][0] for var in test_vars]
     
-    nominal = [0.224297, 0.178662, 0.148119, 1.967039]
+    #nominal = [0.224297, 0.178662, 0.148119, 1.967039]
+    nominal = [0.22449, 0.177862, 0.147608, 1.956197]
     npt.assert_allclose(actual=first_vals, desired=nominal, rtol=TEST_RTOL)
     
 
