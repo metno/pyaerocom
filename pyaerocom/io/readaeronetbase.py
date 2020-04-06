@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import numpy as np
-from datetime import datetime
-from pyaerocom.time_config import TS_TYPES
 from collections import OrderedDict as od
+from datetime import datetime
+import numpy as np
+from tqdm import tqdm
+
+from pyaerocom.time_config import TS_TYPES
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.io.helpers import _print_read_info
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.helpers import varlist_aerocom
@@ -381,18 +382,10 @@ class ReadAeronetBase(ReadUngriddedBase):
         
         num_vars = len(vars_to_retrieve)
         num_files = len(files)
-        disp_each = int(num_files*0.1)
-        if disp_each < 1:
-            disp_each = 1
-        last_t = datetime.now()   
-        for i, _file in enumerate(files):
+        print_log.info('Reading AERONET data')
+        for i in tqdm(range(num_files)):
             
-            if i%disp_each == 0:
-                last_t = _print_read_info(i, disp_each, num_files, 
-                                          last_t, type(self).__name__,
-                                          print_log)
-                print_log.info("Reading file {} of {} ({})".format(i, 
-                                 num_files, type(self).__name__))
+            _file = files[i]
             station_data = self.read_file(_file, 
                                           vars_to_retrieve=vars_to_retrieve)
             # Fill the metatdata dict
