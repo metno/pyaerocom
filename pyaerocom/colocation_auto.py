@@ -705,24 +705,25 @@ class Colocator(ColocationSetup):
         else:
             ropts = {}
         
-        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                   vars_to_retrieve=obs_vars,
-                                   **ropts)
-        
-        # ToDo: consider removing outliers already here.
-        if 'obs_filters' in self:
-            remaining_filters = self._eval_obs_filters()
-            obs_data = obs_data.apply_filters(**remaining_filters)
                 
         data_objs = {}
         for model_var, obs_var in var_matches.items():
             
-            ts_type = self.ts_type
-            start, stop = start_stop(self.start, self.stop)
-            print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
-                                                             self.obs_id, 
-                                                             model_var, 
-                                                             obs_var))
+            obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                           vars_to_retrieve=obs_var,
+                           **ropts)
+
+        # ToDo: consider removing outliers already here.
+            if 'obs_filters' in self:
+                remaining_filters = self._eval_obs_filters()
+                obs_data = obs_data.apply_filters(**remaining_filters)
+                
+                ts_type = self.ts_type
+                start, stop = start_stop(self.start, self.stop)
+                print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
+                                                                 self.obs_id, 
+                                                                 model_var, 
+                                                                 obs_var))
             try:
                 model_data = self._read_gridded(reader=model_reader, 
                                                 var_name=model_var, 
