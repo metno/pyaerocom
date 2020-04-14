@@ -225,7 +225,6 @@ class ReadEbas(ReadUngriddedBase):
         self._loaded_ebas_vars = {}
         
         self._file_dir = None
-        self._filelog = None
         
         self.files_failed = []
         self._read_stats_log = BrowseDict()
@@ -249,20 +248,6 @@ class ReadEbas(ReadUngriddedBase):
         self.files_contain = []
         
         self._all_stats = None
-    
-    @property
-    def filelog(self):
-        """File logger"""
-        if self._filelog is None:
-            import logging
-            logdir = const.LOGFILESDIR
-            logfile = os.path.join(logdir, 'ReadEbas_{}.log'.format(self.__version__))
-            fh = logging.FileHandler(logfile)
-            logger = logging.getLogger('ebas_io')
-            logger.setLevel(logging.DEBUG)
-            logger.addHandler(fh)
-            self._filelog = logger
-        return self._filelog
     
     @property
     def file_dir(self):

@@ -55,10 +55,11 @@ def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
                              vmr_unit=unit_var,
                              to_unit=to_unit)
         stat[mconcvar] = conc
-        meta['var_info'][mconcvar] = {}
-        meta['var_info'][mconcvar]['computed'] = True
-        meta['var_info'][mconcvar]['units'] = to_unit
-        
+        vi = {}
+        vi.update(meta['var_info'][vmrvar])
+        vi['computed'] = True
+        vi['units'] = to_unit
+        meta['var_info'][mconcvar] = vi
         
     return data
 
@@ -114,7 +115,7 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore 
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.6'
+    __version__ = '0.0.7'
     
     _FILEMASK = '*.nc'
     
@@ -543,7 +544,12 @@ class ReadGhost(ReadUngriddedBase):
                 meta_key += 1
                 meta_idx[meta_key] = {}
                 
-                metadata[meta_key] = meta = stat['meta']
+                meta = stat['meta']
+                vi = meta['var_info']
+                
+                meta['var_info'] = {}
+                
+                metadata[meta_key] = meta
                 metadata[meta_key]['data_id'] = self.DATA_ID
                 # duplicate for now
                 metadata[meta_key]['instrument_name'] = meta['measuring_instrument_name']
@@ -571,7 +577,7 @@ class ReadGhost(ReadUngriddedBase):
                 
                 for i, var_to_write in enumerate(vars_to_add):
                     values = stat[var_to_write]
-                
+                    
                     start = idx + i * num_times 
                     stop = start + num_times
                 
@@ -582,7 +588,7 @@ class ReadGhost(ReadUngriddedBase):
                     else:
                         var_idx = data_obj.var_idx[var_to_write]
                 
-                
+                    meta['var_info'][var_to_write] = vi[var_to_write]
                     #write common meta info for this station (data lon, lat and 
                     #altitude are set to station locations)
                     data_obj._data[start:stop, 
@@ -617,25 +623,11 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
     
-    vmrvar = 'vmro3'
-    reader = ReadGhost()
-    files = reader.get_file_list(vmrvar)
+    var = 'conco3' 
+    obs = ReadGhost('GHOST.daily').read(var)
     
-    #statlist = reader.read_file(files[0])
-
-# =============================================================================
-#     mmol_o3 = 48 # g mol-1
-#     
-#     stat = statlist[0]
-#     
-#     vmrdata = stat[vmrvar]
-#     meta = stat['meta']
-#     p = meta['measuring_instrument_volume_standard_pressure']
-#     T = meta['measuring_instrument_volume_standard_temperature']
-#     
-#     conco3 = vmrx_to_concx(vmrdata, p, T, mmol_o3, 'nmol mol-1',
-#                            output_unit='ug m-3')
-# =============================================================================
+   
+    #obs  = pya.io.ReadUngridded().read('GHOST.daily', var)
+    #obs._check_index()
     
-    data = reader.read(['conco3', 'vmro3', 'vmrso2'])
-    
+    subset = obs.filter_altitude((0,1000))
