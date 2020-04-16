@@ -708,22 +708,26 @@ class Colocator(ColocationSetup):
                 
         data_objs = {}
         for model_var, obs_var in var_matches.items():
-            
-            obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                           vars_to_retrieve=obs_var,
-                           **ropts)
+# =============================================================================
+# @hansbrenna has changed the flow of this part of the method to work better 
+# with large observational data sets. I have moved the reading of the obs data
+# after the check of whether the co-located data file already exists. If it
+# exists and reanalyse_existing = False, the obs data will not be read for that
+# obs-model combination. If the co-located data object is to be computed, only 
+# one observational variable will be loaded into the UngriddedData object at
+# a time.
+# =============================================================================
 
         # ToDo: consider removing outliers already here.
-            if 'obs_filters' in self:
-                remaining_filters = self._eval_obs_filters()
-                obs_data = obs_data.apply_filters(**remaining_filters)
-                
+            if 'obs_filters' in self:              
                 ts_type = self.ts_type
                 start, stop = start_stop(self.start, self.stop)
                 print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
                                                                  self.obs_id, 
                                                                  model_var, 
                                                                  obs_var))
+
+
             try:
                 model_data = self._read_gridded(reader=model_reader, 
                                                 var_name=model_var, 
@@ -746,6 +750,16 @@ class Colocator(ColocationSetup):
             if ts_type is None:
                 # if colocation frequency is not specified
                 ts_type = ts_type_src
+            
+            #check if co-located data file already exists before reading observational
+            #data sets
+            # if self.save_coldata:
+            #     savename = self._coldata_savename(model_data, start, stop, 
+            #                                       ts_type, var_name=model_var)
+                
+            #     file_exists = self._check_coldata_exists(model_data.data_id, 
+            #                                              savename)
+
 # =============================================================================
 #             if not model_data.ts_type in all_ts_types:
 #                 raise TemporalResolutionError('Invalid temporal resolution {} '
@@ -792,6 +806,21 @@ class Colocator(ColocationSetup):
                                        'colocated data file {}'.format(savename))
                         print_log.info('REMOVE: {}\n'.format(savename))
                         os.remove(os.path.join(out_dir, savename))
+                        
+                        #Reading obs data only if the co-located data file does
+                        #not already exist.
+                        #This part of the method has been changed by @hansbrenna to work better with
+                        #large observational data sets. Only one variable is loaded into
+                        # the UngriddedData object at a time. Currently the variable is
+                        #re-read a lot of times, which is a weakness.
+                        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                                       vars_to_retrieve=obs_var,
+                                       **ropts)
+                        
+                                # ToDo: consider removing outliers already here.
+                        if 'obs_filters' in self:
+                            remaining_filters = self._eval_obs_filters()
+                            obs_data = obs_data.apply_filters(**remaining_filters)
                         
             try:
                 try:
