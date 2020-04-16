@@ -48,6 +48,21 @@ This repository contains the AeroCom python tools which are / will be used to pr
 
 At this point the tools are co-operational together with the IDL based aerocom-tools that cannot be made public because they use 3rd party libraries with a non GPL compatible license.
 
+Citation
+========
+
+If you use pyaerocom for your research and find it useful, please consider citing pyaerocom using the following citation details:
+
+@misc{pyaerocom,
+author = {{MET Norway }},
+title = {Pyaerocom, a Python package containing reading, post analysis and visualisation tools for the AEROCOM project.},
+year = {2020},
+address = {Oslo, Norway},
+url = {https://pyaerocom.met.no/},
+publisher={GitHub},
+howpublished={\url{https://github.com/metno/pyaerocom}},
+}
+
 Website and code documentation
 ==============================
 

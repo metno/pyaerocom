@@ -80,7 +80,7 @@ class TimeResampler(object):
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
-                 how='mean', apply_constraints=None,
+                 how=None, apply_constraints=None,
                  min_num_obs=None, **kwargs):
         """Resample input data
 
@@ -116,6 +116,8 @@ class TimeResampler(object):
         pandas.Series or xarray.DataArray
             resampled data object
         """
+        if how is None:
+            how = 'mean'
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
         to_freq = to_ts_type.to_pandas_freq() 

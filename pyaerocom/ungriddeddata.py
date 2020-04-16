@@ -201,6 +201,11 @@ class UngriddedData(object):
                 assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
                           'index assigned in data and var_idx for {} in meta-block'
                           .format(var, idx))
+            for var in meta['var_info']:
+                assert var in vars_avail, ('Detected variable {} in var_info '
+                                           'of meta block {}. This variable is '
+                                           'not registered in attr. var_idx'
+                                           .format(var, idx))
         
     @property
     def index(self):
@@ -1267,7 +1272,13 @@ class UngriddedData(object):
             if self._check_filter_match(meta, *filters):
                 meta_matches.append(meta_idx)
                 for var in meta['var_info']:
-                    totnum += len(self.meta_idx[meta_idx][var])
+                    try:
+                        totnum += len(self.meta_idx[meta_idx][var])
+                    except KeyError:
+                        const.print_log.warn('Ignoring variable {} in '
+                                             'meta block {} since no data '
+                                             'could be found'.format(
+                                              var, meta_idx))
                 
         return (meta_matches, totnum)
     

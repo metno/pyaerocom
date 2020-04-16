@@ -156,9 +156,11 @@ def compute_model_average_and_diversity(cfg, var_name,
             models_failed.append(mid)
             const.print_log.info('Failed to process...: {}'.format(repr(e)))
             
-            data = cfg.read_model_data(mname, var_name, 
-                                       ts_type=ts_type,
-                                       **kwargs)
+# =============================================================================
+#             data = cfg.read_model_data(mname, var_name, 
+#                                        ts_type=ts_type,
+#                                        **kwargs)
+# =============================================================================
             if logfile is not None:
                 logfile.write('\nFAILED {}: {}'.format(mid, repr(e)))
             continue

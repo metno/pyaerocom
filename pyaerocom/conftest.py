@@ -13,7 +13,7 @@ import requests
 import tarfile
 
 from traceback import format_exc
-from pyaerocom import const 
+from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal
 from pyaerocom.io import ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3
@@ -97,6 +97,7 @@ _URL_TESTDATA = 'https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.g
 # Testdata directory
 TESTDATADIR = Path(const._TESTDATADIR)
 
+AMES_FILE = 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas'
 # Paths to be added to pya.const. All relative to BASEDIR
 ADD_PATHS = {
     
@@ -111,24 +112,25 @@ ADD_PATHS = {
 # Additional paths that have to exist (for sanity checking)
 TEST_PATHS = {
     
-    'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc'
+    'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
+    'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE)
     
     }
 TEST_PATHS.update(ADD_PATHS)
-
-
 
 _UNGRIDDED_READERS = {
     'AeronetSunV3L2Subset.daily'  : ReadAeronetSunV3,
     'AeronetSDAV3L2Subset.daily'  : ReadAeronetSdaV3,
     'AeronetInvV3L2Subset.daily'  : ReadAeronetInvV3,
-    'EBASSubset'            : ReadEbas
+    'EBASSubset'                  : ReadEbas
 }
 
 
-    
 TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
 
+NASA_AMES_FILEPATHS = {
+    'scatc_jfj' :  TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
+    }
 
 # checks if testdata-minimal is available and if not, tries to download it 
 # automatically into ~/MyPyaerocom/testdata-minimal
@@ -164,6 +166,8 @@ testdata_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
 
 test_not_working = pytest.mark.skip(reason='Method raises Exception')
 
+from pyaerocom import change_verbosity
+change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
 # Example GriddedData object (TM5 model)
@@ -193,7 +197,14 @@ def aeronetsunv3lev2_subset():
 def data_scat_jungfraujoch():
     r = ReadEbas()
     return r.read('scatc550aer', station_names='Jungfrau*')
+
+@pytest.fixture(scope='session')
+def loaded_nasa_ames_example():
+    from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
+    #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
+    return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
     
+
 if __name__=="__main__":
     import sys
     import pyaerocom as pya
