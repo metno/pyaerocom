@@ -118,8 +118,6 @@ TEST_PATHS = {
     }
 TEST_PATHS.update(ADD_PATHS)
 
-
-
 _UNGRIDDED_READERS = {
     'AeronetSunV3L2Subset.daily'  : ReadAeronetSunV3,
     'AeronetSDAV3L2Subset.daily'  : ReadAeronetSdaV3,
@@ -128,9 +126,11 @@ _UNGRIDDED_READERS = {
 }
 
 
-    
 TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
 
+NASA_AMES_FILEPATHS = {
+    'scatc_jfj' :  TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
+    }
 
 # checks if testdata-minimal is available and if not, tries to download it 
 # automatically into ~/MyPyaerocom/testdata-minimal
@@ -165,7 +165,7 @@ testdata_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
                     reason='Skipping tests that require testdata-minimal.')
 
 test_not_working = pytest.mark.skip(reason='Method raises Exception')
-print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+
 from pyaerocom import change_verbosity
 change_verbosity('critical', const.print_log)
 ### Fixtures representing data
@@ -199,11 +199,12 @@ def data_scat_jungfraujoch():
     return r.read('scatc550aer', station_names='Jungfrau*')
 
 @pytest.fixture(scope='session')
-def nasa_ames_example():
+def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
-    fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
-    return EbasNasaAmesFile(fp)
+    #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
+    return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
     
+
 if __name__=="__main__":
     import sys
     import pyaerocom as pya

@@ -4,7 +4,7 @@
 # Box 43 Blindern
 # 0313 OSLO
 # NORWAY
-# E-mail: jan.griesfeller@met.no
+# E-mail: jonasg@met.no
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -462,8 +462,8 @@ class ReadEbas(ReadUngriddedBase):
         db = self.file_index
         files_vars = {}
         totnum = 0
-        const.print_log.info('Retrieving EBAS files for variables\n{}'
-                             .format(vars_to_retrieve))
+        const.logger.info('Retrieving EBAS files for variables\n{}'
+                          .format(vars_to_retrieve))
         # directory containing NASA Ames files
         filedir = self.file_dir
         for var in vars_to_retrieve:

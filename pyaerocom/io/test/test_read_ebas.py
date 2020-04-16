@@ -24,11 +24,15 @@
 
 import pytest
 import os
-from pyaerocom import const
-from pyaerocom.conftest import testdata_unavail
-from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 import numpy as np
+import numpy.testing as npt
+
+from pyaerocom import const
+from pyaerocom.conftest import testdata_unavail, NASA_AMES_FILEPATHS
+from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
+from pyaerocom.io.ebas_varinfo import EbasVarInfo
 import pyaerocom.mathutils as mu
+from pyaerocom.stationdata import StationData
     
 @pytest.fixture(scope='module')
 @testdata_unavail
@@ -37,6 +41,7 @@ def reader():
     
 @testdata_unavail
 class TestReadEBAS(object):
+
     PROVIDES_VARIABLES = ['DEFAULT',
                          'sc550aer',
                          'sc440aer',
@@ -305,16 +310,67 @@ class TestReadEBAS(object):
     def test__shift_wavelength(self):
         pass
     
-    def test_find_var_cols(self, reader, nasa_ames_example):
+    def test_find_var_cols(self, reader, loaded_nasa_ames_example):
         var = ['sc550aer', 'scrh']
         desired = {'sc550aer' : [17], 
                    'scrh'     : [3]}
         
-        cols = reader.find_var_cols(var, nasa_ames_example)
+        cols = reader.find_var_cols(var, loaded_nasa_ames_example)
         for k, v in desired.items():
             assert k in cols
             assert cols[k] == v
+    
+    @pytest.mark.parametrize('var', ['sc550aer'])
+    def test_get_ebas_var(self, reader, var):
+        vi = reader.get_ebas_var(var)
+        assert isinstance(vi, EbasVarInfo)
+        assert var in reader._loaded_ebas_vars
+    
+    @pytest.mark.parametrize('filename,vars_to_retrieve,start,stop,totnum,'
+                             'var_nanmeans,var_numnans,var_units,meta', [
+        (NASA_AMES_FILEPATHS['scatc_jfj'], ['scrh'],
+         np.datetime64('2018-01-01T00:30:00'), 
+         np.datetime64('2018-12-31T23:29:59'),
+        8760,8.2679,78,['%'],
+        {'latitude': 46.5475, 'longitude': 7.985, 'altitude': 3580.0, 
+         'filename': 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas', 
+         'station_id': 'CH0001G', 'station_name': 'Jungfraujoch', 
+         'instrument_name': 'TSI_3563_JFJ_dry', 
+         'PI': 'Bukowiecki, Nicolas; Baltensperger, Urs', 
+         'ts_type': 'hourly', 'data_id': 'EBASMC', 'data_level': 2, 
+         'revision_date': np.datetime64('2019-05-20T00:00:00')})
+        ]) 
+    def test_read_file(self, reader, filename, vars_to_retrieve, start, 
+                       stop, totnum, var_nanmeans, var_numnans, var_units,
+                       meta):
+        data = reader.read_file(filename=filename, 
+                                vars_to_retrieve=vars_to_retrieve)
+        if isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        assert isinstance(data, StationData)
+        assert isinstance(data, dict)
+        assert 'var_info' in data
+        assert [var in data for var in vars_to_retrieve]
+        assert [var in data['var_info'] for var in vars_to_retrieve]
+        assert data.dtime[0] == start
+        assert data.dtime[-1] == stop
+        assert len(data.dtime) == totnum
+        nanmeans = []
+        numnans = []
+        varunits = []
+        for i, var in enumerate(vars_to_retrieve):
+            assert isinstance(data[var], np.ndarray)
+            varunits.append(data['var_info'][var]['units'])
+            nanmeans.append(np.nanmean(data[var]))
+            numnans.append(np.isnan(data[var]).sum())
+        npt.assert_allclose(nanmeans, var_nanmeans, rtol=1e-3)
+        npt.assert_array_equal(numnans, var_numnans)
+        npt.assert_array_equal(varunits, var_units)
         
+        _meta = data.get_meta()
+        assert len(_meta) == len(meta)
+        for key, val in _meta.items():
+            assert val == meta[key]
         
 if __name__ == '__main__':
     import os    
