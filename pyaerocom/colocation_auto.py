@@ -526,8 +526,6 @@ class Colocator(ColocationSetup):
                                         .format(self.model_id, var_name))
             var = list(var_matches.keys())[0]
         return self._read_gridded(reader, var, 
-                                  start=self.start, 
-                                  stop=self.stop, 
                                   is_model=True, 
                                   **kwargs)
     
@@ -573,8 +571,16 @@ class Colocator(ColocationSetup):
         return obs_data
     # ToDo: cumbersome (together with _find_var_matches, review whole handling
     # of vertical codes for variable mappings...)
-    def _read_gridded(self, reader, var_name, start, stop, is_model=True,
-                      **kwargs):
+    def _read_gridded(self, reader, var_name, is_model=True, **kwargs):
+        try:
+            start = kwargs.pop('start')
+        except KeyError:
+            start = self.start
+            
+        try:
+            stop = kwargs.pop('stop')
+        except KeyError:
+            stop = self.stop
         if is_model:
             vert_which = self.obs_vert_type
             ts_type_read = self.model_ts_type_read
