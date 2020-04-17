@@ -976,7 +976,7 @@ class ReadGridded(object):
         if len(exps) > 1:
             msg += 'Found multiple experiments. Choose from: {}'.format(exps)
         if len(verts) > 1:
-            dvc = const.VARS[var_name].default_vert_code
+            dvc = const.VARS[var_name].get_default_vert_code()
             if dvc is not None and dvc in verts:
                 return self.filter_query(var_name, ts_type, start, stop, 
                                          experiment, vert_which=dvc, 
