@@ -361,7 +361,12 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           colocation_settings,
                                           vert_code, out_dirs):
     
-    """Creates all json files for one ColocatedData object"""
+    """Creates all json files for one ColocatedData object
+    
+    ToDo
+    ----
+    Complete docstring
+    """
     if not isinstance(coldata, ColocatedData):
         raise ValueError('Need ColocatedData object, got {}'
                          .format(type(coldata)))

@@ -4,10 +4,11 @@
 This module contains plot routines for Aerocom data. So far, this includes a
 low level, very flexible plot method
 """
-from matplotlib.pyplot import figure, get_cmap
+import matplotlib.pyplot as plt
 from pandas import to_datetime
 import numpy as np
 from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
+from mpl_toolkits.axes_grid1 import AxesGrid
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -44,7 +45,7 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
     if color_theme is None:
         color_theme=COLOR_THEME
     if vmin is not None and vmax is not None and vmin < 0 and vmax > 0:
-        cmap = get_cmap(color_theme.cmap_map_div)
+        cmap = plt.get_cmap(color_theme.cmap_map_div)
         if color_theme.cmap_map_div_shifted:
             try:
                 from geonum.helpers import shifted_color_map
@@ -52,7 +53,7 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
             except Exception:
                 logger.warning('cannot shift colormap, need geonum installation')
         return cmap
-    return get_cmap(color_theme.cmap_map)
+    return plt.get_cmap(color_theme.cmap_map)
     
 
 def set_map_ticks(ax, xticks=None, yticks=None, add_x=True, 
@@ -158,7 +159,7 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
                 figw = figh*fix_aspect
                 figsize = (figw, figh)
                     
-            fig = figure(figsize=figsize)
+            fig = plt.figure(figsize=figsize)
         else:
             fig.clf()
         if contains_cbar:
@@ -191,6 +192,126 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
         ax.gridlines()
     
     return ax
+
+def init_multimap_grid(nrows, ncols, add_coastlines=True, remove_outline_map=True,
+                       projection=None, figsize=None, color_theme=None, 
+                       axes_pad_hor=0.02, axes_pad_vert=0.02, 
+                       cbar_mode=None, cbar_location='right', 
+                       cbar_pad='5%', cbar_size='3%', label_mode='', 
+                       **kwargs):
+    if color_theme is None:
+        color_theme = COLOR_THEME
+    if projection is None:
+        projection = ccrs.PlateCarree()
+        
+    axes_class = (GeoAxes, dict(map_projection=projection))
+    
+    if figsize is None:
+        w = 20
+        wmap = w / ncols
+        hmap = wmap/2
+        h = hmap * nrows
+        figsize=(w,h)
+    fig = plt.figure(figsize=figsize)
+    
+# =============================================================================
+#     axgr = AxesGrid(fig, 111, axes_class=axes_class,
+#                     nrows_ncols=(nrows, ncols),
+#                     axes_pad=(0.6, 0.5),
+#                     cbar_location='right',
+#                     cbar_mode="each",
+#                     cbar_pad="5%",
+#                     cbar_size='3%',
+#                     label_mode='')  # note the empty label_mode
+# =============================================================================
+    axgr = AxesGrid(fig, 111, axes_class=axes_class,
+                    nrows_ncols=(nrows, ncols),
+                    axes_pad = (axes_pad_hor, axes_pad_vert),
+                    cbar_location=cbar_location,
+                    cbar_mode=cbar_mode,
+                    cbar_pad=cbar_pad,
+                    cbar_size=cbar_size,
+                    label_mode=label_mode,
+                    **kwargs) 
+    
+    if add_coastlines or remove_outline_map:
+        for ax in axgr:
+            if add_coastlines:
+                ax.coastlines(color=color_theme.color_coastline)
+            if remove_outline_map:
+                ax.outline_patch.set_edgecolor('white')    
+    return fig, axgr
+
+def _init_width_ratios(width_ratios, ncols, add_cbar_axes):
+    if width_ratios is None:        
+        sub = [30, 1] if add_cbar_axes else [30]
+        width_ratios = sub*ncols
+    elif isinstance(width_ratios, list):
+        if len(width_ratios) == ncols and add_cbar_axes:
+            wr = np.asarray(width_ratios)
+            wrmax = wr.max()
+            cbarw = wrmax / 30
+            width_ratios = []
+            for w in wr:
+                width_ratios.extend([w, cbarw])
+    
+    if not isinstance(width_ratios, list):
+        raise ValueError('Invalid input for width ratio')
+    return width_ratios
+
+def init_multimap_grid_v0(nrows, ncols, add_cbar_axes=False,
+                       add_coastlines=True, remove_outline_map=True,
+                       projection=None, width_ratios=None,
+                       figsize=None):
+    if projection is None:
+        projection = ccrs.PlateCarree()
+    
+    width_ratios = _init_width_ratios(width_ratios, ncols, add_cbar_axes)
+    ncols_axes = len(width_ratios)        
+    
+    if figsize is None:
+        w = 20
+        wmap = int(w / ncols)
+        map_wh_aspect = 2 if not add_cbar_axes else 2
+        hmap = int(wmap / map_wh_aspect)
+        h = nrows * hmap
+        figsize=(w, h)
+    
+    
+    fig = plt.figure(figsize=figsize)
+    gs = fig.add_gridspec(ncols=ncols_axes, nrows=nrows, 
+                          width_ratios=width_ratios)
+    
+    axes_map = []
+    axes_cbar = []
+    for row in range(nrows):
+        
+        axes_map_row = []
+        axes_cbar_row = []
+        for i in range(ncols_axes):
+            if not add_cbar_axes or i%2==0:
+                ax = fig.add_subplot(gs[row, i], projection=projection)
+                if add_coastlines:
+                    ax.coastlines(color='#e6e6e6')
+                if remove_outline_map:
+                    ax.outline_patch.set_edgecolor('white')    
+                axes_map_row.append(ax)
+            else:
+                ax = fig.add_subplot(gs[row, i])
+                axes_cbar_row.append(ax)
+                ax.yaxis.tick_right()
+        
+        
+            axes_map.append(axes_map_row)
+            axes_cbar.append(axes_cbar_row)
+        
+    
+    axes_map = np.asarray(axes_map)
+    axes_cbar = np.asarray(axes_cbar)
+     
+    #plt.subplots_adjust(wspace=0.05, hspace=0.04)    
+    #fig.tight_layout()
+    return fig, axes_map, axes_cbar
 
 def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None, 
                             unit=None, xlim=(-180, 180), ylim=(-90, 90), 
@@ -300,7 +421,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         if cmap is None:
             cmap = get_cmap_maps_aerocom(color_theme, low, high)
         elif isinstance(cmap, str):
-            cmap = get_cmap(cmap)
+            cmap = plt.get_cmap(cmap)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
     else:
         dmin = np.nanmin(data)
@@ -326,7 +447,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             if cmap is None:
                 cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
             elif isinstance(cmap, str):
-                cmap = get_cmap(cmap)
+                cmap = plt.get_cmap(cmap)
             if discrete_norm:
                 #to compute upper range of colour range, round up vmax
                 exp = float(exponent(vmax) - 1)
@@ -344,7 +465,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             if cmap is None:
                 cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
             elif isinstance(cmap, str):
-                cmap = get_cmap(cmap)
+                cmap = plt.get_cmap(cmap)
             norm = Normalize(vmin=vmin, vmax=vmax)
     cbar_extend = "neither"
     if c_under is not None:
@@ -480,7 +601,7 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
                  to_datetime(data.start).strftime("%Y%m%d"),
                  data.area_weighted_mean()))
     return fig
-    
+
 def plot_map(data, *args, **kwargs):
     """Map plot of grid data
     
@@ -602,7 +723,7 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
     
     norm=None
     if isinstance(cmap, str):
-        cmap = get_cmap(cmap)
+        cmap = plt.get_cmap(cmap)
     if step_bounds is not None:
         bounds = np.arange(vmin, vmax+step_bounds, step_bounds)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
@@ -626,36 +747,52 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         cbar.set_label('NMB [%]')
         
     return ax
-
    
 if __name__ == "__main__":
-    from matplotlib.pyplot import close
-    close('all')
+    
+    plt.close('all')
     
     import pyaerocom as pya
+    import pandas as pd
+    
+    #fig, axm, axc = init_multimap_grid_v0(5, 3, add_cbar_axes=True)
+    
+    reader = pya.io.ReadGridded('OsloCTM3v1.01-met2010_AP3-CTRL')
+    
+    data = reader.read_var('ec550dryaer', ts_type='monthly')
+    
+    #plot_griddeddata_on_map(data, ax=axm[0][0], ax_cbar=axc[0][0])
     
     
-    data = pya.io.ReadGridded('AEROCOM-MEAN_AP3-CTRL').read_var('od550aer')#.resample_time('yearly')
+    fig, axgr = init_multimap_grid(3,4, figsize=(18, 7), axes_pad_hor=0.6, 
+                                   axes_pad_vert=0.5, cbar_mode='each')    
+    for ax in axgr:
+        ax.coastlines()
+      
+    vmin, vmax = 0, np.ceil(data.max()/100)*100
+    ts = data.time_stamps()
+    for i in range(12):
+        cax = axgr.cbar_axes[i]
+        ax = axgr[i]
+        plot_griddeddata_on_map(data[i], ax=ax, ax_cbar=cax, 
+                                vmin=vmin, vmax=vmax, discrete_norm=True)
+        
+        ax.set_title(pd.Timestamp(ts[i]).strftime('%B %Y'),
+                     fontsize=10)
     
-    obs0= pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    col0 = pya.colocation.colocate_gridded_ungridded(data, obs0, 
-                                                     filter_name='LAND')
+    fig = plt.figure(figsize=(18, 7))
+    axes_class = (GeoAxes, dict(map_projection=ccrs.PlateCarree()))
     
-    obs1= pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
+    axgr = AxesGrid(fig, 111, axes_class=axes_class,
+                    nrows_ncols=(3, 4),
+                    axes_pad=(0.6, 0.5),
+                    cbar_location='right',
+                    cbar_mode="each",
+                    cbar_pad="5%",
+                    cbar_size='3%',
+                    label_mode='')  # note the empty label_mode
     
-    col1 = pya.colocation.colocate_gridded_gridded(data, obs1, 
-                                                   filter_name='OCN',
-                                                   regrid_res_deg=5)
     
-    
-    
-    ax = plot_nmb_map_colocateddata(col0, step_bounds=10, marker='^', 
-                                    ref_label='AERONET (LAND)')
-    ax = plot_nmb_map_colocateddata(col1, step_bounds=10, 
-                                    ax=ax, add_cbar=False, 
-                                    ref_label='MODIS6-aqua (OCN)')
-    
-    ax.legend()
-    
-    ax.set_title('AEROCOM ensemble model (2010)')
+        
+        

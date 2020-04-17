@@ -4,7 +4,7 @@
 # Box 43 Blindern
 # 0313 OSLO
 # NORWAY
-# E-mail: jan.griesfeller@met.no
+# E-mail: jonasg@met.no
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -74,10 +74,6 @@ class ReadEbasOptions(BrowseDict):
         :func:`ReadEbas.read` (e.g. if sc550dryaer is requested, this 
         requires reading of sc550aer and scrh. The latter 2 will be 
         written to the data object if this parameter evaluates to True)
-    log_read_stats : bool
-        It True, the number of data points that is removed per station (
-        dependent on other constraints) is logged in the attribute 
-        _read_stats_log
     merge_meta : bool
         if True, then :func:`UngriddedData.merge_common_meta` will be called
         at the end of :func:`ReadEbas.read` (merges common metadata blocks
@@ -101,8 +97,6 @@ class ReadEbasOptions(BrowseDict):
         self.eval_flags = True
         
         self.keep_aux_vars = False
-        
-        self.log_read_stats = False
         
         self.merge_meta = False
         
@@ -131,7 +125,7 @@ class ReadEbas(ReadUngriddedBase):
     """
     
     #: version log of this class (for caching)
-    __version__ = "0.31_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.32_" + ReadUngriddedBase.__baseversion__
     
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -225,7 +219,6 @@ class ReadEbas(ReadUngriddedBase):
         self._loaded_ebas_vars = {}
         
         self._file_dir = None
-        self._filelog = None
         
         self.files_failed = []
         self._read_stats_log = BrowseDict()
@@ -251,20 +244,6 @@ class ReadEbas(ReadUngriddedBase):
         self._all_stats = None
     
     @property
-    def filelog(self):
-        """File logger"""
-        if self._filelog is None:
-            import logging
-            logdir = const.LOGFILESDIR
-            logfile = os.path.join(logdir, 'ReadEbas_{}.log'.format(self.__version__))
-            fh = logging.FileHandler(logfile)
-            logger = logging.getLogger('ebas_io')
-            logger.setLevel(logging.DEBUG)
-            logger.addHandler(fh)
-            self._filelog = logger
-        return self._filelog
-    
-    @property
     def file_dir(self):
         """Directory containing EBAS NASA Ames files"""
         if self._file_dir is not None:
@@ -273,8 +252,9 @@ class ReadEbas(ReadUngriddedBase):
     
     @file_dir.setter
     def file_dir(self, val):
-        if isinstance(val, str):
-            self._file_dir = val
+        if not isinstance(val, str) or not os.path.exists(val):
+            raise FileNotFoundError('Input directory does not exist')
+        self._file_dir = val
             
     @property
     def FILE_REQUEST_OPTS(self):
@@ -310,11 +290,6 @@ class ReadEbas(ReadUngriddedBase):
     def wavelength_tol_nm(self):
         """Wavelength tolerance in nm for columns"""
         return self.opts.wavelength_tol_nm
-    
-    @property
-    def log_read_stats(self):
-        """Option: if True, then reading info will be logged during read"""
-        return self.opts.log_read_stats
     
     @property
     def keep_aux_vars(self):
@@ -487,15 +462,18 @@ class ReadEbas(ReadUngriddedBase):
         db = self.file_index
         files_vars = {}
         totnum = 0
-        const.print_log.info('Retrieving EBAS files for variables\n{}'
-                             .format(vars_to_retrieve))
+        const.logger.info('Retrieving EBAS files for variables\n{}'
+                          .format(vars_to_retrieve))
         # directory containing NASA Ames files
         filedir = self.file_dir
         for var in vars_to_retrieve:
             info = self.get_ebas_var(var)
             
             if 'station_names' in constraints:
-                stat_matches = self.find_station_matches(constraints['station_names'])
+                try:
+                    stat_matches = self.find_station_matches(constraints['station_names'])
+                except FileNotFoundError:
+                    continue
                 constraints['station_names'] = stat_matches
                 
             req = info.make_sql_request(**constraints)
@@ -508,21 +486,97 @@ class ReadEbas(ReadUngriddedBase):
             paths = []
             for file in filenames:
                 if file in self.IGNORE_FILES:
-                    const.print_log.info('Ignoring flagged file {}'.format(file))
+                    const.logger.info('Ignoring flagged file {}'.format(file))
                     continue
-                paths.append(os.path.join(filedir, file))
+                fp = os.path.join(filedir, file)
+                if os.path.exists(fp):
+                    paths.append(fp)
             files_vars[var] = sorted(paths)
             num = len(paths)
             totnum += num
             self.logger.info('{} files found for variable {}'.format(num, var))
         if len(files_vars) == 0:
-            raise IOError('No file could be retrieved for either of the '
-                          'specified input variables: {}'
-                          .format(vars_to_retrieve))
+            raise FileNotFoundError('No files could be retrieved for either '
+                                    'of the specified input variables and '
+                                    'constraints : {} ({})'
+                                    .format(vars_to_retrieve, constraints))
         
         self._lists_orig = files_vars
         files = self._merge_lists(files_vars)
         return files
+    
+# =============================================================================
+#     def get_file_listOLD(self, vars_to_retrieve=None, **constraints):
+#         """Get list of files for all variables to retrieve
+#         
+#         Parameters
+#         ----------
+#         vars_to_retrieve : list
+#             list of variables that are supposed to be loaded
+#         **constraints
+#             further EBAS request constraints deviating from default (default 
+#             info for each AEROCOM variable can be found in `ebas_config.ini <
+#             https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
+#             ebas_config.ini>`__). For details on possible input parameters 
+#             see :class:`EbasSQLRequest` (or `this tutorial <http://aerocom.met.no
+#             /pyaerocom/tutorials.html#ebas-file-query-and-database-browser>`__)
+#             
+#         Returns
+#         -------
+#         list 
+#             unified list of file paths each containing either of the specified 
+#             variables
+#         """
+#         if vars_to_retrieve is None:
+#             vars_to_retrieve = self.DEFAULT_VARS
+#         elif isinstance(vars_to_retrieve, str):
+#             vars_to_retrieve = [vars_to_retrieve]
+#             
+#         # make sure variable names are input correctly
+#         vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
+#         
+#         self.logger.info('Fetching data files. This might take a while...')
+#         
+#         db = self.file_index
+#         files_vars = {}
+#         totnum = 0
+#         const.print_log.info('Retrieving EBAS files for variables\n{}'
+#                              .format(vars_to_retrieve))
+#         # directory containing NASA Ames files
+#         filedir = self.file_dir
+#         for var in vars_to_retrieve:
+#             info = self.get_ebas_var(var)
+#             
+#             if 'station_names' in constraints:
+#                 stat_matches = self.find_station_matches(constraints['station_names'])
+#                 constraints['station_names'] = stat_matches
+#                 
+#             req = info.make_sql_request(**constraints)
+#             
+#             const.logger.info('Retrieving EBAS file list for request:\n{}'
+#                               .format(req))
+#             filenames = db.get_file_names(req)
+#             self.sql_requests.append(req)
+#             
+#             paths = []
+#             for file in filenames:
+#                 if file in self.IGNORE_FILES:
+#                     const.print_log.info('Ignoring flagged file {}'.format(file))
+#                     continue
+#                 paths.append(os.path.join(filedir, file))
+#             files_vars[var] = sorted(paths)
+#             num = len(paths)
+#             totnum += num
+#             self.logger.info('{} files found for variable {}'.format(num, var))
+#         if len(files_vars) == 0:
+#             raise IOError('No file could be retrieved for either of the '
+#                           'specified input variables: {}'
+#                           .format(vars_to_retrieve))
+#         
+#         self._lists_orig = files_vars
+#         files = self._merge_lists(files_vars)
+#         return files
+# =============================================================================
     
     def _get_var_cols(self, ebas_var_info, data):
         """Get all columns in NASA Ames file matching input Aerocom variable
@@ -934,16 +988,7 @@ class ReadEbas(ReadUngriddedBase):
              vars_to_compute) = self.check_vars_to_retrieve(vars_to_retrieve)
         else:
             vars_to_read, vars_to_compute = _vars_to_read, _vars_to_compute
-        
-# =============================================================================
-#         for var in vars_to_read:
-#             info = self.get_ebas_var(var)
-#             if info.requires is not None:
-#                 for aux_var in info.requires:
-#                     if not aux_var in self._loaded_ebas_vars:
-#                         self._loaded_ebas_vars[aux_var] = EbasVarInfo(aux_var)  
-# =============================================================================
-            
+ 
         file = EbasNasaAmesFile(filename)
         
         # find columns in NASA Ames file for variables that are to be read
@@ -1019,11 +1064,6 @@ class ReadEbas(ReadUngriddedBase):
                     data_out = self._convert_varunit_stationdata(data_out, var)
                 except Exception:
                     raise
-            if self.log_read_stats:
-                info = data_out['var_info'][var]
-                info['numtot'] = len(data)
-                info['numnans'] = np.isnan(data).sum()
-            
             
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
@@ -1083,13 +1123,7 @@ class ReadEbas(ReadUngriddedBase):
                     for k, v in from_dict.items():
                         if not k in to_dict or to_dict[k] is None:
                             to_dict[k] = v
-                    if self.log_read_stats:
-                        # determines the additional number of points that were set 
-                        # to NaN while computing the variable. If
-                        nandiff = (np.isnan(data[var]).sum() - 
-                                   np.isnan(data[from_var]).sum())
-                        
-                        to_dict['num_nan_diff'] = nandiff
+
                 if from_var in data.data_flagged:
                     data.data_flagged[var] = data.data_flagged[from_var]
                 if from_var in data.data_err:

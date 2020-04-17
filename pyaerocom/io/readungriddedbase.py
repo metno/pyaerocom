@@ -53,7 +53,7 @@ class ReadUngriddedBase(abc.ABC):
                 "Data directory: {}\n"
                 "Supported variables: {}\n"
                 "Last revision: {}"
-                .format(self.DATA_ID, self.DATASET_PATH,
+                .format(self.data_id, self.DATASET_PATH,
                         self.PROVIDES_VARIABLES, self.data_revision))
     
     @abc.abstractproperty
@@ -123,10 +123,6 @@ class ReadUngriddedBase(abc.ABC):
         """
         pass        
     
-    @property
-    def data_id(self):
-        """Wrapper for :attr:`DATA_ID` (pyaerocom standard name)"""
-        return self.DATA_ID
     
     @abc.abstractproperty
     def SUPPORTED_DATASETS(self):
@@ -166,7 +162,7 @@ class ReadUngriddedBase(abc.ABC):
         """
         if self._dataset_path is not None and os.path.exists(self._dataset_path):
             return self._dataset_path
-        return get_obsnetwork_dir(self.DATA_ID)
+        return get_obsnetwork_dir(self.data_id)
         
     @abc.abstractmethod
     def read_file(self, filename, vars_to_retrieve=None):
@@ -221,7 +217,7 @@ class ReadUngriddedBase(abc.ABC):
     # of the derived reading classes
     def __init__(self, dataset_to_read=None, dataset_path=None):
         self.data = None #object that holds the loaded data
-        
+        self._data_id = None
         self.files = []
         # list that will be updated in read method to store all files that
         # could not be read. It is the responsibility of developers of derived
@@ -240,8 +236,13 @@ class ReadUngriddedBase(abc.ABC):
             if not dataset_to_read in self.SUPPORTED_DATASETS:
                 raise AttributeError("Dataset {} not supported by this "
                                      "interface".format(dataset_to_read))
-            self.DATA_ID = dataset_to_read
-            
+            self._data_id = dataset_to_read
+          
+    @property
+    def data_id(self):
+        """Wrapper for :attr:`DATA_ID` (pyaerocom standard name)"""
+        return self.DATA_ID if self._data_id is None else self._data_id
+    
     @property
     def REVISION_FILE(self):
         """Name of revision file located in data directory"""
@@ -258,7 +259,7 @@ class ReadUngriddedBase(abc.ABC):
     
     @property
     def dataset_to_read(self):
-        return self.DATA_ID
+        return self.data_id
     
     @property
     def data_revision(self):
