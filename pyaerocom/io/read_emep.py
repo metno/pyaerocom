@@ -114,6 +114,8 @@ class ReadEMEP(object):
         try:
             del(gridded.metadata['current_date_first'])
             del(gridded.metadata['current_date_last'])
+            # ReadGridded cannot concatenate several years of data if this is missing
+            gridded.metadata['from_files'] = self._filepath 
         except KeyError as e:
             const.print_log.exception('Metadata not available: {}'.format(repr(e)))
 
@@ -164,19 +166,3 @@ if __name__ == '__main__':
     depso4 = reader.read_var('depso4', ts_type='monthly')
     # Read variable that uses unit conversions
     wetso4 = reader.read_var('wetso4', ts_type='monthly')
-
-    
-# =============================================================================
-#     basepath = '/home/eirikg/Desktop/pyaerocom/data/'
-#     file = '2020_AerocomHIST/1850_GLOB1_2010met/Base_month.nc'
-#     filepath = '{}{}'.format(basepath, file)
-# 
-#     reader = ReadEMEP(filepath, data_id='EMEP')
-#     wetso4 = reader.read_var('wetso4', ts_type='monthly')
-#     from pyaerocom.io.readgridded import ReadGridded
-#     control_dir = '/home/eirikg/Desktop/pyaerocom/data/2020_AerocomHIST/control'
-#     control_reader = ReadGridded(data_dir=control_dir)
-#     wetso4_control = control_reader.read_var('wetso4')
-#     
-#     coloc = pya.colocation.colocate_gridded_gridded(wetso4, wetso4_control)
-# =============================================================================
