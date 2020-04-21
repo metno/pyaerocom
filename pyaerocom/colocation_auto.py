@@ -783,8 +783,9 @@ class Colocator(ColocationSetup):
                                                                self.model_id))
                 ts_type = ts_type_src
             
-            
+            really_do_reanalysis = True
             if self.save_coldata:
+                really_do_reanalysis = False
                 savename = self._coldata_savename(model_data, start, stop, 
                                                   ts_type, var_name=model_var)
                 
@@ -802,25 +803,29 @@ class Colocator(ColocationSetup):
                             self.file_status[savename] = 'skipped'
                         continue
                     else:
+                        really_do_reanalysis = True
                         print_log.info('Deleting and recomputing existing '
-                                       'colocated data file {}'.format(savename))
+                               'colocated data file {}'.format(savename))
                         print_log.info('REMOVE: {}\n'.format(savename))
                         os.remove(os.path.join(out_dir, savename))
-                        
-                        #Reading obs data only if the co-located data file does
-                        #not already exist.
-                        #This part of the method has been changed by @hansbrenna to work better with
-                        #large observational data sets. Only one variable is loaded into
-                        # the UngriddedData object at a time. Currently the variable is
-                        #re-read a lot of times, which is a weakness.
-                        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                       vars_to_retrieve=obs_var,
-                                       **ropts)
-                        
-                                # ToDo: consider removing outliers already here.
-                        if 'obs_filters' in self:
-                            remaining_filters = self._eval_obs_filters()
-                            obs_data = obs_data.apply_filters(**remaining_filters)
+                else:
+                    really_do_reanalysis = True
+                
+            if really_do_reanalysis:                
+                #Reading obs data only if the co-located data file does
+                #not already exist.
+                #This part of the method has been changed by @hansbrenna to work better with
+                #large observational data sets. Only one variable is loaded into
+                # the UngriddedData object at a time. Currently the variable is
+                #re-read a lot of times, which is a weakness.
+                obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                               vars_to_retrieve=obs_var,
+                               **ropts)
+                
+                        # ToDo: consider removing outliers already here.
+                if 'obs_filters' in self:
+                    remaining_filters = self._eval_obs_filters()
+                    obs_data = obs_data.apply_filters(**remaining_filters)
                         
             try:
                 try:
