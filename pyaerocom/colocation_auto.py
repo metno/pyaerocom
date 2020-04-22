@@ -838,7 +838,7 @@ class Colocator(ColocationSetup):
                 try:
                     by=self.update_baseyear_gridded
                     stop=None
-                except:
+                except AttributeError:
                     by=None
                 if self.model_use_climatology:
                     by=start.year
