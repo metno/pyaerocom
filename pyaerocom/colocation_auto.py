@@ -228,6 +228,7 @@ class ColocationSetup(BrowseDict):
         self.obs_name = obs_name
         self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
+        self.obs_add_meta = []
         
         self.start = start
         self.stop = stop
