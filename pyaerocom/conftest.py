@@ -159,6 +159,17 @@ geonum_unavail = pytest.mark.skipif(not const.GEONUM_AVAILABLE,
 etopo1_unavail = pytest.mark.skipif(not const.ETOPO1_AVAILABLE,
                    reason='Skipping tests that require access to ETOPO1 data')
 
+try: 
+    import reverse_geocode
+    rg_avail = True
+except ModuleNotFoundError:
+    rg_avail = False
+    
+rg_unavail = pytest.mark.skipif(not rg_avail,
+                   reason='Skipping tests that require access to reverse_geocode')
+
+etopo1_unavail = pytest.mark.skipif(not const.ETOPO1_AVAILABLE,
+                   reason='Skipping tests that require access to ETOPO1 data')
 always_skipped = pytest.mark.skipif(True==True, reason='Seek the answer')
 
 testdata_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
