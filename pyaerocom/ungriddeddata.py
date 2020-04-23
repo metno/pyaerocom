@@ -13,6 +13,7 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   MetaDataError, StationNotFoundError)
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
+from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
@@ -492,6 +493,58 @@ class UngriddedData(object):
                                        'that matches name {}'
                                        .format(station_str))
         return idx
+    
+    def _get_stat_coords(self):
+        meta_idx = []
+        coords = []
+        for idx, meta in self.metadata.items():
+            try:
+                lat, lon = meta['latitude'], meta['longitude']
+            except:
+                const.print_log.warning('Could not retrieve lat lon coord '
+                                        'at meta index {}'.format(idx))
+                continue
+            meta_idx.append(idx)
+            coords.append((lat, lon))
+        return (meta_idx, coords)
+    
+    def check_set_country(self):
+        """CHecks all metadata entries for availability of country information
+        
+        Metadata blocks that are missing country entry will be updated based
+        on country inferred from corresponding lat / lon coordinate. Uses 
+        :func:`pyaerocom.geodesy.get_country_info_coords` (library 
+        reverse-geocode) to retrieve countries. This may be errouneous 
+        close to country borders as it uses eucledian distance based on a list
+        of known locations.
+        
+        
+        Note
+        ----
+        Metadata blocks that do not contain latitude and longitude entries are
+        skipped.
+        
+        Returns
+        -------
+        list
+            metadata entries where country was added
+        list 
+            corresponding countries that were inferred from lat / lon
+        """
+        meta_idx, coords = self._get_stat_coords()
+        info = get_country_info_coords(coords)
+        meta_idx_updated = []
+        countries = []
+        
+        for i, idx in enumerate(meta_idx):
+            meta = self.metadata[idx]
+            if not 'country' in meta or meta['country'] is None:
+                country = info[i]['country']
+                meta['country'] = country
+                meta['country_code'] = info[i]['country_code']
+                meta_idx_updated.append(idx)
+                countries.append(country)
+        return (meta_idx_updated, countries)
     
     def find_station_meta_indices(self, station_name_or_pattern,
                                   allow_wildcards=True):
@@ -2630,9 +2683,11 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     return closest_idx    
         
 if __name__ == "__main__":
+    import pyaerocom as pya
     
+    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
-    d = UngriddedData()
+    data.check_set_country()    
 
         
     

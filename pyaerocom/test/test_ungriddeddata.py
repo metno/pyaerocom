@@ -8,7 +8,7 @@ Created on Thu Apr 12 14:45:43 2018
 import numpy as np
 import numpy.testing as npt
 from pyaerocom import UngriddedData
-from pyaerocom.conftest import testdata_unavail
+from pyaerocom.conftest import testdata_unavail, rg_unavail
 from pyaerocom.exceptions import DataCoverageError
 
 def test_init_shape():
@@ -62,7 +62,25 @@ def test_coordinate_access():
 @testdata_unavail
 def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
+
+@testdata_unavail    
+@rg_unavail
+def test_check_set_country(aeronetsunv3lev2_subset):
+    idx, countries = aeronetsunv3lev2_subset.check_set_country()
+    assert len(idx) == len(aeronetsunv3lev2_subset.metadata)
+    assert len(countries) == len(idx)
+    assert countries == ['Italy', 'Japan', 'Burkina Faso', 'Brazil', 
+                         'American Samoa', 'French Southern Territories', 
+                         'Korea, Republic of', 'France', 'Portugal', 
+                         'France', 'Barbados', 'United Kingdom', 'Bolivia', 
+                         'United States', 'French Polynesia', 'China', 
+                         'Taiwan', 'Algeria', 'Netherlands', 'Greece', 
+                         'Belgium', 'Argentina']
+    idx, countries = aeronetsunv3lev2_subset.check_set_country()
+    assert idx == []
+    assert countries == []
+    
     
 if __name__=="__main__":
-    test_init_shape()
-    test_coordinate_access()
+    import sys, pytest
+    pytest.main(sys.argv)
