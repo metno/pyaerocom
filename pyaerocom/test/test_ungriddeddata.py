@@ -7,6 +7,7 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import numpy as np
 import numpy.testing as npt
+import pytest
 from pyaerocom import UngriddedData
 from pyaerocom.conftest import testdata_unavail, rg_unavail
 from pyaerocom.exceptions import DataCoverageError
@@ -79,8 +80,16 @@ def test_check_set_country(aeronetsunv3lev2_subset):
     idx, countries = aeronetsunv3lev2_subset.check_set_country()
     assert idx == []
     assert countries == []
-    
+ 
+@pytest.mark.dependency(depends=["test_check_set_country"])
+def test_countries_available(aeronetsunv3lev2_subset):
+    assert aeronetsunv3lev2_subset.countries_available == ['Algeria', 
+        'American Samoa', 'Argentina', 'Barbados', 'Belgium', 'Bolivia', 
+        'Brazil', 'Burkina Faso', 'China', 'France', 'French Polynesia', 
+        'French Southern Territories', 'Greece', 'Italy', 'Japan', 
+        'Korea, Republic of', 'Netherlands', 'Portugal', 'Taiwan', 
+        'United Kingdom', 'United States']
     
 if __name__=="__main__":
-    import sys, pytest
+    import sys
     pytest.main(sys.argv)

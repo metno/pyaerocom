@@ -546,6 +546,18 @@ class UngriddedData(object):
                 countries.append(country)
         return (meta_idx_updated, countries)
     
+    @property
+    def countries_available(self):
+        #self.check_set_country()
+        countries = []
+        for idx, meta in self.metadata.items():
+            try:
+                countries.append(meta['country'])
+            except:
+                const.print_log.warnign('No country information in meta block', idx)
+        
+        return sorted(dict.fromkeys(countries))
+    
     def find_station_meta_indices(self, station_name_or_pattern,
                                   allow_wildcards=True):
         """Find indices of all metadata blocks matching input station name
