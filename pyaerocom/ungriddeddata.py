@@ -2372,7 +2372,7 @@ class UngriddedData(object):
         return ax
         
     def plot_station_coordinates(self, var_name=None, 
-                                 filter_name=None, start=None, 
+                                 start=None, 
                                  stop=None, ts_type=None, color='r', 
                                  marker='o', markersize=8, fontsize_base=10, 
                                  legend=True, add_title=True, 
@@ -2388,8 +2388,6 @@ class UngriddedData(object):
         
         var_name : :obj:`str`, optional
             name of variable to be retrieved
-        filter_name : :obj:`str`, optional
-            name of filter (e.g. EUROPE-noMOUNTAINS)
         start 
             start time (optional)
         stop 
@@ -2431,9 +2429,7 @@ class UngriddedData(object):
                               'distinguishable. You may want to apply a filter '
                               'first and plot them separately')
         
-        f = Filter(filter_name)
-        
-        subset = f(self)
+        subset = self
         if var_name is None:
             info_str = 'AllVars'
         else:
@@ -2446,7 +2442,7 @@ class UngriddedData(object):
             info_str = var_name
         
         
-        info_str += '_{}'.format(f.name)
+
         try:
             info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
         except Exception:
@@ -2454,7 +2450,7 @@ class UngriddedData(object):
         if ts_type is not None:
             info_str += '_{}'.format(ts_type)
         
-        if all([x is None for x in (var_name, filter_name, start, stop)]): #use all stations
+        if all([x is None for x in (var_name, start, stop)]): #use all stations
             all_meta = subset._meta_to_lists()
             lons, lats = all_meta['longitude'], all_meta['latitude']
             
@@ -2474,13 +2470,15 @@ class UngriddedData(object):
                               markersize=markersize, 
                               legend=legend,
                               fontsize_base=fontsize_base, **kwargs)
-        region = f.region
-        ax.set_xlim(region.lon_range_plot)
-        ax.set_ylim(region.lat_range_plot)
-    
-        ax = set_map_ticks(ax, 
-                           region.lon_ticks, 
-                           region.lat_ticks)
+# =============================================================================
+#         region = f.region
+#         ax.set_xlim(region.lon_range_plot)
+#         ax.set_ylim(region.lat_range_plot)
+#     
+#         ax = set_map_ticks(ax, 
+#                            region.lon_ticks, 
+#                            region.lat_ticks)
+# =============================================================================
         
         if 'title' in kwargs:
             title = kwargs['title']
@@ -2712,10 +2710,15 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
         
 if __name__ == "__main__":
     import pyaerocom as pya
-    
+    import matplotlib.pyplot as plt
     data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
     data.check_set_country()    
+    
+    sub = data.filter_region('United States', check_country_meta=True)
+    
+    sub.plot_station_coordinates()
+    plt.show()
 
         
     
