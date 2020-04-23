@@ -90,6 +90,20 @@ def test_countries_available(aeronetsunv3lev2_subset):
         'Korea, Republic of', 'Netherlands', 'Portugal', 'Taiwan', 
         'United Kingdom', 'United States']
     
+@pytest.mark.dependency(depends=["test_check_set_country"])
+@pytest.mark.parametrize('region_id,check_mask,check_country_meta,num_meta', [
+    ('Italy', True, True, 1),
+    ('EUROPE', True, True, 7),
+    ('OCN', True, True, 8)
+    ])
+def test_filter_region(aeronetsunv3lev2_subset, region_id, check_mask,
+                       check_country_meta, num_meta):
+    subset = aeronetsunv3lev2_subset.filter_region(region_id, 
+                                                   check_mask=check_mask,
+                                                   check_country_meta=check_country_meta)
+    
+    assert len(subset.metadata) == num_meta
+    
 if __name__=="__main__":
     import sys
     pytest.main(sys.argv)

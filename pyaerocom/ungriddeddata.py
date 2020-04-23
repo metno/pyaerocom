@@ -1361,24 +1361,40 @@ class UngriddedData(object):
         """
         return self.filter_by_meta(altitude=alt_range)
     
-    def filter_region(self, region_id, **kwargs):
+    def filter_region(self, region_id, check_mask=True, 
+                      check_country_meta=False, **kwargs):
         """Filter object by a certain region
         
         Parameters
         ----------
         region_id : str
             name of region (must be valid AeroCom region name or HTAP region)
+        check_mask : bool
+            if True and region_id a valid name for a binary mask, then the 
+            filtering is done based on that binary mask.
+        check_country_meta : bool
+            if True, then the input region_id is first checked against 
+            available country names in metadata. If that fails, it is assumed
+            that this regions is either a valid name for registered rectangular
+            regions or for available binary masks.
+        **kwargs
+            currently not used in method (makes usage in higher level classes
+            such as :class:`Filter` easier as other data objects have the 
+            same method with possibly other input possibilities)
             
         Returns
         -------
         UngriddedData
             filtered data object (containing only stations that fall into 
             input region)
-            
-        
         """
-        if region_id in const.HTAP_REGIONS:
+        if check_country_meta:
+            if region_id in self.countries_available:
+                return self.filter_by_meta(country=region_id)
+            
+        if region_id in const.HTAP_REGIONS and check_mask:
             return self.apply_region_mask(region_id)
+        
         region = Region(region_id)
         return self.filter_by_meta(longitude=region.lon_range, 
                                    latitude=region.lat_range)
