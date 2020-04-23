@@ -714,6 +714,8 @@ class Colocator(ColocationSetup):
         
                 
         data_objs = {}
+        start, stop = start_stop(self.start, self.stop)
+        
         for model_var, obs_var in var_matches.items():
 # =============================================================================
 # @hansbrenna has changed the flow of this part of the method to work better 
@@ -725,14 +727,14 @@ class Colocator(ColocationSetup):
 # a time.
 # =============================================================================
 
-        # ToDo: consider removing outliers already here.
-            if 'obs_filters' in self:              
-                ts_type = self.ts_type
-                start, stop = start_stop(self.start, self.stop)
-                print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
-                                                                 self.obs_id, 
-                                                                 model_var, 
-                                                                 obs_var))
+            # ToDo: consider removing outliers already here.
+            #if 'obs_filters' in self:              
+                
+            ts_type = self.ts_type        
+            print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
+                                                             self.obs_id, 
+                                                             model_var, 
+                                                             obs_var))
 
 
             try:
