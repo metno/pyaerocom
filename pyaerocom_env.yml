@@ -18,6 +18,6 @@ dependencies:
   - simplejson
   - pytest
   - requests
-  - reverse_geocode
+  - reverse-geocode
   - tqdm
   
