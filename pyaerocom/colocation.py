@@ -854,22 +854,26 @@ if __name__=='__main__':
     
     
     model_id='NorESM2-met2010_AP3-CTRL'
-    obs_id = 'EBASMC'
+    obs_id = 'GHOST.daily'
     
-    modelreader = pya.io.ReadGridded(model_id)
-    modeldata = modelreader.read_var('sconcso4', start=2010, ts_type='monthly')
+    
+    
+    mr = pya.io.ReadGridded(model_id)
+    modeldata = mr.read_var('sconcpm10')
 
-    modeldata.resample_time('yearly').quickplot_map()
+    #modeldata.resample_time('yearly').quickplot_map()
     
     #obsdata = pya.io.ReadUngridded().read(obs_id, 'concso4').set_flags_nan()
     
-    obsdata1 = pya.io.ReadUngridded().read('GAWTADsubsetAasEtAl', 'concso4')
+    obsdata = pya.io.ReadUngridded().read('GHOST.daily', 'concpm10')
     
-    coldata2 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata1, ts_type='monthly', var_ref='concso4',
-                                                     use_climatology_ref=True,
-                                                     filter_name='WORLD-wMOUNTAINS') 
+    coldata = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
+                                                         ts_type='monthly', 
+                                                         var_ref='concpm10',
+                                                         update_baseyear_gridded=2018,
+                                                         filter_name='WORLD-wMOUNTAINS') 
     
-    coldata2.plot_scatter()
+    #scoldata2.plot_scatter()
     
 
     
