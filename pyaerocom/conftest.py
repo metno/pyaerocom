@@ -68,7 +68,8 @@ NASA_AMES_FILEPATHS = {
 # checks if testdata-minimal is available and if not, tries to download it 
 # automatically into ~/MyPyaerocom/testdata-minimal
 if INIT_TESTDATA:
-    TESTDATA_AVAIL = cth.check_access_testdata(TESTDATADIR, TEST_PATHS)
+    TESTDATA_AVAIL = cth.check_access_testdata(TESTDATADIR, TEST_PATHS, 
+                                               URL_TESTDATA)
     
     if TESTDATA_AVAIL:
         try:

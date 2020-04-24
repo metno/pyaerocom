@@ -55,10 +55,10 @@ def _check_access_testdata(basedir, test_paths):
             return False
     return True
                 
-def check_access_testdata(basedir, test_paths):
+def check_access_testdata(basedir, test_paths, url_testdata):
     if not _check_access_testdata(basedir, test_paths):
         try:
-            if _download_test_data(const.OUTPUTDIR):
+            if _download_test_data(url_testdata, const.OUTPUTDIR):
                 if _check_access_testdata(basedir, test_paths):
                     return True
         except Exception:
