@@ -77,10 +77,6 @@ def calc_figsize(lon_range, lat_range, figh=8):
     
 def calc_pseudolog_cmaplevels(vmin, vmax, add_zero=False):
     """Initiate pseudo-log discrete colormap levels
-    
-    Note
-    ----
-        This is a beta version and aims to 
         
     Parameters
     ----------

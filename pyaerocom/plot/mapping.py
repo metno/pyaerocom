@@ -439,6 +439,8 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                 log_scale=False
         if vmax is None:
             vmax = dmax
+        if exponent(vmin) == exponent(vmax):
+            log_scale=False
         if log_scale: # no negative values allowed
             if vmin < 0:
                 vmin = data[data>0].min()
@@ -462,11 +464,18 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                     raise ValueError('Logscale can only be applied for vmin>0')
                 norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
         else: 
+            if add_zero and vmin > 0:
+                vmin = 0
             if cmap is None:
                 cmap = get_cmap_maps_aerocom(color_theme, vmin, vmax)
             elif isinstance(cmap, str):
                 cmap = plt.get_cmap(cmap)
-            norm = Normalize(vmin=vmin, vmax=vmax)
+            if discrete_norm:
+                bounds = np.linspace(vmin, vmax, 10)
+                norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, 
+                                    clip=False)
+            else:
+                norm = Normalize(vmin=vmin, vmax=vmax)
     cbar_extend = "neither"
     if c_under is not None:
         cmap.set_under(c_under)
@@ -754,6 +763,12 @@ if __name__ == "__main__":
     
     import pyaerocom as pya
     import pandas as pd
+    
+    temp = pya.io.ReadGridded('ERA5').read_var('ta').resample_time('yearly')
+    
+    ax = plot_griddeddata_on_map(temp)
+    
+    raise Exception
     
     #fig, axm, axc = init_multimap_grid_v0(5, 3, add_cbar_axes=True)
     
