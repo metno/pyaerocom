@@ -548,14 +548,21 @@ class UngriddedData(object):
     
     @property
     def countries_available(self):
+        """
+        Alphabetically sorted list of country names available
+        """
         #self.check_set_country()
         countries = []
         for idx, meta in self.metadata.items():
             try:
                 countries.append(meta['country'])
             except:
-                const.print_log.warnign('No country information in meta block', idx)
-        
+                const.logger.warning('No country information in meta block', idx)
+        if len(countries) == 0:
+            const.print_log.warning('None of the metadata blocks contains '
+                                    'country information. You may want to '
+                                    'run class method check_set_country first '
+                                    'to automatically assign countries.')
         return sorted(dict.fromkeys(countries))
     
     def find_station_meta_indices(self, station_name_or_pattern,
