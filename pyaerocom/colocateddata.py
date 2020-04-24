@@ -5,7 +5,8 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (CoordinateError, DataDimensionError, 
                                   DataSourceError, 
-                                  NetcdfError, VarNotAvailableError)
+                                  NetcdfError, VarNotAvailableError,
+                                  MetaDataError)
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
@@ -243,6 +244,18 @@ class ColocatedData(object):
         return all([dim in self.dims for dim in ['latitude', 'longitude']])
     
     @property
+    def countries_available(self):
+        """
+        Alphabetically sorted list of country names available
+        """
+        if not 'country' in self.coords:
+            raise MetaDataError('No country information available in '
+                                'ColocatedData. You may run class method '
+                                'check_set_countries to automatically assign '
+                                'countries to the station_name coordinate')
+        return sorted(dict.fromkeys(self.data['country'].data))
+    
+    @property
     def area_weights(self):
         return self.calc_area_weights()
     
@@ -423,6 +436,17 @@ class ColocatedData(object):
         return data.unstack(**kwargs)
     
     def get_coords_valid_obs(self):
+        """
+        Get latitude / longitude coordinates where obsdata is available
+
+        Returns
+        -------
+        list
+            latitute coordinates
+        list 
+            longitude coordinates
+
+        """
         
         obs = self.data[0]
         if self.ndim == 4:
@@ -448,6 +472,63 @@ class ColocatedData(object):
         
         return list(zip(lats, lons, stats))
     
+    def _get_stat_coords(self):
+        if self.ndim == 4:
+            if not self.has_latlon_dims:
+                raise DataDimensionError('Invalid dimensions in 4D ColocatedData')
+            raise NotImplementedError('Coming soon...')
+        
+        return list(zip(self.latitude.data, self.longitude.data))
+        
+    def check_set_countries(self, inplace=True):
+        """
+        Checks if country information is available and assigns if not
+        
+        If not country information is available, countries will be assigned
+        for each lat / lon coordinate using 
+        :func:`pyaerocom.geodesy.get_country_info_coords`.
+
+        Parameters
+        ----------
+        inplace : bool, optional
+            If True, modify and return this object, else a copy. 
+            The default is True.
+
+        Raises
+        ------
+        NotImplementedError
+            If data is 4D (i.e. if latitude and longitude are othorgonal 
+            dimensions)
+
+        Returns
+        -------
+        ColocatedData
+            data object with countries assigned
+
+        """
+        if self.has_latlon_dims: #4D data
+            raise NotImplementedError('Cannot yet assign countries to 4D '
+                                      'ColocatedData')
+        coldata = self if inplace else self.copy()
+        
+        if 'country' in coldata.data.coords:
+            logger.info('Country information is available')
+            return coldata
+        coords = coldata._get_stat_coords()
+    
+        info = pya.geodesy.get_country_info_coords(coords)
+        
+        countries, codes = [],[]
+        for item in info:
+            countries.append(item['country']) 
+            codes.append(item['country_code'])
+            
+        arr = coldata.data
+        arr = arr.assign_coords(country = ('station_name', countries),
+                                country_codes=('station_name', codes))
+        coldata.data = arr
+        return coldata
+            
     def copy(self):
         """Copy this object"""
         return ColocatedData(self.data.copy())
@@ -866,6 +947,25 @@ class ColocatedData(object):
         return True
         
     @staticmethod
+    def _filter_country_2d(arr, country):
+        if not 'country' in arr.coords:
+            raise DataDimensionError('Cannot filter country {}. No country '
+                                     'information available in DataArray'
+                                     .format(country))
+        countries = arr.country
+        country_dims = countries.dims
+        # some sanity checking (this can probably be done more elegant using
+        # xarray syntax, however, did not manage to use loc, sel, etc since 
+        # country is not a dimension coordinate)
+        assert country_dims[0] == 'station_name'
+        assert len(country_dims) == 1
+        
+        assert arr.ndim == 3
+        assert arr.dims[-1] == 'station_name'
+        mask = arr.country == country
+        return arr[:,:,mask]
+        
+    @staticmethod
     def _filter_latlon_2d(arr, lat_range, lon_range):
         
         if not 'station_name' in arr.dims:
@@ -890,6 +990,17 @@ class ColocatedData(object):
             lon_range = slice(lon_range[0], lon_range[1])
             
         return arr.sel(dict(latitude=lat_range, longitude=lon_range))
+    
+    def apply_country_filter(self, region_id, inplace=False):
+        is_2d = self._check_latlon_coords()
+        if is_2d:
+            filtered = self._filter_country_2d(self.data, region_id)
+        else:
+            raise NotImplementedError('Cannot yet filter')
+        if inplace:
+            self.data = filtered
+            return self
+        return ColocatedData(filtered)
     
     def apply_latlon_filter(self, lat_range=None, lon_range=None, 
                             region_id=None, inplace=False):
@@ -988,7 +1099,8 @@ class ColocatedData(object):
         data.data = arr  
         return data
     
-    def filter_region(self, region_id, inplace=False):
+    def filter_region(self, region_id, check_mask=True, 
+                      check_country_meta=False, inplace=False):
         """Filter object by region
         
         Parameters
@@ -998,12 +1110,23 @@ class ColocatedData(object):
         inplace : bool
             if True, the filtering is done directly in this instance, else 
             a new instance is returned
+        check_mask : bool
+            if True and region_id a valid name for a binary mask, then the 
+            filtering is done based on that binary mask.
+        check_country_meta : bool
+            if True, then the input region_id is first checked against 
+            available country names in metadata. If that fails, it is assumed
+            that this regions is either a valid name for registered rectangular
+            regions or for available binary masks.
         
         Returns
         -------
         ColocatedData
             filtered data object
         """
+        if check_country_meta:
+            if region_id in self.countries_available:
+                return self.apply_country_filter(region_id, inplace)
         if region_id in const.HTAP_REGIONS:
             return self.apply_region_mask(region_id, inplace)
         
@@ -1061,66 +1184,13 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close('all')
+    coldir = '/home/jonasg/github/aerocom_evaluation/coldata/PIII-optics2019-P/NorESM2-met2010_AP3-CTRL/'
+    fname4d = 'od550csaer_REF-MODIS6.1-aqua_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
+    fname3d = 'od550csaer_REF-AeronetSun_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
+    coldata = ColocatedData(coldir + fname3d)
+    c1 = coldata.check_set_countries(inplace=False)
     
-    col_filename = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
+    c1.filter_region('Germany', check_country_meta=True, inplace=True)
     
-    meta = ColocatedData.get_meta_from_filename(col_filename)
-    
-    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
-    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
-
-    coldata1 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
-                                                         ts_type='daily',
-                                                         start=2010,
-                                                         var_outlier_ranges={'od550aer':[0,10]},
-                                                         filter_name='WORLD-noMOUNTAINS',
-                                                         remove_outliers=True, 
-                                                         colocate_time=False)
-    coldata1.plot_coordinates()
-    #coldata1.filter_region(region_id = 'SEA')
-    #coldata1.plot_coordinates()
-    #coldata1 = coldata1.resample_time('yearly', colocate_time=True)
-    #coldata1.plot_coordinates()
-    #print()
-    
-    """
-    sat = pya.io.ReadGridded('MODIS6.aqua').read_var('od550aer', start=2010)
-    
-    coldata2 = pya.colocation.colocate_gridded_gridded(modeldata, sat, 
-                                                       ts_type='monthly',
-                                                       regrid_res_deg=10)
-    
-   
-    coldata2.plot_coordinates()
-    
-    sat_namerica = coldata2.apply_latlon_filter(region_id='NAMERICA')
-    sat_namerica.plot_scatter()
-    sat_namerica.plot_coordinates()
-    
-    coldata1.plot_scatter()
-    
-    stats = {}
-    for region_id in pya.region.get_all_default_region_ids():
-        filtered = coldata1.apply_latlon_filter(region_id=region_id)
-        stats[region_id] = filtered.calc_statistics()
-    print('AERONET')    
-    for r, s in stats.items():
-        if s['num_valid'] == 0:
-            print('No data in region {}'.format(r))
-        else:
-            print('{}: NMB={:.3f} (R={:.2f})'.format(r, s['nmb']*100, s['R']))
-
-    stats = {}
-    for region_id in pya.region.get_all_default_region_ids():
-        filtered = coldata2.apply_latlon_filter(region_id=region_id)
-        stats[region_id] = filtered.calc_statistics()
-    print('MODIS')    
-    for r, s in stats.items():
-        if s['num_valid'] == 0:
-            print('No data in region {}'.format(r))
-        else:
-            print('{}: NMB={:.3f} (R={:.2f})'.format(r, s['nmb']*100, s['R']))    
-    """
-    
-        
+    c1.plot_coordinates()
     
