@@ -78,13 +78,16 @@ class ReadEMEP(object):
 
         var_map = get_emep_variables()
 
+        aliases = get_aliases(var_name)
+        if len(aliases) == 1 and aliases[0] in var_map:
+            var_name = aliases[0]
+
         if var_name in self.AUX_REQUIRES:
             temp_cubes = []
             for aux_var in self.AUX_REQUIRES[var_name]:
                 temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
             aux_func = self.AUX_FUNS[var_name]
             cube = aux_func(*temp_cubes)
-            # cube.var_name = var_name
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
         else:
             try:
@@ -94,15 +97,13 @@ class ReadEMEP(object):
                 sys.exit(1)
 
             EMEP_prefix = emep_var.split('_')[0]
-
             data = xr.open_dataset(self._filepath)[emep_var]
-
-
             data.attrs['long_name'] = var_name
 
             if (EMEP_prefix in ['WDEP', 'DDEP']) and emep_var != 'WDEP_PREC':
                 # Get rid of units (S, N f.e.) that cannot be handled with CF units
-                data.attrs['units'] = 'ug/m2' # Very hardcoded. Is this always true?
+                 # Very hardcoded. Is this always true?
+                data.attrs['units'] = 'mg/m2'
             gridded = GriddedData(data.to_iris(), var_name=var_name, ts_type=ts_type)
 
             # Convert mg/m^2 (implicit per day, month or year) -> kg
@@ -138,11 +139,11 @@ class ReadEMEP(object):
         Convert implicit daily, monthly or yearly rates to per second.
         And set units to 'kg m-2 s-1'.
         """
-
-        gridded.to_xarray().values *= 10**-6  # ug -> kg
+        # TODO: Only modify data if conversion is succesful
         timestamps = gridded.time_stamps()
         seconds_factor = seconds_in_periods(timestamps, ts_type)
         for i in range(len(seconds_factor)):
+            gridded.to_xarray().isel(time=i).values *= 10**-6  # mg -> kg
             gridded.to_xarray().isel(time=i).values /= seconds_factor[i]
         gridded.units = 'kg m-2 s-1'
 
