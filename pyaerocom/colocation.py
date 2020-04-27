@@ -487,8 +487,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         ts_type = TsType(ts_type)
     if ts_type is None or grid_ts_type < ts_type:
         ts_type = grid_ts_type
-    elif grid_ts_type > ts_type:
-        gridded_data = gridded_data.resample_time(str(ts_type))
+    elif grid_ts_type > ts_type and not colocate_time:
+        gridded_data = gridded_data.resample_time(str(ts_type),
+                                                  apply_constraints=apply_time_resampling_constraints,
+                                                  min_num_obs=min_num_obs)
         grid_ts_type = ts_type
         
     # get start / stop of gridded data as pandas.Timestamp
