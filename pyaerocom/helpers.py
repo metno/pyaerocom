@@ -857,12 +857,12 @@ def calc_climatology(s, start, stop, min_count=None,
         #mean[num < min_num_obs] = np.nan
     return clim
 
-def resample_timeseries(s, freq, how='mean', min_num_obs=None):
+def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
     """Resample a timeseries (pandas.Series)
     
     Parameters
     ----------
-    s : Series
+    ts : Series
         time series instance
     freq : str
         new temporal resolution (can be pandas freq. string, or pyaerocom
@@ -882,7 +882,7 @@ def resample_timeseries(s, freq, how='mean', min_num_obs=None):
     """
     from pyaerocom import const
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
-    resampler = s.resample(freq, loffset=loffset)
+    resampler = ts.resample(freq, loffset=loffset)
     if min_num_obs is None:
         data = resampler.agg(how)
     else:
