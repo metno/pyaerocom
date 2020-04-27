@@ -359,7 +359,8 @@ def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
 def compute_json_files_from_colocateddata(coldata, obs_name, 
                                           model_name, use_weights,
                                           colocation_settings,
-                                          vert_code, out_dirs):
+                                          vert_code, out_dirs,
+                                          regions_by_country=False):
     
     """Creates all json files for one ColocatedData object
     
@@ -367,6 +368,9 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     ----
     Complete docstring
     """
+    if regions_by_country:
+        raise NotImplementedError('Region by country filter is coming soon...')
+        
     if not isinstance(coldata, ColocatedData):
         raise ValueError('Need ColocatedData object, got {}'
                          .format(type(coldata)))
