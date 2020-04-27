@@ -18,6 +18,7 @@ def compute_model_average_and_diversity(cfg, var_name,
                                         ts_type='monthly', 
                                         lat_res_deg=2, 
                                         lon_res_deg=3, 
+                                        year=None,
                                         data_id=None,
                                         avg_how='median',
                                         extract_surface=True, 
@@ -69,7 +70,9 @@ def compute_model_average_and_diversity(cfg, var_name,
         raise ValueError
     if ignore_models is None:
         ignore_models = []
-    #year = cfg.colocation_settings.start
+    if year is None:
+        year = cfg.colocation_settings.start
+        
     if cfg.colocation_settings.stop is not None:
         raise ValueError('Can only compute average model for single year '
                          'analyses')
@@ -125,6 +128,7 @@ def compute_model_average_and_diversity(cfg, var_name,
     for mname in model_names:
         if not mname in cfg.model_config:
             raise Exception('Please debug')
+
         if mname in ignore_models:
             const.print_log.info('Ignoring model {}'.format(mname))
             continue
@@ -136,6 +140,7 @@ def compute_model_average_and_diversity(cfg, var_name,
         try:
             data = cfg.read_model_data(mname, var_name, 
                                        ts_type=ts_type,
+                                       start=year,
                                        **kwargs)
             if not data.units == vunit:
                 data.convert_unit(vunit)

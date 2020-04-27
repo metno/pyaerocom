@@ -6,11 +6,8 @@ This module contains functionality related to regions in pyaerocom
 import os
 from ast import literal_eval
 import re, fnmatch
-try:
-    from ConfigParser import ConfigParser
-except: 
-    from configparser import ConfigParser
-from pyaerocom import __dir__, logger
+from configparser import ConfigParser
+from pyaerocom import __dir__, logger, print_log
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
@@ -23,6 +20,13 @@ class VarNameInfo(object):
     _VALID_WVL_RANGE = [100, 2000]
     _VALID_WVL_IDS = ['od', 'abs', 'ec', 'sc', 'ac', 'bsc', 'ssa']
     PATTERNS = {'od' : r'od\d+aer'}
+    DEFAULT_VERT_CODE_PATTERNS = {
+        'abs*'  :   'Column',
+        'od*'   :   'Column',
+        'ang*'  :   'Column',
+        'load*' :   'Column',
+        'wet*'  :   'Surface',
+        'dry*'  :   'Surface'}
     def __init__(self, var_name):
         self.var_name = var_name.lower()
         self._nums = []
@@ -30,18 +34,26 @@ class VarNameInfo(object):
             self._nums = self._numbers_in_string(var_name)
         except:
             pass
-     
+
+    def get_default_vert_code(self):
+        """Get default vertical code for variable name"""
+        for pattern, code in self.DEFAULT_VERT_CODE_PATTERNS.items():
+            if fnmatch.fnmatch(self.var_name, pattern):
+                return code
+        raise ValueError('No default vertical code could be found for {}'
+                         .format(self.var_name))
+
     @staticmethod
     def _numbers_in_string(s):
         return [int(x) for x in re.findall(r'\d+', s)]
-    
+
     @property
     def contains_numbers(self):
         """Boolean specifying whether this variable name contains numbers"""
         if len(self._nums) > 0:
             return True
         return False
-    
+
     @property
     def is_wavelength_dependent(self):
         """Boolean specifying whether this variable name is wavelength dependent"""
@@ -49,7 +61,7 @@ class VarNameInfo(object):
             if self.var_name.startswith(item):
                 return True
         return False
-    
+
     @property
     def contains_wavelength_nm(self):
         """Boolean specifying whether this variable contains a certain wavelength"""
@@ -59,7 +71,7 @@ class VarNameInfo(object):
         if self._nums and low <= self._nums[0] <= high:
             return True
         return False
-    
+
     @property
     def wavelength_nm(self):
         """Wavelength in nm (if appliable)"""
@@ -68,47 +80,47 @@ class VarNameInfo(object):
                                           'dependent (does not start with '
                                           'either of {})'.format(self.var_name,
                                                      self._VALID_WVL_IDS))
-            
+
         elif not self.contains_wavelength_nm:
             raise VariableDefinitionError('Wavelength could not be extracted '
                                           'from variable name')
         return self._nums[0]
 
-        
+
     @property
     def is_optical_density(self):
         """Boolean specifying whether variable is an optical depth"""
         if re.match(self.PATTERNS['od'], self.var_name) and self.contains_wavelength_nm:
             return True
         return False
-    
+
     def in_wavelength_range(self, low, high):
         """Boolean specifying whether variable is within wavelength range
-        
+
         Parameters
         ----------
         low : float
             lower end of wavelength range to be tested
         high : float
             upper end of wavelength range to be tested
-        
+
         Returns
         -------
         bool
-            True, if this variable is wavelength dependent and if the 
-            wavelength that is inferred from the filename is within the 
+            True, if this variable is wavelength dependent and if the
+            wavelength that is inferred from the filename is within the
             specified input range
         """
         return low <= self.wavelength <= high
-    
+
     def translate_to_wavelength(self, to_wavelength):
         """Create new variable name at a different wavelength
-        
+
         Parameters
         ----------
         to_wavelength : float
             new wavelength in nm
-        
+
         Returns
         -------
         VarNameInfo
@@ -119,7 +131,7 @@ class VarNameInfo(object):
         name = self.var_name.replace(str(self.wavelength_nm),
                                      str(to_wavelength))
         return VarNameInfo(name)
-    
+
     def __str__(self):
         s = ('\nVariable {}\n'
              'is_wavelength_dependent: {}\n'
@@ -129,12 +141,12 @@ class VarNameInfo(object):
         if self.is_wavelength_dependent:
             s += '\nwavelength_nm: {}'.format(self.wavelength_nm)
         return s
- 
+
 def parse_variables_ini(fpath=None):
     """Returns instance of ConfigParser to access information"""
     if fpath is None:
         fpath = os.path.join(__dir__, "data", "variables.ini")
-        
+
     if not os.path.exists(fpath):
         raise FileNotFoundError("FATAL: variables.ini file could not be found "
                                 "at {}".format(fpath))
@@ -155,7 +167,7 @@ def parse_aliases_ini():
 
 def get_emep_variables(parser=None):
         """Read all variable definitions from emep_variables.ini file and return as dict
-    
+
         Returns
         -------
         dict
@@ -172,7 +184,7 @@ def get_emep_variables(parser=None):
                 variables[var_name] = variable
         return variables
 
-    
+
 def parse_emep_variables_ini(fpath=None):
     """Returns instance of ConfigParser to access information"""
     if fpath is None:
@@ -187,7 +199,7 @@ def parse_emep_variables_ini(fpath=None):
 
 def _read_alias_ini(parser=None):
     """Read all alias definitions from aliases.ini file and return as dict
-    
+
     Returns
     -------
     dict
@@ -215,7 +227,7 @@ def get_aliases(var_name, parser=None):
         file = os.path.join(__dir__, "data", "aliases.ini")
         parser = ConfigParser()
         parser.read(file)
-        
+
     info = parser['aliases']
     aliases = []
     if var_name in info:
@@ -245,11 +257,11 @@ def _check_alias_family(var_name, parser):
 # =============================================================================
 class Variable(object):
     """Interface that specifies default settings for a variable
-    
+
     See `variables.ini <https://github.com/metno/pyaerocom/blob/master/
-    pyaerocom/data/variables.ini>`__ file for an overview of currently available 
+    pyaerocom/data/variables.ini>`__ file for an overview of currently available
     default variables.
-    
+
     Parameters
     ----------
     var_name : str
@@ -258,18 +270,18 @@ class Variable(object):
         if True, input variable name is attempted to be read from config file
     cfg : ConfigParser
         open config parser that holds the information in config file available
-        (i.e. :func:`ConfigParser.read` has been called with config file as 
+        (i.e. :func:`ConfigParser.read` has been called with config file as
         input)
     **kwargs
         any valid class attribute (e.g. map_vmin, map_vmax, ...)
-        
+
     Attributes
     ----------
     var_name : str
         input variable name
     var_name_aerocom : str
-        AEROCOM variable name (see e.g. `AEROCOM protocol 
-        <http://aerocom.met.no/protocol_table.html>`__ for a list of 
+        AEROCOM variable name (see e.g. `AEROCOM protocol
+        <http://aerocom.met.no/protocol_table.html>`__ for a list of
         available variables)
     is_3d : bool
         flag that indicates if variable is 3D
@@ -290,7 +302,7 @@ class Variable(object):
         upper limit of allowed value range
     obs_wavelength_tol_nm : float
         wavelength tolerance (+/-) for reading of obsdata. Default is 10, i.e.
-        if this variable is defined at 550 nm and obsdata contains measured 
+        if this variable is defined at 550 nm and obsdata contains measured
         values of this quantity within interval of 540 - 560, then these data
         is used
     scat_xlim : float
@@ -334,12 +346,12 @@ class Variable(object):
                 'map_vmax': float,
                 'map_cbar_levels': literal_eval_list,
                 'map_cbar_ticks': literal_eval_list}
-    
+
     #maybe used in config -> what should be the name
-    ALT_NAMES = {'unit' : 'units'}  
-    
+    ALT_NAMES = {'unit' : 'units'}
+
     RH_MAX_DRY = 0.4
-    
+
     plot_info_keys = ['scat_xlim',
                       'scat_ylim',
                       'scat_loglog',
@@ -350,7 +362,7 @@ class Variable(object):
                       'map_c_over',
                       'map_cbar_levels',
                       'map_cbar_ticks']
-    
+
     @staticmethod
     def _check_input_var_name(var_name):
         var_name = var_name.lower()
@@ -361,15 +373,15 @@ class Variable(object):
 #             var_name = var_name.replace('dry', '')
 # =============================================================================
         return var_name
-    
+
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
         #save orig. input for whatever reasons
-        self._var_name_input = var_name 
+        self._var_name_input = var_name
 
         # var_name in lowercase and cleaned up (3d and dry removed if applicable)
         self.var_name = var_name = self._check_input_var_name(var_name)
         self._var_name_aerocom = None
-    
+
         self.standard_name = None
         self.units = None
         self.default_vert_code = None
@@ -385,12 +397,12 @@ class Variable(object):
 
         #wavelength tolerance in nm
         self.obs_wavelength_tol_nm = None
-        
+
         self.scat_xlim = None
         self.scat_ylim = None
         self.scat_loglog = None
         self.scat_scale_factor = 1.0
-            
+
         # settings for map plotting
         self.map_vmin = None
         self.map_vmax = None
@@ -398,39 +410,39 @@ class Variable(object):
         self.map_c_over = 'r'
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
-        # imports default information and, on top, variable information (if 
+        # imports default information and, on top, variable information (if
         # applicable)
         if init:
-            self.parse_from_ini(var_name, cfg=cfg) 
-        
+            self.parse_from_ini(var_name, cfg=cfg)
+
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
             self.obs_wavelength_tol_nm = OBS_WAVELENGTH_TOL_NM
-    
+
     @property
     def var_name_aerocom(self):
         vna = self._var_name_aerocom
         return self.var_name if vna is None else vna
-    
+
     @property
     def var_name_input(self):
         """Input variable (in lowercase)"""
         return self._var_name_input.lower()
-    
+
     @property
     def is_3d(self):
         """True if str '3d' is contained in :attr:`var_name_input`"""
         return True if '3d' in self.var_name_input else False
-    
+
     @property
     def is_dry(self):
         """True if str 'dry' is contained in :attr:`var_name_input`"""
         return True if 'dry' in self.var_name_input else False
-    
+
     @property
     def is_alias(self):
         return True if self.var_name != self.var_name_aerocom else False
-    
+
     @property
     def unit(self):
         """Unit of variable (old name, deprecated)"""
@@ -439,7 +451,7 @@ class Variable(object):
                                 'class is deprecated. Please '
                                 'use units instead'))
         return self.units
-        
+
     @property
     def plot_info(self):
         """Dictionary containing plot information"""
@@ -447,28 +459,28 @@ class Variable(object):
         for k in self.plot_info_keys:
             d[k] = self[k]
         return d
-    
+
     def update(self, **kwargs):
         for key, val in kwargs.items():
             self[key] = val
-        
+
     @property
     def has_unit(self):
         """Boolean specifying whether variable has unit"""
         return True if not self.unit in (1, None) else False
-    
+
     @property
     def lower_limit(self):
         """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
         logger.warning(DeprecationWarning('Old name for attribute minimum'))
         return self.minimum
-     
+
     @property
     def upper_limit(self):
         """Old attribute name for :attr:`minimum` (following HTAP2 defs)"""
         logger.warning(DeprecationWarning('Old name for attribute minimum'))
-        return self.maximum 
-    
+        return self.maximum
+
     @property
     def unit_str(self):
         """string representation of unit"""
@@ -476,47 +488,60 @@ class Variable(object):
             return ''
         else:
             return '[{}]'.format(self.unit)
-    
+
     @staticmethod
     def read_config():
         return parse_variables_ini()
-    
+
     @property
     def var_name_info(self):
         return VarNameInfo(self.var_name)
-        
+
     @property
     def aliases(self):
         """Alias variable names that are frequently found / used
-        
+
         Returns
         -------
         list
             list containing valid aliases
         """
         return get_aliases(self.var_name)
-    
+
     @property
     def long_name(self):
         """Wrapper for :attr:`description`"""
         return self.description
-    
+
     def keys(self):
         return list(self.__dict__.keys())
-    
+
     @staticmethod
     def _check_aliases(var_name):
-            
+
         ap = parse_aliases_ini()
         aliases = _read_alias_ini(ap)
         if var_name in aliases:
             return aliases[var_name]
         return _check_alias_family(var_name, ap)
-            
-                        
+
+    def get_default_vert_code(self):
+        """Get default vertical code for variable name"""
+        if self.default_vert_code is not None:
+            return self.default_vert_code
+        try:
+            return VarNameInfo(self.var_name_aerocom).get_default_vert_code()
+        except ValueError:
+            print_log.warn('default_vert_code not set for {} and '
+                           'could also not be inferred'
+                           .format(self.var_name_aerocom))
+            return None
+
+
+
     def parse_from_ini(self, var_name=None, cfg=None):
         """Import information about default region
-        
+
         Parameters
         ----------
         var_name : str
@@ -526,12 +551,12 @@ class Variable(object):
             available
         cfg : ConfigParser
             open config parser object
-            
+
         Returns
         -------
         bool
             True, if default could be loaded, False if not
-        
+
         Raises
         ------
         IOError
@@ -539,7 +564,7 @@ class Variable(object):
         """
         if cfg is None:
             cfg = self.read_config()
-        
+
         if not var_name in cfg:
             try:
                 var_name = self._check_aliases(var_name)
@@ -547,7 +572,7 @@ class Variable(object):
                 logger.info('Unknown input variable {}'.format(var_name))
                 return
             self._var_name_aerocom = var_name
-        
+
         var_info = cfg[var_name]
         # this variable should import settings from another variable
         if 'use' in var_info:
@@ -558,12 +583,12 @@ class Variable(object):
                                               'variables.ini.'
                                               .format(var_name, use))
             self.parse_from_ini(use, cfg)
-        
+
         for key, val in var_info.items():
             if key in self.ALT_NAMES:
                 key = self.ALT_NAMES[key]
             self._add(key, val)
-            
+
 # =============================================================================
 #         for key in self.keys():
 #             if key in self.ALT_NAMES:
@@ -572,7 +597,7 @@ class Variable(object):
 #             elif key in var_info:
 #                 self._add(key, var_info[key])
 # =============================================================================
-    
+
     def _add(self, key, val):
         if key in self._TYPE_CONV:
             try:
@@ -584,38 +609,38 @@ class Variable(object):
         if val == 'None':
             val = None
         self[key] = val
-        
+
     def __setitem__(self, key, val):
         self.__dict__[key] = val
-    
+
     def __getitem__(self, key):
         return self.__dict__[key]
-    
+
     def __repr__(self):
        return ("{}\nstandard_name: {}; Unit: {}"
-               .format(self.var_name, self.standard_name, 
+               .format(self.var_name, self.standard_name,
                        self.unit))
-   
+
     def __eq__(self, other):
         if isinstance(other, str):
             other = Variable(other)
         elif not isinstance(other, Variable):
             raise TypeError('Can only compare with str or other Variable instance')
         return True if other.var_name_aerocom == self.var_name_aerocom else False
-    
+
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
-        
+
         plot_s = '\nPlotting settings\n......................'
-        
+
         for k, v in self.__dict__.items():
             if k in self.plot_info_keys:
                 if v is None:
                     continue
                 if isinstance(v, dict):
                     plot_s += "\n{} (dict)".format(k)
-                    plot_s = dict_to_str(v, plot_s, indent=3, 
+                    plot_s = dict_to_str(v, plot_s, indent=3,
                                          ignore_null=True)
                 elif isinstance(v, list):
                     plot_s += "\n{} (list, {} items)".format(k, len(v))
@@ -631,30 +656,30 @@ class Variable(object):
                     s += list_to_shortstr(v)
                 else:
                     s += "\n%s: %s" %(k,v)
-        
+
         s += plot_s
         return s
 
 class VarCollection(object):
     """Variable access class based on variables config file"""
-    
+
     def __init__(self, var_ini):
         self._all_vars = None
         self._var_ini = None
-        
+
         self.var_ini = var_ini
-        
+
         self._cfg_parser = parse_variables_ini(var_ini)
         self._alias_parser = parse_aliases_ini()
         self._idx = -1
-        
+
         logger.info("Importing variable aliases info")
-        
+
     @property
     def all_vars(self):
         """List of all variables
-        
-        Note: does not include variable names that may be inferred via 
+
+        Note: does not include variable names that may be inferred via
         alias families as defined in section [alias_families] in
         aliases.ini.
         """
@@ -663,32 +688,32 @@ class VarCollection(object):
             #all_vars.extend(list(_read_alias_ini()))
             self._all_vars = all_vars
         return self._all_vars
-    
+
     @property
     def var_ini(self):
         """Config file specifying variable information"""
         return self._var_ini
-    
+
     @var_ini.setter
     def var_ini(self, var_ini):
-        
+
         if not os.path.exists(var_ini):
             raise IOError("File {} does not exist".format(var_ini))
         self._var_ini = var_ini
-    
+
     def find(self, search_pattern):
         """Find all variables that match input search pattern
-        
+
         Note
         ----
-        Searches for matches in variable names (:attr:`Variable.var_name`) and 
+        Searches for matches in variable names (:attr:`Variable.var_name`) and
         standard name (:attr:`Variable.standard_name`).
-        
+
         Parameters
         ----------
         search_pattern : str
             variable search pattern
-        
+
         Returns
         -------
         list
@@ -698,30 +723,30 @@ class VarCollection(object):
         for var in self:
             if fnmatch.fnmatch(var.var_name, search_pattern):
                 matches.append(var.var_name)
-            elif (isinstance(var.standard_name, str) and 
+            elif (isinstance(var.standard_name, str) and
                   fnmatch.fnmatch(var.standard_name, search_pattern)):
                 matches.append(var.var_name)
         return matches
-        
+
     def get_coord_var_and_standard_names(self):
         """Get dictionary with coord and standard names"""
         d = {}
         for k in self.all_vars:
             d[k] = self[k]['standard_name']
         return d
-    
+
     def _read_ini(self):
         parser = ConfigParser()
         parser.read(self.var_ini)
         return parser
-        
+
     def __dir__(self):
         """Activates auto tab-completion for all variables"""
         return self.all_vars
-    
+
     def __iter__(self):
         return self
-    
+
     def __next__(self):
         self._idx += 1
         if self._idx == len(self.all_vars):
@@ -729,10 +754,10 @@ class VarCollection(object):
             raise StopIteration
         var_name = self.all_vars[self._idx]
         return self[var_name]
-    
+
     def __contains__(self, var_name):
         """Enables using ``in`` method
-        
+
         Example
         -------
         >>> all_vars = VarCollection()
@@ -744,10 +769,10 @@ class VarCollection(object):
         if var_name in self.all_vars:
             return True
         return False
-    
+
     def __getattr__(self, attr):
         """Use . operator to access variables
-        
+
         Example
         -------
         >>> all_vars = VarCollection()
@@ -757,10 +782,10 @@ class VarCollection(object):
         if attr in self.__dict__:
             return self.__dict__[attr]
         return self[attr]
-        
+
     def __getitem__(self, var_name):
         """Use [] operator to access variables
-        
+
         Example
         -------
         >>> all_vars = VarCollection()
@@ -773,17 +798,17 @@ class VarCollection(object):
             raise VariableDefinitionError('Error (VarCollection): input variable '
                                           '{} is not supported'.format(var_name))
         return var
-       
+
     def __repr__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = '\n{}\n{}\n{}'.format(len(head)*"-", head, len(head)*"-")
         for v in self.all_vars:
             s += '\n{}'.format(v)
-        return s   
-    
+        return s
+
     def __str__(self):
         return self.var_name
-          
+
 def get_variable(var_name):
     """
     Get a certain variable
@@ -804,7 +829,7 @@ def all_vars_to_dataframe():
     """Make an overview table for all variables"""
     import pandas as pd
     head = ['Name', 'Standard name', 'unit', 'Wavelength [nm]', 'Dimensions',
-            'Comments and purpose'] 
+            'Comments and purpose']
     res = []
     for varname in all_var_names():
         var = Variable(varname)
@@ -822,8 +847,8 @@ if __name__=="__main__":
     #res = pya.const.VARS.find('od*aer')
     v1 = pya.const.VARS['scatc550dryaer']
     v0 = pya.const.VARS['scatc550aer']
-    
+
     print(v0 == v1)
     var = pya.const.VARS['blaaa']
-    
+
     print(var)

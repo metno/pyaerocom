@@ -228,6 +228,7 @@ class ColocationSetup(BrowseDict):
         self.obs_name = obs_name
         self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
+        self.obs_add_meta = []
         
         self.start = start
         self.stop = stop
@@ -526,8 +527,6 @@ class Colocator(ColocationSetup):
                                         .format(self.model_id, var_name))
             var = list(var_matches.keys())[0]
         return self._read_gridded(reader, var, 
-                                  start=self.start, 
-                                  stop=self.stop, 
                                   is_model=True, 
                                   **kwargs)
     
@@ -573,8 +572,16 @@ class Colocator(ColocationSetup):
         return obs_data
     # ToDo: cumbersome (together with _find_var_matches, review whole handling
     # of vertical codes for variable mappings...)
-    def _read_gridded(self, reader, var_name, start, stop, is_model=True,
-                      **kwargs):
+    def _read_gridded(self, reader, var_name, is_model=True, **kwargs):
+        try:
+            start = kwargs.pop('start')
+        except KeyError:
+            start = self.start
+            
+        try:
+            stop = kwargs.pop('stop')
+        except KeyError:
+            stop = self.stop
         if is_model:
             vert_which = self.obs_vert_type
             ts_type_read = self.model_ts_type_read
@@ -705,24 +712,31 @@ class Colocator(ColocationSetup):
         else:
             ropts = {}
         
-        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                   vars_to_retrieve=obs_vars,
-                                   **ropts)
-        
-        # ToDo: consider removing outliers already here.
-        if 'obs_filters' in self:
-            remaining_filters = self._eval_obs_filters()
-            obs_data = obs_data.apply_filters(**remaining_filters)
                 
         data_objs = {}
+        start, stop = start_stop(self.start, self.stop)
+        
         for model_var, obs_var in var_matches.items():
-            
-            ts_type = self.ts_type
-            start, stop = start_stop(self.start, self.stop)
+# =============================================================================
+# @hansbrenna has changed the flow of this part of the method to work better 
+# with large observational data sets. I have moved the reading of the obs data
+# after the check of whether the co-located data file already exists. If it
+# exists and reanalyse_existing = False, the obs data will not be read for that
+# obs-model combination. If the co-located data object is to be computed, only 
+# one observational variable will be loaded into the UngriddedData object at
+# a time.
+# =============================================================================
+
+            # ToDo: consider removing outliers already here.
+            #if 'obs_filters' in self:              
+                
+            ts_type = self.ts_type        
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
                                                              self.obs_id, 
                                                              model_var, 
                                                              obs_var))
+
+
             try:
                 model_data = self._read_gridded(reader=model_reader, 
                                                 var_name=model_var, 
@@ -745,6 +759,16 @@ class Colocator(ColocationSetup):
             if ts_type is None:
                 # if colocation frequency is not specified
                 ts_type = ts_type_src
+            
+            #check if co-located data file already exists before reading observational
+            #data sets
+            # if self.save_coldata:
+            #     savename = self._coldata_savename(model_data, start, stop, 
+            #                                       ts_type, var_name=model_var)
+                
+            #     file_exists = self._check_coldata_exists(model_data.data_id, 
+            #                                              savename)
+
 # =============================================================================
 #             if not model_data.ts_type in all_ts_types:
 #                 raise TemporalResolutionError('Invalid temporal resolution {} '
@@ -768,8 +792,9 @@ class Colocator(ColocationSetup):
                                                                self.model_id))
                 ts_type = ts_type_src
             
-            
+            really_do_reanalysis = True
             if self.save_coldata:
+                really_do_reanalysis = False
                 savename = self._coldata_savename(model_data, start, stop, 
                                                   ts_type, var_name=model_var)
                 
@@ -787,16 +812,35 @@ class Colocator(ColocationSetup):
                             self.file_status[savename] = 'skipped'
                         continue
                     else:
+                        really_do_reanalysis = True
                         print_log.info('Deleting and recomputing existing '
-                                       'colocated data file {}'.format(savename))
+                               'colocated data file {}'.format(savename))
                         print_log.info('REMOVE: {}\n'.format(savename))
                         os.remove(os.path.join(out_dir, savename))
+                else:
+                    really_do_reanalysis = True
+                
+            if really_do_reanalysis:                
+                #Reading obs data only if the co-located data file does
+                #not already exist.
+                #This part of the method has been changed by @hansbrenna to work better with
+                #large observational data sets. Only one variable is loaded into
+                # the UngriddedData object at a time. Currently the variable is
+                #re-read a lot of times, which is a weakness.
+                obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
+                               vars_to_retrieve=obs_var,
+                               **ropts)
+                
+                        # ToDo: consider removing outliers already here.
+                if 'obs_filters' in self:
+                    remaining_filters = self._eval_obs_filters()
+                    obs_data = obs_data.apply_filters(**remaining_filters)
                         
             try:
                 try:
                     by=self.update_baseyear_gridded
                     stop=None
-                except:
+                except AttributeError:
                     by=None
                 if self.model_use_climatology:
                     by=start.year
