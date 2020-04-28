@@ -207,6 +207,9 @@ class AerocomEvaluation(object):
         self.var_mapping = {}
         self.var_order_menu = []
         
+        self.regions_how = 'default'
+        self.resample_how = None
+        
         self._valid_obs_vars = {}
         if len(settings)==0 and try_load_json and proj_id is not None:
             try:
