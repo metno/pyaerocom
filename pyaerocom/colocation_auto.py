@@ -242,6 +242,7 @@ class ColocationSetup(BrowseDict):
         # OPtions related to time resampling
         self.apply_time_resampling_constraints=apply_time_resampling_constraints
         self.min_num_obs=min_num_obs
+        self.resample_how=None
         
         self.var_outlier_ranges = var_outlier_ranges
         self.var_ref_outlier_ranges = var_ref_outlier_ranges
