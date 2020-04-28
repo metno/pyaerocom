@@ -10,6 +10,7 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
 from pyaerocom.region import valid_region, Region
+from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr, get_mask_value)
 
 import numpy as np
@@ -476,11 +477,18 @@ class ColocatedData(object):
         if self.ndim == 4:
             if not self.has_latlon_dims:
                 raise DataDimensionError('Invalid dimensions in 4D ColocatedData')
-            raise NotImplementedError('Coming soon...')
-        
+            lats, lons = self.data.latitude.data, self.data.longitude.data
+            coords = np.dstack((np.meshgrid(lats, lons)))
+            coords = coords.reshape(len(lats) * len(lons), 2)
+            return coords
+        if not 'latitude' in self.coords:
+            coords = self.data.station_name.data
+            if not isinstance(coords[0], tuple) or len(coords[0]) != 2:
+                raise ValueError('Cannot infer coordinates...')
+            return coords
         return list(zip(self.latitude.data, self.longitude.data))
         
-    def check_set_countries(self, inplace=True):
+    def check_set_countries(self, inplace=True, assign_to_dim=None):
         """
         Checks if country information is available and assigns if not
         
@@ -493,10 +501,13 @@ class ColocatedData(object):
         inplace : bool, optional
             If True, modify and return this object, else a copy. 
             The default is True.
-
+        assign_to_dim : str, optional
+            name of dimension to which the country coordinate is assigned. 
+            Default is None, in which case station_name is used.
+            
         Raises
         ------
-        NotImplementedError
+        DataDimensionError
             If data is 4D (i.e. if latitude and longitude are othorgonal 
             dimensions)
 
@@ -506,9 +517,21 @@ class ColocatedData(object):
             data object with countries assigned
 
         """
-        if self.has_latlon_dims: #4D data
-            raise NotImplementedError('Cannot yet assign countries to 4D '
-                                      'ColocatedData')
+        if self.has_latlon_dims:
+            raise DataDimensionError('Countries cannot be assigned to 4D'
+                                     'ColocatedData with othorgonal lat / lon '
+                                     'dimensions. Please consider stacking '
+                                     'the latitude and longitude dimensions-')
+        if assign_to_dim is None:
+            assign_to_dim = 'station_name'
+        
+        if not assign_to_dim in self.dims:
+            raise DataDimensionError('No such dimension', assign_to_dim)
+# =============================================================================
+#         if self.has_latlon_dims: #4D data
+#             raise NotImplementedError('Cannot yet assign countries to 4D '
+#                                       'ColocatedData')
+# =============================================================================
         coldata = self if inplace else self.copy()
         
         if 'country' in coldata.data.coords:
@@ -516,7 +539,7 @@ class ColocatedData(object):
             return coldata
         coords = coldata._get_stat_coords()
     
-        info = pya.geodesy.get_country_info_coords(coords)
+        info = get_country_info_coords(coords)
         
         countries, codes = [],[]
         for item in info:
@@ -524,14 +547,47 @@ class ColocatedData(object):
             codes.append(item['country_code'])
             
         arr = coldata.data
-        arr = arr.assign_coords(country = ('station_name', countries),
-                                country_codes=('station_name', codes))
+        arr = arr.assign_coords(country = (assign_to_dim, countries),
+                                country_codes=(assign_to_dim, codes))
         coldata.data = arr
         return coldata
             
     def copy(self):
         """Copy this object"""
         return ColocatedData(self.data.copy())
+    
+    def set_zeros_nan(self, inplace=True):
+        """
+        Replace all 0's with NaN in data
+
+        Parameters
+        ----------
+        inplace : str, optional
+            Whether to modify this object or return a copy. The default is True.
+
+        Returns
+        -------
+        cd : ColocatedData
+            modified data object
+
+        """
+        # actual 0 entries in data will be ignored as they can skew the statistics
+        # data should not be 0! Even if it's below detection limit or similar (in
+        # which case it should be NaN)
+        if inplace:
+            cd = self
+        else:
+            cd = self.copy()
+        zeros = cd.data.data == 0
+        if zeros.any():
+            const.print_log.warning("Found 0's in ColocatedData ({},{},{}). "
+                                    "These will be set to NaN for web processing"
+                                    .format(cd.meta['var_name'][0],
+                                            cd.meta['data_source'][0],
+                                            cd.meta['data_source'][1]))
+        
+            cd.data.data[zeros] = np.nan
+        return cd
     
     def calc_statistics(self, constrain_val_range=False, 
                         use_area_weights=False, **kwargs):
