@@ -9,6 +9,7 @@ import simplejson
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
+from pyaerocom.region import Region, get_all_default_region_ids
 
 from pyaerocom.io.helpers import save_dict_json
 
@@ -17,7 +18,6 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
 
 from pyaerocom.web.const import HEATMAP_FILENAME_EVAL_IFACE
 from pyaerocom.web.helpers_evaluation_iface import (
-    make_regions_json,
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
     compute_json_files_from_colocateddata,
@@ -240,7 +240,7 @@ class AerocomEvaluation(object):
     @property
     def regions_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.out_basedir, 'regions.json')
+        return os.path.join(self.exp_dir, 'regions.json')
     
     @property
     def menu_file(self):
@@ -516,18 +516,27 @@ class AerocomEvaluation(object):
         if len(matches) == 1:
             return matches[0]
         raise ValueError('Could not identify unique model name')
-            
-    def make_regions_json(self):
-        """Creates file regions.ini for web interface"""
-        return make_regions_json(self.regions_file)
+        
+# =============================================================================
+#     def make_regions_json(self):
+#         """Creates file regions.ini for web interface"""
+#         return make_regions_json()
+# =============================================================================
     
     def compute_json_files_from_colocateddata(self, coldata, obs_name, 
                                               model_name):
         """Creates all json files for one ColocatedData object"""
         vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
+        
         return compute_json_files_from_colocateddata(
-                coldata, obs_name, model_name, self.weighted_stats,
-                self.colocation_settings, vert_code, self.out_dirs, 
+                coldata=coldata, 
+                obs_name=obs_name, 
+                model_name=model_name, 
+                use_weights=self.weighted_stats,
+                vert_code=vert_code,
+                colocation_settings=self.colocation_settings, 
+                out_dirs=self.out_dirs, 
+                regions_json=self.regions_file, 
                 regions_how=self.regions_how)
          
     def get_vert_code(self, obs_name, obs_var):
@@ -1126,6 +1135,7 @@ class AerocomEvaluation(object):
             - update and order heatmap file
         """
         self.update_menu(**opts)
+        #self.make_regions_json()
         try:
             self.make_info_table_web()
             self.update_heatmap_json()
@@ -1343,5 +1353,5 @@ if __name__ == '__main__':
     cfg_dir = '/home/jonasg/github/aerocom_evaluation/data_new/config_files/'
     stp = AerocomEvaluation('aerocom', 'PIII-optics', config_dir=cfg_dir)
     #stp.make_info_table_web()
-    
+    stp.regions_how='country'
     stp.make_regions_json()
