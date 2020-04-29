@@ -18,7 +18,7 @@ from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
                               get_all_default_regions, Region)
 
-from pyaerocom import __version__ as pyaerocom_version
+#from pyaerocom import __version__ as PYA_VERSION
 
 def delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id):
     """Delete all data associated with a certain experiment
@@ -443,9 +443,9 @@ def _init_meta_glob(coldata, **kwargs):
     
     # create metadata dictionary that is shared among all timeseries files
     meta_glob = {}
-    meta_glob['pyaerocom_version'] = pyaerocom_version
-    meta_glob['obs_name'] = obs_name
-    meta_glob['model_name'] = model_name
+    meta_glob['pyaerocom_version'] = meta['pyaerocom']
+    #meta_glob['obs_name'] = obs_name
+    #meta_glob['model_name'] = model_name
     meta_glob['obs_var'] = meta['var_name'][0]
     meta_glob['obs_unit'] = meta['var_units'][0]
     #meta_glob['vert_code'] = vert_code
@@ -459,7 +459,7 @@ def _init_meta_glob(coldata, **kwargs):
     return meta_glob
 
 def _process_sites(coldata, colocation_settings, 
-                   regions_how, vert_code):
+                   regions_how, **meta_add):
     
     ts_objs = []
     
@@ -468,7 +468,7 @@ def _process_sites(coldata, colocation_settings,
     
     stats_dummy = _init_stats_dummy()
     default_regs = get_all_default_regions(use_all_in_ini=False)
-    meta_glob = _init_meta_glob(coldata, vert_code=vert_code)
+    meta_glob = _init_meta_glob(coldata, **meta_add)
     
     lats = coldata.data.latitude.values.astype(np.float64)
     lons = coldata.data.longitude.values.astype(np.float64)
@@ -609,8 +609,12 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     
     (map_data, 
      scat_data, 
-     ts_objs) = _process_sites(coldata, colocation_settings, 
-                               regions_how, vert_code)
+     ts_objs) = _process_sites(coldata, 
+                               colocation_settings, 
+                               regions_how,
+                               vert_code=vert_code,
+                               obs_name=obs_name, 
+                               model_name=model_name)
         
     dirs = out_dirs
 
@@ -638,10 +642,10 @@ if __name__ == '__main__':
     
     coldata = ColocatedData(colfile)
     out_dirs = stp.out_dirs
-    obs_name, model_name = coldata.meta['data_source']
+    obs, mod = coldata.meta['data_source']
     
-    compute_json_files_from_colocateddata(coldata, obs_name, 
-                                          model_name, 
+    compute_json_files_from_colocateddata(coldata, obs, 
+                                          mod, 
                                           use_weights=False,
                                           colocation_settings=stp.colocation_settings,
                                           vert_code='Column', 
