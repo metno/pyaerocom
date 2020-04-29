@@ -590,8 +590,6 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     if zeros_to_nan:
         coldata = coldata.set_zeros_nan()
     
-    
-    
     use_country = True if regions_how == 'country' else False
     # FIRST: process data for heatmap json file
     hm_data = _process_heatmap_json(coldata, region_ids, use_weights, 

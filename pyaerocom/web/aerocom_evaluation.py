@@ -527,7 +527,8 @@ class AerocomEvaluation(object):
         vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
         return compute_json_files_from_colocateddata(
                 coldata, obs_name, model_name, self.weighted_stats,
-                self.colocation_settings, vert_code, self.out_dirs)
+                self.colocation_settings, vert_code, self.out_dirs, 
+                regions_how=self.regions_how)
          
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
