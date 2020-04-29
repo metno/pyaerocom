@@ -248,6 +248,16 @@ class ColocatedData(object):
     def countries_available(self):
         """
         Alphabetically sorted list of country names available
+        
+        Raises
+        ------
+        MetaDataError
+            if no country information is available
+            
+        Returns
+        -------
+        list 
+            list of countries available in these data
         """
         if not 'country' in self.coords:
             raise MetaDataError('No country information available in '
@@ -258,7 +268,34 @@ class ColocatedData(object):
     
     @property
     def area_weights(self):
+        """
+        Wrapper for :func:`calc_area_weights`
+        """
         return self.calc_area_weights()
+    
+    def get_country_codes(self):
+        """
+        Get country names and codes for all locations contained in these data
+        
+        Raises
+        ------
+        MetaDataError
+            if no country information is available
+            
+        Returns
+        -------
+        dict
+            dictionary of unique country names (keys) and corresponding country
+            codes (values)
+        """
+        if not 'country' in self.coords:
+            raise MetaDataError('No country information available in '
+                                'ColocatedData. You may run class method '
+                                'check_set_countries to automatically assign '
+                                'countries to the station_name coordinate')
+        countries = self.data['country'].data
+        codes = self.data['country_codes'].data
+        return dict(zip(countries, codes))
     
     def calc_area_weights(self):
         """Calculate area weights
