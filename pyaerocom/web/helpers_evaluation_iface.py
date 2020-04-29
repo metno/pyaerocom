@@ -273,21 +273,6 @@ def make_info_table_evaluation_iface(config):
                             else:
                                 motab[k] = str(v)
     return table
-
-def make_regions_json(regions_file):
-    """Creates file regions.ini for web interface"""
-    regs = {}
-    for regname in get_all_default_region_ids():
-        reg = Region(regname)
-        regs[regname] = r = {}
-        latr = reg.lat_range
-        r['minLat'] = latr[0]
-        r['maxLat'] = latr[1]
-        lonr = reg.lon_range
-        r['minLon'] = lonr[0]
-        r['maxLon'] = lonr[1]
-    save_dict_json(regs, regions_file)
-    return regs
     
 def get_stationfile_name(station_name, obs_name, obs_var, vert_code):
     """Get name of station timeseries file"""
@@ -353,16 +338,7 @@ def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
     mn[model_var] = result
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
-        
-def init_regions_web(coldata, regions_how):
-    if regions_how == 'default':
-        return get_all_default_region_ids()
-    elif regions_how == 'htap':
-        raise NotImplementedError
-    elif regions_how == 'country':
-        coldata.check_set_countries(True)
-        return coldata.countries_available
-      
+              
 def _process_heatmap_json(coldata, region_ids, use_weights, use_country=False):
     # data used for heatmap display in interface
 # =============================================================================
@@ -550,10 +526,49 @@ def _process_sites(coldata, colocation_settings,
             dc += 1
     return (map_data, scat_data, ts_objs)
 
+def _prepare_default_regions_json():
+    regs = {}
+    for regname in get_all_default_region_ids():
+        reg = Region(regname)
+        regs[regname] = r = {}
+        latr = reg.lat_range
+        r['minLat'] = latr[0]
+        r['maxLat'] = latr[1]
+        lonr = reg.lon_range
+        r['minLon'] = lonr[0]
+        r['maxLon'] = lonr[1]
+    return regs
+    
+def init_regions_web(coldata, regions_how):
+    if regions_how == 'default':
+        return _prepare_default_regions_json()
+        #region_ids = get_all_default_region_ids()
+    elif regions_how == 'country':
+        coldata.check_set_countries(True)
+        return coldata.get_country_codes()
+        #region_ids = coldata.countries_available
+    elif regions_how == 'htap':
+        raise NotImplementedError('Support for HTAP regions is coming soon')
+    else:
+        raise ValueError('Invalid input for regions_how', regions_how)
+    
+def update_regions_json(region_defs, regions_json):
+    if os.path.exists(regions_json):
+        current = read_json(regions_json)
+    else:
+        current = {}
+        
+    for region_id, region_info in region_defs.items():
+        if not region_id in current:
+            current[region_id] = region_info
+    save_dict_json(current, regions_json)
+    return current
+
 def compute_json_files_from_colocateddata(coldata, obs_name, 
                                           model_name, use_weights,
                                           colocation_settings,
                                           vert_code, out_dirs,
+                                          regions_json,
                                           regions_how=None, 
                                           zeros_to_nan=True):
     
@@ -585,7 +600,10 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     model_var = coldata.meta['var_name'][1]
     
     # get region IDs
-    region_ids = init_regions_web(coldata, regions_how)
+    regions = init_regions_web(coldata, regions_how)
+    update_regions_json(regions, regions_json)
+    
+    region_ids = list(regions)
     
     if zeros_to_nan:
         coldata = coldata.set_zeros_nan()
@@ -642,10 +660,12 @@ if __name__ == '__main__':
     out_dirs = stp.out_dirs
     obs, mod = coldata.meta['data_source']
     
+    rgf = stp.regions_file
     compute_json_files_from_colocateddata(coldata, obs, 
                                           mod, 
                                           use_weights=False,
                                           colocation_settings=stp.colocation_settings,
                                           vert_code='Column', 
                                           out_dirs=out_dirs, 
-                                          regions_how='country')
+                                          regions_how='country', 
+                                          regions_json=rgf)
