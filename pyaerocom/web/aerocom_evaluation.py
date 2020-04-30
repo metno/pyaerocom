@@ -16,7 +16,8 @@ from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
                                    read_json, write_json)
 
-from pyaerocom.web.const import HEATMAP_FILENAME_EVAL_IFACE
+from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_DAILY, 
+                                 HEATMAP_FILENAME_EVAL_IFACE_MONTHLY)
 from pyaerocom.web.helpers_evaluation_iface import (
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
@@ -547,47 +548,49 @@ class AerocomEvaluation(object):
         return info[obs_var]
     
     @property
-    def _heatmap_file(self):
-        return os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE)
+    def _heatmap_files(self):
+        
+        return dict(daily=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_DAILY),
+                    monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY))
     
     def update_heatmap_json(self):
-        fp = self._heatmap_file
-        if not os.path.exists(fp):
-            raise FileNotFoundError(fp)
+        for freq, fp in self._heatmap_files.items():
+            if not os.path.exists(fp):
+                raise FileNotFoundError(fp)
+                
+            with open(self.menu_file, 'r') as f:
+                menu = simplejson.load(f)
+            with open(fp, 'r') as f:
+                data = simplejson.load(f)
+            if not self.exp_id in menu:
+                raise ValueError('No entry found in menu.json for experiment {}'
+                                 .format(self.exp_id))
             
-        with open(self.menu_file, 'r') as f:
-            menu = simplejson.load(f)
-        with open(fp, 'r') as f:
-            data = simplejson.load(f)
-        if not self.exp_id in menu:
-            raise ValueError('No entry found in menu.json for experiment {}'
-                             .format(self.exp_id))
-        
-        menu = menu[self.exp_id]
-        hm = {}
-        for var, info in menu.items():
-            obs_dict = info['obs']
-            if not var in hm:
-                hm[var] = {}
-            for obs, vdict in obs_dict.items():
-                if not obs in hm[var]:
-                    hm[var][obs] = {}
-                for vc, mdict in vdict.items():
-                    if not vc in hm[var][obs]:
-                        hm[var][obs][vc] = {}
-                    for mod, minfo in mdict.items():
-                        if not mod in hm[var][obs][vc]:
-                            hm[var][obs][vc][mod] = {}
-                        modvar = minfo['var']
-                        if not modvar in hm[var][obs][vc][mod]:
-                            hm[var][obs][vc][mod][modvar] = {}
-                        
-                        hm_data = data[var][obs][vc][mod][modvar]
-                        hm[var][obs][vc][mod][modvar] = hm_data
+            menu = menu[self.exp_id]
+            hm = {}
+            for var, info in menu.items():
+                obs_dict = info['obs']
+                if not var in hm:
+                    hm[var] = {}
+                for obs, vdict in obs_dict.items():
+                    if not obs in hm[var]:
+                        hm[var][obs] = {}
+                    for vc, mdict in vdict.items():
+                        if not vc in hm[var][obs]:
+                            hm[var][obs][vc] = {}
+                        for mod, minfo in mdict.items():
+                            if not mod in hm[var][obs][vc]:
+                                hm[var][obs][vc][mod] = {}
+                            modvar = minfo['var']
+                            if not modvar in hm[var][obs][vc][mod]:
+                                hm[var][obs][vc][mod][modvar] = {}
                             
-        with open(fp, 'w') as f:
-            simplejson.dump(hm, f, ignore_nan=True)
-      
+                            hm_data = data[var][obs][vc][mod][modvar]
+                            hm[var][obs][vc][mod][modvar] = hm_data
+                                
+            with open(fp, 'w') as f:
+                simplejson.dump(hm, f, ignore_nan=True)
+          
     def find_coldata_files(self, model_name, obs_name, var_name=None):
         """Find colocated data files for a certain model/obs/var combination
         
