@@ -559,6 +559,34 @@ def _process_sites(data, jsdate, regions_how, meta_glob):
             dc += 1
     return (map_data, scat_data, ts_objs)
 
+def _process_regional_timeseries(data, jsdate, region_ids,
+                                 regions_how, meta_glob):
+    ts_objs = []
+    check_countries = True if regions_how=='country' else False
+    for reg in region_ids:
+        ts_data = _init_ts_data()
+        ts_data['station_name'] = reg
+        ts_data.update(meta_glob)
+        
+        for freq, cd in data.items():
+            if not isinstance(cd, ColocatedData):
+                continue
+            subset = cd.filter_region(reg, 
+                                      inplace=False,
+                                      check_country_meta=check_countries)
+            if cd.has_latlon_dims:
+                avg = subset.data.mean(dim=('latitude', 'longitude'))
+            else:
+                avg = subset.data.mean(dim='station_name')
+            obs_vals = avg[0].data.tolist()
+            mod_vals = avg[1].data.tolist()
+            ts_data['{}_date'.format(freq)] = jsdate[freq]
+            ts_data['{}_obs'.format(freq)] = obs_vals
+            ts_data['{}_mod'.format(freq)] = mod_vals
+            
+        ts_objs.append(ts_data)
+    return ts_objs
+            
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob):
     
@@ -706,12 +734,23 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         add_entry_heatmap_json(hm_file, hm_data, obs_name, obs_var, 
                                vert_code, model_name, model_var)    
     
+    ts_objs_regional = _process_regional_timeseries(data, 
+                                                    jsdate, 
+                                                    region_ids, 
+                                                    regions_how,
+                                                    meta_glob)
     
+    for ts_data in ts_objs_regional:
+        #writes json file
+        _write_stationdata_json(ts_data, out_dirs)
+        
     (map_data, 
      scat_data, 
      ts_objs) = _process_sites(data, jsdate,
                                regions_how,
                                meta_glob=meta_glob)
+                               
+    
         
     dirs = out_dirs
 
