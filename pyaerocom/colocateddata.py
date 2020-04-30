@@ -1281,9 +1281,16 @@ if __name__=="__main__":
     fname4d = 'od550csaer_REF-MODIS6.1-aqua_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
     fname3d = 'od550csaer_REF-AeronetSun_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
     coldata = ColocatedData(coldir + fname3d)
-    c1 = coldata.check_set_countries(inplace=False)
     
-    c1.filter_region('Germany', check_country_meta=True, inplace=True)
+    md = coldata.data[0]
     
-    c1.plot_coordinates()
+    mean = md.mean(dim='station_name')
+    
+    mean.plot()
+    print(md)
+    #c1 = coldata.check_set_countries(inplace=False)
+    
+    #c1.filter_region('Germany', check_country_meta=True, inplace=True)
+    
+    #c1.plot_coordinates()
     
