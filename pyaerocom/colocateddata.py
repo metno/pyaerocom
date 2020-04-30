@@ -1224,7 +1224,37 @@ class ColocatedData(object):
             return self.apply_region_mask(region_id, inplace)
         
         return self.apply_latlon_filter(region_id=region_id, inplace=inplace)
-     
+    
+    def get_regional_timeseries(self, region_id, **filter_kwargs):
+        """
+        Compute regional timeseries both for model and obs
+        
+        Parameters
+        ----------
+        region_id : str
+            name of region for which regional timeseries is supposed to be 
+            retrieved
+        **filter_kwargs
+            additional keyword args passed to :func:`filter_region`.
+            
+        Returns 
+        -------
+        dict
+            dictionary containing regional timeseries for model (key `mod`)
+            and obsdata (key `obs`) and name of region.
+        """
+        result = {}
+        subset = self.filter_region(region_id, inplace=False,
+                                    **filter_kwargs)
+        if subset.has_latlon_dims:
+            rgts = subset.data.mean(dim=('latitude', 'longitude'))
+        else:
+            rgts = subset.data.mean(dim='station_name')
+        result['obs'] = pd.Series(rgts.data[0], rgts.time)
+        result['mod'] = pd.Series(rgts.data[1], rgts.time)
+        result['region'] = region_id
+        return result
+    
     def calc_nmb_array(self):
         """Calculate data array with normalised bias (NMB) values
         
@@ -1278,16 +1308,13 @@ if __name__=="__main__":
     import pyaerocom as pya
     plt.close('all')
     coldir = '/home/jonasg/github/aerocom_evaluation/coldata/PIII-optics2019-P/NorESM2-met2010_AP3-CTRL/'
-    fname4d = 'od550csaer_REF-MODIS6.1-aqua_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
-    fname3d = 'od550csaer_REF-AeronetSun_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
-    coldata = ColocatedData(coldir + fname3d)
+    fname = 'od550csaer_REF-MODIS6.1-aqua_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
+    #fname = 'od550csaer_REF-AeronetSun_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
     
-    md = coldata.data[0]
+    coldata = ColocatedData(coldir + fname)
     
-    mean = md.mean(dim='station_name')
+    ts = coldata.get_regional_timeseries('EUROPE')
     
-    mean.plot()
-    print(md)
     #c1 = coldata.check_set_countries(inplace=False)
     
     #c1.filter_region('Germany', check_country_meta=True, inplace=True)
