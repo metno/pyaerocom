@@ -151,16 +151,16 @@ if __name__=="__main__":
     import pandas as pd
 
     test_seconds_in_periods()
-    # test_get_standarad_name()
-    # test_get_standard_unit()
-    # test_start_stop_from_year()
-    # test__get_pandas_freq_and_loffset()
-    # test_resample_timeseries(_make_timeseries_synthetic())
-    # test_same_meta_dict()
+    test_get_standarad_name()
+    test_get_standard_unit()
+    test_start_stop_from_year()
+    test__get_pandas_freq_and_loffset()
+    test_resample_timeseries(_make_timeseries_synthetic())
+    test_same_meta_dict()
 
 
-    # stat1 = DATA_ACCESS['station_data1']
-    # stat2 = DATA_ACCESS['station_data2']
+    stat1 = DATA_ACCESS['station_data1']
+    stat2 = DATA_ACCESS['station_data2']
     
-    # merged_ec = helpers.merge_station_data([stat1, stat2],
-    #                                        var_name='ec550aer')
+    merged_ec = helpers.merge_station_data([stat1, stat2],
+                                           var_name='ec550aer')

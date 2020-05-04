@@ -150,5 +150,5 @@ sorted_out
 # save pycharm run configs, but nothing else from pycharm
 !.idea/runConfigurations
 
-#
+# Vim temp files
 *.swp
