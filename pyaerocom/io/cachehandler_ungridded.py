@@ -114,7 +114,9 @@ class CacheHandlerUngridded(object):
         return os.path.join(self.cache_dir, self.file_name(var_name))
     
     def _check_pkl_head_vs_database(self, in_handle):
+        
         current = self.cache_meta_info()
+        
         head = pickle.load(in_handle)
         if not isinstance(head, dict):
             raise CacheReadError('Invalid cache file')
@@ -133,22 +135,26 @@ class CacheHandlerUngridded(object):
             newest = max(glob.iglob(os.path.join(self.data_dir, '*')), 
                          key=os.path.getctime)
             newest_date = os.path.getctime(newest)
-        except Exception as e:
-            raise AerocomConnectionError('Failed to establish connection to '
-                                         'data server. Reason: {}'.repr(e))
-        d = dict.fromkeys(self.CACHE_HEAD_KEYS)
+        except Exception:
+            newest = None
+            newest_date = None
+# =============================================================================
+#             raise AerocomConnectionError('Failed to establish connection to '
+#                                          'data server. Reason: {}'.format(repr(e)))
+# =============================================================================
+        current = dict.fromkeys(self.CACHE_HEAD_KEYS)
         from pyaerocom import __version__
         
-        d['pyaerocom_version'] = __version__
-        d['newest_file_in_read_dir'] = newest
-        d['newest_file_date_in_read_dir'] = newest_date
-        d['data_revision'] = self.reader.data_revision
-        d['reader_version'] = self.reader.__version__
-        d['ungridded_data_version'] = UngriddedData.__version__ 
-        d['cacher_version'] = self.__version__
-        return d
+        current['pyaerocom_version'] = __version__
+        current['newest_file_in_read_dir'] = newest
+        current['newest_file_date_in_read_dir'] = newest_date
+        current['data_revision'] = self.reader.data_revision
+        current['reader_version'] = self.reader.__version__
+        current['ungridded_data_version'] = UngriddedData.__version__ 
+        current['cacher_version'] = self.__version__
+        return current
     
-    def check_and_load(self, var_name):
+    def check_and_load(self, var_name, force_use_outdated=False):
         """Check if cache file exists and load
         
         Note
@@ -157,6 +163,14 @@ class CacheHandlerUngridded(object):
         outdated against pyaerocom updates, then it will be removed (the latter
         only if :attr:`pyaerocom.const.RM_CACHE_OUTDATED` is True).
         
+        Parameters
+        ----------
+        var_name : str 
+            name of variable to be read
+        force_use_outdated : bool
+            if True, read existing cache file even if it is not up to date or
+            pyaerocom version changed (not recommended to use)
+            
         Returns
         -------
         bool
@@ -182,20 +196,22 @@ class CacheHandlerUngridded(object):
                         .format(self.dataset_to_read, var_name))
             return False
     
-        
-        delete_existing = const.RM_CACHE_OUTDATED
+        delete_existing = const.RM_CACHE_OUTDATED if not force_use_outdated else False
                 
         in_handle = open(fp, 'rb')
-        
-        
-        try:
-            ok = self._check_pkl_head_vs_database(in_handle)
-        except Exception as e:
-            ok = False
-            delete_existing = True
-            const.logger.exception('File error in cached data file {}. File will '
-                             'be removed and data reloaded'
-                             'Error: {}'.format(fp, repr(e)))
+        if force_use_outdated:
+            last_meta = pickle.load(in_handle)
+            assert len(last_meta) == len(self.CACHE_HEAD_KEYS)
+            ok = True
+        else:
+            try:
+                ok = self._check_pkl_head_vs_database(in_handle)
+            except Exception as e:
+                ok = False
+                delete_existing = True
+                const.logger.exception('File error in cached data file {}. File will '
+                                 'be removed and data reloaded'
+                                 'Error: {}'.format(fp, repr(e)))
         if not ok:
             # TODO: Should we delete the cache file if it is outdated ???
             const.logger.info('Aborting reading cache file {}. Aerocom database '
