@@ -529,7 +529,8 @@ class AerocomEvaluation(object):
                                               model_name):
         """Creates all json files for one ColocatedData object"""
         vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
-        
+        if len(self.region_groups) > 0:
+            raise NotImplementedError('Filtering of grouped regions is not ready yet...')
         return compute_json_files_from_colocateddata(
                 coldata=coldata, 
                 obs_name=obs_name, 
@@ -539,8 +540,8 @@ class AerocomEvaluation(object):
                 colocation_settings=self.colocation_settings, 
                 out_dirs=self.out_dirs, 
                 regions_json=self.regions_file, 
-                regions_how=self.regions_how, 
-                region_groups=self.region_groups)
+                regions_how=self.regions_how) 
+                #region_groups=self.region_groups)
          
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
