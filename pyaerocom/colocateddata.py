@@ -5,11 +5,12 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (CoordinateError, DataDimensionError, 
                                   DataSourceError, 
+                                  DataExtractionError,
                                   NetcdfError, VarNotAvailableError,
                                   MetaDataError)
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
-from pyaerocom.region import valid_region, Region
+from pyaerocom.region import valid_default_region, Region
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr, get_mask_value)
 
@@ -267,6 +268,28 @@ class ColocatedData(object):
         return sorted(dict.fromkeys(self.data['country'].data))
     
     @property
+    def country_codes_available(self):
+        """
+        Alphabetically sorted list of country codes available
+        
+        Raises
+        ------
+        MetaDataError
+            if no country information is available
+            
+        Returns
+        -------
+        list 
+            list of countries available in these data
+        """
+        if not 'country_code' in self.coords:
+            raise MetaDataError('No country information available in '
+                                'ColocatedData. You may run class method '
+                                'check_set_countries to automatically assign '
+                                'countries to the station_name coordinate')
+        return sorted(dict.fromkeys(self.data['country_code'].data))
+    
+    @property
     def area_weights(self):
         """
         Wrapper for :func:`calc_area_weights`
@@ -294,7 +317,7 @@ class ColocatedData(object):
                                 'check_set_countries to automatically assign '
                                 'countries to the station_name coordinate')
         countries = self.data['country'].data
-        codes = self.data['country_codes'].data
+        codes = self.data['country_code'].data
         return dict(zip(countries, codes))
     
     def calc_area_weights(self):
@@ -585,7 +608,7 @@ class ColocatedData(object):
             
         arr = coldata.data
         arr = arr.assign_coords(country = (assign_to_dim, countries),
-                                country_codes=(assign_to_dim, codes))
+                                country_code=(assign_to_dim, codes))
         coldata.data = arr
         return coldata
             
@@ -1040,12 +1063,14 @@ class ColocatedData(object):
         return True
         
     @staticmethod
-    def _filter_country_2d(arr, country):
+    def _filter_country_2d(arr, country, use_country_code):
         if not 'country' in arr.coords:
             raise DataDimensionError('Cannot filter country {}. No country '
                                      'information available in DataArray'
                                      .format(country))
-        countries = arr.country
+
+        what = 'country' if not use_country_code else 'country_code'
+        countries = arr[what]
         country_dims = countries.dims
         # some sanity checking (this can probably be done more elegant using
         # xarray syntax, however, did not manage to use loc, sel, etc since 
@@ -1055,7 +1080,7 @@ class ColocatedData(object):
         
         assert arr.ndim == 3
         assert arr.dims[-1] == 'station_name'
-        mask = arr.country == country
+        mask = arr[what] == country
         return arr[:,:,mask]
         
     @staticmethod
@@ -1084,10 +1109,12 @@ class ColocatedData(object):
             
         return arr.sel(dict(latitude=lat_range, longitude=lon_range))
     
-    def apply_country_filter(self, region_id, inplace=False):
+    def apply_country_filter(self, region_id, use_country_code=False, 
+                             inplace=False):
         is_2d = self._check_latlon_coords()
         if is_2d:
-            filtered = self._filter_country_2d(self.data, region_id)
+            filtered = self._filter_country_2d(self.data, region_id, 
+                                               use_country_code)
         else:
             raise NotImplementedError('Cannot yet filter')
         if inplace:
@@ -1121,7 +1148,7 @@ class ColocatedData(object):
             filtered data object
         """
         is_2d = self._check_latlon_coords()
-        if valid_region(region_id):
+        if valid_default_region(region_id):
             reg = Region(region_id)
             lon_range = reg.lon_range
             lat_range = reg.lat_range
@@ -1219,12 +1246,24 @@ class ColocatedData(object):
         """
         if check_country_meta:
             if region_id in self.countries_available:
-                return self.apply_country_filter(region_id, inplace)
+                return self.apply_country_filter(region_id, 
+                                                 use_country_code=False,
+                                                 inplace=inplace)
+            
+            elif region_id in self.country_codes_available:
+                return self.apply_country_filter(region_id, 
+                                                 use_country_code=True,
+                                                 inplace=inplace)
+        
         if region_id in const.HTAP_REGIONS:
             return self.apply_region_mask(region_id, inplace)
+        elif region_id in const.OLD_AEROCOM_REGIONS:
+            return self.apply_latlon_filter(region_id=region_id, 
+                                            inplace=inplace)
+        else:
+            raise DataExtractionError('Failed to filter region {}.'
+                                      .format(region_id))
         
-        return self.apply_latlon_filter(region_id=region_id, inplace=inplace)
-    
     def get_regional_timeseries(self, region_id, **filter_kwargs):
         """
         Compute regional timeseries both for model and obs
@@ -1313,7 +1352,23 @@ if __name__=="__main__":
     
     coldata = ColocatedData(coldir + fname)
     
-    ts = coldata.get_regional_timeseries('EUROPE')
+    #ts = coldata.get_regional_timeseries('EUROPE')
+    
+    from time import time
+    t0 = time()
+    sub0 = coldata.filter_region('EUROPE')
+    dt0 = time() - t0
+    
+    stacked = coldata.flatten_latlondim_station_name()
+    
+    t1 = time()
+    sub1 = stacked.filter_region('EUROPE')
+    dt1 = time() - t1
+    
+    print('Not stacked: {:.3f} s'.format(dt0))
+    print('Stacked: {:.3f} s'.format(dt1))
+    
+    
     
     #c1 = coldata.check_set_countries(inplace=False)
     
