@@ -209,6 +209,7 @@ class AerocomEvaluation(object):
         self.var_order_menu = []
         
         self.regions_how = 'default'
+        self.region_groups = {}
         self.resample_how = None
         
         self._valid_obs_vars = {}
@@ -538,7 +539,8 @@ class AerocomEvaluation(object):
                 colocation_settings=self.colocation_settings, 
                 out_dirs=self.out_dirs, 
                 regions_json=self.regions_file, 
-                regions_how=self.regions_how)
+                regions_how=self.regions_how, 
+                region_groups=self.region_groups)
          
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
