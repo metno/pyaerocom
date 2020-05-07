@@ -7,7 +7,7 @@ def test_read_emep():
     r = ReadEMEP()
     assert r.data_id == None
     assert r.vars_provided == None
-    assert self.filepath == None
+    assert r.filepath == None
 
 @lustre_unavail
 def test_read_emep_data():
