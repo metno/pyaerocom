@@ -18,19 +18,27 @@ from pyaerocom.helpers import seconds_in_periods
 from pyaerocom.variable import get_aliases
 from pyaerocom.units_helpers import implicit_to_explicit_rates
 class ReadEMEP(object):
+    """
+    Class for reading EMEP model output data.
+
+    Parameters
+    ----------
+    data_id : str
+        string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
+    filepath : str
+        Path to netcdf file.
+
+    Attributes
+    ----------
+    filepath :
+    data_id :
+
+    """
+
+
 
 
     def __init__(self, filepath=None, data_id=None):
-        """
-        Read EMEP model data files based on path to netcdf file.
-
-        Parameters
-        ----------
-        data_id : str
-            string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
-        filepath : str
-            File containing netcdf file.
-        """
 
         self.filepath = filepath
         self.data_id = data_id
