@@ -8,7 +8,7 @@ Created on Thu Apr 12 14:45:43 2018
 
 
 from pyaerocom import units_helpers as helpers
-from pyaerocom.conftest import lustre_unavail
+from pyaerocom.conftest import lustre_unavail, testdata_unavail
 from pyaerocom.griddeddata import GriddedData
 from iris.cube import Cube
 from pyaerocom.exceptions import UnitConversionError
@@ -26,7 +26,8 @@ def test_implicit_to_explicit_rates_already_rate():
     assert helpers.implicit_to_explicit_rates(g, 'monthly') == False
 
 
-@lustre_unavail
-def test_implicit_to_explicit_rates_convert_data():
-    # TODO: Add a simple conversion test with a griddeddata object
-    pass
+@testdata_unavail
+def test_implicit_to_explicit_rates_convert_data(data_tm5):
+    data = data_tm5
+    helpers.implicit_to_explicit_rates(data, 'monthly')
+    assert isinstance(data, GriddedData)

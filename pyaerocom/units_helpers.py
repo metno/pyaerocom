@@ -181,6 +181,13 @@ def implicit_to_explicit_rates(gridded, ts_type):
 
     Some data should be per second but have units without time information
     information.
+
+    Parameters
+    ----------
+    gridded : GriddedData
+        Data to convert
+    ts_type : str
+        Temporal resolution of gridded.
     """
     # TODO: Only modify data if conversion is succesful
     unit = gridded.units
