@@ -13,7 +13,8 @@ import xarray as xray
 from pyaerocom.exceptions import (LongitudeConstraintError, 
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError,
-                                  VariableDefinitionError)
+                                  VariableDefinitionError, 
+                                  ResamplingError)
 from pyaerocom import logger, const
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
@@ -880,22 +881,17 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
     Series
         resampled time series object
     """
-    from pyaerocom import const
     freq, loffset = _get_pandas_freq_and_loffset(freq)    
     resampler = ts.resample(freq, loffset=loffset)
     if min_num_obs is None:
         data = resampler.agg(how)
     else:
         df = resampler.agg([how, 'count'])
-        const.logger.info(freq, min_num_obs)
-        const.logger.info('before mean', df[how].mean())
         invalid = df['count'] < min_num_obs
-        const.logger.info(len(invalid), invalid.sum())
         df[how][invalid] = np.nan
-        const.logger.info('after mean', df[how].mean())
         data = df[how]
-
-    return data#.loc[s.index[0]:s.index[-1]]
+    #print(freq, min_num_obs, how)
+    return data
 
 def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
@@ -952,8 +948,15 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         #invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
         invalid = arr.resample(time=pd_freq).count(dim='time') < min_num_obs
 
-    freq, loffset = _get_pandas_freq_and_loffset(freq)    
-    arr = arr.resample(time=pd_freq, loffset=loffset).mean(dim='time')
+    freq, loffset = _get_pandas_freq_and_loffset(freq)
+    resampler = arr.resample(time=pd_freq, loffset=loffset)
+    try:
+        aggfun = getattr(resampler, how)
+    except AttributeError:
+        raise ResamplingError('Invalid aggregator {} for temporal resampling '
+                              'of DataArray...'.format(how))
+    arr = aggfun(dim='time')
+        
     if invalid is not None:
         arr.data[invalid.data] = np.nan
     return arr
