@@ -16,34 +16,24 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.tstype import TsType
 from pyaerocom.helpers import seconds_in_periods
 from pyaerocom.variable import get_aliases
-
+from pyaerocom.units_helpers import implicit_to_explicit_rates
 class ReadEMEP(object):
 
 
-    def __init__(self, filepath, data_id=None, var_file=None):
+    def __init__(self, filepath=None, data_id=None):
         """
-        var_file: path
-            Use alternative EMEP -> Aerocom variable mapping.
+        Read EMEP model data files based on path to netcdf file.
+
+        Parameters
+        ----------
+        data_id : str
+            string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
+        filepath : str
+            File containing netcdf file.
         """
 
-        self._filepath = filepath
-        self._data_id = data_id
-        self._var_file = var_file
-        self._vars_provided = None
-        try:
-            open(filepath, 'r')
-        except Exception as e:
-            const.print_log.exception('File "{}" not found. Error message: {}'.format(filepath, self._filepath,
-                                                       repr(e)))
-
-        # TODO: Move this to function
-        data = xr.open_dataset(filepath)
-        data_vars = set(data.keys())
-        emep_vars = set(get_emep_variables().values())
-        available = data_vars.intersection(emep_vars)
-        inv_emep = {v: k for k, v in get_emep_variables().items()}
-        avail_aero = [ inv_emep[var] for var in available]
-        self.vars_provided = sorted(avail_aero)
+        self.filepath = filepath
+        self.data_id = data_id
 
         # dictionary containing information about additionally required variables
         # for each auxiliary variable (i.e. each variable that is not provided
@@ -54,7 +44,6 @@ class ReadEMEP(object):
                              # 'sconctno3' : ['sconcno3', 'sconchno3'],
                              'sconcoa' : ['sconcoac', 'sconcoaf']}
 
-
        # Functions that are used to compute additional variables (i.e. one
        # for each variable defined in AUX_REQUIRES)
         self.AUX_FUNS = {'depso4' : add_cubes,
@@ -63,6 +52,54 @@ class ReadEMEP(object):
                          'sconctno3' : add_cubes,
                          'sconcoa' : add_cubes}
 
+    @property
+    def filepath(self):
+        """
+        Path to netcdf file
+        """
+        return self._filepath
+
+    @filepath.setter
+    def filepath(self, val):
+        try:
+            open(val, 'r')
+        except Exception as e:
+            const.print_log.exception('File "{}" not found. Error message: {}'.format(val, repr(e)))
+            val = None
+        self._filepath = val
+
+
+    @property
+    def vars_provided(self):
+        """Variables provided by this dataset"""
+        return self._get_vars_provided()
+
+    def _get_vars_provided(self):
+        variables = None
+        if self.filepath:
+            data = xr.open_dataset(self.filepath)
+            data_vars = set(data.keys())
+            emep_vars = set(get_emep_variables().values())
+            available = data_vars.intersection(emep_vars)
+            inv_emep = {v: k for k, v in get_emep_variables().items()}
+            avail_aero = [ inv_emep[var] for var in available]
+            variables = sorted(avail_aero)
+        return variables
+
+    @property
+    def data_id(self):
+        """
+        Data ID of dataset
+        """
+        return self._data_id
+
+    @data_id.setter
+    def data_id(self, val):
+        """
+        """
+        if not isinstance(val, str):
+            val = None
+        self._data_id = val
 
     def __str__(self):
         s = 'Reader: ReadEMEP\n'
@@ -112,7 +149,7 @@ class ReadEMEP(object):
                 gridded.time.long_name = 'time' # quickplot_map expects time long name to be time.
                 gridded.time.standard_name = 'time'
                 gridded._update_coord_info()
-                self.implicit_to_explicit_rates(gridded, ts_type)
+                implicit_to_explicit_rates(gridded, ts_type)
 
 
         # At this point a GriddedData object with name gridded should exist
@@ -132,20 +169,6 @@ class ReadEMEP(object):
             const.print_log.exception('Metadata not available: {}'.format(repr(e)))
 
         return gridded
-
-
-    def implicit_to_explicit_rates(self, gridded, ts_type):
-        """
-        Convert implicit daily, monthly or yearly rates to per second.
-        And set units to 'kg m-2 s-1'.
-        """
-        # TODO: Only modify data if conversion is succesful
-        timestamps = gridded.time_stamps()
-        seconds_factor = seconds_in_periods(timestamps, ts_type)
-        for i in range(len(seconds_factor)):
-            gridded.to_xarray().isel(time=i).values *= 10**-6  # mg -> kg
-            gridded.to_xarray().isel(time=i).values /= seconds_factor[i]
-        gridded.units = 'kg m-2 s-1'
 
 
     def read(self, vars_to_retrieve, data_id=None, start=None, stop=None,
@@ -169,8 +192,10 @@ if __name__ == '__main__':
 
     basepath = '/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_AerocomHIST/'
     file = '2010_GLOB1_2010met/Base_month.nc' # 2010 emissions with 2010 meteorology
-    var_file= basepath + 'vars_sorted.sh'
     filepath = '{}{}'.format(basepath, file)
+
+    filepath = '/home/eirikg/Desktop/pyaerocom/data/2020_AerocomHIST/2010_GLOB1_2010met/Base_month.nc'
+
 
     reader = ReadEMEP(filepath, data_id='EMEP')
     # Read variable that uses AUX_FUNS
