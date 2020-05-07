@@ -146,6 +146,12 @@ class ColocationSetup(BrowseDict):
         time resampling constraints applied if input arg 
         `apply_time_resampling_constraints` is True - or None, in which case 
         :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used.
+    resample_how : str or dict
+        string specifying how data should be aggregated when resampling in time.
+        Default is "mean". Can also be a nested dictionary, e.g. 
+        resample_how={'conco3': 'daily': {'hourly' : 'max'}}} would use the 
+        maximum value to aggregate from hourly to daily for variable conco3,
+        rather than the mean. 
     model_keep_outliers : bool
         if True, no outliers are removed from model data
     obs_keep_outliers : bool
@@ -211,6 +217,7 @@ class ColocationSetup(BrowseDict):
                 const.print_log.info('Creating directory: {}'.format(basedir_coldata))
                 os.mkdir(basedir_coldata)
         
+        self._obs_cache_only = False
         self.obs_vars = obs_vars
         self.obs_vert_type = obs_vert_type
         self.model_vert_type_alt = model_vert_type_alt
@@ -334,6 +341,9 @@ class Colocator(ColocationSetup):
             
         """
         self.update(**opts)
+        # ToDo: setting the defaults for time resampling here should be 
+        # unnecessary since this is done in TimeResampler. Ensure that and 
+        # remove here
         if self.apply_time_resampling_constraints is None:
             self.apply_time_resampling_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
         
@@ -671,7 +681,19 @@ class Colocator(ColocationSetup):
             msg = 'WRITE: {}\n'.format(savename)
             self._write_log(msg)
             print_log.info(msg)
-           
+        
+    def _eval_resample_how(self, model_var, obs_var):
+        rshow = self.resample_how
+        if not isinstance(rshow, dict):
+            return rshow
+        
+        if obs_var in rshow:    
+            return rshow[obs_var]
+        elif model_var in rshow:
+            return rshow[model_var]
+        else:
+            return None
+        
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         print_log.info('PREPARING colocation of {} vs. {}'
@@ -757,6 +779,7 @@ class Colocator(ColocationSetup):
                 else:
                     continue
             ts_type_src = model_data.ts_type
+            rshow = self._eval_resample_how(model_var, obs_var)
             if ts_type is None:
                 # if colocation frequency is not specified
                 ts_type = ts_type_src
@@ -828,9 +851,12 @@ class Colocator(ColocationSetup):
                 #large observational data sets. Only one variable is loaded into
                 # the UngriddedData object at a time. Currently the variable is
                 #re-read a lot of times, which is a weakness.
-                obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                               vars_to_retrieve=obs_var,
-                               **ropts)
+                obs_data = obs_reader.read(
+                    
+                    datasets_to_read=self.obs_id, 
+                    vars_to_retrieve=obs_var,
+                    only_cached=self._obs_cache_only,
+                    **ropts)
                 
                         # ToDo: consider removing outliers already here.
                 if 'obs_filters' in self:
@@ -866,7 +892,8 @@ class Colocator(ColocationSetup):
                         colocate_time=self.colocate_time,
                         var_keep_outliers=self.model_keep_outliers,
                         var_ref_keep_outliers=self.obs_keep_outliers,
-                        use_climatology_ref=self.obs_use_climatology)
+                        use_climatology_ref=self.obs_use_climatology,
+                        resample_how=rshow)
                 
                 if self.model_to_stp:
                     coldata = correct_model_stp_coldata(coldata)
@@ -985,6 +1012,7 @@ class Colocator(ColocationSetup):
             # model and obs.
             lowest = self.get_lowest_resolution(ts_type, model_data.ts_type,
                                                 obs_data.ts_type)
+            rshow = self._eval_resample_how(model_var, obs_var)
             if lowest != ts_type:
                 print_log.info('Updating ts_type from {} to {} (highest '
                                'available in {} / {} combination)'
@@ -1035,7 +1063,8 @@ class Colocator(ColocationSetup):
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
                         var_keep_outliers=self.model_keep_outliers,
-                        var_ref_keep_outliers=self.obs_keep_outliers)
+                        var_ref_keep_outliers=self.obs_keep_outliers, 
+                        resample_how=rshow)
                 if self.save_coldata:
                     self._save_coldata(coldata, savename, out_dir, model_var, 
                                        model_data, obs_var)
