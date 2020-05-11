@@ -3,12 +3,6 @@
 """
 High level module containing analysis classes and methods to perform 
 colocation.
-
-NOTE
-----
-
-This module will be deprecated soon but most of the code will be refactored 
-into colocation.py module.
 """
 from datetime import datetime
 import numpy as np
@@ -22,8 +16,7 @@ from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                varlist_aerocom)
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
-                                  colocate_gridded_ungridded,
-                                  correct_model_stp_coldata)
+                                  colocate_gridded_ungridded)
 from pyaerocom.colocateddata import ColocatedData
 
 from pyaerocom.filter import Filter
@@ -31,6 +24,8 @@ from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
                                   TemporalResolutionError)
+
+from pyaerocom.not_finalised import correct_model_stp_coldata
                    
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
@@ -358,8 +353,15 @@ class Colocator(ColocationSetup):
             self.logging = False
         
         self._write_log('\n\nModel: {}\n'.format(self.model_id))
+        obs_id = self.obs_id
+        
         try:
-            if self.obs_id in self.UNGRIDDED_IDS:
+            if not isinstance(obs_id, str): #may be multiple ungridded datasets
+                if all(x in self.UNGRIDDED_IDS for x in obs_id):
+                    self.data[self.model_id] = self._run_gridded_ungridded(var_name)
+                else:
+                    raise ValueError('Could not identify obs_id {}'.format(obs_id))
+            elif obs_id in self.UNGRIDDED_IDS: # obs_id is string
                 self.data[self.model_id] = self._run_gridded_ungridded(var_name)
             else:
                 self.data[self.model_id] = self._run_gridded_gridded(var_name)
@@ -694,6 +696,16 @@ class Colocator(ColocationSetup):
         else:
             return None
         
+    def _get_ungridded_obsvars_avail(self, obs_reader):
+        _oreaders = obs_reader.get_readers(self.obs_id)
+
+        obs_vars = []
+        for var in varlist_aerocom(self.obs_vars):
+            for _oreader in _oreaders:
+                if _oreader.var_supported(var) and not var in obs_vars:
+                    obs_vars.append(var)
+        return obs_vars
+    
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         print_log.info('PREPARING colocation of {} vs. {}'
@@ -703,13 +715,7 @@ class Colocator(ColocationSetup):
         
         obs_reader = ReadUngridded(self.obs_id)
             
-        _oreader = obs_reader.get_reader(self.obs_id)
-
-        obs_vars = []
-        for var in varlist_aerocom(self.obs_vars):
-            if _oreader.var_supported(var):
-                obs_vars.append(var)
-            
+        obs_vars = self._get_ungridded_obsvars_avail(obs_reader)    
         #flist(np.intersect1d(self.obs_vars, obs_vars_supported))
         
         if len(obs_vars) == 0:
