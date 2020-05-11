@@ -38,10 +38,13 @@ class ReadEMEP(object):
 
 
 
-    def __init__(self, filepath=None, data_id=None):
+    def __init__(self, filepath=None, data_id=None, data_dir=None):
 
         self.filepath = filepath
         self.data_id = data_id
+
+        if data_dir:
+            raise NotImplementedError('Reading from directory is not implemented.')
 
         # dictionary containing information about additionally required variables
         # for each auxiliary variable (i.e. each variable that is not provided
@@ -116,10 +119,11 @@ class ReadEMEP(object):
 
 
     def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None, experiment=None, vert_which=None,
-                 flex_ts_type=True, prefer_longer=False,
-                 aux_vars=None, aux_fun=None, **kwargs):
+                 ts_type=None):
         """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
+
+        if start or stop:
+            raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
 
         var_map = get_emep_variables()
 
@@ -142,40 +146,26 @@ class ReadEMEP(object):
                 sys.exit(1)
 
             EMEP_prefix = emep_var.split('_')[0]
-            data = xr.open_dataset(self._filepath)[emep_var]
+            data = xr.open_dataset(self.filepath)[emep_var]
             data.attrs['long_name'] = var_name
+            data.time.attrs['long_name'] = 'time'
+            data.time.attrs['standard_name'] = 'time'
+            data.attrs['units'] = self.preprocess_units(data.units)
+            cube = data.to_iris()
+            gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
 
-            if (EMEP_prefix in ['WDEP', 'DDEP']) and emep_var != 'WDEP_PREC':
-                # Get rid of units (S, N f.e.) that cannot be handled with CF units
-                 # Very hardcoded. Is this always true?
-                data.attrs['units'] = 'mg/m2'
-            gridded = GriddedData(data.to_iris(), var_name=var_name, ts_type=ts_type)
-
-            # Convert mg/m^2 (implicit per day, month or year) -> kg
             if EMEP_prefix in ['WDEP', 'DDEP']:
-                # TODO: This is duplicated. Need better flow.
-                gridded.time.long_name = 'time' # quickplot_map expects time long name to be time.
-                gridded.time.standard_name = 'time'
-                gridded._update_coord_info()
                 implicit_to_explicit_rates(gridded, ts_type)
-
 
         # At this point a GriddedData object with name gridded should exist
 
-        gridded.time.long_name = 'time' # quickplot_map expects time long name to be time.
-        gridded.time.standard_name = 'time'
-        gridded._update_coord_info()
-        gridded.metadata['data_id'] = self._data_id
-        # Remove unneccessary(?) metadata. Better way to do this?
+        gridded.metadata['data_id'] = self.data_id
+        gridded.metadata['from_files'] = self.filepath # ReadGridded cannot concatenate several years of data if this is missing
 
-        try:
-            del(gridded.metadata['current_date_first'])
-            del(gridded.metadata['current_date_last'])
-            # ReadGridded cannot concatenate several years of data if this is missing
-            gridded.metadata['from_files'] = self._filepath
-        except KeyError as e:
-            const.print_log.exception('Metadata not available: {}'.format(repr(e)))
-
+        # Remove unneccessary metadata. Better way to do this?
+        for metadata in ['current_date_first', 'current_date_last']:
+            if metadata in gridded.metadata.keys():
+                del(gridded.metadata[metadata])
         return gridded
 
 
@@ -196,6 +186,16 @@ class ReadEMEP(object):
         return tuple(data)
 
 
+    @staticmethod
+    def preprocess_units(units):
+        new_unit = units
+        if units == '':
+            new_unit = '1'
+        elif units == 'mgS/m2' or units == 'mgN/m2':
+            raise NotImplementedError('Species specific units are not implemented.')
+            new_unit = units
+        return new_unit
+
 if __name__ == '__main__':
 
     basepath = '/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_AerocomHIST/'
@@ -207,6 +207,6 @@ if __name__ == '__main__':
 
     reader = ReadEMEP(filepath, data_id='EMEP')
     # Read variable that uses AUX_FUNS
-    depso4 = reader.read_var('depso4', ts_type='monthly')
+    depso4 = reader.read_var('wetsox', ts_type='monthly')
     # Read variable that uses unit conversions
     wetso4 = reader.read_var('wetso4', ts_type='monthly')
