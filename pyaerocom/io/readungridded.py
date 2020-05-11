@@ -172,7 +172,7 @@ class ReadUngridded(object):
             return self._readers[dataset_to_read].PROVIDES_VARIABLES
         return self.find_read_class(dataset_to_read).PROVIDES_VARIABLES
       
-    def get_reader(self, dataset_to_read=None):
+    def get_reader(self, dataset_to_read):
         """Helper method that returns loaded reader class
         
         Parameters
@@ -193,8 +193,15 @@ class ReadUngridded(object):
         NetworkNotImplemented
             if network is supported but no reading routine is implemented yet
         """
-        if dataset_to_read is None:
-            dataset_to_read = self.dataset_to_read
+# =============================================================================
+#         if dataset_to_read is None:
+#             dataset_to_read = self.dataset_to_read
+# =============================================================================
+        if not isinstance(dataset_to_read, str): # assume its more than one
+            raise ValueError('Invalid input for dataset_to_read. Need str, '
+                             'got {}. Use get_readers, if you want to retrieve '
+                             'reading classes for multiple observation IDs'
+                             .format(type(dataset_to_read)))
         elif not dataset_to_read in self.supported_datasets:
             raise NetworkNotSupported('Could not fetch reader class: Input '
                                       'network {} is not supported by '
@@ -202,6 +209,38 @@ class ReadUngridded(object):
         if not dataset_to_read in self._readers:
             self.find_read_class(dataset_to_read)
         return self._readers[dataset_to_read]
+    
+    def get_readers(self, datasets_to_read):
+        """Helper method that returns loaded reader class
+        
+        Parameters
+        -----------
+        datasets_to_read : list or tuple
+            list of observation IDs
+        
+        Returns
+        -------
+        list
+            list of reader isntances for each observation ID in input list
+        
+        Raises
+        ------
+        NetworkNotSupported
+            if network is not supported by pyaerocom
+        NetworkNotImplemented
+            if network is supported but no reading routine is implemented yet
+        """
+# =============================================================================
+#         if dataset_to_read is None:
+#             dataset_to_read = self.dataset_to_read
+# =============================================================================
+        if not isinstance(datasets_to_read, (list, tuple)): # assume its more than one
+            raise ValueError('Invalid input for datasets_to_read. Need list or, '
+                             'tuple, got {}. Use get_reader, if you want to '
+                             'retrieve reader for single observation ID'
+                             .format(type(datasets_to_read)))
+        return [self.get_reader(x) for x in datasets_to_read]
+    
     
     def find_read_class(self, dataset_to_read):
         """Find reading class for dataset name
