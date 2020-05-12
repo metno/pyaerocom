@@ -698,13 +698,17 @@ class StationData(StationMetaData):
         ts_type_other = TsType(other.get_var_ts_type(var_name))
         if ts_type_this == ts_type_other:
             return (self.to_timeseries(var_name), other.to_timeseries(var_name))
+        elif ts_type_this > ts_type_other:    
+            # make sure each variable in the object has explicitely ts_type
+            # assigned (rather than global specification)
+            self._update_var_timeinfo()
+            s0 = self.resample_time(var_name, 
+                                    ts_type=ts_type_other,
+                                    inplace=True)[var_name].dropna()
+            s1 = other.to_timeseries(var_name)
+        else:
+            other._update_var_timeinfo()
         
-    
-        # make sure each variable in the object has explicitely ts_type
-        # assigned (rather than global specification)
-        self._update_var_timeinfo()
-        other._update_var_timeinfo()
-        ts_type = get_lowest_resolution(ts_type_this, ts_type_other)
         
         _tt = TsType(ts_type)
         if _tt.mulfac != 1:
