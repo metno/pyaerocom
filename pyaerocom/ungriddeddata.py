@@ -600,6 +600,7 @@ class UngriddedData(object):
                         merge_if_multi=True, merge_pref_attr=None, 
                         merge_sort_by_largest=True, insert_nans=False,
                         allow_wildcards_station_name=True,
+                        keep_overlap=False,
                         **kwargs):
         """Convert data from one station to :class:`StationData`
         
@@ -647,6 +648,10 @@ class UngriddedData(object):
             pattern), metadata matches will be identified applying wildcard 
             matches between input `meta_idx` and all station names in this 
             object.
+        keep_overlap : bool
+            if True and if there are temporal overlaps when merging multiple
+            metadata blocks, the overlapping timeseries that is removed is 
+            stored in output StationData attr. overlap.
         
         Returns
         -------
@@ -699,7 +704,8 @@ class UngriddedData(object):
             merged = merge_station_data(stats, vars_to_convert,
                                         pref_attr=merge_pref_attr,
                                         sort_by_largest=merge_sort_by_largest,
-                                        fill_missing_nan=False) #done below
+                                        fill_missing_nan=False,
+                                        keep_overlap=keep_overlap) #done below
             stats = [merged]
         
         stats_ok = []

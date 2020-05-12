@@ -656,24 +656,6 @@ class StationData(StationMetaData):
                 
         return self
 
-    def _ensure_same_var_ts_type_other(self, other, var_name):
-        ts_type = self.get_var_ts_type(var_name)
-        ts_type1 = other.get_var_ts_type(var_name)
-        if ts_type != ts_type1:
-            # make sure each variable in the object has explicitely ts_type
-            # assigned (rather than global specification)
-
-            self._update_var_timeinfo()
-            other._update_var_timeinfo()
-
-            from pyaerocom.helpers import get_lowest_resolution
-            ts_type = get_lowest_resolution(ts_type, ts_type1)
-        from pyaerocom.tstype import TsType
-        _tt = TsType(ts_type)
-        if _tt.mulfac != 1:
-            ts_type = _tt.next_lower.val
-        return ts_type
-
     def _update_var_timeinfo(self):
 
         for var, info in self.var_info.items():
@@ -691,50 +673,104 @@ class StationData(StationMetaData):
                 info['ts_type'] = self.ts_type
         self.ts_type = None
 
-    def _merge_vardata_2d(self, other, var_name):
-        """Merge 2D variable data (for details see :func:`merge_vardata`)"""
-        ts_type = self._ensure_same_var_ts_type_other(other, var_name)
+    def _check_resolve_overlap(self, var_name, s0, s1, keep=True):
+        overlap = s0.index.intersection(s1.index)
+        if not len(overlap) > 0:
+            return s1
         
-        s0 = self.resample_time(var_name, ts_type=ts_type,
-                                inplace=True)[var_name].dropna()
-        s1 = other.resample_time(var_name, inplace=True,
-                                 ts_type=ts_type)[var_name].dropna()
-
-        info = other.var_info[var_name]
-        removed = None
-        if 'overlap' in info and info['overlap']:
-            raise NotImplementedError('Coming soon...')
+        removed = s1[overlap]
+        # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
+        #s1 = s1.drop(index=overlap, inplace=True)
+        s1.drop(index=overlap, inplace=True)
         
-        if len(s1) > 0: #there is data
-            overlap = s0.index.intersection(s1.index)
-            if len(overlap) > 0:
-                removed = s1[overlap]
-                # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
-                #s1 = s1.drop(index=overlap, inplace=True)
-                s1.drop(index=overlap, inplace=True)
-            #compute merged time series
-            if len(s1) > 0:
-                s0 = pd.concat([s0, s1], verify_integrity=True)
-            
-            # sort the concatenated series based on timestamps
-            s0.sort_index(inplace=True)
-            self.merge_varinfo(other, var_name)
-        
-        # assign merged time series (overwrites previous one)
-        self[var_name] = s0
-        self.dtime = s0.index.values
-        
-        if removed is not None:
+        if keep:
             if var_name in self.overlap:
                 self.overlap[var_name] = pd.concat([self.overlap[var_name], 
                                                    removed])
                 self.overlap[var_name].sort_index(inplace=True)
             else:
                 self.overlap[var_name] = removed
-                
-        return self
+        return s1
     
-    def merge_vardata(self, other, var_name):
+    def _get_vardata_same_ts_type(self, other, var_name):
+        
+        ts_type_this = TsType(self.get_var_ts_type(var_name))
+        ts_type_other = TsType(other.get_var_ts_type(var_name))
+        if ts_type_this == ts_type_other:
+            return (self.to_timeseries(var_name), other.to_timeseries(var_name))
+        
+    
+        # make sure each variable in the object has explicitely ts_type
+        # assigned (rather than global specification)
+        self._update_var_timeinfo()
+        other._update_var_timeinfo()
+        ts_type = get_lowest_resolution(ts_type_this, ts_type_other)
+        
+        _tt = TsType(ts_type)
+        if _tt.mulfac != 1:
+            ts_type = _tt.next_lower.val
+            
+        s0 = self.resample_time(var_name, ts_type=ts_type,
+                                inplace=True)[var_name].dropna()
+        s1 = other.resample_time(var_name, inplace=True,
+                                 ts_type=ts_type)[var_name].dropna()
+        
+        return (s0, s1)
+
+    def _merge_vardata_2d(self, other, var_name, sort_index,
+                          keep_overlap):
+        """Merge 2D variable data from other StationData object
+        
+
+        Parameters
+        ----------
+        other : StationData
+            other data object
+        var_name : str
+            name of variable (needs to be available in this and input 
+            data object)
+        sort_index : bool, optional
+            If True, the (time) index in the merged timeseries will be sorted. 
+        keep_overlap : bool
+            if True and if there are temporal overlaps when merging the input 
+            data, the overlapping timeseries that is removed and is 
+            stored in output StationData attr. overlap.
+            
+
+        Returns
+        -------
+        bool
+            True, if data was merged, else False (the latter for instance if)
+
+        """
+        s0, s1 = self._get_vardata_same_ts_type(self, other, var_name)
+        # Nothing to do
+        if not len(s1) > 0: 
+            return False
+        
+        # Check and remove overlaps
+        s1 = self._check_resolve_overlap(var_name, s0, s1, keep=keep_overlap)
+        
+        #compute merged time series
+        if not len(s1) > 0:
+            return False
+        
+        s0 = pd.concat([s0, s1], verify_integrity=True)
+        self.merge_varinfo(other, var_name)
+        
+        # sort the concatenated series based on timestamps
+        if sort_index:
+            s0.sort_index(inplace=True)
+    
+    
+        # assign merged time series (overwrites previous one)
+        self[var_name] = s0
+        self.dtime = s0.index.values
+        
+        return True
+    
+    def merge_vardata(self, other, var_name, sort_index=True, 
+                      keep_overlap=True):
         """Merge variable data from other object into this object
         
         Note
@@ -755,12 +791,18 @@ class StationData(StationMetaData):
             other data object 
         var_name : str
             variable name for which info is to be merged (needs to be both
-            available in this object and the provided other object)
+            available in this object and the provided other object).
+        sort_index : bool, optional
+            If True, the (time) index in the merged timeseries will be sorted. 
+        keep_overlap : bool
+            if True and if there are temporal overlaps when merging the input 
+            data, the overlapping timeseries that is removed and is 
+            stored in output StationData attr. overlap.
             
         Returns
         -------
-        StationData
-            this object
+        bool
+            if True, data was merged, else this object is unchanged.
         """
         if not var_name in self:
             raise VarNotAvailableError('StationData object does not contain '
@@ -785,9 +827,11 @@ class StationData(StationMetaData):
             raise NotImplementedError('Coming soon...')
             #return self._merge_vardata_3d(other, var_name)
         else:
-            return self._merge_vardata_2d(other, var_name)
+            return self._merge_vardata_2d(other, var_name, sort_index, 
+                                          keep_overlap)
 
-    def merge_other(self, other, var_name, **add_meta_keys):
+    def merge_other(self, other, var_name, sort_index=True, 
+                    keep_overlap=True, **add_meta_keys):
         """Merge other station data object
         
         Todo
@@ -803,6 +847,12 @@ class StationData(StationMetaData):
         var_name : str
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
+        sort_index : bool, optional
+            If True, the (time) index in the merged timeseries will be sorted. 
+        keep_overlap : bool
+            if True and if there are temporal overlaps when merging the input 
+            data, the overlapping timeseries that is removed and is 
+            stored in output StationData attr. overlap.
             
         Returns
         -------
@@ -810,8 +860,8 @@ class StationData(StationMetaData):
             this object that has merged the other station
         """
         #self.merge_meta_same_station(other, **add_meta_keys)
-        self.merge_vardata(other, var_name)
-        self.merge_meta_same_station(other, **add_meta_keys)
+        if self.merge_vardata(other, var_name, sort_index, keep_overlap):
+            self.merge_meta_same_station(other, **add_meta_keys)
 
         return self
         
@@ -1110,6 +1160,7 @@ class StationData(StationMetaData):
     
     def resample_time(self, var_name, ts_type, how='mean',
                       apply_constraints=None, min_num_obs=None, 
+                      insert_nans=False,
                       inplace=False, **kwargs):
         """Resample one of the time-series in this object
         
@@ -1159,7 +1210,13 @@ class StationData(StationMetaData):
                                     'resolution of {} data in StationData {}. '
                                     'No resampling constraints will be applied'
                                     .format(var_name, outdata.station_name))
-    
+        
+        # ADDED on 11.5.2020 by JGLISS to improve performance 
+        # (this may give different results since
+        # missing timestamps are not filled up by default anymore)
+        if from_ts_type == to_ts_type and not insert_nans:
+            return outdata
+        
         data = outdata[var_name]
     
         if not isinstance(data, (pd.Series, xray.DataArray)):
@@ -1236,7 +1293,7 @@ class StationData(StationMetaData):
             self.var_info.pop(var_name)
         return self
     
-    def insert_nans_timeseries(self, var_name):
+    def insert_nans_timeseries(self, var_name, inplace=True):
         """Fill up missing values with NaNs in an existing time series
         
         Note
@@ -1261,9 +1318,11 @@ class StationData(StationMetaData):
         """
         ts_type = self.get_var_ts_type(var_name)
         
-        self.resample_time(var_name, ts_type, inplace=True)
+        return self.resample_time(var_name, ts_type,
+                                  insert_nans=True, 
+                                  inplace=True)
         
-        return self
+        #return self
 
     
     def _to_ts_helper(self, var_name):
@@ -1393,7 +1452,7 @@ class StationData(StationMetaData):
         """
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
-        data = self[var_name]
+        #data = self[var_name]
         alt_info = None
         # check if altitude subset is requested and process if applicable
         if 'altitude' in kwargs:

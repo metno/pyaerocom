@@ -610,6 +610,7 @@ def isrange(val):
        
 def merge_station_data(stats, var_name, pref_attr=None, 
                        sort_by_largest=True, fill_missing_nan=True, 
+                       keep_overlap=False,
                        **add_meta_keys):
     """Merge multiple StationData objects (from one station) into one instance
     
@@ -647,6 +648,10 @@ def merge_station_data(stats, var_name, pref_attr=None,
         if True, the resulting time series is filled with NaNs. NOTE: this 
         requires that information about the temporal resolution (ts_type) of
         the data is available in each of the StationData objects.
+    keep_overlap : bool
+        if True and if there are temporal overlaps when merging multiple
+        metadata blocks, the overlapping timeseries that is removed is 
+        stored in output StationData attr. overlap.
     """    
     from pyaerocom import const
     if isinstance(var_name, list):
@@ -709,7 +714,10 @@ def merge_station_data(stats, var_name, pref_attr=None,
         merged = stats.pop(0)
             
         for i, stat in enumerate(stats): 
-            merged.merge_other(stat, var_name, **add_meta_keys)
+            merged.merge_other(stat, var_name, sort_index=False, 
+                               keep_overlap=keep_overlap,
+                               **add_meta_keys)
+        merged[var_name].sort_index(inplace=True)
     else:
         from xarray import DataArray
         dtime = []
