@@ -697,12 +697,6 @@ def merge_station_data(stats, var_name, pref_attr=None,
             
     if not is_3d:
         if pref_attr is not None:
-            if not isnumeric(stats[0][pref_attr]):
-                raise NotImplementedError(
-                    'Cannot order list of StationData objects for merging by '
-                    'preferred attr. {}. Can only handle attributes which have '
-                    'numerical values so far'.format(pref_attr)
-                    )
             stats.sort(key=lambda s: s[pref_attr])
         else:
             stats.sort(key=lambda s: len(s[var_name].dropna()))
