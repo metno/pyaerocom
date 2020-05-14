@@ -28,9 +28,12 @@ class TsType(object):
                   "monthly" :  "days"}
     
     def __init__(self, val):
+        
         self._mulfac = 1
         self._val = None
         
+        if isinstance(val, TsType):
+            val = val.val
         self.val = val
     
     @property
