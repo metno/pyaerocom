@@ -231,10 +231,12 @@ class ReadUngridded(object):
         """
         if dataset_to_read in self._readers:
             return self._readers[dataset_to_read]
-        if not dataset_to_read in const.OBS_IDS_UNGRIDDED:
-            raise NetworkNotSupported("Network {} is not supported or data is "
-                                      "not available on this machine"
-                                      .format(dataset_to_read))
+# =============================================================================
+#         if not dataset_to_read in const.OBS_IDS_UNGRIDDED:
+#             raise NetworkNotSupported("Network {} is not supported or data is "
+#                                       "not available on this machine"
+#                                       .format(dataset_to_read))
+# =============================================================================
         for _cls in self.SUPPORTED:
             if dataset_to_read in _cls.SUPPORTED_DATASETS:
                 self._readers[dataset_to_read] = _cls(dataset_to_read)
@@ -244,7 +246,7 @@ class ReadUngridded(object):
         
     
     def read_dataset(self, dataset_to_read, vars_to_retrieve=None, 
-                     **kwargs):
+                     only_cached=False, **kwargs):
         """Read dataset into an instance of :class:`ReadUngridded`
         
         Note
@@ -256,9 +258,13 @@ class ReadUngridded(object):
         ----------
         dataset_to_read : str
             name of dataset
-        vars_to_retrieve : list
-            list of variables to be retrieved. If None (default), the default
-            variables of each reading routine are imported
+        vars_to_retrieve : str or list
+            variable or list of variables to be imported
+        only_cached : bool
+            if True, then nothing is reloaded but only data is loaded that is
+            available as cached objects (not recommended to use but may be 
+            used if working offline without connection to database)
+        
             
         Returns
         --------
@@ -299,14 +305,18 @@ class ReadUngridded(object):
             # initate cache handler    
             for var in vars_available:
                 try:
-                    cache.check_and_load(var_name=var)
+                    cache.check_and_load(var_name=var, 
+                                         force_use_outdated=only_cached)
                 except Exception:
                     self.logger.exception('Fatal: compatibility error between '
                                           'old cache file {} and current version '
                                           'of code ')
                     
+        if not only_cached:
+            vars_to_read = [v for v in vars_available if not v in cache.loaded_data]
+        else:
+            vars_to_read = []
             
-        vars_to_read = [v for v in vars_available if not v in cache.loaded_data]
         data_read = None
         if len(vars_to_read) > 0:
             
@@ -340,12 +350,24 @@ class ReadUngridded(object):
             const.CACHING = _caching
         return data_out
     
-    def read(self, datasets_to_read=None, vars_to_retrieve=None, **kwargs):
+    def read(self, datasets_to_read=None, vars_to_retrieve=None, 
+             only_cached=False, **kwargs):
         """Read observations
 
         Iter over all datasets in :attr:`datasets_to_read`, call 
         :func:`read_dataset` and append to data object
         
+        Parameters
+        ----------
+        datasets_to_read : str or list
+            data ID or list of all datasets to be imported
+        vars_to_retrieve : str or list
+            variable or list of variables to be imported
+        only_cached : bool
+            if True, then nothing is reloaded but only data is loaded that is
+            available as cached objects (not recommended to use but may be 
+            used if working offline without connection to database)
+            
         Example
         -------
         >>> import pyaerocom.io.readungridded as pio
@@ -354,6 +376,8 @@ class ReadUngridded(object):
         >>> obj.read()
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
+        
+        
         """
         if datasets_to_read is not None:
             self.datasets_to_read = datasets_to_read
@@ -364,7 +388,9 @@ class ReadUngridded(object):
         for ds in self.datasets_to_read:
             self.logger.info('Reading {} data'.format(ds))
             try:
-                data.append(self.read_dataset(ds, vars_to_retrieve, **kwargs))
+                data.append(self.read_dataset(ds, vars_to_retrieve,
+                                              only_cached=only_cached, 
+                                              **kwargs))
             except DataRetrievalError as e:
                 print_log.exception('Failed to read {}. Reason: {}'
                                     .format(ds, repr(e)))
@@ -491,7 +517,8 @@ if __name__=="__main__":
 
     reader = ReadUngridded()
     
-    data = reader.read('EBASMC', ['absc550aer', 'scatc550dryaer'])
+    data = reader.read('GHOST.daily', 'concpm10', 
+                       only_cached=True)
     
 # =============================================================================
 #     data = reader.read('EBASMC', 

@@ -45,6 +45,7 @@ def test_stationmetadata():
     assert sorted(meta.keys(), key=str.casefold) == [
         'altitude',
         'country',
+        'country_code',
         'data_id',
         'data_level',
         'data_product',
