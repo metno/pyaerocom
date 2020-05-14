@@ -268,7 +268,9 @@ class TestReadEBAS(object):
     def test_get_file_list(self, reader, vars_to_retrieve, constraints, 
                            num_files):
         
-        lst = reader.get_file_list(vars_to_retrieve, **constraints)
+        lst = reader.get_file_list(vars_to_retrieve, 
+                                   verify_files_exist=True,
+                                   **constraints)
     
         assert isinstance(lst, list)
         assert len(lst)==num_files
