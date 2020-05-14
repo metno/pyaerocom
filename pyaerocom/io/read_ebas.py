@@ -428,13 +428,21 @@ class ReadEbas(ReadUngriddedBase):
             out.append(name)
         return out
     
-    def get_file_list(self, vars_to_retrieve=None, **constraints):
+    def get_file_list(self, vars_to_retrieve=None, 
+                      verify_files_exist=False, 
+                      **constraints):
         """Get list of files for all variables to retrieve
         
         Parameters
         ----------
         vars_to_retrieve : list
             list of variables that are supposed to be loaded
+        verify_files_exist : bool
+            if True, the output filelist contains only files that are actually
+            available (due to the fact that the list of filenames is retrieved
+            from SQLite database). NOTE: This can slow things down dramatically
+            in case data is located on a remote server, that is mounted, 
+            since os.path.exists is used for each file. Defaults to False.
         **constraints
             further EBAS request constraints deviating from default (default 
             info for each AEROCOM variable can be found in `ebas_config.ini <
@@ -484,12 +492,20 @@ class ReadEbas(ReadUngriddedBase):
             self.sql_requests.append(req)
             
             paths = []
-            for file in filenames:
-                if file in self.IGNORE_FILES:
-                    const.logger.info('Ignoring flagged file {}'.format(file))
-                    continue
-                fp = os.path.join(filedir, file)
-                if os.path.exists(fp):
+            if verify_files_exist:
+                for file in filenames:
+                    if file in self.IGNORE_FILES:
+                        const.logger.info('Ignoring flagged file {}'.format(file))
+                        continue
+                    fp = os.path.join(filedir, file)
+                    if os.path.exists(fp):
+                        paths.append(fp)
+            else:
+                for file in filenames:
+                    if file in self.IGNORE_FILES:
+                        const.logger.info('Ignoring flagged file {}'.format(file))
+                        continue
+                    fp = os.path.join(filedir, file)
                     paths.append(fp)
             files_vars[var] = sorted(paths)
             num = len(paths)
@@ -1139,7 +1155,8 @@ class ReadEbas(ReadUngriddedBase):
         return self._loaded_aerocom_vars[var_name]
     
     def read(self, vars_to_retrieve=None, first_file=None, 
-             last_file=None, multiproc=False, files=None, **constraints):
+             last_file=None, multiproc=False, files=None,
+             verify_files_exist=False, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
         
         Parameters
@@ -1153,6 +1170,12 @@ class ReadEbas(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file 
             in the list is used
+        multiproc : bool
+            read using multiprocessing (NOT WORKING, DON'T ENABLE)
+        files : list
+            list of files to be read
+        verify_files_exist : bool
+            passed to :func:`get_file_list`, see there for details.
         **constraints
             further reading constraints deviating from default (default 
             info for each AEROCOM variable can be found in `ebas_config.ini <
@@ -1193,7 +1216,9 @@ class ReadEbas(ReadUngriddedBase):
                 if not var in vars_to_retrieve:
                     vars_to_retrieve.append(var)
         if files is None:
-            self.get_file_list(vars_to_retrieve, **constraints)
+            self.get_file_list(vars_to_retrieve, 
+                               verify_files_exist=verify_files_exist,
+                               **constraints)
             files = self.files
             files_contain = self.files_contain
         else:
