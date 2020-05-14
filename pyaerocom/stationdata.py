@@ -573,7 +573,6 @@ class StationData(StationMetaData):
                                          'mismatch'.format(key))
                     vals = [x.strip() for x in info_this[key].split(';')]
                     vals_in = [x.strip() for x in val.split(';')]
-                    
                     for _val in vals_in:
                         if not _val in vals:
                             info_this[key] = info_this[key] + ';{}'.format(_val)
@@ -700,7 +699,7 @@ class StationData(StationMetaData):
         ts_type_other = other.get_var_ts_type(var_name)
         
         ts_type = get_lowest_resolution(ts_type_this, 
-                                       ts_type_other)
+                                        ts_type_other)
         _tt = TsType(ts_type)
         if _tt.mulfac != 1:
             ts_type = _tt.next_lower.val
@@ -717,7 +716,7 @@ class StationData(StationMetaData):
         else:
             other._update_var_timeinfo()
             s1 = other.resample_time(var_name, 
-                                     ts_type=ts_type_other,
+                                     ts_type=ts_type,
                                      inplace=True)[var_name].dropna()
         return (s0, s1)
 
@@ -1219,8 +1218,13 @@ class StationData(StationMetaData):
         # ADDED on 11.5.2020 by JGLISS to improve performance 
         # (this may give different results since
         # missing timestamps are not filled up by default anymore)
-        if from_ts_type == to_ts_type and not insert_nans:
-            return outdata
+        # ADDED on 14.5.2020: HGLISS removed the equality check for ts_type 
+        # again since resampling need to be done in any case to ensure 
+        # the actual time stamps are the same (when colocating...)
+# =============================================================================
+#         if from_ts_type == to_ts_type and not insert_nans:
+#             return outdata
+# =============================================================================
         
         data = outdata[var_name]
     
