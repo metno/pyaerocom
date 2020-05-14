@@ -64,12 +64,12 @@ def test_next_lower():
         
     assert str(TsType('3minutely').next_lower) == 'hourly'
     
+def test_init_with_TsType_instance():
+    tt = TsType('2daily')
+    t1 = TsType(tt)
+    
+    assert t1.val == tt.val
     
 if __name__=="__main__":
-    test_basic_operators()
-    test_basic_operators_pandas()    
-    test_to_numpy_freq()
-    test_to_pandas_freq()
-    test_cf_base_unit()
-    test_next_higher()
-    test_next_lower()
+    import sys, pytest
+    pytest.main(sys.argv)
