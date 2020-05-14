@@ -5,9 +5,8 @@ from datetime import datetime
 from collections import OrderedDict as od
 import fnmatch
 import pandas as pd
+from tqdm import tqdm
 from pyaerocom import const
-logger = const.logger
-print_log = const.print_log
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, StationNotFoundError)
@@ -432,7 +431,7 @@ class UngriddedData(object):
         chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += size
-        logger.info("adding chunk, new array size ({})".format(self._data.shape))                
+        const.logger.info("adding chunk, new array size ({})".format(self._data.shape))                
     
     
     def _find_station_indices_wildcards(self, station_str):
@@ -693,7 +692,7 @@ class UngriddedData(object):
                                                       start, stop)
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
-                logger.info('Skipping meta index {}. Reason: {}'
+                const.logger.info('Skipping meta index {}. Reason: {}'
                             .format(idx, repr(e)))
         if merge_if_multi and len(stats) > 1:
             if len(vars_to_convert) > 1:
@@ -701,6 +700,7 @@ class UngriddedData(object):
                                           'with multiple variables.')
             if merge_pref_attr is None: 
                 merge_pref_attr = self._try_infer_stat_merge_pref_attr(stats)
+            
             merged = merge_station_data(stats, vars_to_convert,
                                         pref_attr=merge_pref_attr,
                                         sort_by_largest=merge_sort_by_largest,
@@ -784,7 +784,7 @@ class UngriddedData(object):
             try:
                 rev = self.data_revision[val['data_id']]
             except Exception:
-                logger.warning('Data revision could not be accessed')
+                const.logger.warning('Data revision could not be accessed')
         sd.data_revision = rev
         try:
             vars_avail = list(val['var_info'].keys())
@@ -846,7 +846,7 @@ class UngriddedData(object):
             
             # make sure there is some valid data
             if tmask.sum() == 0:
-                logger.info('Ignoring station {}, var {} ({}): '
+                const.logger.info('Ignoring station {}, var {} ({}): '
                             'no data available in specified time interval '
                             '{} - {}'.format(sd['station_name'],
                                              var,
@@ -859,7 +859,7 @@ class UngriddedData(object):
             
             vals = subset[:, self._DATAINDEX]
             if np.all(np.isnan(vals)):
-                logger.warn('Ignoring station {}, var {} ({}):'
+                const.logger.warn('Ignoring station {}, var {} ({}):'
                             'All values are NaN'
                             .format(sd['station_name'], var, sd['data_id']))
                 continue
@@ -984,7 +984,7 @@ class UngriddedData(object):
             
         _iter = self._generate_station_index(by_station_name, 
                                              ignore_index)
-        for idx in _iter:
+        for idx in tqdm(_iter):
             try:
                 data = self.to_station_data(idx, vars_to_convert, start, 
                                             stop, freq,
@@ -1000,9 +1000,10 @@ class UngriddedData(object):
             # catch the exceptions that are acceptable
             except (VarNotAvailableError, TimeMatchError, 
                     DataCoverageError) as e:
-                logger.warning('Failed to convert to StationData '
+                const.logger.warning('Failed to convert to StationData '
                                'Error: {}'.format(repr(e)))
                 out_data['failed'].append([idx, repr(e)])
+
         return out_data
   
     # TODO: check more general cases (i.e. no need to convert to StationData
@@ -1251,10 +1252,10 @@ class UngriddedData(object):
             
         if low is None:
             low = const.VARS[var_name].minimum
-            logger.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
+            const.logger.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
         if high is None:
             high = const.VARS[var_name].maximum
-            logger.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
+            const.logger.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
         var_mask = self._data[:, new._VARINDEX] == var_idx
         
@@ -1317,11 +1318,11 @@ class UngriddedData(object):
         
         for i, meta in self.metadata.items():
             if not 'station_name' in meta:
-                print_log.warning('Skipping meta-block {}: station_name is not '
+                const.print_log.warning('Skipping meta-block {}: station_name is not '
                                   'defined'.format(i))
                 continue
             elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
-                print_log.warning('Skipping meta-block {} (station {}): '
+                const.print_log.warning('Skipping meta-block {} (station {}): '
                                   'one or more of the coordinates is not '
                                   'defined'.format(i, meta['station_name']))
                 continue
@@ -1682,7 +1683,7 @@ class UngriddedData(object):
             new instance of ungridded data containing only data from specified
             input network
         """
-        logger.info('Extracting dataset {} from data object'.format(data_id))
+        const.logger.info('Extracting dataset {} from data object'.format(data_id))
         return self.filter_by_meta(data_id=data_id)
     
     
@@ -2205,7 +2206,7 @@ class UngriddedData(object):
                 for var in check_vars_available:
                     try:
                         if not var in meta['variables']:
-                            logger.debug('No {} in data of station {}'
+                            const.logger.debug('No {} in data of station {}'
                                          '({})'.format(var, name, 
                                                        meta['data_id']))
                             ok = False
@@ -2218,7 +2219,7 @@ class UngriddedData(object):
                             for var in check_vars_available:
                                 try:
                                     if not var in meta_other['variables']:
-                                        logger.debug('No {} in data of station'
+                                        const.logger.debug('No {} in data of station'
                                                      ' {} ({})'.format(var, 
                                                      name, 
                                                      meta_other['data_id']))
@@ -2233,7 +2234,7 @@ class UngriddedData(object):
                             dist = np.linalg.norm((dlat*lat_len, 
                                                    dlon*lat_len*lon_fac))
                             if dist > max_diff_coords_km:
-                                logger.warning('Coordinate of station '
+                                const.logger.warning('Coordinate of station '
                                                '{} varies more than {} km '
                                                'between {} and {} data. '
                                                'Retrieved distance: {:.2f} km '
@@ -2244,7 +2245,7 @@ class UngriddedData(object):
                                 ok = False
                         if ok: #match found
                             station_map[meta_idx] = meta_idx_other
-                            logger.debug('Found station match {}'.format(name))
+                            const.logger.debug('Found station match {}'.format(name))
                             # no need to further iterate over the rest 
                             continue
                         
@@ -2333,7 +2334,7 @@ class UngriddedData(object):
         """
         if 'merge_if_multi' in kwargs:
             if not kwargs.pop['merge_if_multi']:
-                print_log.warning('Invalid input merge_if_multi=False'
+                const.print_log.warning('Invalid input merge_if_multi=False'
                                   'setting it to True')
         stat = self.to_station_data(station_name, var_name, start, stop, 
                                     freq=ts_type, merge_if_multi=True,
@@ -2437,7 +2438,7 @@ class UngriddedData(object):
         from pyaerocom.plot.mapping import set_map_ticks
     
         if len(self.contains_datasets) > 1:
-            print_log.warning('UngriddedData object contains more than one '
+            const.print_log.warning('UngriddedData object contains more than one '
                               'dataset ({}). Station coordinates will not be '
                               'distinguishable. You may want to apply a filter '
                               'first and plot them separately')
@@ -2603,7 +2604,7 @@ class UngriddedData(object):
     # DEPRECATED METHODS
     @property
     def vars_to_retrieve(self):
-        logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
+        const.logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
                                           "deprecated. Please use attr "
                                           "contains_vars instead"))
         return self.contains_vars
@@ -2634,7 +2635,7 @@ class UngriddedData(object):
         pandas.Series
             time series data
         """
-        logger.warning(DeprecationWarning('Outdated method, please use to_timeseries'))
+        const.logger.warning(DeprecationWarning('Outdated method, please use to_timeseries'))
         
         data = self.to_station_data(station, var_name, 
                                      start, stop, freq=ts_type,
@@ -2708,7 +2709,7 @@ class UngriddedData(object):
                                                              freq=freq))
                     except (VarNotAvailableError, TimeMatchError, 
                             DataCoverageError) as e:
-                        logger.warning('Failed to convert to StationData '
+                        const.logger.warning('Failed to convert to StationData '
                                'Error: {}'.format(repr(e)))
                 return out_data
     
@@ -2723,15 +2724,9 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
         
 if __name__ == "__main__":
     import pyaerocom as pya
-    import matplotlib.pyplot as plt
-    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    data = pya.io.ReadUngridded().read(['GHOST.hourly', 'GHOST.daily'],
+                                'conco3')
     
-    data.check_set_country()    
-    
-    sub = data.filter_region('United States', check_country_meta=True)
-    
-    sub.plot_station_coordinates()
-    plt.show()
-
+    stats = data.to_station_data_all('conco3', start=2018)
         
     
