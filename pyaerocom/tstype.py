@@ -79,9 +79,9 @@ class TsType(object):
             try:
                 val = self._from_pandas(val)
             except TemporalResolutionError:
-                raise TemporalResolutionError('Invalid input. Need any valid '
+                raise TemporalResolutionError('Invalid input {}. Need any valid '
                                               'ts_type: {}'
-                                              .format(self.VALID))
+                                              .format(val, self.VALID))
         if val in self.TS_MAX_VALS and ival != 1:
             if ival > self.TS_MAX_VALS[val]:
                 raise TemporalResolutionError('Invalid input for ts_type {}{}. '
