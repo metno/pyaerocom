@@ -22,7 +22,8 @@ from pyaerocom.tstype import TsType
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _make_mobs_dataframe
-from pyaerocom.helpers import isnumeric, isrange, calc_climatology
+from pyaerocom.helpers import (isnumeric, isrange, calc_climatology,
+                               get_lowest_resolution)
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
@@ -694,31 +695,30 @@ class StationData(StationMetaData):
     
     def _get_vardata_same_ts_type(self, other, var_name):
         
-        ts_type_this = TsType(self.get_var_ts_type(var_name))
-        ts_type_other = TsType(other.get_var_ts_type(var_name))
-        if ts_type_this == ts_type_other:
-            return (self.to_timeseries(var_name), other.to_timeseries(var_name))
-        elif ts_type_this > ts_type_other:    
-            # make sure each variable in the object has explicitely ts_type
-            # assigned (rather than global specification)
-            self._update_var_timeinfo()
-            s0 = self.resample_time(var_name, 
-                                    ts_type=ts_type_other,
-                                    inplace=True)[var_name].dropna()
-            s1 = other.to_timeseries(var_name)
-        else:
-            other._update_var_timeinfo()
         
+        ts_type_this = self.get_var_ts_type(var_name)
+        ts_type_other = other.get_var_ts_type(var_name)
         
+        ts_type = get_lowest_resolution(ts_type_this, 
+                                       ts_type_other)
         _tt = TsType(ts_type)
         if _tt.mulfac != 1:
             ts_type = _tt.next_lower.val
             
-        s0 = self.resample_time(var_name, ts_type=ts_type,
-                                inplace=True)[var_name].dropna()
-        s1 = other.resample_time(var_name, inplace=True,
-                                 ts_type=ts_type)[var_name].dropna()
-        
+        if ts_type_this == ts_type: # do nothing
+            s0 = self.to_timeseries(var_name)
+        else:
+            self._update_var_timeinfo()
+            s0 = self.resample_time(var_name, 
+                                    ts_type=ts_type,
+                                    inplace=True)[var_name].dropna()
+        if ts_type_other == ts_type:
+            s1 = other.to_timeseries(var_name)
+        else:
+            other._update_var_timeinfo()
+            s1 = other.resample_time(var_name, 
+                                     ts_type=ts_type_other,
+                                     inplace=True)[var_name].dropna()
         return (s0, s1)
 
     def _merge_vardata_2d(self, other, var_name, sort_index,
@@ -747,7 +747,7 @@ class StationData(StationMetaData):
             True, if data was merged, else False (the latter for instance if)
 
         """
-        s0, s1 = self._get_vardata_same_ts_type(self, other, var_name)
+        s0, s1 = self._get_vardata_same_ts_type(other, var_name)
         # Nothing to do
         if not len(s1) > 0: 
             return False
@@ -1128,9 +1128,10 @@ class StationData(StationMetaData):
         if stop is None:
             stop = const.CLIM_STOP
         if apply_constraints is None:
+            
             apply_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
         if apply_constraints and clim_mincount is None:
-            clim_mincount = const.CLIM_MIN_COUNT[clim_freq]
+            clim_mincount = const.CLIM_MIN_COUNT[clim_freq] #session["clim_min_count"][clim_freq]
         
         
         clim = calc_climatology(ts, start, stop, 
@@ -1718,20 +1719,10 @@ def compute_trends_station(station, var_name, start_year=None,
 
 if __name__=="__main__":
     import pyaerocom as pya
-    import matplotlib.pyplot as plt
-
     
-    empty = StationData()
+    var_name = 'concpm10'
+    ebas = pya.io.ReadUngridded().read('EBASMC', var_name)
     
-    empty.var_info['bla'] = dict(blub=42)
-    
-    empty_copy = empty.copy()
-    empty_copy.var_info['bla']['blub'] = 1
-    
-    print(empty.var_info['bla']['blub'])
-    print(empty_copy.var_info['bla']['blub'])
-    
-    for var in set('abc', 'bl'):
-        print(var)
-    
-    
+    min_num = {'weekly' : {'daily' : 2}}
+    stats = ebas.to_station_data_all(var_name, ts_type='weekly',
+                                     min_num_obs=min_num)
