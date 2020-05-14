@@ -157,6 +157,7 @@ class StationMetaData(DataSource):
         self.PI = None
         
         self.country = None
+        self.country_code = None
         
         self.ts_type = None
         

@@ -13,6 +13,7 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   MetaDataError, StationNotFoundError)
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
+from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
@@ -492,6 +493,77 @@ class UngriddedData(object):
                                        'that matches name {}'
                                        .format(station_str))
         return idx
+    
+    def _get_stat_coords(self):
+        meta_idx = []
+        coords = []
+        for idx, meta in self.metadata.items():
+            try:
+                lat, lon = meta['latitude'], meta['longitude']
+            except:
+                const.print_log.warning('Could not retrieve lat lon coord '
+                                        'at meta index {}'.format(idx))
+                continue
+            meta_idx.append(idx)
+            coords.append((lat, lon))
+        return (meta_idx, coords)
+    
+    def check_set_country(self):
+        """CHecks all metadata entries for availability of country information
+        
+        Metadata blocks that are missing country entry will be updated based
+        on country inferred from corresponding lat / lon coordinate. Uses 
+        :func:`pyaerocom.geodesy.get_country_info_coords` (library 
+        reverse-geocode) to retrieve countries. This may be errouneous 
+        close to country borders as it uses eucledian distance based on a list
+        of known locations.
+        
+        
+        Note
+        ----
+        Metadata blocks that do not contain latitude and longitude entries are
+        skipped.
+        
+        Returns
+        -------
+        list
+            metadata entries where country was added
+        list 
+            corresponding countries that were inferred from lat / lon
+        """
+        meta_idx, coords = self._get_stat_coords()
+        info = get_country_info_coords(coords)
+        meta_idx_updated = []
+        countries = []
+        
+        for i, idx in enumerate(meta_idx):
+            meta = self.metadata[idx]
+            if not 'country' in meta or meta['country'] is None:
+                country = info[i]['country']
+                meta['country'] = country
+                meta['country_code'] = info[i]['country_code']
+                meta_idx_updated.append(idx)
+                countries.append(country)
+        return (meta_idx_updated, countries)
+    
+    @property
+    def countries_available(self):
+        """
+        Alphabetically sorted list of country names available
+        """
+        #self.check_set_country()
+        countries = []
+        for idx, meta in self.metadata.items():
+            try:
+                countries.append(meta['country'])
+            except:
+                const.logger.warning('No country information in meta block', idx)
+        if len(countries) == 0:
+            const.print_log.warning('None of the metadata blocks contains '
+                                    'country information. You may want to '
+                                    'run class method check_set_country first '
+                                    'to automatically assign countries.')
+        return sorted(dict.fromkeys(countries))
     
     def find_station_meta_indices(self, station_name_or_pattern,
                                   allow_wildcards=True):
@@ -1296,24 +1368,40 @@ class UngriddedData(object):
         """
         return self.filter_by_meta(altitude=alt_range)
     
-    def filter_region(self, region_id, **kwargs):
+    def filter_region(self, region_id, check_mask=True, 
+                      check_country_meta=False, **kwargs):
         """Filter object by a certain region
         
         Parameters
         ----------
         region_id : str
             name of region (must be valid AeroCom region name or HTAP region)
+        check_mask : bool
+            if True and region_id a valid name for a binary mask, then the 
+            filtering is done based on that binary mask.
+        check_country_meta : bool
+            if True, then the input region_id is first checked against 
+            available country names in metadata. If that fails, it is assumed
+            that this regions is either a valid name for registered rectangular
+            regions or for available binary masks.
+        **kwargs
+            currently not used in method (makes usage in higher level classes
+            such as :class:`Filter` easier as other data objects have the 
+            same method with possibly other input possibilities)
             
         Returns
         -------
         UngriddedData
             filtered data object (containing only stations that fall into 
             input region)
-            
-        
         """
-        if region_id in const.HTAP_REGIONS:
+        if check_country_meta:
+            if region_id in self.countries_available:
+                return self.filter_by_meta(country=region_id)
+            
+        if region_id in const.HTAP_REGIONS and check_mask:
             return self.apply_region_mask(region_id)
+        
         region = Region(region_id)
         return self.filter_by_meta(longitude=region.lon_range, 
                                    latitude=region.lat_range)
@@ -2291,7 +2379,7 @@ class UngriddedData(object):
         return ax
         
     def plot_station_coordinates(self, var_name=None, 
-                                 filter_name=None, start=None, 
+                                 start=None, 
                                  stop=None, ts_type=None, color='r', 
                                  marker='o', markersize=8, fontsize_base=10, 
                                  legend=True, add_title=True, 
@@ -2307,8 +2395,6 @@ class UngriddedData(object):
         
         var_name : :obj:`str`, optional
             name of variable to be retrieved
-        filter_name : :obj:`str`, optional
-            name of filter (e.g. EUROPE-noMOUNTAINS)
         start 
             start time (optional)
         stop 
@@ -2350,9 +2436,7 @@ class UngriddedData(object):
                               'distinguishable. You may want to apply a filter '
                               'first and plot them separately')
         
-        f = Filter(filter_name)
-        
-        subset = f(self)
+        subset = self
         if var_name is None:
             info_str = 'AllVars'
         else:
@@ -2365,7 +2449,7 @@ class UngriddedData(object):
             info_str = var_name
         
         
-        info_str += '_{}'.format(f.name)
+
         try:
             info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
         except Exception:
@@ -2373,7 +2457,7 @@ class UngriddedData(object):
         if ts_type is not None:
             info_str += '_{}'.format(ts_type)
         
-        if all([x is None for x in (var_name, filter_name, start, stop)]): #use all stations
+        if all([x is None for x in (var_name, start, stop)]): #use all stations
             all_meta = subset._meta_to_lists()
             lons, lats = all_meta['longitude'], all_meta['latitude']
             
@@ -2393,13 +2477,15 @@ class UngriddedData(object):
                               markersize=markersize, 
                               legend=legend,
                               fontsize_base=fontsize_base, **kwargs)
-        region = f.region
-        ax.set_xlim(region.lon_range_plot)
-        ax.set_ylim(region.lat_range_plot)
-    
-        ax = set_map_ticks(ax, 
-                           region.lon_ticks, 
-                           region.lat_ticks)
+# =============================================================================
+#         region = f.region
+#         ax.set_xlim(region.lon_range_plot)
+#         ax.set_ylim(region.lat_range_plot)
+#     
+#         ax = set_map_ticks(ax, 
+#                            region.lon_ticks, 
+#                            region.lat_ticks)
+# =============================================================================
         
         if 'title' in kwargs:
             title = kwargs['title']
@@ -2630,9 +2716,16 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     return closest_idx    
         
 if __name__ == "__main__":
+    import pyaerocom as pya
+    import matplotlib.pyplot as plt
+    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
+    data.check_set_country()    
     
-    d = UngriddedData()
+    sub = data.filter_region('United States', check_country_meta=True)
+    
+    sub.plot_station_coordinates()
+    plt.show()
 
         
     

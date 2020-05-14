@@ -709,9 +709,12 @@ class StationData(StationMetaData):
             overlap = s0.index.intersection(s1.index)
             if len(overlap) > 0:
                 removed = s1[overlap]
-                s1 = s1.drop(index=overlap, inplace=True)
+                # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
+                #s1 = s1.drop(index=overlap, inplace=True)
+                s1.drop(index=overlap, inplace=True)
             #compute merged time series
-            s0 = pd.concat([s0, s1], verify_integrity=True)
+            if len(s1) > 0:
+                s0 = pd.concat([s0, s1], verify_integrity=True)
             
             # sort the concatenated series based on timestamps
             s0.sort_index(inplace=True)

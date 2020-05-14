@@ -137,7 +137,7 @@ def corr(ref_data, data, weights=None):
 
 
 def calc_statistics(data, ref_data, lowlim=None, highlim=None,
-                    min_num_valid=5, weights=None):
+                    min_num_valid=1, weights=None):
     """Calc statistical properties from two data arrays
     
     Calculates the following statistical properties based on the two provided
@@ -248,11 +248,11 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result['rms'] = np.sqrt(np.average(diffsquare, weights=weights))
     
     # NO implementation to apply weights yet ...
-    cr = corr(data, ref_data, weights)
-
-    result['R'] = cr
-    result['R_spearman'] = spearmanr(data, ref_data)[0]
-    result['R_kendall'] = kendalltau(data, ref_data)[0]
+    
+    if num_points > 1:
+        result['R'] = corr(data, ref_data, weights)
+        result['R_spearman'] = spearmanr(data, ref_data)[0]
+        result['R_kendall'] = kendalltau(data, ref_data)[0]
     
     # NMB, MNMB and FGE are constrained to positive values, thus negative
     # values need to be removed

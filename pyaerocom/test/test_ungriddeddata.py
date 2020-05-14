@@ -7,8 +7,9 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import numpy as np
 import numpy.testing as npt
+import pytest
 from pyaerocom import UngriddedData
-from pyaerocom.conftest import testdata_unavail
+from pyaerocom.conftest import testdata_unavail, rg_unavail
 from pyaerocom.exceptions import DataCoverageError
 
 def test_init_shape():
@@ -62,7 +63,47 @@ def test_coordinate_access():
 @testdata_unavail
 def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
+
+@testdata_unavail    
+@rg_unavail
+def test_check_set_country(aeronetsunv3lev2_subset):
+    idx, countries = aeronetsunv3lev2_subset.check_set_country()
+    assert len(idx) == len(aeronetsunv3lev2_subset.metadata)
+    assert len(countries) == len(idx)
+    assert countries == ['Italy', 'Japan', 'Burkina Faso', 'Brazil', 
+                         'American Samoa', 'French Southern Territories', 
+                         'Korea, Republic of', 'France', 'Portugal', 
+                         'France', 'Barbados', 'United Kingdom', 'Bolivia', 
+                         'United States', 'French Polynesia', 'China', 
+                         'Taiwan', 'Algeria', 'Netherlands', 'Greece', 
+                         'Belgium', 'Argentina']
+    idx, countries = aeronetsunv3lev2_subset.check_set_country()
+    assert idx == []
+    assert countries == []
+ 
+@pytest.mark.dependency(depends=["test_check_set_country"])
+def test_countries_available(aeronetsunv3lev2_subset):
+    assert aeronetsunv3lev2_subset.countries_available == ['Algeria', 
+        'American Samoa', 'Argentina', 'Barbados', 'Belgium', 'Bolivia', 
+        'Brazil', 'Burkina Faso', 'China', 'France', 'French Polynesia', 
+        'French Southern Territories', 'Greece', 'Italy', 'Japan', 
+        'Korea, Republic of', 'Netherlands', 'Portugal', 'Taiwan', 
+        'United Kingdom', 'United States']
+    
+@pytest.mark.dependency(depends=["test_check_set_country"])
+@pytest.mark.parametrize('region_id,check_mask,check_country_meta,num_meta', [
+    ('Italy', True, True, 1),
+    ('EUROPE', True, True, 7),
+    ('OCN', True, True, 8)
+    ])
+def test_filter_region(aeronetsunv3lev2_subset, region_id, check_mask,
+                       check_country_meta, num_meta):
+    subset = aeronetsunv3lev2_subset.filter_region(region_id, 
+                                                   check_mask=check_mask,
+                                                   check_country_meta=check_country_meta)
+    
+    assert len(subset.metadata) == num_meta
     
 if __name__=="__main__":
-    test_init_shape()
-    test_coordinate_access()
+    import sys
+    pytest.main(sys.argv)

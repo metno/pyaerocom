@@ -225,7 +225,7 @@ class Region(BrowseDict):
         ax.axes.set_xlabel('Longitude')
         ax.axes.set_ylabel('Latitude')
         ax.axes.set_title("Region name: {}".format(self.name))
-        mask = load_region_mask_xr(region_id=self.name)
+        mask = load_region_mask_xr(self.name)
         #import numpy as np
         data = mask.data 
         data[data==0]=np.nan
@@ -386,7 +386,7 @@ def find_closest_region_coord(lat, lon, default_regs=None, **add_regions):
     Returns
     -------
     str
-        name of sqaure region
+        name of square region
     """ 
     regs = get_regions_coord(lat, lon, default_regs=default_regs, 
                              **add_regions)
@@ -408,7 +408,7 @@ def find_closest_region_coord(lat, lon, default_regs=None, **add_regions):
                 best=rname
         return best
 
-def valid_region(name):
+def valid_default_region(name):
     """Boolean specifying whether input region is valid or not"""
     if isinstance(name, str):
         return True if name.upper() in get_all_default_region_ids() else False
@@ -423,11 +423,7 @@ if __name__=="__main__":
     import numpy as np
     from pyaerocom.helpers_landsea_masks import load_region_mask_xr
     
-    mask = load_region_mask_xr(region_id=['EUR', 'PAN'])
-    
-    raise Exception
-    
-    
+    mask = load_region_mask_xr('EUR', 'PAN')
     
     print(r.is_htap)
     r.import_default("EUROPE")
@@ -438,4 +434,4 @@ if __name__=="__main__":
     reg = find_closest_region_coord(lat, lon)
     
     print(reg)
-    print(valid_region('europe'))
+    print(valid_default_region)
