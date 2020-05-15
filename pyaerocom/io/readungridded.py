@@ -172,7 +172,7 @@ class ReadUngridded(object):
             return self._readers[dataset_to_read].PROVIDES_VARIABLES
         return self.find_read_class(dataset_to_read).PROVIDES_VARIABLES
       
-    def get_reader(self, dataset_to_read):
+    def get_reader(self, dataset_to_read=None):
         """Helper method that returns loaded reader class
         
         Parameters
@@ -193,10 +193,8 @@ class ReadUngridded(object):
         NetworkNotImplemented
             if network is supported but no reading routine is implemented yet
         """
-# =============================================================================
-#         if dataset_to_read is None:
-#             dataset_to_read = self.dataset_to_read
-# =============================================================================
+        if dataset_to_read is None:
+            dataset_to_read = self.dataset_to_read
         if not isinstance(dataset_to_read, str): # assume its more than one
             raise ValueError('Invalid input for dataset_to_read. Need str, '
                              'got {}. Use get_readers, if you want to retrieve '
