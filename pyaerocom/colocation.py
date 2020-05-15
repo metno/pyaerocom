@@ -136,14 +136,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if vert_scheme is not None:
         raise NotImplementedError('Input vert_scheme cannot yet be handled '
                                   'for gridded / gridded colocation...')
-
-    if var_outlier_ranges is None:
-        var_outlier_ranges = {}
-    if var_ref_outlier_ranges is None:
-        var_ref_outlier_ranges = {}
-    
-    if filter_name is None:
-        filter_name = const.DEFAULT_REG_FILTER
     
     if gridded_data.var_info.has_unit:
         if harmonise_units and not gridded_data.units == gridded_data_ref.units:
@@ -156,7 +148,17 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                     .format(gridded_data.units, 
                                             gridded_data_ref.units))
     
-    var, var_ref = gridded_data.var_name, gridded_data_ref.var_name
+    var, var_ref = gridded_data.var_name, gridded_data_ref.var_name            
+    
+    if var_outlier_ranges is None:
+        var_outlier_ranges = {}
+    if var_ref_outlier_ranges is None:
+        var_ref_outlier_ranges = {}
+    
+    if filter_name is None:
+        filter_name = const.DEFAULT_REG_FILTER
+    
+    
     if remove_outliers:
         low, high, low_ref, high_ref = None, None, None, None    
         if var in var_outlier_ranges:
@@ -311,6 +313,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                   **kwargs)
     return data
 
+
 def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None, 
                                start=None, stop=None, filter_name=None,
                                regrid_res_deg=None, remove_outliers=True,
@@ -448,6 +451,20 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         if none of the data points in input :class:`UngriddedData` matches 
         the input colocation constraints
     """
+# =============================================================================
+#     try:
+#         gridded_data.check_dimcoords_tseries()
+#     except DimensionOrderError:
+#         gridded_data.reorder_dimensions_tseries()
+# =============================================================================
+    var = gridded_data.var_name
+    if var_ref is None:
+        aerocom_var = gridded_data.var_name_aerocom
+        if aerocom_var is not None:
+            var_ref = aerocom_var
+        else: 
+            var_ref = var
+            
     if var_outlier_ranges is None:
         var_outlier_ranges = {}
     if var_ref_outlier_ranges is None:
@@ -456,18 +473,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
     
-    try:
-        gridded_data.check_dimcoords_tseries()
-    except DimensionOrderError:
-        gridded_data.reorder_dimensions_tseries()
+    
         
-    var = gridded_data.var_name
-    aerocom_var = gridded_data.var_name_aerocom
-    if var_ref is None:
-        if aerocom_var is not None:
-            var_ref = aerocom_var
-        else: 
-            var_ref = var
+    
         
     if remove_outliers:
         low, high, low_ref, high_ref = None, None, None, None    
