@@ -9,15 +9,16 @@ import simplejson
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
+from pyaerocom.region import Region, get_all_default_region_ids
 
 from pyaerocom.io.helpers import save_dict_json
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval, 
                                    read_json, write_json)
 
-from pyaerocom.web.const import HEATMAP_FILENAME_EVAL_IFACE
+from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_DAILY, 
+                                 HEATMAP_FILENAME_EVAL_IFACE_MONTHLY)
 from pyaerocom.web.helpers_evaluation_iface import (
-    make_regions_json,
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
     compute_json_files_from_colocateddata,
@@ -207,6 +208,10 @@ class AerocomEvaluation(object):
         self.var_mapping = {}
         self.var_order_menu = []
         
+        self.regions_how = 'default'
+        self.region_groups = {}
+        self.resample_how = None
+        
         self._valid_obs_vars = {}
         if len(settings)==0 and try_load_json and proj_id is not None:
             try:
@@ -237,7 +242,7 @@ class AerocomEvaluation(object):
     @property
     def regions_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.out_basedir, 'regions.json')
+        return os.path.join(self.exp_dir, 'regions.json')
     
     @property
     def menu_file(self):
@@ -513,18 +518,30 @@ class AerocomEvaluation(object):
         if len(matches) == 1:
             return matches[0]
         raise ValueError('Could not identify unique model name')
-            
-    def make_regions_json(self):
-        """Creates file regions.ini for web interface"""
-        return make_regions_json(self.regions_file)
+        
+# =============================================================================
+#     def make_regions_json(self):
+#         """Creates file regions.ini for web interface"""
+#         return make_regions_json()
+# =============================================================================
     
     def compute_json_files_from_colocateddata(self, coldata, obs_name, 
                                               model_name):
         """Creates all json files for one ColocatedData object"""
         vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
+        if len(self.region_groups) > 0:
+            raise NotImplementedError('Filtering of grouped regions is not ready yet...')
         return compute_json_files_from_colocateddata(
-                coldata, obs_name, model_name, self.weighted_stats,
-                self.colocation_settings, vert_code, self.out_dirs)
+                coldata=coldata, 
+                obs_name=obs_name, 
+                model_name=model_name, 
+                use_weights=self.weighted_stats,
+                vert_code=vert_code,
+                colocation_settings=self.colocation_settings, 
+                out_dirs=self.out_dirs, 
+                regions_json=self.regions_file, 
+                regions_how=self.regions_how) 
+                #region_groups=self.region_groups)
          
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
@@ -534,47 +551,49 @@ class AerocomEvaluation(object):
         return info[obs_var]
     
     @property
-    def _heatmap_file(self):
-        return os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE)
+    def _heatmap_files(self):
+        
+        return dict(daily=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_DAILY),
+                    monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY))
     
     def update_heatmap_json(self):
-        fp = self._heatmap_file
-        if not os.path.exists(fp):
-            raise FileNotFoundError(fp)
+        for freq, fp in self._heatmap_files.items():
+            if not os.path.exists(fp):
+                raise FileNotFoundError(fp)
+                
+            with open(self.menu_file, 'r') as f:
+                menu = simplejson.load(f)
+            with open(fp, 'r') as f:
+                data = simplejson.load(f)
+            if not self.exp_id in menu:
+                raise ValueError('No entry found in menu.json for experiment {}'
+                                 .format(self.exp_id))
             
-        with open(self.menu_file, 'r') as f:
-            menu = simplejson.load(f)
-        with open(fp, 'r') as f:
-            data = simplejson.load(f)
-        if not self.exp_id in menu:
-            raise ValueError('No entry found in menu.json for experiment {}'
-                             .format(self.exp_id))
-        
-        menu = menu[self.exp_id]
-        hm = {}
-        for var, info in menu.items():
-            obs_dict = info['obs']
-            if not var in hm:
-                hm[var] = {}
-            for obs, vdict in obs_dict.items():
-                if not obs in hm[var]:
-                    hm[var][obs] = {}
-                for vc, mdict in vdict.items():
-                    if not vc in hm[var][obs]:
-                        hm[var][obs][vc] = {}
-                    for mod, minfo in mdict.items():
-                        if not mod in hm[var][obs][vc]:
-                            hm[var][obs][vc][mod] = {}
-                        modvar = minfo['var']
-                        if not modvar in hm[var][obs][vc][mod]:
-                            hm[var][obs][vc][mod][modvar] = {}
-                        
-                        hm_data = data[var][obs][vc][mod][modvar]
-                        hm[var][obs][vc][mod][modvar] = hm_data
+            menu = menu[self.exp_id]
+            hm = {}
+            for var, info in menu.items():
+                obs_dict = info['obs']
+                if not var in hm:
+                    hm[var] = {}
+                for obs, vdict in obs_dict.items():
+                    if not obs in hm[var]:
+                        hm[var][obs] = {}
+                    for vc, mdict in vdict.items():
+                        if not vc in hm[var][obs]:
+                            hm[var][obs][vc] = {}
+                        for mod, minfo in mdict.items():
+                            if not mod in hm[var][obs][vc]:
+                                hm[var][obs][vc][mod] = {}
+                            modvar = minfo['var']
+                            if not modvar in hm[var][obs][vc][mod]:
+                                hm[var][obs][vc][mod][modvar] = {}
                             
-        with open(fp, 'w') as f:
-            simplejson.dump(hm, f, ignore_nan=True)
-      
+                            hm_data = data[var][obs][vc][mod][modvar]
+                            hm[var][obs][vc][mod][modvar] = hm_data
+                                
+            with open(fp, 'w') as f:
+                simplejson.dump(hm, f, ignore_nan=True)
+          
     def find_coldata_files(self, model_name, obs_name, var_name=None):
         """Find colocated data files for a certain model/obs/var combination
         
@@ -1122,6 +1141,7 @@ class AerocomEvaluation(object):
             - update and order heatmap file
         """
         self.update_menu(**opts)
+        #self.make_regions_json()
         try:
             self.make_info_table_web()
             self.update_heatmap_json()
@@ -1339,5 +1359,5 @@ if __name__ == '__main__':
     cfg_dir = '/home/jonasg/github/aerocom_evaluation/data_new/config_files/'
     stp = AerocomEvaluation('aerocom', 'PIII-optics', config_dir=cfg_dir)
     #stp.make_info_table_web()
-    
+    stp.regions_how='country'
     stp.make_regions_json()

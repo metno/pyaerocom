@@ -177,8 +177,9 @@ class Config(object):
     SENTINEL5P_NAME = 'Sentinel5P'
     AEOLUS_NAME = 'AeolusL2A'
     
-    OLD_AEROCOM_REGIONS = ['EUROPE', 'WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
-                       'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
+    OLD_AEROCOM_REGIONS = ['WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
+                           'EUROPE', 'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 
+                           'NAMERICA']
     
     URL_HTAP_MASKS = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
     

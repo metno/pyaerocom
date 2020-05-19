@@ -9,7 +9,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 
-from pyaerocom.conftest import (TEST_RTOL, lustre_unavail, testdata_unavail)
+from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
 from pyaerocom.colocation import colocate_gridded_ungridded
 from pyaerocom.colocateddata import ColocatedData
 

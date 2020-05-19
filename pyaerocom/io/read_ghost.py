@@ -115,7 +115,7 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore 
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.7'
+    __version__ = '0.0.8'
     
     _FILEMASK = '*.nc'
     
@@ -209,7 +209,7 @@ class ReadGhost(ReadUngriddedBase):
         Default implementation of string for temporal resolution
         """
         try:
-            return self.TS_TYPES[self.DATA_ID]
+            return self.TS_TYPES[self.data_id]
         except KeyError:
             try:
                 return self._ts_type_from_data_id()
@@ -299,10 +299,10 @@ class ReadGhost(ReadUngriddedBase):
     
 
     def _ts_type_from_data_id(self):
-        if '.' in self.DATA_ID:
-            ts_type = self.DATA_ID.split('.')[-1]
+        if '.' in self.data_id:
+            ts_type = self.data_id.split('.')[-1]
             if ts_type in TS_TYPES:
-                self.TS_TYPES[self.DATA_ID] = ts_type
+                self.TS_TYPES[self.data_id] = ts_type
                 return ts_type
         raise AttributeError('Failed to retrieve ts_type from DATA_ID')
         
@@ -550,7 +550,7 @@ class ReadGhost(ReadUngriddedBase):
                 meta['var_info'] = {}
                 
                 metadata[meta_key] = meta
-                metadata[meta_key]['data_id'] = self.DATA_ID
+                metadata[meta_key]['data_id'] = self.data_id
                 # duplicate for now
                 metadata[meta_key]['instrument_name'] = meta['measuring_instrument_name']
                 statname = metadata[meta_key]['station_name']
