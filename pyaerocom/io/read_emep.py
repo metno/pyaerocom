@@ -8,6 +8,8 @@ Created on Mon Feb 10 13:20:04 2020
 
 import xarray as xr
 import sys
+import os
+import glob
 import pyaerocom as pya
 from pyaerocom import const, print_log, logger
 from pyaerocom.io.aux_read_cubes import add_cubes
@@ -17,6 +19,8 @@ from pyaerocom.tstype import TsType
 from pyaerocom.helpers import seconds_in_periods
 from pyaerocom.variable import get_aliases
 from pyaerocom.units_helpers import implicit_to_explicit_rates
+
+
 class ReadEMEP(object):
     """
     Class for reading EMEP model output data.
@@ -27,24 +31,32 @@ class ReadEMEP(object):
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
     filepath : str
         Path to netcdf file.
+    data_dir : str
 
     Attributes
     ----------
     filepath :
     data_id :
-
+    data_dir :
+    vars_provided :
     """
-
-
 
 
     def __init__(self, filepath=None, data_id=None, data_dir=None):
 
-        self.filepath = filepath
-        self.data_id = data_id
+        # if (filepath and data_dir):
+        #     raise ValueError('Either filepath or data_dir should be set, not both.')
 
         if data_dir:
-            raise NotImplementedError('Reading from directory is not implemented.')
+            self.data_dir = data_dir
+        else:
+            self._data_dir = None
+        if filepath:
+            self.filepath = filepath
+        else:
+            self._filepath = None
+        self.data_id = data_id
+
 
         # dictionary containing information about additionally required variables
         # for each auxiliary variable (i.e. each variable that is not provided
@@ -63,6 +75,7 @@ class ReadEMEP(object):
                          'sconctno3' : add_cubes,
                          'sconcoa' : add_cubes}
 
+
     @property
     def filepath(self):
         """
@@ -70,14 +83,36 @@ class ReadEMEP(object):
         """
         return self._filepath
 
+
+    @property
+    def data_dir(self):
+        """
+        Directory containing netcdf files
+        """
+        return self._data_dir
+
+
     @filepath.setter
     def filepath(self, val):
         try:
             open(val, 'r')
         except Exception as e:
-            const.print_log.exception('File "{}" not found. Error message: {}'.format(val, repr(e)))
+            const.print_log.warning('File "{}" not found. Error message: {}'.format(val, repr(e)))
             val = None
         self._filepath = val
+
+
+    @data_dir.setter
+    def data_dir(self, val):
+        if not os.path.isdir(val):
+            raise FileNotFoundError('Folder "{}" not found.'.format(val))
+            val = None
+        self._data_dir = val
+
+
+    @property
+    def ts_types(self):
+        return self._get_ts_types()
 
 
     @property
@@ -85,16 +120,38 @@ class ReadEMEP(object):
         """Variables provided by this dataset"""
         return self._get_vars_provided()
 
+
+    def _get_ts_types(self):
+        ts_types = []
+        if self.data_dir:
+            files = os.listdir(self.data_dir)
+            for filename in files:
+                ts_types.append(ts_type_from_filename(filename))
+        elif self.filepath:
+            filename = self.filepath.split('/')[-1]
+            ts_types.append(ts_type_from_filename(filename))
+        return list(set(ts_types))
+
+    def _get_paths(self):
+        paths = []
+        if self.filepath:
+            paths = [self.filepath]
+        if self.data_dir:
+            pattern = os.path.join(self.data_dir, 'Base_*.nc')
+            paths = glob.glob(pattern)
+        return paths
+
     def _get_vars_provided(self):
         variables = None
-        if self.filepath:
-            data = xr.open_dataset(self.filepath)
-            data_vars = set(data.keys())
-            emep_vars = set(get_emep_variables().values())
-            available = data_vars.intersection(emep_vars)
-            inv_emep = {v: k for k, v in get_emep_variables().items()}
-            avail_aero = [ inv_emep[var] for var in available]
-            variables = sorted(avail_aero)
+        data_vars = set()
+        for filepath in self._get_paths():
+            data = xr.open_dataset(filepath)
+            data_vars.update(set(data.keys()))
+        emep_vars = set(get_emep_variables().values())
+        available = data_vars.intersection(emep_vars)
+        inv_emep = {v: k for k, v in get_emep_variables().items()}
+        avail_aero = [ inv_emep[var] for var in available]
+        variables = sorted(avail_aero)
         return variables
 
     @property
@@ -114,6 +171,7 @@ class ReadEMEP(object):
 
     def __str__(self):
         s = 'Reader: ReadEMEP\n'
+        s += "Available frequencies: {}\n".format(self.ts_types)
         s += "Available variables: {}\n".format(self.vars_provided)
         return s
 
@@ -131,6 +189,20 @@ class ReadEMEP(object):
         if len(aliases) == 1 and aliases[0] in var_map:
             var_name = aliases[0]
 
+        # Find path to file based on ts_type
+        filepath = ''
+        if self.data_dir:
+            filename = ''
+            if ts_type == 'monthly':
+                filename = 'Base_month.nc'
+            elif ts_type == 'daily':
+                filename = 'Base_day.nc'
+            elif ts_type == 'yearly':
+                filename = 'Base_fullrun.nc'
+            filepath = os.path.join(self.data_dir, filename)
+        elif self.filepath:
+            filepath = self.filepath
+
         if var_name in self.AUX_REQUIRES:
             temp_cubes = []
             for aux_var in self.AUX_REQUIRES[var_name]:
@@ -145,12 +217,14 @@ class ReadEMEP(object):
                 const.print_log.exception('Variable {} not in EMEP mapping.'.format(var_name))
                 sys.exit(1)
 
+
+
             EMEP_prefix = emep_var.split('_')[0]
-            data = xr.open_dataset(self.filepath)[emep_var]
+            data = xr.open_dataset(filepath)[emep_var]
             data.attrs['long_name'] = var_name
             data.time.attrs['long_name'] = 'time'
             data.time.attrs['standard_name'] = 'time'
-            data.attrs['units'] = self.preprocess_units(data.units)
+            data.attrs['units'] = self.preprocess_units(data.units, EMEP_prefix)
             cube = data.to_iris()
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
 
@@ -160,7 +234,7 @@ class ReadEMEP(object):
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = self.filepath # ReadGridded cannot concatenate several years of data if this is missing
+        gridded.metadata['from_files'] = filepath # ReadGridded cannot concatenate several years of data if this is missing
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
@@ -187,14 +261,29 @@ class ReadEMEP(object):
 
 
     @staticmethod
-    def preprocess_units(units):
+    def preprocess_units(units, prefix=None):
         new_unit = units
-        if units == '':
+        if units == '' and prefix == 'AOD': #
             new_unit = '1'
         elif units == 'mgS/m2' or units == 'mgN/m2':
             raise NotImplementedError('Species specific units are not implemented.')
             new_unit = units
         return new_unit
+
+
+def ts_type_from_filename(filename):
+    ts_type = None
+    filename = filename.lower()
+    filename = os.path.splitext(filename)[0]
+    if filename == 'base_day':
+        ts_type = 'daily'
+    elif filename == 'base_month':
+        ts_type = 'monthly'
+    elif filename == 'base_fullrun':
+        ts_type = 'yearly'
+    return ts_type
+
+
 
 if __name__ == '__main__':
 
