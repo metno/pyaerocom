@@ -138,17 +138,20 @@ class ReadGridded(object):
                     'wetoa'         : ('wetpoa', 'wetsoa'),
                     'dryoa'         : ('drypoa', 'drysoa'),
                     'conc*'         : ('mmr*', 'rho'),
+                    'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
     
-    AUX_ALT_VARS = {'od440aer'  :   ['od443aer'],
-                    'od870aer'  :   ['od865aer']}
+    AUX_ALT_VARS = {'od440aer'      :   ['od443aer'],
+                    'od870aer'      :   ['od865aer'],
+                    'ac550dryaer'   :   ['ac550aer']}
     
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
                 'od550gt1aer'  :    subtract_cubes,
                 'wetoa'        :    add_cubes,
                 'dryoa'        :    add_cubes,
+                'sc550dryaer'  :    subtract_cubes, 
                 'conc*'        :    multiply_cubes,
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
