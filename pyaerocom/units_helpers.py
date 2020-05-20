@@ -188,21 +188,30 @@ def implicit_to_explicit_rates(gridded, ts_type):
         Data to convert
     ts_type : str
         Temporal resolution of gridded.
+
+    Returns
+    -------
+    GriddedData
+        Modified data, if not already a rate.
     """
+
     # TODO: Only modify data if conversion is succesful
+    new_gridded = gridded
     unit = gridded.units
     unit_string = str(unit)
     is_rate = ('/s' in unit_string) or ('s-1' in unit_string)
-    if is_rate:
-        return False
-    else:
+    if not is_rate:
+        raise NotImplementedError('This conversion needs further work.')
         timestamps = gridded.time_stamps()
         seconds_factor = seconds_in_periods(timestamps, ts_type)
+        new_gridded = gridded
+        data = new_gridded.to_xarray()
         for i in range(len(seconds_factor)):
-            # gridded.to_xarray().isel(time=i).values *= 10**-6  # mg -> kg
-            gridded.to_xarray().isel(time=i).values /= seconds_factor[i]
-        unit = '{} s-1'.format(gridded.units) # append rate to format
-        return True
+            data.isel(time=i).values /= seconds_factor[i]
+        new_gridded.cube = data.to_iris()
+        new_units = '{} s-1'.format(gridded.units) # append rate to format
+        new_gridded.units = new_units
+    return new_gridded
 
 if __name__ == '__main__':
     df = UCONV_MUL_FACS
