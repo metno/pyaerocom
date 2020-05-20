@@ -119,7 +119,7 @@ class ReadGhost(ReadUngriddedBase):
     
     _FILEMASK = '*.nc'
     
-    DATA_ID = 'GHOST.daily'
+    DATA_ID = 'GHOST.EEA.daily'
     
     SUPPORTED_DATASETS = ['GHOST.EEA.hourly',
                           'GHOST.EEA.daily',
