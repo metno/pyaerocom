@@ -32,7 +32,7 @@ class VarNameInfo(object):
         self._nums = []
         try:
             self._nums = self._numbers_in_string(var_name)
-        except:
+        except Exception:
             pass
 
     def get_default_vert_code(self):
