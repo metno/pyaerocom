@@ -117,33 +117,21 @@ def test_get_lon_rng_constraint():
 def test_get_time_rng_constraint():
     pass
 
-def test_seconds_in_periods():
+@pytest.mark.parametrize("date,ts_type,expected", [
+    ("2000-02-18","monthly",29),  # February leap year
+    ("2000-02-18","yearly",366),  # Leap year
+    ("2001-02-18","monthly",28),  # February non leap year
+    ("2001-02-18","daily",1),     # Daily
+    ("2001-02-18","yearly",365)]) # Non leap year
+def test_seconds_in_periods(date, ts_type, expected):
 
     from numpy import datetime64
 
     seconds_in_day = 24*60*60
 
-    # Leap year
-    ts = datetime64('2000-02-18')
-    seconds = helpers.seconds_in_periods(ts, 'monthly')
-    assert seconds == 29*seconds_in_day
-
-    seconds = helpers.seconds_in_periods(ts, 'yearly')
-    assert seconds == 366*seconds_in_day
-
-
-    # February in non leap year
-    ts = datetime64('2001-02-18')
-    seconds = helpers.seconds_in_periods(ts, 'monthly')
-    assert seconds == 28*seconds_in_day
-
-    # Daily
-    seconds = helpers.seconds_in_periods(ts, 'daily')
-    assert seconds == seconds_in_day
-
-    # Yearly non leap year
-    seconds = helpers.seconds_in_periods(ts, 'yearly')
-    assert seconds == 365*seconds_in_day
+    ts = datetime64(date)
+    seconds = helpers.seconds_in_periods(ts, ts_type)
+    assert seconds == expected*seconds_in_day
 
 
 if __name__=="__main__":
@@ -161,6 +149,6 @@ if __name__=="__main__":
 
     stat1 = DATA_ACCESS['station_data1']
     stat2 = DATA_ACCESS['station_data2']
-    
+
     merged_ec = helpers.merge_station_data([stat1, stat2],
                                            var_name='ec550aer')
