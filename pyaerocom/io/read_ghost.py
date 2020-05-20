@@ -119,13 +119,17 @@ class ReadGhost(ReadUngriddedBase):
     
     _FILEMASK = '*.nc'
     
-    DATA_ID = 'GHOST.daily'
+    DATA_ID = 'GHOST.EEA.daily'
     
-    SUPPORTED_DATASETS = ['GHOST.hourly',
-                          'GHOST.daily']
+    SUPPORTED_DATASETS = ['GHOST.EEA.hourly',
+                          'GHOST.EEA.daily',
+                          'GHOST.EBAS.hourly',
+                          'GHOST.EBAS.daily',]
     
-    TS_TYPES = {'GHOST.hourly'   : 'hourly',
-                'GHOST.daily'    : 'daily'}
+    TS_TYPES = {'GHOST.EEA.hourly'   : 'hourly',
+                'GHOST.EEA.daily'    : 'daily',
+                'GHOST.EBAS.hourly'   : 'hourly',
+                'GHOST.EBAS.daily'    : 'daily'}
     
     META_KEYS = GHOST_META_KEYS
     
