@@ -43,8 +43,8 @@ def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
     for stat in data:
         vmrdata = stat[vmrvar]
         meta = stat['meta']
-        p = meta['measuring_instrument_volume_standard_pressure']
-        T = meta['measuring_instrument_volume_standard_temperature']
+        p = meta['network_provided_volume_standard_pressure']
+        T = meta['network_provided_volume_standard_temperature']
         mmol_var = get_molmass(vmrvar)
         unit_var = meta['var_info'][vmrvar]['units']
         to_unit = const.VARS[mconcvar].units
