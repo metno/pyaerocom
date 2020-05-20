@@ -459,7 +459,6 @@ def get_tot_number_of_seconds(ts_type, dtime=None):
         DESCRIPTION.
 
     """
-    from pyaerocom.tstype import TsType
 
     ts_tpe = TsType(ts_type)
 
