@@ -12,6 +12,7 @@ import os
 import glob
 import pyaerocom as pya
 from pyaerocom import const, print_log, logger
+from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
@@ -42,6 +43,24 @@ class ReadEMEP(object):
     """
 
 
+    # dictionary containing information about additionally required variables
+    # for each auxiliary variable (i.e. each variable that is not provided
+    # by the original data but computed on import)
+    AUX_REQUIRES = {'depso4' : ['dryso4','wetso4'],
+                         'sconcbc' : ['sconcbcf', 'sconcbcc'],
+                         'sconcno3' : ['sconcno3c', 'sconcno3f'],
+                         # 'sconctno3' : ['sconcno3', 'sconchno3'],
+                         'sconcoa' : ['sconcoac', 'sconcoaf']}
+
+    # Functions that are used to compute additional variables (i.e. one
+    # for each variable defined in AUX_REQUIRES)
+    AUX_FUNS = {'depso4' : add_cubes,
+                     'sconcbc' : add_cubes,
+                     'sconcno3' : add_cubes,
+                     'sconctno3' : add_cubes,
+                     'sconcoa' : add_cubes}
+
+
     def __init__(self, filepath=None, data_id=None, data_dir=None):
 
         # if (filepath and data_dir):
@@ -58,22 +77,6 @@ class ReadEMEP(object):
         self.data_id = data_id
 
 
-        # dictionary containing information about additionally required variables
-        # for each auxiliary variable (i.e. each variable that is not provided
-        # by the original data but computed on import)
-        self.AUX_REQUIRES = {'depso4' : ['dryso4','wetso4'],
-                             'sconcbc' : ['sconcbcf', 'sconcbcc'],
-                             'sconcno3' : ['sconcno3c', 'sconcno3f'],
-                             # 'sconctno3' : ['sconcno3', 'sconchno3'],
-                             'sconcoa' : ['sconcoac', 'sconcoaf']}
-
-       # Functions that are used to compute additional variables (i.e. one
-       # for each variable defined in AUX_REQUIRES)
-        self.AUX_FUNS = {'depso4' : add_cubes,
-                         'sconcbc' : add_cubes,
-                         'sconcno3' : add_cubes,
-                         'sconctno3' : add_cubes,
-                         'sconcoa' : add_cubes}
 
 
     @property
@@ -203,18 +206,18 @@ class ReadEMEP(object):
         elif self.filepath:
             filepath = self.filepath
 
-        if var_name in self.AUX_REQUIRES:
+        if var_name in AUX_REQUIRES:
             temp_cubes = []
-            for aux_var in self.AUX_REQUIRES[var_name]:
+            for aux_var in AUX_REQUIRES[var_name]:
                 temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
-            aux_func = self.AUX_FUNS[var_name]
+            aux_func = AUX_FUNS[var_name]
             cube = aux_func(*temp_cubes)
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
         else:
             try:
                 emep_var = var_map[var_name]
             except KeyError as e:
-                const.print_log.exception('Variable {} not in EMEP mapping.'.format(var_name))
+                raise VarNotAvailableError('Variable {} not in EMEP mapping.'.format(var_name))
                 sys.exit(1)
 
 
