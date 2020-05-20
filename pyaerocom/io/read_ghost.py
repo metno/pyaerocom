@@ -168,7 +168,7 @@ class ReadGhost(ReadUngriddedBase):
         'concso2'   : _vmr_to_conc_ghost_stats}
     
     CONVERT_UNITS_META = {
-        'measuring_instrument_volume_standard_pressure' : 'Pa',
+        'network_provided_volume_standard_pressure' : 'Pa',
     }
     
     # This is the default list of flags that mark bad / invalid data, as 
@@ -178,7 +178,7 @@ class ReadGhost(ReadUngriddedBase):
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
     DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([0, 1, 2, 3, 6, 8, 9, 10, 12, 
-                                                13, 14, 17, 18, 22, 25, 30, 40, 
+                                                13, 14, 15, 18, 22, 25, 30, 40, 
                                                 41, 42]),
                              'flag' : None}
     
