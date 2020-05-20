@@ -66,11 +66,11 @@ class ReadEMEP(object):
         # if (filepath and data_dir):
         #     raise ValueError('Either filepath or data_dir should be set, not both.')
 
-        if data_dir:
+        if data_dir is not None:
             self.data_dir = data_dir
         else:
             self._data_dir = None
-        if filepath:
+        if filepath is not None:
             self.filepath = filepath
         else:
             self._filepath = None
