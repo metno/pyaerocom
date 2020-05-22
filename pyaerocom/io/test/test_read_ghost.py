@@ -29,12 +29,12 @@ from pyaerocom.io.read_ghost import ReadGhost
 import numpy as np
     
 @pytest.fixture(scope='module')
-def ghost_daily():
-    return ReadGhost('GHOST.daily')
+def ghost_eea_daily():
+    return ReadGhost('GHOST.EEA.daily')
 
 @pytest.fixture(scope='module')
-def ghost_hourly():
-    return ReadGhost('GHOST.hourly')
+def ghost_eea_hourly():
+    return ReadGhost('GHOST.EEA.hourly')
 
 @lustre_unavail
 class TestReadGhost(object):
@@ -62,7 +62,7 @@ class TestReadGhost(object):
     DEFAULT_VAR = 'conco3'
     DEFAULT_SITE = None
     
-    fixture_names = ('ghost_daily', 'ghost_hourly')
+    fixture_names = ('ghost_eea_daily', 'ghost_eea_hourly')
     
     # cf.: https://hackebrot.github.io/pytest-tricks/fixtures_as_class_attributes/
     @pytest.fixture(autouse=True)
@@ -74,7 +74,7 @@ class TestReadGhost(object):
     def default_reader(self):
         """Just a convenience thing used in tests below that would be redundant
         if applied to daily and hourly"""
-        return self.get_reader('ghost_daily')
+        return self.get_reader('ghost_eea_daily')
     
     def get_reader(self, fixture_name):
         return getattr(self, fixture_name)
@@ -82,7 +82,7 @@ class TestReadGhost(object):
     def test_meta_keys(self):
         assert len(self.default_reader.META_KEYS) == 143
         
-    @pytest.mark.parametrize('fixture_name', ['ghost_daily', 'ghost_hourly'])
+    @pytest.mark.parametrize('fixture_name', ['ghost_eea_daily', 'ghost_eea_hourly'])
     def test_PROVIDES_VARIABLES(self, fixture_name):
         reader = self.get_reader(fixture_name)
         assert reader.PROVIDES_VARIABLES == self.PROVIDES_VARIABLES
@@ -95,10 +95,10 @@ class TestReadGhost(object):
         
     @pytest.mark.parametrize(
         'fixture_name,vars_to_read,pattern,filenum,lastfilename', [
-        ('ghost_daily','vmro3',None,24,'sconco3_201912.nc'),
-        ('ghost_hourly','vmro3',None,24,'sconco3_201912.nc'),
-        ('ghost_daily','concpm10',None,24,'pm10_201912.nc'),
-        ('ghost_daily','vmro3','*201810.nc',1,'sconco3_201810.nc'),
+        ('ghost_eea_daily','vmro3',None,24,'sconco3_201912.nc'),
+        ('ghost_eea_hourly','vmro3',None,24,'sconco3_201912.nc'),
+        ('ghost_eea_daily','concpm10',None,24,'pm10_201912.nc'),
+        ('ghost_eea_daily','vmro3','*201810.nc',1,'sconco3_201810.nc'),
         ])
     def test_get_file_list(self, fixture_name, vars_to_read, pattern, filenum, 
                            lastfilename):
@@ -110,11 +110,11 @@ class TestReadGhost(object):
         assert os.path.basename(files[-1]) == lastfilename
       
     def test__ts_type_from_data_id(self):
-        assert self.get_reader('ghost_daily')._ts_type_from_data_id() == 'daily'
+        assert self.get_reader('ghost_eea_daily')._ts_type_from_data_id() == 'daily'
         
     @pytest.mark.parametrize('fixture_name,val', [
-            ('ghost_daily', 'daily'), 
-            ('ghost_hourly', 'hourly')
+            ('ghost_eea_daily', 'daily'), 
+            ('ghost_eea_hourly', 'hourly')
         ])
     def test_TS_TYPE(self, fixture_name, val):
         assert self.get_reader(fixture_name).TS_TYPE == val
@@ -161,7 +161,7 @@ class TestReadGhost(object):
         assert valid.sum() == numvalid
     
     @pytest.mark.parametrize('fixture_name,statnum,first_stat_name', [
-        ('ghost_daily', 2057, 'blaaaa'),
+        ('ghost_eea_daily', 2290, 'Bleak House'),
         ])
     def test_read_file(self, fixture_name, statnum, first_stat_name):
         reader = self.get_reader(fixture_name)
@@ -169,7 +169,8 @@ class TestReadGhost(object):
         assert isinstance(data, list)
         assert len(data) == statnum
         first_stat = data[0]
-        assert isinstance(data[0], dict)
+        assert isinstance(first_stat, dict)
+        assert first_stat['meta']['station_name'] == first_stat_name
         
         
  
