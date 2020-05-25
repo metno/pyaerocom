@@ -43,8 +43,8 @@ def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
     for stat in data:
         vmrdata = stat[vmrvar]
         meta = stat['meta']
-        p = meta['measuring_instrument_volume_standard_pressure']
-        T = meta['measuring_instrument_volume_standard_temperature']
+        p = meta['network_provided_volume_standard_pressure']
+        T = meta['network_provided_volume_standard_temperature']
         mmol_var = get_molmass(vmrvar)
         unit_var = meta['var_info'][vmrvar]['units']
         to_unit = const.VARS[mconcvar].units
@@ -119,13 +119,17 @@ class ReadGhost(ReadUngriddedBase):
     
     _FILEMASK = '*.nc'
     
-    DATA_ID = 'GHOST.daily'
+    DATA_ID = 'GHOST.EEA.daily'
     
-    SUPPORTED_DATASETS = ['GHOST.hourly',
-                          'GHOST.daily']
+    SUPPORTED_DATASETS = ['GHOST.EEA.hourly',
+                          'GHOST.EEA.daily',
+                          'GHOST.EBAS.hourly',
+                          'GHOST.EBAS.daily',]
     
-    TS_TYPES = {'GHOST.hourly'   : 'hourly',
-                'GHOST.daily'    : 'daily'}
+    TS_TYPES = {'GHOST.EEA.hourly'   : 'hourly',
+                'GHOST.EEA.daily'    : 'daily',
+                'GHOST.EBAS.hourly'   : 'hourly',
+                'GHOST.EBAS.daily'    : 'daily'}
     
     META_KEYS = GHOST_META_KEYS
     
@@ -164,7 +168,7 @@ class ReadGhost(ReadUngriddedBase):
         'concso2'   : _vmr_to_conc_ghost_stats}
     
     CONVERT_UNITS_META = {
-        'measuring_instrument_volume_standard_pressure' : 'Pa',
+        'network_provided_volume_standard_pressure' : 'Pa',
     }
     
     # This is the default list of flags that mark bad / invalid data, as 
@@ -174,7 +178,7 @@ class ReadGhost(ReadUngriddedBase):
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
     DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([0, 1, 2, 3, 6, 8, 9, 10, 12, 
-                                                13, 14, 17, 18, 22, 25, 30, 40, 
+                                                13, 14, 15, 18, 22, 25, 30, 40, 
                                                 41, 42]),
                              'flag' : None}
     
