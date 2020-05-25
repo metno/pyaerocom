@@ -34,7 +34,7 @@ GHOST_META_KEYS = [
     'GPW_max_population_density_5km',
     'GPW_population_density',
     'GSFC_coastline_proximity',
-    'Joly-Peuch_classification_code',
+    'Joly_Peuch_classification_code',
     'Koppen-Geiger_classification',
     'Koppen-Geiger_modal_classification_25km',
     'Koppen-Geiger_modal_classification_5km',
