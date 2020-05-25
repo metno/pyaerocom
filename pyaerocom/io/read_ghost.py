@@ -627,11 +627,18 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
     
-    var = 'conco3' 
-    obs = ReadGhost('GHOST.daily').read(var)
+    var = 'concpm10' 
     
-   
-    #obs  = pya.io.ReadUngridded().read('GHOST.daily', var)
+    reader = ReadGhost('GHOST.EEA.daily')
+    
+    files = reader.get_file_list(var)
+    
+    data = reader.read(var, files = [files[0]])
+    
+    codes_avail = []
+    
+    data.filter_by_meta(station_name='bla')
+    
     #obs._check_index()
     
-    subset = obs.filter_altitude((0,1000))
+    #subset = obs.filter_altitude((0,1000))
