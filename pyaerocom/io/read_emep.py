@@ -179,12 +179,49 @@ class ReadEMEP(object):
         return s
 
 
+    def has_var(self, var_name):
+        """Check if variable is available
+
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+
+        Returns
+        -------
+        bool
+        """
+        # vars_provided includes variables that can be read and variables that
+        # can be computed. It does not consider variable families that may be
+        # able to be computed or alias matches
+        avail = self.vars_provided
+        if var_name in avail:
+            return True
+        try:
+            var = const.VARS[var_name]
+        except VariableDefinitionError as e:
+            const.print_log.warn(repr(e))
+            return False
+        #
+        # if self.check_compute_var(var_name):
+        #     return True
+        #
+        for alias in var.aliases:
+            if alias in avail:
+                return True
+        #
+        # if var.is_alias and var.var_name_aerocom in avail:
+        #     return True
+
+        return False
+
+
     def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None):
+                 ts_type=None, **kwargs):
         """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
 
-        if start or stop:
-            raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
+        # if start or stop:
+        #     raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
 
         var_map = get_emep_variables()
 
@@ -206,11 +243,11 @@ class ReadEMEP(object):
         elif self.filepath:
             filepath = self.filepath
 
-        if var_name in AUX_REQUIRES:
+        if var_name in self.AUX_REQUIRES:
             temp_cubes = []
-            for aux_var in AUX_REQUIRES[var_name]:
+            for aux_var in self.AUX_REQUIRES[var_name]:
                 temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
-            aux_func = AUX_FUNS[var_name]
+            aux_func = self.AUX_FUNS[var_name]
             cube = aux_func(*temp_cubes)
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
         else:
