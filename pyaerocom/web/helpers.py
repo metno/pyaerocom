@@ -64,7 +64,7 @@ class ObsConfigEval(BrowseDict):
     
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
-        if not isinstance(self.obs_id, str):
+        if not isinstance(self.obs_id, (str, dict)):
             raise ValueError('Invalid value for obs_id: {}. Need str.'
                              .format(self.obs_id))
         if isinstance(self.obs_vars, str):
