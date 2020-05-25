@@ -322,7 +322,27 @@ class Colocator(ColocationSetup):
             except Exception as e:
                 const.print_log.warning('Deactivating logging in Colocator. Reason: {}'
                                         .format(repr(e)))
-                
+        
+    def _run(self, obs_id, var_name):
+        """Helper to run single obs_id"""
+        if not isinstance(obs_id, str):
+            raise ValueError('Invalid input for obs_id, need str, got {}'
+                             .format(obs_id))
+        try:
+            if obs_id in self.UNGRIDDED_IDS:
+                res = self._run_gridded_ungridded(obs_id, var_name)
+            else:
+                res = self._run_gridded_gridded(obs_id, var_name)
+        except Exception:
+            msg = ('Failed to perform analysis: {}\n'
+                   .format(traceback.format_exc()))
+            const.print_log.warning(msg)
+            self._write_log(msg)
+            if self.raise_exceptions:
+                self._close_log()
+                raise Exception(traceback.format_exc())
+        return res
+    
     def run(self, var_name=None, **opts):
         """Perform colocation for current setup
         
@@ -344,7 +364,7 @@ class Colocator(ColocationSetup):
         
         if self.apply_time_resampling_constraints is True and self.min_num_obs is None:
             self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
-            
+        
         try:
             self._init_log()
         except Exception as e:
@@ -355,27 +375,16 @@ class Colocator(ColocationSetup):
         self._write_log('\n\nModel: {}\n'.format(self.model_id))
         obs_id = self.obs_id
         
-        try:
-            if not isinstance(obs_id, str): #may be multiple ungridded datasets
-                if all(x in self.UNGRIDDED_IDS for x in obs_id):
-                    self.data[self.model_id] = self._run_gridded_ungridded(var_name)
-                else:
-                    raise ValueError('Could not identify obs_id {}'.format(obs_id))
-            elif obs_id in self.UNGRIDDED_IDS: # obs_id is string
-                self.data[self.model_id] = self._run_gridded_ungridded(var_name)
-            else:
-                self.data[self.model_id] = self._run_gridded_gridded(var_name)
-        except Exception:
-            msg = ('Failed to perform analysis: {}\n'
-                   .format(traceback.format_exc()))
-            const.print_log.warning(msg)
-            self._write_log(msg)
-            if self.raise_exceptions:
-                self._close_log()
-                raise Exception(traceback.format_exc())
-        finally:
-            self._close_log()
-            
+        if isinstance(obs_id, str):
+            self.data[self.model_id] = self._run(self, obs_id, var_name)
+        elif isinstance(obs_id, dict):
+            for var, obsnetwork in obs_id.items():
+                self.data[self.model_id] = self._run(obsnetwork, var)
+        else:
+            raise ValueError('Invalid value for obs_id, need str or dict, '
+                             'got {}'.format(obs_id))
+        self._close_log()
+                
     @staticmethod
     def get_lowest_resolution(ts_type, *ts_types):
         """Get the lowest resolution ts_type of input ts_types"""
@@ -696,8 +705,8 @@ class Colocator(ColocationSetup):
         else:
             return None
         
-    def _get_ungridded_obsvars_avail(self, obs_reader):
-        _oreaders = obs_reader.get_readers(self.obs_id)
+    def _get_ungridded_obsvars_avail(self, obs_reader, obs_id):
+        _oreaders = obs_reader.get_readers(obs_id)
 
         obs_vars = []
         for var in varlist_aerocom(self.obs_vars):
@@ -706,21 +715,22 @@ class Colocator(ColocationSetup):
                     obs_vars.append(var)
         return obs_vars
     
-    def _run_gridded_ungridded(self, var_name=None):
+    def _run_gridded_ungridded(self, obs_id=None, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         print_log.info('PREPARING colocation of {} vs. {}'
                        .format(self.model_id, self.obs_id))
-    
+        if obs_id is None:
+            obs_id = self.obs_id
         model_reader = ReadGridded(self.model_id)
         
-        obs_reader = ReadUngridded(self.obs_id)
+        obs_reader = ReadUngridded(obs_id)
             
-        obs_vars = self._get_ungridded_obsvars_avail(obs_reader)    
+        obs_vars = self._get_ungridded_obsvars_avail(obs_reader, obs_id)    
         #flist(np.intersect1d(self.obs_vars, obs_vars_supported))
         
         if len(obs_vars) == 0:
             raise DataCoverageError('No observation variable matches found for '
-                                    '{}'.format(self.obs_id))
+                                    '{}'.format(obs_id))
                 
         var_matches = self._find_var_matches(obs_vars, model_reader,
                                              var_name)
@@ -761,7 +771,7 @@ class Colocator(ColocationSetup):
                 
             ts_type = self.ts_type        
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
-                                                             self.obs_id, 
+                                                             obs_id, 
                                                              model_var, 
                                                              obs_var))
 
@@ -859,7 +869,7 @@ class Colocator(ColocationSetup):
                 #re-read a lot of times, which is a weakness.
                 obs_data = obs_reader.read(
                     
-                    datasets_to_read=self.obs_id, 
+                    datasets_to_read=obs_id, 
                     vars_to_retrieve=obs_var,
                     only_cached=self._obs_cache_only,
                     **ropts)
@@ -911,7 +921,7 @@ class Colocator(ColocationSetup):
                 msg = ('Colocation between model {} / {} and obs {} / {} '
                        'failed: Reason {}'.format(self.model_id,
                                                   model_var, 
-                                                  self.obs_id,
+                                                  obs_id,
                                                   obs_var,
                                                   repr(e)))
                 const.print_log.warning(msg)
@@ -922,11 +932,12 @@ class Colocator(ColocationSetup):
                     
         return data_objs
     
-    def _run_gridded_gridded(self, var_name=None):
-        
+    def _run_gridded_gridded(self, obs_id=None, var_name=None):
+        if obs_id is None:
+            obs_id = self.obs_id
         start, stop = start_stop(self.start, self.stop)
         model_reader = ReadGridded(self.model_id)
-        obs_reader = ReadGridded(self.obs_id)
+        obs_reader = ReadGridded(obs_id)
         
         if 'obs_filters' in self:
             remaining_filters = self._eval_obs_filters()
@@ -960,7 +971,7 @@ class Colocator(ColocationSetup):
         for model_var, obs_var in var_matches.items():
             
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
-                                                             self.obs_id, 
+                                                             obs_id, 
                                                              model_var, 
                                                              obs_var))
             try:
@@ -1023,7 +1034,7 @@ class Colocator(ColocationSetup):
                 print_log.info('Updating ts_type from {} to {} (highest '
                                'available in {} / {} combination)'
                                .format(ts_type, lowest, self.model_id,
-                                       self.obs_id))
+                                       obs_id))
                 ts_type = lowest
             
             if self.save_coldata:
@@ -1083,7 +1094,7 @@ class Colocator(ColocationSetup):
                 msg = ('Colocation between model {} / {} and obs {} / {} '
                        'failed: Reason {}'.format(self.model_id,
                                                   model_var, 
-                                                  self.obs_id,
+                                                  obs_id,
                                                   obs_var,
                                                   repr(e)))
                 const.print_log.warning(msg)
@@ -1130,12 +1141,16 @@ class Colocator(ColocationSetup):
             var_name = model_data.var_name
         start_str = to_datestring_YYYYMMDD(start)
         stop_str = to_datestring_YYYYMMDD(stop)
-    
+        
         if isinstance(self.obs_name, str):
             obs_id = self.obs_name
         else:
             obs_id = self.obs_id
             
+        if not isinstance(obs_id, str):
+            raise ValueError('Cannot uniquely infer observation name for '
+                             'colcoated data filename. Consider setting attr. '
+                             'obs_name directly'.format(obs_id))
         if isinstance(self.model_name, str):
             model_id = self.model_name
         else:
