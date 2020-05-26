@@ -9,38 +9,42 @@ def test_read_emep():
     assert r.vars_provided == []
     assert r.filepath == None
 
-@lustre_unavail
-def test_read_emep_data():
-    path = '/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_AerocomHIST/2010_GLOB1_2010met/Base_month.nc'
-
+@testdata_unavail
+def test_read_emep_data(path_emep):
+    path = path_emep['daily']
+    print(path)
     r = ReadEMEP(filepath=path)
 
     # r.filepath = path
     vars_provided = r.vars_provided
     assert isinstance(vars_provided, list)
+    assert r.vars_provided == ['vmro3']
 
-    data = r.read_var('dryso4', ts_type='monthly')
+    data = r.read_var('vmro3', ts_type='daily')
     assert isinstance(data, GriddedData)
     assert data.time.long_name == 'time'
     assert data.time.standard_name == 'time'
 
-    # Read auxilliary variable
-    # TODO: run these two similiar tests parameterized
-    data = r.read_var('depso4', ts_type='monthly')
-    assert isinstance(data, GriddedData)
-    assert data.time.long_name == 'time'
-    assert data.time.standard_name == 'time'
-    assert data.metadata['computed'] == True
+    # # Read auxilliary variable
+    # # TODO: run these two similiar tests parameterized
+    # data = r.read_var('vmro3', ts_type='monthly')
+    # assert isinstance(data, GriddedData)
+    # assert data.time.long_name == 'time'
+    # assert data.time.standard_name == 'time'
+    # assert data.metadata['computed'] == True
 
-    data = r.read_var('od550aer', ts_type='monthly')
-    assert data.units == '1'
+    # data = r.read_var('od550aer', ts_type='monthly')
+    # assert data.units == '1'
 
-@lustre_unavail
-def test_read_emep_directory():
-    data_dir = '/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_AerocomHIST/2010_GLOB1_2010met'
+@testdata_unavail
+def test_read_emep_directory(path_emep):
+    data_dir = path_emep['data_dir']
     r = ReadEMEP(data_dir=data_dir)
     assert r.data_dir == data_dir
-
+    vars_provided = r.vars_provided
+    assert 'vmro3' in vars_provided
+    assert 'concpm10' in vars_provided
+    assert 'concno2' in vars_provided
 
 
 @pytest.mark.parametrize('filename,ts_type', [
@@ -52,7 +56,6 @@ def test_ts_type_from_filename(filename, ts_type):
     assert ts_type_from_filename(filename) == ts_type
 
 
-@lustre_unavail
 @testdata_unavail
 def test_read_emep_colocate():
     pass
