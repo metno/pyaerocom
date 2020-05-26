@@ -206,11 +206,11 @@ class ReadEMEP(object):
         elif self.filepath:
             filepath = self.filepath
 
-        if var_name in AUX_REQUIRES:
+        if var_name in self.AUX_REQUIRES:
             temp_cubes = []
-            for aux_var in AUX_REQUIRES[var_name]:
+            for aux_var in self.AUX_REQUIRES[var_name]:
                 temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
-            aux_func = AUX_FUNS[var_name]
+            aux_func = self.AUX_FUNS[var_name]
             cube = aux_func(*temp_cubes)
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
         else:
