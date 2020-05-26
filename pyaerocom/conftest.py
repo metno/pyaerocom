@@ -48,6 +48,8 @@ TEST_PATHS = {
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
     'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE),
     'emep_daily' : 'modeldata/EMEP_2017/Base_day.nc',
+    'emep_monthly' : 'modeldata/EMEP_2017/Base_month.nc',
+    'emep_yearly' : 'modeldata/EMEP_2017/Base_fullrun.nc',
     'emep_data_dir' : 'modeldata/EMEP_2017'
 
     }
@@ -122,8 +124,10 @@ change_verbosity('critical', const.print_log)
 @pytest.fixture(scope='session')
 def path_emep():
     paths = {}
-    paths['daily'] = TESTDATADIR.joinpath(TEST_PATHS['emep_daily'])
-    paths['data_dir'] = TESTDATADIR.joinpath(TEST_PATHS['emep_data_dir'])
+    paths['daily'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_daily']))
+    paths['monthly'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_monthly']))
+    paths['yearly'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_yearly']))
+    paths['data_dir'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_data_dir']))
     return paths
 
 # Example GriddedData object (TM5 model)
