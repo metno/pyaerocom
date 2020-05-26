@@ -330,9 +330,10 @@ class Colocator(ColocationSetup):
                              .format(obs_id))
         try:
             if obs_id in self.UNGRIDDED_IDS:
-                res = self._run_gridded_ungridded(obs_id, var_name)
+                return self._run_gridded_ungridded(obs_id, var_name)
             else:
-                res = self._run_gridded_gridded(obs_id, var_name)
+                return self._run_gridded_gridded(obs_id, var_name)
+        
         except Exception:
             msg = ('Failed to perform analysis: {}\n'
                    .format(traceback.format_exc()))
@@ -341,7 +342,6 @@ class Colocator(ColocationSetup):
             if self.raise_exceptions:
                 self._close_log()
                 raise Exception(traceback.format_exc())
-        return res
     
     def run(self, var_name=None, **opts):
         """Perform colocation for current setup
