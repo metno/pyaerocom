@@ -567,7 +567,7 @@ class Colocator(ColocationSetup):
         if 'use_input_var' in kwargs:
             use_input_var = kwargs.pop('use_input_var')
 
-        reader = instantiate_model_reader()
+        reader = self.instantiate_model_reader()
         if use_input_var:
             var = var_name
         else:
@@ -740,7 +740,7 @@ class Colocator(ColocationSetup):
         print_log.info('PREPARING colocation of {} vs. {}'
                        .format(self.model_id, self.obs_id))
 
-        model_reader = instantiate_model_reader()
+        model_reader = self.instantiate_model_reader()
         obs_reader = ReadUngridded(self.obs_id)
 
         _oreader = obs_reader.get_reader(self.obs_id)
@@ -960,7 +960,7 @@ class Colocator(ColocationSetup):
     def _run_gridded_gridded(self, var_name=None):
 
         start, stop = start_stop(self.start, self.stop)
-        model_reader = instantiate_model_reader()
+        model_reader = self.instantiate_model_reader()
         obs_reader = ReadGridded(self.obs_id)
 
         if 'obs_filters' in self:
