@@ -15,38 +15,51 @@ from pyaerocom.colocateddata import ColocatedData
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
-    (dict(), 
+    (dict(),
      'monthly', (2,12,8), 0.315930,0.275671),
     (dict(var_ref_outlier_ranges={'od550aer':[0.1,0.5]},
           var_outlier_ranges={'od550aer':[0.1,0.2]}),
      'monthly', (2,12,8), 0.227333,0.275671),
-    (dict(apply_time_resampling_constraints=False), 
+    (dict(apply_time_resampling_constraints=False),
      'monthly', (2,12,8), 0.316924,0.275671),
-    (dict(filter_name='WORLD-wMOUNTAINS'), 
+    (dict(filter_name='WORLD-wMOUNTAINS'),
      'monthly', (2,12,11), 0.269707, 0.243861),
-    (dict(use_climatology_ref=True), 
+    (dict(use_climatology_ref=True),
      'monthly', (2,12,13), 0.302636, 0.234147)
     ])
-def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, 
+def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
                                     addargs, ts_type, shape,
                                     obsmean, modmean):
-    coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, 
+    coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
                                          **addargs)
-    
-    assert isinstance(coldata, ColocatedData)    
+
+    assert isinstance(coldata, ColocatedData)
     assert coldata.ts_type == ts_type
-    assert coldata.shape == shape 
-    
+    assert coldata.shape == shape
+
     means = [np.nanmean(coldata.data.data[0]),
              np.nanmean(coldata.data.data[1])]
-    
+
     npt.assert_allclose(means, [obsmean, modmean], rtol=TEST_RTOL)
-    
+
 @pytest.mark.skip(reason='No fixture for gridded observation data available yet')
 def test_colocate_gridded_gridded(mod, obs, addargs, **kwargs):
     pass
 
+
+from pyaerocom.colocation_auto import Colocator
+from pyaerocom.io.read_emep import ReadEMEP
+from pyaerocom.io.readgridded import ReadGridded
+@pytest.mark.parametrize('reader_id,reader_class', [
+    ('ReadEMEP', ReadEMEP),
+    ('ReadGridded', ReadGridded)
+    ])
+def test_colocation_reader(reader_id, reader_class):
+    col = Colocator(gridded_reader_id=reader_id)
+    reader = col.get_gridded_reader()
+    assert reader == reader_class
+
+
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
-    

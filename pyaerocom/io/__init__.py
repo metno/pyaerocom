@@ -34,10 +34,10 @@
 # =============================================================================
 # from .read_aeronet_sdav2 import ReadAeronetSDAV2
 def geopy_available():
-    """Helper method that checks if geopy library is available 
-    
+    """Helper method that checks if geopy library is available
+
     Required for import of ReadAeolusL2aData
-    
+
     Returns
     -------
     bool
@@ -93,6 +93,7 @@ from .read_aasetal import ReadAasEtal
 from .read_ghost import ReadGhost
 
 from .readgridded import ReadGridded, ReadGriddedMulti
+from .read_emep import ReadEMEP
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
 
