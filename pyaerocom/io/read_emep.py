@@ -61,7 +61,7 @@ class ReadEMEP(object):
                      'sconcoa' : add_cubes}
 
 
-    def __init__(self, model_id, filepath=None, data_id=None, data_dir=None):
+    def __init__(self, filepath=None, data_id=None, data_dir=None):
 
         # if (filepath and data_dir):
         #     raise ValueError('Either filepath or data_dir should be set, not both.')

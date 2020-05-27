@@ -66,11 +66,6 @@ def test_read_emep_colocate_gridded_gridded(data_tm5, path_emep):
     col = colocate_gridded_gridded(data_emep, data_tm5)
     assert isinstance(col, ColocatedData)
 
-@testdata_unavail
-def test_read_emep_colocate_gridded_ungridded(path_emep, some_obs_dataset):
-    # Test colcation against some ungridded data
-    pass
-
 
 @pytest.mark.parametrize('filename,ts_type', [
     ('Base_month.nc', 'monthly'),
