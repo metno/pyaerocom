@@ -740,7 +740,7 @@ class Colocator(ColocationSetup):
         print_log.info('PREPARING colocation of {} vs. {}'
                        .format(self.model_id, self.obs_id))
 
-        model_reader = instantiate_model_reader
+        model_reader = instantiate_model_reader()
         obs_reader = ReadUngridded(self.obs_id)
 
         _oreader = obs_reader.get_reader(self.obs_id)
