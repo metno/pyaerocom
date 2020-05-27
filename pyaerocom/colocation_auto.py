@@ -407,10 +407,9 @@ class Colocator(ColocationSetup):
         Create reader object based on reader id.
         """
         reader_class = self.get_gridded_reader()
-        reader = reader_class(self.model_id)
-        if self.filepath and self.data_id:
-            model_reader.filepath = self.filepath
-            model_reader.data_id = self.data_id
+        reader = reader_class(data_id=self.model_id)
+        if hasattr(reader, 'filepath'):
+            reader.filepath = self.filepath
         return reader
 
 
