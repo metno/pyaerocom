@@ -12,14 +12,14 @@ from pathlib import Path
 from traceback import format_exc
 
 from pyaerocom import const
-import pyaerocom._conftest_helpers as cth                          
+import pyaerocom._conftest_helpers as cth
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal
 from pyaerocom.io import ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3
 from pyaerocom.io import ReadEbas
 from pyaerocom.test.synthetic_data import DataAccess
 
-INIT_TESTDATA = True                            
+INIT_TESTDATA = True
 TEST_RTOL = 1e-4
 
 DATA_ACCESS = DataAccess()
@@ -33,21 +33,25 @@ TESTDATADIR = Path(const._TESTDATADIR)
 AMES_FILE = 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas'
 # Paths to be added to pya.const. All relative to BASEDIR
 ADD_PATHS = {
-    
+
     'MODELS'                : 'modeldata',
     'AeronetSunV3L2Subset.daily'  : 'obsdata/AeronetSunV3Lev2.daily/renamed',
     'AeronetSDAV3L2Subset.daily'  : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
     'AeronetInvV3L2Subset.daily'  : 'obsdata/AeronetInvV3Lev2.daily/renamed',
     'EBASSubset'            : 'obsdata/EBASMultiColumn'
-    
+
 }
 
 # Additional paths that have to exist (for sanity checking)
 TEST_PATHS = {
-    
+
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
-    'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE)
-    
+    'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE),
+    'emep_daily' : 'modeldata/EMEP_2017/Base_day.nc',
+    'emep_monthly' : 'modeldata/EMEP_2017/Base_month.nc',
+    'emep_yearly' : 'modeldata/EMEP_2017/Base_fullrun.nc',
+    'emep_data_dir' : 'modeldata/EMEP_2017'
+
     }
 TEST_PATHS.update(ADD_PATHS)
 
@@ -65,41 +69,41 @@ NASA_AMES_FILEPATHS = {
     'scatc_jfj' :  TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
     }
 
-# checks if testdata-minimal is available and if not, tries to download it 
+# checks if testdata-minimal is available and if not, tries to download it
 # automatically into ~/MyPyaerocom/testdata-minimal
 if INIT_TESTDATA:
-    TESTDATA_AVAIL = cth.check_access_testdata(TESTDATADIR, TEST_PATHS, 
+    TESTDATA_AVAIL = cth.check_access_testdata(TESTDATADIR, TEST_PATHS,
                                                URL_TESTDATA)
-    
+
     if TESTDATA_AVAIL:
         try:
-            cth._init_testdata(const, ADD_PATHS, TESTDATADIR, 
+            cth._init_testdata(const, ADD_PATHS, TESTDATADIR,
                                _UNGRIDDED_READERS)
         except Exception:
             raise ValueError('FATAL: Failed to initiate testdata. Traceback:\n'
                              .format(format_exc()))
             TESTDATA_AVAIL = False
 else:
-    TESTDATA_AVAIL = False   
-# skipif marker that is True if no access to metno PPI is provided 
+    TESTDATA_AVAIL = False
+# skipif marker that is True if no access to metno PPI is provided
 # (some tests are skipped in this case)
 lustre_unavail = pytest.mark.skipif(not const.has_access_lustre,
                                     reason='Skipping tests that require access '
                                     'to AEROCOM database on METNo servers')
 
-# custom skipif marker that is used below for test functions that 
+# custom skipif marker that is used below for test functions that
 # require geonum to be installed
 geonum_unavail = pytest.mark.skipif(not const.GEONUM_AVAILABLE,
                    reason='Skipping tests that require geonum.')
 etopo1_unavail = pytest.mark.skipif(not const.ETOPO1_AVAILABLE,
                    reason='Skipping tests that require access to ETOPO1 data')
 
-try: 
+try:
     import reverse_geocode
     rg_avail = True
 except ModuleNotFoundError:
     rg_avail = False
-    
+
 rg_unavail = pytest.mark.skipif(not rg_avail,
                    reason='Skipping tests that require access to reverse_geocode')
 
@@ -116,6 +120,16 @@ from pyaerocom import change_verbosity
 change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
+# Path to EMEP data
+@pytest.fixture(scope='session')
+def path_emep():
+    paths = {}
+    paths['daily'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_daily']))
+    paths['monthly'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_monthly']))
+    paths['yearly'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_yearly']))
+    paths['data_dir'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_data_dir']))
+    return paths
+
 # Example GriddedData object (TM5 model)
 @pytest.fixture(scope='session')
 def data_tm5():
@@ -128,7 +142,7 @@ def data_tm5():
 @pytest.fixture(scope='session')
 def aasetal_data():
     reader = ReadAasEtal()
-    # that's quite time consuming, so keep it for possible usage in other 
+    # that's quite time consuming, so keep it for possible usage in other
     # tests
     return reader.read()  # read all variables
 
@@ -149,13 +163,13 @@ def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
     #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
     return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
-    
+
 
 if __name__=="__main__":
     import sys
     import pyaerocom as pya
-    
+
     reader = pya.io.ReadEbas('EBASSubset')
-    
+
     db = reader.sqlite_database_file
     print(db)
