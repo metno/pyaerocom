@@ -84,7 +84,7 @@ def delete_all_coords_cube(cube, inplace=True):
 
 def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
                              lon_dimname=None, method='nearest',
-                             new_index_name=None):
+                             new_index_name=None, check_domain=True):
     """Extract individual lat / lon coordinates from `DataArray`
     
     Parameters
@@ -105,23 +105,15 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         how to interpolate to input coordinates (defaults to nearest neighbour)
     new_index_name : str, optional
         name of flattend latlon dimension (defaults to latlon)
+    check_domain : bool
+        if True, lat/lon domain of datarray is checked and all input coordinates
+        that are outside of the domain are ignored.
     
     Returns
     -------
     DataArray
         data at input coordinates
     """
-    
-# =============================================================================
-#     if lat_dimname is None:
-#         for name in ['lat', 'latitude']:
-#             if name in arr.dims:
-#                 lat_dimname = name
-#     if lon_dimname is None:
-#         for name in ['lon', 'longitude']:
-#             if name in arr.dims:
-#                 lon_dimname = name
-# =============================================================================
     if lat_dimname is None:
         lat_dimname = 'lat'
     if lon_dimname is None:
@@ -140,6 +132,13 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         lat = [lat]
     if isinstance(lon, str):
         lon = [lon]
+    if check_domain:
+        arr_lat = arr[lat_dimname].data
+        arr_lon = arr[lon_dimname].data
+        lat0, lat1 = arr_lat.min(), arr_lat.max()
+        lon0, lon1 = arr_lon.min(), arr_lon.max()
+        lat = [x for x in lat if lat0 <= x <= lat1]
+        lon = [x for x in lon if lon0 <= x <= lon1]
     if new_index_name is None:
         new_index_name = 'latlon'
     where = {lat_dimname : xray.DataArray(lat, dims=new_index_name), 
