@@ -17,6 +17,7 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal
 from pyaerocom.io import ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3
 from pyaerocom.io import ReadEbas
+from pyaerocom.io import ReadEMEP
 from pyaerocom.test.synthetic_data import DataAccess
 
 INIT_TESTDATA = True
@@ -47,11 +48,7 @@ TEST_PATHS = {
 
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
     'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE),
-    'emep_daily' : 'modeldata/EMEP_2017/Base_day.nc',
-    'emep_monthly' : 'modeldata/EMEP_2017/Base_month.nc',
-    'emep_yearly' : 'modeldata/EMEP_2017/Base_fullrun.nc',
-    'emep_data_dir' : 'modeldata/EMEP_2017'
-
+    'emep' : 'modeldata/EMEP_2017'
     }
 TEST_PATHS.update(ADD_PATHS)
 
@@ -120,14 +117,15 @@ from pyaerocom import change_verbosity
 change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
-# Path to EMEP data
+# Paths to EMEP data
 @pytest.fixture(scope='session')
 def path_emep():
     paths = {}
-    paths['daily'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_daily']))
-    paths['monthly'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_monthly']))
-    paths['yearly'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_yearly']))
-    paths['data_dir'] = str(TESTDATADIR.joinpath(TEST_PATHS['emep_data_dir']))
+    emep_path= TESTDATADIR.joinpath(TEST_PATHS['emep'])
+    paths['daily'] = str(emep_path.joinpath('Base_day.nc'))
+    paths['monthly'] = str(emep_path.joinpath('Base_month.nc'))
+    paths['yearly'] = str(emep_path.joinpath('Base_fullrun.nc'))
+    paths['data_dir'] = str(emep_path)
     return paths
 
 # Example GriddedData object (TM5 model)
