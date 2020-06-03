@@ -47,6 +47,19 @@ def test_colocate_gridded_gridded(mod, obs, addargs, **kwargs):
     pass
 
 
+from pyaerocom.io.read_emep import ReadEMEP
+@testdata_unavail
+def test_colocate_gridded_ungridded_nonglobal(path_emep, aeronetsunv3lev2_subset):
+    # The EMEP dataset used here is on a non global grid, allowing us to test
+    # some features on colocating global with non global.
+    data_emep = ReadEMEP(path_emep['daily']).read_var('vmro3', ts_type='daily')
+    data_emep.var_name = 'od550aer'
+    data_emep.units = '1'
+    coldata = colocate_gridded_ungridded(data_emep, aeronetsunv3lev2_subset)
+    coords = coldata.coords
+    assert len(coords['station_name']) == 1
+
+
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.io.read_emep import ReadEMEP
 from pyaerocom.io.readgridded import ReadGridded
