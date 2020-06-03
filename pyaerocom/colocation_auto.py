@@ -127,11 +127,7 @@ class ColocationSetup(BrowseDict):
     obs_ts_type_read : :obj:`str` or :obj:`dict`, optional
         may be specified to explicitly define the reading frequency of the
         observation data (so far, this does only apply to gridded obsdata such
-        as satelli    flex_ts_type_gridded : bool
-        boolean specifying whether reading frequency of gridded data is
-        allowed to be flexible. This includes all gridded data, whether it is
-        model or gridded observation (e.g. satellites). Defaults to True.
-tes). For ungridded reading, the frequency may be specified
+        as satellites). For ungridded reading, the frequency may be specified
         via :attr:`obs_id`, where applicable (e.g. AeronetSunV3Lev2.daily).
         Not to be confused with :attr:`ts_type`, which specifies the
         frequency used for colocation. Can be specified variable specific in
