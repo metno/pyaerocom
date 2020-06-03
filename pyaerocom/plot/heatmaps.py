@@ -8,7 +8,7 @@ import pandas as pd
 from pyaerocom.mathutils import exponent
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
-from seaborn import heatmap
+from seaborn import heatmap, mpl_palette
 
 def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, 
                   vmin=None, vmax=None, color_rowwise=False,
@@ -24,6 +24,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   title=None, circle=None, labelsize=12,
                   annot_fontsize=None,
                   annot_fmt_rowwise=False,
+                  annot_fmt_exceed=None,
+                  cbar_kws=None,
                   **kwargs):
     
 
@@ -105,11 +107,12 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
         fig, ax = plt.subplots(1, 1, figsize=figsize)
     else:
         fig = ax.figure
-    cbar_kws = {}
+    if cbar_kws is None:
+        cbar_kws = {}
     if annot_fontsize is None:
         annot_fontsize = labelsize-4
     annot_kws={"size": annot_fontsize}
-    
+    df_hm = df
     if normalise_rows:
         if normalise_rows_col is not None:
             if isinstance(normalise_rows_col, str):
@@ -119,7 +122,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                     raise ValueError('Failed to localise column {}'
                                      .format(normalise_rows_col))
             norm_ref = df.values[:, normalise_rows_col]
-            cbar_label += " (norm. col. {})".format(normalise_rows_col)
+            #cbar_label += " (norm. col. {})".format(normalise_rows_col)
         else:
             if normalise_rows_how == 'mean':
                 norm_ref = df.mean(axis=1)
@@ -130,16 +133,18 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
             else:
                 raise ValueError('Invalid input for normalise_rows_how ({}). '
                                  'Choose from mean, median or sum'.format(normalise_rows_how))
-            cbar_label += " (norm. row {})".format(normalise_rows_how)
-        df = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
+            #cbar_label += " (norm. row {})".format(normalise_rows_how)
+        df_hm = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
         num_fmt = ".0%"
         
         cbar_kws['format'] = FuncFormatter(lambda x, pos: '{:.0%}'.format(x))
         #df = df.div(df.max(axis=1), axis=0)
     if color_rowwise:
-        df_hm = df.div(abs(df).max(axis=1), axis=0)
-    else:
-        df_hm = df
+        df_hm = df_hm.div(abs(df_hm).max(axis=1), axis=0)
+# =============================================================================
+#     else:
+#         df_hm = df
+# =============================================================================
 
     cbar_kws['label'] = cbar_label
     
@@ -158,7 +163,10 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     #num_fmt = '3.2G'
     if annot_fmt_rowwise and isinstance(annot, np.ndarray):
         _annot = []
-        
+        if isinstance(annot_fmt_exceed, list):
+            exceed_val, exceed_fmt = annot_fmt_exceed
+        else:
+            exceed_val, exceed_fmt = None, None
         for row in annot:
             mask = row[~np.isnan(row)]
             mask = mask[mask!=0]
@@ -179,16 +187,19 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
             for i, val in enumerate(row):
                 if np.isnan(val):
                     valstr = ''
-
                 else:
                     #exp = exps(i)
                     #fmt = '.{}f'.format(numdigits)
-                    valstr = format(val, rowfmt)
-                
+                    if exceed_val is not None and val > exceed_val:
+                        valstr = format(val, exceed_fmt)    
+                    else:
+                        valstr = format(val, rowfmt)
+                        
                 row_fmt.append(valstr)
             _annot.append(row_fmt)
         annot = np.asarray(_annot)
             #print(row)
+        
         ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
                      cbar=cbar, cbar_kws=cbar_kws, fmt='', 
                      vmin=vmin, vmax=vmax, annot_kws=annot_kws, **kwargs)
