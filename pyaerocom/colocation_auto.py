@@ -397,7 +397,10 @@ class Colocator(ColocationSetup):
             raise ValueError('Invalid value for model_read_aux dict of variable '
                              '{}. Require keys vars_required and fun in dict, '
                              'got {}'.format(model_var, info))
-        model_reader.add_aux_compute(var_name=model_var, **info)
+        try:
+            model_reader.add_aux_compute(var_name=model_var, **info)
+        except DataCoverageError:
+            return False
         return True
     
     def _find_var_matches_OLD(self, obs_vars, model_reader, var_name=None):
@@ -484,7 +487,7 @@ class Colocator(ColocationSetup):
                 model_var = muv[obs_var]
             else:
                 model_var = obs_var
-                
+            
             self._check_add_model_read_aux(model_var, model_reader)
                 
             if model_reader.has_var(model_var):
