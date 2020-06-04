@@ -1217,7 +1217,7 @@ if __name__ == "__main__":
     vars_to_retrieve = options['variables'].copy()
 
     data_numpy = obj.read(files=options['files'], vars_to_retrieve=vars_to_retrieve[0],
-                          local_temp_dir=default_local_temp_dir, return_as='dict')
+                          local_temp_dir=options['tempdir'], return_as='dict')
 
     # limit data to EMEP CAMS domain
     if options['emepflag']:
