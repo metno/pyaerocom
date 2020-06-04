@@ -13,6 +13,7 @@ from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   MetaDataError, StationNotFoundError)
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
+from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (same_meta_dict, 
                                start_stop_str,
@@ -115,15 +116,17 @@ class UngriddedData(object):
     _LAT_OFFSET = np.float(90.)
     
     STANDARD_META_KEYS = list(StationMetaData().keys())
-    def __init__(self, num_points=None, add_cols=None, chunksize=_CHUNKSIZE):
+    def __init__(self, num_points=None, add_cols=None, chunksize=None):
 
         self._index = self._init_index(add_cols)
         if num_points is None:
             num_points = self._ROWNO
         else:
             self._ROWNO = num_points
-
-        self._CHUNKSIZE = chunksize
+        
+        if chunksize is None:
+            chunksize = self._CHUNKSIZE
+        self._chunksize = chunksize
 
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([num_points, self._COLNO]) * np.nan
@@ -198,6 +201,11 @@ class UngriddedData(object):
                 assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
                           'index assigned in data and var_idx for {} in meta-block'
                           .format(var, idx))
+            for var in meta['var_info']:
+                assert var in vars_avail, ('Detected variable {} in var_info '
+                                           'of meta block {}. This variable is '
+                                           'not registered in attr. var_idx'
+                                           .format(var, idx))
         
     @property
     def index(self):
@@ -399,7 +407,7 @@ class UngriddedData(object):
     @time.setter
     def time(self, value):
         raise AttributeError("Time array cannot be changed")
-        
+      
     def last_filter_applied(self):
         """Returns the last filter that was applied to this dataset
         
@@ -419,20 +427,51 @@ class UngriddedData(object):
             minimum chunksize specified in attribute ``_CHUNKSIZE``, then the
             latter is used.
         """
-        if size is None or size < self._CHUNKSIZE:
-            size = self._CHUNKSIZE
+        if size is None or size < self._chunksize:
+            size = self._chunksize
         chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
         self._ROWNO += size
         logger.info("adding chunk, new array size ({})".format(self._data.shape))                
     
-    def _find_station_indices(self, station_pattern):
+    
+    def _find_station_indices_wildcards(self, station_str):
         """Find indices of all metadata blocks matching input station name
         
         Parameters
         ----------
-        station_pattern : str
+        station_str : str
             station name or wildcard pattern
+    
+        Returns
+        -------
+        list
+           list containing all metadata indices that match the input station
+           name or pattern
+           
+        Raises
+        ------
+        StationNotFoundError
+            if no such station exists in this data object
+        """
+        idx = []
+        for i, meta in self.metadata.items():
+            if fnmatch.fnmatch(meta['station_name'], station_str):
+                idx.append(i)
+        if len(idx) == 0:
+            raise StationNotFoundError('No station available in UngriddedData '
+                                       'that matches pattern {}'
+                                       .format(station_str))
+        return idx
+    
+    def _find_station_indices(self, station_str):
+        """Find indices of all metadata blocks matching input station name
+        
+        Parameters
+        ----------
+        station_str : str
+            station name
+        
         
         Returns
         -------
@@ -447,15 +486,87 @@ class UngriddedData(object):
         """
         idx = []
         for i, meta in self.metadata.items():
-            if fnmatch.fnmatch(meta['station_name'], station_pattern):
+            if meta['station_name'] == station_str:
                 idx.append(i)
         if len(idx) == 0:
             raise StationNotFoundError('No station available in UngriddedData '
-                                       'that matches name or pattern {}'
-                                       .format(station_pattern))
+                                       'that matches name {}'
+                                       .format(station_str))
         return idx
     
-    def find_station_meta_indices(self, station_name_or_pattern):
+    def _get_stat_coords(self):
+        meta_idx = []
+        coords = []
+        for idx, meta in self.metadata.items():
+            try:
+                lat, lon = meta['latitude'], meta['longitude']
+            except:
+                const.print_log.warning('Could not retrieve lat lon coord '
+                                        'at meta index {}'.format(idx))
+                continue
+            meta_idx.append(idx)
+            coords.append((lat, lon))
+        return (meta_idx, coords)
+    
+    def check_set_country(self):
+        """CHecks all metadata entries for availability of country information
+        
+        Metadata blocks that are missing country entry will be updated based
+        on country inferred from corresponding lat / lon coordinate. Uses 
+        :func:`pyaerocom.geodesy.get_country_info_coords` (library 
+        reverse-geocode) to retrieve countries. This may be errouneous 
+        close to country borders as it uses eucledian distance based on a list
+        of known locations.
+        
+        
+        Note
+        ----
+        Metadata blocks that do not contain latitude and longitude entries are
+        skipped.
+        
+        Returns
+        -------
+        list
+            metadata entries where country was added
+        list 
+            corresponding countries that were inferred from lat / lon
+        """
+        meta_idx, coords = self._get_stat_coords()
+        info = get_country_info_coords(coords)
+        meta_idx_updated = []
+        countries = []
+        
+        for i, idx in enumerate(meta_idx):
+            meta = self.metadata[idx]
+            if not 'country' in meta or meta['country'] is None:
+                country = info[i]['country']
+                meta['country'] = country
+                meta['country_code'] = info[i]['country_code']
+                meta_idx_updated.append(idx)
+                countries.append(country)
+        return (meta_idx_updated, countries)
+    
+    @property
+    def countries_available(self):
+        """
+        Alphabetically sorted list of country names available
+        """
+        #self.check_set_country()
+        countries = []
+        for idx, meta in self.metadata.items():
+            try:
+                countries.append(meta['country'])
+            except:
+                const.logger.warning('No country information in meta block', idx)
+        if len(countries) == 0:
+            const.print_log.warning('None of the metadata blocks contains '
+                                    'country information. You may want to '
+                                    'run class method check_set_country first '
+                                    'to automatically assign countries.')
+        return sorted(dict.fromkeys(countries))
+    
+    def find_station_meta_indices(self, station_name_or_pattern,
+                                  allow_wildcards=True):
         """Find indices of all metadata blocks matching input station name
         
         You may also use wildcard pattern as input (e.g. *Potenza*)
@@ -464,7 +575,10 @@ class UngriddedData(object):
         ----------
         station_pattern : str
             station name or wildcard pattern
-        
+        allow_wildcards : bool
+            if True, input station_pattern will be used as wildcard pattern and
+            all matches are returned.
+            
         Returns
         -------
         list
@@ -476,13 +590,16 @@ class UngriddedData(object):
         StationNotFoundError
             if no such station exists in this data object
         """
-        return self._find_station_indices(station_name_or_pattern)
+        if not allow_wildcards:
+            return self._find_station_indices(station_name_or_pattern)
+        return self._find_station_indices_wildcards(station_name_or_pattern)
     
     # TODO: see docstring
     def to_station_data(self, meta_idx, vars_to_convert=None, start=None, 
                         stop=None, freq=None,  
                         merge_if_multi=True, merge_pref_attr=None, 
                         merge_sort_by_largest=True, insert_nans=False,
+                        allow_wildcards_station_name=True,
                         **kwargs):
         """Convert data from one station to :class:`StationData`
         
@@ -525,6 +642,11 @@ class UngriddedData(object):
         insert_nans : bool
             if True, then the retrieved :class:`StationData` objects are filled
             with NaNs 
+        allow_wildcards_station_name : bool
+            if True and if input `meta_idx` is a string (i.e. a station name or 
+            pattern), metadata matches will be identified applying wildcard 
+            matches between input `meta_idx` and all station names in this 
+            object.
         
         Returns
         -------
@@ -551,7 +673,8 @@ class UngriddedData(object):
         if isinstance(meta_idx, str):
             # user asks explicitely for station name, find all meta indices
             # that match this station
-            meta_idx = self._find_station_indices(meta_idx)
+            meta_idx = self.find_station_meta_indices(meta_idx,
+                                                      allow_wildcards_station_name)
         if not isinstance(meta_idx, list):
             meta_idx = [meta_idx]
         
@@ -655,7 +778,7 @@ class UngriddedData(object):
             try:
                 rev = self.data_revision[val['data_id']]
             except Exception:
-                print_log.warning('Data revision could not be accessed')
+                logger.warning('Data revision could not be accessed')
         sd.data_revision = rev
         try:
             vars_avail = list(val['var_info'].keys())
@@ -860,6 +983,7 @@ class UngriddedData(object):
                 data = self.to_station_data(idx, vars_to_convert, start, 
                                             stop, freq,
                                             merge_if_multi=True,
+                                            allow_wildcards_station_name=False,
                                             **kwargs)
                 
                 out_data['latitude'].append(data['latitude'])
@@ -1121,10 +1245,10 @@ class UngriddedData(object):
             
         if low is None:
             low = const.VARS[var_name].minimum
-            print_log.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
+            logger.info('Setting {} outlier lower lim: {:.2f}'.format(var_name, low))
         if high is None:
             high = const.VARS[var_name].maximum
-            print_log.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
+            logger.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
         var_mask = self._data[:, new._VARINDEX] == var_idx
         
@@ -1218,8 +1342,14 @@ class UngriddedData(object):
         for meta_idx, meta in self.metadata.items():
             if self._check_filter_match(meta, *filters):
                 meta_matches.append(meta_idx)
-                for var in meta['variables']:
-                    totnum += len(self.meta_idx[meta_idx][var])
+                for var in meta['var_info']:
+                    try:
+                        totnum += len(self.meta_idx[meta_idx][var])
+                    except KeyError:
+                        const.print_log.warn('Ignoring variable {} in '
+                                             'meta block {} since no data '
+                                             'could be found'.format(
+                                              var, meta_idx))
                 
         return (meta_matches, totnum)
     
@@ -1238,24 +1368,40 @@ class UngriddedData(object):
         """
         return self.filter_by_meta(altitude=alt_range)
     
-    def filter_region(self, region_id, **kwargs):
+    def filter_region(self, region_id, check_mask=True, 
+                      check_country_meta=False, **kwargs):
         """Filter object by a certain region
         
         Parameters
         ----------
         region_id : str
             name of region (must be valid AeroCom region name or HTAP region)
+        check_mask : bool
+            if True and region_id a valid name for a binary mask, then the 
+            filtering is done based on that binary mask.
+        check_country_meta : bool
+            if True, then the input region_id is first checked against 
+            available country names in metadata. If that fails, it is assumed
+            that this regions is either a valid name for registered rectangular
+            regions or for available binary masks.
+        **kwargs
+            currently not used in method (makes usage in higher level classes
+            such as :class:`Filter` easier as other data objects have the 
+            same method with possibly other input possibilities)
             
         Returns
         -------
         UngriddedData
             filtered data object (containing only stations that fall into 
             input region)
-            
-        
         """
-        if region_id in const.HTAP_REGIONS:
+        if check_country_meta:
+            if region_id in self.countries_available:
+                return self.filter_by_meta(country=region_id)
+            
+        if region_id in const.HTAP_REGIONS and check_mask:
             return self.apply_region_mask(region_id)
+        
         region = Region(region_id)
         return self.filter_by_meta(longitude=region.lon_range, 
                                    latitude=region.lat_range)
@@ -1287,7 +1433,7 @@ class UngriddedData(object):
             mask_val = get_mask_value(lat, lon, mask)
             if mask_val >= 1: # coordinate is in mask
                 meta_matches.append(meta_idx)
-                for var in meta['variables']:
+                for var in meta['var_info']:
                     totnum += len(self.meta_idx[meta_idx][var])
         
         new = self._new_from_meta_blocks(meta_matches, totnum)
@@ -1442,7 +1588,7 @@ class UngriddedData(object):
             meta = self.metadata[meta_idx]
             new.metadata[meta_idx_new] = meta
             new.meta_idx[meta_idx_new] = od()
-            for var in meta['variables']:
+            for var in meta['var_info']:
                 indices = self.meta_idx[meta_idx][var]
                 totnum = len(indices)
 
@@ -2233,7 +2379,7 @@ class UngriddedData(object):
         return ax
         
     def plot_station_coordinates(self, var_name=None, 
-                                 filter_name=None, start=None, 
+                                 start=None, 
                                  stop=None, ts_type=None, color='r', 
                                  marker='o', markersize=8, fontsize_base=10, 
                                  legend=True, add_title=True, 
@@ -2249,8 +2395,6 @@ class UngriddedData(object):
         
         var_name : :obj:`str`, optional
             name of variable to be retrieved
-        filter_name : :obj:`str`, optional
-            name of filter (e.g. EUROPE-noMOUNTAINS)
         start 
             start time (optional)
         stop 
@@ -2292,9 +2436,7 @@ class UngriddedData(object):
                               'distinguishable. You may want to apply a filter '
                               'first and plot them separately')
         
-        f = Filter(filter_name)
-        
-        subset = f(self)
+        subset = self
         if var_name is None:
             info_str = 'AllVars'
         else:
@@ -2307,7 +2449,7 @@ class UngriddedData(object):
             info_str = var_name
         
         
-        info_str += '_{}'.format(f.name)
+
         try:
             info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
         except Exception:
@@ -2315,7 +2457,7 @@ class UngriddedData(object):
         if ts_type is not None:
             info_str += '_{}'.format(ts_type)
         
-        if all([x is None for x in (var_name, filter_name, start, stop)]): #use all stations
+        if all([x is None for x in (var_name, start, stop)]): #use all stations
             all_meta = subset._meta_to_lists()
             lons, lats = all_meta['longitude'], all_meta['latitude']
             
@@ -2335,13 +2477,15 @@ class UngriddedData(object):
                               markersize=markersize, 
                               legend=legend,
                               fontsize_base=fontsize_base, **kwargs)
-        region = f.region
-        ax.set_xlim(region.lon_range_plot)
-        ax.set_ylim(region.lat_range_plot)
-    
-        ax = set_map_ticks(ax, 
-                           region.lon_ticks, 
-                           region.lat_ticks)
+# =============================================================================
+#         region = f.region
+#         ax.set_xlim(region.lon_range_plot)
+#         ax.set_ylim(region.lat_range_plot)
+#     
+#         ax = set_map_ticks(ax, 
+#                            region.lon_ticks, 
+#                            region.lat_ticks)
+# =============================================================================
         
         if 'title' in kwargs:
             title = kwargs['title']
@@ -2572,9 +2716,16 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     return closest_idx    
         
 if __name__ == "__main__":
+    import pyaerocom as pya
+    import matplotlib.pyplot as plt
+    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     
+    data.check_set_country()    
     
-    d = UngriddedData()
+    sub = data.filter_region('United States', check_country_meta=True)
+    
+    sub.plot_station_coordinates()
+    plt.show()
 
         
     

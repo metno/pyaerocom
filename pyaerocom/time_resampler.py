@@ -51,8 +51,13 @@ class TimeResampler(object):
             return resample_timeseries
         return resample_time_dataarray
 
-    def _gen_idx(self, from_ts_type, to_ts_type, min_num_obs):
+    def _gen_idx(self, from_ts_type, to_ts_type, min_num_obs, how):
         if isnumeric(min_num_obs):
+            if not isinstance(how, str):
+                raise ValueError('Error initialising resampling constraints. '
+                                 'min_num_obs is numeric ({}) and input how '
+                                 'is {} (would need to be string, e.g. mean)'
+                                 .format(min_num_obs, how))
             return [(to_ts_type.val, int(min_num_obs))]
         if not isinstance(min_num_obs, dict):
             raise ValueError('Invalid input for min_num_obs, need dictionary '
@@ -71,16 +76,19 @@ class TimeResampler(object):
         for i in range(start+1, stop+1):
             to = valid[i]
             if to in min_num_obs and last_from in min_num_obs[to]:
-
+                if isinstance(how, dict) and to in how and last_from in how[to]:
+                    _how = how[to][last_from]
+                else:
+                    _how = 'mean'
                 min_num = min_num_obs[to][last_from]
                 last_from = to
-                idx.append((to, min_num))
+                idx.append((to, min_num, _how))
         if len(idx) == 0  or not idx[-1][0] == to_ts_type.val:
-            idx.append((to_ts_type.val, 0))
+            idx.append((to_ts_type.val, 0, 'mean'))
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
-                 how='mean', apply_constraints=None,
+                 how=None, apply_constraints=None,
                  min_num_obs=None, **kwargs):
         """Resample input data
 
@@ -116,18 +124,11 @@ class TimeResampler(object):
         pandas.Series or xarray.DataArray
             resampled data object
         """
+        if how is None:
+            how = 'mean'
+        
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
-
-# =============================================================================
-#         if not to_ts_type.val in self.FREQS_SUPPORTED:
-#             if to_ts_type.mulfac == 1:
-#                 raise NotImplementedError('Cannot resample to input frequency '
-#                                       '{}. Choose from: {}'
-#                                       .format(to_ts_type,
-#                                               self.FREQS_SUPPORTED.keys()))
-#             to_ts_type = to_ts_type.next_lower
-# =============================================================================
 
         if input_data is not None:
             self.input_data = input_data
@@ -137,21 +138,26 @@ class TimeResampler(object):
         if apply_constraints is None:
             apply_constraints = self.APPLY_CONSTRAINTS
 
-        if not apply_constraints:
-            self.last_setup = dict(apply_constraints=False,
-                                   min_num_obs=None)
-            return self.fun(self.input_data, freq=to_ts_type.val,
-                            how=how, **kwargs)
-        elif from_ts_type is None:
-            const.print_log.warn('Cannot apply time resampling constraints, '
-                                 'since input from_ts_type is None. Applying '
-                                 'resampling to {} without any constraints'
-                                 .format(to_ts_type))
-            self.last_setup = dict(apply_constraints=False,
-                                   min_num_obs=None)
+        self.last_setup = dict(apply_constraints=False,
+                               min_num_obs=None,
+                               how=how)
+        
+        if not apply_constraints or from_ts_type is None:
             freq = to_ts_type.to_pandas_freq()
+            if not isinstance(how, str):
+                raise ValueError('Temporal resampling without constraints can '
+                                 'only use string type argument how (e.g. '
+                                 'how=mean). Got {}'.format(how))
             return self.fun(self.input_data, freq=freq,
                             how=how, **kwargs)
+# =============================================================================
+#         elif from_ts_type is None:
+#             self.last_setup = dict(apply_constraints=False,
+#                                    min_num_obs=None)
+#             freq = to_ts_type.to_pandas_freq()
+#             return self.fun(self.input_data, freq=freq,
+#                             how=how, **kwargs)
+# =============================================================================
 
         if isinstance(from_ts_type, str):
             from_ts_type = TsType(from_ts_type)
@@ -161,33 +167,35 @@ class TimeResampler(object):
                              'str or TsType. Input arg from_ts_type is '
                              'required if resampling using hierarchical '
                              'constraints (arg apply_constraints) is activated'
-                             .format(from_ts_type))
+                             .format(from_ts_type.val))
 
         if to_ts_type > from_ts_type:
             raise TemporalResolutionError('Cannot resample time-series from {} '
                                           'to {}'
                                           .format(from_ts_type, to_ts_type))
         elif to_ts_type == from_ts_type:
-            const.logger.info('Input time frequency equals current frequency '
-                              'of data, ignoring any resampling constraints')
-            self.last_setup = dict(apply_constraints=False,
-                                   min_num_obs=None)
+            const.logger.info('Input time frequency {} equals current frequency '
+                              'of data. Resampling will be applied anyways '
+                              'which will introduce NaN values at missing '
+                              'time stamps'.format(to_ts_type.val))
+            
             freq = to_ts_type.to_pandas_freq()
-            return self.fun(self.input_data, freq=freq, how=how,
+            return self.fun(self.input_data, freq=freq, how='mean',
                             **kwargs)
 
         if min_num_obs is None:
             min_num_obs = self.SAMPLING_CONSTRAINTS
 
-        _idx = self._gen_idx(from_ts_type, to_ts_type, min_num_obs)
+        _idx = self._gen_idx(from_ts_type, to_ts_type, min_num_obs, how)
         data = self.input_data
-        for to_ts_type, mno in _idx:
-            const.logger.info('TO: {} ({})'.format(to_ts_type, mno))
+        for to_ts_type, mno, rshow in _idx:
+            const.logger.info('TO: {} ({}, {})'.format(to_ts_type, mno, rshow))
             freq = TsType(to_ts_type).to_pandas_freq()
-            data = self.fun(data, freq=freq, how=how,
+            data = self.fun(data, freq=freq, how=rshow,
                             min_num_obs=mno)
         self.last_setup = dict(apply_constraints=True,
-                               min_num_obs=min_num_obs)
+                               min_num_obs=min_num_obs, 
+                               how=how)
         return data
 
 

@@ -146,6 +146,12 @@ class ColocationSetup(BrowseDict):
         time resampling constraints applied if input arg 
         `apply_time_resampling_constraints` is True - or None, in which case 
         :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used.
+    resample_how : str or dict
+        string specifying how data should be aggregated when resampling in time.
+        Default is "mean". Can also be a nested dictionary, e.g. 
+        resample_how={'conco3': 'daily': {'hourly' : 'max'}}} would use the 
+        maximum value to aggregate from hourly to daily for variable conco3,
+        rather than the mean. 
     model_keep_outliers : bool
         if True, no outliers are removed from model data
     obs_keep_outliers : bool
@@ -211,6 +217,7 @@ class ColocationSetup(BrowseDict):
                 const.print_log.info('Creating directory: {}'.format(basedir_coldata))
                 os.mkdir(basedir_coldata)
         
+        self._obs_cache_only = False
         self.obs_vars = obs_vars
         self.obs_vert_type = obs_vert_type
         self.model_vert_type_alt = model_vert_type_alt
@@ -228,6 +235,7 @@ class ColocationSetup(BrowseDict):
         self.obs_name = obs_name
         self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
+        self.obs_add_meta = []
         
         self.start = start
         self.stop = stop
@@ -241,6 +249,7 @@ class ColocationSetup(BrowseDict):
         # OPtions related to time resampling
         self.apply_time_resampling_constraints=apply_time_resampling_constraints
         self.min_num_obs=min_num_obs
+        self.resample_how=None
         
         self.var_outlier_ranges = var_outlier_ranges
         self.var_ref_outlier_ranges = var_ref_outlier_ranges
@@ -332,6 +341,9 @@ class Colocator(ColocationSetup):
             
         """
         self.update(**opts)
+        # ToDo: setting the defaults for time resampling here should be 
+        # unnecessary since this is done in TimeResampler. Ensure that and 
+        # remove here
         if self.apply_time_resampling_constraints is None:
             self.apply_time_resampling_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
         
@@ -385,7 +397,10 @@ class Colocator(ColocationSetup):
             raise ValueError('Invalid value for model_read_aux dict of variable '
                              '{}. Require keys vars_required and fun in dict, '
                              'got {}'.format(model_var, info))
-        model_reader.add_aux_compute(var_name=model_var, **info)
+        try:
+            model_reader.add_aux_compute(var_name=model_var, **info)
+        except DataCoverageError:
+            return False
         return True
     
     def _find_var_matches_OLD(self, obs_vars, model_reader, var_name=None):
@@ -472,7 +487,7 @@ class Colocator(ColocationSetup):
                 model_var = muv[obs_var]
             else:
                 model_var = obs_var
-                
+            
             self._check_add_model_read_aux(model_var, model_reader)
                 
             if model_reader.has_var(model_var):
@@ -526,8 +541,6 @@ class Colocator(ColocationSetup):
                                         .format(self.model_id, var_name))
             var = list(var_matches.keys())[0]
         return self._read_gridded(reader, var, 
-                                  start=self.start, 
-                                  stop=self.stop, 
                                   is_model=True, 
                                   **kwargs)
     
@@ -573,8 +586,16 @@ class Colocator(ColocationSetup):
         return obs_data
     # ToDo: cumbersome (together with _find_var_matches, review whole handling
     # of vertical codes for variable mappings...)
-    def _read_gridded(self, reader, var_name, start, stop, is_model=True,
-                      **kwargs):
+    def _read_gridded(self, reader, var_name, is_model=True, **kwargs):
+        try:
+            start = kwargs.pop('start')
+        except KeyError:
+            start = self.start
+            
+        try:
+            stop = kwargs.pop('stop')
+        except KeyError:
+            stop = self.stop
         if is_model:
             vert_which = self.obs_vert_type
             ts_type_read = self.model_ts_type_read
@@ -660,11 +681,27 @@ class Colocator(ColocationSetup):
         coldata.to_netcdf(out_dir, savename=savename)
         self.file_status[savename] = 'saved'
         if self._log:
-            self._write_log('WRITE: {}\n'.format(savename))
-            print_log.info('Writing file {}'.format(savename))
-           
+            msg = 'WRITE: {}\n'.format(savename)
+            self._write_log(msg)
+            print_log.info(msg)
+        
+    def _eval_resample_how(self, model_var, obs_var):
+        rshow = self.resample_how
+        if not isinstance(rshow, dict):
+            return rshow
+        
+        if obs_var in rshow:    
+            return rshow[obs_var]
+        elif model_var in rshow:
+            return rshow[model_var]
+        else:
+            return None
+        
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
+        print_log.info('PREPARING colocation of {} vs. {}'
+                       .format(self.model_id, self.obs_id))
+    
         model_reader = ReadGridded(self.model_id)
         
         obs_reader = ReadUngridded(self.obs_id)
@@ -685,6 +722,11 @@ class Colocator(ColocationSetup):
         var_matches = self._find_var_matches(obs_vars, model_reader,
                                              var_name)
         
+        print_log.info('The following variable combinations will be colocated\n'
+                       'MODEL-VAR\tOBS-VAR')
+        for key, val in var_matches.items():
+            print_log.info('{}\t{}'.format(key, val))
+            
         # get list of unique observation variables
         obs_vars = np.unique(list(var_matches.values())).tolist()
         
@@ -695,27 +737,32 @@ class Colocator(ColocationSetup):
             ropts = self.read_opts_ungridded
         else:
             ropts = {}
-            
-        obs_data = obs_reader.read(datasets_to_read=self.obs_id, 
-                                   vars_to_retrieve=obs_vars,
-                                   **ropts)
         
-        # ToDo: consider removing outliers already here.
-        if 'obs_filters' in self:
-            remaining_filters = self._eval_obs_filters()
-            obs_data = obs_data.apply_filters(**remaining_filters)
                 
         data_objs = {}
+        start, stop = start_stop(self.start, self.stop)
+        
         for model_var, obs_var in var_matches.items():
-            
-            
-            
-            ts_type = self.ts_type
-            start, stop = start_stop(self.start, self.stop)
+# =============================================================================
+# @hansbrenna has changed the flow of this part of the method to work better 
+# with large observational data sets. I have moved the reading of the obs data
+# after the check of whether the co-located data file already exists. If it
+# exists and reanalyse_existing = False, the obs data will not be read for that
+# obs-model combination. If the co-located data object is to be computed, only 
+# one observational variable will be loaded into the UngriddedData object at
+# a time.
+# =============================================================================
+
+            # ToDo: consider removing outliers already here.
+            #if 'obs_filters' in self:              
+                
+            ts_type = self.ts_type        
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id, 
                                                              self.obs_id, 
                                                              model_var, 
                                                              obs_var))
+
+
             try:
                 model_data = self._read_gridded(reader=model_reader, 
                                                 var_name=model_var, 
@@ -735,9 +782,20 @@ class Colocator(ColocationSetup):
                 else:
                     continue
             ts_type_src = model_data.ts_type
+            rshow = self._eval_resample_how(model_var, obs_var)
             if ts_type is None:
                 # if colocation frequency is not specified
                 ts_type = ts_type_src
+            
+            #check if co-located data file already exists before reading observational
+            #data sets
+            # if self.save_coldata:
+            #     savename = self._coldata_savename(model_data, start, stop, 
+            #                                       ts_type, var_name=model_var)
+                
+            #     file_exists = self._check_coldata_exists(model_data.data_id, 
+            #                                              savename)
+
 # =============================================================================
 #             if not model_data.ts_type in all_ts_types:
 #                 raise TemporalResolutionError('Invalid temporal resolution {} '
@@ -761,8 +819,9 @@ class Colocator(ColocationSetup):
                                                                self.model_id))
                 ts_type = ts_type_src
             
-            
+            really_do_reanalysis = True
             if self.save_coldata:
+                really_do_reanalysis = False
                 savename = self._coldata_savename(model_data, start, stop, 
                                                   ts_type, var_name=model_var)
                 
@@ -780,13 +839,39 @@ class Colocator(ColocationSetup):
                             self.file_status[savename] = 'skipped'
                         continue
                     else:
+                        really_do_reanalysis = True
                         print_log.info('Deleting and recomputing existing '
-                                       'colocated data file {}'.format(savename))
+                               'colocated data file {}'.format(savename))
                         print_log.info('REMOVE: {}\n'.format(savename))
                         os.remove(os.path.join(out_dir, savename))
+                else:
+                    really_do_reanalysis = True
+                
+            if really_do_reanalysis:                
+                #Reading obs data only if the co-located data file does
+                #not already exist.
+                #This part of the method has been changed by @hansbrenna to work better with
+                #large observational data sets. Only one variable is loaded into
+                # the UngriddedData object at a time. Currently the variable is
+                #re-read a lot of times, which is a weakness.
+                obs_data = obs_reader.read(
+                    
+                    datasets_to_read=self.obs_id, 
+                    vars_to_retrieve=obs_var,
+                    only_cached=self._obs_cache_only,
+                    **ropts)
+                
+                        # ToDo: consider removing outliers already here.
+                if 'obs_filters' in self:
+                    remaining_filters = self._eval_obs_filters()
+                    obs_data = obs_data.apply_filters(**remaining_filters)
                         
             try:
-                by=None
+                try:
+                    by=self.update_baseyear_gridded
+                    stop=None
+                except AttributeError:
+                    by=None
                 if self.model_use_climatology:
                     by=start.year
                 coldata = colocate_gridded_ungridded(
@@ -810,7 +895,8 @@ class Colocator(ColocationSetup):
                         colocate_time=self.colocate_time,
                         var_keep_outliers=self.model_keep_outliers,
                         var_ref_keep_outliers=self.obs_keep_outliers,
-                        use_climatology_ref=self.obs_use_climatology)
+                        use_climatology_ref=self.obs_use_climatology,
+                        resample_how=rshow)
                 
                 if self.model_to_stp:
                     coldata = correct_model_stp_coldata(coldata)
@@ -929,6 +1015,7 @@ class Colocator(ColocationSetup):
             # model and obs.
             lowest = self.get_lowest_resolution(ts_type, model_data.ts_type,
                                                 obs_data.ts_type)
+            rshow = self._eval_resample_how(model_var, obs_var)
             if lowest != ts_type:
                 print_log.info('Updating ts_type from {} to {} (highest '
                                'available in {} / {} combination)'
@@ -979,7 +1066,8 @@ class Colocator(ColocationSetup):
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
                         var_keep_outliers=self.model_keep_outliers,
-                        var_ref_keep_outliers=self.obs_keep_outliers)
+                        var_ref_keep_outliers=self.obs_keep_outliers, 
+                        resample_how=rshow)
                 if self.save_coldata:
                     self._save_coldata(coldata, savename, out_dir, model_var, 
                                        model_data, obs_var)

@@ -24,7 +24,7 @@
 """
 main program with a command line interface for pyaerocom
 
-OUTDATED
+OUTDATED    OUTDATED    OUTDATED    OUTDATED    OUTDATED    OUTDATED
 """
 
 import argparse

@@ -213,7 +213,7 @@ if __name__=="__main__":
     
     plt.close('all')
     
-    f = Filter("LAND-noMOUNTAINS-EUROPE")
+    f = Filter("EEUROPE")
     
     obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)

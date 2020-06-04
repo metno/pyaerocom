@@ -411,31 +411,76 @@ class GriddedData(object):
     def base_year(self, val):
         self.change_base_year(val)
             
-    def change_base_year(self, new_year):
-        """Changes base year of time dimension 
+# =============================================================================
+#     def change_base_year_OLD(self, new_year):
+#         """Changes base year of time dimension 
+#         
+#         Relevant, e.g. for climatological analyses
+#         
+#         Parameters
+#         -----------
+#         new_year : int 
+#             new base year (can also be other than integer if it is convertible)
+#         """
+#         if not self.has_time_dim:
+#             raise DataDimensionError('Data object has no time dimension ... ')
+#         if isinstance(new_year, str):
+#             try:
+#                 new_year = int(new_year)
+#                 if not new_year > -2000 and new_year < 20000:
+#                     raise ValueError('Need value between -2000 and 20000')
+#             except Exception as e:
+#                 raise ValueError(repr(e))
+#         from cf_units import Unit
+#         startyr = int(str(self.start.astype('datetime64[Y]')))
+#         diff = new_year - startyr
+#         u = self.time.units
+#         origin = u.utime().origin.year
+#         origin_new = u.utime().origin.year + diff
+#         self.time.units = Unit(u.origin.replace(str(origin), 
+#                                                 str(origin_new)), 
+#                                 calendar=u.calendar)
+# =============================================================================
         
-        Relevant, e.g. for climatological analyses
+    def change_base_year(self, new_year, inplace=True):
+        """
+        Changes base year of time dimension 
+         
+        Relevant, e.g. for climatological analyses.
         
+        ToDo
+        ----
+        Account for leap years.
+        
+        Note
+        ----
+        This method does not account for offsets arising from leap years (
+        affecting daily or higher resolution data). 
+        It is thus recommended to use this method with care. E.g. if you use 
+        this method on a 2016 daily data object, containing a calendar that
+        supports leap years, you'll end up with 366 time stamps also in the new
+        data object.
+         
         Parameters
         -----------
         new_year : int 
             new base year (can also be other than integer if it is convertible)
+        inplace : bool
+            if True, modify this object, else, use a copy
+            
+        Returns
+        -------
+        GriddedData
+            modified data object
         """
-        if not self.has_time_dim:
-            raise DataDimensionError('Data object has no time dimension ... ')
-        if isinstance(new_year, str):
-            try:
-                new_year = int(new_year)
-                if not new_year > -2000 and new_year < 20000:
-                    raise ValueError('Need value between -2000 and 20000')
-            except Exception as e:
-                raise ValueError(repr(e))
-        from cf_units import Unit
-        u = self.time.units
+        if inplace:
+            data = self
+        else: 
+            data = self.copy()
+        from pyaerocom.io.iris_io import correct_time_coord
+        data.cube = correct_time_coord(data.cube, data.ts_type, new_year)
+        return data
         
-        self.time.units = Unit(u.origin.replace(str(u.utime().origin.year), 
-                                                str(new_year)), 
-                                calendar=u.calendar)
     @property
     def start(self):
         """Start time of dataset as datetime64 object"""
@@ -469,7 +514,7 @@ class GriddedData(object):
             logger.exception('Failed to round start time {} to beggining of '
                              'frequency {}'.format(t, self.ts_type))
             return t.astype('datetime64[us]')
-    
+        
     @property
     def cube(self):
         """Instance of underlying cube object"""
@@ -682,7 +727,7 @@ class GriddedData(object):
 #                               'large ({} GB)'.format(self.name, self._size_GB))
 # =============================================================================
         self.grid.convert_units(new_unit)
-        
+      
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
         
@@ -696,6 +741,51 @@ class GriddedData(object):
         if self.has_time_dim:    
             return cftime_to_datetime64(self.time)
 
+    def years_avail(self):
+        """
+        Generate list of years that are available in this dataset
+
+        Returns
+        -------
+        list
+        
+        """
+        toyear = lambda x: int(str(x.astype('datetime64[Y]')))
+        
+        return [x for x in set(map(toyear, self.time_stamps()))]
+    
+    def split_years(self, years=None):
+        """
+        Generator to split data object into individual years
+        
+        Note
+        ----
+        This is a generator method and thus should be looped over
+
+        Parameters
+        ----------
+        years : list, optional
+            List of years that should be excluded. If None, it uses output
+            from :func:`years_avail`.
+
+        Yields
+        ------
+        GriddedData
+            single year data object
+
+        """
+        
+        from pyaerocom.helpers import start_stop_from_year
+        if years is None:
+            years = self.years_avail()
+        if len(years) == 1:
+            const.print_log.info('Nothing to split... GriddedData contains '
+                                 'only {}'.format(years[0]))
+            yield self
+        for year in years:
+            start, stop = start_stop_from_year(year)
+            yield self.crop(time_range=(start, stop))
+            
     def check_coord_order(self):
         """Wrapper for :func:`check_dimcoords_tseries`"""
         logger.warning(DeprecationWarning('Method was renamed, please use '
@@ -1387,12 +1477,12 @@ class GriddedData(object):
         """
         if low is None:
             low = self.var_info.minimum
-            print_log.info('Setting {} outlier lower lim: {:.2f}'
-                           .format(self.var_name, low))
+            logger.info('Setting {} outlier lower lim: {:.2f}'
+                        .format(self.var_name, low))
         if high is None:
             high = self.var_info.maximum
-            print_log.info('Setting {} outlier upper lim: {:.2f}'
-                           .format(self.var_name, high))
+            logger.info('Setting {} outlier upper lim: {:.2f}'
+                        .format(self.var_name, high))
         mask = np.logical_or(self.grid.data < low,
                              self.grid.data > high)
         self.grid.data[mask] = np.nan
@@ -1479,7 +1569,10 @@ class GriddedData(object):
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
         data.units = self.units
-        data.check_dimcoords_tseries()
+        try:
+            data.check_dimcoords_tseries()
+        except: 
+            data.reorder_dimensions_tseries()
         return data
         
     def resample_time(self, to_ts_type='monthly', how='mean', 
@@ -1809,7 +1902,7 @@ class GriddedData(object):
             except Exception:
                 pass
 
-        if vert_code is None:
+        if vert_code in (None, ''):
             raise ValueError('Please provide input vert_code')
 
         if data_id is None:
@@ -1817,7 +1910,12 @@ class GriddedData(object):
         if var_name is None:
             var_name = self.var_name
         if year is None:
-            year = str(pd.Timestamp(self.start).year)
+            start = pd.Timestamp(self.start).year
+            stop = pd.Timestamp(self.stop).year
+            if stop > start:
+                raise ValueError('Cannot create AeroCom savename for multiyear '
+                                 'data... please split first')
+            year = str(start)
         else:
             year = str(year)
         if ts_type is None:
@@ -1887,6 +1985,18 @@ class GriddedData(object):
                 meta_out[k] = v
         self.cube.attributes = meta_out
         
+    def _to_netcdf_aerocom(self, out_dir, **kwargs):
+        
+        years = self.years_avail()
+        outpaths = []
+        for subset in self.split_years(years):
+            subset._check_meta_netcdf()
+            savename = subset.aerocom_savename(**kwargs)
+            fp = os.path.join(out_dir, savename)
+            iris.save(subset.grid, fp)
+            outpaths.append(fp)
+        return outpaths
+    
     def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save as netcdf file
         
@@ -1902,15 +2012,18 @@ class GriddedData(object):
             
         Returns
         -------
-        str
-            file path
+        list
+            list of output files created
         """
+        
+        if savename is None: #use AeroCom convention
+            return self._to_netcdf_aerocom(out_dir, **kwargs)
         self._check_meta_netcdf()
-        if savename is None:
-            savename = self.aerocom_savename(**kwargs)
+        savename = self.aerocom_savename(**kwargs)
         fp = os.path.join(out_dir, savename)
         iris.save(self.grid, fp)
-        return fp
+            
+        return [fp]
         
     def interpolate(self, sample_points=None, scheme="nearest", 
                     collapse_scalar=True, **coords):
@@ -2540,10 +2653,15 @@ if __name__=='__main__':
     plt.close("all")
 
     # print("uses last changes ")
-    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)#.resample_time('yearly')
-
-    f1 = pya.Filter('LAND')
+    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', 
+                                                          start=2009,
+                                                          stop=2013)
     
-    subset = f1(data)
+    print(data.years_avail())
     
-    subset.quickplot_map()
+    outdir = '/home/jonasg/MyPyaerocom/TEST_TO_NETCDF/'
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+        
+    data.to_netcdf(out_dir=outdir, vert_code='Column')
+    

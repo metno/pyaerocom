@@ -38,6 +38,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              colocate_time=False,
                              var_keep_outliers=True,
                              var_ref_keep_outliers=False, 
+                             resample_how=None,
                              **kwargs):
     """Colocate 2 gridded data objects
     
@@ -118,6 +119,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     var_ref_keep_outliers : bool
         if True, then no outliers will be removed from the reference dataset, 
         even if `remove_outliers` is True.
+    resample_how : str or dict
+        string specifying how data should be aggregated when resampling in time.
+        Default is "mean". Can also be a nested dictionary, e.g. 
+        resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
+        to aggregate from hourly to daily, rather than the mean. 
     **kwargs
         additional keyword args (not used here, but included such that factory 
         class can handle different methods with different inputs)
@@ -191,14 +197,16 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             gridded_data_ref = gridded_data_ref.resample_time(
                     grid_ts_type,
                     apply_constraints=apply_time_resampling_constraints, 
-                    min_num_obs=min_num_obs)
+                    min_num_obs=min_num_obs, 
+                    how=resample_how)
             
                 
         else:
             gridded_data = gridded_data.resample_time(
                     ref_ts_type,
                     apply_constraints=apply_time_resampling_constraints, 
-                    min_num_obs=min_num_obs)
+                    min_num_obs=min_num_obs, 
+                    how=resample_how)
             grid_ts_type = ref_ts_type
     # now both are in same temporal resolution
     
@@ -300,6 +308,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                   colocate_time=colocate_time,
                                   apply_constraints=apply_time_resampling_constraints,
                                   min_num_obs=min_num_obs,
+                                  how=resample_how,
                                   **kwargs)
     return data
 
@@ -319,29 +328,33 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                var_keep_outliers=True,
                                var_ref_keep_outliers=False, 
                                use_climatology_ref=False,
+                               resample_how=None,
                                **kwargs):
-    """Colocate gridded with ungridded data 
+    """Colocate gridded with ungridded data (low level method)
+    
+    For high-level colocation see :class:`pyaerocom.colocation_auto.Colocator` 
+    and :class:`pyaerocom.colocation_auto.ColocationSetup`
     
     Note
     ----
     Uses the variable that is contained in input :class:`GriddedData` object 
-    (since these objects only contain a single variable)
+    (since these objects only contain a single variable). If this variable 
+    is not contained in observation data (or contained but using a different 
+    variable name) you may specify the obs variable to be used via input arg
+    `var_ref`
     
     Parameters
     ----------
     gridded_data : GriddedData
-        gridded data (e.g. model results)
+        gridded data object (e.g. model results).
     ungridded_data : UngriddedData
-        ungridded data (e.g. observations)
+        ungridded data object (e.g. observations).
     ts_type : str
         desired temporal resolution of colocated data (must be valid AeroCom
-        ts_type str such as daily, monthly, yearly.). The colocation itself is
-        done in the highest available resolution and resampling to `ts_type` is
-        done afterwards. You may change this behaviour by setting input param
-        `resample_first=True` (default is False).
+        ts_type str such as daily, monthly, yearly.). 
     start : :obj:`str` or :obj:`datetime64` or similar, optional
         start time for colocation, if None, the start time of the input
-        :class:`GriddedData` object is used
+        :class:`GriddedData` object is used.
     stop : :obj:`str` or :obj:`datetime64` or similar, optional
         stop time for colocation, if None, the stop time of the input
         :class:`GriddedData` object is used
@@ -356,7 +369,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         resolution. (BETA feature)
     remove_outliers : bool
         if True, outliers are removed from model and obs data before colocation, 
-        else not.
+        else not. Outlier ranges can be specified via input args 
+        `var_outlier_ranges` and `var_ref_outlier_ranges`.
     vert_scheme : str
         string specifying scheme used to reduce the dimensionality in case 
         input grid data contains vertical dimension. Example schemes are 
@@ -408,12 +422,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         even if `remove_outliers` is True.
     use_climatology_ref : bool
         if true, climatological timeseries are used from observations
-    clim_start 
-        start time of climatological timeseries (only relevant if 
-        `use_climatology_ref` is True). If None, pyaerocom default is used.
-    clim_stop 
-        stop time of climatological timeseries (only relevant if 
-        `use_climatology_ref` is True). If None, pyaerocom default is used.
+    resample_how : str or dict
+        string specifying how data should be aggregated when resampling in time.
+        Default is "mean". Can also be a nested dictionary, e.g. 
+        resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
+        to aggregate from hourly to daily, rather than the mean. 
     **kwargs
         additional keyword args (passed to 
         :func:`UngriddedData.to_station_data_all`)
@@ -444,6 +457,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
     
+    try:
+        gridded_data.check_dimcoords_tseries()
+    except DimensionOrderError:
+        gridded_data.reorder_dimensions_tseries()
+        
     var = gridded_data.var_name
     aerocom_var = gridded_data.var_name_aerocom
     if var_ref is None:
@@ -475,15 +493,24 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
         gridded_data.base_year = update_baseyear_gridded
+    
+    grid_ts_type_src = gridded_data.ts_type
+    grid_ts_type = TsType(gridded_data.ts_type)
+    if isinstance(ts_type, str):
+        ts_type = TsType(ts_type)
+    if ts_type is None or grid_ts_type < ts_type:
+        ts_type = grid_ts_type
+    elif grid_ts_type > ts_type and not colocate_time:
+        gridded_data = gridded_data.resample_time(str(ts_type),
+                                                  apply_constraints=apply_time_resampling_constraints,
+                                                  min_num_obs=min_num_obs, 
+                                                  how=resample_how)
+        grid_ts_type = ts_type
+        
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
-    
-    grid_ts_type = gridded_data.ts_type
-    
-    if ts_type is None or TsType(grid_ts_type) < TsType(ts_type):
-        ts_type = grid_ts_type
-    
+
     if start is None:
         start = grid_start
     else:
@@ -532,7 +559,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
     else:
-        col_freq = grid_ts_type#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
+        col_freq = str(grid_ts_type)#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
         obs_start = start
         obs_stop = stop
     # get timeseries from all stations in provided time resolution
@@ -546,20 +573,22 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             ignore_index=ignore_station_names,
             **kwargs)
     
+    
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
     
+# =============================================================================
+#     obs_stat_data = obs_stat_data[:5]
+#     ungridded_lats = ungridded_lats[:5]
+#     ungridded_lons = ungridded_lons[:5]
+#     
+# =============================================================================
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError('Variable {} is not available in specified '
                                    'time interval ({}-{})'
                                    .format(var_ref, start, stop))
     # make sure the gridded data is in the right dimension
-    try:
-        gridded_data.check_dimcoords_tseries()
-    except DimensionOrderError:
-        gridded_data.reorder_dimensions_tseries()
-    
     if gridded_data.ndim > 3:
         if vert_scheme is None:
             vert_scheme = 'mean'
@@ -569,6 +598,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     grid_stat_data = gridded_data.to_time_series(longitude=ungridded_lons,
                                                  latitude=ungridded_lats,
                                                  vert_scheme=vert_scheme)
+    
     
     pd_freq = TsType(col_freq).to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -637,22 +667,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                       check_unit=True)
         
         # get grid and obs timeseries data (that may be sampled in arbitrary
-        # time resolution, particularly the obs data)
-# =============================================================================
-#         grid_ts = grid_stat[var]
-#         obs_ts = obs_stat[var_ref]
-# =============================================================================
-        
-        # resample to the colocation frequency
-# =============================================================================
-#         obs_ts1 = obs_ts.resample(col_freq).mean()
-#         grid_ts1 = grid_ts.resample(col_freq).mean()
-# =============================================================================
-        
+        # time resolution, particularly the obs data)        
         grid_ts2 = grid_stat.resample_time(
                     var, 
                     ts_type=col_freq,
-                    how='mean',
+                    how=resample_how,
                     apply_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     inplace=True)[var]
@@ -666,7 +685,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             obs_ts2 = obs_stat.resample_time(
                         var_ref, 
                         ts_type=col_freq,
-                        how='mean',
+                        how=resample_how,
                         apply_constraints=apply_time_resampling_constraints,
                         min_num_obs=min_num_obs,
                         inplace=True)[var_ref]
@@ -700,7 +719,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'var_name'          :   [var_ref, var],
             'ts_type'           :   col_freq, # will be updated below if resampling
             'filter_name'       :   filter_name,
-            'ts_type_src'       :   [ts_type_src_ref, grid_ts_type],
+            'ts_type_src'       :   [ts_type_src_ref, grid_ts_type_src],
             'start_str'         :   to_datestring_YYYYMMDD(start),
             'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'var_units'         :   [ungridded_unit,
@@ -737,11 +756,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     data = ColocatedData(data=coldata, coords=coords, dims=dims, name=var,
                          attrs=meta)
     
-    if col_freq != ts_type:
+    if col_freq != str(ts_type):
         data = data.resample_time(to_ts_type=ts_type, 
                                   colocate_time=colocate_time,
                                   apply_constraints=apply_time_resampling_constraints,
                                   min_num_obs=min_num_obs,
+                                  how=resample_how,
                                   **kwargs)
     return data
 
@@ -753,6 +773,7 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273, inplace=False):
     BETA version, quite unelegant coded (at 8pm 3 weeks before IPCC deadline), 
     but should do the job for 2010 monthly colocated data files (AND NOTHING
     ELSE)!
+    
     """
     if coldata.ndim != 3:
         raise NotImplementedError('Can only handle 3D coldata so far...')
@@ -855,24 +876,37 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
     
+    #obsdata = pya.io.ReadGhost('GHOST.hourly').read('concpm25')
+    obsdata = pya.io.ReadUngridded().read('GHOST.hourly', 'conco3',
+                                          only_cached=True)
     
-    model_id='NorESM2-met2010_AP3-CTRL'
-    obs_id = 'EBASMC'
+    obsdata.check_set_country()
     
-    modelreader = pya.io.ReadGridded(model_id)
-    modeldata = modelreader.read_var('sconcso4', start=2010, ts_type='monthly')
+    obsdata = obsdata.filter_region('Norway', check_country_meta=True)
+    model_id='ENSEMBLE.cams61.day1'
 
-    modeldata.resample_time('yearly').quickplot_map()
+    mr = pya.io.ReadGridded(model_id)
+    modeldata = mr.read_var('conco3', start=2018, vert_which='Surface')
+
+    #modeldata.resample_time('yearly').quickplot_map()
     
     #obsdata = pya.io.ReadUngridded().read(obs_id, 'concso4').set_flags_nan()
     
-    obsdata1 = pya.io.ReadUngridded().read('GAWTADsubsetAasEtAl', 'concso4')
     
-    coldata2 = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata1, ts_type='monthly', var_ref='concso4',
-                                                     use_climatology_ref=True,
-                                                     filter_name='WORLD-wMOUNTAINS') 
+    rsh = {'daily': {'hourly': 'max'}}
     
-    coldata2.plot_scatter()
+    coldata_max = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
+                                                         ts_type='monthly', 
+                                                         var_ref='conco3',
+                                                         resample_how=rsh) 
+    
+    coldata_mean = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata, 
+                                                         ts_type='monthly', 
+                                                         var_ref='conco3') 
+    
+    pya.plot.mapping.plot_nmb_map_colocateddata(coldata_max)
+    pya.plot.mapping.plot_nmb_map_colocateddata(coldata_mean)
+    #scoldata2.plot_scatter()
     
 
     

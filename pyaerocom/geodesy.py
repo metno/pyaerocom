@@ -8,8 +8,47 @@ This module contains low-level methods to perform geographical calculations,
 """
 from pyaerocom import const
 from pyaerocom import print_log, logger
+from pyaerocom.helpers import isnumeric
 import numpy as np
 import os
+
+def get_country_info_coords(coords):
+    """
+    Get country information for input lat/lon coordinates
+
+    Parameters
+    ----------
+    coords : list or tuple
+        list of coord tuples (lat, lon) or single coord tuple
+
+    Raises
+    ------
+    ModuleNotFoundError
+        if library reverse_geocode is not installed
+    ValueError
+        if input format is incorrect
+
+    Returns
+    -------
+    list
+        list of dictionaries containing country information for each input
+        coordinate
+    """
+    try:
+        import reverse_geocode as rg
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError('Cannot retrieve country information for '
+                                  'lat / lon coordinates. Please install '
+                                  'library reverse_geocode')  
+    if isinstance(coords, np.ndarray):
+        coords = list(coords)
+    if not isinstance(coords, (list, tuple)):
+        raise ValueError('Invalid input for coords, need list or tuple or array')
+        
+    if isnumeric(coords[0]) and len(coords)==2: #only one coordinate
+        return [rg.get(coords)]
+    
+    return rg.search(coords)
 
 def get_topo_data(lat0, lon0, lat1=None, lon1=None, topo_dataset='srtm', 
                   topodata_loc=None, try_etopo1=False):

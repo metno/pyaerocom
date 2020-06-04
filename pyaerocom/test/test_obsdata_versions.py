@@ -34,7 +34,8 @@ def test_revision_dates():
                             ['DMS_AMS_CVO', '20190807'], 
                             ['EARLINET', '20190129'], 
                             ['EBASMC', '20191218'], 
-                            ['GAWTADsubsetAasEtAl', '20190522']])
+                            ['GAWTADsubsetAasEtAl', '20190522'],
+                            ['GHOST.daily', '20200304']])
 
     
 if __name__=="__main__":

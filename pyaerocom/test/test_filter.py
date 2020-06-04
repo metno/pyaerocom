@@ -11,6 +11,7 @@ import numpy as np
 from pyaerocom.filter import Filter
 from pyaerocom.conftest import lustre_unavail, testdata_unavail
 
+#TODO: use mark.parametrize for first 2 test functions and call test_Filter
 def test_Filter_init():
     assert Filter('EUROPE').name == 'EUROPE-wMOUNTAINS'
     assert Filter('noMOUNTAINS-OCN-NAMERICA').name == 'NAMERICA-noMOUNTAINS-OCN'
@@ -31,6 +32,8 @@ def test_filter_attributes():
     ])
 def test_filter_griddeddata(data_tm5, filter_name, mean):
     
+    # use copy so that this fixture can be used elsewhere without being c
+    # changed by this method globally
     model = data_tm5.copy()
 
     f = Filter(filter_name) # europe only land
@@ -38,26 +41,24 @@ def test_filter_griddeddata(data_tm5, filter_name, mean):
     subset = f.apply(model)
     np.testing.assert_allclose(np.nanmean(subset.cube.data), mean)
     
-@lustre_unavail
-def test_filter_ungriddeddata(aeronetsunv3lev2_subset):
+@testdata_unavail
+@pytest.mark.parametrize('filter_name,num_sites',[
+    ('WORLD-wMOUNTAINS', 22),
+    ('OCN',8),
+    ('EUROPE', 7)
+    ])
+def test_filter_ungriddeddata(aeronetsunv3lev2_subset, filter_name, 
+                              num_sites):
     
     obs_data = aeronetsunv3lev2_subset
     
-    f1 = Filter(name = 'NAMERICA-noMOUNTAINS')
-    f2 = Filter(name = 'NAMERICA-noMOUNTAINS-OCN')
-    f3 = Filter(name = 'NAMERICA-noMOUNTAINS-LAND')
-
-    #gg = data.to_station_data_all()
-    assert len(f1.apply(obs_data).unique_station_names) == 2
-    try:
-        f2.apply(obs_data).unique_station_names
-    except Exception as e:
-        from pyaerocom.exceptions import DataExtractionError
-        assert isinstance(e, DataExtractionError)
-    assert len(f3(obs_data).unique_station_names) == 2
+    f = Filter(filter_name)
+    num = len(f.apply(obs_data).unique_station_names)
+    assert num == num_sites
     
     
-@lustre_unavail
+@pytest.mark.skip(reason=('Need to storee colocateddata object in tmp_dir '
+                          'and provide as fixture'))
 def test_filter_colocateddata():
     pass
 # =============================================================================

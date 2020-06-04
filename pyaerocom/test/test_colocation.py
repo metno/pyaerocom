@@ -6,81 +6,46 @@ Created on Mon Nov 25 15:27:28 2019
 @author: jonasg
 """
 import pytest
-#import numpy as np
+import numpy as np
 import numpy.testing as npt
 
-from pyaerocom.conftest import TEST_RTOL, lustre_unavail, testdata_unavail
+from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
 from pyaerocom.colocation import colocate_gridded_ungridded
+from pyaerocom.colocateddata import ColocatedData
 
-@lustre_unavail
 @testdata_unavail
-def test_colocate_gridded_ungridded_default(data_tm5, aeronetsunv3lev2_subset):
-    coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset)
-    assert coldata.ts_type == 'monthly'
+@pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
+    (dict(), 
+     'monthly', (2,12,8), 0.315930,0.275671),
+    (dict(var_ref_outlier_ranges={'od550aer':[0.1,0.5]},
+          var_outlier_ranges={'od550aer':[0.1,0.2]}),
+     'monthly', (2,12,8), 0.227333,0.275671),
+    (dict(apply_time_resampling_constraints=False), 
+     'monthly', (2,12,8), 0.316924,0.275671),
+    (dict(filter_name='WORLD-wMOUNTAINS'), 
+     'monthly', (2,12,11), 0.269707, 0.243861),
+    (dict(use_climatology_ref=True), 
+     'monthly', (2,12,13), 0.302636, 0.234147)
+    ])
+def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, 
+                                    addargs, ts_type, shape,
+                                    obsmean, modmean):
+    coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset, 
+                                         **addargs)
     
-    stats = {'totnum': 48.0, 'num_valid': 15.0, 
-             'refdata_mean': 0.09317085075736015, 
-             'refdata_std': 0.0418982083785594, 
-             'data_mean': 0.10662878553072612, 
-             'data_std': 0.04734850235431848, 
-             'weighted': False, 
-             'rms': 0.026635879341186646, 
-             'R': 0.8743210058158878, 
-             'R_spearman': 0.8785714285714284, 
-             'R_kendall': 0.7333333333333334, 
-             'nmb': 0.14444361797676125, 
-             'mnmb': 0.12380017801579468, 
-             'fge': 0.23771937356434453, 
-             'num_neg_data': 0, 
-             'num_neg_refdata': 0, 
-             'num_coords_with_data': 3, 
-             'num_coords_tot': 4}
+    assert isinstance(coldata, ColocatedData)    
+    assert coldata.ts_type == ts_type
+    assert coldata.shape == shape 
     
-    stats_calc = coldata.calc_statistics()
-    assert len(stats) == len(stats_calc)
-    vals = []
-    vals_nominal = []
-    for key, val in stats_calc.items():
-        assert key in stats, key
-        vals.append(val)    
-        vals_nominal.append(stats[key])
-    npt.assert_allclose(vals, vals_nominal, rtol=TEST_RTOL)
-        
- 
-@lustre_unavail
-@testdata_unavail
-def test_colocate_gridded_ungridded_custom(data_tm5, aeronetsunv3lev2_subset):
-    coldata = colocate_gridded_ungridded(
-            data_tm5, 
-            aeronetsunv3lev2_subset,
-            ts_type='yearly',
-            use_climatology_ref=True,
-            apply_time_resampling_constraints=True,
-            colocate_time=True,
-            remove_outliers=False)
+    means = [np.nanmean(coldata.data.data[0]),
+             np.nanmean(coldata.data.data[1])]
     
-    assert coldata.ts_type == 'yearly'
-    assert coldata.shape == (2, 1, 6)
+    npt.assert_allclose(means, [obsmean, modmean], rtol=TEST_RTOL)
     
-    stats = {'totnum': 6.0, 'num_valid': 4.0, 'refdata_mean': 0.14714656748980037, 
-             'refdata_std': 0.05836215522825422, 'data_mean': 0.13612345532913292, 
-             'data_std': 0.03900864539522903, 'weighted': False, 
-             'rms': 0.05254246921514237, 'R': 0.5026321577103197, 
-             'R_spearman': 0.39999999999999997, 'R_kendall': 0.3333333333333334, 
-             'nmb': -0.07491246550098105, 'mnmb': -0.03453627649127072, 
-             'fge': 0.24068195719824653, 'num_neg_data': 0, 
-             'num_neg_refdata': 0, 'num_coords_with_data': 4, 'num_coords_tot': 6}
-    
-    stats_calc = coldata.calc_statistics(min_num_valid=4)
-    assert len(stats) == len(stats_calc)
-    vals = []
-    vals_nominal = []
-    for key, val in stats_calc.items():
-        assert key in stats, key
-        vals.append(val)
-        vals_nominal.append(stats[key])
-    npt.assert_allclose(vals, vals_nominal, rtol=TEST_RTOL)
-    
+@pytest.mark.skip(reason='No fixture for gridded observation data available yet')
+def test_colocate_gridded_gridded(mod, obs, addargs, **kwargs):
+    pass
+
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)

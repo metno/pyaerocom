@@ -7,7 +7,7 @@ import os
 from ast import literal_eval
 import re, fnmatch
 from configparser import ConfigParser
-from pyaerocom import __dir__, logger
+from pyaerocom import __dir__, logger, print_log
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
@@ -20,6 +20,13 @@ class VarNameInfo(object):
     _VALID_WVL_RANGE = [100, 2000]
     _VALID_WVL_IDS = ['od', 'abs', 'ec', 'sc', 'ac', 'bsc', 'ssa']
     PATTERNS = {'od' : r'od\d+aer'}
+    DEFAULT_VERT_CODE_PATTERNS = {
+        'abs*'  :   'Column',
+        'od*'   :   'Column',
+        'ang*'  :   'Column',
+        'load*' :   'Column',
+        'wet*'  :   'Surface',
+        'dry*'  :   'Surface'}
     def __init__(self, var_name):
         self.var_name = var_name.lower()
         self._nums = []
@@ -28,6 +35,14 @@ class VarNameInfo(object):
         except Exception:
             pass
      
+    def get_default_vert_code(self):
+        """Get default vertical code for variable name"""
+        for pattern, code in self.DEFAULT_VERT_CODE_PATTERNS.items():
+            if fnmatch.fnmatch(self.var_name, pattern):
+                return code
+        raise ValueError('No default vertical code could be found for {}'
+                         .format(self.var_name))
+    
     @staticmethod
     def _numbers_in_string(s):
         return [int(x) for x in re.findall(r'\d+', s)]
@@ -476,6 +491,19 @@ class Variable(object):
         if var_name in aliases:
             return aliases[var_name]
         return _check_alias_family(var_name, ap)
+      
+    def get_default_vert_code(self):
+        """Get default vertical code for variable name"""
+        if self.default_vert_code is not None:
+            return self.default_vert_code
+        try: 
+            return VarNameInfo(self.var_name_aerocom).get_default_vert_code()
+        except ValueError:
+            print_log.warn('default_vert_code not set for {} and '
+                           'could also not be inferred'
+                           .format(self.var_name_aerocom))
+            return None
+            
             
                         
     def parse_from_ini(self, var_name=None, cfg=None):

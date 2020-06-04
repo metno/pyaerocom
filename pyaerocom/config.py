@@ -110,7 +110,7 @@ class Config(object):
     DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
 
     #: name of EBAS sqlite database
-    EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
+    #EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
     
     #: boolean specifying wheter EBAS DB is copied to local cache for faster 
     #: access, defaults to True
@@ -177,8 +177,9 @@ class Config(object):
     SENTINEL5P_NAME = 'Sentinel5P'
     AEOLUS_NAME = 'AeolusL2A'
     
-    OLD_AEROCOM_REGIONS = ['EUROPE', 'WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
-                       'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 'NAMERICA']
+    OLD_AEROCOM_REGIONS = ['WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
+                           'EUROPE', 'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA', 
+                           'NAMERICA']
     
     URL_HTAP_MASKS = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
     
@@ -203,20 +204,23 @@ class Config(object):
     _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
     _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
+    _config_ini_localdb = os.path.join(__dir__, 'data', 'paths_local_database.ini')
     
     # this dictionary links environment ID's with corresponding ini files
     _config_files = {
             'metno'            : _config_ini_lustre,
             'users-db'         : _config_ini_user_server,
-            'testdata'         : _config_ini_testdata
+            'testdata'         : _config_ini_testdata,
+            'local-db'         : _config_ini_localdb
     }
 
     # this dictionary links environment ID's with corresponding subdirectory
     # names that are required to exist in order to load this environment
     _check_subdirs_cfg = {
-            'metno'       : 'aerocom1',
+            'metno'       : 'aerocom',
             'users-db'    : 'AMAP',
             'testdata'    : 'modeldata',
+            'local-db'    : 'modeldata'
     }
 
     
@@ -228,11 +232,12 @@ class Config(object):
 
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = od()
-    _DB_SEARCH_SUBDIRS['lustre/storeA/project/aerocom'] = 'metno'
+    _DB_SEARCH_SUBDIRS['lustre/storeA/project'] = 'metno'
     #_DB_SEARCH_SUBDIRS['lustre/storeB/project/aerocom'] = 'metno'
     _DB_SEARCH_SUBDIRS['metno/aerocom_users_database'] = 'users-db'
     _DB_SEARCH_SUBDIRS['pyaerocom-testdata/'] = 'testdata'
     _DB_SEARCH_SUBDIRS['MyPyaerocom/pyaerocom-testdata'] = 'testdata'
+    _DB_SEARCH_SUBDIRS['MyPyaerocom/data'] = 'local-db'
 
     DONOTCACHEFILE = None
     
@@ -258,6 +263,7 @@ class Config(object):
         self._colocateddatadir = colocateddata_dir
         self._filtermaskdir = None
         self._local_tmp_dir = None
+        self._downloaddatadir = None
         self._confirmed_access = []
         self._rejected_access = []
         
@@ -348,9 +354,12 @@ class Config(object):
         if loc in self._confirmed_access:
             return True
         elif loc in self._rejected_access:
-            self.print_log.warning('Attempting access to location {}, which '
-                                   'has been checked before and failed. This '
-                                   'may slow things down.'.format(loc))
+            return False
+# =============================================================================
+#             self.print_log.warning('Attempting access to location {}, which '
+#                                    'has been checked before and failed. This '
+#                                    'may slow things down.'.format(loc))
+# =============================================================================
         
         if timeout is None:
             timeout = self.SERVER_CHECK_TIMEOUT
@@ -506,15 +515,39 @@ class Config(object):
     @property
     def LOCAL_TMP_DIR(self):
         """Local TEMP directory"""
+        if self._local_tmp_dir is None:
+            self._local_tmp_dir = '{}/tmp'.format(self.OUTPUTDIR)
         if not self._check_access(self._local_tmp_dir):
-            self.print_log.warning('const.LOCAL_TMP_DIR is not set or does '
-                                   'not exist.')
+            try:
+                os.mkdir(self._local_tmp_dir)
+            except Exception:
+                raise FileNotFoundError('const.LOCAL_TMP_DIR {} is not set or '
+                                        'does not exist and cannot be created')
         return self._local_tmp_dir
     
     @LOCAL_TMP_DIR.setter
     def LOCAL_TMP_DIR(self, val):
         self._local_tmp_dir = val
+
+    @property        
+    def DOWNLOAD_DATADIR(self):
+        """Directory where data is downloaded into"""
+        if self._downloaddatadir is None:
+            self._downloaddatadir = chk_make_subdir(self.OUTPUTDIR, 'data')
+        return self._downloaddatadir
         
+    @DOWNLOAD_DATADIR.setter
+    def DOWNLOAD_DATADIR(self, val):
+        if not isinstance(val, str):
+            raise ValueError('Please provide str')
+        elif not os.path.exists(val):
+            try:
+                os.mkdir(val)
+            except Exception:
+                raise IOError('Input directory {} does not exist and can '
+                              'also not be created'.format(val))
+        self._downloaddatadir =  val
+                
     @property
     def CACHEDIR(self):
         """Cache directory for UngriddedData objects"""
@@ -668,58 +701,32 @@ class Config(object):
             raise FileNotFoundError('Cannot add {}: location does not exist')
             
         raise NotImplementedError
-        
     
-    
-    def _check_ebas_db_local_vs_remote(self, loc_remote, loc_local):
+# =============================================================================
+#     @property
+#     def EBASMC_SQL_DATABASE(self):
+#         """Path to EBAS SQL database"""
+#         dbname = self.EBAS_SQL_DB_NAME
+#         if not 'EBASMC' in self.OBSLOCS_UNGRIDDED:
+#             return None
+#         loc_remote = os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], dbname)
+#         if self.EBAS_DB_LOCAL_CACHE:
+#             loc_local = os.path.join(self.CACHEDIR, dbname)
+#             return self._check_ebas_db_local_vs_remote(loc_remote, loc_local)
+#                 
+#         return loc_remote
+# =============================================================================
         
-        if os.path.exists(loc_remote): # remote exists
-    
-            if os.path.exists(loc_local):
-                chtremote = os.path.getmtime(loc_remote)
-                chtlocal = os.path.getmtime(loc_local)
-                if chtlocal == chtremote:
-                    return loc_local
-                
-            # changing time differs -> try to copy to local and if that
-            # fails, use remote location
-            try:
-                import shutil
-                from time import time
-                t0 = time()
-                shutil.copy2(loc_remote, loc_local)
-                self.print_log.info('Copied EBAS SQL database to {}\n'
-                                    'Elapsed time: {:.3f} s'
-                                    .format(loc_local, time() - t0))
-                
-                return loc_local
-            except Exception as e:
-                self.print_log.warning('Failed to copy EBAS SQL database. '
-                                       'Reason: {}'.format(repr(e)))
-                return loc_remote
-        return loc_remote
-        
-
-    @property
-    def EBASMC_SQL_DATABASE(self):
-        """Path to EBAS SQL database"""
-        dbname = self.EBAS_SQL_DB_NAME
-        if not 'EBASMC' in self.OBSLOCS_UNGRIDDED:
-            return None
-        loc_remote = os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], dbname)
-        if self.EBAS_DB_LOCAL_CACHE:
-            loc_local = os.path.join(self.CACHEDIR, dbname)
-            return self._check_ebas_db_local_vs_remote(loc_remote, loc_local)
-                
-        return loc_remote
-        
-    @property
-    def EBASMC_DATA_DIR(self):
-        """Data directory of EBAS multicolumn files"""
-        return os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], 'data/')
+# =============================================================================
+#     @property
+#     def EBASMC_DATA_DIR(self):
+#         """Data directory of EBAS multicolumn files"""
+#         return os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], 'data/')
+# =============================================================================
     
     @property
     def EBAS_FLAGS_FILE(self):
+        """Location of CSV file specifying meaning of EBAS flags"""
         from pyaerocom import __dir__
         return os.path.join(__dir__, 'data', 'ebas_flags.csv')
 
@@ -840,11 +847,14 @@ class Config(object):
         self.read_config(self._config_files[database_name], 
                          keep_basedirs=keep_root)
         
-
-
-    @property    
-    def EBAS_FLAG_INFO(self):
-        """Information about EBAS flags
+    @property
+    def ebas_flag_info(self):
+        """Information about EBAS flags 
+        
+        Note
+        ----
+        Is loaded upon request -> cf. 
+        :attr:`pyaerocom.io.ebas_nasa_ames.EbasFlagCol.FLAG_INFO`
         
         Dictionary containing 3 dictionaries (keys: ```valid, values, info```) 
         that contain information about validity of each flag (```valid```), 
@@ -887,7 +897,12 @@ class Config(object):
             self._init_output_folders_from_cfg(cr)
 
         if cr.has_section('supplfolders'):
+            if basedir is None and 'BASEDIR' in cr['supplfolders']:
+                basedir = cr['supplfolders']['BASEDIR'] 
+                
             for name, path in cr['supplfolders'].items():
+                if '${BASEDIR}' in path:
+                    path = path.replace('${BASEDIR}', basedir)
                 self.SUPPLDIRS[name] = path
         
         cr.clear()
@@ -978,18 +993,14 @@ class Config(object):
                     for chk_dir in chk_dirs:
                         chk = Path(path.replace(repl, chk_dir))
                         if self._check_access(chk):
-                            dirconfirmed = str(chk)
+                            dirconfirmed = str(chk_dir)
         
         for name, loc in candidates.items():
-            if repl in loc:
-                if dirconfirmed is not None:
+            if '${BASEDIR}' in loc and dirconfirmed is not None:
+                loc = loc.replace('${BASEDIR}', dirconfirmed)
+            if '${HOME}' in loc:
+                loc = loc.replace('${HOME}', os.path.expanduser('~'))
                 
-                    loc = loc.replace('${BASEDIR}', dirconfirmed)
-                    loc = loc.replace('${HOME}', os.path.expanduser('~'))
-                else: 
-                    #skip this entry
-                    continue
-    
             self.OBSLOCS_UNGRIDDED[name] = loc
         self.logger.info("ELAPSED TIME _add_obsconfig: {:.5f} s".format(time()-t0))
         
@@ -1100,4 +1111,7 @@ class Config(object):
     
 if __name__=="__main__":
     import pyaerocom as pya
-    print(pya.const)
+    #print(pya.const)
+    print(pya.const.LOCAL_TMP_DIR)
+    
+    pya.browse_datab

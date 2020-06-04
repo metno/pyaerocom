@@ -11,27 +11,31 @@ from pyaerocom.conftest import TEST_RTOL, lustre_unavail
 from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom import VerticalProfile
 
-TESTDIR = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/Export/Earlinet/CAMS/data/ev/'
 FILES = ['ev1008192050.e532',
          'ev1009162031.e532',
          'ev1012131839.e532',
          'ev1011221924.e532',
          'ev1105122027.e532']
 
-PATHS = [os.path.join(TESTDIR, f) for f in FILES]
+@lustre_unavail
+def get_test_paths():
+    from pyaerocom import const
+    testdir = os.path.join(const.OBSLOCS_UNGRIDDED['EARLINET'], 'ev') 
+    return [os.path.join(testdir, f) for f in FILES]
 
 @lustre_unavail
 def test_all_files_exist():
-    for file in PATHS:
+    for file in get_test_paths():
         if not os.path.exists(file):
             raise AssertionError('File {} does not exist'.format(file))
 
 @lustre_unavail
 def test_first_file():
     read = ReadEarlinet()
-    read.files = PATHS
+    paths = get_test_paths()
+    read.files = paths
     
-    stat = read.read_file(PATHS[0], 'ec532aer')
+    stat = read.read_file(paths[0], 'ec532aer')
     
     assert 'data_level' in stat
     assert 'wavelength_det' in stat
@@ -65,7 +69,7 @@ def test_first_file():
 @lustre_unavail
 def test_read_ungridded():
     read = ReadEarlinet()
-    read.files = PATHS
+    read.files = get_test_paths()
     
     data = read.read('ec532aer')
     
