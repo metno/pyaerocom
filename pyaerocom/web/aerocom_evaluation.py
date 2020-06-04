@@ -138,7 +138,7 @@ class AerocomEvaluation(object):
     var_order_menu : list, optional
         order of variables in menu
     """
-    OUT_DIR_NAMES = ['map', 'ts', 'scat', 'hm', 'profiles']
+    OUT_DIR_NAMES = ['map', 'ts','ts/dw', 'scat', 'hm', 'profiles']
     
     
     #: Vertical layer ranges
