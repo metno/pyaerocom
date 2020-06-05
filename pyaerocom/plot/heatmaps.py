@@ -10,11 +10,56 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 from seaborn import heatmap, mpl_palette
 
+def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
+    _annot = []
+    if not isinstance(annot_fmt_rows, list):
+        annot_fmt_rows = []
+        for row in annot:
+            mask = row[~np.isnan(row)]
+            mask = mask[mask!=0]
+            exps = exponent(mask)
+            minexp = exps.min()
+            if minexp < -3:
+                annot_fmt_rows.append('.1E')
+            elif minexp < 0:
+                annot_fmt_rows.append('.{}f'.format(-minexp + 1))
+            elif minexp == 0:
+                annot_fmt_rows.append('.1f')
+            else:
+                annot_fmt_rows.append('.4g')
+    if isinstance(annot_fmt_exceed, list):
+        exceed_val, exceed_fmt = annot_fmt_exceed
+    else:
+        exceed_val, exceed_fmt = None, None
+    
+    for i, row in enumerate(annot):
+        rowfmt = annot_fmt_rows[i]
+        #numdigits = -exps.min()
+        row_fmt = []
+        #lowest = np.min(row)
+        #exp = exponent(lowest)
+        for i, val in enumerate(row):
+            if np.isnan(val):
+                valstr = ''
+            else:
+                #exp = exps(i)
+                #fmt = '.{}f'.format(numdigits)
+                if exceed_val is not None and val > exceed_val:
+                    valstr = format(val, exceed_fmt)    
+                else:
+                    valstr = format(val, rowfmt)
+                    
+            row_fmt.append(valstr)
+        _annot.append(row_fmt)
+    annot = np.asarray(_annot)
+    return annot, annot_fmt_rows
+
 def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, 
                   vmin=None, vmax=None, color_rowwise=False,
                   normalise_rows=False, 
                   normalise_rows_how='median',
                   normalise_rows_col=None,
+                  norm_ref=None,
                   annot=True, num_digits=None, ax=None, 
                   figsize=(12,12), cbar=False, cbar_label="", 
                   cbar_labelsize=None,
@@ -25,6 +70,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   annot_fontsize=None,
                   annot_fmt_rowwise=False,
                   annot_fmt_exceed=None,
+                  annot_fmt_rows=None, # explicit formatting strings for rows
                   cbar_kws=None,
                   **kwargs):
     
@@ -111,31 +157,40 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
         cbar_kws = {}
     if annot_fontsize is None:
         annot_fontsize = labelsize-4
-    annot_kws={"size": annot_fontsize}
+    if not 'annot_kws' in kwargs:
+        kwargs['annot_kws'] = {}
+    kwargs['annot_kws']['size'] = annot_fontsize
     df_hm = df
     if normalise_rows:
-        if normalise_rows_col is not None:
-            if isinstance(normalise_rows_col, str):
-                try:
-                    normalise_rows_col = df.columns.to_list().index(normalise_rows_col)
-                except ValueError:
-                    raise ValueError('Failed to localise column {}'
-                                     .format(normalise_rows_col))
-            norm_ref = df.values[:, normalise_rows_col]
-            #cbar_label += " (norm. col. {})".format(normalise_rows_col)
-        else:
-            if normalise_rows_how == 'mean':
-                norm_ref = df.mean(axis=1)
-            elif normalise_rows_how == 'median':
-                norm_ref = df.median(axis=1)
-            elif normalise_rows_how == 'sum':
-                norm_ref = df.sum(axis=1)
+        if norm_ref is None:
+            if normalise_rows_col is not None:
+                if isinstance(normalise_rows_col, str):
+                    try:
+                        normalise_rows_col = df.columns.to_list().index(normalise_rows_col)
+                    except ValueError:
+                        raise ValueError('Failed to localise column {}'
+                                         .format(normalise_rows_col))
+                norm_ref = df.values[:, normalise_rows_col]
+                #cbar_label += " (norm. col. {})".format(normalise_rows_col)
             else:
-                raise ValueError('Invalid input for normalise_rows_how ({}). '
-                                 'Choose from mean, median or sum'.format(normalise_rows_how))
+                if normalise_rows_how == 'mean':
+                    norm_ref = df.mean(axis=1)
+                elif normalise_rows_how == 'median':
+                    norm_ref = df.median(axis=1)
+                elif normalise_rows_how == 'sum':
+                    norm_ref = df.sum(axis=1)
+                else:
+                    raise ValueError('Invalid input for normalise_rows_how ({}). '
+                                     'Choose from mean, median or sum'.format(normalise_rows_how))
             #cbar_label += " (norm. row {})".format(normalise_rows_how)
         df_hm = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
-        num_fmt = ".0%"
+# =============================================================================
+#         try:
+#             df_hm.MEDIAN.values[3] = 0.32
+#         except:
+#             pass
+# =============================================================================
+        #num_fmt = ".0%"
         
         cbar_kws['format'] = FuncFormatter(lambda x, pos: '{:.0%}'.format(x))
         #df = df.div(df.max(axis=1), axis=0)
@@ -152,57 +207,34 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     
     if annot is True:
         annot = df.values
-
-    if vmin is None:
-        vmin = df_hm.min().min() * (1-low)
-    elif vmax is None:
-        vmax = df_hm.max().max() * (1+high)
-    
-    
+# =============================================================================
+#     
+#     if 'norm' in kwargs and any(x is not None for x in (vmin, vmax)):
+#         raise ValueError('Invalid input: Both vmin/vmax and norm is specified '
+#                          'for color range mapping.')
+#     elif not 'norm' in kwargs:
+# =============================================================================
+    if 'norm' in kwargs:
+        norm = kwargs['norm']
+        vmin = norm.boundaries[0]
+        vmax = norm.boundaries[-1]
+    else:
+        if vmin is None:
+            vmin = df_hm.min().min() * (1-low)
+        if vmax is None:
+            vmax = df_hm.max().max() * (1+high)
+        
     #num_fmt=None   
     #num_fmt = '3.2G'
     if annot_fmt_rowwise and isinstance(annot, np.ndarray):
-        _annot = []
-        if isinstance(annot_fmt_exceed, list):
-            exceed_val, exceed_fmt = annot_fmt_exceed
-        else:
-            exceed_val, exceed_fmt = None, None
-        for row in annot:
-            mask = row[~np.isnan(row)]
-            mask = mask[mask!=0]
-            exps = exponent(mask)
-            minexp = exps.min()
-            if minexp < -3:
-                rowfmt = '.1E'
-            elif minexp < 0:
-                rowfmt = '.{}f'.format(-minexp + 1)
-            elif minexp == 0:
-                rowfmt = '.1f'
-            else:
-                rowfmt = '.4g'
-            #numdigits = -exps.min()
-            row_fmt = []
-            #lowest = np.min(row)
-            #exp = exponent(lowest)
-            for i, val in enumerate(row):
-                if np.isnan(val):
-                    valstr = ''
-                else:
-                    #exp = exps(i)
-                    #fmt = '.{}f'.format(numdigits)
-                    if exceed_val is not None and val > exceed_val:
-                        valstr = format(val, exceed_fmt)    
-                    else:
-                        valstr = format(val, rowfmt)
-                        
-                row_fmt.append(valstr)
-            _annot.append(row_fmt)
-        annot = np.asarray(_annot)
+        annot, annot_fmt_rows = _format_annot_heatmap(annot, 
+                                                      annot_fmt_rows, 
+                                                      annot_fmt_exceed)
             #print(row)
         
-        ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
+        ax = heatmap(df_hm, cmap=cmap, center=center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
                      cbar=cbar, cbar_kws=cbar_kws, fmt='', 
-                     vmin=vmin, vmax=vmax, annot_kws=annot_kws, **kwargs)
+                     vmin=vmin, vmax=vmax, **kwargs)
     
     else:
         # If the user needs too many displays 
@@ -212,7 +244,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
             num_fmt = ".{}f".format(num_digits)
         ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
                      cbar=cbar, cbar_kws=cbar_kws, fmt=num_fmt, 
-                     vmin=vmin, vmax=vmax, annot_kws=annot_kws, **kwargs)
+                     vmin=vmin, vmax=vmax, **kwargs)
         
     ax.figure.axes[-1].yaxis.label.set_size(labelsize)  
     if title is not None:
@@ -246,6 +278,6 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     ax.set_ylabel(ylabel, fontsize=labelsize)
     if cbar_labelsize is not None:
         ax.figure.axes[-1].yaxis.label.set_size(cbar_labelsize)
-    fig.tight_layout()
+    #fig.tight_layout()
     
-    return ax
+    return ax, annot_fmt_rows
