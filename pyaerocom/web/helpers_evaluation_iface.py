@@ -498,7 +498,7 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
         _check_flatten_latlon_dims(coldata)
         assert coldata.dims == ('data_source', 'time', 'station_name')
 
-    mon_slice = data.where((data['time.month']==1)|(data['time.month']==2),drop=True)
+    # mon_slice = data.where((data['time.month']==1)|(data['time.month']==2),drop=True)
     
     #turn colocated data object into a DataArray containing a representative week
     min_month = data['time.month'].values.min()
@@ -513,7 +513,7 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
         for day in range(7):
             day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
             rep_day = day_slice.groupby('time.hour').mean(dim='time')
-            rep_day['hour'] = rep_day.hour/100+day+1
+            rep_day['hour'] = rep_day.hour/24+day+1
             if day == 0:
                 rep_week = rep_day
             else:
@@ -529,7 +529,7 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
             first_pass = False
             rep_week_full_period = rep_week_ds
         else:
-            rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='dummy_time')
+            rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
     
     repw = rep_week_full_period['rep_week']
     
@@ -546,9 +546,10 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
     if regions_how == 'country':
         countries = repw.country.values
     dc = 0
+    time = (np.arange(168)/24+1).round(4).tolist()
     for i, stat_name in enumerate(repw.station_name.values):
         has_data = False
-        ts_data = {'week_date' : [],'week_obs' : [], 'week_mod' : []}
+        ts_data = {'time' : time,'bimonthly' : {'obs' : {},'mod' : {}},'seasonal' : {'obs' : {},'mod' : {}} }
         ts_data['station_name'] = stat_name
         ts_data.update(meta_glob)
     
@@ -568,24 +569,24 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
                     'alt'       : stat_alt,
                     'region'    : region}
 
-        obs_vals = repw[0, :, i]
-        if all(np.isnan(obs_vals)):
+        obs_vals = repw[:,0, :, i]
+        if (np.isnan(obs_vals)).all().values:
             continue
         has_data = True
-        mod_vals = repw[1, :, i]
+        mod_vals = repw[:,1, :, i]
         
-        timestamps = []
-        for i,j in zip(rep_week_full_period['month_stamp'].values,repw['dummy_time'].values.round(2)):
-            months = i.split('-')
-            start_month = months[0]
-            stop_month = months[1]
-            timestamp = start_month.zfill(2)+stop_month.zfill(2)+f'{j}'
-            timestamps.append(timestamp)
-            # timestamp = f'{i}'.replace('-','')+f'{j}'
-        
-        ts_data['week_date'] = timestamps
-        ts_data['week_obs'] = obs_vals.values.tolist()
-        ts_data['week_mod'] = mod_vals.values.tolist()
+        # timestamps = []
+        # for k,l in zip(rep_week_full_period['month_stamp'].values,repw['dummy_time'].values.round(2)):
+        #     months = k.split('-')
+        #     start_month = months[0]
+        #     stop_month = months[1]
+        #     timestamp = start_month.zfill(2)+stop_month.zfill(2)+f'{l}'
+        #     timestamps.append(timestamp)
+        #     # timestamp = f'{i}'.replace('-','')+f'{j}'
+        period_keys = ['JF','MA','MJ','JA','SO','ND']
+        for p,pk in enumerate(period_keys):
+            ts_data['bimonthly']['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
+            ts_data['bimonthly']['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
         
         if has_data:
             ts_objs.append(ts_data)
