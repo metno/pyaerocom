@@ -568,11 +568,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
-
-
-    lat0, lat1 = float(np.min(gridded_data.latitude.points)), float(np.max(gridded_data.latitude.points))
-    lon0, lon1 = float(np.min(gridded_data.longitude.points)), float(np.max(gridded_data.longitude.points))
-
     all_stats = ungridded_data.to_station_data_all(
 
             vars_to_convert=var_ref,
@@ -580,8 +575,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             stop=obs_stop,
             by_station_name=True,
             ignore_index=ignore_station_names,
-            latitudes = [lat0, lat1],
-            longitudes = [lon0, lon1],
             **kwargs)
 
     obs_stat_data = all_stats['stats']
