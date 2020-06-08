@@ -9,12 +9,3 @@ from pyaerocom import units_helpers as helpers
 
 def test_unit_conversion_fac():
     assert helpers.unit_conversion_fac('m-1', '1/Mm') == 1e6
-    
-    
-    
-    
-    
-    
-    
-    
-    

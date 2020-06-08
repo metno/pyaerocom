@@ -15,7 +15,7 @@ from pyaerocom.helpers import get_tot_number_of_seconds
 
 class ReadAasEtal(ReadUngriddedBase):
     """Read subset of GAW-TAD-EANET data related to Aas et al., 2019
-    
+
     Paper URL: https://www.nature.com/articles/s41598-018-37304-0
 
     See Also
@@ -46,34 +46,34 @@ class ReadAasEtal(ReadUngriddedBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     # This contains the mapping between the requested variables and what it is called in the files.
-    
+
     COLNAMES_VARS = {}
     COLNAMES_VARS['concentration_mgS/L']  = ['concso4pr']
     COLNAMES_VARS['concentration_ugS/m3'] = ['concso4', 'concso2']
     COLNAMES_VARS['precip_amount_mm']     = ['pr']
     COLNAMES_VARS['deposition_kgS/ha']    = ['wetso4']
 
-    #: Dictionary mapping filenames to available variables in the respective files. 
+    #: Dictionary mapping filenames to available variables in the respective files.
     FILES_CONTAIN = {}
     FILES_CONTAIN['monthly_so2.csv']        = ['concso2']
     FILES_CONTAIN['monthly_so4_aero.csv']   = ['concso4']
     FILES_CONTAIN['monthly_so4_precip.csv'] = ['wetso4', 'pr', 'concso4pr']
-    
-    #: Dictionary mapping variable name to hard coded filenames. 
+
+    #: Dictionary mapping variable name to hard coded filenames.
     VARS_TO_FILES = {}
     VARS_TO_FILES['concso2']   = ['monthly_so2.csv']
     VARS_TO_FILES['concso4']   = ['monthly_so4_aero.csv']
     VARS_TO_FILES['pr']        = ['monthly_so4_precip.csv']
     VARS_TO_FILES['wetso4']    = ['monthly_so4_precip.csv']
     VARS_TO_FILES['concso4pr'] = ['monthly_so4_precip.csv']
-    
+
     # (from to unit)
-    UNITCONVERSION = {'concso2':   ('ug S/m3', 'ug m-3'), 
-                      'concso4':   ('ug S/m3', 'ug m-3'), 
+    UNITCONVERSION = {'concso2':   ('ug S/m3', 'ug m-3'),
+                      'concso4':   ('ug S/m3', 'ug m-3'),
                       'wetso4':    ('kg S/ha', 'kg m-2'),  #  s-1
                       'concso4pr': ('mg S/L',   'g m-3')
                       }
-    
+
 # =============================================================================
 #     VAR_UNITS_READ={}
 #     VAR_UNITS_READ['concso2'] = 'ug m-3'
@@ -82,14 +82,13 @@ class ReadAasEtal(ReadUngriddedBase):
 #     VAR_UNITS_READ['wetso4']   = 'kg m-2 s-1'
 #     VAR_UNITS_READ['concso4pr'] = 'g m-3' # Removed sulphur from VAR_UNITS_READ mgS/L
 # =============================================================================
-    #: :obj: `list` of :obj: `str` 
+    #: :obj: `list` of :obj: `str`
     #: List containing all the variables available in this data set.
     PROVIDES_VARIABLES = list(VARS_TO_FILES.keys())
-    
-    
+
     #: int: Number of available variables in this data set.
     num_vars = len(PROVIDES_VARIABLES)
-    
+
     @property
     def DEFAULT_VARS(self):
         """Default variables (wrapper for :attr:`PROVIDES_VARIABLES`)"""
@@ -100,18 +99,18 @@ class ReadAasEtal(ReadUngriddedBase):
         dates_alt = [tconv(yr, m) for yr, m in
                      zip(df.year.values, df.month.values)]
         return np.asarray(dates_alt)
-    
+
     def read_file(self, filename, vars_to_retrieve): #  -> List[StationData]:
         """ Read one GawTadSubsetAasEtAl file
-        
+
         ToDo
         ----
         Could be more efficient...
-        
+
         Note
         ----
-        One file contains all stations for one variable. This is unctypical 
-        for ground based observations since the data files are typically by 
+        One file contains all stations for one variable. This is unctypical
+        for ground based observations since the data files are typically by
         station.
 
         Parameters
@@ -120,8 +119,8 @@ class ReadAasEtal(ReadUngriddedBase):
             absolute path to filename to read
 
         vars_to_retrieve : list or str, optional
-            list containing variable IDs that are supposed to be read. 
-            
+            list containing variable IDs that are supposed to be read.
+
         Returns
         -------
         station_list : list
@@ -129,29 +128,29 @@ class ReadAasEtal(ReadUngriddedBase):
         """
         station_list = []
         df = pd.read_csv(filename, sep=",", low_memory=False)
-        # Converting month and year. 
+        # Converting month and year.
 
         df['dtime'] = self._get_time_stamps(df)
-        
+
         # array av numpy.datetime64
         df.rename(columns= {"Sampler":"instrument_name"}, inplace=True)
         grouped = df.groupby(by = "station_name")
 
         # Looping over every station:
         for name, station_group in grouped:
-            station_group = station_group.drop_duplicates(subset='dtime', 
-                                                          keep='first')  # Drops duplacate rows 
-            
+            station_group = station_group.drop_duplicates(subset='dtime',
+                                                          keep='first')  # Drops duplacate rows
+
             tvals = station_group['dtime']
-            
+
             stat = StationData()
             # Meta data
             stat['station_name'] = name
-            
+
             stat["filename"] = filename
             stat["data_id"] = self.DATA_ID
             stat["ts_type"] = self.TS_TYPE
-            
+
             var_names = self.COLNAMES_VARS
             # Looping over all keys in the grouped data frame.
             for key in station_group:
@@ -164,21 +163,21 @@ class ReadAasEtal(ReadUngriddedBase):
                         raise IOError('Found multiple matches...')
                     var = _var[0]
                     if var in self.UNITCONVERSION.keys():
-                        # Convert units 
+                        # Convert units
                         from_unit, to_unit = self.UNITCONVERSION[var]
                         values = pd.to_numeric(station_group[key],
                                                errors='coerce').values
-                        stat[var] = convert_unit(data=values, 
-                                                 from_unit=from_unit, 
-                                                 to_unit=to_unit, 
+                        stat[var] = convert_unit(data=values,
+                                                 from_unit=from_unit,
+                                                 to_unit=to_unit,
                                                  var_name=var)
-                        
+
                         if var == 'wetso4':
                             # TODO: quite hard coded...
-                            numsecs = get_tot_number_of_seconds(ts_type=self.TS_TYPE, 
+                            numsecs = get_tot_number_of_seconds(ts_type=self.TS_TYPE,
                                                                 dtime=tvals)
                             stat[var] = stat[var] / numsecs
-                            
+
                             to_unit = 'kg m-2 s-1'
                     else:
                         to_unit = key.split('_')[-1]
@@ -186,23 +185,23 @@ class ReadAasEtal(ReadUngriddedBase):
                                              errors='coerce').values
                         # This should only be true for
                         stat[var] = vals
-                                             
+
                     stat['var_info'][var] = {'units' : to_unit}
                 else:
                     if key == 'dtime':
                         stat[key] = station_group[key].values
                     else:
-                        # Store the meta data. 
+                        # Store the meta data.
                         stat[key] = station_group[key].values[0]
-                
+
 # =============================================================================
-#             # Since no altitude is provided in the files. Geodesy is used to approximate 
-#             # altitude based on latitude and longitude. 
+#             # Since no altitude is provided in the files. Geodesy is used to approximate
+#             # altitude based on latitude and longitude.
 #             try:
-#                 s["altitude"] = geodesy.get_topo_altitude(lat=s.latitude, 
+#                 s["altitude"] = geodesy.get_topo_altitude(lat=s.latitude,
 #                                                           lon=s.longitude)
 #             except ValueError as e:
-#                 s['altitude'] = np.nan 
+#                 s['altitude'] = np.nan
 #                 from pyaerocom import const
 #                 const.logger.warning('Failed to access altitude for {}'
 #                                      .format(name))
@@ -210,12 +209,11 @@ class ReadAasEtal(ReadUngriddedBase):
             # Added the created station to the station list.
             station_list.append(stat)
         return station_list
-    
 
     def read(self, vars_to_retrieve=None):
         """ Method that reads list of files as instance of :class:`UngriddedData`
 
-        Parameters 
+        Parameters
         ----------
         vars_to_retrieve : :obj:`list` or `str`:, optional,
             list containing variable IDs that are supposed to be read. If None,
@@ -229,7 +227,7 @@ class ReadAasEtal(ReadUngriddedBase):
         -------
         UngriddedData : :class:`UngriddedData`
             data object
-            
+
         """
 
         files = self.get_file_list()
@@ -242,7 +240,7 @@ class ReadAasEtal(ReadUngriddedBase):
         meta_key = 0.0
         idx = 0
         varindex = -1
-        
+
         #assign metadata object
         metadata = data_obj.metadata # OrderedDict
         meta_idx = data_obj.meta_idx # OrderedDict
@@ -288,7 +286,7 @@ class ReadAasEtal(ReadUngriddedBase):
                 if (idx + totnum) >= data_obj._ROWNO:
                     # This results in a error because it doesn't want to multiply empty with nan
                     data_obj.add_chunk(totnum)
-                
+
                 metadata[meta_key]['var_info'] = OrderedDict()
                 for var_count, var in enumerate(temp_vars):
 
@@ -319,13 +317,13 @@ class ReadAasEtal(ReadUngriddedBase):
 
                 meta_key += 1
                 idx += totnum
-                
+
         data_obj._data = data_obj._data[:idx]
         # sanity check
         data_obj._check_index()
         self.data = data_obj # initalizing a pointer to it selves
         return data_obj
- 
+
 def _check_line_endings(filename):
     """File that checks all line endings in an ascii file (not in use)"""
     ll = None
@@ -353,13 +351,13 @@ class ReadSulphurAasEtAl(ReadAasEtal):
         super(ReadAasEtal, self).__init__(*args, **kwargs)
         msg = ('You are using an old name for class ReadAasEtal')
         const.print_log.warning(DeprecationWarning(msg))
-        
+
 if __name__ == "__main__":
 
      aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-     
+
      all_vars = ['concso2', 'concso4', 'pr', 'wetso4', 'concso4pr']
      data = aa.read('wetso4')
-     
+
      for k, m in data.metadata.items():
          print(m['var_info']['pr']['units'])

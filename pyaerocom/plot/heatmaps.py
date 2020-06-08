@@ -31,7 +31,7 @@ def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
         exceed_val, exceed_fmt = annot_fmt_exceed
     else:
         exceed_val, exceed_fmt = None, None
-    
+
     for i, row in enumerate(annot):
         rowfmt = annot_fmt_rows[i]
         #numdigits = -exps.min()
@@ -45,27 +45,27 @@ def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
                 #exp = exps(i)
                 #fmt = '.{}f'.format(numdigits)
                 if exceed_val is not None and val > exceed_val:
-                    valstr = format(val, exceed_fmt)    
+                    valstr = format(val, exceed_fmt)
                 else:
                     valstr = format(val, rowfmt)
-                    
+
             row_fmt.append(valstr)
         _annot.append(row_fmt)
     annot = np.asarray(_annot)
     return annot, annot_fmt_rows
 
-def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3, 
+def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   vmin=None, vmax=None, color_rowwise=False,
-                  normalise_rows=False, 
+                  normalise_rows=False,
                   normalise_rows_how='median',
                   normalise_rows_col=None,
                   norm_ref=None,
-                  annot=True, num_digits=None, ax=None, 
-                  figsize=(12,12), cbar=False, cbar_label="", 
+                  annot=True, num_digits=None, ax=None,
+                  figsize=(12,12), cbar=False, cbar_label="",
                   cbar_labelsize=None,
                   xticklabels=None, xtick_rot=45,
-                  yticklabels=None, ytick_rot=45, 
-                  xlabel=None, ylabel=None, 
+                  yticklabels=None, ytick_rot=45,
+                  xlabel=None, ylabel=None,
                   title=None, circle=None, labelsize=12,
                   annot_fontsize=None,
                   annot_fmt_rowwise=False,
@@ -73,10 +73,9 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   annot_fmt_rows=None, # explicit formatting strings for rows
                   cbar_kws=None,
                   **kwargs):
-    
 
     """Plot a pandas dataframe as heatmap
-    
+
     Parameters
     ----------
     df : DataFrame
@@ -86,26 +85,26 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     center : float
         value that is mapped to center colour of colormap (e.g. 0)
     low : float
-        Extends lower range of the table values so that when mapped to  the 
-        colormap, it’s entire range isn’t used. E.g. 0.3 roughly corresponds 
+        Extends lower range of the table values so that when mapped to  the
+        colormap, it’s entire range isn’t used. E.g. 0.3 roughly corresponds
         to colormap crop of 30% at the lower end.
     high : float
-        Extends upper range of the table values so that when mapped to the 
-        colormap, it’s entire range isn’t used. E.g. 0.3 roughly corresponds 
+        Extends upper range of the table values so that when mapped to the
+        colormap, it’s entire range isn’t used. E.g. 0.3 roughly corresponds
         to colormap crop of 30% at the upper end.
     color_rowwise : bool
         if True, the color mapping is applied row by row, else, for the whole
         table
     normalise_rows : bool
         if True, the table is normalised in a rowwise manner either using the
-        mean value in each row (if argument ``normalise_rows_col`` is 
-        unspecified) or using the value in a specified column. 
+        mean value in each row (if argument ``normalise_rows_col`` is
+        unspecified) or using the value in a specified column.
     normalise_rows_how : str
         aggregation string for row normalisation. Choose from ``mean, median,
         sum``. Only relevant if input arg ``normalise_rows==True``.
     normalise_rows_col : int, optional
-        if provided and if prev. arg. ``normalise_rows==True``, then the 
-        corresponding table column is used for normalisation rather than 
+        if provided and if prev. arg. ``normalise_rows==True``, then the
+        corresponding table column is used for normalisation rather than
         the mean value of each row
     annot : bool
         if True, the table values are printed into the heatmap
@@ -126,7 +125,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
         List of string labels.
     yticklabels : List[str]
         List of string labels.
-        
+
     Returns
     -------
     axes
@@ -134,7 +133,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     """
     if cbar_label is None:
         cbar_label = ''
-    # Old vesion only for 
+    # Old vesion only for
     if isinstance(df.columns, pd.MultiIndex):
         # If pandas is a instance of multicolumns make sure that it only ha one column.
         if len(df.columns.levels) > 1:
@@ -144,8 +143,8 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                                  "single index DataFrame. "+
                                  "Not MulitiIndex of {} ".format(len(df.columns.levels[0]))+
                                  " columns which you provided. "+
-                                 "Please extract a column. ")  
-            
+                                 "Please extract a column. ")
+
     if circle:
         raise NotImplementedError('Adding circles to heatmap is not implemented yet.')
 
@@ -191,7 +190,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
 #             pass
 # =============================================================================
         #num_fmt = ".0%"
-        
+
         cbar_kws['format'] = FuncFormatter(lambda x, pos: '{:.0%}'.format(x))
         #df = df.div(df.max(axis=1), axis=0)
     if color_rowwise:
@@ -202,13 +201,13 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
 # =============================================================================
 
     cbar_kws['label'] = cbar_label
-    
+
     #cbar_kws['fontsize'] = 18
-    
+
     if annot is True:
         annot = df.values
 # =============================================================================
-#     
+#
 #     if 'norm' in kwargs and any(x is not None for x in (vmin, vmax)):
 #         raise ValueError('Invalid input: Both vmin/vmax and norm is specified '
 #                          'for color range mapping.')
@@ -223,61 +222,60 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
             vmin = df_hm.min().min() * (1-low)
         if vmax is None:
             vmax = df_hm.max().max() * (1+high)
-        
-    #num_fmt=None   
+
+    #num_fmt=None
     #num_fmt = '3.2G'
     if annot_fmt_rowwise and isinstance(annot, np.ndarray):
-        annot, annot_fmt_rows = _format_annot_heatmap(annot, 
-                                                      annot_fmt_rows, 
+        annot, annot_fmt_rows = _format_annot_heatmap(annot,
+                                                      annot_fmt_rows,
                                                       annot_fmt_exceed)
             #print(row)
-        
+
         ax = heatmap(df_hm, cmap=cmap, center=center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
-                     cbar=cbar, cbar_kws=cbar_kws, fmt='', 
+                     cbar=cbar, cbar_kws=cbar_kws, fmt='',
                      vmin=vmin, vmax=vmax, **kwargs)
-    
+
     else:
-        # If the user needs too many displays 
+        # If the user needs too many displays
         if num_digits is None or num_digits > 5:
             num_fmt = ".4g"
         else:
             num_fmt = ".{}f".format(num_digits)
         ax = heatmap(df_hm, cmap=cmap, center = center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
-                     cbar=cbar, cbar_kws=cbar_kws, fmt=num_fmt, 
+                     cbar=cbar, cbar_kws=cbar_kws, fmt=num_fmt,
                      vmin=vmin, vmax=vmax, **kwargs)
-        
-    ax.figure.axes[-1].yaxis.label.set_size(labelsize)  
+
+    ax.figure.axes[-1].yaxis.label.set_size(labelsize)
     if title is not None:
         ax.set_title(title, fontsize=labelsize+2)
-    
+
     if yticklabels is None:
         yticklabels = ax.get_yticklabels()
-        
-    
-    ax.set_yticklabels(yticklabels, 
-                       rotation=ytick_rot, 
+
+    ax.set_yticklabels(yticklabels,
+                       rotation=ytick_rot,
                        fontsize=labelsize-2)
-    
+
     if xticklabels is None:
         xticklabels = ax.get_xticklabels()
-        
-    ax.set_xticklabels(xticklabels, 
-                       rotation=xtick_rot, 
+
+    ax.set_xticklabels(xticklabels,
+                       rotation=xtick_rot,
                        ha='right',
                        fontsize=labelsize-2)
-    
+
     #ax.set_xticklabels(xticklabels, rotation=45, ha='right')
-    
+
     if xlabel is None:
         xlabel = ''
-        
+
     ax.set_xlabel(xlabel, fontsize=labelsize)
-    
+
     if ylabel is None:
         ylabel = ''
     ax.set_ylabel(ylabel, fontsize=labelsize)
     if cbar_labelsize is not None:
         ax.figure.axes[-1].yaxis.label.set_size(cbar_labelsize)
     #fig.tight_layout()
-    
+
     return ax, annot_fmt_rows

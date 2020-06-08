@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Helper methods for access of and working with land/sea masks. pyaerocom 
+Helper methods for access of and working with land/sea masks. pyaerocom
 provides automatic access to HTAP land sea masks from this URL:
-    
+
 https://pyaerocom.met.no/pyaerocom-suppl
 
-Filtering by these masks is implemented in :class:`Filter` and all relevant 
-data classes (i.e. :class:`GriddedData`, :class:`UngriddedData`, 
+Filtering by these masks is implemented in :class:`Filter` and all relevant
+data classes (i.e. :class:`GriddedData`, :class:`UngriddedData`,
 :class:`ColocatedData`).
 """
 
-import os 
+import os
 import glob
 import requests
 
@@ -26,7 +26,7 @@ from pyaerocom.exceptions import DataRetrievalError
 def available_htap_masks():
     """
     List of HTAP mask names
-    
+
     Returns
     ----------
     list
@@ -35,21 +35,21 @@ def available_htap_masks():
     return const.HTAP_REGIONS
 
 def download_htap_masks(regions_to_download=None):
-    """Download HTAP mask 
-    
+    """Download HTAP mask
+
     URL: https://pyaerocom.met.no/pyaerocom-suppl.
-    
+
     Parameters
     -----------
     regions_to_download : list
-        List containing the regions to download. 
-    
+        List containing the regions to download.
+
     Returns
     -------
     list
-        List of file paths that point to the mask files that were successfully 
+        List of file paths that point to the mask files that were successfully
         downloaded
-    
+
     Raises
     ------
     ValueError
@@ -57,8 +57,7 @@ def download_htap_masks(regions_to_download=None):
     DataRetrievalError
         if download fails for one of the input regions
     """
-    
-    
+
     if regions_to_download is None:
         regions_to_download = const.HTAP_REGIONS
     elif isinstance(regions_to_download, str):
@@ -66,7 +65,7 @@ def download_htap_masks(regions_to_download=None):
     elif not isinstance(regions_to_download, list):
         raise ValueError('Invalid input for regions_to_download, need list or '
                          'str')
-        
+
     path_out = const.FILTERMASKKDIR
     base_url = const.URL_HTAP_MASKS
 
@@ -79,14 +78,14 @@ def download_htap_masks(regions_to_download=None):
             file_out = os.path.join(path_out, '{}htap.0.1x0.1deg.nc'
                                     .format(region))
         else:
-            filename = '{}htap.0.1x0.1deg.nc'.format(region)      
-            file_out = os.path.join(path_out, filename)    
-        
+            filename = '{}htap.0.1x0.1deg.nc'.format(region)
+            file_out = os.path.join(path_out, filename)
+
         url = os.path.join(base_url, filename)
-        
+
         try:
             r = requests.get(url)
-            open(file_out, 'wb').write(r.content) 
+            open(file_out, 'wb').write(r.content)
             paths.append(file_out)
         except Exception as e:
             raise DataRetrievalError('Failed to download HTAP mask {}. Reason '
@@ -95,17 +94,17 @@ def download_htap_masks(regions_to_download=None):
 
 def get_htap_mask_files(*region_ids):
     """Get file paths to input HTAP regions
-    
+
     Parameters
     ----------
     *region_ids
         ID's of regions for which mask files are supposed to be retrieved
-    
+
     Returns
     -------
     list
         list of file paths for each input region
-    
+
     Raises
     ------
     FileNotFoundError
@@ -130,21 +129,21 @@ def get_htap_mask_files(*region_ids):
                                 .format(region))
         out.append(files[0])
     return out
-        
+
 def load_region_mask_xr(*regions):
-    """Load boolean mask for input regions (as xarray.DataArray)  
-    
+    """Load boolean mask for input regions (as xarray.DataArray)
+
     Parameters
     -----------
     *regions
-        regions that are supposed to be loaded and merged (just use string, 
+        regions that are supposed to be loaded and merged (just use string,
         no list or similar)
-    
+
     Returns
     ---------
-    xarray.DataArray 
+    xarray.DataArray
         boolean mask for input region(s)
-    """    
+    """
     masks = None
     for i, fil in enumerate(get_htap_mask_files(*regions)):
         r = regions[i]
@@ -161,16 +160,16 @@ def load_region_mask_xr(*regions):
     return mask
 
 def load_region_mask_iris(*regions):
-    """ Loads regional mask to iris. 
-    
-    Parameters 
+    """ Loads regional mask to iris.
+
+    Parameters
     -----------
     region_id : str
-        Chosen region. 
-    
+        Chosen region.
+
     Returns
     ---------
-    iris.cube.Cube 
+    iris.cube.Cube
         cube representing merged mask from input regions
     """
     cubes = []
@@ -182,8 +181,8 @@ def load_region_mask_iris(*regions):
         out = cubes[0]
     else:
         merged_np = np.max([x.data for x in cubes], axis=0)
-        out = numpy_to_cube(merged_np, 
-                            dims=(cubes[0].coords()[0], 
+        out = numpy_to_cube(merged_np,
+                            dims=(cubes[0].coords()[0],
                                   cubes[0].coords()[1]))
         out.units = cubes[0].units
     name =  '-'.join(names)
@@ -193,7 +192,7 @@ def load_region_mask_iris(*regions):
 
 def get_mask_value(lat, lon, mask):
     """Get value of mask at input lat / lon position
-    
+
     Parameters
     ----------
     lat : float
@@ -202,10 +201,10 @@ def get_mask_value(lat, lon, mask):
         longitude
     mask : xarray.DataArray
         data array
-        
+
     Returns
     -------
-    float 
+    float
         neirest neigbhour mask value to input lat lon
     """
     if not isinstance(mask, xr.DataArray):
@@ -215,26 +214,19 @@ def get_mask_value(lat, lon, mask):
 
 def check_all_htap_available():
     """
-    Check for missing HTAP masks on local computer and download 
+    Check for missing HTAP masks on local computer and download
     """
     return get_htap_mask_files(*available_htap_masks())
-     
 
 if __name__ == '__main__':
     files = check_all_htap_available()
-    
+
     print(sorted([os.path.basename(x) for x in files]))
-    
+
     raise Exception
     masks  =['NAF', 'MDE', 'PAN', 'EAS']
     for file in get_htap_mask_files(*masks):
         print(file)
-    
+
     mask_xr = load_region_mask_xr(*masks)
     mask_iris = load_region_mask_iris(*masks)
-      
-    
-    
-           
-           
-           

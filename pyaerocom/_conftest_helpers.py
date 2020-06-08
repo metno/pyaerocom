@@ -18,14 +18,14 @@ def _download_test_data(url_testdata, basedir=None):
     #raise Exception('Temporarily disabled...')
     if basedir is None:
         basedir = const.OUTPUTDIR
-   
+
     download_loc = Path(basedir).joinpath('{}.tar.gz'.format(const._testdatadirname))
-    
+
     try:
         r = requests.get(url_testdata)
         with open(download_loc, 'wb') as f:
-            f.write(r.content) 
-            
+            f.write(r.content)
+
         with tarfile.open(download_loc, 'r:gz') as tar:
             tar.extractall(const.OUTPUTDIR)
             tar.close()
@@ -46,15 +46,15 @@ def _check_access_testdata(basedir, test_paths):
                          .format(type(basedir)))
     if not basedir.exists():
         return False
-    
+
     if not isinstance(test_paths, dict):
         raise ValueError('Invalid input for test_paths, need dict')
-    
+
     for data_id, data_dir in test_paths.items():
         if not basedir.joinpath(data_dir).exists():
             return False
     return True
-                
+
 def check_access_testdata(basedir, test_paths, url_testdata):
     if not _check_access_testdata(basedir, test_paths):
         try:
@@ -71,11 +71,10 @@ def _init_testdata(const, add_paths, testdatadir, ungridded_readers):
         ddir = str(testdatadir.joinpath(relpath))
         if name in ungridded_readers:
             reader = ungridded_readers[name]
-            
-            const.add_ungridded_obs(name, ddir, 
+
+            const.add_ungridded_obs(name, ddir,
                                     reader=reader,
                                     check_read=True)
-            
+
         else:
             const.add_data_search_dir(ddir)
-            

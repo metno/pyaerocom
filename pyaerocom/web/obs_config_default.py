@@ -8,15 +8,15 @@ UNDER DEVELOPMENT -> CURRENTLY NOT USED
 
 OBS_SOURCES = {
 
-'EBAS-Lev3'         :   dict(obs_id='EBASMC', 
-                             obs_vars=['ac550aer', 'sc550dryaer'], 
+'EBAS-Lev3'         :   dict(obs_id='EBASMC',
+                             obs_vars=['ac550aer', 'sc550dryaer'],
                              vert_scheme='surface',
                              obs_vert_type='Surface'),
-        
+
 'AeronetSun'        :   dict(obs_id='AeronetSunV3Lev2.daily',
                              obs_vars=['ang4487aer', 'od550aer'],
                              obs_vert_type='Column'),
-                             
+
 'AeronetSDA'        :   dict(obs_id='AeronetSDAV3Lev2.daily',
                              obs_vars=['od550lt1aer', 'od550gt1aer'],
                              obs_vert_type='Column'),
@@ -51,17 +51,17 @@ OBS_SOURCES = {
 }
 
 OBS_DEFAULTS = {
-        
+
         'Column'        :   {'od550aer'          :  'AeronetSun',
                              'ang4487aer'        :  'AeronetSun',
                              'od550lt1aer'       :  'AeronetSDA',
                              'od550gt1aer'       :  'AeronetSDA',
                              'abs550aer'         :  'AeronetInv'},
-                         
+
         'Surface'       :   {'ac550aer'        :  'EBAS-Lev3',
                              'sc550dryaer'    :  'EBAS-Lev3'},
 }
-                
+
 def get_default_obsnetwork(var_name, vert_which=None):
     res = []
     for k, v in OBS_DEFAULTS.items():
@@ -79,9 +79,7 @@ def get_default_obsnetwork(var_name, vert_which=None):
                          'Please specify vertical type via vert_which input arg'
                          .format(var_name))
     return res[0]
-        
-    
-                
+
 def get_all_vars():
     all_vars =  []
     for cfg in OBS_SOURCES.values():
@@ -89,7 +87,6 @@ def get_all_vars():
     return list(dict.fromkeys(all_vars))
 
 if __name__ == '__main__':
-    
+
     print(get_all_vars())
     print(get_default_obsnetwork('ang4487aer'))
-    
