@@ -4,22 +4,22 @@ from pyaerocom.io import ReadGridded
 import fnmatch
 import os
 import pandas as pd
-    
-def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False, 
+
+def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
                          sort_by_cols=['Var', 'Model']):
     """Create an info table for model list based on variables
-    
+
     The method iterates over all models in :attr:`model_list` and creates an
     instance of :class:`ReadGridded`. Variable matches are searched based on
     input list :attr:`vars_or_var_patterns` (you may also use wildcards to
     specify a family of variables) and for each match the information below
-    is collected. The search also includes variables that are not directly 
-    available in the model data but can be computed from other available 
-    variables. That is, all variables that are defined in 
+    is collected. The search also includes variables that are not directly
+    available in the model data but can be computed from other available
+    variables. That is, all variables that are defined in
     :attr:`ReadGridded.AUX_REQUIRES`.
 
     The output table (DataFrame) then consists of the following columns:
-        
+
         - Var: variable name
         - Model: model name
         - Years: available years
@@ -35,29 +35,28 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
         - Shape: Shape of data (only retrieved if *read_data* is True)
         - Read ok: reading was successful (only retrieved if *read_data* \
                                            is True)
-        
-    
+
     Parameters
     ----------
     model_ids : list
         list of model ids to be analysed (can also be string -> single model)
     vars_or_var_patterns : list
-        list of variables or variable patterns to be analysed (can also be 
+        list of variables or variable patterns to be analysed (can also be
         string -> single variable or variable family)
     read_data : bool
         if True, more information about the imported data will be available
-        in the table (e.g. no. of dimensions, names of dimension coords) 
-        but the routine will run longer since the data is imported 
-    sort_by_cols : list 
-        column sort order (use header names in listing above). Defaults 
+        in the table (e.g. no. of dimensions, names of dimension coords)
+        but the routine will run longer since the data is imported
+    sort_by_cols : list
+        column sort order (use header names in listing above). Defaults
         to `['Var', 'Model']`
-    
+
     Returns
     -------
-    pandas.DataFrame 
-        dataframe including result table (ready to be saved as csv or other 
+    pandas.DataFrame
+        dataframe including result table (ready to be saved as csv or other
         tabular format or to be displayed in a jupyter notebook)
-    
+
     Example
     -------
     >>> from pyaerocom import create_varinfo_table
@@ -73,8 +72,8 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
         vars_or_var_patterns = [vars_or_var_patterns]
 
     failed = []
-    
-    header = ['Var', 'Model', 'Years', 'Freq', 'Vertical', 'At stations', 
+
+    header = ['Var', 'Model', 'Years', 'Freq', 'Vertical', 'At stations',
               'AUX vars', 'Dim', 'Dim names','Shape', 'Read ok']
     result = []
     table_cols = ['year', 'ts_type', 'vert_code', 'is_at_stations', 'aux_vars']
@@ -104,14 +103,13 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
                                 sub_res.extend([None, None, None, False])
                             result.append(sub_res)
 
-
         except IOError as e:
             dummy = [None]*len(header)
             dummy[1] = model
             result.append(dummy)
             print(repr(e))
             failed.append(model)
-    
+
     df = pd.DataFrame(result, columns=header)
     #df.set_index(['Var'], inplace=True)
     if sort_by_cols:

@@ -86,7 +86,6 @@ class VarNameInfo(object):
                                           'from variable name')
         return self._nums[0]
 
-
     @property
     def is_optical_density(self):
         """Boolean specifying whether variable is an optical depth"""
@@ -536,8 +535,6 @@ class Variable(object):
                            'could also not be inferred'
                            .format(self.var_name_aerocom))
             return None
-
-
 
     def parse_from_ini(self, var_name=None, cfg=None):
         """Import information about default region

@@ -278,9 +278,6 @@ class ColocationSetup(BrowseDict):
 
         self.update(**kwargs)
 
-
-
-
     @property
     def basedir_logfiles(self):
         """Base directory for storing logfiles"""
@@ -489,7 +486,6 @@ class Colocator(ColocationSetup):
                     _var_matches[mvar] = ovar
             var_matches = _var_matches
 
-
         if len(var_matches) == 0:
 
             raise DataCoverageError('No variable matches between '
@@ -579,7 +575,6 @@ class Colocator(ColocationSetup):
         return self._read_gridded(reader, var,
                                   is_model=True,
                                   **kwargs)
-
 
     def read_ungridded(self, vars_to_read=None):
         obs_reader = ReadUngridded(self.obs_id)
@@ -680,7 +675,6 @@ class Colocator(ColocationSetup):
                                    flex_ts_type=self.flex_ts_type_gridded,
                                    vert_which=vt)
 
-
     def _eval_obs_filters(self):
         obs_filters = self['obs_filters']
         remaining = {}
@@ -697,7 +691,6 @@ class Colocator(ColocationSetup):
             else:
                 remaining[key] = val
         return remaining
-
 
     def _save_coldata(self, coldata, savename, out_dir, model_var, model_data,
                       obs_var):
@@ -773,7 +766,6 @@ class Colocator(ColocationSetup):
         else:
             ropts = {}
 
-
         data_objs = {}
         start, stop = start_stop(self.start, self.stop)
 
@@ -796,7 +788,6 @@ class Colocator(ColocationSetup):
                                                              self.obs_id,
                                                              model_var,
                                                              obs_var))
-
 
             try:
                 model_data = self._read_gridded(reader=model_reader,
@@ -983,7 +974,6 @@ class Colocator(ColocationSetup):
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
 
-
         all_ts_types = const.GRID_IO.TS_TYPES
 
         ts_type = self.ts_type
@@ -1130,7 +1120,6 @@ class Colocator(ColocationSetup):
         logdir = chk_make_subdir(self.basedir_logfiles,
                                  self.model_id)
 
-
         fname = ('{}_{}.log'.format(self.obs_id, datetime.today().strftime('%Y%m%d')))
         self._log = log = open(os.path.join(logdir, fname), 'a+')
         log.write('\n------------------ NEW ----------------\n')
@@ -1182,8 +1171,6 @@ class Colocator(ColocationSetup):
                                                         ts_type=ts_type,
                                                         filter_name=self.filter_name)
         return col_data_name + '.nc'
-
-
 
     def _check_coldata_exists(self, model_id, coldata_savename):
         """Check if colocated data file exists"""
@@ -1239,7 +1226,6 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
 
-
     MODEL_ID =  'CAM5.3-Oslo_AP3-CTRL2016-PD'
     col = Colocator(model_id = MODEL_ID,
                     obs_id='AeronetSunV3Lev2.daily',
@@ -1253,7 +1239,6 @@ if __name__ == '__main__':
     col.reanalyse_existing = True
 
     print(col)
-
 
     run = False
     if run:

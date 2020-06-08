@@ -103,6 +103,5 @@ if geopy_available() and coda_available():
     from .read_aeolus_l2a_data import ReadL2Data
     from .read_sentinel5p_data import ReadL2Data
 
-
 from . import testfiles
 from . import helpers_units

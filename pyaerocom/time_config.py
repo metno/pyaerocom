@@ -7,10 +7,9 @@ Definitions and helpers related to time conversion
 from iris import coord_categorisation
 from datetime import datetime
 
-
 TS_TYPES = ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']
 
-# The following import was removed and the information about available unit 
+# The following import was removed and the information about available unit
 # strings was copied from the netCDF4 module directly here
 # from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
 #                     hr_units, day_units)
@@ -24,13 +23,13 @@ day_units = ['day', 'days', 'd']
 
 #
 # Start of the gregorian calendar
-# adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx   
+# adapted from here: https://github.com/Unidata/cftime/blob/master/cftime/_cftime.pyx
 GREGORIAN_BASE = datetime(1582, 10, 15)
 
 IRIS_AGGREGATORS = {'hourly'    :   coord_categorisation.add_hour,
                     'daily'     :   coord_categorisation.add_day_of_year,
                     'monthly'   :   coord_categorisation.add_month_number,
-                    'yearly'    :   coord_categorisation.add_year} 
+                    'yearly'    :   coord_categorisation.add_year}
 
 # some helper dictionaries for conversion of temporal resolution
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases
@@ -39,7 +38,7 @@ TS_TYPE_TO_PANDAS_FREQ = {'minutely':   'T',
                           'daily'   :   'D',
                           'weekly'  :   'W-MON',
                           'monthly' :   'MS', #Month start !
-                          'season'  :   'Q', 
+                          'season'  :   'Q',
                           'yearly'  :   'AS'}
 
 PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
@@ -47,7 +46,7 @@ PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}
 
-# frequency strings 
+# frequency strings
 # https://numpy.org/devdocs/reference/arrays.datetime.html#datetime-units
 TS_TYPE_TO_NUMPY_FREQ =  {'minutely':   'm',
                           'hourly'  :   'h',
@@ -77,5 +76,5 @@ TS_TYPE_SECS = {'minutely': 60,
 XARR_TIME_GROUPERS = {'H'       : 'hour',
                       'D'       : 'day',
                       'W-Mon'   : 'week',
-                      'MS'      : 'month', 
+                      'MS'      : 'month',
                       'AS'      : 'year'}

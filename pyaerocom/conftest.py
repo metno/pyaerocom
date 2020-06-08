@@ -59,7 +59,6 @@ _UNGRIDDED_READERS = {
     'EBASSubset'                  : ReadEbas
 }
 
-
 TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
 
 NASA_AMES_FILEPATHS = {
@@ -150,7 +149,6 @@ def aeronetsunv3lev2_subset():
     #return r.read(vars_to_retrieve=TEST_VARS)
     return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
-
 @pytest.fixture(scope='session')
 def data_scat_jungfraujoch():
     r = ReadEbas()
@@ -161,7 +159,6 @@ def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
     #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
     return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
-
 
 if __name__=="__main__":
     import sys

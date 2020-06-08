@@ -7,7 +7,7 @@ from pyaerocom import const
 
 class DataSource(BrowseDict):
     """Dict-like object defining a data source
-    
+
     Attributes
     ----------
     data_id
@@ -18,27 +18,27 @@ class DataSource(BrowseDict):
         data product (e.g. SDA, Inv, Sun for Aeronet)
     data_version
         version of data (e.g. 3)
-    data_level 
+    data_level
         level of data (e.g. 2)
     revision_date
         last revision date of dataset
-    ts_type_src 
+    ts_type_src
         sampling frequency as defined in data files (use None if undefined)
     stat_merge_pref_attr : str
         optional, a metadata attribute that is available in data and that
         is used to order the individual stations by relevance in case overlaps
-        occur. The associated values of this attribute need to be sortable 
-        (e.g. revision_date). This is only relevant in case overlaps occur. 
+        occur. The associated values of this attribute need to be sortable
+        (e.g. revision_date). This is only relevant in case overlaps occur.
     """
     _types = dict(dataset_name          =   str,
                   data_product          =   str,
                   data_version          =   float,
                   data_level            =   float,
                   ts_type_src           =   str,
-                  stat_merge_pref_attr  =   str, 
+                  stat_merge_pref_attr  =   str,
                   revision_date         =   np.datetime64,
                   website               =   str)
-    
+
     _ini_file_name = 'data_sources.ini'
     def __init__(self, **info):
 
@@ -49,22 +49,21 @@ class DataSource(BrowseDict):
         self.data_level = None
         self.revision_date = None
         self.website = None
-        
+
         self.ts_type_src = None
-        
+
         self.stat_merge_pref_attr = None
-        
+
         self.update(**info)
         if self.data_id is not None:
             self._parse_source_info_from_ini()
-        
+
     @property
     def data_dir(self):
         """Directory containing data files"""
         from pyaerocom.io.helpers import get_obsnetwork_dir
         return get_obsnetwork_dir(self.data_id)
-    
-    
+
     def dataset_str(self):
         s = ''
         if self.dataset_name is not None:
@@ -83,14 +82,14 @@ class DataSource(BrowseDict):
         else:
             s += self.data_id
         return s
-    
+
     def load_dataset_info(self):
         """Wrapper for :func:`_parse_source_info_from_ini`"""
         try:
             self._parse_source_info_from_ini()
         except Exception:
             pass
-        
+
     def _parse_source_info_from_ini(self):
         """Parse source info from ini file"""
         from configparser import ConfigParser
@@ -105,19 +104,19 @@ class DataSource(BrowseDict):
                     self[k] = self._types[k](v)
                 else:
                     self[k] = str(v)
-              
+
 class StationMetaData(DataSource):
     """This object defines a standard for station metadata in pyaerocom
-    
-    Variable names associated with meta data can vary significantly between 
-    different conventions (e.g. conventions in modellers community vs. 
-    observations community). 
-    
+
+    Variable names associated with meta data can vary significantly between
+    different conventions (e.g. conventions in modellers community vs.
+    observations community).
+
     Note
     ----
     - This object is a dictionary and can be easily expanded
     - In many cases, only some of the attributes are relevant
-    
+
     Attributes
     ----------
     filename : str
@@ -125,7 +124,7 @@ class StationMetaData(DataSource):
     station_id : str
         Code or unique ID of station
     station_name :str
-        name or ID of a station. Note, that the concept of a station in 
+        name or ID of a station. Note, that the concept of a station in
         pyaerocom is not necessarily related to a fixed coordinate. A station
         can also be a satellite, ship, or a human walking around and measuring
         something
@@ -136,7 +135,7 @@ class StationMetaData(DataSource):
     country : str
         string specifying country (or country ID)
     ts_type : str
-        frequency of data (e.g. monthly). Note the difference between 
+        frequency of data (e.g. monthly). Note the difference between
         :attr:`ts_type_src` of :class:`DataSource`, which specifies the freq.
         of the original files.
     latitude : float
@@ -145,101 +144,101 @@ class StationMetaData(DataSource):
         longitude coordinate
     altitude : float
         altitude coordinate
-    
+
     """
     def __init__(self, **info):
-        
+
         self.filename = None
-        
+
         self.station_id = None
         self.station_name = None
         self.instrument_name = None
         self.PI = None
-        
+
         self.country = None
         self.country_code = None
-        
+
         self.ts_type = None
-        
+
         self.latitude = np.nan
         self.longitude = np.nan
         self.altitude = np.nan
-        
+
         super(StationMetaData, self).__init__(**info)
 
 class AerocomDataID(object):
     """
     Class representing a model data ID following AeroCom PhaseIII conventions
-    
+
     The ID must contain 4 substrings with meta parameters:
-        
+
         <ModelName>-<MeteoConfigSpecifier>_<ExperimentName>-<PerturbationName>
-        
-    E.g. 
-        
+
+    E.g.
+
         NorESM2-met2010_CTRL-AP3
-        
+
     For more information see `AeroCom diagnostics spreadsheet <https://docs.google.com/spreadsheets/d/1NiHLVTDsBo0JEBSnnDECNI2ojUnCVlxuy2PFrsRJW38/edit#gid=1475397852>`__
-        
-    This interface can be used to make sure a provided data ID is following 
-    this convention and to extract the corresponding meta parameters as 
+
+    This interface can be used to make sure a provided data ID is following
+    this convention and to extract the corresponding meta parameters as
     dictionary (:func:`to_dict`) or to create an data_id from the corresponding
     meta parameters :func:`from_dict`.
     """
     DELIM = '_'
     SUBDELIM = '-'
     KEYS = ['model_name', 'meteo', 'experiment', 'perturbation']
-    
+
     def __init__(self, data_id=None, **meta_info):
 
         self._data_id = None
         self._values = None
-                
+
         if data_id is not None:
             self.data_id = data_id
         elif meta_info:
             self._values_from_dict(meta_info)
-            
+
     @property
     def data_id(self):
         """
-        str 
+        str
             AeroCom data ID
         """
         return self._data_id
-    
+
     @data_id.setter
     def data_id(self, val):
         self._values = self._eval_data_id(val)
         self._data_id = val
-    
+
     @property
     def values(self):
         if self._values is not None:
             return self._values
         raise AttributeError('Meta value list is not set.')
-    
+
     @values.setter
     def values(self, val):
         if not isinstance(val, list) or not len(val) == len(self.KEYS):
             raise ValueError('Invalid input: need list of length {}'
                              .format(len(self.KEYS)))
-        # this will first create a data_id string from input values and 
+        # this will first create a data_id string from input values and
         # then call setter method to make sure the input is correct.
         self.data_id = self.from_values(val)
-        
+
     def to_dict(self):
         """Convert data_id to dictionary
-        
+
         Returns
         -------
-        dict 
+        dict
             dictionary with metadata information
         """
         if not len(self._values) == len(self.KEYS):
             self._eval_data_id(self.data_id)
         return dict(zip(self.KEYS, self._values))
-    
+
     def _values_from_dict(self, meta):
         vals = []
         for key in self.KEYS:
@@ -249,7 +248,7 @@ class AerocomDataID(object):
             vals.append(meta[key])
         self._data_id = self.from_values(vals)
         self._values = vals
-        
+
     @staticmethod
     def from_dict(meta):
         """
@@ -258,7 +257,7 @@ class AerocomDataID(object):
         Parameters
         ----------
         meta : dict
-            dictionary containing required keys (cf. :attr:`KEYS`) and 
+            dictionary containing required keys (cf. :attr:`KEYS`) and
             corresponding values to create an data_id
 
         Raises
@@ -272,12 +271,12 @@ class AerocomDataID(object):
 
         """
         return AerocomDataID(**meta)
-        
+
     @staticmethod
     def from_values(values):
         """
-        Create data_id from list of values 
-        
+        Create data_id from list of values
+
         Note
         ----
         The values have to be in the right order, cf. :attr:`KEYS`
@@ -302,7 +301,7 @@ class AerocomDataID(object):
             raise ValueError('Need 4 entries model_name, meteo_config, '
                              'experiment, perturbation')
         return '{}-{}_{}-{}'.format(*values)
-            
+
     def _eval_data_id(self, val):
         """
         Check and extract meta information from input data_id
@@ -315,19 +314,19 @@ class AerocomDataID(object):
         Raises
         ------
         ValueError
-            if input is not string or is not in format 
-            <model_name>-<meteo_config>_<experiment>-<perturbation>    
+            if input is not string or is not in format
+            <model_name>-<meteo_config>_<experiment>-<perturbation>
 
         Returns
         -------
-        values 
+        values
             DESCRIPTION.
 
         """
         if not isinstance(val, str):
             raise ValueError('Invalid input for data_id. Need str. Got {}'
                              .format(val))
-        
+
         values = [''] * len(self.KEYS)
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
@@ -336,11 +335,11 @@ class AerocomDataID(object):
                                  .format(val))
             values[0] = val
             return values
-            
+
         sub = spl[0].split(self.SUBDELIM, 1)
         if len(sub) == 2:
             values[0] = sub[0] #model_name
-            
+
             meteo = sub[1]
             if meteo.startswith('met'):
                 values[1] = meteo #meteo_config
@@ -351,7 +350,7 @@ class AerocomDataID(object):
                 values[0] = spl[0]
         else:
             values[0] = spl[0]
-            
+
         sub = spl[1].split(self.SUBDELIM, 1)
         if len(sub) == 2:
             values[2] = sub[0]
@@ -359,26 +358,24 @@ class AerocomDataID(object):
         else:
             values[2] = spl[1]
         return values
-    
+
     def __eq__(self, other):
         return True if self._data_id == str(other) else False
-    
+
     def __repr__(self):
-        return self._data_id 
-    
+        return self._data_id
+
     def __str__(self):
         return self._data_id
 
-    
 if __name__ == '__main__':
     meta = StationMetaData(data_id = 'AeronetSunV3Lev2.daily',
                            ts_type = 'blaaaa')
     print(meta)
     print(meta.dataset_str())
-    
-    
+
     data_id = AerocomDataID('EMEP-met2010_EXP-PERT')
-    
+
     dd = data_id.to_dict()
-    
+
     assert AerocomDataID(**dd) == AerocomDataID.from_dict(dd)

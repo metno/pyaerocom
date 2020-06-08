@@ -42,7 +42,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              **kwargs):
     """Colocate 2 gridded data objects
 
-
     Todo
     ----
     - think about vertical dimension (vert_scheme input not used at the moment)
@@ -200,7 +199,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                     min_num_obs=min_num_obs,
                     how=resample_how)
 
-
         else:
             gridded_data = gridded_data.resample_time(
                     ref_ts_type,
@@ -247,7 +245,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     files_ref = [os.path.basename(x) for x in gridded_data_ref.from_files]
     files = [os.path.basename(x) for x in gridded_data.from_files]
 
-
     meta = {'data_source'       :   [gridded_data_ref.data_id,
                                      gridded_data.data_id],
             'var_name'          :   [var_ref, var],
@@ -287,7 +284,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     time = gridded_data.time_stamps().astype('datetime64[ns]')
     lats = gridded_data.latitude.points
     lons = gridded_data.longitude.points
-
 
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
@@ -570,6 +566,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     lon0, lon1 = float(np.min(gridded_data.longitude.points)), float(np.max(gridded_data.longitude.points))
 
     all_stats = ungridded_data.to_station_data_all(
+
             vars_to_convert=var_ref,
             start=obs_start,
             stop=obs_stop,
@@ -578,7 +575,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             latitudes = [lat0, lat1],
             longitudes = [lon0, lon1],
             **kwargs)
-
 
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
@@ -608,11 +604,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     pd_freq = TsType(col_freq).to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
 
+    coldata = np.empty((2, len(time_idx), len(obs_stat_data)))
+
     lons = []
     lats = []
     alts = []
     station_names = []
-
 
     ungridded_unit = None
     ts_type_src_ref = None
@@ -620,11 +617,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded_unit = str(gridded_data.units)
     else:
         gridded_unit = None
-
-
-    coldata = np.empty((2, len(time_idx), len(obs_stat_data)))
-
-
 
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
@@ -745,7 +737,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'apply_constraints' :   apply_time_resampling_constraints,
             'min_num_obs'       :   min_num_obs,
             'outliers_removed'  :   remove_outliers}
-
 
     meta.update(regfilter.to_dict())
 
@@ -900,7 +891,6 @@ if __name__=='__main__':
     #modeldata.resample_time('yearly').quickplot_map()
 
     #obsdata = pya.io.ReadUngridded().read(obs_id, 'concso4').set_flags_nan()
-
 
     rsh = {'daily': {'hourly': 'max'}}
 
