@@ -46,7 +46,8 @@ ADD_PATHS = {
 TEST_PATHS = {
 
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
-    'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE)
+    'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE),
+    'coldata_tm5_aeronet': 'coldata/od550aer_REF-AeronetSunV3Lev2.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
 
     }
 TEST_PATHS.update(ADD_PATHS)
@@ -125,6 +126,11 @@ def data_tm5():
     return data
 
 @pytest.fixture(scope='session')
+def coldata_tm5_aeronet():
+    fpath = TESTDATADIR.joinpath(TEST_PATHS['coldata_tm5_aeronet'])
+    return cth._load_coldata_tm5_aeronet_from_scratch(fpath)
+
+@pytest.fixture(scope='session')
 def aasetal_data():
     reader = ReadAasEtal()
     # that's quite time consuming, so keep it for possible usage in other
@@ -136,6 +142,8 @@ def aeronetsunv3lev2_subset():
     r = ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
     #return r.read(vars_to_retrieve=TEST_VARS)
     return r.read(vars_to_retrieve=TEST_VARS_AERONET)
+
+
 
 @pytest.fixture(scope='session')
 def data_scat_jungfraujoch():
