@@ -554,16 +554,20 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
     if od_ref_alt in data:
         # fill up time steps that are nans with values calculated from the
         # alternative wavelength to minimise gaps in the time series
-        mask = np.argwhere(np.isnan(result))
 
+        # UPDATED BY JGLISS ON 8.6.2020
+        #mask = np.argwhere(np.isnan(result))
+        mask = np.isnan(result)
         if len(mask) > 0: #there are nans
             ods_alt = data[od_ref_alt][mask]
-            ang = data[use_angstrom_coeff][mask]
-            replace = compute_od_from_angstromexp(to_lambda=to_lambda,
-                                                    od_ref=ods_alt,
-                                                    lambda_ref=lambda_ref_alt,
-                                                    angstrom_coeff=ang)
-            result[mask] = replace
+            if not np.isnan(ods_alt).all():
+
+                ang = data[use_angstrom_coeff][mask]
+                replace = compute_od_from_angstromexp(to_lambda=to_lambda,
+                                                        od_ref=ods_alt,
+                                                        lambda_ref=lambda_ref_alt,
+                                                        angstrom_coeff=ang)
+                result[mask] = replace
 
     return result
 
