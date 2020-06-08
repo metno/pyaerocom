@@ -12,7 +12,6 @@ from pyaerocom import __version__ as pya_ver
 from pyaerocom.tstype import TsType
 from pyaerocom.helpers import isnumeric
 from pyaerocom.exceptions import (ColocationError,
-from pyaerocom.exceptions import (ColocationError,
                                   DataUnitError,
                                   DimensionOrderError,
                                   MetaDataError,
@@ -66,20 +65,20 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         :class:`GriddedData` object is used
     filter_name : str
         string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
-        details). If None, then it is set to 'WORLD-wMOUNTAINS', which 
-        corresponds to no filtering (world with mountains). 
+        details). If None, then it is set to 'WORLD-wMOUNTAINS', which
+        corresponds to no filtering (world with mountains).
         Use WORLD-noMOUNTAINS to exclude mountain sites.
     regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         objects will be regridded in lon / lat dimension to the input
         resolution.
     remove_outliers : bool
-        if True, outliers are removed from model and obs data before colocation, 
+        if True, outliers are removed from model and obs data before colocation,
         else not.
     vert_scheme : str
-        string specifying scheme used to reduce the dimensionality in case 
-        input grid data contains vertical dimension. Example schemes are 
-        `mean, surface, altitude`, for details see 
+        string specifying scheme used to reduce the dimensionality in case
+        input grid data contains vertical dimension. Example schemes are
+        `mean, surface, altitude`, for details see
         :func:`GriddedData.to_time_series`.
     harmonise_units : bool
         if True, units are attempted to be harmonised (note: raises Exception
@@ -95,45 +94,45 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         like `var_outlier_ranges` but for reference dataset.
     update_baseyear_gridded : int, optional
         optional input that can be set in order to redefine the time dimension
-        in the gridded data object to be analysed. E.g., if the data object 
+        in the gridded data object to be analysed. E.g., if the data object
         is a climatology (one year of data) that has set the base year of the
-        time dimension to a value other than the specified input start / stop 
-        time this may be used to update the time in order to make colocation 
+        time dimension to a value other than the specified input start / stop
+        time this may be used to update the time in order to make colocation
         possible.
     apply_time_resampling_constraints : bool, optional
-        if True, then time resampling constraints are applied as provided via 
+        if True, then time resampling constraints are applied as provided via
         :attr:`min_num_obs` or if that one is unspecified, as defined in
-        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than 
+        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
         :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
         (which defaults to True !!).
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
     colocate_time : bool
         if True and if original time resolution of data is higher than desired
-        time resolution (`ts_type`), then both datasets are colocated in time 
-        *before* resampling to lower resolution. 
+        time resolution (`ts_type`), then both datasets are colocated in time
+        *before* resampling to lower resolution.
     var_keep_outliers : bool
-        if True, then no outliers will be removed from dataset to be analysed, 
+        if True, then no outliers will be removed from dataset to be analysed,
         even if `remove_outliers` is True. That is because for model evaluation
         often only outliers are supposed to be removed in the observations but
         not in the model.
     var_ref_keep_outliers : bool
-        if True, then no outliers will be removed from the reference dataset, 
+        if True, then no outliers will be removed from the reference dataset,
         even if `remove_outliers` is True.
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
-        Default is "mean". Can also be a nested dictionary, e.g. 
+        Default is "mean". Can also be a nested dictionary, e.g.
         resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
-        to aggregate from hourly to daily, rather than the mean. 
+        to aggregate from hourly to daily, rather than the mean.
     **kwargs
-        additional keyword args (not used here, but included such that factory 
+        additional keyword args (not used here, but included such that factory
         class can handle different methods with different inputs)
-    
+
     Returns
     -------
     ColocatedData
         instance of colocated data
-        
+
     """
     if vert_scheme is not None:
         raise NotImplementedError('Input vert_scheme cannot yet be handled '
@@ -143,10 +142,10 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         var_outlier_ranges = {}
     if var_ref_outlier_ranges is None:
         var_ref_outlier_ranges = {}
-    
+
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
-    
+
     if gridded_data.var_info.has_unit:
         if harmonise_units and not gridded_data.units == gridded_data_ref.units:
             try:
@@ -155,21 +154,21 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                 raise DataUnitError('Failed to merge data unit of reference '
                                     'gridded data object ({}) to data unit '
                                     'of gridded data object ({})'
-                                    .format(gridded_data.units, 
+                                    .format(gridded_data.units,
                                             gridded_data_ref.units))
-    
+
     var, var_ref = gridded_data.var_name, gridded_data_ref.var_name
     if remove_outliers:
-        low, high, low_ref, high_ref = None, None, None, None    
+        low, high, low_ref, high_ref = None, None, None, None
         if var in var_outlier_ranges:
             low, high = var_outlier_ranges[var]
         if var_ref in var_ref_outlier_ranges:
             low_ref, high_ref = var_ref_outlier_ranges[var_ref]
-    
+
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
         gridded_data.base_year = update_baseyear_gridded
-        
+
     if regrid_res_deg is not None:
         if not isinstance(regrid_res_deg, dict):
             if not isnumeric(regrid_res_deg):
@@ -182,55 +181,55 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                                    **regrid_res_deg)
     # perform regridding
     if gridded_data.lon_res < gridded_data_ref.lon_res: #obs has lower resolution
-        gridded_data = gridded_data.regrid(gridded_data_ref, 
+        gridded_data = gridded_data.regrid(gridded_data_ref,
                                            scheme=regrid_scheme)
     else:
-        gridded_data_ref = gridded_data_ref.regrid(gridded_data, 
+        gridded_data_ref = gridded_data_ref.regrid(gridded_data,
                                                    scheme=regrid_scheme)
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
     grid_stop = to_pandas_timestamp(gridded_data.stop)
-    
+
     grid_start_ref = to_pandas_timestamp(gridded_data_ref.start)
     grid_stop_ref = to_pandas_timestamp(gridded_data_ref.stop)
-    
+
     # time resolution of dataset to be analysed
     grid_ts_type = grid_ts_type_src = gridded_data.ts_type
     ref_ts_type = ref_ts_type_src = gridded_data_ref.ts_type
     if ref_ts_type != grid_ts_type:
         # ref data is in higher resolution
         if TsType(ref_ts_type) > TsType(grid_ts_type):
-            
+
             gridded_data_ref = gridded_data_ref.resample_time(
                     grid_ts_type,
-                    apply_constraints=apply_time_resampling_constraints, 
-                    min_num_obs=min_num_obs, 
+                    apply_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
                     how=resample_how)
-            
-                
+
+
         else:
             gridded_data = gridded_data.resample_time(
                     ref_ts_type,
-                    apply_constraints=apply_time_resampling_constraints, 
-                    min_num_obs=min_num_obs, 
+                    apply_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
                     how=resample_how)
             grid_ts_type = ref_ts_type
     # now both are in same temporal resolution
-    
-    # input ts_type is not specified or model is in lower resolution 
+
+    # input ts_type is not specified or model is in lower resolution
     # than input ts_type -> use model frequency to colocate
     if ts_type is None or TsType(grid_ts_type) < TsType(ts_type):
         ts_type = grid_ts_type
-    
+
     if start is None:
         start = grid_start
     else:
-        start = to_pandas_timestamp(start)    
+        start = to_pandas_timestamp(start)
     if stop is None:
         stop = grid_stop
     else:
         stop = to_pandas_timestamp(stop)
-    
+
     if grid_start_ref > start:
         start = grid_start_ref
     if grid_stop_ref < stop:
@@ -242,19 +241,19 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              .format(start, stop, grid_start, grid_stop))
     gridded_data = gridded_data.crop(time_range=(start, stop))
     gridded_data_ref = gridded_data_ref.crop(time_range=(start, stop))
-    
+
     # perform region extraction (if applicable)
     regfilter = Filter(name=filter_name)
     gridded_data = regfilter(gridded_data)
     gridded_data_ref = regfilter(gridded_data_ref)
-    
+
     if not gridded_data.shape == gridded_data_ref.shape:
         raise ColocationError('Shape mismatch between two colocated data '
                                'arrays, please debug')
     files_ref = [os.path.basename(x) for x in gridded_data_ref.from_files]
     files = [os.path.basename(x) for x in gridded_data.from_files]
-    
-    
+
+
     meta = {'data_source'       :   [gridded_data_ref.data_id,
                                      gridded_data.data_id],
             'var_name'          :   [var_ref, var],
@@ -275,14 +274,14 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'pyaerocom'         :   pya_ver,
             'apply_constraints' :   apply_time_resampling_constraints,
             'min_num_obs'       :   min_num_obs}
-    
+
     meta.update(regfilter.to_dict())
     if remove_outliers:
         if not var_keep_outliers:
             gridded_data.remove_outliers(low, high)
         if not var_ref_keep_outliers:
             gridded_data_ref.remove_outliers(low_ref, high_ref)
-            
+
     data = gridded_data.grid.data
     if isinstance(data, np.ma.core.MaskedArray):
         data = data.filled(np.nan)
@@ -294,8 +293,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     time = gridded_data.time_stamps().astype('datetime64[ns]')
     lats = gridded_data.latitude.points
     lons = gridded_data.longitude.points
-    
-    
+
+
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
               'var_name'    : ('data_source', meta['var_name']),
@@ -304,14 +303,14 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
               'time'        : time,
               'latitude'    : lats,
               'longitude'   : lons}
-    
+
     dims = ['data_source', 'time', 'latitude', 'longitude']
-    
+
     data = ColocatedData(data=arr, coords=coords, dims=dims,
                          name=gridded_data.var_name, attrs=meta)
-    
+
     if grid_ts_type != ts_type:
-        data = data.resample_time(to_ts_type=ts_type, 
+        data = data.resample_time(to_ts_type=ts_type,
                                   colocate_time=colocate_time,
                                   apply_constraints=apply_time_resampling_constraints,
                                   min_num_obs=min_num_obs,
@@ -750,7 +749,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'min_num_obs'       :   min_num_obs,
             'outliers_removed'  :   remove_outliers}
 
-    
+
     meta.update(regfilter.to_dict())
 
     # create coordinates of DataArray
@@ -919,6 +918,5 @@ if __name__=='__main__':
     pya.plot.mapping.plot_nmb_map_colocateddata(coldata_max)
     pya.plot.mapping.plot_nmb_map_colocateddata(coldata_mean)
     #scoldata2.plot_scatter()
-    
 
-    
+
