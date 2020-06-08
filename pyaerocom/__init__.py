@@ -1,4 +1,4 @@
-from ._init_helpers import (_init_supplemental, _init_logger, 
+from ._init_helpers import (_init_supplemental, _init_logger,
                             LOGLEVELS, change_verbosity)
 __version__, __dir__ = _init_supplemental()
 
@@ -13,7 +13,7 @@ from .region import Region
 from .config import Config
 
 const = Config()
-    
+
 from . import metastandards
 from . import vertical_profile
 from . import mathutils
@@ -45,6 +45,3 @@ from .variable import get_variable
 from .utils import create_varinfo_table
 
 from .filter import Filter
-
-
-

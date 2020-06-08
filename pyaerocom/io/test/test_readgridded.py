@@ -21,42 +21,42 @@ def init_reader():
 @pytest.fixture(scope='session')
 def reader_reanalysis():
     return init_reader()
-    
+
 def test_ReadGridded_class_empty():
     r = ReadGridded()
     assert r.data_id == None
     assert r.data_dir == None
     from pyaerocom.io.aerocom_browser import AerocomBrowser
     assert isinstance(r.browser, AerocomBrowser)
-    
+
     failed = False
     try:
         r.years_avail
     except AttributeError:
         failed = True
     assert failed
-    assert r.vars_filename == []  
-    
-@lustre_unavail    
+    assert r.vars_filename == []
+
+@lustre_unavail
 def test_file_info(reader_reanalysis):
     assert isinstance(reader_reanalysis.file_info, DataFrame)
     assert len(reader_reanalysis.file_info.columns) == 12, 'Mismatch colnum file_info (df)'
 
-@lustre_unavail    
+@lustre_unavail
 def test_years_available(reader_reanalysis):
     years = list(range(2003, 2020)) + [9999]
-    npt.assert_array_equal(reader_reanalysis.years_avail, years)    
+    npt.assert_array_equal(reader_reanalysis.years_avail, years)
 
 @lustre_unavail
 def test_data_dir(reader_reanalysis):
     assert reader_reanalysis.data_dir.endswith('aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed')
-    
-@lustre_unavail    
+
+@lustre_unavail
 def test_read_var(reader_reanalysis):
     from numpy import datetime64
     d = reader_reanalysis.read_var(var_name="od550aer", ts_type="daily",
                          start=START, stop=STOP)
-    
+
     from pyaerocom import GriddedData
     assert isinstance(d, GriddedData)
     npt.assert_array_equal([d.var_name, sum(d.shape), d.start, d.stop],
@@ -73,14 +73,14 @@ def test_read_var(reader_reanalysis):
 
 @lustre_unavail
 def test_prefer_longer(reader_reanalysis):
-    daily = reader_reanalysis.read_var('od550aer', ts_type='monthly', 
+    daily = reader_reanalysis.read_var('od550aer', ts_type='monthly',
                              flex_ts_type=True,
                              prefer_longer=True)
     assert daily.ts_type == 'daily'
-    
+
 @lustre_unavail
 def test_read_vars(reader_reanalysis):
-    data = reader_reanalysis.read(['od440aer', 'od550aer', 'od865aer'], 
+    data = reader_reanalysis.read(['od440aer', 'od550aer', 'od865aer'],
                         ts_type="daily", start=START, stop=STOP)
     vals = [len(data),
             sum(data[0].shape),
@@ -88,10 +88,6 @@ def test_read_vars(reader_reanalysis):
             sum(data[2].shape)]
     nominal = [3, 2307, 2307, 2307]
     npt.assert_array_equal(vals, nominal)
-    
 
-    
 if __name__=="__main__":
     pytest.main(['./test_readgridded.py'])
-    
-    

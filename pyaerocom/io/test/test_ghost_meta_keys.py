@@ -3,7 +3,7 @@
 """
 Metadata keys from GHOST that only depend on station dimension
 
-THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION 
+THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION
 PROVIDED BY BSC
 """
 from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS as actual_keys
@@ -156,6 +156,6 @@ desired_keys = [
 
 def test_ghost_meta_keys():
     assert actual_keys == desired_keys
-    
+
 if __name__ == '__main__':
     test_ghost_meta_keys()

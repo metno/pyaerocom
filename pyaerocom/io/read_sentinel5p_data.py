@@ -40,7 +40,6 @@ import logging
 from pyaerocom import const
 from pyaerocom.ungriddeddata import UngriddedData
 
-
 class ReadL2Data(ReadL2DataBase):
     """Interface for reading various Sentinel5P L2 data
 
@@ -65,7 +64,6 @@ class ReadL2Data(ReadL2DataBase):
     _QANAME = 'qa_index'
     DEFAULT_VARS = [_O3NAME]
     PROVIDES_VARIABLES = [_NO2NAME, _O3NAME]
-
 
     SUPPORTED_DATASETS = []
     SUPPORTED_DATASETS.append(DATA_ID)
@@ -113,8 +111,6 @@ class ReadL2Data(ReadL2DataBase):
         self._HEIGHTSTEPNO = 24
         self.SUPPORTED_SUFFIXES.append('.nc')
 
-
-
         # create a dict with the aerocom variable name as key and the index number in the
         # resulting numpy array as value.
         # INDEX_DICT = {}
@@ -151,7 +147,6 @@ class ReadL2Data(ReadL2DataBase):
         # QUALITY_FLAGS.update({_NO2NAME: 0.5}) #cloudy
         self.QUALITY_FLAGS.update({self._O3NAME: 0.7})
 
-
         self.CODA_READ_PARAMETERS[self._NO2NAME] = {}
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'] = {}
         self.CODA_READ_PARAMETERS[self._NO2NAME]['vars'] = {}
@@ -160,7 +155,6 @@ class ReadL2Data(ReadL2DataBase):
         self.CODA_READ_PARAMETERS[self._O3NAME]['metadata'] = {}
         self.CODA_READ_PARAMETERS[self._O3NAME]['vars'] = {}
         self.CODA_READ_PARAMETERS[self._O3NAME]['time_offset'] = np.float_(24. * 60. * 60.)
-
 
         # self.CODA_READ_PARAMETERS[DATASET_NAME]['metadata'][_TIME_NAME] = 'PRODUCT/time_utc'
         self.CODA_READ_PARAMETERS[self._NO2NAME]['metadata'][self._TIME_NAME] = 'PRODUCT/time'
@@ -255,7 +249,6 @@ class ReadL2Data(ReadL2DataBase):
             self._TM5_CONSTANT_B_NAME = 'tm5_constant_b'
             self._TM5_CONSTANT_B_INDEX = self._TM5_CONSTANT_A_INDEX + 1
 
-
             self._COLNO = self._TM5_CONSTANT_B_INDEX + 1
             self.INDEX_DICT.update({self._AVERAGINGKERNELNAME: self._AVERAGINGKERNELINDEX})
             self.INDEX_DICT.update({self._LEVELSNAME: self._LEVELSINDEX})
@@ -341,7 +334,6 @@ class ReadL2Data(ReadL2DataBase):
         # field name whose size determines the number of time steps in a product
         self.TSSIZENAME=self._TIME_OFFSET_NAME
 
-
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
             # if self.logger.hasHandlers():
@@ -399,8 +391,6 @@ class ReadL2Data(ReadL2DataBase):
                     column 4: altitude
 
                     Note: negative values are put to np.nan already
-
-
 
         """
 
@@ -817,7 +807,6 @@ class ReadL2Data(ReadL2DataBase):
                 ds[var + '_numobs'] = (lat_dim_name, lon_dim_name), np.reshape(_data[var]['numobs'], (
                     len(_data[lat_dim_name]), len(_data[lon_dim_name])))
 
-
             # add attributes to variables
             for var in ds.variables:
                 # add predifined attributes
@@ -931,7 +920,6 @@ class ReadL2Data(ReadL2DataBase):
             # 1 by on degree grid on emep domain
             pass
 
-
         pass
 
         if isinstance(data, xr.Dataset):
@@ -940,7 +928,6 @@ class ReadL2Data(ReadL2DataBase):
         else:
             super().to_grid(data=None, vars=None, gridtype=gridtype, engine='python', return_data_for_gridding=False)
     ###################################################################################
-
 
     #####################################################################################
 
@@ -985,9 +972,6 @@ class ReadL2Data(ReadL2DataBase):
                                                      >= lat_min)
                 lats_remaining = _data[self._LATITUDENAME][matching_indexes_lat_max[0][matching_indexes_lat_min[0]]]
 
-
-
-
                 matching_indexes = np.where(ret_data[:, self._LATINDEX] <= lat_max)
                 ret_data = ret_data[matching_indexes[0], :]
                 # logging.warning('len after lat_max: {}'.format(len(ret_data)))
@@ -1004,13 +988,9 @@ class ReadL2Data(ReadL2DataBase):
                 _data._data = ret_data
                 return _data
 
-
         else:
 
             super().select_bbox(_data, bbox)
-
-
-
 
 if __name__ == "__main__":
     """small test for the sentinel5p reading...
@@ -1217,7 +1197,7 @@ if __name__ == "__main__":
     vars_to_retrieve = options['variables'].copy()
 
     data_numpy = obj.read(files=options['files'], vars_to_retrieve=vars_to_retrieve[0],
-                          local_temp_dir=default_local_temp_dir, return_as='dict')
+                          local_temp_dir=options['tempdir'], return_as='dict')
 
     # limit data to EMEP CAMS domain
     if options['emepflag']:
@@ -1282,4 +1262,3 @@ if __name__ == "__main__":
                              global_attributes=global_attributes,
                              data_to_write=gridded_var_data,
                              gridded=True)
-

@@ -33,7 +33,6 @@
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
 
-
 #import pdb
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -128,7 +127,7 @@ def plotmaps(data, verbose = False, filter ="WORLD", var="od550aer",
                 # plt.ylabel(_title(plot_defn.coords[0], with_units=True))
                 # plot_defn = iplt._get_plot_defn(cube, mode, ndims)
 
-                plt.colorbar(spacing='uniform', ticks=colorbar_ticks, 
+                plt.colorbar(spacing='uniform', ticks=colorbar_ticks,
                              boundaries=colorbar_levels, extend='max')
 
                 ax.coastlines()

@@ -70,7 +70,7 @@ class TimeResampler(object):
                                  .format(from_mul, from_ts_type))
         start = valid.index(from_ts_type.base)
         stop = valid.index(to_ts_type.base)
-        
+
         last_from = valid[start]
         idx = []
         for i in range(start+1, stop+1):
@@ -126,7 +126,7 @@ class TimeResampler(object):
         """
         if how is None:
             how = 'mean'
-        
+
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
 
@@ -141,7 +141,7 @@ class TimeResampler(object):
         self.last_setup = dict(apply_constraints=False,
                                min_num_obs=None,
                                how=how)
-        
+
         if not apply_constraints or from_ts_type is None:
             freq = to_ts_type.to_pandas_freq()
             if not isinstance(how, str):
@@ -178,7 +178,7 @@ class TimeResampler(object):
                               'of data. Resampling will be applied anyways '
                               'which will introduce NaN values at missing '
                               'time stamps'.format(to_ts_type.val))
-            
+
             freq = to_ts_type.to_pandas_freq()
             return self.fun(self.input_data, freq=freq, how='mean',
                             **kwargs)
@@ -194,22 +194,19 @@ class TimeResampler(object):
             data = self.fun(data, freq=freq, how=rshow,
                             min_num_obs=mno)
         self.last_setup = dict(apply_constraints=True,
-                               min_num_obs=min_num_obs, 
+                               min_num_obs=min_num_obs,
                                how=how)
         return data
-
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
-
 
     data = pya.io.ReadGridded('AATSR_SU_v4.3').read_var('od550aer', start=2010)
     mon_iris = data.resample_time('monthly')
 
     mon_xarr = data.resample_time('monthly', apply_constraints=True,
                                   min_num_obs=1)
-
 
     plt.close('all')
     data = pya.io.ReadUngridded().read('EBASMC', 'concpm10')
