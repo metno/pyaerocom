@@ -558,6 +558,14 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         col_freq = str(grid_ts_type)#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
         obs_start = start
         obs_stop = stop
+
+
+    latitude = gridded_data.latitude.points
+    longitude = gridded_data.longitude.points
+    lat_range = [np.min(latitude), np.max(latitude)]
+    lon_range = [np.min(longitude), np.max(longitude)]
+    ungridded_data = ungridded_data.filter_by_meta(latitude=lat_range, longitude=lon_range)
+
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
     all_stats = ungridded_data.to_station_data_all(
@@ -573,12 +581,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
 
-# =============================================================================
-#     obs_stat_data = obs_stat_data[:5]
-#     ungridded_lats = ungridded_lats[:5]
-#     ungridded_lons = ungridded_lons[:5]
-#
-# =============================================================================
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError('Variable {} is not available in specified '
                                    'time interval ({}-{})'
