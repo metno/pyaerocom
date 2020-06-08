@@ -434,7 +434,6 @@ class UngriddedData(object):
         self._ROWNO += size
         logger.info("adding chunk, new array size ({})".format(self._data.shape))
 
-
     def _find_station_indices_wildcards(self, station_str):
         """Find indices of all metadata blocks matching input station name
 
@@ -471,7 +470,6 @@ class UngriddedData(object):
         ----------
         station_str : str
             station name
-
 
         Returns
         -------
@@ -517,7 +515,6 @@ class UngriddedData(object):
         reverse-geocode) to retrieve countries. This may be errouneous
         close to country borders as it uses eucledian distance based on a list
         of known locations.
-
 
         Note
         ----
@@ -931,8 +928,7 @@ class UngriddedData(object):
 
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None,
                             freq=None, by_station_name=True,
-                            ignore_index=None,
-                            **kwargs):
+                            ignore_index=None, **kwargs):
         """Convert all data to :class:`StationData` objects
 
         Creates one instance of :class:`StationData` for each metadata block in
@@ -1031,7 +1027,6 @@ class UngriddedData(object):
                         result[var].extend([np.nan]*num_points)
         result['num_stats'] = num_stats
         return result
-
 
     def _check_filter_match(self, meta, str_f, list_f, range_f, val_f):
         """Helper method that checks if station meta item matches filters
@@ -1556,8 +1551,6 @@ class UngriddedData(object):
         ...                                     altitude=[0, 1000])
         """
 
-
-
         if 'variables' in filter_attributes:
             raise NotImplementedError('Cannot yet filter by variables')
 
@@ -1680,7 +1673,6 @@ class UngriddedData(object):
         logger.info('Extracting dataset {} from data object'.format(data_id))
         return self.filter_by_meta(data_id=data_id)
 
-
     def extract_var(self, var_name, check_index=True):
         """Split this object into single-var UngriddedData objects
 
@@ -1747,7 +1739,6 @@ class UngriddedData(object):
                 stop = arr_idx + num_add
                 subset.meta_idx[meta_idx][var_name] = np.arange(start, stop)
 
-
                 subset._data[start:stop] = self._data[idx]
                 subset._data[start:stop, subset._METADATAKEYINDEX] = meta_idx
                 subset._data[start:stop, subset._VARINDEX] = 0
@@ -1797,7 +1788,6 @@ class UngriddedData(object):
             data._check_index()
         return data
 
-
     def _station_to_json_trends(self, var_name, station_name,
                                 freq, **kwargs):
         """Convert station data to json file for trends interface
@@ -1817,7 +1807,6 @@ class UngriddedData(object):
         if not isinstance(station_name, str):
             raise ValueError('Require station name (or pattern) as string')
         stat = self.to_station_data(station_name, var_name, freq=freq, **kwargs)
-
 
     def code_lat_lon_in_float(self):
         """method to code lat and lon in a single number so that we can use np.unique to
@@ -2336,7 +2325,6 @@ class UngriddedData(object):
                                     **kwargs)
         return stat.to_timeseries(var_name)
 
-
     def plot_station_timeseries(self, station_name, var_name, start=None,
                                 stop=None, ts_type=None,
                                 insert_nans=True, ax=None, **kwargs):
@@ -2449,8 +2437,6 @@ class UngriddedData(object):
                                  .format(var_name))
             info_str = var_name
 
-
-
         try:
             info_str += '_{}'.format(start_stop_str(start, stop, ts_type))
         except Exception:
@@ -2499,7 +2485,6 @@ class UngriddedData(object):
     def __contains__(self, key):
         """Check if input key (str) is valid dataset, variable, instrument or
         station name
-
 
         Parameters
         ----------

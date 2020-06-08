@@ -10,4 +10,3 @@ var_groups = {'EBASMC' : [
                 ['sc550aer', 'sc550dryaer','ac550aer'],
                 ['conco3'],
                 ['concpm10', 'concpm25']]}
-

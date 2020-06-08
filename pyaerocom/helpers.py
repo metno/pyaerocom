@@ -246,7 +246,6 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
         array is mapped to a value larger than the first one at the left end
         of the array)
 
-
     """
     from pyaerocom import const
     if len(coord_vals) < 2:
@@ -263,7 +262,6 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
     if abs(modulus - diff) > tol:
         return False
     return True
-
 
 def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
     """Make a cube from a numpy array
@@ -373,7 +371,6 @@ def infer_time_resolution(time_stamps):
     """
     import pandas as pd
     from pyaerocom import const
-
 
     if not isinstance(time_stamps, pd.DatetimeIndex):
         try:
@@ -849,7 +846,6 @@ def calc_climatology(s, start, stop, min_count=None,
 
     df = pd.DataFrame(sc)
     df['month'] = df.index.month
-
 
     clim = df.groupby('month').agg([resample_how, 'std','count'])
 

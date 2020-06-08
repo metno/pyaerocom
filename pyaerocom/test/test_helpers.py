@@ -40,7 +40,6 @@ def test__get_pandas_freq_and_loffset():
     val = helpers._get_pandas_freq_and_loffset('monthly')
     assert val == ('MS', '14D')
 
-
 def _make_timeseries_synthetic():
     from pandas import Series, date_range
     idx = date_range(start="2000",periods=90, freq='D')
@@ -132,14 +131,12 @@ if __name__=="__main__":
 
     import pandas as pd
 
-
     test_get_standarad_name()
     test_get_standard_unit()
     test_start_stop_from_year()
     test__get_pandas_freq_and_loffset()
     test_resample_timeseries(_make_timeseries_synthetic())
     test_same_meta_dict()
-
 
     stat1 = DATA_ACCESS['station_data1']
     stat2 = DATA_ACCESS['station_data2']

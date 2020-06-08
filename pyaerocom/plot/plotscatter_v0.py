@@ -22,8 +22,7 @@ xypos.append((0.3, 0.78))
 xypos.append((0.8, 0.1))
 xypos.append((0.8, 0.06))
 
-
-def plotscatter(model_name, model_data=None, obs_data=None, opts=None, 
+def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
                 verbose=True):
     """Method to plot scatterplots
 
@@ -35,16 +34,16 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
     """
     if verbose:
         change_verbosity(new_level='debug')
-        
+
     plt_name = 'SCATTERLOG'
     var_to_run = opts['VariablesToRun'][0]
-    
+
     # global settings (including plot settings) for variable
     VARS = const.VARS[var_to_run]
-    
+
     obs_network_name = opts['ObsNetworkName'][0]
-    obs_data_as_series = obs_data.to_timeseries(start_date=opts['StartDate'], 
-                                                end_date=opts['EndDate'], 
+    obs_data_as_series = obs_data.to_timeseries(start_date=opts['StartDate'],
+                                                end_date=opts['EndDate'],
                                                 freq='D')
     obs_lats = [obs_data_as_series[i]['latitude'] for i in range(len(obs_data_as_series))]
     obs_lons = [obs_data_as_series[i]['longitude'] for i in range(len(obs_data_as_series))]
@@ -54,7 +53,7 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
     # model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons,
     #                                                          times_as_dt64, var_name = [var_to_run])
 
-    model_data_as_series = model_data.to_time_series([("latitude", obs_lats), 
+    model_data_as_series = model_data.to_time_series([("latitude", obs_lats),
                                                       ("longitude", obs_lons)])
 
     df_time = pd.DataFrame()
@@ -115,7 +114,7 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
         plotname = "{} {}".format(years_covered[0], 'daily')
 
     logger.info(figname)
-    
+
     mean = df_time.mean()
     correlation_coeff = df_time.corr()
     # IDL: rms=sqrt(total((f_YData-f_Xdata)^2)/n_elements(f_YData))
@@ -140,7 +139,7 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
                          marker='+',
                          color='black')
     # plot the 1 by 1 line
-    plt.plot(VARS['scat_xlim'], 
+    plt.plot(VARS['scat_xlim'],
              VARS['scat_ylim'], '-', color='grey')
     plt.axes().set_aspect('equal')
 
@@ -148,47 +147,45 @@ def plotscatter(model_name, model_data=None, obs_data=None, opts=None,
     plt.ylim(VARS['scat_ylim'])
     xypos_index = 0
     var_str = var_to_run + VARS.unit_str
-    plt.axes().annotate("{} #: {} # st: {}".format(var_str, 
+    plt.axes().annotate("{} #: {} # st: {}".format(var_str,
                         len(df_time), station_no),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=14, color='red')
     xypos_index += 1
     plt.axes().annotate('Obs: {:.3f}'.format(mean[obs_network_name]),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=10, color='red')
     xypos_index += 1
     plt.axes().annotate('Mod: {:.3f}'.format(mean[model_name]),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=10, color='red')
     xypos_index += 1
     plt.axes().annotate('NMB: {:.1f}%'.format(nmb),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=10, color='red')
     xypos_index += 1
     plt.axes().annotate('MNMB: {:.1f}%'.format(mnmb),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=10, color='red')
     xypos_index += 1
     plt.axes().annotate('R: {:.3f}'.format(correlation_coeff.values[0, 1]),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=10, color='red')
     xypos_index += 1
     plt.axes().annotate('RMS: {:.3f}'.format(rms),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=10, color='red')
     xypos_index += 1
     plt.axes().annotate('FGE: {:.3f}'.format(fge),
-                        xy=xypos[xypos_index], xycoords='axes fraction', 
+                        xy=xypos[xypos_index], xycoords='axes fraction',
                         fontsize=10, color='red')
     # right lower part
     plt.axes().annotate('{}'.format(plotname),
-                        xy=xypos[-2], xycoords='axes fraction', ha='center', 
+                        xy=xypos[-2], xycoords='axes fraction', ha='center',
                         fontsize=10, color='black')
     plt.axes().annotate('{}'.format(filter_name),
-                        xy=xypos[-1], xycoords='axes fraction', ha='center', 
+                        xy=xypos[-1], xycoords='axes fraction', ha='center',
                         fontsize=10, color='black')
 
     plt.savefig(figname, dpi=300)
     plt.close()
-    
-

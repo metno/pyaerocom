@@ -10,10 +10,8 @@ from pyaerocom.conftest import geonum_unavail, etopo1_unavail, rg_unavail
 import numpy.testing as npt
 import pytest
 
-
 TEST_LAT = 50.8
 TEST_LON = 9
-
 
 @rg_unavail
 @pytest.mark.parametrize('coords,countries', [
@@ -25,23 +23,23 @@ def test_get_country_info_coords(coords, countries):
         assert isinstance(res, dict)
         assert 'country' in res
         assert res['country'] == countries[i]
-    
+
 def test_haversine():
     npt.assert_allclose(geodesy.haversine(0, 15, 0, 16), 111.2, atol=0.1)
-    
+
 def test_is_within_radius_km():
     assert geodesy.is_within_radius_km(0, 15, 0, 16, 1000, 111.2)
-    
+
 @geonum_unavail
 def test_srtm_altitude():
     npt.assert_almost_equal(geodesy.get_topo_altitude(TEST_LAT, TEST_LON), 207)
-    
+
 @geonum_unavail
 @etopo1_unavail
 def test_etopo_altitude():
     npt.assert_almost_equal(geodesy.get_topo_altitude(TEST_LAT, TEST_LON,
                                                       topo_dataset='etopo1'), 217)
-    
+
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
