@@ -26,6 +26,45 @@ from pyaerocom.helpers import (to_pandas_timestamp,
 from pyaerocom.filter import Filter
 from pyaerocom.colocateddata import ColocatedData
 
+def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
+    """
+    Regrid instance of `GriddedData`
+
+    Makes sure to handle different input options for `regrid_res_deg`.
+
+    Parameters
+    ----------
+    gridded : GriddedData
+        instance of :class:`GriddedData` that is supposed to be regridded.
+    regrid_scheme : str
+        iris scheme used for regridding (defaults to area weighted regridding)
+    regrid_res_deg : int or dict, optional
+        regrid resolution in degrees. If specified, the input gridded data
+        objects will be regridded in lon / lat dimension to the input
+        resolution (if input is integer, both lat and lon are regridded to that
+        resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
+        to specify regrid resolutions, respectively).
+
+    Raises
+    ------
+    ValueError
+        If input for `regrid_res_deg` is invalid.
+
+    Returns
+    -------
+    GriddedData
+        regridded data object
+
+    """
+    if not isinstance(regrid_res_deg, dict):
+        if not isnumeric(regrid_res_deg):
+            raise ValueError('Invalid input for regrid_res_deg. Need integer '
+                             'or dict specifying lat and lon res')
+        regrid_res_deg = dict(lat_res_deg=regrid_res_deg,
+                              lon_res_deg=regrid_res_deg)
+
+    return gridded.regrid(scheme=regrid_scheme, **regrid_res_deg)
+
 def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              start=None, stop=None, filter_name=None,
                              regrid_res_deg=None, remove_outliers=True,
@@ -172,15 +211,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         gridded_data.base_year = update_baseyear_gridded
 
     if regrid_res_deg is not None:
-        if not isinstance(regrid_res_deg, dict):
-            if not isnumeric(regrid_res_deg):
-                raise ValueError('Invalid input for regrid_res_deg. Need integer '
-                                 'or dict specifying lat and lon res')
-            regrid_res_deg = dict(lat_res_deg=regrid_res_deg,
-                                  lon_res_deg=regrid_res_deg)
-
-        gridded_data_ref = gridded_data_ref.regrid(scheme=regrid_scheme,
-                                                   **regrid_res_deg)
+        gridded_data_ref = _regrid_gridded(gridded_data_ref,
+                                           regrid_scheme,
+                                           regrid_res_deg)
     # perform regridding
     if gridded_data.lon_res < gridded_data_ref.lon_res: #obs has lower resolution
         gridded_data = gridded_data.regrid(gridded_data_ref,
@@ -555,15 +588,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded_data = gridded_data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
-        if not isinstance(regrid_res_deg, dict):
-            if not isnumeric(regrid_res_deg):
-                raise ValueError('Invalid input for regrid_res_deg. Need integer '
-                                 'or dict specifying lat and lon res')
-            regrid_res_deg = dict(lat_res_deg=regrid_res_deg,
-                                  lon_res_deg=regrid_res_deg)
-
-        gridded_data = gridded_data.regrid(scheme=regrid_scheme,
-                                           **regrid_res_deg)
+        gridded_data = _regrid_gridded(gridded_data, regrid_scheme,
+                                       regrid_res_deg)
 
     if remove_outliers and not var_ref_keep_outliers:
         ungridded_data.remove_outliers(var_ref, inplace=True,
