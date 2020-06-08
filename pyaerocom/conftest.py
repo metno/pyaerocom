@@ -143,8 +143,6 @@ def aeronetsunv3lev2_subset():
     #return r.read(vars_to_retrieve=TEST_VARS)
     return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
-
-
 @pytest.fixture(scope='session')
 def data_scat_jungfraujoch():
     r = ReadEbas()
