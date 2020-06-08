@@ -260,7 +260,6 @@ if __name__=="__main__":
 
     stats = first_ten.to_station_data_all()
 
-
     read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)
     data = read.read_first_file(vars_to_retrieve=['ang4487aer',
                                                   'ang4487aer_calc'])

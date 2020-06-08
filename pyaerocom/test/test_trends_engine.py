@@ -2,4 +2,3 @@
 # -*- coding: utf-8 -*-
 
 from pyaerocom.trends_engine import TrendsEngine
-

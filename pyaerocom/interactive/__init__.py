@@ -11,6 +11,6 @@ try:
     ipw_avail = True
 except Exception:
     ipw_avail = False
-    
+
 if ipw_avail:
     from .ipywidgets import ProgressBarLabelled

@@ -7,7 +7,7 @@ Created on Thu Jun 13 09:31:56 2019
 """
 
 VAR_MAPPING = {
-    
+
     'od550aer'      : ['AOD', '2D', 'Optical properties'],
     'od550csaer'    : ['AOD (clear sky)', '2D', 'Optical properties'],
     'od550lt1aer'   : ['AOD<1um', '2D', 'Optical properties'],

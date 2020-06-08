@@ -38,7 +38,6 @@ import logging
 from pyaerocom import const
 from pyaerocom.ungriddeddata import UngriddedData
 
-
 class ReadL2DataBase(ReadUngriddedBase):
     """Interface for reading various satellite's L2 data
 
@@ -630,8 +629,6 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         All the data points in data are considered!
 
-
-
         """
         import numpy as np
         import time
@@ -777,7 +774,6 @@ class ReadL2DataBase(ReadUngriddedBase):
             gridded_var_data[var]['stddev'] = grid_array_prot.copy()
             gridded_var_data[var]['numobs'] = grid_array_prot.copy()
 
-
         return data_for_gridding, \
                gridded_var_data,
 
@@ -844,8 +840,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         >>> m.scatter(x,y,3,marker='o',color='k')
         >>> plt.show()
 
-
-
         >>> infile='/lustre/storeB/project/fou/kl/vals5p/aerocom/Sentinel5P/renamed/aerocom.Sentinel5P.daily.sconcno2.2018.nc'
         >>> import xarray as xr
         >>> import cartopy.crs as ccrs
@@ -862,7 +856,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         >>> plot=mean_data.plot.pcolormesh(ax=ax, cmap='jet', transform=ccrs.PlateCarree(), robust=True, levels=16)
         >>> ax.coastlines()
         >>> ax.set_global()
-
 
         """
 
