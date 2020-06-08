@@ -71,7 +71,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         objects will be regridded in lon / lat dimension to the input
-        resolution.
+        resolution (if input is integer, both lat and lon are regridded to that
+        resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
+        to specify regrid resolutions, respectively).
     remove_outliers : bool
         if True, outliers are removed from model and obs data before colocation,
         else not.
@@ -369,10 +371,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         details). If None, then it is set to 'WORLD-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
         Use WORLD-noMOUNTAINS to exclude mountain sites.
-    regrid_res_deg : :obj:`int`, optional
+    regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         object will be regridded in lon / lat dimension to the input
-        resolution. (BETA feature)
+        resolution (if input is integer, both lat and lon are regridded to that
+        resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
+        to specify regrid resolutions, respectively).
     remove_outliers : bool
         if True, outliers are removed from model and obs data before colocation,
         else not. Outlier ranges can be specified via input args
