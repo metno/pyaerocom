@@ -8,10 +8,14 @@ Created on Mon Nov 25 15:27:28 2019
 import pytest
 import numpy as np
 import numpy.testing as npt
+import iris
+from cf_units import Unit
 
 from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
 from pyaerocom.colocation import colocate_gridded_ungridded
 from pyaerocom.colocateddata import ColocatedData
+from pyaerocom import GriddedData
+from pyaerocom import helpers
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
@@ -42,23 +46,30 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
 
     npt.assert_allclose(means, [obsmean, modmean], rtol=TEST_RTOL)
 
-@pytest.mark.skip(reason='No fixture for gridded observation data available yet')
-def test_colocate_gridded_gridded(mod, obs, addargs, **kwargs):
-    pass
-
-
-from pyaerocom.io.read_emep import ReadEMEP
 @testdata_unavail
-def test_colocate_gridded_ungridded_nonglobal(path_emep, aeronetsunv3lev2_subset):
-    # The EMEP dataset used here is on a non global grid, allowing us to test
-    # some features on colocating global with non global.
-    data_emep = ReadEMEP(path_emep['daily']).read_var('vmro3', ts_type='daily')
-    data_emep.var_name = 'od550aer'
-    data_emep.units = '1'
-    coldata = colocate_gridded_ungridded(data_emep, aeronetsunv3lev2_subset)
+def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
+    times = [1,2]
+    time_unit = Unit("days since 1990-1-1 0:0:0")
+    cubes = iris.cube.CubeList()
+
+    for time in times:
+        time_coord = iris.coords.DimCoord(time, units=time_unit, standard_name='time')
+        cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1, lat_range=[30.05,81.95], lon_range=[-29.5,89.95])
+        cube.add_aux_coord(time_coord)
+        cubes.append(cube)
+    time_cube = cubes.merge_cube()
+    gridded = GriddedData(time_cube)
+    gridded.var_name = 'od550aer'
+    gridded.units = Unit('1')
+    gridded.change_base_year(2018)
+
+    coldata = colocate_gridded_ungridded(gridded, aeronetsunv3lev2_subset, colocate_time=False)
     coords = coldata.coords
     assert len(coords['station_name']) == 1
 
+@pytest.mark.skip(reason='No fixture for gridded observation data available yet')
+def test_colocate_gridded_gridded(mod, obs, addargs, **kwargs):
+    pass
 
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.io.read_emep import ReadEMEP

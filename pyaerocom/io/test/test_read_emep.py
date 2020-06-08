@@ -21,7 +21,7 @@ def test_read_emep_data(path_emep):
     # r.filepath = path
     vars_provided = r.vars_provided
     assert isinstance(vars_provided, list)
-    assert r.vars_provided == ['vmro3']
+    assert 'vmro3' in vars_provided
 
     data = r.read_var('vmro3', ts_type='daily')
     assert isinstance(data, GriddedData)

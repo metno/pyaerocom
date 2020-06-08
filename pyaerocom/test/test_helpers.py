@@ -7,6 +7,7 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import numpy as np
 import pytest
+import xarray as xr
 from pyaerocom.conftest import DATA_ACCESS
 #import numpy.testing as npt
 from pyaerocom import helpers
@@ -131,6 +132,15 @@ def test_seconds_in_periods(date, ts_type, expected):
     ts = datetime64(date)
     seconds = helpers.seconds_in_periods(ts, ts_type)
     assert seconds == expected*seconds_in_day
+
+def test_extract_latlon_dataarray():
+    cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1, lat_range=[10,20], lon_range=[10,20])
+    data = xr.DataArray.from_iris(cube)
+    # First coordinate does not exist in the dataarray.
+    lat = [15,15, 18]
+    lon = [1,15, 18]
+    subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
+    assert isinstance(subset, xr.DataArray)
 
 
 if __name__=="__main__":

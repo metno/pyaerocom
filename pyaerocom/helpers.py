@@ -137,8 +137,15 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         arr_lon = arr[lon_dimname].data
         lat0, lat1 = arr_lat.min(), arr_lat.max()
         lon0, lon1 = arr_lon.min(), arr_lon.max()
-        lat = [x for x in lat if lat0 <= x <= lat1]
-        lon = [x for x in lon if lon0 <= x <= lon1]
+        new_lat = []
+        new_lon = []
+        for x, y in zip(lat, lon):
+            if (lat0 <= x <= lat1) and (lon0 <= y <= lon1):
+                new_lat.append(x)
+                new_lon.append(y)
+        if len(new_lat) == 0 and len(new_lon) == 0:
+            raise DataCoverageError('Coordinates not found in dataarray')
+        lat, lon = new_lat, new_lon
     if new_index_name is None:
         new_index_name = 'latlon'
     where = {lat_dimname : xray.DataArray(lat, dims=new_index_name),
