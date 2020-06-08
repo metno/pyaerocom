@@ -3,10 +3,9 @@
 """
 Metadata keys from GHOST that only depend on station dimension
 
-THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION 
+THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION
 PROVIDED BY BSC
 """
-
 
 GHOST_META_KEYS = [
     'EDGAR_v4.3.2_annual_average_BC_emissions',
@@ -153,4 +152,3 @@ GHOST_META_KEYS = [
     'street_type',
     'street_width'
 ]
-

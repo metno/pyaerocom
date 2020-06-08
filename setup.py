@@ -10,7 +10,6 @@ with open('VERSION.md') as f:
     print(version)
     f.close()
 
-
 setup(
     name        =   'pyaerocom',
     version     =   version,
@@ -28,7 +27,7 @@ setup(
                      'pyaerocom.test',
                      'pyaerocom.io.test',
                      'pyaerocom.scripts'],
-    #include_package_data = True,            
+    #include_package_data = True,
     package_data=   {'pyaerocom'    :   ['data/*']},
 
     classifiers=[

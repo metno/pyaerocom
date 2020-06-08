@@ -62,7 +62,6 @@ def cli():
     >>> obs_data.read()
     >>> pa.helpers.griesie_dataframe_testing(model_data, obs_data, startdate, enddate)
 
-
     >>> obs_data_as_series = obs_data.to_timeseries(start_date=startdate, end_date=enddate, freq='D')
     >>> obs_lats = obs_data.latitude
     >>> obs_lons = obs_data.longitude
@@ -85,14 +84,10 @@ def cli():
     >>> df_all=pd.DataFrame(columns=['obs', 'model'])
     >>>
 
-
-
-
     >>> # model time series at obs times with NaNs removed
     >>> model_series_at_obs_times = [model_data_as_series[i]['zdust'][obs_data_as_series[i]['zdust'].index].dropna()*1E3 for i in range(len(obs_data_as_series))]
     >>> #obs data at non NaN model data times
     >>> obs_series_at_model_times = [obs_data_as_series[i]['zdust'][model_series_at_obs_times[i].index] for i in range(len(model_series_at_obs_times))]
-
 
     >>> # model_at_obs_times = model_data_as_series[0]['zdust'][obs_data_as_series[0]['zdust'].index]
     >>> model_at_obs_times = list(itertools.chain.from_iterable([model_data_as_series[i]['zdust'][obs_data_as_series[i]['zdust'].index]*1E3 for i in range(len(obs_data_as_series))]))
@@ -119,7 +114,7 @@ def cli():
                         help="model names to use; can be a comma separated "
                               "list; use " + const.NOMODELNAME +
                              " for observations only",nargs="+")
-    parser.add_argument("-v", "--verbose", help="switch on verbosity", 
+    parser.add_argument("-v", "--verbose", help="switch on verbosity",
                         action='store_true')
     parser.add_argument("--variable", help="list of variables; comma seperated.")
     parser.add_argument("--modelyear",
@@ -218,7 +213,6 @@ def cli():
         options['PLOTSCATTER'] = args.plotscatter
     else:
         options['PLOTSCATTER'] = False
-
 
     if args.plotsitelocation:
         options['PLOTSITELOCATION'] = args.plotsitelocation
@@ -379,7 +373,6 @@ def cli():
                 # print(test_list)
                 #return ObsData
 
-
             else:
                 sys.stdout.write(
                     "ERROR: {0} is not a supported observation network name.\n".format(options['ObsNetworkName'][0]))
@@ -387,5 +380,3 @@ def cli():
 ###########################################################################################################################
 if __name__ == '__main__':
     cli()
-    
-

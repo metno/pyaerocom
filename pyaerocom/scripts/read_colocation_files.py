@@ -35,8 +35,6 @@
 """
 object to read colocation netcdf files
 
-
-
 """
 import os
 import glob
@@ -49,11 +47,9 @@ from pyaerocom.io.read_aeolus_l2a_data import ReadL2Data
 
 # import coda
 
-
 class ReadCoLocationData(ReadL2Data):
     __version__ = "0.01"
     DATASET_NAME = 'co-location data'
-
 
     def __init__(self, index_pointer=0, dataset_to_read=None, loglevel=logging.INFO, verbose=False):
         super().__init__(dataset_to_read)
@@ -630,7 +626,6 @@ class ReadCoLocationData(ReadL2Data):
 
                     # plot_data[data_name] = plot_out_arr.copy()
 
-
                 # now remove the very negative values used to make the interpolation work
                 plot_out_arr[np.where(plot_out_arr == filling_zero_val)] = np.nan
 
@@ -673,7 +668,6 @@ class ReadCoLocationData(ReadL2Data):
                     stat_info[data_name]['mean'] = np.nanmean(data_dict[data_name][:, self.INDEX_DICT[data_var]])
                     stat_info[data_name]['min'] = np.nanmin(data_dict[data_name][:, self.INDEX_DICT[data_var]])
                     stat_info[data_name]['max'] = np.nanmax(data_dict[data_name][:, self.INDEX_DICT[data_var]])
-
 
                 # plt_x = [30.,30.]
                 yticks.append(plot_handle[plot_index].axes.get_yticks())
@@ -839,7 +833,6 @@ class ReadCoLocationData(ReadL2Data):
 
     ###################################################################################
 
-
 if __name__ == '__main__':
     import logging
 
@@ -929,7 +922,6 @@ if __name__ == '__main__':
         options['modeldir'] = default_model_dir_start + options['retrieval']+'_test'
         options['aeolusdir'] = default_aeolus_dir_start + options['retrieval']+'_test'
 
-
     if args.logfile:
         options['logfile'] = args.logfile
         logging.basicConfig(filename=options['logfile'], level=logging.INFO)
@@ -939,7 +931,6 @@ if __name__ == '__main__':
 
     if args.endtime:
         options['endtime'] = np.datetime64(args.endtime).astype('datetime64[s]')
-
 
     if args.variables:
         options['variables'] = args.variables.split(',')

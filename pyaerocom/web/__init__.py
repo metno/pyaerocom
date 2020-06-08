@@ -5,4 +5,3 @@ from .helpers import ModelConfigEval, ObsConfigEval
 from .web_naming_conventions import VAR_MAPPING
 from .utils import *
 from .cli import *
-

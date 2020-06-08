@@ -84,7 +84,7 @@ def delete_all_coords_cube(cube, inplace=True):
 
 def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
                              lon_dimname=None, method='nearest',
-                             new_index_name=None):
+                             new_index_name=None, check_domain=True):
     """Extract individual lat / lon coordinates from `DataArray`
 
     Parameters
@@ -105,23 +105,15 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         how to interpolate to input coordinates (defaults to nearest neighbour)
     new_index_name : str, optional
         name of flattend latlon dimension (defaults to latlon)
+    check_domain : bool
+        if True, lat/lon domain of datarray is checked and all input coordinates
+        that are outside of the domain are ignored.
 
     Returns
     -------
     DataArray
         data at input coordinates
     """
-
-# =============================================================================
-#     if lat_dimname is None:
-#         for name in ['lat', 'latitude']:
-#             if name in arr.dims:
-#                 lat_dimname = name
-#     if lon_dimname is None:
-#         for name in ['lon', 'longitude']:
-#             if name in arr.dims:
-#                 lon_dimname = name
-# =============================================================================
     if lat_dimname is None:
         lat_dimname = 'lat'
     if lon_dimname is None:
@@ -140,6 +132,13 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         lat = [lat]
     if isinstance(lon, str):
         lon = [lon]
+    if check_domain:
+        arr_lat = arr[lat_dimname].data
+        arr_lon = arr[lon_dimname].data
+        lat0, lat1 = arr_lat.min(), arr_lat.max()
+        lon0, lon1 = arr_lon.min(), arr_lon.max()
+        lat = [x for x in lat if lat0 <= x <= lat1]
+        lon = [x for x in lon if lon0 <= x <= lon1]
     if new_index_name is None:
         new_index_name = 'latlon'
     where = {lat_dimname : xray.DataArray(lat, dims=new_index_name),
@@ -240,7 +239,6 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
         array is mapped to a value larger than the first one at the left end
         of the array)
 
-
     """
     from pyaerocom import const
     if len(coord_vals) < 2:
@@ -257,7 +255,6 @@ def check_coord_circular(coord_vals, modulus, rtol=1e-5):
     if abs(modulus - diff) > tol:
         return False
     return True
-
 
 def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
     """Make a cube from a numpy array
@@ -368,7 +365,6 @@ def infer_time_resolution(time_stamps):
     import pandas as pd
     from pyaerocom import const
 
-
     if not isinstance(time_stamps, pd.DatetimeIndex):
         try:
             time_stamps = pd.DatetimeIndex(time_stamps)
@@ -472,6 +468,7 @@ def get_tot_number_of_seconds(ts_type, dtime=None):
         # find seconds from dtime
         # TODO generalize this
         days_in_month = dtime.dt.daysinmonth
+
         return days_in_month*24*60*60
     else:
         return TS_TYPE_SECS[ts_type]
@@ -892,7 +889,6 @@ def calc_climatology(s, start, stop, min_count=None,
 
     df = pd.DataFrame(sc)
     df['month'] = df.index.month
-
 
     clim = df.groupby('month').agg([resample_how, 'std','count'])
 

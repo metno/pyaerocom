@@ -26,13 +26,11 @@ TESTDATA = [
 @pytest.mark.parametrize(('obs_id,reader'), TESTDATA)
 def test_get_ungridded_reader(obs_id, reader):
     assert name(utils.get_ungridded_reader(obs_id)) == name(reader)
-    
+
 @lustre_unavail
 def test_browse_database():
     assert 'TM5-met2010_AP3-CTRL2019' in utils.browse_database('*TM5*CTRL*')
-    
 
 if __name__=='__main__':
     import sys
     pytest.main(sys.argv)
-    
