@@ -24,7 +24,7 @@ def _apply_operator_cubes(cube1, cube2, operator_name,
                           'to correct for dimension definition errors'
                           .format(operator_name))
         if 'differing coordinates (time)' in repr(e):
-            iris.util.unify_time_units([cube1, cube2])    
+            iris.util.unify_time_units([cube1, cube2])
             attrs = {}
             attrs.update(cube1.coord('time').attributes)
             attrs.update(cube2.coord('time').attributes)
@@ -32,8 +32,8 @@ def _apply_operator_cubes(cube1, cube2, operator_name,
             cube1.coord('time').attributes = attrs
 
         elif allow_coord_merge:
-            copy_coords_cube(to_cube=cube2, 
-                             from_cube=cube1, 
+            copy_coords_cube(to_cube=cube2,
+                             from_cube=cube1,
                              inplace=True)
     return fun(cube1, cube2)
 
@@ -56,7 +56,7 @@ def _check_same_units(cube1, cube2):
     from pyaerocom import const
     var1 = cube1.var_name
     u1 = cube1.units
-    
+
     var2 = cube2.var_name
     u2 = cube2.units
 
@@ -66,7 +66,7 @@ def _check_same_units(cube1, cube2):
     elif var2 in const.VARS and u2 == const.VARS[var2]['units'] :
         cube1.convert_units(u2)
         return (cube1, cube2)
-    
+
     try:
         cube2.convert_units(u1)
         return (cube1, cube2)
@@ -82,7 +82,7 @@ def merge_meta_cubes(cube1, cube2):
         print_log.warning('WARNING: Failed to merge Cube metadata. Error: {}'
                           .format(repr(e)))
         return {'NOTE'  : 'MERGE_FAILED',
-                'meta1' : cube1.attributes, 
+                'meta1' : cube1.attributes,
                 'meta2' : cube2.attributes}
 
 def apply_rh_thresh_cubes(cube, rh_cube, rh_max=None):
@@ -99,49 +99,48 @@ def apply_rh_thresh_cubes(cube, rh_cube, rh_max=None):
     cube_out.attributes.update(cube.attributes)
     cube_out.attributes['rh_max'] = rh_max
     return cube_out
-    
-        
+
 def add_cubes(cube1, cube2):
     """Method to add cubes from 2 gridded data objects
     """
     cube1, cube2 = _check_input_iscube(cube1, cube2)
     cube1, cube2 = _check_same_units(cube1, cube2)
-    
-    cube_out = _apply_operator_cubes(cube1, cube2, 'add', 
+
+    cube_out = _apply_operator_cubes(cube1, cube2, 'add',
                                      allow_coord_merge=True)
-    
+
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
 
 def subtract_cubes(cube1, cube2):
     """Method to subtract 1 cube from another"""
     cube1, cube2 = _check_input_iscube(cube1, cube2)
-    cube1, cube2 = _check_same_units(cube1, cube2)    
-    
-    cube_out = _apply_operator_cubes(cube1, cube2, 'subtract', 
+    cube1, cube2 = _check_same_units(cube1, cube2)
+
+    cube_out = _apply_operator_cubes(cube1, cube2, 'subtract',
                                      allow_coord_merge=True)
-    
+
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
-   
+
 def multiply_cubes(cube1, cube2):
     """Method to multiply 2 cubes"""
     cube1, cube2 = _check_input_iscube(cube1, cube2)
-    cube_out = _apply_operator_cubes(cube1, cube2, 'multiply', 
+    cube_out = _apply_operator_cubes(cube1, cube2, 'multiply',
                                      allow_coord_merge=True)
-    
+
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
 
 def divide_cubes(cube1, cube2):
     """Method to divide 2 cubes with each other"""
     cube1, cube2 = _check_input_iscube(cube1, cube2)
-    cube_out = _apply_operator_cubes(cube1, cube2, 'divide', 
+    cube_out = _apply_operator_cubes(cube1, cube2, 'divide',
                                      allow_coord_merge=True)
-    
+
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
-   
+
 def lifetime_from_load_and_dep(load, wetdep, drydep):
     """Compute lifetime from load and wet and dry deposition"""
     raise NotImplementedError('Lifetime cannot be computed based on '
@@ -149,9 +148,9 @@ def lifetime_from_load_and_dep(load, wetdep, drydep):
     load, wetdep, drydep = _check_input_iscube(load, wetdep, drydep)
     deptot = _apply_operator_cubes(wetdep, drydep, 'add',
                                    allow_coord_merge=True)
-    
+
     deptot.attributes.update(merge_meta_cubes(wetdep, drydep))
-    
+
     cube_out = _apply_operator_cubes(load, deptot, 'divide',
                                      allow_coord_merge=True)
     cube_out.attributes.update(merge_meta_cubes(load, deptot))
@@ -159,7 +158,7 @@ def lifetime_from_load_and_dep(load, wetdep, drydep):
 
 def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     """Compute Angstrom coefficient cube based on 2 optical densitiy cubes
-    
+
     Parameters
     ----------
     cube1 : iris.cube.Cube
@@ -170,7 +169,7 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
         wavelength 1
     lambda 2 : float
         wavelength 2
-        
+
     Returns
     -------
     Cube
@@ -183,10 +182,10 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
         lambda1 = VarNameInfo(cube1.var_name).wavelength_nm
     if lambda2 is None:
         lambda2 = VarNameInfo(cube2.var_name).wavelength_nm
-    
+
     ratio = _apply_operator_cubes(cube1, cube2, 'divide')
     logr = iris.analysis.maths.log(ratio)
-    
+
     wvl_r = np.log(lambda1 / lambda2)
     cube_out = -1*iris.analysis.maths.divide(logr, wvl_r)
     cube_out.units = Unit('1')

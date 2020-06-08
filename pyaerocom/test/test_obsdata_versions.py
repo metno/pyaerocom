@@ -24,20 +24,19 @@ def test_revision_dates():
     for name in order:
         res.append([name, l[name]])
 
-    npt.assert_array_equal(res, 
-                           [['AeronetInvV2Lev2.daily', '20171216'], 
-                            ['AeronetInvV3Lev2.daily', '20200201'], 
-                            ['AeronetSDAV2Lev2.daily', '20180519'], 
-                            ['AeronetSDAV3Lev2.daily', '20200203'], 
-                            ['AeronetSunV2Lev2.daily', '20180519'], 
-                            ['AeronetSunV3Lev2.daily', '20200203'], 
-                            ['DMS_AMS_CVO', '20190807'], 
-                            ['EARLINET', '20190129'], 
-                            ['EBASMC', '20191218'], 
+    npt.assert_array_equal(res,
+                           [['AeronetInvV2Lev2.daily', '20171216'],
+                            ['AeronetInvV3Lev2.daily', '20200201'],
+                            ['AeronetSDAV2Lev2.daily', '20180519'],
+                            ['AeronetSDAV3Lev2.daily', '20200203'],
+                            ['AeronetSunV2Lev2.daily', '20180519'],
+                            ['AeronetSunV3Lev2.daily', '20200203'],
+                            ['DMS_AMS_CVO', '20190807'],
+                            ['EARLINET', '20190129'],
+                            ['EBASMC', '20191218'],
                             ['GAWTADsubsetAasEtAl', '20190522'],
                             ['GHOST.daily', '20200304']])
 
-    
 if __name__=="__main__":
     import sys
     pytest.main(sys.argv)

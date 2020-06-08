@@ -27,20 +27,19 @@ XYPOS.append((0.3, 0.78))
 XYPOS.append((0.8, 0.1))
 XYPOS.append((0.8, 0.06))
 
-
-def plotsitelocation(model_name, model_data=None, obs_data=None, options=None, 
+def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
                      verbose=True):
     """method to plot scatterplots"""
 
     plt_name = 'SITELOCATION'
     var_to_run = options['VariablesToRun'][0]
     obs_network_name = options['ObsNetworkName'][0]
-    obs_data_as_series = obs_data.to_timeseries(start_date=options['StartDate'], 
-                                                end_date=options['EndDate'], 
+    obs_data_as_series = obs_data.to_timeseries(start_date=options['StartDate'],
+                                                end_date=options['EndDate'],
                                                 freq='D')
-    obs_lats = [obs_data_as_series[i]['latitude'] 
+    obs_lats = [obs_data_as_series[i]['latitude']
                 for i in range(len(obs_data_as_series))]
-    obs_lons = [obs_data_as_series[i]['longitude'] 
+    obs_lons = [obs_data_as_series[i]['longitude']
                 for i in range(len(obs_data_as_series))]
     obs_names = [obs_data_as_series[i]['station_name']
                  for i in range(len(obs_data_as_series))]
@@ -49,7 +48,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
     # model_data_as_series = pa.helpers.to_time_series_griesie(model_station_data.grid.data, obs_lats, obs_lons,
     #                                                          times_as_dt64, var_name = [var_to_run])
 
-    model_data_as_series = model_data.to_time_series([("latitude", obs_lats), 
+    model_data_as_series = model_data.to_time_series([("latitude", obs_lats),
                                                       ("longitude", obs_lons)])
 
     df_time = pd.DataFrame()
@@ -80,7 +79,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
         # df_time has now all time steps where either one of the obs or model data have data
         #
         # df_points = df_points.append(pd.DataFrame(np.float_(df_time_temp.values), columns=df_time_temp.columns))
-        df_time = df_time.append(pd.DataFrame(df_time_temp, 
+        df_time = df_time.append(pd.DataFrame(df_time_temp,
                                               columns=df_time_temp.columns))
 
     # remove all indices where either one of the data pairs is NaN
@@ -119,7 +118,7 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
     lat_high = 90.
     lon_low = -180.
     lon_high = 180.
-    
+
     # TODO: review basemap dependency
     basemap_flag=False
     if basemap_flag and const.BASEMAP_AVAILABLE:
@@ -145,7 +144,6 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
         plot = plt.scatter(obs_lons, obs_lats, 8, marker='o', color='r')
         #plot.axes.set_aspect(1.8)
 
-
         # lon_formatter = LongitudeFormatter(number_format='.1f', degree_symbol='')
         # lat_formatter = LatitudeFormatter(number_format='.1f', degree_symbol='')
         # ax.xaxis.set_major_formatter(lon_formatter)
@@ -169,15 +167,11 @@ def plotsitelocation(model_name, model_data=None, obs_data=None, options=None,
                     horizontalalignment='left', fontsize=13,
                     color='black', bbox=dict(boxstyle='square', facecolor='white', edgecolor='none', alpha=0.7))
 
-
-
     plt.title(title, fontsize=13)
     plt.xticks(fontsize=11)
     plt.yticks(fontsize=11)
     plt.xlabel = 'longitude'
     plt.ylabel = 'latitude'
-
-
 
     plt.savefig(figname, dpi=300)
     plt.close()

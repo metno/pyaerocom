@@ -31,26 +31,26 @@ HA_TO_SQM = 10000   # hectar to square metre.
 
 # logic of hierarchy is: variable -> from unit -> to_unit -> conversion factor
 UCONV_MUL_FACS = pd.DataFrame([
-        
+
   ['concso4', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO4],
   ['concso2', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO2],
-  
+
   ['concbc', 'ug C/m3', 'ug m-3', 1.0],
   ['concoa', 'ug C/m3', 'ug m-3', 1.0],
   ['concoc', 'ug C/m3', 'ug m-3', 1.0],
   ['conctc', 'ug C/m3', 'ug m-3', 1.0],
-  
+
   ['wetso4', 'kg S/ha', 'kg m-2',  UCONV_FAC_S_SO4 / HA_TO_SQM],
   ['concso4pr', 'mg S/L', 'g m-3',  UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
 
 ], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
 
-# may be used to specify alternative names for custom units  defined 
+# may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
 UALIASES = {'ug S m-3' : 'ug S/m3',
             'ug C m-3' : 'ug C/m3'}
 # =============================================================================
-#     
+#
 # if sum(CONV_MUL_FACS.index.duplicated()) > 0:
 #     raise ValueError('Each unit can only be defined once')
 # =============================================================================
@@ -71,28 +71,28 @@ def unit_conversion_fac_custom(var_name, from_unit):
                                   'Reason: no custom conversion factor could '
                                   'be inferred from table '
                                   'pyaerocom.units_helpers.UCONV_MUL_FACS'
-                                  .format(from_unit, var_name))        
+                                  .format(from_unit, var_name))
     return (info.to, info.fac)
 
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
-    
+
     Note
     ----
     Input must be either instances of :class:`cf_units.Unit` class or string.
-    
+
     Parameters
     ----------
     from_unit : :obj:`cf_units.Unit`, or :obj:`str`
         unit to be converted
     to_unit : :obj:`cf_units.Unit`, or :obj:`str`
         final unit
-        
+
     Returns
     --------
     float
         multiplicative conversion factor
-        
+
     Raises
     ------
     ValueError
@@ -101,15 +101,15 @@ def unit_conversion_fac(from_unit, to_unit):
     if isinstance(from_unit, str):
         from_unit = cf_units.Unit(from_unit)
     try:
-        return from_unit.convert(1, to_unit)    
+        return from_unit.convert(1, to_unit)
     except ValueError:
         from pyaerocom.exceptions import UnitConversionError
         raise UnitConversionError('Failed to convert unit from {} to {}'
                                   .format(from_unit, to_unit))
 
 def convert_unit(data, from_unit, to_unit, var_name=None):
-    """Convert unit of data 
-    
+    """Convert unit of data
+
     Parameters
     ----------
     data : np.ndarray or similar
@@ -119,29 +119,29 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
     to_unit : cf_units.Unit or str
         new unit of input data
     var_name : str, optional
-        name of variable. If provided, method 
+        name of variable. If provided, method
         :func:`unit_conversion_fac_custom` is called before the standard unit
         conversion is applied. That requires that `var_name` is specified in
         :attr:`pyaerocom.molmasses.CONV_MUL_FACS`.
-    
+
     Returns
     -------
     data
         data in new unit
     """
     if var_name in UCONV_MUL_FACS.index:
-        from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name, 
+        from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name,
                                                              from_unit)
         data *= pre_conv_fac
-    
+
     conv_fac = unit_conversion_fac(from_unit, to_unit)
     if conv_fac != 1:
         data *= conv_fac
     return data
 
 def convert_unit_back(data, from_unit, to_unit, var_name=None):
-    """Convert unit of data 
-    
+    """Convert unit of data
+
     Parameters
     ----------
     data : np.ndarray or similar
@@ -151,22 +151,22 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
     to_unit : cf_units.Unit or str
         new unit of input data
     var_name : str, optional
-        name of variable. If provided, method 
+        name of variable. If provided, method
         :func:`unit_conversion_fac_custom` is called before the standard unit
         conversion is applied. That requires that `var_name` is specified in
         :attr:`pyaerocom.molmasses.CONV_MUL_FACS`.
-    
+
     Returns
     -------
     data
         data in new unit
-    
+
     """
     if var_name in UCONV_MUL_FACS.index:
-        from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name, 
+        from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name,
                                                              to_unit)
         data = np.divide(data, pre_conv_fac)
-    
+
     conv_fac = unit_conversion_fac(to_unit, from_unit)
     if conv_fac != 1:
         data = np.divide(data, conv_fac)
@@ -176,9 +176,9 @@ if __name__ == '__main__':
     df = UCONV_MUL_FACS
     print(df)
     import numpy as np
-    
+
     print(convert_unit(np.ones(3), 'ug S/m3', 'ug m-3', 'concso4'))
-    
+
     data = np.ones(10)
 
     unit = 'kg S/ha'

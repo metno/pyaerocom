@@ -17,13 +17,10 @@ from pyaerocom.io.aerocom_browser import AerocomBrowser
     ])
 def test_find_data_dir(searchstr, endswith):
     browser = AerocomBrowser()
-    
+
     data_dir = browser.find_data_dir(searchstr)
     assert data_dir.endswith(endswith)
-    
 
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
-
-    

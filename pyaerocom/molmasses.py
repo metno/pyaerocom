@@ -47,7 +47,7 @@ def get_species(var_name):
                 return species
     raise UnkownSpeciesError('Could not infer atom / molecule/ species from '
                              'var_name {}'.format(var_name))
-    
+
 def get_molmass(var_name):
     """
     Get molar mass for input variable
@@ -64,12 +64,3 @@ def get_molmass(var_name):
 
     """
     return MOLMASSES[get_species(var_name)]
-
-
-            
-            
-
-                    
-
-
-

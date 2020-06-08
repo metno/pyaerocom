@@ -30,19 +30,17 @@ def test_default_vert_grid(stat1):
 def test_has_var(stat1, stat2):
     assert stat1.has_var('od550aer')
     assert stat2.has_var('conco3')
-    
+
 def test_get_unit(stat1, stat2):
-    
+
     assert stat1.get_unit('ec550aer') == Unit('m-1')
     assert stat2.get_unit('ec550aer') == Unit('1/Mm')
-    
+
 def test_check_var_unit_aerocom(stat1):
     assert stat1.get_unit('ec550aer') == Unit('m-1')
     stat1.check_var_unit_aerocom('ec550aer')
     assert stat1.get_unit('ec550aer') == Unit('1/Mm')
-    
 
-    
 if __name__=="__main__":
     import sys
     pytest.main(sys.argv)
