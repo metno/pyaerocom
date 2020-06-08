@@ -932,7 +932,6 @@ class UngriddedData(object):
     def to_station_data_all(self, vars_to_convert=None, start=None, stop=None,
                             freq=None, by_station_name=True,
                             ignore_index=None,
-                            lat_range=None, lon_range=None,
                             **kwargs):
         """Convert all data to :class:`StationData` objects
 
@@ -987,12 +986,6 @@ class UngriddedData(object):
                                             merge_if_multi=True,
                                             allow_wildcards_station_name=False,
                                             **kwargs)
-
-                if lat_range and lon_range:
-                    lat_start, lat_stop = lat_range
-                    lon_start, lon_stop = lon_range
-                    if not ((lat_start <= data['latitude'] <= lat_stop) and (lon_start <= data['longitude'] <= lon_stop)):
-                        continue # Station not in lat/lon range, skip adding data
 
                 out_data['latitude'].append(data['latitude'])
                 out_data['longitude'].append(data['longitude'])
