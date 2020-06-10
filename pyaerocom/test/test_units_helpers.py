@@ -16,26 +16,30 @@ from pyaerocom.exceptions import UnitConversionError
 def test_unit_conversion_fac():
     assert helpers.unit_conversion_fac('m-1', '1/Mm') == 1e6
 
-# @testdata_unavail
-# @pytest.mark.parametrize('units', [
-#     's-1','1/s'
-#     ])
-# def test_implicit_to_explicit_rates_already_rate(data_tm5, units):
-#     # Function should not convert data that is already a rate
-#     data = data_tm5
-#     data.units = units
-#     assert data == helpers.implicit_to_explicit_rates(data, 'monthly')
+@testdata_unavail
+@pytest.mark.parametrize('units', [
+    's-1','1/s'
+    ])
+def test_implicit_to_explicit_rates_already_rate(data_tm5, units):
+    # Function should not convert data that is already a rate
+    data = data_tm5
+    data.units = units
+    new_data = helpers.implicit_to_explicit_rates(data, 'monthly')
+    new_data_values = new_data.to_xarray().values
+    data_values = data.to_xarray().values
+    assert (new_data_values == data_values).all()
 
 
 @testdata_unavail
 def test_implicit_to_explicit_rates_convert_data(data_tm5):
     data = data_tm5
-    data.units = 'kg/m2'
+    data.units = 'kg m-2'
+    new_data = helpers.implicit_to_explicit_rates(data, 'monthly')
+    assert isinstance(new_data, GriddedData)
+    assert new_data.units == 'kg m-2 s-1'
+    new_data_values = new_data.to_xarray().values
     data_values = data.to_xarray().values
-    helpers.implicit_to_explicit_rates(data, 'monthly')
-#    assert isinstance(converted, GriddedData)
-    assert data.units == 'kg/m2 s-1'
-    assert (data_values != data.to_xarray().values).all()
+    assert (new_data_values != data_values).all()
 
 if __name__=='__main__':
     import sys

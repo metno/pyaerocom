@@ -8,6 +8,8 @@ Created on Mon Sep 2 08:47:56 2019
 """
 import pandas as pd
 import cf_units
+import numpy as np
+
 from pyaerocom.helpers import seconds_in_periods
 from pyaerocom.exceptions import UnitConversionError
 # 1. DEFINITION OF MOLAR MASSES
@@ -177,7 +179,7 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
 def implicit_to_explicit_rates(gridded, ts_type):
     """
     Convert implicitly defined daily, monthly or yearly rates to
-    per second and update units accordingly.
+    per second. Update units and values accordingly.
 
     Some data should be per second but have units without time information
     information.
@@ -195,23 +197,23 @@ def implicit_to_explicit_rates(gridded, ts_type):
         Modified data, if not already a rate.
     """
 
-    # TODO: Only modify data if conversion is succesful
     from pyaerocom import GriddedData
     unit = gridded.units
     unit_string = str(unit)
     is_rate = ('/s' in unit_string) or ('s-1' in unit_string)
-    if not is_rate:
-        timestamps = gridded.time_stamps()
-        seconds_factor = seconds_in_periods(timestamps, ts_type)
-        new_gridded = gridded
-        data = new_gridded.to_xarray()
-        datarrs = []
+    if is_rate:
+        return gridded
+    else:
+        seconds_factor = seconds_in_periods(gridded.time_stamps(), ts_type)
+        data = gridded.to_xarray()
+        mult_fac = np.ones_like(data)
         for i in range(len(seconds_factor)):
-            datarrs.append(data.isel(time=i) / seconds_factor[i])
-        import xarray as xr
-        new_dataarray = xr.concat(datarrs, dim='time')
-        gridded.cube = new_dataarray.to_iris()
-        gridded.units = '{} s-1'.format(gridded.units) # append rate to format
+            mult_fac[i] *= seconds_factor[i]
+        result = data*mult_fac
+        cube = result.to_iris()
+        new_gridded = GriddedData()
+        new_gridded.grid = cube
+        new_gridded.units = '{} s-1'.format(gridded.units) # append rate to format
     return new_gridded
 
 if __name__ == '__main__':
