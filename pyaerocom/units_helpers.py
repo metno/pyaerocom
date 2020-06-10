@@ -177,7 +177,7 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
 def implicit_to_explicit_rates(gridded, ts_type):
     """
     Convert implicitly defined daily, monthly or yearly rates to
-    per second.
+    per second and update units accordingly.
 
     Some data should be per second but have units without time information
     information.
@@ -196,21 +196,22 @@ def implicit_to_explicit_rates(gridded, ts_type):
     """
 
     # TODO: Only modify data if conversion is succesful
-    new_gridded = gridded
+    from pyaerocom import GriddedData
     unit = gridded.units
     unit_string = str(unit)
     is_rate = ('/s' in unit_string) or ('s-1' in unit_string)
     if not is_rate:
-        raise NotImplementedError('This conversion needs further work.')
         timestamps = gridded.time_stamps()
         seconds_factor = seconds_in_periods(timestamps, ts_type)
         new_gridded = gridded
         data = new_gridded.to_xarray()
+        datarrs = []
         for i in range(len(seconds_factor)):
-            data.isel(time=i).values /= seconds_factor[i]
-        new_gridded.cube = data.to_iris()
-        new_units = '{} s-1'.format(gridded.units) # append rate to format
-        new_gridded.units = new_units
+            datarrs.append(data.isel(time=i) / seconds_factor[i])
+        import xarray as xr
+        new_dataarray = xr.concat(datarrs, dim='time')
+        gridded.cube = new_dataarray.to_iris()
+        gridded.units = '{} s-1'.format(gridded.units) # append rate to format
     return new_gridded
 
 if __name__ == '__main__':

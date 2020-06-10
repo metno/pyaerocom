@@ -127,6 +127,12 @@ def path_emep():
     paths['data_dir'] = str(emep_path)
     return paths
 
+@pytest.fixture(scope='session')
+def data_emep_monthly(path_emep):
+    r = ReadEMEP(filepath=path_emep['monthly'])
+    data = r.read_var('conco3')
+    return data
+
 # Example GriddedData object (TM5 model)
 @pytest.fixture(scope='session')
 def data_tm5():

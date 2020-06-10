@@ -15,10 +15,8 @@ def test_read_emep():
 @testdata_unavail
 def test_read_emep_data(path_emep):
     path = path_emep['daily']
-    print(path)
     r = ReadEMEP(filepath=path)
 
-    # r.filepath = path
     vars_provided = r.vars_provided
     assert isinstance(vars_provided, list)
     assert 'vmro3' in vars_provided
@@ -27,18 +25,6 @@ def test_read_emep_data(path_emep):
     assert isinstance(data, GriddedData)
     assert data.time.long_name == 'time'
     assert data.time.standard_name == 'time'
-
-    # # TODO: Compare against expected formats for colocation gridded_gridded, gridded_ungridded
-    # # TODO: Read auxilliary variable
-    # # TODO: run these two similiar tests parameterized
-    # data = r.read_var('vmro3', ts_type='monthly')
-    # assert isinstance(data, GriddedData)
-    # assert data.time.long_name == 'time'
-    # assert data.time.standard_name == 'time'
-    # assert data.metadata['computed'] == True
-
-    # data = r.read_var('od550aer', ts_type='monthly')
-    # assert data.units == '1'
 
 @testdata_unavail
 def test_read_emep_directory(path_emep):
@@ -51,7 +37,6 @@ def test_read_emep_directory(path_emep):
     assert 'concno2' in vars_provided
     paths = r._get_paths()
     assert len(paths) == 3
-
 
 
 @testdata_unavail
@@ -76,15 +61,15 @@ def test_ts_type_from_filename(filename, ts_type):
     assert ts_type_from_filename(filename) == ts_type
 
 
-def test_preprocess_units():
+def test__preprocess_units():
     units = ''
     prefix = 'AOD'
-    assert ReadEMEP().preprocess_units(units, prefix) == '1'
+    assert ReadEMEP()._preprocess_units(units, prefix) == '1'
 
     units = 'mgS/m2'
     catch_error = False
     try:
-        ReadEMEP().preprocess_units(units)
+        ReadEMEP()._preprocess_units(units)
     except NotImplementedError as e:
         catch_error = True
     assert catch_error == True

@@ -264,7 +264,7 @@ class ReadEMEP(object):
             data.attrs['long_name'] = var_name
             data.time.attrs['long_name'] = 'time'
             data.time.attrs['standard_name'] = 'time'
-            data.attrs['units'] = self.preprocess_units(data.units, EMEP_prefix)
+            data.attrs['units'] = self._preprocess_units(data.units, EMEP_prefix)
             cube = data.to_iris()
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
 
@@ -301,7 +301,7 @@ class ReadEMEP(object):
 
 
     @staticmethod
-    def preprocess_units(units, prefix=None):
+    def _preprocess_units(units, prefix=None):
         new_unit = units
         if units == '' and prefix == 'AOD': #
             new_unit = '1'
