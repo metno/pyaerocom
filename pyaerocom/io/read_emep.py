@@ -7,7 +7,6 @@ Created on Mon Feb 10 13:20:04 2020
 """
 
 import xarray as xr
-import sys
 import os
 import glob
 import pyaerocom as pya
@@ -74,21 +73,18 @@ class ReadEMEP(object):
             self._filepath = None
         self.data_id = data_id
 
+    def __str__(self):
+        s = 'Reader: ReadEMEP\n'
+        s += "Available frequencies: {}\n".format(self.ts_types)
+        s += "Available variables: {}\n".format(self.vars_provided)
+        return s
+
     @property
     def filepath(self):
         """
         Path to netcdf file
         """
         return self._filepath
-
-
-    @property
-    def data_dir(self):
-        """
-        Directory containing netcdf files
-        """
-        return self._data_dir
-
 
     @filepath.setter
     def filepath(self, val):
@@ -99,6 +95,12 @@ class ReadEMEP(object):
             val = None
         self._filepath = val
 
+    @property
+    def data_dir(self):
+        """
+        Directory containing netcdf files
+        """
+        return self._data_dir
 
     @data_dir.setter
     def data_dir(self, val):
@@ -107,11 +109,20 @@ class ReadEMEP(object):
             val = None
         self._data_dir = val
 
-
     @property
     def ts_types(self):
         return self._available_ts_types()
 
+    def _available_ts_types(self):
+        ts_types = []
+        if self.data_dir:
+            files = os.listdir(self.data_dir)
+            for filename in files:
+                ts_types.append(self._ts_type_from_filename(filename))
+        elif self.filepath:
+            filename = self.filepath.split('/')[-1]
+            ts_types.append(self._ts_type_from_filename(filename))
+        return list(set(ts_types))
 
     @property
     def vars_provided(self):
@@ -131,18 +142,6 @@ class ReadEMEP(object):
         variables = sorted(avail_aero)
         return variables
 
-
-    def _available_ts_types(self):
-        ts_types = []
-        if self.data_dir:
-            files = os.listdir(self.data_dir)
-            for filename in files:
-                ts_types.append(ts_type_from_filename(filename))
-        elif self.filepath:
-            filename = self.filepath.split('/')[-1]
-            ts_types.append(ts_type_from_filename(filename))
-        return list(set(ts_types))
-
     def _get_paths(self):
         paths = []
         if self.filepath:
@@ -151,7 +150,6 @@ class ReadEMEP(object):
             pattern = os.path.join(self.data_dir, 'Base_*.nc')
             paths = glob.glob(pattern)
         return paths
-
 
     @property
     def data_id(self):
@@ -168,49 +166,6 @@ class ReadEMEP(object):
             val = None
         self._data_id = val
 
-    def __str__(self):
-        s = 'Reader: ReadEMEP\n'
-        s += "Available frequencies: {}\n".format(self.ts_types)
-        s += "Available variables: {}\n".format(self.vars_provided)
-        return s
-
-
-    def has_var(self, var_name):
-        """Check if variable is available
-
-        Parameters
-        ----------
-        var_name : str
-            variable to be checked
-
-        Returns
-        -------
-        bool
-        """
-        # vars_provided includes variables that can be read and variables that
-        # can be computed. It does not consider variable families that may be
-        # able to be computed or alias matches
-        avail = self.vars_provided
-        if var_name in avail:
-            return True
-        try:
-            var = const.VARS[var_name]
-        except VariableDefinitionError as e:
-            const.print_log.warn(repr(e))
-            return False
-        #
-        # if self.check_compute_var(var_name):
-        #     return True
-        #
-        for alias in var.aliases:
-            if alias in avail:
-                return True
-        #
-        # if var.is_alias and var.var_name_aerocom in avail:
-        #     return True
-
-        return False
-
     def read(self, vars_to_retrieve, data_id=None, start=None, stop=None,
              ts_type=None, **kwargs):
 
@@ -225,7 +180,6 @@ class ReadEMEP(object):
                             'Error message: {}'.format(self._filepath,
                                                        repr(e)))
         return tuple(data)
-
 
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, **kwargs):
@@ -243,7 +197,7 @@ class ReadEMEP(object):
             raise ValueError('ts_type needed when reading from a directory.')
         if self.filepath:
             const.print_log.warning('No ts_type, inferring from filename...')
-            ts_type = ts_type_from_filename(self.filepath.split('/')[-1].split('.')[0])
+            ts_type = self._ts_type_from_filename(self.filepath.split('/')[-1].split('.')[0])
             if not ts_type:
                 raise ValueError('ts_type could not be inferred')
         return ts_type
@@ -323,19 +277,44 @@ class ReadEMEP(object):
             new_unit = units
         return new_unit
 
+    @staticmethod
+    def _ts_type_from_filename(filename):
+        ts_type = None
+        filename = filename.lower()
+        filename = os.path.splitext(filename)[0]
+        if filename == 'base_day':
+            ts_type = 'daily'
+        elif filename == 'base_month':
+            ts_type = 'monthly'
+        elif filename == 'base_fullrun':
+            ts_type = 'yearly'
+        return ts_type
 
-def ts_type_from_filename(filename):
-    ts_type = None
-    filename = filename.lower()
-    filename = os.path.splitext(filename)[0]
-    if filename == 'base_day':
-        ts_type = 'daily'
-    elif filename == 'base_month':
-        ts_type = 'monthly'
-    elif filename == 'base_fullrun':
-        ts_type = 'yearly'
-    return ts_type
+    def has_var(self, var_name):
+        """Check if variable is available
 
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+
+        Returns
+        -------
+        bool
+        """
+        avail = self.vars_provided
+        if var_name in avail:
+            return True
+        try:
+            var = const.VARS[var_name]
+        except VariableDefinitionError as e:
+            const.print_log.warn(repr(e))
+            return False
+
+        for alias in var.aliases:
+            if alias in avail:
+                return True
+        return False
 
 
 if __name__ == '__main__':
@@ -344,11 +323,6 @@ if __name__ == '__main__':
     file = '2010_GLOB1_2010met/Base_month.nc' # 2010 emissions with 2010 meteorology
     filepath = '{}{}'.format(basepath, file)
 
-    filepath = '/home/eirikg/Desktop/pyaerocom/data/2020_AerocomHIST/2010_GLOB1_2010met/Base_month.nc'
-
-
     reader = ReadEMEP(filepath, data_id='EMEP')
-    # Read variable that uses AUX_FUNS
-    depso4 = reader.read_var('wetsox', ts_type='monthly')
-    # Read variable that uses unit conversions
+    depso4 = reader.read_var('depso4', ts_type='monthly')
     wetso4 = reader.read_var('wetso4', ts_type='monthly')

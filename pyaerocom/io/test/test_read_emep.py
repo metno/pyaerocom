@@ -1,6 +1,6 @@
 import pytest
 from pyaerocom.conftest import lustre_unavail, testdata_unavail
-from pyaerocom.io.read_emep import ReadEMEP, ts_type_from_filename
+from pyaerocom.io.read_emep import ReadEMEP
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.colocation import colocate_gridded_gridded
 from pyaerocom.colocation import ColocatedData
@@ -99,8 +99,9 @@ def test__load_gridded(path_emep):
     ('Base_day.nc', 'daily'),
     ('Base_fullrun', 'yearly')
     ])
-def test_ts_type_from_filename(filename, ts_type):
-    assert ts_type_from_filename(filename) == ts_type
+def test__ts_type_from_filename(filename, ts_type):
+    r = ReadEMEP()
+    assert r._ts_type_from_filename(filename) == ts_type
 
 def test__preprocess_units():
     units = ''
