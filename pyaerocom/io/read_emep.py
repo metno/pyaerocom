@@ -42,7 +42,6 @@ class ReadEMEP(object):
     vars_provided :
     """
 
-
     # dictionary containing information about additionally required variables
     # for each auxiliary variable (i.e. each variable that is not provided
     # by the original data but computed on import)
@@ -61,10 +60,9 @@ class ReadEMEP(object):
                      'sconcoa' : add_cubes}
 
 
-    def __init__(self, filepath=None, data_id=None, data_dir=None):
-
-        # if (filepath and data_dir):
-        #     raise ValueError('Either filepath or data_dir should be set, not both.')
+    def __init__(self, filepath=None, data_dir=None, data_id=None):
+        if (filepath and data_dir):
+            raise ValueError('Either filepath or data_dir should be set, not both.')
 
         if data_dir is not None:
             self.data_dir = data_dir
@@ -75,9 +73,6 @@ class ReadEMEP(object):
         else:
             self._filepath = None
         self.data_id = data_id
-
-
-
 
     @property
     def filepath(self):
@@ -115,7 +110,7 @@ class ReadEMEP(object):
 
     @property
     def ts_types(self):
-        return self._get_ts_types()
+        return self._available_ts_types()
 
 
     @property
@@ -123,8 +118,21 @@ class ReadEMEP(object):
         """Variables provided by this dataset"""
         return self._get_vars_provided()
 
+    def _get_vars_provided(self):
+        variables = None
+        data_vars = set()
+        for filepath in self._get_paths():
+            data = xr.open_dataset(filepath)
+            data_vars.update(set(data.keys()))
+        emep_vars = set(get_emep_variables().values())
+        available = data_vars.intersection(emep_vars)
+        inv_emep = {v: k for k, v in get_emep_variables().items()}
+        avail_aero = [ inv_emep[var] for var in available]
+        variables = sorted(avail_aero)
+        return variables
 
-    def _get_ts_types(self):
+
+    def _available_ts_types(self):
         ts_types = []
         if self.data_dir:
             files = os.listdir(self.data_dir)
@@ -144,18 +152,6 @@ class ReadEMEP(object):
             paths = glob.glob(pattern)
         return paths
 
-    def _get_vars_provided(self):
-        variables = None
-        data_vars = set()
-        for filepath in self._get_paths():
-            data = xr.open_dataset(filepath)
-            data_vars.update(set(data.keys()))
-        emep_vars = set(get_emep_variables().values())
-        available = data_vars.intersection(emep_vars)
-        inv_emep = {v: k for k, v in get_emep_variables().items()}
-        avail_aero = [ inv_emep[var] for var in available]
-        variables = sorted(avail_aero)
-        return variables
 
     @property
     def data_id(self):
@@ -215,80 +211,11 @@ class ReadEMEP(object):
 
         return False
 
-
-    def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None, **kwargs):
-        """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
-
-        # if start or stop:
-        #     raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
-
-        var_map = get_emep_variables()
-
-        aliases = get_aliases(var_name)
-        if len(aliases) == 1 and aliases[0] in var_map:
-            var_name = aliases[0]
-
-        # Find path to file based on ts_type
-        filepath = ''
-        if self.data_dir:
-            filename = ''
-            if ts_type == 'monthly':
-                filename = 'Base_month.nc'
-            elif ts_type == 'daily':
-                filename = 'Base_day.nc'
-            elif ts_type == 'yearly':
-                filename = 'Base_fullrun.nc'
-            filepath = os.path.join(self.data_dir, filename)
-        elif self.filepath:
-            filepath = self.filepath
-
-        if var_name in self.AUX_REQUIRES:
-            temp_cubes = []
-            for aux_var in self.AUX_REQUIRES[var_name]:
-                temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
-            aux_func = self.AUX_FUNS[var_name]
-            cube = aux_func(*temp_cubes)
-            gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
-        else:
-            try:
-                emep_var = var_map[var_name]
-            except KeyError as e:
-                raise VarNotAvailableError('Variable {} not in EMEP mapping.'.format(var_name))
-                sys.exit(1)
-
-
-
-            EMEP_prefix = emep_var.split('_')[0]
-            data = xr.open_dataset(filepath)[emep_var]
-            data.attrs['long_name'] = var_name
-            data.time.attrs['long_name'] = 'time'
-            data.time.attrs['standard_name'] = 'time'
-            data.attrs['units'] = self._preprocess_units(data.units, EMEP_prefix)
-            cube = data.to_iris()
-            gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
-
-            if EMEP_prefix in ['WDEP', 'DDEP']:
-                implicit_to_explicit_rates(gridded, ts_type)
-
-        # At this point a GriddedData object with name gridded should exist
-
-        gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = filepath # ReadGridded cannot concatenate several years of data if this is missing
-
-        # Remove unneccessary metadata. Better way to do this?
-        for metadata in ['current_date_first', 'current_date_last']:
-            if metadata in gridded.metadata.keys():
-                del(gridded.metadata[metadata])
-        return gridded
-
-
     def read(self, vars_to_retrieve, data_id=None, start=None, stop=None,
              ts_type=None, **kwargs):
 
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-
         data = []
         for var_name in vars_to_retrieve:
             try:
@@ -299,6 +226,92 @@ class ReadEMEP(object):
                                                        repr(e)))
         return tuple(data)
 
+
+    def read_var(self, var_name, start=None, stop=None,
+                 ts_type=None, **kwargs):
+        """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
+
+        if not ts_type:
+            ts_type = self._infer_ts_type()
+        filepath = self._find_filepath(ts_type)
+        gridded = self._load_gridded(var_name, filepath, ts_type)
+        return gridded
+
+    def _infer_ts_type(self):
+        ts_type = None
+        if self.data_dir:
+            raise ValueError('ts_type needed when reading from a directory.')
+        if self.filepath:
+            const.print_log.warning('No ts_type, inferring from filename...')
+            ts_type = ts_type_from_filename(self.filepath.split('/')[-1].split('.')[0])
+            if not ts_type:
+                raise ValueError('ts_type could not be inferred')
+        return ts_type
+
+    def _find_filepath(self, ts_type):
+        if self.data_dir:
+            filepath = self._filepath_from_data_dir(ts_type)
+        elif self.filepath:
+            filepath = self.filepath
+        else:
+            raise ValueError('Filepath or data_dir must be set before reading variable.')
+        return filepath
+
+    def _filepath_from_data_dir(self, ts_type):
+        if ts_type == 'monthly':
+            filename = 'Base_month.nc'
+        elif ts_type == 'daily':
+            filename = 'Base_day.nc'
+        elif ts_type == 'yearly':
+            filename = 'Base_fullrun.nc'
+        else:
+            raise ValueError('ts_type not recognized.')
+        filepath = os.path.join(self.data_dir, filename)
+        return filepath
+
+
+    def _load_gridded(self, var_name, filepath, ts_type):
+        if var_name in self.AUX_REQUIRES:
+            return self._load_gridded_aux(var_name, filepath, ts_type)
+        else:
+            return self._load_gridded_standard(var_name, filepath, ts_type)
+
+    def _load_gridded_standard(self, var_name, filepath, ts_type):
+        try:
+            emep_var = get_emep_variables()[var_name]
+            EMEP_prefix = emep_var.split('_')[0]
+        except KeyError as e:
+            raise VarNotAvailableError('Variable {} not in EMEP mapping.'.format(var_name))
+        data = xr.open_dataset(filepath)[emep_var]
+        data = self._standardize_dataarray_metadata(data, var_name, filepath, EMEP_prefix)
+        cube = data.to_iris()
+        gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
+        if EMEP_prefix in ['WDEP', 'DDEP']:
+            gridded = implicit_to_explicit_rates(gridded, ts_type)
+        return gridded
+
+    def _load_gridded_aux(self, var_name, filepath, ts_type):
+        temp_cubes = []
+        for aux_var in self.AUX_REQUIRES[var_name]:
+            temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
+        aux_func = self.AUX_FUNS[var_name]
+        cube = aux_func(*temp_cubes)
+        gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
+        return gridded
+
+    def _standardize_dataarray_metadata(self, data, var_name, filepath, EMEP_prefix):
+        data.attrs['data_id'] = self.data_id
+        data.attrs['from_files'] = filepath
+        try:
+            data.time.attrs['long_name'] = 'time'
+            data.time.attrs['standard_name'] = 'time'
+            data.attrs['units'] = self._preprocess_units(data.units, EMEP_prefix)
+        except AttributeError as e:
+            const.print_log.warning('Data has no time dimension.')
+        for metadata in ['current_date_first', 'current_date_last']:
+            if metadata in data.attrs.keys():
+                del(data.attrs[metadata])
+        return data
 
     @staticmethod
     def _preprocess_units(units, prefix=None):
