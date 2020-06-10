@@ -11,6 +11,9 @@ import xarray as xr
 from pyaerocom.conftest import DATA_ACCESS
 #import numpy.testing as npt
 from pyaerocom import helpers
+from pyaerocom.exceptions import DataCoverageError
+
+from contextlib import contextmanager
 
 def test_get_standarad_name():
     assert (helpers.get_standard_name('od550aer') ==
@@ -125,7 +128,22 @@ def test_extract_latlon_dataarray():
     lon = [1,15, 18]
     subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
     assert isinstance(subset, xr.DataArray)
+    assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) -1
 
+@contextmanager
+def does_not_raise_exception():
+    yield
+
+@pytest.mark.parametrize('lat,lon,expectation', [
+    ([], [], pytest.raises(DataCoverageError)),
+    ([1,2], [-1,2], pytest.raises(DataCoverageError)),
+    ([15], [15], does_not_raise_exception())
+    ])
+def test_extract_latlon_dataarray_no_matches(lat, lon, expectation):
+    cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1, lat_range=[10,20], lon_range=[10,20])
+    data = xr.DataArray.from_iris(cube)
+    with expectation:
+        helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
 
 if __name__=="__main__":
 
