@@ -76,6 +76,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     NAN_VAL = -999.
 
     #: Mappings for identifying variables in file
+    # NOT IMPLEMENTED!
     VAR_PATTERNS_FILE = {'AOD_([0-9]*)nm' : 'od*aer'}
 
     #: dictionary specifying the file column names (values) for each Aerocom
@@ -84,9 +85,9 @@ class ReadAeronetSunV3(ReadAeronetBase):
     VAR_NAMES_FILE['od340aer'] = 'AOD_340nm'
     VAR_NAMES_FILE['od440aer'] = 'AOD_440nm'
     VAR_NAMES_FILE['od500aer'] = 'AOD_500nm'
-    # VAR_NAMES_FILE['od865aer'] = 'AOD_865nm'
     VAR_NAMES_FILE['od870aer'] = 'AOD_870nm'
     VAR_NAMES_FILE['ang4487aer'] = '440-870_Angstrom_Exponent'
+    VAR_NAMES_FILE['nobs500nm'] = 'N[AOD_500nm]'
 
     #: dictionary specifying the file column names (values) for each
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
