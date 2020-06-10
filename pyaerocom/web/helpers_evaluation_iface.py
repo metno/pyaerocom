@@ -288,7 +288,7 @@ def get_json_mapname(obs_name, obs_var, model_name, model_var,
 
 def _write_stationdata_json(ts_data, out_dirs):
     filename = get_stationfile_name(ts_data['station_name'],
-                                    ts_data['obs_name'],
+                                    ts_data['web_iface_name'],
                                     ts_data['obs_var'],
                                     ts_data['vert_code'])
 
@@ -663,6 +663,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           colocation_settings,
                                           vert_code, out_dirs,
                                           regions_json,
+                                          web_iface_name,
                                           regions_how=None,
                                           zeros_to_nan=True):
 
@@ -698,7 +699,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     meta_glob = _init_meta_glob(coldata,
                                 vert_code=vert_code,
                                 obs_name=obs_name,
-                                model_name=model_name)
+                                model_name=model_name,
+                                web_iface_name=web_iface_name)
     if regions_how is None:
         regions_how = 'default'
 
@@ -727,7 +729,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
         hm_file = os.path.join(out_dirs['hm'], fname)
 
-        add_entry_heatmap_json(hm_file, hm_data, obs_name, obs_var,
+        add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
                                vert_code, model_name, model_var)
 
     ts_objs_regional = _process_regional_timeseries(data,
@@ -748,7 +750,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
     dirs = out_dirs
 
-    map_name = get_json_mapname(obs_name, obs_var, model_name,
+    map_name = get_json_mapname(web_iface_name, obs_var, model_name,
                                 model_var, vert_code)
 
     outfile_map =  os.path.join(dirs['map'], map_name)
