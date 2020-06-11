@@ -12,10 +12,17 @@ import iris
 from cf_units import Unit
 
 from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
-from pyaerocom.colocation import colocate_gridded_ungridded
+from pyaerocom.colocation import (_regrid_gridded, colocate_gridded_ungridded)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom import GriddedData
 from pyaerocom import helpers
+
+def test__regrid_gridded(data_tm5):
+     one_way = _regrid_gridded(data_tm5, 'areaweighted', 5)
+     another_way = _regrid_gridded(data_tm5, 'areaweighted',
+                                   dict(lon_res_deg=5, lat_res_deg=5))
+
+     assert one_way.shape == another_way.shape
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
@@ -29,7 +36,10 @@ from pyaerocom import helpers
     (dict(filter_name='WORLD-wMOUNTAINS'),
      'monthly', (2,12,11), 0.269707, 0.243861),
     (dict(use_climatology_ref=True),
-     'monthly', (2,12,13), 0.302636, 0.234147)
+     'monthly', (2,12,13), 0.302636, 0.234147),
+    (dict(regrid_res_deg=30),
+     'monthly', (2,12,8), 0.31593 , 0.169897)
+
     ])
 def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
                                     addargs, ts_type, shape,
