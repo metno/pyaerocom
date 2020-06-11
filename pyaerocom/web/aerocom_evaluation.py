@@ -522,6 +522,10 @@ class AerocomEvaluation(object):
                                               model_name):
         """Creates all json files for one ColocatedData object"""
         vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
+        try:
+            web_iface_name = self.obs_config[obs_name]['web_interface_name']
+        except:
+            web_iface_name = obs_name
         if len(self.region_groups) > 0:
             raise NotImplementedError('Filtering of grouped regions is not ready yet...')
         return compute_json_files_from_colocateddata(
@@ -533,7 +537,8 @@ class AerocomEvaluation(object):
                 colocation_settings=self.colocation_settings,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
-                regions_how=self.regions_how)
+                regions_how=self.regions_how,
+                web_iface_name=web_iface_name)
                 #region_groups=self.region_groups)
 
     def get_vert_code(self, obs_name, obs_var):
@@ -666,6 +671,7 @@ class AerocomEvaluation(object):
         converted = []
 
         files = self.find_coldata_files(model_name, obs_name, var_name)
+
 
         if colocator is not None:
             files = self._check_process_colfiles(files, colocator)
@@ -885,6 +891,27 @@ class AerocomEvaluation(object):
                            .format(name_or_pattern))
         return matches
 
+    def _check_and_get_iface_names(self):
+        obs_list = list(self.obs_config)
+        iface_names = []
+        for obs_name in obs_list:
+            try:
+                if self.obs_config[obs_name]['web_interface_name'] == None:
+                    self.obs_config[obs_name]['web_interface_name'] = obs_name
+                else:
+                    pass
+            except KeyError:
+                self.obs_config[obs_name]['web_interface_name'] = obs_name
+            if not isinstance(self.obs_config[obs_name]['web_interface_name'],str):
+                raise ValueError('Invalid value for web_iface_name in {}. Need str type'.format(obs_name))
+            iface_names.append(self.obs_config[obs_name]['web_interface_name'])
+        iface_names = set(iface_names)
+        return iface_names
+
+    @property
+    def iface_names(self):
+       return self._check_and_get_iface_names()
+
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
                        update_interface=True,
                        reanalyse_existing=None, raise_exceptions=None,
@@ -948,6 +975,7 @@ class AerocomEvaluation(object):
             self.only_colocation = only_colocation
         if only_json is not None:
             self.only_json = only_json
+        #self.iface_names = self._check_and_get_iface_names()
         if self.clear_existing_json:
             self.clean_json_files()
 
@@ -1069,6 +1097,7 @@ class AerocomEvaluation(object):
 
     def get_web_overview_table(self):
         """Computes overview table based on existing map files"""
+        iface_names = self.iface_names
         tab = []
         from pandas import DataFrame
         for f in self.all_map_files:
@@ -1082,7 +1111,7 @@ class AerocomEvaluation(object):
                     const.print_log.warning('Found outdated json map file: {}'
                                             'Will be ignored'.format(f))
                     continue
-                elif not obs_name in self.obs_config:
+                elif not obs_name in iface_names:
                     const.print_log.warning('Found outdated json map file: {}'
                                             'Will be ignored'.format(f))
                     continue
@@ -1207,7 +1236,7 @@ class AerocomEvaluation(object):
             remove=False
             obs_vars = self._get_valid_obs_vars(obs_name)
 
-            if not (obs_name in self.obs_config and
+            if not (obs_name in self.iface_names and
                     mod_name in self.model_config and
                     obs_var in obs_vars):
                 remove = True
