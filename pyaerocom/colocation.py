@@ -10,6 +10,7 @@ import xarray as xr
 from pyaerocom import logger, const
 from pyaerocom import __version__ as pya_ver
 from pyaerocom.tstype import TsType
+from pyaerocom.helpers import isnumeric
 from pyaerocom.exceptions import (ColocationError,
                                   DataUnitError,
                                   DimensionOrderError,
@@ -24,6 +25,45 @@ from pyaerocom.helpers import (to_pandas_timestamp,
 
 from pyaerocom.filter import Filter
 from pyaerocom.colocateddata import ColocatedData
+
+def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
+    """
+    Regrid instance of `GriddedData`
+
+    Makes sure to handle different input options for `regrid_res_deg`.
+
+    Parameters
+    ----------
+    gridded : GriddedData
+        instance of :class:`GriddedData` that is supposed to be regridded.
+    regrid_scheme : str
+        iris scheme used for regridding (defaults to area weighted regridding)
+    regrid_res_deg : int or dict, optional
+        regrid resolution in degrees. If specified, the input gridded data
+        objects will be regridded in lon / lat dimension to the input
+        resolution (if input is integer, both lat and lon are regridded to that
+        resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
+        to specify regrid resolutions, respectively).
+
+    Raises
+    ------
+    ValueError
+        If input for `regrid_res_deg` is invalid.
+
+    Returns
+    -------
+    GriddedData
+        regridded data object
+
+    """
+    if not isinstance(regrid_res_deg, dict):
+        if not isnumeric(regrid_res_deg):
+            raise ValueError('Invalid input for regrid_res_deg. Need integer '
+                             'or dict specifying lat and lon res')
+        regrid_res_deg = dict(lat_res_deg=regrid_res_deg,
+                              lon_res_deg=regrid_res_deg)
+
+    return gridded.regrid(scheme=regrid_scheme, **regrid_res_deg)
 
 def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              start=None, stop=None, filter_name=None,
@@ -67,10 +107,12 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         details). If None, then it is set to 'WORLD-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
         Use WORLD-noMOUNTAINS to exclude mountain sites.
-    regrid_res_deg : :obj:`int`, optional
+    regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         objects will be regridded in lon / lat dimension to the input
-        resolution. (BETA feature)
+        resolution (if input is integer, both lat and lon are regridded to that
+        resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
+        to specify regrid resolutions, respectively).
     remove_outliers : bool
         if True, outliers are removed from model and obs data before colocation,
         else not.
@@ -169,9 +211,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         gridded_data.base_year = update_baseyear_gridded
 
     if regrid_res_deg is not None:
-        gridded_data_ref = gridded_data_ref.regrid(lat_res_deg=regrid_res_deg,
-                                                   lon_res_deg=regrid_res_deg,
-                                                   scheme=regrid_scheme)
+        gridded_data_ref = _regrid_gridded(gridded_data_ref,
+                                           regrid_scheme,
+                                           regrid_res_deg)
     # perform regridding
     if gridded_data.lon_res < gridded_data_ref.lon_res: #obs has lower resolution
         gridded_data = gridded_data.regrid(gridded_data_ref,
@@ -198,6 +240,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                     apply_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     how=resample_how)
+
 
         else:
             gridded_data = gridded_data.resample_time(
@@ -245,6 +288,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     files_ref = [os.path.basename(x) for x in gridded_data_ref.from_files]
     files = [os.path.basename(x) for x in gridded_data.from_files]
 
+
     meta = {'data_source'       :   [gridded_data_ref.data_id,
                                      gridded_data.data_id],
             'var_name'          :   [var_ref, var],
@@ -284,6 +328,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     time = gridded_data.time_stamps().astype('datetime64[ns]')
     lats = gridded_data.latitude.points
     lons = gridded_data.longitude.points
+
 
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
@@ -359,10 +404,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         details). If None, then it is set to 'WORLD-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
         Use WORLD-noMOUNTAINS to exclude mountain sites.
-    regrid_res_deg : :obj:`int`, optional
+    regrid_res_deg : int or dict, optional
         regrid resolution in degrees. If specified, the input gridded data
         object will be regridded in lon / lat dimension to the input
-        resolution. (BETA feature)
+        resolution (if input is integer, both lat and lon are regridded to that
+        resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
+        to specify regrid resolutions, respectively).
     remove_outliers : bool
         if True, outliers are removed from model and obs data before colocation,
         else not. Outlier ranges can be specified via input args
@@ -541,9 +588,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded_data = gridded_data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
-        gridded_data = gridded_data.regrid(lat_res_deg=regrid_res_deg,
-                                           lon_res_deg=regrid_res_deg,
-                                           scheme=regrid_scheme)
+        gridded_data = _regrid_gridded(gridded_data, regrid_scheme,
+                                       regrid_res_deg)
 
     if remove_outliers and not var_ref_keep_outliers:
         ungridded_data.remove_outliers(var_ref, inplace=True,
@@ -558,6 +604,14 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         col_freq = str(grid_ts_type)#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
         obs_start = start
         obs_stop = stop
+
+
+    latitude = gridded_data.latitude.points
+    longitude = gridded_data.longitude.points
+    lat_range = [np.min(latitude), np.max(latitude)]
+    lon_range = [np.min(longitude), np.max(longitude)]
+    ungridded_data = ungridded_data.filter_by_meta(latitude=lat_range, longitude=lon_range)
+
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
     all_stats = ungridded_data.to_station_data_all(
@@ -573,12 +627,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
 
-# =============================================================================
-#     obs_stat_data = obs_stat_data[:5]
-#     ungridded_lats = ungridded_lats[:5]
-#     ungridded_lons = ungridded_lons[:5]
-#
-# =============================================================================
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError('Variable {} is not available in specified '
                                    'time interval ({}-{})'
@@ -730,6 +778,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'apply_constraints' :   apply_time_resampling_constraints,
             'min_num_obs'       :   min_num_obs,
             'outliers_removed'  :   remove_outliers}
+
 
     meta.update(regfilter.to_dict())
 
@@ -899,3 +948,5 @@ if __name__=='__main__':
     pya.plot.mapping.plot_nmb_map_colocateddata(coldata_max)
     pya.plot.mapping.plot_nmb_map_colocateddata(coldata_mean)
     #scoldata2.plot_scatter()
+
+
