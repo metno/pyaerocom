@@ -550,10 +550,22 @@ class AerocomEvaluation(object):
                     monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY))
 
     def update_heatmap_json(self):
+        """
+        Synchronise content of heatmap json files with content of menu.json
+
+        Missing hea
+
+        Raises
+        ------
+        ValueError
+            if this experiment (:attr:`exp_id`) is not registered in menu.json
+        """
         for freq, fp in self._heatmap_files.items():
             if not os.path.exists(fp):
-                raise FileNotFoundError(fp)
-
+                #raise FileNotFoundError(fp)
+                const.print_log.warning('Skipping heatmap file {} (for {} freq). '
+                                        'File does not exist'.format(fp, freq))
+                continue
             with open(self.menu_file, 'r') as f:
                 menu = simplejson.load(f)
             with open(fp, 'r') as f:
