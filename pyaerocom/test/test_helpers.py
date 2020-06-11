@@ -8,12 +8,10 @@ Created on Thu Apr 12 14:45:43 2018
 import numpy as np
 import pytest
 import xarray as xr
-from pyaerocom.conftest import DATA_ACCESS
+from pyaerocom.conftest import DATA_ACCESS, does_not_raise_exception
 #import numpy.testing as npt
 from pyaerocom import helpers
 from pyaerocom.exceptions import DataCoverageError
-
-from contextlib import contextmanager
 
 def test_get_standarad_name():
     assert (helpers.get_standard_name('od550aer') ==
@@ -129,10 +127,6 @@ def test_extract_latlon_dataarray():
     subset = helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
     assert isinstance(subset, xr.DataArray)
     assert len(subset.lat) == len(lat) - 1 and len(subset.lon) == len(lon) -1
-
-@contextmanager
-def does_not_raise_exception():
-    yield
 
 @pytest.mark.parametrize('lat,lon,expectation', [
     ([], [], pytest.raises(DataCoverageError)),
