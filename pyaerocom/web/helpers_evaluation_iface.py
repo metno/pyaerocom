@@ -308,7 +308,7 @@ def _write_stationdata_json(ts_data, out_dirs):
         
 def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     filename = get_stationfile_name(ts_data['station_name'], 
-                                    ts_data['obs_name'],
+                                    ts_data['web_iface_name'],
                                     ts_data['obs_var'],
                                     ts_data['vert_code'])
 
@@ -487,23 +487,28 @@ def _init_ts_data():
         yearly_mod = []
         )
 
-def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
+def _create_diurnal_weekly_data_object(data,resolution):
     import xarray as xr
-    data = coldata.data
-    ts_objs = []
-    
-    if isinstance(coldata, ColocatedData):
-        _check_flatten_latlon_dims(coldata)
-        assert coldata.dims == ('data_source', 'time', 'station_name')
+    if resolution == 'monthly':
+        b1 = 0
+        b2 = 0
+        step =1
+    elif resolution == 'bimonthly':
+        b1 = 0
+        b2 = 1
+        step = 2
+    elif resolution == 'seasonal':
+        b1 = 0
+        b2 = 2
+        step = 3
+    else:
+        raise ValueError(f'Invalid resolution. Got {resolution}.')
 
-    # mon_slice = data.where((data['time.month']==1)|(data['time.month']==2),drop=True)
-    
-    #turn colocated data object into a DataArray containing a representative week
     min_month = data['time.month'].values.min()
     max_month = data['time.month'].values.max()
     months = range(min_month,max_month+1)
     first_pass = True
-    for i,j in zip(months[0::2], months[1::2]):
+    for i,j in zip(months[b1::step], months[b2::step]):
         rep_week_ds = xr.Dataset()
         mon_slice = data.where((data['time.month']>=i)&(data['time.month']<=j),drop=True)
         month_stamp = f'{i}-{j}'
@@ -528,26 +533,73 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
             rep_week_full_period = rep_week_ds
         else:
             rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
+    return rep_week_full_period
+
+def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
+    #import xarray as xr
+    data = coldata.data
+    ts_objs = []
     
-    repw = rep_week_full_period['rep_week']
+    if isinstance(coldata, ColocatedData):
+        _check_flatten_latlon_dims(coldata)
+        assert coldata.dims == ('data_source', 'time', 'station_name')
+
+    # # mon_slice = data.where((data['time.month']==1)|(data['time.month']==2),drop=True)
     
+    # #turn colocated data object into a DataArray containing a representative week
+    # min_month = data['time.month'].values.min()
+    # max_month = data['time.month'].values.max()
+    # months = range(min_month,max_month+1)
+    # first_pass = True
+    # for i,j in zip(months[0::2], months[1::2]):
+    #     rep_week_ds = xr.Dataset()
+    #     mon_slice = data.where((data['time.month']>=i)&(data['time.month']<=j),drop=True)
+    #     month_stamp = f'{i}-{j}'
+        
+    #     for day in range(7):
+    #         day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
+    #         rep_day = day_slice.groupby('time.hour').mean(dim='time')
+    #         rep_day['hour'] = rep_day.hour/24+day+1
+    #         if day == 0:
+    #             rep_week = rep_day
+    #         else:
+    #             rep_week = xr.concat([rep_week,rep_day],dim='hour')
+                
+    #     rep_week=rep_week.rename({'hour':'dummy_time'})
+    #     month_stamps = np.zeros(rep_week.dummy_time.shape,dtype='<U5')
+    #     month_stamps[:] = month_stamp
+    #     rep_week_ds['rep_week']=rep_week
+    #     rep_week_ds['month_stamp'] = (('dummy_time'),month_stamps)
+        
+    #     if first_pass:
+    #         first_pass = False
+    #         rep_week_full_period = rep_week_ds
+    #     else:
+    #         rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
+    rep_week_monthly = _create_diurnal_weekly_data_object(data, 'monthly')
+    rep_week_seasonal = _create_diurnal_weekly_data_object(data, 'seasonal')
+
+    repw_res = {'monthly':rep_week_monthly['rep_week'],
+                'seasonal': rep_week_seasonal['rep_week']}
+
     default_regs = get_all_default_regions(use_all_in_ini=False)
+
+
+    lats = repw_res['monthly'].latitude.values.astype(np.float64)
+    lons = repw_res['monthly'].longitude.values.astype(np.float64)
     
-    lats = repw.latitude.values.astype(np.float64)
-    lons = repw.longitude.values.astype(np.float64)
-    
-    if 'altitude' in repw.coords:
-        alts = repw.altitude.values.astype(np.float64)
+    if 'altitude' in repw_res['monthly'].coords:
+        alts = repw_res['monthly'].altitude.values.astype(np.float64)
     else:
         alts = [np.nan]*len(lats)
     
     if regions_how == 'country':
-        countries = repw.country.values
+        countries = repw_res['monthly'].country.values
     dc = 0
     time = (np.arange(168)/24+1).round(4).tolist()
-    for i, stat_name in enumerate(repw.station_name.values):
+    for i, stat_name in enumerate(repw_res['monthly'].station_name.values):
         has_data = False
-        ts_data = {'time' : time,'bimonthly' : {'obs' : {},'mod' : {}},'seasonal' : {'obs' : {},'mod' : {}} }
+        ts_data = {'time' : time,'monthly' : {'obs' : {},'mod' : {}},'seasonal' : {'obs' : {},'mod' : {}} }
         ts_data['station_name'] = stat_name
         ts_data.update(meta_glob)
     
@@ -567,28 +619,34 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
         #             'alt'       : stat_alt,
         #             'region'    : region}
 
-        obs_vals = repw[:,0, :, i]
-        if (np.isnan(obs_vals)).all().values:
-            continue
-        has_data = True
-        mod_vals = repw[:,1, :, i]
-        
-        # timestamps = []
-        # for k,l in zip(rep_week_full_period['month_stamp'].values,repw['dummy_time'].values.round(2)):
-        #     months = k.split('-')
-        #     start_month = months[0]
-        #     stop_month = months[1]
-        #     timestamp = start_month.zfill(2)+stop_month.zfill(2)+f'{l}'
-        #     timestamps.append(timestamp)
-        #     # timestamp = f'{i}'.replace('-','')+f'{j}'
-        period_keys = ['JF','MA','MJ','JA','SO','ND']
-        for p,pk in enumerate(period_keys):
-            ts_data['bimonthly']['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
-            ts_data['bimonthly']['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
-        
-        if has_data:
-            ts_objs.append(ts_data)
-            dc +=1
+        for res,repw in repw_res.items():
+            obs_vals = repw[:,0, :, i]
+            if (np.isnan(obs_vals)).all().values:
+                continue
+            has_data = True
+            mod_vals = repw[:,1, :, i]
+            
+            # timestamps = []
+            # for k,l in zip(rep_week_full_period['month_stamp'].values,repw['dummy_time'].values.round(2)):
+            #     months = k.split('-')
+            #     start_month = months[0]
+            #     stop_month = months[1]
+            #     timestamp = start_month.zfill(2)+stop_month.zfill(2)+f'{l}'
+            #     timestamps.append(timestamp)
+            #     # timestamp = f'{i}'.replace('-','')+f'{j}'
+            if res == 'monthly':
+                period_keys = [1,2,3,4,5,6,7,8,9,10,11,12]
+            elif res == 'bimonthly':
+                period_keys = ['JF','MA','MJ','JA','SO','ND']
+            elif res == 'seasonal':
+                period_keys = ['JFM','AMJ','JAS','OND']
+            for p,pk in enumerate(period_keys):
+                ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
+                ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
+            
+            if has_data:
+                ts_objs.append(ts_data)
+                dc +=1
     return ts_objs
 
 def _process_sites(data, jsdate, regions_how, meta_glob):
@@ -788,6 +846,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           vert_code, out_dirs,
                                           regions_json,
                                           web_iface_name,
+                                          diurnal_only,
                                           regions_how=None,
                                           zeros_to_nan=True):
 
@@ -840,7 +899,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     data, jsdate = _init_data_default_frequencies(coldata,
                                                   colocation_settings)
 
-    if coldata.ts_type != 'hourly':
+    if not diurnal_only:
         # FIRST: process data for heatmap json file
         hm_all = _process_heatmap_data(data, region_ids, use_weights, 
                                        use_country=use_country,
