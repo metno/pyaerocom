@@ -7,9 +7,11 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import pytest
 import numpy as np
-import numpy.testing as npt
 from pandas import Timestamp
 from pyaerocom import ColocatedData
+from pyaerocom.conftest import TESTDATADIR, TEST_PATHS
+
+EXAMPLE_FILE = TESTDATADIR.joinpath(TEST_PATHS['coldata_tm5_aeronet'])
 
 def test_meta_access_filename():
     name = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
@@ -23,6 +25,16 @@ def test_meta_access_filename():
     for k, v in ColocatedData.get_meta_from_filename(name).items():
         assert meta[k] == v
 
+def test_read_colocated_data(coldata_tm5_aeronet):
+    loaded = ColocatedData(str(EXAMPLE_FILE))
+    mean_loaded = np.nanmean(loaded.data)
+    mean_fixture = np.nanmean(coldata_tm5_aeronet.data.data)
+    assert mean_fixture == mean_loaded
+
+
+
+
 if __name__=="__main__":
 
-    test_meta_access_filename()
+    import sys
+    pytest.main(sys.argv)
