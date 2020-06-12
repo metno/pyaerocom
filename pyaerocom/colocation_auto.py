@@ -900,11 +900,11 @@ class Colocator(ColocationSetup):
                 data_objs[model_var] = coldata
             except Exception as e:
                 msg = ('Colocation between model {} / {} and obs {} / {} '
-                       'failed: Reason {}'.format(self.model_id,
+                       'failed.\nTraceback:\n{}'.format(self.model_id,
                                                   model_var,
                                                   self.obs_id,
                                                   obs_var,
-                                                  repr(e)))
+                                                  traceback.format_exc()))
                 const.print_log.warning(msg)
                 self._write_log(msg + '\n')
                 if self.raise_exceptions:

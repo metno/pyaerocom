@@ -58,7 +58,7 @@ class TimeResampler(object):
                                  'min_num_obs is numeric ({}) and input how '
                                  'is {} (would need to be string, e.g. mean)'
                                  .format(min_num_obs, how))
-            return [(to_ts_type.val, int(min_num_obs))]
+            return [(to_ts_type.val, int(min_num_obs), how)]
         if not isinstance(min_num_obs, dict):
             raise ValueError('Invalid input for min_num_obs, need dictionary '
                              'or integer, got {}'.format(min_num_obs))

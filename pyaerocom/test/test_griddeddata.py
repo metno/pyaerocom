@@ -119,6 +119,14 @@ def test_change_baseyear(data_tm5):
 
     assert str(cp.time.units) == 'days since 901-01-01 00:00:00'
 
+@testdata_unavail
+@pytest.mark.parametrize('kwargs,result', [
+    (dict(), 0.11864813532841474),
+    (dict(areaweighted=False), 0.09825691),
+    ])
+def test_mean(data_tm5,kwargs,result):
+    npt.assert_allclose(data_tm5.mean(**kwargs), result)
+
 if __name__=="__main__":
     import sys
     pytest.main(sys.argv)
