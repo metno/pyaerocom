@@ -535,7 +535,7 @@ def _create_diurnal_weekly_data_object(data,resolution):
             rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
     return rep_week_full_period
 
-def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
+def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
     #import xarray as xr
     data = coldata.data
     ts_objs = []
@@ -544,38 +544,6 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
         _check_flatten_latlon_dims(coldata)
         assert coldata.dims == ('data_source', 'time', 'station_name')
 
-    # # mon_slice = data.where((data['time.month']==1)|(data['time.month']==2),drop=True)
-    
-    # #turn colocated data object into a DataArray containing a representative week
-    # min_month = data['time.month'].values.min()
-    # max_month = data['time.month'].values.max()
-    # months = range(min_month,max_month+1)
-    # first_pass = True
-    # for i,j in zip(months[0::2], months[1::2]):
-    #     rep_week_ds = xr.Dataset()
-    #     mon_slice = data.where((data['time.month']>=i)&(data['time.month']<=j),drop=True)
-    #     month_stamp = f'{i}-{j}'
-        
-    #     for day in range(7):
-    #         day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
-    #         rep_day = day_slice.groupby('time.hour').mean(dim='time')
-    #         rep_day['hour'] = rep_day.hour/24+day+1
-    #         if day == 0:
-    #             rep_week = rep_day
-    #         else:
-    #             rep_week = xr.concat([rep_week,rep_day],dim='hour')
-                
-    #     rep_week=rep_week.rename({'hour':'dummy_time'})
-    #     month_stamps = np.zeros(rep_week.dummy_time.shape,dtype='<U5')
-    #     month_stamps[:] = month_stamp
-    #     rep_week_ds['rep_week']=rep_week
-    #     rep_week_ds['month_stamp'] = (('dummy_time'),month_stamps)
-        
-    #     if first_pass:
-    #         first_pass = False
-    #         rep_week_full_period = rep_week_ds
-    #     else:
-    #         rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
     rep_week_monthly = _create_diurnal_weekly_data_object(data, 'monthly')
     rep_week_seasonal = _create_diurnal_weekly_data_object(data, 'seasonal')
 
@@ -635,7 +603,7 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
             #     timestamps.append(timestamp)
             #     # timestamp = f'{i}'.replace('-','')+f'{j}'
             if res == 'monthly':
-                period_keys = [1,2,3,4,5,6,7,8,9,10,11,12]
+                period_keys = ['01','02','03','04','05','06','07','08','09','10','11','12']
             elif res == 'bimonthly':
                 period_keys = ['JF','MA','MJ','JA','SO','ND']
             elif res == 'seasonal':
@@ -647,7 +615,42 @@ def _process_sites_weekly_ts(coldata,regions_how,meta_glob):
             if has_data:
                 ts_objs.append(ts_data)
                 dc +=1
-    return ts_objs
+    ts_objs_reg = []
+    check_countries = True if regions_how=='country' else False
+
+    if regions_how != 'country':
+        print('Regional diurnal cycles are only implemented for country regions, skipping...')
+        ts_objs_reg = None
+    else:
+        for reg in region_ids:
+            ts_data = {'time' : time,'monthly' : {'obs' : {},'mod' : {}},'seasonal' : {'obs' : {},'mod' : {}} }
+            ts_data['station_name'] = reg
+            ts_data.update(meta_glob)
+    
+            for res,repw in repw_res.items():
+                if reg == 'WORLD':
+                    subset = repw
+                else:
+                    subset = repw.where(repw.country == reg)
+
+                # if cd.has_latlon_dims:
+                #     avg = subset.data.mean(dim=('latitude', 'longitude'))
+                # else:
+                avg = subset.mean(dim='station_name')
+                obs_vals = avg[:,0,:]
+                mod_vals = avg[:,1,:]
+                if res == 'monthly':
+                    period_keys = ['01','02','03','04','05','06','07','08','09','10','11','12']
+                elif res == 'bimonthly':
+                    period_keys = ['JF','MA','MJ','JA','SO','ND']
+                elif res == 'seasonal':
+                    period_keys = ['JFM','AMJ','JAS','OND']
+                for p,pk in enumerate(period_keys):
+                    ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
+                    ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
+    
+                ts_objs_reg.append(ts_data)
+    return ts_objs,ts_objs_reg
 
 def _process_sites(data, jsdate, regions_how, meta_glob):
     ts_objs = []
@@ -952,61 +955,65 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             _write_stationdata_json(ts_data, out_dirs)
     
     if coldata.ts_type == 'hourly':
-       ts_objs_weekly = _process_sites_weekly_ts(coldata,regions_how, meta_glob)
+       ts_objs_weekly,ts_objs_weekly_reg = _process_sites_weekly_ts(coldata,regions_how, region_ids, meta_glob)
     
     if coldata.ts_type == 'hourly':
         for ts_data_weekly in ts_objs_weekly:
             #writes json file
             _write_diurnal_week_stationdata_json(ts_data_weekly, out_dirs)
+        if ts_objs_weekly_reg != None:
+            for ts_data_weekly_reg in ts_objs_weekly_reg:
+                #writes json file
+                _write_diurnal_week_stationdata_json(ts_data_weekly_reg, out_dirs)
 
-    # FIRST: process data for heatmap json file
-    hm_all = _process_heatmap_data(data, region_ids, use_weights,
-                                   use_country=use_country,
-                                   meta_glob=meta_glob)
+    # # FIRST: process data for heatmap json file
+    # hm_all = _process_heatmap_data(data, region_ids, use_weights,
+    #                                use_country=use_country,
+    #                                meta_glob=meta_glob)
 
-    for freq, hm_data in hm_all.items():
-        if freq == 'daily':
-            fname = HEATMAP_FILENAME_EVAL_IFACE_DAILY
-        else:
-            fname = HEATMAP_FILENAME_EVAL_IFACE_MONTHLY
+    # for freq, hm_data in hm_all.items():
+    #     if freq == 'daily':
+    #         fname = HEATMAP_FILENAME_EVAL_IFACE_DAILY
+    #     else:
+    #         fname = HEATMAP_FILENAME_EVAL_IFACE_MONTHLY
 
-        hm_file = os.path.join(out_dirs['hm'], fname)
+    #     hm_file = os.path.join(out_dirs['hm'], fname)
 
-        add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
-                               vert_code, model_name, model_var)
+    #     add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
+    #                            vert_code, model_name, model_var)
 
-    ts_objs_regional = _process_regional_timeseries(data,
-                                                    jsdate,
-                                                    region_ids,
-                                                    regions_how,
-                                                    meta_glob)
+    # ts_objs_regional = _process_regional_timeseries(data,
+    #                                                 jsdate,
+    #                                                 region_ids,
+    #                                                 regions_how,
+    #                                                 meta_glob)
 
-    for ts_data in ts_objs_regional:
-        #writes json file
-        _write_stationdata_json(ts_data, out_dirs)
+    # for ts_data in ts_objs_regional:
+    #     #writes json file
+    #     _write_stationdata_json(ts_data, out_dirs)
 
-    (map_data,
-     scat_data,
-     ts_objs) = _process_sites(data, jsdate,
-                               regions_how,
-                               meta_glob=meta_glob)
+    # (map_data,
+    #  scat_data,
+    #  ts_objs) = _process_sites(data, jsdate,
+    #                            regions_how,
+    #                            meta_glob=meta_glob)
 
-    dirs = out_dirs
+    # dirs = out_dirs
 
-    map_name = get_json_mapname(web_iface_name, obs_var, model_name,
-                                model_var, vert_code)
+    # map_name = get_json_mapname(web_iface_name, obs_var, model_name,
+    #                             model_var, vert_code)
 
-    outfile_map =  os.path.join(dirs['map'], map_name)
-    with open(outfile_map, 'w') as f:
-        simplejson.dump(map_data, f, ignore_nan=True)
+    # outfile_map =  os.path.join(dirs['map'], map_name)
+    # with open(outfile_map, 'w') as f:
+    #     simplejson.dump(map_data, f, ignore_nan=True)
 
-    outfile_scat =  os.path.join(dirs['scat'], map_name)
-    with open(outfile_scat, 'w') as f:
-        simplejson.dump(scat_data, f, ignore_nan=True)
+    # outfile_scat =  os.path.join(dirs['scat'], map_name)
+    # with open(outfile_scat, 'w') as f:
+    #     simplejson.dump(scat_data, f, ignore_nan=True)
 
-    for ts_data in ts_objs:
-        #writes json file
-        _write_stationdata_json(ts_data, out_dirs)
+    # for ts_data in ts_objs:
+    #     #writes json file
+    #     _write_stationdata_json(ts_data, out_dirs)
 
 if __name__ == '__main__':
     import pyaerocom as pya
