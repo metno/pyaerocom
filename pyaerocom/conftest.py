@@ -8,8 +8,8 @@ Created on Tue Feb 11 15:57:09 2020
 import pytest
 
 from pathlib import Path
-
 from traceback import format_exc
+from contextlib import contextmanager
 
 from pyaerocom import const
 import pyaerocom._conftest_helpers as cth
@@ -165,6 +165,10 @@ def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
     #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
     return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
+
+@contextmanager
+def does_not_raise_exception():
+    yield
 
 if __name__=="__main__":
     import sys
