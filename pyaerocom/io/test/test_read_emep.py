@@ -15,10 +15,8 @@ def test_read_emep():
 @testdata_unavail
 def test_read_emep_data(path_emep):
     path = path_emep['daily']
-    print(path)
     r = ReadEMEP(filepath=path)
 
-    # r.filepath = path
     vars_provided = r.vars_provided
     assert isinstance(vars_provided, list)
     assert 'vmro3' in vars_provided
@@ -27,18 +25,6 @@ def test_read_emep_data(path_emep):
     assert isinstance(data, GriddedData)
     assert data.time.long_name == 'time'
     assert data.time.standard_name == 'time'
-
-    # # TODO: Compare against expected formats for colocation gridded_gridded, gridded_ungridded
-    # # TODO: Read auxilliary variable
-    # # TODO: run these two similiar tests parameterized
-    # data = r.read_var('vmro3', ts_type='monthly')
-    # assert isinstance(data, GriddedData)
-    # assert data.time.long_name == 'time'
-    # assert data.time.standard_name == 'time'
-    # assert data.metadata['computed'] == True
-
-    # data = r.read_var('od550aer', ts_type='monthly')
-    # assert data.units == '1'
 
 @testdata_unavail
 def test_read_emep_directory(path_emep):
@@ -52,21 +38,6 @@ def test_read_emep_directory(path_emep):
     paths = r._get_paths()
     assert len(paths) == 3
 
-
-
-@testdata_unavail
-def test_read_emep_colocate_gridded_gridded(data_tm5, path_emep):
-    filepath = path_emep['monthly']
-    r = ReadEMEP(path_emep['monthly'])
-    data_emep = r.read_var('concpm10', ts_type='monthly')
-
-    # Change units and year to match TM5 data
-    data_emep.change_base_year(2010)
-    data_emep.units = '1'
-    col = colocate_gridded_gridded(data_emep, data_tm5)
-    assert isinstance(col, ColocatedData)
-
-
 @pytest.mark.parametrize('filename,ts_type', [
     ('Base_month.nc', 'monthly'),
     ('Base_day.nc', 'daily'),
@@ -74,7 +45,6 @@ def test_read_emep_colocate_gridded_gridded(data_tm5, path_emep):
     ])
 def test_ts_type_from_filename(filename, ts_type):
     assert ts_type_from_filename(filename) == ts_type
-
 
 def test_preprocess_units():
     units = ''
@@ -88,3 +58,7 @@ def test_preprocess_units():
     except NotImplementedError as e:
         catch_error = True
     assert catch_error == True
+
+if __name__ == '__main__':
+    import sys
+    pytest.main(sys.argv)

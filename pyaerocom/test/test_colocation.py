@@ -17,6 +17,7 @@ from pyaerocom.colocation import (_regrid_gridded, colocate_gridded_ungridded,
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom import GriddedData
 from pyaerocom import helpers
+from pyaerocom.io import ReadEMEP
 
 def test__regrid_gridded(data_tm5):
      one_way = _regrid_gridded(data_tm5, 'areaweighted', 5)
@@ -96,25 +97,19 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats['R'] == 1
     assert stats['R_spearman'] == 1
 
-from pyaerocom.colocation_auto import Colocator
-from pyaerocom.io.read_emep import ReadEMEP
-from pyaerocom.io.readgridded import ReadGridded
-@pytest.mark.parametrize('reader_id,reader_class', [
-    ('ReadEMEP', ReadEMEP),
-    ('ReadGridded', ReadGridded)
-    ])
-def test_colocator_reader(reader_id, reader_class):
-    col = Colocator(gridded_reader_id=reader_id)
-    reader = col.get_gridded_reader()
-    assert reader == reader_class
-
 @testdata_unavail
-def test_colocator_instantiate_model_reader(path_emep):
-    col = Colocator(gridded_reader_id='ReadEMEP')
-    col.filepath = path_emep['daily']
-    r = col.instantiate_model_reader()
-    assert isinstance(r, ReadEMEP)
-    assert r.filepath == col.filepath
+def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
+    filepath = path_emep['monthly']
+    r = ReadEMEP(path_emep['monthly'])
+    data_emep = r.read_var('concpm10', ts_type='monthly')
+
+    # Change units and year to match TM5 data
+    data_emep.change_base_year(2010)
+    data_emep.units = '1'
+    col = colocate_gridded_gridded(data_emep, data_tm5)
+    assert isinstance(col, ColocatedData)
+
+
 
 
 if __name__ == '__main__':

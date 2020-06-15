@@ -216,9 +216,20 @@ class ReadEMEP(object):
         return False
 
 
-    def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None, **kwargs):
-        """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
+    def read_var(self, var_name, ts_type=None, **kwargs):
+        """Load data for given variable.
+
+        Parameters
+        ----------
+        var_name : str
+            Variable to be read
+        ts_type : str
+            Temporal resolution of data to read. ("hourly", "daily", "monthly")
+
+        Returns
+        -------
+        GriddedData
+        """
 
         # if start or stop:
         #     raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
