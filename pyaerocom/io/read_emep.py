@@ -181,9 +181,20 @@ class ReadEMEP(object):
                                                        repr(e)))
         return tuple(data)
 
-    def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None, **kwargs):
-        """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
+    def read_var(self, var_name, ts_type=None, **kwargs):
+        """Load data for given variable.
+
+        Parameters
+        ----------
+        var_name : str
+            Variable to be read
+        ts_type : str
+            Temporal resolution of data to read. ("hourly", "daily", "monthly")
+
+        Returns
+        -------
+        GriddedData
+        """
 
         if not ts_type:
             ts_type = self._infer_ts_type()

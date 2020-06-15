@@ -203,7 +203,7 @@ class ColocationSetup(BrowseDict):
                  obs_name=None, model_name=None,
                  save_coldata=True,
                  gridded_reader_id='ReadGridded',
-                 data_id=None, **kwargs):
+                 **kwargs):
 
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
@@ -226,7 +226,6 @@ class ColocationSetup(BrowseDict):
         self.read_opts_ungridded = read_opts_ungridded
         self.obs_ts_type_read = obs_ts_type_read
         self.gridded_reader_id = gridded_reader_id
-        self.data_id = data_id
         self.model_use_vars = model_use_vars
         self.model_add_vars = model_add_vars
         self.model_keep_outliers = model_keep_outliers
@@ -933,11 +932,11 @@ class Colocator(ColocationSetup):
                 data_objs[model_var] = coldata
             except Exception as e:
                 msg = ('Colocation between model {} / {} and obs {} / {} '
-                       'failed: Reason {}'.format(self.model_id,
+                       'failed.\nTraceback:\n{}'.format(self.model_id,
                                                   model_var,
                                                   self.obs_id,
                                                   obs_var,
-                                                  repr(e)))
+                                                  traceback.format_exc()))
                 const.print_log.warning(msg)
                 self._write_log(msg + '\n')
                 if self.raise_exceptions:

@@ -76,18 +76,6 @@ def test__infer_ts_type(path_emep):
         # assert gridded.ts_type == 'monthly'
 
 @testdata_unavail
-def test_read_emep_colocate_gridded_gridded(data_tm5, path_emep):
-    filepath = path_emep['monthly']
-    r = ReadEMEP(path_emep['monthly'])
-    data_emep = r.read_var('concpm10', ts_type='monthly')
-
-    # Change units and year to match TM5 data
-    data_emep.change_base_year(2010)
-    data_emep.units = '1'
-    col = colocate_gridded_gridded(data_emep, data_tm5)
-    assert isinstance(col, ColocatedData)
-
-@testdata_unavail
 def test__load_gridded(path_emep):
     filepath = path_emep['monthly']
     r = ReadEMEP(filepath)
@@ -116,7 +104,6 @@ def test__preprocess_units():
         catch_error = True
     assert catch_error == True
 
-
-if __name__=="__main__":
+if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)

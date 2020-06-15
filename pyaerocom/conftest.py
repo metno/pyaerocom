@@ -8,8 +8,8 @@ Created on Tue Feb 11 15:57:09 2020
 import pytest
 
 from pathlib import Path
-
 from traceback import format_exc
+from contextlib import contextmanager
 
 from pyaerocom import const
 import pyaerocom._conftest_helpers as cth
@@ -48,6 +48,7 @@ TEST_PATHS = {
 
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
     'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE),
+    'coldata_tm5_aeronet': 'coldata/od550aer_REF-AeronetSunV3Lev2.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc',
     'emep' : 'modeldata/EMEP_2017'
     }
 TEST_PATHS.update(ADD_PATHS)
@@ -143,6 +144,11 @@ def data_tm5():
     return data
 
 @pytest.fixture(scope='session')
+def coldata_tm5_aeronet():
+    fpath = TESTDATADIR.joinpath(TEST_PATHS['coldata_tm5_aeronet'])
+    return cth._load_coldata_tm5_aeronet_from_scratch(fpath)
+
+@pytest.fixture(scope='session')
 def aasetal_data():
     reader = ReadAasEtal()
     # that's quite time consuming, so keep it for possible usage in other
@@ -165,6 +171,10 @@ def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
     #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
     return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
+
+@contextmanager
+def does_not_raise_exception():
+    yield
 
 if __name__=="__main__":
     import sys
