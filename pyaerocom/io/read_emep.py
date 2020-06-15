@@ -24,18 +24,25 @@ class ReadEMEP(object):
 
     Parameters
     ----------
-    data_id : str
-        string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
-    filepath : str
-        Path to netcdf file.
-    data_dir : str
+    data_id : str, optional
+        ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
+    filepath : str, optional
+        Path to netcdf file
+    data_dir : str, optional
+        Base directory of EMEP data, containing one or more netcdf files
 
     Attributes
     ----------
-    filepath :
-    data_id :
-    data_dir :
-    vars_provided :
+    filepath : str
+        Path to netcdf file
+    data_id : str
+        ID of model
+    data_dir : str
+        Base directory of EMEP data, containing one or more netcdf files
+    vars_provided : str
+        Variables that are available to read in filepath or data_dir
+    ts_types : str
+        Available temporal resolution in filepath or data_dir
     """
 
     # dictionary containing information about additionally required variables
@@ -57,7 +64,6 @@ class ReadEMEP(object):
     def __init__(self, filepath=None, data_dir=None, data_id=None):
         if (filepath and data_dir):
             raise ValueError('Either filepath or data_dir should be set, not both.')
-
         if data_dir is not None:
             self.data_dir = data_dir
         else:
@@ -161,16 +167,22 @@ class ReadEMEP(object):
             val = None
         self._data_id = val
 
-    def read(self, vars_to_retrieve, ts_type=None):
+    def read(self, vars_to_retrieve, ts_type):
         """
         Loads data for all variables in vars_to_retrieve.
+
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            List of variables to load
+        ts_type :
+            Temperol resolution
 
         Returns
         -------
         tuple
             loaded data objects (type :class:`GriddedData`)
         """
-
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         data = []
@@ -196,7 +208,6 @@ class ReadEMEP(object):
         -------
         GriddedData
         """
-
         if not ts_type:
             ts_type = self._infer_ts_type()
         filepath = self._find_filepath(ts_type)
@@ -234,7 +245,6 @@ class ReadEMEP(object):
             raise ValueError('ts_type not recognized.')
         filepath = os.path.join(self.data_dir, filename)
         return filepath
-
 
     def _load_gridded(self, var_name, filepath, ts_type):
         if var_name in self.AUX_REQUIRES:
