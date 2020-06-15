@@ -498,7 +498,7 @@ class Variable(object):
         try:
             return VarNameInfo(self.var_name_aerocom).get_default_vert_code()
         except ValueError:
-            print_log.warn('default_vert_code not set for {} and '
+            print_log.warning('default_vert_code not set for {} and '
                            'could also not be inferred'
                            .format(self.var_name_aerocom))
             return None

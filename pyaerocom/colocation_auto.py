@@ -552,7 +552,7 @@ class Colocator(ColocationSetup):
             if var in obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES:
                 obs_vars.append(var)
             else:
-                const.print_log.warn('Variable {} is not supported by {} '
+                const.print_log.warning('Variable {} is not supported by {} '
                                      'and will be skipped'
                                      .format(var, self.obs_id))
         if len(obs_vars) == 0:

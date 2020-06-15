@@ -51,7 +51,7 @@ def varlist_aerocom(varlist):
             if not _var in output:
                 output.append(_var)
         except VariableDefinitionError as e:
-            const.print_log.warn(repr(e))
+            const.print_log.warning(repr(e))
     if len(output) == 0:
         raise ValueError('None of the input variables appears to be valid')
     return output
