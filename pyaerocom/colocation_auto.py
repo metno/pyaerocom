@@ -10,10 +10,11 @@ NOTE
 This module will be deprecated soon but most of the code will be refactored
 into colocation.py module.
 """
-from datetime import datetime
-import numpy as np
+
 import os
 import traceback
+from datetime import datetime
+import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import const, print_log
@@ -202,7 +203,6 @@ class ColocationSetup(BrowseDict):
                  colocate_time=False, basedir_coldata=None,
                  obs_name=None, model_name=None,
                  save_coldata=True,
-                 gridded_reader_id='ReadGridded',
                  **kwargs):
 
         if isinstance(obs_vars, str):
@@ -225,7 +225,6 @@ class ColocationSetup(BrowseDict):
         self.model_vert_type_alt = model_vert_type_alt
         self.read_opts_ungridded = read_opts_ungridded
         self.obs_ts_type_read = obs_ts_type_read
-        self.gridded_reader_id = gridded_reader_id
         self.model_use_vars = model_use_vars
         self.model_add_vars = model_add_vars
         self.model_keep_outliers = model_keep_outliers
@@ -238,6 +237,10 @@ class ColocationSetup(BrowseDict):
         self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
         self.obs_add_meta = []
+
+        self.gridded_reader_id = {
+         'model' : 'ReadGridded',
+         'obs' : 'ReadGridded'}
 
         self.start = start
         self.stop = stop
@@ -383,28 +386,33 @@ class Colocator(ColocationSetup):
         finally:
             self._close_log()
 
-    def get_gridded_reader(self):
+    def instantiate_gridded_reader(self, what):
         """
-        Returns the class of the reader used for model data.
-        """
-        try:
-            reader = self.SUPPORTED_GRIDDED_READERS[self.gridded_reader_id]
-        except KeyError as e:
-            raise NotImplementedError('Reader {} is not supported: {}'.format(self.gridded_reader_id, e))
-        return reader
+        Create reader for model or observational gridded data.
 
-
-    def instantiate_model_reader(self):
+        Parameters
+        ----------
+        what : str
+            Type of reader. ("model" or "obs")
         """
-        Create reader object based on reader id.
-        """
-        reader_class = self.get_gridded_reader()
-        reader = reader_class(data_id=self.model_id)
+        if what == 'model':
+            data_id = self.model_id
+        else:
+            data_id = self.obs_id
+        reader_class = self._get_gridded_reader_class(what=what)
+        reader = reader_class(data_id=data_id)
         if hasattr(reader, 'filepath'):
             reader.filepath = self.filepath
         return reader
 
-
+    def _get_gridded_reader_class(self, what):
+        """Returns the class of the reader for gridded data."""
+        try:
+            reader = self.SUPPORTED_GRIDDED_READERS[self.gridded_reader_id[what]]
+        except KeyError as e:
+            raise NotImplementedError('Reader {} is not supported: {}'.
+                                      format(self.gridded_reader_id[what], e))
+        return reader
 
     @staticmethod
     def get_lowest_resolution(ts_type, *ts_types):
@@ -560,7 +568,7 @@ class Colocator(ColocationSetup):
         if 'use_input_var' in kwargs:
             use_input_var = kwargs.pop('use_input_var')
 
-        reader = self.instantiate_model_reader()
+        reader = self.instantiate_gridded_reader(what='model')
         if use_input_var:
             var = var_name
         else:
@@ -730,7 +738,7 @@ class Colocator(ColocationSetup):
         print_log.info('PREPARING colocation of {} vs. {}'
                        .format(self.model_id, self.obs_id))
 
-        model_reader = self.instantiate_model_reader()
+        model_reader = self.instantiate_gridded_reader(what='model')
         obs_reader = ReadUngridded(self.obs_id)
 
         _oreader = obs_reader.get_reader(self.obs_id)
@@ -948,8 +956,8 @@ class Colocator(ColocationSetup):
     def _run_gridded_gridded(self, var_name=None):
 
         start, stop = start_stop(self.start, self.stop)
-        model_reader = self.instantiate_model_reader()
-        obs_reader = ReadGridded(self.obs_id)
+        model_reader = self.instantiate_gridded_reader(what='model')
+        obs_reader = self.instantiate_gridded_reader(what='obs')
 
         if 'obs_filters' in self:
             remaining_filters = self._eval_obs_filters()
