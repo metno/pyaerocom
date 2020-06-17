@@ -35,7 +35,7 @@ def test_alias_families():
 def test_get_emep_variables():
     variables = get_emep_variables()
     assert isinstance(variables, dict)
-    assert variables['sconco3'] == 'SURF_ug_O3'
+    assert variables['conco3'] == 'SURF_ug_O3'
 
 
 if __name__=='__main__':

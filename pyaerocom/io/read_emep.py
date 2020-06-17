@@ -179,12 +179,60 @@ class ReadEMEP(object):
         return s
 
 
-    def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None):
-        """Read EMEP variable, rename to Aerocom naming and return GriddedData object"""
+    def has_var(self, var_name):
+        """Check if variable is available
 
-        if start or stop:
-            raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+
+        Returns
+        -------
+        bool
+        """
+        # vars_provided includes variables that can be read and variables that
+        # can be computed. It does not consider variable families that may be
+        # able to be computed or alias matches
+        avail = self.vars_provided
+        if var_name in avail:
+            return True
+        try:
+            var = const.VARS[var_name]
+        except VariableDefinitionError as e:
+            const.print_log.warn(repr(e))
+            return False
+        #
+        # if self.check_compute_var(var_name):
+        #     return True
+        #
+        for alias in var.aliases:
+            if alias in avail:
+                return True
+        #
+        # if var.is_alias and var.var_name_aerocom in avail:
+        #     return True
+
+        return False
+
+
+    def read_var(self, var_name, ts_type=None, **kwargs):
+        """Load data for given variable.
+
+        Parameters
+        ----------
+        var_name : str
+            Variable to be read
+        ts_type : str
+            Temporal resolution of data to read. ("hourly", "daily", "monthly")
+
+        Returns
+        -------
+        GriddedData
+        """
+
+        # if start or stop:
+        #     raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
 
         var_map = get_emep_variables()
 

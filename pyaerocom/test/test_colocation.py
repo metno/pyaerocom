@@ -12,10 +12,12 @@ import iris
 from cf_units import Unit
 
 from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
-from pyaerocom.colocation import (_regrid_gridded, colocate_gridded_ungridded)
+from pyaerocom.colocation import (_regrid_gridded, colocate_gridded_ungridded,
+                                  colocate_gridded_gridded)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom import GriddedData
 from pyaerocom import helpers
+from pyaerocom.io import ReadEMEP
 
 def test__regrid_gridded(data_tm5):
      one_way = _regrid_gridded(data_tm5, 'areaweighted', 5)
@@ -38,12 +40,15 @@ def test__regrid_gridded(data_tm5):
     (dict(use_climatology_ref=True),
      'monthly', (2,12,13), 0.302636, 0.234147),
     (dict(regrid_res_deg=30),
-     'monthly', (2,12,8), 0.31593 , 0.169897)
+     'monthly', (2,12,8), 0.31593 , 0.169897),
+    (dict(ts_type='yearly', apply_time_resampling_constraints=False),
+     'yearly', (2,1,8), 0.417676, 0.275671)
 
     ])
 def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
                                     addargs, ts_type, shape,
                                     obsmean, modmean):
+
     coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
                                          **addargs)
 
@@ -58,7 +63,6 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
 
 @testdata_unavail
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
-
     times = [1,2]
     time_unit = Unit("days since 1990-1-1 0:0:0")
     cubes = iris.cube.CubeList()
@@ -78,9 +82,35 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     coords = coldata.coords
     assert len(coords['station_name']) == 1
 
-@pytest.mark.skip(reason='No fixture for gridded observation data available yet')
-def test_colocate_gridded_gridded(mod, obs, addargs, **kwargs):
-    pass
+@testdata_unavail
+def test_colocate_gridded_gridded_same(data_tm5):
+    coldata = colocate_gridded_gridded(data_tm5, data_tm5)
+    assert isinstance(coldata, ColocatedData)
+    stats = coldata.calc_statistics()
+    # check mean value
+    npt.assert_allclose(stats['data_mean'], 0.09825691)
+    # check that mean value is same as in input GriddedData object
+    npt.assert_allclose(stats['data_mean'], data_tm5.mean(areaweighted=False))
+    assert stats['refdata_mean'] == stats['data_mean']
+    assert stats['nmb'] == 0
+    assert stats['mnmb'] == 0
+    assert stats['R'] == 1
+    assert stats['R_spearman'] == 1
+
+@testdata_unavail
+def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
+    filepath = path_emep['monthly']
+    r = ReadEMEP(path_emep['monthly'])
+    data_emep = r.read_var('concpm10', ts_type='monthly')
+
+    # Change units and year to match TM5 data
+    data_emep.change_base_year(2010)
+    data_emep.units = '1'
+    col = colocate_gridded_gridded(data_emep, data_tm5)
+    assert isinstance(col, ColocatedData)
+
+
+
 
 if __name__ == '__main__':
     import sys
