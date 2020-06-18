@@ -134,16 +134,18 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     if cbar_label is None:
         cbar_label = ''
     # Old vesion only for
-    if isinstance(df.columns, pd.MultiIndex):
-        # If pandas is a instance of multicolumns make sure that it only ha one column.
-        if len(df.columns.levels) > 1:
-             raise AttributeError("Heatmaps can only be created for "+
-                                 "single column tabular data (e.g. Bias or "+
-                                 "RMSE) with a partly unstacked MultiIndex or a "+
-                                 "single index DataFrame. "+
-                                 "Not MulitiIndex of {} ".format(len(df.columns.levels[0]))+
-                                 " columns which you provided. "+
-                                 "Please extract a column. ")
+# =============================================================================
+#     if isinstance(df.columns, pd.MultiIndex):
+#         # If pandas is a instance of multicolumns make sure that it only ha one column.
+#         if len(df.columns.levels) > 1:
+#              raise AttributeError("Heatmaps can only be created for "+
+#                                  "single column tabular data (e.g. Bias or "+
+#                                  "RMSE) with a partly unstacked MultiIndex or a "+
+#                                  "single index DataFrame. "+
+#                                  "Not MulitiIndex of {} ".format(len(df.columns.levels[0]))+
+#                                  " columns which you provided. "+
+#                                  "Please extract a column. ")
+# =============================================================================
 
     if circle:
         raise NotImplementedError('Adding circles to heatmap is not implemented yet.')
