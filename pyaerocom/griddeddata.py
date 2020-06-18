@@ -1505,7 +1505,7 @@ class GriddedData(object):
         case data is lazily loaded.
         """
         if not np.ma.is_masked(self.cube.data):
-            self.cube.data = np.ma.masked_array(arr)
+            self.cube.data = np.ma.masked_array(self.cube.data)
 
     def _resample_time_iris(self, to_ts_type):
         """Resample time dimension using iris funcitonality
@@ -2668,4 +2668,10 @@ if __name__=='__main__':
 
     # print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer',
-                                                          start=2010)
+                                                          start=2010).resample_time('yearly')
+
+
+    data1 = data.remove_outliers(0.2, 0.4, inplace=False)
+
+    data.quickplot_map()
+    data1.quickplot_map()
