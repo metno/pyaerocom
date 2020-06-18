@@ -206,6 +206,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         if var_ref in var_ref_outlier_ranges:
             low_ref, high_ref = var_ref_outlier_ranges[var_ref]
 
+        if not var_keep_outliers:
+            gridded_data.remove_outliers(low, high)
+        if not var_ref_keep_outliers:
+            gridded_data_ref.remove_outliers(low_ref, high_ref)
+
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
         gridded_data.base_year = update_baseyear_gridded
@@ -311,11 +316,13 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'min_num_obs'       :   min_num_obs}
 
     meta.update(regfilter.to_dict())
-    if remove_outliers:
-        if not var_keep_outliers:
-            gridded_data.remove_outliers(low, high)
-        if not var_ref_keep_outliers:
-            gridded_data_ref.remove_outliers(low_ref, high_ref)
+# =============================================================================
+#     if remove_outliers:
+#         if not var_keep_outliers:
+#             gridded_data.remove_outliers(low, high)
+#         if not var_ref_keep_outliers:
+#             gridded_data_ref.remove_outliers(low_ref, high_ref)
+# =============================================================================
 
     data = gridded_data.grid.data
     if isinstance(data, np.ma.core.MaskedArray):
@@ -807,7 +814,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                   **kwargs)
     return data
 
-def correct_model_stp_coldata(coldata, p0=None, t0=273, inplace=False):
+def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     """Correct modeldata in colocated data object to STP conditions
 
     Note
