@@ -501,6 +501,12 @@ def _create_diurnal_weekly_data_object(data,resolution):
         b1 = 0
         b2 = 2
         step = 3
+        seasons = ['DJF','MAM','JJA','SON']
+    elif resolution == 'yearly':
+        b1 = 0
+        b2 = 11
+        step = 11
+        seasons = ['year']
     else:
         raise ValueError(f'Invalid resolution. Got {resolution}.')
 
@@ -508,10 +514,17 @@ def _create_diurnal_weekly_data_object(data,resolution):
     max_month = data['time.month'].values.max()
     months = range(min_month,max_month+1)
     first_pass = True
-    for i,j in zip(months[b1::step], months[b2::step]):
+    for seas in seasons:
+    #for i,j in zip(months[b1::step], months[b2::step]):
         rep_week_ds = xr.Dataset()
-        mon_slice = data.where((data['time.month']>=i)&(data['time.month']<=j),drop=True)
-        month_stamp = f'{i}-{j}'
+        if resolution == 'seasonal':
+            mon_slice = data.where(data['time.season']==seas,drop=True)
+        elif resolution == 'yearly':
+            mon_slice = data
+        else:
+            raise NotImplementedError(f'Functionality currently not implemented for resolution {resolution}')
+        # mon_slice = data.where((data['time.month']>=i)&(data['time.month']<=j),drop=True)
+        month_stamp = f'seas'
         
         for day in range(7):
             day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
@@ -544,30 +557,30 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
         _check_flatten_latlon_dims(coldata)
         assert coldata.dims == ('data_source', 'time', 'station_name')
 
-    rep_week_monthly = _create_diurnal_weekly_data_object(data, 'monthly')
-    rep_week_seasonal = _create_diurnal_weekly_data_object(data, 'seasonal')
+    # rep_week_monthly = _create_diurnal_weekly_data_object(data, 'monthly')
+    # rep_week_seasonal = _create_diurnal_weekly_data_object(data, 'seasonal')
 
-    repw_res = {'monthly':rep_week_monthly['rep_week'],
-                'seasonal': rep_week_seasonal['rep_week']}
+    repw_res = {'seasonal':_create_diurnal_weekly_data_object(data, 'seasonal')['rep_week'],
+                'yearly':_create_diurnal_weekly_data_object(data, 'yearly')['rep_week'].expand_dims('period',axis=0),}
 
     default_regs = get_all_default_regions(use_all_in_ini=False)
 
 
-    lats = repw_res['monthly'].latitude.values.astype(np.float64)
-    lons = repw_res['monthly'].longitude.values.astype(np.float64)
+    lats = repw_res['seasonal'].latitude.values.astype(np.float64)
+    lons = repw_res['seasonal'].longitude.values.astype(np.float64)
     
-    if 'altitude' in repw_res['monthly'].coords:
-        alts = repw_res['monthly'].altitude.values.astype(np.float64)
+    if 'altitude' in repw_res['seasonal'].coords:
+        alts = repw_res['seasonal'].altitude.values.astype(np.float64)
     else:
         alts = [np.nan]*len(lats)
     
     if regions_how == 'country':
-        countries = repw_res['monthly'].country.values
+        countries = repw_res['seasonal'].country.values
     dc = 0
     time = (np.arange(168)/24+1).round(4).tolist()
-    for i, stat_name in enumerate(repw_res['monthly'].station_name.values):
+    for i, stat_name in enumerate(repw_res['seasonal'].station_name.values):
         has_data = False
-        ts_data = {'time' : time,'monthly' : {'obs' : {},'mod' : {}},'seasonal' : {'obs' : {},'mod' : {}} }
+        ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
         ts_data['station_name'] = stat_name
         ts_data.update(meta_glob)
     
@@ -607,14 +620,16 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
             elif res == 'bimonthly':
                 period_keys = ['JF','MA','MJ','JA','SO','ND']
             elif res == 'seasonal':
-                period_keys = ['JFM','AMJ','JAS','OND']
+                period_keys = ['DJF','MAM','JJA','SON']
+            elif res == 'yearly':
+                period_keys = ['Annual']
             for p,pk in enumerate(period_keys):
                 ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
                 ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
             
-            if has_data:
-                ts_objs.append(ts_data)
-                dc +=1
+        if has_data:
+            ts_objs.append(ts_data)
+            dc +=1
     ts_objs_reg = []
     check_countries = True if regions_how=='country' else False
 
@@ -623,7 +638,7 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
         ts_objs_reg = None
     else:
         for reg in region_ids:
-            ts_data = {'time' : time,'monthly' : {'obs' : {},'mod' : {}},'seasonal' : {'obs' : {},'mod' : {}} }
+            ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
             ts_data['station_name'] = reg
             ts_data.update(meta_glob)
     
@@ -644,12 +659,14 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
                 elif res == 'bimonthly':
                     period_keys = ['JF','MA','MJ','JA','SO','ND']
                 elif res == 'seasonal':
-                    period_keys = ['JFM','AMJ','JAS','OND']
+                    period_keys = ['DJF','MAM','JJA','SON']
+                elif res == 'yearly':
+                    period_keys = ['Annual']
                 for p,pk in enumerate(period_keys):
                     ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
                     ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
     
-                ts_objs_reg.append(ts_data)
+            ts_objs_reg.append(ts_data)
     return ts_objs,ts_objs_reg
 
 def _process_sites(data, jsdate, regions_how, meta_glob):
