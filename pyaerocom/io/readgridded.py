@@ -1389,11 +1389,69 @@ class ReadGridded(object):
                 ts_type = None
         return vert_which, ts_type
 
+    def apply_var_filter(self, data, filter_var, perator,
+                         filter_val,
+                         new_val=None,
+                         **kwargs):
+        """
+        Filter a `GriddeData` object by value in another variable
+
+        Note
+        ----
+        BETA version, that was hacked down in a rush to be able to apply
+        AOD>0.1 threshold when reading AE.
+
+
+        Parameters
+        ----------
+        data : TYPE
+            DESCRIPTION.
+        filter_var : TYPE
+            DESCRIPTION.
+        operator : str
+            operator used to filter other variable field to retrieve filter
+            mask
+        filter_val : float
+            value in filter_var for which mask will be retrieved
+        new_val : TYPE, optional
+            DESCRIPTION. The default is None.
+        **kwargs : TYPE
+            DESCRIPTION.
+
+        Raises
+        ------
+        ValueError
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        if new_val is None:
+            new_val = np.nan
+
+        other_data = self.read_var(filter_var, **kwargs)
+        if not other_data.shape == data.shape:
+            raise ValueError('Failed to apply filter. Shape mismatch')
+        if operator == '==':
+            mask = other_data.cube.data == filter_val
+        elif operator == '>':
+            mask = other_data.cube.data > filter_val
+        elif operator == '<':
+            mask = other_data.cube.data < filter_val
+        else:
+            raise NotImplementedError('Can only handle the following operators '
+                                      'so far: ==, <, >')
+        data.cube.data[mask] = new_val
+        return data
+
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, vert_which=None,
                  flex_ts_type=True, prefer_longer=False,
                  aux_vars=None, aux_fun=None,
+                 apply_var_filter=None,
                  **kwargs):
         """Read model data for a specific variable
 
