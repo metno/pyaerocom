@@ -5,14 +5,10 @@ Created on Mon Jun  8 10:13:05 2020
 
 @author: jonasg
 """
-from pyaerocom.web import helpers as h
 import pytest
-from contextlib import contextmanager
 
-
-@contextmanager
-def does_not_raise_exception():
-    yield
+from pyaerocom.web import helpers as h
+from pyaerocom.conftest import does_not_raise_exception
 
 @pytest.mark.parametrize('input_args,expectation', [
     pytest.param(dict(), pytest.raises(ValueError)),
