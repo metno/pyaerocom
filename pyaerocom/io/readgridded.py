@@ -53,7 +53,8 @@ from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
 
 from pyaerocom.helpers import (to_pandas_timestamp,
                                sort_ts_types,
-                               get_highest_resolution)
+                               get_highest_resolution,
+                               isnumeric)
 
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
@@ -131,6 +132,13 @@ class ReadGridded(object):
         searched using :func:`search_all_files`.
 
     """
+    CONSTRAINT_OPERATORS = {'==' : np.equal,
+                            '<'  : np.less,
+                            '<=' : np.less_equal,
+                            '>'  : np.greater,
+                            '>=' : np.greater_equal}
+
+
     AUX_REQUIRES = {'ang4487aer'    : ('od440aer', 'od870aer'),
                     'od550gt1aer'   : ('od550aer', 'od550lt1aer'),
                     'wetoa'         : ('wetpoa', 'wetsoa'),
@@ -1389,10 +1397,22 @@ class ReadGridded(object):
                 ts_type = None
         return vert_which, ts_type
 
-    def apply_var_filter(self, data, filter_var, perator,
-                         filter_val,
-                         new_val=None,
-                         **kwargs):
+    def check_constraint_valid(self, constraint):
+        if not isinstance(constraint, dict):
+            raise ValueError('Read constraint needs to be dict')
+        elif not 'operator' in constraint:
+            raise ValueError('Constraint requires specification of operator. '
+                             'Valid operators: {}'.format(self.CONSTRAINT_OPERATORS))
+        elif not constraint['operator'] in self.CONSTRAINT_OPERATORS:
+            raise ValueError('Invalid constraint operator. Choose from: {}'
+                             .format(self.CONSTRAINT_OPERATORS))
+        elif not 'filter_val' in constraint:
+            raise ValueError('constraint needs specification of filter_val')
+        elif not isnumeric(constraint['filter_val']):
+            raise ValueError('Need numerical filter value')
+
+    def apply_read_constraint(self, data, constraint,
+                              **kwargs):
         """
         Filter a `GriddeData` object by value in another variable
 
@@ -1404,8 +1424,8 @@ class ReadGridded(object):
 
         Parameters
         ----------
-        data : TYPE
-            DESCRIPTION.
+        data : GriddedData
+            data object to which constraint is applied
         filter_var : TYPE
             DESCRIPTION.
         operator : str
@@ -1428,30 +1448,81 @@ class ReadGridded(object):
         None.
 
         """
-        if new_val is None:
-            new_val = np.nan
+        self.check_constraint_valid(constraint)
+        if 'new_val' in constraint:
+            new_val = constraint['new_val']
+        else:
+            new_val = np.ma.masked
 
-        other_data = self.read_var(filter_var, **kwargs)
+        operator_fun = self.CONSTRAINT_OPERATORS[constraint['operator']]
+
+        if 'var_name' in constraint:
+            other_data = self.read_var(constraint['var_name'],
+                                       **kwargs)
+        else:
+            other_data = data
+
         if not other_data.shape == data.shape:
             raise ValueError('Failed to apply filter. Shape mismatch')
-        if operator == '==':
-            mask = other_data.cube.data == filter_val
-        elif operator == '>':
-            mask = other_data.cube.data > filter_val
-        elif operator == '<':
-            mask = other_data.cube.data < filter_val
-        else:
-            raise NotImplementedError('Can only handle the following operators '
-                                      'so far: ==, <, >')
+
+        # needs both data objects to be loaded into memory
+        other_data._ensure_is_masked_array()
+        data._ensure_is_masked_array()
+        mask = operator_fun(other_data.cube.data,
+                            constraint['filter_val'])
+
         data.cube.data[mask] = new_val
         return data
+
+    def _try_read_var(self, var_name, start, stop,
+                  ts_type, experiment, vert_which,
+                  flex_ts_type, prefer_longer, **kwargs):
+        """Helper method used in :func:`read_var`
+
+        See :func:`read_var` for description of input arguments.
+        """
+        if var_name in self._aux_requires and self.check_compute_var(var_name):
+            return self.compute_var(var_name=var_name,
+                                    start=start, stop=stop,
+                                    ts_type=ts_type,
+                                    experiment=experiment,
+                                    vert_which=vert_which,
+                                    flex_ts_type=flex_ts_type,
+                                    prefer_longer=prefer_longer)
+
+        try:
+            var_to_read = self._get_var_to_read(var_name)
+            return self._load_var(var_name=var_to_read,
+                                  ts_type=ts_type,
+                                  start=start, stop=stop,
+                                  experiment=experiment,
+                                  vert_which=vert_which,
+                                  flex_ts_type=flex_ts_type,
+                                  prefer_longer=prefer_longer,
+                                  **kwargs)
+
+        except VarNotAvailableError:
+            if self.check_compute_var(var_name):
+                return self.compute_var(var_name=var_name,
+                                        start=start, stop=stop,
+                                        ts_type=ts_type,
+                                        experiment=experiment,
+                                        vert_which=vert_which,
+                                        flex_ts_type=flex_ts_type,
+                                        prefer_longer=prefer_longer)
+        # this input variable was explicitely set to be computed, in which
+        # case reading of that variable is ignored even if a file exists for
+        # that
+        raise VarNotAvailableError("Error: variable {} not available in "
+                                    "files and can also not be computed."
+                                    .format(var_name))
 
     # TODO: add from_vars input arg for computation and corresponding method
     def read_var(self, var_name, start=None, stop=None,
                  ts_type=None, experiment=None, vert_which=None,
                  flex_ts_type=True, prefer_longer=False,
                  aux_vars=None, aux_fun=None,
-                 apply_var_filter=None,
+                 constraints=None,
                  **kwargs):
         """Read model data for a specific variable
 
@@ -1507,6 +1578,8 @@ class ReadGridded(object):
             only relevant if `var_name` is not available for reading but needs
             to be computed: custom method for computation (cf.
             :func:`add_aux_compute` for details)
+        constraints : list, optional
+            list of reading cons
         **kwargs
             additional keyword args parsed to :func:`_load_var`
 
@@ -1532,43 +1605,25 @@ class ReadGridded(object):
         vert_which, ts_type =  self._eval_vert_which_and_ts_type(var_name,
                                                                  vert_which,
                                                                  ts_type)
+        data = self._try_read_var(var_name, start, stop,
+                                  ts_type, experiment, vert_which,
+                                  flex_ts_type, prefer_longer, **kwargs)
 
-        # this input variable was explicitely set to be computed, in which
-        # case reading of that variable is ignored even if a file exists for
-        # that
-        if var_name in self._aux_requires and self.check_compute_var(var_name):
-            return self.compute_var(var_name=var_name,
-                                    start=start, stop=stop,
-                                    ts_type=ts_type,
-                                    experiment=experiment,
-                                    vert_which=vert_which,
-                                    flex_ts_type=flex_ts_type,
-                                    prefer_longer=prefer_longer)
+        if constraints is not None:
 
-        try:
-            var_to_read = self._get_var_to_read(var_name)
-            return self._load_var(var_name=var_to_read,
-                                  ts_type=ts_type,
-                                  start=start, stop=stop,
-                                  experiment=experiment,
-                                  vert_which=vert_which,
-                                  flex_ts_type=flex_ts_type,
-                                  prefer_longer=prefer_longer,
-                                  **kwargs)
-
-        except VarNotAvailableError:
-            if self.check_compute_var(var_name):
-                return self.compute_var(var_name=var_name,
-                                        start=start, stop=stop,
-                                        ts_type=ts_type,
-                                        experiment=experiment,
-                                        vert_which=vert_which,
-                                        flex_ts_type=flex_ts_type,
-                                        prefer_longer=prefer_longer)
-
-        raise VarNotAvailableError("Error: variable {} not available in "
-                                    "files and can also not be computed."
-                                    .format(var_name))
+            if isinstance(constraints, dict):
+                constraints = [constraints]
+            for constraint in constraints:
+                data = self.apply_read_constraint(data, constraint,
+                                                  start=start,
+                                                  stop=stop,
+                                                  ts_type=ts_type,
+                                                  experiment=experiment,
+                                                  vert_which=vert_which,
+                                                  flex_ts_type=flex_ts_type,
+                                                  prefer_longer=prefer_longer,
+                                                  **kwargs)
+        return data
 
     def read(self, vars_to_retrieve=None, start=None, stop=None, ts_type=None,
              experiment=None, vert_which=None, flex_ts_type=True,
@@ -2046,17 +2101,20 @@ class ReadGriddedMulti(object):
         return s
 
 if __name__=="__main__":
+    import pyaerocom as pya
 
     import matplotlib.pyplot as plt
     plt.close('all')
-    import pyaerocom as pya
+    reader = ReadGridded('AATSR_SU_v4.3')
+    read_constraint = dict(
+        var_name = 'od550aer',
+        operator='<',
+        filter_val=0.1
+    )
 
-    r = ReadGridded('ECMWF_CAMS_REAN')
+    ae = reader.read_var('ang4487aer', start=2010)
+    ae_qa = reader.read_var('ang4487aer', start=2010,
+                         constraints=[read_constraint])
 
-    r = ReadGridded('OsloCTM3v1.01-met2010_AP3-CTRL')
-
-    print(r)
-
-    od550aer = r.read_var('od550aer')
-
-    ang4487aer = r.read_var('ang4487aer')
+    ae.resample_time('yearly', apply_constraints=False).quickplot_map()
+    ae_qa.resample_time('yearly', apply_constraints=False).quickplot_map()
