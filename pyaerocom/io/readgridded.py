@@ -1397,7 +1397,138 @@ class ReadGridded(object):
                 ts_type = None
         return vert_which, ts_type
 
+    # TODO: add from_vars input arg for computation and corresponding method
+    def read_var(self, var_name, start=None, stop=None,
+                 ts_type=None, experiment=None, vert_which=None,
+                 flex_ts_type=True, prefer_longer=False,
+                 aux_vars=None, aux_fun=None,
+                 constraints=None,
+                 **kwargs):
+        """Read model data for a specific variable
+
+        This method searches all valid files for a given variable and for a
+        provided temporal resolution (e.g. *daily, monthly*), optionally
+        within a certain time window, that may be specified on class
+        instantiation or using the corresponding input parameters provided in
+        this method.
+
+        The individual NetCDF files for a given temporal period are loaded as
+        instances of the :class:`iris.Cube` object and appended to an instance
+        of the :class:`iris.cube.CubeList` object. The latter is then used to
+        concatenate the individual cubes in time into a single instance of the
+        :class:`pyaerocom.GriddedData` class. In order to ensure that this
+        works, several things need to be ensured, which are listed in the
+        following and which may be controlled within the global settings for
+        NetCDF import using the attribute :attr:`GRID_IO` (instance of
+        :class:`OnLoad`) in the default instance of the
+        :class:`pyaerocom.config.Config` object accessible via
+        ``pyaerocom.const``.
+
+        Parameters
+        ----------
+        var_name : str
+            variable that are supposed to be read
+        start : Timestamp or str, optional
+            start time of data import
+        stop : Timestamp or str, optional
+            stop time of data import
+        ts_type : str
+            string specifying temporal resolution (choose from
+            "hourly", "3hourly", "daily", "monthly"). If None, prioritised
+            of the available resolutions is used
+        experiment : str
+            name of experiment (only relevant if this dataset contains more
+            than one experiment)
+        vert_which : str or dict, optional
+            valid AeroCom vertical info string encoded in name (e.g. Column,
+            ModelLevel) or dictionary containing var_name as key and vertical
+            coded string as value, accordingly
+        flex_ts_type : bool
+            if True and if applicable, then another ts_type is used in case
+            the input ts_type is not available for this variable
+        prefer_longer : bool
+            if True and applicable, the ts_type resulting in the longer time
+            coverage will be preferred over other possible frequencies that
+            match the query.
+        aux_vars : list
+            only relevant if `var_name` is not available for reading but needs
+            to be computed: list of variables that are required to compute
+            `var_name`
+        aux_fun : callable
+            only relevant if `var_name` is not available for reading but needs
+            to be computed: custom method for computation (cf.
+            :func:`add_aux_compute` for details)
+        constraints : list, optional
+            list of reading constraints (dict type). See
+            :func:`check_constraint_valid` and :func:`apply_read_constraint`
+            for details related to format of the individual constraints.
+        **kwargs
+            additional keyword args parsed to :func:`_load_var`
+
+        Returns
+        -------
+        GriddedData
+            loaded data object
+
+        Raises
+        ------
+        AttributeError
+            if none of the ts_types identified from file names is valid
+        VarNotAvailableError
+            if specified ts_type is not supported
+        """
+        # user has provided input that specified how the input variable
+        # is supposed to be computed. In this case, the variable will be
+        # computed even if it is directly available in a file, i.e. it
+        # could be read.
+        if aux_vars is not None:
+            self.add_aux_compute(var_name, aux_vars, aux_fun)
+
+        vert_which, ts_type =  self._eval_vert_which_and_ts_type(var_name,
+                                                                 vert_which,
+                                                                 ts_type)
+        data = self._try_read_var(var_name, start, stop,
+                                  ts_type, experiment, vert_which,
+                                  flex_ts_type, prefer_longer, **kwargs)
+
+        if constraints is not None:
+
+            if isinstance(constraints, dict):
+                constraints = [constraints]
+            for constraint in constraints:
+                data = self.apply_read_constraint(data, constraint,
+                                                  start=start,
+                                                  stop=stop,
+                                                  ts_type=ts_type,
+                                                  experiment=experiment,
+                                                  vert_which=vert_which,
+                                                  flex_ts_type=flex_ts_type,
+                                                  prefer_longer=prefer_longer,
+                                                  **kwargs)
+        return data
+
     def check_constraint_valid(self, constraint):
+        """
+        Check if reading constraint is valid
+
+        Parameters
+        ----------
+        constraint : dict
+            reading constraint. Requires at lest entries for following keys:
+            - operator (str): for valid operators see :attr:`CONSTRAINT_OPERATORS`
+            - filter_val (float): value against which data is evaluated wrt to \
+                operator
+
+        Raises
+        ------
+        ValueError
+            If constraint is invalid
+
+        Returns
+        -------
+        None.
+
+        """
         if not isinstance(constraint, dict):
             raise ValueError('Read constraint needs to be dict')
         elif not 'operator' in constraint:
@@ -1426,26 +1557,33 @@ class ReadGridded(object):
         ----------
         data : GriddedData
             data object to which constraint is applied
-        filter_var : TYPE
-            DESCRIPTION.
-        operator : str
-            operator used to filter other variable field to retrieve filter
-            mask
-        filter_val : float
-            value in filter_var for which mask will be retrieved
-        new_val : TYPE, optional
-            DESCRIPTION. The default is None.
+        constraint : dict
+            dictionary defining read constraint (see
+            :func:`check_constraint_valid` for minimum requirement). If
+            constraint contains key var_name (not mandatory), then the
+            corresponding variable is attemted to be read and is used to
+            evaluate constraint and the corresponding boolean mask is then
+            applied to input `data`. Wherever this mask is True (i.e. constraint
+            is met), the current value in input `data` will be replaced with
+            `numpy.ma.masked` or, if specified, with entry `new_val` in input
+            constraint dict.
         **kwargs : TYPE
-            DESCRIPTION.
+            reading arguments in case additional variable data needs to be
+            loaded, to determine filter mask (i.e. if `var_name` is specified
+            in input constraint). Parse to :func:`read_var`.
 
         Raises
         ------
         ValueError
-            DESCRIPTION.
+            If constraint is invalid (cf. :func:`check_constraint_valid` for
+            details).
 
         Returns
         -------
-        None.
+        GriddedData
+            modified data objects (all grid-points that met constraint
+            are replaced with either `numpy.ma.masked` or with a
+            value that can be specified via key `new_val` in input constraint).
 
         """
         self.check_constraint_valid(constraint)
@@ -1516,114 +1654,6 @@ class ReadGridded(object):
         raise VarNotAvailableError("Error: variable {} not available in "
                                     "files and can also not be computed."
                                     .format(var_name))
-
-    # TODO: add from_vars input arg for computation and corresponding method
-    def read_var(self, var_name, start=None, stop=None,
-                 ts_type=None, experiment=None, vert_which=None,
-                 flex_ts_type=True, prefer_longer=False,
-                 aux_vars=None, aux_fun=None,
-                 constraints=None,
-                 **kwargs):
-        """Read model data for a specific variable
-
-        This method searches all valid files for a given variable and for a
-        provided temporal resolution (e.g. *daily, monthly*), optionally
-        within a certain time window, that may be specified on class
-        instantiation or using the corresponding input parameters provided in
-        this method.
-
-        The individual NetCDF files for a given temporal period are loaded as
-        instances of the :class:`iris.Cube` object and appended to an instance
-        of the :class:`iris.cube.CubeList` object. The latter is then used to
-        concatenate the individual cubes in time into a single instance of the
-        :class:`pyaerocom.GriddedData` class. In order to ensure that this
-        works, several things need to be ensured, which are listed in the
-        following and which may be controlled within the global settings for
-        NetCDF import using the attribute :attr:`GRID_IO` (instance of
-        :class:`OnLoad`) in the default instance of the
-        :class:`pyaerocom.config.Config` object accessible via
-        ``pyaerocom.const``.
-
-        Parameters
-        ----------
-        var_name : str
-            variable that are supposed to be read
-        start : Timestamp or str, optional
-            start time of data import
-        stop : Timestamp or str, optional
-            stop time of data import
-        ts_type : str
-            string specifying temporal resolution (choose from
-            "hourly", "3hourly", "daily", "monthly"). If None, prioritised
-            of the available resolutions is used
-        experiment : str
-            name of experiment (only relevant if this dataset contains more
-            than one experiment)
-        vert_which : str or dict, optional
-            valid AeroCom vertical info string encoded in name (e.g. Column,
-            ModelLevel) or dictionary containing var_name as key and vertical
-            coded string as value, accordingly
-        flex_ts_type : bool
-            if True and if applicable, then another ts_type is used in case
-            the input ts_type is not available for this variable
-        prefer_longer : bool
-            if True and applicable, the ts_type resulting in the longer time
-            coverage will be preferred over other possible frequencies that
-            match the query.
-        aux_vars : list
-            only relevant if `var_name` is not available for reading but needs
-            to be computed: list of variables that are required to compute
-            `var_name`
-        aux_fun : callable
-            only relevant if `var_name` is not available for reading but needs
-            to be computed: custom method for computation (cf.
-            :func:`add_aux_compute` for details)
-        constraints : list, optional
-            list of reading constraints
-        **kwargs
-            additional keyword args parsed to :func:`_load_var`
-
-        Returns
-        -------
-        GriddedData
-            loaded data object
-
-        Raises
-        ------
-        AttributeError
-            if none of the ts_types identified from file names is valid
-        VarNotAvailableError
-            if specified ts_type is not supported
-        """
-        # user has provided input that specified how the input variable
-        # is supposed to be computed. In this case, the variable will be
-        # computed even if it is directly available in a file, i.e. it
-        # could be read.
-        if aux_vars is not None:
-            self.add_aux_compute(var_name, aux_vars, aux_fun)
-
-        vert_which, ts_type =  self._eval_vert_which_and_ts_type(var_name,
-                                                                 vert_which,
-                                                                 ts_type)
-        data = self._try_read_var(var_name, start, stop,
-                                  ts_type, experiment, vert_which,
-                                  flex_ts_type, prefer_longer, **kwargs)
-
-        if constraints is not None:
-
-            if isinstance(constraints, dict):
-                constraints = [constraints]
-            for constraint in constraints:
-                data = self.apply_read_constraint(data, constraint,
-                                                  start=start,
-                                                  stop=stop,
-                                                  ts_type=ts_type,
-                                                  experiment=experiment,
-                                                  vert_which=vert_which,
-                                                  flex_ts_type=flex_ts_type,
-                                                  prefer_longer=prefer_longer,
-                                                  **kwargs)
-        return data
 
     def read(self, vars_to_retrieve=None, start=None, stop=None, ts_type=None,
              experiment=None, vert_which=None, flex_ts_type=True,
