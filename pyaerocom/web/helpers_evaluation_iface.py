@@ -412,6 +412,7 @@ def init_regions_web(coldata, regions_how):
     else:
         raise ValueError('Invalid input for regions_how', regions_how)
 
+@retry(wait=wait_random_exponential(multiplier=1, max=20),stop=stop_after_attempt(20))
 def update_regions_json(region_defs, regions_json):
     if os.path.exists(regions_json):
         current = read_json(regions_json)
