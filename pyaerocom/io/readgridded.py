@@ -1579,7 +1579,7 @@ class ReadGridded(object):
             to be computed: custom method for computation (cf.
             :func:`add_aux_compute` for details)
         constraints : list, optional
-            list of reading cons
+            list of reading constraints
         **kwargs
             additional keyword args parsed to :func:`_load_var`
 
