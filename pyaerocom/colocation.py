@@ -207,9 +207,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             low_ref, high_ref = var_ref_outlier_ranges[var_ref]
 
         if not var_keep_outliers:
-            gridded_data.remove_outliers(low, high)
+            gridded_data.remove_outliers(low, high,
+                                         inplace=True)
         if not var_ref_keep_outliers:
-            gridded_data_ref.remove_outliers(low_ref, high_ref)
+            gridded_data_ref.remove_outliers(low_ref, high_ref,
+                                             inplace=True)
 
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
