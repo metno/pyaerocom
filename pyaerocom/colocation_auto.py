@@ -709,8 +709,6 @@ class Colocator(ColocationSetup):
             if _oreader.var_supported(var):
                 obs_vars.append(var)
 
-        #flist(np.intersect1d(self.obs_vars, obs_vars_supported))
-
         if len(obs_vars) == 0:
             raise DataCoverageError('No observation variable matches found for '
                                     '{}'.format(self.obs_id))
@@ -738,19 +736,9 @@ class Colocator(ColocationSetup):
         start, stop = start_stop(self.start, self.stop)
 
         for model_var, obs_var in var_matches.items():
-# =============================================================================
-# @hansbrenna has changed the flow of this part of the method to work better
-# with large observational data sets. I have moved the reading of the obs data
-# after the check of whether the co-located data file already exists. If it
-# exists and reanalyse_existing = False, the obs data will not be read for that
-# obs-model combination. If the co-located data object is to be computed, only
-# one observational variable will be loaded into the UngriddedData object at
-# a time.
-# =============================================================================
 
             # ToDo: consider removing outliers already here.
             #if 'obs_filters' in self:
-
             ts_type = self.ts_type
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id,
                                                              self.obs_id,
@@ -781,21 +769,6 @@ class Colocator(ColocationSetup):
                 # if colocation frequency is not specified
                 ts_type = ts_type_src
 
-            #check if co-located data file already exists before reading observational
-            #data sets
-            # if self.save_coldata:
-            #     savename = self._coldata_savename(model_data, start, stop,
-            #                                       ts_type, var_name=model_var)
-
-            #     file_exists = self._check_coldata_exists(model_data.data_id,
-            #                                              savename)
-
-# =============================================================================
-#             if not model_data.ts_type in all_ts_types:
-#                 raise TemporalResolutionError('Invalid temporal resolution {} '
-#                                               'in model {}'.format(model_data.ts_type,
-#                                                                    self.model_id))
-# =============================================================================
             ignore_stats = None
             if self.ignore_station_names is not None:
                 ignore_stats = self.ignore_station_names
@@ -920,21 +893,9 @@ class Colocator(ColocationSetup):
         obs_reader = ReadGridded(self.obs_id)
 
         if 'obs_filters' in self:
-            remaining_filters = self._eval_obs_filters()
-            if bool(remaining_filters):
-                raise NotImplementedError('Cannot apply filters {} to gridded '
-                                          'observation data.'.format(remaining_filters))
+            obs_filters = self._eval_obs_filters()
 
         obs_vars = self.obs_vars
-
-# =============================================================================
-#         obs_vars_avail =  obs_reader.vars_provided
-#
-#         for obs_var in obs_vars:
-#             if not obs_var in obs_vars_avail:
-#                 raise DataCoverageError('Variable {} is not supported by {}'
-#                                         .format(obs_var, self.obs_id))
-# =============================================================================
 
         var_matches = self._find_var_matches(obs_vars, model_reader, var_name)
 
@@ -948,7 +909,7 @@ class Colocator(ColocationSetup):
         data_objs = {}
 
         for model_var, obs_var in var_matches.items():
-
+            obs_filters_var = obs_filters[obs_var] if obs_var in obs_filters else {}
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id,
                                                              self.obs_id,
                                                              model_var,
@@ -985,7 +946,8 @@ class Colocator(ColocationSetup):
                                                var_name=obs_var,
                                                start=start,
                                                stop=stop,
-                                               is_model=False)
+                                               is_model=False,
+                                               **obs_filters_var)
             except Exception as e:
 
                 msg = ('Failed to load gridded data: {} / {}. Reason {}'
@@ -1172,17 +1134,7 @@ class Colocator(ColocationSetup):
                 oname = const.VARS[ovar].var_name
                 if (oname != ovar and ovar in oor and not oname in oor):
                     self.var_ref_outlier_ranges[oname] = oor[ovar]
-# =============================================================================
-#         for mvar, ovar in var_matches.items():
-#             if isinstance(oor, dict):
-#                 oname = const.VARS[ovar].var_name
-#                 if (oname != ovar and ovar in oor and not oname in oor):
-#                         self.var_ref_outlier_ranges[oname] = oor[ovar]
-#             if isinstance(mor, dict):
-#                 mname = const.VARS[mvar].var_name
-#                 if mname != mvar and mvar in mor and not mname in mor:
-#                     self.var_outlier_ranges[mname] = mor[mvar]
-# =============================================================================
+
 
     def __call__(self, **kwargs):
         raise NotImplementedError
