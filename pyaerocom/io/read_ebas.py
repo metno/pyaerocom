@@ -819,7 +819,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not 'wavelength' in colinfo:
-                const.logger.warn('Ignoring column {}\n{}\nVar {}: column '
+                const.logger.warning('Ignoring column {}\n{}\nVar {}: column '
                                   'misses wavelength specification!'
                                   .format(colnum, colinfo,
                                           var_info.var_name))
@@ -852,7 +852,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not 'wavelength' in colinfo:
-                const.logger.warn('Ignoring column {} ({}) in EBAS file for '
+                const.logger.warning('Ignoring column {} ({}) in EBAS file for '
                                   'reading var {}: column misses wavelength '
                                   'specification'
                                   .format(colnum, colinfo, var_info))

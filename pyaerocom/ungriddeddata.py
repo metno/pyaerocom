@@ -850,7 +850,7 @@ class UngriddedData(object):
 
             vals = subset[:, self._DATAINDEX]
             if np.all(np.isnan(vals)):
-                logger.warn('Ignoring station {}, var {} ({}):'
+                logger.warning('Ignoring station {}, var {} ({}):'
                             'All values are NaN'
                             .format(sd['station_name'], var, sd['data_id']))
                 continue
@@ -1342,7 +1342,7 @@ class UngriddedData(object):
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
-                        const.print_log.warn('Ignoring variable {} in '
+                        const.print_log.warning('Ignoring variable {} in '
                                              'meta block {} since no data '
                                              'could be found'.format(
                                               var, meta_idx))
