@@ -36,6 +36,7 @@ ADD_PATHS = {
 
     'MODELS'                : 'modeldata',
     'OBSERVATIONS'          : 'obsdata',
+    'CONFIG'                : 'config',
     'AeronetSunV3L2Subset.daily'  : 'obsdata/AeronetSunV3Lev2.daily/renamed',
     'AeronetSDAV3L2Subset.daily'  : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
     'AeronetInvV3L2Subset.daily'  : 'obsdata/AeronetInvV3Lev2.daily/renamed',
