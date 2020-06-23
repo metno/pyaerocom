@@ -894,6 +894,8 @@ class Colocator(ColocationSetup):
 
         if 'obs_filters' in self:
             obs_filters = self._eval_obs_filters()
+        else:
+            obs_filters = {}
 
         obs_vars = self.obs_vars
 
