@@ -700,7 +700,7 @@ class GriddedData(object):
             try:
                 self.var_name = var_name
             except ValueError:
-                const.print_log.warn('Could not update var_name, invalid input '
+                const.print_log.warning('Could not update var_name, invalid input '
                                      '{} (need str)'.format(var_name))
 
     def _get_info_from_filenames(self):
@@ -2474,7 +2474,7 @@ class GriddedData(object):
         """Update metadata dictionary"""
         for key, val in kwargs.items():
             if key == 'var_name' and not isinstance(val, str):
-                const.print_log.warn('Skipping assignment of var_name from '
+                const.print_log.warning('Skipping assignment of var_name from '
                                      'metadata in GriddedData, since attr. '
                                      'needs to be str and is {}'.format(val))
                 continue
@@ -2651,13 +2651,13 @@ class GriddedData(object):
     @property
     def unit(self):
         """Unit of data"""
-        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+        const.print_log.warning(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         return self.grid.units
 
     @unit.setter
     def unit(self, val):
-        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+        const.print_log.warning(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         self.grid.units = val
 

@@ -567,7 +567,7 @@ class ReadGridded(object):
         try:
             var = const.VARS[var_name]
         except VariableDefinitionError as e:
-            const.print_log.warn(repr(e))
+            const.print_log.warning(repr(e))
             return False
 
         if self.check_compute_var(var_name):
