@@ -362,6 +362,79 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                   **kwargs)
     return data
 
+def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
+                               ts_type, resample_how,
+                               apply_time_resampling_constraints,
+                               min_num_obs,
+                               use_climatology_ref):
+    """
+    Helper method that colocates two timeseries from 2 StationData objects
+
+    Used in main loop of :func:`colocate_gridded_ungridded`
+
+    Parameters
+    ----------
+    stat_data : StationData
+        first data object (usually the one that is to be compared with obs)
+    stat_data_ref : StationData
+        second data object (usually obs)
+    var : str
+        variable to be used from `stat_data`
+    var_ref : str
+        variable to be used from `stat_data_ref`
+    ts_type : str
+        output frequency
+    resample_how : str or dict
+        string specifying how data should be aggregated when resampling in time.
+        Default is "mean". Can also be a nested dictionary, e.g.
+        resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
+        to aggregate from hourly to daily, rather than the mean.
+    apply_time_resampling_constraints : bool, optional
+        if True, then time resampling constraints are applied as provided via
+        :attr:`min_num_obs` or if that one is unspecified, as defined in
+        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
+        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
+        (which defaults to True !!).
+    min_num_obs : int or dict, optional
+        minimum number of observations for resampling of time
+    use_climatology_ref : bool
+        if True, climatological timeseries are used from observations
+
+
+    Returns
+    -------
+    pandas.DataFrame
+        dataframe containing the colocated input data (column names are
+        data and ref)
+    """
+
+    # get grid and obs timeseries data (that may be sampled in arbitrary
+    # time resolution, particularly the obs data)
+    grid_ts2 = stat_data.resample_time(
+                var,
+                ts_type=ts_type,
+                how=resample_how,
+                apply_constraints=apply_time_resampling_constraints,
+                min_num_obs=min_num_obs,
+                inplace=True)[var]
+
+    if use_climatology_ref:
+        obs_ts2 = stat_data_ref.calc_climatology(
+                var_ref,
+                apply_constraints=apply_time_resampling_constraints,
+                min_num_obs=min_num_obs)[var_ref]
+    else:
+        obs_ts2 = stat_data_ref.resample_time(
+                    var_ref,
+                    ts_type=ts_type,
+                    how=resample_how,
+                    apply_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
+                    inplace=True)[var_ref]
+
+    # fill up missing time stamps
+    return pd.concat([obs_ts2, grid_ts2], axis=1, keys=['ref', 'data'])
+
 def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                start=None, stop=None, filter_name=None,
                                regrid_res_deg=None, remove_outliers=True,
@@ -473,7 +546,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         if True, then no outliers will be removed from the reference dataset,
         even if `remove_outliers` is True.
     use_climatology_ref : bool
-        if true, climatological timeseries are used from observations
+        if True, climatological timeseries are used from observations
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -670,6 +743,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
+        # ToDo: consider removing to keep ts_type_src_ref (this was probably
+        # introduced for EBAS were the original data frequency is not constant
+        # but can vary from site to site)
         if ts_type_src_ref is None:
             ts_type_src_ref = obs_stat['ts_type_src']
         elif obs_stat['ts_type_src'] != ts_type_src_ref:
@@ -695,7 +771,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         # need to be updated, for details (or if errors occur), cf.
         # UngriddedData.to_station_data, where the conversion happens)
 
-        # get model data corresponding to station
+        # get model station data
         grid_stat = grid_stat_data[i]
         if harmonise_units:
             grid_unit = grid_stat.get_unit(var)
@@ -717,36 +793,20 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             grid_stat.remove_outliers(var, low=low, high=high,
                                       check_unit=True)
 
-        # get grid and obs timeseries data (that may be sampled in arbitrary
-        # time resolution, particularly the obs data)
-        grid_ts2 = grid_stat.resample_time(
-                    var,
-                    ts_type=col_freq,
-                    how=resample_how,
-                    apply_constraints=apply_time_resampling_constraints,
-                    min_num_obs=min_num_obs,
-                    inplace=True)[var]
+        _df = _colocate_site_data_helper(
 
-        if use_climatology_ref:
-            obs_ts2 = obs_stat.calc_climatology(
-                    var_ref,
-                    apply_constraints=apply_time_resampling_constraints,
-                    min_num_obs=min_num_obs)[var_ref]
-        else:
-            obs_ts2 = obs_stat.resample_time(
-                        var_ref,
-                        ts_type=col_freq,
-                        how=resample_how,
-                        apply_constraints=apply_time_resampling_constraints,
-                        min_num_obs=min_num_obs,
-                        inplace=True)[var_ref]
-
-        # fill up missing time stamps
-        _df = pd.concat([obs_ts2, grid_ts2], axis=1, keys=['o', 'm'])
+            stat_data=grid_stat,
+            stat_data_ref=obs_stat,
+            var=var, var_ref=var_ref,
+            ts_type=col_freq,
+            resample_how=resample_how,
+            apply_time_resampling_constraints=apply_time_resampling_constraints,
+            min_num_obs=min_num_obs,
+            use_climatology_ref=use_climatology_ref)
 
         # assign the unified timeseries data to the colocated data array
-        coldata[0, :, i] = _df['o'].values
-        coldata[1, :, i] = _df['m'].values
+        coldata[0, :, i] = _df['ref'].values
+        coldata[1, :, i] = _df['data'].values
 
         lons.append(obs_stat.longitude)
         lats.append(obs_stat.latitude)
@@ -928,34 +988,13 @@ if __name__=='__main__':
     plt.close('all')
 
     #obsdata = pya.io.ReadGhost('GHOST.hourly').read('concpm25')
-    obsdata = pya.io.ReadUngridded().read('GHOST.hourly', 'conco3',
-                                          only_cached=True)
-
-    obsdata.check_set_country()
-
-    obsdata = obsdata.filter_region('Norway', check_country_meta=True)
-    model_id='ENSEMBLE.cams61.day1'
+    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily',
+                                          'od550aer')
+    model_id='ECMWF_CAMS_REAN'
 
     mr = pya.io.ReadGridded(model_id)
-    modeldata = mr.read_var('conco3', start=2018, vert_which='Surface')
+    modeldata = mr.read_var('od550aer', start=2010)
 
-    #modeldata.resample_time('yearly').quickplot_map()
+    coldata = colocate_gridded_ungridded(modeldata, obsdata)
 
-    #obsdata = pya.io.ReadUngridded().read(obs_id, 'concso4').set_flags_nan()
-
-    rsh = {'daily': {'hourly': 'max'}}
-
-    coldata_max = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata,
-                                                         ts_type='monthly',
-                                                         var_ref='conco3',
-                                                         resample_how=rsh)
-
-    coldata_mean = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata,
-                                                         ts_type='monthly',
-                                                         var_ref='conco3')
-
-    pya.plot.mapping.plot_nmb_map_colocateddata(coldata_max)
-    pya.plot.mapping.plot_nmb_map_colocateddata(coldata_mean)
-    #scoldata2.plot_scatter()
-
-
+    coldata.plot_scatter(loglog=True)
