@@ -13,7 +13,6 @@ dependencies:
   - seaborn >= 0.8.0
   - netcdf4
   - geonum
-  - cf_units
   - numpy
   - simplejson
   - pytest

@@ -205,7 +205,7 @@ class TrendsEvaluation(object):
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 if key in self.obs_config:
-                    self._log.warn('Obs config for key {}  already exists and '
+                    self._log.warning('Obs config for key {}  already exists and '
                                    'will be overwritten {}'.format(key))
                 self.obs_config[key] = ObsConfigEval(**val)
             elif 'model_id' in val:
@@ -213,7 +213,7 @@ class TrendsEvaluation(object):
                     raise KeyError('Need key "mtype" in specfication of model {}'
                                    .format(key))
                 if key in self.model_config:
-                    self._log.warn('Model config for key {}  already exists and '
+                    self._log.warning('Model config for key {}  already exists and '
                                    'will be overwritten {}'.format(key))
                 self.model_config[key] = ModelConfigEval(**val)
             else:
