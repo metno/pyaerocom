@@ -5,7 +5,6 @@ import glob
 import os
 import numpy as np
 import simplejson
-from tenacity import retry,wait_random_exponential,stop_after_attempt
 
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
@@ -404,7 +403,6 @@ class AerocomEvaluation(object):
         elif key in self.colocation_settings:
             return self.colocation_settings[key]
 
-    @retry(wait=wait_random_exponential(multiplier=1, max=20),stop=stop_after_attempt(20))
     def init_dirs(self, out_basedir=None):
         """Check and create directories"""
         if out_basedir is not None:

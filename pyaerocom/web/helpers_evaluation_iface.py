@@ -6,7 +6,6 @@ Created on Mon Apr 15 14:00:44 2019
 import os, glob, shutil
 import numpy as np
 import simplejson
-from tenacity import retry,wait_random_exponential,stop_after_attempt
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.io.helpers import save_dict_json
@@ -327,7 +326,6 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
 
-@retry(wait=wait_random_exponential(multiplier=1, max=20),stop=stop_after_attempt(20))
 def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
                            model_name, model_var):
     fp = heatmap_file
@@ -412,7 +410,6 @@ def init_regions_web(coldata, regions_how):
     else:
         raise ValueError('Invalid input for regions_how', regions_how)
 
-@retry(wait=wait_random_exponential(multiplier=1, max=20),stop=stop_after_attempt(20))
 def update_regions_json(region_defs, regions_json):
     if os.path.exists(regions_json):
         current = read_json(regions_json)
