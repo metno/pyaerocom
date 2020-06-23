@@ -981,55 +981,6 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                 #writes json file
                 _write_diurnal_week_stationdata_json(ts_data_weekly_reg, out_dirs)
 
-    # # FIRST: process data for heatmap json file
-    # hm_all = _process_heatmap_data(data, region_ids, use_weights,
-    #                                use_country=use_country,
-    #                                meta_glob=meta_glob)
-
-    # for freq, hm_data in hm_all.items():
-    #     if freq == 'daily':
-    #         fname = HEATMAP_FILENAME_EVAL_IFACE_DAILY
-    #     else:
-    #         fname = HEATMAP_FILENAME_EVAL_IFACE_MONTHLY
-
-    #     hm_file = os.path.join(out_dirs['hm'], fname)
-
-    #     add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
-    #                            vert_code, model_name, model_var)
-
-    # ts_objs_regional = _process_regional_timeseries(data,
-    #                                                 jsdate,
-    #                                                 region_ids,
-    #                                                 regions_how,
-    #                                                 meta_glob)
-
-    # for ts_data in ts_objs_regional:
-    #     #writes json file
-    #     _write_stationdata_json(ts_data, out_dirs)
-
-    # (map_data,
-    #  scat_data,
-    #  ts_objs) = _process_sites(data, jsdate,
-    #                            regions_how,
-    #                            meta_glob=meta_glob)
-
-    # dirs = out_dirs
-
-    # map_name = get_json_mapname(web_iface_name, obs_var, model_name,
-    #                             model_var, vert_code)
-
-    # outfile_map =  os.path.join(dirs['map'], map_name)
-    # with open(outfile_map, 'w') as f:
-    #     simplejson.dump(map_data, f, ignore_nan=True)
-
-    # outfile_scat =  os.path.join(dirs['scat'], map_name)
-    # with open(outfile_scat, 'w') as f:
-    #     simplejson.dump(scat_data, f, ignore_nan=True)
-
-    # for ts_data in ts_objs:
-    #     #writes json file
-    #     _write_stationdata_json(ts_data, out_dirs)
-
 if __name__ == '__main__':
     import pyaerocom as pya
     stp = pya.web.AerocomEvaluation('test', 'test')
