@@ -215,7 +215,7 @@ class AerocomEvaluation(object):
         if len(settings)==0 and try_load_json and proj_id is not None:
             try:
                 self.load_config(self.proj_id, self.exp_id, config_dir)
-                const.print_log.warn('Found and imported config file for {} / {}'
+                const.print_log.warning('Found and imported config file for {} / {}'
                                      .format(self.proj_id, self.exp_id))
             except Exception:
                 pass
@@ -381,12 +381,12 @@ class AerocomEvaluation(object):
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 if key in self.obs_config:
-                    self._log.warn('Obs config for key {}  already exists and '
+                    self._log.warning('Obs config for key {}  already exists and '
                                    'will be overwritten {}'.format(key))
                 self.obs_config[key] = ObsConfigEval(**val)
             elif 'model_id' in val:
                 if key in self.model_config:
-                    self._log.warn('Model config for key {}  already exists and '
+                    self._log.warning('Model config for key {}  already exists and '
                                    'will be overwritten {}'.format(key))
                 self.model_config[key] = ModelConfigEval(**val)
             else:

@@ -35,6 +35,7 @@ AMES_FILE = 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.C
 ADD_PATHS = {
 
     'MODELS'                : 'modeldata',
+    'OBSERVATIONS'          : 'obsdata',
     'AeronetSunV3L2Subset.daily'  : 'obsdata/AeronetSunV3Lev2.daily/renamed',
     'AeronetSDAV3L2Subset.daily'  : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
     'AeronetInvV3L2Subset.daily'  : 'obsdata/AeronetInvV3Lev2.daily/renamed',

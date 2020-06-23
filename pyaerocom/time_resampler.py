@@ -65,7 +65,7 @@ class TimeResampler(object):
         valid = self.valid_base_ts_types
         from_mul = from_ts_type.mulfac
         if from_mul != 1:
-            const.print_log.warn('Ignoring multiplication factor {} in '
+            const.print_log.warning('Ignoring multiplication factor {} in '
                                  'data with resolution {} in resampling method'
                                  .format(from_mul, from_ts_type))
         start = valid.index(from_ts_type.base)

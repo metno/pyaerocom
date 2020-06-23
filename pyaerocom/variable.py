@@ -433,7 +433,7 @@ class Variable(object):
     @property
     def has_unit(self):
         """Boolean specifying whether variable has unit"""
-        return True if not self.unit in (1, None) else False
+        return True if not self.units in (1, None) else False
 
     @property
     def lower_limit(self):
@@ -450,10 +450,10 @@ class Variable(object):
     @property
     def unit_str(self):
         """string representation of unit"""
-        if self.unit is None:
+        if self.units is None:
             return ''
         else:
-            return '[{}]'.format(self.unit)
+            return '[{}]'.format(self.units)
 
     @staticmethod
     def read_config():
@@ -498,7 +498,7 @@ class Variable(object):
         try:
             return VarNameInfo(self.var_name_aerocom).get_default_vert_code()
         except ValueError:
-            print_log.warn('default_vert_code not set for {} and '
+            print_log.warning('default_vert_code not set for {} and '
                            'could also not be inferred'
                            .format(self.var_name_aerocom))
             return None
@@ -583,7 +583,7 @@ class Variable(object):
     def __repr__(self):
        return ("{}\nstandard_name: {}; Unit: {}"
                .format(self.var_name, self.standard_name,
-                       self.unit))
+                       self.units))
 
     def __eq__(self, other):
         if isinstance(other, str):
