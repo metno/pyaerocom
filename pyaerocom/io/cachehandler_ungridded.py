@@ -311,6 +311,11 @@ class CacheHandlerUngridded(object):
         cache_dir : str, optional
             output directory (default is pyaerocom cache dir accessed via
             :func:`cache_dir`).
+
+        Returns
+        -------
+        str
+            output file path
         """
         meta = self.cache_meta_info()
 
@@ -364,6 +369,7 @@ class CacheHandlerUngridded(object):
             if not success:
                 os.remove(fp)
         const.logger.info('Wrote: {}'.format(fp))
+        return fp
 
     def __str__(self):
         return 'pyaerocom.CacheHandlerUngridded\nDefault cache dir: {}'.format(self.cache_dir)
