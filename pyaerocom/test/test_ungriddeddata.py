@@ -111,8 +111,8 @@ def test_save_as(aeronetsunv3lev2_subset, tempdir):
     assert os.path.exists(fp)
 
 def test_from_cache(aeronetsunv3lev2_subset, tempdir):
-    fp = os.path.join(tempdir, 'ungridded_aeronet_subset.pkl')
-    reloaded = UngriddedData.from_cache(fp)
+    reloaded = UngriddedData.from_cache(data_dir=tempdir,
+                                        file_name='ungridded_aeronet_subset.pkl')
 
     assert reloaded.shape == aeronetsunv3lev2_subset.shape
 
