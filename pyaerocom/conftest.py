@@ -139,8 +139,13 @@ def aasetal_data():
     return reader.read()  # read all variables
 
 @pytest.fixture(scope='session')
-def aeronetsunv3lev2_subset():
-    r = ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
+def aeronet_sun_subset_reader():
+    reader = ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
+    return reader
+
+@pytest.fixture(scope='session')
+def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
+    r = aeronet_sun_subset_reader
     #return r.read(vars_to_retrieve=TEST_VARS)
     return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
@@ -154,6 +159,12 @@ def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
     #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
     return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
+
+@pytest.fixture(scope='session')
+def tempdir(tmpdir_factory):
+    """Temporary directory for dumping data shared between tests"""
+    tmpdir= tmpdir_factory.mktemp('data')
+    return tmpdir
 
 @contextmanager
 def does_not_raise_exception():
