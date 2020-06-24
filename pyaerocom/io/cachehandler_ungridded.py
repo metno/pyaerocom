@@ -29,7 +29,7 @@ class CacheHandlerUngridded(object):
         dictionary containing successfully loaded instances of single variable
         :class:`UngriddedData` objects (keys are variable names)
     """
-    __version__ = '1.00'
+    __version__ = '1.10'
     #: Directory of cache files
     try:
         CACHE_DIR = const.CACHEDIR
@@ -46,13 +46,13 @@ class CacheHandlerUngridded(object):
                        'ungridded_data_version',
                        'cacher_version']
 
-    def __init__(self, reader=None, cache_dir=None, **kwargs):
+    def __init__(self, reader=None, cache_dir=None,
+                 **kwargs):
         self._reader = None
         if reader is not None:
             self.reader = reader
 
         self.loaded_data = {}
-
         self._cache_dir = cache_dir
 
     @property
@@ -77,7 +77,7 @@ class CacheHandlerUngridded(object):
 
     @property
     def cache_dir(self):
-        """Directory where cached files are stored"""
+        """Directory where cache data objects are stored"""
         if self._cache_dir is not None:
             return self._cache_dir
         if self.CACHE_DIR is None or not os.path.exists(self.CACHE_DIR):
@@ -98,18 +98,57 @@ class CacheHandlerUngridded(object):
         return self.reader.dataset_to_read
 
     @property
-    def data_dir(self):
-        """Data directory of the associated dataset"""
+    def src_data_dir(self):
+        """Data source directory of the associated dataset
+
+        Needed to check whether an existing cache file is outdated
+        """
         return self.reader.DATASET_PATH
 
-    def file_name(self, var_name):
-        """File name of cache file"""
+    def default_file_name(self, var_name):
+        """File name of cache file
+
+
+        Parameters
+        ----------
+        var_name : str
+            name of variable to be cached. Note: if inpu
+
+        Returns
+        -------
+        str
+            file name of pickle file
+        """
         name = '_'.join([self.dataset_to_read, var_name])
         return name + '.pkl'
 
-    def file_path(self, var_name):
-        """File path of cache file"""
-        return os.path.join(self.cache_dir, self.file_name(var_name))
+    def file_path(self, var_or_file_name, cache_dir=None):
+        """File path of cache file
+
+        Parameters
+        ----------
+        var_or_file_name : str
+            name of output filename or variable that is supposed to be stored.
+            Default usage is to provide variable and then
+            :func:`default_file_name` is used. Can be None if
+            input `data` contains only a single variable.
+        cache_dir : str, optional
+            output directory (default is pyaerocom cache dir accessed via
+            :func:`cache_dir`).
+
+        Returns
+        -------
+        str
+            output file path
+        """
+        if not var_or_file_name.endswith('.pkl'):
+            var_or_file_name = self.default_file_name(var_or_file_name)
+        if cache_dir is None:
+            cache_dir = self.cache_dir
+        elif not os.path.exists(cache_dir):
+            raise FileNotFoundError('Specified output directory does not exist:'
+                                    '{}'.format(cache_dir))
+        return os.path.join(cache_dir, var_or_file_name)
 
     def _check_pkl_head_vs_database(self, in_handle):
 
@@ -130,29 +169,33 @@ class CacheHandlerUngridded(object):
     def cache_meta_info(self):
         """Dictionary containing relevant caching meta-info"""
         try:
-            newest = max(glob.iglob(os.path.join(self.data_dir, '*')),
+            newest = max(glob.iglob(os.path.join(self.src_data_dir, '*')),
                          key=os.path.getctime)
             newest_date = os.path.getctime(newest)
         except Exception:
             newest = None
             newest_date = None
-# =============================================================================
-#             raise AerocomConnectionError('Failed to establish connection to '
-#                                          'data server. Reason: {}'.format(repr(e)))
-# =============================================================================
+
+        try:
+            rev = self.reader.data_revision
+            reader_ver = self.reader.__version__
+        except AttributeError:
+            rev = None
+            reader_ver = None
         current = dict.fromkeys(self.CACHE_HEAD_KEYS)
         from pyaerocom import __version__
 
         current['pyaerocom_version'] = __version__
         current['newest_file_in_read_dir'] = newest
         current['newest_file_date_in_read_dir'] = newest_date
-        current['data_revision'] = self.reader.data_revision
-        current['reader_version'] = self.reader.__version__
+        current['data_revision'] = rev
+        current['reader_version'] = reader_ver
         current['ungridded_data_version'] = UngriddedData.__version__
         current['cacher_version'] = self.__version__
         return current
 
-    def check_and_load(self, var_name, force_use_outdated=False):
+    def check_and_load(self, var_or_file_name, force_use_outdated=False,
+                       cache_dir=None):
         """Check if cache file exists and load
 
         Note
@@ -163,11 +206,17 @@ class CacheHandlerUngridded(object):
 
         Parameters
         ----------
-        var_name : str
-            name of variable to be read
+        var_or_file_name : str
+            name of output filename or variable that is supposed to be stored.
+            Default usage is to provide variable and then
+            :func:`default_file_name` is used. Can be None if
+            input `data` contains only a single variable.ead
         force_use_outdated : bool
             if True, read existing cache file even if it is not up to date or
             pyaerocom version changed (not recommended to use)
+        cache_dir : str, optional
+            output directory (default is pyaerocom cache dir accessed via
+            :func:`cache_dir`).
 
         Returns
         -------
@@ -184,14 +233,14 @@ class CacheHandlerUngridded(object):
             class (which should not happen)
         """
         try:
-            fp = self.file_path(var_name)
+            fp = self.file_path(var_or_file_name, cache_dir=cache_dir)
         except FileNotFoundError as e:
             const.logger.warning(repr(e))
             return False
 
         if not os.path.isfile(fp):
-            const.logger.info('No cache file available for {}, {}'
-                        .format(self.dataset_to_read, var_name))
+            const.logger.info('Cache file does not exist: {}'
+                              .format(fp))
             return False
 
         delete_existing = const.RM_CACHE_OUTDATED if not force_use_outdated else False
@@ -213,14 +262,14 @@ class CacheHandlerUngridded(object):
         if not ok:
             # TODO: Should we delete the cache file if it is outdated ???
             const.logger.info('Aborting reading cache file {}. Aerocom database '
-                        'or pyaerocom version has changed compared to '
-                        'cached version'
-                        .format(self.file_name(var_name)))
+                              'or pyaerocom version has changed compared to '
+                              'cached version'
+                              .format(fp))
             in_handle.close()
             if delete_existing: #something was wrong
                 const.print_log.info('Deleting outdated cache file: {}'
                                      .format(fp))
-                os.remove(self.file_path(var_name))
+                os.remove(fp)
             return False
 
         # everything is okay
@@ -230,9 +279,9 @@ class CacheHandlerUngridded(object):
                             'instance of UngriddedData, got {}'
                             .format(type(data)))
 
-        self.loaded_data[var_name] = data
-        const.logger.info('Successfully loaded data for {} from Cache'
-                    .format(self.dataset_to_read))
+        self.loaded_data[var_or_file_name] = data
+        const.logger.info('Successfully loaded cache file {}'
+                          .format(fp))
         return True
 
     def delete_all_cache_files(self):
@@ -247,46 +296,54 @@ class CacheHandlerUngridded(object):
             os.remove(fp)
             const.print_log.info('Deleted {}'.format(fp))
 
-    def write(self, data, var_name=None):
+    def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
 
         Parameters
         ----------
         data : UngriddedData
             object containing the data (possibly containing multiple variables)
-        var_name : str, optional
-            name of variable that is supposed to be stored (only required if
-            input `data` contains more than one variable)
+        var_or_file_name : str, optional
+            name of output filename or variable that is supposed to be stored.
+            Default usage is to provide variable and then
+            :func:`default_file_name` is used. Can be None if
+            input `data` contains only a single variable.
+        cache_dir : str, optional
+            output directory (default is pyaerocom cache dir accessed via
+            :func:`cache_dir`).
         """
         meta = self.cache_meta_info()
 
         if not isinstance(data, UngriddedData):
             raise TypeError('Invalid input, need instance of UngriddedData, '
                             'got {}'.format(type(data)))
-        if len(data.contains_datasets) > 1:
-            raise CacheWriteError('Input UngriddedData object contains '
-                                  'datasets: {}. Can only write single '
-                                  'dataset objects'
-                                  .format(data.contains_datasets))
-        if var_name is None:
+
+        if not var_or_file_name.endswith('.pkl'):
+            var_name = var_or_file_name
+            if len(data.contains_datasets) > 1:
+                raise CacheWriteError('Input UngriddedData object contains '
+                                      'datasets: {}. Can only write single '
+                                      'dataset objects'
+                                      .format(data.contains_datasets))
+            if var_name is None:
+                if len(data.contains_vars) > 1:
+                    raise CacheWriteError('Input UngriddedData object for {} contains '
+                                          'more than one variable: {}. Please '
+                                          'specify which variable should be '
+                                          'cached'
+                                          .format(self.reader.data_id,
+                                                  data.contains_vars))
+                var_name = data.contains_vars[0]
+
+            elif not var_name in data.contains_vars:
+                raise CacheWriteError('Cannot write cache file: variable {} does '
+                                      'not exist in input UngriddedData object'
+                                      .format(var_name))
+
             if len(data.contains_vars) > 1:
-                raise CacheWriteError('Input UngriddedData object for {} contains '
-                                      'more than one variable: {}. Please '
-                                      'specify which variable should be '
-                                      'cached'
-                                      .format(self.reader.data_id,
-                                              data.contains_vars))
-            var_name = data.contains_vars[0]
+                data = data.extract_var(var_name)
 
-        elif not var_name in data.contains_vars:
-            raise CacheWriteError('Cannot write cache file: variable {} does '
-                                  'not exist in input UngriddedData object'
-                                  .format(var_name))
-
-        if len(data.contains_vars) > 1:
-            data = data.extract_var(var_name)
-
-        fp = self.file_path(var_name)
+        fp = self.file_path(var_or_file_name, cache_dir=cache_dir)
         const.logger.info('Writing cache file: {}'.format(fp))
         success = True
         # OutHandle = gzip.open(c__cache_file, 'wb') # takes too much time
@@ -305,15 +362,13 @@ class CacheHandlerUngridded(object):
         finally:
             out_handle.close()
             if not success:
-                os.remove(self.file_path)
-        const.logger.info('Successfully wrote {} data ({}) to disk!'
-                    .format(var_name, self.reader.data_id))
+                os.remove(fp)
+        const.logger.info('Wrote: {}'.format(fp))
 
     def __str__(self):
-        return 'Cache handler for {}'.format(self.reader.data_id)
+        return 'pyaerocom.CacheHandlerUngridded\nDefault cache dir: {}'.format(self.cache_dir)
 
 if __name__ == "__main__":
 
     ch = CacheHandlerUngridded()
-
-    ch.delete_all_cache_files()
+    print(ch)

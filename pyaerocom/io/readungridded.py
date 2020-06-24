@@ -302,7 +302,7 @@ class ReadUngridded(object):
             # initate cache handler
             for var in vars_available:
                 try:
-                    cache.check_and_load(var_name=var,
+                    cache.check_and_load(var,
                                          force_use_outdated=only_cached)
                 except Exception:
                     self.logger.exception('Fatal: compatibility error between '
@@ -511,20 +511,14 @@ class ReadUngridded(object):
         return data
 if __name__=="__main__":
 
-    reader = ReadUngridded()
+    reader = ReadUngridded('AeronetSunV3Lev2.daily')
 
-    data = reader.read('GHOST.daily', 'concpm10',
-                       only_cached=True)
+    data = reader.read('AeronetSunV3Lev2.daily', 'od550aer')
 
-# =============================================================================
-#     data = reader.read('EBASMC',
-#                        vars_to_retrieve=['conctc', 'concoa', 'concbc', 'conceqbc'])
-# =============================================================================
+    ch = CacheHandlerUngridded()
 
-# =============================================================================
-#     data = reader.read([const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
-#                         const.AERONET_SUN_V3L2_AOD_DAILY_NAME],
-#                     vars_to_retrieve='od550aer',
-#                     last_file=10)
-#
-# =============================================================================
+    filename = 'test_custom_cache.pkl'
+    ch.write(data, filename)
+
+    if ch.check_and_load(filename):
+        data1 = ch.loaded_data[filename]
