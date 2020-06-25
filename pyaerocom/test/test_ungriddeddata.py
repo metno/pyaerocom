@@ -7,6 +7,7 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import numpy as np
 import numpy.testing as npt
+import os
 import pytest
 from pyaerocom import UngriddedData
 from pyaerocom.conftest import testdata_unavail, rg_unavail
@@ -102,6 +103,18 @@ def test_filter_region(aeronetsunv3lev2_subset, region_id, check_mask,
                                                    check_country_meta=check_country_meta)
 
     assert len(subset.metadata) == num_meta
+
+def test_save_as(aeronetsunv3lev2_subset, tempdir):
+    fp = aeronetsunv3lev2_subset.save_as(file_name='ungridded_aeronet_subset.pkl',
+                                    save_dir=tempdir)
+
+    assert os.path.exists(fp)
+
+def test_from_cache(aeronetsunv3lev2_subset, tempdir):
+    reloaded = UngriddedData.from_cache(data_dir=tempdir,
+                                        file_name='ungridded_aeronet_subset.pkl')
+
+    assert reloaded.shape == aeronetsunv3lev2_subset.shape
 
 if __name__=="__main__":
     import sys
