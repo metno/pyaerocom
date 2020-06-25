@@ -112,7 +112,7 @@ class CacheHandlerUngridded(object):
         Parameters
         ----------
         var_name : str
-            name of variable to be cached. Note: if inpu
+            name of variable to be cached.
 
         Returns
         -------
