@@ -138,7 +138,7 @@ class AerocomEvaluation(object):
     var_order_menu : list, optional
         order of variables in menu
     """
-    OUT_DIR_NAMES = ['map', 'ts', 'scat', 'hm', 'profiles']
+    OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles']
 
     #: Vertical layer ranges
     VERT_LAYERS = {'0-2km'  :   [0, 2000],
@@ -517,6 +517,17 @@ class AerocomEvaluation(object):
 #         """Creates file regions.ini for web interface"""
 #         return make_regions_json()
 # =============================================================================
+    def get_diurnal_only(self,obs_name,colocated_data):
+        try:
+            diurnal_only = self.obs_config[obs_name]['diurnal_only']
+        except:
+            diurnal_only = False
+        if not isinstance(diurnal_only,bool):
+            raise ValueError(f'Need Boolean dirunal_only for {obs_name}, got {type(diurnal_only)}')
+        ts_type = colocated_data.ts_type
+        if diurnal_only and ts_type != 'hourly':
+            raise NotImplementedError(f'diurnal processing is only available for ColocatedData with ts_type=hourly. Got diurnal_only={diurnal_only} for {obs_name} with ts_type {ts_type}')
+        return diurnal_only
 
     def compute_json_files_from_colocateddata(self, coldata, obs_name,
                                               model_name):
@@ -526,6 +537,7 @@ class AerocomEvaluation(object):
             web_iface_name = self.obs_config[obs_name]['web_interface_name']
         except:
             web_iface_name = obs_name
+        diurnal_only = self.get_diurnal_only(obs_name,coldata)
         if len(self.region_groups) > 0:
             raise NotImplementedError('Filtering of grouped regions is not ready yet...')
         return compute_json_files_from_colocateddata(
@@ -538,7 +550,8 @@ class AerocomEvaluation(object):
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
                 regions_how=self.regions_how,
-                web_iface_name=web_iface_name)
+                web_iface_name=web_iface_name,
+                diurnal_only=diurnal_only)
                 #region_groups=self.region_groups)
 
     def get_vert_code(self, obs_name, obs_var):
