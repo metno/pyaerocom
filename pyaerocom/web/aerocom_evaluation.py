@@ -4,12 +4,13 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
+from traceback import format_exc
 import simplejson
 
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
-from pyaerocom.region import Region, get_all_default_region_ids
+#from pyaerocom.region import Region, get_all_default_region_ids
 
 from pyaerocom.io.helpers import save_dict_json
 
@@ -1057,7 +1058,9 @@ class AerocomEvaluation(object):
         col.update(**self.colocation_settings)
         col.update(**self.get_model_config(model_name))
         #col.update(**kwargs)
+
         data = col.read_model_data(var_name, **kwargs)
+
         return data
 
     def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
