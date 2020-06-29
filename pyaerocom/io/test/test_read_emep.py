@@ -39,6 +39,7 @@ def test_read_emep_directory(path_emep):
     assert len(paths) == 3
 
 @pytest.mark.parametrize('filename,ts_type', [
+    ('Base_hour.nc', 'hourly'),
     ('Base_month.nc', 'monthly'),
     ('Base_day.nc', 'daily'),
     ('Base_fullrun', 'yearly')
