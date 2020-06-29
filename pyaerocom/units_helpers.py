@@ -8,7 +8,8 @@ Created on Mon Sep 2 08:47:56 2019
 """
 import pandas as pd
 import cf_units
-
+from pyaerocom.helpers import seconds_in_periods
+from pyaerocom.exceptions import UnitConversionError
 # 1. DEFINITION OF MOLAR MASSES
 
 # Atoms
@@ -171,6 +172,46 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
     if conv_fac != 1:
         data = np.divide(data, conv_fac)
     return data
+
+
+def implicit_to_explicit_rates(gridded, ts_type):
+    """
+    Convert implicitly defined daily, monthly or yearly rates to
+    per second.
+
+    Some data should be per second but have units without time information
+    information.
+
+    Parameters
+    ----------
+    gridded : GriddedData
+        Data to convert
+    ts_type : str
+        Temporal resolution of gridded.
+
+    Returns
+    -------
+    GriddedData
+        Modified data, if not already a rate.
+    """
+
+    # TODO: Only modify data if conversion is succesful
+    new_gridded = gridded
+    unit = gridded.units
+    unit_string = str(unit)
+    is_rate = ('/s' in unit_string) or ('s-1' in unit_string)
+    if not is_rate:
+        raise NotImplementedError('This conversion needs further work.')
+        timestamps = gridded.time_stamps()
+        seconds_factor = seconds_in_periods(timestamps, ts_type)
+        new_gridded = gridded
+        data = new_gridded.to_xarray()
+        for i in range(len(seconds_factor)):
+            data.isel(time=i).values /= seconds_factor[i]
+        new_gridded.cube = data.to_iris()
+        new_units = '{} s-1'.format(gridded.units) # append rate to format
+        new_gridded.units = new_units
+    return new_gridded
 
 if __name__ == '__main__':
     df = UCONV_MUL_FACS

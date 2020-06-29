@@ -1,12 +1,10 @@
 import os
 import pytest
 
-from pyaerocom.conftest import TESTDATADIR
-from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom.conftest import testdata_unavail
+from pyaerocom.conftest import TESTDATADIR, does_not_raise_exception, testdata_unavail
 
 from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
-from pyaerocom.io import ReadGridded
+from pyaerocom.io import ReadGridded, ReadEMEP
 from pyaerocom.exceptions import DataCoverageError
 from pyaerocom.io.aux_read_cubes import add_cubes
 

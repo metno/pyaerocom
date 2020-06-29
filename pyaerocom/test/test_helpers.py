@@ -118,6 +118,22 @@ def test_get_lon_rng_constraint():
 def test_get_time_rng_constraint():
     pass
 
+@pytest.mark.parametrize("date,ts_type,expected", [
+    ("2000-02-18","monthly",29),  # February leap year
+    ("2000-02-18","yearly",366),  # Leap year
+    ("2001-02-18","monthly",28),  # February non leap year
+    ("2001-02-18","daily",1),     # Daily
+    ("2001-02-18","yearly",365)]) # Non leap year
+def test_seconds_in_periods(date, ts_type, expected):
+
+    from numpy import datetime64
+
+    seconds_in_day = 24*60*60
+
+    ts = datetime64(date)
+    seconds = helpers.seconds_in_periods(ts, ts_type)
+    assert seconds == expected*seconds_in_day
+
 def test_extract_latlon_dataarray():
     cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1, lat_range=[10,20], lon_range=[10,20])
     data = xr.DataArray.from_iris(cube)
@@ -143,6 +159,7 @@ if __name__=="__main__":
 
     import pandas as pd
 
+    test_seconds_in_periods()
     test_get_standarad_name()
     test_get_standard_unit()
     test_start_stop_from_year()
