@@ -401,8 +401,10 @@ class Colocator(ColocationSetup):
             data_id = self.obs_id
         reader_class = self._get_gridded_reader_class(what=what)
         reader = reader_class(data_id=data_id)
-        if hasattr(reader, 'filepath'):
+        if hasattr(reader, 'filepath') and hasattr(self, 'filepath'):
             reader.filepath = self.filepath
+        elif hasattr(reader, 'data_dir') and hasattr(self, 'data_dir'):
+            reader.data_dir = self.data_dir
         return reader
 
     def _get_gridded_reader_class(self, what):
