@@ -916,7 +916,7 @@ class Colocator(ColocationSetup):
                                                 var_name=model_var,
                                                 start=start,
                                                 stop=stop,
-                                                is_model=True)
+                                                is_model=True, ts_type=ts_type)
             except Exception as e:
 
                 msg = ('Failed to load gridded data: {} / {}. Reason {}'
@@ -943,7 +943,7 @@ class Colocator(ColocationSetup):
                                                var_name=obs_var,
                                                start=start,
                                                stop=stop,
-                                               is_model=False)
+                                               is_model=False, ts_type=ts_type)
             except Exception as e:
 
                 msg = ('Failed to load gridded data: {} / {}. Reason {}'
