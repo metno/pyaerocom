@@ -287,7 +287,7 @@ class ReadEMEP(object):
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = filepath # ReadGridded cannot concatenate several years of data if this is missing
+        gridded.metadata['from_files'] = [filepath] # ReadGridded cannot concatenate several years of data if this is missing
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
