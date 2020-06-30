@@ -734,13 +734,14 @@ class Colocator(ColocationSetup):
                                                              model_var,
                                                              obs_var))
 
+            print_log.info('Loading gridded data with ts_type {}'.format(ts_type))
             try:
                 model_data = self._read_gridded(reader=model_reader,
                                                 var_name=model_var,
                                                 start=start,
                                                 stop=stop,
                                                 is_model=True,
-                                                ts_type=self.ts_type)
+                                                ts_type=ts_type)
             except Exception as e:
 
                 msg = ('Failed to load gridded data: {} / {}. Reason {}'
@@ -753,6 +754,7 @@ class Colocator(ColocationSetup):
                     raise Exception(msg)
                 else:
                     continue
+            print_log.info('Gridded data loaded.')
             ts_type_src = model_data.ts_type
             rshow = self._eval_resample_how(model_var, obs_var)
             if ts_type is None:
@@ -816,13 +818,14 @@ class Colocator(ColocationSetup):
                 #large observational data sets. Only one variable is loaded into
                 # the UngriddedData object at a time. Currently the variable is
                 #re-read a lot of times, which is a weakness.
+                print_log.info('Reading ungridded data.')
                 obs_data = obs_reader.read(
 
                     datasets_to_read=self.obs_id,
                     vars_to_retrieve=obs_var,
                     only_cached=self._obs_cache_only,
                     **ropts)
-
+                print_log.info('Ungridded data read')
                         # ToDo: consider removing outliers already here.
                 if 'obs_filters' in self:
                     remaining_filters = self._eval_obs_filters()
@@ -836,6 +839,7 @@ class Colocator(ColocationSetup):
                     by=None
                 if self.model_use_climatology:
                     by=start.year
+                print_log.info('Colocating gridded and ungridded data.')
                 coldata = colocate_gridded_ungridded(
 
                         gridded_data=model_data,
