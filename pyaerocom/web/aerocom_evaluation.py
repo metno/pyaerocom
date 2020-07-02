@@ -1220,13 +1220,16 @@ class AerocomEvaluation(object):
              vert_code,
              mod_name, mod_var) = self._info_from_map_file(file)
             remove=False
-            obs_vars = self._get_valid_obs_vars(obs_name)
 
-            if not (obs_name in self.obs_config and
-                    mod_name in self.model_config and
-                    obs_var in obs_vars):
+            if not obs_name in self.obs_config:
+                # Obs dataset was removed
                 remove = True
-            if mod_name in self.model_config:
+            elif not mod_name in self.model_config:
+                # Model dataset was removed
+                remove = True
+            elif not obs_var in self._get_valid_obs_vars(obs_name):
+                remove = True
+            else:
                 mcfg = self.model_config[mod_name]
                 if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
                     if not mod_var == mcfg['model_use_vars'][obs_var]:
