@@ -47,7 +47,7 @@ class ReadEMEP(object):
     # for each auxiliary variable (i.e. each variable that is not provided
     # by the original data but computed on import)
     AUX_REQUIRES = {'depso4' : ['dryso4','wetso4'],
-                         'sconcbc' : ['sconcbcf', 'sconcbcc'],
+                         'concbc' : ['concbcf', 'concbcc'],
                          'sconcno3' : ['sconcno3c', 'sconcno3f'],
                          # 'sconctno3' : ['sconcno3', 'sconchno3'],
                          'sconcoa' : ['sconcoac', 'sconcoaf']}
