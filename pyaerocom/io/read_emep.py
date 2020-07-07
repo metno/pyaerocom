@@ -278,6 +278,11 @@ class ReadEMEP(object):
             data.time.attrs['long_name'] = 'time'
             data.time.attrs['standard_name'] = 'time'
             data.attrs['units'] = self.preprocess_units(data.units, EMEP_prefix)
+
+            # quickfix for EMEP reporting (@ejgal)
+            if var_name == 'ac550aer':
+                data.attrs['units'] = '1/m'
+
             cube = data.to_iris()
             if ts_type == 'hourly':
                 cube.coords()[0].convert_units('hours since 1900-01-01')
