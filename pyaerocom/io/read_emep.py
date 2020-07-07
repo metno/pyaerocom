@@ -224,7 +224,7 @@ class ReadEMEP(object):
         var_name : str
             Variable to be read
         ts_type : str
-            Temporal resolution of data to read. ("hourly", "daily", "monthly")
+            Temporal resolution of data to read. ("hourly", "daily", "monthly" , "yearly")
 
         Returns
         -------
@@ -246,6 +246,8 @@ class ReadEMEP(object):
             filename = ''
             if ts_type == 'monthly':
                 filename = 'Base_month.nc'
+            elif ts_type == 'hourly':
+                filename = 'Base_hour.nc'
             elif ts_type == 'daily':
                 filename = 'Base_day.nc'
             elif ts_type == 'yearly':
@@ -328,6 +330,8 @@ def ts_type_from_filename(filename):
     filename = os.path.splitext(filename)[0]
     if filename == 'base_day':
         ts_type = 'daily'
+    elif filename == 'base_hour':
+        ts_type = 'hourly'
     elif filename == 'base_month':
         ts_type = 'monthly'
     elif filename == 'base_fullrun':
