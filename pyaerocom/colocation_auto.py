@@ -729,10 +729,6 @@ class Colocator(ColocationSetup):
             #if 'obs_filters' in self:
 
             ts_type = self.ts_type
-            try:
-                ts_type_model = self.model_ts_type_read[model_var]
-            except Exception as e:
-                ts_type_model = self.ts_type
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id,
                                                              self.obs_id,
                                                              model_var,
@@ -744,8 +740,7 @@ class Colocator(ColocationSetup):
                                                 var_name=model_var,
                                                 start=start,
                                                 stop=stop,
-                                                is_model=True,
-                                                ts_type=ts_type_model)
+                                                is_model=True)
             except Exception as e:
 
                 msg = ('Failed to load gridded data: {} / {}. Reason {}'
