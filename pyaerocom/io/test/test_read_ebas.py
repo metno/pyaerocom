@@ -185,6 +185,7 @@ class TestReadEBAS(object):
              'wavelength_tol_nm': 50,
              'shift_wavelengths': True,
              'assume_default_ae_if_unavail': True,
+             'check_correct_MAAP_wrong_wvl': False,
              'eval_flags': True,
              'keep_aux_vars': False,
              'merge_meta': False,
