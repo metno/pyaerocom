@@ -231,6 +231,16 @@ class ReadEMEP(object):
         GriddedData
         """
 
+        if isinstance(ts_type, dict):
+            try:
+                ts_type = ts_type[var_name]
+            except Exception:
+                const.print_log.info('Setting ts_type to None, since input '
+                                     'dict {} does not contain specification '
+                                     'variable to read {}'.format(ts_type,
+                                                                  var_name))
+                ts_type = None
+
         # if start or stop:
         #     raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
 
