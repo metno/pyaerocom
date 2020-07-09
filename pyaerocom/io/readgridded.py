@@ -427,6 +427,20 @@ class ReadGridded(object):
         return True
 
     def _check_var_match_pattern(self, var_name):
+        """Check if input variable can be accessed via auxiliary variable family
+
+        E.g. if var_name is concpm10 and mmrpm10 and rho are available
+
+        Parameters
+        ----------
+        var_name : str
+            variable that is supposed to be read
+
+        Returns
+        -------
+        bool
+            True if variable can be read, else False
+        """
         vars_found = []
         for pattern in self.registered_var_patterns:
             if fnmatch.fnmatch(var_name, pattern):
@@ -2135,16 +2149,6 @@ if __name__=="__main__":
 
     import matplotlib.pyplot as plt
     plt.close('all')
-    reader = ReadGridded('AATSR_SU_v4.3')
-    read_constraint = dict(
-        var_name = 'od550aer',
-        operator='<',
-        filter_val=0.1
-    )
+    reader = ReadGridded()
 
-    ae = reader.read_var('ang4487aer', start=2010)
-    ae_qa = reader.read_var('ang4487aer', start=2010,
-                         constraints=[read_constraint])
-
-    ae.resample_time('yearly', apply_constraints=False).quickplot_map()
-    ae_qa.resample_time('yearly', apply_constraints=False).quickplot_map()
+    reader._check_var_match_pattern('concpm10')

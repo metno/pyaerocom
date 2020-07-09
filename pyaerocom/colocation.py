@@ -673,7 +673,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded_data = _regrid_gridded(gridded_data, regrid_scheme,
                                        regrid_res_deg)
 
-    if remove_outliers and not var_ref_keep_outliers:
+    if remove_outliers and not var_ref_keep_outliers: #called twice if used via Colocator, this should go out here
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref,
                                        high=high_ref)
@@ -698,13 +698,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
     all_stats = ungridded_data.to_station_data_all(
-
             vars_to_convert=var_ref,
             start=obs_start,
             stop=obs_stop,
             by_station_name=True,
             ignore_index=ignore_station_names,
-            **kwargs)
+            **kwargs
+            )
 
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
