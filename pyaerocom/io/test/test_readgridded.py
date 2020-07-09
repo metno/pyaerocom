@@ -27,18 +27,18 @@ def reader_tm5():
 
 
 @pytest.mark.parametrize('input_args,mean_val', [
-    (dict(var_name='od550aer'), 0.1186),
-    (dict(var_name='od550aer', constraints={
+    (dict(var_name='od550aer', ts_type='monthly'), 0.1186),
+    (dict(var_name='od550aer', ts_type='monthly', constraints={
                                   'var_name'   : 'od550aer',
                                   'operator'   : '>',
                                   'filter_val' : 1000
                                   }), 0.1186),
-    (dict(var_name='od550aer', constraints={
+    (dict(var_name='od550aer', ts_type='monthly', constraints={
                                   'var_name'   : 'od550aer',
                                   'operator'   : '<',
                                   'filter_val' : 0.1
                                   }), 0.2062),
-    (dict(var_name='od550aer', constraints=[
+    (dict(var_name='od550aer', ts_type='monthly', constraints=[
         {'var_name'   : 'od550aer',
          'operator'   : '<',
          'filter_val' : 0.1},
