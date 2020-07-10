@@ -24,6 +24,7 @@ def compute_model_average_and_diversity(cfg, var_name,
                                         extract_surface=True,
                                         ignore_models=None,
                                         logfile=None,
+                                        comment=None,
                                         **kwargs):
     """Compute median or mean model based on input models
 
@@ -159,12 +160,6 @@ def compute_model_average_and_diversity(cfg, var_name,
         except Exception as e:
             models_failed.append(mid)
             const.print_log.info('Failed to process...: {}'.format(repr(e)))
-
-# =============================================================================
-#             data = cfg.read_model_data(mname, var_name,
-#                                        ts_type=ts_type,
-#                                        **kwargs)
-# =============================================================================
             if logfile is not None:
                 logfile.write('\nFAILED {}: {}'.format(mid, repr(e)))
             continue
@@ -183,15 +178,18 @@ def compute_model_average_and_diversity(cfg, var_name,
     dims = [data.time, dummy.coord('latitude'), dummy.coord('longitude')]
     avg = avg_fun(loaded, axis=0)
     if avg_how == 'mean':
-        delta_textor = np.std(np.asarray(loaded) / avg, axis=0) * 100
+        diversity = np.std(np.asarray(loaded) / avg, axis=0) * 100
     else:
         ld = np.asarray(loaded)
         q1 = np.quantile(ld, 0.25, axis=0)
         q3 = np.quantile(ld, 0.75, axis=0)
-        delta_textor = (q3-q1) / avg * 100
+        diversity = (q3-q1) / avg * 100
 
-    comment = ('AeroCom {} model (cf. attrs. from_models and from_vars for details)'
-               .format(avg_how))
+    if comment is None:
+        comment = 'AeroCom {} model data for variable {}.'.format(avg_how,
+                                                                 var_name)
+
+
 
     mean = GriddedData(numpy_to_cube(avg,
                                      dims=dims,
@@ -205,10 +203,9 @@ def compute_model_average_and_diversity(cfg, var_name,
                                      models_failed=models_failed,
                                      comment=comment))
 
-    comment = ('AeroCom model diversity of {} in % based on Textor et al. Atmos. '
-               'Chem. Phys., 6, 1777–1813, 2006'.format(var_name))
+    comment += ' Diversity field in units of %'
 
-    delta = GriddedData(numpy_to_cube(delta_textor,
+    delta = GriddedData(numpy_to_cube(diversity,
                                       dims=dims,
                                       var_name='{}div'.format(var_name),
                                       units='%',
