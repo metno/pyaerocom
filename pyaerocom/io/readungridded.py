@@ -302,7 +302,8 @@ class ReadUngridded(object):
                     'Directory does not exist'.format(dataset_to_read, data_dir)
                     )
             reader._dataset_path = data_dir
-
+            const.print_log.info('Reading {} from specified data loaction: {}'
+                                 .format(dataset_to_read, data_dir))
         if vars_to_retrieve is None:
             vars_to_retrieve = reader.PROVIDES_VARIABLES
         elif isinstance(vars_to_retrieve, str):
