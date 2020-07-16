@@ -7,7 +7,12 @@ Created on Mon Sep 2 08:47:56 2019
 @author: jonasg
 """
 import pandas as pd
-import cf_units
+
+from cf_units import Unit
+from pyaerocom import const
+from pyaerocom.exceptions import UnitConversionError
+
+VARS = const.VARS
 
 # 1. DEFINITION OF MOLAR MASSES
 
@@ -32,13 +37,13 @@ HA_TO_SQM = 10000   # hectar to square metre.
 # logic of hierarchy is: variable -> from unit -> to_unit -> conversion factor
 UCONV_MUL_FACS = pd.DataFrame([
 
-  ['concso4', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO4],
-  ['concso2', 'ug S/m3', 'ug m-3',  UCONV_FAC_S_SO2],
+  ['concso4', 'ug S/m3', VARS.concso4.units,  UCONV_FAC_S_SO4],
+  ['concso2', 'ug S/m3', VARS.concso2.units,  UCONV_FAC_S_SO2],
 
-  ['concbc', 'ug C/m3', 'ug m-3', 1.0],
-  ['concoa', 'ug C/m3', 'ug m-3', 1.0],
-  ['concoc', 'ug C/m3', 'ug m-3', 1.0],
-  ['conctc', 'ug C/m3', 'ug m-3', 1.0],
+  ['concbc', 'ug C/m3', VARS.concbc.units, 1.0],
+  ['concoa', 'ug C/m3', VARS.concoa.units, 1.0],
+  ['concoc', 'ug C/m3', VARS.concoc.units, 1.0],
+  ['conctc', 'ug C/m3', VARS.conctc.units, 1.0],
 
   ['wetso4', 'kg S/ha', 'kg m-2',  UCONV_FAC_S_SO4 / HA_TO_SQM],
   ['concso4pr', 'mg S/L', 'g m-3',  UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
@@ -49,24 +54,18 @@ UCONV_MUL_FACS = pd.DataFrame([
 # in UCONV_MUL_FACS
 UALIASES = {'ug S m-3' : 'ug S/m3',
             'ug C m-3' : 'ug C/m3'}
-# =============================================================================
-#
-# if sum(CONV_MUL_FACS.index.duplicated()) > 0:
-#     raise ValueError('Each unit can only be defined once')
-# =============================================================================
 
 def unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit"""
     if from_unit in UALIASES:
         from_unit = UALIASES[from_unit]
     try:
-        info = UCONV_MUL_FACS.loc[(var_name, from_unit), :]
+        info = UCONV_MUL_FACS.loc[(var_name, str(from_unit)), :]
         if not isinstance(info, pd.Series):
             raise Exception('Could not find unique conversion factor in table '
                             'UCONV_MUL_FACS in units_helpers.py. Please check '
                             'for dulplicate entries')
     except KeyError:
-        from pyaerocom.exceptions import UnitConversionError
         raise UnitConversionError('Failed to convert unit {} (variable {}). '
                                   'Reason: no custom conversion factor could '
                                   'be inferred from table '
@@ -99,11 +98,10 @@ def unit_conversion_fac(from_unit, to_unit):
         if units cannot be converted into each other using cf_units package
     """
     if isinstance(from_unit, str):
-        from_unit = cf_units.Unit(from_unit)
+        from_unit = Unit(from_unit)
     try:
         return from_unit.convert(1, to_unit)
     except ValueError:
-        from pyaerocom.exceptions import UnitConversionError
         raise UnitConversionError('Failed to convert unit from {} to {}'
                                   .format(from_unit, to_unit))
 
@@ -129,10 +127,22 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
     data
         data in new unit
     """
+    if isinstance(from_unit, str):
+        from_unit = Unit(from_unit)
+    if isinstance(to_unit, str):
+        to_unit = Unit(to_unit)
+    if from_unit == to_unit:
+        # nothing to do
+        return data
     if var_name in UCONV_MUL_FACS.index:
-        from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name,
-                                                             from_unit)
-        data *= pre_conv_fac
+        try:
+            from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name,
+                                                                 from_unit)
+            data *= pre_conv_fac
+        except UnitConversionError:
+            # from_unit is likely not custom but standard... and if not
+            # call of unit_conversion_fac below will crash
+            pass
 
     conv_fac = unit_conversion_fac(from_unit, to_unit)
     if conv_fac != 1:
@@ -173,16 +183,5 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
     return data
 
 if __name__ == '__main__':
-    df = UCONV_MUL_FACS
-    print(df)
-    import numpy as np
 
-    print(convert_unit(np.ones(3), 'ug S/m3', 'ug m-3', 'concso4'))
-
-    data = np.ones(10)
-
-    unit = 'kg S/ha'
-    var_name = 'wetso4'
-    print(unit_conversion_fac_custom(var_name, unit))
-
-    print(convert_unit(data, unit, 'kg m-2', var_name))
+    print(convert_unit(1, 'ug m-3', 'g m-3', 'concso2'))
