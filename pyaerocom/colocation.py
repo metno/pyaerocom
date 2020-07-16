@@ -353,12 +353,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
     data.longitude.attrs['units'] = str(gridded_data.longitude.units)
 
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
     if grid_ts_type != ts_type:
         data = data.resample_time(to_ts_type=ts_type,
                                   colocate_time=colocate_time,
@@ -880,13 +874,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
     data.longitude.attrs['units'] = str(gridded_data.longitude.units)
-
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
-    print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
 
     if col_freq != str(ts_type):
         data = data.resample_time(to_ts_type=ts_type,
