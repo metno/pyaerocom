@@ -652,6 +652,38 @@ class Colocator(ColocationSetup):
         else:
             return None
 
+    def _infer_start_stop(self, reader):
+        """
+        Infer start / stop for colocation from gridded reader
+
+        Parameters
+        ----------
+        reader : ReadGridded (or similar WE NEED A BASE CLASS)
+            Re
+
+        Raises
+        ------
+        AttributeError
+            if input reader does not have start / stop specified.
+
+        Returns
+        -------
+        None.
+
+        """
+        try:
+            yrs_avail = reader.years_avail
+        except AttributeError:
+            raise AttributeError('Input reader {} does not have attr. '
+                                 'years_avail') # not sure if ReadEMEP has...
+
+        first, last = yrs_avail[0], yrs_avail[-1]
+        self.start = first
+        if last > first:
+            self.stop=last
+        elif self.stop is not None:
+            self.stop = None
+
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         print_log.info('PREPARING colocation of {} vs. {}'
@@ -693,6 +725,9 @@ class Colocator(ColocationSetup):
             ropts = {}
 
         data_objs = {}
+        if self.start is None:
+            self._infer_start_stop(model_reader)
+
         start, stop = start_stop(self.start, self.stop)
 
         for model_var, obs_var in var_matches.items():
@@ -831,7 +866,7 @@ class Colocator(ColocationSetup):
                     self._save_coldata(coldata, savename, out_dir, model_var,
                                        model_data, obs_var)
                 data_objs[model_var] = coldata
-            except Exception as e:
+            except Exception:
                 msg = ('Colocation between model {} / {} and obs {} / {} '
                        'failed.\nTraceback:\n{}'.format(self.model_id,
                                                   model_var,
@@ -848,8 +883,12 @@ class Colocator(ColocationSetup):
 
     def _run_gridded_gridded(self, var_name=None):
 
-        start, stop = start_stop(self.start, self.stop)
         model_reader = ReadGridded(self.model_id)
+
+        if self.start is None:
+            self._infer_start_stop(model_reader)
+
+        start, stop = start_stop(self.start, self.stop)
         obs_reader = ReadGridded(self.obs_id, data_dir=self.obs_data_dir)
 
         if 'obs_filters' in self:
