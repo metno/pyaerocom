@@ -187,8 +187,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
 
-    if gridded_data.var_info.has_unit:
-        if harmonise_units and not gridded_data.units == gridded_data_ref.units:
+    if harmonise_units and gridded_data.var_info.has_unit:
+        if not gridded_data.units == gridded_data_ref.units:
             try:
                 gridded_data_ref.convert_unit(gridded_data.units)
             except Exception:
