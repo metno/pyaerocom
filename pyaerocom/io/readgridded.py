@@ -36,6 +36,7 @@
 import fnmatch
 from glob import glob
 import os
+from pathlib import Path
 from collections import OrderedDict as od
 
 import numpy as np
@@ -236,6 +237,8 @@ class ReadGridded(object):
 
     @data_dir.setter
     def data_dir(self, val):
+        if isinstance(val, Path):
+            val = str(val)
         if not isinstance(val, str) or not os.path.isdir(val):
             raise FileNotFoundError('Input data directory {} does not exist'
                                     .format(val))

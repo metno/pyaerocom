@@ -71,6 +71,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                   annot_fmt_rowwise=False,
                   annot_fmt_exceed=None,
                   annot_fmt_rows=None, # explicit formatting strings for rows
+                  cbar_ax=None,
                   cbar_kws=None,
                   **kwargs):
 
@@ -133,19 +134,6 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
     """
     if cbar_label is None:
         cbar_label = ''
-    # Old vesion only for
-# =============================================================================
-#     if isinstance(df.columns, pd.MultiIndex):
-#         # If pandas is a instance of multicolumns make sure that it only ha one column.
-#         if len(df.columns.levels) > 1:
-#              raise AttributeError("Heatmaps can only be created for "+
-#                                  "single column tabular data (e.g. Bias or "+
-#                                  "RMSE) with a partly unstacked MultiIndex or a "+
-#                                  "single index DataFrame. "+
-#                                  "Not MulitiIndex of {} ".format(len(df.columns.levels[0]))+
-#                                  " columns which you provided. "+
-#                                  "Please extract a column. ")
-# =============================================================================
 
     if circle:
         raise NotImplementedError('Adding circles to heatmap is not implemented yet.')
@@ -181,24 +169,13 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
                 else:
                     raise ValueError('Invalid input for normalise_rows_how ({}). '
                                      'Choose from mean, median or sum'.format(normalise_rows_how))
-            #cbar_label += " (norm. row {})".format(normalise_rows_how)
+
         df_hm = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
-# =============================================================================
-#         try:
-#             df_hm.MEDIAN.values[3] = 0.32
-#         except:
-#             pass
-# =============================================================================
-        #num_fmt = ".0%"
 
         cbar_kws['format'] = FuncFormatter(lambda x, pos: '{:.0%}'.format(x))
         #df = df.div(df.max(axis=1), axis=0)
     if color_rowwise:
         df_hm = df_hm.div(abs(df_hm).max(axis=1), axis=0)
-# =============================================================================
-#     else:
-#         df_hm = df
-# =============================================================================
 
     cbar_kws['label'] = cbar_label
 
@@ -236,7 +213,7 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
         else:
             fmt = ".{}f".format(num_digits)
     ax = heatmap(df_hm, cmap=cmap, center=center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
-                 cbar=cbar, cbar_kws=cbar_kws, fmt=fmt,
+                 cbar=cbar, cbar_ax=cbar_ax, cbar_kws=cbar_kws, fmt=fmt,
                  vmin=vmin, vmax=vmax, **kwargs)
 
 

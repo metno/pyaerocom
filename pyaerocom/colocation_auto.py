@@ -231,8 +231,10 @@ class ColocationSetup(BrowseDict):
 
         self.model_id = model_id
         self.model_name = model_name
+
         self.obs_id = obs_id
         self.obs_name = obs_name
+        self.obs_data_dir = None
         self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
         self.obs_add_meta = []
@@ -480,7 +482,28 @@ class Colocator(ColocationSetup):
                                   **kwargs)
 
     def read_ungridded(self, vars_to_read=None):
-        obs_reader = ReadUngridded(self.obs_id)
+        """Helper to read UngriddedData
+
+        Note
+        ----
+        Currently not used in main processing method
+        :func:`_run_gridded_ungridded`. But should be.
+
+        Parameters
+        ----------
+        vars_to_read : str or list, optional
+            variables that should be read from obs-network (:attr:`obs_id`)
+
+        Returns
+        -------
+        UngriddedData
+            loaded data object
+
+        """
+        if isinstance(vars_to_read, str):
+            vars_to_read = [vars_to_read]
+
+        obs_reader = ReadUngridded(self.obs_id, data_dir=self.obs_data_dir)
         if vars_to_read is None:
             vars_to_read = self.obs_vars
         obs_vars = []
@@ -629,6 +652,38 @@ class Colocator(ColocationSetup):
         else:
             return None
 
+    def _infer_start_stop(self, reader):
+        """
+        Infer start / stop for colocation from gridded reader
+
+        Parameters
+        ----------
+        reader : ReadGridded (or similar WE NEED A BASE CLASS)
+            Re
+
+        Raises
+        ------
+        AttributeError
+            if input reader does not have start / stop specified.
+
+        Returns
+        -------
+        None.
+
+        """
+        try:
+            yrs_avail = reader.years_avail
+        except AttributeError:
+            raise AttributeError('Input reader {} does not have attr. '
+                                 'years_avail') # not sure if ReadEMEP has...
+
+        first, last = yrs_avail[0], yrs_avail[-1]
+        self.start = first
+        if last > first:
+            self.stop=last
+        elif self.stop is not None:
+            self.stop = None
+
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         print_log.info('PREPARING colocation of {} vs. {}'
@@ -636,7 +691,8 @@ class Colocator(ColocationSetup):
 
         model_reader = ReadGridded(self.model_id)
 
-        obs_reader = ReadUngridded(self.obs_id)
+        obs_reader = ReadUngridded(self.obs_id,
+                                   data_dir=self.obs_data_dir)
 
         _oreader = obs_reader.get_reader(self.obs_id)
 
@@ -669,6 +725,9 @@ class Colocator(ColocationSetup):
             ropts = {}
 
         data_objs = {}
+        if self.start is None:
+            self._infer_start_stop(model_reader)
+
         start, stop = start_stop(self.start, self.stop)
 
         for model_var, obs_var in var_matches.items():
@@ -807,7 +866,7 @@ class Colocator(ColocationSetup):
                     self._save_coldata(coldata, savename, out_dir, model_var,
                                        model_data, obs_var)
                 data_objs[model_var] = coldata
-            except Exception as e:
+            except Exception:
                 msg = ('Colocation between model {} / {} and obs {} / {} '
                        'failed.\nTraceback:\n{}'.format(self.model_id,
                                                   model_var,
@@ -824,9 +883,13 @@ class Colocator(ColocationSetup):
 
     def _run_gridded_gridded(self, var_name=None):
 
-        start, stop = start_stop(self.start, self.stop)
         model_reader = ReadGridded(self.model_id)
-        obs_reader = ReadGridded(self.obs_id)
+
+        if self.start is None:
+            self._infer_start_stop(model_reader)
+
+        start, stop = start_stop(self.start, self.stop)
+        obs_reader = ReadGridded(self.obs_id, data_dir=self.obs_data_dir)
 
         if 'obs_filters' in self:
             obs_filters = self._eval_obs_filters()
@@ -1083,23 +1146,20 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
 
+    obs_dir = '/home/jonasg/MyPyaerocom/testdata-minimal/modeldata/TM5-met2010_CTRL-TEST/renamed'
     MODEL_ID =  'CAM5.3-Oslo_AP3-CTRL2016-PD'
     col = Colocator(model_id = MODEL_ID,
-                    obs_id='AeronetSunV3Lev2.daily',
-                    obs_vars=['od550aer', 'ang4487aer'],
-                    start=2010,
-                    filter_name='WORLD-wMOUNTAINS',
-                    model_use_vars=dict(od550aer = 'od550csaer'),
-                    vert_scheme=dict(od550aer='Column'))
+                    obs_data_dir=obs_dir,
+                    obs_id='TM5-met2010_CTRL-TEST',
+                    obs_vars=['od550aer'],
+                    start=2010)
 
-    col.raise_exceptions = True
-    col.reanalyse_existing = True
+    col.run(reanalyse_existing=True)
 
-    print(col)
+    data = col.data[MODEL_ID]['od550aer']
+    data.plot_scatter(loglog=True)
 
-    run = False
-    if run:
-        col.run()
-        for model_id, vardict in col.data.items():
-            for data in vardict.values():
-                data.plot_scatter()
+
+
+
+

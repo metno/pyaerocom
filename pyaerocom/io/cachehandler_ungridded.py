@@ -29,7 +29,7 @@ class CacheHandlerUngridded(object):
         dictionary containing successfully loaded instances of single variable
         :class:`UngriddedData` objects (keys are variable names)
     """
-    __version__ = '1.10'
+    __version__ = '1.11'
     #: Directory of cache files
     try:
         CACHE_DIR = const.CACHEDIR
@@ -169,9 +169,11 @@ class CacheHandlerUngridded(object):
     def cache_meta_info(self):
         """Dictionary containing relevant caching meta-info"""
         try:
-            newest = max(glob.iglob(os.path.join(self.src_data_dir, '*')),
+            newestp = max(glob.iglob(os.path.join(self.src_data_dir, '*')),
                          key=os.path.getctime)
-            newest_date = os.path.getctime(newest)
+            newest_date = os.path.getctime(newestp)
+            newest = os.path.basename(newestp)
+
         except Exception:
             newest = None
             newest_date = None

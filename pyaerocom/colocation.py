@@ -318,13 +318,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'min_num_obs'       :   min_num_obs}
 
     meta.update(regfilter.to_dict())
-# =============================================================================
-#     if remove_outliers:
-#         if not var_keep_outliers:
-#             gridded_data.remove_outliers(low, high)
-#         if not var_ref_keep_outliers:
-#             gridded_data_ref.remove_outliers(low_ref, high_ref)
-# =============================================================================
 
     data = gridded_data.grid.data
     if isinstance(data, np.ma.core.MaskedArray):
@@ -352,6 +345,13 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
 
     data = ColocatedData(data=arr, coords=coords, dims=dims,
                          name=gridded_data.var_name, attrs=meta)
+
+    # add correct units for lat / lon dimensions
+    data.latitude.attrs['standard_name'] = gridded_data.latitude.standard_name
+    data.latitude.attrs['units'] = str(gridded_data.latitude.units)
+
+    data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
+    data.longitude.attrs['units'] = str(gridded_data.longitude.units)
 
     if grid_ts_type != ts_type:
         data = data.resample_time(to_ts_type=ts_type,
@@ -868,6 +868,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     data = ColocatedData(data=coldata, coords=coords, dims=dims, name=var,
                          attrs=meta)
 
+    # add correct units for lat / lon dimensions
+    data.latitude.attrs['standard_name'] = gridded_data.latitude.standard_name
+    data.latitude.attrs['units'] = str(gridded_data.latitude.units)
+
+    data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
+    data.longitude.attrs['units'] = str(gridded_data.longitude.units)
+
     if col_freq != str(ts_type):
         data = data.resample_time(to_ts_type=ts_type,
                                   colocate_time=colocate_time,
@@ -989,13 +996,13 @@ if __name__=='__main__':
     plt.close('all')
 
     #obsdata = pya.io.ReadGhost('GHOST.hourly').read('concpm25')
-    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily',
-                                          'od550aer')
+    obsdata = pya.io.ReadGridded('FMI-SAT-MERGED11').read_var('od550aer',
+                                                              start=2010)
     model_id='ECMWF_CAMS_REAN'
 
     mr = pya.io.ReadGridded(model_id)
     modeldata = mr.read_var('od550aer', start=2010)
 
-    coldata = colocate_gridded_ungridded(modeldata, obsdata)
+    coldata = colocate_gridded_gridded(modeldata, obsdata)
 
     coldata.plot_scatter(loglog=True)
