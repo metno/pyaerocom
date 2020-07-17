@@ -13,7 +13,7 @@ dependencies:
   - seaborn >= 0.8.0
   - netcdf4
   - geonum
-  - numpy
+  - numpy=1.17.5 # TEMPORARY FIX FROM 17.07.2020 SINCE SOMETHING BREAKS WITH numpy 1.19.0 (see #176)
   - simplejson
   - pytest
   - requests
