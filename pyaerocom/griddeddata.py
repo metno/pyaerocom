@@ -506,12 +506,6 @@ class GriddedData(object):
         t = t.astype(dtype_appr) + np.timedelta64(1, freq)
         t = t.astype('datetime64[us]') - np.timedelta64(1,'us')
         return t
-# =============================================================================
-#         except Exception:
-#             logger.exception('Failed to round start time {} to beggining of '
-#                              'frequency {}'.format(t, self.ts_type))
-#             return t.astype('datetime64[us]')
-# =============================================================================
 
     @property
     def cube(self):
