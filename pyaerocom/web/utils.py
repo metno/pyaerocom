@@ -203,6 +203,32 @@ def compute_model_average_and_diversity(cfg, var_name,
                                      models_failed=models_failed,
                                      comment=comment))
 
+    commentq1 =  comment + '(First Quartile)'
+    per25 = GriddedData(numpy_to_cube(q1,
+                                     dims=dims,
+                                     var_name='{}q1'.format(var_name),
+                                     units=data.unit,
+                                     ts_type=ts_type,
+                                     data_id=data_id,
+                                     from_files=from_files,
+                                     from_models=from_models,
+                                     from_vars=from_vars,
+                                     models_failed=models_failed,
+                                     comment=commentq1))
+
+    commentq3 =  comment + '(Third Quartile)'
+    per75 = GriddedData(numpy_to_cube(q3,
+                                     dims=dims,
+                                     var_name='{}q1'.format(var_name),
+                                     units=data.unit,
+                                     ts_type=ts_type,
+                                     data_id=data_id,
+                                     from_files=from_files,
+                                     from_models=from_models,
+                                     from_vars=from_vars,
+                                     models_failed=models_failed,
+                                     comment=commentq3))
+
     comment += ' Diversity field in units of %'
 
     delta = GriddedData(numpy_to_cube(diversity,
@@ -217,4 +243,4 @@ def compute_model_average_and_diversity(cfg, var_name,
                                       models_failed=models_failed,
                                       comment=comment))
 
-    return (mean, delta)
+    return (mean, delta, per25, per75)
