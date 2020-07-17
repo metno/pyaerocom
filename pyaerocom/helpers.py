@@ -1367,7 +1367,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
             raise ValueError('unsupported time units')
 
         basedate = np.datetime64(basedate)
-        dt = np.asarray(np.asarray(times), dtype="timedelta64[%s]" %tstr)
+        dt = np.asarray(np.asarray(times), dtype='timedelta64[{}]'.format(tstr))
         return basedate + dt
     else:
         return np.asarray([np.datetime64(t) for t in cfunit.num2date(times)])
