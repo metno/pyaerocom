@@ -219,7 +219,7 @@ def compute_model_average_and_diversity(cfg, var_name,
     commentq3 =  comment + '(Third Quartile)'
     per75 = GriddedData(numpy_to_cube(q3,
                                      dims=dims,
-                                     var_name='{}q1'.format(var_name),
+                                     var_name='{}q3'.format(var_name),
                                      units=data.unit,
                                      ts_type=ts_type,
                                      data_id=data_id,
