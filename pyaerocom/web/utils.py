@@ -177,6 +177,7 @@ def compute_model_average_and_diversity(cfg, var_name,
 
     dims = [data.time, dummy.coord('latitude'), dummy.coord('longitude')]
     avg = avg_fun(loaded, axis=0)
+    q1, q3 = None, None
     if avg_how == 'mean':
         diversity = np.std(np.asarray(loaded) / avg, axis=0) * 100
     else:
@@ -203,33 +204,7 @@ def compute_model_average_and_diversity(cfg, var_name,
                                      models_failed=models_failed,
                                      comment=comment))
 
-    commentq1 =  comment + '(First Quartile)'
-    per25 = GriddedData(numpy_to_cube(q1,
-                                     dims=dims,
-                                     var_name='{}q1'.format(var_name),
-                                     units=data.unit,
-                                     ts_type=ts_type,
-                                     data_id=data_id,
-                                     from_files=from_files,
-                                     from_models=from_models,
-                                     from_vars=from_vars,
-                                     models_failed=models_failed,
-                                     comment=commentq1))
-
-    commentq3 =  comment + '(Third Quartile)'
-    per75 = GriddedData(numpy_to_cube(q3,
-                                     dims=dims,
-                                     var_name='{}q3'.format(var_name),
-                                     units=data.unit,
-                                     ts_type=ts_type,
-                                     data_id=data_id,
-                                     from_files=from_files,
-                                     from_models=from_models,
-                                     from_vars=from_vars,
-                                     models_failed=models_failed,
-                                     comment=commentq3))
-
-    comment += ' Diversity field in units of %'
+    commentdiv = comment + ' Diversity field in units of % (IQR for median, std for mean)'
 
     delta = GriddedData(numpy_to_cube(diversity,
                                       dims=dims,
@@ -241,6 +216,35 @@ def compute_model_average_and_diversity(cfg, var_name,
                                       from_models=from_models,
                                       from_vars=from_vars,
                                       models_failed=models_failed,
-                                      comment=comment))
+                                      comment=commentdiv))
+
+    if q1 is not None: # then also q3 is not None
+        commentq1 =  comment + ' First Quantile.'
+        per25 = GriddedData(numpy_to_cube(q1,
+                                         dims=dims,
+                                         var_name='{}q1'.format(var_name),
+                                         units=data.unit,
+                                         ts_type=ts_type,
+                                         data_id=data_id,
+                                         from_files=from_files,
+                                         from_models=from_models,
+                                         from_vars=from_vars,
+                                         models_failed=models_failed,
+                                         comment=commentq1))
+
+        commentq3 =  comment + ' First Quantile.'
+        per75 = GriddedData(numpy_to_cube(q3,
+                                         dims=dims,
+                                         var_name='{}q3'.format(var_name),
+                                         units=data.unit,
+                                         ts_type=ts_type,
+                                         data_id=data_id,
+                                         from_files=from_files,
+                                         from_models=from_models,
+                                         from_vars=from_vars,
+                                         models_failed=models_failed,
+                                         comment=commentq3))
+    else:
+        per25, per75 = None, None
 
     return (mean, delta, per25, per75)
