@@ -287,6 +287,27 @@ def get_json_mapname(obs_name, obs_var, model_name, model_var,
             .format(obs_name, obs_var, vert_code, model_name, model_var))
 
 def _write_stationdata_json(ts_data, out_dirs):
+    """
+    This method writes time series data given in a dictionary to .json files
+
+    Parameters
+    ----------
+    ts_data : dict
+        A dictionary containing all processed time series data.
+    out_dirs : list?
+        list of file paths for writing data to
+
+    Raises
+    ------
+    Exception
+        Raised if opening json file fails
+
+    Returns
+    -------
+    None.
+
+
+    """
     filename = get_stationfile_name(ts_data['station_name'],
                                     ts_data['web_iface_name'],
                                     ts_data['obs_var'],
@@ -307,6 +328,27 @@ def _write_stationdata_json(ts_data, out_dirs):
         simplejson.dump(current, f, ignore_nan=True)
         
 def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
+    """
+    Minor modification of method _write_stationdata_json to allow a further
+    level of sub-directories
+
+    Parameters
+    ----------
+    ts_data : dict
+        A dictionary containing all processed time series data.
+    out_dirs : list?
+        list of file paths for writing data to
+
+    Raises
+    ------
+    Exception
+        Raised if opening json file fails
+
+    Returns
+    -------
+    None.
+
+    """
     filename = get_stationfile_name(ts_data['station_name'], 
                                     ts_data['web_iface_name'],
                                     ts_data['obs_var'],
@@ -487,32 +529,45 @@ def _init_ts_data():
         yearly_mod = []
         )
 
-def _create_diurnal_weekly_data_object(data,resolution):
+def _create_diurnal_weekly_data_object(coldata,resolution):
+    """
+    Private helper functions that creates the data set containing all the
+    weekly time series at the specified resolution. Called by 
+    _process_sites_weekly_ts. The returned xarray.Dataset contains a dummy time
+    variable (currently not used) and the weekly time series as xarray.DataArray
+    objects.
+
+    Parameters
+    ----------
+    coldata : ColocatedData
+        ColocatedData object colocated on hourly resolution.
+    resolution : string
+        String specifying the averaging window used to generate representative
+        weekly time series with hourly resolution. Valid values are 'yearly' 
+        and  'seasonal'.
+
+    Raises
+    ------
+    ValueError
+        If an invalid resolution is given raise ValueError and print what 
+        was given.
+
+    Returns
+    -------
+    rep_week_full_period : xarray.Dataset
+        Contains the weekly time series as the variable 'rep_week'
+        
+
+    """
     import xarray as xr
-    if resolution == 'monthly':
-        b1 = 0
-        b2 = 0
-        step =1
-    elif resolution == 'bimonthly':
-        b1 = 0
-        b2 = 1
-        step = 2
-    elif resolution == 'seasonal':
-        b1 = 0
-        b2 = 2
-        step = 3
+    data = coldata.data
+    if resolution == 'seasonal':
         seasons = ['DJF','MAM','JJA','SON']
     elif resolution == 'yearly':
-        b1 = 0
-        b2 = 11
-        step = 11
         seasons = ['year']
     else:
         raise ValueError(f'Invalid resolution. Got {resolution}.')
 
-    min_month = data['time.month'].values.min()
-    max_month = data['time.month'].values.max()
-    months = range(min_month,max_month+1)
     first_pass = True
     for seas in seasons:
     #for i,j in zip(months[b1::step], months[b2::step]):
@@ -521,10 +576,8 @@ def _create_diurnal_weekly_data_object(data,resolution):
             mon_slice = data.where(data['time.season']==seas,drop=True)
         elif resolution == 'yearly':
             mon_slice = data
-        else:
-            raise NotImplementedError(f'Functionality currently not implemented for resolution {resolution}')
-        # mon_slice = data.where((data['time.month']>=i)&(data['time.month']<=j),drop=True)
-        month_stamp = f'seas'
+
+        month_stamp = f'{seas}'
         
         for day in range(7):
             day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
@@ -548,34 +601,33 @@ def _create_diurnal_weekly_data_object(data,resolution):
             rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
     return rep_week_full_period
 
-def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
-    #import xarray as xr
-    data = coldata.data
+def _get_period_keys(resolution):
+    if resolution == 'seasonal':
+        period_keys = ['DJF','MAM','JJA','SON']
+    elif resolution == 'yearly':
+        period_keys = ['Annual']
+    return period_keys
+
+def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
+    """
+    Process the xarray.Datasets objects returned by _create_diurnal_weekly_data_object
+    into a dictionary containing station time series data and metadata.
+
+    Parameters
+    ----------
+    repw_res : dict
+        Dictionary of xarray.Datasets for each supported averaging window for
+        the weekly time series
+    meta_glob : dict
+        Dictionary containing global metadata.
+
+    Returns
+    -------
+    ts_objs : dict
+        Dictionary containing station time series data and metadata.
+
+    """
     ts_objs = []
-    
-    if isinstance(coldata, ColocatedData):
-        _check_flatten_latlon_dims(coldata)
-        assert coldata.dims == ('data_source', 'time', 'station_name')
-
-    # rep_week_monthly = _create_diurnal_weekly_data_object(data, 'monthly')
-    # rep_week_seasonal = _create_diurnal_weekly_data_object(data, 'seasonal')
-
-    repw_res = {'seasonal':_create_diurnal_weekly_data_object(data, 'seasonal')['rep_week'],
-                'yearly':_create_diurnal_weekly_data_object(data, 'yearly')['rep_week'].expand_dims('period',axis=0),}
-
-    default_regs = get_all_default_regions(use_all_in_ini=False)
-
-
-    lats = repw_res['seasonal'].latitude.values.astype(np.float64)
-    lons = repw_res['seasonal'].longitude.values.astype(np.float64)
-    
-    if 'altitude' in repw_res['seasonal'].coords:
-        alts = repw_res['seasonal'].altitude.values.astype(np.float64)
-    else:
-        alts = [np.nan]*len(lats)
-    
-    if regions_how == 'country':
-        countries = repw_res['seasonal'].country.values
     dc = 0
     time = (np.arange(168)/24+1).round(4).tolist()
     for i, stat_name in enumerate(repw_res['seasonal'].station_name.values):
@@ -584,21 +636,16 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
         ts_data['station_name'] = stat_name
         ts_data.update(meta_glob)
     
-        stat_lat = lats[i]
-        stat_lon = lons[i]
-        stat_alt = alts[i]
+        # stat_lat = lats[i]
+        # stat_lon = lons[i]
+        # stat_alt = alts[i]
         
-        if regions_how == 'default':
-            region = find_closest_region_coord(stat_lat, stat_lon,
-                                               default_regs=default_regs)
-        elif regions_how == 'country':
-            region = countries[i]
-            
-        # map_stat = {'site'      : stat_name, 
-        #             'lat'       : stat_lat, 
-        #             'lon'       : stat_lon,
-        #             'alt'       : stat_alt,
-        #             'region'    : region}
+        # if regions_how == 'default':
+        #     region = find_closest_region_coord(stat_lat, stat_lon,
+        #                                        default_regs=default_regs)
+        # elif regions_how == 'country':
+        #     region = countries[i]
+
 
         for res,repw in repw_res.items():
             obs_vals = repw[:,0, :, i]
@@ -606,23 +653,8 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
                 continue
             has_data = True
             mod_vals = repw[:,1, :, i]
-            
-            # timestamps = []
-            # for k,l in zip(rep_week_full_period['month_stamp'].values,repw['dummy_time'].values.round(2)):
-            #     months = k.split('-')
-            #     start_month = months[0]
-            #     stop_month = months[1]
-            #     timestamp = start_month.zfill(2)+stop_month.zfill(2)+f'{l}'
-            #     timestamps.append(timestamp)
-            #     # timestamp = f'{i}'.replace('-','')+f'{j}'
-            if res == 'monthly':
-                period_keys = ['01','02','03','04','05','06','07','08','09','10','11','12']
-            elif res == 'bimonthly':
-                period_keys = ['JF','MA','MJ','JA','SO','ND']
-            elif res == 'seasonal':
-                period_keys = ['DJF','MAM','JJA','SON']
-            elif res == 'yearly':
-                period_keys = ['Annual']
+
+            period_keys = _get_period_keys(res)
             for p,pk in enumerate(period_keys):
                 ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
                 ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
@@ -630,8 +662,32 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
         if has_data:
             ts_objs.append(ts_data)
             dc +=1
+    return ts_objs
+
+def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how,region_ids):
+    """
+    Process the xarray.Dataset objects returned by _create_diurnal_weekly_data_object
+    into a dictionary containing country average time series data and metadata.
+
+    Parameters
+    ----------
+    repw_res : dict
+        DESCRIPTION.
+    meta_glob : dict
+        DESCRIPTION.
+    regions_how : string
+        DESCRIPTION.
+    region_ids : list?
+        DESCRIPTION.
+
+    Returns
+    -------
+    ts_objs_reg : dict
+        DESCRIPTION.
+
+    """
     ts_objs_reg = []
-    check_countries = True if regions_how=='country' else False
+    time = (np.arange(168)/24+1).round(4).tolist()
 
     if regions_how != 'country':
         print('Regional diurnal cycles are only implemented for country regions, skipping...')
@@ -654,19 +710,73 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
                 avg = subset.mean(dim='station_name')
                 obs_vals = avg[:,0,:]
                 mod_vals = avg[:,1,:]
-                if res == 'monthly':
-                    period_keys = ['01','02','03','04','05','06','07','08','09','10','11','12']
-                elif res == 'bimonthly':
-                    period_keys = ['JF','MA','MJ','JA','SO','ND']
-                elif res == 'seasonal':
-                    period_keys = ['DJF','MAM','JJA','SON']
-                elif res == 'yearly':
-                    period_keys = ['Annual']
+
+                period_keys = _get_period_keys(res)
                 for p,pk in enumerate(period_keys):
                     ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
                     ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
     
             ts_objs_reg.append(ts_data)
+    return ts_objs_reg
+
+def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
+    """
+    Private helper function to process ColocatedData objects into dictionaries
+    containing represenative weekly time series with hourly resolution. 
+
+    Processing the coloceted data object into a collection of representative 
+    weekly time series is done in the private function _create_diurnal_weekly_data_object.
+    This object (an xarray.Dataset) is then further processed into two dictionaries
+    containing station and regional time series respectively.
+
+    Parameters
+    ----------
+    coldata : ColocatedData
+        The colocated data to process.
+    regions_how : string
+        Srting describing how regions are to be processed. Regional time series
+        are only calculated if regions_how = country.
+    region_ids : list?
+        List of regional IDs.
+    meta_glob : dict
+        Dictionary containing global metadata.
+
+    Returns
+    -------
+    ts_objs : dict
+        Dictionary containing station time series data and metadata
+    ts_objs_reg : dict
+        Dictionary containing regional time series data and metadata
+
+    """
+
+    if isinstance(coldata, ColocatedData):
+        _check_flatten_latlon_dims(coldata)
+        assert coldata.dims == ('data_source', 'time', 'station_name')
+
+    repw_res = {'seasonal':_create_diurnal_weekly_data_object(coldata, 'seasonal')['rep_week'],
+                'yearly':_create_diurnal_weekly_data_object(coldata, 'yearly')['rep_week'].expand_dims('period',axis=0),}
+
+    default_regs = get_all_default_regions(use_all_in_ini=False)
+
+
+    lats = repw_res['seasonal'].latitude.values.astype(np.float64)
+    lons = repw_res['seasonal'].longitude.values.astype(np.float64)
+    
+    if 'altitude' in repw_res['seasonal'].coords:
+        alts = repw_res['seasonal'].altitude.values.astype(np.float64)
+    else:
+        alts = [np.nan]*len(lats)
+    
+    if regions_how == 'country':
+        countries = repw_res['seasonal'].country.values
+
+    ts_objs = _process_weekly_object_to_station_time_series(repw_res,meta_glob)
+    ts_objs_reg = _process_weekly_object_to_country_time_series(repw_res,
+                                                                meta_glob,
+                                                                regions_how,
+                                                                region_ids)
+
     return ts_objs,ts_objs_reg
 
 def _process_sites(data, jsdate, regions_how, meta_glob):

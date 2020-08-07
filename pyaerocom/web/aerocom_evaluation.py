@@ -518,6 +518,29 @@ class AerocomEvaluation(object):
 #         return make_regions_json()
 # =============================================================================
     def get_diurnal_only(self,obs_name,colocated_data):
+        """
+
+        Parameters
+        ----------
+        obs_name : string
+            Name of observational subset
+        colocated_data : ColocatedData
+            A ColocatedData object that will be checked for the presence of
+            parameter 'diurnal_only'.
+
+        Raises
+        ------
+        ValueError
+            Raised if colocated_data has 'diurnal_only' set, but it is not a boolean
+        NotImplementedError
+            Raised if colocated_data has ts_type != 'hourly'
+
+        Returns
+        -------
+        diurnal_only : bool
+            
+
+        """
         try:
             diurnal_only = self.obs_config[obs_name]['diurnal_only']
         except:
