@@ -568,7 +568,7 @@ def _create_diurnal_weekly_data_object(coldata,resolution):
     else:
         raise ValueError(f'Invalid resolution. Got {resolution}.')
 
-    first_pass = True
+
     for seas in seasons:
     #for i,j in zip(months[b1::step], months[b2::step]):
         rep_week_ds = xr.Dataset()
@@ -593,9 +593,8 @@ def _create_diurnal_weekly_data_object(coldata,resolution):
         month_stamps[:] = month_stamp
         rep_week_ds['rep_week']=rep_week
         rep_week_ds['month_stamp'] = (('dummy_time'),month_stamps)
-        
-        if first_pass:
-            first_pass = False
+
+        if seas in ['DJF','year']:
             rep_week_full_period = rep_week_ds
         else:
             rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
@@ -607,6 +606,53 @@ def _get_period_keys(resolution):
     elif resolution == 'yearly':
         period_keys = ['Annual']
     return period_keys
+
+def _process_one_station_weekly(stat_name, i,repw_res, meta_glob, time):
+    """
+    Processes one station data set for all supported averaging windows into a
+    dict of station time series data and metadata.
+
+    Parameters
+    ----------
+    stat_name : string
+        Name of station to process
+    i : int
+        Index of the station to process in the xarray.Datasets.
+    repw_res : dict
+        Dictionary of xarray.Datasets for each supported averaging window for
+        the weekly time series
+    meta_glob : TYPE
+        Dictionary containing global metadata.
+    time : list
+        Time index.
+
+    Returns
+    -------
+    ts_data : dict
+        Dictinary of time series data and metadata for one station. Contains all
+        resolutions/averaging windows.
+    has_data : bool
+        Set to false if all data is missing for a station.
+
+    """
+    has_data = False
+    ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
+    ts_data['station_name'] = stat_name
+    ts_data.update(meta_glob)
+
+
+    for res,repw in repw_res.items():
+        obs_vals = repw[:,0, :, i]
+        if (np.isnan(obs_vals)).all().values:
+            continue
+        has_data = True
+        mod_vals = repw[:,1, :, i]
+
+        period_keys = _get_period_keys(res)
+        for period_num,pk in enumerate(period_keys):
+            ts_data[res]['obs'][pk] = obs_vals.sel(period=period_num).values.tolist()
+            ts_data[res]['mod'][pk] = mod_vals.sel(period=period_num).values.tolist()
+    return ts_data, has_data
 
 def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
     """
@@ -623,42 +669,17 @@ def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
 
     Returns
     -------
-    ts_objs : dict
-        Dictionary containing station time series data and metadata.
+    ts_objs : list
+        List of dicts containing station time series data and metadata.
 
     """
     ts_objs = []
     dc = 0
     time = (np.arange(168)/24+1).round(4).tolist()
     for i, stat_name in enumerate(repw_res['seasonal'].station_name.values):
-        has_data = False
-        ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
-        ts_data['station_name'] = stat_name
-        ts_data.update(meta_glob)
-    
-        # stat_lat = lats[i]
-        # stat_lon = lons[i]
-        # stat_alt = alts[i]
-        
-        # if regions_how == 'default':
-        #     region = find_closest_region_coord(stat_lat, stat_lon,
-        #                                        default_regs=default_regs)
-        # elif regions_how == 'country':
-        #     region = countries[i]
+        ts_data, has_data = _process_one_station_weekly(stat_name, i, repw_res,
+                                                        meta_glob, time)
 
-
-        for res,repw in repw_res.items():
-            obs_vals = repw[:,0, :, i]
-            if (np.isnan(obs_vals)).all().values:
-                continue
-            has_data = True
-            mod_vals = repw[:,1, :, i]
-
-            period_keys = _get_period_keys(res)
-            for p,pk in enumerate(period_keys):
-                ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
-                ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
-            
         if has_data:
             ts_objs.append(ts_data)
             dc +=1
@@ -672,18 +693,20 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how
     Parameters
     ----------
     repw_res : dict
-        DESCRIPTION.
+        Dictionary of xarray.Datasets for each supported averaging window for
+        the weekly time series
     meta_glob : dict
-        DESCRIPTION.
+        Dictionary containing global metadata.
     regions_how : string
-        DESCRIPTION.
+        String describing how regions are to be processed. Regional time series
+        are only calculated if regions_how = country.
     region_ids : list?
-        DESCRIPTION.
+        List of regional IDs
 
     Returns
     -------
-    ts_objs_reg : dict
-        DESCRIPTION.
+    ts_objs_reg : list
+        List of dicts containing station time series data and metadata.
 
     """
     ts_objs_reg = []
@@ -712,9 +735,9 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how
                 mod_vals = avg[:,1,:]
 
                 period_keys = _get_period_keys(res)
-                for p,pk in enumerate(period_keys):
-                    ts_data[res]['obs'][f'{pk}'] = obs_vals.sel(period=p).values.tolist()
-                    ts_data[res]['mod'][f'{pk}'] = mod_vals.sel(period=p).values.tolist()
+                for period_num,pk in enumerate(period_keys):
+                    ts_data[res]['obs'][pk] = obs_vals.sel(period=period_num).values.tolist()
+                    ts_data[res]['mod'][pk] = mod_vals.sel(period=period_num).values.tolist()
     
             ts_objs_reg.append(ts_data)
     return ts_objs_reg
@@ -743,10 +766,10 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
 
     Returns
     -------
-    ts_objs : dict
-        Dictionary containing station time series data and metadata
-    ts_objs_reg : dict
-        Dictionary containing regional time series data and metadata
+    ts_objs : list
+        List of dicts containing station time series data and metadata.
+    ts_objs_reg : list
+        List of dicts containing country time series data and metadata.
 
     """
 
