@@ -137,6 +137,7 @@ class ReadGridded(object):
                     'dryoa'         : ('drypoa', 'drysoa'),
                     'conc*'         : ('mmr*', 'rho'),
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
+                    'concox'        : ('concno2', 'conco3')
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
@@ -151,6 +152,7 @@ class ReadGridded(object):
                 'dryoa'        :    add_cubes,
                 'sc550dryaer'  :    subtract_cubes,
                 'conc*'        :    multiply_cubes,
+                'concox'       :    add_cubes,
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
@@ -159,7 +161,8 @@ class ReadGridded(object):
 
     VERT_ALT = {'Surface' : 'ModelLevel'}
 
-    def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3",
+    def __init__(self, data_id=None, data_dir=None,
+                 file_convention="aerocom3",
                  init=True):
 
         self._data_dir = None
