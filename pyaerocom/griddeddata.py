@@ -14,7 +14,7 @@ from pathlib import Path
 
 from pyaerocom import const, logger, print_log
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
-
+from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
                                   DataExtractionError,
@@ -485,12 +485,16 @@ class GriddedData(object):
             raise ValueError('GriddedData has no time dimension')
         t = cftime_to_datetime64(self.time[0])[0]
 
-        try:
-            dtype_appr = 'datetime64[{}]'.format(TS_TYPE_TO_NUMPY_FREQ[self.ts_type])
-            t=t.astype(dtype_appr)
-        except Exception:
-            logger.exception('Failed to round start time {} to beginning of '
-                             'frequency {}'.format(t, self.ts_type))
+        #try:
+        # ToDo: check if this is needed
+        np_freq = TsType(self.ts_type).to_numpy_freq() #TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
+        dtype_appr = 'datetime64[{}]'.format(np_freq)
+        t=t.astype(dtype_appr)
+# =============================================================================
+#         except Exception:
+#             logger.exception('Failed to round start time {} to beginning of '
+#                              'frequency {}'.format(t, self.ts_type))
+# =============================================================================
         return t.astype('datetime64[us]')
 
     @property
@@ -499,11 +503,11 @@ class GriddedData(object):
         if not self.has_time_dim:
             raise ValueError('GriddedData has no time dimension')
         t = cftime_to_datetime64(self.time[-1])[0]
-        #try:
-        freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
-        dtype_appr = 'datetime64[{}]'.format(freq)
 
-        t = t.astype(dtype_appr) + np.timedelta64(1, freq)
+        np_freq = TsType(self.ts_type).to_numpy_freq() #TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
+        dtype_appr = 'datetime64[{}]'.format(np_freq)
+
+        t = t.astype(dtype_appr) + np.timedelta64(1, np_freq)
         t = t.astype('datetime64[us]') - np.timedelta64(1,'us')
         return t
 
@@ -1526,7 +1530,7 @@ class GriddedData(object):
             if input resolution is not provided, or if it is higher temporal
             resolution than this object
         """
-        from pyaerocom.tstype import TsType
+        #from pyaerocom.tstype import TsType
 
         to = TsType(to_ts_type)
         current = TsType(self.ts_type)
