@@ -98,7 +98,7 @@ class TestReadEBAS(object):
                          'test']
 
     def test_DATA_ID(self, reader):
-        assert reader.DATA_ID == const.EBAS_MULTICOLUMN_NAME
+        assert reader.data_id == const.EBAS_MULTICOLUMN_NAME
 
     def test_FILE_SUBDIR_NAME(self, reader):
         assert reader.FILE_SUBDIR_NAME == 'data'
