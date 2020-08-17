@@ -51,7 +51,7 @@ def varlist_aerocom(varlist):
             if not _var in output:
                 output.append(_var)
         except VariableDefinitionError as e:
-            const.print_log.warn(repr(e))
+            const.print_log.warning(repr(e))
     if len(output) == 0:
         raise ValueError('None of the input variables appears to be valid')
     return output
@@ -466,7 +466,7 @@ def get_standard_unit(var_name):
         corresponding standard unit
     """
     from pyaerocom import const
-    return const.VARS[var_name].unit
+    return const.VARS[var_name].units
 
 def get_lowest_resolution(ts_type, *ts_types):
     """Get the lowest resolution from several ts_type codes
@@ -1317,7 +1317,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
             raise ValueError('unsupported time units')
 
         basedate = np.datetime64(basedate)
-        dt = np.asarray(np.asarray(times), dtype="timedelta64[%s]" %tstr)
+        dt = np.asarray(np.asarray(times), dtype='timedelta64[{}]'.format(tstr))
         return basedate + dt
     else:
         return np.asarray([np.datetime64(t) for t in cfunit.num2date(times)])

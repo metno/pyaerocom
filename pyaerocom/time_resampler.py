@@ -58,14 +58,14 @@ class TimeResampler(object):
                                  'min_num_obs is numeric ({}) and input how '
                                  'is {} (would need to be string, e.g. mean)'
                                  .format(min_num_obs, how))
-            return [(to_ts_type.val, int(min_num_obs))]
+            return [(to_ts_type.val, int(min_num_obs), how)]
         if not isinstance(min_num_obs, dict):
             raise ValueError('Invalid input for min_num_obs, need dictionary '
                              'or integer, got {}'.format(min_num_obs))
         valid = self.valid_base_ts_types
         from_mul = from_ts_type.mulfac
         if from_mul != 1:
-            const.print_log.warn('Ignoring multiplication factor {} in '
+            const.print_log.warning('Ignoring multiplication factor {} in '
                                  'data with resolution {} in resampling method'
                                  .format(from_mul, from_ts_type))
         start = valid.index(from_ts_type.base)

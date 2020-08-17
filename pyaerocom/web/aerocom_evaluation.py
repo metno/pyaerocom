@@ -4,12 +4,13 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
+from traceback import format_exc
 import simplejson
 
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
-from pyaerocom.region import Region, get_all_default_region_ids
+#from pyaerocom.region import Region, get_all_default_region_ids
 
 from pyaerocom.io.helpers import save_dict_json
 
@@ -215,7 +216,7 @@ class AerocomEvaluation(object):
         if len(settings)==0 and try_load_json and proj_id is not None:
             try:
                 self.load_config(self.proj_id, self.exp_id, config_dir)
-                const.print_log.warn('Found and imported config file for {} / {}'
+                const.print_log.warning('Found and imported config file for {} / {}'
                                      .format(self.proj_id, self.exp_id))
             except Exception:
                 pass
@@ -381,12 +382,12 @@ class AerocomEvaluation(object):
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 if key in self.obs_config:
-                    self._log.warn('Obs config for key {}  already exists and '
+                    self._log.warning('Obs config for key {}  already exists and '
                                    'will be overwritten {}'.format(key))
                 self.obs_config[key] = ObsConfigEval(**val)
             elif 'model_id' in val:
                 if key in self.model_config:
-                    self._log.warn('Model config for key {}  already exists and '
+                    self._log.warning('Model config for key {}  already exists and '
                                    'will be overwritten {}'.format(key))
                 self.model_config[key] = ModelConfigEval(**val)
             else:
@@ -550,10 +551,22 @@ class AerocomEvaluation(object):
                     monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY))
 
     def update_heatmap_json(self):
+        """
+        Synchronise content of heatmap json files with content of menu.json
+
+        Missing hea
+
+        Raises
+        ------
+        ValueError
+            if this experiment (:attr:`exp_id`) is not registered in menu.json
+        """
         for freq, fp in self._heatmap_files.items():
             if not os.path.exists(fp):
-                raise FileNotFoundError(fp)
-
+                #raise FileNotFoundError(fp)
+                const.print_log.warning('Skipping heatmap file {} (for {} freq). '
+                                        'File does not exist'.format(fp, freq))
+                continue
             with open(self.menu_file, 'r') as f:
                 menu = simplejson.load(f)
             with open(fp, 'r') as f:
@@ -1045,7 +1058,9 @@ class AerocomEvaluation(object):
         col.update(**self.colocation_settings)
         col.update(**self.get_model_config(model_name))
         #col.update(**kwargs)
+
         data = col.read_model_data(var_name, **kwargs)
+
         return data
 
     def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
@@ -1205,13 +1220,16 @@ class AerocomEvaluation(object):
              vert_code,
              mod_name, mod_var) = self._info_from_map_file(file)
             remove=False
-            obs_vars = self._get_valid_obs_vars(obs_name)
 
-            if not (obs_name in self.obs_config and
-                    mod_name in self.model_config and
-                    obs_var in obs_vars):
+            if not obs_name in self.obs_config:
+                # Obs dataset was removed
                 remove = True
-            if mod_name in self.model_config:
+            elif not mod_name in self.model_config:
+                # Model dataset was removed
+                remove = True
+            elif not obs_var in self._get_valid_obs_vars(obs_name):
+                remove = True
+            else:
                 mcfg = self.model_config[mod_name]
                 if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
                     if not mod_var == mcfg['model_use_vars'][obs_var]:

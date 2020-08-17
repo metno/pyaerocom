@@ -1109,6 +1109,4 @@ class Config(object):
 if __name__=="__main__":
     import pyaerocom as pya
     #print(pya.const)
-    print(pya.const.LOCAL_TMP_DIR)
-
-    pya.browse_datab
+    print(pya.const.has_access_lustre)

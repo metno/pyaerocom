@@ -222,6 +222,9 @@ class ColocatedData(object):
                                      'in 4D data object, which contains the '
                                      'following dimensions: {}'.self.data.dims)
             return len(self.data.longitude) * len(self.data.latitude)
+        elif not self.has_time_dim:
+            if self.has_latlon_dims:
+                return np.prod(self.data[0].shape)
         raise DataDimensionError('Could not infer number of coordinates')
 
     @property
@@ -234,8 +237,15 @@ class ColocatedData(object):
         """
         if not self.check_dimensions():
             raise DataDimensionError('Invalid dimensionality...')
+        if self.has_time_dim:
+            return (self.data[0].count(dim='time') > 0).data.sum()
+        # TODO: ADDED IN A RUSH BY JGLISS ON 17.06.2020, check!
+        return (self.data[0].count() > 0).data.sum()
 
-        return (self.data[0].count(dim='time') > 0).data.sum()
+    @property
+    def has_time_dim(self):
+        """Boolean specifying whether data has a time dimension"""
+        return True if 'time' in self.dims else False
 
     @property
     def has_latlon_dims(self):
@@ -350,13 +360,21 @@ class ColocatedData(object):
         return self.data.max()
 
     def check_dimensions(self):
-        """Checks if data source and time dimension are at the right index"""
+        """Checks if data source and time dimension are at the right index
+
+        ToDo
+        ----
+        Check if this is needed. Little cumbersome at the moment, the data
+        object can / should be more flexible! Should
+        """
         dims = self.data.dims
         if not 2 < len(dims) < 5:
             logger.info('Invalid number of dimensions. Must be 3 or 4')
             return False
         try:
-            if dims.index('data_source') == 0 and dims.index('time') == 1:
+            if dims.index('data_source') == 0:
+                if 'time' in dims and dims.index('time') == 1:
+                    return True
                 return True
             raise Exception
         except Exception:
@@ -662,14 +680,22 @@ class ColocatedData(object):
             kwargs['lowlim'] = var.lower_limit
             kwargs['highlim'] = var.upper_limit
 
-        if use_area_weights and self.has_latlon_dims:
-            weights = self.area_weights[0].flatten()
-        else:
-            weights = None
+        if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
+# =============================================================================
+#                 raise DataDimensionError('Cannot calculate statistics with '
+#                                          'area weights. Data needs to have '
+#                                          'latitude / longitude dimension.')
+# =============================================================================
+
+            kwargs['weights'] = self.area_weights[0].flatten()
+        elif 'weights' in kwargs:
+            raise ValueError('Invalid input combination: weights are provided '
+                             'but use_area_weights is set to False...')
+
 
         stats = calc_statistics(self.data.values[1].flatten(),
                                 self.data.values[0].flatten(),
-                                weights=weights, **kwargs)
+                                **kwargs)
 
         stats['num_coords_with_data'] = self.num_coords_with_data
         stats['num_coords_tot'] = self.num_coords
@@ -1150,9 +1176,11 @@ class ColocatedData(object):
             lat_range = reg.lat_range
             region_id = reg.name
 
-        if any(x is None for x in (lon_range, lat_range)):
-            raise ValueError('Need either lon_range or lat_range or valid '
-                             'region_id')
+# =============================================================================
+#         if any(x is None for x in (lon_range, lat_range)):
+#             raise ValueError('Need either lon_range or lat_range or valid '
+#                              'region_id')
+# =============================================================================
         if lon_range is None:
             lon_range = [-180, 180]
         if lat_range is None:
@@ -1333,7 +1361,7 @@ class ColocatedData(object):
     @property
     def unit(self):
         """Unit of data"""
-        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+        const.print_log.warning(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         return self.units
 

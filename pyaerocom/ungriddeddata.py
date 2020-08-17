@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 from collections import OrderedDict as od
 import fnmatch
+import os
 import pandas as pd
 from pyaerocom import const
 logger = const.logger
@@ -850,7 +851,7 @@ class UngriddedData(object):
 
             vals = subset[:, self._DATAINDEX]
             if np.all(np.isnan(vals)):
-                logger.warn('Ignoring station {}, var {} ({}):'
+                logger.warning('Ignoring station {}, var {} ({}):'
                             'All values are NaN'
                             .format(sd['station_name'], var, sd['data_id']))
                 continue
@@ -1342,7 +1343,7 @@ class UngriddedData(object):
                     try:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
-                        const.print_log.warn('Ignoring variable {} in '
+                        const.print_log.warning('Ignoring variable {} in '
                                              'meta block {} since no data '
                                              'could be found'.format(
                                               var, meta_idx))
@@ -2414,10 +2415,7 @@ class UngriddedData(object):
             matplotlib axes instance
 
         """
-
-        from pyaerocom import Filter
         from pyaerocom.plot.plotcoordinates import plot_coordinates
-        from pyaerocom.plot.mapping import set_map_ticks
 
         if len(self.contains_datasets) > 1:
             print_log.warning('UngriddedData object contains more than one '
@@ -2464,15 +2462,6 @@ class UngriddedData(object):
                               markersize=markersize,
                               legend=legend,
                               fontsize_base=fontsize_base, **kwargs)
-# =============================================================================
-#         region = f.region
-#         ax.set_xlim(region.lon_range_plot)
-#         ax.set_ylim(region.lat_range_plot)
-#
-#         ax = set_map_ticks(ax,
-#                            region.lon_ticks,
-#                            region.lat_ticks)
-# =============================================================================
 
         if 'title' in kwargs:
             title = kwargs['title']
@@ -2481,6 +2470,72 @@ class UngriddedData(object):
         if add_title:
             ax.set_title(title, fontsize=fontsize_base+4)
         return ax
+
+    def save_as(self, file_name, save_dir):
+        """
+        Save this object to disk
+
+        Note
+        ----
+        So far, only storage as pickled object via
+        `CacheHandlerUngridded` is supported, so input file_name must end
+        with .pkl
+
+        Parameters
+        ----------
+        file_name : str
+            name of output file
+        save_dir : str
+            name of output directory
+
+        Returns
+        -------
+        str
+            file path
+
+        """
+        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+
+        if not os.path.exists(save_dir):
+            raise FileNotFoundError('Directory does not exist: {}'.format(save_dir))
+        elif not file_name.endswith('.pkl'):
+            raise ValueError('Can only store files as pickle, file_name needs '
+                             'to have format .pkl')
+        ch = CacheHandlerUngridded()
+        return ch.write(self, var_or_file_name=file_name,
+                        cache_dir=save_dir)
+
+    @staticmethod
+    def from_cache(data_dir, file_name):
+        """
+        Load pickled instance of `UngriddedData`
+
+        Parameters
+        ----------
+        data_dir : str
+            directory where pickled object is stored
+        file_name : str
+            file name of pickled object (needs to end with pkl)
+
+        Raises
+        ------
+        ValueError
+            if loading failed
+
+        Returns
+        -------
+        UngriddedData
+            loaded UngriddedData object. If this method is called from an
+            instance of `UngriddedData`, this instance remains unchanged.
+            You may merge the returned reloaded instance using
+            :func:`merge`.
+
+        """
+        from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+        ch = CacheHandlerUngridded()
+        if ch.check_and_load(file_name, cache_dir=data_dir):
+            return ch.loaded_data[file_name]
+        raise ValueError('Failed to load UngriddedData object')
 
     def __contains__(self, key):
         """Check if input key (str) is valid dataset, variable, instrument or

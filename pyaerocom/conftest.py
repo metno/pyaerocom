@@ -8,8 +8,8 @@ Created on Tue Feb 11 15:57:09 2020
 import pytest
 
 from pathlib import Path
-
 from traceback import format_exc
+from contextlib import contextmanager
 
 from pyaerocom import const
 import pyaerocom._conftest_helpers as cth
@@ -35,6 +35,7 @@ AMES_FILE = 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.C
 ADD_PATHS = {
 
     'MODELS'                : 'modeldata',
+    'OBSERVATIONS'          : 'obsdata',
     'AeronetSunV3L2Subset.daily'  : 'obsdata/AeronetSunV3Lev2.daily/renamed',
     'AeronetSDAV3L2Subset.daily'  : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
     'AeronetInvV3L2Subset.daily'  : 'obsdata/AeronetInvV3Lev2.daily/renamed',
@@ -46,7 +47,8 @@ ADD_PATHS = {
 TEST_PATHS = {
 
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
-    'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE)
+    'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE),
+    'coldata_tm5_aeronet': 'coldata/od550aer_REF-AeronetSunV3Lev2.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
 
     }
 TEST_PATHS.update(ADD_PATHS)
@@ -125,6 +127,11 @@ def data_tm5():
     return data
 
 @pytest.fixture(scope='session')
+def coldata_tm5_aeronet():
+    fpath = TESTDATADIR.joinpath(TEST_PATHS['coldata_tm5_aeronet'])
+    return cth._load_coldata_tm5_aeronet_from_scratch(fpath)
+
+@pytest.fixture(scope='session')
 def aasetal_data():
     reader = ReadAasEtal()
     # that's quite time consuming, so keep it for possible usage in other
@@ -132,8 +139,13 @@ def aasetal_data():
     return reader.read()  # read all variables
 
 @pytest.fixture(scope='session')
-def aeronetsunv3lev2_subset():
-    r = ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
+def aeronet_sun_subset_reader():
+    reader = ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
+    return reader
+
+@pytest.fixture(scope='session')
+def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
+    r = aeronet_sun_subset_reader
     #return r.read(vars_to_retrieve=TEST_VARS)
     return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
@@ -147,6 +159,16 @@ def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
     #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
     return EbasNasaAmesFile(NASA_AMES_FILEPATHS['scatc_jfj'])
+
+@pytest.fixture(scope='session')
+def tempdir(tmpdir_factory):
+    """Temporary directory for dumping data shared between tests"""
+    tmpdir= tmpdir_factory.mktemp('data')
+    return tmpdir
+
+@contextmanager
+def does_not_raise_exception():
+    yield
 
 if __name__=="__main__":
     import sys

@@ -155,7 +155,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out.data_id = self.DATA_ID
+        data_out.data_id = self.data_id
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []
@@ -282,5 +282,5 @@ if __name__=="__main__":
 
     #file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
 
-    reader = ReadAeronetSunV3()
-    reader.read(['od550aer', 'od550csaer'])
+    reader = ReadAeronetSunV3(const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME)
+    od = reader.read('od550aer')

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import iris
 import numpy as np
+from traceback import format_exc
 from pyaerocom import print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
@@ -78,12 +79,20 @@ def merge_meta_cubes(cube1, cube2):
     try:
         return merge_dicts(cube1.attributes,
                            cube2.attributes)
-    except Exception as e:
-        print_log.warning('WARNING: Failed to merge Cube metadata. Error: {}'
-                          .format(repr(e)))
-        return {'NOTE'  : 'MERGE_FAILED',
-                'meta1' : cube1.attributes,
-                'meta2' : cube2.attributes}
+    except Exception:
+        print_log.warning('WARNING: Failed to merge Cube metadata. Reason:\n{}'
+                          .format(format_exc()))
+        ts_type = None
+        try:
+            if cube1.attributes['ts_type']==cube2.attributes['ts_type']:
+                ts_type = cube1.attributes['ts_type']
+        except:
+            pass
+
+        return {'NOTE'      : 'METADATA_MERGE_FAILED',
+                'meta1'     : cube1.attributes,
+                'meta2'     : cube2.attributes,
+                'ts_type'   : ts_type}
 
 def apply_rh_thresh_cubes(cube, rh_cube, rh_max=None):
     """Method that applies a low RH filter to input cube"""

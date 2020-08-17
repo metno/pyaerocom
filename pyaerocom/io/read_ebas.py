@@ -94,6 +94,8 @@ class ReadEbasOptions(BrowseDict):
         self.shift_wavelengths = True
         self.assume_default_ae_if_unavail = True
 
+        self.check_correct_MAAP_wrong_wvl = False
+
         self.eval_flags = True
 
         self.keep_aux_vars = False
@@ -125,7 +127,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.32_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.34_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -308,7 +310,7 @@ class ReadEbas(ReadUngriddedBase):
         """Path to EBAS SQL database"""
         dbname = self.SQL_DB_NAME
         loc_remote = os.path.join(self.DATASET_PATH, dbname)
-        if self.DATA_ID in self.CACHE_SQLITE_FILE and const.EBAS_DB_LOCAL_CACHE:
+        if self.data_id in self.CACHE_SQLITE_FILE and const.EBAS_DB_LOCAL_CACHE:
             loc_local = os.path.join(const.CACHEDIR, dbname)
             return _check_ebas_db_local_vs_remote(loc_remote, loc_local)
 
@@ -729,7 +731,7 @@ class ReadEbas(ReadUngriddedBase):
         name = meta['station_name'].replace('/', ';')
 
         data_out['filename'] = os.path.basename(file.file)
-        data_out['data_id'] = self.DATA_ID
+        data_out['data_id'] = self.data_id
         data_out['PI'] = file['data_originator']
         data_out['station_id'] = meta['station_code']
 
@@ -819,7 +821,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not 'wavelength' in colinfo:
-                const.logger.warn('Ignoring column {}\n{}\nVar {}: column '
+                const.logger.warning('Ignoring column {}\n{}\nVar {}: column '
                                   'misses wavelength specification!'
                                   .format(colnum, colinfo,
                                           var_info.var_name))
@@ -852,7 +854,7 @@ class ReadEbas(ReadUngriddedBase):
         for colnum in col_matches:
             colinfo = file.var_defs[colnum]
             if not 'wavelength' in colinfo:
-                const.logger.warn('Ignoring column {} ({}) in EBAS file for '
+                const.logger.warning('Ignoring column {} ({}) in EBAS file for '
                                   'reading var {}: column misses wavelength '
                                   'specification'
                                   .format(colnum, colinfo, var_info))
@@ -867,6 +869,94 @@ class ReadEbas(ReadUngriddedBase):
                 matches.append(colnum)
 
         return (matches, min_diff_wvl)
+
+    def _check_shift_wavelength(self, var, col_info, meta, data):
+        """
+        Where applicable, shift wavelength of input data to another wavelegnth
+
+        Applies to cases where input variable corresponds to a wavelength
+        (e.g. ac550aer corresponds to 550nm) but EBAS measurement was performed
+        at another wavelength (e.g. 520nm). In this case, the data is shifted
+        to the wavelength of that variable using an assumed Angstrom Exponent
+        (:attr:`ASSUME_AE_SHIFT_WVL`).
+
+        Parameters
+        ----------
+        var : str
+            variable na,e
+        col_info : EbasColDef
+            EBAS file column information
+        meta : dict
+            EBAS file metadata
+        data : ndarray
+            array containing variable data
+
+        Raises
+        ------
+        EbasFileError
+            if variable is wavelength dependent but
+        NotImplementedError
+            if option to shift wavelength is activated but option
+            `assume_default_ae_if_unavail` is set False.
+
+        Returns
+        -------
+        data : ndarray
+            modified input data
+
+        """
+
+        _col = col_info
+        vi = self.var_info(var)
+        # make sure this variable has wavelength set
+        #vi.ensure_wavelength_avail()
+        if vi.is_wavelength_dependent:
+            if not 'wavelength' in _col:
+                raise EbasFileError('Cannot access column wavelength '
+                                    'information for variable {}'
+                                    .format(var))
+            wvlcol = _col.get_wavelength_nm()
+            # HARD CODED FIX FOR INVALID WAVELENGTH IN ABSCOEFF EBAS FILES
+            if var == 'ac550aer' and self.opts.check_correct_MAAP_wrong_wvl:
+                instr = meta['instrument_name']
+
+                if any([x in instr for x in ['MAAP', 'Thermo']]) and wvlcol!= 637:
+                    _col['wavelength_WRONG_EBAS'] = '{} nm'.format(wvlcol)
+                    _col['wavelength_nm_WRONG_EBAS'] = wvlcol
+                    _col['wavelength'] = '637 nm'
+                    _col['wavelength_WRONG_EBAS_INFO'] = (
+                        'Wavelength of MAAP / Thermo absorption instruments '
+                        'is sometimes reported wrongly, in most cases 670nm '
+                        'is specified in the EBAS files. Please contact '
+                        'EBAS team if you have any questions regarding this'
+                        )
+                    wvlcol = 637
+
+            _col['wavelength_nm'] = wvlcol
+            if self.opts.shift_wavelengths:
+                towvl = vi.wavelength_nm
+                if wvlcol != towvl:
+                    # ToDo: add AE if available
+                    if self.opts.assume_default_ae_if_unavail:
+                        ae = self.ASSUME_AE_SHIFT_WVL
+                        avg_before = np.nanmean(data)
+                        data = self._shift_wavelength(vals=data,
+                                                  from_wvl=wvlcol,
+                                                  to_wvl=towvl,
+                                                  angexp=ae)
+                        avg = np.nanmean(data)
+                        diff = (avg - avg_before) / avg_before * 100
+                        _col['wvl_adj'] = True
+                        _col['from_wvl'] = wvlcol
+                        _col['wvl_adj_angstrom'] = ae
+                        _col['wvl_adj_diff'] = '{:.2f} %'.format(diff)
+                        _col['wavelength'] = '{:.1f} nm'.format(towvl)
+                        _col['wavelength_nm'] = towvl
+                    else:
+                        raise NotImplementedError('Cannot correct for '
+                                                  'wavelength shift, need '
+                                                  'Angstrom Exp.')
+        return data
 
     def _shift_wavelength(self, vals, from_wvl, to_wvl, angexp):
         return vals * (from_wvl / to_wvl)**angexp
@@ -1015,27 +1105,8 @@ class ReadEbas(ReadUngriddedBase):
 
             if not 'unit' in _col: #make sure a unit is assigned to data column
                 _col['unit']= file.unit
-            if 'wavelength' in _col:
-                _col['wavelength_nm'] = wvlcol = _col.get_wavelength_nm()
-                if self.opts.shift_wavelengths:
-                    towvl = self.var_info(var).wavelength_nm
-                    if wvlcol != towvl:
-                        # ToDo: add AE if available
-                        if self.opts.assume_default_ae_if_unavail:
-                            ae = self.ASSUME_AE_SHIFT_WVL
-                            data = self._shift_wavelength(vals=data,
-                                                      from_wvl=wvlcol,
-                                                      to_wvl=towvl,
-                                                      angexp=ae)
-                            _col['wavelength_adjustment'] = True
-                            _col['from_wavelength'] = wvlcol
-                            _col['wavelength_adjustment_angstrom'] = ae
-                            _col['wavelength'] = '{:.1f} nm'.format(towvl)
-                            _col['wavelength_nm'] = towvl
-                        else:
-                            raise NotImplementedError('Cannot correct for '
-                                                      'wavelength shift, need '
-                                                      'Angstrom Exp.')
+
+            data = self._check_shift_wavelength(var, _col, meta, data)
 
             # TODO: double-check with NILU if this can be assumed
             if not 'matrix' in _col:
@@ -1215,7 +1286,7 @@ class ReadEbas(ReadUngriddedBase):
         This method is not supposed to be called directly but is used in
         :func:`read` and serves the purpose of parallel loading of data
         """
-        data_obj = UngriddedData()
+        data_obj = UngriddedData(num_points=1000000)
 
         # Add reading options
         filters = self.opts.filter_dict
@@ -1354,16 +1425,16 @@ class ReadEbas(ReadUngriddedBase):
         if self.merge_meta:
             data_obj = data_obj.merge_common_meta(ignore_keys=['filename',
                                                                'PI'])
-        #data_obj.data_revision[self.DATA_ID] = self.data_revision
+
         self.data = data_obj
 
         return data_obj
 
 if __name__=="__main__":
 
-    r = ReadEbas()
+    reader = ReadEbas()
 
-    db = r.sqlite_database_file
-    files = r.get_file_list(['sc550dryaer'])
+    #db = r.sqlite_database_file
+    #files = r.get_file_list(['ac550aer'])
 
-    r.read('sc550dryaer')
+    data = reader.read('ac550aer')

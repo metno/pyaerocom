@@ -14,7 +14,7 @@ from pathlib import Path
 
 from pyaerocom import const, logger, print_log
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
-
+from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (CoordinateError,
                                   DataDimensionError,
                                   DataExtractionError,
@@ -485,12 +485,16 @@ class GriddedData(object):
             raise ValueError('GriddedData has no time dimension')
         t = cftime_to_datetime64(self.time[0])[0]
 
-        try:
-            dtype_appr = 'datetime64[{}]'.format(TS_TYPE_TO_NUMPY_FREQ[self.ts_type])
-            t=t.astype(dtype_appr)
-        except Exception:
-            logger.exception('Failed to round start time {} to beginning of '
-                             'frequency {}'.format(t, self.ts_type))
+        #try:
+        # ToDo: check if this is needed
+        np_freq = TsType(self.ts_type).to_numpy_freq() #TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
+        dtype_appr = 'datetime64[{}]'.format(np_freq)
+        t=t.astype(dtype_appr)
+# =============================================================================
+#         except Exception:
+#             logger.exception('Failed to round start time {} to beginning of '
+#                              'frequency {}'.format(t, self.ts_type))
+# =============================================================================
         return t.astype('datetime64[us]')
 
     @property
@@ -499,17 +503,13 @@ class GriddedData(object):
         if not self.has_time_dim:
             raise ValueError('GriddedData has no time dimension')
         t = cftime_to_datetime64(self.time[-1])[0]
-        try:
-            freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
-            dtype_appr = 'datetime64[{}]'.format(freq)
 
-            t = t.astype(dtype_appr) + np.timedelta64(1, unit=freq)
-            t = t.astype('datetime64[us]') - np.timedelta64(1,unit='us')
-            return t
-        except Exception:
-            logger.exception('Failed to round start time {} to beggining of '
-                             'frequency {}'.format(t, self.ts_type))
-            return t.astype('datetime64[us]')
+        np_freq = TsType(self.ts_type).to_numpy_freq() #TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
+        dtype_appr = 'datetime64[{}]'.format(np_freq)
+
+        t = t.astype(dtype_appr) + np.timedelta64(1, np_freq)
+        t = t.astype('datetime64[us]') - np.timedelta64(1,'us')
+        return t
 
     @property
     def cube(self):
@@ -700,7 +700,7 @@ class GriddedData(object):
             try:
                 self.var_name = var_name
             except ValueError:
-                const.print_log.warn('Could not update var_name, invalid input '
+                const.print_log.warning('Could not update var_name, invalid input '
                                      '{} (need str)'.format(var_name))
 
     def _get_info_from_filenames(self):
@@ -1452,7 +1452,7 @@ class GriddedData(object):
         return subset
 
     # TODO: Test, confirm and remove beta flag in docstring
-    def remove_outliers(self, low=None, high=None):
+    def remove_outliers(self, low=None, high=None, inplace=True):
         """Remove outliers from data
 
         Parameters
@@ -1467,6 +1467,14 @@ class GriddedData(object):
             corresponding value from the default settings for this variable
             are used (cf. maximum attribute of `available variables
             <https://pyaerocom.met.no/config_files.html#variables>`__)
+        inplace : bool
+            if True, this object is modified, else outliers are removed in
+            a copy of this object
+
+        Returns
+        -------
+        GriddedData
+            modified data object
         """
         if low is None:
             low = self.var_info.minimum
@@ -1476,10 +1484,28 @@ class GriddedData(object):
             high = self.var_info.maximum
             logger.info('Setting {} outlier upper lim: {:.2f}'
                         .format(self.var_name, high))
-        mask = np.logical_or(self.grid.data < low,
-                             self.grid.data > high)
-        self.grid.data[mask] = np.nan
-        self.metadata['outliers_removed'] = True
+        obj = self if inplace else self.copy()
+        obj._ensure_is_masked_array()
+
+        data = obj.grid.data
+
+        mask = np.logical_or(data<low, data>high)
+        obj.grid.data[mask] = np.ma.masked
+        obj.metadata['outliers_removed'] = True
+        return obj
+
+    def _ensure_is_masked_array(self):
+        """Make sure underlying data is masked array
+
+        Required, e.g. for removal of outliers
+
+        Note
+        ----
+        Will trigger "realisation" of data (i.e. loading of numpy array) in
+        case data is lazily loaded.
+        """
+        if not np.ma.is_masked(self.cube.data):
+            self.cube.data = np.ma.masked_array(self.cube.data)
 
     def _resample_time_iris(self, to_ts_type):
         """Resample time dimension using iris funcitonality
@@ -1504,7 +1530,7 @@ class GriddedData(object):
             if input resolution is not provided, or if it is higher temporal
             resolution than this object
         """
-        from pyaerocom.tstype import TsType
+        #from pyaerocom.tstype import TsType
 
         to = TsType(to_ts_type)
         current = TsType(self.ts_type)
@@ -2448,7 +2474,7 @@ class GriddedData(object):
         """Update metadata dictionary"""
         for key, val in kwargs.items():
             if key == 'var_name' and not isinstance(val, str):
-                const.print_log.warn('Skipping assignment of var_name from '
+                const.print_log.warning('Skipping assignment of var_name from '
                                      'metadata in GriddedData, since attr. '
                                      'needs to be str and is {}'.format(val))
                 continue
@@ -2625,13 +2651,13 @@ class GriddedData(object):
     @property
     def unit(self):
         """Unit of data"""
-        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+        const.print_log.warning(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         return self.grid.units
 
     @unit.setter
     def unit(self, val):
-        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+        const.print_log.warning(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         self.grid.units = val
 
@@ -2642,13 +2668,10 @@ if __name__=='__main__':
 
     # print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer',
-                                                          start=2009,
-                                                          stop=2013)
+                                                          start=2010).resample_time('yearly')
 
-    print(data.years_avail())
 
-    outdir = '/home/jonasg/MyPyaerocom/TEST_TO_NETCDF/'
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
+    data1 = data.remove_outliers(0.2, 0.4, inplace=False)
 
-    data.to_netcdf(out_dir=outdir, vert_code='Column')
+    data.quickplot_map()
+    data1.quickplot_map()
