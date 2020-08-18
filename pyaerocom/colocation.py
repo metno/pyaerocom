@@ -591,10 +591,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded_data = _regrid_gridded(gridded_data, regrid_scheme,
                                        regrid_res_deg)
 
-<<<<<<< Updated upstream
-=======
-    #called twice if used via Colocator, this should go out here
->>>>>>> Stashed changes
     if remove_outliers and not var_ref_keep_outliers:
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref,
