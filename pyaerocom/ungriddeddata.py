@@ -1109,6 +1109,33 @@ class UngriddedData(object):
                                          .format(list(val), key, repr(e)))
         return (str_f, list_f, range_f, val_f)
 
+    def check_convert_var_units(self, var_name, to_unit=None,
+                                    inplace=True):
+        obj = self if inplace else self.copy()
+        from pyaerocom.units_helpers import unit_conversion_fac
+
+        # get the unit
+        if to_unit is None:
+            to_unit = const.VARS[var_name]['units']
+
+        for i, meta in obj.metadata.items():
+            if var_name in meta['var_info']:
+                try:
+                    unit = meta['var_info'][var_name]['units']
+                except KeyError:
+                    add_str = ''
+                    if 'unit' in meta['var_info'][var_name]:
+                        add_str = ('Corresponding var_info dict contains '
+                                   'attr. "unit", which is deprecated, please '
+                                   'check corresponding reading routine. ')
+                    raise MetaDataError('Failed to access unit information for '
+                                        'variable {} in metadata block {}. {}'
+                                        .format(var_name, i, add_str))
+                fac = unit_conversion_fac(unit, to_unit)
+                if fac != 1:
+                    raise NotImplementedError
+        return obj
+
     def check_unit(self, var_name, unit=None):
         """Check if variable unit corresponds to AeroCom unit
 
