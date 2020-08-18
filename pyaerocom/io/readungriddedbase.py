@@ -447,7 +447,7 @@ class ReadUngriddedBase(abc.ABC):
                 vars_to_read.append(var)
         return (vars_to_read, vars_to_compute)
 
-    def compute_additional_vars(self, data, vars_to_compute):
+    def compute_additional_vars(self, data, vars_to_compute, **kwargs):
         """Compute all additional variables
 
         The computations for each additional parameter are done using the
@@ -480,7 +480,7 @@ class ReadUngriddedBase(abc.ABC):
                     missing.append(req)
 
             if len(missing) == 0:
-                data[var] = self.AUX_FUNS[var](data)
+                data[var] = self.AUX_FUNS[var](data, **kwargs)
                 data['var_info'][var] = {'computed' : True}
 
         return data

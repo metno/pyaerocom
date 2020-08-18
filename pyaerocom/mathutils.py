@@ -362,7 +362,7 @@ def calc_ang4487aer(data):
     od440aer, od870aer = data['od440aer'], data['od870aer']
     return compute_angstrom_coeff(od440aer, od870aer, .44, .87)
 
-def calc_od550aer(data):
+def calc_od550aer(data, **kwargs):
     """Compute AOD at 550 nm using Angstrom coefficient and 500 nm AOD
 
     Parameters
@@ -382,7 +382,8 @@ def calc_od550aer(data):
                            lambda_ref=.50,
                            od_ref_alt='od440aer',
                            lambda_ref_alt=.44,
-                           use_angstrom_coeff='ang4487aer')
+                           use_angstrom_coeff='ang4487aer',
+                           **kwargs)
 
 def calc_abs550aer(data):
     """Compute AOD at 550 nm using Angstrom coefficient and 500 nm AOD
@@ -495,7 +496,8 @@ def compute_od_from_angstromexp(to_lambda, od_ref, lambda_ref,
 
 def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
                     od_ref_alt=None, lambda_ref_alt=None,
-                    use_angstrom_coeff='ang4487aer'):
+                    use_angstrom_coeff='ang4487aer',
+                    add_numobs=False):
     """Helper method for computing ODs
 
     Parameters
@@ -521,6 +523,9 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
         wavelength corresponding to alternative reference AOD
     use_angstrom_coeff : str
         name of Angstrom coefficient in data, that is used for computation
+    add_numobs : bool
+        if True, then numobs information is expected to be in input data and
+        will be evaluated to determine numobs of computed variable.
 
     Returns
     -------
@@ -550,6 +555,17 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
                                           od_ref=data[od_ref],
                                           lambda_ref=lambda_ref,
                                           angstrom_coeff=data[use_angstrom_coeff])
+
+    if add_numobs:
+        nobs_od_name = 'nobs_{}'.format(od_ref)
+        nobs_ang_name = 'nobs_{}'.format(use_angstrom_coeff)
+        if not all([x in data for x in [nobs_od_name, nobs_ang_name]]):
+            raise ValueError('Missing numobs data...')
+        nobs_od = data[nobs_od_name]
+        nobs_ang = data[nobs_ang_name]
+
+        nobs = np.minimum(nobs_od, nobs_ang)
+        raise NotImplementedError
     # optional if available
     if od_ref_alt in data:
         # fill up time steps that are nans with values calculated from the
@@ -568,6 +584,8 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
                                                         lambda_ref=lambda_ref_alt,
                                                         angstrom_coeff=ang)
                 result[mask] = replace
+
+
 
     return result
 

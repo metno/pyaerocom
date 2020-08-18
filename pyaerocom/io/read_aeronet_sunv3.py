@@ -87,7 +87,9 @@ class ReadAeronetSunV3(ReadAeronetBase):
     VAR_NAMES_FILE['od500aer'] = 'AOD_500nm'
     VAR_NAMES_FILE['od870aer'] = 'AOD_870nm'
     VAR_NAMES_FILE['ang4487aer'] = '440-870_Angstrom_Exponent'
-    VAR_NAMES_FILE['nobs500nm'] = 'N[AOD_500nm]'
+
+    NUMOBS_MASK = 'N[{}]'
+    #VAR_NAMES_FILE['nobs500nm'] = 'N[AOD_500nm]'
 
     #: dictionary specifying the file column names (values) for each
     #: metadata key (cf. attributes of :class:`StationData`, e.g.
@@ -152,6 +154,12 @@ class ReadAeronetSunV3(ReadAeronetBase):
             vars_to_retrieve = self.DEFAULT_VARS
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+
+        # get variable names for NumObs
+        for var in vars_to_read:
+            varfile = self.VAR_NAMES_FILE[var]
+            _vn = 'nobs_{}'.format(var)
+            self.META_NAMES_FILE[_vn] = self.NUMOBS_MASK.format(varfile)
 
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
@@ -262,7 +270,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_out[var] = array
 
         # compute additional variables (if applicable)
-        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        data_out = self.compute_additional_vars(data_out, vars_to_compute,
+                                                add_numobs=True)
 
         # convert data vectors to pandas.Series (if applicable)
         if vars_as_series:
@@ -282,5 +291,5 @@ if __name__=="__main__":
 
     #file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
 
-    reader = ReadAeronetSunV3(const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME)
+    reader = ReadAeronetSunV3()
     od = reader.read('od550aer')
