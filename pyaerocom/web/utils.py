@@ -190,8 +190,6 @@ def compute_model_average_and_diversity(cfg, var_name,
         comment = 'AeroCom {} model data for variable {}.'.format(avg_how,
                                                                  var_name)
 
-
-
     mean = GriddedData(numpy_to_cube(avg,
                                      dims=dims,
                                      var_name=var_name,
