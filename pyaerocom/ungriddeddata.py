@@ -1109,6 +1109,38 @@ class UngriddedData(object):
                                          .format(list(val), key, repr(e)))
         return (str_f, list_f, range_f, val_f)
 
+    def check_convert_var_units(self, var_name, to_unit=None,
+                                    inplace=True):
+        obj = self if inplace else self.copy()
+        from pyaerocom.units_helpers import unit_conversion_fac
+
+        # get the unit
+        if to_unit is None:
+            to_unit = const.VARS[var_name]['units']
+
+        for i, meta in obj.metadata.items():
+            if var_name in meta['var_info']:
+                try:
+                    unit = meta['var_info'][var_name]['units']
+                except KeyError:
+                    add_str = ''
+                    if 'unit' in meta['var_info'][var_name]:
+                        add_str = ('Corresponding var_info dict contains '
+                                   'attr. "unit", which is deprecated, please '
+                                   'check corresponding reading routine. ')
+                    raise MetaDataError('Failed to access unit information for '
+                                        'variable {} in metadata block {}. {}'
+                                        .format(var_name, i, add_str))
+                fac = unit_conversion_fac(unit, to_unit)
+                if fac != 1:
+                    meta_idx = obj.meta_idx[i][var_name]
+                    current = obj._data[meta_idx, obj._DATAINDEX]
+                    new = current * fac
+                    obj._data[meta_idx, obj._DATAINDEX] = new
+                    obj.metadata[i]['var_info'][var_name]['units'] = to_unit
+
+        return obj
+
     def check_unit(self, var_name, unit=None):
         """Check if variable unit corresponds to AeroCom unit
 
@@ -1232,12 +1264,8 @@ class UngriddedData(object):
             new = self
         else:
             new = self.copy()
-        try:
-            self.check_unit(var_name, unit=unit_ref)
-        except MetaDataError as e:
-            raise MetaDataError('Cannot remove outliers for variable {}. Found '
-                                'invalid units. Error: {}'
-                                .format(var_name, repr(e)))
+
+        new.check_convert_var_units(var_name, to_unit=unit_ref)
 
         if low is None:
             low = const.VARS[var_name].minimum
@@ -1246,9 +1274,9 @@ class UngriddedData(object):
             high = const.VARS[var_name].maximum
             logger.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
-        var_mask = self._data[:, new._VARINDEX] == var_idx
+        var_mask = new._data[:, new._VARINDEX] == var_idx
 
-        all_data =  self._data[:, self._DATAINDEX]
+        all_data =  new._data[:, new._DATAINDEX]
         invalid_mask = np.logical_or(all_data<low, all_data>high)
 
         mask = invalid_mask * var_mask
@@ -2704,11 +2732,11 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
 if __name__ == "__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
-    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    plt.close('all')
+    data = pya.io.ReadUngridded().read('EBASMC', 'ac550aer')
 
-    data.check_set_country()
+    data1 = data.check_convert_var_units('ac550aer', 'm-1', inplace=False)
 
-    sub = data.filter_region('United States', check_country_meta=True)
+    data.plot_station_timeseries(10, 'ac550aer')
 
-    sub.plot_station_coordinates()
-    plt.show()
+    data1.plot_station_timeseries(10, 'ac550aer')
