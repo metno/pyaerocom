@@ -918,35 +918,12 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
 
-    #obsdata = pya.io.ReadGhost('GHOST.hourly').read('concpm25')
-    obsdata = pya.io.ReadUngridded().read('GHOST.hourly', 'conco3',
-                                          only_cached=True)
+    obsdata = pya.io.ReadUngridded().read('EBASMC', 'ac550aer')
 
-    obsdata.check_set_country()
+    # update unit to wrong unit
+    obsdata.check_convert_var_units('ac550aer', 'm-1', inplace=True)
 
-    obsdata = obsdata.filter_region('Norway', check_country_meta=True)
-    model_id='ENSEMBLE.cams61.day1'
+    obsdata.remove_outliers('ac550aer', inplace=True)
 
-    mr = pya.io.ReadGridded(model_id)
-    modeldata = mr.read_var('conco3', start=2018, vert_which='Surface')
-
-    #modeldata.resample_time('yearly').quickplot_map()
-
-    #obsdata = pya.io.ReadUngridded().read(obs_id, 'concso4').set_flags_nan()
-
-    rsh = {'daily': {'hourly': 'max'}}
-
-    coldata_max = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata,
-                                                         ts_type='monthly',
-                                                         var_ref='conco3',
-                                                         resample_how=rsh)
-
-    coldata_mean = pya.colocation.colocate_gridded_ungridded(modeldata, obsdata,
-                                                         ts_type='monthly',
-                                                         var_ref='conco3')
-
-    pya.plot.mapping.plot_nmb_map_colocateddata(coldata_max)
-    pya.plot.mapping.plot_nmb_map_colocateddata(coldata_mean)
-    #scoldata2.plot_scatter()
 
 
