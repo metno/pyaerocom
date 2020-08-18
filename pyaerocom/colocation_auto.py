@@ -231,6 +231,7 @@ class ColocationSetup(BrowseDict):
 
         self.model_id = model_id
         self.model_name = model_name
+        self.model_data_dir = None
 
         self.obs_id = obs_id
         self.obs_name = obs_name
@@ -466,7 +467,8 @@ class Colocator(ColocationSetup):
         if 'use_input_var' in kwargs:
             use_input_var = kwargs.pop('use_input_var')
 
-        reader = ReadGridded(self.model_id)
+        reader = ReadGridded(self.model_id,
+                             data_dir=self.model_data_dir)
         if use_input_var:
             var = var_name
         else:
@@ -689,7 +691,8 @@ class Colocator(ColocationSetup):
         print_log.info('PREPARING colocation of {} vs. {}'
                        .format(self.model_id, self.obs_id))
 
-        model_reader = ReadGridded(self.model_id)
+        model_reader = ReadGridded(self.model_id,
+                                   data_dir=self.model_data_dir)
 
         obs_reader = ReadUngridded(self.obs_id,
                                    data_dir=self.obs_data_dir)
@@ -883,13 +886,15 @@ class Colocator(ColocationSetup):
 
     def _run_gridded_gridded(self, var_name=None):
 
-        model_reader = ReadGridded(self.model_id)
+        model_reader = ReadGridded(self.model_id,
+                                   data_dir=self.model_data_dir)
 
         if self.start is None:
             self._infer_start_stop(model_reader)
 
         start, stop = start_stop(self.start, self.stop)
-        obs_reader = ReadGridded(self.obs_id, data_dir=self.obs_data_dir)
+        obs_reader = ReadGridded(self.obs_id,
+                                 data_dir=self.obs_data_dir)
 
         if 'obs_filters' in self:
             obs_filters = self._eval_obs_filters()

@@ -174,6 +174,25 @@ def test_colocator_with_obs_data_dir_ungridded():
     assert str(cd.start) == '2010-01-15T00:00:00.000000000'
     assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
 
+def test_colocator_with_model_data_dir_ungridded():
+    col = Colocator(save_coldata=False)
+    col.model_id='TM5-met2010_CTRL-TEST'
+    col.obs_id='AeronetSunV3L2Subset.daily'
+    col.obs_vars='od550aer'
+    col.ts_type='monthly'
+    col.apply_time_resampling_constraints = False
+
+    model_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
+    col.model_data_dir=TESTDATADIR.joinpath(model_dir)
+
+    data = col._run_gridded_ungridded()
+    assert len(data) == 1
+    cd = data['od550aer']
+    assert isinstance(cd, ColocatedData)
+    assert cd.ts_type=='monthly'
+    assert str(cd.start) == '2010-01-15T00:00:00.000000000'
+    assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
+
 def test_colocator_with_obs_data_dir_gridded():
     col = Colocator(save_coldata=False)
     col.model_id='TM5-met2010_CTRL-TEST'

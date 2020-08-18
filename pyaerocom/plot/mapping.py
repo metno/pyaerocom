@@ -646,12 +646,14 @@ def plot_map(data, *args, **kwargs):
 def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
                                 vmax=100, cmap='bwr', s=80, marker='o',
                                 step_bounds=None, add_cbar=True,
+                                norm=None,
                                 cbar_extend='both',
                                 add_mean_edgecolor=True,
                                 ax=None, ax_cbar=None,
                                 cbar_outline_visible=False,
                                 ref_label=None, data_label=None,
-                                stats_area_weighted=False, **kwargs):
+                                stats_area_weighted=False,
+                                **kwargs):
     """Plot map of normalised mean bias from instance of ColocatedData
 
     Note
@@ -692,7 +694,18 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
     -------
     GeoAxes
     """
+    try:
+        mec = kwargs.pop('mec')
+    except KeyError:
+        try:
+            mec = kwargs.pop('markeredgecolor')
+        except KeyError:
+            mec = 'face'
 
+    try:
+        mew = kwargs.pop('mew')
+    except KeyError:
+        mew = 1
     #_arr = coldata.data
     mean_bias = coldata.calc_nmb_array()
 
@@ -724,28 +737,34 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
 
     fig = ax.figure
 
-    norm=None
+
     if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
-    if step_bounds is not None:
+    if norm is None and step_bounds is not None:
         bounds = np.arange(vmin, vmax+step_bounds, step_bounds)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
 
-    ec = 'none'
+
+
     if add_mean_edgecolor:
         nn = Normalize(vmin=vmin, vmax=vmax)
         nmb = coldata.calc_statistics(use_area_weights=stats_area_weighted)['nmb']
         if in_percent:
             nmb*=100
         ec = cmap(nn(nmb))
+    else:
+        ec = mec
     _sc = ax.scatter(lons, lats, c=data, marker=marker,
                      cmap=cmap, vmin=vmin, vmax=vmax, s=s, norm=norm,
-                     label=ref_label, edgecolors=ec)
+                     label=ref_label, edgecolors=ec,
+                     linewidths=mew)
     if add_cbar:
         if ax_cbar is None:
             ax_cbar = _add_cbar_axes(ax)
         cbar = fig.colorbar(_sc, cmap=cmap, norm=norm, #boundaries=bounds,
-                            extend=cbar_extend, cax=ax_cbar)
+                            extend=cbar_extend, cax=ax_cbar,
+                            orientation='horizontal')
+
         cbar.outline.set_visible(cbar_outline_visible)
         cbar.set_label('NMB [%]')
 
