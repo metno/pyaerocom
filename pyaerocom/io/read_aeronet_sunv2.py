@@ -163,7 +163,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
 
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out.data_id = self.DATA_ID
+        data_out.data_id = self.data_id
 
         #create empty array for all variables that are supposed to be read
         for var in vars_to_read:

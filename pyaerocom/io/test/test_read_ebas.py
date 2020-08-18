@@ -98,7 +98,7 @@ class TestReadEBAS(object):
                          'test']
 
     def test_DATA_ID(self, reader):
-        assert reader.DATA_ID == const.EBAS_MULTICOLUMN_NAME
+        assert reader.data_id == 'EBASSubset'
 
     def test_FILE_SUBDIR_NAME(self, reader):
         assert reader.FILE_SUBDIR_NAME == 'data'
@@ -338,7 +338,7 @@ class TestReadEBAS(object):
          'station_id': 'CH0001G', 'station_name': 'Jungfraujoch',
          'instrument_name': 'TSI_3563_JFJ_dry',
          'PI': 'Bukowiecki, Nicolas; Baltensperger, Urs',
-         'ts_type': 'hourly', 'data_id': 'EBASMC', 'data_level': 2,
+         'ts_type': 'hourly', 'data_id': 'EBASSubset', 'data_level': 2,
          'revision_date': np.datetime64('2019-05-20T00:00:00')})
         ])
     def test_read_file(self, reader, filename, vars_to_retrieve, start,

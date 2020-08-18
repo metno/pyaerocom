@@ -148,7 +148,7 @@ class ReadAasEtal(ReadUngriddedBase):
             stat['station_name'] = name
 
             stat["filename"] = filename
-            stat["data_id"] = self.DATA_ID
+            stat["data_id"] = self.data_id
             stat["ts_type"] = self.TS_TYPE
 
             var_names = self.COLNAMES_VARS
@@ -260,7 +260,7 @@ class ReadAasEtal(ReadUngriddedBase):
                 metadata[meta_key] = OrderedDict()
                 metadata[meta_key].update(stat.get_meta())
                 metadata[meta_key].update(stat.get_station_coords())
-                metadata[meta_key]['data_id'] = self.DATA_ID
+                metadata[meta_key]['data_id'] = self.data_id
                 metadata[meta_key]['ts_type'] = self.TS_TYPE
                 #metadata[meta_key]['variables'] = stat["variables"]
                 # Is instrumentname
@@ -354,10 +354,5 @@ class ReadSulphurAasEtAl(ReadAasEtal):
 
 if __name__ == "__main__":
 
-     aa = ReadSulphurAasEtAl('GAWTADsubsetAasEtAl')
-
-     all_vars = ['concso2', 'concso4', 'pr', 'wetso4', 'concso4pr']
-     data = aa.read('wetso4')
-
-     for k, m in data.metadata.items():
-         print(m['var_info']['pr']['units'])
+     aa = ReadAasEtal('GAWTADsubsetAasEtAl')
+     print(aa.data_id)

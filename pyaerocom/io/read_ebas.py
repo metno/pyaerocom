@@ -310,7 +310,7 @@ class ReadEbas(ReadUngriddedBase):
         """Path to EBAS SQL database"""
         dbname = self.SQL_DB_NAME
         loc_remote = os.path.join(self.DATASET_PATH, dbname)
-        if self.DATA_ID in self.CACHE_SQLITE_FILE and const.EBAS_DB_LOCAL_CACHE:
+        if self.data_id in self.CACHE_SQLITE_FILE and const.EBAS_DB_LOCAL_CACHE:
             loc_local = os.path.join(const.CACHEDIR, dbname)
             return _check_ebas_db_local_vs_remote(loc_remote, loc_local)
 
@@ -731,7 +731,7 @@ class ReadEbas(ReadUngriddedBase):
         name = meta['station_name'].replace('/', ';')
 
         data_out['filename'] = os.path.basename(file.file)
-        data_out['data_id'] = self.DATA_ID
+        data_out['data_id'] = self.data_id
         data_out['PI'] = file['data_originator']
         data_out['station_id'] = meta['station_code']
 
@@ -1425,7 +1425,7 @@ class ReadEbas(ReadUngriddedBase):
         if self.merge_meta:
             data_obj = data_obj.merge_common_meta(ignore_keys=['filename',
                                                                'PI'])
-        #data_obj.data_revision[self.DATA_ID] = self.data_revision
+
         self.data = data_obj
 
         return data_obj

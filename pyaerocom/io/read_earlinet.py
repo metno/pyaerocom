@@ -212,7 +212,7 @@ class ReadEarlinet(ReadUngriddedBase):
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
         data_out['station_id'] = filename.split('/')[-2]
-        data_out['data_id'] = self.DATA_ID
+        data_out['data_id'] = self.data_id
         data_out['ts_type'] = self.TS_TYPE
 
         # create empty arrays for all variables that are supposed to be read
@@ -498,7 +498,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     if add_meta in stat:
                         metadata[meta_key][add_meta] = stat[add_meta]
                 #metadata[meta_key]['station_id'] = station_id
-                #metadata[meta_key]['data_id'] = self.DATA_ID
+
                 metadata[meta_key]['data_revision'] = self.data_revision
                 metadata[meta_key]['variables'] = []
                 metadata[meta_key]['var_info'] = od()
@@ -579,7 +579,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        #data_obj.data_revision[self.DATA_ID] = self.data_revision
+
         self.data = data_obj
         return data_obj
 
