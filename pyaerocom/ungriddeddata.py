@@ -1133,7 +1133,12 @@ class UngriddedData(object):
                                         .format(var_name, i, add_str))
                 fac = unit_conversion_fac(unit, to_unit)
                 if fac != 1:
-                    raise NotImplementedError
+                    meta_idx = obj.meta_idx[i][var_name]
+                    current = obj._data[meta_idx, obj._DATAINDEX]
+                    new = current * fac
+                    obj._data[meta_idx, obj._DATAINDEX] = new
+                    obj.metadata[i]['var_info'][var_name]['units'] = to_unit
+
         return obj
 
     def check_unit(self, var_name, unit=None):
@@ -2731,11 +2736,11 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
 if __name__ == "__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
-    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    plt.close('all')
+    data = pya.io.ReadUngridded().read('EBASMC', 'ac550aer')
 
-    data.check_set_country()
+    data1 = data.check_convert_var_units('ac550aer', 'm-1', inplace=False)
 
-    sub = data.filter_region('United States', check_country_meta=True)
+    data.plot_station_timeseries(10, 'ac550aer')
 
-    sub.plot_station_coordinates()
-    plt.show()
+    data1.plot_station_timeseries(10, 'ac550aer')
