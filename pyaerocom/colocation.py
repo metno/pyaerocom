@@ -995,14 +995,9 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
 
-    #obsdata = pya.io.ReadGhost('GHOST.hourly').read('concpm25')
-    obsdata = pya.io.ReadGridded('FMI-SAT-MERGED11').read_var('od550aer',
-                                                              start=2010)
-    model_id='ECMWF_CAMS_REAN'
+    obsdata = pya.io.ReadUngridded().read('EBASMC', 'ac550aer')
 
-    mr = pya.io.ReadGridded(model_id)
-    modeldata = mr.read_var('od550aer', start=2010)
+    # update unit to wrong unit
+    obsdata.check_convert_var_units('ac550aer', 'm-1', inplace=True)
 
-    coldata = colocate_gridded_gridded(modeldata, obsdata)
-
-    coldata.plot_scatter(loglog=True)
+    obsdata.remove_outliers('ac550aer', inplace=True)
