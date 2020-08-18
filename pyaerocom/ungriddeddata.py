@@ -1264,12 +1264,8 @@ class UngriddedData(object):
             new = self
         else:
             new = self.copy()
-        try:
-            self.check_unit(var_name, unit=unit_ref)
-        except MetaDataError as e:
-            raise MetaDataError('Cannot remove outliers for variable {}. Found '
-                                'invalid units. Error: {}'
-                                .format(var_name, repr(e)))
+
+        new.check_convert_var_units(var_name, to_unit=unit_ref)
 
         if low is None:
             low = const.VARS[var_name].minimum
@@ -1278,9 +1274,9 @@ class UngriddedData(object):
             high = const.VARS[var_name].maximum
             logger.info('Setting {} outlier upper lim: {:.2f}'.format(var_name, high))
         var_idx = new.var_idx[var_name]
-        var_mask = self._data[:, new._VARINDEX] == var_idx
+        var_mask = new._data[:, new._VARINDEX] == var_idx
 
-        all_data =  self._data[:, self._DATAINDEX]
+        all_data =  new._data[:, new._DATAINDEX]
         invalid_mask = np.logical_or(all_data<low, all_data>high)
 
         mask = invalid_mask * var_mask
