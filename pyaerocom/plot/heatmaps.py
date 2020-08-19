@@ -218,9 +218,11 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
             fmt = ".4g"
         else:
             fmt = ".{}f".format(num_digits)
+
     ax = heatmap(df_hm, cmap=cmap, center=center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
                  cbar=cbar, cbar_ax=cbar_ax, cbar_kws=cbar_kws, fmt=fmt,
-                 vmin=vmin, vmax=vmax, **kwargs)
+                 vmin=vmin, vmax=vmax,
+                 xticklabels=True, yticklabels=True, **kwargs)
 
 
     ax.figure.axes[-1].yaxis.label.set_size(labelsize)

@@ -524,7 +524,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
 
     return fig
 
-def _add_cbar_axes(ax, where='right'):
+def _add_cbar_axes(ax):#, where='right'):
     _loc = ax.bbox._bbox
     fig = ax.figure
 
@@ -651,6 +651,7 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
                                 add_mean_edgecolor=True,
                                 ax=None, ax_cbar=None,
                                 cbar_outline_visible=False,
+                                cbar_orientation='vertical',
                                 ref_label=None, data_label=None,
                                 stats_area_weighted=False,
                                 **kwargs):
@@ -763,7 +764,7 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
             ax_cbar = _add_cbar_axes(ax)
         cbar = fig.colorbar(_sc, cmap=cmap, norm=norm, #boundaries=bounds,
                             extend=cbar_extend, cax=ax_cbar,
-                            orientation='horizontal')
+                            orientation=cbar_orientation)
 
         cbar.outline.set_visible(cbar_outline_visible)
         cbar.set_label('NMB [%]')
