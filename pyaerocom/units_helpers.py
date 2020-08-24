@@ -11,7 +11,6 @@ import numpy as np
 
 from cf_units import Unit
 from pyaerocom import const
-from pyaerocom import GriddedData
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.helpers import seconds_in_periods
 
@@ -40,16 +39,16 @@ HA_TO_SQM = 10000   # hectar to square metre.
 # logic of hierarchy is: variable -> from unit -> to_unit -> conversion factor
 UCONV_MUL_FACS = pd.DataFrame([
 
-  ['concso4', 'ug S/m3', VARS.concso4.units,  UCONV_FAC_S_SO4],
-  ['concso2', 'ug S/m3', VARS.concso2.units,  UCONV_FAC_S_SO2],
+    ['concso4', 'ug S/m3', VARS.concso4.units, UCONV_FAC_S_SO4],
+    ['concso2', 'ug S/m3', VARS.concso2.units, UCONV_FAC_S_SO2],
 
-  ['concbc', 'ug C/m3', VARS.concbc.units, 1.0],
-  ['concoa', 'ug C/m3', VARS.concoa.units, 1.0],
-  ['concoc', 'ug C/m3', VARS.concoc.units, 1.0],
-  ['conctc', 'ug C/m3', VARS.conctc.units, 1.0],
+    ['concbc', 'ug C/m3', VARS.concbc.units, 1.0],
+    ['concoa', 'ug C/m3', VARS.concoa.units, 1.0],
+    ['concoc', 'ug C/m3', VARS.concoc.units, 1.0],
+    ['conctc', 'ug C/m3', VARS.conctc.units, 1.0],
 
-  ['wetso4', 'kg S/ha', 'kg m-2',  UCONV_FAC_S_SO4 / HA_TO_SQM],
-  ['concso4pr', 'mg S/L', 'g m-3',  UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
+    ['wetso4', 'kg S/ha', 'kg m-2', UCONV_FAC_S_SO4 / HA_TO_SQM],
+    ['concso4pr', 'mg S/L', 'g m-3', UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
 
 ], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
 
@@ -202,8 +201,8 @@ def implicit_to_explicit_rates(gridded, ts_type):
     GriddedData
         Modified data, if not already a rate.
     """
-
     from pyaerocom import GriddedData
+
     unit = gridded.units
     unit_string = str(unit)
     is_rate = ('/s' in unit_string) or ('s-1' in unit_string)

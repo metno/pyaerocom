@@ -8,8 +8,8 @@ Created on Thu Apr 12 14:45:43 2018
 import pytest
 import numpy.testing as npt
 from pyaerocom import units_helpers as uh
-from pyaerocom.conftest import lustre_unavail, testdata_unavail
-
+from pyaerocom.conftest import testdata_unavail
+from pyaerocom import GriddedData
 
 @pytest.mark.parametrize('from_unit,to_unit,val', [
     ('m-1', '1/Mm', 1e6),
@@ -18,15 +18,13 @@ from pyaerocom.conftest import lustre_unavail, testdata_unavail
 def test_unit_conversion_fac(from_unit, to_unit, val):
     assert uh.unit_conversion_fac(from_unit, to_unit) == val
 
-
-
 @pytest.mark.parametrize('var_name,from_unit,to_unit,val', [
-    ('concso2', 'ug S/m3','ug m-3', 1.9979),
-    ('concso4', 'ug S/m3','ug m-3', 2.9958),
-    ('concbc', 'ug C/m3','ug m-3', 1),
-    ('concoa', 'ug C/m3','ug m-3', 1),
-    ('concoc', 'ug C/m3','ug m-3', 1),
-    ('wetso4', 'kg S/ha','kg m-2', 0.0003),
+    ('concso2', 'ug S/m3', 'ug m-3', 1.9979),
+    ('concso4', 'ug S/m3', 'ug m-3', 2.9958),
+    ('concbc', 'ug C/m3', 'ug m-3', 1),
+    ('concoa', 'ug C/m3', 'ug m-3', 1),
+    ('concoc', 'ug C/m3', 'ug m-3', 1),
+    ('wetso4', 'kg S/ha', 'kg m-2', 0.0003),
     ('concso4pr', 'mg S/L', 'g m-3', 2.995821)
     ])
 def test_unit_conversion_fac_custom(var_name, from_unit, to_unit, val):
@@ -36,13 +34,13 @@ def test_unit_conversion_fac_custom(var_name, from_unit, to_unit, val):
                         val, rtol=1e-2)
 
 @pytest.mark.parametrize('from_unit,to_unit,var_name,val', [
-    ('ug m-3','ug/m3',None,1),
-    ('ug m-3','ug/m3','concso2',1),
+    ('ug m-3', 'ug/m3', None, 1),
+    ('ug m-3', 'ug/m3', 'concso2', 1),
     ('mg m-3', 'ug m-3', 'concso2', 1e3),
     ('ug S/m3', 'mg m-3', 'concso2', 1.9979e-3)
     ])
 def test_convert_unit(from_unit, to_unit, var_name, val):
-    result = uh.convert_unit(1,from_unit, to_unit, var_name)
+    result = uh.convert_unit(1, from_unit, to_unit, var_name)
     npt.assert_allclose(result,
                         val, rtol=1e-2)
 
