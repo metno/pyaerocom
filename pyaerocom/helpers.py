@@ -14,7 +14,7 @@ from pyaerocom.exceptions import (LongitudeConstraintError,
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError,
                                   VariableDefinitionError,
-                                  ResamplingError)
+                                  ResamplingError, TemporalResolutionError)
 from pyaerocom import logger, const
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
@@ -385,6 +385,51 @@ def infer_time_resolution(time_stamps):
         if highest_secs <= TS_TYPE_SECS[tp]:
             return tp
     raise ValueError('Could not infer time resolution')
+
+def seconds_in_periods(timestamps, ts_type):
+    """
+    Calculates the number of seconds for each period in timestamps.
+
+    Parameters
+    ----------
+    timestamps : numpy.datetime64 or numpy.ndarray
+        Either a single datetime or an array of datetimes.
+    ts_type : str
+        Frequency of timestamps.
+
+    Returns
+    -------
+    np.array :
+        Array with same length as timestamps containing number of seconds for
+        each period.
+    """
+
+    ts_type = TsType(ts_type)
+    if isinstance(timestamps, np.datetime64):
+        timestamps = np.array([timestamps])
+    if isinstance(timestamps, np.ndarray):
+        timestamps = [to_pandas_timestamp(timestamp) for timestamp in timestamps]
+    # From here on timestamps should be a numpy array containing pandas Timestamps
+
+    seconds_in_day = 24*60*60
+    if ts_type >= TsType('monthly'):
+        if ts_type == TsType('monthly'):
+            days_in_months = np.array([ timestamp.days_in_month for timestamp in timestamps])
+            seconds = days_in_months * seconds_in_day
+            return seconds
+        if ts_type == TsType('daily'):
+            return seconds_in_day * np.ones_like(timestamps)
+        raise NotImplementedError('Only yearly, monthly and daily frequencies implemented.')
+    elif ts_type == TsType('yearly'):
+        days_in_year = []
+        for ts in timestamps:
+            if ts.year % 4 == 0:
+                days_in_year.append(366) #  Leap year
+            else:
+                days_in_year.append(365)
+        seconds = np.array(days_in_year) * seconds_in_day
+        return seconds
+    raise TemporalResolutionError('Unknown TsType: {}'.format(ts_type))
 
 def get_tot_number_of_seconds(ts_type, dtime=None):
     """Get total no. of seconds for a given frequency

@@ -139,6 +139,18 @@ def test_extract_latlon_dataarray_no_matches(lat, lon, expectation):
     with expectation:
         helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
 
+@pytest.mark.parametrize("date,ts_type,expected", [
+    ("2000-02-18","monthly",29),  # February leap year
+    ("2000-02-18","yearly",366),  # Leap year
+    ("2001-02-18","monthly",28),  # February non leap year
+    ("2001-02-18","daily",1),     # Daily
+    ("2001-02-18","yearly",365)]) # Non leap year
+def test_seconds_in_periods(date, ts_type, expected):
+    seconds_in_day = 24*60*60
+    ts = np.datetime64(date)
+    seconds = helpers.seconds_in_periods(ts, ts_type)
+    assert seconds == expected*seconds_in_day
+
 if __name__=="__main__":
 
     import pandas as pd
