@@ -7,10 +7,13 @@ Created on Mon Sep 2 08:47:56 2019
 @author: jonasg
 """
 import pandas as pd
+import numpy as np
 
 from cf_units import Unit
 from pyaerocom import const
+from pyaerocom import GriddedData
 from pyaerocom.exceptions import UnitConversionError
+from pyaerocom.helpers import seconds_in_periods
 
 VARS = const.VARS
 
@@ -181,6 +184,43 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
     if conv_fac != 1:
         data = np.divide(data, conv_fac)
     return data
+
+def implicit_to_explicit_rates(gridded, ts_type):
+    """
+    Convert implicitly defined daily, monthly or yearly rates to
+    per second. Update units and values accordingly.
+    Some data should be per second but have units without time information
+    information.
+    Parameters
+    ----------
+    gridded : GriddedData
+        Data to convert
+    ts_type : str
+        Temporal resolution of gridded.
+    Returns
+    -------
+    GriddedData
+        Modified data, if not already a rate.
+    """
+
+    from pyaerocom import GriddedData
+    unit = gridded.units
+    unit_string = str(unit)
+    is_rate = ('/s' in unit_string) or ('s-1' in unit_string)
+    if is_rate:
+        return gridded
+    else:
+        seconds_factor = seconds_in_periods(gridded.time_stamps(), ts_type)
+        data = gridded.to_xarray()
+        mult_fac = np.ones_like(data)
+        for i in range(len(seconds_factor)):
+            mult_fac[i] *= seconds_factor[i]
+        result = data*mult_fac
+        cube = result.to_iris()
+        new_gridded = GriddedData()
+        new_gridded.grid = cube
+        new_gridded.units = '{} s-1'.format(gridded.units) # append rate to format
+    return new_gridded
 
 if __name__ == '__main__':
 
