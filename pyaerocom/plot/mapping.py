@@ -401,7 +401,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                              'invalid')
 
     if add_cbar and ax_cbar is None:
-        ax_cbar = _add_cbar_axes(ax, where='right')
+        ax_cbar = _add_cbar_axes(ax)#, where='right')
 
     X, Y = meshgrid(lons, lats)
 
