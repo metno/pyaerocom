@@ -10,6 +10,7 @@ from pyaerocom.io import ReadGridded
 from pyaerocom.exceptions import DataCoverageError
 from pyaerocom.io.aux_read_cubes import add_cubes
 
+@testdata_unavail
 @pytest.fixture(scope='function')
 def col_tm5_aero(model_id='TM5-met2010_CTRL-TEST',
                  obs_id='AeronetSunV3L2Subset.daily',
@@ -24,6 +25,18 @@ def col_tm5_aero(model_id='TM5-met2010_CTRL-TEST',
 def col():
     return Colocator(raise_exceptions=True, reanalyze_existing=True)
 
+def test_model_ts_type_read(col_tm5_aero):
+    model_var = 'abs550aer'
+    obs_var = 'od550aer'
+    col_tm5_aero.save_coldata = False
+    # Problem with saving since obs_id is different
+    # from obs_data.contains_dataset[0]...
+    col_tm5_aero.model_add_vars = {obs_var:model_var}
+    col_tm5_aero.model_ts_type_read = {model_var:'daily', obs_var:'monthly'}
+    data = col_tm5_aero._run_gridded_ungridded()
+    assert (data[model_var].data.ts_type_src.values == ['daily', 'daily']).all()
+    assert (data[obs_var].data.ts_type_src.values == ['daily', 'monthly']).all()
+
 def test_colocator(col):
     assert isinstance(col, Colocator)
     col.obs_vars = 'var'
@@ -33,18 +46,6 @@ def test_colocator_init_basedir_coldata(tmpdir):
     basedir = os.path.join(tmpdir, 'basedir')
     col = Colocator(raise_exceptions=True, basedir_coldata=basedir)
     assert os.path.isdir(basedir)
-
-def test_colocator__check_add_model_read_aux():
-    coloc = Colocator(raise_exceptions=True)
-    r = ReadGridded('TM5-met2010_CTRL-TEST')
-
-    assert not coloc._check_add_model_read_aux('od550aer', r)
-
-    coloc.model_read_aux = {
-        'od550aer' : dict(
-            vars_required=['od550aer', 'od550aer'],
-            fun=add_cubes)}
-    assert coloc._check_add_model_read_aux('od550aer', r)
 
 @testdata_unavail
 def test_colocator__coldata_savename(data_tm5):
@@ -103,19 +104,6 @@ def test_colocator_basedir_coldata(tmpdir):
     col = Colocator(raise_exceptions=True)
     col.basedir_coldata = basedir
     assert not os.path.isdir(basedir)
-
-def test_colocator__find_var_matches(col):
-    r = ReadGridded('TM5-met2010_CTRL-TEST')
-    with pytest.raises(DataCoverageError):
-        col._find_var_matches('invalid', r)
-    var_matches = col._find_var_matches('od550aer', r)
-    assert var_matches == {'od550aer': 'od550aer'}
-
-    obs_vars = 'conco3'
-    col.obs_vars = [obs_vars]
-    col.model_use_vars = {obs_vars : 'od550aer'}
-    var_matches = col._find_var_matches('conco3', r)
-    assert var_matches == {'od550aer' : 'conco3'}
 
 def test_colocator_read_ungridded():
     col = Colocator(raise_exceptions=True)
@@ -211,6 +199,50 @@ def test_colocator_with_obs_data_dir_gridded():
     assert cd.ts_type=='monthly'
     assert str(cd.start) == '2010-01-15T00:00:00.000000000'
     assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
+
+def test_colocator__find_var_matches(col):
+    r = ReadGridded('TM5-met2010_CTRL-TEST')
+    with pytest.raises(DataCoverageError):
+        col._find_var_matches('invalid', r)
+    var_matches = col._find_var_matches('od550aer', r)
+    assert var_matches == {'od550aer': 'od550aer'}
+
+    obs_vars = 'conco3'
+    col.obs_vars = [obs_vars]
+    col.model_use_vars = {obs_vars : 'od550aer'}
+    var_matches = col._find_var_matches('conco3', r)
+    assert var_matches == {'od550aer' : 'conco3'}
+
+def test_colocator__find_var_matches_model_add_vars(col):
+    r = ReadGridded('TM5-met2010_CTRL-TEST')
+    model_var = 'abs550aer'
+    obs_var = 'od550aer'
+    col.model_add_vars = {obs_var:model_var}
+    var_matches = col._find_var_matches(obs_var, r)
+    assert var_matches == {model_var:obs_var, obs_var:obs_var}
+
+def test_model_add_vars(col_tm5_aero):
+    model_var = 'abs550aer'
+    obs_var = 'od550aer'
+    col_tm5_aero.model_add_vars = {obs_var:model_var}
+    model_reader = ReadGridded(col_tm5_aero.model_id)
+    var_matches = col_tm5_aero._check_model_add_var(obs_var, model_reader, {})
+    assert var_matches == {model_var: obs_var}
+    var_matches = col_tm5_aero._find_var_matches([obs_var], model_reader)
+    assert len(var_matches) == 2
+    assert (model_var in var_matches)
+    assert (obs_var in var_matches)
+
+
+def test_colocator__check_add_model_read_aux():
+    coloc = Colocator(raise_exceptions=True)
+    r = ReadGridded('TM5-met2010_CTRL-TEST')
+    assert not coloc._check_add_model_read_aux('od550aer', r)
+    coloc.model_read_aux = {
+        'od550aer' : dict(
+            vars_required=['od550aer', 'od550aer'],
+            fun=add_cubes)}
+    assert coloc._check_add_model_read_aux('od550aer', r)
 
 
 if __name__ == '__main__':
