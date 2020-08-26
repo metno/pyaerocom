@@ -1364,6 +1364,6 @@ if __name__=="__main__":
     r = ReadEbas()
 
     db = r.sqlite_database_file
-    files = r.get_file_list(['sc550dryaer'])
+    #$files = r.get_file_list(['vmro3'])
 
-    r.read('sc550dryaer')
+    r.read('vmro3')
