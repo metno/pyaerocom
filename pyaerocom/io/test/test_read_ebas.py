@@ -78,6 +78,7 @@ class TestReadEBAS(object):
                          'concno2',
                          'conco3',
                          'concco',
+                         'vmro3',
                          'concprcpso4',
                          'concprcpso4t',
                          'concprcpso4c',
