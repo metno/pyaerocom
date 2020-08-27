@@ -908,7 +908,9 @@ class ReadEbas(ReadUngriddedBase):
             of the input variables.
         """
         file = loaded_nasa_ames
-        var_cols = {}
+
+        # dict containing variable column matches
+        _vc = {}
         # Loop over all variables that are supposed to be read
         for var in vars_to_read:
             # get corresponding EBAS variable info ...
@@ -947,19 +949,21 @@ class ReadEbas(ReadUngriddedBase):
                                                           file, var_info)
 
             if bool(col_matches):
-                var_cols[var] = col_matches
+                _vc[var] = col_matches
 
-        if not len(var_cols) > 0:
+        if not len(_vc) > 0:
             raise NotInFileError('None of the specified variables {} could be '
                                  'found in file {}'.format(vars_to_read,
                                                 os.path.basename(file.file)))
-
-        for var, cols in var_cols.items():
-            if len(cols) > 1:
+        var_cols = {}
+        for var, cols in _vc.items():
+            if len(cols) == 1:
+                col = cols[0]
+            else:
                 col = self._find_best_data_column(cols,
                                                   self.get_ebas_var(var),
                                                   file)
-                var_cols[var] = col
+            var_cols[var] = col
         return var_cols
 
     def get_ebas_var(self, var_name):
