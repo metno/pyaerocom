@@ -78,6 +78,7 @@ class TestReadEBAS(object):
                          'concno2',
                          'conco3',
                          'concco',
+                         'vmro3',
                          'concprcpso4',
                          'concprcpso4t',
                          'concprcpso4c',
@@ -313,8 +314,8 @@ class TestReadEBAS(object):
 
     def test_find_var_cols(self, reader, loaded_nasa_ames_example):
         var = ['sc550aer', 'scrh']
-        desired = {'sc550aer' : [17],
-                   'scrh'     : [3]}
+        desired = {'sc550aer' : 17,
+                   'scrh'     : 3}
 
         cols = reader.find_var_cols(var, loaded_nasa_ames_example)
         for k, v in desired.items():
