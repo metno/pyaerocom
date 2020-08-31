@@ -1,4 +1,5 @@
 import pytest
+import os
 from pyaerocom.conftest import lustre_unavail, testdata_unavail
 from pyaerocom.io.read_emep import ReadEMEP, ts_type_from_filename
 from pyaerocom.griddeddata import GriddedData
@@ -37,6 +38,15 @@ def test_read_emep_directory(path_emep):
     assert 'concno2' in vars_provided
     paths = r._get_paths()
     assert len(paths) == 3
+
+@pytest.mark.parametrize('files, ts_types', [
+    (['Base_hour.nc','test.nc','Base_month.nc', 'Base_day.nc', 'Base_fullrun.nc'], ['hourly','monthly','daily','yearly'])
+])
+def test_read_emep_ts_types(files, ts_types, tmpdir):
+    for filename in files:
+        open(os.path.join(tmpdir, filename), 'a').close()
+    r = ReadEMEP(data_dir=tmpdir)
+    assert sorted(r.ts_types) == sorted(ts_types)
 
 @pytest.mark.parametrize('filename,ts_type', [
     ('Base_hour.nc', 'hourly'),
