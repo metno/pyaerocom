@@ -499,17 +499,19 @@ class GriddedData(object):
         if not self.has_time_dim:
             raise ValueError('GriddedData has no time dimension')
         t = cftime_to_datetime64(self.time[-1])[0]
-        try:
-            freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
-            dtype_appr = 'datetime64[{}]'.format(freq)
+        #try:
+        freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
+        dtype_appr = 'datetime64[{}]'.format(freq)
 
-            t = t.astype(dtype_appr) + np.timedelta64(1, unit=freq)
-            t = t.astype('datetime64[us]') - np.timedelta64(1,unit='us')
-            return t
-        except Exception:
-            logger.exception('Failed to round start time {} to beggining of '
-                             'frequency {}'.format(t, self.ts_type))
-            return t.astype('datetime64[us]')
+        t = t.astype(dtype_appr) + np.timedelta64(1, freq)
+        t = t.astype('datetime64[us]') - np.timedelta64(1,'us')
+        return t
+# =============================================================================
+#         except Exception:
+#             logger.exception('Failed to round start time {} to beggining of '
+#                              'frequency {}'.format(t, self.ts_type))
+#             return t.astype('datetime64[us]')
+# =============================================================================
 
     @property
     def cube(self):
