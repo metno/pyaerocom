@@ -44,7 +44,7 @@ def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
             row_fmt = []
             #lowest = np.min(row)
             #exp = exponent(lowest)
-            for i, val in enumerate(row):
+            for val in row:
                 if np.isnan(val):
                     valstr = ''
                 else:
