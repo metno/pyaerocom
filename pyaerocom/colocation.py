@@ -175,9 +175,11 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         instance of colocated data
 
     """
+    if vert_scheme == 'surface':
+        vert_scheme = None
     if vert_scheme is not None:
-        raise NotImplementedError('Input vert_scheme cannot yet be handled '
-                                  'for gridded / gridded colocation...')
+        raise NotImplementedError(f'This type of colocation is not implemented '
+                                  f'for gridded / gridded colocation... ({vert_scheme})')
 
     if var_outlier_ranges is None:
         var_outlier_ranges = {}
