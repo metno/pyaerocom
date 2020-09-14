@@ -214,7 +214,7 @@ def implicit_to_explicit_rates(gridded, ts_type):
         mult_fac = np.ones_like(data)
         for i in range(len(seconds_factor)):
             mult_fac[i] *= seconds_factor[i]
-        result = data*mult_fac
+        result = data / mult_fac
         cube = result.to_iris()
         new_gridded = GriddedData()
         new_gridded.grid = cube
