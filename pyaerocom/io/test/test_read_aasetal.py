@@ -56,7 +56,7 @@ def test__get_time_stamps():
 @lustre_unavail
 def test_reader():
     reader = ReadAasEtal(DATA_ID)
-    assert reader.DATA_ID == DATA_ID
+    assert reader.data_id == DATA_ID
     assert reader.DATASET_PATH == DATA_DIR()
     assert reader.PROVIDES_VARIABLES == ['concso2', 'concso4', 'pr',
                                          'wetso4', 'concso4pr']

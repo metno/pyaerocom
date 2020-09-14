@@ -36,6 +36,7 @@ AMES_FILE = 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.C
 ADD_PATHS = {
 
     'MODELS'                : 'modeldata',
+    'OBSERVATIONS'          : 'obsdata',
     'AeronetSunV3L2Subset.daily'  : 'obsdata/AeronetSunV3Lev2.daily/renamed',
     'AeronetSDAV3L2Subset.daily'  : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
     'AeronetInvV3L2Subset.daily'  : 'obsdata/AeronetInvV3Lev2.daily/renamed',
@@ -157,8 +158,8 @@ def aeronetsunv3lev2_subset():
 
 @pytest.fixture(scope='session')
 def data_scat_jungfraujoch():
-    r = ReadEbas()
-    return r.read('scatc550aer', station_names='Jungfrau*')
+    r = ReadEbas('EBASSubset')
+    return r.read('sc550aer', station_names='Jungfrau*')
 
 @pytest.fixture(scope='session')
 def loaded_nasa_ames_example():

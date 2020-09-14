@@ -1333,7 +1333,7 @@ class ColocatedData(object):
     @property
     def unit(self):
         """Unit of data"""
-        const.print_log.warn(DeprecationWarning('Attr. unit is deprecated, '
+        const.print_log.warning(DeprecationWarning('Attr. unit is deprecated, '
                                                 'please use units instead'))
         return self.units
 

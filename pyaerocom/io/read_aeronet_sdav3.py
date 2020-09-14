@@ -145,7 +145,7 @@ class ReadAeronetSdaV3(ReadAeronetBase):
 
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out.data_id = self.DATA_ID
+        data_out.data_id = self.data_id
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []

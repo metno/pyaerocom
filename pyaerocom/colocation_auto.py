@@ -419,10 +419,6 @@ class Colocator(ColocationSetup):
         """Get the lowest resolution ts_type of input ts_types"""
         return get_lowest_resolution(ts_type, *ts_types)
 
-    def output_dir(self, task_name):
-        """Output directory for colocated data"""
-        return self._output_dirs[task_name]
-
     def _check_add_model_read_aux(self, model_var, model_reader):
         if not isinstance(self.model_read_aux, dict):
             return False
@@ -443,65 +439,6 @@ class Colocator(ColocationSetup):
             return False
         return True
 
-    def _find_var_matches_OLD(self, obs_vars, model_reader, var_name=None):
-        """Find variable matches in model data for input obs variables"""
-        if isinstance(obs_vars, str):
-            obs_vars = [obs_vars]
-        var_matches = {}
-
-        muv, mav = {}, {}
-        if isinstance(self.model_use_vars, dict):
-            muv = self.model_use_vars
-
-        if isinstance(self.model_add_vars, dict):
-            mav = self.model_add_vars
-
-        for obs_var in obs_vars:
-            if obs_var in muv:
-                model_var = muv[obs_var]
-            else:
-                model_var = obs_var
-
-            self._check_add_model_read_aux(model_var, model_reader)
-
-            if model_reader.has_var(model_var):
-                var_matches[model_var] = obs_var
-
-            if obs_var in mav: #observation variable
-                model_add_var = mav[obs_var]
-                self._check_add_model_read_aux(model_add_var, model_reader)
-                if model_reader.has_var(model_add_var):
-                    var_matches[model_add_var] = obs_var
-
-        for obs_var, obs_var_altname in self.obs_vars_rename.items():
-            if obs_var_altname in var_matches:
-                raise AttributeError('{} match was already found for obs '
-                                     'var to be renamed {}...'
-                                     .format(obs_var_altname, obs_var))
-            if model_reader.has_var(obs_var_altname):
-                var_matches[obs_var_altname] = obs_var
-
-        if var_name is not None:
-            if isinstance(var_name, str):
-                var_name = [var_name]
-            if not isinstance(var_name, list):
-                raise ValueError('Invalid input for var_name. Need str or '
-                                 'list, got {}'.format(var_name))
-            _var_matches = {}
-            for mvar, ovar in var_matches.items():
-                if mvar in var_name or ovar in var_name:
-                    _var_matches[mvar] = ovar
-            var_matches = _var_matches
-
-        if len(var_matches) == 0:
-
-            raise DataCoverageError('No variable matches between '
-                                    '{} and {} for input vars: {}'
-                                    .format(self.model_id,
-                                            self.obs_id,
-                                            self.obs_vars))
-        return var_matches
-
     def _check_model_add_var(self, var_name, model_reader, var_matches):
         if isinstance(self.model_add_vars, dict) and var_name in self.model_add_vars: #observation variable
             add_var = self.model_add_vars[var_name]
@@ -515,8 +452,7 @@ class Colocator(ColocationSetup):
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
 
-        # dictionary that will map input variable names (values) with model
-        # variables (keys)
+        # dictionary that will map model variables (keys) with observation variables (values)
         var_matches = {}
 
         muv = self.model_use_vars if isinstance(self.model_use_vars, dict) else {}
@@ -592,7 +528,7 @@ class Colocator(ColocationSetup):
             if var in obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES:
                 obs_vars.append(var)
             else:
-                const.print_log.warn('Variable {} is not supported by {} '
+                const.print_log.warning('Variable {} is not supported by {} '
                                      'and will be skipped'
                                      .format(var, self.obs_id))
         if len(obs_vars) == 0:
@@ -801,8 +737,7 @@ class Colocator(ColocationSetup):
                                                 var_name=model_var,
                                                 start=start,
                                                 stop=stop,
-                                                is_model=True,
-                                                ts_type=self.ts_type)
+                                                is_model=True)
             except Exception as e:
 
                 msg = ('Failed to load gridded data: {} / {}. Reason {}'
@@ -820,16 +755,6 @@ class Colocator(ColocationSetup):
             if ts_type is None:
                 # if colocation frequency is not specified
                 ts_type = ts_type_src
-
-            #check if co-located data file already exists before reading observational
-            #data sets
-            # if self.save_coldata:
-            #     savename = self._coldata_savename(model_data, start, stop,
-            #                                       ts_type, var_name=model_var)
-
-            #     file_exists = self._check_coldata_exists(model_data.data_id,
-            #                                              savename)
-
 # =============================================================================
 #             if not model_data.ts_type in all_ts_types:
 #                 raise TemporalResolutionError('Invalid temporal resolution {} '
@@ -966,16 +891,6 @@ class Colocator(ColocationSetup):
                                           'observation data.'.format(remaining_filters))
 
         obs_vars = self.obs_vars
-
-# =============================================================================
-#         obs_vars_avail =  obs_reader.vars_provided
-#
-#         for obs_var in obs_vars:
-#             if not obs_var in obs_vars_avail:
-#                 raise DataCoverageError('Variable {} is not supported by {}'
-#                                         .format(obs_var, self.obs_id))
-# =============================================================================
-
         var_matches = self._find_var_matches(obs_vars, model_reader, var_name)
 
         if self.remove_outliers:
