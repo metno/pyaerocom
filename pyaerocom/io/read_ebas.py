@@ -129,7 +129,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.34_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.36_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -195,7 +195,8 @@ class ReadEbas(ReadUngriddedBase):
 
     IGNORE_WAVELENGTH = ['conceqbc']
 
-    ASSUME_AE_SHIFT_WVL = 1.0
+    ASSUME_AAE_SHIFT_WVL = 1.0
+    ASSUME_AE_SHIFT_WVL = 1.5
 
     IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
     # list of all available resolution codes (extracted from SQLite database)
@@ -950,7 +951,10 @@ class ReadEbas(ReadUngriddedBase):
                 if wvlcol != towvl:
                     # ToDo: add AE if available
                     if self.opts.assume_default_ae_if_unavail:
-                        ae = self.ASSUME_AE_SHIFT_WVL
+                        if var.startswith('ac'):
+                            ae = self.ASSUME_AAE_SHIFT_WVL
+                        else:
+                            ae = self.ASSUME_AE_SHIFT_WVL
                         avg_before = np.nanmean(data)
                         data = self._shift_wavelength(vals=data,
                                                   from_wvl=wvlcol,
@@ -1448,7 +1452,7 @@ if __name__=="__main__":
 
     r = ReadEbas()
 
-    data = r.read('vmro3', station_names='Eureka')
+    data = r.read('sc550dryaer')
 
-    data.plot_station_timeseries('Eureka', 'vmro3')
+    #data.plot_station_timeseries('Eureka', 'vmro3')
 
