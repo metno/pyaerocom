@@ -30,7 +30,8 @@ from pyaerocom.filter import Filter
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError,
+                                  VariableDefinitionError)
 
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
@@ -426,13 +427,17 @@ class Colocator(ColocationSetup):
             else:
                 model_var = obs_var
 
-            self._check_add_model_read_aux(model_var, model_reader)
+            try:
+                self._check_add_model_read_aux(model_var, model_reader)
 
-            if model_reader.has_var(model_var):
-                var_matches[model_var] = obs_var
 
-            var_matches = self._check_model_add_var(obs_var, model_reader,
-                                                    var_matches)
+                if model_reader.has_var(model_var):
+                    var_matches[model_var] = obs_var
+
+                var_matches = self._check_model_add_var(obs_var, model_reader,
+                                                        var_matches)
+            except VariableDefinitionError:
+                continue
 
         if var_name is not None:
             _var_matches = {}
@@ -761,6 +766,9 @@ class Colocator(ColocationSetup):
                     raise Exception(msg)
                 else:
                     continue
+
+            print(model_data.from_files)
+
             ts_type_src = model_data.ts_type
             rshow = self._eval_resample_how(model_var, obs_var)
             if ts_type is None:
@@ -908,7 +916,7 @@ class Colocator(ColocationSetup):
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
 
-        all_ts_types = const.GRID_IO.TS_TYPES
+        #all_ts_types = const.GRID_IO.TS_TYPES
 
         ts_type = self.ts_type
 
@@ -939,11 +947,13 @@ class Colocator(ColocationSetup):
                 else:
                     continue
 
-            if not model_data.ts_type in all_ts_types:
-                raise TemporalResolutionError('Invalid temporal resolution {} '
-                                              'in model {}'
-                                              .format(model_data.ts_type,
-                                                      self.model_id))
+# =============================================================================
+#             if not model_data.ts_type in all_ts_types:
+#                 raise TemporalResolutionError('Invalid temporal resolution {} '
+#                                               'in model {}'
+#                                               .format(model_data.ts_type,
+#                                                       self.model_id))
+# =============================================================================
 
             if ts_type is None:
                 ts_type = model_data.ts_type
@@ -967,10 +977,12 @@ class Colocator(ColocationSetup):
                 else:
                     continue
 
-            if not obs_data.ts_type in all_ts_types:
-                raise TemporalResolutionError('Invalid temporal resolution {} '
-                                              'in obs {}'.format(obs_data.ts_type,
-                                                                 self.model_id))
+# =============================================================================
+#             if not obs_data.ts_type in all_ts_types:
+#                 raise TemporalResolutionError('Invalid temporal resolution {} '
+#                                               'in obs {}'.format(obs_data.ts_type,
+#                                                                  self.model_id))
+# =============================================================================
 
             # update colocation ts_type, based on the available resolution in
             # model and obs.
