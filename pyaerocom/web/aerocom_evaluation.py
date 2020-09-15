@@ -894,8 +894,9 @@ class AerocomEvaluation(object):
                 if fnmatch(mname, search_pattern) and not mname in matches:
                     matches.append(mname)
         if len(matches) == 0:
-            raise KeyError('No observations could be found that match input {}'
-                           .format(name_or_pattern))
+            raise KeyError('No observations could be found that match input {}.\n'
+                           'Choose from\n{}'
+                           .format(name_or_pattern, list(self.obs_config.keys())))
         return matches
 
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
