@@ -2121,7 +2121,8 @@ class GriddedData(object):
                                  'other data object or both lat_res_deg and '
                                  'lon_res_deg specified')
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
-                                           lon_res_deg=lon_res_deg)
+                                           lon_res_deg=lon_res_deg,
+                                           coord_system=self.cube.coord_system())
             other = GriddedData(dummy)
 
         if not (self.has_latlon_dims * other.has_latlon_dims):

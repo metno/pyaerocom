@@ -175,11 +175,29 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         instance of colocated data
 
     """
-    if vert_scheme == 'surface':
-        vert_scheme = None
-    if vert_scheme is not None:
+    if vert_scheme not in [None,'surface']:
         raise NotImplementedError(f'This type of colocation is not implemented '
                                   f'for gridded / gridded colocation... ({vert_scheme})')
+
+    # make sure the gridded data is in the right dimension
+    if gridded_data.ndim > 3:
+        if vert_scheme is None:
+            vert_scheme = 'mean'
+        if not vert_scheme in gridded_data.SUPPORTED_VERT_SCHEMES:
+            raise ValueError('Vertical scheme {} is not supported'.format(vert_scheme))
+        if vert_scheme != None:
+            gridded_data = gridded_data._apply_vert_scheme(None,vert_scheme)
+
+    if gridded_data_ref.ndim > 3:
+        if vert_scheme is None:
+            vert_scheme = 'mean'
+        if not vert_scheme in gridded_data_ref.SUPPORTED_VERT_SCHEMES:
+            raise ValueError('Vertical scheme {} is not supported'.format(vert_scheme))
+        if vert_scheme != None:
+            gridded_data_ref = gridded_data_ref._apply_vert_scheme(None,vert_scheme)
+    # grid_stat_data = gridded_data.to_time_series(longitude=ungridded_lons,
+    #                                              latitude=ungridded_lats,
+    #                                              vert_scheme=vert_scheme)
 
     if var_outlier_ranges is None:
         var_outlier_ranges = {}

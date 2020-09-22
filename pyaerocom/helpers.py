@@ -168,7 +168,7 @@ def tuple_list_to_lists(tuple_list):
     return list(map(list, zip(tuple_list)))
 
 def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None,
-                           lon_range=None):
+                           lon_range=None,coord_system=None):
     """Make an empty Cube with given latitude and longitude resolution
 
     Dimensions will be lat, lon
@@ -205,12 +205,14 @@ def make_dummy_cube_latlon(lat_res_deg=2, lon_res_deg=3, lat_range=None,
     latdim = iris.coords.DimCoord(lats, var_name='lat',
                                   standard_name='latitude',
                                   circular=False,
-                                  units=Unit('degrees'))
+                                  units=Unit('degrees'),
+                                  coord_system=coord_system)
 
     londim = iris.coords.DimCoord(lons, var_name='lon',
                                   standard_name='longitude',
                                   circular=lon_circ,
-                                  units=Unit('degrees'))
+                                  units=Unit('degrees'),
+                                  coord_system=coord_system)
 
     latdim.guess_bounds()
     londim.guess_bounds()
