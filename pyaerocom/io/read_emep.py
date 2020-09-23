@@ -127,8 +127,9 @@ class ReadEMEP(object):
     def _get_ts_types(self):
         ts_types = []
         if self.data_dir:
-            files = os.listdir(self.data_dir)
-            for filename in files:
+            files = self._get_paths()
+            for path in files:
+                filename = path.split('/')[-1]
                 ts_types.append(ts_type_from_filename(filename))
         elif self.filepath:
             filename = self.filepath.split('/')[-1]
