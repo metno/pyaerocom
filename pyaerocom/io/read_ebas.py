@@ -23,6 +23,7 @@ import fnmatch
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
+from pyaerocom.units_helpers import unit_conversion_fac
 from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_sc440dryaer,
                                  compute_sc700dryaer,
@@ -35,7 +36,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
-from pyaerocom.exceptions import NotInFileError, EbasFileError
+from pyaerocom.exceptions import (NotInFileError, EbasFileError,
+                                  UnitConversionError)
 from pyaerocom._lowlevel_helpers import BrowseDict
 from tqdm import tqdm
 
@@ -635,7 +637,8 @@ class ReadEbas(ReadUngriddedBase):
                                  "file".format(ebas_var_info.var_name))
         return col_matches
 
-    def _find_best_data_column(self, cols, ebas_var_info, file):
+    def _find_best_data_column(self, cols, ebas_var_info, file,
+                               check_units_on_multimatch=True):
         """Find best match of data column for variable in multiple columns
 
         This method is supposed to be used in case no unique match can be
@@ -710,19 +713,28 @@ class ReadEbas(ReadUngriddedBase):
             if num_matches == 0:
                 raise ValueError('Note for developers: this should not happen, '
                                  'please debug')
-            # multiple column matches were found, use the one that contains
-            # less NaNs
-            num_invalid = []
-            for colnum in result_col:
-                num_invalid.append(np.isnan(file.data[:, colnum]).sum())
-            result_col = [result_col[np.argmin(num_invalid)]]
-# =============================================================================
-#             raise EbasFileError('Could not identify unique column for var {}. '
-#                                 'Detected multiple matches: {}'.format(
-#                                         ebas_var_info.var_name,
-#                                         result_col))
-# =============================================================================
-        return result_col
+            to_unit =  str(self.var_info(ebas_var_info['var_name']).units)
+            if check_units_on_multimatch and not to_unit in ('', '1'):
+                _cols = []
+                for colnum in result_col:
+                    try:
+                        from_unit = file.var_defs[colnum].units
+                        unit_conversion_fac(from_unit, to_unit)
+                        _cols.append(colnum)
+                    except UnitConversionError:
+                        continue
+                if len(_cols) > 0:
+                    result_col = _cols
+
+            if len(result_col) > 1:
+                # multiple column matches were found, use the one that contains
+                # less NaNs
+                num_invalid = []
+                for colnum in result_col:
+                    num_invalid.append(np.isnan(file.data[:, colnum]).sum())
+                result_col = [result_col[np.argmin(num_invalid)]]
+
+        return result_col[0]
 
     def _add_meta(self, data_out, file):
         meta = file.meta
@@ -896,7 +908,9 @@ class ReadEbas(ReadUngriddedBase):
             of the input variables.
         """
         file = loaded_nasa_ames
-        var_cols = {}
+
+        # dict containing variable column matches
+        _vc = {}
         # Loop over all variables that are supposed to be read
         for var in vars_to_read:
             # get corresponding EBAS variable info ...
@@ -935,19 +949,21 @@ class ReadEbas(ReadUngriddedBase):
                                                           file, var_info)
 
             if bool(col_matches):
-                var_cols[var] = col_matches
+                _vc[var] = col_matches
 
-        if not len(var_cols) > 0:
+        if not len(_vc) > 0:
             raise NotInFileError('None of the specified variables {} could be '
                                  'found in file {}'.format(vars_to_read,
                                                 os.path.basename(file.file)))
-
-        for var, cols in var_cols.items():
-            if len(cols) > 1:
+        var_cols = {}
+        for var, cols in _vc.items():
+            if len(cols) == 1:
+                col = cols[0]
+            else:
                 col = self._find_best_data_column(cols,
                                                   self.get_ebas_var(var),
                                                   file)
-                var_cols[var] = col
+            var_cols[var] = col
         return var_cols
 
     def get_ebas_var(self, var_name):
@@ -995,11 +1011,9 @@ class ReadEbas(ReadUngriddedBase):
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
         #totnum = file.data.shape[0]
-        for var, colnums  in var_cols.items():
+        for var, colnum  in var_cols.items():
             data_out['var_info'][var] = {}
-            if len(colnums) != 1:
-                raise Exception('Something went wrong...please debug')
-            colnum = colnums[0]
+
             _col = file.var_defs[colnum]
             data = file.data[:, colnum]
 
@@ -1364,6 +1378,8 @@ if __name__=="__main__":
     r = ReadEbas()
 
     db = r.sqlite_database_file
-    files = r.get_file_list(['sc550dryaer'])
+    #$files = r.get_file_list(['vmro3'])
 
-    r.read('sc550dryaer')
+    data = r.read('vmro3', station_names='Eureka')
+
+    data.plot_station_timeseries('Eureka', 'vmro3')
