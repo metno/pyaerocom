@@ -411,7 +411,7 @@ def seconds_in_periods(timestamps, ts_type):
         timestamps = [to_pandas_timestamp(timestamp) for timestamp in timestamps]
     # From here on timestamps should be a numpy array containing pandas Timestamps
 
-    seconds_in_day = 24*60*60
+    seconds_in_day = 86400
     if ts_type >= TsType('monthly'):
         if ts_type == TsType('monthly'):
             days_in_months = np.array([ timestamp.days_in_month for timestamp in timestamps])
