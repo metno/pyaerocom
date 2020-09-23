@@ -147,8 +147,8 @@ def aeronetsunv3lev2_subset():
 
 @pytest.fixture(scope='session')
 def data_scat_jungfraujoch():
-    r = ReadEbas()
-    return r.read('scatc550aer', station_names='Jungfrau*')
+    r = ReadEbas('EBASSubset')
+    return r.read('sc550aer', station_names='Jungfrau*')
 
 @pytest.fixture(scope='session')
 def loaded_nasa_ames_example():

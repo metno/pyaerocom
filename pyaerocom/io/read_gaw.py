@@ -74,7 +74,7 @@ class ReadGAW(ReadUngriddedBase):
     @property
     def DATASET_NAME(self):
         """Name of the dataset"""
-        return self.DATA_ID
+        return self.data_id
 
     def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
@@ -160,7 +160,7 @@ class ReadGAW(ReadUngriddedBase):
 
         # Empty data object (a dictionary with extended functionality)
         data_out = StationData()
-        data_out.data_id = self.DATA_ID
+        data_out.data_id = self.data_id
         data_out.dataset_name = self.DATASET_NAME
 
         # Fill dictionary with relevant metadata and variables from the file.

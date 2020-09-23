@@ -19,7 +19,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
-    __baseversion__ = '0.09_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.10_' + ReadUngriddedBase.__baseversion__
 
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -81,18 +81,18 @@ class ReadAeronetBase(ReadUngriddedBase):
         self._alt_var_cols = {}
 
     def _ts_type_from_data_id(self):
-        if '.' in self.DATA_ID:
-            ts_type = self.DATA_ID.split('.')[-1]
+        if '.' in self.data_id:
+            ts_type = self.data_id.split('.')[-1]
             if ts_type in TS_TYPES:
-                self.TS_TYPES[self.DATA_ID] = ts_type
+                self.TS_TYPES[self.data_id] = ts_type
                 return ts_type
-        raise AttributeError('Failed to retrieve ts_type from DATA_ID')
+        raise AttributeError('Failed to retrieve ts_type from data_id')
 
     @property
     def TS_TYPE(self):
         """Default implementation of string for temporal resolution"""
         try:
-            return self.TS_TYPES[self.DATA_ID]
+            return self.TS_TYPES[self.data_id]
         except KeyError:
             try:
                 return self._ts_type_from_data_id()
@@ -396,7 +396,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta['var_info'] = od()
             meta.update(station_data.get_meta())
             #metadata[meta_key].update(station_data.get_station_coords())
-            meta['data_id'] = self.DATA_ID
+            meta['data_id'] = self.data_id
             meta['ts_type'] = self.TS_TYPE
             meta['variables'] = vars_to_retrieve
             if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
@@ -470,7 +470,7 @@ class ReadAeronetBase(ReadUngriddedBase):
 
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        #data_obj.data_revision[self.DATA_ID] = self.data_revision
+        #data_obj.data_revision[self.data_id] = self.data_revision
         self.data = data_obj
         return data_obj
 
