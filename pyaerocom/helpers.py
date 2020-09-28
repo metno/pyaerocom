@@ -1271,7 +1271,7 @@ def to_datestring_YYYYMMDD(value):
     ValueError
         if input is not supported
     """
-    if isinstance(value, str) and len(value, 8):
+    if isinstance(value, str) and len(value) == 8:
         logger.info('Input is already string containing 8 chars. Assuming it '
                     'is in the right format and returning unchanged')
         return value

@@ -98,8 +98,13 @@ def test_start_stop_from_year():
     assert start == Timestamp('2000')
     assert stop == Timestamp('2000-12-31 23:59:59')
 
-def to_datestring_YYYYMMDD():
-    pass
+@pytest.mark.parametrize(
+    'input,expected', [
+        ('20100101', '20100101'),
+        (helpers.to_pandas_timestamp('20100101'), '20100101')
+    ])
+def test_to_datestring_YYYYMMDD(input, expected):
+    assert helpers.to_datestring_YYYYMMDD(input) == expected
 
 def test_cftime_to_datetime64():
     pass
