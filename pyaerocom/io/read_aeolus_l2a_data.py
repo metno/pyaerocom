@@ -830,7 +830,8 @@ class ReadL2Data(ReadL2DataBase):
                     # file_data['time'].astype(np.float_) is milliseconds after the (Unix) epoch
                     # but we want to save the time as seconds since the epoch
                     _time = _time / 1000.
-                    for _index in range(len(file_data[self._QANAME][file_data[self._TIME_NAME][idx]])):
+                    # for _index in range(len(file_data[self._QANAME][file_data[self._TIME_NAME][idx]])):
+                    for _index in range(len(file_data[self._QANAME][file_data[self._TIME_NAME][idx]])-1):
                         # this works because all variables have to have the same size
                         # (aka same number of height levels)
 
@@ -864,9 +865,14 @@ class ReadL2Data(ReadL2DataBase):
                                     data[index_pointer, self.INDEX_DICT[var]] = \
                                         file_data[var][file_data['time'][idx]][_index]
                                 except KeyError:
-                                    # the data has not been forseen to be used
+                                    # the data has not been foreseen to be used
                                     continue
                                     # pass
+                                except IndexError:
+                                    #change in data.rev.2A10 files: middle point data has one element less
+                                    #we might want to keep the 0.0 here at some point
+                                    data[index_pointer, self.INDEX_DICT[var]] = \
+                                        np.nan
 
                             # put negative values to np.nan if the variable is not a metadata variable
                             if data[index_pointer, self.INDEX_DICT[var]] == self.NAN_DICT[var]:
@@ -3372,20 +3378,16 @@ if __name__ == '__main__':
 
     # single outfile
     if 'outfile' in options:
-        if len(options['files']) == 1:
-            # write netcdf
-            if os.path.exists(options['outfile']):
-                if options['overwrite']:
-                    obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
-                                         global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
-                else:
-                    sys.stderr.write('Error: path {} exists'.format(options['outfile']))
-            else:
+        # write netcdf
+        if os.path.exists(options['outfile']):
+            if options['overwrite']:
                 obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
                                      global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
+            else:
+                sys.stderr.write('Error: path {} exists'.format(options['outfile']))
         else:
-            sys.stderr.write("error: multiple input files, but only on output file given\n"
-                             "Please use the --outdir option instead\n")
+            obj.to_netcdf_simple(netcdf_filename=options['outfile'], data_to_write=data_numpy,
+                                 global_attributes=global_attributes, vars_to_write=[vars_to_read[0], obj._UPPERALTITUDENAME])
 
     # outdir
     # if 'outdir' in options and 'outfile' not in options:
