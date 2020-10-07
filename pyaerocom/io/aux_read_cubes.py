@@ -5,6 +5,7 @@ import numpy as np
 from pyaerocom import print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
+from pyaerocom.molmasses import *
 
 CUBE_MATHS = {'add'         :   iris.analysis.maths.add,
               'subtract'    :   iris.analysis.maths.subtract,
@@ -190,4 +191,50 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     cube_out = -1*iris.analysis.maths.divide(logr, wvl_r)
     cube_out.units = Unit('1')
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
+    return cube_out
+
+def cube_multiply_constant(cube):
+    pass
+
+def rho_from_ts_ps(ts, ps):
+    R = 287.058 #R for dry air
+
+    rho = R*divide_cubes(ts,ps)
+
+    rho.attributes.update(merge_meta_cubes(ts, ps))
+
+    return rho
+
+def mmr_from_vmr(cube):
+    """
+    Convvert gas volume/mole mixing ratios into mass mixing ratios.
+
+    Parameters
+    ----------
+    cube : iris.cube.Cube
+        A cube containing gas vmr data to be converted into mmr.
+
+    Returns
+    -------
+    cube_out : iris.cube.Cube
+        Cube containing mmr data.
+
+    """
+    cube = _check_input_iscube(cube)[0]
+
+    var_name = cube.var_name
+    M_dry_air = get_molmass('air_dry')
+    M_variable = get_molmass(var_name)
+
+    cube_out = (M_variable/M_dry_air)*cube
+    return cube_out
+
+def conc_from_vmr(cube, ts, ps):
+    cube,ts,ps = _check_input_iscube(cube,ts,ps)
+
+    mmr_cube = mmr_from_vmr(cube)
+    rho = rho_from_ts_ps(ts, ps)
+
+    cube_out = multiply_cubes(mmr_cube,rho)
+
     return cube_out
