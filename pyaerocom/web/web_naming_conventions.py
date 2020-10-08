@@ -18,6 +18,7 @@ VAR_MAPPING = {
     'sc550dryaer'   : ['Scat. coef. (dry)', '3D', 'Optical properties'],
     'sc550aer'      : ['Scat. coef.', '3D', 'Optical properties'],
     'ac550aer'      : ['Abs. coef.', '3D', 'Optical properties'],
+    'ac550dryaer'   : ['Abs. coef. (dry)', '3D', 'Optical properties'],
     'ec532aer'      : ['Ext. coeff.', '3D', 'Optical properties'],
     'bsc532aer'     : ['Backscat. coeff.', '3D', 'Optical properties'],
     'concpm10'      : ['PM10', '3D', 'Particle concentrations'],

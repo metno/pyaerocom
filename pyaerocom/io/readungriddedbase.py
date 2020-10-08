@@ -481,7 +481,10 @@ class ReadUngriddedBase(abc.ABC):
 
             if len(missing) == 0:
                 data[var] = self.AUX_FUNS[var](data)
-                data['var_info'][var] = {'computed' : True}
+                try:
+                    data['var_info'][var]['computed']=True
+                except KeyError:
+                    data['var_info'][var] = {'computed' : True}
 
         return data
 
