@@ -1153,11 +1153,6 @@ class ColocatedData(object):
             lat_range = reg.lat_range
             region_id = reg.name
 
-# =============================================================================
-#         if any(x is None for x in (lon_range, lat_range)):
-#             raise ValueError('Need either lon_range or lat_range or valid '
-#                              'region_id')
-# =============================================================================
         if lon_range is None:
             lon_range = [-180, 180]
         if lat_range is None:
