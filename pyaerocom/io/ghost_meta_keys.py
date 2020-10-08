@@ -79,7 +79,6 @@ GHOST_META_KEYS = [
     'distance_to_junction',
     'distance_to_kerb',
     'distance_to_source',
-    # 'horizontal_geodetic_datum',
     'latitude',
     'longitude',
     'measurement_altitude',

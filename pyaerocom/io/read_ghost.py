@@ -115,19 +115,23 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.8'
+    __version__ = '0.0.9'
 
     _FILEMASK = '*.nc'
 
     DATA_ID = 'GHOST.EEA.daily'
 
-    SUPPORTED_DATASETS = ['GHOST.EEA.hourly',
+    SUPPORTED_DATASETS = ['GHOST.EEA.monthly',
+                          'GHOST.EEA.hourly',
                           'GHOST.EEA.daily',
+                          'GHOST.EBAS.monthly',
                           'GHOST.EBAS.hourly',
                           'GHOST.EBAS.daily',]
 
-    TS_TYPES = {'GHOST.EEA.hourly'   : 'hourly',
+    TS_TYPES = {'GHOST.EEA.monthly'   : 'monthly',
+                'GHOST.EEA.hourly'   : 'hourly',
                 'GHOST.EEA.daily'    : 'daily',
+                'GHOST.EBAS.monthly'   : 'monthly',
                 'GHOST.EBAS.hourly'   : 'hourly',
                 'GHOST.EBAS.daily'    : 'daily'}
 
@@ -141,12 +145,13 @@ class ReadGhost(ReadUngriddedBase):
     #: these need to be output variables in AeroCom convention (cf. file
     #: pyaerocom/data/variables.ini). See also :attr:`VARNAMES_DATA` for a
     #: mapping of variable names used in GHOST
-    VARS_TO_READ = ['concpm10', 'concpm25','vmrco', 'vmrno',
-                    'vmrno2', 'vmro3', 'vmrso2']
+    VARS_TO_READ = ['concpm10', 'concpm25','conccl','vmrco', 'vmrno',
+                    'vmrno2', 'vmro3', 'vmrso2',]
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
     VARNAMES_DATA = {'concpm10' : 'pm10',
                      'concpm25' : 'pm2p5',
+                     'conccl'   : 'sconccl',
                      'vmrco'    : 'sconcco',
                      'vmrno'    : 'sconcno',
                      'vmrno2'   : 'sconcno2',
