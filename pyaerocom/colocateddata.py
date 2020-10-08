@@ -667,12 +667,6 @@ class ColocatedData(object):
             kwargs['highlim'] = var.upper_limit
 
         if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
-# =============================================================================
-#                 raise DataDimensionError('Cannot calculate statistics with '
-#                                          'area weights. Data needs to have '
-#                                          'latitude / longitude dimension.')
-# =============================================================================
-
             kwargs['weights'] = self.area_weights[0].flatten()
         elif 'weights' in kwargs:
             raise ValueError('Invalid input combination: weights are provided '
