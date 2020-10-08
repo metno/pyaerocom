@@ -9,10 +9,13 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 import iris
+import pandas as pd
 from cf_units import Unit
 
 from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
-from pyaerocom.colocation import (_regrid_gridded, colocate_gridded_ungridded,
+from pyaerocom.colocation import (_regrid_gridded,
+                                  _colocate_site_data_helper,
+                                  colocate_gridded_ungridded,
                                   colocate_gridded_gridded)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom import GriddedData
@@ -25,6 +28,22 @@ def test__regrid_gridded(data_tm5):
                                    dict(lon_res_deg=5, lat_res_deg=5))
 
      assert one_way.shape == another_way.shape
+
+def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
+    var = 'od550aer'
+    stat1 = aeronetsunv3lev2_subset.to_station_data(3, var)
+    stat2 = aeronetsunv3lev2_subset.to_station_data(4, var)
+    df = _colocate_site_data_helper(stat1, stat2, var, var,
+                                    'daily',None,False,None,False)
+
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 9483
+    means = [np.nanmean(df['data']),
+             np.nanmean(df['ref'])]
+    should_be = [0.31171085422102346,
+                 0.07752743643132792]
+    npt.assert_allclose(means, should_be, rtol=1e-5)
+
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[

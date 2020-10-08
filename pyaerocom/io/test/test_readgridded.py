@@ -7,8 +7,8 @@ Created on Mon Jul  9 14:14:29 2018
 # TODO: Docstrings
 import pytest
 import numpy.testing as npt
-from pandas import Timestamp, DataFrame
-from pyaerocom.conftest import TEST_RTOL, lustre_unavail
+from pandas import DataFrame
+from pyaerocom.conftest import TEST_RTOL, lustre_unavail, testdata_unavail
 from pyaerocom.io.readgridded import ReadGridded
 
 START = "1-1-2003"
@@ -17,10 +17,39 @@ STOP = "31-12-2007"
 def init_reader():
     return ReadGridded(data_id="ECMWF_CAMS_REAN")
 
-@lustre_unavail
 @pytest.fixture(scope='session')
 def reader_reanalysis():
     return init_reader()
+
+@pytest.fixture(scope='module')
+def reader_tm5():
+    return ReadGridded('TM5-met2010_CTRL-TEST')
+
+
+@pytest.mark.parametrize('input_args,mean_val', [
+    (dict(var_name='od550aer', ts_type='monthly'), 0.1186),
+    (dict(var_name='od550aer', ts_type='monthly', constraints={
+                                  'var_name'   : 'od550aer',
+                                  'operator'   : '>',
+                                  'filter_val' : 1000
+                                  }), 0.1186),
+    (dict(var_name='od550aer', ts_type='monthly', constraints={
+                                  'var_name'   : 'od550aer',
+                                  'operator'   : '<',
+                                  'filter_val' : 0.1
+                                  }), 0.2062),
+    (dict(var_name='od550aer', ts_type='monthly', constraints=[
+        {'var_name'   : 'od550aer',
+         'operator'   : '<',
+         'filter_val' : 0.1},
+        {'var_name'   : 'od550aer',
+         'operator'   : '>',
+         'filter_val' : 0.11}
+        ]), 0.1047)
+    ])
+def test_read_var(reader_tm5, input_args, mean_val):
+    data = reader_tm5.read_var(**input_args)
+    npt.assert_allclose(data.mean(), mean_val, rtol=1e-3)
 
 def test_ReadGridded_class_empty():
     r = ReadGridded()
@@ -52,7 +81,7 @@ def test_data_dir(reader_reanalysis):
     assert reader_reanalysis.data_dir.endswith('aerocom/aerocom-users-database/ECMWF/ECMWF_CAMS_REAN/renamed')
 
 @lustre_unavail
-def test_read_var(reader_reanalysis):
+def test_read_var_lustre(reader_reanalysis):
     from numpy import datetime64
     d = reader_reanalysis.read_var(var_name="od550aer", ts_type="daily",
                          start=START, stop=STOP)
@@ -90,4 +119,5 @@ def test_read_vars(reader_reanalysis):
     npt.assert_array_equal(vals, nominal)
 
 if __name__=="__main__":
-    pytest.main(['./test_readgridded.py'])
+    import sys
+    pytest.main(sys.argv)
