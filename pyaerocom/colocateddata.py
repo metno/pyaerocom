@@ -210,8 +210,6 @@ class ColocatedData(object):
     @property
     def num_coords(self):
         """Total number of lat/lon coordinates"""
-        if not self.check_dimensions():
-            raise DataDimensionError('Invalid dimensionality...')
         if 'station_name' in self.coords:
             return len(self.data.station_name)
 
@@ -235,8 +233,6 @@ class ColocatedData(object):
         ----
         check 4D data
         """
-        if not self.check_dimensions():
-            raise DataDimensionError('Invalid dimensionality...')
         if self.has_time_dim:
             return (self.data[0].count(dim='time') > 0).data.sum()
         # TODO: ADDED IN A RUSH BY JGLISS ON 17.06.2020, check!
@@ -367,18 +363,8 @@ class ColocatedData(object):
         Check if this is needed. Little cumbersome at the moment, the data
         object can / should be more flexible! Should
         """
-        dims = self.data.dims
-        if not 2 < len(dims) < 5:
-            logger.info('Invalid number of dimensions. Must be 3 or 4')
-            return False
-        try:
-            if dims.index('data_source') == 0:
-                if 'time' in dims and dims.index('time') == 1:
-                    return True
-                return True
-            raise Exception
-        except Exception:
-            return False
+        raise NotImplementedError(DeprecationWarning('This method has been '
+                                                     'deprecated in v0.10.0'))
 
     def resample_time(self, to_ts_type, how='mean',
                       apply_constraints=None, min_num_obs=None,
@@ -992,7 +978,6 @@ class ColocatedData(object):
         raise NotImplementedError('Coming soon...')
         data = df.to_xarray()
         self.data = data
-        self.check_dimensions()
 
     def to_csv(self, out_dir, savename=None):
         """Save data object as .csv file
@@ -1011,8 +996,6 @@ class ColocatedData(object):
             savename = self.savename_aerocom
         if not savename.endswith('.csv'):
             savename = '{}.csv'.format(savename)
-        if not self.check_dimensions():
-            raise IOError('Invalid dimensionality, please check...')
         df = self.to_dataframe()
         file_path = os.path.join(out_dir, savename)
         df.to_csv(file_path)
