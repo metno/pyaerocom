@@ -313,7 +313,7 @@ class ReadGhost(ReadUngriddedBase):
             if ts_type in TS_TYPES:
                 self.TS_TYPES[self.data_id] = ts_type
                 return ts_type
-        raise AttributeError('Failed to retrieve ts_type from DATA_ID')
+        raise AttributeError('Failed to retrieve ts_type from data_id')
 
     def _eval_flags(self, vardata, invalidate_flags, ds):
         valid = np.ones_like(vardata).astype(bool)

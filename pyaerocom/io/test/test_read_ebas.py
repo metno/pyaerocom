@@ -78,6 +78,7 @@ class TestReadEBAS(object):
                          'concno2',
                          'conco3',
                          'concco',
+                         'vmro3',
                          'concprcpso4',
                          'concprcpso4t',
                          'concprcpso4c',
@@ -98,7 +99,7 @@ class TestReadEBAS(object):
                          'test']
 
     def test_DATA_ID(self, reader):
-        assert reader.DATA_ID == const.EBAS_MULTICOLUMN_NAME
+        assert reader.data_id == 'EBASSubset'
 
     def test_FILE_SUBDIR_NAME(self, reader):
         assert reader.FILE_SUBDIR_NAME == 'data'
@@ -175,7 +176,10 @@ class TestReadEBAS(object):
         assert reader.IGNORE_WAVELENGTH == ['conceqbc']
 
     def test_ASSUME_AE_SHIFT_WVL(self, reader):
-        assert reader.ASSUME_AE_SHIFT_WVL == 1.0
+        assert reader.ASSUME_AE_SHIFT_WVL == 1.5
+
+    def test_ASSUME_AAE_SHIFT_WVL(self, reader):
+        assert reader.ASSUME_AAE_SHIFT_WVL == 1.0
 
     def test_IGNORE_FILES(self, reader):
         assert reader.IGNORE_FILES == ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
@@ -185,6 +189,7 @@ class TestReadEBAS(object):
              'wavelength_tol_nm': 50,
              'shift_wavelengths': True,
              'assume_default_ae_if_unavail': True,
+             'check_correct_MAAP_wrong_wvl': False,
              'eval_flags': True,
              'keep_aux_vars': False,
              'merge_meta': False,
@@ -312,8 +317,8 @@ class TestReadEBAS(object):
 
     def test_find_var_cols(self, reader, loaded_nasa_ames_example):
         var = ['sc550aer', 'scrh']
-        desired = {'sc550aer' : [17],
-                   'scrh'     : [3]}
+        desired = {'sc550aer' : 17,
+                   'scrh'     : 3}
 
         cols = reader.find_var_cols(var, loaded_nasa_ames_example)
         for k, v in desired.items():
@@ -337,7 +342,7 @@ class TestReadEBAS(object):
          'station_id': 'CH0001G', 'station_name': 'Jungfraujoch',
          'instrument_name': 'TSI_3563_JFJ_dry',
          'PI': 'Bukowiecki, Nicolas; Baltensperger, Urs',
-         'ts_type': 'hourly', 'data_id': 'EBASMC', 'data_level': 2,
+         'ts_type': 'hourly', 'data_id': 'EBASSubset', 'data_level': 2,
          'revision_date': np.datetime64('2019-05-20T00:00:00')})
         ])
     def test_read_file(self, reader, filename, vars_to_retrieve, start,

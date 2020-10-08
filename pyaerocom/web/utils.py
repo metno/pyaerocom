@@ -24,6 +24,7 @@ def compute_model_average_and_diversity(cfg, var_name,
                                         extract_surface=True,
                                         ignore_models=None,
                                         logfile=None,
+                                        comment=None,
                                         **kwargs):
     """Compute median or mean model based on input models
 
@@ -159,12 +160,6 @@ def compute_model_average_and_diversity(cfg, var_name,
         except Exception as e:
             models_failed.append(mid)
             const.print_log.info('Failed to process...: {}'.format(repr(e)))
-
-# =============================================================================
-#             data = cfg.read_model_data(mname, var_name,
-#                                        ts_type=ts_type,
-#                                        **kwargs)
-# =============================================================================
             if logfile is not None:
                 logfile.write('\nFAILED {}: {}'.format(mid, repr(e)))
             continue
@@ -182,16 +177,18 @@ def compute_model_average_and_diversity(cfg, var_name,
 
     dims = [data.time, dummy.coord('latitude'), dummy.coord('longitude')]
     avg = avg_fun(loaded, axis=0)
+    q1, q3 = None, None
     if avg_how == 'mean':
-        delta_textor = np.std(np.asarray(loaded) / avg, axis=0) * 100
+        diversity = np.std(np.asarray(loaded) / avg, axis=0) * 100
     else:
         ld = np.asarray(loaded)
         q1 = np.quantile(ld, 0.25, axis=0)
         q3 = np.quantile(ld, 0.75, axis=0)
-        delta_textor = (q3-q1) / avg * 100
+        diversity = (q3-q1) / avg * 100
 
-    comment = ('AeroCom {} model (cf. attrs. from_models and from_vars for details)'
-               .format(avg_how))
+    if comment is None:
+        comment = 'AeroCom {} model data for variable {}.'.format(avg_how,
+                                                                 var_name)
 
     mean = GriddedData(numpy_to_cube(avg,
                                      dims=dims,
@@ -205,10 +202,9 @@ def compute_model_average_and_diversity(cfg, var_name,
                                      models_failed=models_failed,
                                      comment=comment))
 
-    comment = ('AeroCom model diversity of {} in % based on Textor et al. Atmos. '
-               'Chem. Phys., 6, 1777–1813, 2006'.format(var_name))
+    commentdiv = comment + ' Diversity field in units of % (IQR for median, std for mean)'
 
-    delta = GriddedData(numpy_to_cube(delta_textor,
+    delta = GriddedData(numpy_to_cube(diversity,
                                       dims=dims,
                                       var_name='{}div'.format(var_name),
                                       units='%',
@@ -218,6 +214,35 @@ def compute_model_average_and_diversity(cfg, var_name,
                                       from_models=from_models,
                                       from_vars=from_vars,
                                       models_failed=models_failed,
-                                      comment=comment))
+                                      comment=commentdiv))
 
-    return (mean, delta)
+    if q1 is not None: # then also q3 is not None
+        commentq1 =  comment + ' First Quantile.'
+        per25 = GriddedData(numpy_to_cube(q1,
+                                         dims=dims,
+                                         var_name='{}q1'.format(var_name),
+                                         units=data.unit,
+                                         ts_type=ts_type,
+                                         data_id=data_id,
+                                         from_files=from_files,
+                                         from_models=from_models,
+                                         from_vars=from_vars,
+                                         models_failed=models_failed,
+                                         comment=commentq1))
+
+        commentq3 =  comment + ' First Quantile.'
+        per75 = GriddedData(numpy_to_cube(q3,
+                                         dims=dims,
+                                         var_name='{}q3'.format(var_name),
+                                         units=data.unit,
+                                         ts_type=ts_type,
+                                         data_id=data_id,
+                                         from_files=from_files,
+                                         from_models=from_models,
+                                         from_vars=from_vars,
+                                         models_failed=models_failed,
+                                         comment=commentq3))
+    else:
+        per25, per75 = None, None
+
+    return (mean, delta, per25, per75)

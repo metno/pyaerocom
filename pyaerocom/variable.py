@@ -401,6 +401,10 @@ class Variable(object):
         return True if '3d' in self.var_name_input else False
 
     @property
+    def is_wavelength_dependent(self):
+        return True if self.wavelength_nm is not None else False
+
+    @property
     def is_dry(self):
         """True if str 'dry' is contained in :attr:`var_name_input`"""
         return True if 'dry' in self.var_name_input else False

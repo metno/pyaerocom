@@ -75,8 +75,8 @@ class ReadUngridded(object):
     if isinstance(const._cachedir, str) and os.path.exists(const._cachedir):
         _DONOTCACHEFILE = os.path.join(const._cachedir, 'DONOTCACHE')
 
-    def __init__(self, datasets_to_read=None,
-                 vars_to_retrieve=None, ignore_cache=False):
+    def __init__(self, datasets_to_read=None, vars_to_retrieve=None,
+                 ignore_cache=False, data_dir=None):
         if datasets_to_read is None:
             datasets_to_read = const.AERONET_SUN_V3L2_AOD_DAILY_NAME
         #will be assigned in setter method of dataset_to_read
@@ -93,6 +93,13 @@ class ReadUngridded(object):
 
         # initiate a logger for this class
         self.logger = logging.getLogger(__name__)
+
+        if data_dir is not None and len(self.datasets_to_read) > 1:
+            raise ValueError('Invalid input combination for ReadUngridded. '
+                             'Input data_dir can only be specified if a '
+                             'single dataset is supposed to be read')
+
+        self.data_dir=data_dir
 
         if ignore_cache:
             self.logger.info('Deactivating caching')
@@ -283,6 +290,20 @@ class ReadUngridded(object):
 
         reader = self.get_reader(dataset_to_read)
 
+        # data_dir will be None in most cases, but can be specified when
+        # creating the instance, by default, data_dir is inferred automatically
+        # in the reading class, using database location
+        data_dir = self.data_dir
+        if self.data_dir is not None:
+
+            if not os.path.exists(self.data_dir):
+                raise FileNotFoundError(
+                    'Trying to read {} from specified data_dir {} failed. '
+                    'Directory does not exist'.format(dataset_to_read, data_dir)
+                    )
+            reader._dataset_path = data_dir
+            const.print_log.info('Reading {} from specified data loaction: {}'
+                                 .format(dataset_to_read, data_dir))
         if vars_to_retrieve is None:
             vars_to_retrieve = reader.PROVIDES_VARIABLES
         elif isinstance(vars_to_retrieve, str):
@@ -302,7 +323,7 @@ class ReadUngridded(object):
             # initate cache handler
             for var in vars_available:
                 try:
-                    cache.check_and_load(var_name=var,
+                    cache.check_and_load(var,
                                          force_use_outdated=only_cached)
                 except Exception:
                     self.logger.exception('Fatal: compatibility error between '
@@ -511,20 +532,15 @@ class ReadUngridded(object):
         return data
 if __name__=="__main__":
 
-    reader = ReadUngridded()
+    obs_dir = '/home/jonasg/MyPyaerocom/data/obsdata/AeronetSunV3Lev2.0.daily/renamed'
+    reader = ReadUngridded(data_dir=obs_dir)
 
-    data = reader.read('GHOST.daily', 'concpm10',
-                       only_cached=True)
+    data = reader.read('AeronetSunV3Lev2.daily', 'od550aer')
 
-# =============================================================================
-#     data = reader.read('EBASMC',
-#                        vars_to_retrieve=['conctc', 'concoa', 'concbc', 'conceqbc'])
-# =============================================================================
+    ch = CacheHandlerUngridded()
 
-# =============================================================================
-#     data = reader.read([const.AERONET_SUN_V2L2_AOD_DAILY_NAME,
-#                         const.AERONET_SUN_V3L2_AOD_DAILY_NAME],
-#                     vars_to_retrieve='od550aer',
-#                     last_file=10)
-#
-# =============================================================================
+    filename = 'test_custom_cache.pkl'
+    ch.write(data, filename)
+
+    if ch.check_and_load(filename):
+        data1 = ch.loaded_data[filename]

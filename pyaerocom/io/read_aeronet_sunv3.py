@@ -106,7 +106,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
     #: by the original data but computed on import)
-    AUX_REQUIRES = {'ang4487aer_calc'   :   ['od440aer',
+    AUX_REQUIRES = {'ang44&87aer'   :   ['od440aer',
                                              'od870aer'],
                     'od550aer'          :   ['od440aer',
                                              'od500aer',
@@ -114,8 +114,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
     #: Functions that are used to compute additional variables (i.e. one
     #: for each variable defined in AUX_REQUIRES)
-    AUX_FUNS = {'ang4487aer_calc'   :   calc_ang4487aer,
-                'od550aer'          :   calc_od550aer}
+    AUX_FUNS = {'ang44&87aer'   :   calc_ang4487aer,
+                'od550aer'      :   calc_od550aer}
 
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
@@ -154,7 +154,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out.data_id = self.DATA_ID
+        data_out.data_id = self.data_id
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []
@@ -281,5 +281,5 @@ if __name__=="__main__":
 
     #file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
 
-    reader = ReadAeronetSunV3()
-    reader.read(['od550aer', 'od550csaer'])
+    reader = ReadAeronetSunV3(const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME)
+    od = reader.read('od550aer')
