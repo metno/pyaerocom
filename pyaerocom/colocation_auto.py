@@ -766,9 +766,6 @@ class Colocator(ColocationSetup):
                     raise Exception(msg)
                 else:
                     continue
-
-            print(model_data.from_files)
-
             ts_type_src = model_data.ts_type
             rshow = self._eval_resample_how(model_var, obs_var)
             if ts_type is None:
@@ -1175,7 +1172,6 @@ if __name__ == '__main__':
 
     data = col.data[MODEL_ID]['od550aer']
     data.plot_scatter(loglog=True)
-
 
 
 
