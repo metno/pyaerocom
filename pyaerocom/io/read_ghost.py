@@ -121,13 +121,17 @@ class ReadGhost(ReadUngriddedBase):
 
     DATA_ID = 'GHOST.EEA.daily'
 
-    SUPPORTED_DATASETS = ['GHOST.EEA.hourly',
+    SUPPORTED_DATASETS = ['GHOST.EEA.monthly',
+                          'GHOST.EEA.hourly',
                           'GHOST.EEA.daily',
+                          'GHOST.EBAS.monthly',
                           'GHOST.EBAS.hourly',
                           'GHOST.EBAS.daily',]
 
-    TS_TYPES = {'GHOST.EEA.hourly'   : 'hourly',
+    TS_TYPES = {'GHOST.EEA.monthly'   : 'monthly',
+                'GHOST.EEA.hourly'   : 'hourly',
                 'GHOST.EEA.daily'    : 'daily',
+                'GHOST.EBAS.monthly'   : 'monthly',
                 'GHOST.EBAS.hourly'   : 'hourly',
                 'GHOST.EBAS.daily'    : 'daily'}
 
@@ -144,17 +148,20 @@ class ReadGhost(ReadUngriddedBase):
     #: these need to be output variables in AeroCom convention (cf. file
     #: pyaerocom/data/variables.ini). See also :attr:`VARNAMES_DATA` for a
     #: mapping of variable names used in GHOST
-    VARS_TO_READ = ['concpm10', 'concpm25','vmrco', 'vmrno',
-                    'vmrno2', 'vmro3', 'vmrso2']
+    VARS_TO_READ = ['concpm10','concpm10al', 'concpm25','concpm1','conccl','vmrco', 'vmrno',
+                    'vmrno2', 'vmro3', 'vmrso2',]
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
-    VARNAMES_DATA = {'concpm10' : 'pm10',
-                     'concpm25' : 'pm2p5',
-                     'vmrco'    : 'sconcco',
-                     'vmrno'    : 'sconcno',
-                     'vmrno2'   : 'sconcno2',
-                     'vmro3'    : 'sconco3',
-                     'vmrso2'   : 'sconcso2',
+    VARNAMES_DATA = {'concpm10'  : 'pm10',
+                     'concpm10al': 'pm10al',
+                     'concpm25'  : 'pm2p5',
+                     'concpm1'   : 'pm1',
+                     'conccl'    : 'sconccl',
+                     'vmrco'     : 'sconcco',
+                     'vmrno'     : 'sconcno',
+                     'vmrno2'    : 'sconcno2',
+                     'vmro3'     : 'sconco3',
+                     'vmrso2'    : 'sconcso2',
                      }
 
     AUX_REQUIRES = {'concco'    :  ['vmrco'],
@@ -175,14 +182,15 @@ class ReadGhost(ReadUngriddedBase):
     }
 
     # This is the default list of flags that mark bad / invalid data, as
-    # provided by Dene: [0, 1, 2, 3, 5, 6, 8, 9, 10, 12, 13, 14, 17, 18, 22,
-    # 25, 30, 40, 41, 42]
+    # provided by Dene: [0, 1, 2, 3, 6, 20, 21, 22, 72, 75, 82, 83, 90, 91,
+    #92, 105, 110, 111, 112, 113, 115, 132, 133]
 
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
-    DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([0, 1, 2, 3, 6, 8, 9, 10, 12,
-                                                13, 14, 15, 18, 22, 25, 30, 40,
-                                                41, 42]),
+    DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([[0, 1, 2, 3, 6, 20, 21, 22,
+                                                 72, 75, 82, 83, 90, 91, 92,
+                                                 105, 110, 111, 112, 113, 115,
+                                                 132, 133]]),
                              'flag' : None}
 
     @property
