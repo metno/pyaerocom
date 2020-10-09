@@ -12,7 +12,7 @@ import os
 import glob
 import pyaerocom as pya
 from pyaerocom import const, print_log, logger
-from pyaerocom.exceptions import VarNotAvailableError
+from pyaerocom.exceptions import VarNotAvailableError, VariableDefinitionError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
@@ -32,14 +32,21 @@ class ReadEMEP(object):
         string ID of model (e.g. "AATSR_SU_v4.3","CAM5.3-Oslo_CTRL2016")
     filepath : str
         Path to netcdf file.
-    data_dir : str
+    data_dir : str, optional
+        Base directory of EMEP data, containing one or more netcdf files
 
     Attributes
     ----------
-    filepath :
-    data_id :
-    data_dir :
-    vars_provided :
+    filepath : str
+        Path to netcdf file
+    data_id : str
+        ID of model
+    data_dir : str
+        Base directory of EMEP data, containing one or more netcdf files
+    vars_provided : str
+        Variables that are available to read in filepath or data_dir
+    ts_types : str
+        Available temporal resolution in filepath or data_dir
     """
 
 
@@ -97,11 +104,8 @@ class ReadEMEP(object):
 
     @filepath.setter
     def filepath(self, val):
-        try:
-            open(val, 'r')
-        except Exception as e:
-            const.print_log.warning('File "{}" not found. Error message: {}'.format(val, repr(e)))
-            val = None
+        if not os.path.isfile(val):
+            raise FileNotFoundError('Filepath {} not found.'.format(val))
         self._filepath = val
 
 
@@ -109,7 +113,6 @@ class ReadEMEP(object):
     def data_dir(self, val):
         if not os.path.isdir(val):
             raise FileNotFoundError('Folder "{}" not found.'.format(val))
-            val = None
         self._data_dir = val
 
 
@@ -234,7 +237,8 @@ class ReadEMEP(object):
 
         # if start or stop:
         #     raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
-
+        if self.filepath is None and self.data_dir is None:
+            raise ValueError('filepath or data_dir must be set before reading.')
         var_map = get_emep_variables()
 
         aliases = get_aliases(var_name)
@@ -243,7 +247,7 @@ class ReadEMEP(object):
 
         # Find path to file based on ts_type
         filepath = ''
-        if self.data_dir:
+        if self.data_dir is not None:
             filename = ''
             if ts_type == 'monthly':
                 filename = 'Base_month.nc'
@@ -254,7 +258,9 @@ class ReadEMEP(object):
             elif ts_type == 'yearly':
                 filename = 'Base_fullrun.nc'
             filepath = os.path.join(self.data_dir, filename)
-        elif self.filepath:
+            if not os.path.isfile(filepath):
+                raise FileNotFoundError('Could not find file: {}'.format(filepath))
+        elif self.filepath is not None:
             filepath = self.filepath
 
         if var_name in self.AUX_REQUIRES:
@@ -267,12 +273,8 @@ class ReadEMEP(object):
         else:
             try:
                 emep_var = var_map[var_name]
-            except KeyError as e:
+            except KeyError:
                 raise VarNotAvailableError('Variable {} not in EMEP mapping.'.format(var_name))
-                sys.exit(1)
-
-
-
             EMEP_prefix = emep_var.split('_')[0]
             data = xr.open_dataset(filepath)[emep_var]
             data.attrs['long_name'] = var_name
@@ -295,23 +297,6 @@ class ReadEMEP(object):
             if metadata in gridded.metadata.keys():
                 del(gridded.metadata[metadata])
         return gridded
-
-
-    def read(self, vars_to_retrieve, data_id=None, start=None, stop=None,
-             ts_type=None, **kwargs):
-
-        if isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-
-        data = []
-        for var_name in vars_to_retrieve:
-            try:
-                data.append(self.read_var(var_name, start, stop, ts_type, data_id=data_id))
-            except Exception as e:
-                const.print_log.exception('Failed to read data of {}\n'
-                            'Error message: {}'.format(self._filepath,
-                                                       repr(e)))
-        return tuple(data)
 
 
     @staticmethod
