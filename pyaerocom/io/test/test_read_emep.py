@@ -12,13 +12,14 @@ def test_read_emep():
     assert r.data_id == None
     assert r.vars_provided == []
     assert r.filepath == None
-
+    assert r.years_avail == []
     with pytest.raises(FileNotFoundError):
         ReadEMEP(data_dir='/invalid')
     with pytest.raises(FileNotFoundError):
         ReadEMEP(filepath='/invalid/test.nc')
 
 
+@testdata_unavail
 def test_read_emep_read_var(path_emep):
     with pytest.raises(ValueError):
         r = ReadEMEP()
@@ -30,7 +31,6 @@ def test_read_emep_read_var(path_emep):
     with pytest.raises(FileNotFoundError):
         r = ReadEMEP(data_dir=data_dir)
         r.read_var('od550aer')
-
 
 @testdata_unavail
 def test_read_emep_data(path_emep):
@@ -76,18 +76,19 @@ def test_read_emep_ts_types(files, ts_types, tmpdir):
 def test_ts_type_from_filename(filename, ts_type):
     assert ts_type_from_filename(filename) == ts_type
 
+def test_read_emep_years_avail(path_emep):
+    data_dir = path_emep['data_dir']
+    r = ReadEMEP(data_dir=data_dir)
+    assert r.years_avail == [2017]
+
 def test_preprocess_units():
     units = ''
     prefix = 'AOD'
     assert ReadEMEP().preprocess_units(units, prefix) == '1'
 
     units = 'mgS/m2'
-    catch_error = False
-    try:
+    with pytest.raises(NotImplementedError):
         ReadEMEP().preprocess_units(units)
-    except NotImplementedError as e:
-        catch_error = True
-    assert catch_error == True
 
 if __name__ == '__main__':
     import sys

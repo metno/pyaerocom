@@ -7,6 +7,7 @@ Created on Mon Feb 10 13:20:04 2020
 """
 
 import xarray as xr
+import numpy as np
 import sys
 import os
 import glob
@@ -47,6 +48,8 @@ class ReadEMEP(object):
         Variables that are available to read in filepath or data_dir
     ts_types : str
         Available temporal resolution in filepath or data_dir
+    years_avail : str
+        Years available for reading
     """
 
 
@@ -82,8 +85,6 @@ class ReadEMEP(object):
         else:
             self._filepath = None
         self.data_id = data_id
-
-
 
 
     @property
@@ -122,6 +123,21 @@ class ReadEMEP(object):
 
 
     @property
+    def years_avail(self):
+        """
+        Years available in dataset
+        """
+        try:
+            paths = self._get_paths()
+            data = xr.open_dataset(paths[0])
+            years = data.time.dt.year.values
+            years = list(np.unique(years))
+            return sorted(years)
+        except Exception as e:
+            return []
+
+
+    @property
     def vars_provided(self):
         """Variables provided by this dataset"""
         return self._get_vars_provided()
@@ -129,21 +145,21 @@ class ReadEMEP(object):
 
     def _get_ts_types(self):
         ts_types = []
-        if self.data_dir:
+        if self.data_dir is not None:
             files = self._get_paths()
             for path in files:
                 filename = path.split('/')[-1]
                 ts_types.append(ts_type_from_filename(filename))
-        elif self.filepath:
+        elif self.filepath is not None:
             filename = self.filepath.split('/')[-1]
             ts_types.append(ts_type_from_filename(filename))
         return list(set(ts_types))
 
     def _get_paths(self):
         paths = []
-        if self.filepath:
+        if self.filepath is not None:
             paths = [self.filepath]
-        if self.data_dir:
+        if self.data_dir is not None:
             pattern = os.path.join(self.data_dir, 'Base_*.nc')
             paths = glob.glob(pattern)
         return paths
