@@ -13,6 +13,25 @@ def test_read_emep():
     assert r.vars_provided == []
     assert r.filepath == None
 
+    with pytest.raises(FileNotFoundError):
+        ReadEMEP(data_dir='/invalid')
+    with pytest.raises(FileNotFoundError):
+        ReadEMEP(filepath='/invalid/test.nc')
+
+
+def test_read_emep_read_var(path_emep):
+    with pytest.raises(ValueError):
+        r = ReadEMEP()
+        r.read_var('od550aer')
+    with pytest.raises(ValueError):
+        r = ReadEMEP()
+        r.read_var('od550aer')
+    data_dir = path_emep['data_dir']
+    with pytest.raises(FileNotFoundError):
+        r = ReadEMEP(data_dir=data_dir)
+        r.read_var('od550aer')
+
+
 @testdata_unavail
 def test_read_emep_data(path_emep):
     path = path_emep['daily']
