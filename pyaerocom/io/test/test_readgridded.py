@@ -4,7 +4,6 @@
 Created on Mon Jul  9 14:14:29 2018
 """
 
-# TODO: Docstrings
 import pytest
 import os
 from collections import OrderedDict
@@ -15,6 +14,43 @@ from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import VarNotAvailableError, VariableDefinitionError
 
+def init_reader():
+    return ReadGridded(data_id="ECMWF_CAMS_REAN")
+
+@pytest.fixture(scope='session')
+def reader_reanalysis():
+    return init_reader()
+
+@pytest.fixture(scope='module')
+def reader_tm5():
+    return ReadGridded('TM5-met2010_CTRL-TEST')
+
+path_tm5 = str(TESTDATADIR.joinpath(TEST_PATHS['tm5']))
+
+@pytest.mark.parametrize('input_args,mean_val', [
+    (dict(var_name='od550aer', ts_type='monthly'), 0.1186),
+    (dict(var_name='od550aer', ts_type='monthly', constraints={
+                                  'var_name'   : 'od550aer',
+                                  'operator'   : '>',
+                                  'filter_val' : 1000
+                                  }), 0.1186),
+    (dict(var_name='od550aer', ts_type='monthly', constraints={
+                                  'var_name'   : 'od550aer',
+                                  'operator'   : '<',
+                                  'filter_val' : 0.1
+                                  }), 0.2062),
+    (dict(var_name='od550aer', ts_type='monthly', constraints=[
+        {'var_name'   : 'od550aer',
+         'operator'   : '<',
+         'filter_val' : 0.1},
+        {'var_name'   : 'od550aer',
+         'operator'   : '>',
+         'filter_val' : 0.11}
+        ]), 0.1047)
+    ])
+def test_read_var(reader_tm5, input_args, mean_val):
+    data = reader_tm5.read_var(**input_args)
+    npt.assert_allclose(data.mean(), mean_val, rtol=1e-3)
 
 def test_ReadGridded_class_empty():
     r = ReadGridded()
@@ -22,29 +58,16 @@ def test_ReadGridded_class_empty():
     assert r.data_dir == None
     from pyaerocom.io.aerocom_browser import AerocomBrowser
     assert isinstance(r.browser, AerocomBrowser)
-
-    failed = False
-    try:
+    with pytest.raises(AttributeError):
         r.years_avail
-    except AttributeError:
-        failed = True
-    assert failed
     assert r.vars_filename == []
 
 
-path_tm5 = str(TESTDATADIR.joinpath(TEST_PATHS['tm5']))
-
-# @pytest.fixture(scope='function')
-# def tm5_reader():
-#     return ReadGridded(data_dir=path_tm5)
-
-
 @testdata_unavail
-def test_ReadGridded_data_dir():
-    r = ReadGridded(data_dir=path_tm5)
-    assert r.data_dir == path_tm5
-    assert r._vars_2d == ['abs550aer', 'od550aer']
-    assert r._vars_3d == []
+def test_ReadGridded_data_dir(reader_tm5):
+    assert reader_tm5.data_dir == path_tm5
+    assert reader_tm5._vars_2d == ['abs550aer', 'od550aer']
+    assert reader_tm5._vars_3d == []
 
 
 def test_ReadGridded_ts_types():
@@ -52,8 +75,8 @@ def test_ReadGridded_ts_types():
     assert sorted(r.ts_types) == ['daily', 'monthly']
 
 @testdata_unavail
-def test_ReadGridded_read_var():
-    r = ReadGridded(data_dir=path_tm5)
+def test_ReadGridded_read_var(reader_tm5):
+    r = reader_tm5
     data = r.read_var('od550aer')
     assert isinstance(data, GriddedData)
     ds = data.to_xarray().load()
@@ -90,24 +113,10 @@ def test_ReadGridded_aux(tmpdir, vars, expected):
             var)
         open(os.path.join(tmpdir, filename), 'a').close()
     r = ReadGridded(data_dir=str(tmpdir))
-    # assert r._check_var_match_pattern('conco3')
     for var in expected:
         assert r.has_var(var)  # calling has_var
     assert sorted(r.vars_provided) == sorted(expected)
     # assert r.has_var('conco3')
-
-
-# def test_ReadGridded__check_ts_types():
-#     r = ReadGridded()
-#     with pytest.raises(IndexError):  # Should throw ValueError
-#         r._check_ts_type('nonexisting_ts_type')
-#     with pytest.raises(AttributeError):
-#         r._check_ts_type(None)
-#     assert r._check_ts_type('monthly') == 'monthly'
-
-
-# def test_ReadGridded_add_aux_compute():
-#     r = ReadGridded()
 
 
 def test_ReadGridded_prefer_longer():
@@ -129,29 +138,15 @@ def test_ReadGridded_years_avail(tmpdir, years, expected):
     assert sorted(r.years_avail) == sorted(years)
 
 
-def test_ReadGridded_get_var_info_from_files():
-    r = ReadGridded(data_dir=path_tm5)
-    with pytest.raises(VariableDefinitionError):  # Should not raise error
-        od = r.get_var_info_from_files()
-    r.AUX_REQUIRES = {}
-    od = r.get_var_info_from_files()
+def test_ReadGridded_get_var_info_from_files(reader_tm5):
+    od = reader_tm5.get_var_info_from_files()
     assert isinstance(od, OrderedDict)
+    assert sorted(od.keys()) == sorted(['abs550aer', 'od550aer'])
 
 
 # Lustre tests
 START = "1-1-2003"
 STOP = "31-12-2007"
-
-
-def init_reader():
-    return ReadGridded(data_id="ECMWF_CAMS_REAN")
-
-
-@lustre_unavail
-@pytest.fixture(scope='session')
-def reader_reanalysis():
-    return init_reader()
-
 
 @lustre_unavail
 def test_file_info(reader_reanalysis):
@@ -173,7 +168,7 @@ def test_data_dir(reader_reanalysis):
 
 
 @lustre_unavail
-def test_read_var(reader_reanalysis):
+def test_read_var_lustre(reader_reanalysis):
     from numpy import datetime64
     d = reader_reanalysis.read_var(var_name="od550aer", ts_type="daily",
                                    start=START, stop=STOP)
