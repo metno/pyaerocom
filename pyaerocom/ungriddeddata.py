@@ -89,10 +89,10 @@ class UngriddedData(object):
     __version__ = '0.21'
 
     #: inital total number of rows in dataarray
-    _ROWNO = 10000
+    _ROWNO = 100000
     #: default number of rows that are dynamically added if total number of
     #: data rows is reached.
-    _CHUNKSIZE = 1000
+    _CHUNKSIZE = 100000
 
     #: The following indices specify what the individual rows of the datarray
     #: are reserved for. These may be expanded when creating an instance of
@@ -207,6 +207,127 @@ class UngriddedData(object):
                                            'of meta block {}. This variable is '
                                            'not registered in attr. var_idx'
                                            .format(var, idx))
+
+    @staticmethod
+    def from_station_data(stats):
+
+        if isinstance(stats, StationData):
+            stats = [StationData]
+        data_obj = UngriddedData(num_points=1000000)
+
+        meta_key = 0.0
+        idx = 0
+
+        metadata = data_obj.metadata
+        meta_idx = data_obj.meta_idx
+
+        var_count_glob = -1
+        for stat in stats:
+            if not isinstance(stat, StationData):
+                raise ValueError
+            metadata[meta_key] = od()
+            metadata[meta_key].update(stat.get_meta(add_none_vals=True))
+            metadata[meta_key]['var_info'] = od()
+
+            meta_idx[meta_key] = {}
+
+            append_vars = list(stat.var_info.keys())
+
+            for var in append_vars:
+                if not var in data_obj.var_idx:
+                    var_count_glob += 1
+                    var_idx = var_count_glob
+                    data_obj.var_idx[var] = var_idx
+                else:
+                    var_idx = data_obj.var_idx[var]
+
+                vardata = stat[var]
+
+                if isinstance(vardata, pd.Series):
+                    times = vardata.index
+                    values = vardata.values
+                else:
+                    times = stat['dtime']
+                    values = vardata
+                    if not len(times) == len(values):
+                        raise ValueError
+
+                times = np.asarray([np.datetime64(x, 's') for x in times])
+                times = np.float64(times)
+
+                num_times = len(times)
+                #check if size of data object needs to be extended
+                if (idx + num_times) >= data_obj._ROWNO:
+                    #if totnum < data_obj._CHUNKSIZE, then the latter is used
+                    data_obj.add_chunk()
+
+                start = idx
+                stop = start + num_times
+
+                #write common meta info for this station (data lon, lat and
+                #altitude are set to station locations)
+                data_obj._data[start:stop,
+                               data_obj._LATINDEX] = stat['latitude']
+                data_obj._data[start:stop,
+                               data_obj._LONINDEX] = stat['longitude']
+                data_obj._data[start:stop,
+                               data_obj._ALTITUDEINDEX] = stat['altitude']
+                data_obj._data[start:stop,
+                               data_obj._METADATAKEYINDEX] = meta_key
+
+                # write data to data object
+                data_obj._data[start:stop, data_obj._TIMEINDEX] = times
+
+                data_obj._data[start:stop, data_obj._DATAINDEX] = values
+
+                data_obj._data[start:stop, data_obj._VARINDEX] = var_idx
+
+                if var in stat.data_flagged:
+                    invalid = stat.data_flagged[var]
+                    data_obj._data[start:stop, data_obj._DATAFLAGINDEX] = invalid
+
+                if var in stat.data_err:
+                    errs = stat.data_err[var]
+                    data_obj._data[start:stop, data_obj._DATAERRINDEX] = errs
+
+                var_info = stat['var_info'][var]
+                metadata[meta_key]['var_info'][var] = od()
+                metadata[meta_key]['var_info'][var].update(var_info)
+                meta_idx[meta_key][var] = np.arange(start, stop)
+
+                idx += num_times
+
+            meta_key += 1
+
+        # shorten data_obj._data to the right number of points
+        data_obj._data = data_obj._data[:idx]
+
+        data_obj._check_index()
+
+        return data_obj
+
+    def add_station_data(self, stat, meta_idx=None, data_idx=None,
+                         check_index=False):
+        raise NotImplementedError('Coming s... at some point')
+        if meta_idx is None:
+            meta_idx = self.last_meta_idx + 1
+        elif meta_idx in self.meta_idx.keys():
+            raise ValueError('Cannot add data at meta block index {}, index '
+                             'already exists'.format(meta_idx))
+
+        if data_idx is None:
+            data_idx = self._data.shape[0]
+        elif not np.all(np.isnan(self._data[data_idx, :])):
+            raise ValueError('Cannot add data at data index {}, index '
+                             'already exists'.format(data_idx))
+
+
+    @property
+    def last_meta_idx(self):
+        """
+        Index of last metadata block
+        """
+        return np.max(list(self.meta_idx.keys()))
 
     @property
     def index(self):
