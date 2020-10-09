@@ -78,10 +78,7 @@ def test_ReadGridded_ts_types():
 def test_ReadGridded_read_var(reader_tm5):
     r = reader_tm5
     data = r.read_var('od550aer')
-    assert isinstance(data, GriddedData)
-    ds = data.to_xarray().load()
-    mean = float(ds.mean(dim='time').mean(dim='lat').mean(dim='lon'))
-    npt.assert_almost_equal(mean, 0.09631748)
+    npt.assert_almost_equal(data.mean(), 0.0960723)
     with pytest.raises(VarNotAvailableError):
         r.read_var('wetso4')
     from pyaerocom.io.aux_read_cubes import add_cubes
@@ -118,13 +115,22 @@ def test_ReadGridded_aux(tmpdir, vars, expected):
     assert sorted(r.vars_provided) == sorted(expected)
     # assert r.has_var('conco3')
 
-
-def test_ReadGridded_prefer_longer():
+@pytest.mark.parametrize('options,expected', [
+    (dict(prefer_longer=True, flex_ts_type=True, ts_type='monthly'), 'daily'),
+    (dict(prefer_longer=False, flex_ts_type=True, ts_type='monthly'), 'monthly'),
+    (dict(prefer_longer=True, flex_ts_type=False, ts_type='monthly'), 'monthly'),
+    (dict(prefer_longer=False, flex_ts_type=False, ts_type='monthly'), 'monthly'),
+    (dict(prefer_longer=True, flex_ts_type=True), 'daily'),
+    (dict(prefer_longer=False, flex_ts_type=True), 'daily')
+])
+def test_ReadGridded_prefer_longer(options, expected):
     r = ReadGridded(data_dir=path_tm5)
-    daily = r.read_var('abs550aer', ts_type='monthly', flex_ts_type=True,
-                       prefer_longer=True)
-    assert daily.ts_type == 'daily'
+    gridded = r.read_var('abs550aer', **options)
+    assert gridded.ts_type == expected
 
+
+def test_filter_query(reader_tm5):
+    reader_tm5.filter_query('abs550aer', ts_type='yearly', flex_ts_type=True)
 
 @pytest.mark.parametrize('years, expected', [
     ([2003, 2005], [2003, 2005]),
