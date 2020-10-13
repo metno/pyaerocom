@@ -6,6 +6,7 @@ General helper methods for the pyaerocom library.
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
 import iris
+import math as ma
 import numpy as np
 import pandas as pd
 import xarray as xray
@@ -1035,7 +1036,7 @@ def same_meta_dict(meta1, meta2, ignore_keys=['PI'],
         if k in ignore_keys:
             continue
         elif k in num_keys:
-            if not np.isclose(v, meta2[k], rtol=num_rtol):
+            if not ma.isclose(v, meta2[k], rel_tol=num_rtol):
                 return False
         elif isinstance(v, dict):
             if not same_meta_dict(v, meta2[k]):
