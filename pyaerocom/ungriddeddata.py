@@ -9,6 +9,7 @@ import pandas as pd
 from pyaerocom import const
 logger = const.logger
 print_log = const.print_log
+from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, StationNotFoundError)
@@ -2000,12 +2001,11 @@ class UngriddedData(object):
         for meta_key, meta in self.metadata.items():
             found = False
             for idx, meta_reg in enumerate(meta_registered):
-                try:
-                    if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
-                        same_indices[idx].append(meta_key)
-                        found = True
-                except Exception:
-                    print()
+
+                if same_meta_dict(meta_reg, meta, ignore_keys=ignore_keys):
+                    same_indices[idx].append(meta_key)
+                    found = True
+
             if not found:
                 meta_registered.append(meta)
                 same_indices.append([meta_key])
@@ -2050,19 +2050,9 @@ class UngriddedData(object):
             for j, meta_idx in enumerate(idx_lst):
                 if j > 0: # don't check first against first
                     meta = self.metadata[meta_idx]
-                    if not same_meta_dict(meta, _meta_check,
-                                          ignore_keys=ignore_keys):
-                        raise ValueError('Unexpected error. Please debug or '
-                                         'contact jonasg@met.no')
-                    for k in ignore_keys:
-                        if k in meta:
-                            if not k in _meta_check:
-                                _meta_check[k] = meta[k]
-                            else:
-                                if not isinstance(_meta_check[k], list):
-                                    _meta_check[k] = [_meta_check[k]]
-                                if not meta[k] in _meta_check[k]:
-                                    _meta_check[k].append(meta[k])
+                    merged = merge_dicts(meta, _meta_check)
+                    for key in ignore_keys:
+                        _meta_check[key] = merged[key]
 
                 data_var_idx = self.meta_idx[meta_idx]
                 for var, data_idx in data_var_idx.items():
@@ -2080,7 +2070,6 @@ class UngriddedData(object):
             new.meta_idx[i] = _meta_idx_new
             new.metadata[i] = _meta_check
         new.var_idx.update(self.var_idx)
-        #new.unit = self.unit
         new.filter_hist.update(self.filter_hist)
         if not new.shape == sh:
             raise Exception('FATAL: Mismatch in shape between initial and '
@@ -2580,7 +2569,7 @@ class UngriddedData(object):
                 raise ValueError('Can only handle single variable (or all'
                                  '-> input var_name=None)')
             elif not var_name in subset.contains_vars:
-                raise ValueError('Input variable is not available in dataset '
+                raise ValueError('Input variable {} is not available in dataset '
                                  .format(var_name))
             info_str = var_name
 
@@ -2606,6 +2595,7 @@ class UngriddedData(object):
             lats = stat_data['latitude']
         if not 'label' in kwargs:
             kwargs['label'] = info_str
+
         ax = plot_coordinates(lons, lats,
                               color=color, marker=marker,
                               markersize=markersize,
