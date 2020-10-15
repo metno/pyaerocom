@@ -15,7 +15,7 @@ from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   UnitConversionError, DataUnitError,
                                   TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
-                                         BrowseDict)
+                                         BrowseDict, merge_dicts)
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.vertical_profile import VerticalProfile
 from pyaerocom.tstype import TsType
@@ -454,16 +454,22 @@ class StationData(StationMetaData):
         if not key in self or self[key] == None:
             self[key] = val
         else:
-            if isinstance(self[key], str):
+            current_val = self[key]
+            if isinstance(current_val, dict):
+                if not isinstance(val, dict):
+                    raise ValueError('Cannot merge meta item {} due to type '
+                                     'mismatch'.format(key))
+                self[key] = merge_dicts(current_val, val)
+            elif isinstance(current_val, str):
                 if not isinstance(val, str):
                     raise ValueError('Cannot merge meta item {} due to type '
                                      'mismatch'.format(key))
-                vals = [x.strip() for x in self[key].split(';')]
+                vals = [x.strip() for x in current_val.split(';')]
                 vals_in = [x.strip() for x in val.split(';')]
 
                 for _val in vals_in:
                     if not _val in vals:
-                        self[key] = self[key] + '; {}'.format(_val)
+                        self[key] = self[key] + ';{}'.format(_val)
             else:
                 if isinstance(val, (list, np.ndarray)):
                     raise ValueError('Cannot append metadata value that is '
@@ -479,7 +485,7 @@ class StationData(StationMetaData):
 
     def merge_meta_same_station(self, other, coord_tol_km=None,
                                 check_coords=True, inplace=True,
-                                **add_meta_keys):
+                                add_meta_keys=None):
         """Merge meta information from other object
 
         Note
@@ -504,11 +510,17 @@ class StationData(StationMetaData):
             if True, the metadata from the other station is added to the
             metadata of this station, else, a new station is returned with the
             merged attributes.
-        **add_meta_keys
+        add_meta_keys : str or list, optional
             additional non-standard metadata keys that are supposed to be
             considered for merging.
 
         """
+        if add_meta_keys is None:
+            add_meta_keys = []
+
+        elif isinstance(add_meta_keys, str):
+            add_meta_keys = [add_meta_keys]
+
         if not other.station_name == self.station_name:
             raise ValueError('Can only merged metadata from same station')
 
@@ -783,7 +795,7 @@ class StationData(StationMetaData):
         else:
             return self._merge_vardata_2d(other, var_name)
 
-    def merge_other(self, other, var_name, **add_meta_keys):
+    def merge_other(self, other, var_name, add_meta_keys=None):
         """Merge other station data object
 
         Todo
@@ -799,6 +811,9 @@ class StationData(StationMetaData):
         var_name : str
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
+        add_meta_keys : str or list, optional
+            additional non-standard metadata keys that are supposed to be
+            considered for merging.
 
         Returns
         -------
@@ -807,7 +822,7 @@ class StationData(StationMetaData):
         """
         #self.merge_meta_same_station(other, **add_meta_keys)
         self.merge_vardata(other, var_name)
-        self.merge_meta_same_station(other, **add_meta_keys)
+        self.merge_meta_same_station(other, add_meta_keys=add_meta_keys)
 
         return self
 
