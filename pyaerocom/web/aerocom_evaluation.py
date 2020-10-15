@@ -525,13 +525,19 @@ class AerocomEvaluation(object):
         vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
         if len(self.region_groups) > 0:
             raise NotImplementedError('Filtering of grouped regions is not ready yet...')
+
+        col = Colocator()
+        col.update(**self.colocation_settings)
+        col.update(**self.obs_config[obs_name])
+        col.update(**self.get_model_config(model_name))
+
         return compute_json_files_from_colocateddata(
                 coldata=coldata,
                 obs_name=obs_name,
                 model_name=model_name,
                 use_weights=self.weighted_stats,
                 vert_code=vert_code,
-                colocation_settings=self.colocation_settings,
+                colocation_settings=col,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
                 regions_how=self.regions_how)
@@ -770,6 +776,7 @@ class AerocomEvaluation(object):
         obs_cfg = self.obs_config[obs_name]
         if obs_cfg['obs_vert_type'] in self.VERT_SCHEMES and not 'vert_scheme' in obs_cfg:
             obs_cfg['vert_scheme'] = self.VERT_SCHEMES[obs_cfg['obs_vert_type']]
+
         col.update(**obs_cfg)
         col.update(**self.get_model_config(model_name))
 
