@@ -659,7 +659,7 @@ def isrange(val):
 
 def merge_station_data(stats, var_name, pref_attr=None,
                        sort_by_largest=True, fill_missing_nan=True,
-                       **add_meta_keys):
+                       add_meta_keys=None):
     """Merge multiple StationData objects (from one station) into one instance
 
     Note
@@ -696,6 +696,9 @@ def merge_station_data(stats, var_name, pref_attr=None,
         if True, the resulting time series is filled with NaNs. NOTE: this
         requires that information about the temporal resolution (ts_type) of
         the data is available in each of the StationData objects.
+    add_meta_keys : str or list, optional
+            additional non-standard metadata keys that are supposed to be
+            considered for merging.
     """
     from pyaerocom import const
     if isinstance(var_name, list):
@@ -752,7 +755,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
         merged = stats.pop(0)
 
         for i, stat in enumerate(stats):
-            merged.merge_other(stat, var_name, **add_meta_keys)
+            merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
     else:
         from xarray import DataArray
         dtime = []
@@ -776,7 +779,8 @@ def merge_station_data(stats, var_name, pref_attr=None,
             if i == 0:
                 merged = stat
             else:
-                merged.merge_meta_same_station(stat, **add_meta_keys)
+                merged.merge_meta_same_station(stat,
+                                               add_meta_keys=add_meta_keys)
 
             _data[:, i] = np.interp(vert_grid, stat['altitude'],
                                     stat[var_name].values)
