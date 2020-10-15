@@ -572,7 +572,7 @@ class Colocator(ColocationSetup):
 
         try:
             # set defaults if input was not specified explicitely
-            if ts_type_read is None and not self.flex_ts_type_gridded:
+            if not self.flex_ts_type_gridded:
                 ts_type_read = self.ts_type
             if not 'vert_which' in kwargs:
                 kwargs['vert_which'] = vert_which
