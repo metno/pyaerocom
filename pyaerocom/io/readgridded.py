@@ -141,6 +141,7 @@ class ReadGridded(object):
 
 
     AUX_REQUIRES = {'ang4487aer'    : ('od440aer', 'od870aer'),
+                    'angabs4487aer' : ('abs440aer', 'abs870aer'),
                     'od550gt1aer'   : ('od550aer', 'od550lt1aer'),
                     'wetoa'         : ('wetpoa', 'wetsoa'),
                     'dryoa'         : ('drypoa', 'drysoa'),
@@ -156,6 +157,7 @@ class ReadGridded(object):
                     'ac550dryaer'   :   ['ac550aer']}
 
     AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
+                'angabs4487aer':    compute_angstrom_coeff_cubes,
                 'od550gt1aer'  :    subtract_cubes,
                 'wetoa'        :    add_cubes,
                 'dryoa'        :    add_cubes,
