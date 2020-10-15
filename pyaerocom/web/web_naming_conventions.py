@@ -14,6 +14,7 @@ VAR_MAPPING = {
     'od550gt1aer'   : ['AOD>1um', '2D', 'Optical properties'],
     'abs550aer'     : ['AAOD', '2D', 'Optical properties'],
     'ang4487aer'    : ['AE', '2D', 'Optical properties'],
+    'angabs4487aer' : ['AAE', '2D', 'Optical properties'],
     'ang4487csaer'  : ['AE (clear sky)', '2D', 'Optical properties'],
     'sc550dryaer'   : ['Scat. coef. (dry)', '3D', 'Optical properties'],
     'sc550aer'      : ['Scat. coef.', '3D', 'Optical properties'],
