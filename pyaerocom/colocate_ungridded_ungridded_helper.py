@@ -237,6 +237,7 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
             prefer_col = col_names[col_order.index(prefer)]
             dont_prefer = col_names[int(not (col_names.index(prefer_col)))]
             add_ts = df[prefer_col].combine_first(df[dont_prefer])
+            var_name_out = var
 
         elif merge_how == 'mean':
             add_ts = df.mean(axis=1)
@@ -253,7 +254,7 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
             var_info.update(merge_info_vars)
 
             new['var_info'][var_name_out] = var_info
-            new[var_name_out] = ts
+            new[var_name_out] = add_ts
 
         merged_stats.append(new)
 
@@ -268,22 +269,60 @@ if __name__=='__main__':
     pya.const.add_ungridded_obs('AeronetSunV3', obs_path, reader=pya.io.ReadAeronetSunV3)
     pya.const.add_ungridded_obs('AeronetSdaV3', obs_ref_path, reader=pya.io.ReadAeronetSdaV3)
 
-    var = 'od550aer'
-    var_ref = 'ang4487aer'
 
     r = pya.io.ReadUngridded('AeronetSunV3')
-    #r_ref = pya.io.ReadUngridded('AeronetSdaV3')
+    r_ref = pya.io.ReadUngridded('AeronetSdaV3')
 
-    obs = r.read(vars_to_retrieve=[var, var_ref],
-                 common_meta={'ts_type':'daily'})
-# =============================================================================
-#     obs_ref = r_ref.read(vars_to_retrieve=[var_ref, var, 'od550gt1aer'],
-#                          common_meta={'ts_type':'daily'})
-# =============================================================================
-    func = 'AeronetSunV3;od550aer-AeronetSdaV3;od550lt1aer'
-    data = combine_vardata_ungridded(obs, var,
-                                     var_ref=var_ref,
-                                     merge_how='combine',
-                                     merge_eval_fun=func)
+    sun_aod = r.read(vars_to_retrieve=['od550aer'],
+                     common_meta={'ts_type':'daily'})
+    sun_ang = r.read(vars_to_retrieve=['ang4487aer'],
+                     common_meta={'ts_type':'daily'})
 
-    print(data)
+    sda_aods = r_ref.read(vars_to_retrieve=['od550aer', 'od550lt1aer'],
+                         common_meta={'ts_type':'daily'})
+
+    # TEST 1 (use "combine with 2 different variables") using "closest" sites
+    # for matching site locations
+    data = combine_vardata_ungridded(data=sun_aod, var='od550aer',
+                                     data_ref=sun_ang, var_ref='ang4487aer',
+                                     match_stats_how='closest',
+                                     merge_how='combine')
+
+    assert len(data.unique_station_names) == 18
+    for meta in data.metadata.values():
+        assert 'od550aer' in meta['var_info']
+        assert 'ang4487aer' in meta['var_info']
+
+    # TEST 2 (use "combine with 2 different variables") using station names
+    # for matching site locations
+    data = combine_vardata_ungridded(data=sun_aod, var='od550aer',
+                                     data_ref=sun_ang, var_ref='ang4487aer',
+                                     match_stats_how='station_name',
+                                     merge_how='combine')
+
+    assert len(data.unique_station_names) == 18
+    for meta in data.metadata.values():
+        assert 'od550aer' in meta['var_info']
+        assert 'ang4487aer' in meta['var_info']
+
+    # TEST 3 (use "combine with the same variables") using station names
+    # for matching site locations
+    data = combine_vardata_ungridded(data=sun_aod, var='od550aer',
+                                     data_ref=sda_aods, var_ref='od550aer',
+                                     match_stats_how='station_name',
+                                     merge_how='combine')
+
+    stats_common = np.intersect1d(sun_aod.unique_station_names,
+                                  sda_aods.unique_station_names)
+
+    assert len(data.unique_station_names) == len(stats_common)
+    for meta in data.metadata.values():
+        assert 'od550aer' in meta['var_info']
+        vi =  meta['var_info']['od550aer']
+        assert 'merge_how' in vi
+        assert vi['merge_how'] == 'combine'
+        assert 'prefer' in vi
+        assert vi['prefer'] == 'AeronetSunV3;od550aer'
+
+
+
