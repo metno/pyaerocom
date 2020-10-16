@@ -1161,6 +1161,7 @@ class AerocomEvaluation(object):
             self.update_heatmap_json()
         except KeyError: # if no data is available for this experiment
             pass
+        self.to_json(self.exp_dir)
 
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
@@ -1316,13 +1317,44 @@ class AerocomEvaluation(object):
                 d[key] = val
         return d
 
+    @property
+    def name_config_file(self):
+        """
+        File name of config file (without file ending specification)
+
+        Returns
+        -------
+        str
+            name of config file
+        """
+        return 'cfg_{}_{}'.format(self.proj_id, self.exp_id)
+
+    @property
+    def name_config_file_json(self):
+        """
+        File name of config file (with json ending)
+
+        Returns
+        -------
+        str
+            name of config file
+        """
+        return '{}.json'.format(self.name_config_file)
+
     def to_json(self, output_dir):
-        """Convert configuration to json ini file"""
+        """Convert analysis configuration to json file and save
+
+        Parameters
+        ----------
+        output_dir : str
+            directory where the config json file is supposed to be stored
+
+        """
         d = self.to_dict()
-        out_name = 'cfg_{}_{}.json'.format(self.proj_id, self.exp_id)
+        out_name = self.name_config_file_json
 
         save_dict_json(d, os.path.join(output_dir, out_name), indent=3)
-        return d
+
 
     def load_config(self, proj_id, exp_id, config_dir=None):
         """Load configuration json file"""

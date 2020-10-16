@@ -514,7 +514,6 @@ class ReadGridded(object):
         callable
             function that is used to compute input variable
         """
-
         if not var_to_compute in self._aux_avail:
             if not self.check_compute_var(var_to_compute):
                 raise VarNotAvailableError('Variable {} cannot be computed'
@@ -545,7 +544,6 @@ class ReadGridded(object):
             raise VariableDefinitionError('Invalid variable name {}. Must not '
                                           'contain *'.format(var_name))
         if var_name in self._aux_avail:
-
             return True
         elif self._check_aux_compute_access(var_name):
             return True
@@ -1065,6 +1063,8 @@ class ReadGridded(object):
             try:
                 vars_to_read = self._get_aux_vars_and_fun(var_to_compute)[0]
             except VarNotAvailableError:
+                pass
+            except VariableDefinitionError:
                 pass
             else:
                 # init result info dict for aux variable
