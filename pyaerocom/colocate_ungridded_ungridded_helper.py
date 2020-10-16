@@ -150,7 +150,7 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
             var_name_out = var_name_out.replace('{};'.format(dataset_ref), '')
 
     merge_info_vars = {'merge_how' : merge_how}
-    if merge_how == 'combine':
+    if merge_how == 'combine' and var==var_ref:
         merge_info_vars['prefer'] = prefer
     elif merge_how == 'eval':
         merge_info_vars['merge_eval_fun'] = merge_eval_fun
@@ -205,51 +205,55 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
             to_ts_type,
             resample_how=resample_how,
             apply_time_resampling_constraints=apply_time_resampling_constraints,
-            min_num_obs=None,
+            min_num_obs=min_num_obs,
             use_climatology_ref=False)
 
         df.dropna(axis=0, how='all', inplace=True)
 
         # NOTE: the dataframe returned by _colocate_site_data_helper has ref as first
         # column and the first input data as 2nd!
+        stat_order = [stat_other, stat]
         col_order = [long['id'], short['id']]
         col_vars = [long['var_name'], short['var_name']]
         col_names = list(df.columns.values)
 
-
-
-        if merge_how == 'combine' and var != var_ref:
-            # simply add the two colocated timeseries into new StationData
+        # in case input variables are different, keep both of them in the
+        # output colocated StationData, in addition to potentially computed
+        # additional variables below
+        if var != var_ref:
             for j, colname in enumerate(col_names):
+                _var = col_vars[j]
+                _stat = stat_order[j]
                 ts = df[colname]
-                new[col_vars[j]] = ts
-        else:
-            if merge_how == 'combine':
-                prefer_col = col_names[col_order.index(prefer)]
-                dont_prefer = col_names[int(not (col_names.index(prefer_col)))]
-                df['result'] = df[prefer_col].combine_first(df[dont_prefer])
+                new[_var] = ts
+                vi = _stat['var_info'][_var]
+                vi['ts_type'] = to_ts_type
+                new['var_info'][_var] = vi
 
-            elif merge_how == 'mean':
-                df['result'] = df.mean(axis=1)
+        add_ts = None
+        # Merge timeseries if variables are the same and are supposed to be
+        # combined
+        if merge_how=='combine' and var==var_ref:
+            prefer_col = col_names[col_order.index(prefer)]
+            dont_prefer = col_names[int(not (col_names.index(prefer_col)))]
+            add_ts = df[prefer_col].combine_first(df[dont_prefer])
 
-            elif merge_how == 'eval':
-                func = merge_eval_fun.replace(col_order[0], col_names[0])
-                func = func.replace(col_order[1], col_names[1])
+        elif merge_how == 'mean':
+            add_ts = df.mean(axis=1)
 
-                df['result'] = df.eval(func)
+        elif merge_how == 'eval':
+            func = merge_eval_fun.replace(col_order[0], col_names[0])
+            func = func.replace(col_order[1], col_names[1])
 
-            ts = df['result'].dropna()
+            add_ts = df.eval(func)
 
-        var_info = {'ts_type' : to_ts_type}
-        var_info.update(merge_info_vars)
+        if add_ts is not None:
 
+            var_info = {'ts_type' : to_ts_type}
+            var_info.update(merge_info_vars)
 
-
-
-
-
-        new['var_info'][var_name_out] = var_info
-        new[var_name_out] = ts
+            new['var_info'][var_name_out] = var_info
+            new[var_name_out] = ts
 
         merged_stats.append(new)
 
