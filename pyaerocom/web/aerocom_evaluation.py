@@ -1328,7 +1328,7 @@ class AerocomEvaluation(object):
         return '{}.json'.format(self.name_config_file)
 
     def to_json(self, output_dir):
-        """Convert analysis configuration to json file and safe
+        """Convert analysis configuration to json file and save
 
         Parameters
         ----------
