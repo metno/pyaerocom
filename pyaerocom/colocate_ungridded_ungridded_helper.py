@@ -1,74 +1,16 @@
-import pyaerocom as pya
+
 import numpy as np
 
 from pyaerocom import const
+from pyaerocom._lowlevel_helpers import invalid_input_err_str
+from pyaerocom.geodesy import find_coord_indices_within_distance
+from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.helpers import sort_ts_types
+from pyaerocom.colocation import _colocate_site_data_helper
 import os
 
 from pyaerocom.conftest import TEST_PATHS
-
-
-def calc_latlon_dists(latref, lonref, latlons):
-    """
-    Calculate distances of (lat, lon) coords to input lat, lon coordinate
-
-    Parameters
-    ----------
-    latref : float
-        latitude of reference coordinate
-    lonref : float
-        longitude of reference coordinate
-    latlons : list
-        list of (lat, lon) tuples for which distances to (latref, lonref) are
-        computed
-
-    Returns
-    -------
-    list
-        list of computed geographic distances to input reference coordinate
-        for all (lat, lon) coords in `latlons`
-
-    """
-    distfun = pya.geodesy.calc_distance
-    return [distfun(latref, lonref,c[0],c[1]) for c in latlons]
-
-def find_coord_indices_within_distance(latref, lonref, latlons,
-                                       radius=1):
-    """
-
-
-    Parameters
-    ----------
-    latref : float
-        latitude of reference coordinate
-    lonref : float
-        longitude of reference coordinate
-    latlons : list
-        list of (lat, lon) tuples for which distances to (latref, lonref) are
-        computed
-    radius : float or int, optional
-        Maximum allowed distance to input coordinate. The default is 1.
-
-    Returns
-    -------
-    ndarray
-        Indices of latlon coordinates in :param:`latlons` that are within
-        the specified radius around (`latref`, `lonref`). The indices are
-        sorted by distance to the input coordinate, starting with the
-        closest
-
-    """
-
-    dists = np.asarray(calc_latlon_dists(latref, lonref, latlons))
-    within_tol = np.where(dists<radius)[0]
-    # the following statement sorts all indices in dists that are within
-    # the tolerance radius, so the first entry in the returned aaray is the
-    # index of the closest coordinate within the radius and the last is the
-    # furthest
-    return within_tol[np.argsort(dists[within_tol])]
-
-def invalid_input_err(arg, opts):
-    return ValueError('Invalid input for merge_how ({}), choose from {}'
-                     .format(arg, opts))
 
 def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
                               match_stats_how='closest',
@@ -126,7 +68,8 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
     prefer = idobs
 
     if not merge_how in merge_how_opts:
-        raise invalid_input_err(merge_how, merge_how_opts)
+        raise ValueError(invalid_input_err_str(
+            'merge_how', merge_how, merge_how_opts))
 
     elif merge_how == 'eval':
         if merge_eval_fun is None:
@@ -190,7 +133,7 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
         # prepare output StationData object (will contain colocated timeseries
         # of both input variables as well as, additionally retrieved variable,
         # if applicable)
-        new = pya.StationData()
+        new = StationData()
 
         meta_merged = stat.merge_meta_same_station(stat_other,
                                                    inplace=False)
@@ -201,9 +144,9 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
         tt = stat.get_var_ts_type(var)
         tto = stat.get_var_ts_type(var_other)
 
-        to_ts_type = pya.helpers.sort_ts_types([tt, tto])[-1]
+        to_ts_type = sort_ts_types([tt, tto])[-1]
 
-        df = pya.colocation._colocate_site_data_helper(
+        df = _colocate_site_data_helper(
             stat, stat_other,
             var, var_other,
             to_ts_type,
@@ -262,11 +205,11 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
 
         merged_stats.append(new)
 
-    data = pya.UngriddedData.from_station_data(merged_stats)
+    data = UngriddedData.from_station_data(merged_stats)
     return data
 
 if __name__=='__main__':
-
+    import pyaerocom as pya
     from numpy import testing as npt
     testdatadir = (const._TESTDATADIR)
     obs_path = os.path.join(testdatadir, TEST_PATHS['AeronetSunV3L2Subset.daily'])

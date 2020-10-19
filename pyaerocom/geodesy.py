@@ -12,6 +12,63 @@ from pyaerocom.helpers import isnumeric
 import numpy as np
 import os
 
+def calc_latlon_dists(latref, lonref, latlons):
+    """
+    Calculate distances of (lat, lon) coords to input lat, lon coordinate
+
+    Parameters
+    ----------
+    latref : float
+        latitude of reference coordinate
+    lonref : float
+        longitude of reference coordinate
+    latlons : list
+        list of (lat, lon) tuples for which distances to (latref, lonref) are
+        computed
+
+    Returns
+    -------
+    list
+        list of computed geographic distances to input reference coordinate
+        for all (lat, lon) coords in `latlons`
+
+    """
+    return [calc_distance(latref, lonref,c[0],c[1]) for c in latlons]
+
+def find_coord_indices_within_distance(latref, lonref, latlons,
+                                       radius=1):
+    """
+    Find indices of coordinates that match input coordinate
+
+    Parameters
+    ----------
+    latref : float
+        latitude of reference coordinate
+    lonref : float
+        longitude of reference coordinate
+    latlons : list
+        list of (lat, lon) tuples for which distances to (latref, lonref) are
+        computed
+    radius : float or int, optional
+        Maximum allowed distance to input coordinate. The default is 1.
+
+    Returns
+    -------
+    ndarray
+        Indices of latlon coordinates in :param:`latlons` that are within
+        the specified radius around (`latref`, `lonref`). The indices are
+        sorted by distance to the input coordinate, starting with the
+        closest
+
+    """
+    dists = np.asarray(calc_latlon_dists(latref, lonref, latlons))
+    within_tol = np.where(dists<radius)[0]
+    # the following statement sorts all indices in dists that are within
+    # the tolerance radius, so the first entry in the returned aaray is the
+    # index of the closest coordinate within the radius and the last is the
+    # furthest
+    return within_tol[np.argsort(dists[within_tol])]
+
 def get_country_info_coords(coords):
     """
     Get country information for input lat/lon coordinates

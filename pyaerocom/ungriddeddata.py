@@ -329,7 +329,7 @@ class UngriddedData(object):
 
     def add_station_data(self, stat, meta_idx=None, data_idx=None,
                          check_index=False):
-        raise NotImplementedError('Coming s... at some point')
+        raise NotImplementedError('Coming at some point')
         if meta_idx is None:
             meta_idx = self.last_meta_idx + 1
         elif meta_idx in self.meta_idx.keys():
@@ -2031,6 +2031,7 @@ class UngriddedData(object):
                 same_indices.append([meta_key])
 
         return same_indices
+
 
     def merge_common_meta(self, ignore_keys=None):
         """Merge all meta entries that are the same
