@@ -97,14 +97,6 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
     idobs='{};{}'.format(dataset, var)
     idref='{};{}'.format(dataset_ref, var_ref)
 
-    if merge_how == 'eval':
-        if merge_eval_fun is None:
-            raise ValueError('Please specify evaluation function for mode eval')
-        elif not all([x in merge_eval_fun for x in [idobs, idref]]):
-            raise ValueError('merge_eval_fun needs to include both input '
-                             'datasets;variables (e.g. {} + {}'
-                             .format(idobs, idref))
-
     data_stats = data.to_station_data_all(var)#, start=start, stop=stop)
     data_stats['var_name'] = var
     data_stats['id'] = idobs
@@ -137,14 +129,21 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
         raise invalid_input_err(merge_how, merge_how_opts)
 
     elif merge_how == 'eval':
-        if not isinstance(merge_eval_fun, str):
-            raise ValueError('merge_eval_fun needs to be string as it is parsed '
-                             'to pd.DataFrame.eval method (look it up online).')
+        if merge_eval_fun is None:
+            raise ValueError('Please specify evaluation function for mode eval')
         elif not all([x in merge_eval_fun for x in [idobs, idref]]):
-            raise ValueError('merge_eval_fun needs to contain both input datasets',
-                             [idobs, idref])
+            raise ValueError('merge_eval_fun needs to include both input '
+                             'datasets;variables (e.g. {} + {}'
+                             .format(idobs, idref))
+        if '=' in merge_eval_fun:
+            spl = merge_eval_fun.split('=')
+            if len(spl) > 2:
+                raise ValueError('merge_eval_fun contains more than 1 equality '
+                                 'symbol...')
+            var_name_out = spl[0].strip()
+            merge_eval_fun = spl[1].strip()
 
-        if var_name_out is None:
+        elif var_name_out is None:
             var_name_out = merge_eval_fun
             var_name_out = var_name_out.replace('{};'.format(dataset), '')
             var_name_out = var_name_out.replace('{};'.format(dataset_ref), '')
@@ -158,28 +157,33 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
     long_coords = list(zip(long['latitude'], long['longitude']))
 
     merged_stats = []
+    _index_used = []
     var, var_other = short['var_name'], long['var_name']
     for i, stat in enumerate(short['stats']):
         statname = stat.station_name
         lat0, lon0 = short['latitude'][i], short['longitude'][i]
 
         if match_stats_how == 'station_name':
-            try:
-                idx_other = long['station_name'].index(statname)
-            except ValueError:
-                continue
+            index_matches = np.where(np.asarray(long['station_name'])==statname)[0]
         else:
             index_matches = find_coord_indices_within_distance(
                 latref=lat0,
                 lonref=lon0,
                 latlons=long_coords,
                 radius=match_stats_tol_km)
-            if len(index_matches) == 0:
-                continue
-            elif len(index_matches) > 1 and not match_stats_how=='closest':
-                raise NotImplementedError()
 
-            idx_other = index_matches[0]
+        if len(index_matches) == 0:
+            continue
+        elif len(index_matches) > 1 and not match_stats_how=='closest':
+            raise NotImplementedError()
+
+        idx_other = index_matches[0]
+
+        # make sure to assign each site only once
+        if idx_other in _index_used:
+            continue
+
+        _index_used.append(idx_other)
 
         stat_other = long['stats'][idx_other]
 
@@ -262,6 +266,8 @@ def combine_vardata_ungridded(data, var, data_ref=None, var_ref=None,
     return data
 
 if __name__=='__main__':
+
+    from numpy import testing as npt
     testdatadir = (const._TESTDATADIR)
     obs_path = os.path.join(testdatadir, TEST_PATHS['AeronetSunV3L2Subset.daily'])
     obs_ref_path = os.path.join(testdatadir, TEST_PATHS['AeronetSDAV3L2Subset.daily'])
@@ -277,6 +283,7 @@ if __name__=='__main__':
                      common_meta={'ts_type':'daily'})
     sun_ang = r.read(vars_to_retrieve=['ang4487aer'],
                      common_meta={'ts_type':'daily'})
+
 
     sda_aods = r_ref.read(vars_to_retrieve=['od550aer', 'od550lt1aer'],
                          common_meta={'ts_type':'daily'})
@@ -315,7 +322,7 @@ if __name__=='__main__':
     stats_common = np.intersect1d(sun_aod.unique_station_names,
                                   sda_aods.unique_station_names)
 
-    assert len(data.unique_station_names) == len(stats_common)
+    assert len(data.unique_station_names) == 13
     for meta in data.metadata.values():
         assert 'od550aer' in meta['var_info']
         vi =  meta['var_info']['od550aer']
@@ -323,6 +330,34 @@ if __name__=='__main__':
         assert vi['merge_how'] == 'combine'
         assert 'prefer' in vi
         assert vi['prefer'] == 'AeronetSunV3;od550aer'
+
+
+    # TEST 4 (use "eval to compute od500aer from od550aer and ang4487aer")
+    # using "closest" sites for matching site locations
+    func = 'od500aer=AeronetSunV3;od550aer*(500/550)**(-AeronetSunV3;ang4487aer)'
+    data = combine_vardata_ungridded(data=sun_aod, var='od550aer',
+                                     data_ref=sun_ang, var_ref='ang4487aer',
+                                     match_stats_how='closest',
+                                     merge_how='eval',
+                                     merge_eval_fun=func)
+
+    assert len(data.unique_station_names) == 18
+
+    test_vals = []
+    test_vals_computed = []
+    for key, meta in data.metadata.items():
+        assert 'od550aer' in meta['var_info']
+        assert 'ang4487aer' in meta['var_info']
+        assert 'od500aer' in meta['var_info']
+
+        od550aer = data._data[data.meta_idx[key]['od550aer'][0], data._DATAINDEX]
+        od500aer = data._data[data.meta_idx[key]['od500aer'][0], data._DATAINDEX]
+        ang4487aer = data._data[data.meta_idx[key]['ang4487aer'][0], data._DATAINDEX]
+
+        test_vals.append(od500aer)
+        test_vals_computed.append(od550aer * (500/550)**(-ang4487aer))
+
+    npt.assert_allclose(test_vals, test_vals_computed, atol=1e-12)
 
 
 
