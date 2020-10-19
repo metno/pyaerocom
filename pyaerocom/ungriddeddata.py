@@ -13,6 +13,7 @@ from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, StationNotFoundError)
+from pyaerocom.colocate_ungridded_ungridded_helper import combine_vardata_ungridded
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
@@ -2152,13 +2153,6 @@ class UngriddedData(object):
                 if var in obj.var_idx: #variable already exists in this object
                     if not idx == obj.var_idx[var]:
                         other.change_var_idx(var, obj.var_idx[var])
-# =============================================================================
-#                         raise AttributeError('Could not merge data objects. '
-#                                              'Variable {} occurs in both '
-#                                              'datasets but has different '
-#                                              'variable index in data array'
-#                                              .format(var))
-# =============================================================================
                 else: # variable does not yet exist
                     idx_exists = [v for v in obj.var_idx.values()]
                     if idx in idx_exists:
@@ -2174,6 +2168,29 @@ class UngriddedData(object):
         obj.filter_hist.update(other.filter_hist)
         obj._check_index()
         return obj
+
+    def colocate_vardata(self, var1, var2, other=None,
+                         match_stats_how='closest',
+                         match_stats_tol_km=1, merge_how='combine',
+                         merge_eval_fun=None,
+                         var_name_out=None,
+                         resample_how='mean',
+                         apply_time_resampling_constraints=False,
+                         min_num_obs=None):
+
+        statlist = combine_vardata_ungridded(self, var1=var1, data2=other,
+                                             var2=var2,
+                                             match_stats_how='closest',
+                                             match_stats_tol_km=1,
+                                             merge_how='combine',
+                                             merge_eval_fun=None,
+                                             var_name_out=None,
+                                             resample_how='mean',
+                                             apply_time_resampling_constraints=False,
+                                             min_num_obs=None)
+
+        new = UngriddedData.from_station_data(statlist)
+        return new
 
     def change_var_idx(self, var_name, new_idx):
         """Change index that is assigned to variable
