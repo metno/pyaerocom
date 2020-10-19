@@ -211,6 +211,26 @@ class UngriddedData(object):
 
     @staticmethod
     def from_station_data(stats):
+        """
+        Create UngriddedData from input station data object(s)
+
+        Parameters
+        ----------
+        stats : list or StationData
+            input data object(s)
+
+        Raises
+        ------
+        ValueError
+            if any of the input data objects is not an instance of
+            :class:`StationData`.
+
+        Returns
+        -------
+        UngriddedData
+            ungridded data object created from input station data objects
+
+        """
 
         if isinstance(stats, StationData):
             stats = [StationData]
@@ -225,7 +245,7 @@ class UngriddedData(object):
         var_count_glob = -1
         for stat in stats:
             if not isinstance(stat, StationData):
-                raise ValueError
+                raise ValueError('Need instances of StationData')
             metadata[meta_key] = od()
             metadata[meta_key].update(stat.get_meta(add_none_vals=True))
             metadata[meta_key]['var_info'] = od()
