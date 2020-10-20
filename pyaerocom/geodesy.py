@@ -33,7 +33,7 @@ def calc_latlon_dists(latref, lonref, latlons):
         for all (lat, lon) coords in `latlons`
 
     """
-    return [calc_distance(latref, lonref,c[0],c[1]) for c in latlons]
+    return [haversine(latref, lonref,c[0],c[1]) for c in latlons]
 
 def find_coord_indices_within_distance(latref, lonref, latlons,
                                        radius=1):
