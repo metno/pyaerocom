@@ -376,28 +376,6 @@ class StationData(StationMetaData):
         if _check_var:
             raise NotImplementedError('This feature does currently not work '
                                       'due to recent API changes')
-# =============================================================================
-#             logger.debug("Performing quality check for coordinates")
-#             lat, dlat, dlon, dalt = (vals['latitude'],
-#                                      stds['latitude'],
-#                                      stds['longitude'],
-#                                      stds['altitude'])
-#             lat_len = 111e3 #approximate length of latitude degree in m
-#             if self.COORD_MAX_VAR['latitude'] < lat_len * dlat:
-#                 raise CoordinateError("Variation in station latitude is "
-#                                       "exceeding upper limit of {} m".format(
-#                                       self.COORD_MAX_VAR['latitude']))
-#             elif self.COORD_MAX_VAR['longitude'] < (lat_len *
-#                                                     np.cos(np.deg2rad(lat)) *
-#                                                     dlon):
-#                 raise CoordinateError("Variation in station longitude is "
-#                                       "exceeding upper limit of {} m".format(
-#                                       self.COORD_MAX_VAR['latitude']))
-#             elif self.COORD_MAX_VAR['altitude'] < dalt:
-#                 raise CoordinateError("Variation in station altitude is "
-#                                       "exceeding upper limit of {} m".format(
-#                                       self.COORD_MAX_VAR['latitude']))
-# =============================================================================
         return vals
 
     def get_meta(self, force_single_value=True, quality_check=True,
@@ -522,7 +500,8 @@ class StationData(StationMetaData):
             add_meta_keys = [add_meta_keys]
 
         if not other.station_name == self.station_name:
-            raise ValueError('Can only merged metadata from same station')
+            const.logger.info('Sites have different station_name: {} and {}'
+                              .format(self.station_name, other.station_name))
 
         if not inplace:
             from copy import deepcopy
