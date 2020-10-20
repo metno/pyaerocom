@@ -192,8 +192,10 @@ def combine_vardata_ungridded(data1, var1, data2=None, var2=None,
         # if applicable)
         new = StationData()
 
-        meta_merged = stat.merge_meta_same_station(stat_other,
-                                                   inplace=False)
+        meta_merged = stat.merge_meta_same_station(
+            stat_other,
+            coord_tol_km=match_stats_tol_km,
+            inplace=False)
 
         for key in new.STANDARD_META_KEYS:
             new[key] = meta_merged[key]
