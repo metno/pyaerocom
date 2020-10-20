@@ -31,7 +31,7 @@ import pyaerocom as pya
 from pyaerocom import const
 from pyaerocom.mathutils import vmrx_to_concx
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.io.ghost_meta_keys import GHOST_EEA_META_KEYS, GHOST_EBAS_META_KEYS
+from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.time_config import TS_TYPES
@@ -134,11 +134,6 @@ class ReadGhost(ReadUngriddedBase):
                 'GHOST.EBAS.monthly'   : 'monthly',
                 'GHOST.EBAS.hourly'   : 'hourly',
                 'GHOST.EBAS.daily'    : 'daily'}
-
-    EEA_META_KEYS = GHOST_EEA_META_KEYS
-
-    EBAS_META_KEYS = GHOST_EBAS_META_KEYS
-
 
     FLAG_VARS = ['flag', 'qa']
 
@@ -339,11 +334,7 @@ class ReadGhost(ReadUngriddedBase):
 
     @property
     def META_KEYS(self):
-        if 'GHOST.EBAS' in self.data_id:
-            META_KEYS = self.EBAS_META_KEYS
-        elif 'GHOST.EEA' in self.data_id:
-            META_KEYS = self.EEA_META_KEYS
-        return META_KEYS
+        return GHOST_META_KEYS
 
     def read_file(self, filename, var_to_read=None, invalidate_flags=None,
                   var_to_write=None):
