@@ -156,6 +156,12 @@ def data_scat_jungfraujoch():
     return r.read('sc550aer', station_names='Jungfrau*')
 
 @pytest.fixture(scope='session')
+def data_scat_jungfraujoch_full():
+    r = ReadEbas()
+    return r.read('sc550aer', station_names='Jungfrau*')
+
+
+@pytest.fixture(scope='session')
 def loaded_nasa_ames_example():
     from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
     #fp = TESTDATADIR.joinpath(TEST_PATHS['nasa_ames_sc550aer'])
