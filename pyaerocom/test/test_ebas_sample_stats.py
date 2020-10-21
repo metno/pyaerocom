@@ -12,8 +12,8 @@ import numpy as np
 from pyaerocom.conftest import lustre_unavail
 
 @lustre_unavail
-def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
-    data = data_scat_jungfraujoch
+def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch_full):
+    data = data_scat_jungfraujoch_full
 
     assert data.shape == (245448, 12)# (227928, 12)
     assert len(data.metadata) == 28
@@ -36,8 +36,8 @@ def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch):
                         [4.35, 7.24, 182.7, -5.57], rtol=1e-1)
 
 @lustre_unavail
-def test_scat_jungfraujoch(data_scat_jungfraujoch):
-    stat = data_scat_jungfraujoch.to_station_data('Jung*')
+def test_scat_jungfraujoch(data_scat_jungfraujoch_full):
+    stat = data_scat_jungfraujoch_full.to_station_data('Jung*')
 
     assert 'sc550aer' in stat
     assert 'sc550aer' in stat.overlap
@@ -68,10 +68,10 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch):
                         [2.91, 4.58, -3.47, 97.65], rtol=1e-1)
 
 @lustre_unavail
-def test_scat_jungfraujoch_lev3(data_scat_jungfraujoch):
-    data_scat_jungfraujoch = data_scat_jungfraujoch.apply_filters(
+def test_scat_jungfraujoch_lev3(data_scat_jungfraujoch_full):
+    data_scat_jungfraujoch_full = data_scat_jungfraujoch_full.apply_filters(
             set_flags_nan=True, remove_outliers=True, data_level=2)
-    stat = data_scat_jungfraujoch.to_station_data('Jung*')
+    stat = data_scat_jungfraujoch_full.to_station_data('Jung*')
 
     assert 'sc550aer' in stat
     assert 'sc550aer' in stat.overlap
@@ -102,9 +102,9 @@ def test_scat_jungfraujoch_lev3(data_scat_jungfraujoch):
                         [2.91, 4.58, -3.47, 97.65], rtol=1e-1)
 
 @lustre_unavail
-def test_scat_jungfraujoch_subset(data_scat_jungfraujoch):
+def test_scat_jungfraujoch_subset(data_scat_jungfraujoch_full):
 
-    stat = data_scat_jungfraujoch.to_station_data('Jung*',
+    stat = data_scat_jungfraujoch_full.to_station_data('Jung*',
                                                   start=2008, stop=2011,
                                                   freq='monthly')
 
