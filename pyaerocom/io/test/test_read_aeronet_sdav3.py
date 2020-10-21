@@ -7,9 +7,10 @@ import pytest
 import numpy.testing as npt
 import numpy as np
 import os
-from pyaerocom.conftest import TEST_RTOL, lustre_unavail
+from pyaerocom.conftest import TEST_RTOL, testdata_unavail
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 
+@testdata_unavail
 def test_load_thessaloniki(aeronet_sda_subset_reader):
     reader = aeronet_sda_subset_reader
     files = reader.find_in_file_list('*Thessaloniki*')
