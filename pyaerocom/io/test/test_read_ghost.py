@@ -39,7 +39,11 @@ def ghost_eea_hourly():
 @lustre_unavail
 class TestReadGhost(object):
     PROVIDES_VARIABLES = ['concpm10',
+                          'concpm10al',
+                          'concpm10as',
                           'concpm25',
+                          'concpm1',
+                          'conccl',
                           'vmrco',
                           'vmrno',
                           'vmrno2',
@@ -52,7 +56,11 @@ class TestReadGhost(object):
                           'concso2']
 
     INVDICT = {'pm10': 'concpm10',
+               'pm10al': 'concpm10al',
+               'pm10as': 'concpm10as',
                'pm2p5': 'concpm25',
+               'pm1': 'concpm1',
+               'sconccl': 'conccl',
                'sconcco': 'vmrco',
                'sconcno': 'vmrno',
                'sconcno2': 'vmrno2',
