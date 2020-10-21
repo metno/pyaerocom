@@ -9,8 +9,10 @@ ToDo
 
 """
 import simplejson
+from traceback import format_exc
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.exceptions import InitialisationError
 
 class ObsConfigEval(BrowseDict):
     """Observation configuration for evaluation (dictionary)
@@ -24,6 +26,10 @@ class ObsConfigEval(BrowseDict):
     obs_id : str
         ID of observation network in AeroCom database
         (e.g. 'AeronetSunV3Lev2.daily')
+    obs_type : str
+        specifies whether data is gridded or ungridded. Choose from 'gridded'
+        or 'ungridded'. This is optional, but some functionality will not work
+        if it is not set (such as registering auxiliary variables).
     obs_vars : list
         list of pyaerocom variable names that are supposed to be analysed
         (e.g. ['od550aer', 'ang4487aer'])
@@ -53,20 +59,43 @@ class ObsConfigEval(BrowseDict):
     def __init__(self, **kwargs):
 
         self.obs_id = None
+        self.obs_type = None
         self.obs_vars = None
         self.obs_ts_type_read = None
         self.obs_vert_type = None
+        self.obs_aux_requires = {}
+        self.obs_aux_funs = {}
 
         self.read_opts_ungridded = None
 
         self.update(**kwargs)
         self.check_cfg()
+        self.check_add_obs()
+
+    def check_add_obs(self):
+        """Check if this dataset is an auxiliary post dataset"""
+        if len(self.obs_aux_requires) > 0:
+            if not self.obs_type == 'ungridded':
+                raise NotImplementedError(
+                    'Cannot initialise auxiliary setup for {}. Aux obs reading '
+                    'is so far only possible for ungridded observations.'
+                    .format(self.obs_id))
+            try:
+                const.add_ungridded_post_dataset(**self)
+            except Exception:
+                raise InitialisationError(
+                    'Cannot initialise auxiliary reading setup for {}. '
+                    'Reason:\n{}'.format(self.obs_id, format_exc()))
+
 
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
+
         if not isinstance(self.obs_id, (str, dict)):
-            raise ValueError('Invalid value for obs_id: {}. Need str.'
-                             .format(self.obs_id))
+            raise ValueError('Invalid value for obs_id: {}. Need str or dict '
+                         'or specification of ids and variables via '
+                         'obs_compute_post'
+                         .format(self.obs_id))
         if isinstance(self.obs_vars, str):
             self.obs_vars = [self.obs_vars]
         elif not isinstance(self.obs_vars, list):
