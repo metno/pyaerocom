@@ -10,12 +10,11 @@ import os
 from pyaerocom.conftest import TEST_RTOL, lustre_unavail
 from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 
-@lustre_unavail
-def test_load_berlin_AeroSdaV2L2D():
-    reader = ReadAeronetSdaV3()
-    files = reader.find_in_file_list('*Berlin*')
+def test_load_thessaloniki(aeronet_sda_subset_reader):
+    reader = aeronet_sda_subset_reader
+    files = reader.find_in_file_list('*Thessaloniki*')
     assert len(files) == 1
-    assert os.path.basename(files[0]) == 'Berlin_FUB.lev30', files[0]
+    assert os.path.basename(files[0]) == 'Thessaloniki.lev30', files[0]
 
     test_vars = ['ang4487aer',
                  'od550aer',
@@ -30,15 +29,14 @@ def test_load_berlin_AeroSdaV2L2D():
     assert all([len(data[x]) > 100 for x in test_vars])
 
     assert isinstance(data['dtime'][0], np.datetime64)
-    assert data['dtime'][0] == np.datetime64('2014-07-06T12:00:00'), data['dtime'][0]
+    assert data['dtime'][0] == np.datetime64('2003-06-01T12:00:00'), data['dtime'][0]
 
     means = []
     for var in test_vars:
+        means.append(np.nanmean(data[var]))
 
-        means.append(data[var].mean())
-
-    desired = [1.3437323123209168, 0.15558341331479467, 0.02798509404146714,
-               0.12759832110794386]
+    desired = [1.4777584841303428, 0.1988665578854858, 0.036805761707404114,
+               0.16206080598741934]
 
     npt.assert_allclose(actual=means,
                         desired = desired,
