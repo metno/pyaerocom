@@ -88,7 +88,7 @@ class TestReadGhost(object):
         return getattr(self, fixture_name)
 
     def test_meta_keys(self):
-        assert len(self.default_reader.META_KEYS) == 143
+        assert len(self.default_reader.META_KEYS) == 142
 
     @pytest.mark.parametrize('fixture_name', ['ghost_eea_daily', 'ghost_eea_hourly'])
     def test_PROVIDES_VARIABLES(self, fixture_name):
