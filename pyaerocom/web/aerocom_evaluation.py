@@ -4,12 +4,13 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
+from traceback import format_exc
 import simplejson
 
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
-from pyaerocom.region import Region, get_all_default_region_ids
+#from pyaerocom.region import Region, get_all_default_region_ids
 
 from pyaerocom.io.helpers import save_dict_json
 
@@ -538,7 +539,7 @@ class AerocomEvaluation(object):
         Returns
         -------
         diurnal_only : bool
-            
+
 
         """
         try:
@@ -935,8 +936,9 @@ class AerocomEvaluation(object):
                 if fnmatch(mname, search_pattern) and not mname in matches:
                     matches.append(mname)
         if len(matches) == 0:
-            raise KeyError('No observations could be found that match input {}'
-                           .format(name_or_pattern))
+            raise KeyError('No observations could be found that match input {}.\n'
+                           'Choose from\n{}'
+                           .format(name_or_pattern, list(self.obs_config.keys())))
         return matches
 
     def _check_and_get_iface_names(self):
@@ -1121,7 +1123,9 @@ class AerocomEvaluation(object):
         col.update(**self.colocation_settings)
         col.update(**self.get_model_config(model_name))
         #col.update(**kwargs)
+
         data = col.read_model_data(var_name, **kwargs)
+
         return data
 
     def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
@@ -1215,6 +1219,7 @@ class AerocomEvaluation(object):
             self.update_heatmap_json()
         except KeyError: # if no data is available for this experiment
             pass
+        self.to_json(self.exp_dir)
 
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
@@ -1282,13 +1287,16 @@ class AerocomEvaluation(object):
              vert_code,
              mod_name, mod_var) = self._info_from_map_file(file)
             remove=False
-            obs_vars = self._get_valid_obs_vars(obs_name)
 
-            if not (obs_name in self.iface_names and
-                    mod_name in self.model_config and
-                    obs_var in obs_vars):
+            if not obs_name in self.obs_config:
+                # Obs dataset was removed
                 remove = True
-            if mod_name in self.model_config:
+            elif not mod_name in self.model_config:
+                # Model dataset was removed
+                remove = True
+            elif not obs_var in self._get_valid_obs_vars(obs_name):
+                remove = True
+            else:
                 mcfg = self.model_config[mod_name]
                 if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
                     if not mod_var == mcfg['model_use_vars'][obs_var]:
@@ -1367,13 +1375,44 @@ class AerocomEvaluation(object):
                 d[key] = val
         return d
 
+    @property
+    def name_config_file(self):
+        """
+        File name of config file (without file ending specification)
+
+        Returns
+        -------
+        str
+            name of config file
+        """
+        return 'cfg_{}_{}'.format(self.proj_id, self.exp_id)
+
+    @property
+    def name_config_file_json(self):
+        """
+        File name of config file (with json ending)
+
+        Returns
+        -------
+        str
+            name of config file
+        """
+        return '{}.json'.format(self.name_config_file)
+
     def to_json(self, output_dir):
-        """Convert configuration to json ini file"""
+        """Convert analysis configuration to json file and save
+
+        Parameters
+        ----------
+        output_dir : str
+            directory where the config json file is supposed to be stored
+
+        """
         d = self.to_dict()
-        out_name = 'cfg_{}_{}.json'.format(self.proj_id, self.exp_id)
+        out_name = self.name_config_file_json
 
         save_dict_json(d, os.path.join(output_dir, out_name), indent=3)
-        return d
+
 
     def load_config(self, proj_id, exp_id, config_dir=None):
         """Load configuration json file"""
