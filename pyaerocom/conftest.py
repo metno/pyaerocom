@@ -157,6 +157,11 @@ def aeronet_sun_subset_reader():
     return reader
 
 @pytest.fixture(scope='session')
+def aeronet_sda_subset_reader():
+    reader = ReadAeronetSdaV3('AeronetSDAV3L2Subset.daily')
+    return reader
+
+@pytest.fixture(scope='session')
 def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
     r = aeronet_sun_subset_reader
     #return r.read(vars_to_retrieve=TEST_VARS)
@@ -166,6 +171,12 @@ def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
 def data_scat_jungfraujoch():
     r = ReadEbas('EBASSubset')
     return r.read('sc550aer', station_names='Jungfrau*')
+
+@pytest.fixture(scope='session')
+def data_scat_jungfraujoch_full():
+    r = ReadEbas()
+    return r.read('sc550aer', station_names='Jungfrau*')
+
 
 @pytest.fixture(scope='session')
 def loaded_nasa_ames_example():

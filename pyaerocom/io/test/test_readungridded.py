@@ -41,7 +41,7 @@ def test_basic_attributes():
     assert type(r.get_reader()).__name__ == 'ReadAeronetSunV3'
     assert r.dataset_provides_variables() == ['od340aer', 'od440aer',
                                               'od500aer', 'od870aer',
-                                              'ang4487aer', 'ang4487aer_calc',
+                                              'ang4487aer', 'ang44&87aer',
                                               'od550aer']
 
 @lustre_unavail
