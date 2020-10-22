@@ -13,7 +13,7 @@ from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.exceptions import (DataExtractionError, VarNotAvailableError,
                                   TimeMatchError, DataCoverageError,
                                   MetaDataError, StationNotFoundError)
-from pyaerocom.colocate_ungridded_ungridded_helper import combine_vardata_ungridded
+from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
@@ -119,6 +119,7 @@ class UngriddedData(object):
     _LAT_OFFSET = np.float(90.)
 
     STANDARD_META_KEYS = list(StationMetaData().keys())
+
     def __init__(self, num_points=None, add_cols=None, chunksize=None):
 
         self._index = self._init_index(add_cols)
@@ -2169,25 +2170,34 @@ class UngriddedData(object):
         obj._check_index()
         return obj
 
-    def colocate_vardata(self, var1, var2, other=None,
-                         match_stats_how='closest',
-                         match_stats_tol_km=1, merge_how='combine',
-                         merge_eval_fun=None,
-                         var_name_out=None,
-                         resample_how='mean',
-                         apply_time_resampling_constraints=False,
-                         min_num_obs=None):
+    def colocate_vardata(self, var1, data_id1=None,
+                         var2=None, data_id2=None, other=None,
+                         **kwargs):
+        if other is None:
+            other = self
+        if var2 is None:
+            var2 = var1
+        if data_id1 is None:
+            contains = self.contains_datasets
+            if len(contains) > 1:
+                raise ValueError('Please provide data_id1 since data object '
+                                 'contains more than 1 dataset...')
+            data_id1 = contains[0]
 
-        statlist = combine_vardata_ungridded(self, var1=var1, data2=other,
-                                             var2=var2,
-                                             match_stats_how='closest',
-                                             match_stats_tol_km=1,
-                                             merge_how='combine',
-                                             merge_eval_fun=None,
-                                             var_name_out=None,
-                                             resample_how='mean',
-                                             apply_time_resampling_constraints=False,
-                                             min_num_obs=None)
+        if data_id2 is None:
+            contains = other.contains_datasets
+            if len(contains) > 1:
+                raise ValueError('Please provide data_id2 since data object '
+                                 'contains more than 1 dataset...')
+            data_id2 = contains[0]
+        if self is other and data_id1 == data_id2 and var1 == var2:
+            raise ValueError('Input combination too unspecific, please provide '
+                             'either another data object, 2 different data IDs '
+                             'or 2 different variable names')
+        input_data = [(self, data_id1, var1),
+                      (other, data_id2, var2)]
+        statlist = combine_vardata_ungridded(input_data,
+                                             **kwargs)
 
         new = UngriddedData.from_station_data(statlist)
         return new
@@ -2937,10 +2947,9 @@ if __name__ == "__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
     plt.close('all')
-    data = pya.io.ReadUngridded().read('EBASMC', 'ac550aer')
+    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    data1 = pya.io.ReadUngridded().read('AeronetInvV3Lev2.daily', 'od550aer')
 
-    data1 = data.check_convert_var_units('ac550aer', 'm-1', inplace=False)
+    data2 = data.colocate_vardata(var1='od550aer', other=data1)
 
-    data.plot_station_timeseries(10, 'ac550aer')
-
-    data1.plot_station_timeseries(10, 'ac550aer')
+    print(data2)
