@@ -65,6 +65,7 @@ class ObsConfigEval(BrowseDict):
         self.obs_vert_type = None
         self.obs_aux_requires = {}
         self.obs_aux_funs = {}
+        self.obs_aux_units = {}
 
         self.read_opts_ungridded = None
 
@@ -101,6 +102,8 @@ class ObsConfigEval(BrowseDict):
         elif not isinstance(self.obs_vars, list):
             raise ValueError('Invalid input for obs_vars. Need list or str, '
                              'got: {}'.format(self.obs_vars))
+        if self.obs_aux_units is None:
+            self.obs_aux_units = {}
         ovt = self.obs_vert_type
         if ovt is None:
             raise ValueError('obs_vert_type is not defined. Please specify '
