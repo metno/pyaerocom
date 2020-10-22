@@ -31,7 +31,7 @@ class ObsVarCombi(object):
 class AuxInfoUngridded(object):
     MAX_VARS_PER_METHOD = 2
     def __init__(self, data_id, vars_supported, aux_requires,
-                 aux_funs):
+                 aux_funs, aux_units):
 
         if isinstance(vars_supported, str):
             vars_supported = [vars_supported]
@@ -41,6 +41,7 @@ class AuxInfoUngridded(object):
 
         self.aux_requires = aux_requires
         self.aux_funs = aux_funs
+        self.aux_units = aux_units
         self.check_status()
 
     def to_dict(self):
@@ -49,7 +50,8 @@ class AuxInfoUngridded(object):
             data_id = self.data_id,
             vars_supported = self.vars_supported,
             aux_requires = self.aux_requires,
-            aux_funs = self.aux_funs
+            aux_funs = self.aux_funs,
+            aux_units = self.aux_units
             )
 
     def check_status(self):
@@ -67,11 +69,13 @@ class AuxInfoUngridded(object):
         for var in self.vars_supported:
             if not var in self.aux_requires:
                 raise ValueError('Variable {} is not defined in attr '
-                                     'aux_requires...'.format(var))
+                                 'aux_requires...'.format(var))
             elif not var in self.aux_funs:
-                raise ValueError('Variable {} is not defined in attr '
-                                     'aux_funs...'.format(var))
-
+                raise ValueError('Specification of computation function is '
+                                 'missing for var {}'.format(var))
+            elif not var in self.aux_units:
+                raise ValueError('Specification of unit is missing for var {}'
+                                 .format(var))
             fun = self.aux_funs[var]
 
             aux_info = self.aux_requires[var]
