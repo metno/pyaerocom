@@ -49,6 +49,7 @@ from pyaerocom.variable import Variable, is_3d
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
+                                         divide_cubes,
                                          subtract_cubes,
                                          add_cubes)
 
@@ -147,7 +148,8 @@ class ReadGridded(object):
                     'dryoa'         : ('drypoa', 'drysoa'),
                     'conc*'         : ('mmr*', 'rho'),
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
-                    'concox'        : ('concno2', 'conco3')
+                    'concox'        : ('concno2', 'conco3'),
+                    'fmf550aer'     : ('od550lt1aer', 'od550aer')
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
@@ -156,14 +158,15 @@ class ReadGridded(object):
                     'od870aer'      :   ['od865aer'],
                     'ac550dryaer'   :   ['ac550aer']}
 
-    AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
-                'angabs4487aer':    compute_angstrom_coeff_cubes,
-                'od550gt1aer'  :    subtract_cubes,
-                'wetoa'        :    add_cubes,
-                'dryoa'        :    add_cubes,
-                'sc550dryaer'  :    subtract_cubes,
-                'conc*'        :    multiply_cubes,
-                'concox'       :    add_cubes,
+    AUX_FUNS = {'ang4487aer'    :   compute_angstrom_coeff_cubes,
+                'angabs4487aer' :   compute_angstrom_coeff_cubes,
+                'od550gt1aer'   :   subtract_cubes,
+                'wetoa'         :   add_cubes,
+                'dryoa'         :   add_cubes,
+                'sc550dryaer'   :   subtract_cubes,
+                'conc*'         :   multiply_cubes,
+                'concox'        :   add_cubes,
+                'fmf550aer'     :   divide_cubes
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
@@ -2158,5 +2161,3 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     reader = ReadGridded()
-
-    reader._check_var_match_pattern('concpm10')
