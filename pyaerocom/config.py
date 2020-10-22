@@ -273,6 +273,7 @@ class Config(object):
 
         # Attributes that are used to store search directories
         self.OBSLOCS_UNGRIDDED = od()
+        self.OBS_UNGRIDDED_POST = od()
         self.SUPPLDIRS = od()
         self._search_dirs = []
 
@@ -353,11 +354,6 @@ class Config(object):
             return True
         elif loc in self._rejected_access:
             return False
-# =============================================================================
-#             self.print_log.warning('Attempting access to location {}, which '
-#                                    'has been checked before and failed. This '
-#                                    'may slow things down.'.format(loc))
-# =============================================================================
 
         if timeout is None:
             timeout = self.SERVER_CHECK_TIMEOUT
@@ -617,30 +613,6 @@ class Config(object):
              'method add_data_search_dir for adding new locations. You can '
              'still use the setter method for adding a database location')
         raise DeprecationError(msg)
-        #return self._modelbasedir
-
-# =============================================================================
-#     @BASEDIR.setter
-#     def BASEDIR(self, value):
-#         if not self._check_access(value):
-#             raise FileNotFoundError('Cannot change data base directory. '
-#                                     'Input directory does not exist')
-#
-#         value = self._check_basedir_environment(value)
-#
-#         self._obsbasedir = value
-#         self._modelbasedir = value
-#
-#         try:
-#             config_file, env_id = self._infer_config_from_basedir(value)
-#             self.print_log.info('Adding paths for {} with root at {}'
-#                                 .format(env_id, value))
-#             self.read_config(config_file, keep_basedirs=True)
-#         except FileNotFoundError:
-#             self.print_log.warning('Failed to infer path environment for '
-#                                    'input dir {}. No search paths will be added'
-#                                    .format(value))
-# =============================================================================
 
     @property
     def DIR_INI_FILES(self):
@@ -699,28 +671,6 @@ class Config(object):
 
         raise NotImplementedError
 
-# =============================================================================
-#     @property
-#     def EBASMC_SQL_DATABASE(self):
-#         """Path to EBAS SQL database"""
-#         dbname = self.EBAS_SQL_DB_NAME
-#         if not 'EBASMC' in self.OBSLOCS_UNGRIDDED:
-#             return None
-#         loc_remote = os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], dbname)
-#         if self.EBAS_DB_LOCAL_CACHE:
-#             loc_local = os.path.join(self.CACHEDIR, dbname)
-#             return self._check_ebas_db_local_vs_remote(loc_remote, loc_local)
-#
-#         return loc_remote
-# =============================================================================
-
-# =============================================================================
-#     @property
-#     def EBASMC_DATA_DIR(self):
-#         """Data directory of EBAS multicolumn files"""
-#         return os.path.join(self.OBSLOCS_UNGRIDDED["EBASMC"], 'data/')
-# =============================================================================
-
     @property
     def EBAS_FLAGS_FILE(self):
         """Location of CSV file specifying meaning of EBAS flags"""
@@ -729,13 +679,10 @@ class Config(object):
 
     @property
     def OBS_IDS_UNGRIDDED(self):
-        """List of all IDs of observations"""
-        return [x for x in self.OBSLOCS_UNGRIDDED.keys()]
-
-    @property
-    def OBSDIRS_UNGRIDDED(self):
-        """List of all IDs of observations"""
-        return [x for x in self.OBSLOCS_UNGRIDDED.values()]
+        """List of all data IDs of supported ungridded observations"""
+        ids = [x for x in self.OBSLOCS_UNGRIDDED.keys()]
+        ids.extend(self.OBS_UNGRIDDED_POST)
+        return ids
 
     @property
     def ERA5_SURFTEMP_FILE(self):
@@ -762,7 +709,8 @@ class Config(object):
                                         .format(loc))
             self._search_dirs.append(loc)
 
-    def add_ungridded_obs(self, obs_id, data_dir, reader=None, check_read=False):
+    def add_ungridded_obs(self, obs_id, data_dir, reader=None,
+                          check_read=False):
         """Add a network to the data search structure
 
         Parameters
@@ -782,7 +730,7 @@ class Config(object):
         ValueError
             if the data directory does not exist
         """
-        if obs_id in self.OBSLOCS_UNGRIDDED:
+        if obs_id in self.OBS_IDS_UNGRIDDED:
             raise AttributeError('Network with ID {} is already registered at '
                                  '{}'.format(obs_id, self.OBSLOCS_UNGRIDDED[obs_id]))
         elif not self._check_access(data_dir):
@@ -796,6 +744,55 @@ class Config(object):
         self.OBSLOCS_UNGRIDDED[obs_id] = data_dir
         if check_read:
             self._check_obsreader(obs_id, data_dir, reader)
+
+    def add_ungridded_post_dataset(self, obs_id, obs_vars, obs_aux_requires,
+                                   obs_aux_funs, obs_aux_units=None, **kwargs):
+        """
+        Register new ungridded dataset
+
+        Other than :func:`add_ungridded_obs`, this method adds required logic
+        for a "virtual" ungridded observation datasets, that is, a dataset that
+        can only be computed from other ungridded datasets but not read from
+        disk.
+
+        Parameters
+        ----------
+        obs_id : str
+            Name of new dataset.
+        obs_vars : str or list
+            variables supported by this dataset.
+        obs_read_aux : dict
+            dictionary containing information on how this dataset is supposed
+            to be created, for each supported variable. Entries are One key must be "fun" and the value corresponds to
+            the computation method for that
+
+        Raises
+        ------
+        ValueError
+            if input obs_id is already reserved
+
+
+        Returns
+        -------
+        None.
+
+        """
+        if obs_id in self.OBS_IDS_UNGRIDDED:
+            raise ValueError('Network with ID {} is already registered...'
+                                 .format(obs_id))
+        elif obs_aux_units is None:
+            obs_aux_untis = {}
+        # this class will do the required sanity checking and will only
+        # initialise if everything is okay
+        addinfo = obs_io.AuxInfoUngridded(
+            data_id=obs_id,
+            vars_supported=obs_vars,
+            aux_requires=obs_aux_requires,
+            aux_funs=obs_aux_funs,
+            aux_units=obs_aux_units
+            )
+
+        self.OBS_UNGRIDDED_POST[obs_id] = addinfo.to_dict()
 
     def _check_obsreader(self, obs_id, data_dir, reader):
         """
@@ -1062,49 +1059,6 @@ class Config(object):
             else:
                 s += "\n%s: %s" %(k, v)
         return s
-
-    ### DEPRECATED BUT STILL FUNCTIONAL CODE
-    @property
-    def OUT_BASEDIR(self):
-        msg = 'Attribute OUT_BASEDIR is deprecated. Please use OUTPUTDIR instead'
-        self.print_log.warning(DeprecationWarning(msg))
-        return self.OUTPUTDIR
-
-    @property
-    def OBSDATACACHEDIR(self):
-        """Cache directory for UngriddedData objects (deprecated)"""
-        msg=('Attr. was renamed (but still works). Please us CACHEDIR instead')
-        self.print_log.warning(DeprecationWarning(msg))
-        return self.CACHEDIR
-
-    @property
-    def OBSDIRS(self):
-        msg = 'Attr. OBSDIRS is deprecated, use OBSDIRS_UNGRIDDED instead'
-        self.print_log.warning(DeprecationWarning(msg))
-        return self.OBSDIRS_UNGRIDDED
-
-    @property
-    def OBS_IDS(self):
-        msg = 'Attr. OBS_IDS is deprecated, use OBS_IDS_UNGRIDDED instead'
-        self.print_log.warning(DeprecationWarning(msg))
-        return self.OBS_IDS_UNGRIDDED
-
-    @property
-    def OBSCONFIG(self):
-        msg = ('Attr. OBSCONFIG is deprecated, use OBSLOCS_UNGRIDDED instead. '
-               'Note that the latter maps ids with paths directly and has no '
-               '{"PATH":<loc>} style entries')
-        self.print_log.warning(DeprecationWarning(msg))
-        cfg = {}
-        for obsid, path in self.OBSLOCS_UNGRIDDED.items():
-            cfg[obsid] = {'PATH':path}
-        return cfg
-
-    @property
-    def MODELDIRS(self):
-        msg = 'Attr. MODELDIRS is deprecated, use DATA_SEARCH_DIRS instead'
-        self.print_log.warning(DeprecationWarning(msg))
-        return self.DATA_SEARCH_DIRS
 
 if __name__=="__main__":
     import pyaerocom as pya
