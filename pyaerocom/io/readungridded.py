@@ -33,7 +33,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 import os, logging
-
+from pathlib import Path
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (DataRetrievalError,
                                   NetworkNotImplemented, NetworkNotSupported)
@@ -122,13 +122,16 @@ class ReadUngridded(object):
 
     @data_dir.setter
     def data_dir(self, val):
+        if isinstance(val, Path):
+            val = str(val)
         dsr = self.datasets_to_read
-        if len(dsr) == 1 and isinstance(val, str):
+        if len(dsr) < 2 and isinstance(val, str):
             val = {dsr[0] : val}
         elif not isinstance(val, dict):
-            raise ValueError('Invalid input combination for ReadUngridded. '
-                             'Input data_dir needs to be a dictionary for each '
-                             'dataset that is supposed to be read.')
+            raise ValueError('Invalid input data_dir ({}); needs to be a '
+                             'dictionary for each dataset that is supposed to '
+                             'be read ({})'.format(val, dsr))
+
         for ds, data_dir in val.items():
             assert os.path.exists(data_dir)
         self._data_dir = val
