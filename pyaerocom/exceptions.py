@@ -83,6 +83,9 @@ class NDimError(DataDimensionError):
 class EbasFileError(ValueError):
     pass
 
+class InitialisationError(ValueError):
+    pass
+
 class FileConventionError(IOError):
     pass
 
