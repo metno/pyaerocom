@@ -39,7 +39,7 @@ def stats_sda_fineaod(SDA_DATA):
 SUN_ID = 'AeronetSunV3L2Subset.daily'
 SDA_ID = 'AeronetSDAV3L2Subset.daily'
 
-FMFFUN = '({};od550lt1aer/{};od550aer)*100'.format(SDA_ID, SUN_ID)
+FMFFUN = 'fmf550aer=({};od550lt1aer/{};od550aer)*100'.format(SDA_ID, SUN_ID)
 
 @pytest.mark.parametrize('merge_how,merge_eval_fun,var_name_out,data_id_out,'
                          'var_unit_out,expectation', [
