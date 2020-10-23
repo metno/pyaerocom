@@ -507,13 +507,23 @@ class ReadUngridded(object):
                 for aux_var in aux_vars:
                     input_data_ids_vars.append((aux_data, aux_id, aux_var))
 
-            aux_fun = aux_info['aux_funs'][var]
-            var_unit_out = aux_info['aux_units'][var]
+            aux_merge_how = aux_info['aux_merge_how'][var]
+
+            if var in aux_info['aux_units']:
+                var_unit_out = aux_info['aux_units'][var]
+            else:
+                var_unit_out = None
+
+            if aux_merge_how == 'eval':
+                # function MUST be defined
+                aux_fun = aux_info['aux_funs'][var]
+            else:
+                aux_fun = None
 
             merged_stats = combine_vardata_ungridded(
                 data_ids_and_vars=input_data_ids_vars,
                 merge_eval_fun=aux_fun,
-                merge_how='eval',
+                merge_how=aux_merge_how,
                 var_name_out=var,
                 var_unit_out=var_unit_out,
                 data_id_out=aux_info['data_id'])
@@ -616,6 +626,8 @@ class ReadUngridded(object):
 
         """
         obs_vars = []
+        if isinstance(vars_desired, str):
+            vars_desired = [vars_desired]
         if obs_id in self.post_compute:
             # check if all required are accessible
             postinfo = self.post_compute[obs_id]
@@ -625,6 +637,8 @@ class ReadUngridded(object):
                 requires = postinfo['aux_requires'][var]
                 all_good = True
                 for ds, vars_required in requires.items():
+                    if isinstance(vars_required,str):
+                        vars_required = [vars_required]
                     vars_avail = self.get_vars_supported(ds, vars_required)
                     if not len(vars_required) == len(vars_avail):
                         all_good = False
