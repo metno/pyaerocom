@@ -746,7 +746,8 @@ class Config(object):
             self._check_obsreader(obs_id, data_dir, reader)
 
     def add_ungridded_post_dataset(self, obs_id, obs_vars, obs_aux_requires,
-                                   obs_aux_funs, obs_aux_units=None, **kwargs):
+                                   obs_merge_how, obs_aux_funs=None,
+                                   obs_aux_units=None, **kwargs):
         """
         Register new ungridded dataset
 
@@ -755,16 +756,36 @@ class Config(object):
         can only be computed from other ungridded datasets but not read from
         disk.
 
+        If all input parameters are okay, the new dataset will be registered
+        in :attr:`OBS_UNGRIDDED_POST` and will then be accessible for import
+        in ungridded reading factory class :class:`pyaerocom.io.ReadUngridded`.
+
         Parameters
         ----------
         obs_id : str
             Name of new dataset.
         obs_vars : str or list
             variables supported by this dataset.
-        obs_read_aux : dict
-            dictionary containing information on how this dataset is supposed
-            to be created, for each supported variable. Entries are One key must be "fun" and the value corresponds to
-            the computation method for that
+        obs_aux_requires : dict
+            dicionary specifying required datasets and variables for each
+            variable supported by the auxiliary dataset.
+        obs_merge_how : str or dict
+            info on how to derive each of the supported coordinates (e.g. eval,
+            combine). For valid input args see
+            :mod:`pyaerocom.combine_vardata_ungridded`. If value is string,
+            then the same method is used for all variables.
+        obs_aux_funs : dict, optional
+            dictionary specifying computation methods for auxiliary variables
+            that are supposed to be retrieved via `obs_merge_how='eval'`.
+            Keys are variable names, values are respective computation methods
+            (which need to be strings as they will be evaluated via
+             :func:`pandas.DataFrame.eval` in
+             :mod:`pyaerocom.combine_vardata_ungridded`). This input is
+            optional, but mandatory if any of the `obs_vars` is
+            supposed to be retrieved via `merge_how='eval'`.
+        obs_aux_units : dict, optional
+            output units of auxiliary variables (only needed for varibales
+            that are derived via `merge_how='eval'`)
 
         Raises
         ------
@@ -781,13 +802,14 @@ class Config(object):
             raise ValueError('Network with ID {} is already registered...'
                                  .format(obs_id))
         elif obs_aux_units is None:
-            obs_aux_untis = {}
+            obs_aux_units = {}
         # this class will do the required sanity checking and will only
         # initialise if everything is okay
         addinfo = obs_io.AuxInfoUngridded(
             data_id=obs_id,
             vars_supported=obs_vars,
             aux_requires=obs_aux_requires,
+            aux_merge_how=obs_merge_how,
             aux_funs=obs_aux_funs,
             aux_units=obs_aux_units
             )
