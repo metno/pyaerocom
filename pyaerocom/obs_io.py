@@ -100,28 +100,29 @@ class AuxInfoUngridded(object):
                 if not isinstance(fun, str):
                     raise ValueError('eval functions need to be strings')
 
-                aux_info = self.aux_requires[var]
+            aux_info = self.aux_requires[var]
 
-                fc = 0
-                for aux_id, var_info in aux_info.items():
-                    if isinstance(var_info, str):
-                        # make sure variables are represented as list, even if
-                        # it is only one
-                        aux_info[aux_id] = var_info = [var_info]
-                    for _var in var_info:
-                        obsvar = ObsVarCombi(aux_id, _var)
-                        obsvarstr = str(obsvar)
-                        if not obsvarstr in fun:
-                            raise ValueError('Mismatch between aux_requires and '
-                                             'aux_funs for variable {}. No such '
-                                             'obs;var string {} in computation '
-                                             'method {}'
-                                             .format(var, obsvarstr, fun))
+            fc = 0
+            for aux_id, var_info in aux_info.items():
+                if isinstance(var_info, str):
+                    # make sure variables are represented as list, even if
+                    # it is only one
+                    aux_info[aux_id] = var_info = [var_info]
+                for _var in var_info:
+                    obsvar = ObsVarCombi(aux_id, _var)
+                    obsvarstr = str(obsvar)
+                    if not obsvarstr in fun:
+                        raise ValueError('Mismatch between aux_requires and '
+                                         'aux_funs for variable {}. No such '
+                                         'obs;var string {} in computation '
+                                         'method {}'
+                                         .format(var, obsvarstr, fun))
 
-                        fc += 1
-                        if fc > self.MAX_VARS_PER_METHOD:
-                            raise NotImplementedError('So far only 2 variables '
-                                                      'can be combined...')
+                    fc += 1
+                    if fc > self.MAX_VARS_PER_METHOD:
+                        raise NotImplementedError('So far only 2 variables '
+                                                  'can be combined...')
+
     def __repr__(self):
         return ('{}; data_id: {}; vars_supported: {}'
                 .format(str(type(self).__name__), self.data_id, self.vars_supported))
