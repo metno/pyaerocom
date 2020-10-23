@@ -56,8 +56,6 @@ from pyaerocom.helpers import varlist_aerocom
 
 from pyaerocom import const, print_log
 
-# TODO Note: Removed infiles (list of files from which datasets were read, since it
-# was not used anywhere so far)
 class ReadUngridded(object):
     """Factory class for reading of ungridded data based on obsnetwork ID
 
