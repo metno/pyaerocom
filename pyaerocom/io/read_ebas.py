@@ -1141,10 +1141,7 @@ class ReadEbas(ReadUngriddedBase):
             data_out['var_info'][var].update(var_info)
 
             if self.opts.convert_units:
-                try:
-                    data_out = self._convert_varunit_stationdata(data_out, var)
-                except Exception:
-                    raise
+                data_out = self._convert_varunit_stationdata(data_out, var)
 
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
@@ -1152,7 +1149,8 @@ class ReadEbas(ReadUngriddedBase):
         data_out['dtime'] = file.time_stamps
 
         # compute additional variables (if applicable)
-        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        data_out = self.compute_additional_vars(data_out,
+                                                vars_to_compute)
 
         return data_out
 
