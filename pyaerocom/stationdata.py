@@ -22,7 +22,8 @@ from pyaerocom.tstype import TsType
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _make_mobs_dataframe
-from pyaerocom.helpers import isnumeric, isrange, calc_climatology
+from pyaerocom.helpers import (isnumeric, isrange, calc_climatology,
+                               to_datetime64)
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
@@ -427,43 +428,109 @@ class StationData(StationMetaData):
 
         return meta
 
+    def _check_meta_item(self, key):
+        """Check if metadata item is valid
+
+        Valid value types are dictionaries, lists, strings, numerical values
+        and datetetime objects.
+        """
+        val = self[key]
+        if val is None:
+            return
+        elif isinstance(val, np.ndarray):
+            if val.ndim != 1:
+                raise MetaDataError('Invalid metadata entry {} for key {}.'
+                                    'Only 1d numpy arrays are supported...'
+                                    .format(val, key))
+            self[key] = list(val)
+        elif not isinstance(val, (dict, list, str)) and not isnumeric(val):
+            try:
+                self[key] = to_datetime64(val)
+            except Exception:
+                raise MetaDataError('Invalid metadata entry {} for key {}.'
+                                    'Only dicts, lists, strings, numerical '
+                                    'values or datetime objects are supported'
+                                    .format(val, key))
+
+    def _merge_meta_item(self, key, val):
+        """Merge meta item into this object
+
+        Parameters
+        ----------
+        key
+            key of metadata value
+        val
+            value to be added
+        """
+        current_val = self[key]
+        same_type = isinstance(current_val, type(val))
+        try:
+            if isinstance(current_val, dict):
+                if not same_type:
+                    raise ValueError('Cannot merge meta item {} due to type '
+                                     'mismatch'.format(key))
+                elif not current_val == val:
+                    self[key] = merge_dicts(current_val, val)
+
+            elif isinstance(current_val, str):
+                if not same_type:
+                    if isinstance(val, list):
+                        if not current_val in val:
+                            newval = val.insert(0, current_val)
+                        self[key] = newval
+                    else:
+                        raise ValueError('Cannot merge meta item {} due to type '
+                                         'mismatch'.format(key))
+                elif not current_val == val:
+                    # both are str that may be already merged with ";" -> only
+                    # add new entries
+                    vals_in = [x.strip() for x in val.split(';')]
+
+                    for item in vals_in:
+                        if not item in current_val:
+                            current_val += ';{}'.format(item)
+                    self[key] = current_val
+
+            elif isinstance(current_val, list):
+                if not same_type:
+                    val = [val]
+                for item in val:
+                    if not item in current_val:
+                        current_val.append(item)
+                self[key] = current_val
+
+            elif isnumeric(current_val) and isnumeric(val):
+                if val != current_val:
+                    self[key] = [current_val, val]
+
+            elif isinstance(val, list):
+                if not current_val in val:
+                    self[key] = val.insert(0, current_val)
+
+            elif current_val != val:
+                self[key] = [current_val, val]
+
+            else: #they shoul be the same
+                assert current_val == val, (current_val, val)
+        except Exception as e:
+            raise MetaDataError('Failed to merge metadata entries for key {}.\n'
+                                'Value in current StationData: {}\n'
+                                'Value to be merged: {}\n'
+                                'Error: {}'
+                                .format(key, current_val, val, repr(e)))
+
+
+
     def _append_meta_item(self, key, val):
         """Add a metadata item"""
-        if not key in self or self[key] == None:
+        if not key in self or self[key] is None:
             self[key] = val
         else:
-            current_val = self[key]
-            if isinstance(current_val, dict):
-                if not isinstance(val, dict):
-                    raise ValueError('Cannot merge meta item {} due to type '
-                                     'mismatch'.format(key))
-                self[key] = merge_dicts(current_val, val)
-            elif isinstance(current_val, str):
-                if not isinstance(val, str):
-                    raise ValueError('Cannot merge meta item {} due to type '
-                                     'mismatch'.format(key))
-                vals = [x.strip() for x in current_val.split(';')]
-                vals_in = [x.strip() for x in val.split(';')]
-
-                for _val in vals_in:
-                    if not _val in vals:
-                        self[key] = self[key] + ';{}'.format(_val)
-            else:
-                if isinstance(val, (list, np.ndarray)):
-                    raise ValueError('Cannot append metadata value that is '
-                                     'already a list or numpy array due to '
-                                     'potential ambiguities')
-                if isinstance(self[key], list):
-                    if not val in self[key]:
-                        self[key].append(val)
-                else:
-                    if not self[key] == val:
-                        self[key] = [self[key], val]
-        return self
+            self._merge_meta_item(key, val)
 
     def merge_meta_same_station(self, other, coord_tol_km=None,
                                 check_coords=True, inplace=True,
-                                add_meta_keys=None):
+                                add_meta_keys=None, raise_on_error=False):
         """Merge meta information from other object
 
         Note
@@ -491,6 +558,11 @@ class StationData(StationMetaData):
         add_meta_keys : str or list, optional
             additional non-standard metadata keys that are supposed to be
             considered for merging.
+        raise_on_error : bool
+            if True, then an Exception will be raised in case one of the
+            metadata items cannot be merged, which is most often due to
+            unresolvable type differences of metadata values between the two
+            objects
 
         """
         if add_meta_keys is None:
@@ -499,13 +571,8 @@ class StationData(StationMetaData):
         elif isinstance(add_meta_keys, str):
             add_meta_keys = [add_meta_keys]
 
-        if not other.station_name == self.station_name:
-            const.logger.info('Sites have different station_name: {} and {}'
-                              .format(self.station_name, other.station_name))
-
         if not inplace:
-            from copy import deepcopy
-            obj = deepcopy(self)
+            obj = self.copy()
         else:
             obj = self
 
@@ -519,16 +586,25 @@ class StationData(StationMetaData):
 
         keys = self.STANDARD_META_KEYS
         keys.extend(add_meta_keys)
-        # remove station name from key list to be merged
         for key in keys:
-            if key == 'station_name':
-                continue
             if key in self.STANDARD_COORD_KEYS:
                 if self[key] is None and other[key] is not None:
                     self[key] = other[key]
 
             elif key in other and other[key] is not None:
-                obj._append_meta_item(key, other[key])
+                try:
+                    self._check_meta_item(key)
+                    other._check_meta_item(key)
+
+                    obj._append_meta_item(key, other[key])
+                except MetaDataError as e:
+                    obj[key] = 'N/A_FAILED_TO_MERGE'
+                    msg = ('Failed to merge meta item {}. Reason:{}'
+                           .format(key, repr(e)))
+                    if raise_on_error:
+                        raise MetaDataError(msg)
+                    else:
+                        const.print_log.warn(msg)
 
         return obj
 
