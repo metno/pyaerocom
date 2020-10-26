@@ -90,11 +90,9 @@ class UngriddedData(object):
     #: version of class (for caching)
     __version__ = '0.21'
 
-    #: inital total number of rows in dataarray
-    _ROWNO = 100000
     #: default number of rows that are dynamically added if total number of
     #: data rows is reached.
-    _CHUNKSIZE = 100000
+    _CHUNKSIZE = 1000000
 
     #: The following indices specify what the individual rows of the datarray
     #: are reserved for. These may be expanded when creating an instance of
@@ -120,17 +118,17 @@ class UngriddedData(object):
 
     STANDARD_META_KEYS = list(StationMetaData().keys())
 
-    def __init__(self, num_points=None, add_cols=None, chunksize=None):
+    @property
+    def _ROWNO(self):
+        return self._data.shape[0]
 
-        self._index = self._init_index(add_cols)
+    def __init__(self, num_points=None, add_cols=None):
+
         if num_points is None:
-            num_points = self._ROWNO
-        else:
-            self._ROWNO = num_points
+            num_points = self._CHUNKSIZE
 
-        if chunksize is None:
-            chunksize = self._CHUNKSIZE
-        self._chunksize = chunksize
+        self._chunksize = num_points
+        self._index = self._init_index(add_cols)
 
         #keep private, this is not supposed to be used by the user
         self._data = np.empty([num_points, self._COLNO]) * np.nan
@@ -249,7 +247,10 @@ class UngriddedData(object):
             if not isinstance(stat, StationData):
                 raise ValueError('Need instances of StationData')
             metadata[meta_key] = od()
-            metadata[meta_key].update(stat.get_meta(add_none_vals=True))
+            metadata[meta_key].update(stat.get_meta(force_single_value=False,
+                                                    quality_check=False,
+                                                    add_none_vals=True))
+
             metadata[meta_key]['var_info'] = od()
 
             meta_idx[meta_key] = {}
@@ -282,7 +283,7 @@ class UngriddedData(object):
                 #check if size of data object needs to be extended
                 if (idx + num_times) >= data_obj._ROWNO:
                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
-                    data_obj.add_chunk()
+                    data_obj.add_chunk(num_times)
 
                 start = idx
                 stop = start + num_times
@@ -576,7 +577,6 @@ class UngriddedData(object):
             size = self._chunksize
         chunk = np.empty([size, self._COLNO])*np.nan
         self._data = np.append(self._data, chunk, axis=0)
-        self._ROWNO += size
         logger.info("adding chunk, new array size ({})".format(self._data.shape))
 
     def _find_station_indices_wildcards(self, station_str):
@@ -2946,6 +2946,8 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
 if __name__ == "__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
+
+    empty = UngriddedData()
     plt.close('all')
     data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     data1 = pya.io.ReadUngridded().read('AeronetInvV3Lev2.daily', 'od550aer')
