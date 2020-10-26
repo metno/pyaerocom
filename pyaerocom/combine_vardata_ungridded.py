@@ -119,14 +119,6 @@ def _combine_2_sites(stat, var, stat_other, var_other,
 
     new = StationData()
 
-    meta_merged = stat.merge_meta_same_station(
-        stat_other,
-        coord_tol_km=match_stats_tol_km,
-        inplace=False)
-
-    for key in new.STANDARD_META_KEYS:
-        new[key] = meta_merged[key]
-
     unit = stat.get_unit(var)
     unit_other = stat_other.get_unit(var_other)
 
@@ -232,6 +224,15 @@ def _combine_2_sites(stat, var, stat_other, var_other,
 
         new['var_info'][var_name_out] = var_info
         new[var_name_out] = add_ts
+
+    meta_merged = stat.merge_meta_same_station(
+        other=stat_other,
+        check_coords=False, #has already been done
+        inplace=True,
+        raise_on_error=False) # don't raise error if meta merging fails (for now)
+
+    for key in new.STANDARD_META_KEYS:
+        new[key] = meta_merged[key]
 
     if isinstance(data_id_out, str):
         new['data_id'] = data_id_out
