@@ -40,7 +40,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                check_coord_circular,
                                extract_latlon_dataarray)
 
-from pyaerocom.mathutils import closest_index
+from pyaerocom.mathutils import closest_index, exponent
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.vert_coords import AltitudeAccess
@@ -1278,7 +1278,14 @@ class GriddedData(object):
         except DimensionOrderError:
             self.reorder_dimensions_tseries()
         cname = self.dimcoord_names[-1]
+        coord = self[cname]
         from pyaerocom import vert_coords as vc
+        if 'positive' in coord.attributes:
+            if coord.attributes['positive'] == 'up':
+                return np.argmin(self.grid.dim_coords[3].points)
+            elif coord.attributes['positive'] == 'down':
+                return np.argmax(self.grid.dim_coords[3].points)
+
         try:
             coord = vc.VerticalCoordinate(cname)
             if coord.lev_increases_with_alt:
@@ -1292,10 +1299,20 @@ class GriddedData(object):
                 raise DataExtractionError('Cannot infer surface level since '
                                           'global option INFER_SURFACE_LEVEL in'
                                           'pyaerocom.const.GRID_IO is deactivated')
+            const.print_log.info(
+                'Inferring surface level in GriddedData based on mean value of '
+                '{} data in first and last level since CF coordinate info is '
+                'missing... The level with the largest mean value will be '
+                'assumed to be the surface. If mean values in both levels'
+                .format(self.var_name))
             last_lev_idx = self.shape[-1] - 1
-            first_lowest_idx = self[0, :, :, 0].data
-            first_highest_idx = self[0, :, :, last_lev_idx].data
-            if np.nanmean(first_lowest_idx) > np.nanmean(first_highest_idx):
+            mean_first_idx = np.nanmean(self[0, :, :, 0].data)
+            mean_last_idx = np.nanmean(self[0, :, :, last_lev_idx].data)
+            if exponent(mean_first_idx) == exponent(mean_last_idx):
+                raise DataExtractionError('Could not infer surface level. '
+                    '{} data in first and last level is of similar magnitude...'
+                    .format(self.var_name))
+            elif mean_first_idx > mean_last_idx:
                 return 0
             return last_lev_idx
 
