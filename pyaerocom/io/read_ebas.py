@@ -226,7 +226,7 @@ class ReadEbas(ReadUngriddedBase):
         self._read_stats_log = BrowseDict()
 
         #: SQL database interface class used to retrieve file paths for vars
-        self.file_index = EbasFileIndex(self.sqlite_database_file)
+        self._file_index = None
         self.sql_requests = []
 
         #: original file lists retrieved for each variable individually using
@@ -257,6 +257,13 @@ class ReadEbas(ReadUngriddedBase):
         if not isinstance(val, str) or not os.path.exists(val):
             raise FileNotFoundError('Input directory does not exist')
         self._file_dir = val
+
+    @property
+    def file_index(self):
+        """SQlite file mapping metadata with filenames"""
+        if self._file_index is None:
+            self._file_index = EbasFileIndex(self.sqlite_database_file)
+        return self._file_index
 
     @property
     def FILE_REQUEST_OPTS(self):
@@ -1450,7 +1457,7 @@ if __name__=="__main__":
 
     r = ReadEbas()
 
-    data = r.read('sc550dryaer')
+    #data = r.read('sc550dryaer')
 
     #data.plot_station_timeseries('Eureka', 'vmro3')
 
