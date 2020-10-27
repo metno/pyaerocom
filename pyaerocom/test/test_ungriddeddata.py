@@ -18,7 +18,7 @@ def ungridded_empty():
     return UngriddedData()
 
 def test_init_shape(ungridded_empty):
-    npt.assert_array_equal(ungridded_empty.shape, (100000, 12))
+    npt.assert_array_equal(ungridded_empty.shape, (1000000, 12))
 
 def test_init_add_cols():
     d1 = UngriddedData(num_points=2, add_cols=['bla', 'blub'])
@@ -28,7 +28,7 @@ def test_add_chunk(ungridded_empty):
 
     ungridded_empty.add_chunk(111002)
 
-    npt.assert_array_equal(ungridded_empty.shape, (211002, 12))
+    npt.assert_array_equal(ungridded_empty.shape, (2000000, 12))
 
 def test_coordinate_access():
     import string
