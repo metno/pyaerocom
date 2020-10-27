@@ -291,10 +291,15 @@ class ReadUngridded(object):
 
         for _cls in self.SUPPORTED_READERS:
             if dataset_to_read in _cls.SUPPORTED_DATASETS:
-                self._readers[dataset_to_read] = _cls(dataset_to_read)
+                try:
+                    self._readers[dataset_to_read] = _cls(dataset_to_read)
+                except Exception as e:
+                    raise DataRetrievalError('Failed to instantiate reader for '
+                                             'dataset {}. Reason: {}'
+                                             .format(dataset_to_read, repr(e)))
                 return self._readers[dataset_to_read]
-        raise NetworkNotImplemented("No reading class available yet for dataset "
-                                    "{}".format(dataset_to_read))
+        raise NetworkNotImplemented('Could not find reading class for dataset '
+                                    '{}'.format(dataset_to_read))
 
     def _get_data_dir(self, dataset_to_read):
         """Helper to retrieve data directory for a given dataset (if available)
