@@ -380,8 +380,11 @@ class StationData(StationMetaData):
         return vals
 
     def get_meta(self, force_single_value=True, quality_check=True,
-                 add_none_vals=False):
+                 add_none_vals=False, add_meta_keys=None):
         """Return meta-data as dictionary
+
+        By default, only default metadata keys are considered, use parameter
+        `add_meta_keys` to add additional metadata.
 
         Parameters
         ----------
@@ -394,6 +397,9 @@ class StationData(StationMetaData):
             allowed in the local variation. The upper limits are specified
             in attr. ``COORD_MAX_VAR``.
         add_none_vals : bool
+            Add metadata keys which have value set to None.
+        add_meta_keys : str or list, optional
+            Add none-standard metadata.
 
         Returns
         -------
@@ -407,10 +413,22 @@ class StationData(StationMetaData):
         MetaDataError
             in case of consistencies in meta data between individual time-stamps
         """
+        if isinstance(add_meta_keys, str):
+            add_meta_keys = [add_meta_keys]
+        elif not isinstance(add_meta_keys, list):
+            add_meta_keys = []
         meta = {}
-        meta.update(self.get_station_coords(force_single_value, quality_check))
-        for key in self.STANDARD_META_KEYS:
-            if key in self.STANDARD_COORD_KEYS: # this has been handled above
+        meta.update(self.get_station_coords(force_single_value,
+                                            quality_check))
+        keys = self.STANDARD_META_KEYS
+        keys.extend(add_meta_keys)
+        for key in keys:
+            if not key in self:
+                const.print_log.warn('No such key in StationData: {}'
+                                     .format(key))
+                continue
+            elif key in self.STANDARD_COORD_KEYS:
+                # this has been handled above
                 continue
             if self[key] is None and not add_none_vals:
                 logger.info('No metadata available for key {}'.format(key))
