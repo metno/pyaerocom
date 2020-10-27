@@ -170,16 +170,14 @@ class ReadGhost(ReadUngriddedBase):
                     'concno'    :  ['vmrno'],
                     'concno2'   :  ['vmrno2'],
                     'conco3'    :  ['vmro3'],
-                    'concso2'   :  ['vmrso2'],
-                    'vmrox'     :  ['vmrno2', 'vmro3']}
+                    'concso2'   :  ['vmrso2']}
 
     AUX_FUNS = {
         'concco'    : _vmr_to_conc_ghost_stats,
         'concno'    : _vmr_to_conc_ghost_stats,
         'concno2'   : _vmr_to_conc_ghost_stats,
         'conco3'    : _vmr_to_conc_ghost_stats,
-        'concso2'   : _vmr_to_conc_ghost_stats,
-        'vmrox'     : _add_variable_data}
+        'concso2'   : _vmr_to_conc_ghost_stats}
 
     CONVERT_UNITS_META = {
         'network_provided_volume_standard_pressure' : 'Pa',
@@ -385,7 +383,11 @@ class ReadGhost(ReadUngriddedBase):
         # more elegantly
         meta_glob = {}
         for meta_key in self.META_KEYS:
-            meta_glob[meta_key] = ds[meta_key].values
+            try:
+                meta_glob[meta_key] = ds[meta_key].values
+            except KeyError:
+                const.print_log.warn('No such metadata key in GHOST data file: '
+                                     '{}'.format(os.path.basename(filename)))
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
             from_unit = ds[meta_key].attrs['units']
