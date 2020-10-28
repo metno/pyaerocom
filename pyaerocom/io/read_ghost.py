@@ -135,7 +135,10 @@ class ReadGhost(ReadUngriddedBase):
                 'GHOST.EBAS.hourly'   : 'hourly',
                 'GHOST.EBAS.daily'    : 'daily'}
 
-    META_KEYS = GHOST_META_KEYS
+    EEA_META_KEYS = GHOST_META_KEYS
+
+    EBAS_META_KEYS = GHOST_META_KEYS
+
 
     FLAG_VARS = ['flag', 'qa']
 
@@ -333,6 +336,14 @@ class ReadGhost(ReadUngriddedBase):
                                              invalidate)
         invalid = ~valid
         return invalid
+
+    @property
+    def META_KEYS(self):
+        if 'GHOST.EBAS' in self.data_id:
+            META_KEYS = self.EBAS_META_KEYS
+        elif 'GHOST.EEA' in self.data_id:
+            META_KEYS = self.EEA_META_KEYS
+        return META_KEYS
 
     def read_file(self, filename, var_to_read=None, invalidate_flags=None,
                   var_to_write=None):
@@ -628,8 +639,8 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
 
-    var = 'conco3'
-    obs = ReadGhost('GHOST.daily').read(var)
+    var = 'vmro3'
+    obs = ReadGhost('GHOST.EBAS.daily').read(var)
 
     #obs  = pya.io.ReadUngridded().read('GHOST.daily', var)
     #obs._check_index()
