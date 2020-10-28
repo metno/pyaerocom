@@ -93,7 +93,7 @@ from .read_aasetal import ReadAasEtal
 from .read_ghost import ReadGhost
 
 from .readgridded import ReadGridded, ReadGriddedMulti
-from .read_emep import ReadEMEP
+from .read_mscw_ctm import ReadEMEP, ReadMscwCtm
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
 

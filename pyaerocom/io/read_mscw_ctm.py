@@ -23,9 +23,11 @@ from pyaerocom.variable import get_aliases
 from pyaerocom.units_helpers import implicit_to_explicit_rates
 
 
-class ReadEMEP(object):
+
+
+class ReadMscwCtm(object):
     """
-    Class for reading EMEP model output data.
+    Class for reading model output from the EMEP MSC-W chemical transport model.
 
     Parameters
     ----------
@@ -339,6 +341,15 @@ def ts_type_from_filename(filename):
     elif filename == 'base_fullrun':
         ts_type = 'yearly'
     return ts_type
+
+
+class ReadEMEP(ReadMscwCtm):
+    """Old name of :class:`ReadMscwCtm`."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("You are using a deprecated name ReadEMEP for class ReadMscwCtm")
+
 
 
 
