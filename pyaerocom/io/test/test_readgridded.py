@@ -163,7 +163,7 @@ def test_file_info(reader_reanalysis):
 
 @lustre_unavail
 def test_years_available(reader_reanalysis):
-    years = list(range(2003, 2020)) + [9999]
+    years = list(range(2003, 2021)) + [9999]
     npt.assert_array_equal(reader_reanalysis.years_avail, years)
 
 
