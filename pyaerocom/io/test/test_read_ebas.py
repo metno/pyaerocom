@@ -79,6 +79,10 @@ class TestReadEBAS(object):
                          'conco3',
                          'concco',
                          'vmro3',
+                         'vmrso2',
+                         'vmrco',
+                         'vmrno2',
+                         'vmrno',
                          'concprcpso4',
                          'concprcpso4t',
                          'concprcpso4c',
@@ -234,7 +238,8 @@ class TestReadEBAS(object):
             reader.NAN_VAL
 
     def test_PROVIDES_VARIABLES(self, reader):
-        assert reader.PROVIDES_VARIABLES == self.PROVIDES_VARIABLES
+
+        assert sorted(reader.PROVIDES_VARIABLES) == sorted(self.PROVIDES_VARIABLES)
 
     def test_prefer_statistics(self, reader):
         assert reader.prefer_statistics == ['arithmetic mean', 'median']
