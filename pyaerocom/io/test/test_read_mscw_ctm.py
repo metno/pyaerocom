@@ -1,6 +1,7 @@
 import pytest
 import os
-from pyaerocom.conftest import lustre_unavail, testdata_unavail
+from pyaerocom.conftest import (lustre_unavail, testdata_unavail,
+                                does_not_raise_exception)
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.read_mscw_ctm import ts_type_from_filename
 from pyaerocom.griddeddata import GriddedData
@@ -24,14 +25,17 @@ def test_read_emep():
 def test_read_emep_read_var(path_emep):
     with pytest.raises(ValueError):
         r = ReadMscwCtm()
-        r.read_var('od550aer')
+        r.read_var('vmro3')
     with pytest.raises(ValueError):
         r = ReadMscwCtm()
-        r.read_var('od550aer')
+        r.read_var('vmro3')
     data_dir = path_emep['data_dir']
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError):
         r = ReadMscwCtm(data_dir=data_dir)
-        r.read_var('od550aer')
+        r.read_var('vmro3')
+    with does_not_raise_exception():
+        r = ReadMscwCtm(data_dir=data_dir)
+        r.read_var('vmro3', 'daily')
 
 @testdata_unavail
 def test_read_emep_data(path_emep):

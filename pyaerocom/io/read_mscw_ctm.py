@@ -110,6 +110,7 @@ class ReadMscwCtm(object):
         if not os.path.isfile(val):
             raise FileNotFoundError('Filepath {} not found.'.format(val))
         self._filepath = val
+        self._data_dir = None
 
 
     @data_dir.setter
@@ -117,6 +118,7 @@ class ReadMscwCtm(object):
         if not os.path.isdir(val):
             raise FileNotFoundError('Folder "{}" not found.'.format(val))
         self._data_dir = val
+        self._filepath = None
 
 
     @property
@@ -253,10 +255,10 @@ class ReadMscwCtm(object):
         GriddedData
         """
 
-        # if start or stop:
-        #     raise NotImplementedError('Currently ReadEMEP only reads from files containing one year of data.')
         if self.filepath is None and self.data_dir is None:
             raise ValueError('filepath or data_dir must be set before reading.')
+        elif self.data_dir is not None and ts_type is None:
+            raise ValueError('ts_type must be set when reading from directory.')
         var_map = get_emep_variables()
 
         aliases = get_aliases(var_name)
