@@ -125,7 +125,7 @@ def _combine_2_sites(stat, var, stat_other, var_other,
         other=stat_other,
         check_coords=False, #has already been done
         inplace=True,
-        raise_on_error=True) # don't raise error if meta merging fails (for now)
+        raise_on_error=True)
 
     unit = stat.get_unit(var)
     unit_other = stat_other.get_unit(var_other)
