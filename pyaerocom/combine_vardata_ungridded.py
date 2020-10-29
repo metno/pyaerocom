@@ -106,7 +106,7 @@ def _combine_2_sites(stat, var, stat_other, var_other,
                      data_id_out, var_unit_out, resample_how,
                      apply_time_resampling_constraints,
                      min_num_obs, prefer, merge_info_vars):
-    """Combine to StationData objects for a given merge strategy
+    """Combine two StationData objects for a given merge strategy
 
     Private for now...  details should follow. Until then see
     :func:`combine_vardata_ungridded` for details on input args
