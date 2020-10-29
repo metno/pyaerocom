@@ -407,7 +407,7 @@ class Colocator(ColocationSetup):
             data_dir = self.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
         reader = reader_class(data_id=data_id, data_dir=data_dir)
-        if hasattr(reader, 'filepath'):
+        if hasattr(reader, 'filepath') and hasattr(self, 'filepath'):
             reader.filepath = self.filepath
         return reader
 
@@ -723,7 +723,7 @@ class Colocator(ColocationSetup):
             yrs_avail = reader.years_avail
         except AttributeError:
             raise AttributeError('Input reader {} does not have attr. '
-                                 'years_avail') # not sure if ReadEMEP has...
+                                 'years_avail')
 
         first, last = yrs_avail[0], yrs_avail[-1]
         self.start = first
