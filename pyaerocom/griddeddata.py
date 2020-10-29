@@ -74,33 +74,6 @@ class GriddedData(object):
         variable name that is extracted if `input` is a file path. Irrelevant
         if `input` is preloaded Cube
 
-    Example
-    -------
-    >>> from pyaerocom.io.testfiles import get
-    >>> files = get()
-    >>> data = GriddedData(files['models']['aatsr_su_v4.3'],
-    ...  ot self.grid.var_name is None:
-                const.print_log.warning('Overwriting existing variable name {} '
-                                        'in with {}'.format(self.grid.var_name,
-                                                 var_name))                  var_name="od550aer")
-    >>> print(data.var_name)
-    od550aer
-    >>> print(type(data.longitude))
-    <class 'iris.coords.DimCoord'>
-    >>> print(data.longitude.points.min(), data.longitude.points.max())
-    -179.5 179.5
-    >>> print(data.latitude.points.min(), data.latitude.points.max())
-    -89.5 89.5
-    >>> print(data.time.points.min(), data.time.points.max())
-    0.0 365.0
-    >>> tstamps = data.time_stamps()
-    >>> print(tstamps[0], tstamps[-1])
-    2008-01-01T00:00:00.000000 2008-12-31T00:00:00.000000
-    >>> data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 180),
-    ...                          time_range=("2008-02-01", "2008-02-15"))
-    >>> print(data_cropped.shape)
-    (15, 120, 20)
-
     Attributes
     ----------
     grid

@@ -19,7 +19,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
-    __baseversion__ = '0.10_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.12_' + ReadUngriddedBase.__baseversion__
 
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -324,7 +324,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             print(col)
 
     def read(self, vars_to_retrieve=None, files=None, first_file=None,
-             last_file=None, file_pattern=None):
+             last_file=None, file_pattern=None, common_meta=None):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -345,13 +345,18 @@ class ReadAeronetBase(ReadUngriddedBase):
             `file_pattern` is specified.
         file_pattern : str, optional
             string pattern for file search (cf :func:`get_file_list`)
+        common_meta : dict, optional
+            dictionary that contains additional metadata shared for this
+            network (assigned to each metadata block of the
+            :class:`UngriddedData` object that is returned)
 
         Returns
         -------
         UngriddedData
             data object
         """
-
+        if common_meta is None:
+            common_meta = {}
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
@@ -398,7 +403,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             #metadata[meta_key].update(station_data.get_station_coords())
             meta['data_id'] = self.data_id
             meta['ts_type'] = self.TS_TYPE
-            meta['variables'] = vars_to_retrieve
+            #meta['variables'] = vars_to_retrieve
             if 'instrument_name' in station_data and station_data['instrument_name'] is not None:
                 instr = station_data['instrument_name']
             else:
@@ -406,6 +411,8 @@ class ReadAeronetBase(ReadUngriddedBase):
             meta['instrument_name'] = instr
             meta['data_revision'] = self.data_revision
             meta['filename'] = _file
+
+            meta.update(**common_meta)
             # this is a list with indices of this station for each variable
             # not sure yet, if we really need that or if it speeds up things
             meta_idx[meta_key] = od()

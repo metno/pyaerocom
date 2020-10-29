@@ -9,6 +9,28 @@ from concurrent.futures import ThreadPoolExecutor
 import multiprocessing as mp
 from collections import OrderedDict
 
+
+def invalid_input_err_str(argname, argval, argopts):
+    """Just a small helper to format an input error string for functions
+
+    Parameters
+    ----------
+    argname : str
+        name of input argument
+    argval
+        (invalid) value of input argument
+    argopts
+        possible input args for arg
+
+    Returns
+    -------
+    str
+        formatted string that can be parsed to an Exception
+    """
+
+    return ('Invalid input for {} ({}), choose from {}'
+            .format(argname, argval, argopts))
+
 def check_dir_access(path, timeout=0.1):
     """Uses multiprocessing approach to check if location can be accessed
 

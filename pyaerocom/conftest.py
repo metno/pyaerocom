@@ -156,6 +156,11 @@ def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
     return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
 @pytest.fixture(scope='session')
+def aeronetsdav3lev2_subset(aeronet_sda_subset_reader):
+    r = aeronet_sda_subset_reader
+    return r.read(vars_to_retrieve=['od550aer', 'od550lt1aer'])
+
+@pytest.fixture(scope='session')
 def data_scat_jungfraujoch():
     r = ReadEbas('EBASSubset')
     return r.read('sc550aer', station_names='Jungfrau*')

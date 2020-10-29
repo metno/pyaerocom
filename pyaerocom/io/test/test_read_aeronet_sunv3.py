@@ -51,6 +51,14 @@ def test_read(reader):
     npt.assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 0.676,
                         rtol=1e-3)
 
+@testdata_unavail
+def test_read_add_common_meta(reader):
+    files = reader.files[2:4]
+    data = reader.read('od550aer', files=files,
+                       common_meta={'bla':42})
+    assert all('bla' in x for x in data.metadata.values())
+
+
 if __name__=="__main__":
     import sys
     pytest.main(sys.argv)

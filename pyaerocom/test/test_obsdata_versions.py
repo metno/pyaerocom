@@ -16,7 +16,7 @@ from pyaerocom.conftest import lustre_unavail
 def test_revision_dates():
     f = ReadUngridded()
     l = {}
-    for s in f.SUPPORTED:
+    for s in f.SUPPORTED_READERS:
         r = s()
         l[r.DATA_ID] = r.data_revision
     res = []

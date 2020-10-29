@@ -38,6 +38,10 @@ from pyaerocom.time_config import TS_TYPES
 from pyaerocom.molmasses import get_molmass
 import cf_units
 
+def _add_variable_data(data):
+    raise NotImplementedError('Coming soon...')
+
+
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
     mmol_air = get_molmass('air_dry')
     for stat in data:
@@ -166,7 +170,7 @@ class ReadGhost(ReadUngriddedBase):
                     'concno'    :  ['vmrno'],
                     'concno2'   :  ['vmrno2'],
                     'conco3'    :  ['vmro3'],
-                    'concso2'   :  ['vmrso2'],}
+                    'concso2'   :  ['vmrso2']}
 
     AUX_FUNS = {
         'concco'    : _vmr_to_conc_ghost_stats,
@@ -379,7 +383,11 @@ class ReadGhost(ReadUngriddedBase):
         # more elegantly
         meta_glob = {}
         for meta_key in self.META_KEYS:
-            meta_glob[meta_key] = ds[meta_key].values
+            try:
+                meta_glob[meta_key] = ds[meta_key].values
+            except KeyError:
+                const.print_log.warn('No such metadata key in GHOST data file: '
+                                     '{}'.format(os.path.basename(filename)))
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
             from_unit = ds[meta_key].attrs['units']
@@ -628,10 +636,7 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
 
-    var = 'conco3'
-    obs = ReadGhost('GHOST.daily').read(var)
+    var = 'vmrox'
+    reader = ReadGhost('GHOST.EEA.daily')
 
-    #obs  = pya.io.ReadUngridded().read('GHOST.daily', var)
-    #obs._check_index()
-
-    subset = obs.filter_altitude((0,1000))
+    data = reader.read(var)

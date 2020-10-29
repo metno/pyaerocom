@@ -18,8 +18,7 @@ import traceback
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import const, print_log
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
-                               get_lowest_resolution, start_stop,
-                               varlist_aerocom)
+                               get_lowest_resolution, start_stop)
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded,
@@ -30,7 +29,6 @@ from pyaerocom.filter import Filter
 from pyaerocom.io import ReadUngridded, ReadGridded
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
-                                  TemporalResolutionError,
                                   VariableDefinitionError)
 
 class ColocationSetup(BrowseDict):
@@ -572,7 +570,7 @@ class Colocator(ColocationSetup):
 
         try:
             # set defaults if input was not specified explicitely
-            if ts_type_read is None and not self.flex_ts_type_gridded:
+            if not self.flex_ts_type_gridded:
                 ts_type_read = self.ts_type
             if not 'vert_which' in kwargs:
                 kwargs['vert_which'] = vert_which
@@ -699,15 +697,11 @@ class Colocator(ColocationSetup):
         model_reader = ReadGridded(self.model_id,
                                    data_dir=self.model_data_dir)
 
-        obs_reader = ReadUngridded(self.obs_id,
+        obs_reader = ReadUngridded(datasets_to_read=self.obs_id,
                                    data_dir=self.obs_data_dir)
 
-        _oreader = obs_reader.get_reader(self.obs_id)
-
-        obs_vars = []
-        for var in varlist_aerocom(self.obs_vars):
-            if _oreader.var_supported(var):
-                obs_vars.append(var)
+        obs_vars = obs_reader.get_vars_supported(self.obs_id,
+                                                 self.obs_vars)
 
         if len(obs_vars) == 0:
             raise DataCoverageError('No observation variable matches found for '
@@ -825,8 +819,6 @@ class Colocator(ColocationSetup):
                 # the UngriddedData object at a time. Currently the variable is
                 #re-read a lot of times, which is a weakness.
                 obs_data = obs_reader.read(
-
-                    datasets_to_read=self.obs_id,
                     vars_to_retrieve=obs_var,
                     only_cached=self._obs_cache_only,
                     **ropts)
