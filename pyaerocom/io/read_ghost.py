@@ -169,7 +169,7 @@ class ReadGhost(ReadUngriddedBase):
                     'concno'    :  ['vmrno'],
                     'concno2'   :  ['vmrno2'],
                     'conco3'    :  ['vmro3'],
-                    'concso2'   :  ['vmrso2'],}
+                    'concso2'   :  ['vmrso2']}
 
     AUX_FUNS = {
         'concco'    : _vmr_to_conc_ghost_stats,
@@ -343,7 +343,7 @@ class ReadGhost(ReadUngriddedBase):
             META_KEYS = self.EBAS_META_KEYS
         elif 'GHOST.EEA' in self.data_id:
             META_KEYS = self.EEA_META_KEYS
-        return META_KEYS
+        raise ValueError(f'Metadata not defined for {self.data_id}')
 
     def read_file(self, filename, var_to_read=None, invalidate_flags=None,
                   var_to_write=None):
@@ -390,7 +390,11 @@ class ReadGhost(ReadUngriddedBase):
         # more elegantly
         meta_glob = {}
         for meta_key in self.META_KEYS:
-            meta_glob[meta_key] = ds[meta_key].values
+            try:
+                meta_glob[meta_key] = ds[meta_key].values
+            except KeyError:
+                const.print_log.warn('No such metadata key in GHOST data file: '
+                                     '{}'.format(os.path.basename(filename)))
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
             from_unit = ds[meta_key].attrs['units']
@@ -641,8 +645,3 @@ if __name__ == '__main__':
 
     var = 'vmro3'
     obs = ReadGhost('GHOST.EBAS.daily').read(var)
-
-    #obs  = pya.io.ReadUngridded().read('GHOST.daily', var)
-    #obs._check_index()
-
-    subset = obs.filter_altitude((0,1000))

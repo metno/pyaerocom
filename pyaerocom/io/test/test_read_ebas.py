@@ -386,14 +386,3 @@ if __name__ == '__main__':
     import os
     import sys
     pytest.main(sys.argv)
-
-# =============================================================================
-#     reader =  ReadGhost()
-#     from time import time
-#     for var in reader.PROVIDES_VARIABLES:
-#         lst = reader.get_file_list(var)
-#         print(os.path.basename(lst[-1]))
-#         t0 =time()
-#         reader.read_file(lst[-1], var_to_read=var)
-#         print('{:.1f} s'.format(time()-t0))
-# =============================================================================

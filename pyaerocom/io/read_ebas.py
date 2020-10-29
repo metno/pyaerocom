@@ -226,7 +226,7 @@ class ReadEbas(ReadUngriddedBase):
         self._read_stats_log = BrowseDict()
 
         #: SQL database interface class used to retrieve file paths for vars
-        self.file_index = EbasFileIndex(self.sqlite_database_file)
+        self._file_index = None
         self.sql_requests = []
 
         #: original file lists retrieved for each variable individually using
@@ -257,6 +257,13 @@ class ReadEbas(ReadUngriddedBase):
         if not isinstance(val, str) or not os.path.exists(val):
             raise FileNotFoundError('Input directory does not exist')
         self._file_dir = val
+
+    @property
+    def file_index(self):
+        """SQlite file mapping metadata with filenames"""
+        if self._file_index is None:
+            self._file_index = EbasFileIndex(self.sqlite_database_file)
+        return self._file_index
 
     @property
     def FILE_REQUEST_OPTS(self):
@@ -1141,10 +1148,7 @@ class ReadEbas(ReadUngriddedBase):
             data_out['var_info'][var].update(var_info)
 
             if self.opts.convert_units:
-                try:
-                    data_out = self._convert_varunit_stationdata(data_out, var)
-                except Exception:
-                    raise
+                data_out = self._convert_varunit_stationdata(data_out, var)
 
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
@@ -1152,7 +1156,8 @@ class ReadEbas(ReadUngriddedBase):
         data_out['dtime'] = file.time_stamps
 
         # compute additional variables (if applicable)
-        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        data_out = self.compute_additional_vars(data_out,
+                                                vars_to_compute)
 
         return data_out
 
@@ -1452,7 +1457,7 @@ if __name__=="__main__":
 
     r = ReadEbas()
 
-    data = r.read('sc550dryaer')
+    #data = r.read('sc550dryaer')
 
     #data.plot_station_timeseries('Eureka', 'vmro3')
 

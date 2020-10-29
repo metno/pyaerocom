@@ -11,7 +11,7 @@ from pyaerocom import const, change_verbosity
 
 def get_ungridded_reader(obs_id):
 
-    for reader in ReadUngridded.SUPPORTED:
+    for reader in ReadUngridded.SUPPORTED_READERS:
         if obs_id in reader.SUPPORTED_DATASETS:
             return reader
     raise ValueError('No ungridded reader found that supports {}'.format(obs_id))

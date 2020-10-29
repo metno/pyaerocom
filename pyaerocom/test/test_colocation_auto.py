@@ -190,7 +190,7 @@ def test_colocator_with_obs_data_dir_gridded():
     col.apply_time_resampling_constraints = False
 
     obs_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
-    col.obs_data_dir=TESTDATADIR.joinpath(obs_dir)
+    col.obs_data_dir=str(TESTDATADIR.joinpath(obs_dir))
 
     data = col._run_gridded_gridded()
     assert len(data) == 1
