@@ -196,7 +196,7 @@ class Config(object):
     SERVER_CHECK_TIMEOUT = 2 #0.1 #s
 
     _outhomename = 'MyPyaerocom'
-    _testdatadirname = 'testdata-minimal'
+
 
     from pyaerocom import __dir__
     _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
@@ -482,11 +482,6 @@ class Config(object):
 
         """
         return self._search_dirs
-
-    @property
-    def _TESTDATADIR(self):
-        """Directory where testdata is stored (only for automated testing)"""
-        return os.path.join(self.OUTPUTDIR, self._testdatadirname)
 
     @property
     def FILTERMASKKDIR(self):
