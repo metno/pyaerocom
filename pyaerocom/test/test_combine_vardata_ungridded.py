@@ -39,6 +39,44 @@ def stats_sda_fineaod(SDA_DATA):
 SUN_ID = 'AeronetSunV3L2Subset.daily'
 SDA_ID = 'AeronetSDAV3L2Subset.daily'
 
+OD450FUN = f'{SUN_ID};od550aer*(450/550)**(-{SUN_ID};ang4487aer)'
+@pytest.mark.parametrize('var1,var2,add_args,numst,mean_first,expectation', [
+    ('od550aer', 'od550aer', {}, 13, {'od550aer' : 0.5}, pytest.raises(ValueError)),
+    ('od550aer', 'ang4487aer',
+     {'merge_how' : 'mean',
+      'var_name_out' : 'blaaa'}, 13, {'blaaa' : 0.251},
+     pytest.raises(NotImplementedError)),
+    ('od550aer', 'ang4487aer', {}, 18,
+     {'od550aer' : 0.50155,
+      'ang4487aer' : 0.25738}, does_not_raise_exception()),
+    ('od550aer', 'ang4487aer', {'merge_how' : 'eval',
+                                'merge_eval_fun' : OD450FUN,
+                                'var_name_out' : 'od450aer',
+                                'var_unit_out' : '1'}, 18,
+     {'od550aer' : 0.50155,
+      'ang4487aer' : 0.25738,
+      'od450aer'  : 0.51902},
+     does_not_raise_exception())
+    ])
+def test_combine_vardata_ungridded_single_ungridded(aeronetsunv3lev2_subset,
+                                                    var1, var2,
+                                                    add_args, numst,
+                                                    mean_first,
+                                                    expectation):
+
+    input_data = [(aeronetsunv3lev2_subset, SUN_ID, var1),
+                  (aeronetsunv3lev2_subset, SUN_ID, var2)]
+    with expectation:
+        stats = testmod.combine_vardata_ungridded(input_data, **add_args)
+
+        assert len(stats) == numst
+        first = stats[0]
+        for var, val in mean_first.items():
+            assert var in first
+            avg = np.nanmean(first[var])
+            npt.assert_allclose(avg, val, rtol=1e-4)
+
+
 FMFFUN = 'fmf550aer=({};od550lt1aer/{};od550aer)*100'.format(SDA_ID, SUN_ID)
 
 @pytest.mark.parametrize('merge_how,merge_eval_fun,var_name_out,data_id_out,'
@@ -204,9 +242,6 @@ def test__combine_2_sites_same_site(stats_sun_aod, merge_how, merge_eval_fun,
     assert len(stat1[var1].dropna()) == len(new[vno])
     assert new.get_unit(vno) == unitout
 
-
-def test_combine_vardata_ungridded():
-    pass
 
 if __name__ == '__main__':
     import sys
