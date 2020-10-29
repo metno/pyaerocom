@@ -398,6 +398,10 @@ class Colocator(ColocationSetup):
         ----------
         what : str
             Type of reader. ("model" or "obs")
+
+        Returns
+        -------
+        Instance of reader class defined in self.SUPPORTED_GRIDDED_READERS
         """
         if what == 'model':
             data_id = self.model_id
