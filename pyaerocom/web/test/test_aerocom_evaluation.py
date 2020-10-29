@@ -3,7 +3,7 @@ import pytest
 from pandas import DataFrame
 
 from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
-from pyaerocom.conftest import TEST_PATHS, TESTDATADIR
+from pyaerocom.conftest import tda
 from pyaerocom.web import AerocomEvaluation
 from pyaerocom.io.aux_read_cubes import add_cubes
 
@@ -21,7 +21,7 @@ TS_TYPE = 'monthly'
 START = 2010
 
 
-CONFIG = TESTDATADIR.joinpath(TEST_PATHS['CONFIG'])
+CONFIG = tda.testdatadir.joinpath(tda.ADD_PATHS['CONFIG'])
 METHODS_FILE = CONFIG.joinpath('cube_read_methods.py')
 
 @pytest.fixture(scope='function')
