@@ -382,7 +382,9 @@ class Variable(object):
         self._var_name_aerocom = None
 
         self.standard_name = None
-        self.units = None
+        # Assume variables that have no unit specified in variables.ini are
+        # unitless.
+        self.units = '1'
         self.default_vert_code = None
         #self.aliases = []
         self.wavelength_nm = None
