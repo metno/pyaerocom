@@ -34,7 +34,6 @@
 """
 Provides access to pyaerocom specific configuration values
 """
-from time import time
 import numpy as np
 import os
 import getpass
@@ -247,9 +246,9 @@ class Config(object):
                  output_dir=None, config_file=None,
                  cache_dir=None, colocateddata_dir=None,
                  write_fileio_err_log=True,
-                 activate_caching=True):
-        t0 = time()
-        # Loggers
+                 activate_caching=True,
+                 try_infer_environment=True):
+
         from pyaerocom import print_log, logger
         self.print_log = print_log
         self.logger = logger
@@ -292,7 +291,7 @@ class Config(object):
          config_file) = self._check_input_basedir_and_config_file(basedir,
                                                                   config_file)
 
-        if not isinstance(config_file, str) or not os.path.exists(config_file):
+        if try_infer_environment and not isinstance(config_file, str):
             self.logger.info('Checking database access...')
             try:
                 basedir, config_file = self.infer_basedir_and_config()
@@ -307,7 +306,6 @@ class Config(object):
                                        .format(repr(e)))
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
-        self.logger.info("ELAPSED TIME Config.__init__: {:.5f} s".format(time()-t0))
 
     def _check_input_basedir_and_config_file(self, basedir, config_file):
         if config_file is not None and not os.path.exists(config_file):
@@ -936,9 +934,6 @@ class Config(object):
         raise FileNotFoundError('Could not confirm any directory...')
 
     def _add_searchdirs(self, cr, basedir=None):
-
-        t0 = time()
-
         chk_dirs = []
         if basedir is not None and self._check_access(basedir):
             chk_dirs.append(basedir)
@@ -968,11 +963,9 @@ class Config(object):
             candidate = loc.replace('${BASEDIR}', basedir)
             if not candidate in self._search_dirs:
                 self._search_dirs.append(candidate)
-        self.logger.info("ELAPSED TIME _add_searchdirs: {:.5f} s".format(time()-t0))
         return True
 
     def _add_obsconfig(self, cr, basedir=None):
-        t0 = time()
         chk_dirs = []
         if basedir is not None and self._check_access(basedir):
             chk_dirs.append(basedir)
@@ -1018,10 +1011,8 @@ class Config(object):
                 loc = loc.replace('${HOME}', os.path.expanduser('~'))
 
             self.OBSLOCS_UNGRIDDED[name] = loc
-        self.logger.info("ELAPSED TIME _add_obsconfig: {:.5f} s".format(time()-t0))
 
     def _init_output_folders_from_cfg(self, cr):
-        t0 = time()
         cfg = cr['outputfolders']
         if 'CACHEDIR' in cfg and not self._check_access(self._cachedir):
             self._cachedir = cfg['CACHEDIR']
@@ -1041,8 +1032,6 @@ class Config(object):
                 _dir = _dir.replace('${USER}', getpass.getuser())
 
             self._local_tmp_dir = _dir
-
-        self.logger.info("ELAPSED TIME init outputdirs: {:.5f} s".format(time()-t0))
 
     def _add_obsname(self, name):
         name_str = '{}_NAME'.format(name.upper())
