@@ -195,7 +195,7 @@ class ReadMscwCtm(object):
         self._data_id = val
 
     def __str__(self):
-        s = 'Reader: ReadEMEP\n'
+        s = 'Reader: ReadMscwCtm\n'
         s += "Available frequencies: {}\n".format(self.ts_types)
         s += "Available variables: {}\n".format(self.vars_provided)
         return s
@@ -359,10 +359,7 @@ if __name__ == '__main__':
     file = '2010_GLOB1_2010met/Base_month.nc' # 2010 emissions with 2010 meteorology
     filepath = '{}{}'.format(basepath, file)
 
-    filepath = '/home/eirikg/Desktop/pyaerocom/data/2020_AerocomHIST/2010_GLOB1_2010met/Base_month.nc'
-
-
-    reader = ReadEMEP(filepath, data_id='EMEP')
+    reader = ReadMscwCtm(filepath, data_id='EMEP')
     # Read variable that uses AUX_FUNS
     depso4 = reader.read_var('wetsox', ts_type='monthly')
     # Read variable that uses unit conversions

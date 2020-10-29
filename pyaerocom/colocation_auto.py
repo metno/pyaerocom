@@ -28,7 +28,7 @@ from pyaerocom.colocation import (colocate_gridded_gridded,
 from pyaerocom.colocateddata import ColocatedData
 
 from pyaerocom.filter import Filter
-from pyaerocom.io import ReadUngridded, ReadGridded, ReadEMEP
+from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
                                   TemporalResolutionError,
@@ -323,7 +323,7 @@ class Colocator(ColocationSetup):
 
     SUPPORTED_GRIDDED_READERS = {
         'ReadGridded' : ReadGridded,
-        'ReadEMEP' : ReadEMEP
+        'ReadMscwCtm' : ReadMscwCtm
     }
 
 

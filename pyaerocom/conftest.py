@@ -17,7 +17,7 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal
 from pyaerocom.io import ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3
 from pyaerocom.io import ReadEbas
-from pyaerocom.io import ReadEMEP
+from pyaerocom.io import ReadMscwCtm
 from pyaerocom.test.synthetic_data import DataAccess
 
 INIT_TESTDATA = True

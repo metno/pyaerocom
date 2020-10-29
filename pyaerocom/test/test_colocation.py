@@ -20,7 +20,7 @@ from pyaerocom.colocation import (_regrid_gridded,
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom import GriddedData
 from pyaerocom import helpers
-from pyaerocom.io import ReadEMEP
+from pyaerocom.io import ReadMscwCtm
 
 def test__regrid_gridded(data_tm5):
      one_way = _regrid_gridded(data_tm5, 'areaweighted', 5)
@@ -119,7 +119,7 @@ def test_colocate_gridded_gridded_same(data_tm5):
 @testdata_unavail
 def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
     filepath = path_emep['monthly']
-    r = ReadEMEP(path_emep['monthly'])
+    r = ReadMscwCtm(path_emep['monthly'])
     data_emep = r.read_var('concpm10', ts_type='monthly')
 
     # Change units and year to match TM5 data
