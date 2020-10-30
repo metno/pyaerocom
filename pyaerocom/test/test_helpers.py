@@ -43,7 +43,9 @@ def test__get_pandas_freq_and_loffset():
     assert val == ('MS', '14D')
 
 def _make_timeseries_synthetic():
+
     idx = date_range(start="2000", periods=90, freq='D')
+
     vals = np.arange(len(idx))
     return  Series(vals, idx)
 
@@ -54,7 +56,6 @@ def timeseries_synthetic():
 def test_resample_timeseries(timeseries_synthetic):
     s1 = helpers.resample_timeseries(timeseries_synthetic,
                                      'monthly')
-
     assert len(s1) == 3
     for time in s1.index:
         assert time.year == 2000, time.year
