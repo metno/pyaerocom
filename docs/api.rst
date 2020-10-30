@@ -52,6 +52,9 @@ Metadata and vocabulary standards
 Variable conventions
 ---------------------
 
+Helper classes and methods related to variable definitions and variable
+naming and metadata conventions.
+
 .. automodule:: pyaerocom.variable
    :members:
    :undoc-members:
@@ -73,15 +76,13 @@ Low-level colocation methods
    :members:
    :undoc-members:
 
+Combining ungridded observations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: pyaerocom.combine_vardata_ungridded
    :members:
    :undoc-members:
 
 .. _reading:
-
-.. note::
-
-	All reading routines are part of the :mod:`pyaerocom.io` sub-package (cf. :ref:`io`)
 
 Reading of gridded data
 -----------------------
@@ -148,7 +149,8 @@ All ungridded reading routines are based on this template class.
 AERONET
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All AERONET reading classes are based on the template :class:`ReadAeronetBase` class which, in turn inherits from :class:`ReadUngriddedBase`.
+All AERONET reading classes are based on the template :class:`ReadAeronetBase`
+class which, in turn inherits from :class:`ReadUngriddedBase`.
 
 .. automodule:: pyaerocom.io.readaeronetbase
    :members:
@@ -249,8 +251,9 @@ Further I/O features
 
 .. note::
 
-	The	:mod:`pyaerocom.io` package also includes all relevant data import and reading routines. These are introduced
-	above, in Section Reading.
+	The	:mod:`pyaerocom.io` package also includes all relevant data import and
+  reading routines. These are introduced above, in Section
+  :ref:`reading`.
 
 AeroCom database browser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
