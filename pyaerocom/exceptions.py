@@ -56,6 +56,9 @@ class DataCoverageError(ValueError):
 class DataDimensionError(ValueError):
     pass
 
+class DataIdError(ValueError):
+    pass
+
 class DataQueryError(ValueError):
     pass
 

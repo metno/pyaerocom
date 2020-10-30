@@ -165,7 +165,7 @@ class TestDataAccess(object):
                 if self.download() and self.check_access(add_check_paths):
                     return True
             except Exception as e:
-                const.print_log.warn(f'Failed to access testdata: {e}')
+                const.print_log.warning(f'Failed to access testdata: {e}')
             return False
         return True
 
@@ -177,14 +177,16 @@ class TestDataAccess(object):
         for name, relpath in self.ADD_PATHS.items():
             ddir = str(testdatadir.joinpath(relpath))
             if name in self._UNGRIDDED_READERS:
+                if name in const.OBSLOCS_UNGRIDDED and ddir == const.OBSLOCS_UNGRIDDED[name]:
+                    const.print_log.info(f'dataset {name} is already registered')
+                    continue
                 reader = self._UNGRIDDED_READERS[name]
-
                 try:
                     const.add_ungridded_obs(name, ddir,
                                             reader=reader,
                                             check_read=True)
                 except Exception as e:
-                    const.print_log.warn(
+                    const.print_log.warning(
                         f'Failed to instantiate testdata since ungridded '
                         f'dataset {name} at {ddir} could not be registered: {e}')
                     return False
@@ -203,6 +205,6 @@ def initialise():
         const.print_log.info(f'pyaerocom-testdata is ready to be used. The data '
                              f'is available at {td.testdatadir}')
     else:
-        const.print_log.warn('Failed to initiate pyaerocom-testdata')
+        const.print_log.warning('Failed to initiate pyaerocom-testdata')
 if __name__ == '__main__':
     initialise()

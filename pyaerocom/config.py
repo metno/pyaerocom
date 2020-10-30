@@ -47,7 +47,8 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
                                          check_dir_access,
                                          check_write_access)
 
-from pyaerocom.exceptions import DeprecationError, DataSourceError
+from pyaerocom.exceptions import (DeprecationError, DataSourceError,
+                                  DataIdError)
 from pyaerocom.variable import VarCollection
 from configparser import ConfigParser
 
@@ -724,8 +725,8 @@ class Config(object):
             if the data directory does not exist
         """
         if obs_id in self.OBS_IDS_UNGRIDDED:
-            raise AttributeError('Network with ID {} is already registered at '
-                                 '{}'.format(obs_id, self.OBSLOCS_UNGRIDDED[obs_id]))
+            raise DataIdError(f'Network with ID {obs_id} is already registered at '
+                              f'{self.OBSLOCS_UNGRIDDED[obs_id]}')
         elif not self._check_access(data_dir):
             raise ValueError('Input data directory cannot be accessed')
         if reader is None:

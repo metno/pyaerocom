@@ -40,7 +40,6 @@ def test_Config_no_config():
     assert isinstance(cfg.GRID_IO, GridIO)
 
 
-
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
