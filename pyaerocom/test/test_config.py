@@ -228,12 +228,10 @@ def test_default_config():
     from pyaerocom.variable import VarCollection
     assert isinstance(cfg._var_param, VarCollection)
     assert isinstance(cfg.VARS, VarCollection)
-    assert cfg.VARS == cfg.VAR_PARAM
+    assert cfg.VARS is cfg.VAR_PARAM
 
-    assert cfg._coords is None
     assert isinstance(cfg.COORDINFO, VarCollection)
-    assert isinstance(cfg._coords, VarCollection)
-
+    assert cfg._coords is cfg.COORDINFO
 
     # Attributes that are used to store search directories
     for obs_id in TestDataAccess._UNGRIDDED_READERS:
@@ -252,11 +250,10 @@ def test_default_config():
 
     assert cfg.WRITE_FILEIO_ERR_LOG
 
-    assert cfg._ebas_flag_info is None
     from pyaerocom.grid_io import GridIO
     assert isinstance(cfg.GRID_IO, GridIO)
 
-
+### NEED TO TEST MORE CLASS METHODS...
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
