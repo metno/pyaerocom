@@ -316,7 +316,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         idx = 0
 
         # check if the supplied file is a supported archive file (tar in this case)
-        # and extract the files with supported suffixes to const._cachedir
+        # and extract the files with supported suffixes to const.CACHEDIR
         non_archive_files = []
         for idx, _file in enumerate(sorted(files)):
             # temp = 'reading file: {}'.format(_file)
