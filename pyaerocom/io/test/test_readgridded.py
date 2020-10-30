@@ -8,11 +8,12 @@ import pytest
 import os
 from collections import OrderedDict
 import numpy.testing as npt
-from pandas import Timestamp, DataFrame
-from pyaerocom.conftest import TEST_RTOL, does_not_raise_exception, lustre_unavail, testdata_unavail, TEST_PATHS, TESTDATADIR
+from pandas import DataFrame
+from pyaerocom.conftest import (TEST_RTOL, lustre_unavail, testdata_unavail,
+                                CHECK_PATHS, TESTDATADIR)
 from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom import GriddedData
-from pyaerocom.exceptions import VarNotAvailableError, VariableDefinitionError
+from pyaerocom.exceptions import VarNotAvailableError
 
 def init_reader():
     return ReadGridded(data_id="ECMWF_CAMS_REAN")
@@ -25,7 +26,7 @@ def reader_reanalysis():
 def reader_tm5():
     return ReadGridded('TM5-met2010_CTRL-TEST')
 
-path_tm5 = str(TESTDATADIR.joinpath(TEST_PATHS['tm5']))
+path_tm5 = str(TESTDATADIR.joinpath(CHECK_PATHS['tm5']))
 
 @pytest.mark.parametrize('input_args,mean_val', [
     (dict(var_name='od550aer', ts_type='monthly'), 0.1186),

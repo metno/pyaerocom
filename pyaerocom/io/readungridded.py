@@ -75,12 +75,7 @@ class ReadUngridded(object):
                          ReadGAW,
                          ReadAasEtal,
                          ReadGhost]
-
-    # when this file exists, an existing cache file is not read
-    _DONOTCACHEFILE = None
-    if isinstance(const._cachedir, str) and os.path.exists(const._cachedir):
-        _DONOTCACHEFILE = os.path.join(const._cachedir, 'DONOTCACHE')
-
+    DONOTCACHE_NAME = 'DONOTCACHE'
     def __init__(self, datasets_to_read=None, vars_to_retrieve=None,
                  ignore_cache=False, data_dir=None):
 
@@ -101,7 +96,6 @@ class ReadUngridded(object):
 
         # initiate a logger for this class
         self.logger = logging.getLogger(__name__)
-
 
         if data_dir is not None:
             self.data_dir=data_dir
@@ -164,9 +158,26 @@ class ReadUngridded(object):
                              'single dataset retrievals')
         return self.get_reader(self._datasets_to_read[0]).DATASET_PATH
 
+    def _check_donotcachefile(self):
+        """Check if donotcache file exists
+
+        Returns
+        -------
+        bool
+            True if file exists, else False
+        """
+        try:
+            if os.path.exists(os.path.join(const.cache_basedir,
+                                           self.DONOTCACHE_NAME)):
+                return True
+        except:
+            pass
+        return False
+
     @property
     def ignore_cache(self):
-        if os.path.exists(self._DONOTCACHEFILE) or not const.CACHING:
+        """Boolean specifying whether caching is active or not"""
+        if self._check_donotcachefile() or not const.CACHING:
             return True
         return False
 

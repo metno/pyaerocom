@@ -386,7 +386,7 @@ class ReadGhost(ReadUngriddedBase):
             try:
                 meta_glob[meta_key] = ds[meta_key].values
             except KeyError:
-                const.print_log.warn('No such metadata key in GHOST data file: '
+                const.print_log.warning('No such metadata key in GHOST data file: '
                                      '{}'.format(os.path.basename(filename)))
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
