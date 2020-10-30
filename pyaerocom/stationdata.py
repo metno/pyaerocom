@@ -1421,10 +1421,6 @@ class StationData(StationMetaData):
                                       apply_constraints=apply_constraints,
                                       min_num_obs=min_num_obs,
                                       **kwargs)
-# =============================================================================
-#             data = resample_timeseries(data, freq, how=resample_how,
-#                                        **kwargs)
-# =============================================================================
 
         return data
 
@@ -1439,7 +1435,7 @@ class StationData(StationMetaData):
         data - if it exists - will be plotted on top of the actual timeseries
         using red colour and dashed line. As the overlapping data may be
         identical with the actual data, you might want to increase the line
-        width of the actual timeseries using an additional input argumend
+        width of the actual timeseries using an additional input argument
         ``lw=4``, or similar.
 
         Parameters

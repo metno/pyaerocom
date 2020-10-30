@@ -176,7 +176,10 @@ class TestReadEBAS(object):
         assert reader.IGNORE_WAVELENGTH == ['conceqbc']
 
     def test_ASSUME_AE_SHIFT_WVL(self, reader):
-        assert reader.ASSUME_AE_SHIFT_WVL == 1.0
+        assert reader.ASSUME_AE_SHIFT_WVL == 1.5
+
+    def test_ASSUME_AAE_SHIFT_WVL(self, reader):
+        assert reader.ASSUME_AAE_SHIFT_WVL == 1.0
 
     def test_IGNORE_FILES(self, reader):
         assert reader.IGNORE_FILES == ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
@@ -186,6 +189,7 @@ class TestReadEBAS(object):
              'wavelength_tol_nm': 50,
              'shift_wavelengths': True,
              'assume_default_ae_if_unavail': True,
+             'check_correct_MAAP_wrong_wvl': False,
              'eval_flags': True,
              'keep_aux_vars': False,
              'merge_meta': False,

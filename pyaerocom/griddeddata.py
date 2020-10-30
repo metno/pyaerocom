@@ -40,7 +40,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                check_coord_circular,
                                extract_latlon_dataarray)
 
-from pyaerocom.mathutils import closest_index
+from pyaerocom.mathutils import closest_index, exponent
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.vert_coords import AltitudeAccess
@@ -1305,7 +1305,14 @@ class GriddedData(object):
         except DimensionOrderError:
             self.reorder_dimensions_tseries()
         cname = self.dimcoord_names[-1]
+        coord = self[cname]
         from pyaerocom import vert_coords as vc
+        if 'positive' in coord.attributes:
+            if coord.attributes['positive'] == 'up':
+                return np.argmin(self.grid.dim_coords[3].points)
+            elif coord.attributes['positive'] == 'down':
+                return np.argmax(self.grid.dim_coords[3].points)
+
         try:
             coord = vc.VerticalCoordinate(cname)
             if coord.lev_increases_with_alt:
@@ -1319,10 +1326,20 @@ class GriddedData(object):
                 raise DataExtractionError('Cannot infer surface level since '
                                           'global option INFER_SURFACE_LEVEL in'
                                           'pyaerocom.const.GRID_IO is deactivated')
+            const.print_log.info(
+                'Inferring surface level in GriddedData based on mean value of '
+                '{} data in first and last level since CF coordinate info is '
+                'missing... The level with the largest mean value will be '
+                'assumed to be the surface. If mean values in both levels'
+                .format(self.var_name))
             last_lev_idx = self.shape[-1] - 1
-            first_lowest_idx = self[0, :, :, 0].data
-            first_highest_idx = self[0, :, :, last_lev_idx].data
-            if np.nanmean(first_lowest_idx) > np.nanmean(first_highest_idx):
+            mean_first_idx = np.nanmean(self[0, :, :, 0].data)
+            mean_last_idx = np.nanmean(self[0, :, :, last_lev_idx].data)
+            if exponent(mean_first_idx) == exponent(mean_last_idx):
+                raise DataExtractionError('Could not infer surface level. '
+                    '{} data in first and last level is of similar magnitude...'
+                    .format(self.var_name))
+            elif mean_first_idx > mean_last_idx:
                 return 0
             return last_lev_idx
 
@@ -1452,7 +1469,7 @@ class GriddedData(object):
         return subset
 
     # TODO: Test, confirm and remove beta flag in docstring
-    def remove_outliers(self, low=None, high=None):
+    def remove_outliers(self, low=None, high=None, inplace=True):
         """Remove outliers from data
 
         Parameters
@@ -1467,6 +1484,14 @@ class GriddedData(object):
             corresponding value from the default settings for this variable
             are used (cf. maximum attribute of `available variables
             <https://pyaerocom.met.no/config_files.html#variables>`__)
+        inplace : bool
+            if True, this object is modified, else outliers are removed in
+            a copy of this object
+
+        Returns
+        -------
+        GriddedData
+            modified data object
         """
         if low is None:
             low = self.var_info.minimum
@@ -1476,10 +1501,28 @@ class GriddedData(object):
             high = self.var_info.maximum
             logger.info('Setting {} outlier upper lim: {:.2f}'
                         .format(self.var_name, high))
-        mask = np.logical_or(self.grid.data < low,
-                             self.grid.data > high)
-        self.grid.data[mask] = np.nan
-        self.metadata['outliers_removed'] = True
+        obj = self if inplace else self.copy()
+        obj._ensure_is_masked_array()
+
+        data = obj.grid.data
+
+        mask = np.logical_or(data<low, data>high)
+        obj.grid.data[mask] = np.ma.masked
+        obj.metadata['outliers_removed'] = True
+        return obj
+
+    def _ensure_is_masked_array(self):
+        """Make sure underlying data is masked array
+
+        Required, e.g. for removal of outliers
+
+        Note
+        ----
+        Will trigger "realisation" of data (i.e. loading of numpy array) in
+        case data is lazily loaded.
+        """
+        if not np.ma.is_masked(self.cube.data):
+            self.cube.data = np.ma.masked_array(self.cube.data)
 
     def _resample_time_iris(self, to_ts_type):
         """Resample time dimension using iris funcitonality
@@ -2642,13 +2685,10 @@ if __name__=='__main__':
 
     # print("uses last changes ")
     data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer',
-                                                          start=2009,
-                                                          stop=2013)
+                                                          start=2010).resample_time('yearly')
 
-    print(data.years_avail())
 
-    outdir = '/home/jonasg/MyPyaerocom/TEST_TO_NETCDF/'
-    if not os.path.exists(outdir):
-        os.mkdir(outdir)
+    data1 = data.remove_outliers(0.2, 0.4, inplace=False)
 
-    data.to_netcdf(out_dir=outdir, vert_code='Column')
+    data.quickplot_map()
+    data1.quickplot_map()

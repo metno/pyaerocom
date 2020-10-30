@@ -7,6 +7,7 @@ Created on Mon Mar 23 15:03:51 2020
 """
 
 from argparse import ArgumentParser
+from pyaerocom import const
 import pyaerocom.scripts.highlevel_utils as hlu
 
 def init_parser():
@@ -16,6 +17,8 @@ def init_parser():
     ap.add_argument('-b', '--browse', help='Browse database')
     ap.add_argument('--clearcache', action='store_true',
                     help='Delete cached data objects')
+    ap.add_argument('--ppiaccess', action='store_true',
+                    help='Check if MetNO PPI can be accessed')
 
     return ap
 
@@ -51,6 +54,10 @@ def main():
         else:
             print('Wise decision, pyaerocom will handle it for you '
                   'automatically anyways ;P')
+
+    if args.ppiaccess:
+        print('True') if const.has_access_lustre else print('False')
+
 
 if __name__ == '__main__':
     main()
