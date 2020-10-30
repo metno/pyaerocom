@@ -18,16 +18,16 @@ from pyaerocom.io import (ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3,
                           ReadEbas)
 
 class TestDataAccess(object):
-    # thats were the testdata can be downloaded from
+    #: That's were the testdata can be downloaded from
     URL_TESTDATA = 'https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.gz'
 
-    # Directory where testdata will be downloaded into
+    #: Directory where testdata will be downloaded into
     BASEDIR_DEFAULT = const.OUTPUTDIR
 
-    #: Name of testdata directory (which will be downloaded into DOWNLOADDIR)
+    #: Name of testdata directory
     TESTDATADIRNAME = 'testdata-minimal'
 
-    # Paths to be added to pya.const. All relative to BASEDIR
+    #: Paths to be added to pya.const. All relative to :attr:`basedir`
     ADD_PATHS = {
 
         'MODELS'                        : 'modeldata',
@@ -67,6 +67,7 @@ class TestDataAccess(object):
 
     @property
     def testdatadir(self):
+        """Directory containing testdata"""
         return self.basedir.joinpath(self.TESTDATADIRNAME)
 
     def download(self, basedir=None):
@@ -196,8 +197,12 @@ class TestDataAccess(object):
                 const.print_log.info(f'Adding data search directory {ddir}.')
         return True
 
-if __name__ == '__main__':
+def initialise():
     td = TestDataAccess()
-    print(td.check_access())
-    td.init()
-    print(td.check_access())
+    if td.init():
+        const.print_log.info(f'pyaerocom-testdata is ready to be used. The data '
+                             f'is available at {td.testdatadir}')
+    else:
+        const.print_log.warn('Failed to initiate pyaerocom-testdata')
+if __name__ == '__main__':
+    initialise()
