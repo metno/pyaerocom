@@ -38,10 +38,6 @@ from pyaerocom.time_config import TS_TYPES
 from pyaerocom.molmasses import get_molmass
 import cf_units
 
-def _add_variable_data(data):
-    raise NotImplementedError('Coming soon...')
-
-
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
     mmol_air = get_molmass('air_dry')
     for stat in data:
@@ -119,7 +115,7 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.9'
+    __version__ = '0.0.10'
 
     _FILEMASK = '*.nc'
 
@@ -636,7 +632,5 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
 
-    var = 'vmrox'
-    reader = ReadGhost('GHOST.EEA.daily')
-
-    data = reader.read(var)
+    var = 'vmro3'
+    obs = ReadGhost('GHOST.EBAS.daily').read(var)
