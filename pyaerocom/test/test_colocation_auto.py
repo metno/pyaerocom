@@ -1,9 +1,7 @@
 import os
 import pytest
 
-from pyaerocom.conftest import TESTDATADIR, ADD_PATHS
-from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom.conftest import testdata_unavail
+from pyaerocom.conftest import tda, does_not_raise_exception, testdata_unavail
 
 from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
 from pyaerocom.io import ReadGridded, ReadMscwCtm
@@ -44,7 +42,7 @@ def test_colocator(col):
 
 def test_colocator_init_basedir_coldata(tmpdir):
     basedir = os.path.join(tmpdir, 'basedir')
-    col = Colocator(raise_exceptions=True, basedir_coldata=basedir)
+    Colocator(raise_exceptions=True, basedir_coldata=basedir)
     assert os.path.isdir(basedir)
 
 @testdata_unavail
@@ -95,9 +93,9 @@ def test__run_gridded_gridded(col_tm5_aero):
 
 def test_colocator_filter_name():
     with does_not_raise_exception():
-        col = Colocator(filter_name='WORLD')
+        Colocator(filter_name='WORLD')
     with pytest.raises(Exception):
-        col = Colocator(filter_name='invalid')
+        Colocator(filter_name='invalid')
 
 def test_colocator_basedir_coldata(tmpdir):
     basedir = os.path.join(tmpdir, 'test')
@@ -151,8 +149,8 @@ def test_colocator_with_obs_data_dir_ungridded():
     col.ts_type='monthly'
     col.apply_time_resampling_constraints = False
 
-    aeronet_loc = ADD_PATHS['AeronetSunV3L2Subset.daily']
-    col.obs_data_dir=TESTDATADIR.joinpath(aeronet_loc)
+    aeronet_loc = tda.ADD_PATHS['AeronetSunV3L2Subset.daily']
+    col.obs_data_dir = tda.testdatadir.joinpath(aeronet_loc)
 
     data = col._run_gridded_ungridded()
     assert len(data) == 1
@@ -171,7 +169,7 @@ def test_colocator_with_model_data_dir_ungridded():
     col.apply_time_resampling_constraints = False
 
     model_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
-    col.model_data_dir=TESTDATADIR.joinpath(model_dir)
+    col.model_data_dir = tda.testdatadir.joinpath(model_dir)
 
     data = col._run_gridded_ungridded()
     assert len(data) == 1
@@ -190,7 +188,7 @@ def test_colocator_with_obs_data_dir_gridded():
     col.apply_time_resampling_constraints = False
 
     obs_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
-    col.obs_data_dir=str(TESTDATADIR.joinpath(obs_dir))
+    col.obs_data_dir=str(tda.testdatadir.joinpath(obs_dir))
 
     data = col._run_gridded_gridded()
     assert len(data) == 1

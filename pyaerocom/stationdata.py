@@ -424,7 +424,7 @@ class StationData(StationMetaData):
         keys.extend(add_meta_keys)
         for key in keys:
             if not key in self:
-                const.print_log.warn('No such key in StationData: {}'
+                const.print_log.warning('No such key in StationData: {}'
                                      .format(key))
                 continue
             elif key in self.STANDARD_COORD_KEYS:
@@ -622,7 +622,7 @@ class StationData(StationMetaData):
                     if raise_on_error:
                         raise MetaDataError(msg)
                     else:
-                        const.print_log.warn(msg)
+                        const.print_log.warning(msg)
 
         return obj
 
