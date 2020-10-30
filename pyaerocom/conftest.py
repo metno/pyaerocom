@@ -92,7 +92,7 @@ change_verbosity('critical', const.print_log)
 @pytest.fixture(scope='session')
 def path_emep():
     paths = {}
-    emep_path= TESTDATADIR.joinpath(TEST_PATHS['emep'])
+    emep_path= TESTDATADIR.joinpath(CHECK_PATHS['emep'])
     paths['daily'] = str(emep_path.joinpath('Base_day.nc'))
     paths['monthly'] = str(emep_path.joinpath('Base_month.nc'))
     paths['yearly'] = str(emep_path.joinpath('Base_fullrun.nc'))
