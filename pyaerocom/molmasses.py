@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Mar 13 09:56:54 2020
-
-@author: jonasg
-"""
 
 VAR_PREFIXES = ['vmr', 'mmr', 'conc', 'sconc', 'wet', 'dry']
 

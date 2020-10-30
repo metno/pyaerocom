@@ -42,23 +42,6 @@ Other data classes
    :members:
    :undoc-members:
 
-Metadata and vocabulary standards
-----------------------------------
-
-.. automodule:: pyaerocom.metastandards
-   :members:
-   :undoc-members:
-
-Variable conventions
----------------------
-
-Helper classes and methods related to variable definitions and variable
-naming and metadata conventions.
-
-.. automodule:: pyaerocom.variable
-   :members:
-   :undoc-members:
-
 Colocation routines
 -------------------
 
@@ -301,6 +284,23 @@ I/O helpers
    :members:
    :undoc-members:
 
+Metadata and vocabulary standards
+----------------------------------
+
+.. automodule:: pyaerocom.metastandards
+  :members:
+  :undoc-members:
+
+Variable conventions
+---------------------
+
+Helper classes and methods related to variable definitions and variable
+naming and metadata conventions.
+
+.. automodule:: pyaerocom.variable
+  :members:
+  :undoc-members:
+
 Regions and  data filtering
 ----------------------------
 
@@ -373,53 +373,13 @@ Helper methods
    :members:
    :undoc-members:
 
-
-Plotting / Visualisation
--------------------------
-
-The :mod:`pyaerocom.plot` package contains algorithms related to data visualisation and plotting.
-
-Plotting maps
-^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.mapping
-   :members:
-   :undoc-members:
-
-Scatter plots
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.plotscatter
-   :members:
-   :undoc-members:
-
-Time-series plots
-^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.plotseries
-   :members:
-   :undoc-members:
-
-Heatmap plots
-^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.heatmaps
-   :members:
-   :undoc-members:
-
-Colors etc.
-^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.config
-   :members:
-   :undoc-members:
-
 Utils
 -----
 
 .. automodule:: pyaerocom.utils
    :members:
    :undoc-members:
+
 
 Helpers
 -------
@@ -435,12 +395,81 @@ Mathematical helpers
    :members:
    :undoc-members:
 
+Geodesic calculations and topography
+------------------------------------
+
+.. automodule:: pyaerocom.geodesy
+   :members:
+   :undoc-members:
+
+Units and unit conversion
+-------------------------
+
+Units helpers in base package
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.units_helpers
+   :members:
+   :undoc-members:
+
+Units helpers in `io` sub-package
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.helpers_units
+  :members:
+  :undoc-members:
+
+
+Plotting / visualisation (sub package `plot`)
+----------------------------------------------
+
+The :mod:`pyaerocom.plot` package contains algorithms related to data
+visualisation and plotting.
+
+Plotting maps
+^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.mapping
+  :members:
+  :undoc-members:
+
+Scatter plots
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.plotscatter
+  :members:
+  :undoc-members:
+
+Time-series plots
+^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.plotseries
+  :members:
+  :undoc-members:
+
+Heatmap plots
+^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.heatmaps
+  :members:
+  :undoc-members:
+
+Colors etc.
+^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.config
+  :members:
+  :undoc-members:
+
 Web processing (sub-package: web)
 ---------------------------------
 
-This sub-package contains high level processing routines that can be used to process AeroCom data for individual web-interfaces, such as the `AeroCom Evaluation <https://aerocom-trends.met.no/evaluation/web/>`__ interface or the `Aerosol trends <https://aerocom-trends.met.no/>`__ interface.
+This sub-package contains high level processing routines that can be used to
+process AeroCom data for individual web-interfaces, such as the
+`AeroCom Evaluation <https://aerocom-evaluation.met.no>`__ interface or
+the `Aerosol trends <https://aerocom-trends.met.no/>`__ interface.
 
-Aerocom Evaluation interface
+AeroCom Evaluation interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.web.aerocom_evaluation
@@ -461,9 +490,63 @@ Aerosol Trends interface
    :members:
    :undoc-members:
 
+Helper methods for trends interface
+""""""""""""""""""""""""""""""""""""""""
+
+.. automodule:: pyaerocom.web.helpers_trends_iface
+  :members:
+  :undoc-members:
+
 Helpers of web-subpackage
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.web.helpers
+   :members:
+   :undoc-members:
+
+High level utility methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.web.utils
+   :members:
+   :undoc-members:
+
+Configuration and global constants
+----------------------------------
+
+Basic configuration class
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Will be initiated on input and is accessible via `pyaerocom.const`.
+
+.. automodule:: pyaerocom.config
+   :members:
+   :undoc-members:
+
+Config defaults related to gridded data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.grid_io
+   :members:
+   :undoc-members:
+
+Config details related to observations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.obs_io
+   :members:
+   :undoc-members:
+
+Molar masses and related helpers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.molmasses
+   :members:
+   :undoc-members:
+
+Access to minimal test dataset
+------------------------------
+
+.. automodule:: pyaerocom.testdata_access
    :members:
    :undoc-members:
