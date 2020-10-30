@@ -7,6 +7,11 @@ import pytest
 from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io import ReadUngridded
 
+
+def test_invalid_init_data_dir():
+    with pytest.raises(ValueError):
+        ReadUngridded(['EBASMC', 'GHOST.EEA.daily'], data_dir='/bla/blub')
+
 def test_supported():
     supported_datasets =ReadUngridded().supported_datasets
     print(supported_datasets)

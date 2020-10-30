@@ -194,7 +194,7 @@ class Config(object):
 
     #: timeout to check if one of the supported server locations can be
     #: accessed
-    SERVER_CHECK_TIMEOUT = 1 #0.1 #s
+    SERVER_CHECK_TIMEOUT = 2 #0.1 #s
 
     _outhomename = 'MyPyaerocom'
     _testdatadirname = 'testdata-minimal'
@@ -1109,6 +1109,4 @@ class Config(object):
 if __name__=="__main__":
     import pyaerocom as pya
     #print(pya.const)
-    print(pya.const.LOCAL_TMP_DIR)
-
-    pya.browse_datab
+    print(pya.const.has_access_lustre)

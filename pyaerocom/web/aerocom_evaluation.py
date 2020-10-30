@@ -4,12 +4,13 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
+from traceback import format_exc
 import simplejson
 
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
-from pyaerocom.region import Region, get_all_default_region_ids
+#from pyaerocom.region import Region, get_all_default_region_ids
 
 from pyaerocom.io.helpers import save_dict_json
 
@@ -935,8 +936,9 @@ class AerocomEvaluation(object):
                 if fnmatch(mname, search_pattern) and not mname in matches:
                     matches.append(mname)
         if len(matches) == 0:
-            raise KeyError('No observations could be found that match input {}'
-                           .format(name_or_pattern))
+            raise KeyError('No observations could be found that match input {}.\n'
+                           'Choose from\n{}'
+                           .format(name_or_pattern, list(self.obs_config.keys())))
         return matches
 
     def _check_and_get_iface_names(self):
@@ -1121,7 +1123,9 @@ class AerocomEvaluation(object):
         col.update(**self.colocation_settings)
         col.update(**self.get_model_config(model_name))
         #col.update(**kwargs)
+
         data = col.read_model_data(var_name, **kwargs)
+
         return data
 
     def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
@@ -1282,13 +1286,12 @@ class AerocomEvaluation(object):
              vert_code,
              mod_name, mod_var) = self._info_from_map_file(file)
             remove=False
-            obs_vars = self._get_valid_obs_vars(obs_name)
-
             if not (obs_name in self.iface_names and
-                    mod_name in self.model_config and
-                    obs_var in obs_vars):
+                    mod_name in self.model_config):
                 remove = True
-            if mod_name in self.model_config:
+            elif not obs_var in self._get_valid_obs_vars(obs_name):
+                remove = True
+            else:
                 mcfg = self.model_config[mod_name]
                 if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
                     if not mod_var == mcfg['model_use_vars'][obs_var]:
