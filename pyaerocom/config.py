@@ -109,9 +109,6 @@ class Config(object):
     #: DMS
     DMS_AMS_CVO_NAME = 'DMS_AMS_CVO'
 
-    #: name of EBAS sqlite database
-    #EBAS_SQL_DB_NAME = 'ebas_file_index.sqlite3'
-
     #: boolean specifying wheter EBAS DB is copied to local cache for faster
     #: access, defaults to True
     EBAS_DB_LOCAL_CACHE = True
@@ -194,7 +191,7 @@ class Config(object):
 
     #: timeout to check if one of the supported server locations can be
     #: accessed
-    SERVER_CHECK_TIMEOUT = 2 #0.1 #s
+    SERVER_CHECK_TIMEOUT = 0.1 #s
 
     _outhomename = 'MyPyaerocom'
 
@@ -255,7 +252,7 @@ class Config(object):
         self.logger = logger
 
         # Directories
-        self._cachedir = cache_dir
+        self._cache_basedir = cache_dir
         self._outputdir = output_dir
 
         self._colocateddatadir = colocateddata_dir
@@ -536,13 +533,34 @@ class Config(object):
         self._downloaddatadir =  val
 
     @property
+    def user(self):
+        """User ID"""
+        return getpass.getuser()
+
+    @property
+    def cache_basedir(self):
+        """Base directory for caching
+
+        The actual files are cached in user subdirectory, cf :attr:`CACHEDIR`
+        """
+        cd = self._cache_basedir
+        if not check_write_access(cd):
+            outdir = self.OUTPUTDIR
+            cd = chk_make_subdir(outdir, '_cache')
+            self._cache_basedir = cd
+        return cd
+
+    @cache_basedir.setter
+    def cache_basedir(self, val):
+        if check_write_access(val):
+            self._cache_basedir = os.path.abspath(val)
+
+
+    @property
     def CACHEDIR(self):
         """Cache directory for UngriddedData objects"""
-        if not check_write_access(self._cachedir):
-            outdir = self.OUTPUTDIR
-            self._cachedir = chk_make_subdir(outdir, '_cache')
         try:
-            return chk_make_subdir(self._cachedir, getpass.getuser())
+            return chk_make_subdir(self.cache_basedir, self.user)
         except Exception as e:
             self.print_log.warning('Failed to access CACHEDIR: {}\n'
                                    'Deactivating caching'.format(repr(e)))
@@ -555,7 +573,7 @@ class Config(object):
             raise ValueError('Cannot set cache directory. Input directory {} '
                              'does not exist or write '
                              'permission is not granted'.format(val))
-        self._cachedir = val
+        self._cache_basedir = val
 
     @property
     def CACHING(self):
@@ -1010,8 +1028,8 @@ class Config(object):
 
     def _init_output_folders_from_cfg(self, cr):
         cfg = cr['outputfolders']
-        if 'CACHEDIR' in cfg and not self._check_access(self._cachedir):
-            self._cachedir = cfg['CACHEDIR']
+        if 'CACHEDIR' in cfg and not self._check_access(self._cache_basedir):
+            self._cache_basedir = cfg['CACHEDIR']
 
         if 'OUTPUTDIR' in cfg and not self._check_access(self._outputdir):
             self._outputdir = cfg['OUTPUTDIR']
