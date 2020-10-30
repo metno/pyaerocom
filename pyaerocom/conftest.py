@@ -13,8 +13,10 @@ from pyaerocom import const
 import pyaerocom._conftest_helpers as cth
 import pyaerocom.testdata_access as td
 from pyaerocom.griddeddata import GriddedData
+
 from pyaerocom.io import (ReadAasEtal, ReadEbas, ReadAeronetSunV3,
-                          ReadAeronetSdaV3)
+                          ReadAeronetSdaV3, ReadMscwCtm)
+
 from pyaerocom.test.synthetic_data import DataAccess
 
 INIT_TESTDATA = True
@@ -34,8 +36,8 @@ CHECK_PATHS = {
     'tm5': 'modeldata/TM5-met2010_CTRL-TEST/renamed',
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
     'nasa_ames_sc550aer' : 'obsdata/EBASMultiColumn/data/{}'.format(AMES_FILE),
-    'coldata_tm5_aeronet': 'coldata/od550aer_REF-AeronetSunV3Lev2.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
-
+    'coldata_tm5_aeronet': 'coldata/od550aer_REF-AeronetSunV3Lev2.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc',
+    'emep' : 'modeldata/EMEP_2017'
     }
 
 TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
@@ -85,6 +87,17 @@ test_not_working = pytest.mark.skip(reason='Method raises Exception')
 from pyaerocom import change_verbosity
 change_verbosity('critical', const.print_log)
 ### Fixtures representing data
+
+# Paths to EMEP data
+@pytest.fixture(scope='session')
+def path_emep():
+    paths = {}
+    emep_path= TESTDATADIR.joinpath(CHECK_PATHS['emep'])
+    paths['daily'] = str(emep_path.joinpath('Base_day.nc'))
+    paths['monthly'] = str(emep_path.joinpath('Base_month.nc'))
+    paths['yearly'] = str(emep_path.joinpath('Base_fullrun.nc'))
+    paths['data_dir'] = str(emep_path)
+    return paths
 
 # Example GriddedData object (TM5 model)
 @pytest.fixture(scope='session')

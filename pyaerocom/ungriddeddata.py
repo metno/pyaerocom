@@ -1121,6 +1121,7 @@ class UngriddedData(object):
         _iter = self._generate_station_index(by_station_name,
                                              ignore_index)
         for idx in _iter:
+
             try:
                 data = self.to_station_data(idx, vars_to_convert, start,
                                             stop, freq,
