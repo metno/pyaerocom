@@ -290,7 +290,7 @@ class StationData(StationMetaData):
     def same_coords(self, other, tol_km=None):
         """Compare station coordinates of other station with this station
 
-        Paremeters
+        Parameters
         ----------
         other : StationData
             other data object

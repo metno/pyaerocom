@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-This module contains functionality related to regions in pyaerocom
-"""
 import os
 from ast import literal_eval
 import re, fnmatch
 from configparser import ConfigParser
-from pyaerocom import __dir__, logger, print_log
+from pyaerocom import logger, print_log
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
 
-is_3d =  lambda var_name: True if '3d' in var_name.lower() else False
-str2bool = lambda val: val.lower() in ('true', '1', 't', 'yes')
+#: helper vor checking if variable name contains str 3d or 3D
+is_3d = lambda var_name: True if '3d' in var_name.lower() else False
 
 class VarNameInfo(object):
     """This class can be used to retrieve information from variable names"""
-    _VALID_WVL_RANGE = [100, 2000]
+
+    #: valid number range for retrieval of wavelengths from variable name
+    _VALID_WVL_RANGE = [0.1, 10000] #nm
+
+    #: valid variable families for wavelength retrievals
     _VALID_WVL_IDS = ['od', 'abs', 'ec', 'sc', 'ac', 'bsc', 'ssa']
+
     PATTERNS = {'od' : r'od\d+aer'}
     DEFAULT_VERT_CODE_PATTERNS = {
         'abs*'  :   'Column',
@@ -27,6 +29,7 @@ class VarNameInfo(object):
         'load*' :   'Column',
         'wet*'  :   'Surface',
         'dry*'  :   'Surface'}
+
     def __init__(self, var_name):
         self.var_name = var_name.lower()
         self._nums = []
@@ -44,8 +47,20 @@ class VarNameInfo(object):
                          .format(self.var_name))
 
     @staticmethod
-    def _numbers_in_string(s):
-        return [int(x) for x in re.findall(r'\d+', s)]
+    def _numbers_in_string(input_str):
+        """Get list of all numbers in input str
+
+        Parameters
+        ----------
+        input_str : str
+            string to be checked
+
+        Returns
+        -------
+        list
+            list of numbers that were found in input string
+        """
+        return [int(x) for x in re.findall(r'\d+', input_str)]
 
     @property
     def contains_numbers(self):
@@ -143,6 +158,7 @@ class VarNameInfo(object):
 
 def parse_variables_ini(fpath=None):
     """Returns instance of ConfigParser to access information"""
+    from pyaerocom import __dir__
     if fpath is None:
         fpath = os.path.join(__dir__, "data", "variables.ini")
 
@@ -155,6 +171,7 @@ def parse_variables_ini(fpath=None):
 
 def parse_aliases_ini():
     """Returns instance of ConfigParser to access information"""
+    from pyaerocom import __dir__
     fpath = os.path.join(__dir__, "data", "aliases.ini")
     if not os.path.exists(fpath):
         raise FileNotFoundError("FATAL: aliases.ini file could not be found "
@@ -165,27 +182,26 @@ def parse_aliases_ini():
 
 
 def get_emep_variables(parser=None):
-        """Read all variable definitions from emep_variables.ini file and return as dict
+    """Read variable definitions from emep_variables.ini file
 
-        Returns
-        -------
-        dict
-            keys are AEROCOM standard names of variable, values are EMEP
-            variables
-        """
-        if parser is None:
-            parser = parse_emep_variables_ini()
-        variables = {}
-        items = parser['emep_variables']
-        for var_name in items:
-            _variables = [x.strip() for x in items[var_name].strip().split(',')]
-            for variable in _variables:
-                variables[var_name] = variable
-        return variables
-
+    Returns
+    -------
+    dict
+        keys are AEROCOM standard names of variable, values are EMEP variables
+    """
+    if parser is None:
+        parser = parse_emep_variables_ini()
+    variables = {}
+    items = parser['emep_variables']
+    for var_name in items:
+        _variables = [x.strip() for x in items[var_name].strip().split(',')]
+        for variable in _variables:
+            variables[var_name] = variable
+    return variables
 
 def parse_emep_variables_ini(fpath=None):
     """Returns instance of ConfigParser to access information"""
+    from pyaerocom import __dir__
     if fpath is None:
         fpath = os.path.join(__dir__, "data", "emep_variables.ini")
     if not os.path.exists(fpath):
@@ -223,6 +239,7 @@ def _read_alias_ini(parser=None):
 def get_aliases(var_name, parser=None):
     """Get aliases for a certain variable"""
     if parser is None:
+        from pyaerocom import __dir__
         file = os.path.join(__dir__, "data", "aliases.ini")
         parser = ConfigParser()
         parser.read(file)
@@ -246,14 +263,6 @@ def _check_alias_family(var_name, parser):
                                   'belonging to either of the available alias '
                                   'variable families')
 
-# =============================================================================
-# import functools
-# def lowercase(func):
-#     @functools.wraps(func)
-#     def wrapper():
-#         return func().lower()
-#     return wrapper
-# =============================================================================
 class Variable(object):
     """Interface that specifies default settings for a variable
 
@@ -331,22 +340,26 @@ class Variable(object):
     """
     literal_eval_list = lambda val: list(literal_eval(val))
     str2list = lambda val: [x.strip() for x in val.split(',')]
-    _TYPE_CONV={'wavelength_nm': float,
-                'minimum': float,
-                'maximum': float,
-                'dimensions' : str2list,
-                'obs_wavelength_tol_nm': float,
-                'scat_xlim': literal_eval_list,
-                'scat_ylim': literal_eval_list,
-                'scat_loglog': str2bool,
-                'scat_scale_factor': float,
-                'dry_rh_max':float,
-                'map_vmin': float,
-                'map_vmax': float,
-                'map_cbar_levels': literal_eval_list,
-                'map_cbar_ticks': literal_eval_list}
+    str2bool = lambda val: val.lower() in ('true', '1', 't', 'yes')
 
-    #maybe used in config -> what should be the name
+    _TYPE_CONV={
+        'wavelength_nm': float,
+        'minimum': float,
+        'maximum': float,
+        'dimensions' : str2list,
+        'obs_wavelength_tol_nm': float,
+        'scat_xlim': literal_eval_list,
+        'scat_ylim': literal_eval_list,
+        'scat_loglog': str2bool,
+        'scat_scale_factor': float,
+        'dry_rh_max':float,
+        'map_vmin': float,
+        'map_vmax': float,
+        'map_cbar_levels': literal_eval_list,
+        'map_cbar_ticks': literal_eval_list
+        }
+
+    #maybe used in config
     ALT_NAMES = {'unit' : 'units'}
 
     RH_MAX_DRY = 0.4
@@ -367,14 +380,10 @@ class Variable(object):
         var_name = var_name.lower()
         if '3d' in var_name:
             var_name = var_name.replace('3d','')
-# =============================================================================
-#         if 'dry' in var_name:
-#             var_name = var_name.replace('dry', '')
-# =============================================================================
         return var_name
 
     def __init__(self, var_name="od550aer", init=True, cfg=None, **kwargs):
-        #save orig. input for whatever reasons
+        # save orig. input for whatever reasons
         self._var_name_input = var_name
 
         # var_name in lowercase and cleaned up (3d and dry removed if applicable)
@@ -386,7 +395,7 @@ class Variable(object):
         # unitless.
         self.units = '1'
         self.default_vert_code = None
-        #self.aliases = []
+
         self.wavelength_nm = None
         self.dry_rh_max = 40
         self.dimensions = None
@@ -411,6 +420,7 @@ class Variable(object):
         self.map_c_over = 'r'
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
+
         # imports default information and, on top, variable information (if
         # applicable)
         if init:
@@ -504,7 +514,7 @@ class Variable(object):
 
     @property
     def aliases(self):
-        """Alias variable names that are frequently found / used
+        """Alias variable names that are frequently found or used
 
         Returns
         -------
@@ -523,7 +533,6 @@ class Variable(object):
 
     @staticmethod
     def _check_aliases(var_name):
-
         ap = parse_aliases_ini()
         aliases = _read_alias_ini(ap)
         if var_name in aliases:
@@ -591,15 +600,6 @@ class Variable(object):
             if key in self.ALT_NAMES:
                 key = self.ALT_NAMES[key]
             self._add(key, val)
-
-# =============================================================================
-#         for key in self.keys():
-#             if key in self.ALT_NAMES:
-#                 if self.ALT_NAMES[key] in var_info:
-#                     self._add(key, var_info[self.ALT_NAMES[key]])
-#             elif key in var_info:
-#                 self._add(key, var_info[key])
-# =============================================================================
 
     def _add(self, key, val):
         if key in self._TYPE_CONV:
@@ -682,7 +682,9 @@ class VarCollection(object):
     def all_vars(self):
         """List of all variables
 
-        Note: does not include variable names that may be inferred via
+        Note
+        ----
+        Does not include variable names that may be inferred via
         alias families as defined in section [alias_families] in
         aliases.ini.
         """
@@ -759,43 +761,16 @@ class VarCollection(object):
         return self[var_name]
 
     def __contains__(self, var_name):
-        """Enables using ``in`` method
-
-        Example
-        -------
-        >>> all_vars = VarCollection()
-        >>> 'od550aer' in all_vars
-        True
-        >>> 'blaa' in all_vars
-        False
-        """
         if var_name in self.all_vars:
             return True
         return False
 
     def __getattr__(self, attr):
-        """Use . operator to access variables
-
-        Example
-        -------
-        >>> all_vars = VarCollection()
-        >>> all_vars.od550aer
-        Variable od550aer
-        """
         if attr in self.__dict__:
             return self.__dict__[attr]
         return self[attr]
 
     def __getitem__(self, var_name):
-        """Use [] operator to access variables
-
-        Example
-        -------
-        >>> all_vars = VarCollection()
-        >>> all_vars['od550aer']
-        Variable od550aer
-        """
-        #make sure to be in the right namespace
         var = Variable(var_name, cfg=self._cfg_parser)
         if not var.var_name_aerocom in self:
             raise VariableDefinitionError('Error (VarCollection): input variable '
@@ -845,13 +820,3 @@ def all_var_names():
     """Helper method that returns all currently defined variable names"""
     return [k for k in Variable.read_config().keys()]
 
-if __name__=="__main__":
-    import pyaerocom as pya
-    #res = pya.const.VARS.find('od*aer')
-    v1 = pya.const.VARS['scatc550dryaer']
-    v0 = pya.const.VARS['scatc550aer']
-
-    print(v0 == v1)
-    var = pya.const.VARS['blaaa']
-
-    print(var)
