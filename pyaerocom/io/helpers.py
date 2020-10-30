@@ -3,35 +3,72 @@
 """
 I/O helper methods of the pyaerocom package
 """
+from collections import OrderedDict as od
 from datetime import datetime
+import os
+import shutil
+from time import time
+
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
-from pyaerocom import __dir__
-import os
 from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
 
+def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
+    """
+    Check and if applicable, copy ebas_file_index.sqlite3 into cache dir
 
-from collections import OrderedDict as od
+    Note
+    ----
+    This may speedup things if remote location is on a mounted server location.
+    Nothing the user should worry about in any case.
 
-TSTR_TO_NP_DT = {"hourly"  :  "datetime64[h]",
-                 "3hourly" :  "datetime64[3h]",
-                 "daily"   :  "datetime64[D]",
-                 "monthly" :  "datetime64[M]"}
+    Parameters
+    ----------
+    loc_remote : str
+        remote location of ebas_file_index.sqlite3
+    loc_local : str
+        local (cached) location of ebas_file_index.sqlite3
 
-TSTR_TO_NP_TD = {"hourly"  :  "timedelta64[h]",
-                 "3hourly" :  "timedelta64[3h]",
-                 "daily"   :  "timedelta64[D]",
-                 "monthly" :  "timedelta64[M]"}
+    Returns
+    -------
+    str
+        valid location of ebas_file_index.sqlite3 that is supposed to be used
 
+    """
+    if os.path.exists(loc_remote): # remote exists
+        if os.path.exists(loc_local):
+            chtremote = os.path.getmtime(loc_remote)
+            chtlocal = os.path.getmtime(loc_local)
+            if chtlocal == chtremote:
+                return loc_local
 
-TSTR_TO_CF = {"hourly"  :  "hours",
-              "3hourly" :  "hours",
-              "daily"   :  "days",
-              "monthly" :  "days"}
+        # changing time differs -> try to copy to local and if that
+        # fails, use remote location
+        try:
+            t0 = time()
+            shutil.copy2(loc_remote, loc_local)
+            const.print_log.info('Copied EBAS SQL database to {}\n'
+                                'Elapsed time: {:.3f} s'
+                                .format(loc_local, time() - t0))
+
+            return loc_local
+        except Exception as e:
+            const.print_log.warning('Failed to copy EBAS SQL database. '
+                                   'Reason: {}'.format(repr(e)))
+            return loc_remote
+    return loc_remote
+
+def aerocom_savename(data_id, var_name, vert_code, year, ts_type):
+    """Generate filename in AeroCom conventions
+
+    ToDo: complete docstring
+    """
+    return ('aerocom3_{}_{}_{}_{}_{}.nc'
+            .format(data_id, var_name, vert_code, year, ts_type))
 
 def _print_read_info(i, mod, tot_num, last_t, name, logger):
     """Helper for displaying standardised output in reading classes
-    
+
     Not to be used directly
     """
     t = datetime.now()
@@ -46,15 +83,15 @@ def get_metadata_from_filename(filename):
     from pyaerocom.io.fileconventions import FileConventionRead
     fc = FileConventionRead().from_file(filename)
     return fc.get_info_from_file(filename)
-    
+
 def read_ebas_flags_file(ebas_flags_csv):
     """Reads file ebas_flags.csv
-    
+
     Parameters
     ----------
     ebas_flags_csv : str
         file containing flag info
-        
+
     Returns
     -------
     dict
@@ -70,14 +107,14 @@ def read_ebas_flags_file(ebas_flags_csv):
             num = int(spl[0].strip())
             try:
                 val_str = spl[-1][1:-1]
-            except:
+            except Exception:
                 raise IOError('Failed to read flag information in row {} '
                               '(Check if entries in ebas_flags.csv are quoted)'
                               .format(line))
             info_str = ','.join(spl[1:-1])
             try:
                 info_str = info_str[1:-1]
-            except:
+            except Exception:
                 raise IOError('Failed to read flag information in row {} '
                               '(Check if entries in ebas_flags.csv are quoted)'
                               .format(line))
@@ -92,7 +129,7 @@ def read_ebas_flags_file(ebas_flags_csv):
     return result
 
 def add_file_to_log(filepath, err_msg):
-    
+
     try:
         dirname = os.path.dirname(filepath)
         spl = dirname.split(os.sep)
@@ -100,7 +137,7 @@ def add_file_to_log(filepath, err_msg):
             model_or_obs_id = spl[-2]
         else:
             model_or_obs_id = spl[-1]
-    except:
+    except Exception:
         model_or_obs_id = 'others'
     try:
         logdir = const.LOGFILESDIR
@@ -112,7 +149,7 @@ def add_file_to_log(filepath, err_msg):
                     if filepath == line.strip():
                         found = True
                         break
-            
+
         if not found:
             with open(logfile, 'a+') as f:
                 f.write(filepath + '\n')
@@ -124,20 +161,20 @@ def add_file_to_log(filepath, err_msg):
         const.WRITE_FILEIO_ERR_LOG = False
         print_log.info('Failed to write to file-read error logging ({}). '
                        'Deactiving lgging'.format(repr(e)))
-        
+
 def get_standard_name(var_name):
     """Get standard name of aerocom variable
-    
+
     Parameters
     ----------
     var_name : str
         HTAP2 variable name
-    
+
     Returns
     --------
     str
         corresponding standard name
-        
+
     Raises
     ------
     VarNotAvailableError
@@ -157,13 +194,13 @@ def search_data_dir_aerocom(name_or_pattern, ignorecase=True):
     """
     browser = AerocomBrowser()
     return browser.find_data_dir(name_or_pattern, ignorecase)
-  
+
 def get_all_supported_ids_ungridded():
     """Get list of datasets that are supported by :class:`ReadUngridded`
-    
+
     Returns
     -------
-    list 
+    list
         list with supported network names
     """
     from pyaerocom.io import ReadUngridded
@@ -171,17 +208,17 @@ def get_all_supported_ids_ungridded():
 
 def get_obsnetwork_dir(obs_id):
     """Returns data path for obsnetwork ID
-    
+
     Parameters
     ----------
     obs_id : str
         ID  of obsnetwork (e.g. AeronetSunV2Lev2.daily)
-        
+
     Returns
     -------
     str
         corresponding directory from ``pyaerocom.const``
-        
+
     Raises
     ------
     ValueError
@@ -189,10 +226,11 @@ def get_obsnetwork_dir(obs_id):
     IOError
         if directory does not exist
     """
-    if not obs_id in const.OBS_IDS:
-        raise ValueError("Observation network ID {} does not exist".format(obs_id))
-        
-    data_dir = const.OBSCONFIG[obs_id]['PATH']
+    if not obs_id in const.OBSLOCS_UNGRIDDED:
+        raise ValueError("Observation network ID {} does not exist"
+                         .format(obs_id))
+
+    data_dir = const.OBSLOCS_UNGRIDDED[obs_id]
     if not os.path.exists(data_dir):
         raise IOError("Data directory {} of observation network {} does not "
                       "exists".format(data_dir, obs_id))
@@ -200,22 +238,22 @@ def get_obsnetwork_dir(obs_id):
 
 def save_dict_json(d, fp, ignore_nan=True, indent=None):
     """Save a dictionary as json file using :func:`simplejson.dump`
-    
+
     Parameters
     ----------
     d : dict
         input dictionary
     fp : str
         filepath of json file
-        
+
     """
     import simplejson
     with open(fp, 'w') as f:
         simplejson.dump(d, f, ignore_nan=ignore_nan, indent=indent)
-        
+
 def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database
-    
+
     Parameters
     ----------
     update_inifile : bool
@@ -226,7 +264,7 @@ def search_names(update_inifile=True, check_nc_file=True):
         can be detected in the corresponding renamed sub directory
     """
     names = []
-    for mdir in const.MODELDIRS:
+    for mdir in const.DATA_SEARCH_DIRS:
         print("\n%s\n" %mdir)
         sub = os.listdir(mdir)
         for item in sub:
@@ -244,8 +282,9 @@ def search_names(update_inifile=True, check_nc_file=True):
                     names.append(item)
     names = sorted(od.fromkeys(names))
     if update_inifile:
+        from pyaerocom import __dir__
         fpath = os.path.join(__dir__, "data", "names.txt")
-        f = open(fpath, "w") 
+        f = open(fpath, "w")
         for name in names:
             f.write("%s\n" %name)
         f.close()
@@ -253,18 +292,18 @@ def search_names(update_inifile=True, check_nc_file=True):
 
 def get_all_names():
     """Try to import all model IDs from file names.txt in data directory"""
+    from pyaerocom import __dir__
     try:
         with open(os.path.join(__dir__, "data", "names.txt")) as f:
             names = f.read().splitlines()
         f.close()
-    except:
+    except Exception:
         try:
             names = search_names()
-        except:
+        except Exception:
             raise Exception("Failed to access model IDs")
     return names
-    
+
 if __name__=="__main__":
     #names = search_names()
     names = get_all_names()
-    

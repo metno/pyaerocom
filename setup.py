@@ -10,7 +10,6 @@ with open('VERSION.md') as f:
     print(version)
     f.close()
 
-
 setup(
     name        =   'pyaerocom',
     version     =   version,
@@ -26,8 +25,9 @@ setup(
                      'pyaerocom.interactive',
                      'pyaerocom.web.cli',
                      'pyaerocom.test',
-                     'pyaerocom.io.test'],
-    #include_package_data = True,            
+                     'pyaerocom.io.test',
+                     'pyaerocom.scripts'],
+    #include_package_data = True,
     package_data=   {'pyaerocom'    :   ['data/*']},
 
     classifiers=[
@@ -54,6 +54,7 @@ setup(
     description = ('Python tools for the Aerocom project'),
     long_description = readme,
     entry_points = {'console_scripts' : [
+            'pya=pyaerocom.scripts.cli:main',
             'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main',
             'pyaerotrends=pyaerocom.web.cli.main_trends_evaluation:main'
             ]},

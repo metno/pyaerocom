@@ -43,10 +43,9 @@ from pyaerocom.mathutils import (calc_ang4487aer,
 from pyaerocom.stationdata import StationData
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 
-
 class ReadAeronetSdaV2(ReadAeronetBase):
     """Interface for reading Aeronet Sun V2 Level 2 data
-    
+
     Todo
     ----
     Check if also level 1.5 works and include
@@ -54,34 +53,34 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     Parameters
     ----------
     dataset_to_read
-        string specifying either of the supported datasets that are defined 
+        string specifying either of the supported datasets that are defined
         in ``SUPPORTED_DATASETS``.
 
-    """    
-    #: Mask for identifying datafiles 
+    """
+    #: Mask for identifying datafiles
     _FILEMASK = '*.ONEILL_20'
-    
+
     #: version log of this class (for caching)
     __version__ = '0.08_' + ReadAeronetBase.__baseversion__
-    
+
     #: Name of dataset (OBS_ID)
     DATA_ID = const.AERONET_SUN_V2L2_SDA_DAILY_NAME
-    
+
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [const.AERONET_SUN_V2L2_SDA_DAILY_NAME]
-    
+
     #: dictionary assigning temporal resolution flags for supported datasets
     #: that are provided in a defined temporal resolution
     TS_TYPES = {const.AERONET_SUN_V2L2_SDA_DAILY_NAME   :  'daily'}
-    
+
     #: default variables for read method
     DEFAULT_VARS = ['od550aer', 'od550gt1aer','od550lt1aer']
-    
+
     #: value corresponding to invalid measurement
     NAN_VAL = -9999.
-    
+
     # Comment jgliss 20180719: translated most varname to Aerocom convention.
-    # Those, for which no defined name is known were named with a leading 
+    # Those, for which no defined name is known were named with a leading
     # underscore (e.g. _eta500lt1 for fine mode fraction at 500nm)
     #: Dictionary that specifies the index for each data column
     COL_INDEX = od(date                 = 0, # Date(dd:mm:yyyy)
@@ -109,23 +108,22 @@ class ReadAeronetSdaV2(ReadAeronetBase):
                    od440aer             = 25, # 440nm_Input_AOD
                    od412aer             = 26, # 412nm_Input_AOD
                    od380aer             = 27) # 380nm_Input_AOD
-    
-    
+
     # FURTHER HEADER COLUMN INDICES
-    
+
     # i_dAE/dln(wavelength)-Total_500nm[alphap]=12,
     #i_AE-Fine_Mode_500nm[alpha_f]=13,
-    #i_dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f]=14, 
+    #i_dAE/dln(wavelength)-Fine_Mode_500nm[alphap_f]=14,
     #LAST_PROCESSING_DATE_INDEX = 28, #Last_Processing_Date
     #NUMBER_OF_WAVELENGTHS_INDEX = 29, # Number_of_Wavelengths
     #UMBER_OF_OBSERVATIONS_INDEX = 30, #Number_of_Observations
     #EXACT_WAVELENGTHS_FOR_INPUT_AOD_INDEX = 31) # Exact_Wavelengths_for_Input_AOD
-    
-    # specify required dependencies for auxiliary variables, i.e. variables 
-    # that are NOT in Aeronet files but are computed within this class. 
+
+    # specify required dependencies for auxiliary variables, i.e. variables
+    # that are NOT in Aeronet files but are computed within this class.
     # For instance, the computation of the AOD at 550nm requires import of
-    # the AODs at 440, 500 and 870 nm. 
-    
+    # the AODs at 440, 500 and 870 nm.
+
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
     #: by the original data but computed on import)
@@ -133,20 +131,20 @@ class ReadAeronetSdaV2(ReadAeronetBase):
                                          'od870aer'],
                     'od550aer'      :   ['od500aer', 'ang4487aer'],
                     'od550gt1aer'   :   ['od500gt1aer', 'ang4487aer'],
-                    'od550lt1aer'   :   ['od500lt1aer', 'ang4487aer']}   
-    
-    #: Functions that are used to compute additional variables (i.e. one 
+                    'od550lt1aer'   :   ['od500lt1aer', 'ang4487aer']}
+
+    #: Functions that are used to compute additional variables (i.e. one
     #: for each variable defined in AUX_REQUIRES)
     AUX_FUNS = {'ang4487aer'    :   calc_ang4487aer,
                 'od550aer'      :   calc_od550aer,
                 'od550gt1aer'   :   calc_od550gt1aer,
                 'od550lt1aer'   :   calc_od550lt1aer}
-    
-    #: List of variables that are provided by this dataset (will be extended 
+
+    #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(COL_INDEX.keys())
-    
+
     # This how the beginning of data file looks like
 
     # Level 2.0 Quality Assured Data. The following AERONET-SDA data are
@@ -180,17 +178,17 @@ class ReadAeronetSdaV2(ReadAeronetBase):
     # 1.413517,0.036734,0.039337,-999.,-999.,-999.,-999.,-999.,0.064670,
     # -999.,-999.,0.069614,-999.,0.083549,27:11:2007,5,11,0.868800,
     # 0.675600,0.440400,0.500500,0.380100
-    
+
     @property
     def col_index(self):
         """Dictionary that specifies the index for each data column
-        
+
         Note
         ----
         Pointer to :attr:`COL_INDEX`
         """
         return self.COL_INDEX
-    
+
     def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):
         """Read Aeronet Sun SDA V2 file
@@ -205,30 +203,30 @@ class ReadAeronetSdaV2(ReadAeronetBase):
         vars_as_series : bool
             if True, the data columns of all variables in the result dictionary
             are converted into pandas Series objects
-        
+
         Returns
         -------
-        StationData 
+        StationData
             dict-like object containing results
         """
         if vars_to_retrieve is None:
             vars_to_retrieve = self.DEFAULT_VARS
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
-       
+
         #create empty data object (is dictionary with extended functionality)
-        data_out = StationData() 
-        
-        data_out.data_id = self.DATA_ID
+        data_out = StationData()
+
+        data_out.data_id = self.data_id
         # create empty arrays for meta information
         for item in self.META_NAMES_FILE:
             data_out[item] = []
-            
+
         # create empty arrays for all variables that are supposed to be read
         # from file
         for var in vars_to_read:
             data_out[var] = []
-        
+
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
         # Iterate over the lines of the file
@@ -237,7 +235,6 @@ class ReadAeronetSdaV2(ReadAeronetBase):
             c_head_line = in_file.readline()
             c_algorithm = in_file.readline()
 
-            
             self.logger.info(c_head_line)
             self.logger.info(c_algorithm)
 
@@ -252,14 +249,14 @@ class ReadAeronetSdaV2(ReadAeronetBase):
             data_out['station_name'] = dict_loc['Location']
             data_out['PI'] = dict_loc['PI']
             data_out['ts_type'] = self.TS_TYPE
-            
+
             c_dummy = in_file.readline()
             c_Header = in_file.readline()
-            
+
             self.logger.info(c_Header)
-            
+
             col_index = self.col_index
-            
+
             vars_available = {}
             for var in vars_to_read:
                 if var in col_index:
@@ -271,7 +268,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
             for line in in_file:
                 # process line
                 dummy_arr = line.split(self.COL_DELIM)
-                
+
                 # This uses the numpy datestring64 functions that e.g. also
                 # support Months as a time step for timedelta
                 # Build a proper ISO 8601 UTC date string
@@ -285,47 +282,43 @@ class ReadAeronetSdaV2(ReadAeronetBase):
                 #datestring = '+'.join([datestring, '00:00'])
                 data_out['dtime'].append(np.datetime64(datestring))
 
-                # copy the data fields 
+                # copy the data fields
                 for var, idx in vars_available.items():
                     val = np.float_(dummy_arr[idx])
-                    if val == self.NAN_VAL: 
+                    if val == self.NAN_VAL:
                         val = np.nan
                     data_out[var].append(val)
-        
+
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
-        
+
         for var in vars_to_read:
             if var in vars_available:
                 array = np.asarray(data_out[var])
             else:
                 array = np.zeros(len(data_out['dtime'])) * np.nan
             data_out[var] = array
-        
+
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out, vars_to_compute)
-        
+
         # convert data vectors to pandas.Series (if applicable)
-        if vars_as_series:        
+        if vars_as_series:
             for var in (vars_to_read + vars_to_compute):
                 if var in vars_to_retrieve:
-                    data_out[var] = pd.Series(data_out[var], 
+                    data_out[var] = pd.Series(data_out[var],
                                               index=data_out['dtime'])
                 else:
                     del data_out[var]
-            
-        return data_out
 
+        return data_out
 
 if __name__ == "__main__":
     read = ReadAeronetSdaV2()
-    
+
     read.verbosity_level = 'debug'
-    
+
     first_ten = read.read(last_file=10)
-    
+
     data = read.read_first_file()
     print(data)
-    
-    
-    

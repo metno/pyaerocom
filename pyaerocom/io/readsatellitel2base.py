@@ -38,7 +38,6 @@ import logging
 from pyaerocom import const
 from pyaerocom.ungriddeddata import UngriddedData
 
-
 class ReadL2DataBase(ReadUngriddedBase):
     """Interface for reading various satellite's L2 data
 
@@ -117,7 +116,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         self._DATAINDEX01 = UngriddedData._DATAINDEX
         self._COLNO = 12
 
-        self._ROWNO = 1000000
         self._CHUNKSIZE = 100000
 
         self.GROUP_DELIMITER = '/'
@@ -157,7 +155,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         # NETCDF_VAR_ATTRIBUTES[_LATITUDENAME]['_FillValue'] = {}
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['long_name'] = 'latitude'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['standard_name'] = 'latitude'
-        self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['units'] = 'degrees north'
+        self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['units'] = 'degrees_north'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['bounds'] = 'lat_bnds'
         self.NETCDF_VAR_ATTRIBUTES[self._LATITUDENAME]['axis'] = 'Y'
         self.NETCDF_VAR_ATTRIBUTES[self._LONGITUDENAME] = {}
@@ -179,14 +177,56 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         self.COORDINATE_NAMES = []
 
+        self.SCALING_FACTORS = {}
+        # list with static field names
+        self.STATICFIELDNAMES = []
+        # field name whose size determines the number of time steps in a product
+        self.TSSIZENAME=''
+
+        self._QANAME = ''
         # DEFAULT_VARS = []
         # PROVIDES_VARIABLES = []
         # self.DEFAULT_VARS = []
+
+        # grid definitions for to_grid method
+        self.SUPPORTED_GRIDS = {}
 
         try:
             self.LOCAL_TMP_DIR = const.LOCAL_TMP_DIR
         except:
             self.LOCAL_TMP_DIR = const.CACHEDIR
+
+        # some gridding constants
+        self.MIN_LAT = -90.
+        self.MAX_LAT = 90.
+        self.MIN_LON = -180.
+        self.MAX_LON = 180.
+        # supported grids
+        self.SUPPORTED_GRIDS['MODEL'] = {}
+        self.SUPPORTED_GRIDS['MODEL']['grid_dist_lon'] = 0.25
+        self.SUPPORTED_GRIDS['MODEL']['grid_dist_lat'] = 0.125
+        self.SUPPORTED_GRIDS['CAMS50'] = {}
+        self.SUPPORTED_GRIDS['CAMS50']['grid_dist_lon'] = 0.25
+        self.SUPPORTED_GRIDS['CAMS50']['grid_dist_lat'] = 0.125
+        self.SUPPORTED_GRIDS['1x1'] = {}
+        self.SUPPORTED_GRIDS['1x1']['grid_dist_lon'] = 1.
+        self.SUPPORTED_GRIDS['1x1']['grid_dist_lat'] = 1.
+        self.SUPPORTED_GRIDS['0.5x0.5'] = {}
+        self.SUPPORTED_GRIDS['0.5x0.5']['grid_dist_lon'] = 0.5
+        self.SUPPORTED_GRIDS['0.5x0.5']['grid_dist_lat'] = 0.5
+        self.SUPPORTED_GRIDS['0.1x0.1'] = {}
+        self.SUPPORTED_GRIDS['0.1x0.1']['grid_dist_lon'] = 0.1
+        self.SUPPORTED_GRIDS['0.1x0.1']['grid_dist_lat'] = 0.1
+
+        for grid_name in self.SUPPORTED_GRIDS:
+            self.SUPPORTED_GRIDS[grid_name]['grid_lats'] = \
+                np.arange(self.MIN_LAT + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'] / 2.,
+                          self.MAX_LAT + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'] / 2.,
+                          self.SUPPORTED_GRIDS[grid_name]['grid_dist_lat'])
+            self.SUPPORTED_GRIDS[grid_name]['grid_lons'] = \
+                np.arange(self.MIN_LON + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'] / 2.,
+                          self.MAX_LON + self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'] / 2.,
+                          self.SUPPORTED_GRIDS[grid_name]['grid_dist_lon'])
 
         if loglevel is not None:
             # self.logger = logging.getLogger(__name__)
@@ -204,7 +244,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
     def read(self, vars_to_retrieve=None, files=[], first_file=None,
              last_file=None, file_pattern=None, list_coda_paths=False,
-             local_temp_dir=None):
+             local_temp_dir=None, return_as='numpy', apply_quality_flag=0.0):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -271,12 +311,12 @@ class ReadL2DataBase(ReadUngriddedBase):
         self.read_failed = []
         temp_files = {}
 
-        data_obj = UngriddedData(num_points=self._COLNO, chunksize=self._CHUNKSIZE)
+        data_obj = UngriddedData(num_points=self._CHUNKSIZE)
         meta_key = 0.0
         idx = 0
 
         # check if the supplied file is a supported archive file (tar in this case)
-        # and extract the files with supported suffixes to const._cachedir
+        # and extract the files with supported suffixes to const.CACHEDIR
         non_archive_files = []
         for idx, _file in enumerate(sorted(files)):
             # temp = 'reading file: {}'.format(_file)
@@ -316,28 +356,121 @@ class ReadL2DataBase(ReadUngriddedBase):
                 return data_obj
 
             file_data = self.read_file(_file, vars_to_retrieve=vars_to_retrieve,
-                                       loglevel=logging.INFO, return_as='numpy')
-            self.logger.info('{} points read'.format(file_data.shape[0]))
-            # the metadata dict is left empty for L2 data
-            # the location in the data set is time step dependant!
-            if idx == 0:
-                data_obj._data = file_data
+                                       loglevel=logging.INFO, return_as=return_as)
+            if return_as == 'numpy':
+                self.logger.info('{} points read'.format(file_data.shape[0]))
+                # the metadata dict is left empty for L2 data
+                # the location in the data set is time step dependant!
+                if idx == 0:
+                    data_obj._data = file_data
 
+                else:
+                    data_obj._data = np.append(data_obj._data, file_data, axis=0)
+
+                data_obj._idx = data_obj._data.shape[0] + 1
+                file_data = None
+                # remove file if it was temporary one
+                if _file in temp_files:
+                    os.remove(_file)
+                #     pass
+                # tmp_obj = UngriddedData()
+                # tmp_obj._data = file_data
+                # tmp_obj._idx = data_obj._data.shape[0] + 1
+                # data_obj.append(tmp_obj)
+                self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
+            elif return_as == 'dict':
+                if idx == 0:
+                    data_obj._data = {}
+                    shape_store = {}
+                    index_store = {}
+                    file_start_index_arr = [0]
+                    # apply quality flags
+                    if apply_quality_flag > 0.:
+                        qflags = file_data[self._QANAME]
+                        keep_indexes=np.where(qflags >= apply_quality_flag)
+                        elements_to_add = keep_indexes.size
+                    else:
+                        keep_indexes=np.arange(0,len(file_data[self._QANAME]))
+                        elements_to_add = file_data[self._QANAME].shape[0]
+
+                    for _key in file_data:
+                        # print('key: {}'.format(_key))
+                        shape_store[_key] = file_data[_key].shape
+                        index_store[_key] = file_data[_key].shape[0]
+                        input_shape = list(file_data[_key].shape)
+                        input_shape[0] = self._ROWNO
+                        data_obj._data[_key] = np.empty(input_shape, dtype=np.float_)
+                        if len(input_shape) == 1:
+                            data_obj._data[_key][0:file_data[_key].shape[0]] = file_data[_key]
+                        elif len(input_shape) == 2:
+                            data_obj._data[_key][0:file_data[_key].shape[0],:] = file_data[_key]
+                        elif len(input_shape) == 3:
+                            data_obj._data[_key][0:file_data[_key].shape[0],:,:] = file_data[_key]
+                        elif len(input_shape) == 4:
+                            data_obj._data[_key][0:file_data[_key].shape[0],:,:,:] = file_data[_key]
+                        else:
+                            pass
+
+                # 2nd + file
+                else:
+                    if apply_quality_flag > 0.:
+                        qflags = file_data[self._QANAME]
+                        keep_indexes=np.where(qflags >= apply_quality_flag)
+                        elements_to_add = keep_indexes.size
+
+                    file_start_index_arr.append(file_data[self.TSSIZENAME].shape[0])
+                    for _key in file_data:
+                        if _key in self.STATICFIELDNAMES:
+                            print('key: {}'.format(_key))
+                            continue
+                        # shape_store[_key] = file_data[_key].shape
+                        elements_to_add = file_data[_key].shape[0]
+                        # extend data_obj._data[_key] if necessary
+                        if index_store[_key] + elements_to_add > data_obj._data[_key].shape[0]:
+                            current_shape = list(data_obj._data[_key].shape)
+                            current_shape[0] = current_shape[0] + self._CHUNKSIZE
+                            tmp_data = np.empty(current_shape, dtype=np.float_)
+                            if len(current_shape) == 1:
+                                tmp_data[0:data_obj._data[_key].shape[0]] = data_obj._data[_key]
+                            elif len(current_shape) == 2:
+                                tmp_data[0:data_obj._data[_key].shape[0],:] = data_obj._data[_key]
+                            elif len(current_shape) == 3:
+                                tmp_data[0:data_obj._data[_key].shape[0],:,:] = data_obj._data[_key]
+                            elif len(current_shape) == 4:
+                                tmp_data[0:data_obj._data[_key].shape[0],:,:,:] = data_obj._data[_key]
+                            else:
+                                pass
+
+                        input_shape = list(file_data[_key].shape)
+                        if len(input_shape) == 1:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0]] = file_data[_key]
+                        elif len(input_shape) == 2:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0],:] = file_data[_key]
+                        elif len(input_shape) == 3:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0],:,:] = file_data[_key]
+                        elif len(input_shape) == 4:
+                            data_obj._data[_key][index_store[_key]:index_store[_key]+file_data[_key].shape[0],:,:,:] = file_data[_key]
+                        else:
+                            pass
+                        index_store[_key] += elements_to_add
+
+                file_data = None
+                # remove file if it was temporary one
+                if _file in temp_files:
+                    os.remove(_file)
             else:
-                data_obj._data = np.append(data_obj._data, file_data, axis=0)
+                pass
 
-            data_obj._idx = data_obj._data.shape[0] + 1
-            file_data = None
-            # remove file if it was temporary one
-            if _file in temp_files:
-                os.remove(_file)
-            #     pass
-            # tmp_obj = UngriddedData()
-            # tmp_obj._data = file_data
-            # tmp_obj._idx = data_obj._data.shape[0] + 1
-            # data_obj.append(tmp_obj)
+        # now shorten the data dict to the necessary size
+        if return_as == 'dict':
+            for _key in data_obj._data:
+                data_obj._data[_key] = data_obj._data[_key][:index_store[_key]]
+            data_obj._data['file_indexes'] = file_start_index_arr
 
-        self.logger.info('size of data object: {}'.format(data_obj._idx - 1))
+            # apply the quality flags
+            if apply_quality_flag > 0.:
+                pass
+
         return data_obj
 
     ###################################################################################
@@ -370,7 +503,10 @@ class ReadL2DataBase(ReadUngriddedBase):
             if data_to_write is None:
                 _data = self.data
             else:
-                _data = data_to_write._data
+                try:
+                    _data = data_to_write._data
+                except AttributeError:
+                    _data = data_to_write
 
             # vars_to_read_in.extend(list(self.CODA_READ_PARAMETERS[self.DATASET_READ]['metadata'].keys()))
             vars_to_write_out.extend(list(self.CODA_READ_PARAMETERS[vars_to_write[0]]['metadata'].keys()))
@@ -492,8 +628,6 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         All the data points in data are considered!
 
-
-
         """
         import numpy as np
         import time
@@ -594,6 +728,55 @@ class ReadL2DataBase(ReadUngriddedBase):
         pass
 
     ###################################################################################
+    def _to_grid_grid_init(self,gridtype='1x1',vars=None,init_time=None):
+        """small helper routine to init the grid data struct"""
+
+        import numpy as np
+        import time
+
+        start_time = time.perf_counter()
+        grid_data_prot = {}
+        gridded_var_data = {}
+        data_for_gridding = {}
+
+        if gridtype in self.SUPPORTED_GRIDS:
+            temp = 'starting simple gridding for {} grid...'.format(gridtype)
+            self.logger.info(temp)
+
+            grid_array_prot = np.full((self.SUPPORTED_GRIDS[gridtype]['grid_lats'].size,
+                                       self.SUPPORTED_GRIDS[gridtype]['grid_lons'].size), np.nan)
+            # organise the data in a nested python dict like dict_data[grid_lat][grid_lon]=np.ndarray
+            for grid_lat in self.SUPPORTED_GRIDS[gridtype]['grid_lats']:
+                grid_data_prot[grid_lat] = {}
+                for grid_lon in self.SUPPORTED_GRIDS[gridtype]['grid_lons']:
+                    grid_data_prot[grid_lat][grid_lon] = {}
+
+            pass
+        else:
+            temp = 'Error: Unknown grid: {}'.format(gridtype)
+            return
+
+        end_time = time.perf_counter()
+        elapsed_sec = end_time - start_time
+        temp = 'time for global {} gridding with python data types [s] init: {:.3f}'.format(gridtype, elapsed_sec)
+        self.logger.info(temp)
+
+        # predefine the output data dict
+        for var in vars:
+            data_for_gridding[var] = grid_data_prot.copy()
+            gridded_var_data['latitude'] = self.SUPPORTED_GRIDS[gridtype]['grid_lats']
+            gridded_var_data['longitude'] = self.SUPPORTED_GRIDS[gridtype]['grid_lons']
+            gridded_var_data['time'] = init_time
+
+            gridded_var_data[var] = {}
+            gridded_var_data[var]['mean'] = grid_array_prot.copy()
+            gridded_var_data[var]['stddev'] = grid_array_prot.copy()
+            gridded_var_data[var]['numobs'] = grid_array_prot.copy()
+
+        return data_for_gridding, \
+               gridded_var_data,
+
+    ###################################################################################
 
     def select_bbox(self, _data, bbox=None):
         """method to return all points of data laying within a certain latitude and longitude range
@@ -656,8 +839,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         >>> m.scatter(x,y,3,marker='o',color='k')
         >>> plt.show()
 
-
-
         >>> infile='/lustre/storeB/project/fou/kl/vals5p/aerocom/Sentinel5P/renamed/aerocom.Sentinel5P.daily.sconcno2.2018.nc'
         >>> import xarray as xr
         >>> import cartopy.crs as ccrs
@@ -674,7 +855,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         >>> plot=mean_data.plot.pcolormesh(ax=ax, cmap='jet', transform=ccrs.PlateCarree(), robust=True, levels=16)
         >>> ax.coastlines()
         >>> ax.set_global()
-
 
         """
 

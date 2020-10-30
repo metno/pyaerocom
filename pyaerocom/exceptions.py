@@ -47,10 +47,16 @@ class CoordinateNotFoundError(CoordinateError):
 class CoordinateNameError(CoordinateError):
     pass
 
+class DataRetrievalError(IOError):
+    pass
+
 class DataCoverageError(ValueError):
     pass
 
 class DataDimensionError(ValueError):
+    pass
+
+class DataIdError(ValueError):
     pass
 
 class DataQueryError(ValueError):
@@ -60,6 +66,9 @@ class DataSourceError(ValueError):
     pass
 
 class DataUnitError(ValueError):
+    pass
+
+class DeprecationError(AttributeError, ValueError):
     pass
 
 class DimensionOrderError(DataDimensionError):
@@ -75,6 +84,9 @@ class NDimError(DataDimensionError):
     pass
 
 class EbasFileError(ValueError):
+    pass
+
+class InitialisationError(ValueError):
     pass
 
 class FileConventionError(IOError):
@@ -101,6 +113,9 @@ class NetcdfError(IOError):
 class NotInFileError(IOError):
     pass
 
+class ResamplingError(ValueError):
+    pass
+
 class StationNotFoundError(AttributeError):
     pass
 
@@ -119,6 +134,7 @@ class UnitConversionError(ValueError):
 class UnresolvableTimeDefinitionError(DataDimensionError, NetcdfError):
     """Is raised if time definition in NetCDF file is wrong and cannot be corrected"""
     pass
+
 class VarNotAvailableError(DataCoverageError):
     pass
 

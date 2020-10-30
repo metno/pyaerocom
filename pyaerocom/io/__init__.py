@@ -34,10 +34,10 @@
 # =============================================================================
 # from .read_aeronet_sdav2 import ReadAeronetSDAV2
 def geopy_available():
-    """Helper method that checks if geopy library is available 
-    
+    """Helper method that checks if geopy library is available
+
     Required for import of ReadAeolusL2aData
-    
+
     Returns
     -------
     bool
@@ -89,17 +89,19 @@ from .read_aeronet_sunv3 import ReadAeronetSunV3
 from .read_earlinet import ReadEarlinet
 from .read_ebas import ReadEbas
 from .read_gaw import ReadGAW
-from .read_aasetal import ReadSulphurAasEtAl
+from .read_aasetal import ReadAasEtal
+from .read_ghost import ReadGhost
 
 from .readgridded import ReadGridded, ReadGriddedMulti
+from .read_mscw_ctm import ReadMscwCtm
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
+
 if geopy_available() and coda_available():
     # the coda and geopy libraries are needed to read l2 data of the supported satellites
     # Aeolus and Sentinel5P
     from .read_aeolus_l2a_data import ReadL2Data
     from .read_sentinel5p_data import ReadL2Data
-
 
 from . import testfiles
 from . import helpers_units
