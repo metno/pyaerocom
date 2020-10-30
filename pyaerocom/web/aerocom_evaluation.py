@@ -962,7 +962,7 @@ class AerocomEvaluation(object):
             if not isinstance(self.obs_config[obs_name]['web_interface_name'],str):
                 raise ValueError('Invalid value for web_iface_name in {}. Need str type'.format(obs_name))
             iface_names.append(self.obs_config[obs_name]['web_interface_name'])
-        iface_names = set(iface_names)
+        iface_names = list(set(iface_names))
         return iface_names
 
     @property
