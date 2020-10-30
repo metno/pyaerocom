@@ -7,6 +7,7 @@ Created on Mon Nov 25 15:27:28 2019
 """
 import pytest
 import os
+from pyaerocom import conftest
 from pyaerocom import const as DEFAULT_CFG
 import getpass
 
@@ -196,25 +197,21 @@ def test_default_config():
     assert cfg._cache_basedir == mkpath(mypydir, '_cache')
     assert cfg.CACHEDIR == mkpath(mypydir, f'_cache/{USER}')
 
-    assert cfg._colocateddatadir is None
     check = mkpath(mypydir, 'colocated_data')
     assert cfg.COLOCATEDDATADIR == check
     # now this should be assigned
     assert cfg._colocateddatadir == check
 
-    assert cfg._filtermaskdir is None
     check = mkpath(mypydir, 'filtermasks')
     assert cfg.FILTERMASKKDIR == check
     # now this should be assigned
     assert cfg._filtermaskdir == check
 
-    assert cfg._local_tmp_dir is None
     check = mkpath(mypydir, 'tmp')
     assert cfg.LOCAL_TMP_DIR == check
     # now this should be assigned
     assert cfg._local_tmp_dir == check
 
-    assert cfg._downloaddatadir is None
     check = mkpath(mypydir, 'data')
     assert cfg.DOWNLOAD_DATADIR == check
     # now this should be assigned
