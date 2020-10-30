@@ -14,41 +14,48 @@ Gridded data
    :members:
    :undoc-members:
 
-Ungridded data 
+Ungridded data
 ^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.ungriddeddata
    :members:
    :undoc-members:
-   
+
 Colocated data
 ^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocateddata
    :members:
    :undoc-members:
-   
+
 Station data
 ^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.stationdata
    :members:
    :undoc-members:
-   
+
 Other data classes
 ^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.vertical_profile
    :members:
    :undoc-members:
-   
+
 Metadata and vocabulary standards
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------------
 
 .. automodule:: pyaerocom.metastandards
    :members:
    :undoc-members:
-   
+
+Variable conventions
+---------------------
+
+.. automodule:: pyaerocom.variable
+   :members:
+   :undoc-members:
+
 Colocation routines
 -------------------
 
@@ -58,36 +65,68 @@ Automatic colocation engine
 .. automodule:: pyaerocom.colocation_auto
    :members:
    :undoc-members:
-   
+
 Low-level colocation methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocation
    :members:
    :undoc-members:
-   
-.. _reading: 
+
+.. automodule:: pyaerocom.combine_vardata_ungridded
+   :members:
+   :undoc-members:
+
+.. _reading:
 
 .. note::
 
 	All reading routines are part of the :mod:`pyaerocom.io` sub-package (cf. :ref:`io`)
-	
+
 Reading of gridded data
 -----------------------
 
+Gridded data specifies any dataset that can be represented and stored on a
+regular grid within a certain domain (e.g. lat, lon time), for instance, model
+output or level 3 satellite data, stored, for instance, as NetCDF files.
+In pyaerocom, the underlying data object is :class:`GriddedData` and
+pyaerocom supports reading of such data for different file naming conventions.
+
+Data stored using AeroCom conventions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: pyaerocom.io.readgridded
    :members:
    :undoc-members:
-   
+
+Data stored using EMEP conventions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: pyaerocom.io.read_mscw_ctm
+  :members:
+  :undoc-members:
+
 Reading of ungridded data
 -------------------------
 
-The following flowchart illustrates the architecture of ungridded reading in pyaerocom. Below are information about the individual reading classes for each dataset (blue in flowchart), the abstract template base classes the reading classes are based on (dark green) and the factory class :class:`ReadUngridded` (orange) which has registered all individual reading classes. The data classes that are returned by the reading class are indicated in light green. 
+Other than gridded data, ungridded data represents data that is irregularly
+sampled in space and time, for instance, observations at different locations
+around the globe. Such data is represented in pyaerocom by
+:class:`UngriddedData` which is essentially a point-cloud dataset. Reading of
+:class:`UngriddedData` is typically specific for different observational
+data records, as they typically come in various data formats using various
+metadata conventions, which need to be harmonised, which is done during the
+data import.
+
+The following flowchart illustrates the architecture of ungridded reading in
+pyaerocom. Below are information about the individual reading classes for each
+dataset (blue in flowchart), the abstract template base classes the reading
+classes are based on (dark green) and the factory class :class:`ReadUngridded`
+(orange) which has registered all individual reading classes. The data classes
+that are returned by the reading class are indicated in light green.
 
 .. image:: ../suppl/pyaerocom_ungridded_io_flowchart.png
   :width: 800px
   :align: center
-  
+
 ReadUngridded factory class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -141,7 +180,7 @@ AERONET Inversion (V3)
    :undoc-members:
    :inherited-members:
    :show-inheritance:
-   
+
 AERONET (older versions)
 """"""""""""""""""""""""
 
@@ -156,7 +195,7 @@ AERONET (older versions)
    :undoc-members:
    :inherited-members:
    :show-inheritance:
-   
+
 .. automodule:: pyaerocom.io.read_aeronet_invv2
    :members:
    :undoc-members:
@@ -180,53 +219,71 @@ EBAS
    :undoc-members:
    :inherited-members:
    :show-inheritance:
-   
+
 EBAS (low level)
 """"""""""""""""
 
 .. automodule:: pyaerocom.io.ebas_nasa_ames
    :members:
    :undoc-members:
-   
+
 .. automodule:: pyaerocom.io.ebas_file_index
    :members:
    :undoc-members:
-   
+
 .. automodule:: pyaerocom.io.ebas_varinfo
    :members:
    :undoc-members:
-   
-.. _io: 
+
+GHOST
+^^^^^
+
+.. automodule:: pyaerocom.io.read_ghost
+   :members:
+   :undoc-members:
+
+.. _io:
 
 Further I/O features
 --------------------
-  
+
 .. note::
 
 	The	:mod:`pyaerocom.io` package also includes all relevant data import and reading routines. These are introduced
 	above, in Section Reading.
-	
+
 AeroCom database browser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.aerocom_browser
    :members:
    :undoc-members:
-   
+
 File naming conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.fileconventions
    :members:
    :undoc-members:
-   
+
 Iris helpers
 ^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.iris_io
    :members:
    :undoc-members:
-   
+
+.. automodule:: pyaerocom.io.aux_read_cubes
+   :members:
+   :undoc-members:
+
+Handling of cached ungridded data objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.io.cachehandler_ungridded
+   :members:
+   :undoc-members:
+
 I/O utils
 ^^^^^^^^^
 
@@ -240,11 +297,11 @@ I/O helpers
 .. automodule:: pyaerocom.io.helpers
    :members:
    :undoc-members:
-   
+
 Regions and  data filtering
 ----------------------------
 
-Region defintions
+Region definitions
 ^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.region
@@ -257,7 +314,7 @@ Filter class
 .. automodule:: pyaerocom.filter
    :members:
    :undoc-members:
-   
+
 Land / Sea masks
 ^^^^^^^^^^^^^^^^
 
@@ -274,7 +331,7 @@ Handling of time frequencies
 .. automodule:: pyaerocom.tstype
    :members:
    :undoc-members:
-   
+
 Temporal resampling
 ^^^^^^^^^^^^^^^^^^^
 
@@ -288,14 +345,14 @@ Global constants
 .. automodule:: pyaerocom.time_config
    :members:
    :undoc-members:
-   
+
 Conversion of vertical coordinates
 ----------------------------------
 
 .. automodule:: pyaerocom.vert_coords
    :members:
    :undoc-members:
-   
+
 Trends computation
 ------------------
 
@@ -305,14 +362,14 @@ Trends engine
 .. automodule:: pyaerocom.trends_engine
    :members:
    :undoc-members:
-   
+
 Helper methods
 ^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.trends_helpers
    :members:
    :undoc-members:
-   
+
 
 Plotting / Visualisation
 -------------------------
@@ -325,7 +382,7 @@ Plotting maps
 .. automodule:: pyaerocom.plot.mapping
    :members:
    :undoc-members:
-   
+
 Scatter plots
 ^^^^^^^^^^^^^^^^^^^^^^
 
@@ -338,8 +395,8 @@ Time-series plots
 
 .. automodule:: pyaerocom.plot.plotseries
    :members:
-   :undoc-members:   
-   
+   :undoc-members:
+
 Heatmap plots
 ^^^^^^^^^^^^^
 
@@ -360,21 +417,21 @@ Utils
 .. automodule:: pyaerocom.utils
    :members:
    :undoc-members:
-   
+
 Helpers
 -------
 
 .. automodule:: pyaerocom.helpers
    :members:
    :undoc-members:
-   
+
 Mathematical helpers
 --------------------
 
 .. automodule:: pyaerocom.mathutils
    :members:
    :undoc-members:
-   
+
 Web processing (sub-package: web)
 ---------------------------------
 
@@ -387,10 +444,17 @@ Aerocom Evaluation interface
    :members:
    :undoc-members:
 
+Helper methods for evaluation interface
+""""""""""""""""""""""""""""""""""""""""
+
+.. automodule:: pyaerocom.web.helpers_evaluation_iface
+   :members:
+   :undoc-members:
+
 Aerosol Trends interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.web.aerosol_trends
+.. automodule:: pyaerocom.web.trends_evaluation
    :members:
    :undoc-members:
 
