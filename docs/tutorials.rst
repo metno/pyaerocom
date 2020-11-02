@@ -9,6 +9,12 @@ In this section you can find example tutorial notebooks for pyaerocom.
   You can find in all notebooks in the `pyaerocom-tutorials repository
   <https://github.com/metno/pyaerocom-tutorials/tree/master/notebooks>`__.
 
+.. note::
+
+  The tutorials currently undergo revision. While most of the content below is
+  still valid, some of the displayed features are outdated with respect to the
+  most recent release. 
+
 Pyaerocom API flowchart (simplified)
 ------------------------------------
 
@@ -54,4 +60,3 @@ Further tutorials
 .. include:: add04_stationdata_merging.rst
 
 .. include:: add05_variables.rst
-
