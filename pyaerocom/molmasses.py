@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Mar 13 09:56:54 2020
-
-@author: jonasg
-"""
 
 VAR_PREFIXES = ['vmr', 'mmr', 'conc', 'sconc', 'wet', 'dry']
 
@@ -13,7 +8,8 @@ MOLMASSES = {'air_dry'  : 28.9647,
              'o3'       : 48,
              'so2'      : 64.066,
              'so4'      : 96.06,
-             'no2'      : 46.0055}
+             'no2'      : 46.0055,
+             'co'       : 28.010,}
 
 class UnkownSpeciesError(ValueError):
     pass

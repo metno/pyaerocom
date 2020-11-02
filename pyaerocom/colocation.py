@@ -175,9 +175,10 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         instance of colocated data
 
     """
+
     if vert_scheme is not None:
-        raise NotImplementedError('Input vert_scheme cannot yet be handled '
-                                  'for gridded / gridded colocation...')
+        raise NotImplementedError(f'This type of colocation is not implemented '
+                                  f'for gridded / gridded colocation... ({vert_scheme})')
 
     if var_outlier_ranges is None:
         var_outlier_ranges = {}
@@ -187,8 +188,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
 
-    if gridded_data.var_info.has_unit:
-        if harmonise_units and not gridded_data.units == gridded_data_ref.units:
+    if harmonise_units and gridded_data.var_info.has_unit:
+        if not gridded_data.units == gridded_data_ref.units:
             try:
                 gridded_data_ref.convert_unit(gridded_data.units)
             except Exception:
@@ -995,14 +996,9 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
 
-    #obsdata = pya.io.ReadGhost('GHOST.hourly').read('concpm25')
-    obsdata = pya.io.ReadGridded('FMI-SAT-MERGED11').read_var('od550aer',
-                                                              start=2010)
-    model_id='ECMWF_CAMS_REAN'
+    obsdata = pya.io.ReadUngridded().read('EBASMC', 'ac550aer')
 
-    mr = pya.io.ReadGridded(model_id)
-    modeldata = mr.read_var('od550aer', start=2010)
+    # update unit to wrong unit
+    obsdata.check_convert_var_units('ac550aer', 'm-1', inplace=True)
 
-    coldata = colocate_gridded_gridded(modeldata, obsdata)
-
-    coldata.plot_scatter(loglog=True)
+    obsdata.remove_outliers('ac550aer', inplace=True)

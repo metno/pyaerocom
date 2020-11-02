@@ -3,8 +3,10 @@
 """
 General helper methods for the pyaerocom library.
 """
-from pyaerocom import const
+import numpy as np
 import re
+
+from pyaerocom import const
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    TS_TYPE_TO_NUMPY_FREQ,
@@ -115,6 +117,20 @@ class TsType(object):
         if idx == len(self.VALID) - 1:
             raise IndexError('No lower resolution available than {}'.format(self))
         return TsType(self.VALID[idx+1])
+
+    def to_timedelta64(self):
+        """
+        Convert frequency to timedelta64 object
+
+        Can be used, e.g. as tolerance when reindexing pandas Series
+
+        Returns
+        -------
+        timedelta64
+
+        """
+        return np.timedelta64(1, self.to_numpy_freq())
+
 
     @property
     def next_higher(self):

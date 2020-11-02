@@ -103,7 +103,6 @@ class ReadCoLocationData(ReadL2Data):
         num_points = len(file_data)
         if self.index_pointer == 0:
             self.data = file_data
-            self._ROWNO = num_points
             self.index_pointer = num_points
 
         else:
@@ -111,7 +110,7 @@ class ReadCoLocationData(ReadL2Data):
             # add another array chunk to self.data
             self.data = np.append(self.data, np.zeros([num_points, self._COLNO], dtype=np.float_),
                                   axis=0)
-            self._ROWNO = num_points
+
             # copy the data
             self.data[self.index_pointer:, :] = file_data
             self.index_pointer = self.index_pointer + num_points

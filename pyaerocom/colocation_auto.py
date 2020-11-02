@@ -18,8 +18,7 @@ import traceback
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
 from pyaerocom import const, print_log
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
-                               get_lowest_resolution, start_stop,
-                               varlist_aerocom)
+                               get_lowest_resolution, start_stop)
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded,
@@ -27,10 +26,10 @@ from pyaerocom.colocation import (colocate_gridded_gridded,
 from pyaerocom.colocateddata import ColocatedData
 
 from pyaerocom.filter import Filter
-from pyaerocom.io import ReadUngridded, ReadGridded
+from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
-                                  TemporalResolutionError)
+                                  VariableDefinitionError)
 
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
@@ -231,6 +230,7 @@ class ColocationSetup(BrowseDict):
 
         self.model_id = model_id
         self.model_name = model_name
+        self.model_data_dir = None
 
         self.obs_id = obs_id
         self.obs_name = obs_name
@@ -238,6 +238,10 @@ class ColocationSetup(BrowseDict):
         self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
         self.obs_add_meta = []
+
+        self.gridded_reader_id = {
+         'model' : 'ReadGridded',
+         'obs' : 'ReadGridded'}
 
         self.start = start
         self.stop = stop
@@ -313,6 +317,13 @@ class Colocator(ColocationSetup):
     as such. For attributes, please see base class.
     """
 
+
+    SUPPORTED_GRIDDED_READERS = {
+        'ReadGridded' : ReadGridded,
+        'ReadMscwCtm' : ReadMscwCtm
+    }
+
+
     def __init__(self, **kwargs):
         super(Colocator, self).__init__(**kwargs)
 
@@ -376,6 +387,40 @@ class Colocator(ColocationSetup):
         finally:
             self._close_log()
 
+    def instantiate_gridded_reader(self, what):
+        """
+        Create reader for model or observational gridded data.
+
+        Parameters
+        ----------
+        what : str
+            Type of reader. ("model" or "obs")
+
+        Returns
+        -------
+        Instance of reader class defined in self.SUPPORTED_GRIDDED_READERS
+        """
+        if what == 'model':
+            data_id = self.model_id
+            data_dir = self.model_data_dir
+        else:
+            data_id = self.obs_id
+            data_dir = self.obs_data_dir
+        reader_class = self._get_gridded_reader_class(what=what)
+        reader = reader_class(data_id=data_id, data_dir=data_dir)
+        if hasattr(reader, 'filepath') and hasattr(self, 'filepath'):
+            reader.filepath = self.filepath
+        return reader
+
+    def _get_gridded_reader_class(self, what):
+        """Returns the class of the reader for gridded data."""
+        try:
+            reader = self.SUPPORTED_GRIDDED_READERS[self.gridded_reader_id[what]]
+        except KeyError as e:
+            raise NotImplementedError('Reader {} is not supported: {}'.
+                                      format(self.gridded_reader_id[what], e))
+        return reader
+
     @staticmethod
     def get_lowest_resolution(ts_type, *ts_types):
         """Get the lowest resolution ts_type of input ts_types"""
@@ -425,13 +470,17 @@ class Colocator(ColocationSetup):
             else:
                 model_var = obs_var
 
-            self._check_add_model_read_aux(model_var, model_reader)
+            try:
+                self._check_add_model_read_aux(model_var, model_reader)
 
-            if model_reader.has_var(model_var):
-                var_matches[model_var] = obs_var
 
-            var_matches = self._check_model_add_var(obs_var, model_reader,
-                                                    var_matches)
+                if model_reader.has_var(model_var):
+                    var_matches[model_var] = obs_var
+
+                var_matches = self._check_model_add_var(obs_var, model_reader,
+                                                        var_matches)
+            except VariableDefinitionError:
+                continue
 
         if var_name is not None:
             _var_matches = {}
@@ -466,7 +515,7 @@ class Colocator(ColocationSetup):
         if 'use_input_var' in kwargs:
             use_input_var = kwargs.pop('use_input_var')
 
-        reader = ReadGridded(self.model_id)
+        reader = self.instantiate_gridded_reader(what='model')
         if use_input_var:
             var = var_name
         else:
@@ -674,8 +723,8 @@ class Colocator(ColocationSetup):
         try:
             yrs_avail = reader.years_avail
         except AttributeError:
-            raise AttributeError('Input reader {} does not have attr. '
-                                 'years_avail') # not sure if ReadEMEP has...
+            raise AttributeError(f'Input reader {reader} does not have attr. '
+                                 'years_avail')
 
         first, last = yrs_avail[0], yrs_avail[-1]
         self.start = first
@@ -689,17 +738,11 @@ class Colocator(ColocationSetup):
         print_log.info('PREPARING colocation of {} vs. {}'
                        .format(self.model_id, self.obs_id))
 
-        model_reader = ReadGridded(self.model_id)
+        model_reader = self.instantiate_gridded_reader(what='model')
+        obs_reader = ReadUngridded(self.obs_id, data_dir=self.obs_data_dir)
 
-        obs_reader = ReadUngridded(self.obs_id,
-                                   data_dir=self.obs_data_dir)
-
-        _oreader = obs_reader.get_reader(self.obs_id)
-
-        obs_vars = []
-        for var in varlist_aerocom(self.obs_vars):
-            if _oreader.var_supported(var):
-                obs_vars.append(var)
+        obs_vars = obs_reader.get_vars_supported(self.obs_id,
+                                                 self.obs_vars)
 
         if len(obs_vars) == 0:
             raise DataCoverageError('No observation variable matches found for '
@@ -817,8 +860,6 @@ class Colocator(ColocationSetup):
                 # the UngriddedData object at a time. Currently the variable is
                 #re-read a lot of times, which is a weakness.
                 obs_data = obs_reader.read(
-
-                    datasets_to_read=self.obs_id,
                     vars_to_retrieve=obs_var,
                     only_cached=self._obs_cache_only,
                     **ropts)
@@ -883,13 +924,15 @@ class Colocator(ColocationSetup):
 
     def _run_gridded_gridded(self, var_name=None):
 
-        model_reader = ReadGridded(self.model_id)
+        model_reader = ReadGridded(self.model_id,
+                                   data_dir=self.model_data_dir)
 
         if self.start is None:
             self._infer_start_stop(model_reader)
 
         start, stop = start_stop(self.start, self.stop)
-        obs_reader = ReadGridded(self.obs_id, data_dir=self.obs_data_dir)
+        model_reader = self.instantiate_gridded_reader(what='model')
+        obs_reader = self.instantiate_gridded_reader(what='obs')
 
         if 'obs_filters' in self:
             obs_filters = self._eval_obs_filters()
@@ -903,7 +946,7 @@ class Colocator(ColocationSetup):
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
 
-        all_ts_types = const.GRID_IO.TS_TYPES
+        #all_ts_types = const.GRID_IO.TS_TYPES
 
         ts_type = self.ts_type
 
@@ -934,12 +977,6 @@ class Colocator(ColocationSetup):
                 else:
                     continue
 
-            if not model_data.ts_type in all_ts_types:
-                raise TemporalResolutionError('Invalid temporal resolution {} '
-                                              'in model {}'
-                                              .format(model_data.ts_type,
-                                                      self.model_id))
-
             if ts_type is None:
                 ts_type = model_data.ts_type
             try:
@@ -962,10 +999,12 @@ class Colocator(ColocationSetup):
                 else:
                     continue
 
-            if not obs_data.ts_type in all_ts_types:
-                raise TemporalResolutionError('Invalid temporal resolution {} '
-                                              'in obs {}'.format(obs_data.ts_type,
-                                                                 self.model_id))
+# =============================================================================
+#             if not obs_data.ts_type in all_ts_types:
+#                 raise TemporalResolutionError('Invalid temporal resolution {} '
+#                                               'in obs {}'.format(obs_data.ts_type,
+#                                                                  self.model_id))
+# =============================================================================
 
             # update colocation ts_type, based on the available resolution in
             # model and obs.
@@ -1158,8 +1197,3 @@ if __name__ == '__main__':
 
     data = col.data[MODEL_ID]['od550aer']
     data.plot_scatter(loglog=True)
-
-
-
-
-

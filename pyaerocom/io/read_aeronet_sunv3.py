@@ -109,7 +109,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
     #: by the original data but computed on import)
-    AUX_REQUIRES = {'ang4487aer_calc'   :   ['od440aer',
+    AUX_REQUIRES = {'ang44&87aer'   :   ['od440aer',
                                              'od870aer'],
                     'od550aer'          :   ['od440aer',
                                              'od500aer',
@@ -117,8 +117,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
     #: Functions that are used to compute additional variables (i.e. one
     #: for each variable defined in AUX_REQUIRES)
-    AUX_FUNS = {'ang4487aer_calc'   :   calc_ang4487aer,
-                'od550aer'          :   calc_od550aer}
+    AUX_FUNS = {'ang44&87aer'   :   calc_ang4487aer,
+                'od550aer'      :   calc_od550aer}
 
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of

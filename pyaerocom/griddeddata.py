@@ -40,7 +40,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                check_coord_circular,
                                extract_latlon_dataarray)
 
-from pyaerocom.mathutils import closest_index
+from pyaerocom.mathutils import closest_index, exponent
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.vert_coords import AltitudeAccess
@@ -74,37 +74,6 @@ class GriddedData(object):
         variable name that is extracted if `input` is a file path. Irrelevant
         if `input` is preloaded Cube
 
-    Example
-    -------
-    >>> from pyaerocom.io.testfiles import get
-    >>> files = get()
-    >>> data = GriddedData(files['models']['aatsr_su_v4.3'],
-    ...  ot self.grid.var_name is None:
-                const.print_log.warning('Overwriting existing variable name {} '
-                                        'in with {}'.format(self.grid.var_name,
-                                                 var_name))                  var_name="od550aer")
-    >>> print(data.var_name)
-    od550aer
-    >>> print(type(data.longitude))
-    <class 'iris.coords.DimCoord'>
-    >>> print(data.longitude.points.min(), data.longitude.points.max())
-    -179.5 179.5
-    >>> print(data.latitude.points.min(), data.latitude.points.max())
-    -89.5 89.5
-    >>> print(data.time.points.min(), data.time.points.max())
-    0.0 365.0
-    >>> tstamps = data.time_stamps()
-    >>> print(tstamps[0], tstamps[-1])
-    2008-01-01T00:00:00.000000 2008-12-31T00:00:00.000000
-    >>> data_cropped = data.crop(lat_range=(-60, 60), lon_range=(160, 180),
-    ...                          time_range=("2008-02-01", "2008-02-15"))
-    >>> print(data_cropped.shape)
-    (15, 120, 20)
-
-    Attributes
-    ----------
-    grid
-        underlying data type (hopefully :class:`iris.cube.Cube` in most cases)
     """
     _grid = None
     _GRID_IO = const.GRID_IO
@@ -1305,7 +1274,14 @@ class GriddedData(object):
         except DimensionOrderError:
             self.reorder_dimensions_tseries()
         cname = self.dimcoord_names[-1]
+        coord = self[cname]
         from pyaerocom import vert_coords as vc
+        if 'positive' in coord.attributes:
+            if coord.attributes['positive'] == 'up':
+                return np.argmin(self.grid.dim_coords[3].points)
+            elif coord.attributes['positive'] == 'down':
+                return np.argmax(self.grid.dim_coords[3].points)
+
         try:
             coord = vc.VerticalCoordinate(cname)
             if coord.lev_increases_with_alt:
@@ -1319,10 +1295,20 @@ class GriddedData(object):
                 raise DataExtractionError('Cannot infer surface level since '
                                           'global option INFER_SURFACE_LEVEL in'
                                           'pyaerocom.const.GRID_IO is deactivated')
+            const.print_log.info(
+                'Inferring surface level in GriddedData based on mean value of '
+                '{} data in first and last level since CF coordinate info is '
+                'missing... The level with the largest mean value will be '
+                'assumed to be the surface. If mean values in both levels'
+                .format(self.var_name))
             last_lev_idx = self.shape[-1] - 1
-            first_lowest_idx = self[0, :, :, 0].data
-            first_highest_idx = self[0, :, :, last_lev_idx].data
-            if np.nanmean(first_lowest_idx) > np.nanmean(first_highest_idx):
+            mean_first_idx = np.nanmean(self[0, :, :, 0].data)
+            mean_last_idx = np.nanmean(self[0, :, :, last_lev_idx].data)
+            if exponent(mean_first_idx) == exponent(mean_last_idx):
+                raise DataExtractionError('Could not infer surface level. '
+                    '{} data in first and last level is of similar magnitude...'
+                    .format(self.var_name))
+            elif mean_first_idx > mean_last_idx:
                 return 0
             return last_lev_idx
 
@@ -2015,15 +2001,15 @@ class GriddedData(object):
         return outpaths
 
     def to_netcdf(self, out_dir, savename=None, **kwargs):
-        """Save as netcdf file
+        """Save as NetCDF file
 
-        Paraemeters
+        Parameters
         -----------
         out_dir : str
             output direcory (must exist)
-        savename : :obj:`str`, optional
+        savename : str, optional
             name of file. If None, :func:`aerocom_savename` is used which is
-            generated automatically and may be modified via **kwargs
+            generated automatically and may be modified via `**kwargs`
         **kwargs
             keywords for name
 
@@ -2052,18 +2038,17 @@ class GriddedData(object):
 
         Note
         ----
-        The input coordinates may also be provided using the input arg **coords
-        which provides a more intuitive option (e.g. input
+        The input coordinates may also be provided using the input arg
+        `**coords` which provides a more intuitive option (e.g. input
         ``(sample_points=[("longitude", [10, 20]), ("latitude", [1, 2])])``
-        is the same as input
-        ``(longitude=[10, 20], latitude=[1,2])``
+        is the same as input ``(longitude=[10, 20], latitude=[1,2])``
 
         Parameters
         ----------
         sample_points : list
             sequence of coordinate pairs over which to interpolate
         scheme : str or iris interpolator object
-            interpolation scheme, pyaerocom default is Nearest. If input is
+            interpolation scheme, pyaerocom default is nearest. If input is
             string, it is converted into the corresponding iris Interpolator
             object, see :func:`str_to_iris` for valid strings
         collapse_scalar : bool
@@ -2072,7 +2057,7 @@ class GriddedData(object):
         **coords
             additional keyword args that may be used to provide the interpolation
             coordinates in an easier way than using the ``Cube`` argument
-            :arg:`sample_points``. May also be a combination of both.
+            `sample_points`. May also be a combination of both.
 
         Returns
         -------
@@ -2090,12 +2075,6 @@ class GriddedData(object):
             >>> print(itp.shape)
             (365, 1, 1)
         """
-# =============================================================================
-#         if self._size_GB > self._MAX_SIZE_GB:
-#             raise MemoryError('Data is too large (grid size: {}, file: {} GB) '
-#                               'for interpolation (which requires loading data '
-#                               'into memory)'.format(self.shape, self._size_GB))
-# =============================================================================
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme)
         if not sample_points:

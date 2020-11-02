@@ -364,7 +364,7 @@ class CacheHandlerUngridded(object):
 
         except Exception as e:
             from pyaerocom import print_log
-            print_log.exception('Failed to write cache'.format(repr(e)))
+            print_log.exception('Failed to write cache: {}'.format(repr(e)))
             success=False
         finally:
             out_handle.close()

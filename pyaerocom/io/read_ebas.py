@@ -23,6 +23,7 @@ import fnmatch
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
+from pyaerocom.units_helpers import unit_conversion_fac
 from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_sc440dryaer,
                                  compute_sc700dryaer,
@@ -35,7 +36,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
-from pyaerocom.exceptions import NotInFileError, EbasFileError
+from pyaerocom.exceptions import (NotInFileError, EbasFileError,
+                                  UnitConversionError)
 from pyaerocom._lowlevel_helpers import BrowseDict
 from tqdm import tqdm
 
@@ -127,7 +129,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.34_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.36_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -193,7 +195,8 @@ class ReadEbas(ReadUngriddedBase):
 
     IGNORE_WAVELENGTH = ['conceqbc']
 
-    ASSUME_AE_SHIFT_WVL = 1.0
+    ASSUME_AAE_SHIFT_WVL = 1.0
+    ASSUME_AE_SHIFT_WVL = 1.5
 
     IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
     # list of all available resolution codes (extracted from SQLite database)
@@ -223,7 +226,7 @@ class ReadEbas(ReadUngriddedBase):
         self._read_stats_log = BrowseDict()
 
         #: SQL database interface class used to retrieve file paths for vars
-        self.file_index = EbasFileIndex(self.sqlite_database_file)
+        self._file_index = None
         self.sql_requests = []
 
         #: original file lists retrieved for each variable individually using
@@ -254,6 +257,13 @@ class ReadEbas(ReadUngriddedBase):
         if not isinstance(val, str) or not os.path.exists(val):
             raise FileNotFoundError('Input directory does not exist')
         self._file_dir = val
+
+    @property
+    def file_index(self):
+        """SQlite file mapping metadata with filenames"""
+        if self._file_index is None:
+            self._file_index = EbasFileIndex(self.sqlite_database_file)
+        return self._file_index
 
     @property
     def FILE_REQUEST_OPTS(self):
@@ -637,7 +647,8 @@ class ReadEbas(ReadUngriddedBase):
                                  "file".format(ebas_var_info.var_name))
         return col_matches
 
-    def _find_best_data_column(self, cols, ebas_var_info, file):
+    def _find_best_data_column(self, cols, ebas_var_info, file,
+                               check_units_on_multimatch=True):
         """Find best match of data column for variable in multiple columns
 
         This method is supposed to be used in case no unique match can be
@@ -712,19 +723,28 @@ class ReadEbas(ReadUngriddedBase):
             if num_matches == 0:
                 raise ValueError('Note for developers: this should not happen, '
                                  'please debug')
-            # multiple column matches were found, use the one that contains
-            # less NaNs
-            num_invalid = []
-            for colnum in result_col:
-                num_invalid.append(np.isnan(file.data[:, colnum]).sum())
-            result_col = [result_col[np.argmin(num_invalid)]]
-# =============================================================================
-#             raise EbasFileError('Could not identify unique column for var {}. '
-#                                 'Detected multiple matches: {}'.format(
-#                                         ebas_var_info.var_name,
-#                                         result_col))
-# =============================================================================
-        return result_col
+            to_unit =  str(self.var_info(ebas_var_info['var_name']).units)
+            if check_units_on_multimatch and not to_unit in ('', '1'):
+                _cols = []
+                for colnum in result_col:
+                    try:
+                        from_unit = file.var_defs[colnum].units
+                        unit_conversion_fac(from_unit, to_unit)
+                        _cols.append(colnum)
+                    except UnitConversionError:
+                        continue
+                if len(_cols) > 0:
+                    result_col = _cols
+
+            if len(result_col) > 1:
+                # multiple column matches were found, use the one that contains
+                # less NaNs
+                num_invalid = []
+                for colnum in result_col:
+                    num_invalid.append(np.isnan(file.data[:, colnum]).sum())
+                result_col = [result_col[np.argmin(num_invalid)]]
+
+        return result_col[0]
 
     def _add_meta(self, data_out, file):
         meta = file.meta
@@ -938,7 +958,10 @@ class ReadEbas(ReadUngriddedBase):
                 if wvlcol != towvl:
                     # ToDo: add AE if available
                     if self.opts.assume_default_ae_if_unavail:
-                        ae = self.ASSUME_AE_SHIFT_WVL
+                        if var.startswith('ac'):
+                            ae = self.ASSUME_AAE_SHIFT_WVL
+                        else:
+                            ae = self.ASSUME_AE_SHIFT_WVL
                         avg_before = np.nanmean(data)
                         data = self._shift_wavelength(vals=data,
                                                   from_wvl=wvlcol,
@@ -986,7 +1009,9 @@ class ReadEbas(ReadUngriddedBase):
             of the input variables.
         """
         file = loaded_nasa_ames
-        var_cols = {}
+
+        # dict containing variable column matches
+        _vc = {}
         # Loop over all variables that are supposed to be read
         for var in vars_to_read:
             # get corresponding EBAS variable info ...
@@ -1025,19 +1050,21 @@ class ReadEbas(ReadUngriddedBase):
                                                           file, var_info)
 
             if bool(col_matches):
-                var_cols[var] = col_matches
+                _vc[var] = col_matches
 
-        if not len(var_cols) > 0:
+        if not len(_vc) > 0:
             raise NotInFileError('None of the specified variables {} could be '
                                  'found in file {}'.format(vars_to_read,
                                                 os.path.basename(file.file)))
-
-        for var, cols in var_cols.items():
-            if len(cols) > 1:
+        var_cols = {}
+        for var, cols in _vc.items():
+            if len(cols) == 1:
+                col = cols[0]
+            else:
                 col = self._find_best_data_column(cols,
                                                   self.get_ebas_var(var),
                                                   file)
-                var_cols[var] = col
+            var_cols[var] = col
         return var_cols
 
     def get_ebas_var(self, var_name):
@@ -1085,11 +1112,9 @@ class ReadEbas(ReadUngriddedBase):
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
         #totnum = file.data.shape[0]
-        for var, colnums  in var_cols.items():
+        for var, colnum  in var_cols.items():
             data_out['var_info'][var] = {}
-            if len(colnums) != 1:
-                raise Exception('Something went wrong...please debug')
-            colnum = colnums[0]
+
             _col = file.var_defs[colnum]
             data = file.data[:, colnum]
 
@@ -1123,10 +1148,7 @@ class ReadEbas(ReadUngriddedBase):
             data_out['var_info'][var].update(var_info)
 
             if self.opts.convert_units:
-                try:
-                    data_out = self._convert_varunit_stationdata(data_out, var)
-                except Exception:
-                    raise
+                data_out = self._convert_varunit_stationdata(data_out, var)
 
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
@@ -1134,7 +1156,8 @@ class ReadEbas(ReadUngriddedBase):
         data_out['dtime'] = file.time_stamps
 
         # compute additional variables (if applicable)
-        data_out = self.compute_additional_vars(data_out, vars_to_compute)
+        data_out = self.compute_additional_vars(data_out,
+                                                vars_to_compute)
 
         return data_out
 
@@ -1432,9 +1455,9 @@ class ReadEbas(ReadUngriddedBase):
 
 if __name__=="__main__":
 
-    reader = ReadEbas()
+    r = ReadEbas()
 
-    #db = r.sqlite_database_file
-    #files = r.get_file_list(['ac550aer'])
+    #data = r.read('sc550dryaer')
 
-    data = reader.read('ac550aer')
+    #data.plot_station_timeseries('Eureka', 'vmro3')
+

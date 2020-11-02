@@ -115,19 +115,23 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.8'
+    __version__ = '0.0.10'
 
     _FILEMASK = '*.nc'
 
     DATA_ID = 'GHOST.EEA.daily'
 
-    SUPPORTED_DATASETS = ['GHOST.EEA.hourly',
+    SUPPORTED_DATASETS = ['GHOST.EEA.monthly',
+                          'GHOST.EEA.hourly',
                           'GHOST.EEA.daily',
+                          'GHOST.EBAS.monthly',
                           'GHOST.EBAS.hourly',
                           'GHOST.EBAS.daily',]
 
-    TS_TYPES = {'GHOST.EEA.hourly'   : 'hourly',
+    TS_TYPES = {'GHOST.EEA.monthly'   : 'monthly',
+                'GHOST.EEA.hourly'   : 'hourly',
                 'GHOST.EEA.daily'    : 'daily',
+                'GHOST.EBAS.monthly'   : 'monthly',
                 'GHOST.EBAS.hourly'   : 'hourly',
                 'GHOST.EBAS.daily'    : 'daily'}
 
@@ -141,24 +145,28 @@ class ReadGhost(ReadUngriddedBase):
     #: these need to be output variables in AeroCom convention (cf. file
     #: pyaerocom/data/variables.ini). See also :attr:`VARNAMES_DATA` for a
     #: mapping of variable names used in GHOST
-    VARS_TO_READ = ['concpm10', 'concpm25','vmrco', 'vmrno',
-                    'vmrno2', 'vmro3', 'vmrso2']
+    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1','conccl','vmrco', 'vmrno',
+                    'vmrno2', 'vmro3', 'vmrso2',]
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
-    VARNAMES_DATA = {'concpm10' : 'pm10',
-                     'concpm25' : 'pm2p5',
-                     'vmrco'    : 'sconcco',
-                     'vmrno'    : 'sconcno',
-                     'vmrno2'   : 'sconcno2',
-                     'vmro3'    : 'sconco3',
-                     'vmrso2'   : 'sconcso2',
+    VARNAMES_DATA = {'concpm10'  : 'pm10',
+                     'concpm10al': 'pm10al',
+                     'concpm10as': 'pm10as',
+                     'concpm25'  : 'pm2p5',
+                     'concpm1'   : 'pm1',
+                     'conccl'    : 'sconccl',
+                     'vmrco'     : 'sconcco',
+                     'vmrno'     : 'sconcno',
+                     'vmrno2'    : 'sconcno2',
+                     'vmro3'     : 'sconco3',
+                     'vmrso2'    : 'sconcso2',
                      }
 
     AUX_REQUIRES = {'concco'    :  ['vmrco'],
                     'concno'    :  ['vmrno'],
                     'concno2'   :  ['vmrno2'],
                     'conco3'    :  ['vmro3'],
-                    'concso2'   :  ['vmrso2'],}
+                    'concso2'   :  ['vmrso2']}
 
     AUX_FUNS = {
         'concco'    : _vmr_to_conc_ghost_stats,
@@ -172,14 +180,14 @@ class ReadGhost(ReadUngriddedBase):
     }
 
     # This is the default list of flags that mark bad / invalid data, as
-    # provided by Dene: [0, 1, 2, 3, 5, 6, 8, 9, 10, 12, 13, 14, 17, 18, 22,
-    # 25, 30, 40, 41, 42]
+    # provided by Dene: [0, 1, 2, 3, 6, 20, 21, 22, 72, 75, 82, 83, 90, 91,
+    #92, 105, 110, 111, 112, 113, 115, 132, 133]
 
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
-    DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([0, 1, 2, 3, 6, 8, 9, 10, 12,
-                                                13, 14, 15, 18, 22, 25, 30, 40,
-                                                41, 42]),
+    DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([[0, 1, 2, 3, 6, 20, 21, 22, 72,
+                                                 75, 82, 83, 90, 91, 92, 110,
+                                                 111, 112, 113, 115, 132, 133]]),
                              'flag' : None}
 
     @property
@@ -371,7 +379,11 @@ class ReadGhost(ReadUngriddedBase):
         # more elegantly
         meta_glob = {}
         for meta_key in self.META_KEYS:
-            meta_glob[meta_key] = ds[meta_key].values
+            try:
+                meta_glob[meta_key] = ds[meta_key].values
+            except KeyError:
+                const.print_log.warning('No such metadata key in GHOST data file: '
+                                     '{}'.format(os.path.basename(filename)))
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
             from_unit = ds[meta_key].attrs['units']
@@ -620,10 +632,5 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
 
-    var = 'conco3'
-    obs = ReadGhost('GHOST.daily').read(var)
-
-    #obs  = pya.io.ReadUngridded().read('GHOST.daily', var)
-    #obs._check_index()
-
-    subset = obs.filter_altitude((0,1000))
+    var = 'vmro3'
+    obs = ReadGhost('GHOST.EBAS.daily').read(var)

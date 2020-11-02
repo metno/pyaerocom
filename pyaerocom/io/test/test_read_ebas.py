@@ -78,6 +78,11 @@ class TestReadEBAS(object):
                          'concno2',
                          'conco3',
                          'concco',
+                         'vmro3',
+                         'vmrso2',
+                         'vmrco',
+                         'vmrno2',
+                         'vmrno',
                          'concprcpso4',
                          'concprcpso4t',
                          'concprcpso4c',
@@ -175,7 +180,10 @@ class TestReadEBAS(object):
         assert reader.IGNORE_WAVELENGTH == ['conceqbc']
 
     def test_ASSUME_AE_SHIFT_WVL(self, reader):
-        assert reader.ASSUME_AE_SHIFT_WVL == 1.0
+        assert reader.ASSUME_AE_SHIFT_WVL == 1.5
+
+    def test_ASSUME_AAE_SHIFT_WVL(self, reader):
+        assert reader.ASSUME_AAE_SHIFT_WVL == 1.0
 
     def test_IGNORE_FILES(self, reader):
         assert reader.IGNORE_FILES == ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
@@ -230,7 +238,8 @@ class TestReadEBAS(object):
             reader.NAN_VAL
 
     def test_PROVIDES_VARIABLES(self, reader):
-        assert reader.PROVIDES_VARIABLES == self.PROVIDES_VARIABLES
+
+        assert sorted(reader.PROVIDES_VARIABLES) == sorted(self.PROVIDES_VARIABLES)
 
     def test_prefer_statistics(self, reader):
         assert reader.prefer_statistics == ['arithmetic mean', 'median']
@@ -313,8 +322,8 @@ class TestReadEBAS(object):
 
     def test_find_var_cols(self, reader, loaded_nasa_ames_example):
         var = ['sc550aer', 'scrh']
-        desired = {'sc550aer' : [17],
-                   'scrh'     : [3]}
+        desired = {'sc550aer' : 17,
+                   'scrh'     : 3}
 
         cols = reader.find_var_cols(var, loaded_nasa_ames_example)
         for k, v in desired.items():
@@ -377,14 +386,3 @@ if __name__ == '__main__':
     import os
     import sys
     pytest.main(sys.argv)
-
-# =============================================================================
-#     reader =  ReadGhost()
-#     from time import time
-#     for var in reader.PROVIDES_VARIABLES:
-#         lst = reader.get_file_list(var)
-#         print(os.path.basename(lst[-1]))
-#         t0 =time()
-#         reader.read_file(lst[-1], var_to_read=var)
-#         print('{:.1f} s'.format(time()-t0))
-# =============================================================================

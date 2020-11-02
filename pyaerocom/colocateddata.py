@@ -50,7 +50,7 @@ class ColocatedData(object):
         ID of reference data
     **kwargs
         Additional keyword args that are passed to init of :class:`DataArray`
-        in case input :arg:`data` is numpy array.
+        in case input `data` is numpy array.
 
     Raises
     ------
@@ -210,8 +210,6 @@ class ColocatedData(object):
     @property
     def num_coords(self):
         """Total number of lat/lon coordinates"""
-        if not self.check_dimensions():
-            raise DataDimensionError('Invalid dimensionality...')
         if 'station_name' in self.coords:
             return len(self.data.station_name)
 
@@ -235,8 +233,6 @@ class ColocatedData(object):
         ----
         check 4D data
         """
-        if not self.check_dimensions():
-            raise DataDimensionError('Invalid dimensionality...')
         if self.has_time_dim:
             return (self.data[0].count(dim='time') > 0).data.sum()
         # TODO: ADDED IN A RUSH BY JGLISS ON 17.06.2020, check!
@@ -367,18 +363,8 @@ class ColocatedData(object):
         Check if this is needed. Little cumbersome at the moment, the data
         object can / should be more flexible! Should
         """
-        dims = self.data.dims
-        if not 2 < len(dims) < 5:
-            logger.info('Invalid number of dimensions. Must be 3 or 4')
-            return False
-        try:
-            if dims.index('data_source') == 0:
-                if 'time' in dims and dims.index('time') == 1:
-                    return True
-                return True
-            raise Exception
-        except Exception:
-            return False
+        raise NotImplementedError(DeprecationWarning('This method has been '
+                                                     'deprecated in v0.10.0'))
 
     def resample_time(self, to_ts_type, how='mean',
                       apply_constraints=None, min_num_obs=None,
@@ -681,12 +667,6 @@ class ColocatedData(object):
             kwargs['highlim'] = var.upper_limit
 
         if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
-# =============================================================================
-#                 raise DataDimensionError('Cannot calculate statistics with '
-#                                          'area weights. Data needs to have '
-#                                          'latitude / longitude dimension.')
-# =============================================================================
-
             kwargs['weights'] = self.area_weights[0].flatten()
         elif 'weights' in kwargs:
             raise ValueError('Invalid input combination: weights are provided '
@@ -900,20 +880,20 @@ class ColocatedData(object):
         return meta
 
     def to_netcdf(self, out_dir, savename=None, **kwargs):
-        """Save data object as .nc file
+        """Save data object as NetCDF file
 
         Wrapper for method :func:`xarray.DataArray.to_netdcf`
+
         Parameters
         ----------
         out_dir : str
             output directory
-        savename : :obj:`str`, optional
+        savename : str, optional
             name of file, if None, the default save name is used (cf.
             :attr:`savename_aerocom`)
         **kwargs
             additional, optional keyword arguments passed to
             :func:`xarray.DataArray.to_netdcf`
-
         """
         if 'path' in kwargs:
             raise IOError('Path needs to be specified using input parameters '
@@ -992,7 +972,6 @@ class ColocatedData(object):
         raise NotImplementedError('Coming soon...')
         data = df.to_xarray()
         self.data = data
-        self.check_dimensions()
 
     def to_csv(self, out_dir, savename=None):
         """Save data object as .csv file
@@ -1011,8 +990,6 @@ class ColocatedData(object):
             savename = self.savename_aerocom
         if not savename.endswith('.csv'):
             savename = '{}.csv'.format(savename)
-        if not self.check_dimensions():
-            raise IOError('Invalid dimensionality, please check...')
         df = self.to_dataframe()
         file_path = os.path.join(out_dir, savename)
         df.to_csv(file_path)
@@ -1176,11 +1153,6 @@ class ColocatedData(object):
             lat_range = reg.lat_range
             region_id = reg.name
 
-# =============================================================================
-#         if any(x is None for x in (lon_range, lat_range)):
-#             raise ValueError('Need either lon_range or lat_range or valid '
-#                              'region_id')
-# =============================================================================
         if lon_range is None:
             lon_range = [-180, 180]
         if lat_range is None:

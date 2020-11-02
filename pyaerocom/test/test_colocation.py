@@ -20,6 +20,7 @@ from pyaerocom.colocation import (_regrid_gridded,
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom import GriddedData
 from pyaerocom import helpers
+from pyaerocom.io import ReadMscwCtm
 
 def test__regrid_gridded(data_tm5):
      one_way = _regrid_gridded(data_tm5, 'areaweighted', 5)
@@ -81,7 +82,6 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
 
 @testdata_unavail
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
-
     times = [1,2]
     time_unit = Unit("days since 1990-1-1 0:0:0")
     cubes = iris.cube.CubeList()
@@ -115,6 +115,21 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats['mnmb'] == 0
     assert stats['R'] == 1
     assert stats['R_spearman'] == 1
+
+@testdata_unavail
+def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
+    filepath = path_emep['monthly']
+    r = ReadMscwCtm(path_emep['monthly'])
+    data_emep = r.read_var('concpm10', ts_type='monthly')
+
+    # Change units and year to match TM5 data
+    data_emep.change_base_year(2010)
+    data_emep.units = '1'
+    col = colocate_gridded_gridded(data_emep, data_tm5)
+    assert isinstance(col, ColocatedData)
+
+
+
 
 if __name__ == '__main__':
     import sys

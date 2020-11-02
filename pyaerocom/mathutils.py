@@ -624,9 +624,14 @@ def compute_sc550dryaer(data):
 
     """
     rh_max= const.VARS['sc550dryaer'].dry_rh_max
-    return _compute_dry_helper(data, data_colname='sc550aer',
+    vals, rh_mean = _compute_dry_helper(data, data_colname='sc550aer',
                                rh_colname='scrh',
                                rh_max_percent=rh_max)
+    if not 'sc550dryaer' in data.var_info:
+        data.var_info['sc550dryaer'] = {}
+    data.var_info['sc550dryaer']['rh_mean'] = rh_mean
+
+    return vals
 
 def compute_sc440dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
@@ -647,7 +652,7 @@ def compute_sc440dryaer(data):
     rh_max= const.VARS['sc440dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='sc440aer',
                                rh_colname='scrh',
-                               rh_max_percent=rh_max)
+                               rh_max_percent=rh_max)[0]
 
 def compute_sc700dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
@@ -668,7 +673,7 @@ def compute_sc700dryaer(data):
     rh_max= const.VARS['sc700dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='sc700aer',
                                rh_colname='scrh',
-                               rh_max_percent=rh_max)
+                               rh_max_percent=rh_max)[0]
 
 def compute_ac550dryaer(data):
     """Compute aerosol dry absorption coefficent applying RH threshold
@@ -688,8 +693,9 @@ def compute_ac550dryaer(data):
     """
     rh_max= const.VARS['ac550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='ac550aer',
-                               rh_colname='acrh',
-                               rh_max_percent=rh_max)
+                                         rh_colname='acrh',
+                                         rh_max_percent=rh_max)[0]
+
 
 def _compute_dry_helper(data, data_colname, rh_colname,
                         rh_max_percent=None):
@@ -726,7 +732,9 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     vals[high_rh] = np.nan
     vals[np.isnan(rh)] = np.nan
 
-    return vals
+    rh_mean = np.nanmean(rh[~high_rh])
+
+    return vals, rh_mean
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
                   to_unit=None):
@@ -777,6 +785,57 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         conc *= conversion_fac
     return conc
+
+def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None,
+                  to_unit=None):
+    """
+    WORK IN PROGRESS. DO NOT USE!
+    Convert mass concentration to volume mixing ratio (vmr)
+
+    Parameters
+    ----------
+    data : float or ndarray
+        array containing vmr values
+    p_pascal : float
+        pressure in Pa of input data
+    T_kelvin : float
+        temperature in K of input data
+    vmr_unit : str
+        unit of input data
+    mmol_var : float
+        molar mass of variable represented by input data
+    mmol_air : float, optional
+        Molar mass of air. Uses average density of dry air if None.
+        The default is None.
+    to_unit : str, optional
+        Unit to which output data is converted. If None, output unit is
+        kg m-3. The default is None.
+
+    Returns
+    -------
+    float or ndarray
+        input data converted to volume mixing ratio
+
+    """
+    if mmol_air is None:
+        from pyaerocom.molmasses import get_molmass
+        mmol_air = get_molmass('air_dry')
+
+    Rspecific = 287.058 # J kg-1 K-1
+
+    conversion_fac = 1/cf_units.Unit('kg m-3').convert(1, conc_unit)
+# =============================================================================
+#     if conversion_fac != 1:
+#         data *= conversion_fac #/ conversion_fac
+# =============================================================================
+    airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
+    mulfac = mmol_var / mmol_air * airdensity # kg m-3
+    vmr = data / mulfac # unitless
+    if to_unit is not None:
+        conversion_fac *= cf_units.Unit('kg m-3').convert(1, to_unit)
+    if not np.isclose(conversion_fac, 1, rtol=1e-7):
+        vmr *= conversion_fac
+    return vmr
 
 def exponent(num):
     """Get exponent of input number

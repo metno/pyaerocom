@@ -16,6 +16,9 @@ def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
         annot_fmt_rows = []
         for row in annot:
             mask = row[~np.isnan(row)]
+            if len(mask) == 0: #all NaN
+                annot_fmt_rows.append('')
+                continue
             mask = mask[mask!=0]
             exps = exponent(mask)
             minexp = exps.min()
@@ -23,10 +26,10 @@ def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
                 annot_fmt_rows.append('.1E')
             elif minexp < 0:
                 annot_fmt_rows.append('.{}f'.format(-minexp + 1))
-            elif minexp == 0:
+            elif minexp in [0,1]:
                 annot_fmt_rows.append('.1f')
             else:
-                annot_fmt_rows.append('.4g')
+                annot_fmt_rows.append('.0f')
     if isinstance(annot_fmt_exceed, list):
         exceed_val, exceed_fmt = annot_fmt_exceed
     else:
@@ -34,22 +37,25 @@ def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
 
     for i, row in enumerate(annot):
         rowfmt = annot_fmt_rows[i]
-        #numdigits = -exps.min()
-        row_fmt = []
-        #lowest = np.min(row)
-        #exp = exponent(lowest)
-        for i, val in enumerate(row):
-            if np.isnan(val):
-                valstr = ''
-            else:
-                #exp = exps(i)
-                #fmt = '.{}f'.format(numdigits)
-                if exceed_val is not None and val > exceed_val:
-                    valstr = format(val, exceed_fmt)
+        if rowfmt == '':
+            row_fmt = ['']*len(row)
+        else:
+            #numdigits = -exps.min()
+            row_fmt = []
+            #lowest = np.min(row)
+            #exp = exponent(lowest)
+            for val in row:
+                if np.isnan(val):
+                    valstr = ''
                 else:
-                    valstr = format(val, rowfmt)
+                    #exp = exps(i)
+                    #fmt = '.{}f'.format(numdigits)
+                    if exceed_val is not None and val > exceed_val:
+                        valstr = format(val, exceed_fmt)
+                    else:
+                        valstr = format(val, rowfmt)
 
-            row_fmt.append(valstr)
+                row_fmt.append(valstr)
         _annot.append(row_fmt)
     annot = np.asarray(_annot)
     return annot, annot_fmt_rows
@@ -212,9 +218,11 @@ def df_to_heatmap(df, cmap="bwr", center=None, low=0.3, high=0.3,
             fmt = ".4g"
         else:
             fmt = ".{}f".format(num_digits)
+
     ax = heatmap(df_hm, cmap=cmap, center=center, annot=annot, ax=ax, # changes this from df_hm to df because the annotation and colorbar didn't work.
                  cbar=cbar, cbar_ax=cbar_ax, cbar_kws=cbar_kws, fmt=fmt,
-                 vmin=vmin, vmax=vmax, **kwargs)
+                 vmin=vmin, vmax=vmax,
+                 xticklabels=True, yticklabels=True, **kwargs)
 
 
     ax.figure.axes[-1].yaxis.label.set_size(labelsize)

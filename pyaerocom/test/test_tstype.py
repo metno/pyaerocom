@@ -5,6 +5,10 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
+import pytest
+
+import numpy as np
+
 from pyaerocom.tstype import TsType
 
 def test_basic_operators():
@@ -64,11 +68,16 @@ def test_next_lower():
 
     assert str(TsType('3minutely').next_lower) == 'hourly'
 
+@pytest.mark.parametrize('ts_type,ref_time_str,np_dt_str,output_str', [
+    ('daily', '2010-10-01', 'D', '2010-10-02'),
+    ('2monthly', '2010-10', 'M', '2010-12'),
+    ('3hourly', '2010-10-01T15:00:00', 'h', '2010-10-01T18')
+    ])
+def test_to_timedelta64(ts_type, ref_time_str, np_dt_str, output_str):
+    tref = np.datetime64(ref_time_str, np_dt_str)
+    assert str(tref + TsType(ts_type).to_timedelta64()) == output_str
+
 if __name__=="__main__":
-    test_basic_operators()
-    test_basic_operators_pandas()
-    test_to_numpy_freq()
-    test_to_pandas_freq()
-    test_cf_base_unit()
-    test_next_higher()
-    test_next_lower()
+
+    import sys
+    pytest.main(sys.argv)
