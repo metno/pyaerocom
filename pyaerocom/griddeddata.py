@@ -1397,7 +1397,7 @@ class GriddedData(object):
         for dim, val in dimcoord_vals.items():
             is_rng = isrange(val)
             if is_rng:
-                c = rng_funs[dim](val)
+                c = rng_funs[dim](*val)
                 constraints.append(c)
             else:
                 if dim == 'time':
@@ -2644,13 +2644,10 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close("all")
-
+    pya.initialise_testdata()
     # print("uses last changes ")
-    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer',
-                                                          start=2010).resample_time('yearly')
+    data = pya.io.ReadGridded('TM5-met2010_CTRL-TEST').read_var('od550aer',
+                                                                start=2010,
+                                                                ts_type='monthly')
 
-
-    data1 = data.remove_outliers(0.2, 0.4, inplace=False)
-
-    data.quickplot_map()
-    data1.quickplot_map()
+    data.sel(latitude=(30, 60), time=('6/2010', '10/2010'))
