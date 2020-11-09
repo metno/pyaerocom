@@ -803,7 +803,7 @@ class VarCollection(object):
         if not isinstance(var, Variable):
             raise ValueError('Can only add instances of Variable class...')
         if not isinstance(var.units, str):
-            if isinstance(var.units, Unit):
+            if not isinstance(var.units, Unit):
                 raise ValueError('Please assign a unit to the new input '
                                  'variable')
             var.units = str(var.units)
