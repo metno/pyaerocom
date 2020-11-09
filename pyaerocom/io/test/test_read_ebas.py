@@ -349,7 +349,8 @@ class TestReadEBAS(object):
          'instrument_name': 'TSI_3563_JFJ_dry',
          'PI': 'Bukowiecki, Nicolas; Baltensperger, Urs',
          'ts_type': 'hourly', 'data_id': 'EBASSubset', 'data_level': 2,
-         'revision_date': np.datetime64('2019-05-20T00:00:00')})
+         'revision_date': np.datetime64('2019-05-20T00:00:00'),
+         'framework' : 'ACTRIS CREATE EMEP GAW-WDCA'})
         ])
     def test_read_file(self, reader, filename, vars_to_retrieve, start,
                        stop, totnum, var_nanmeans, var_numnans, var_units,
