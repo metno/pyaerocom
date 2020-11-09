@@ -141,7 +141,7 @@ class GriddedData(object):
     def var_name_aerocom(self):
         """AeroCom variable name"""
         try:
-            return const.VARS[self.var_name].var_name
+            return const.VARS[self.var_name].var_name_aerocom
         except Exception:
             return None
 
