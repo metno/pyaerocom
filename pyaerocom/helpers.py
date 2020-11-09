@@ -1437,9 +1437,9 @@ def get_constraint(lon_range=None, lat_range=None,
     """
     constraints = []
     if lon_range is not None:
-        constraints.append(get_lon_rng_constraint(lon_range, meridian_centre))
+        constraints.append(get_lon_rng_constraint(*lon_range, meridian_centre))
     if lat_range is not None:
-        constraints.append(get_lat_rng_constraint(lat_range))
+        constraints.append(get_lat_rng_constraint(*lat_range))
     if time_range is not None:
         constraints.append(get_time_rng_constraint(*time_range))
     if len(constraints) > 0:
@@ -1448,13 +1448,15 @@ def get_constraint(lon_range=None, lat_range=None,
             c = c & cadd
     return c
 
-def get_lat_rng_constraint(lat_range):
+def get_lat_rng_constraint(low, high):
     """Create latitude constraint based on input range
 
     Parameters
     ----------
-    lat_range : tuple
-        2-element tuple specifying latitude range
+    low : float or int
+        lower latitude coordinate
+    high : float or int
+        upper latitude coordinate
 
     Returns
     -------
@@ -1462,15 +1464,17 @@ def get_lat_rng_constraint(lat_range):
         the corresponding iris.Constraint instance
 
     """
-    return iris.Constraint(latitude=lambda v: lat_range[0] <= v <= lat_range[1])
+    return iris.Constraint(latitude=lambda v: low <= v <= high)
 
-def get_lon_rng_constraint(lon_range, meridian_centre=True):
+def get_lon_rng_constraint(low, high, meridian_centre=True):
     """Create longitude constraint based on input range
 
     Parameters
     ----------
-    lon_range : tuple
-        2-element tuple containing from left -> right end of range
+    low : float or int
+        left longitude coordinate
+    high : float or int
+        right longitude coordinate
     meridian_centre : bool
         specifies the coordinate definition range of longitude array of the
         data to be cropped. If True, then -180 -> 180 is assumed, else 0 -> 360
@@ -1487,34 +1491,19 @@ def get_lon_rng_constraint(lon_range, meridian_centre=True):
     LongitudeConstraintError
         if the input implies cropping over border of longitude array
         (e.g. 160 -> - 160 if -180 <= lon <= 180).
-
-    Example
-    -------
-    >>> from pyaerocom.io.testfiles import get
-    >>> from pyaerocom import GriddedData
-    >>> files = get()
-    >>> data = GriddedData(files['models']['aatsr_su_v4.3'], var_name="od550aer")
-    >>> c = get_lon_rng_constraint(lon_range=(170, -160), meridian_centre=True)
-    Traceback (most recent call last):
-     ...
-    ValueError: Left coordinate must exceed right coordinate
-    >>> c = get_lon_rng_constraint(lon_range=(-30, 30), meridian_centre=True)
-    >>> data_crop = data.extract(c)
-    >>> assert data_crop.grid.shape == (366, 180, 60)
     """
-    left, right = lon_range
-    if left == right:
+    if low == high:
         raise ValueError("the specified values are equal")
-    elif left > right:
+    elif low > high:
         raise ValueError("Left coordinate must exceed right coordinate")
     if meridian_centre:
-        left, right = (left+180)%360-180, (right+180)%360-180
+        low, high = (low+180)%360-180, (high+180)%360-180
     else:
-        left, right = left%360, right%360
-    if left > right:
+        low, high = low%360, high%360
+    if low > high:
         msg = ("Cannot crop over right border of longitude range")
         raise LongitudeConstraintError(msg)
-    return iris.Constraint(longitude=lambda v: left <= v <= right)
+    return iris.Constraint(longitude=lambda v: low <= v <= high)
 
 def get_time_rng_constraint(start, stop):
     """Create iris.Constraint for data extraction along time axis
@@ -1560,3 +1549,6 @@ if __name__=="__main__":
                                  np.datetime64('2010-10-15')]))
 
     print(varlist_aerocom(['od550aer', 'od550csaer']))
+
+    rng = (30, 60)
+    get_lon_rng_constraint(*rng, False)
