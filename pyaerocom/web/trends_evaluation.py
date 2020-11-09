@@ -1607,7 +1607,6 @@ class TrendsEvaluation(object):
         for var in vars_to_retrieve:
 
             all_stats = ungridded_data.to_station_data_all(vars_to_convert=var,
-
                                                            by_station_name=True)
             stations = all_stats['stats']
 
