@@ -129,7 +129,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.36_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.37_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -750,6 +750,7 @@ class ReadEbas(ReadUngriddedBase):
         meta = file.meta
         name = meta['station_name'].replace('/', ';')
 
+        data_out['framework'] = file.project_association
         data_out['filename'] = os.path.basename(file.file)
         data_out['data_id'] = self.data_id
         data_out['PI'] = file['data_originator']

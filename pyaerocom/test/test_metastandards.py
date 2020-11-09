@@ -11,15 +11,12 @@ from pyaerocom import metastandards as mst
 def test_datasource_empty():
     ds = mst.DataSource()
 
-    assert list(ds.keys()) == ['data_id',
-                               'dataset_name',
-                               'data_product',
-                               'data_version',
-                               'data_level',
-                               'revision_date',
-                               'website',
-                               'ts_type_src',
-                               'stat_merge_pref_attr']
+    keys_sorted = sorted(
+        ['data_id', 'dataset_name', 'data_product', 'data_version',
+         'data_level', 'revision_date', 'website', 'ts_type_src',
+         'stat_merge_pref_attr', 'framework']
+        )
+    assert sorted(list(ds.keys())) == keys_sorted
     assert list(set(ds.values())) == [None]
 
 @pytest.mark.parametrize('data_id,dataset_name,data_product,data_version,'
@@ -52,6 +49,7 @@ def test_stationmetadata():
         'data_version',
         'dataset_name',
         'filename',
+        'framework',
         'instrument_name',
         'latitude',
         'longitude',
