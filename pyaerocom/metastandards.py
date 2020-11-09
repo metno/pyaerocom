@@ -20,6 +20,8 @@ class DataSource(BrowseDict):
         version of data (e.g. 3)
     data_level
         level of data (e.g. 2)
+    framework : str
+        ID of framework to which data is associated (e.g. ACTRIS, GAW)
     revision_date
         last revision date of dataset
     ts_type_src
@@ -34,6 +36,7 @@ class DataSource(BrowseDict):
                   data_product          =   str,
                   data_version          =   float,
                   data_level            =   float,
+                  framework             =   str,
                   ts_type_src           =   str,
                   stat_merge_pref_attr  =   str,
                   revision_date         =   np.datetime64,
@@ -47,6 +50,9 @@ class DataSource(BrowseDict):
         self.data_product = None
         self.data_version = None
         self.data_level = None
+
+        self.framework = None
+
         self.revision_date = None
         self.website = None
 
