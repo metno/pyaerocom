@@ -541,7 +541,8 @@ class ReadL2Data(ReadL2DataBase):
                         # add another array chunk to self.data
                         data = np.append(data, np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float_),
                                          axis=0)
-                        self._ROWNO += self._CHUNKSIZE
+                        # unneeded after update (_ROWNO is now dynamic and returns shape index 0 of numpy array)
+                        #self._ROWNO += self._CHUNKSIZE
 
             # return only the needed elements...
             file_data = data[0:index_pointer]

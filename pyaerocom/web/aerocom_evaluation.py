@@ -539,7 +539,7 @@ class AerocomEvaluation(object):
         Returns
         -------
         diurnal_only : bool
-            
+
 
         """
         try:
@@ -564,13 +564,19 @@ class AerocomEvaluation(object):
         diurnal_only = self.get_diurnal_only(obs_name,coldata)
         if len(self.region_groups) > 0:
             raise NotImplementedError('Filtering of grouped regions is not ready yet...')
+
+        col = Colocator()
+        col.update(**self.colocation_settings)
+        col.update(**self.obs_config[obs_name])
+        col.update(**self.get_model_config(model_name))
+
         return compute_json_files_from_colocateddata(
                 coldata=coldata,
                 obs_name=obs_name,
                 model_name=model_name,
                 use_weights=self.weighted_stats,
                 vert_code=vert_code,
-                colocation_settings=self.colocation_settings,
+                colocation_settings=col,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
                 regions_how=self.regions_how,
@@ -812,6 +818,7 @@ class AerocomEvaluation(object):
         obs_cfg = self.obs_config[obs_name]
         if obs_cfg['obs_vert_type'] in self.VERT_SCHEMES and not 'vert_scheme' in obs_cfg:
             obs_cfg['vert_scheme'] = self.VERT_SCHEMES[obs_cfg['obs_vert_type']]
+
         col.update(**obs_cfg)
         col.update(**self.get_model_config(model_name))
 
@@ -955,7 +962,7 @@ class AerocomEvaluation(object):
             if not isinstance(self.obs_config[obs_name]['web_interface_name'],str):
                 raise ValueError('Invalid value for web_iface_name in {}. Need str type'.format(obs_name))
             iface_names.append(self.obs_config[obs_name]['web_interface_name'])
-        iface_names = set(iface_names)
+        iface_names = list(set(iface_names))
         return iface_names
 
     @property
@@ -1219,6 +1226,7 @@ class AerocomEvaluation(object):
             self.update_heatmap_json()
         except KeyError: # if no data is available for this experiment
             pass
+        self.to_json(self.exp_dir)
 
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
@@ -1282,9 +1290,8 @@ class AerocomEvaluation(object):
         """
 
         for file in self.all_map_files:
-            (obs_name, obs_var,
-             vert_code,
-             mod_name, mod_var) = self._info_from_map_file(file)
+            (obs_name, obs_var, vert_code,
+            mod_name, mod_var) = self._info_from_map_file(file)
             remove=False
             if not (obs_name in self.iface_names and
                     mod_name in self.model_config):
@@ -1370,13 +1377,44 @@ class AerocomEvaluation(object):
                 d[key] = val
         return d
 
+    @property
+    def name_config_file(self):
+        """
+        File name of config file (without file ending specification)
+
+        Returns
+        -------
+        str
+            name of config file
+        """
+        return 'cfg_{}_{}'.format(self.proj_id, self.exp_id)
+
+    @property
+    def name_config_file_json(self):
+        """
+        File name of config file (with json ending)
+
+        Returns
+        -------
+        str
+            name of config file
+        """
+        return '{}.json'.format(self.name_config_file)
+
     def to_json(self, output_dir):
-        """Convert configuration to json ini file"""
+        """Convert analysis configuration to json file and save
+
+        Parameters
+        ----------
+        output_dir : str
+            directory where the config json file is supposed to be stored
+
+        """
         d = self.to_dict()
-        out_name = 'cfg_{}_{}.json'.format(self.proj_id, self.exp_id)
+        out_name = self.name_config_file_json
 
         save_dict_json(d, os.path.join(output_dir, out_name), indent=3)
-        return d
+
 
     def load_config(self, proj_id, exp_id, config_dir=None):
         """Load configuration json file"""

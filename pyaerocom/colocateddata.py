@@ -50,7 +50,7 @@ class ColocatedData(object):
         ID of reference data
     **kwargs
         Additional keyword args that are passed to init of :class:`DataArray`
-        in case input :arg:`data` is numpy array.
+        in case input `data` is numpy array.
 
     Raises
     ------
@@ -880,20 +880,20 @@ class ColocatedData(object):
         return meta
 
     def to_netcdf(self, out_dir, savename=None, **kwargs):
-        """Save data object as .nc file
+        """Save data object as NetCDF file
 
         Wrapper for method :func:`xarray.DataArray.to_netdcf`
+
         Parameters
         ----------
         out_dir : str
             output directory
-        savename : :obj:`str`, optional
+        savename : str, optional
             name of file, if None, the default save name is used (cf.
             :attr:`savename_aerocom`)
         **kwargs
             additional, optional keyword arguments passed to
             :func:`xarray.DataArray.to_netdcf`
-
         """
         if 'path' in kwargs:
             raise IOError('Path needs to be specified using input parameters '

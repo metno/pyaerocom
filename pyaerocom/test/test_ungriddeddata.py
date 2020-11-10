@@ -13,15 +13,22 @@ from pyaerocom import UngriddedData
 from pyaerocom.conftest import testdata_unavail, rg_unavail
 from pyaerocom.exceptions import DataCoverageError
 
-def test_init_shape():
-    npt.assert_array_equal(UngriddedData().shape, (10000, 12))
+@pytest.fixture(scope='module')
+def ungridded_empty():
+    return UngriddedData()
 
+def test_init_shape(ungridded_empty):
+    npt.assert_array_equal(ungridded_empty.shape, (1000000, 12))
+
+def test_init_add_cols():
     d1 = UngriddedData(num_points=2, add_cols=['bla', 'blub'])
     npt.assert_array_equal(d1.shape, (2, 14))
 
-    d1.add_chunk(1112)
+def test_add_chunk(ungridded_empty):
 
-    npt.assert_array_equal(d1.shape, (1114, 14))
+    ungridded_empty.add_chunk(111002)
+
+    npt.assert_array_equal(ungridded_empty.shape, (2000000, 12))
 
 def test_coordinate_access():
     import string

@@ -18,20 +18,31 @@ def test_supported():
     assert len(supported_datasets) >= 17
     assert all(x in supported_datasets for x in ['AeronetInvV3Lev2.daily',
                                                  'AeronetInvV3Lev1.5.daily',
+                                                 'AeronetInvV3L2Subset.daily',
                                                  'AeronetInvV2Lev2.daily',
                                                  'AeronetInvV2Lev1.5.daily',
                                                  'AeronetSDAV2Lev2.daily',
                                                  'AeronetSDAV3Lev1.5.daily',
                                                  'AeronetSDAV3Lev2.daily',
+                                                 'AeronetSDAV3L2Subset.daily',
                                                  'AeronetSunV2Lev2.daily',
                                                  'AeronetSunV2Lev2.AP',
                                                  'AeronetSunV3Lev1.5.daily',
                                                  'AeronetSunV3Lev1.5.AP',
                                                  'AeronetSunV3Lev2.daily',
                                                  'AeronetSunV3Lev2.AP',
-                                                 'EARLINET', 'EBASMC',
+                                                 'AeronetSunV3L2Subset.daily',
+                                                 'EARLINET',
+                                                 'EBASMC',
+                                                 'EBASSubset',
                                                  'DMS_AMS_CVO',
-                                                 'GAWTADsubsetAasEtAl'])
+                                                 'GAWTADsubsetAasEtAl',
+                                                 'GHOST.EEA.monthly',
+                                                 'GHOST.EEA.hourly',
+                                                 'GHOST.EEA.daily',
+                                                 'GHOST.EBAS.monthly',
+                                                 'GHOST.EBAS.hourly',
+                                                 'GHOST.EBAS.daily'])
 
 @lustre_unavail
 def test_basic_attributes():
@@ -41,7 +52,7 @@ def test_basic_attributes():
     assert type(r.get_reader()).__name__ == 'ReadAeronetSunV3'
     assert r.dataset_provides_variables() == ['od340aer', 'od440aer',
                                               'od500aer', 'od870aer',
-                                              'ang4487aer', 'ang4487aer_calc',
+                                              'ang4487aer', 'ang44&87aer',
                                               'od550aer']
 
 @lustre_unavail

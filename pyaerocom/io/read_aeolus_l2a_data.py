@@ -180,8 +180,7 @@ class ReadL2Data(ReadL2DataBase):
         self._UPPERALTITUDEINDEX = self._RAYLEIGHALTITUDEINDEX + 1
         self._COLNO = self._UPPERALTITUDEINDEX + 1
 
-        self._ROWNO = 100000
-        self._CHUNKSIZE = 10000
+        self._CHUNKSIZE = 100000
         self._HEIGHTSTEPNO = 24
 
         # variable names for the different retrievals
@@ -879,9 +878,9 @@ class ReadL2Data(ReadL2DataBase):
 
                         if index_pointer >= self._ROWNO:
                             # add another array chunk to self.data
-                            data = np.append(data, np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float_),
-                                             axis=0)
-                            self._ROWNO += self._CHUNKSIZE
+                            chunk = np.empty([self._CHUNKSIZE, self._COLNO],
+                                             dtype=np.float_)
+                            data = np.append(data, chunk, axis=0)
 
                 # return only the needed elements...
                 if np.isnan(data[index_pointer, self.INDEX_DICT[var]]):

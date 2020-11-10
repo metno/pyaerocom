@@ -49,6 +49,7 @@ from pyaerocom.variable import Variable, is_3d
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
+                                         divide_cubes,
                                          subtract_cubes,
                                          add_cubes,
                                          mmr_from_vmr,
@@ -144,14 +145,18 @@ class ReadGridded(object):
 
 
     AUX_REQUIRES = {'ang4487aer'    : ('od440aer', 'od870aer'),
+                    'angabs4487aer' : ('abs440aer', 'abs870aer'),
                     'od550gt1aer'   : ('od550aer', 'od550lt1aer'),
                     'wetoa'         : ('wetpoa', 'wetsoa'),
                     'dryoa'         : ('drypoa', 'drysoa'),
-                    # 'conc*'         : ('mmr*', 'rho'),
-                    'conc*'         : ('vmr*', 'ts', 'ps'),
+                    'conc*'         : ('mmr*', 'rho'),
+                    # 'conc*'         : ('vmr*', 'ts', 'ps'),
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
                     'mmr*'          : ('vmr*',),
                     'rho'           : ('ts','ps'),
+                    'concox'        : ('concno2', 'conco3'),
+                    'vmrox'         : ('vmrno2', 'vmro3'),
+                    'fmf550aer'     : ('od550lt1aer', 'od550aer')
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
@@ -160,15 +165,17 @@ class ReadGridded(object):
                     'od870aer'      :   ['od865aer'],
                     'ac550dryaer'   :   ['ac550aer']}
 
-    AUX_FUNS = {'ang4487aer'   :    compute_angstrom_coeff_cubes,
-                'od550gt1aer'  :    subtract_cubes,
-                'wetoa'        :    add_cubes,
-                'dryoa'        :    add_cubes,
-                'sc550dryaer'  :    subtract_cubes,
-                # 'conc*'        :    multiply_cubes,
-                'conc*'        :    conc_from_vmr,
-                'mmr*'         :    mmr_from_vmr,
-                'rho'          :    rho_from_ts_ps,
+
+    AUX_FUNS = {'ang4487aer'    :   compute_angstrom_coeff_cubes,
+                'angabs4487aer' :   compute_angstrom_coeff_cubes,
+                'od550gt1aer'   :   subtract_cubes,
+                'wetoa'         :   add_cubes,
+                'dryoa'         :   add_cubes,
+                'sc550dryaer'   :   subtract_cubes,
+                'conc*'         :   multiply_cubes,
+                'concox'        :   add_cubes,
+                'vmrox'         :   add_cubes,
+                'fmf550aer'     :   divide_cubes
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
@@ -177,7 +184,8 @@ class ReadGridded(object):
 
     VERT_ALT = {'Surface' : 'ModelLevel'}
 
-    def __init__(self, data_id=None, data_dir=None, file_convention="aerocom3",
+    def __init__(self, data_id=None, data_dir=None,
+                 file_convention="aerocom3",
                  init=True):
 
         self._data_dir = None
@@ -518,7 +526,6 @@ class ReadGridded(object):
         callable
             function that is used to compute input variable
         """
-
         if not var_to_compute in self._aux_avail:
             if not self.check_compute_var(var_to_compute):
                 raise VarNotAvailableError('Variable {} cannot be computed'
@@ -549,7 +556,6 @@ class ReadGridded(object):
             raise VariableDefinitionError('Invalid variable name {}. Must not '
                                           'contain *'.format(var_name))
         if var_name in self._aux_avail:
-
             return True
         elif self._check_aux_compute_access(var_name):
             return True
@@ -1069,6 +1075,8 @@ class ReadGridded(object):
             try:
                 vars_to_read = self._get_aux_vars_and_fun(var_to_compute)[0]
             except VarNotAvailableError:
+                pass
+            except VariableDefinitionError:
                 pass
             else:
                 # init result info dict for aux variable
@@ -2162,5 +2170,3 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
     reader = ReadGridded()
-
-    reader._check_var_match_pattern('concpm10')

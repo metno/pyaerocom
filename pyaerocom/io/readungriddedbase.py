@@ -55,6 +55,8 @@ class ReadUngriddedBase(abc.ABC):
                 "Last revision: {}"
                 .format(self.data_id, self.DATASET_PATH,
                         self.PROVIDES_VARIABLES, self.data_revision))
+    def __repr__(self):
+        return str(type(self).__name__)
 
     @abc.abstractproperty
     def TS_TYPE(self):
