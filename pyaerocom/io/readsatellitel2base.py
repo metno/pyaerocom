@@ -116,8 +116,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         self._DATAINDEX01 = UngriddedData._DATAINDEX
         self._COLNO = 12
 
-        self._ROWNO = 100000
-        self._CHUNKSIZE = 10000
+        self._CHUNKSIZE = 100000
 
         self.GROUP_DELIMITER = '/'
 
@@ -312,12 +311,12 @@ class ReadL2DataBase(ReadUngriddedBase):
         self.read_failed = []
         temp_files = {}
 
-        data_obj = UngriddedData(num_points=self._COLNO, chunksize=self._CHUNKSIZE)
+        data_obj = UngriddedData(num_points=self._CHUNKSIZE)
         meta_key = 0.0
         idx = 0
 
         # check if the supplied file is a supported archive file (tar in this case)
-        # and extract the files with supported suffixes to const._cachedir
+        # and extract the files with supported suffixes to const.CACHEDIR
         non_archive_files = []
         for idx, _file in enumerate(sorted(files)):
             # temp = 'reading file: {}'.format(_file)

@@ -8,6 +8,7 @@ Created on Fri Feb 14 16:31:13 2020
 
 import pytest
 from pyaerocom.variable import Variable
+from pyaerocom.variable import get_emep_variables
 
 def test_od550aer():
     v0 = Variable('od550aer')
@@ -30,6 +31,12 @@ def test_alias_families():
     assert var.var_name == 'sconcso4'
     assert var.var_name_aerocom == 'concso4'
     assert var.units == 'ug m-3'
+
+def test_get_emep_variables():
+    variables = get_emep_variables()
+    assert isinstance(variables, dict)
+    assert variables['conco3'] == 'SURF_ug_O3'
+
 
 if __name__=='__main__':
     import sys

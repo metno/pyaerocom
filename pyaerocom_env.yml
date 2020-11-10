@@ -15,7 +15,6 @@ dependencies:
   - geonum
   - numpy
   - simplejson
-  - pytest
   - requests
   - reverse-geocode
   - tqdm

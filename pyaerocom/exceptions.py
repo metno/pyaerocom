@@ -56,6 +56,9 @@ class DataCoverageError(ValueError):
 class DataDimensionError(ValueError):
     pass
 
+class DataIdError(ValueError):
+    pass
+
 class DataQueryError(ValueError):
     pass
 
@@ -81,6 +84,9 @@ class NDimError(DataDimensionError):
     pass
 
 class EbasFileError(ValueError):
+    pass
+
+class InitialisationError(ValueError):
     pass
 
 class FileConventionError(IOError):

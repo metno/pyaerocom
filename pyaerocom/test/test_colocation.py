@@ -9,14 +9,18 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 import iris
+import pandas as pd
 from cf_units import Unit
 
 from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
-from pyaerocom.colocation import (_regrid_gridded, colocate_gridded_ungridded,
+from pyaerocom.colocation import (_regrid_gridded,
+                                  _colocate_site_data_helper,
+                                  colocate_gridded_ungridded,
                                   colocate_gridded_gridded)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom import GriddedData
 from pyaerocom import helpers
+from pyaerocom.io import ReadMscwCtm
 
 def test__regrid_gridded(data_tm5):
      one_way = _regrid_gridded(data_tm5, 'areaweighted', 5)
@@ -24,6 +28,22 @@ def test__regrid_gridded(data_tm5):
                                    dict(lon_res_deg=5, lat_res_deg=5))
 
      assert one_way.shape == another_way.shape
+
+def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
+    var = 'od550aer'
+    stat1 = aeronetsunv3lev2_subset.to_station_data(3, var)
+    stat2 = aeronetsunv3lev2_subset.to_station_data(4, var)
+    df = _colocate_site_data_helper(stat1, stat2, var, var,
+                                    'daily',None,False,None,False)
+
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 9483
+    means = [np.nanmean(df['data']),
+             np.nanmean(df['ref'])]
+    should_be = [0.31171085422102346,
+                 0.07752743643132792]
+    npt.assert_allclose(means, should_be, rtol=1e-5)
+
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
@@ -62,7 +82,6 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
 
 @testdata_unavail
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
-
     times = [1,2]
     time_unit = Unit("days since 1990-1-1 0:0:0")
     cubes = iris.cube.CubeList()
@@ -96,6 +115,21 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats['mnmb'] == 0
     assert stats['R'] == 1
     assert stats['R_spearman'] == 1
+
+@testdata_unavail
+def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
+    filepath = path_emep['monthly']
+    r = ReadMscwCtm(path_emep['monthly'])
+    data_emep = r.read_var('concpm10', ts_type='monthly')
+
+    # Change units and year to match TM5 data
+    data_emep.change_base_year(2010)
+    data_emep.units = '1'
+    col = colocate_gridded_gridded(data_emep, data_tm5)
+    assert isinstance(col, ColocatedData)
+
+
+
 
 if __name__ == '__main__':
     import sys

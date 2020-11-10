@@ -6,6 +6,7 @@ General helper methods for the pyaerocom library.
 from cf_units import Unit
 from datetime import MINYEAR, datetime, date
 import iris
+import math as ma
 import numpy as np
 import pandas as pd
 import xarray as xray
@@ -14,7 +15,7 @@ from pyaerocom.exceptions import (LongitudeConstraintError,
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError,
                                   VariableDefinitionError,
-                                  ResamplingError)
+                                  ResamplingError, TemporalResolutionError)
 from pyaerocom import logger, const
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
@@ -388,6 +389,51 @@ def infer_time_resolution(time_stamps):
             return tp
     raise ValueError('Could not infer time resolution')
 
+def seconds_in_periods(timestamps, ts_type):
+    """
+    Calculates the number of seconds for each period in timestamps.
+
+    Parameters
+    ----------
+    timestamps : numpy.datetime64 or numpy.ndarray
+        Either a single datetime or an array of datetimes.
+    ts_type : str
+        Frequency of timestamps.
+
+    Returns
+    -------
+    np.array :
+        Array with same length as timestamps containing number of seconds for
+        each period.
+    """
+
+    ts_type = TsType(ts_type)
+    if isinstance(timestamps, np.datetime64):
+        timestamps = np.array([timestamps])
+    if isinstance(timestamps, np.ndarray):
+        timestamps = [to_pandas_timestamp(timestamp) for timestamp in timestamps]
+    # From here on timestamps should be a numpy array containing pandas Timestamps
+
+    seconds_in_day = 86400
+    if ts_type >= TsType('monthly'):
+        if ts_type == TsType('monthly'):
+            days_in_months = np.array([ timestamp.days_in_month for timestamp in timestamps])
+            seconds = days_in_months * seconds_in_day
+            return seconds
+        if ts_type == TsType('daily'):
+            return seconds_in_day * np.ones_like(timestamps)
+        raise NotImplementedError('Only yearly, monthly and daily frequencies implemented.')
+    elif ts_type == TsType('yearly'):
+        days_in_year = []
+        for ts in timestamps:
+            if ts.year % 4 == 0:
+                days_in_year.append(366) #  Leap year
+            else:
+                days_in_year.append(365)
+        seconds = np.array(days_in_year) * seconds_in_day
+        return seconds
+    raise TemporalResolutionError('Unknown TsType: {}'.format(ts_type))
+
 def get_tot_number_of_seconds(ts_type, dtime=None):
     """Get total no. of seconds for a given frequency
 
@@ -413,7 +459,6 @@ def get_tot_number_of_seconds(ts_type, dtime=None):
         DESCRIPTION.
 
     """
-    from pyaerocom.tstype import TsType
 
     ts_tpe = TsType(ts_type)
 
@@ -615,7 +660,7 @@ def isrange(val):
 
 def merge_station_data(stats, var_name, pref_attr=None,
                        sort_by_largest=True, fill_missing_nan=True,
-                       **add_meta_keys):
+                       add_meta_keys=None):
     """Merge multiple StationData objects (from one station) into one instance
 
     Note
@@ -652,6 +697,9 @@ def merge_station_data(stats, var_name, pref_attr=None,
         if True, the resulting time series is filled with NaNs. NOTE: this
         requires that information about the temporal resolution (ts_type) of
         the data is available in each of the StationData objects.
+    add_meta_keys : str or list, optional
+            additional non-standard metadata keys that are supposed to be
+            considered for merging.
     """
     from pyaerocom import const
     if isinstance(var_name, list):
@@ -708,7 +756,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
         merged = stats.pop(0)
 
         for i, stat in enumerate(stats):
-            merged.merge_other(stat, var_name, **add_meta_keys)
+            merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
     else:
         from xarray import DataArray
         dtime = []
@@ -732,7 +780,8 @@ def merge_station_data(stats, var_name, pref_attr=None,
             if i == 0:
                 merged = stat
             else:
-                merged.merge_meta_same_station(stat, **add_meta_keys)
+                merged.merge_meta_same_station(stat,
+                                               add_meta_keys=add_meta_keys)
 
             _data[:, i] = np.interp(vert_grid, stat['altitude'],
                                     stat[var_name].values)
@@ -992,7 +1041,7 @@ def same_meta_dict(meta1, meta2, ignore_keys=['PI'],
         if k in ignore_keys:
             continue
         elif k in num_keys:
-            if not np.isclose(v, meta2[k], rtol=num_rtol):
+            if not ma.isclose(v, meta2[k], rel_tol=num_rtol):
                 return False
         elif isinstance(v, dict):
             if not same_meta_dict(v, meta2[k]):
@@ -1228,7 +1277,7 @@ def to_datestring_YYYYMMDD(value):
     ValueError
         if input is not supported
     """
-    if isinstance(value, str) and len(value, 8):
+    if isinstance(value, str) and len(value) == 8:
         logger.info('Input is already string containing 8 chars. Assuming it '
                     'is in the right format and returning unchanged')
         return value

@@ -175,6 +175,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         instance of colocated data
 
     """
+
     if vert_scheme not in [None,'surface']:
         raise NotImplementedError(f'This type of colocation is not implemented '
                                   f'for gridded / gridded colocation... ({vert_scheme})')
@@ -207,8 +208,8 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
 
-    if gridded_data.var_info.has_unit:
-        if harmonise_units and not gridded_data.units == gridded_data_ref.units:
+    if harmonise_units and gridded_data.var_info.has_unit:
+        if not gridded_data.units == gridded_data_ref.units:
             try:
                 gridded_data_ref.convert_unit(gridded_data.units)
             except Exception:
@@ -225,6 +226,13 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             low, high = var_outlier_ranges[var]
         if var_ref in var_ref_outlier_ranges:
             low_ref, high_ref = var_ref_outlier_ranges[var_ref]
+
+        if not var_keep_outliers:
+            gridded_data.remove_outliers(low, high,
+                                         inplace=True)
+        if not var_ref_keep_outliers:
+            gridded_data_ref.remove_outliers(low_ref, high_ref,
+                                             inplace=True)
 
     if update_baseyear_gridded is not None:
         # update time dimension in gridded data
@@ -331,11 +339,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'min_num_obs'       :   min_num_obs}
 
     meta.update(regfilter.to_dict())
-    if remove_outliers:
-        if not var_keep_outliers:
-            gridded_data.remove_outliers(low, high)
-        if not var_ref_keep_outliers:
-            gridded_data_ref.remove_outliers(low_ref, high_ref)
 
     data = gridded_data.grid.data
     if isinstance(data, np.ma.core.MaskedArray):
@@ -364,6 +367,13 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     data = ColocatedData(data=arr, coords=coords, dims=dims,
                          name=gridded_data.var_name, attrs=meta)
 
+    # add correct units for lat / lon dimensions
+    data.latitude.attrs['standard_name'] = gridded_data.latitude.standard_name
+    data.latitude.attrs['units'] = str(gridded_data.latitude.units)
+
+    data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
+    data.longitude.attrs['units'] = str(gridded_data.longitude.units)
+
     if grid_ts_type != ts_type:
         data = data.resample_time(to_ts_type=ts_type,
                                   colocate_time=colocate_time,
@@ -372,6 +382,79 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                   how=resample_how,
                                   **kwargs)
     return data
+
+def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
+                               ts_type, resample_how,
+                               apply_time_resampling_constraints,
+                               min_num_obs,
+                               use_climatology_ref):
+    """
+    Helper method that colocates two timeseries from 2 StationData objects
+
+    Used in main loop of :func:`colocate_gridded_ungridded`
+
+    Parameters
+    ----------
+    stat_data : StationData
+        first data object (usually the one that is to be compared with obs)
+    stat_data_ref : StationData
+        second data object (usually obs)
+    var : str
+        variable to be used from `stat_data`
+    var_ref : str
+        variable to be used from `stat_data_ref`
+    ts_type : str
+        output frequency
+    resample_how : str or dict
+        string specifying how data should be aggregated when resampling in time.
+        Default is "mean". Can also be a nested dictionary, e.g.
+        resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
+        to aggregate from hourly to daily, rather than the mean.
+    apply_time_resampling_constraints : bool, optional
+        if True, then time resampling constraints are applied as provided via
+        :attr:`min_num_obs` or if that one is unspecified, as defined in
+        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
+        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
+        (which defaults to True !!).
+    min_num_obs : int or dict, optional
+        minimum number of observations for resampling of time
+    use_climatology_ref : bool
+        if True, climatological timeseries are used from observations
+
+
+    Returns
+    -------
+    pandas.DataFrame
+        dataframe containing the colocated input data (column names are
+        data and ref)
+    """
+
+    # get grid and obs timeseries data (that may be sampled in arbitrary
+    # time resolution, particularly the obs data)
+    grid_ts2 = stat_data.resample_time(
+                var,
+                ts_type=ts_type,
+                how=resample_how,
+                apply_constraints=apply_time_resampling_constraints,
+                min_num_obs=min_num_obs,
+                inplace=True)[var]
+
+    if use_climatology_ref:
+        obs_ts2 = stat_data_ref.calc_climatology(
+                var_ref,
+                apply_constraints=apply_time_resampling_constraints,
+                min_num_obs=min_num_obs)[var_ref]
+    else:
+        obs_ts2 = stat_data_ref.resample_time(
+                    var_ref,
+                    ts_type=ts_type,
+                    how=resample_how,
+                    apply_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
+                    inplace=True)[var_ref]
+
+    # fill up missing time stamps
+    return pd.concat([obs_ts2, grid_ts2], axis=1, keys=['ref', 'data'])
 
 def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                start=None, stop=None, filter_name=None,
@@ -484,7 +567,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         if True, then no outliers will be removed from the reference dataset,
         even if `remove_outliers` is True.
     use_climatology_ref : bool
-        if true, climatological timeseries are used from observations
+        if True, climatological timeseries are used from observations
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -611,7 +694,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         gridded_data = _regrid_gridded(gridded_data, regrid_scheme,
                                        regrid_res_deg)
 
-    if remove_outliers and not var_ref_keep_outliers:
+    if remove_outliers and not var_ref_keep_outliers: #called twice if used via Colocator, this should go out here
         ungridded_data.remove_outliers(var_ref, inplace=True,
                                        low=low_ref,
                                        high=high_ref)
@@ -630,18 +713,19 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     longitude = gridded_data.longitude.points
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
-    ungridded_data = ungridded_data.filter_by_meta(latitude=lat_range, longitude=lon_range)
+    ungridded_data = ungridded_data.filter_by_meta(latitude=lat_range,
+                                                   longitude=lon_range)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
     all_stats = ungridded_data.to_station_data_all(
-
             vars_to_convert=var_ref,
             start=obs_start,
             stop=obs_stop,
             by_station_name=True,
             ignore_index=ignore_station_names,
-            **kwargs)
+            **kwargs
+            )
 
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
@@ -681,6 +765,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
+        # ToDo: consider removing to keep ts_type_src_ref (this was probably
+        # introduced for EBAS were the original data frequency is not constant
+        # but can vary from site to site)
         if ts_type_src_ref is None:
             ts_type_src_ref = obs_stat['ts_type_src']
         elif obs_stat['ts_type_src'] != ts_type_src_ref:
@@ -706,7 +793,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         # need to be updated, for details (or if errors occur), cf.
         # UngriddedData.to_station_data, where the conversion happens)
 
-        # get model data corresponding to station
+        # get model station data
         grid_stat = grid_stat_data[i]
         if harmonise_units:
             grid_unit = grid_stat.get_unit(var)
@@ -728,36 +815,20 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             grid_stat.remove_outliers(var, low=low, high=high,
                                       check_unit=True)
 
-        # get grid and obs timeseries data (that may be sampled in arbitrary
-        # time resolution, particularly the obs data)
-        grid_ts2 = grid_stat.resample_time(
-                    var,
-                    ts_type=col_freq,
-                    how=resample_how,
-                    apply_constraints=apply_time_resampling_constraints,
-                    min_num_obs=min_num_obs,
-                    inplace=True)[var]
+        _df = _colocate_site_data_helper(
 
-        if use_climatology_ref:
-            obs_ts2 = obs_stat.calc_climatology(
-                    var_ref,
-                    apply_constraints=apply_time_resampling_constraints,
-                    min_num_obs=min_num_obs)[var_ref]
-        else:
-            obs_ts2 = obs_stat.resample_time(
-                        var_ref,
-                        ts_type=col_freq,
-                        how=resample_how,
-                        apply_constraints=apply_time_resampling_constraints,
-                        min_num_obs=min_num_obs,
-                        inplace=True)[var_ref]
-
-        # fill up missing time stamps
-        _df = pd.concat([obs_ts2, grid_ts2], axis=1, keys=['o', 'm'])
+            stat_data=grid_stat,
+            stat_data_ref=obs_stat,
+            var=var, var_ref=var_ref,
+            ts_type=col_freq,
+            resample_how=resample_how,
+            apply_time_resampling_constraints=apply_time_resampling_constraints,
+            min_num_obs=min_num_obs,
+            use_climatology_ref=use_climatology_ref)
 
         # assign the unified timeseries data to the colocated data array
-        coldata[0, :, i] = _df['o'].values
-        coldata[1, :, i] = _df['m'].values
+        coldata[0, :, i] = _df['ref'].values
+        coldata[1, :, i] = _df['data'].values
 
         lons.append(obs_stat.longitude)
         lats.append(obs_stat.latitude)
@@ -818,6 +889,13 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     data = ColocatedData(data=coldata, coords=coords, dims=dims, name=var,
                          attrs=meta)
 
+    # add correct units for lat / lon dimensions
+    data.latitude.attrs['standard_name'] = gridded_data.latitude.standard_name
+    data.latitude.attrs['units'] = str(gridded_data.latitude.units)
+
+    data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
+    data.longitude.attrs['units'] = str(gridded_data.longitude.units)
+
     if col_freq != str(ts_type):
         data = data.resample_time(to_ts_type=ts_type,
                                   colocate_time=colocate_time,
@@ -827,7 +905,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                   **kwargs)
     return data
 
-def correct_model_stp_coldata(coldata, p0=None, t0=273, inplace=False):
+def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
     """Correct modeldata in colocated data object to STP conditions
 
     Note
@@ -944,6 +1022,3 @@ if __name__=='__main__':
     obsdata.check_convert_var_units('ac550aer', 'm-1', inplace=True)
 
     obsdata.remove_outliers('ac550aer', inplace=True)
-
-
-

@@ -5,18 +5,7 @@ from collections import OrderedDict as od
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict
 
 class VerticalProfile(object):
-    """Object for single variable profile data
-
-    Attributes
-    ----------
-    data : :obj:`ndarray` (or similar), optional
-        profile data
-    altitude : :obj:`ndarray` (or similar), optional
-        altitude levels of profile
-    var_name : str
-        name of variable
-
-    """
+    """Object representing single variable profile data"""
     def __init__(self, data=None, altitude=None, dtime=None,
                  var_name=None, data_err=None, var_unit=None,
                  altitude_unit=None, **location_info):
@@ -61,13 +50,7 @@ class VerticalProfile(object):
 
     @property
     def var_name(self):
-        """Variable name of profile data
-
-        Raises
-        ------
-        ValueError
-            if variable name is not available
-        """
+        """Variable name of profile data"""
         if self._var_name  is None:
             raise ValueError('Variable name is not assigned...')
         return self._var_name

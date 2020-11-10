@@ -226,7 +226,7 @@ def get_obsnetwork_dir(obs_id):
     IOError
         if directory does not exist
     """
-    if not obs_id in const.OBS_IDS_UNGRIDDED:
+    if not obs_id in const.OBSLOCS_UNGRIDDED:
         raise ValueError("Observation network ID {} does not exist"
                          .format(obs_id))
 

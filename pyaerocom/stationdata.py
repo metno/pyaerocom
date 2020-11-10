@@ -15,14 +15,15 @@ from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   UnitConversionError, DataUnitError,
                                   TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
-                                         BrowseDict)
+                                         BrowseDict, merge_dicts)
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom.vertical_profile import VerticalProfile
 from pyaerocom.tstype import TsType
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.trends_engine import TrendsEngine
 from pyaerocom.trends_helpers import _make_mobs_dataframe
-from pyaerocom.helpers import isnumeric, isrange, calc_climatology
+from pyaerocom.helpers import (isnumeric, isrange, calc_climatology,
+                               to_datetime64)
 
 from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
@@ -289,7 +290,7 @@ class StationData(StationMetaData):
     def same_coords(self, other, tol_km=None):
         """Compare station coordinates of other station with this station
 
-        Paremeters
+        Parameters
         ----------
         other : StationData
             other data object
@@ -376,33 +377,14 @@ class StationData(StationMetaData):
         if _check_var:
             raise NotImplementedError('This feature does currently not work '
                                       'due to recent API changes')
-# =============================================================================
-#             logger.debug("Performing quality check for coordinates")
-#             lat, dlat, dlon, dalt = (vals['latitude'],
-#                                      stds['latitude'],
-#                                      stds['longitude'],
-#                                      stds['altitude'])
-#             lat_len = 111e3 #approximate length of latitude degree in m
-#             if self.COORD_MAX_VAR['latitude'] < lat_len * dlat:
-#                 raise CoordinateError("Variation in station latitude is "
-#                                       "exceeding upper limit of {} m".format(
-#                                       self.COORD_MAX_VAR['latitude']))
-#             elif self.COORD_MAX_VAR['longitude'] < (lat_len *
-#                                                     np.cos(np.deg2rad(lat)) *
-#                                                     dlon):
-#                 raise CoordinateError("Variation in station longitude is "
-#                                       "exceeding upper limit of {} m".format(
-#                                       self.COORD_MAX_VAR['latitude']))
-#             elif self.COORD_MAX_VAR['altitude'] < dalt:
-#                 raise CoordinateError("Variation in station altitude is "
-#                                       "exceeding upper limit of {} m".format(
-#                                       self.COORD_MAX_VAR['latitude']))
-# =============================================================================
         return vals
 
     def get_meta(self, force_single_value=True, quality_check=True,
-                 add_none_vals=False):
+                 add_none_vals=False, add_meta_keys=None):
         """Return meta-data as dictionary
+
+        By default, only default metadata keys are considered, use parameter
+        `add_meta_keys` to add additional metadata.
 
         Parameters
         ----------
@@ -415,6 +397,9 @@ class StationData(StationMetaData):
             allowed in the local variation. The upper limits are specified
             in attr. ``COORD_MAX_VAR``.
         add_none_vals : bool
+            Add metadata keys which have value set to None.
+        add_meta_keys : str or list, optional
+            Add none-standard metadata.
 
         Returns
         -------
@@ -428,10 +413,22 @@ class StationData(StationMetaData):
         MetaDataError
             in case of consistencies in meta data between individual time-stamps
         """
+        if isinstance(add_meta_keys, str):
+            add_meta_keys = [add_meta_keys]
+        elif not isinstance(add_meta_keys, list):
+            add_meta_keys = []
         meta = {}
-        meta.update(self.get_station_coords(force_single_value, quality_check))
-        for key in self.STANDARD_META_KEYS:
-            if key in self.STANDARD_COORD_KEYS: # this has been handled above
+        meta.update(self.get_station_coords(force_single_value,
+                                            quality_check))
+        keys = self.STANDARD_META_KEYS
+        keys.extend(add_meta_keys)
+        for key in keys:
+            if not key in self:
+                const.print_log.warning('No such key in StationData: {}'
+                                     .format(key))
+                continue
+            elif key in self.STANDARD_COORD_KEYS:
+                # this has been handled above
                 continue
             if self[key] is None and not add_none_vals:
                 logger.info('No metadata available for key {}'.format(key))
@@ -449,37 +446,109 @@ class StationData(StationMetaData):
 
         return meta
 
-    def _append_meta_item(self, key, val):
-        """Add a metadata item"""
-        if not key in self or self[key] == None:
-            self[key] = val
-        else:
-            if isinstance(self[key], str):
-                if not isinstance(val, str):
+    def _check_meta_item(self, key):
+        """Check if metadata item is valid
+
+        Valid value types are dictionaries, lists, strings, numerical values
+        and datetetime objects.
+        """
+        val = self[key]
+        if val is None:
+            return
+        elif isinstance(val, np.ndarray):
+            if val.ndim != 1:
+                raise MetaDataError('Invalid metadata entry {} for key {}.'
+                                    'Only 1d numpy arrays are supported...'
+                                    .format(val, key))
+            self[key] = list(val)
+        elif not isinstance(val, (dict, list, str)) and not isnumeric(val):
+            try:
+                self[key] = to_datetime64(val)
+            except Exception:
+                raise MetaDataError('Invalid metadata entry {} for key {}.'
+                                    'Only dicts, lists, strings, numerical '
+                                    'values or datetime objects are supported'
+                                    .format(val, key))
+
+    def _merge_meta_item(self, key, val):
+        """Merge meta item into this object
+
+        Parameters
+        ----------
+        key
+            key of metadata value
+        val
+            value to be added
+        """
+        current_val = self[key]
+        same_type = isinstance(current_val, type(val))
+        try:
+            if isinstance(current_val, dict):
+                if not same_type:
                     raise ValueError('Cannot merge meta item {} due to type '
                                      'mismatch'.format(key))
-                vals = [x.strip() for x in self[key].split(';')]
-                vals_in = [x.strip() for x in val.split(';')]
+                elif not current_val == val:
+                    self[key] = merge_dicts(current_val, val)
 
-                for _val in vals_in:
-                    if not _val in vals:
-                        self[key] = self[key] + '; {}'.format(_val)
-            else:
-                if isinstance(val, (list, np.ndarray)):
-                    raise ValueError('Cannot append metadata value that is '
-                                     'already a list or numpy array due to '
-                                     'potential ambiguities')
-                if isinstance(self[key], list):
-                    if not val in self[key]:
-                        self[key].append(val)
-                else:
-                    if not self[key] == val:
-                        self[key] = [self[key], val]
-        return self
+            elif isinstance(current_val, str):
+                if not same_type:
+                    if isinstance(val, list):
+                        if not current_val in val:
+                            newval = val.insert(0, current_val)
+                        self[key] = newval
+                    else:
+                        raise ValueError('Cannot merge meta item {} due to type '
+                                         'mismatch'.format(key))
+                elif not current_val == val:
+                    # both are str that may be already merged with ";" -> only
+                    # add new entries
+                    vals_in = [x.strip() for x in val.split(';')]
+
+                    for item in vals_in:
+                        if not item in current_val:
+                            current_val += ';{}'.format(item)
+                    self[key] = current_val
+
+            elif isinstance(current_val, list):
+                if not same_type:
+                    val = [val]
+                for item in val:
+                    if not item in current_val:
+                        current_val.append(item)
+                self[key] = current_val
+
+            elif isnumeric(current_val) and isnumeric(val):
+                if val != current_val:
+                    self[key] = [current_val, val]
+
+            elif isinstance(val, list):
+                if not current_val in val:
+                    self[key] = val.insert(0, current_val)
+
+            elif current_val != val:
+                self[key] = [current_val, val]
+
+            else: #they shoul be the same
+                assert current_val == val, (current_val, val)
+        except Exception as e:
+            raise MetaDataError('Failed to merge metadata entries for key {}.\n'
+                                'Value in current StationData: {}\n'
+                                'Value to be merged: {}\n'
+                                'Error: {}'
+                                .format(key, current_val, val, repr(e)))
+
+
+
+    def _append_meta_item(self, key, val):
+        """Add a metadata item"""
+        if not key in self or self[key] is None:
+            self[key] = val
+        else:
+            self._merge_meta_item(key, val)
 
     def merge_meta_same_station(self, other, coord_tol_km=None,
                                 check_coords=True, inplace=True,
-                                **add_meta_keys):
+                                add_meta_keys=None, raise_on_error=False):
         """Merge meta information from other object
 
         Note
@@ -504,17 +573,24 @@ class StationData(StationMetaData):
             if True, the metadata from the other station is added to the
             metadata of this station, else, a new station is returned with the
             merged attributes.
-        **add_meta_keys
+        add_meta_keys : str or list, optional
             additional non-standard metadata keys that are supposed to be
             considered for merging.
+        raise_on_error : bool
+            if True, then an Exception will be raised in case one of the
+            metadata items cannot be merged, which is most often due to
+            unresolvable type differences of metadata values between the two
+            objects
 
         """
-        if not other.station_name == self.station_name:
-            raise ValueError('Can only merged metadata from same station')
+        if add_meta_keys is None:
+            add_meta_keys = []
+
+        elif isinstance(add_meta_keys, str):
+            add_meta_keys = [add_meta_keys]
 
         if not inplace:
-            from copy import deepcopy
-            obj = deepcopy(self)
+            obj = self.copy()
         else:
             obj = self
 
@@ -528,16 +604,25 @@ class StationData(StationMetaData):
 
         keys = self.STANDARD_META_KEYS
         keys.extend(add_meta_keys)
-        # remove station name from key list to be merged
         for key in keys:
-            if key == 'station_name':
-                continue
             if key in self.STANDARD_COORD_KEYS:
                 if self[key] is None and other[key] is not None:
                     self[key] = other[key]
 
             elif key in other and other[key] is not None:
-                obj._append_meta_item(key, other[key])
+                try:
+                    self._check_meta_item(key)
+                    other._check_meta_item(key)
+
+                    obj._append_meta_item(key, other[key])
+                except MetaDataError as e:
+                    obj[key] = 'N/A_FAILED_TO_MERGE'
+                    msg = ('Failed to merge meta item {}. Reason:{}'
+                           .format(key, repr(e)))
+                    if raise_on_error:
+                        raise MetaDataError(msg)
+                    else:
+                        const.print_log.warning(msg)
 
         return obj
 
@@ -783,7 +868,7 @@ class StationData(StationMetaData):
         else:
             return self._merge_vardata_2d(other, var_name)
 
-    def merge_other(self, other, var_name, **add_meta_keys):
+    def merge_other(self, other, var_name, add_meta_keys=None):
         """Merge other station data object
 
         Todo
@@ -799,6 +884,9 @@ class StationData(StationMetaData):
         var_name : str
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
+        add_meta_keys : str or list, optional
+            additional non-standard metadata keys that are supposed to be
+            considered for merging.
 
         Returns
         -------
@@ -807,7 +895,7 @@ class StationData(StationMetaData):
         """
         #self.merge_meta_same_station(other, **add_meta_keys)
         self.merge_vardata(other, var_name)
-        self.merge_meta_same_station(other, **add_meta_keys)
+        self.merge_meta_same_station(other, add_meta_keys=add_meta_keys)
 
         return self
 
@@ -1421,10 +1509,6 @@ class StationData(StationMetaData):
                                       apply_constraints=apply_constraints,
                                       min_num_obs=min_num_obs,
                                       **kwargs)
-# =============================================================================
-#             data = resample_timeseries(data, freq, how=resample_how,
-#                                        **kwargs)
-# =============================================================================
 
         return data
 
@@ -1439,7 +1523,7 @@ class StationData(StationMetaData):
         data - if it exists - will be plotted on top of the actual timeseries
         using red colour and dashed line. As the overlapping data may be
         identical with the actual data, you might want to increase the line
-        width of the actual timeseries using an additional input argumend
+        width of the actual timeseries using an additional input argument
         ``lw=4``, or similar.
 
         Parameters
