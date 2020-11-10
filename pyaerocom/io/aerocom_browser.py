@@ -59,7 +59,7 @@ class AerocomBrowser(BrowseDict):
         _msgs = []
         _warnings = []
 
-        for obs_id in const.OBS_IDS_UNGRIDDED:
+        for obs_id, obs_path in const.OBSLOCS_UNGRIDDED.items():
             if ignorecase:
                 match = name_or_pattern.lower() == obs_id.lower()
             else:
@@ -67,7 +67,7 @@ class AerocomBrowser(BrowseDict):
             if match:
                 logger.info("Found match for search pattern in obs network "
                             "directories {}".format(obs_id))
-                path = os.path.normpath(const.OBSLOCS_UNGRIDDED[obs_id])
+                path = os.path.normpath(obs_path)
                 if os.path.exists(path):
                     self[obs_id] = path
                     if return_if_match:
@@ -78,7 +78,7 @@ class AerocomBrowser(BrowseDict):
                 else:
                     match = bool(re.search(pattern, obs_id))
                 if match:
-                    path = os.path.normpath(const.OBSLOCS_UNGRIDDED[obs_id])
+                    path = os.path.normpath(obs_path)
                     if os.path.exists(path):
                         self[obs_id] = path
                         _candidates.append(obs_id)

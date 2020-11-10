@@ -11,6 +11,7 @@ import numpy as np
 
 from cf_units import Unit
 from pyaerocom import const
+from pyaerocom.helpers import seconds_in_periods
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.helpers import seconds_in_periods
 

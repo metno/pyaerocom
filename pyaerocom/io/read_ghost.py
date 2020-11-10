@@ -115,7 +115,8 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.9.1'
+    
+    __version__ = '0.0.10'
 
     _FILEMASK = '*.nc'
 
@@ -135,10 +136,7 @@ class ReadGhost(ReadUngriddedBase):
                 'GHOST.EBAS.hourly'   : 'hourly',
                 'GHOST.EBAS.daily'    : 'daily'}
 
-    EEA_META_KEYS = GHOST_META_KEYS
-
-    EBAS_META_KEYS = GHOST_META_KEYS
-
+    META_KEYS = GHOST_META_KEYS
 
     FLAG_VARS = ['flag', 'qa']
 
@@ -169,7 +167,7 @@ class ReadGhost(ReadUngriddedBase):
                     'concno'    :  ['vmrno'],
                     'concno2'   :  ['vmrno2'],
                     'conco3'    :  ['vmro3'],
-                    'concso2'   :  ['vmrso2'],}
+                    'concso2'   :  ['vmrso2']}
 
     AUX_FUNS = {
         'concco'    : _vmr_to_conc_ghost_stats,
@@ -337,14 +335,6 @@ class ReadGhost(ReadUngriddedBase):
         invalid = ~valid
         return invalid
 
-    @property
-    def META_KEYS(self):
-        if 'GHOST.EBAS' in self.data_id:
-            META_KEYS = self.EBAS_META_KEYS
-        elif 'GHOST.EEA' in self.data_id:
-            META_KEYS = self.EEA_META_KEYS
-        return META_KEYS
-
     def read_file(self, filename, var_to_read=None, invalidate_flags=None,
                   var_to_write=None):
         """Read GHOST NetCDF data file
@@ -390,7 +380,11 @@ class ReadGhost(ReadUngriddedBase):
         # more elegantly
         meta_glob = {}
         for meta_key in self.META_KEYS:
-            meta_glob[meta_key] = ds[meta_key].values
+            try:
+                meta_glob[meta_key] = ds[meta_key].values
+            except KeyError:
+                const.print_log.warning('No such metadata key in GHOST data file: '
+                                     '{}'.format(os.path.basename(filename)))
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
             from_unit = ds[meta_key].attrs['units']
@@ -641,8 +635,3 @@ if __name__ == '__main__':
 
     var = 'vmro3'
     obs = ReadGhost('GHOST.EBAS.daily').read(var)
-
-    #obs  = pya.io.ReadUngridded().read('GHOST.daily', var)
-    #obs._check_index()
-
-    subset = obs.filter_altitude((0,1000))

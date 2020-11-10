@@ -246,7 +246,7 @@ class NasaAmesHeader(object):
             self._meta[key] = val
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = "{}".format(type(self).__name__)
         s = "{}\n{}\n".format(head, len(head)*"-")
         s += dict_to_str(self._head_fix)
         s += "\n\n{}".format(str_underline("Column variable definitions",

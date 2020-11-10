@@ -23,8 +23,7 @@ def plot_coordinates(lons, lats, xlim=(-180, 180), ylim=(-90, 90),
 
     if label is None:
         label = '{} stations'.format(len(lons))
-    else:
-        label += ' ({} stations)'.format(len(lons))
+
     ax.scatter(lons, lats, markersize, marker=marker, color=color,
                label=label)
 

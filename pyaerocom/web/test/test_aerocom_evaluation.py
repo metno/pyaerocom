@@ -3,7 +3,7 @@ import pytest
 from pandas import DataFrame
 
 from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
-from pyaerocom.conftest import TEST_PATHS, TESTDATADIR
+from pyaerocom.conftest import tda
 from pyaerocom.web import AerocomEvaluation
 from pyaerocom.io.aux_read_cubes import add_cubes
 
@@ -21,7 +21,7 @@ TS_TYPE = 'monthly'
 START = 2010
 
 
-CONFIG = TESTDATADIR.joinpath(TEST_PATHS['CONFIG'])
+CONFIG = tda.testdatadir.joinpath(tda.ADD_PATHS['CONFIG'])
 METHODS_FILE = CONFIG.joinpath('cube_read_methods.py')
 
 @pytest.fixture(scope='function')
@@ -34,7 +34,9 @@ def model_config():
 
 @pytest.fixture(scope='function')
 def obs_config():
-    config = {OBS_NAME : dict(obs_id=OBS_ID, obs_vars=OBS_VARS, obs_vert_type=OBS_VERT_TYPE)}
+    config = {OBS_NAME : dict(obs_id=OBS_ID,
+                              obs_vars=OBS_VARS,
+                              obs_vert_type=OBS_VERT_TYPE)}
     return config
 
 @pytest.fixture(scope='function')
@@ -46,25 +48,44 @@ def model_config_aux(model_config):
     return config
 
 @pytest.fixture(scope='function')
-def stp(model_config, obs_config):
-    return AerocomEvaluation(proj_id=PROJ_ID, exp_id=EXP_ID, model_config=model_config,
+def stp(model_config, obs_config,tmpdir):
+    return AerocomEvaluation(proj_id=PROJ_ID, exp_id=EXP_ID,
+                             model_config=model_config,
                              obs_config=obs_config, start=START, ts_type=TS_TYPE,
-                             raise_exceptions=True, reanalyse_existing=True)
+                             raise_exceptions=True, reanalyse_existing=True,
+                             out_basedir=str(tmpdir))
 
 @pytest.fixture(scope='function')
-def stp_min():
-    return AerocomEvaluation(proj_id=PROJ_ID, exp_id=EXP_ID, reanalyse_existing=True,
-                             raise_exceptions=True)
+def stp_min(tmpdir):
+    return AerocomEvaluation(proj_id=PROJ_ID, exp_id=EXP_ID,
+                             reanalyse_existing=True,
+                             raise_exceptions=True,
+                             out_basedir=str(tmpdir))
 
 
 def test_aerocom_evaluation(stp_min):
     assert isinstance(stp_min, AerocomEvaluation)
 
 def test_aerocom_evaluation_run_colocation(stp):
-    col = stp.run_colocation(model_name='TM5', obs_name='AeronetSun', var_name='od550aer')
-    assert isinstance(col, Colocator)
 
-    col_paths = stp.run_evaluation(update_interface=False)
+    mid = 'TM5-met2010_CTRL-TEST'
+    var_name = 'od550aer'
+    col = stp.run_colocation(model_name='TM5',
+                             obs_name='AeronetSun',
+                             var_name=var_name)
+
+
+    assert isinstance(col, Colocator)
+    assert mid in col.data
+    assert var_name in col.data[mid]
+    coldata = col.data[mid][var_name]
+    assert isinstance(coldata, ColocatedData)
+    assert coldata.shape == (2, 12, 8)
+
+
+def test_aerocom_evaluation_run_evaluation(stp):
+    col_paths = stp.run_evaluation(update_interface=False,
+                                   reanalyse_existing=False) #reuse model colocated data from prev. test
     assert len(col_paths) == 1
     assert os.path.isfile(col_paths[0])
 
@@ -75,13 +96,15 @@ def test_aerocom_evaluation_get_web_overview_table(stp, tmpdir):
     assert isinstance(table, DataFrame)
     assert len(table) > 0
 
-def test_aerocom_evaluation_get_custom_read_method_model_file(stp, model_config_aux):
+def test_aerocom_evaluation_get_custom_read_method_model_file(stp,
+                                                              model_config_aux):
     stp.add_methods_file = METHODS_FILE
     stp.model_config = model_config_aux
     fun = stp.get_custom_read_method_model('add_cubes')
     assert fun == add_cubes
 
-def test_aerocom_evaluation_get_custom_read_method_model_parameter(stp, model_config_aux):
+def test_aerocom_evaluation_get_custom_read_method_model_parameter(stp,
+                                                                   model_config_aux):
     stp.add_methods={'add_cubes':add_cubes}
     fun = stp.get_custom_read_method_model('add_cubes')
     assert fun == add_cubes

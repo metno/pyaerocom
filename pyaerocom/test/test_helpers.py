@@ -43,7 +43,9 @@ def test__get_pandas_freq_and_loffset():
     assert val == ('MS', '14D')
 
 def _make_timeseries_synthetic():
+
     idx = date_range(start="2000", periods=90, freq='D')
+
     vals = np.arange(len(idx))
     return  Series(vals, idx)
 
@@ -54,7 +56,6 @@ def timeseries_synthetic():
 def test_resample_timeseries(timeseries_synthetic):
     s1 = helpers.resample_timeseries(timeseries_synthetic,
                                      'monthly')
-
     assert len(s1) == 3
     for time in s1.index:
         assert time.year == 2000, time.year
@@ -137,7 +138,10 @@ def test_extract_latlon_dataarray():
     ([15], [15], does_not_raise_exception())
     ])
 def test_extract_latlon_dataarray_no_matches(lat, lon, expectation):
-    cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1, lat_range=[10, 20], lon_range=[10, 20])
+    cube = helpers.make_dummy_cube_latlon(lat_res_deg=1,
+                                          lon_res_deg=1,
+                                          lat_range=[10, 20],
+                                          lon_range=[10, 20])
     data = xr.DataArray.from_iris(cube)
     with expectation:
         helpers.extract_latlon_dataarray(data, lat, lon, check_domain=True)
