@@ -50,7 +50,7 @@ class ColocatedData(object):
         ID of reference data
     **kwargs
         Additional keyword args that are passed to init of :class:`DataArray`
-        in case input :arg:`data` is numpy array.
+        in case input `data` is numpy array.
 
     Raises
     ------
@@ -210,8 +210,6 @@ class ColocatedData(object):
     @property
     def num_coords(self):
         """Total number of lat/lon coordinates"""
-        if not self.check_dimensions():
-            raise DataDimensionError('Invalid dimensionality...')
         if 'station_name' in self.coords:
             return len(self.data.station_name)
 
@@ -222,6 +220,9 @@ class ColocatedData(object):
                                      'in 4D data object, which contains the '
                                      'following dimensions: {}'.self.data.dims)
             return len(self.data.longitude) * len(self.data.latitude)
+        elif not self.has_time_dim:
+            if self.has_latlon_dims:
+                return np.prod(self.data[0].shape)
         raise DataDimensionError('Could not infer number of coordinates')
 
     @property
@@ -232,10 +233,15 @@ class ColocatedData(object):
         ----
         check 4D data
         """
-        if not self.check_dimensions():
-            raise DataDimensionError('Invalid dimensionality...')
+        if self.has_time_dim:
+            return (self.data[0].count(dim='time') > 0).data.sum()
+        # TODO: ADDED IN A RUSH BY JGLISS ON 17.06.2020, check!
+        return (self.data[0].count() > 0).data.sum()
 
-        return (self.data[0].count(dim='time') > 0).data.sum()
+    @property
+    def has_time_dim(self):
+        """Boolean specifying whether data has a time dimension"""
+        return True if 'time' in self.dims else False
 
     @property
     def has_latlon_dims(self):
@@ -350,17 +356,15 @@ class ColocatedData(object):
         return self.data.max()
 
     def check_dimensions(self):
-        """Checks if data source and time dimension are at the right index"""
-        dims = self.data.dims
-        if not 2 < len(dims) < 5:
-            logger.info('Invalid number of dimensions. Must be 3 or 4')
-            return False
-        try:
-            if dims.index('data_source') == 0 and dims.index('time') == 1:
-                return True
-            raise Exception
-        except Exception:
-            return False
+        """Checks if data source and time dimension are at the right index
+
+        ToDo
+        ----
+        Check if this is needed. Little cumbersome at the moment, the data
+        object can / should be more flexible! Should
+        """
+        raise NotImplementedError(DeprecationWarning('This method has been '
+                                                     'deprecated in v0.10.0'))
 
     def resample_time(self, to_ts_type, how='mean',
                       apply_constraints=None, min_num_obs=None,
@@ -662,14 +666,16 @@ class ColocatedData(object):
             kwargs['lowlim'] = var.lower_limit
             kwargs['highlim'] = var.upper_limit
 
-        if use_area_weights and self.has_latlon_dims:
-            weights = self.area_weights[0].flatten()
-        else:
-            weights = None
+        if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
+            kwargs['weights'] = self.area_weights[0].flatten()
+        elif 'weights' in kwargs:
+            raise ValueError('Invalid input combination: weights are provided '
+                             'but use_area_weights is set to False...')
+
 
         stats = calc_statistics(self.data.values[1].flatten(),
                                 self.data.values[0].flatten(),
-                                weights=weights, **kwargs)
+                                **kwargs)
 
         stats['num_coords_with_data'] = self.num_coords_with_data
         stats['num_coords_tot'] = self.num_coords
@@ -874,20 +880,20 @@ class ColocatedData(object):
         return meta
 
     def to_netcdf(self, out_dir, savename=None, **kwargs):
-        """Save data object as .nc file
+        """Save data object as NetCDF file
 
         Wrapper for method :func:`xarray.DataArray.to_netdcf`
+
         Parameters
         ----------
         out_dir : str
             output directory
-        savename : :obj:`str`, optional
+        savename : str, optional
             name of file, if None, the default save name is used (cf.
             :attr:`savename_aerocom`)
         **kwargs
             additional, optional keyword arguments passed to
             :func:`xarray.DataArray.to_netdcf`
-
         """
         if 'path' in kwargs:
             raise IOError('Path needs to be specified using input parameters '
@@ -966,7 +972,6 @@ class ColocatedData(object):
         raise NotImplementedError('Coming soon...')
         data = df.to_xarray()
         self.data = data
-        self.check_dimensions()
 
     def to_csv(self, out_dir, savename=None):
         """Save data object as .csv file
@@ -985,8 +990,6 @@ class ColocatedData(object):
             savename = self.savename_aerocom
         if not savename.endswith('.csv'):
             savename = '{}.csv'.format(savename)
-        if not self.check_dimensions():
-            raise IOError('Invalid dimensionality, please check...')
         df = self.to_dataframe()
         file_path = os.path.join(out_dir, savename)
         df.to_csv(file_path)
@@ -1150,9 +1153,6 @@ class ColocatedData(object):
             lat_range = reg.lat_range
             region_id = reg.name
 
-        if any(x is None for x in (lon_range, lat_range)):
-            raise ValueError('Need either lon_range or lat_range or valid '
-                             'region_id')
         if lon_range is None:
             lon_range = [-180, 180]
         if lat_range is None:

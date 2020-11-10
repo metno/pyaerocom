@@ -7,20 +7,28 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import numpy as np
 import numpy.testing as npt
+import os
 import pytest
 from pyaerocom import UngriddedData
 from pyaerocom.conftest import testdata_unavail, rg_unavail
 from pyaerocom.exceptions import DataCoverageError
 
-def test_init_shape():
-    npt.assert_array_equal(UngriddedData().shape, (10000, 12))
+@pytest.fixture(scope='module')
+def ungridded_empty():
+    return UngriddedData()
 
+def test_init_shape(ungridded_empty):
+    npt.assert_array_equal(ungridded_empty.shape, (1000000, 12))
+
+def test_init_add_cols():
     d1 = UngriddedData(num_points=2, add_cols=['bla', 'blub'])
     npt.assert_array_equal(d1.shape, (2, 14))
 
-    d1.add_chunk(1112)
+def test_add_chunk(ungridded_empty):
 
-    npt.assert_array_equal(d1.shape, (1114, 14))
+    ungridded_empty.add_chunk(111002)
+
+    npt.assert_array_equal(ungridded_empty.shape, (2000000, 12))
 
 def test_coordinate_access():
     import string
@@ -103,6 +111,19 @@ def test_filter_region(aeronetsunv3lev2_subset, region_id, check_mask,
 
     assert len(subset.metadata) == num_meta
 
+
+def test_save_as(aeronetsunv3lev2_subset, tempdir):
+    fp = aeronetsunv3lev2_subset.save_as(file_name='ungridded_aeronet_subset.pkl',
+                                    save_dir=tempdir)
+
+    assert os.path.exists(fp)
+
+def test_from_cache(aeronetsunv3lev2_subset, tempdir):
+    reloaded = UngriddedData.from_cache(data_dir=tempdir,
+                                        file_name='ungridded_aeronet_subset.pkl')
+
+    assert reloaded.shape == aeronetsunv3lev2_subset.shape
+
 def test_check_unit(data_scat_jungfraujoch):
     data_scat_jungfraujoch.check_unit('sc550aer', unit='1/Mm')
     from pyaerocom.exceptions import MetaDataError
@@ -134,6 +155,7 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
             npt.assert_allclose(actual=[ratio.mean(), ratio.std()],
                                     desired=[fac, 0],
                                     atol=1e-20)
+
 
 
 if __name__=="__main__":

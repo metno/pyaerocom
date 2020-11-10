@@ -55,6 +55,8 @@ class ReadUngriddedBase(abc.ABC):
                 "Last revision: {}"
                 .format(self.data_id, self.DATASET_PATH,
                         self.PROVIDES_VARIABLES, self.data_revision))
+    def __repr__(self):
+        return str(type(self).__name__)
 
     @abc.abstractproperty
     def TS_TYPE(self):
@@ -481,7 +483,10 @@ class ReadUngriddedBase(abc.ABC):
 
             if len(missing) == 0:
                 data[var] = self.AUX_FUNS[var](data)
-                data['var_info'][var] = {'computed' : True}
+                try:
+                    data['var_info'][var]['computed']=True
+                except KeyError:
+                    data['var_info'][var] = {'computed' : True}
 
         return data
 

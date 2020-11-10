@@ -602,9 +602,14 @@ def compute_sc550dryaer(data):
 
     """
     rh_max= const.VARS['sc550dryaer'].dry_rh_max
-    return _compute_dry_helper(data, data_colname='sc550aer',
+    vals, rh_mean = _compute_dry_helper(data, data_colname='sc550aer',
                                rh_colname='scrh',
                                rh_max_percent=rh_max)
+    if not 'sc550dryaer' in data.var_info:
+        data.var_info['sc550dryaer'] = {}
+    data.var_info['sc550dryaer']['rh_mean'] = rh_mean
+
+    return vals
 
 def compute_sc440dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
@@ -625,7 +630,7 @@ def compute_sc440dryaer(data):
     rh_max= const.VARS['sc440dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='sc440aer',
                                rh_colname='scrh',
-                               rh_max_percent=rh_max)
+                               rh_max_percent=rh_max)[0]
 
 def compute_sc700dryaer(data):
     """Compute dry scattering coefficent applying RH threshold
@@ -646,7 +651,7 @@ def compute_sc700dryaer(data):
     rh_max= const.VARS['sc700dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='sc700aer',
                                rh_colname='scrh',
-                               rh_max_percent=rh_max)
+                               rh_max_percent=rh_max)[0]
 
 def compute_ac550dryaer(data):
     """Compute aerosol dry absorption coefficent applying RH threshold
@@ -666,8 +671,9 @@ def compute_ac550dryaer(data):
     """
     rh_max= const.VARS['ac550dryaer'].dry_rh_max
     return _compute_dry_helper(data, data_colname='ac550aer',
-                               rh_colname='acrh',
-                               rh_max_percent=rh_max)
+                                         rh_colname='acrh',
+                                         rh_max_percent=rh_max)[0]
+
 
 def _compute_dry_helper(data, data_colname, rh_colname,
                         rh_max_percent=None):
@@ -704,7 +710,9 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     vals[high_rh] = np.nan
     vals[np.isnan(rh)] = np.nan
 
-    return vals
+    rh_mean = np.nanmean(rh[~high_rh])
+
+    return vals, rh_mean
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
                   to_unit=None):
