@@ -146,9 +146,6 @@ def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
     col = colocate_gridded_gridded(data_emep, data_tm5)
     assert isinstance(col, ColocatedData)
 
-
-
-
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
