@@ -50,7 +50,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.*'
 
     #: version log of this class (for caching)
-    __version__ = "0.14_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.15_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -70,7 +70,7 @@ class ReadEarlinet(ReadUngriddedBase):
     ALTITUDE_ID = 'Altitude'
 
     #: temporal resolution
-    TS_TYPE = 'n/d'
+    TS_TYPE = 'native'
 
     #: dictionary specifying the file search patterns for each variable
     VAR_PATTERNS_FILE = {'ec532aer'     : '*.e532',
