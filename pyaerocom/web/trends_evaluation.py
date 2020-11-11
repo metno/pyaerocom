@@ -1118,12 +1118,17 @@ class TrendsEvaluation(object):
 
             vardata[keymap[cname]] = np.float64(cval)
         # the actual sampling frequency
+        tst = vardata['freq']
         try:
-            freq = TsType(vardata['freq'])
+            freq = TsType(tst)
         except TemporalResolutionError:
-            raise TemporalResolutionError(
-                f'Skipping processing of {station.station_name} since temporal '
-                f'resolution could not be inferred')
+            if tst == 'native': # e.g. EARLINET
+                freq = TsType('daily')
+            else:
+                raise TemporalResolutionError(
+                    f'Skipping processing of {station.station_name} since '
+                    'temporal '
+                    f'resolution could not be inferred')
         if vardata['wavelength'] is None:
             try:
                 wvl = '{} nm'.format(const.VARS[var_name].wavelength_nm)
