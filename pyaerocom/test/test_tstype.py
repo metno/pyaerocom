@@ -11,6 +11,10 @@ import numpy as np
 
 from pyaerocom.tstype import TsType
 
+def test_VALID():
+    assert TsType.VALID == ['minutely', 'hourly', 'daily', 'weekly', 'monthly',
+                            'yearly', 'native']
+
 def test_basic_operators():
     monthly = TsType('monthly')
     yearly = TsType('yearly')
