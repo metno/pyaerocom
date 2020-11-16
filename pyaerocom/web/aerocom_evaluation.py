@@ -4,15 +4,17 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
-from traceback import format_exc
 import simplejson
 
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
-#from pyaerocom.region import Region, get_all_default_region_ids
+from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.helpers import isnumeric
 
 from pyaerocom.io.helpers import save_dict_json
+from pyaerocom.io import ReadGridded
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
@@ -25,8 +27,7 @@ from pyaerocom.web.helpers_evaluation_iface import (
     compute_json_files_from_colocateddata,
     delete_experiment_data_evaluation_iface)
 
-from pyaerocom.colocation_auto import ColocationSetup, Colocator
-from pyaerocom.colocateddata import ColocatedData
+
 
 class AerocomEvaluation(object):
     """Class for creating json files for Aerocom Evaluation interface
@@ -139,7 +140,8 @@ class AerocomEvaluation(object):
     var_order_menu : list, optional
         order of variables in menu
     """
-    OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles']
+    OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles',
+                     'contour']
 
     #: Vertical layer ranges
     VERT_LAYERS = {'0-2km'  :   [0, 2000],
@@ -186,6 +188,15 @@ class AerocomEvaluation(object):
 
         #: Directory that contains configuration files
         self.config_dir = config_dir
+
+        #: If True, process also model maps
+        self.add_maps = False
+
+        self.maps_res_deg = 5
+        self.maps_vmin_vmax = None
+
+        #: If True, process only maps (skip obs evaluation)
+        self.only_maps = False
 
         #: Output directories for different types of json files (will be filled
         #: in :func:`init_dirs`)
@@ -969,11 +980,85 @@ class AerocomEvaluation(object):
     def iface_names(self):
        return self._check_and_get_iface_names()
 
+    def run_map_eval(self, model_name, var_name=None):
+        if var_name is None:
+            all_vars = self.all_obs_vars
+        else:
+            all_vars = [var_name]
+
+        model_cfg = self.get_model_config(model_name)
+        settings = self.colocation_settings
+        settings.update(**model_cfg)
+        outdir = self.out_dirs['contour']
+
+        from pyaerocom.web.web_maps_helpers import (calc_contour_json,
+                                                    griddeddata_to_jsondict)
+        for var in all_vars:
+            const.print_log.info(f'Processing model maps for '
+                                 f'{model_name} ({var})')
+            if var in model_cfg['model_use_vars']:
+                var = model_cfg['model_use_vars'][var]
+            if 'model_data_dir' in model_cfg:
+                data_dir = model_cfg['model_data_dir']
+            else:
+                data_dir = None
+            reader = ReadGridded(model_cfg['model_id'],
+                                 data_dir=data_dir)
+
+            data = reader.read_var(var,
+                                   start=settings['start'],
+                                   stop=settings['stop'],
+                                   ts_type='monthly',
+                                   flex_ts_type=True)
+            vc = data.vert_code
+            if not isinstance(vc, str):
+                raise ValueError(f'Invalid vert_code {vc} in GriddedData')
+
+            if not data.ts_type == 'monthly':
+                data = data.resample_time('monthly')
+
+            data.check_unit()
+
+            outname = f'{var}_{vc}_{model_name}'
+
+            vminmax = self.maps_vmin_vmax
+            if isinstance(vminmax, dict) and var in vminmax:
+                vmin, vmax = vminmax[var]
+            else:
+                vmin, vmax = None, None
+            # first calcualate and save geojson with contour levels
+            contourjson = calc_contour_json(data, vmin=vmin, vmax=vmax)
+
+
+            fp = os.path.join(outdir, f'{outname}.geojson')
+            save_dict_json(contourjson, fp)
+
+            # now calculate pixel data json file (basically a json file
+            # containing monthly mean timeseries at each grid point at
+            # a lower resolution)
+            if isnumeric(self.maps_res_deg):
+                lat_res = self.maps_res_deg
+                lon_res = self.maps_res_deg
+            else:
+                lat_res = self.maps_res_deg['lat_res_deg']
+                lon_res = self.maps_res_deg['lon_res_deg']
+
+
+            datajson = griddeddata_to_jsondict(
+                data,
+                lat_res_deg=lat_res,
+                lon_res_deg=lon_res)
+
+            fp = os.path.join(outdir, f'{outname}.json')
+            save_dict_json(datajson, fp)
+
+
+
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
                        update_interface=True,
                        reanalyse_existing=None, raise_exceptions=None,
                        clear_existing_json=None, only_colocation=None,
-                       only_json=None):
+                       only_json=None, only_maps=None):
         """Create colocated data and json files for model / obs combination
 
         Parameters
@@ -1032,6 +1117,9 @@ class AerocomEvaluation(object):
             self.only_colocation = only_colocation
         if only_json is not None:
             self.only_json = only_json
+        if only_maps is not None:
+            self.only_maps = only_maps
+
         #self.iface_names = self._check_and_get_iface_names()
         if self.clear_existing_json:
             self.clean_json_files()
@@ -1050,32 +1138,38 @@ class AerocomEvaluation(object):
 
         self._update_custom_read_methods()
 
-        for obs_name in obs_list:
-            if obs_name in self.obs_ignore:
-                self._log.info('Skipping observation {}'.format(obs_name))
-                continue
+
+        if self.add_maps:
             for model_name in model_list:
-                if model_name == obs_name:
-                    msg = ('Cannot run same dataset against each other'
-                           '({} vs. {})'.format(model_name, model_name))
-                    self._log.info(msg)
-                    const.print_log.info(msg)
-                    continue
+                self.run_map_eval(model_name, var_name)
 
-                if model_name in self.model_ignore:
-                    self._log.info('Skipping model {}'.format(model_name))
+        if not self.only_maps:
+            for obs_name in obs_list:
+                if obs_name in self.obs_ignore:
+                    self._log.info('Skipping observation {}'.format(obs_name))
                     continue
+                for model_name in model_list:
+                    if model_name == obs_name:
+                        msg = ('Cannot run same dataset against each other'
+                               '({} vs. {})'.format(model_name, model_name))
+                        self._log.info(msg)
+                        const.print_log.info(msg)
+                        continue
 
-                if not self.only_json:
-                    col = self.run_colocation(model_name, obs_name, var_name)
-                else:
-                    col = None
-                if only_colocation:
-                    self._log.info('Skipping computation of json files for {}'
-                                   '/{}'.format(obs_name, model_name))
-                    continue
-                res = self.make_json_files(model_name, obs_name, var_name,
-                                           colocator=col)
+                    if model_name in self.model_ignore:
+                        self._log.info('Skipping model {}'.format(model_name))
+                        continue
+
+                    if not self.only_json:
+                        col = self.run_colocation(model_name, obs_name, var_name)
+                    else:
+                        col = None
+                    if only_colocation:
+                        self._log.info('Skipping computation of json files for {}'
+                                       '/{}'.format(obs_name, model_name))
+                        continue
+                    res = self.make_json_files(model_name, obs_name, var_name,
+                                               colocator=col)
 
         if update_interface:
             #self.clean_json_files()
@@ -1220,13 +1314,12 @@ class AerocomEvaluation(object):
             - update and order heatmap file
         """
         self.update_menu(**opts)
-        #self.make_regions_json()
         try:
             self.make_info_table_web()
             self.update_heatmap_json()
+            self.to_json(self.exp_dir)
         except KeyError: # if no data is available for this experiment
             pass
-        self.to_json(self.exp_dir)
 
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
