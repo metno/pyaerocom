@@ -1861,6 +1861,10 @@ class ReadGridded(object):
 
         perts = subset.perturbation.unique()
         meta['perturbation'] = perts[0] if len(perts) == 1 else list(perts)
+
+        vertcodes = subset.vert_code.unique()
+        meta['vert_code'] = vertcodes[0] if len(vertcodes) == 1 else list(vertcodes)
+
         return meta
 
     def _load_var(self, var_name, ts_type, start, stop,
