@@ -217,8 +217,7 @@ def make_info_table_evaluation_iface(config):
     with open(menu, 'r') as f:
         menu = simplejson.load(f)
     if not config.exp_id in menu:
-        raise KeyError('No menu entry available for experiment {}'
-                       .format(config.exp_id))
+        raise KeyError(f'No menu entry available for experiment {config.exp_id}')
     table = {}
     exp = menu[config.exp_id]
     for obs_var, info in exp.items():
