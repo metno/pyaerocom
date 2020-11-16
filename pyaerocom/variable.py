@@ -322,6 +322,8 @@ class Variable(object):
         scatter plot on loglog scale
     scat_scale_factor : float
         scale factor for scatter plot
+    map_cmap : str
+        name of default colormap (matplotlib) of this variable.
     map_vmin : float
         data value corresponding to lower end of colormap in map plots of this
         quantity
@@ -354,6 +356,7 @@ class Variable(object):
         'scat_loglog': str2bool,
         'scat_scale_factor': float,
         'dry_rh_max':float,
+        'map_cmap' : str,
         'map_vmin': float,
         'map_vmax': float,
         'map_cbar_levels': literal_eval_list,
@@ -371,6 +374,7 @@ class Variable(object):
                       'scat_scale_factor',
                       'map_vmin',
                       'map_vmax',
+                      'map_cmap',
                       'map_c_under',
                       'map_c_over',
                       'map_cbar_levels',
@@ -885,3 +889,6 @@ def all_var_names():
     """Helper method that returns all currently defined variable names"""
     return [k for k in Variable.read_config().keys()]
 
+if __name__=='__main__':
+    var = Variable('od550lt1aer')
+    print(var)
