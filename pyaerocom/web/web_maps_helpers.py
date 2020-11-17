@@ -78,7 +78,8 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
         raise ValueError('Please specify vmin, vmax')
 
 
-    cm=plt.cm.get_cmap(cmap)
+    #cm=plt.cm.get_cmap(cmap, nlayers)
+    cm = plt.cm.get_cmap(cmap)
 
     if levels is None:
         levels = np.linspace(vmin, vmax, nlayers)
@@ -103,8 +104,9 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
         contour = ax.contourf(lons, lats, datamon,
                               transform=proj,
                               cmap=cm,
-                              levels=levels,
-                              extend='max')
+                              levels=levels
+                              #extend='max'
+                              )
 
         result = geojsoncontour.contourf_to_geojson(
                     contourf=contour
@@ -112,10 +114,12 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
 
         geojson[date] = eval(result)
 
+    cb = ax.figure.colorbar(contour, ax=ax)
     #set the legend in one key
 
+    colors_hex = [cm(val) for val in cb.values]
     geojson['legend'] = {
-        'colors': list([colors.to_hex(rgba) for rgba in cm._lut][0:len(levels)]),
+        'colors': colors_hex,
         'levels':  list(levels)
     }
     return geojson
