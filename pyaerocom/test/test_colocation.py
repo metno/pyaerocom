@@ -44,6 +44,13 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
                  0.07752743643132792]
     npt.assert_allclose(means, should_be, rtol=1e-5)
 
+def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
+    data = data_tm5.copy()
+    data.var_name='Blaaa'
+    coldata = colocate_gridded_ungridded(data, aeronetsunv3lev2_subset,
+                                         var_ref='od550aer')
+
+    assert coldata.meta['var_name'] == ['od550aer', 'Blaaa']
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
@@ -80,6 +87,8 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
 
     npt.assert_allclose(means, [obsmean, modmean], rtol=TEST_RTOL)
 
+
+
 @testdata_unavail
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     times = [1,2]
@@ -100,6 +109,15 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     coldata = colocate_gridded_ungridded(gridded, aeronetsunv3lev2_subset, colocate_time=False)
     coords = coldata.coords
     assert len(coords['station_name']) == 1
+
+
+@testdata_unavail
+def test_colocate_gridded_gridded_same_new_var(data_tm5):
+    data = data_tm5.copy()
+    data.var_name = 'Blaaa'
+    coldata = colocate_gridded_gridded(data, data_tm5)
+
+    assert coldata.meta['var_name'] == ['od550aer', 'Blaaa']
 
 @testdata_unavail
 def test_colocate_gridded_gridded_same(data_tm5):
@@ -127,9 +145,6 @@ def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
     data_emep.units = '1'
     col = colocate_gridded_gridded(data_emep, data_tm5)
     assert isinstance(col, ColocatedData)
-
-
-
 
 if __name__ == '__main__':
     import sys
