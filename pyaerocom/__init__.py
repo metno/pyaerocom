@@ -45,3 +45,5 @@ from .variable import get_variable
 from .utils import create_varinfo_table
 
 from .filter import Filter
+
+from .testdata_access import initialise as initialise_testdata
