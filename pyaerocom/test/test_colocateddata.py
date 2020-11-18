@@ -31,8 +31,40 @@ def test_read_colocated_data(coldata_tm5_aeronet):
     mean_fixture = np.nanmean(coldata_tm5_aeronet.data.data)
     assert mean_fixture == mean_loaded
 
+@pytest.mark.parametrize('input_args,latrange,lonrange,numst', [
+({'region_id': 'WORLD'}, (-90,90), (-180, 180),8),
+({'region_id': 'NHEMISPHERE'}, (0,90), (-180, 180),5),
+({'region_id': 'EUROPE'}, (40,72), (-10, 40),2),
+({'region_id': 'OCN'}, (-59.95,66.25), (-132.55,119.95),6),
+])
+def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
+                             latrange, lonrange,numst):
 
+    filtered = coldata_tm5_aeronet.apply_latlon_filter(**input_args)
 
+    lats, lons = filtered.data.latitude.data, filtered.data.longitude.data
+    assert lats.min() > latrange[0]
+    assert lats.max() < latrange[1]
+    assert lons.min() > lonrange[0]
+    assert lons.max() < lonrange[1]
+    assert len(filtered.data.station_name.data) == numst
+
+@pytest.mark.parametrize('input_args,latrange,lonrange,numst', [
+
+({'region_id': 'NHEMISPHERE'}, (0,90), (-180, 180),5),
+({'region_id': 'EUROPE'}, (40,72), (-10, 40),2),
+({'region_id': 'OCN'}, (-59.95,66.25), (-132.55,119.95),1),
+])
+def test_filter_region(coldata_tm5_aeronet,input_args, latrange, lonrange,
+                       numst):
+    filtered = coldata_tm5_aeronet.filter_region(**input_args)
+
+    lats, lons = filtered.data.latitude.data, filtered.data.longitude.data
+    assert lats.min() > latrange[0]
+    assert lats.max() < latrange[1]
+    assert lons.min() > lonrange[0]
+    assert lons.max() < lonrange[1]
+    assert len(filtered.data.station_name.data) == numst
 
 if __name__=="__main__":
 

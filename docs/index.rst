@@ -18,7 +18,7 @@ Official website of Pyaerocom, a Python package containing reading, post analysi
    :caption: Contents:
 
    readme
-   tutorials
+   pyaerocom-tutorials/index
    api
 
 Indices and tables

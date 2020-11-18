@@ -162,10 +162,7 @@ To get started, please see `introduction tutorial <https://pyaerocom.met.no/tuto
 Tutorials (Jupyter notebooks)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A number of tutorial jupyter notebooks can be found in the `pyaerocom-tutorials repo <https://github.com/metno/pyaerocom-tutorials/tree/master/notebooks>`__
-
-**NOTE:** in order to execute these notebooks you need to be connected to the AeroCom database located on servers of the Norwegian Meteorological Institute (MetNo). Thus, if you are not happen to be an employee of the institute you will not be able to execute the tutorial notebooks on your own machine. We are working on providing an example dataset that can be downloaded and rewrite the notebooks based on these example data.
-
+A number of tutorial jupyter notebooks can be found in the `pyaerocom-tutorials repo <https://github.com/metno/pyaerocom-tutorials/tree/master>`__
 
 Remark for Windows users
 ^^^^^^^^^^^^^^^^^^^^^^^^
