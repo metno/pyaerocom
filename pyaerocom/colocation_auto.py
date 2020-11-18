@@ -863,8 +863,8 @@ class Colocator(ColocationSetup):
                     vars_to_retrieve=obs_var,
                     only_cached=self._obs_cache_only,
                     **ropts)
-
-                        # ToDo: consider removing outliers already here.
+                raise Exception
+                # ToDo: consider removing outliers already here.
                 if 'obs_filters' in self:
                     remaining_filters = self._eval_obs_filters()
                     obs_data = obs_data.apply_filters(**remaining_filters)
