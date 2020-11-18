@@ -216,7 +216,6 @@ class Region(BrowseDict):
             raise ValueError('Invalid input for ax: need cartopy GeoAxes..')
         if not self.is_htap:
             return ax
-            #raise NotImplementedError('Coming soon')
 
         from pyaerocom.helpers_landsea_masks import load_region_mask_xr
 

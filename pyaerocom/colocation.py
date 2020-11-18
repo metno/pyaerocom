@@ -9,22 +9,31 @@ import pandas as pd
 import xarray as xr
 from pyaerocom import logger, const
 from pyaerocom import __version__ as pya_ver
-from pyaerocom.tstype import TsType
-from pyaerocom.helpers import isnumeric
+
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (ColocationError,
                                   DataUnitError,
                                   DimensionOrderError,
                                   MetaDataError,
                                   TimeMatchError,
                                   VarNotAvailableError)
-
-#from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
+from pyaerocom.filter import Filter
 from pyaerocom.helpers import (to_pandas_timestamp,
                                to_datestring_YYYYMMDD,
-                               make_datetime_index)
+                               make_datetime_index,
+                               isnumeric)
+from pyaerocom.tstype import TsType
+from pyaerocom.variable import Variable
 
-from pyaerocom.filter import Filter
-from pyaerocom.colocateddata import ColocatedData
+def _check_var_registered(var, aerocom_var, gridded_data):
+    vars_avail = const.VARS.all_vars
+    if not any([x in vars_avail for x in [var, aerocom_var]]):
+        newvar = Variable(var_name=var,
+                          standard_name=gridded_data.standard_name,
+                          long_name=gridded_data.long_name,
+                          units=gridded_data.units)
+
+        const.VARS.add_var(newvar)
 
 def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
     """
@@ -200,6 +209,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                                             gridded_data_ref.units))
 
     var, var_ref = gridded_data.var_name, gridded_data_ref.var_name
+    aerocom_var = gridded_data.var_name_aerocom
+    _check_var_registered(var, aerocom_var, gridded_data)
+
     if remove_outliers:
         low, high, low_ref, high_ref = None, None, None, None
         if var in var_outlier_ranges:
@@ -590,6 +602,9 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     var = gridded_data.var_name
     aerocom_var = gridded_data.var_name_aerocom
+
+    _check_var_registered(var, aerocom_var, gridded_data)
+
     if var_ref is None:
         if aerocom_var is not None:
             var_ref = aerocom_var

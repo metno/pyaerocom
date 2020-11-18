@@ -7,6 +7,7 @@ Created on Fri Feb 14 16:31:13 2020
 """
 
 import pytest
+from pyaerocom import const
 from pyaerocom.variable import Variable
 from pyaerocom.variable import get_emep_variables
 
@@ -36,6 +37,20 @@ def test_get_emep_variables():
     variables = get_emep_variables()
     assert isinstance(variables, dict)
     assert variables['conco3'] == 'SURF_ug_O3'
+
+def test_VarCollection_add_var():
+    var = Variable(var_name='concpmgt25',
+                   units='ug m-3',
+                   long_name='PM mass greater than 2.5 um')
+
+    const.VARS.add_var(var)
+    assert 'concpmgt25' in const.VARS
+    var1 = const.VARS['concpmgt25']
+    assert var1.var_name == var.var_name
+    assert var1.var_name_aerocom == var.var_name_aerocom
+    assert var1.units == var.units
+    assert var1.long_name == var.long_name
+
 
 
 if __name__=='__main__':

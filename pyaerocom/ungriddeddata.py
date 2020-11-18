@@ -203,11 +203,6 @@ class UngriddedData(object):
                 assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
                           'index assigned in data and var_idx for {} in meta-block'
                           .format(var, idx))
-            for var in meta['var_info']:
-                assert var in vars_avail, ('Detected variable {} in var_info '
-                                           'of meta block {}. This variable is '
-                                           'not registered in attr. var_idx'
-                                           .format(var, idx))
 
     @staticmethod
     def from_station_data(stats):
