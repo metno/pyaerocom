@@ -665,6 +665,16 @@ class Colocator(ColocationSetup):
                     self[key] = val
             else:
                 remaining[key] = val
+        ignore_stats = self.ignore_station_names
+        if ignore_stats is not None:
+            if 'ignore_station_names' in remaining:
+                raise NotImplementedError(
+                    'ignore_station_names is defined multiple times in '
+                    'corresponding Colocator attr and as entry in '
+                    'Colocator.obs_filters ...'
+                )
+            remaining['ignore_station_names'] = ignore_stats
+
         return remaining
 
     def _save_coldata(self, coldata, savename, out_dir, model_var, model_data,
@@ -762,11 +772,6 @@ class Colocator(ColocationSetup):
         if self.remove_outliers:
             self._update_var_outlier_ranges(var_matches)
 
-        if self.read_opts_ungridded is not None:
-            ropts = self.read_opts_ungridded
-        else:
-            ropts = {}
-
         data_objs = {}
         if self.start is None:
             self._infer_start_stop(model_reader)
@@ -807,15 +812,6 @@ class Colocator(ColocationSetup):
                 # if colocation frequency is not specified
                 ts_type = ts_type_src
 
-            ignore_stats = None
-            if self.ignore_station_names is not None:
-                ignore_stats = self.ignore_station_names
-                if isinstance(ignore_stats, dict):
-                    if obs_var in ignore_stats:
-                        ignore_stats = ignore_stats[obs_var]
-                    else:
-                        ignore_stats = None
-
             #ts_type_src = model_data.ts_type
             if TsType(ts_type_src) < TsType(ts_type):# < all_ts_types.index(ts_type_src):
                 print_log.info('Updating ts_type from {} to {} (highest '
@@ -853,22 +849,34 @@ class Colocator(ColocationSetup):
                     really_do_reanalysis = True
 
             if really_do_reanalysis:
-                #Reading obs data only if the co-located data file does
-                #not already exist.
-                #This part of the method has been changed by @hansbrenna to work better with
-                #large observational data sets. Only one variable is loaded into
+                # Reading obs data only if the co-located data file does
+                # not already exist.
+                # This part of the method has been changed by @hansbrenna to work better with
+                # large observational data sets. Only one variable is loaded into
                 # the UngriddedData object at a time. Currently the variable is
-                #re-read a lot of times, which is a weakness.
+                # re-read a lot of times, which is a weakness.
+
+                # everything under read_opts_ungridded is additional input
+                # applied during the actual reading of data. This will
+                # deactivate caching in most cases. Better way is probably to
+                # provide filtering of ungridded observations "after" reading
+                # (and caching) via obs_filters.
+                if self.read_opts_ungridded is not None:
+                    readobs_filters_pre = self.read_opts_ungridded
+                else:
+                    readobs_filters_pre = {}
+
+                # ToDo: consider removing outliers already here.
+                if 'obs_filters' in self:
+                    readobs_filters_post = self._eval_obs_filters()
+                else:
+                    readobs_filters_post = None
+
                 obs_data = obs_reader.read(
                     vars_to_retrieve=obs_var,
                     only_cached=self._obs_cache_only,
-                    **ropts)
-                raise Exception
-                # ToDo: consider removing outliers already here.
-                if 'obs_filters' in self:
-                    remaining_filters = self._eval_obs_filters()
-                    obs_data = obs_data.apply_filters(**remaining_filters)
-
+                    filter_post=readobs_filters_post,
+                    **readobs_filters_pre)
             try:
                 try:
                     by=self.update_baseyear_gridded
@@ -892,7 +900,6 @@ class Colocator(ColocationSetup):
                         var_outlier_ranges=self.var_outlier_ranges,
                         var_ref_outlier_ranges=self.var_ref_outlier_ranges,
                         update_baseyear_gridded=by,
-                        ignore_station_names=ignore_stats,
                         apply_time_resampling_constraints=self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
@@ -998,13 +1005,6 @@ class Colocator(ColocationSetup):
                     raise Exception(msg)
                 else:
                     continue
-
-# =============================================================================
-#             if not obs_data.ts_type in all_ts_types:
-#                 raise TemporalResolutionError('Invalid temporal resolution {} '
-#                                               'in obs {}'.format(obs_data.ts_type,
-#                                                                  self.model_id))
-# =============================================================================
 
             # update colocation ts_type, based on the available resolution in
             # model and obs.
