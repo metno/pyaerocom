@@ -1174,28 +1174,89 @@ class UngriddedData(object):
         result['num_stats'] = num_stats
         return result
 
-    def _check_filter_match(self, meta, str_f, list_f, range_f, val_f):
+    def _check_str_filter_match(self, meta, negate, str_f):
+        # Check string equality for input meta data and filters. Supports
+        # wildcard matching
+        for metakey, filterval in str_f.items():
+            # key does not exist in this specific meta_block
+            if not metakey in meta:
+                return False
+            # check if this key is in negate list (then result will be True
+            # for all that do not match the specified filter input value(s))
+            neg = metakey in negate
+
+            # actual value of this key in input metadata
+            metaval = meta[metakey]
+
+            # check equality of values
+            match = metaval == filterval
+            if match: # direct match found
+                if neg: # key is flagged in negate -> no match
+                    return False
+            else: # no direct match found
+                # check wildcard match
+                if not '*' in filterval: # no wildcard in
+                    return False
+                else:
+                    match = fnmatch.fnmatch(metaval, filterval)
+                    if neg:
+                        if match:
+                            return False
+                    else:
+                        if not match:
+                            return False
+        return True
+
+    def _check_filter_match(self, meta, negate, str_f, list_f, range_f, val_f):
         """Helper method that checks if station meta item matches filters
 
         Note
         ----
         This method is used in :func:`apply_filter`
         """
-        for k, v in str_f.items():
-            if not k in meta or not meta[k] == v:
-                if '*' in v:
-                    if not fnmatch.fnmatch(meta[k], v):
+        if not self._check_str_filter_match(meta, negate, str_f):
+            return False
+
+        for metakey, filterval in list_f.items():
+            if not metakey in meta:
+                return False
+            neg = metakey in negate
+            metaval = meta[metakey]
+            match = metaval == filterval
+            if match: # lists are identical
+                if neg:
+                    return False
+            else: # value in metadata block is different from filter value
+                match = metaval in filterval
+                if match:
+                    if neg:
                         return False
                 else:
-                    return False
-        for k, v in list_f.items():
-            if not k in meta or not meta[k] in v:
+                    if isinstance(metaval, str):
+                        for entry in filterval:
+                            if '*' in entry:
+                                match = fnmatch.fnmatch(metaval, entry)
+                                if neg:
+                                    if match:
+                                        return False
+                                else:
+                                    if not match:
+                                        return False
+        # range filter
+        for metakey, filterval in range_f.items():
+            if not metakey in meta:
                 return False
-        for k, v in range_f.items():
-            if not k in meta or not in_range(meta[k], v[0], v[1]):
+            neg = metakey in negate
+            match = in_range(meta[metakey], filterval[0], filterval[1])
+            if (neg and match) or (not neg and not match):
                 return False
-        for k, v in val_f.items():
-            if not k in meta or not meta[k] == v:
+
+        for metakey, filterval in val_f.items():
+            if not metakey in meta:
+                return False
+            neg = metakey in negate
+            match = meta[metakey] == filterval
+            if (neg and match) or (not neg and not match):
                 return False
         return True
 
@@ -1499,18 +1560,39 @@ class UngriddedData(object):
                 d[k].append(meta[k])
         return d
 
-    def _find_meta_matches(self, *filters):
+    def _find_meta_matches(self, negate=None, *filters):
         """Find meta matches for input attributes
+
+        Parameters
+        ----------
+        negate : list or str, optional
+            specified meta key(s) provided in `*filters` that are
+            supposed to be treated as 'not valid'. E.g. if
+            `station_name="bad_site"` is input in `filter_attributes` and if
+            `station_name` is listed in `negate`, then all metadata blocks
+            containing "bad_site" as station_name will be excluded in output
+            data object.
+        *filters
+            list of filters to be applied
 
         Returns
         -------
-        list
+        tuple
             list of metadata indices that match input filter
         """
+        if negate is None:
+            negate = []
+        elif isinstance(negate, str):
+            negate = [negate]
+        elif not isinstance(negate, list):
+            raise ValueError(f'Invalid input for negate {negate}, '
+                             f'need list or str or None')
         meta_matches = []
         totnum = 0
         for meta_idx, meta in self.metadata.items():
-            if self._check_filter_match(meta, *filters):
+            if self._check_filter_match(meta,
+                                        negate,
+                                        *filters):
                 meta_matches.append(meta_idx)
                 for var in meta['var_info']:
                     try:
@@ -1690,11 +1772,18 @@ class UngriddedData(object):
             data = data.filter_region(region_id)
         return data
 
-    def filter_by_meta(self, **filter_attributes):
+    def filter_by_meta(self, negate=None, **filter_attributes):
         """Flexible method to filter these data based on input meta specs
 
         Parameters
         ----------
+        negate : list or str, optional
+            specified meta key(s) provided via `filter_attributes` that are
+            supposed to be treated as 'not valid'. E.g. if
+            `station_name="bad_site"` is input in `filter_attributes` and if
+            `station_name` is listed in `negate`, then all metadata blocks
+            containing "bad_site" as station_name will be excluded in output
+            data object.
         **filter_attributes
             valid meta keywords that are supposed to be filtered and the
             corresponding filter values (or value ranges)
@@ -1732,7 +1821,9 @@ class UngriddedData(object):
         filters = self._init_meta_filters(**filter_attributes)
 
         # find all metadata blocks that match the filters
-        meta_matches, totnum_new = self._find_meta_matches(*filters)
+        meta_matches, totnum_new = self._find_meta_matches(negate,
+                                                           *filters,
+                                                           )
         if len(meta_matches) == len(self.metadata):
             const.print_log.info('Input filters {} result in unchanged data '
                                  'object'.format(filter_attributes))
@@ -2948,11 +3039,16 @@ if __name__ == "__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
 
-    empty = UngriddedData()
-    plt.close('all')
-    data = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
-    data1 = pya.io.ReadUngridded().read('AeronetInvV3Lev2.daily', 'od550aer')
+    OBS_LOCAL = '/home/jonasg/MyPyaerocom/data/obsdata/'
 
-    data2 = data.colocate_vardata(var1='od550aer', other=data1)
+    GHOST_EEA_LOCAL = os.path.join(OBS_LOCAL, 'GHOST/data/EEA_AQ_eReporting/daily')
 
-    print(data2)
+    data = pya.io.ReadUngridded('GHOST.EEA.daily',
+                                data_dir=GHOST_EEA_LOCAL).read(vars_to_retrieve='vmro3')
+
+    data.filter_by_meta(station_name = ['Bleak*'],
+                        instrument_name='Blaaaa*',
+                        sampling_height = 2.5,
+                        altitude = (0, 500),
+                        negate=['station_name', 'instrument_name',
+                                'altitude'])
