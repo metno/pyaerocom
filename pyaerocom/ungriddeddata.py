@@ -1820,8 +1820,8 @@ class UngriddedData(object):
                                                            *filters,
                                                            )
         if len(meta_matches) == len(self.metadata):
-            const.print_log.info('Input filters {} result in unchanged data '
-                                 'object'.format(filter_attributes))
+            const.logger.info('Input filters {} result in unchanged data '
+                              'object'.format(filter_attributes))
             return self
         new = self._new_from_meta_blocks(meta_matches, totnum_new)
         time_str = datetime.now().strftime('%Y%m%d%H%M%S')
@@ -3041,9 +3041,34 @@ if __name__ == "__main__":
     data = pya.io.ReadUngridded('GHOST.EEA.daily',
                                 data_dir=GHOST_EEA_LOCAL).read(vars_to_retrieve='vmro3')
 
-    data.filter_by_meta(station_name = ['Bleak*'],
-                        instrument_name='Blaaaa*',
-                        sampling_height = 2.5,
-                        altitude = (0, 500),
-                        negate=['station_name', 'instrument_name',
-                                'altitude'])
+
+    MBlandforms_to_include = ['high altitude plains','water', 'very low plateaus',
+                        'plains', 'rugged lowlands','hills','high altitude plateaus',
+                        'mid altitude plateaus', 'nan','lowlands', 'mid altitude plains',
+                        'low plateaus',]
+
+    EEA_rural_station_types_to_include = ['background']
+    EEA_rural_area_types_to_include = ['rural','rural-near_city',
+                                       'rural-regional',
+                                       'rural-remote']
+
+
+    #Define filters for the obs subsets
+
+    standard_filter = {'set_flags_nan'  : True,
+                       'station_name'   : ['Innsbr*'],
+                       'negate'         : 'station_name'}
+
+    rural_filter = {'standardised_network_provided_station_classification':
+                    EEA_rural_station_types_to_include,
+                    'standardised_network_provided_area_classification':
+                        EEA_rural_area_types_to_include
+                    }
+
+    mountain_filter = {'altitude':[-20,1500],
+                       'ESDAC_Meybeck_landform_classification' :
+                           MBlandforms_to_include
+                      }
+    obs_filters = {**standard_filter,**rural_filter,**mountain_filter}
+
+    filtered = data.apply_filters(**obs_filters)
