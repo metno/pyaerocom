@@ -125,7 +125,7 @@ class ReadUngridded(object):
                              'be read ({})'.format(val, dsr))
 
         for ds, data_dir in val.items():
-            assert os.path.exists(data_dir)
+            assert os.path.exists(data_dir), f'{data_dir} does not exist'
         self._data_dir = val
 
     @property
@@ -362,7 +362,7 @@ class ReadUngridded(object):
         return vtr[dataset_to_read]
 
     def read_dataset(self, dataset_to_read, vars_to_retrieve=None,
-                     only_cached=False, **kwargs):
+                     only_cached=False, filter_post=None, **kwargs):
         """Read dataset into an instance of :class:`ReadUngridded`
 
         Parameters
@@ -475,6 +475,9 @@ class ReadUngridded(object):
 
         if _caching is not None:
             const.CACHING = _caching
+
+        if filter_post is not None:
+            data_out = data_out.filter_by_meta()
         return data_out
 
     def read_dataset_post(self, dataset_to_read, vars_to_retrieve,
