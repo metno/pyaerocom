@@ -96,7 +96,7 @@ class ReadL2Data(ReadL2DataBase):
     PROVIDES_VARIABLES = [_EC355NAME, _BS355NAME, _LODNAME, _SRNAME, _QANAME]
 
     GLOBAL_ATTRIBUTES = {}
-    DATASET_PATH = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/'
+    DATASET_PATH = '/lustre/storeA/project/fou/kl/admaeolus/data.rev.TD01/download/'
 
     def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
         super(ReadL2Data, self).__init__(dataset_to_read)
@@ -469,7 +469,7 @@ class ReadL2Data(ReadL2DataBase):
                     have a look at the example to access the values
 
         This is whats in one DBL file
-        codadump list /lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL
+        codadump list /lustre/storeA/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL
 
         /mph/product
         /mph/proc_stage
@@ -672,8 +672,8 @@ class ReadL2Data(ReadL2DataBase):
         >>> import pyaerocom as pya
         >>> obj = pya.io.read_aeolus_l2a_data.ReadL2Data(verbose=True)
         >>> import numpy as np
-        # >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/AE_TD01_ALD_U_N_2A_20190526T124829029_005400003_004387_0001/AE_TD01_ALD_U_N_2A_20190526T124829029_005400003_004387_0001.DBL'
-        >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/AE_TD01_ALD_U_N_2A_20190719T152159021_005472012_005245_0001/AE_TD01_ALD_U_N_2A_20190719T152159021_005472012_005245_0001.DBL'
+        # >>> filename = '/lustre/storeA/project/fou/kl/admaeolus/data.rev.TD01/download/AE_TD01_ALD_U_N_2A_20190526T124829029_005400003_004387_0001/AE_TD01_ALD_U_N_2A_20190526T124829029_005400003_004387_0001.DBL'
+        >>> filename = '/lustre/storeA/project/fou/kl/admaeolus/data.rev.TD01/download/AE_TD01_ALD_U_N_2A_20190719T152159021_005472012_005245_0001/AE_TD01_ALD_U_N_2A_20190719T152159021_005472012_005245_0001.DBL'
         >>> # read returning a ndarray
         >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
         >>> test=((data_numpy[:,obj._QAINDEX].astype(np.int)))
@@ -914,12 +914,12 @@ class ReadL2Data(ReadL2DataBase):
         -------
         >>> import pyaerocom as pya
         >>> obj = pya.io.read_aeolus_l2a_data.ReadL2Data(verbose=True)
-        >>> basedir='/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/AE_TD01_ALD_U_N_2A_20190526T124829029_005400003_004387_0001/'
+        >>> basedir='/lustre/storeA/project/fou/kl/admaeolus/data.rev.TD01/download/AE_TD01_ALD_U_N_2A_20190526T124829029_005400003_004387_0001/'
         >>> files = obj.get_file_list(basedir=basedir)
 
         >>> import pyaerocom as pya
         >>> obj = pya.io.read_aeolus_l2a_data.ReadL2Data(verbose=True)
-        >>> basedir='/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/'
+        >>> basedir='/lustre/storeA/project/fou/kl/admaeolus/data.rev.TD01/download/'
         >>> files = obj.get_file_list(basedir=basedir)
         """
 
@@ -1057,7 +1057,7 @@ class ReadL2Data(ReadL2DataBase):
         >>> import pyaerocom as pya
         >>> obj = pya.io.read_aeolus_l2a_data.ReadL2Data(loglevel=logging.DEBUG)
         >>> testfiles = []
-        >>> testfiles.append('/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/download/2018-12/01/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.TGZ')
+        >>> testfiles.append('/lustre/storeA/project/fou/kl/admaeolus/data.rev.2A02/download/2018-12/01/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.TGZ')
         >>> data=obj.read(files=testfiles)
         >>> # return the data points within a radius of a certain station
         >>> location = [(49.093,8.428,0.)]
@@ -1419,7 +1419,7 @@ class ReadL2Data(ReadL2DataBase):
     #     >>> obj = read_aeolus_l2a_data.ReadAeolusL2aData(verbose=True)
     #     >>> import os
     #     >>> os.environ['CODA_DEFINITION']='/lustre/storeA/project/aerocom/aerocom1/ADM_CALIPSO_TEST/'
-    #     >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
+    #     >>> filename = '/lustre/storeA/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
     #     >>> # read returning a ndarray
     #     >>> filedata_numpy = obj.read_file(filename, vars_to_retrieve=['ec355aer'], return_as='numpy')
     #     >>> obj.ndarr2data(data_numpy)
@@ -1525,7 +1525,7 @@ class ReadL2Data(ReadL2DataBase):
                     have a look at the example to access the values
 
         This is whats in one DBL file
-        codadump list /lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL
+        codadump list /lustre/storeA/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL
 
         /mph/product
         /mph/proc_stage
@@ -1729,7 +1729,7 @@ class ReadL2Data(ReadL2DataBase):
         >>> obj = read_aeolus_l2a_data.ReadAeolusL2aData(verbose=True)
         >>> import os
         >>> os.environ['CODA_DEFINITION']='/lustre/storeA/project/aerocom/aerocom1/ADM_CALIPSO_TEST/'
-        >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
+        >>> filename = '/lustre/storeA/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
         >>> # read returning a ndarray
         >>> coda_data = obj.read_data_fields(filename)
         """
@@ -1855,7 +1855,7 @@ class ReadL2Data(ReadL2DataBase):
         >>> obj = read_aeolus_l2a_data.ReadAeolusL2aData(verbose=True)
         >>> import os
         >>> os.environ['CODA_DEFINITION']='/lustre/storeA/project/aerocom/aerocom1/ADM_CALIPSO_TEST/'
-        >>> filename = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
+        >>> filename = '/lustre/storeA/project/fou/kl/admaeolus/data.rev.2A02/AE_OPER_ALD_U_N_2A_20181201T033526026_005423993_001590_0001.DBL'
         >>> # read returning a ndarray
         >>> coda_data = obj.read_data_fields(filename)
         >>> import xarray as xr
@@ -3087,13 +3087,13 @@ if __name__ == '__main__':
 
     import argparse
     options = {}
-    default_topo_file = '/lustre/storeB/project/fou/kl/admaeolus/EMEP.topo/MACC14_topo_v1.nc'
+    default_topo_file = '/lustre/storeA/project/fou/kl/admaeolus/EMEP.topo/MACC14_topo_v1.nc'
 
     obj = ReadL2Data(verbose=True)
     SUPPORTED_GRIDS = obj.SUPPORTED_GRIDS.keys()
     DEFAULT_GRID = 'MODEL'
 
-    netcdf_indir = '/lustre/storeB/project/fou/kl/admaeolus/EMEPmodel'
+    netcdf_indir = '/lustre/storeA/project/fou/kl/admaeolus/EMEPmodel'
 
     parser = argparse.ArgumentParser(
         description='command line interface to aeolus2netcdf.py\n\n\n')
@@ -3120,7 +3120,7 @@ if __name__ == '__main__':
     parser.add_argument("--lonmin", help="min longitude to return", default=np.float_(-30.))
     parser.add_argument("--lonmax", help="max longitude to return", default=np.float_(45.))
     parser.add_argument("--dir", help="work on all files below this directory",
-                        default='/lustre/storeB/project/fou/kl/admaeolus/data.rev.2A02/download/AE_OPER_ALD_U_N_2A_*')
+                        default='/lustre/storeA/project/fou/kl/admaeolus/data.rev.2A02/download/AE_OPER_ALD_U_N_2A_*')
     # parser.add_argument("--filemask", help="file mask to find data files",
     #                     default='*AE_OPER_ALD_U_N_2A_*')
     parser.add_argument("--tempdir", help="directory for temporary files",
@@ -3405,7 +3405,7 @@ if __name__ == '__main__':
     if options['netcdfcolocate']:
         start_time = time.perf_counter()
 
-        netcdf_indir = '/lustre/storeB/project/fou/kl/admaeolus/EMEPmodel'
+        netcdf_indir = '/lustre/storeA/project/fou/kl/admaeolus/EMEPmodel'
         import xarray as xr
         # read topography since that needs to be added to the ground following height of the model
         obj.logger.info('reading topography file {}'.format(options['topofile']))
