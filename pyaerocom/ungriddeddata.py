@@ -23,7 +23,7 @@ from pyaerocom.helpers import (same_meta_dict,
                                start_stop, merge_station_data,
                                isnumeric)
 
-from pyaerocom.metastandards import StationMetaData
+from pyaerocom.metastandards import STANDARD_META_KEYS
 
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
                                              get_mask_value)
@@ -116,7 +116,7 @@ class UngriddedData(object):
     _LOCATION_PRECISION = 5
     _LAT_OFFSET = np.float(90.)
 
-    STANDARD_META_KEYS = list(StationMetaData().keys())
+    STANDARD_META_KEYS = STANDARD_META_KEYS
 
     @property
     def _ROWNO(self):
@@ -737,6 +737,7 @@ class UngriddedData(object):
                         merge_if_multi=True, merge_pref_attr=None,
                         merge_sort_by_largest=True, insert_nans=False,
                         allow_wildcards_station_name=True,
+                        add_meta_keys=None,
                         **kwargs):
         """Convert data from one station to :class:`StationData`
 
@@ -822,7 +823,8 @@ class UngriddedData(object):
             try:
                 stat = self._metablock_to_stationdata(idx,
                                                       vars_to_convert,
-                                                      start, stop)
+                                                      start, stop,
+                                                      add_meta_keys)
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
                 logger.info('Skipping meta index {}. Reason: {}'
@@ -894,51 +896,59 @@ class UngriddedData(object):
     ### TODO: check if both `variables` and `var_info` attrs are required in
     ### metdatda blocks
     def _metablock_to_stationdata(self, meta_idx, vars_to_convert,
-                                  start=None, stop=None):
+                                  start=None, stop=None,
+                                  add_meta_keys=None):
         """Convert one metadata index to StationData (helper method)
 
         See :func:`to_station_data` for input parameters
         """
-        # may or may not be defined in metadata block
-        check_keys = ['instrument_name', 'filename', 'revision_date',
-                      'station_name_orig']
+        if add_meta_keys is None:
+            add_meta_keys = []
+        elif isinstance(add_meta_keys, str):
+            add_meta_keys = [add_meta_keys]
 
         sd = StationData()
-        val = self.metadata[meta_idx]
+        meta = self.metadata[meta_idx]
 
         # TODO: make sure in reading classes that data_revision is assigned
         # to each metadata block and not only in self.data_revision
         rev = None
-        if 'data_revision' in val:
-            rev = val['data_revision']
+        if 'data_revision' in meta:
+            rev = meta['data_revision']
         else:
             try:
-                rev = self.data_revision[val['data_id']]
+                rev = self.data_revision[meta['data_id']]
             except Exception:
                 logger.warning('Data revision could not be accessed')
         sd.data_revision = rev
         try:
-            vars_avail = list(val['var_info'].keys())
+            vars_avail = list(meta['var_info'].keys())
         except KeyError:
-            if not 'variables' in val or val['variables'] in (None, []):
+            if not 'variables' in meta or meta['variables'] in (None, []):
                 raise VarNotAvailableError('Metablock does not contain variable '
                                            'information')
-            vars_avail = val['variables']
+            vars_avail = meta['variables']
 
-        for k in check_keys:
-            if k in val:
-                sd[k] = val[k]
+        for key in (self.STANDARD_META_KEYS + add_meta_keys):
+            if key in sd.PROTECTED_KEYS:
+                logger.warning(f'skipping protected key: {key}')
+                continue
+            try:
+                sd[key] = meta[key]
+            except KeyError:
+                pass
 
-        for k in self.STANDARD_META_KEYS:
-            if k in val:
-                sd[k] = val[k]
-        if 'ts_type' in val:
-            sd['ts_type_src'] = val['ts_type']
+        try:
+            sd['ts_type_src'] = meta['ts_type']
+        except KeyError:
+            pass
 
         # assign station coordinates explicitely
         for ck in sd.STANDARD_COORD_KEYS:
-            if ck in val:
-                sd.station_coords[ck] = val[ck]
+            try:
+                sd.station_coords[ck] = meta[ck]
+            except KeyError:
+                pass
 
         # if no input variables are provided, use the ones that are available
         # for this metadata block
@@ -1012,8 +1022,8 @@ class UngriddedData(object):
             FOUND_ONE = True
             # check if there is information about altitude (then relevant 3D
             # variables and parameters are included too)
-            if 'var_info' in val:
-                vi = val['var_info']
+            if 'var_info' in meta:
+                vi = meta['var_info']
             else:
                 vi = {}
             if not np.isnan(altitude).all():
