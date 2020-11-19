@@ -103,7 +103,7 @@ def test_empty_class_header(empty_cfg):
 
     #: timeout to check if one of the supported server locations can be
     #: accessed
-    assert cfg.SERVER_CHECK_TIMEOUT == 0.1 #s
+    assert cfg.SERVER_CHECK_TIMEOUT == 1 #s
 
     assert cfg._outhomename == 'MyPyaerocom'
     from pyaerocom import __dir__
