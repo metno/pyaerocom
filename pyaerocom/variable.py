@@ -3,6 +3,7 @@
 import os
 from ast import literal_eval
 import re, fnmatch
+from cf_units import Unit
 from configparser import ConfigParser
 from pyaerocom import logger, print_log
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
@@ -672,6 +673,8 @@ class VarCollection(object):
 
         self.var_ini = var_ini
 
+        self._vars_added = {}
+
         self._cfg_parser = parse_variables_ini(var_ini)
         self._alias_parser = parse_aliases_ini()
         self._idx = -1
@@ -690,6 +693,7 @@ class VarCollection(object):
         """
         if self._all_vars is None:
             all_vars = [k.lower() for k in self._cfg_parser.keys()]
+            all_vars.extend(self._vars_added.keys())
             #all_vars.extend(list(_read_alias_ini()))
             self._all_vars = all_vars
         return self._all_vars
@@ -770,12 +774,73 @@ class VarCollection(object):
             return self.__dict__[attr]
         return self[attr]
 
-    def __getitem__(self, var_name):
+    def add_var(self, var):
+        """Add a new variable to this collection
+
+        Minimum requirement for new variables are attributes var_name and
+        units.
+
+        Parameters
+        ----------
+        var : Variable
+            new variable definition
+
+        Raises
+        ------
+        VariableDefinitionError
+            if a variable is already defined under that name
+
+        Returns
+        -------
+        None
+        """
+        if not isinstance(var.var_name, str):
+            raise ValueError('Attr. var_name needs to be assigned to input '
+                             'variable')
+        if var.var_name in self.all_vars:
+            raise VariableDefinitionError(f'variable with name {var.var_name} '
+                                          f'is already defined')
+        if not isinstance(var, Variable):
+            raise ValueError('Can only add instances of Variable class...')
+        if not isinstance(var.units, str):
+            if not isinstance(var.units, Unit):
+                raise ValueError('Please assign a unit to the new input '
+                                 'variable')
+            var.units = str(var.units)
+        self._all_vars.append(var.var_name)
+        self._vars_added[var.var_name] = var
+
+    def get_var(self, var_name):
+        """
+        Get variable based on variable name
+
+        Parameters
+        ----------
+        var_name : str
+            name of variable
+
+        Raises
+        ------
+        VariableDefinitionError
+            if no variable under input var_name is registered.
+
+        Returns
+        -------
+        Variable
+            Variable instance
+
+        """
+        if var_name in self._vars_added:
+            return self._vars_added[var_name]
         var = Variable(var_name, cfg=self._cfg_parser)
         if not var.var_name_aerocom in self:
-            raise VariableDefinitionError('Error (VarCollection): input variable '
-                                          '{} is not supported'.format(var_name))
+            raise VariableDefinitionError(
+                'Error (VarCollection): input variable '
+                '{} is not supported'.format(var_name))
         return var
+
+    def __getitem__(self, var_name):
+        return self.get_var(var_name)
 
     def __repr__(self):
         head = "Pyaerocom {}".format(type(self).__name__)

@@ -311,7 +311,7 @@ class VerticalCoordinate(object):
         Returns
         -------
         """
-
+        raise NotImplementedError('Coming soon...')
         #pressure2altitude(p, **kwargs)
         return
 
