@@ -691,7 +691,7 @@ class ReadEbas(ReadUngriddedBase):
             matrix_matches = cols
 
         if len(matrix_matches) == 1:
-            return matrix_matches
+            return matrix_matches[0]
 
         preferred_statistics = self.prefer_statistics
         idx_best_statistics_found = 9999
@@ -1324,13 +1324,6 @@ class ReadEbas(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
-# =============================================================================
-#         num_files = len(files)
-#         disp_each = int(num_files*0.1)
-#         if disp_each < 1:
-#             disp_each = 1
-# =============================================================================
-
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
@@ -1338,12 +1331,6 @@ class ReadEbas(ReadUngriddedBase):
         for i in tqdm(range(len(files))):
             _file = files[i]
             contains = files_contain[i]
-# =============================================================================
-#             if i%disp_each == 0:
-#                 last_t = _print_read_info(i, disp_each, num_files,
-#                                           last_t, type(self).__name__,
-#                                           const.print_log)
-# =============================================================================
             try:
                 station_data = self.read_file(_file,
                                               vars_to_retrieve=contains)
@@ -1457,6 +1444,11 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
 
     r = ReadEbas()
+    fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0044R.20040101000000.20181210133000.high_vol_sampler...1y.1d.DE08L_Metrohm.DE08L_IFT_ION_CHROMATOGRAPHY.lev2.nas'
+    data = r.read_file(fp, 'concso4')
+
+    data.plot_timeseries('concso4')
+    #data = r.read('concso4')
 
     #data = r.read('sc550dryaer')
 
