@@ -150,7 +150,8 @@ class ReadGridded(object):
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
                     'concox'        : ('concno2', 'conco3'),
                     'vmrox'         : ('vmrno2', 'vmro3'),
-                    'fmf550aer'     : ('od550lt1aer', 'od550aer')
+                    'fmf550aer'     : ('od550lt1aer', 'od550aer'),
+                    'concno3'       : ('concno3c', 'concno3f')
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
@@ -168,7 +169,8 @@ class ReadGridded(object):
                 'conc*'         :   multiply_cubes,
                 'concox'        :   add_cubes,
                 'vmrox'         :   add_cubes,
-                'fmf550aer'     :   divide_cubes
+                'fmf550aer'     :   divide_cubes,
+                'concno3'       :   add_cubes,
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }

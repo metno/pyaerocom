@@ -17,6 +17,20 @@ from pyaerocom.helpers import seconds_in_periods
 
 VARS = const.VARS
 
+
+NON_SI_SUPPORTED = {
+    'concno3' : 'ug N m-3'
+}
+
+NON_SI_UCONV_MUL_FACS = pd.DataFrame([
+    ['concno3', 'ug/m3', 'ug N m-3', 3],
+], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
+
+
+# NON_SI_MUL_FACS = pd.DataFrame(
+#     ['concno3', 'ug m-3', 'ug N m-3', 3], # replace with proper value
+# )
+
 # 1. DEFINITION OF MOLAR MASSES
 
 # Atoms
@@ -63,7 +77,7 @@ def unit_conversion_fac_custom(var_name, from_unit):
     if from_unit in UALIASES:
         from_unit = UALIASES[from_unit]
     try:
-        info = UCONV_MUL_FACS.loc[(var_name, str(from_unit)), :]
+        info = df.loc[(var_name, str(from_unit)), :]
         if not isinstance(info, pd.Series):
             raise Exception('Could not find unique conversion factor in table '
                             'UCONV_MUL_FACS in units_helpers.py. Please check '
@@ -75,6 +89,25 @@ def unit_conversion_fac_custom(var_name, from_unit):
                                   'pyaerocom.units_helpers.UCONV_MUL_FACS'
                                   .format(from_unit, var_name))
     return (info.to, info.fac)
+
+def unit_conversion_non_si_fac(var_name, from_unit):
+    """Get custom conversion factor for a certain unit"""
+    # if from_unit in UALIASES:
+    #     from_unit = UALIASES[from_unit]
+    try:
+        info = NON_SI_UCONV_MUL_FACS.loc[(var_name, str(from_unit)), :]
+        if not isinstance(info, pd.Series):
+            raise Exception('Could not find unique conversion factor in table '
+                            'UCONV_MUL_FACS in units_helpers.py. Please check '
+                            'for dulplicate entries')
+    except KeyError:
+        raise UnitConversionError('Failed to convert unit {} (variable {}). '
+                                  'Reason: no custom conversion factor could '
+                                  'be inferred from table '
+                                  'pyaerocom.units_helpers.UCONV_MUL_FACS'
+                                  .format(from_unit, var_name))
+    return (info.to, info.fac)
+
 
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units

@@ -3,6 +3,7 @@
 from collections import OrderedDict as od
 
 import os
+from pyaerocom import units_helpers
 
 import iris
 from iris.analysis.cartography import area_weights
@@ -684,12 +685,18 @@ class GriddedData(object):
 
     def convert_unit(self, new_unit):
         """Convert unit of data to new unit"""
-# =============================================================================
-#         if self._size_GB > self._MAX_SIZE_GB:
-#             raise MemoryError('Cannot convert unit in {} since data is too '
-#                               'large ({} GB)'.format(self.name, self._size_GB))
-# =============================================================================
-        self.grid.convert_units(new_unit)
+        from_unit = self.units
+        var_name = self.var_name
+        import pyaerocom.units_helpers as uh
+        if self.var_name in uh.NON_SI_SUPPORTED.keys():
+            if uh.NON_SI_SUPPORTED[var_name] == new_unit:
+                _, fac = uh.unit_conversion_non_si_fac(var_name, from_unit)
+                cube = self.cube * fac
+                cube.units = new_unit
+                cube.var_name = var_name
+                self.cube = cube
+        else:
+            self.grid.convert_units(new_unit)
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
