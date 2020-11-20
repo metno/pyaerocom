@@ -77,7 +77,7 @@ def unit_conversion_fac_custom(var_name, from_unit):
     if from_unit in UALIASES:
         from_unit = UALIASES[from_unit]
     try:
-        info = df.loc[(var_name, str(from_unit)), :]
+        info = UCONV_MUL_FACS.loc[(var_name, str(from_unit)), :]
         if not isinstance(info, pd.Series):
             raise Exception('Could not find unique conversion factor in table '
                             'UCONV_MUL_FACS in units_helpers.py. Please check '
