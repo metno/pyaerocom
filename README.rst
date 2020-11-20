@@ -1,5 +1,16 @@
 |CI|
 
+Note - You are in the main development branch
+=============================================
+
+This is the main development branch of pyaerocom. It is usually ahead of `master <https://github.com/metno/pyaerocom/tree/master>`__ and the `latest release <https://anaconda.org/conda-forge/pyaerocom>`__, and will have to be installed manually. If you use this branch you are close to or at the tip of the latest developments and we recommend using this branch only after double-checking with the developers.
+
+Possible reasons to use this branch 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- You want to contribute to the currently ongoing developments
+- You need a very recent feature that is not part of the latest release
+
 About
 =====
 
