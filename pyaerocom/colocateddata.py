@@ -1147,12 +1147,16 @@ class ColocatedData(object):
             filtered data object
         """
         is_2d = self._check_latlon_coords()
-        if valid_default_region(region_id):
+
+        if region_id is not None:
             reg = Region(region_id)
             lon_range = reg.lon_range
             lat_range = reg.lat_range
             region_id = reg.name
 
+        if all([x is None for x in (lat_range, lon_range)]):
+            raise ValueError('Please provide input, either for lat_range or '
+                             'lon_range or region_id')
         if lon_range is None:
             lon_range = [-180, 180]
         if lat_range is None:
@@ -1196,6 +1200,24 @@ class ColocatedData(object):
         return ColocatedData(filtered)
 
     def apply_region_mask(self, region_id, inplace=False):
+        """
+        Apply a binary regions mask filter to data object. Available binary
+        regions IDs can be found at `pyaerocom.const.HTAP_REGIONS`.
+
+        Parameters
+        ----------
+        region_id : str
+            ID of binary regions.
+        inplace : bool, optional
+            If True, the current instance, is modified, else a new instance
+            of `ColocatedData` is created and filtered. The default is False.
+
+        Returns
+        -------
+        data : ColocatedData
+            Filtered data object.
+
+        """
 
         data = self if inplace else self.copy()
 
@@ -1222,7 +1244,7 @@ class ColocatedData(object):
         Parameters
         ----------
         region_id : str
-            valid ID of region
+            ID of region
         inplace : bool
             if True, the filtering is done directly in this instance, else
             a new instance is returned
@@ -1253,12 +1275,9 @@ class ColocatedData(object):
 
         if region_id in const.HTAP_REGIONS:
             return self.apply_region_mask(region_id, inplace)
-        elif region_id in const.OLD_AEROCOM_REGIONS:
+        else:
             return self.apply_latlon_filter(region_id=region_id,
                                             inplace=inplace)
-        else:
-            raise DataExtractionError('Failed to filter region {}.'
-                                      .format(region_id))
 
     def get_regional_timeseries(self, region_id, **filter_kwargs):
         """
