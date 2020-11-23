@@ -247,3 +247,19 @@ def conc_from_vmr(cube, ts, ps):
     cube_out = multiply_cubes(mmr_cube,rho)
 
     return cube_out
+
+def conc_from_vmr_STP(cube,):
+    cube = _check_input_iscube(cube)[0]
+
+    R = 287.058 #R for dry air
+
+    standard_T = 293
+    standard_P = 101300
+
+
+    mmr_cube = mmr_from_vmr(cube)
+    rho = R*standard_T/standard_P
+
+    cube_out = rho*mmr_cube
+
+    return cube_out
