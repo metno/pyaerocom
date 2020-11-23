@@ -3,7 +3,6 @@
 from collections import OrderedDict as od
 
 import os
-from pyaerocom import units_helpers
 
 import iris
 from iris.analysis.cartography import area_weights
