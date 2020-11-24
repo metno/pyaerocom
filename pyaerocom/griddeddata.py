@@ -672,30 +672,12 @@ class GriddedData(object):
                 const.print_log.warning('Could not update var_name, invalid input '
                                      '{} (need str)'.format(var_name))
 
-    def _get_info_from_filenames(self):
-        """Try access AeroCom meta info from filenames assigned to this object
-        """
-        raise NotImplementedError
-        from pyaerocom.io import FileConventionRead
-        c = FileConventionRead(from_file=self.from_files[0])
-        info = c.get_info_from_file(self.from_files[0])
-        for f in self.from_files[1:]:
-            add_info = f.from_file(f)
-
     def convert_unit(self, new_unit):
         """Convert unit of data to new unit"""
         from_unit = self.units
-        var_name = self.var_name
         import pyaerocom.units_helpers as uh
-        if self.var_name in uh.NON_SI_SUPPORTED.keys():
-            if uh.NON_SI_SUPPORTED[var_name] == new_unit:
-                _, fac = uh.unit_conversion_non_si_fac(var_name, from_unit)
-                cube = self.cube * fac
-                cube.units = new_unit
-                cube.var_name = var_name
-                self.cube = cube
-        else:
-            self.grid.convert_units(new_unit)
+        converted = uh.convert_unit(self.cube, from_unit, new_unit)
+        self.grid.convert_units(new_unit)
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
@@ -1896,7 +1878,7 @@ class GriddedData(object):
 
         name = [fconv.name, self.name, self.var_name, vert_code,
                 str(pd.Timestamp(self.start).year), self.ts_type]
-        return '_'.format(fconv.file_sep).join(name) + '.nc'
+        return f'{fconv.file_sep}'.join(name) + '.nc'
 
     def aerocom_savename(self, data_id=None, var_name=None,
                          vert_code=None, year=None, ts_type=None):
