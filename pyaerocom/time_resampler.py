@@ -3,6 +3,7 @@
 """
 Module containing time resampling functionality
 """
+import numpy as np
 import pandas as pd
 import xarray as xarr
 from pyaerocom import const
@@ -64,10 +65,8 @@ class TimeResampler(object):
                              'or integer, got {}'.format(min_num_obs))
         valid = self.valid_base_ts_types
         from_mul = from_ts_type.mulfac
-        if from_mul != 1:
-            const.print_log.warning('Ignoring multiplication factor {} in '
-                                 'data with resolution {} in resampling method'
-                                 .format(from_mul, from_ts_type))
+        from_base = from_ts_type.base
+
         start = valid.index(from_ts_type.base)
         stop = valid.index(to_ts_type.base)
 
@@ -81,6 +80,15 @@ class TimeResampler(object):
                 else:
                     _how = 'mean'
                 min_num = min_num_obs[to][last_from]
+                if last_from == from_base and from_mul != 1:
+                    const.print_log.info(
+                        f'Updating min_num_obs={min_num} for {from_base}->'
+                        f'{to} since input resolution is {from_ts_type}'
+                        )
+                    min_num = int(np.ceil(min_num/from_mul))
+                    const.print_log.info(
+                        f'New value: min_num_obs={min_num}'
+                        )
                 last_from = to
                 idx.append((to, min_num, _how))
         if len(idx) == 0  or not idx[-1][0] == to_ts_type.val:
