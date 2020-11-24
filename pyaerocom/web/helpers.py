@@ -12,6 +12,7 @@ import simplejson
 from traceback import format_exc
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.metastandards import DataSource
 from pyaerocom.exceptions import InitialisationError
 
 class ObsConfigEval(BrowseDict):
@@ -50,22 +51,31 @@ class ObsConfigEval(BrowseDict):
         `obs_vert_type=dict(od550aer='Column', ec550aer='ModelLevel')`),
         information is extracted variable specific, for those who are defined
         in the dictionary, for all others, `None` is used.
+    obs_aux_requires : dict, optional
+        information about required datasets / variables for auxiliary
+        variables.
+    instr_vert_loc : str, optional
+        vertical location code of observation instrument. This is used in
+        the web interface for separating different categories of measurements
+        such as "ground", "space" or "airborne".
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
     """
     SUPPORTED_VERT_CODES = ['Column', 'Profile', 'Surface']
     ALT_NAMES_VERT_CODES = dict(ModelLevel = 'Profile')
+
+    SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
     def __init__(self, **kwargs):
 
         self.obs_id = None
         self.obs_type = None
+
         self.obs_vars = None
         self.obs_ts_type_read = None
         self.obs_vert_type = None
-        self.obs_aux_requires = {}
-        self.obs_aux_funs = {}
-        self.obs_aux_units = {}
+        self.obs_aux_requires = None
+        self.instr_vert_loc = None
 
         self.read_opts_ungridded = None
 
@@ -75,7 +85,7 @@ class ObsConfigEval(BrowseDict):
 
     def check_add_obs(self):
         """Check if this dataset is an auxiliary post dataset"""
-        if len(self.obs_aux_requires) > 0:
+        if self.obs_aux_requires is not None:
             if not self.obs_type == 'ungridded':
                 raise NotImplementedError(
                     'Cannot initialise auxiliary setup for {}. Aux obs reading '
@@ -102,8 +112,6 @@ class ObsConfigEval(BrowseDict):
         elif not isinstance(self.obs_vars, list):
             raise ValueError('Invalid input for obs_vars. Need list or str, '
                              'got: {}'.format(self.obs_vars))
-        if self.obs_aux_units is None:
-            self.obs_aux_units = {}
         ovt = self.obs_vert_type
         if ovt is None:
             raise ValueError('obs_vert_type is not defined. Please specify '
@@ -121,6 +129,13 @@ class ObsConfigEval(BrowseDict):
                                      .format(self.obs_vert_type,
                                              var_name,
                                              self.SUPPORTED_VERT_CODES))
+        ovl = self.instr_vert_loc
+        if isinstance(ovl, str) and not ovl in self.SUPPORTED_VERT_LOCS:
+            raise AttributeError(
+                f'Invalid value for instr_vert_loc: {ovl} for {self.obs_id}. '
+                f'Please choose from: {self.SUPPORTED_VERT_LOCS}'
+                )
+
     def _check_ovt(self, ovt):
         """Check if obs_vert_type string is valid alias
 
