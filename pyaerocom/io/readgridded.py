@@ -57,7 +57,7 @@ from pyaerocom.helpers import (to_pandas_timestamp,
                                sort_ts_types,
                                get_highest_resolution,
                                isnumeric)
-
+from pyaerocom.units_helpers import UALIASES
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
@@ -1783,12 +1783,12 @@ class ReadGridded(object):
 
     def _check_correct_units_cube(self, cube):
         if ('invalid_units' in cube.attributes and
-            cube.attributes['invalid_units'] in const.GRID_IO.UNITS_ALIASES):
+            cube.attributes['invalid_units'] in UALIASES):
 
             from_unit = cube.attributes['invalid_units']
-            to_unit = const.GRID_IO.UNITS_ALIASES[from_unit]
-            const.logger.info('Updating invalid unit in {} from {} to {}'
-                              .format(repr(cube), from_unit, to_unit))
+            to_unit = UALIASES[from_unit]
+            const.print_log.info('Updating invalid unit in {} from {} to {}'
+                                 .format(repr(cube), from_unit, to_unit))
 
             cube.units = to_unit
         return cube
