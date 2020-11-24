@@ -66,6 +66,9 @@ class TsType(object):
 
     @val.setter
     def val(self, val):
+        if val is None:
+            raise TemporalResolutionError(
+                'Invalid input, please provide valid frequency string...')
         ival=1
         if val[-1].isdigit():
             raise TemporalResolutionError('Invalid input for TsType: {}'
