@@ -13,38 +13,27 @@ from cf_units import Unit
 from pyaerocom import const
 from pyaerocom.helpers import seconds_in_periods
 from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.helpers import seconds_in_periods
 
 VARS = const.VARS
 
-
-NON_SI_SUPPORTED = {
-    'concno3' : 'ug N m-3'
-}
-
-NON_SI_UCONV_MUL_FACS = pd.DataFrame([
-    ['concno3', 'ug/m3', 'ug N m-3', 3],
-], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
-
-
-# NON_SI_MUL_FACS = pd.DataFrame(
-#     ['concno3', 'ug m-3', 'ug N m-3', 3], # replace with proper value
-# )
-
-# 1. DEFINITION OF MOLAR MASSES
+# 1. DEFINITION OF ATOM and MOLECULAR MASSES
 
 # Atoms
-M_O = 15.999 # g/mol
-M_S = 32.065 # g/mol
+M_O = 15.999 # u
+M_S = 32.065 # u
+M_N = 14.0067 # u
+M_H = 1.00784 # u
 
 # Molecules
+M_SO2 = M_S + 2 * M_O
+M_SO4 = M_S + 4 * M_O
 
-M_SO4 = M_S + 4*M_O
-M_SO2 = M_S + 2*M_O
+M_NO2 = M_N + 2 * M_O
+M_NO3 = M_N + 3 * M_O
 
-# 2. DEFINITION OF CONVERSION FACTORS FOR CERTAIN SPECIES
-UCONV_FAC_S_SO4 = M_SO4 / M_S
-UCONV_FAC_S_SO2 = M_SO2 / M_S
+M_NH3 = M_N + 3 * M_H
+M_NH4 = M_N + 4 * M_H
+
 
 # 2.1 Other conversion factors
 HA_TO_SQM = 10000   # hectar to square metre.
@@ -54,23 +43,25 @@ HA_TO_SQM = 10000   # hectar to square metre.
 # logic of hierarchy is: variable -> from unit -> to_unit -> conversion factor
 UCONV_MUL_FACS = pd.DataFrame([
 
-    ['concso4', 'ug S/m3', VARS.concso4.units, UCONV_FAC_S_SO4],
-    ['concso2', 'ug S/m3', VARS.concso2.units, UCONV_FAC_S_SO2],
-
-    ['concbc', 'ug C/m3', VARS.concbc.units, 1.0],
-    ['concoa', 'ug C/m3', VARS.concoa.units, 1.0],
-    ['concoc', 'ug C/m3', VARS.concoc.units, 1.0],
-    ['conctc', 'ug C/m3', VARS.conctc.units, 1.0],
-
-    ['wetso4', 'kg S/ha', 'kg m-2', UCONV_FAC_S_SO4 / HA_TO_SQM],
-    ['concso4pr', 'mg S/L', 'g m-3', UCONV_FAC_S_SO4] # 1mg/L = 1g/m3
+    ['concso4'  , 'ug S/m3'     , 'ug m-3', M_SO4 / M_S],
+    ['concso2'  , 'ug S/m3'     , 'ug m-3', M_SO2 / M_S],
+    ['concbc'   , 'ug C/m3'     , 'ug m-3', 1.0],
+    ['concoa'   , 'ug C/m3'     , 'ug m-3', 1.0],
+    ['concoc'   , 'ug C/m3'     , 'ug m-3', 1.0],
+    ['conctc'   , 'ug C/m3'     , 'ug m-3', 1.0],
+    ['concno3'  , 'ug N/m3'     , 'ug m-3', M_NO3 / M_N],
+    ['wetso4'   , 'kg S/ha'     , 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
+    ['concso4pr', 'mg S/L'      , 'g m-3' , M_SO4 / M_S] # 1mg/L = 1g/m3
 
 ], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
 
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
-UALIASES = {'ug S m-3' : 'ug S/m3',
-            'ug C m-3' : 'ug C/m3'}
+UALIASES = {'ug S m-3'  : 'ug S/m3',
+            'ug C m-3'  : 'ug C/m3',
+            'ug N m-3'  : 'ug N/m3',
+            '/m'        : 'm-1',
+            'mgN/m2'    : 'mg N m-2'}
 
 def unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit"""
@@ -89,25 +80,6 @@ def unit_conversion_fac_custom(var_name, from_unit):
                                   'pyaerocom.units_helpers.UCONV_MUL_FACS'
                                   .format(from_unit, var_name))
     return (info.to, info.fac)
-
-def unit_conversion_non_si_fac(var_name, from_unit):
-    """Get custom conversion factor for a certain unit"""
-    # if from_unit in UALIASES:
-    #     from_unit = UALIASES[from_unit]
-    try:
-        info = NON_SI_UCONV_MUL_FACS.loc[(var_name, str(from_unit)), :]
-        if not isinstance(info, pd.Series):
-            raise Exception('Could not find unique conversion factor in table '
-                            'UCONV_MUL_FACS in units_helpers.py. Please check '
-                            'for dulplicate entries')
-    except KeyError:
-        raise UnitConversionError('Failed to convert unit {} (variable {}). '
-                                  'Reason: no custom conversion factor could '
-                                  'be inferred from table '
-                                  'pyaerocom.units_helpers.UCONV_MUL_FACS'
-                                  .format(from_unit, var_name))
-    return (info.to, info.fac)
-
 
 def unit_conversion_fac(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
@@ -257,4 +229,6 @@ def implicit_to_explicit_rates(gridded, ts_type):
 
 if __name__ == '__main__':
 
-    print(convert_unit(1, 'ug m-3', 'g m-3', 'concso2'))
+    import cf_units as cfu
+
+    unit = cfu.Unit('ug m-3')
