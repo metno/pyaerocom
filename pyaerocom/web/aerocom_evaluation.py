@@ -176,9 +176,9 @@ class AerocomEvaluation(object):
 
         self.exp_name = None
 
-        self.exp_descr = None
+        self.exp_descr = ''
 
-        self.exp_status = None
+        self.exp_status = 'experimental'
 
         self.clear_existing_json = True
 
@@ -438,9 +438,9 @@ class AerocomEvaluation(object):
 
         elif not len(self.exp_descr.split()) > 10:
             const.print_log.warning(
-                'Experiment description (exp_descr) is rather short (less than '
-                '10 words). Consider providing more information here! Current: '
-                f'{self.exp_descr}'
+                'Experiment description (attr. exp_descr) is either missing or '
+                'rather short (less than 10 words). Consider providing more '
+                'information here! Current: {self.exp_descr}'
                 )
 
         if not isinstance(self.exp_status, str):
