@@ -22,6 +22,8 @@ class DataSource(BrowseDict):
         level of data (e.g. 2)
     framework : str
         ID of framework to which data is associated (e.g. ACTRIS, GAW)
+    instr_vert_loc : str
+        Vertical location of measuring instrument(s).
     revision_date
         last revision date of dataset
     ts_type_src
@@ -32,11 +34,14 @@ class DataSource(BrowseDict):
         occur. The associated values of this attribute need to be sortable
         (e.g. revision_date). This is only relevant in case overlaps occur.
     """
+    SUPPORTED_VERT_LOCS = ["ground", "space", "airborne"]
+
     _types = dict(dataset_name          =   str,
                   data_product          =   str,
                   data_version          =   float,
                   data_level            =   float,
                   framework             =   str,
+                  instr_vert_loc        =   str,
                   ts_type_src           =   str,
                   stat_merge_pref_attr  =   str,
                   revision_date         =   np.datetime64,
@@ -52,7 +57,7 @@ class DataSource(BrowseDict):
         self.data_level = None
 
         self.framework = None
-
+        self.instr_vert_loc = None
         self.revision_date = None
         self.website = None
 
