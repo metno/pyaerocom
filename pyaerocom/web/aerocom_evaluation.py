@@ -164,6 +164,7 @@ class AerocomEvaluation(object):
             'raise_exceptions'    : 'Raise exceptions if they occur'
     }
 
+    EXP_STATUS_VALS = ['public', 'experimental']
     def __init__(self, proj_id=None, exp_id=None, config_dir=None,
                  try_load_json=True, **settings):
 
@@ -176,6 +177,8 @@ class AerocomEvaluation(object):
         self.exp_name = None
 
         self.exp_descr = None
+
+        self.exp_status = None
 
         self.clear_existing_json = True
 
@@ -422,19 +425,31 @@ class AerocomEvaluation(object):
 
     def check_config(self):
         if not isinstance(self.proj_id, str):
-            raise AttributeError(f'proj_id must be string, got {self.proj_id}')
+            raise AttributeError(f'proj_id must be specified, '
+                                 f'(current value: {self.proj_id})')
 
         if not isinstance(self.exp_id, str):
-            raise AttributeError(f'exp_id must be string, got {self.exp_id}')
+            raise AttributeError(f'exp_id must be specified, '
+                                 f'(current value: {self.exp_id})')
 
         if not isinstance(self.exp_descr, str):
-            raise AttributeError(f'exp_descr must be string, got {self.exp_descr}')
+            raise AttributeError(f'exp_descr must be specified, '
+                                 f'(current value: {self.exp_descr})')
+
         elif not len(self.exp_descr.split()) > 10:
             const.print_log.warning(
                 'Experiment description (exp_descr) is rather short (less than '
                 '10 words). Consider providing more information here! Current: '
                 f'{self.exp_descr}'
                 )
+
+        if not isinstance(self.exp_status, str):
+            raise AttributeError(f'exp_status must be specified, '
+                                 f'(current value: {self.exp_status})')
+        elif not self.exp_status in self.EXP_STATUS_VALS:
+            raise ValueError(
+                f'Invalid input for exp_status ({self.exp_status}). '
+                f'Choose from: {self.EXP_STATUS_VALS}.')
 
 
         if not isinstance(self.exp_name, str):
@@ -1475,5 +1490,14 @@ class AerocomEvaluation(object):
         return s
 
 if __name__ == '__main__':
+    import pyaerocom as pya
 
-    stp = AerocomEvaluation('bla', 'blub')
+
+    name = 'A useless experiment called blub, in the bla project.'
+    descr = 'This experiment is indeed, completely useless!'
+    stp = AerocomEvaluation('bla', 'blub', exp_name=name,
+                            exp_descr=descr, exp_status='experimental')
+
+
+
+    pya.web.helpers_evaluation_ifac
