@@ -23,7 +23,7 @@ import fnmatch
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
-from pyaerocom.units_helpers import unit_conversion_fac
+from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_sc440dryaer,
                                  compute_sc700dryaer,
@@ -729,7 +729,7 @@ class ReadEbas(ReadUngriddedBase):
                 for colnum in result_col:
                     try:
                         from_unit = file.var_defs[colnum].units
-                        unit_conversion_fac(from_unit, to_unit)
+                        get_unit_conversion_fac(from_unit, to_unit, var_name)
                         _cols.append(colnum)
                     except UnitConversionError:
                         continue
