@@ -847,8 +847,7 @@ class ReadGridded(object):
         self.file_info = df
 
         if len(df) == 0:
-            raise DataCoverageError('No files could be found for data {} and '
-                                    'years range {}-{}'.format(self.data_id))
+            raise DataCoverageError(f'No files could be found for {self.data_id}')
 
     def filter_files(self, var_name=None, ts_type=None, start=None, stop=None,
                      experiment=None, vert_which=None, is_at_stations=False,
@@ -1782,6 +1781,25 @@ class ReadGridded(object):
         return tuple(data)
 
     def _check_correct_units_cube(self, cube):
+        """Check for units that have been invalidated by iris
+
+        iris lib relies on CF conventions and if the unit in the NetCDF file
+        is invalid, it will set the variable unit to UNKNOWN and put the
+        actually provided unit into the attributes. pyaerocom can handle
+        some of these invalid units, which is checked here and updated
+        accordingly
+
+        Parameters
+        ----------
+        cube : iris.cube.Cube
+            loaded instance of data Cube
+
+        Returns
+        -------
+        iris.cube.Cube
+            input cube that has been checked for supported units and updated
+            if applicable
+        """
         if ('invalid_units' in cube.attributes and
             cube.attributes['invalid_units'] in UALIASES):
 
