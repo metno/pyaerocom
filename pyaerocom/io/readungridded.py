@@ -518,25 +518,35 @@ class ReadUngridded(object):
             return self._eval_filter_post(subset,
                                           dataset_to_read,
                                           vars_available)
-        multivar = len(vars_available) > 1
         filters = {}
         for key, val in filter_post.items():
             if key == 'ignore_station_names':
-                if isinstance(val, dict): #variable specific station filtering
-                    if multivar:
-                        if any([x in vars_available for x in val.keys()]):
-                            raise ValueError()
+                if isinstance(val, (str, list)):
+                    filters['station_name'] = val
+                    if not 'negate' in filters:
+                        filters['negate'] = []
+                    filters['negate'].append('station_name')
+
+                elif isinstance(val, dict): #variable specific station filtering
+                    if len(vars_available) > 1:
+                        raise NotImplementedError(
+                            f'Cannot filter different sites for multivariable '
+                            f'UngriddedData objects (i.e. apply filter '
+                            f'ignore_station_names={val} for UngriddedData '
+                            f'object containing {vars_available}')
                     else:
                         # the variable that is available in the UngriddedData
                         # object
                         var = vars_available[0]
-                        if var in val:
+                        try:
                             filters['station_name'] = val[var]
                             if not 'negate' in filters:
                                 filters['negate'] = []
                             filters['negate'].append('station_name')
-                        # else, ignore, since no site filtering can be inferred
-                        # for this variable
+                        except KeyError:
+                            continue
+                else:
+                    raise ValueError(f'Invalid input for ignore_station_names: {val}')
             else:
                 filters[key] = val
         return filters
