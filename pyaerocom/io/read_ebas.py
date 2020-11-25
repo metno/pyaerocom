@@ -129,7 +129,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.37_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.38_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -196,7 +196,7 @@ class ReadEbas(ReadUngriddedBase):
     IGNORE_WAVELENGTH = ['conceqbc']
 
     ASSUME_AAE_SHIFT_WVL = 1.0
-    ASSUME_AE_SHIFT_WVL = 1.5
+    ASSUME_AE_SHIFT_WVL = 1#.5
 
     IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
     # list of all available resolution codes (extracted from SQLite database)
