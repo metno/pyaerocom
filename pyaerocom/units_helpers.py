@@ -63,7 +63,7 @@ UALIASES = {'ug S m-3'  : 'ug S/m3',
             '/m'        : 'm-1',
             'mgN/m2'    : 'mg N m-2'}
 
-def unit_conversion_fac_custom(var_name, from_unit):
+def _unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit"""
     if from_unit in UALIASES:
         from_unit = UALIASES[from_unit]
@@ -81,7 +81,7 @@ def unit_conversion_fac_custom(var_name, from_unit):
                                   .format(from_unit, var_name))
     return (info.to, info.fac)
 
-def unit_conversion_fac(from_unit, to_unit):
+def _unit_conversion_fac_si(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
 
     Note
@@ -113,6 +113,23 @@ def unit_conversion_fac(from_unit, to_unit):
         raise UnitConversionError('Failed to convert unit from {} to {}'
                                   .format(from_unit, to_unit))
 
+def get_unit_conversion_fac(from_unit, to_unit, var_name=None):
+
+    pre_conv_fac = 1
+    if from_unit == to_unit:
+        # nothing to do
+        return 1
+    elif var_name is not None and var_name in UCONV_MUL_FACS.index:
+        try:
+            from_unit, pre_conv_fac = _unit_conversion_fac_custom(var_name,
+                                                                  from_unit)
+        except UnitConversionError:
+            # from_unit is likely not custom but standard... and if not
+            # call of unit_conversion_fac below will crash
+            pass
+
+    return _unit_conversion_fac_si(from_unit, to_unit) * pre_conv_fac
+
 def convert_unit(data, from_unit, to_unit, var_name=None):
     """Convert unit of data
 
@@ -126,7 +143,7 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
         new unit of input data
     var_name : str, optional
         name of variable. If provided, method
-        :func:`unit_conversion_fac_custom` is called before the standard unit
+        :func:`_unit_conversion_fac_custom` is called before the standard unit
         conversion is applied. That requires that `var_name` is specified in
         :attr:`pyaerocom.molmasses.CONV_MUL_FACS`.
 
@@ -135,24 +152,7 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
     data
         data in new unit
     """
-    if isinstance(from_unit, str):
-        from_unit = Unit(from_unit)
-    if isinstance(to_unit, str):
-        to_unit = Unit(to_unit)
-    if from_unit == to_unit:
-        # nothing to do
-        return data
-    if var_name in UCONV_MUL_FACS.index:
-        try:
-            from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name,
-                                                                 from_unit)
-            data *= pre_conv_fac
-        except UnitConversionError:
-            # from_unit is likely not custom but standard... and if not
-            # call of unit_conversion_fac below will crash
-            pass
-
-    conv_fac = unit_conversion_fac(from_unit, to_unit)
+    conv_fac = get_unit_conversion_fac(from_unit, to_unit, var_name)
     if conv_fac != 1:
         data *= conv_fac
     return data
@@ -170,7 +170,7 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
         new unit of input data
     var_name : str, optional
         name of variable. If provided, method
-        :func:`unit_conversion_fac_custom` is called before the standard unit
+        :func:`_unit_conversion_fac_custom` is called before the standard unit
         conversion is applied. That requires that `var_name` is specified in
         :attr:`pyaerocom.molmasses.CONV_MUL_FACS`.
 
@@ -180,15 +180,13 @@ def convert_unit_back(data, from_unit, to_unit, var_name=None):
         data in new unit
 
     """
-    if var_name in UCONV_MUL_FACS.index:
-        from_unit, pre_conv_fac = unit_conversion_fac_custom(var_name,
-                                                             to_unit)
-        data = np.divide(data, pre_conv_fac)
+    raise NotImplementedError('This method does not work at the moment, and '
+                              'it is unclear what this was developed for, '
+                              'please contact Jonas Gliss or raise an issue '
+                              'on pyaerocom github repo.')
 
-    conv_fac = unit_conversion_fac(to_unit, from_unit)
-    if conv_fac != 1:
-        data = np.divide(data, conv_fac)
-    return data
+def is_deposition(var_name):
+    return True if any([var_name.startswith(x) for x in ('wet', 'dry')]) else False
 
 def implicit_to_explicit_rates(gridded, ts_type):
     """
