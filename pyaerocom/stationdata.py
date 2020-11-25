@@ -25,7 +25,7 @@ from pyaerocom.trends_helpers import _make_mobs_dataframe
 from pyaerocom.helpers import (isnumeric, isrange, calc_climatology,
                                to_datetime64)
 
-from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
+from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
 
 class StationData(StationMetaData):
@@ -224,9 +224,8 @@ class StationData(StationMetaData):
         if unit is None:
             unit = const.VARS[var_name].units
         u = self.get_unit(var_name)
-        if not unit_conversion_fac(u, unit) == 1:
-            raise DataUnitError('Invalid unit {} (expected {})'
-                                .format(u, unit))
+        if not get_unit_conversion_fac(u, unit, var_name) == 1:
+            raise DataUnitError(f'Invalid unit {u} (expected {unit})')
 
     def convert_unit(self, var_name, to_unit):
         """Try to convert unit of data
@@ -256,9 +255,7 @@ class StationData(StationMetaData):
         data = self[var_name]
         data = convert_unit(data, from_unit=unit, to_unit=to_unit,
                             var_name=var_name)
-        #conv_fac = unit_conversion_fac(unit, to_unit)
 
-        #data *= conv_fac
         self[var_name] = data
         self.var_info[var_name]['units'] = to_unit
         const.logger.info('Successfully converted unit of variable {} in {} '

@@ -22,7 +22,7 @@ from pyaerocom.helpers import (same_meta_dict,
                                start_stop_str,
                                start_stop, merge_station_data,
                                isnumeric)
-
+from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.metastandards import StationMetaData
 
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
@@ -1253,7 +1253,7 @@ class UngriddedData(object):
     def check_convert_var_units(self, var_name, to_unit=None,
                                     inplace=True):
         obj = self if inplace else self.copy()
-        from pyaerocom.units_helpers import unit_conversion_fac
+
 
         # get the unit
         if to_unit is None:
@@ -1272,7 +1272,7 @@ class UngriddedData(object):
                     raise MetaDataError('Failed to access unit information for '
                                         'variable {} in metadata block {}. {}'
                                         .format(var_name, i, add_str))
-                fac = unit_conversion_fac(unit, to_unit)
+                fac = get_unit_conversion_fac(unit, to_unit, var_name)
                 if fac != 1:
                     meta_idx = obj.meta_idx[i][var_name]
                     current = obj._data[meta_idx, obj._DATAINDEX]
@@ -1297,7 +1297,6 @@ class UngriddedData(object):
         MetaDataError
             if unit information is not accessible for input variable name
         """
-        from pyaerocom.units_helpers import unit_conversion_fac
         if unit is None:
             unit = const.VARS[var_name]['units']
 
@@ -1322,9 +1321,9 @@ class UngriddedData(object):
                                 'variable {}. Expected unit {}'
                                 .format(var_name, unit))
         for u in units:
-            if not unit_conversion_fac(u, unit) == 1:
-                raise MetaDataError('Invalid unit {} detected (expected {})'
-                                    .format(u, unit))
+            if not get_unit_conversion_fac(u, unit, var_name) == 1:
+                raise MetaDataError(
+                    f'Invalid unit {u} detected (expected {unit})')
 
     def set_flags_nan(self, inplace=False, verbose=False):
         """Set all flagged datapoints to NaN
