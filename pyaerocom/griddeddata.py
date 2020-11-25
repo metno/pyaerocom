@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from cf_units import Unit
 from collections import OrderedDict as od
 
 import os
@@ -181,12 +182,21 @@ class GriddedData(object):
     @property
     def unit_ok(self):
         """Boolean specifying if variable unit is AeroCom default"""
+        from pyaerocom.exceptions import VariableDefinitionError
         try:
             var = const.VARS[self.cube.var_name]
-            if var.has_unit and var.units == self.units:
+            to_unit = var.units
+            current_unit = self.units
+            if to_unit == current_unit: # string match e.g. both are m-1
                 return True
-            return False
-        except Exception:
+            else:
+                # no string match, however, might still be the same
+                # e.g. m-1 and 1/m
+                if Unit(to_unit).convert(1, current_unit) == 1:
+                    self.units = to_unit
+                    return True
+                return False
+        except (VariableDefinitionError, ValueError):
             return False
 
     @property
@@ -211,7 +221,9 @@ class GriddedData(object):
                 self.convert_unit(var.units)
         except (VariableDefinitionError, UnitConversionError,
                 MemoryError, ValueError) as e:
-            logger.info('Failed to convert unit. Reason: {}'.format(repr(e)))
+            print_log.warning(f'Failed to convert unit of {self.data_id} '
+                              f'({self.var_name}) from {self.units} to '
+                              f'{var.units}. Reason: {e}')
 
     @property
     def data_revision(self):
@@ -672,12 +684,41 @@ class GriddedData(object):
                 const.print_log.warning('Could not update var_name, invalid input '
                                      '{} (need str)'.format(var_name))
 
+    def _try_convert_non_cf_unit(self, new_unit):
+        import pyaerocom.units_helpers as uh
+        # check if it is deposition and if units are implicit
+        try:
+            fac = uh.get_unit_conversion_fac(self.units, new_unit, self.var_name)
+        except :
+            if uh.is_deposition(self.var_name):
+                tst = TsType(self.ts_type)
+                si = tst.to_si()
+                check_from = f'{self.units} {si}-1' # e.g. kg N m-2 h-1
+                check_to = f'{self.units} s-1' # -> kg N m-2 s-1
+                check_aerocom = self.var_info.units # what we want in the end
+                fac1 =  uh.get_unit_conversion_fac(check_from,
+                                                   check_to) #h-1 -> s-1
+                fac2 = uh.get_unit_conversion_fac(
+                    check_to,
+                    check_aerocom,
+                    self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
+                mulfac = fac1*fac2
+                self.cube *= mulfac
+                self.units = check_aerocom
+
+
+            else:
+                raise UnitConversionError('What a surprise...')
+
+
+
+
     def convert_unit(self, new_unit):
         """Convert unit of data to new unit"""
-        from_unit = self.units
-        import pyaerocom.units_helpers as uh
-        converted = uh.convert_unit(self.cube, from_unit, new_unit)
-        self.grid.convert_units(new_unit)
+        try:
+            self.grid.convert_units(new_unit)
+        except ValueError as e:
+            self._try_convert_non_cf_unit(new_unit)
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
