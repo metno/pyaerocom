@@ -7,9 +7,15 @@ Created on Tue Nov 24 17:11:58 2020
 """
 import pytest
 from pyaerocom import TsType
+from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.time_resampler import TimeResampler
 import numpy as np
 import pandas as pd
+import xarray as xr
+from iris.cube import Cube
+from pyaerocom import GriddedData
+from pyaerocom.helpers import (resample_time_dataarray,
+                               resample_timeseries)
 
 # get default resampling "min_num_obs"
 min_num_obs_default = {'yearly': {'monthly': 3},
@@ -27,12 +33,34 @@ min_num_obs_custom = {'yearly': {'monthly': 9},
 
 @pytest.fixture(scope='module')
 def fakedata_hourly():
-    idx = pd.date_range(start='1-1-2010 00:00:00', end='1-2-2010 23:59:59',
+    idx = pd.date_range(start='1-1-2010 00:00:00', end='1-13-2010 23:59:59',
                         freq='h')
 
-    data = np.ones_like(idx.astype(float))
-
+    data = np.sin(range(len(idx)))
+    data[44:65] = np.nan
     return pd.Series(data, idx)
+
+@pytest.mark.parametrize('data, expectation',[
+    (pd.Series(), does_not_raise_exception()),
+    (xr.DataArray(), does_not_raise_exception()),
+    (np.asarray([1]), pytest.raises(ValueError)),
+    (GriddedData(), pytest.raises(ValueError)),
+    (Cube([]), pytest.raises(ValueError))
+    ])
+def test_TimeResampler_input_data(data, expectation):
+    with expectation:
+        tr = TimeResampler()
+        tr.input_data = data
+
+
+@pytest.mark.parametrize('data, expectation',[
+    (pd.Series(), resample_timeseries),
+    (xr.DataArray(), resample_time_dataarray),
+    ])
+def test_TimeResampler_fun(data, expectation):
+    tr = TimeResampler()
+    tr.input_data = data
+    assert tr.fun == expectation
 
 @pytest.mark.parametrize('from_ts_type,to_ts_type,min_num_obs,how,expected', [
     (TsType('hourly'), TsType('daily'),3,'median', [('daily', 3, 'median')]),
@@ -50,6 +78,24 @@ def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
     assert val == expected
 
 @pytest.mark.parametrize('args,output_len,output_numnotnan', [
+    (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
+          apply_constraints=False), 1, 1),
+    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
+          apply_constraints=False), 13, 13),
+    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
+          apply_constraints=False), 13, 13),
+    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
+          apply_constraints=True,
+          min_num_obs=min_num_obs_default), 13, 13),
+    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
+          apply_constraints=True,
+          min_num_obs=min_num_obs_custom), 13, 12),
+    (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
+          apply_constraints=True,
+          min_num_obs=min_num_obs_default), 1, 1),
+    (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
+          apply_constraints=True,
+          min_num_obs=min_num_obs_custom), 1, 0)
     ])
 def test_TimeResampler_resample(fakedata_hourly, args, output_len,
                                 output_numnotnan):
