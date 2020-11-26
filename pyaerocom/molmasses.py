@@ -10,7 +10,8 @@ MOLMASSES = {'air_dry'  : 28.9647,
              'so4'      : 96.06,
              'no2'      : 46.0055,
              'co'       : 28.010,
-             'hno3'     : 63.01}
+             'hno3'     : 63.01,
+             'nh3'      : 43.028}
 
 class UnkownSpeciesError(ValueError):
     pass
