@@ -74,6 +74,7 @@ class TestReadEBAS(object):
                          'concno3',
                          'concnh4',
                          'conchno3',
+                         'conctnh',
                          'conctno3',
                          'concno2',
                          'conco3',
