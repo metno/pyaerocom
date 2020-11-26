@@ -1200,9 +1200,7 @@ class UngriddedData(object):
                     return False
             else: # no direct match found
                 # check wildcard match
-                if not '*' in filterval: # no wildcard in
-                    return False
-                else:
+                if '*' in filterval: # no wildcard in
                     match = fnmatch.fnmatch(metaval, filterval)
                     if neg:
                         if match:
@@ -1210,6 +1208,8 @@ class UngriddedData(object):
                     else:
                         if not match:
                             return False
+                elif not neg: # no match, no wildcard match and not inverted
+                    return False
         return True
 
     def _check_filter_match(self, meta, negate, str_f, list_f, range_f, val_f):
