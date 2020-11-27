@@ -816,6 +816,8 @@ class UngriddedData(object):
             meta_idx = [meta_idx]
 
         stats = []
+        # ToDo: check consistency, consider using methods in helpers.py
+        # check also Hans' issue on the topic
         start, stop = np.datetime64(start), np.datetime64(stop)
 
         for idx in meta_idx:
