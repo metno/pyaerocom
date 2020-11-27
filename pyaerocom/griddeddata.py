@@ -688,7 +688,8 @@ class GriddedData(object):
         import pyaerocom.units_helpers as uh
         # check if it is deposition and if units are implicit
         try:
-            fac = uh.get_unit_conversion_fac(self.units, new_unit, self.var_name)
+            fac = uh.get_unit_conversion_fac(self.units, new_unit,
+                                             self.var_name)
         except :
             if uh.is_deposition(self.var_name):
                 tst = TsType(self.ts_type)
@@ -1599,17 +1600,24 @@ class GriddedData(object):
                                   how=how,
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
-        data = GriddedData(arr_out.to_iris(), **self.metadata)
+        data = GriddedData(arr_out.to_iris(),
+                           convert_unit_on_init=False,
+                           **self.metadata)
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
-        data.units = self.units
+        if how in ('mean', 'median', 'std'):
+            data.units = self.units
+        else:
+            print_log.info(
+                f'Cannot infer unit when aggregating using {how}. Please set '
+                f'unit in returned data object!')
         try:
             data.check_dimcoords_tseries()
         except:
             data.reorder_dimensions_tseries()
         return data
 
-    def resample_time(self, to_ts_type='monthly', how='mean',
+    def resample_time(self, to_ts_type='monthly', how=None,
                       apply_constraints=None, min_num_obs=None,
                       use_iris=False):
         """Resample time to input resolution
@@ -1636,6 +1644,9 @@ class GriddedData(object):
                      'daily'    :   {'hourly' : 6}}
 
             to require at least 6 hours per day and 7 days per month.
+        use_iris : bool
+            option to use resampling scheme from iris library rather than
+            xarray.
 
         Returns
         -------
@@ -1648,6 +1659,8 @@ class GriddedData(object):
             if input resolution is not provided, or if it is higher temporal
             resolution than this object
         """
+        if how is None:
+            how = 'mean'
         if not self.has_time_dim:
             raise DataDimensionError('Require time dimension in GriddedData: '
                                      '{}'.format(self.short_str()))
