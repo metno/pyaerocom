@@ -61,7 +61,10 @@ UALIASES = {'ug S m-3'  : 'ug S/m3',
             'ug C m-3'  : 'ug C/m3',
             'ug N m-3'  : 'ug N/m3',
             '/m'        : 'm-1',
-            'mgN/m2'    : 'mg N m-2'}
+            'mgN/m2'    : 'mg N m-2',
+            'mgN/m2/h'  : 'mg N m-2 h-1',
+            'mgN/m**2/h': 'mg N m-2 h-1'
+            }
 
 def _unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit"""
