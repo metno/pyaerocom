@@ -496,9 +496,11 @@ class ReadEbas(ReadUngriddedBase):
                 if file in self.IGNORE_FILES:
                     const.logger.info('Ignoring flagged file {}'.format(file))
                     continue
-                fp = os.path.join(filedir, file)
-                if os.path.exists(fp):
-                    paths.append(fp)
+                paths.append(os.path.join(filedir, file))
+# =============================================================================
+#                 if os.path.exists(fp):
+#                     paths.append(fp)
+# =============================================================================
             files_vars[var] = sorted(paths)
             num = len(paths)
             totnum += num
@@ -729,7 +731,7 @@ class ReadEbas(ReadUngriddedBase):
                 for colnum in result_col:
                     try:
                         from_unit = file.var_defs[colnum].units
-                        get_unit_conversion_fac(from_unit, to_unit, var_name)
+                        get_unit_conversion_fac(from_unit, to_unit, var)
                         _cols.append(colnum)
                     except UnitConversionError:
                         continue
@@ -1443,11 +1445,11 @@ class ReadEbas(ReadUngriddedBase):
 
 if __name__=="__main__":
 
-    r = ReadEbas()
-    fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/DE0044R.20040101000000.20181210133000.high_vol_sampler...1y.1d.DE08L_Metrohm.DE08L_IFT_ION_CHROMATOGRAPHY.lev2.nas'
-    data = r.read_file(fp, 'concso4')
+    reader = ReadEbas()
+    fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/AM0001R.20090101180000.20190424085012.precip_gauge..precip.1y.1d.AM01L_pg_01.AM01L_IC.lev2.nas'
+    data = reader.read_file(fp, 'concprcpno3')
 
-    data.plot_timeseries('concso4')
+    #data.plot_timeseries('concs')
     #data = r.read('concso4')
 
     #data = r.read('sc550dryaer')
