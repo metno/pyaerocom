@@ -385,6 +385,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
         self._data = [] #data block
 
         self.time_stamps = None
+        self.start_meas = None
+        self.stop_meas = None
 
         self.flag_col_info = od()
 
@@ -712,8 +714,59 @@ class EbasNasaAmesFile(NasaAmesHeader):
         start = self.numarr_to_datetime64(offs, self.data[:,0], mulfac)
         stop = self.numarr_to_datetime64(offs, self.data[:,1], mulfac)
 
+
+        # mid timestamps
         self.time_stamps = start + (stop - start)*.5
+        self.start_meas = start
+        self.stop_meas = stop
+
         return (start, stop)
+
+    def get_time_gaps_meas(self, np_freq='s'):
+        """Get array with time gaps between individual measurements
+
+        This is computed based on start and stop timestamps, e.g.
+        `=dt[0] = start[1] - stop[0]`
+
+        Parameters
+        ----------
+        np_freq : str
+            string specifying output frequency of gap values
+
+        Returns
+        -------
+        ndarray
+            array with time-differences as floating point number in specified
+            input resolution
+        """
+        if self.start is None:
+            self.compute_time_stamps() # assigns start / stop attrs.
+        start, stop = self.start, self.stop
+        gaps = (start[1:] - stop[:-1]).astype(f'timedelta64[{np_freq}]').astype(float)
+        return gaps
+
+    def get_time_differences_meas(self, np_freq='s'):
+        """Get array with time between individual measurements
+
+        This is computed based on start and timestamps, e.g.
+        `=dt[0] = start[1] - start[0]`
+
+        Parameters
+        ----------
+        np_freq : str
+            string specifying output frequency of gap values
+
+        Returns
+        -------
+        ndarray
+            array with time-differences as floating point number in specified
+            input resolution
+        """
+        if self.start is None:
+            self.compute_time_stamps() # assigns start / stop attrs.
+        start = self.start
+        dts = (start[1:] - start[:-1]).astype(f'timedelta64[{np_freq}]').astype(float)
+        return dts
 
     def _quality_check(self):
         msgs = ""
