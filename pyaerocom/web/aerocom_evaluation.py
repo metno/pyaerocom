@@ -1249,13 +1249,14 @@ class AerocomEvaluation(object):
             - update and order heatmap file
         """
         self.update_menu(**opts)
-        #self.make_regions_json()
+        # the following code is skipped when
         try:
             self.make_info_table_web()
             self.update_heatmap_json()
+            self.to_json(self.exp_dir)
         except KeyError: # if no data is available for this experiment
             pass
-        self.to_json(self.exp_dir)
+
 
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
@@ -1310,7 +1311,7 @@ class AerocomEvaluation(object):
             delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id)
         except NameError:
             pass
-        self.update_interface()
+        self.update_menu()
 
     def clean_json_files(self, update_interface=False):
         """Checks all existing json files and removes outdated data
