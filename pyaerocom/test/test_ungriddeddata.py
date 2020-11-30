@@ -120,6 +120,9 @@ ALL_SITES = ['AAOT', 'ARIAKE_TOWER', 'Agoufou', 'Alta_Floresta', 'American_Samoa
              'Thornton_C-power', 'Trelew']
 
 @pytest.mark.parametrize('args,sitenames', [
+    ({'station_name' : ['Tr*', 'Mauna*']}, ['Trelew', 'Mauna_Loa']),
+    ({'station_name' : ['Tr*', 'Mauna*'],
+      'negate'  : 'station_name'}, [x for x in ALL_SITES if not x in ['Trelew', 'Mauna_Loa']]),
     ({'altitude' : [0, 1000], 'negate' : 'altitude'}, ['La_Paz', 'Mauna_Loa',
                                                        'Tamanrasset_INM']),
     ({'station_name' : 'Tr*'}, ['Trelew']),

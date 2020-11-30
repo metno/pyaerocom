@@ -1225,28 +1225,37 @@ class UngriddedData(object):
         for metakey, filterval in list_f.items():
             if not metakey in meta:
                 return False
+            if metakey == 'station_name':
+                statname = meta['station_name']
+                if any([statname.startswith(x) for x in ['Tr', 'Mauna']]):
+                    print(statname)
             neg = metakey in negate
             metaval = meta[metakey]
             match = metaval == filterval
             if match: # lists are identical
                 if neg:
                     return False
-            else: # value in metadata block is different from filter value
+            else:
+                # value in metadata block is different from filter value
                 match = metaval in filterval
                 if match:
                     if neg:
                         return False
                 else:
+                    # current metavalue is not equal the filterlist and is also
+                    # not contained in the filterlist. However, one or more
+                    # entries in the filterlist may be wildcard
                     if isinstance(metaval, str):
+                        found = False
                         for entry in filterval:
                             if '*' in entry:
                                 match = fnmatch.fnmatch(metaval, entry)
-                                if neg:
-                                    if match:
+                                if match:
+                                    found = True
+                                    if neg:
                                         return False
-                                else:
-                                    if not match:
-                                        return False
+                        if not found and not neg:
+                            return False
         # range filter
         for metakey, filterval in range_f.items():
             if not metakey in meta:
