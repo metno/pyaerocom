@@ -23,7 +23,7 @@ import fnmatch
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
-from pyaerocom.units_helpers import unit_conversion_fac
+from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_sc440dryaer,
                                  compute_sc700dryaer,
@@ -129,7 +129,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.37_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.38_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -196,7 +196,7 @@ class ReadEbas(ReadUngriddedBase):
     IGNORE_WAVELENGTH = ['conceqbc']
 
     ASSUME_AAE_SHIFT_WVL = 1.0
-    ASSUME_AE_SHIFT_WVL = 1.5
+    ASSUME_AE_SHIFT_WVL = 1#.5
 
     IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
     # list of all available resolution codes (extracted from SQLite database)
@@ -496,9 +496,11 @@ class ReadEbas(ReadUngriddedBase):
                 if file in self.IGNORE_FILES:
                     const.logger.info('Ignoring flagged file {}'.format(file))
                     continue
-                fp = os.path.join(filedir, file)
-                if os.path.exists(fp):
-                    paths.append(fp)
+                paths.append(os.path.join(filedir, file))
+# =============================================================================
+#                 if os.path.exists(fp):
+#                     paths.append(fp)
+# =============================================================================
             files_vars[var] = sorted(paths)
             num = len(paths)
             totnum += num
@@ -691,7 +693,7 @@ class ReadEbas(ReadUngriddedBase):
             matrix_matches = cols
 
         if len(matrix_matches) == 1:
-            return matrix_matches
+            return matrix_matches[0]
 
         preferred_statistics = self.prefer_statistics
         idx_best_statistics_found = 9999
@@ -729,7 +731,7 @@ class ReadEbas(ReadUngriddedBase):
                 for colnum in result_col:
                     try:
                         from_unit = file.var_defs[colnum].units
-                        unit_conversion_fac(from_unit, to_unit)
+                        get_unit_conversion_fac(from_unit, to_unit, var)
                         _cols.append(colnum)
                     except UnitConversionError:
                         continue
@@ -1324,13 +1326,6 @@ class ReadEbas(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
-# =============================================================================
-#         num_files = len(files)
-#         disp_each = int(num_files*0.1)
-#         if disp_each < 1:
-#             disp_each = 1
-# =============================================================================
-
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
@@ -1338,12 +1333,6 @@ class ReadEbas(ReadUngriddedBase):
         for i in tqdm(range(len(files))):
             _file = files[i]
             contains = files_contain[i]
-# =============================================================================
-#             if i%disp_each == 0:
-#                 last_t = _print_read_info(i, disp_each, num_files,
-#                                           last_t, type(self).__name__,
-#                                           const.print_log)
-# =============================================================================
             try:
                 station_data = self.read_file(_file,
                                               vars_to_retrieve=contains)
@@ -1456,7 +1445,12 @@ class ReadEbas(ReadUngriddedBase):
 
 if __name__=="__main__":
 
-    r = ReadEbas()
+    reader = ReadEbas()
+    fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/AM0001R.20090101180000.20190424085012.precip_gauge..precip.1y.1d.AM01L_pg_01.AM01L_IC.lev2.nas'
+    data = reader.read_file(fp, 'concprcpno3')
+
+    #data.plot_timeseries('concs')
+    #data = r.read('concso4')
 
     #data = r.read('sc550dryaer')
 

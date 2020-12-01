@@ -102,7 +102,8 @@ class TestReadEBAS(object):
                          'wetno3',
                          'scavratioso4',
                          'test',
-                         'concpm1']
+                         'concpm1',
+                         'conctnh']
 
     def test_DATA_ID(self, reader):
         assert reader.data_id == 'EBASSubset'

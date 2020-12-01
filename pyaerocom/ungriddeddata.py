@@ -24,6 +24,8 @@ from pyaerocom.helpers import (same_meta_dict,
                                isnumeric)
 
 from pyaerocom.metastandards import STANDARD_META_KEYS
+from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.metastandards import StationMetaData
 
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
                                              get_mask_value)
@@ -817,6 +819,8 @@ class UngriddedData(object):
             meta_idx = [meta_idx]
 
         stats = []
+        # ToDo: check consistency, consider using methods in helpers.py
+        # check also Hans' issue on the topic
         start, stop = np.datetime64(start), np.datetime64(stop)
 
         for idx in meta_idx:
@@ -1225,10 +1229,6 @@ class UngriddedData(object):
         for metakey, filterval in list_f.items():
             if not metakey in meta:
                 return False
-            if metakey == 'station_name':
-                statname = meta['station_name']
-                if any([statname.startswith(x) for x in ['Tr', 'Mauna']]):
-                    print(statname)
             neg = metakey in negate
             metaval = meta[metakey]
             match = metaval == filterval
@@ -1333,7 +1333,7 @@ class UngriddedData(object):
     def check_convert_var_units(self, var_name, to_unit=None,
                                     inplace=True):
         obj = self if inplace else self.copy()
-        from pyaerocom.units_helpers import unit_conversion_fac
+
 
         # get the unit
         if to_unit is None:
@@ -1352,7 +1352,7 @@ class UngriddedData(object):
                     raise MetaDataError('Failed to access unit information for '
                                         'variable {} in metadata block {}. {}'
                                         .format(var_name, i, add_str))
-                fac = unit_conversion_fac(unit, to_unit)
+                fac = get_unit_conversion_fac(unit, to_unit, var_name)
                 if fac != 1:
                     meta_idx = obj.meta_idx[i][var_name]
                     current = obj._data[meta_idx, obj._DATAINDEX]
@@ -1377,7 +1377,6 @@ class UngriddedData(object):
         MetaDataError
             if unit information is not accessible for input variable name
         """
-        from pyaerocom.units_helpers import unit_conversion_fac
         if unit is None:
             unit = const.VARS[var_name]['units']
 
@@ -1402,9 +1401,9 @@ class UngriddedData(object):
                                 'variable {}. Expected unit {}'
                                 .format(var_name, unit))
         for u in units:
-            if not unit_conversion_fac(u, unit) == 1:
-                raise MetaDataError('Invalid unit {} detected (expected {})'
-                                    .format(u, unit))
+            if not get_unit_conversion_fac(u, unit, var_name) == 1:
+                raise MetaDataError(
+                    f'Invalid unit {u} detected (expected {unit})')
 
     def set_flags_nan(self, inplace=False, verbose=False):
         """Set all flagged datapoints to NaN
@@ -2067,26 +2066,6 @@ class UngriddedData(object):
             data._check_index()
         return data
 
-    def _station_to_json_trends(self, var_name, station_name,
-                                freq, **kwargs):
-        """Convert station data to json file for trends interface
-
-        Parameters
-        ----------
-        var_name : str
-            variable name (e.g. od550aer)
-        station_name : str
-            name (or wildcard pattern) that specifies station
-        freq : str
-            temporal resolution
-        **kwargs
-            further input arguments that are passed to :func:`to_station_data`
-        """
-        raise NotImplementedError
-        if not isinstance(station_name, str):
-            raise ValueError('Require station name (or pattern) as string')
-        stat = self.to_station_data(station_name, var_name, freq=freq, **kwargs)
-
     def code_lat_lon_in_float(self):
         """method to code lat and lon in a single number so that we can use np.unique to
         determine single locations"""
@@ -2648,7 +2627,6 @@ class UngriddedData(object):
 
         """
         if ax is None:
-            import matplotlib.pyplot as plt
             from pyaerocom.plot.config import FIGSIZE_DEFAULT
             fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
 

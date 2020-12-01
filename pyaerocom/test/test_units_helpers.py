@@ -18,8 +18,8 @@ from pyaerocom import GriddedData
     ('m-1', '1/Mm', 1e6),
     ('ug m-3', 'ug/m3', 1)
 ])
-def test_unit_conversion_fac(from_unit, to_unit, val):
-    assert uh.unit_conversion_fac(from_unit, to_unit) == val
+def test__unit_conversion_fac_si(from_unit, to_unit, val):
+    assert uh._unit_conversion_fac_si(from_unit, to_unit) == val
 
 
 @pytest.mark.parametrize('var_name,from_unit,to_unit,val', [
@@ -31,8 +31,8 @@ def test_unit_conversion_fac(from_unit, to_unit, val):
     ('wetso4', 'kg S/ha', 'kg m-2', 0.0003),
     ('concso4pr', 'mg S/L', 'g m-3', 2.995821)
 ])
-def test_unit_conversion_fac_custom(var_name, from_unit, to_unit, val):
-    to, num = uh.unit_conversion_fac_custom(var_name, from_unit)
+def test__unit_conversion_fac_custom(var_name, from_unit, to_unit, val):
+    to, num = uh._unit_conversion_fac_custom(var_name, from_unit)
     assert to == to_unit
     npt.assert_allclose(num,
                         val, rtol=1e-2)
