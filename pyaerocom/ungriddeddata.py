@@ -1225,8 +1225,6 @@ class UngriddedData(object):
         for metakey, filterval in list_f.items():
             if not metakey in meta:
                 return False
-            if metakey == 'station_name':
-                statname = meta['station_name']
             neg = metakey in negate
             metaval = meta[metakey]
             match = metaval == filterval
@@ -2065,26 +2063,6 @@ class UngriddedData(object):
             data._check_index()
         return data
 
-    def _station_to_json_trends(self, var_name, station_name,
-                                freq, **kwargs):
-        """Convert station data to json file for trends interface
-
-        Parameters
-        ----------
-        var_name : str
-            variable name (e.g. od550aer)
-        station_name : str
-            name (or wildcard pattern) that specifies station
-        freq : str
-            temporal resolution
-        **kwargs
-            further input arguments that are passed to :func:`to_station_data`
-        """
-        raise NotImplementedError
-        if not isinstance(station_name, str):
-            raise ValueError('Require station name (or pattern) as string')
-        stat = self.to_station_data(station_name, var_name, freq=freq, **kwargs)
-
     def code_lat_lon_in_float(self):
         """method to code lat and lon in a single number so that we can use np.unique to
         determine single locations"""
@@ -2646,7 +2624,6 @@ class UngriddedData(object):
 
         """
         if ax is None:
-            import matplotlib.pyplot as plt
             from pyaerocom.plot.config import FIGSIZE_DEFAULT
             fig, ax = plt.subplots(figsize=FIGSIZE_DEFAULT)
 
