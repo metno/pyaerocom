@@ -7,6 +7,7 @@ import os, glob, shutil
 import numpy as np
 import simplejson
 from pyaerocom import const
+from pyaerocom.helpers import start_stop_str
 from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import read_json, write_json
@@ -14,6 +15,7 @@ from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
                                  HEATMAP_FILENAME_EVAL_IFACE_DAILY)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
+from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import DataDimensionError, TemporalResolutionError
 from pyaerocom.region import (get_all_default_region_ids,
@@ -21,6 +23,113 @@ from pyaerocom.region import (get_all_default_region_ids,
                               get_all_default_regions, Region)
 
 #from pyaerocom import __version__ as PYA_VERSION
+def make_info_string(stp):
+    """
+    Convert instance of :class:`AerocomEvaluation` into a descriptive string
+
+    Note
+    ----
+    BETA feature, this might crash!!
+
+    Parameters
+    ----------
+    stp : AerocomEvaluation
+        Instance of configuration class
+
+    Returns
+    -------
+    st : str
+        Long string representation of the input configuration.
+
+    """
+    modelnum = len(stp.model_config)
+    obsnum = len(stp.obs_config)
+    varnum = len(stp.all_obs_vars)
+    colstp = stp.colocation_settings
+
+    if modelnum > 0:
+
+        _modpost = 'model' if modelnum==1 else 'models'
+        modstr = f'the following {modelnum} {_modpost}: '
+        for mod in stp.model_config:
+            modstr += f'{mod}, '
+
+        modstr = modstr[:-2]
+        modstr += '. '
+    else:
+        modstr = '0 models. '
+    obsvarstr = ''
+    if obsnum > 0:
+        obsvarstr += 'These are: '
+        for oname, ocfg in stp.obs_config.items():
+            obsvarstr += f'{oname} ('
+            for var in ocfg['obs_vars']:
+                obsvarstr += f'{var}, '
+            obsvarstr = obsvarstr[:-2]
+            obsvarstr += '), '
+        obsvarstr = obsvarstr[:-2]
+        obsvarstr += '. '
+
+    obs_alt_time = []
+    try:
+        startstop = start_stop_str(colstp.start,
+                                   colstp.stop)
+
+        obs_alt_time.append(startstop)
+
+        timeinfo = (f'The evaluation is done for the following time '
+                    f'interval: {startstop}. ')
+    except ValueError:
+        # no start / stop time specified
+        timeinfo = (
+            'No specific time interval is specified for the analysis. Thus, '
+            'the interval is determined for each model and observation dataset '
+            '(and variable) individually, based on data availability. '
+            )
+
+    try:
+        freq = str(TsType(colstp.ts_type))
+        flexfreq = colstp.flex_ts_type_gridded
+        freqinfo = f'The default colocation frequency is {freq}'
+        if flexfreq:
+            freqinfo += (
+                ', however, this requirement is flexible, that is, if a model '
+                '(or obs) is available in lower resolution it will still be '
+                'colocated, but then the computed statistics are only available '
+                'in that resolution. ')
+        else:
+            freqinfo += '. '
+
+    except pya.exceptions.TemporalResolutionError:
+        freqinfo = (
+        'The analysis is performed in the highest available '
+        'resolution. '
+        )
+
+    freqinfo += (
+        'Note, however, that the minimum required resolution for the analysis '
+        'is monthly.'
+        )
+
+
+    obsaltinfo = {}
+    for oname, ocfg in stp.obs_config.items():
+        col = Colocator(**colstp)
+        col.update(**ocfg)
+        tst = start_stop_str(col.start,
+                             col.stop)
+        if not tst in obs_alt_time:
+            obs_alt_time.append(tst)
+
+    #if len(obsalt_times) > 0:
+    st = (
+        f'{stp.exp_id}: {stp.exp_name}\n{stp.exp_descr}\n'
+        f'The experiment contains {modstr}'
+        f'These models are evaluated against {obsnum} observational '
+        f'dataset(s) and a total of {varnum} variables. '
+        f'{obsvarstr}{timeinfo}{freqinfo}')
+
+    return st
 
 def delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id):
     """Delete all data associated with a certain experiment

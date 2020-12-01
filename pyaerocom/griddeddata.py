@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from cf_units import Unit
 from collections import OrderedDict as od
 
 import os
@@ -200,12 +201,21 @@ class GriddedData(object):
     @property
     def unit_ok(self):
         """Boolean specifying if variable unit is AeroCom default"""
+        from pyaerocom.exceptions import VariableDefinitionError
         try:
             var = const.VARS[self.cube.var_name]
-            if var.has_unit and var.units == self.units:
+            to_unit = var.units
+            current_unit = self.units
+            if to_unit == current_unit: # string match e.g. both are m-1
                 return True
-            return False
-        except Exception:
+            else:
+                # no string match, however, might still be the same
+                # e.g. m-1 and 1/m
+                if Unit(to_unit).convert(1, current_unit) == 1:
+                    self.units = to_unit
+                    return True
+                return False
+        except (VariableDefinitionError, ValueError):
             return False
 
     @property
@@ -230,7 +240,9 @@ class GriddedData(object):
                 self.convert_unit(var.units)
         except (VariableDefinitionError, UnitConversionError,
                 MemoryError, ValueError) as e:
-            logger.info('Failed to convert unit. Reason: {}'.format(repr(e)))
+            print_log.warning(f'Failed to convert unit of {self.data_id} '
+                              f'({self.var_name}) from {self.units} to '
+                              f'{var.units}. Reason: {e}')
 
     @property
     def data_revision(self):
@@ -691,24 +703,42 @@ class GriddedData(object):
                 const.print_log.warning('Could not update var_name, invalid input '
                                      '{} (need str)'.format(var_name))
 
-    def _get_info_from_filenames(self):
-        """Try access AeroCom meta info from filenames assigned to this object
-        """
-        raise NotImplementedError
-        from pyaerocom.io import FileConventionRead
-        c = FileConventionRead(from_file=self.from_files[0])
-        info = c.get_info_from_file(self.from_files[0])
-        for f in self.from_files[1:]:
-            add_info = f.from_file(f)
+    def _try_convert_non_cf_unit(self, new_unit):
+        import pyaerocom.units_helpers as uh
+        # check if it is deposition and if units are implicit
+        try:
+            fac = uh.get_unit_conversion_fac(self.units, new_unit,
+                                             self.var_name)
+        except :
+            if uh.is_deposition(self.var_name):
+                tst = TsType(self.ts_type)
+                si = tst.to_si()
+                check_from = f'{self.units} {si}-1' # e.g. kg N m-2 h-1
+                check_to = f'{self.units} s-1' # -> kg N m-2 s-1
+                check_aerocom = self.var_info.units # what we want in the end
+                fac1 =  uh.get_unit_conversion_fac(check_from,
+                                                   check_to) #h-1 -> s-1
+                fac2 = uh.get_unit_conversion_fac(
+                    check_to,
+                    check_aerocom,
+                    self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
+                mulfac = fac1*fac2
+                self.cube *= mulfac
+                self.units = check_aerocom
+
+
+            else:
+                raise UnitConversionError('What a surprise...')
+
+
+
 
     def convert_unit(self, new_unit):
         """Convert unit of data to new unit"""
-# =============================================================================
-#         if self._size_GB > self._MAX_SIZE_GB:
-#             raise MemoryError('Cannot convert unit in {} since data is too '
-#                               'large ({} GB)'.format(self.name, self._size_GB))
-# =============================================================================
-        self.grid.convert_units(new_unit)
+        try:
+            self.grid.convert_units(new_unit)
+        except ValueError as e:
+            self._try_convert_non_cf_unit(new_unit)
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
@@ -1589,17 +1619,24 @@ class GriddedData(object):
                                   how=how,
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
-        data = GriddedData(arr_out.to_iris(), **self.metadata)
+        data = GriddedData(arr_out.to_iris(),
+                           convert_unit_on_init=False,
+                           **self.metadata)
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
-        data.units = self.units
+        if how in ('mean', 'median', 'std'):
+            data.units = self.units
+        else:
+            print_log.info(
+                f'Cannot infer unit when aggregating using {how}. Please set '
+                f'unit in returned data object!')
         try:
             data.check_dimcoords_tseries()
         except:
             data.reorder_dimensions_tseries()
         return data
 
-    def resample_time(self, to_ts_type='monthly', how='mean',
+    def resample_time(self, to_ts_type='monthly', how=None,
                       apply_constraints=None, min_num_obs=None,
                       use_iris=False):
         """Resample time to input resolution
@@ -1626,6 +1663,9 @@ class GriddedData(object):
                      'daily'    :   {'hourly' : 6}}
 
             to require at least 6 hours per day and 7 days per month.
+        use_iris : bool
+            option to use resampling scheme from iris library rather than
+            xarray.
 
         Returns
         -------
@@ -1638,6 +1678,8 @@ class GriddedData(object):
             if input resolution is not provided, or if it is higher temporal
             resolution than this object
         """
+        if how is None:
+            how = 'mean'
         if not self.has_time_dim:
             raise DataDimensionError('Require time dimension in GriddedData: '
                                      '{}'.format(self.short_str()))
@@ -1909,7 +1951,7 @@ class GriddedData(object):
 
         name = [fconv.name, self.name, self.var_name, vert_code,
                 str(pd.Timestamp(self.start).year), self.ts_type]
-        return '_'.format(fconv.file_sep).join(name) + '.nc'
+        return f'{fconv.file_sep}'.join(name) + '.nc'
 
     def aerocom_savename(self, data_id=None, var_name=None,
                          vert_code=None, year=None, ts_type=None):
@@ -2662,5 +2704,11 @@ class GriddedData(object):
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
+    plt.close("all")
+    pya.initialise_testdata()
+    # print("uses last changes ")
+    data = pya.io.ReadGridded('TM5-met2010_CTRL-TEST').read_var('od550aer',
+                                                                start=2010,
+                                                                ts_type='monthly')
 
-    pya.Region('OCN').plot()
+    data.sel(latitude=(30, 60), time=('6/2010', '10/2010'))

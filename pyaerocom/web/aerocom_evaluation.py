@@ -87,6 +87,8 @@ class AerocomEvaluation(object):
         ID of experiment
     exp_name : :obj:`str`, optional
         name of experiment
+    exp_descr : str
+        string that explains in more detail what this project is about.
     clear_existing_json : bool
         Boolean specifying whether existing json files should be deleted for
         var / obs / model combination before rerunning
@@ -165,6 +167,7 @@ class AerocomEvaluation(object):
             'raise_exceptions'    : 'Raise exceptions if they occur'
     }
 
+    EXP_STATUS_VALS = ['public', 'experimental']
     def __init__(self, proj_id=None, exp_id=None, config_dir=None,
                  try_load_json=True, **settings):
 
@@ -175,6 +178,10 @@ class AerocomEvaluation(object):
         self.exp_id = exp_id
 
         self.exp_name = None
+
+        self.exp_descr = ''
+
+        self.exp_status = 'experimental'
 
         self.clear_existing_json = True
 
@@ -430,16 +437,39 @@ class AerocomEvaluation(object):
 
     def check_config(self):
         if not isinstance(self.proj_id, str):
-            raise ValueError('proj_id must be string, got {}'.format(self.proj_id))
+            raise AttributeError(f'proj_id must be specified, '
+                                 f'(current value: {self.proj_id})')
 
         if not isinstance(self.exp_id, str):
-            raise ValueError('exp_id must be string, got {}'.format(self.exp_id))
+            raise AttributeError(f'exp_id must be specified, '
+                                 f'(current value: {self.exp_id})')
+
+        if not isinstance(self.exp_descr, str):
+            raise AttributeError(f'exp_descr must be specified, '
+                                 f'(current value: {self.exp_descr})')
+
+        elif not len(self.exp_descr.split()) > 10:
+            const.print_log.warning(
+                'Experiment description (attr. exp_descr) is either missing or '
+                'rather short (less than 10 words). Consider providing more '
+                'information here! Current: {self.exp_descr}'
+                )
+
+        if not isinstance(self.exp_status, str):
+            raise AttributeError(f'exp_status must be specified, '
+                                 f'(current value: {self.exp_status})')
+        elif not self.exp_status in self.EXP_STATUS_VALS:
+            raise ValueError(
+                f'Invalid input for exp_status ({self.exp_status}). '
+                f'Choose from: {self.EXP_STATUS_VALS}.')
+
 
         if not isinstance(self.exp_name, str):
             const.print_log.warning('exp_name must be string, got {}. Using '
                                     'exp_id {} for experiment name'
                                     .format(self.exp_name, self.exp_id))
             self.exp_name = self.exp_id
+
 
         for k, v in self.model_config.items():
             if '_' in k or ':' in k:
@@ -1320,7 +1350,7 @@ class AerocomEvaluation(object):
             self.to_json(self.exp_dir)
         except KeyError: # if no data is available for this experiment
             pass
-
+          
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
         update_menu_evaluation_iface(self, **opts)
@@ -1374,7 +1404,7 @@ class AerocomEvaluation(object):
             delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id)
         except NameError:
             pass
-        self.update_interface()
+        self.update_menu()
 
     def clean_json_files(self, update_interface=False):
         """Checks all existing json files and removes outdated data
@@ -1554,8 +1584,14 @@ class AerocomEvaluation(object):
         return s
 
 if __name__ == '__main__':
-    cfg_dir = '/home/jonasg/github/aerocom_evaluation/data_new/config_files/'
-    stp = AerocomEvaluation('aerocom', 'PIII-optics', config_dir=cfg_dir)
-    #stp.make_info_table_web()
-    stp.regions_how='country'
-    stp.make_regions_json()
+    import pyaerocom as pya
+
+
+    name = 'A useless experiment called blub, in the bla project.'
+    descr = 'This experiment is indeed, completely useless!'
+    stp = AerocomEvaluation('bla', 'blub', exp_name=name,
+                            exp_descr=descr, exp_status='experimental')
+
+
+
+    pya.web.helpers_evaluation_ifac

@@ -56,6 +56,13 @@ TS_TYPE_TO_NUMPY_FREQ =  {'minutely':   'm',
                           'monthly' :   'M', #Month start !
                           'yearly'  :   'Y'}
 
+TS_TYPE_TO_SI = {   'minutely':   'min',
+                    'hourly'  :   'h',
+                    'daily'   :   'd',
+                    'weekly'  :   'week'
+
+                }
+
 # conversion of datetime-like objects for given temporal resolutions (can, e.g.
 # be used in plotting methods)
 TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
@@ -65,6 +72,8 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'weekly'   : '%d.%m.%Y',
                          'monthly'  : '%b %Y',
                          'yearly'   : '%Y'}
+
+
 
 TS_TYPE_SECS = {'minutely': 60,
                 'hourly'  : 3600,
