@@ -33,7 +33,7 @@ import numpy as np
 import xarray
 
 from pyaerocom import const
-from pyaerocom.units_helpers import unit_conversion_fac
+from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
@@ -297,7 +297,7 @@ class ReadEarlinet(ReadUngriddedBase):
             unit_fac = None
             try:
                 to_unit = self._var_info[var].units
-                unit_fac = unit_conversion_fac(unit, to_unit)
+                unit_fac = get_unit_conversion_fac(unit, to_unit)
                 val *= unit_fac
                 unit = to_unit
                 unit_ok = True
@@ -362,8 +362,8 @@ class ReadEarlinet(ReadUngriddedBase):
                 to_alt_unit = const.VARS['alt'].units
                 if not alt_unit == to_alt_unit:
                     try:
-                        alt_unit_fac = unit_conversion_fac(alt_unit,
-                                                           to_alt_unit)
+                        alt_unit_fac = get_unit_conversion_fac(alt_unit,
+                                                               to_alt_unit)
                         alt_vals *= alt_unit_fac
                         alt_unit = to_alt_unit
                     except Exception as e:

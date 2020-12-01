@@ -32,12 +32,13 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
+from cf_units import Unit
+from collections import OrderedDict as od
 
 import fnmatch
 from glob import glob
 import os
 from pathlib import Path
-from collections import OrderedDict as od
 
 import numpy as np
 import pandas as pd
@@ -46,6 +47,7 @@ import iris
 from pyaerocom import const, print_log, logger
 from pyaerocom.metastandards import AerocomDataID
 from pyaerocom.variable import Variable, is_3d
+from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
@@ -56,14 +58,17 @@ from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
 from pyaerocom.helpers import (to_pandas_timestamp,
                                sort_ts_types,
                                get_highest_resolution,
-                               isnumeric)
+                               isnumeric,
+                               resample_time_dataarray)
 
+from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
                                   FileConventionError,
                                   IllegalArgumentError,
                                   TemporalResolutionError,
+                                  UnitConversionError,
                                   VarNotAvailableError,
                                   VariableDefinitionError)
 
@@ -72,6 +77,207 @@ from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
+
+WDEP_IMPLICIT_UNITS = [Unit('mg N m-2'), Unit('mg S m-2')]
+PR_IMPLICIT_UNITS = [Unit('mm')]
+
+DEP_TEST_UNIT = 'kg m-2 s-1'
+DEP_TEST_NONSI_ATOMS = ['N', 'S']
+
+def _check_unit(unit, test_unit, non_si_info=None):
+    if non_si_info is None:
+        non_si_info = []
+    try:
+        get_unit_conversion_fac(unit, DEP_TEST_UNIT)
+        return True
+    except UnitConversionError:
+        for substr in non_si_info:
+            if substr in unit:
+                check = unit.replace(substr, '')
+                return _check_unit(check, test_unit)
+    return False
+
+def check_wdep_units(gridded):
+
+    unit = Unit(gridded.units)
+    freq = TsType(gridded.ts_type)
+    freq_si = freq.to_si()
+
+    # check if unit is implicit and change if possible
+    if any([unit == x for x in WDEP_IMPLICIT_UNITS]):
+        unit = Unit(f'{unit} {freq_si}-1')
+        gridded.units = unit
+    else:
+        if not _check_unit(unit, DEP_TEST_UNIT, DEP_TEST_NONSI_ATOMS):
+            raise ValueError(f'Cannot handle wet deposition unit {unit}')
+
+    # Check if frequency in unit corresponds to sampling frequency (e.g.
+    # ug m-2 h-1 for hourly data).
+    freq_si_str = f'{freq_si}-1'
+    freq_si_str_alt = f'/{freq_si}'
+    if freq_si_str_alt in str(unit):
+        # make sure frequencey is denoted as e.g. m s-1 instead of m/s
+        unit = str(unit).replace(freq_si_str_alt,
+                                 freq_si_str)
+
+        gridded.units = unit
+
+    # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
+    # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
+    if not freq_si_str in str(unit):
+        raise NotImplementedError(f'Cannot yet handle wdep in {unit} but '
+                                  f'{freq} sampling frequency')
+    return gridded
+
+def check_pr_units(gridded):
+
+    unit = Unit(gridded.units)
+    freq = TsType(gridded.ts_type)
+    freq_si = freq.to_si()
+
+    # check if precip unit is implicit
+    if any([unit == x for x in PR_IMPLICIT_UNITS]):
+        unit = f'{unit} {freq_si}-1'
+        gridded.units = unit
+    else:
+        raise ValueError(f'Cannot handle precip unit {unit}')
+
+    # Check if frequency in unit corresponds to sampling frequency (e.g.
+    # ug m-2 h-1 for hourly data).
+    freq_si_str = f'{freq_si}-1'
+    freq_si_str_alt = f'/{freq_si}'
+    if freq_si_str_alt in str(unit):
+        # make sure frequencey is denoted as e.g. m s-1 instead of m/s
+        unit = str(unit).replace(freq_si_str_alt,
+                                 freq_si_str)
+
+        gridded.units = unit
+
+    # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
+    # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
+    if not freq_si_str in str(unit):
+        raise NotImplementedError(f'Cannot yet handle wdep in {unit} but '
+                                  f'{freq} sampling frequency')
+    return gridded
+
+def _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit, prlim_set_under):
+    if prlim_unit is None:
+        raise ValueError(f'Please provide prlim_unit for prlim={prlim}')
+    elif prlim_set_under is None:
+        raise ValueError(f'Please provide prlim_set_under for prlim={prlim}')
+    elif not isnumeric(prlim_set_under):
+        raise ValueError(f'Please provide a numerical value or np.nan for '
+                         f'prlim_set_under, got {prlim_set_under}')
+
+    prmask = prarr.data < prlim
+    wdeparr.data[prmask] = prlim_set_under
+
+    return wdeparr, prmask
+
+def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
+                                        prlim=None, prlim_unit=None,
+                                        prlim_set_under=None):
+
+    if ts_type is None:
+        ts_type = wdep.ts_type
+
+    # get units from deposition input and precipitation; sometimes, they are
+    # defined implicit, e.g. mm for precipitation, which is then already
+    # accumulated over the provided time resolution in the data, that is, if
+    # the data is hourly and precip is in units of mm, then it means the the
+    # unit is mm/h. In addition, wet deposition units may be in mass of main
+    # atom (e.g. N, or S) which are not SI and thus, not handled properly by
+    # CF units.
+    wdep = check_wdep_units(wdep)
+    pr = check_pr_units(pr)
+
+    # get temporal resolution of wet deposition and convert to SI conform str
+    wdep_unit = str(wdep.units)
+    freq_wdep = TsType(wdep.ts_type)
+    freq_wdep_si = freq_wdep.to_si()
+
+    # repeat the unit check steps done for wet deposition
+    pr_unit = str(pr.units)
+    freq_pr = TsType(pr.ts_type)
+    freq_pr_si = freq_pr.to_si()
+
+    if not freq_wdep == freq_pr:
+        # ToDo: this can probably fixed via time resampling with how='sum'
+        # for the higher resolution dataset, but for this first draft, this
+        # is not allowed.
+        raise ValueError('Input precipitation and wetdeposition fields '
+                         'need to be in the same frequency...')
+
+    # assign input frequency (just for making the code better readable)
+    from_freq = freq_wdep
+    from_freq_si = freq_pr_si
+
+    # convert data objects to xarray to do modifications and computation of
+    # output variable
+    prarr = pr.to_xarray()
+    wdeparr = wdep.to_xarray()
+
+    # Make sure precip unit is correct for concprcp=wdep/pr
+    pr_unit_calc = f'm {from_freq_si}-1'
+
+    # unit conversion factor for precip
+    mulfac_pr = get_unit_conversion_fac(pr_unit, pr_unit_calc)
+
+    if mulfac_pr != 1:
+        prarr *= mulfac_pr
+        pr_unit = pr_unit_calc
+
+    # Make sure wdep unit is correct for concprcp=wdep/pr
+    wdep_unit_check_calc = wdep_unit.replace('N', '').replace('S', '')
+    wdep_unit_calc = f'ug m-2 {from_freq_si}-1'
+    mulfac_wdep = get_unit_conversion_fac(wdep_unit_check_calc, wdep_unit_calc)
+
+    if mulfac_wdep != 1:
+        wdeparr *= mulfac_wdep
+        if 'N' in wdep_unit:
+            wdep_unit_calc = wdep_unit_calc.replace('ug', 'ug N')
+        elif 'S' in wdep_unit:
+            wdep_unit_calc = wdep_unit_calc.replace('ug', 'ug S')
+        wdep_unit = wdep_unit_calc
+
+    # apply prlim filter if applicable
+    prlim_applied = False
+    if prlim is not None and Unit(prlim_unit) == Unit(pr_unit):
+        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit,
+                                      prlim_set_under)
+        prlim_applied = True
+
+    to_freq = TsType(ts_type)
+    if not from_freq == to_freq:
+        to_freq_pd = to_freq.to_pandas_freq()
+        to_freq_si = to_freq.to_si()
+
+        wdeparr = resample_time_dataarray(wdeparr,
+                                          to_freq_pd,
+                                          how='sum')
+        wdep_unit = wdep_unit.replace(f'{from_freq_si}-1',
+                                      f'{to_freq_si}-1')
+        prarr = resample_time_dataarray(prarr,
+                                        to_freq_pd,
+                                        how='sum')
+        pr_unit = pr_unit.replace(f'{from_freq_si}-1',
+                                  f'{to_freq_si}-1')
+
+    if not prlim_applied and prlim is not None:
+        if not Unit(pr_unit) == Unit(prlim_unit):
+            raise ValueError(f'Invalid input for prlim_unit: {prlim_unit}. Unit '
+                             f'does not match with data unit {pr_unit}')
+        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr,
+                                      prlim, prlim_unit,
+                                      prlim_set_under)
+
+    concprcparr = wdeparr / prarr
+
+    cube = concprcparr.to_iris()
+    # infer output unit of concentration variable (should be ug m-3 or ug N m-3 or ug S m-3)
+    conc_unit_out = wdep_unit.replace('m-2', 'm-3').replace(f'{to_freq_si}-1', '').strip()
+    cube.units = conc_unit_out
+    return cube
 
 class ReadGridded(object):
     """Class for reading gridded files based on network or model ID
@@ -150,7 +356,9 @@ class ReadGridded(object):
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
                     'concox'        : ('concno2', 'conco3'),
                     'vmrox'         : ('vmrno2', 'vmro3'),
-                    'fmf550aer'     : ('od550lt1aer', 'od550aer')
+                    'fmf550aer'     : ('od550lt1aer', 'od550aer'),
+                    'concno3'       : ('concno3c', 'concno3f'),
+                    'concprcpoxn'   : ('wetoxn', 'pr')
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
@@ -168,10 +376,21 @@ class ReadGridded(object):
                 'conc*'         :   multiply_cubes,
                 'concox'        :   add_cubes,
                 'vmrox'         :   add_cubes,
-                'fmf550aer'     :   divide_cubes
+                'fmf550aer'     :   divide_cubes,
+                'concno3'       :   add_cubes,
+                'concprcpoxn'   :   compute_concprcp_from_pr_and_wetdep
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
+
+    #: Additional arguments passed to computation methods for auxiliary data
+    #: This is optional and defined per-variable like in AUX_FUNS
+    AUX_ADD_ARGS = {
+        'concprcpoxn'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_unit='m d-1',
+                                 prlim_set_under=np.nan)
+        }
 
     _data_dir = ""
 
@@ -845,8 +1064,7 @@ class ReadGridded(object):
         self.file_info = df
 
         if len(df) == 0:
-            raise DataCoverageError('No files could be found for data {} and '
-                                    'years range {}-{}'.format(self.data_id))
+            raise DataCoverageError(f'No files could be found for {self.data_id}')
 
     def filter_files(self, var_name=None, ts_type=None, start=None, stop=None,
                      experiment=None, vert_which=None, is_at_stations=False,
@@ -1128,6 +1346,7 @@ class ReadGridded(object):
     def compute_var(self, var_name, start=None, stop=None, ts_type=None,
                     experiment=None, vert_which=None, flex_ts_type=True,
                     prefer_longer=False, vars_to_read=None, aux_fun=None,
+                    try_convert_units=True, aux_add_args=None,
                     **kwargs):
         """Compute auxiliary variable
 
@@ -1160,6 +1379,13 @@ class ReadGridded(object):
             if True and applicable, the ts_type resulting in the longer time
             coverage will be preferred over other possible frequencies that
             match the query.
+        try_convert_units : bool
+            if True, units of GriddedData objects are attempted to be converted
+            to AeroCom default. This applies both to the GriddedData objects
+            being read for computation as well as the variable computed from
+            the forme objects. This is, for instance, useful when computing
+            concentration in precipitation from wet deposition and precipitation
+            amount.
         **kwargs
             additional keyword args passed to :func:`_load_var`
 
@@ -1171,7 +1397,8 @@ class ReadGridded(object):
         if vars_to_read is not None:
             self.add_aux_compute(var_name, vars_to_read, aux_fun)
         vars_to_read, aux_fun = self._get_aux_vars_and_fun(var_name)
-
+        if aux_add_args is None:
+            aux_add_args={}
         data = []
         # all variables that are required need to be in the same temporal
         # resolution
@@ -1197,15 +1424,27 @@ class ReadGridded(object):
                                       vert_which=vert_which,
                                       flex_ts_type=flex_ts_type,
                                       prefer_longer=prefer_longer,
+                                      try_convert_units=try_convert_units,
                                       **kwargs)
             data.append(aux_data)
 
-        cube = aux_fun(*data)
+        if var_name in self.AUX_ADD_ARGS:
+            for key, val in self.AUX_ADD_ARGS[var_name].items():
+                if not key in aux_add_args:
+                    aux_add_args[key] = val
+
+        if len(aux_add_args) > 0:
+            cube = aux_fun(*data, **aux_add_args)
+        else:
+            cube = aux_fun(*data)
+
         cube.var_name = var_name
 
         data = GriddedData(cube, data_id=self.data_id,
-                           #ts_type=data[0].ts_type,
-                           computed=True)
+                           computed=True,
+                           convert_unit_on_init=try_convert_units,
+                           **kwargs)
+
         data.reader = self
         return data
 
@@ -1653,7 +1892,8 @@ class ReadGridded(object):
                                     experiment=experiment,
                                     vert_which=vert_which,
                                     flex_ts_type=flex_ts_type,
-                                    prefer_longer=prefer_longer)
+                                    prefer_longer=prefer_longer,
+                                    **kwargs)
 
         try:
             var_to_read = self._get_var_to_read(var_name)
@@ -1674,7 +1914,8 @@ class ReadGridded(object):
                                         experiment=experiment,
                                         vert_which=vert_which,
                                         flex_ts_type=flex_ts_type,
-                                        prefer_longer=prefer_longer)
+                                        prefer_longer=prefer_longer,
+                                        **kwargs)
         # this input variable was explicitely set to be computed, in which
         # case reading of that variable is ignored even if a file exists for
         # that
@@ -1780,13 +2021,32 @@ class ReadGridded(object):
         return tuple(data)
 
     def _check_correct_units_cube(self, cube):
+        """Check for units that have been invalidated by iris
+
+        iris lib relies on CF conventions and if the unit in the NetCDF file
+        is invalid, it will set the variable unit to UNKNOWN and put the
+        actually provided unit into the attributes. pyaerocom can handle
+        some of these invalid units, which is checked here and updated
+        accordingly
+
+        Parameters
+        ----------
+        cube : iris.cube.Cube
+            loaded instance of data Cube
+
+        Returns
+        -------
+        iris.cube.Cube
+            input cube that has been checked for supported units and updated
+            if applicable
+        """
         if ('invalid_units' in cube.attributes and
-            cube.attributes['invalid_units'] in const.GRID_IO.UNITS_ALIASES):
+            cube.attributes['invalid_units'] in UALIASES):
 
             from_unit = cube.attributes['invalid_units']
-            to_unit = const.GRID_IO.UNITS_ALIASES[from_unit]
-            const.logger.info('Updating invalid unit in {} from {} to {}'
-                              .format(repr(cube), from_unit, to_unit))
+            to_unit = UALIASES[from_unit]
+            const.print_log.info('Updating invalid unit in {} from {} to {}'
+                                 .format(repr(cube), from_unit, to_unit))
 
             cube.units = to_unit
         return cube
@@ -1865,7 +2125,8 @@ class ReadGridded(object):
 
     def _load_var(self, var_name, ts_type, start, stop,
                   experiment, vert_which, flex_ts_type,
-                  prefer_longer, **kwargs):
+                  prefer_longer, try_convert_units=True,
+                  **kwargs):
         """Find files corresponding to input specs and load into GriddedData
 
         Note
@@ -1901,6 +2162,7 @@ class ReadGridded(object):
                            from_files=from_files,
                            data_id=self.data_id,
                            concatenated=is_concat,
+                           convert_unit_on_init=try_convert_units,
                            **meta)
         data.reader = self
         # crop cube in time (if applicable)
@@ -2160,6 +2422,3 @@ class ReadGriddedMulti(object):
 if __name__=="__main__":
     import pyaerocom as pya
 
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    reader = ReadGridded()

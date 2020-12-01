@@ -8,7 +8,7 @@ Created on Thu Apr 12 14:45:43 2018
 import pytest
 
 import numpy as np
-
+from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.tstype import TsType
 
 def test_basic_operators():
@@ -44,6 +44,19 @@ def test_to_numpy_freq():
 def test_to_pandas_freq():
     assert TsType('3hourly').to_pandas_freq() == '3H'
     assert TsType('daily').to_pandas_freq() == 'D'
+
+@pytest.mark.parametrize('ts_type, value, raises', [
+    ('hourly', 'h', does_not_raise_exception()),
+    ('3hourly', '3h', does_not_raise_exception()),
+    ('daily', 'd', does_not_raise_exception()),
+    ('minutely', 'min', does_not_raise_exception()),
+    ('weekly', 'week', does_not_raise_exception()),
+    ('monthly', None, pytest.raises(ValueError)),
+    ('4weekly', '4week', does_not_raise_exception()),
+    ])
+def test_to_si(ts_type, value, raises):
+    with raises:
+        assert TsType(ts_type).to_si() == value
 
 def test_cf_base_unit():
     assert TsType('daily').cf_base_unit == 'days'

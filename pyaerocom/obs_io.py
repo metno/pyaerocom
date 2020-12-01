@@ -92,9 +92,11 @@ class AuxInfoUngridded(object):
                 if not var in self.aux_funs:
                     raise ValueError('Specification of computation function is '
                                      'missing for var {}'.format(var))
-                elif not var in self.aux_units:
-                    raise ValueError('Specification of unit is missing for var {}'
-                                     .format(var))
+# =============================================================================
+#                 elif not var in self.aux_units:
+#                     raise ValueError('Specification of unit is missing for var {}'
+#                                      .format(var))
+# =============================================================================
                 fun = self.aux_funs[var]
 
                 if not isinstance(fun, str):
