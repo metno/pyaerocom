@@ -83,7 +83,6 @@ FMFFUN = 'fmf550aer=({};od550lt1aer/{};od550aer)*100'.format(SDA_ID, SUN_ID)
                          'var_unit_out,expectation', [
     ('combine',None,None,None,None,does_not_raise_exception()),
     ('eval', FMFFUN, 'fmf550aer', None,'%',does_not_raise_exception()),
-    ('eval', FMFFUN, 'fmf550aer', None,None, pytest.raises(ValueError)),
     ('eval', FMFFUN, None, 'Bla','%', does_not_raise_exception())
 
     ])
@@ -112,7 +111,8 @@ def test__combine_2_sites_different_vars(
                                        apply_time_resampling_constraints=False,
                                        min_num_obs=None,
                                        prefer=prefer,
-                                       merge_info_vars={})
+                                       merge_info_vars={},
+                                       add_meta_keys=None)
 
         assert var1 in new
         assert var2 in new
@@ -229,7 +229,8 @@ def test__combine_2_sites_same_site(stats_sun_aod, merge_how, merge_eval_fun,
                                    apply_time_resampling_constraints=False,
                                    min_num_obs=None,
                                    prefer=prefer,
-                                   merge_info_vars={})
+                                   merge_info_vars={},
+                                   add_meta_keys=None)
 
     vno = var1 if var_name_out is None else var_name_out
     dataid = SUN_ID if data_id_out is None else data_id_out

@@ -88,18 +88,7 @@ class GridIO(object):
                 'CHECK_DIM_COORDS': True,
                 'EQUALISE_METADATA': True,
                 'INCLUDE_SUBDIRS': False}
-# =============================================================================
-#         {'FILE_TYPE': '.nc',
-#                 'PERFORM_FMT_CHECKS' : True,
-#                 'DEL_TIME_BOUNDS': True,
-#                 'SHIFT_LONS': True,
-#                 'CHECK_TIME_FILENAME': False,
-#                 'CORRECT_TIME_FILENAME': False,
-#                 'CHECK_DIM_COORDS': False,
-#                 'EQUALISE_METADATA': False,
-#                 'INCLUDE_SUBDIRS': True}
-#
-# =============================================================================
+
     def __init__(self, **kwargs):
         self.FILE_TYPE = '.nc'
         # it is important to keep them in the order from highest to lowest

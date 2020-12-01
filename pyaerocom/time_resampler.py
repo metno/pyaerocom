@@ -3,12 +3,13 @@
 """
 Module containing time resampling functionality
 """
+import numpy as np
 import pandas as pd
 import xarray as xarr
 from pyaerocom import const
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.tstype import TsType
-from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
+from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ, TS_TYPES
 from pyaerocom.helpers import (resample_time_dataarray,
                                resample_timeseries, isnumeric)
 
@@ -29,9 +30,9 @@ class TimeResampler(object):
     def __init__(self, input_data=None):
         self.last_setup = None
         self._input_data = None
-        self.input_data = input_data
-        self.valid_base_ts_types = [x for x in const.GRID_IO.TS_TYPES if
-                                    TsType(x).mulfac==1]
+
+        if input_data is not None:
+            self.input_data = input_data
 
     @property
     def input_data(self):
@@ -52,6 +53,19 @@ class TimeResampler(object):
         return resample_time_dataarray
 
     def _gen_idx(self, from_ts_type, to_ts_type, min_num_obs, how):
+        """Generate hierarchical resampling index
+
+        Return
+        ------
+        list
+            list (can be considered the iterator) of 3-element tuples for each\
+            resampling step, containing
+
+            - frequency to which the current is converted
+            - minimum number of not-NaN values required for that step
+            - aggregator to be used (e.g. mean, median, ...)
+
+        """
         if isnumeric(min_num_obs):
             if not isinstance(how, str):
                 raise ValueError('Error initialising resampling constraints. '
@@ -62,12 +76,13 @@ class TimeResampler(object):
         if not isinstance(min_num_obs, dict):
             raise ValueError('Invalid input for min_num_obs, need dictionary '
                              'or integer, got {}'.format(min_num_obs))
-        valid = self.valid_base_ts_types
+
+        how_default = how if isinstance(how, str) else 'mean'
+
+        valid = TS_TYPES
         from_mul = from_ts_type.mulfac
-        if from_mul != 1:
-            const.print_log.warning('Ignoring multiplication factor {} in '
-                                 'data with resolution {} in resampling method'
-                                 .format(from_mul, from_ts_type))
+        from_base = from_ts_type.base
+
         start = valid.index(from_ts_type.base)
         stop = valid.index(to_ts_type.base)
 
@@ -79,8 +94,17 @@ class TimeResampler(object):
                 if isinstance(how, dict) and to in how and last_from in how[to]:
                     _how = how[to][last_from]
                 else:
-                    _how = 'mean'
+                    _how = how_default
                 min_num = min_num_obs[to][last_from]
+                if last_from == from_base and from_mul != 1:
+                    const.print_log.info(
+                        f'Updating min_num_obs={min_num} for {from_base}->'
+                        f'{to} since input resolution is {from_ts_type}'
+                        )
+                    min_num = int(np.ceil(min_num/from_mul))
+                    const.print_log.info(
+                        f'New value: min_num_obs={min_num}'
+                        )
                 last_from = to
                 idx.append((to, min_num, _how))
         if len(idx) == 0  or not idx[-1][0] == to_ts_type.val:
@@ -150,14 +174,6 @@ class TimeResampler(object):
                                  'how=mean). Got {}'.format(how))
             return self.fun(self.input_data, freq=freq,
                             how=how, **kwargs)
-# =============================================================================
-#         elif from_ts_type is None:
-#             self.last_setup = dict(apply_constraints=False,
-#                                    min_num_obs=None)
-#             freq = to_ts_type.to_pandas_freq()
-#             return self.fun(self.input_data, freq=freq,
-#                             how=how, **kwargs)
-# =============================================================================
 
         if isinstance(from_ts_type, str):
             from_ts_type = TsType(from_ts_type)
