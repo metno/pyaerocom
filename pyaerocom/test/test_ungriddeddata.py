@@ -111,6 +111,30 @@ def test_filter_region(aeronetsunv3lev2_subset, region_id, check_mask,
 
     assert len(subset.metadata) == num_meta
 
+# sites in aeronet data
+
+ALL_SITES = ['AAOT', 'ARIAKE_TOWER', 'Agoufou', 'Alta_Floresta', 'American_Samoa',
+             'Amsterdam_Island', 'Anmyon', 'Avignon', 'Azores', 'BORDEAUX',
+             'Barbados', 'Blyth_NOAH', 'La_Paz', 'Mauna_Loa', 'Tahiti', 'Taihu',
+             'Taipei_CWB', 'Tamanrasset_INM', 'The_Hague', 'Thessaloniki',
+             'Thornton_C-power', 'Trelew']
+
+@pytest.mark.parametrize('args,sitenames', [
+    ({'station_name' : ['Tr*', 'Mauna*']}, ['Trelew', 'Mauna_Loa']),
+    ({'station_name' : ['Tr*', 'Mauna*'],
+      'negate'  : 'station_name'}, [x for x in ALL_SITES if not x in ['Trelew', 'Mauna_Loa']]),
+    ({'altitude' : [0, 1000], 'negate' : 'altitude'}, ['La_Paz', 'Mauna_Loa',
+                                                       'Tamanrasset_INM']),
+    ({'station_name' : 'Tr*'}, ['Trelew']),
+    ({'station_name' : 'Tr*',
+      'negate' : 'station_name'}, [x for x in ALL_SITES if not x=='Trelew'])
+    ])
+def test_filter_by_meta(aeronetsunv3lev2_subset, args, sitenames):
+    data = aeronetsunv3lev2_subset
+    subset = data.filter_by_meta(**args)
+    sites = [x['station_name'] for x in subset.metadata.values()]
+    stats = sorted(list(dict.fromkeys(sites)))
+    assert sorted(sitenames) == stats
 
 def test_save_as(aeronetsunv3lev2_subset, tempdir):
     fp = aeronetsunv3lev2_subset.save_as(file_name='ungridded_aeronet_subset.pkl',
