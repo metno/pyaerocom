@@ -47,7 +47,6 @@ import iris
 from pyaerocom import const, print_log, logger
 from pyaerocom.metastandards import AerocomDataID
 from pyaerocom.variable import Variable, is_3d
-from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
@@ -194,7 +193,6 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
     # get temporal resolution of wet deposition and convert to SI conform str
     wdep_unit = str(wdep.units)
     freq_wdep = TsType(wdep.ts_type)
-    freq_wdep_si = freq_wdep.to_si()
 
     # repeat the unit check steps done for wet deposition
     pr_unit = str(pr.units)
@@ -263,13 +261,17 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
         pr_unit = pr_unit.replace(f'{from_freq_si}-1',
                                   f'{to_freq_si}-1')
 
-    if not prlim_applied and prlim is not None:
-        if not Unit(pr_unit) == Unit(prlim_unit):
-            raise ValueError(f'Invalid input for prlim_unit: {prlim_unit}. Unit '
-                             f'does not match with data unit {pr_unit}')
-        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr,
-                                      prlim, prlim_unit,
-                                      prlim_set_under)
+    if not prlim_applied:
+        if prlim is not None:
+            if not Unit(pr_unit) == Unit(prlim_unit):
+                raise ValueError(f'Invalid input for prlim_unit: {prlim_unit}. Unit '
+                                 f'does not match with data unit {pr_unit}')
+            wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr,
+                                          prlim, prlim_unit,
+                                          prlim_set_under)
+
+    # set PR=0 to NaN (as we divide py PR)
+    prarr.data[prarr.data==0] = np.nan
 
     concprcparr = wdeparr / prarr
 
