@@ -653,7 +653,7 @@ class ReadGridded(object):
             try:
                 # the variable might be updated in _check_var_avail
                 vars_to_read.append(self._check_var_avail(var))
-            except VarNotAvailableError:
+            except (VarNotAvailableError, VariableDefinitionError):
                 return False
         if not len(vars_to_read) == len(vars_req):
             return False
@@ -704,7 +704,7 @@ class ReadGridded(object):
                     for var in vars_found:
                         try:
                             vars_to_read.append(self._check_var_avail(var))
-                        except VarNotAvailableError:
+                        except (VarNotAvailableError, VariableDefinitionError):
                             all_ok = False
                             break
 
