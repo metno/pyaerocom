@@ -115,8 +115,8 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
-    
-    __version__ = '0.0.10'
+
+    __version__ = '0.0.11'
 
     _FILEMASK = '*.nc'
 
