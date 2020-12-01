@@ -1227,8 +1227,6 @@ class UngriddedData(object):
                 return False
             if metakey == 'station_name':
                 statname = meta['station_name']
-                if any([statname.startswith(x) for x in ['Tr', 'Mauna']]):
-                    print(statname)
             neg = metakey in negate
             metaval = meta[metakey]
             match = metaval == filterval
