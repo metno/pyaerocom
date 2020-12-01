@@ -292,7 +292,7 @@ def combine_vardata_ungridded(data_ids_and_vars,
     Note
     ----
     Be aware of unit conversion issues that may arise if your input data is
-    not in AeroCom default units. For that reason,  For details see below.
+    not in AeroCom default units. For details see below.
 
     Parameters
     ----------
@@ -514,4 +514,3 @@ if __name__=='__main__':
                                              var_name_out='vmrox',
                                              merge_how='eval',
                                              add_meta_keys=meta_keys)
-
