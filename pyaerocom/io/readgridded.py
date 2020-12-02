@@ -653,7 +653,7 @@ class ReadGridded(object):
             try:
                 # the variable might be updated in _check_var_avail
                 vars_to_read.append(self._check_var_avail(var))
-            except VarNotAvailableError:
+            except (VarNotAvailableError, VariableDefinitionError):
                 return False
         if not len(vars_to_read) == len(vars_req):
             return False
@@ -704,7 +704,7 @@ class ReadGridded(object):
                     for var in vars_found:
                         try:
                             vars_to_read.append(self._check_var_avail(var))
-                        except VarNotAvailableError:
+                        except (VarNotAvailableError, VariableDefinitionError):
                             all_ok = False
                             break
 
@@ -2123,6 +2123,10 @@ class ReadGridded(object):
 
         perts = subset.perturbation.unique()
         meta['perturbation'] = perts[0] if len(perts) == 1 else list(perts)
+
+        vertcodes = subset.vert_code.unique()
+        meta['vert_code'] = vertcodes[0] if len(vertcodes) == 1 else list(vertcodes)
+
         return meta
 
     def _load_var(self, var_name, ts_type, start, stop,
