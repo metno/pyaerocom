@@ -1,10 +1,12 @@
-from matplotlib import colors
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import cartopy.crs as ccrs
 from matplotlib.axes import Axes
 from cartopy.mpl.geoaxes import GeoAxes
+from matplotlib.colors import ListedColormap
+from seaborn import color_palette
 
 def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
 
@@ -77,12 +79,10 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
     if any([x is None for x in [vmin, vmax]]):
         raise ValueError('Please specify vmin, vmax')
 
-
-    #cm=plt.cm.get_cmap(cmap, nlayers)
-    cm = plt.cm.get_cmap(cmap)
-
     if levels is None:
         levels = np.linspace(vmin, vmax, nlayers)
+
+    cm = ListedColormap(color_palette(cmap, len(levels)-1))
 
     proj = ccrs.PlateCarree()
     ax = plt.axes(projection=proj)
@@ -103,10 +103,8 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
         datamon = nparr[i]
         contour = ax.contourf(lons, lats, datamon,
                               transform=proj,
-                              cmap=cm,
-                              levels=levels
-                              #extend='max'
-                              )
+                              colors=cm.colors,
+                              levels=levels)
 
         result = geojsoncontour.contourf_to_geojson(
                     contourf=contour
@@ -117,7 +115,9 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
     cb = ax.figure.colorbar(contour, ax=ax)
     #set the legend in one key
 
-    colors_hex = [cm(val) for val in cb.values]
+    from matplotlib.colors import to_hex
+    colors_hex = [to_hex(val) for val in cm.colors]
+
     geojson['legend'] = {
         'colors': colors_hex,
         'levels':  list(levels)
