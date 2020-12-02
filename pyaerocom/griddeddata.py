@@ -2169,7 +2169,8 @@ class GriddedData(object):
                                  'lon_res_deg specified')
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
                                            lon_res_deg=lon_res_deg)
-            other = GriddedData(dummy)
+            other = GriddedData(dummy,
+                                convert_unit_on_init=False)
 
         if not (self.has_latlon_dims * other.has_latlon_dims):
             raise DataDimensionError('Can only regrid data objects with '
