@@ -1605,7 +1605,9 @@ class GriddedData(object):
                            **self.metadata)
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
-        if how in ('mean', 'median', 'std'):
+        if isinstance(how,dict):
+            how = how[to_ts_type][self.ts_type]
+        if how in ('mean', 'median', 'std', 'max'):
             data.units = self.units
         else:
             print_log.info(
