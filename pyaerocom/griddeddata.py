@@ -241,8 +241,7 @@ class GriddedData(object):
         except (VariableDefinitionError, UnitConversionError,
                 MemoryError, ValueError) as e:
             print_log.warning(f'Failed to convert unit of {self.data_id} '
-                              f'({self.var_name}) from {self.units} to '
-                              f'{var.units}. Reason: {e}')
+                              f'({self.var_name}). Reason: {e}')
 
     @property
     def data_revision(self):
