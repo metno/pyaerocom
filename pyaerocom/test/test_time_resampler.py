@@ -77,33 +77,39 @@ def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
     val = TimeResampler()._gen_idx(from_ts_type, to_ts_type, min_num_obs, how)
     assert val == expected
 
-@pytest.mark.parametrize('args,output_len,output_numnotnan', [
+@pytest.mark.parametrize('args,output_len,output_numnotnan,lsp', [
+    (dict(to_ts_type='monthly',from_ts_type='hourly',
+          how=dict(daily=dict(hourly='sum')),
+          apply_constraints=True,
+          min_num_obs=min_num_obs_custom), 1, 0, False),
     (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
-          apply_constraints=False), 1, 1),
+          apply_constraints=False), 1, 1, True),
     (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
-          apply_constraints=False), 13, 13),
+          apply_constraints=False), 13, 13, True),
     (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
-          apply_constraints=False), 13, 13),
-    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
-          apply_constraints=True,
-          min_num_obs=min_num_obs_default), 13, 13),
+          apply_constraints=False), 13, 13, True),
     (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
           apply_constraints=True,
-          min_num_obs=min_num_obs_custom), 13, 12),
+          min_num_obs=min_num_obs_default), 13, 13, True),
+    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
+          apply_constraints=True,
+          min_num_obs=min_num_obs_custom), 13, 12, True),
     (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
           apply_constraints=True,
-          min_num_obs=min_num_obs_default), 1, 1),
+          min_num_obs=min_num_obs_default), 1, 1, True),
     (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
           apply_constraints=True,
-          min_num_obs=min_num_obs_custom), 1, 0)
+          min_num_obs=min_num_obs_custom), 1, 0, True),
+
     ])
 def test_TimeResampler_resample(fakedata_hourly, args, output_len,
-                                output_numnotnan):
+                                output_numnotnan, lsp):
     tr = TimeResampler(input_data=fakedata_hourly)
     ts = tr.resample(**args)
     assert len(ts) == output_len
     notnan = ~np.isnan(ts)
     assert notnan.sum() == output_numnotnan
+    assert tr.last_units_preserved == lsp
 
 if __name__ == '__main__':
     import sys
