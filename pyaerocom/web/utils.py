@@ -132,7 +132,7 @@ def compute_model_average_and_diversity(cfg, var_name,
         if mname in ignore_models:
             const.print_log.info('Ignoring model {}'.format(mname))
             continue
-        const.print_log.info('Model {} ({})'.format(mname, var_name))
+        const.print_log.info(f'Adding {mname} ({var_name})')
 
         mid = cfg.get_model_id(mname)
         if mid == data_id or mname==data_id:
@@ -157,9 +157,10 @@ def compute_model_average_and_diversity(cfg, var_name,
                 else:
                     raise NotImplementedError('Cannot process ModelLevel fields yet')
             data = data.regrid(dummy)
+            const.print_log.info('Success!')
         except Exception as e:
             models_failed.append(mid)
-            const.print_log.info('Failed to process...: {}'.format(repr(e)))
+            const.print_log.info(f'Failed! Reason: {e}')
             if logfile is not None:
                 logfile.write('\nFAILED {}: {}'.format(mid, repr(e)))
             continue
