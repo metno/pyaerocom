@@ -116,7 +116,7 @@ class ReadGhost(ReadUngriddedBase):
     flagged by my processing accordingly.
     """
 
-    __version__ = '0.0.11'
+    __version__ = '0.0.12'
 
     _FILEMASK = '*.nc'
 
