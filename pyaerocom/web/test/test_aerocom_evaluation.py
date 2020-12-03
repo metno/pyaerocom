@@ -182,8 +182,8 @@ def test_aerocom_evaluation_find_model_name(stp):
     assert model_name == MODEL_NAME
 
 @pytest.mark.parametrize('key,val,expected',[
-    ('proj_id', ['project'], ValueError),
-    ('exp_id', ['exp'], ValueError)
+    ('proj_id', ['project'], AttributeError),
+    ('exp_id', ['exp'], AttributeError)
 ])
 def test_aerocom_evaluation_check_config(stp_min, key, val, expected):
     stp_min[key] = val
