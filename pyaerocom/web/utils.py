@@ -25,6 +25,7 @@ def compute_model_average_and_diversity(cfg, var_name,
                                         ignore_models=None,
                                         logfile=None,
                                         comment=None,
+                                        model_use_vars=None,
                                         **kwargs):
     """Compute median or mean model based on input models
 
@@ -69,6 +70,8 @@ def compute_model_average_and_diversity(cfg, var_name,
     """
     if not isinstance(cfg, AerocomEvaluation):
         raise ValueError
+    if model_use_vars is None:
+        model_use_vars = {}
     if ignore_models is None:
         ignore_models = []
     if year is None:
@@ -137,6 +140,13 @@ def compute_model_average_and_diversity(cfg, var_name,
         mid = cfg.get_model_id(mname)
         if mid == data_id or mname==data_id:
             continue
+
+        read_var = var_name
+        if mname in model_use_vars:
+            muv = model_use_vars[mname]
+            if var_name in muv:
+                read_var = muv[var_name]
+
         try:
             data = cfg.read_model_data(mname, var_name,
                                        ts_type=ts_type,
@@ -177,73 +187,92 @@ def compute_model_average_and_diversity(cfg, var_name,
     from_files = [os.path.basename(f) for f in from_files]
 
     dims = [data.time, dummy.coord('latitude'), dummy.coord('longitude')]
-    avg = avg_fun(loaded, axis=0)
-    q1, q3 = None, None
+
+    # the merged data objects
+    arr = np.asarray(loaded)
+
+    # average (mean or median)
+    avgarr = avg_fun(arr, axis=0)
+
     if avg_how == 'mean':
-        diversity = np.std(np.asarray(loaded) / avg, axis=0) * 100
+        stdarr = np.std(arr)
+        divarr = np.std(arr / avgarr, axis=0) * 100
     else:
-        ld = np.asarray(loaded)
-        q1 = np.quantile(ld, 0.25, axis=0)
-        q3 = np.quantile(ld, 0.75, axis=0)
-        diversity = (q3-q1) / avg * 100
+        q1arr = np.quantile(arr, 0.25, axis=0)
+        q3arr = np.quantile(arr, 0.75, axis=0)
+        divarr = (q3arr - q1arr) / avgarr * 100
 
     if comment is None:
-        comment = 'AeroCom {} model data for variable {}.'.format(avg_how,
-                                                                 var_name)
+        comment = f'AeroCom ensemble {avg_how} for variable {var_name}. '
 
-    mean = GriddedData(numpy_to_cube(avg,
-                                     dims=dims,
-                                     var_name=var_name,
-                                     units=data.unit,
-                                     ts_type=ts_type,
-                                     data_id=data_id,
-                                     from_files=from_files,
-                                     from_models=from_models,
-                                     from_vars=from_vars,
-                                     models_failed=models_failed,
-                                     comment=comment))
+    # median or mean
+    avg_out = GriddedData(numpy_to_cube(avgarr,
+                                        dims=dims,
+                                        var_name=var_name,
+                                        units=data.units,
+                                        ts_type=ts_type,
+                                        data_id=data_id,
+                                        from_files=from_files,
+                                        from_models=from_models,
+                                        from_vars=from_vars,
+                                        models_failed=models_failed,
+                                        comment=comment)
+                          )
 
     commentdiv = comment + ' Diversity field in units of % (IQR for median, std for mean)'
 
-    delta = GriddedData(numpy_to_cube(diversity,
-                                      dims=dims,
-                                      var_name='{}div'.format(var_name),
-                                      units='%',
-                                      ts_type=ts_type,
-                                      data_id=data_id,
-                                      from_files=from_files,
-                                      from_models=from_models,
-                                      from_vars=from_vars,
-                                      models_failed=models_failed,
-                                      comment=commentdiv))
+    # IQR or std based diversity
+    div_out = GriddedData(numpy_to_cube(divarr,
+                                        dims=dims,
+                                        var_name='{}div'.format(var_name),
+                                        units='%',
+                                        ts_type=ts_type,
+                                        data_id=data_id,
+                                        from_files=from_files,
+                                        from_models=from_models,
+                                        from_vars=from_vars,
+                                        models_failed=models_failed,
+                                        comment=commentdiv))
 
-    if q1 is not None: # then also q3 is not None
-        commentq1 =  comment + ' First Quantile.'
-        per25 = GriddedData(numpy_to_cube(q1,
-                                         dims=dims,
-                                         var_name='{}q1'.format(var_name),
-                                         units=data.unit,
-                                         ts_type=ts_type,
-                                         data_id=data_id,
-                                         from_files=from_files,
-                                         from_models=from_models,
-                                         from_vars=from_vars,
-                                         models_failed=models_failed,
-                                         comment=commentq1))
-
-        commentq3 =  comment + ' First Quantile.'
-        per75 = GriddedData(numpy_to_cube(q3,
-                                         dims=dims,
-                                         var_name='{}q3'.format(var_name),
-                                         units=data.unit,
-                                         ts_type=ts_type,
-                                         data_id=data_id,
-                                         from_files=from_files,
-                                         from_models=from_models,
-                                         from_vars=from_vars,
-                                         models_failed=models_failed,
-                                         comment=commentq3))
+    std_out, q1_out, q3_out = None, None, None
+    if avg_how == 'mean':
+        commentstd = comment + ' Standard deviation'
+        std_out = GriddedData(numpy_to_cube(stdarr,
+                                            dims=dims,
+                                            var_name='{}q1'.format(var_name),
+                                            units=data.unit,
+                                            ts_type=ts_type,
+                                            data_id=data_id,
+                                            from_files=from_files,
+                                            from_models=from_models,
+                                            from_vars=from_vars,
+                                            models_failed=models_failed,
+                                            comment=commentstd))
     else:
-        per25, per75 = None, None
+        commentq1 =  comment + ' First quantile.'
+        q1_out = GriddedData(numpy_to_cube(q1arr,
+                                           dims=dims,
+                                           var_name='{}q1'.format(var_name),
+                                           units=data.unit,
+                                           ts_type=ts_type,
+                                           data_id=data_id,
+                                           from_files=from_files,
+                                           from_models=from_models,
+                                           from_vars=from_vars,
+                                           models_failed=models_failed,
+                                           comment=commentq1))
 
-    return (mean, delta, per25, per75)
+        commentq3 =  comment + ' Third quantile.'
+        q3_out = GriddedData(numpy_to_cube(q3arr,
+                                           dims=dims,
+                                           var_name='{}q3'.format(var_name),
+                                           units=data.unit,
+                                           ts_type=ts_type,
+                                           data_id=data_id,
+                                           from_files=from_files,
+                                           from_models=from_models,
+                                           from_vars=from_vars,
+                                           models_failed=models_failed,
+                                           comment=commentq3))
+
+    return (avg_out, div_out, q1_out, q3_out, std_out)
