@@ -148,7 +148,7 @@ def compute_model_average_and_diversity(cfg, var_name,
                 read_var = muv[var_name]
 
         try:
-            data = cfg.read_model_data(mname, var_name,
+            data = cfg.read_model_data(mname, read_var,
                                        ts_type=ts_type,
                                        start=year,
                                        **kwargs)
