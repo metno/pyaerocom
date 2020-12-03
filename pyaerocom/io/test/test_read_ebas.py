@@ -268,14 +268,14 @@ class TestReadEBAS(object):
         assert fp.endswith('ebas_file_index.sqlite3')
 
     @pytest.mark.parametrize('vars_to_retrieve,constraints,num_files', [
-        ('sc550aer', {}, 5),
-        ('sc550dryaer', {}, 5),
-        ('sc550dryaer', {'station_names': 'Jungfraujoch'}, 2),
-        ('ac550aer', {}, 4),
-        ('concpm10', {}, 4),
-        ('conco3', {}, 4),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, 4),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, 17),
+        ('sc550aer', {}, 1236),
+        ('sc550dryaer', {}, 1308),
+        ('sc550dryaer', {'station_names': 'Jungfraujoch'}, 28),
+        ('ac550aer', {}, 874),
+        ('concpm10', {}, 4943),
+        ('conco3', {}, 5127),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, 139),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, 12179),
         ])
     def test_get_file_list(self, reader, vars_to_retrieve, constraints,
                            num_files):

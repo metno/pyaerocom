@@ -77,11 +77,11 @@ EX_WRONG5['aux_requires']['blablub'] = {'abc' : '42'}
 EX_WRONG6 = deepcopy(EX_WRONG5)
 EX_WRONG6['aux_requires']['blablub']['def'] = '43'
 
-EX_WRONG7 = deepcopy(EX_WRONG6)
-EX_WRONG7['aux_funs']['blablub'] = 'abc;42+def;43'
+EX_NOTWRONG1 = deepcopy(EX_WRONG6)
+EX_NOTWRONG1['aux_funs']['blablub'] = 'abc;42+def;43'
 
-EX_NOTWRONG1 = deepcopy(EX_WRONG7)
-EX_NOTWRONG1['aux_units']['blablub'] = '1'
+EX_NOTWRONG2 = deepcopy(EX_NOTWRONG1)
+EX_NOTWRONG2['aux_units']['blablub'] = '1'
 
 @pytest.mark.parametrize('argdict,expectation', [
     (AUX_EXAMPLE, does_not_raise_exception()),
@@ -92,8 +92,8 @@ EX_NOTWRONG1['aux_units']['blablub'] = '1'
     (EX_WRONG4, pytest.raises(ValueError)),
     (EX_WRONG5, pytest.raises(ValueError)),
     (EX_WRONG6, pytest.raises(ValueError)),
-    (EX_WRONG7, pytest.raises(ValueError)),
     (EX_NOTWRONG1, does_not_raise_exception()),
+    (EX_NOTWRONG2, does_not_raise_exception())
     ])
 def test_AuxInfoUngridded___init__(argdict, expectation):
     with expectation:
