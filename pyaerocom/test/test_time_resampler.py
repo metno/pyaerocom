@@ -77,7 +77,7 @@ def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
     val = TimeResampler()._gen_idx(from_ts_type, to_ts_type, min_num_obs, how)
     assert val == expected
 
-@pytest.mark.parametrize('args,output_len,output_numnotnan,lsp', [
+@pytest.mark.parametrize('args,output_len,output_numnotnan,lup', [
     (dict(to_ts_type='monthly',from_ts_type='hourly',
           how=dict(daily=dict(hourly='sum')),
           apply_constraints=True,
@@ -103,13 +103,13 @@ def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
 
     ])
 def test_TimeResampler_resample(fakedata_hourly, args, output_len,
-                                output_numnotnan, lsp):
+                                output_numnotnan, lup):
     tr = TimeResampler(input_data=fakedata_hourly)
     ts = tr.resample(**args)
     assert len(ts) == output_len
     notnan = ~np.isnan(ts)
     assert notnan.sum() == output_numnotnan
-    assert tr.last_units_preserved == lsp
+    assert tr.last_units_preserved == lup
 
 if __name__ == '__main__':
     import sys
