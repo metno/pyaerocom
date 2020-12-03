@@ -1546,7 +1546,6 @@ class GriddedData(object):
             resolution than this object
         """
         #from pyaerocom.tstype import TsType
-
         to = TsType(to_ts_type)
         current = TsType(self.ts_type)
 
@@ -1584,10 +1583,11 @@ class GriddedData(object):
         import xarray as xarr
 
         arr = xarr.DataArray.from_iris(self.cube)
-
+        from_ts_type = self.ts_type
         try:
             rs = TimeResampler(arr)
-            arr_out = rs.resample(to_ts_type, from_ts_type=self.ts_type,
+            arr_out = rs.resample(to_ts_type,
+                                  from_ts_type=from_ts_type,
                                   how=how,
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
@@ -1595,7 +1595,7 @@ class GriddedData(object):
             arr['time'] = self.time_stamps()
             rs = TimeResampler(arr)
             arr_out = rs.resample(to_ts_type,
-                                  from_ts_type=self.ts_type,
+                                  from_ts_type=from_ts_type,
                                   how=how,
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
@@ -1604,12 +1604,21 @@ class GriddedData(object):
                            **self.metadata)
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
-        if how in ('mean', 'median', 'std', 'max', 'min'):
+
+        # in case of these aggregators, the data unit can be kept
+        # ToDo: this is a quick fix and needs revision, should also check
+        # if this can be handled automatically by iris, since iris knows
+        # about cf Units and will perhaps change a unit automatically when
+        # e.g. a cumulative sum is applied to the time dimension (for instance)
+        # if precip data in mm hr-1 is converted from hourly -> daily using
+        # cumulative sum.
+        if rs.last_units_preserved:
             data.units = self.units
         else:
             print_log.info(
                 f'Cannot infer unit when aggregating using {how}. Please set '
-                f'unit in returned data object!')
+                f'unit in returned data object!'
+                )
         try:
             data.check_dimcoords_tseries()
         except:
@@ -2691,6 +2700,6 @@ if __name__=='__main__':
     # print("uses last changes ")
     data = pya.io.ReadGridded('TM5-met2010_CTRL-TEST').read_var('od550aer',
                                                                 start=2010,
-                                                                ts_type='monthly')
+                                                                ts_type='daily')
 
-    data.sel(latitude=(30, 60), time=('6/2010', '10/2010'))
+
