@@ -2157,7 +2157,8 @@ class GriddedData(object):
         """
 
         if isinstance(other, iris.cube.Cube):
-            other = GriddedData(other)
+            other = GriddedData(other,
+                                convert_unit_on_init=False)
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
 
@@ -2168,7 +2169,8 @@ class GriddedData(object):
                                  'lon_res_deg specified')
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
                                            lon_res_deg=lon_res_deg)
-            other = GriddedData(dummy)
+            other = GriddedData(dummy,
+                                convert_unit_on_init=False)
 
         if not (self.has_latlon_dims * other.has_latlon_dims):
             raise DataDimensionError('Can only regrid data objects with '
