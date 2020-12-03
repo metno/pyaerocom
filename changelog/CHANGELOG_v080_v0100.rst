@@ -243,7 +243,7 @@
 - 2020-06-19, Eirik gallefoss	Minor changes to Colocator
 - 2020-06-17, Eirik gallefoss	Add tests for colocation_auto
 - 2020-06-19, Hans Brenna	testing a feature for simple parallelization of web processing
-- 2020-06-19, jgliss	Update some docstrings and minor reorganisation in ReadGridded`
+- 2020-06-19, jgliss	Update some docstrings and minor reorganisation in ReadGridded
 - 2020-06-19, Jonas	Update pyaerocom/io/readgridded.py
 - 2020-06-18, jgliss	Add some tests for ReadGridded.read_var (using testdata); includes tests for new input arg constraints
 - 2020-06-18, alpsjur	Added NHEMISPHERE and SHEMISPHERE to regions

@@ -1,93 +1,61 @@
 * Land sea masks?
-* Filter class?
-- Renamed class ReadSulphurAasEtAl to ReadAasEtal (old name still works) and fixed some bugs and did some cleanup in that class
 
 Test improvements
-* Replace many tests relying on lustre to work with test dataset.
-* Added conftest.py for defining session wide test fixtures and updated/reafctured all relevant tests accordingly
+- Most tests now uses a publicly available test dataset
+- Added conftest.py for defining session wide test fixtures
 
+Spatial filtering of gridded and ungridded data objects
 
 Reading Data
-- New class for reading GHOST data (ReadGhost)
-
+- Support for reading GHOST data (ReadGhost)
 - Support for reading EMEP data (ReadMscwCtm)
-
-
-GriddedData
-* GriddedData.to_xarray
-* GriddedData timeseries extraction is now more robust against memory errors and uses xarray
-* GriddedData.to_netcdf
-* GriddedData.resample_time can now also apply resampling constraints;
-
-UngriddedData
-* UngriddedData.filter_region can now also handle country names
-* Remove option to provide filter_name in UngriddedData.plot_station_coordinates (filtering should be done before)
-* New property method countries_available in UngriddedData
-* Implement save_as and from_cache in UngriddedData
-* UngriddedData: Add beta version of method from_station_data
-
-StationData
-- API CHANGE): StationData.resample_timeseries is deprecated (but still works) and usage of new method resample_time is recommended (which returns instance of StationData other than pd.Series); new method copy in StationData
-
-ColocatedData
-* _filter_country, apply_country_filter, countries_available, check_set_countries, _get_stat_coords and implement country filtering in filter_region
-* get_country_codes
-
-Helpers
-* Added new method make_datetime_index in helpers.py
-* Added method read_obsdata in AerocomEvaluation class
-* Added lowlevel method calc_climatology in helpers.py;
-* Added new method calc_climatology to StationData
-
-Climatology
-
-CacheHanglerUngridded
-* Add option force_use_outdated
-* Modify CacheHandlerUngridded so that it can also handle custom filenames
-* Added method delete_all_cache_files in CacheHanglerUngridded
 
 ReadGridded
 * Improve flexibility related to multiple vert_code matches using new method get_vert_code in Variable class
 
-ReadUngridded
-* Add option only_cached
-* Add input option data_dir to ReadUngridded
-* ReadUngridded can now also handle post computation with merge method combine
-* Major update to ReadUngridded: incorporate logic for post-computation of variables (BETA)
+GriddedData
+- Can be converted to xarray or stored as netcdf files
+- More robust timeseries extraction
+- Constraints can be applied during temporal resampling
 
+ReadUngridded
+- Add option only_cached to only read cached data f.e. when working offline
+* ReadUngridded can post compute variables with merge method combine
+
+UngriddedData
+- Can be filtered by country names
+- Can now be saved as pickled objects
+- Create UngriddedData from StationData object(s)
+
+CacheHandlerUngridded
+- Modified to handle custom filenames
+- Added method delete_all_cache_files
+- Add option force_use_outdated
 
 Colocation
-* Refined time resampling strategy in colocate_gridded_ungridded (resampling constraints are now applied also in main loop)
-* (UNDER DEVELOPMENT): add new attr. resample_how to ColocationSetup (not being used so far, related to #88)
+- Outliers in gridded/gridded colocation are now removed in original resolution
+- Ungridded/ungridded colocation routine
+- Gridded/gridded colocation now regrids to the lowest of both resolutions
+- Add option resample_how
 * resample_how option in high level colocation routines
-* Add flexible selection of model reader
-* Add option of setting gridded reader for observations in Colocator
-* MAJOR ANALYSIS CHANGE: outliers in gridded / gridded colocation are now removed in original resolution
-* Finish first draft of ungridded / ungridded base colocation routine
-* Updated gridded/gridded colocation so that it regrids to the lowest of both resolutions
-
-
-Config
-* add_ungridded_post_dataset
 
 Plotting
-* New method in plot/mapping.py for plotting bias maps from ColocatedData
+- New method plot_nmb_map_colocateddata in plot/mapping.py for plotting bias maps from ColocatedData
+
+Web processing
+- compute_model_average_and_diversity now also outputs fields for 1. and 3. quantiles
 
 Aerocom Evaluation
-* Added method for reordering experiments in menu.json for Aerocom Evaluation interface
+- Store a copy of the config file in experiment output directory
 * New method read_ungridded_obsdata
-* AerocomEvaluation now applies weighted statistics to gridded/gridded colocated objects, in heatmap
-* (UNDER DEVELOPMENT): add new attrs. resample_how to AerocomEvalation (not being used so far, related to #88) and regions_how, which is used in processing of json files from colocateddata (upcoming commit, related to #90)
-* store config in experiment directory
-* Daily and monthly heatmaps
-* Regional timeseries
-* Diurnal processing
-* web_interface_name option for obs_config in web processing
-* Added support for country-regional diurnal time series
-Added functionality in mathutils to compute weighted statistics
+- AerocomEvaluation now applies weighted statistics to gridded/gridded colocated objects in heatmap
+- Create json files for daily and monthly heatmaps
+- Regional timeseries
+- Diurnal processing
 
-web
-* web/utils/compute_model_average_and_diversity now also outputs fields for 1. and 3. quantiles
+API changes:
+- Renamed class ReadSulphurAasEtAl to ReadAasEtal
+- StationData.resample_timeseries is deprecated (but still works) and usage of new method resample_time is recommended
 
 ### Bugfixes
 
