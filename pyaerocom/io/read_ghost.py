@@ -187,7 +187,8 @@ class ReadGhost(ReadUngriddedBase):
     #: provided flag or qa variable, or both, currently only from qa variable)
     DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([[0, 1, 2, 3, 6, 20, 21, 22, 72,
                                                  75, 82, 83, 90, 91, 92, 110,
-                                                 111, 112, 113, 115, 132, 133]]),
+                                                 111, 112, 113, 115, 131, 132,
+                                                 133]]),
                              'flag' : None}
 
     @property
