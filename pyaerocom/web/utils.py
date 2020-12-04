@@ -195,7 +195,7 @@ def compute_model_average_and_diversity(cfg, var_name,
     avgarr = avg_fun(arr, axis=0)
 
     if avg_how == 'mean':
-        stdarr = np.std(arr)
+        stdarr = np.std(arr, axis=0)
         divarr = np.std(arr / avgarr, axis=0) * 100
     else:
         q1arr = np.quantile(arr, 0.25, axis=0)
@@ -239,8 +239,8 @@ def compute_model_average_and_diversity(cfg, var_name,
         commentstd = comment + ' Standard deviation'
         std_out = GriddedData(numpy_to_cube(stdarr,
                                             dims=dims,
-                                            var_name='{}q1'.format(var_name),
-                                            units=data.unit,
+                                            var_name='{}std'.format(var_name),
+                                            units=data.units,
                                             ts_type=ts_type,
                                             data_id=data_id,
                                             from_files=from_files,
@@ -253,7 +253,7 @@ def compute_model_average_and_diversity(cfg, var_name,
         q1_out = GriddedData(numpy_to_cube(q1arr,
                                            dims=dims,
                                            var_name='{}q1'.format(var_name),
-                                           units=data.unit,
+                                           units=data.units,
                                            ts_type=ts_type,
                                            data_id=data_id,
                                            from_files=from_files,
