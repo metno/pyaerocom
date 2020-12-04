@@ -1870,7 +1870,7 @@ class GriddedData(object):
                 data = data[time_range[0]:time_range[1]]
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
-        return GriddedData(data, **suppl)
+        return GriddedData(data, convert_unit_on_init=False, **suppl)
 
     def get_area_weighted_timeseries(self, region=None):
         """Helper method to extract area weighted mean timeseries
@@ -2072,7 +2072,6 @@ class GriddedData(object):
         if savename is None: #use AeroCom convention
             return self._to_netcdf_aerocom(out_dir, **kwargs)
         self._check_meta_netcdf()
-        savename = self.aerocom_savename(**kwargs)
         fp = os.path.join(out_dir, savename)
         iris.save(self.grid, fp)
 
