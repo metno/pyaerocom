@@ -129,7 +129,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.38_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.39_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -497,10 +497,7 @@ class ReadEbas(ReadUngriddedBase):
                     const.logger.info('Ignoring flagged file {}'.format(file))
                     continue
                 paths.append(os.path.join(filedir, file))
-# =============================================================================
-#                 if os.path.exists(fp):
-#                     paths.append(fp)
-# =============================================================================
+
             files_vars[var] = sorted(paths)
             num = len(paths)
             totnum += num
@@ -514,79 +511,6 @@ class ReadEbas(ReadUngriddedBase):
         self._lists_orig = files_vars
         files = self._merge_lists(files_vars)
         return files
-
-# =============================================================================
-#     def get_file_listOLD(self, vars_to_retrieve=None, **constraints):
-#         """Get list of files for all variables to retrieve
-#
-#         Parameters
-#         ----------
-#         vars_to_retrieve : list
-#             list of variables that are supposed to be loaded
-#         **constraints
-#             further EBAS request constraints deviating from default (default
-#             info for each AEROCOM variable can be found in `ebas_config.ini <
-#             https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
-#             ebas_config.ini>`__). For details on possible input parameters
-#             see :class:`EbasSQLRequest` (or `this tutorial <http://aerocom.met.no
-#             /pyaerocom/tutorials.html#ebas-file-query-and-database-browser>`__)
-#
-#         Returns
-#         -------
-#         list
-#             unified list of file paths each containing either of the specified
-#             variables
-#         """
-#         if vars_to_retrieve is None:
-#             vars_to_retrieve = self.DEFAULT_VARS
-#         elif isinstance(vars_to_retrieve, str):
-#             vars_to_retrieve = [vars_to_retrieve]
-#
-#         # make sure variable names are input correctly
-#         vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
-#
-#         self.logger.info('Fetching data files. This might take a while...')
-#
-#         db = self.file_index
-#         files_vars = {}
-#         totnum = 0
-#         const.print_log.info('Retrieving EBAS files for variables\n{}'
-#                              .format(vars_to_retrieve))
-#         # directory containing NASA Ames files
-#         filedir = self.file_dir
-#         for var in vars_to_retrieve:
-#             info = self.get_ebas_var(var)
-#
-#             if 'station_names' in constraints:
-#                 stat_matches = self.find_station_matches(constraints['station_names'])
-#                 constraints['station_names'] = stat_matches
-#
-#             req = info.make_sql_request(**constraints)
-#
-#             const.logger.info('Retrieving EBAS file list for request:\n{}'
-#                               .format(req))
-#             filenames = db.get_file_names(req)
-#             self.sql_requests.append(req)
-#
-#             paths = []
-#             for file in filenames:
-#                 if file in self.IGNORE_FILES:
-#                     const.print_log.info('Ignoring flagged file {}'.format(file))
-#                     continue
-#                 paths.append(os.path.join(filedir, file))
-#             files_vars[var] = sorted(paths)
-#             num = len(paths)
-#             totnum += num
-#             self.logger.info('{} files found for variable {}'.format(num, var))
-#         if len(files_vars) == 0:
-#             raise IOError('No file could be retrieved for either of the '
-#                           'specified input variables: {}'
-#                           .format(vars_to_retrieve))
-#
-#         self._lists_orig = files_vars
-#         files = self._merge_lists(files_vars)
-#         return files
-# =============================================================================
 
     def _get_var_cols(self, ebas_var_info, data):
         """Get all columns in NASA Ames file matching input Aerocom variable
@@ -757,7 +681,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out['data_id'] = self.data_id
         data_out['PI'] = file['data_originator']
         data_out['station_id'] = meta['station_code']
-
+        data_out['set_type_code'] = meta['set_type_code']
         data_out['station_name'] = name
         if name in self.MERGE_STATIONS:
             data_out['station_name'] = self.MERGE_STATIONS[name]
@@ -1111,10 +1035,10 @@ class ReadEbas(ReadUngriddedBase):
         data_out = StationData()
 
         data_out = self._add_meta(data_out, file)
+
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
-        #totnum = file.data.shape[0]
         for var, colnum  in var_cols.items():
             data_out['var_info'][var] = {}
 
@@ -1444,10 +1368,12 @@ class ReadEbas(ReadUngriddedBase):
         return data_obj
 
 if __name__=="__main__":
+    import pyaerocom as pya
 
-    reader = ReadEbas()
-    fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/AM0001R.20090101180000.20190424085012.precip_gauge..precip.1y.1d.AM01L_pg_01.AM01L_IC.lev2.nas'
-    data = reader.read_file(fp, 'concprcpno3')
+    reader = pya.io.ReadUngridded()
+#    reader = ReadEbas()
+    #fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/AM0001R.20090101180000.20190424085012.precip_gauge..precip.1y.1d.AM01L_pg_01.AM01L_IC.lev2.nas'
+    data = reader.read('EBASMC', 'sc550dryaer')
 
     #data.plot_timeseries('concs')
     #data = r.read('concso4')
