@@ -140,12 +140,12 @@ desired_keys = [
     'sample_preparation_techniques',
     'sample_preparation_types',
     'sampling_height',
-    'standardised_network_provided_area_classification',
-    'standardised_network_provided_land_use',
-    'standardised_network_provided_main_emission_source',
-    'standardised_network_provided_measurement_scale',
-    'standardised_network_provided_station_classification',
-    'standardised_network_provided_terrain',
+    'area_classification',
+    'land_use',
+    'main_emission_source',
+    'measurement_scale',
+    'station_classification',
+    'terrain',
     'station_name',
     'station_reference',
     'station_timezone',
@@ -154,7 +154,7 @@ desired_keys = [
 ]
 
 def test_ghost_meta_keys():
-    assert actual_keys == desired_keys
+    assert sorted(actual_keys) == sorted(desired_keys)
 
 if __name__ == '__main__':
     test_ghost_meta_keys()
