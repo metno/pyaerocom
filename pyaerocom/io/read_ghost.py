@@ -115,7 +115,8 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.10'
+
+    __version__ = '0.0.12'
 
     _FILEMASK = '*.nc'
 
@@ -145,7 +146,7 @@ class ReadGhost(ReadUngriddedBase):
     #: these need to be output variables in AeroCom convention (cf. file
     #: pyaerocom/data/variables.ini). See also :attr:`VARNAMES_DATA` for a
     #: mapping of variable names used in GHOST
-    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1','conccl','vmrco', 'vmrno',
+    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1','conccl', 'concso4','vmrco', 'vmrno',
                     'vmrno2', 'vmro3', 'vmrso2',]
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
@@ -155,6 +156,7 @@ class ReadGhost(ReadUngriddedBase):
                      'concpm25'  : 'pm2p5',
                      'concpm1'   : 'pm1',
                      'conccl'    : 'sconccl',
+                     'concso4'   : 'sconcso4',
                      'vmrco'     : 'sconcco',
                      'vmrno'     : 'sconcno',
                      'vmrno2'    : 'sconcno2',
@@ -181,13 +183,14 @@ class ReadGhost(ReadUngriddedBase):
 
     # This is the default list of flags that mark bad / invalid data, as
     # provided by Dene: [0, 1, 2, 3, 6, 20, 21, 22, 72, 75, 82, 83, 90, 91,
-    #92, 105, 110, 111, 112, 113, 115, 132, 133]
+    #92, 105 (removed), 110, 111, 112, 113, 115, 132, 133]
 
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
     DEFAULT_FLAGS_INVALID = {'qa' : np.asarray([[0, 1, 2, 3, 6, 20, 21, 22, 72,
                                                  75, 82, 83, 90, 91, 92, 110,
-                                                 111, 112, 113, 115, 132, 133]]),
+                                                 111, 112, 113, 115, 131, 132,
+                                                 133]]),
                              'flag' : None}
 
     @property
