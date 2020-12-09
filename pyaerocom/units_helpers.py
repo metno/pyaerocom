@@ -58,6 +58,9 @@ UCONV_MUL_FACS = pd.DataFrame([
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
 UALIASES = {'ug S m-3'  : 'ug S/m3',
+            'mgS/m2'    : 'mg S m-2',
+            'mgS/m2/h'  : 'mg S m-2 h-1',
+            'mgS/m**2/h': 'mg S m-2 h-1',
             'ug C m-3'  : 'ug C/m3',
             'ug N m-3'  : 'ug N/m3',
             '/m'        : 'm-1',
