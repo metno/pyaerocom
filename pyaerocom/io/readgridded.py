@@ -139,12 +139,10 @@ def check_pr_units(gridded):
     if any([unit == x for x in PR_IMPLICIT_UNITS]):
         unit = f'{unit} {freq_si}-1'
         gridded.units = unit
-    else:
-        raise ValueError(f'Cannot handle precip unit {unit}')
 
     # Check if frequency in unit corresponds to sampling frequency (e.g.
     # ug m-2 h-1 for hourly data).
-    freq_si_str = f'{freq_si}-1'
+    freq_si_str = f' {freq_si}-1'
     freq_si_str_alt = f'/{freq_si}'
     if freq_si_str_alt in str(unit):
         # make sure frequencey is denoted as e.g. m s-1 instead of m/s
@@ -417,7 +415,9 @@ class ReadGridded(object):
                     'vmrox'         : ('vmrno2', 'vmro3'),
                     'fmf550aer'     : ('od550lt1aer', 'od550aer'),
                     'concno3'       : ('concno3c', 'concno3f'),
-                    'concprcpoxn'   : ('wetoxn', 'pr')
+                    'concprcpoxn'   : ('wetoxn', 'pr'),
+                    'concprcpoxs'   : ('wetoxs', 'pr'),
+
                     #'mec550*'       : ['od550*', 'load*'],
                     #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
                     }
@@ -437,7 +437,8 @@ class ReadGridded(object):
                 'vmrox'         :   add_cubes,
                 'fmf550aer'     :   divide_cubes,
                 'concno3'       :   add_cubes,
-                'concprcpoxn'   :   compute_concprcp_from_pr_and_wetdep
+                'concprcpoxn'   :   compute_concprcp_from_pr_and_wetdep,
+                'concprcpoxs'   :   compute_concprcp_from_pr_and_wetdep
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
@@ -446,6 +447,10 @@ class ReadGridded(object):
     #: This is optional and defined per-variable like in AUX_FUNS
     AUX_ADD_ARGS = {
         'concprcpoxn'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_units='m d-1',
+                                 prlim_set_under=np.nan),
+        'concprcpoxs'   :   dict(ts_type='daily',
                                  prlim=0.1e-3,
                                  prlim_units='m d-1',
                                  prlim_set_under=np.nan)
