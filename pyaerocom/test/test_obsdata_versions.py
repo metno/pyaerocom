@@ -14,14 +14,14 @@ from pyaerocom.conftest import lustre_unavail
 
 obsdata_versions = [
     ['AeronetInvV2Lev2.daily', '20171216'],
-    ['AeronetInvV3Lev2.daily', '20200919'],
+    ['AeronetInvV3Lev2.daily', '20201205'],
     ['AeronetSDAV2Lev2.daily', '20180519'],
-    ['AeronetSDAV3Lev2.daily', '20200922'],
+    ['AeronetSDAV3Lev2.daily', '20201207'],
     ['AeronetSunV2Lev2.daily', '20180519'],
-    ['AeronetSunV3Lev2.daily', '20200922'],
+    ['AeronetSunV3Lev2.daily', '20201207'],
     ['DMS_AMS_CVO', '20190807'],
     ['EARLINET', '20190129'],
-    ['EBASMC', '20200401'],
+    ['EBASMC', '20201204'],
     ['GAWTADsubsetAasEtAl', '20190522'],
     ['GHOST.EEA.daily', 'n/d']]
 
