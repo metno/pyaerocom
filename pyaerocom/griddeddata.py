@@ -689,7 +689,7 @@ class GriddedData(object):
         try:
             fac = uh.get_unit_conversion_fac(self.units, new_unit,
                                              self.var_name)
-        except :
+        except Exception as e:
             if uh.is_deposition(self.var_name):
                 tst = TsType(self.ts_type)
                 si = tst.to_si()
@@ -708,7 +708,7 @@ class GriddedData(object):
 
 
             else:
-                raise UnitConversionError('What a surprise...')
+                raise UnitConversionError(e)
 
 
 
