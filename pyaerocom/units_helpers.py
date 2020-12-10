@@ -57,17 +57,32 @@ UCONV_MUL_FACS = pd.DataFrame([
 
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
-UALIASES = {'ug S m-3'  : 'ug S/m3',
-            'mgS/m2'    : 'mg S m-2',
-            'mgS/m2/h'  : 'mg S m-2 h-1',
-            'mgS/m**2/h': 'mg S m-2 h-1',
-            'ug C m-3'  : 'ug C/m3',
-            'ug N m-3'  : 'ug N/m3',
-            '/m'        : 'm-1',
-            'mgN/m2'    : 'mg N m-2',
-            'mgN/m2/h'  : 'mg N m-2 h-1',
-            'mgN/m**2/h': 'mg N m-2 h-1'
-            }
+UALIASES = {
+    # mass concentrations
+    'ug S m-3'      : 'ug S/m3',
+    'ug C m-3'      : 'ug C/m3',
+    'ug N m-3'      : 'ug N/m3',
+    # deposition rates (implicit)
+    ## sulphur species
+    'mgS/m2'        : 'mg S m-2',
+    'mgSm-2'        : 'mg S m-2',
+    ## nitrogen species
+    'mgN/m2'        : 'mg N m-2',
+    'mgNm-2'        : 'mg S m-2',
+    # deposition rates (explicit)
+    ## sulphur species
+    'mgS/m2/h'      : 'mg S m-2 h-1',
+    'mgS/m**2/h'    : 'mg S m-2 h-1',
+    'mgSm-2h-1'     : 'mg S m-2 h-1',
+    'mgSm**-2h-1'   : 'mg S m-2 h-1',
+    ## nitrogen species
+    'mgN/m2/h'      : 'mg N m-2 h-1',
+    'mgN/m**2/h'    : 'mg N m-2 h-1',
+    'mgNm-2h-1'     : 'mg N m-2 h-1',
+    'mgNm**-2h-1'   : 'mg N m-2 h-1',
+    # others
+    '/m'            : 'm-1'
+    }
 
 def _unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit"""
