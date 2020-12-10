@@ -68,7 +68,7 @@ UALIASES = {
     'mgSm-2'        : 'mg S m-2',
     ## nitrogen species
     'mgN/m2'        : 'mg N m-2',
-    'mgNm-2'        : 'mg S m-2',
+    'mgNm-2'        : 'mg N m-2',
     # deposition rates (explicit)
     ## sulphur species
     'mgS/m2/h'      : 'mg S m-2 h-1',
