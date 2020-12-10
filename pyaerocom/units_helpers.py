@@ -80,6 +80,8 @@ UALIASES = {
     'mgN/m**2/h'    : 'mg N m-2 h-1',
     'mgNm-2h-1'     : 'mg N m-2 h-1',
     'mgNm**-2h-1'   : 'mg N m-2 h-1',
+    ## others
+    'MM/H'          : 'mm h-1',
     # others
     '/m'            : 'm-1'
     }
