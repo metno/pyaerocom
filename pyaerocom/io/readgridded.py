@@ -425,9 +425,7 @@ class ReadGridded(object):
                     'concno3'       : ('concno3c', 'concno3f'),
                     'concprcpoxn'   : ('wetoxn', 'pr'),
                     'concprcpoxs'   : ('wetoxs', 'pr'),
-
-                    #'mec550*'       : ['od550*', 'load*'],
-                    #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
+                    'concprcprdn'   : ('wetrdn', 'pr'),
                     }
 
     AUX_ALT_VARS = {'od440aer'      :   ['od443aer'],
@@ -450,7 +448,8 @@ class ReadGridded(object):
                 'fmf550aer'     :   divide_cubes,
                 'concno3'       :   add_cubes,
                 'concprcpoxn'   :   compute_concprcp_from_pr_and_wetdep,
-                'concprcpoxs'   :   compute_concprcp_from_pr_and_wetdep
+                'concprcpoxs'   :   compute_concprcp_from_pr_and_wetdep,
+                'concprcprdn'   :   compute_concprcp_from_pr_and_wetdep
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
@@ -463,6 +462,10 @@ class ReadGridded(object):
                                  prlim_units='m d-1',
                                  prlim_set_under=np.nan),
         'concprcpoxs'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_units='m d-1',
+                                 prlim_set_under=np.nan),
+        'concprcprdn'   :   dict(ts_type='daily',
                                  prlim=0.1e-3,
                                  prlim_units='m d-1',
                                  prlim_set_under=np.nan)
@@ -2502,5 +2505,8 @@ class ReadGriddedMulti(object):
 if __name__=="__main__":
     import pyaerocom as pya
 
-    data = ReadGridded('TM5-met2010_AP3-CTRL').read_var('ang4487aer')
+    reader = ReadGridded('EMEP.cams50.u3all')
+    print(reader)
+
+    data = reader.read_var('concprcpoxs')
 

@@ -599,6 +599,7 @@ def correct_time_coord(cube, ts_type, year):
     except Exception:
         pass
     cube.add_dim_coord(tcoord, tindex_cube)
+    cube.attributes['timedim-corrected'] = True
     return cube
 
 def concatenate_iris_cubes(cubes, error_on_mismatch=True):
