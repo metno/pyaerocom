@@ -191,6 +191,7 @@ class ColocationSetup(BrowseDict):
                  model_use_vars=None, model_add_vars=None,
                  model_read_aux=None, read_opts_ungridded=None,
                  obs_vert_type=None, model_vert_type_alt=None,
+                 model_read_opts=None,
                  var_outlier_ranges=None, var_ref_outlier_ranges=None,
                  model_ts_type_read=None,
                  obs_ts_type_read=None, flex_ts_type_gridded=True,
@@ -220,6 +221,7 @@ class ColocationSetup(BrowseDict):
         self.obs_vars = obs_vars
         self.obs_vert_type = obs_vert_type
         self.model_vert_type_alt = model_vert_type_alt
+        self.model_read_opts = model_read_opts
         self.read_opts_ungridded = read_opts_ungridded
         self.obs_ts_type_read = obs_ts_type_read
 
@@ -608,6 +610,9 @@ class Colocator(ColocationSetup):
             if self.model_use_climatology:
                 start = 9999
                 stop = None
+            mro = self.model_read_opts
+            if isinstance(mro, dict) and var_name in mro:
+                kwargs.update(mro[var_name])
         else:
             vert_which = None
             ts_type_read = self.obs_ts_type_read

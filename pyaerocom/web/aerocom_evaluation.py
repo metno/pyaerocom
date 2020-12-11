@@ -1442,19 +1442,24 @@ class AerocomEvaluation(object):
         """
         return '{}.json'.format(self.name_config_file)
 
-    def to_json(self, output_dir):
+    def to_json(self, output_dir, ignore_nan=True, indent=3):
         """Convert analysis configuration to json file and save
 
         Parameters
         ----------
         output_dir : str
             directory where the config json file is supposed to be stored
+        ignore_nan : bool
+            set NaNs to Null when writing
+
 
         """
         d = self.to_dict()
         out_name = self.name_config_file_json
 
-        save_dict_json(d, os.path.join(output_dir, out_name), indent=3)
+        save_dict_json(d, os.path.join(output_dir, out_name),
+                       ignore_nan=ignore_nan,
+                       indent=indent)
 
 
     def load_config(self, proj_id, exp_id, config_dir=None):
