@@ -74,7 +74,7 @@ class ObsConfigEval(BrowseDict):
         self.obs_vars = None
         self.obs_ts_type_read = None
         self.obs_vert_type = None
-        self.obs_aux_requires = None
+        self.obs_aux_requires = {}
         self.instr_vert_loc = None
 
         self.read_opts_ungridded = None
@@ -85,7 +85,12 @@ class ObsConfigEval(BrowseDict):
 
     def check_add_obs(self):
         """Check if this dataset is an auxiliary post dataset"""
-        if self.obs_aux_requires is not None:
+        if not isinstance(self.obs_aux_requires, dict):
+            raise ValueError(
+                f'Invalid value obs_aux_requires={self.obs_aux_requires}'
+                f'Need dict...'
+                )
+        elif len(self.obs_aux_requires) > 0:
             if not self.obs_type == 'ungridded':
                 raise NotImplementedError(
                     'Cannot initialise auxiliary setup for {}. Aux obs reading '

@@ -219,13 +219,21 @@ class AerocomEvaluation(object):
         self.resample_how = None
 
         self._valid_obs_vars = {}
-        if len(settings)==0 and try_load_json and proj_id is not None:
+        if (len(settings)==0 and try_load_json and isinstance(proj_id, str)
+            and isinstance(exp_id, str)):
             try:
-                self.load_config(self.proj_id, self.exp_id, config_dir)
-                const.print_log.warning('Found and imported config file for {} / {}'
-                                     .format(self.proj_id, self.exp_id))
+                self.load_config(proj_id, exp_id, config_dir)
+                const.print_log.info(
+                    f'Found and imported config file for project {proj_id}, '
+                    f'experiment {exp_id}'
+                    )
+
             except Exception:
-                pass
+                from traceback import format_exc
+                const.print_log.warning(
+                    f'Failed to import config file for project {proj_id}, '
+                    f'experiment {exp_id}. Reason:\n{format_exc()}'
+                    )
         self.update(**settings)
 
     @property
