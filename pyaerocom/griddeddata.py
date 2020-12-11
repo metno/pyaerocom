@@ -703,8 +703,11 @@ class GriddedData(object):
                     check_aerocom,
                     self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
                 mulfac = fac1*fac2
-                self.cube *= mulfac
-                self.units = check_aerocom
+                new = self._grid * mulfac
+                new.attributes = self._grid.attributes
+                new.units = check_aerocom
+                self._grid = new
+                #self.units = check_aerocom
 
 
             else:
