@@ -5,6 +5,7 @@ import glob
 import os
 import numpy as np
 import simplejson
+from traceback import format_exc
 
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
@@ -1010,7 +1011,73 @@ class AerocomEvaluation(object):
     def iface_names(self):
        return self._check_and_get_iface_names()
 
+    def _process_map_var(self, model_name, var):
+
+        from pyaerocom.web.web_maps_helpers import (calc_contour_json,
+                                                    griddeddata_to_jsondict)
+
+        data = self.read_model_data(model_name, var)
+
+        vc = data.vert_code
+        if not isinstance(vc, str):
+            raise ValueError(f'Invalid vert_code {vc} in GriddedData')
+        elif vc == 'ModelLevel':
+            if not data.ndim == 4:
+                raise ValueError('Invalid ModelLevel file, needs to have '
+                                 '4 dimensions (time, lat, lon, lev)')
+            data = data.extract_surface_level()
+        if not data.has_time_dim:
+            raise AttributeError('Data needs to have time dimension...')
+        elif not data.has_latlon_dims:
+            raise AttributeError('Data needs to have lat and lon dimensions')
+
+        if not data.ts_type == 'monthly':
+            data = data.resample_time('monthly')
+
+        data.check_unit()
+
+        vminmax = self.maps_vmin_vmax
+        if isinstance(vminmax, dict) and var in vminmax:
+            vmin, vmax = vminmax[var]
+        else:
+            vmin, vmax = None, None
+
+        # first calcualate and save geojson with contour levels
+        contourjson = calc_contour_json(data, vmin=vmin, vmax=vmax)
+
+        # now calculate pixel data json file (basically a json file
+        # containing monthly mean timeseries at each grid point at
+        # a lower resolution)
+        if isnumeric(self.maps_res_deg):
+            lat_res = self.maps_res_deg
+            lon_res = self.maps_res_deg
+        else:
+            lat_res = self.maps_res_deg['lat_res_deg']
+            lon_res = self.maps_res_deg['lon_res_deg']
+
+
+        datajson = griddeddata_to_jsondict(data,
+                                           lat_res_deg=lat_res,
+                                           lon_res_deg=lon_res)
+        outname = f'{var}_{vc}_{model_name}'
+        return (contourjson, datajson, outname)
+
     def run_map_eval(self, model_name, var_name=None):
+        """Run evaluation of map processing
+
+        Create json files for model-maps display. This analysis does not
+        require any observation data but processes model output at all model
+        grid points, which is then displayed on the website in the maps
+        section.
+
+        Parameters
+        ----------
+        model_name : str
+            name of model to be processed
+        var_name : str, optional
+            name of variable to be processed. If None, all available
+            observation variables are used.
+        """
         if var_name is None:
             all_vars = self.all_obs_vars
         else:
@@ -1021,55 +1088,24 @@ class AerocomEvaluation(object):
         settings.update(**model_cfg)
         outdir = self.out_dirs['contour']
 
-        from pyaerocom.web.web_maps_helpers import (calc_contour_json,
-                                                    griddeddata_to_jsondict)
         for var in all_vars:
             const.print_log.info(f'Processing model maps for '
                                  f'{model_name} ({var})')
-
-            data = self.read_model_data(model_name, var)
-
-            vc = data.vert_code
-            if not isinstance(vc, str):
-                raise ValueError(f'Invalid vert_code {vc} in GriddedData')
-
-            if not data.ts_type == 'monthly':
-                data = data.resample_time('monthly')
-
-            data.check_unit()
-
-            outname = f'{var}_{vc}_{model_name}'
-
-            vminmax = self.maps_vmin_vmax
-            if isinstance(vminmax, dict) and var in vminmax:
-                vmin, vmax = vminmax[var]
-            else:
-                vmin, vmax = None, None
-            # first calcualate and save geojson with contour levels
-            contourjson = calc_contour_json(data, vmin=vmin, vmax=vmax)
-
-
-            fp = os.path.join(outdir, f'{outname}.geojson')
-            save_dict_json(contourjson, fp)
-
-            # now calculate pixel data json file (basically a json file
-            # containing monthly mean timeseries at each grid point at
-            # a lower resolution)
-            if isnumeric(self.maps_res_deg):
-                lat_res = self.maps_res_deg
-                lon_res = self.maps_res_deg
-            else:
-                lat_res = self.maps_res_deg['lat_res_deg']
-                lon_res = self.maps_res_deg['lon_res_deg']
-
-
-            datajson = griddeddata_to_jsondict(
-                data,
-                lat_res_deg=lat_res,
-                lon_res_deg=lon_res)
-
-            fp = os.path.join(outdir, f'{outname}.json')
-            save_dict_json(datajson, fp)
+            success = False
+            try:
+                (contourjson,
+                 datajson,
+                 outname) = self._process_map_var(model_name, var)
+                success = True
+            except:
+                const.print_log.warning(
+                    f'Failed to process maps for {model_name} {var} data. '
+                    f'Reason: {format_exc()}')
+            if success:
+                fp = os.path.join(outdir, f'{outname}.geojson')
+                save_dict_json(contourjson, fp)
+                fp = os.path.join(outdir, f'{outname}.json')
+                save_dict_json(datajson, fp)
 
 
 
