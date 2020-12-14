@@ -2598,12 +2598,14 @@ class GriddedData(object):
 
     def __str__(self):
         """For now, use string representation of underlying data"""
-        return ("pyaerocom.GriddedData: %s\nGrid data: %s"
-                %(self.name, self.grid.__str__()))
+        st = (f'pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n'
+              f'{self._grid.__str__()}')
+        return st
 
     def __repr__(self):
         """For now, use representation of underlying data"""
-        return "pyaerocom.GriddedData\nGrid data: %s" %self.grid.__repr__()
+        return (f'pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n'
+                f'{self._grid.__repr__()}')
 
     def __add__(self, other):
         raise NotImplementedError('Coming soon')
