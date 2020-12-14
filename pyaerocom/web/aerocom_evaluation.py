@@ -1026,20 +1026,9 @@ class AerocomEvaluation(object):
         for var in all_vars:
             const.print_log.info(f'Processing model maps for '
                                  f'{model_name} ({var})')
-            if var in model_cfg['model_use_vars']:
-                var = model_cfg['model_use_vars'][var]
-            if 'model_data_dir' in model_cfg:
-                data_dir = model_cfg['model_data_dir']
-            else:
-                data_dir = None
-            reader = ReadGridded(model_cfg['model_id'],
-                                 data_dir=data_dir)
 
-            data = reader.read_var(var,
-                                   start=settings['start'],
-                                   stop=settings['stop'],
-                                   ts_type='monthly',
-                                   flex_ts_type=True)
+            data = self.read_model_data(model_name, var)
+
             vc = data.vert_code
             if not isinstance(vc, str):
                 raise ValueError(f'Invalid vert_code {vc} in GriddedData')
@@ -1350,7 +1339,7 @@ class AerocomEvaluation(object):
             self.to_json(self.exp_dir)
         except KeyError: # if no data is available for this experiment
             pass
-          
+
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
         update_menu_evaluation_iface(self, **opts)
