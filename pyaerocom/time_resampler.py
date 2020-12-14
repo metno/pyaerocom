@@ -24,15 +24,29 @@ class TimeResampler(object):
     specified to first required minimum number of hours per day, and minimum
     days per month, to create the output data.
     """
-    SAMPLING_CONSTRAINTS = const.OBS_MIN_NUM_RESAMPLE
+    DEFAULT_SAMPLING_CONSTRAINTS = const.OBS_MIN_NUM_RESAMPLE
     APPLY_CONSTRAINTS = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
     FREQS_SUPPORTED = TS_TYPE_TO_PANDAS_FREQ
+    AGGRS_UNIT_PRESERVE = ('mean', 'median', 'std', 'max', 'min')
+
     def __init__(self, input_data=None):
         self.last_setup = None
+        # the following attribute is updated whenever a resampling operation is
+        # performed and it will check if any of the specified resampling
+        # aggregators invalidates unit preservation (e.g. using how=add for
+        # for accumulating precipitation...). See also attr. AGGRS_UNIT_PRESERVE
+        self._last_units_preserved = None
         self._input_data = None
 
         if input_data is not None:
             self.input_data = input_data
+
+    @property
+    def last_units_preserved(self):
+        """Boolean indicating if last resampling operation preserves units"""
+        if self._last_units_preserved is None:
+            raise AttributeError('Please call resample first...')
+        return self._last_units_preserved
 
     @property
     def input_data(self):
@@ -88,6 +102,7 @@ class TimeResampler(object):
 
         last_from = valid[start]
         idx = []
+
         for i in range(start+1, stop+1):
             to = valid[i]
             if to in min_num_obs and last_from in min_num_obs[to]:
@@ -167,16 +182,26 @@ class TimeResampler(object):
         if apply_constraints is None:
             apply_constraints = self.APPLY_CONSTRAINTS
 
-        self.last_setup = dict(apply_constraints=False,
-                               min_num_obs=None,
+        if min_num_obs is None:
+            min_num_obs = self.DEFAULT_SAMPLING_CONSTRAINTS
+
+        self.last_setup = dict(apply_constraints=apply_constraints,
+                               min_num_obs=min_num_obs,
                                how=how)
 
-        if not apply_constraints or from_ts_type is None:
+        if from_ts_type is None:
+            apply_constraints = False
+
+        if not apply_constraints:
             freq = to_ts_type.to_pandas_freq()
             if not isinstance(how, str):
                 raise ValueError('Temporal resampling without constraints can '
                                  'only use string type argument how (e.g. '
                                  'how=mean). Got {}'.format(how))
+            if how in self.AGGRS_UNIT_PRESERVE:
+                self._last_units_preserved = True
+            else:
+                self._last_units_preserved = False
             return self.fun(self.input_data, freq=freq,
                             how=how, **kwargs)
 
@@ -201,19 +226,25 @@ class TimeResampler(object):
                               'time stamps'.format(to_ts_type.val))
 
             freq = to_ts_type.to_pandas_freq()
+            self._last_units_preserved = True
             return self.fun(self.input_data, freq=freq, how='mean',
                             **kwargs)
 
-        if min_num_obs is None:
-            min_num_obs = self.SAMPLING_CONSTRAINTS
-
         _idx = self._gen_idx(from_ts_type, to_ts_type, min_num_obs, how)
         data = self.input_data
+        aggrs = []
         for to_ts_type, mno, rshow in _idx:
             const.logger.info('TO: {} ({}, {})'.format(to_ts_type, mno, rshow))
             freq = TsType(to_ts_type).to_pandas_freq()
             data = self.fun(data, freq=freq, how=rshow,
                             min_num_obs=mno)
+            aggrs.append(rshow)
+
+        if all([x in self.AGGRS_UNIT_PRESERVE for x in aggrs]):
+            self._last_units_preserved = True
+        else:
+            self._last_units_preserved = False
+
         self.last_setup = dict(apply_constraints=True,
                                min_num_obs=min_num_obs,
                                how=how)

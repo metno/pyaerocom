@@ -55,7 +55,7 @@ def test_to_pandas_freq():
     ('daily', 'd', does_not_raise_exception()),
     ('minutely', 'min', does_not_raise_exception()),
     ('weekly', 'week', does_not_raise_exception()),
-    ('monthly', None, pytest.raises(ValueError)),
+    ('monthly', 'month',does_not_raise_exception()),
     ('4weekly', '4week', does_not_raise_exception()),
     ])
 def test_to_si(ts_type, value, raises):

@@ -708,7 +708,7 @@ class GriddedData(object):
         try:
             fac = uh.get_unit_conversion_fac(self.units, new_unit,
                                              self.var_name)
-        except :
+        except Exception as e:
             if uh.is_deposition(self.var_name):
                 tst = TsType(self.ts_type)
                 si = tst.to_si()
@@ -722,12 +722,15 @@ class GriddedData(object):
                     check_aerocom,
                     self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
                 mulfac = fac1*fac2
-                self.cube *= mulfac
-                self.units = check_aerocom
+                new = self._grid * mulfac
+                new.attributes = self._grid.attributes
+                new.units = check_aerocom
+                self._grid = new
+                #self.units = check_aerocom
 
 
             else:
-                raise UnitConversionError('What a surprise...')
+                raise UnitConversionError(e)
 
 
 
@@ -1565,7 +1568,6 @@ class GriddedData(object):
             resolution than this object
         """
         #from pyaerocom.tstype import TsType
-
         to = TsType(to_ts_type)
         current = TsType(self.ts_type)
 
@@ -1603,10 +1605,11 @@ class GriddedData(object):
         import xarray as xarr
 
         arr = xarr.DataArray.from_iris(self.cube)
-
+        from_ts_type = self.ts_type
         try:
             rs = TimeResampler(arr)
-            arr_out = rs.resample(to_ts_type, from_ts_type=self.ts_type,
+            arr_out = rs.resample(to_ts_type,
+                                  from_ts_type=from_ts_type,
                                   how=how,
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
@@ -1614,7 +1617,7 @@ class GriddedData(object):
             arr['time'] = self.time_stamps()
             rs = TimeResampler(arr)
             arr_out = rs.resample(to_ts_type,
-                                  from_ts_type=self.ts_type,
+                                  from_ts_type=from_ts_type,
                                   how=how,
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
@@ -1623,12 +1626,21 @@ class GriddedData(object):
                            **self.metadata)
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
-        if how in ('mean', 'median', 'std', 'max', 'min'):
+
+        # in case of these aggregators, the data unit can be kept
+        # ToDo: this is a quick fix and needs revision, should also check
+        # if this can be handled automatically by iris, since iris knows
+        # about cf Units and will perhaps change a unit automatically when
+        # e.g. a cumulative sum is applied to the time dimension (for instance)
+        # if precip data in mm hr-1 is converted from hourly -> daily using
+        # cumulative sum.
+        if rs.last_units_preserved:
             data.units = self.units
         else:
             print_log.info(
                 f'Cannot infer unit when aggregating using {how}. Please set '
-                f'unit in returned data object!')
+                f'unit in returned data object!'
+                )
         try:
             data.check_dimcoords_tseries()
         except:
@@ -1880,7 +1892,7 @@ class GriddedData(object):
                 data = data[time_range[0]:time_range[1]]
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
-        return GriddedData(data, **suppl)
+        return GriddedData(data, convert_unit_on_init=False, **suppl)
 
     def get_area_weighted_timeseries(self, region=None):
         """Helper method to extract area weighted mean timeseries
@@ -2082,7 +2094,6 @@ class GriddedData(object):
         if savename is None: #use AeroCom convention
             return self._to_netcdf_aerocom(out_dir, **kwargs)
         self._check_meta_netcdf()
-        savename = self.aerocom_savename(**kwargs)
         fp = os.path.join(out_dir, savename)
         iris.save(self.grid, fp)
 
@@ -2176,7 +2187,8 @@ class GriddedData(object):
         """
 
         if isinstance(other, iris.cube.Cube):
-            other = GriddedData(other)
+            other = GriddedData(other,
+                                convert_unit_on_init=False)
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
 
@@ -2187,7 +2199,8 @@ class GriddedData(object):
                                  'lon_res_deg specified')
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
                                            lon_res_deg=lon_res_deg)
-            other = GriddedData(dummy)
+            other = GriddedData(dummy,
+                                convert_unit_on_init=False)
 
         if not (self.has_latlon_dims * other.has_latlon_dims):
             raise DataDimensionError('Can only regrid data objects with '
@@ -2710,6 +2723,4 @@ if __name__=='__main__':
     # print("uses last changes ")
     data = pya.io.ReadGridded('TM5-met2010_CTRL-TEST').read_var('od550aer',
                                                                 start=2010,
-                                                                ts_type='monthly')
-
-    data.sel(latitude=(30, 60), time=('6/2010', '10/2010'))
+                                                                ts_type='daily')
