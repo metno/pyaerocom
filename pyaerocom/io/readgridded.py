@@ -1349,7 +1349,7 @@ class ReadGridded(object):
                     experiment=None, vert_which=None, flex_ts_type=True,
                     prefer_longer=False, vars_to_read=None, aux_fun=None,
                     try_convert_units=True, aux_add_args=None,
-                    **kwargs):
+                    rename_var=None, **kwargs):
         """Compute auxiliary variable
 
         Like :func:`read_var` but for auxiliary variables
@@ -1388,6 +1388,9 @@ class ReadGridded(object):
             the forme objects. This is, for instance, useful when computing
             concentration in precipitation from wet deposition and precipitation
             amount.
+        rename_var : str
+            if this is set, the `var_name` attribute of the output
+            `GriddedData` object will be updated accordingly.
         **kwargs
             additional keyword args passed to :func:`_load_var`
 
@@ -1427,6 +1430,7 @@ class ReadGridded(object):
                                       flex_ts_type=flex_ts_type,
                                       prefer_longer=prefer_longer,
                                       try_convert_units=try_convert_units,
+                                      rename_var=None,
                                       **kwargs)
             data.append(aux_data)
 
@@ -1448,6 +1452,8 @@ class ReadGridded(object):
                            **kwargs)
 
         data.reader = self
+        if rename_var is not None:
+            data.var_name = rename_var
         return data
 
     def find_common_ts_type(self, vars_to_read, start=None, stop=None,
@@ -1670,8 +1676,8 @@ class ReadGridded(object):
                  ts_type=None, experiment=None, vert_which=None,
                  flex_ts_type=True, prefer_longer=False,
                  aux_vars=None, aux_fun=None,
-                 constraints=None,
-                 **kwargs):
+                 constraints=None, try_convert_units=True,
+                 rename_var=None, **kwargs):
         """Read model data for a specific variable
 
         This method searches all valid files for a given variable and for a
@@ -1730,6 +1736,14 @@ class ReadGridded(object):
             list of reading constraints (dict type). See
             :func:`check_constraint_valid` and :func:`apply_read_constraint`
             for details related to format of the individual constraints.
+        try_convert_units : bool
+            if True, then the unit of the variable data is checked against
+            AeroCom default unit for that variable and if it deviates, it is
+            attempted to be converted to the AeroCom default unit. Default is
+            True.
+        rename_var : str
+            if this is set, the `var_name` attribute of the output
+            `GriddedData` object will be updated accordingly.
         **kwargs
             additional keyword args parsed to :func:`_load_var`
 
@@ -1757,7 +1771,9 @@ class ReadGridded(object):
                                                                  ts_type)
         data = self._try_read_var(var_name, start, stop,
                                   ts_type, experiment, vert_which,
-                                  flex_ts_type, prefer_longer, **kwargs)
+                                  flex_ts_type, prefer_longer,
+                                  try_convert_units=try_convert_units,
+                                  rename_var=rename_var, **kwargs)
 
         if constraints is not None:
 
@@ -1882,7 +1898,9 @@ class ReadGridded(object):
 
     def _try_read_var(self, var_name, start, stop,
                   ts_type, experiment, vert_which,
-                  flex_ts_type, prefer_longer, **kwargs):
+                  flex_ts_type, prefer_longer,
+                  try_convert_units, rename_var,
+                  **kwargs):
         """Helper method used in :func:`read_var`
 
         See :func:`read_var` for description of input arguments.
@@ -1895,6 +1913,8 @@ class ReadGridded(object):
                                     vert_which=vert_which,
                                     flex_ts_type=flex_ts_type,
                                     prefer_longer=prefer_longer,
+                                    try_convert_units=try_convert_units,
+                                    rename_var=rename_var,
                                     **kwargs)
 
         try:
@@ -1906,6 +1926,8 @@ class ReadGridded(object):
                                   vert_which=vert_which,
                                   flex_ts_type=flex_ts_type,
                                   prefer_longer=prefer_longer,
+                                  try_convert_units=try_convert_units,
+                                  rename_var=rename_var,
                                   **kwargs)
 
         except VarNotAvailableError:
@@ -1917,6 +1939,8 @@ class ReadGridded(object):
                                         vert_which=vert_which,
                                         flex_ts_type=flex_ts_type,
                                         prefer_longer=prefer_longer,
+                                        try_convert_units=try_convert_units,
+                                        rename_var=rename_var,
                                         **kwargs)
         # this input variable was explicitely set to be computed, in which
         # case reading of that variable is ignored even if a file exists for
@@ -2131,7 +2155,8 @@ class ReadGridded(object):
 
     def _load_var(self, var_name, ts_type, start, stop,
                   experiment, vert_which, flex_ts_type,
-                  prefer_longer, try_convert_units=True,
+                  prefer_longer, try_convert_units,
+                  rename_var,
                   **kwargs):
         """Find files corresponding to input specs and load into GriddedData
 
@@ -2179,6 +2204,8 @@ class ReadGridded(object):
                 const.print_log.exception('Failed to crop time dimension in {}. '
                                           '(start: {}, stop: {})'
                                           .format(data, start, stop))
+        if rename_var is not None:
+            data.var_name = rename_var
         return data
 
     def _check_crop_time(self, data, start, stop):
@@ -2259,20 +2286,7 @@ class ReadGridded(object):
                                                 self.years_avail,
                                                 self.ts_types,
                                                 self.vars_provided))
-# =============================================================================
-#         if self.data:
-#             s += "\nLoaded GriddedData objects:\n"
-#             for var_name, data in self.data.items():
-#                 s += "{}\n".format(data.short_str())
-# =============================================================================
-# =============================================================================
-#         if self.data_yearly:
-#             s += "\nLoaded GriddedData objects (individual years):\n"
-#             for var_name, yearly_data in self.data_yearly.items():
-#                 if yearly_data:
-#                     for year, data in yearly_data.items():
-#                         s += "{}\n".format(data.short_str())
-# =============================================================================
+
         return s.rstrip()
 
     ### DEPRECATED STUFF
@@ -2416,13 +2430,7 @@ class ReadGriddedMulti(object):
         head = "Pyaerocom %s" %type(self).__name__
         s = ("\n%s\n%s\n"
              "Data-IDs: %s\n" %(head, len(head)*"-", self.data_ids))
-# =============================================================================
-#         if bool(self.data):
-#             s += "\nLoaded data:"
-#             for name, vardata in self.data.items():
-#                 for var, data in vardata.items():
-#                     s += "\n%s" %var
-# =============================================================================
+
         return s
 
 if __name__=="__main__":
