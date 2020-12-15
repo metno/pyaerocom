@@ -366,8 +366,6 @@ class Variable(object):
     #maybe used in config
     ALT_NAMES = {'unit' : 'units'}
 
-    RH_MAX_DRY = 0.4
-
     plot_info_keys = ['scat_xlim',
                       'scat_ylim',
                       'scat_loglog',
