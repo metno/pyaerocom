@@ -32,7 +32,7 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
 
     dd['time'] = [pd.to_datetime(t).strftime('%Y-%m-%d') for t in data.time_stamps()]
 
-    nparr = stacked.data
+    nparr = stacked.data.astype(np.float64)
     for i, (lat, lon) in enumerate(stacked.station_name.values):
 
         coord = lat, lon
