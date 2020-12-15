@@ -196,6 +196,9 @@ class ReadMscwCtm(object):
             val = None
         self._data_id = val
 
+    def __repr__(self):
+            return self.__str__()
+
     def __str__(self):
         s = 'Reader: ReadMscwCtm\n'
         s += "Available frequencies: {}\n".format(self.ts_types)
