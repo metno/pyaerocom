@@ -15,7 +15,6 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.helpers import isnumeric
 
 from pyaerocom.io.helpers import save_dict_json
-from pyaerocom.io import ReadGridded
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
@@ -158,6 +157,7 @@ class AerocomEvaluation(object):
     #: vertical schemes that may be used for colocation
     VERT_SCHEMES = {'Surface' : 'surface'}
 
+    JSON_SUPPORTED_VERT_SCHEMES = ['Column', 'Surface']
     #: Attributes that are ignored when writing setup to json file
     JSON_CFG_IGNORE = ['add_methods', '_log', 'out_dirs']
 
@@ -293,11 +293,28 @@ class AerocomEvaluation(object):
         return sorted(list(np.unique(obs_vars)))
 
     @property
+    def all_modelmap_vars(self):
+        """List of variables to be processed for model map display
+
+        Note
+        ----
+        For now this is just a wrapper for :attr:`all_obs_vars`
+        """
+        return self.all_obs_vars
+
+    @property
     def all_map_files(self):
         """List of all existing map files"""
         if not os.path.exists(self.out_dirs['map']):
             raise FileNotFoundError('No data available for this experiment')
         return os.listdir(self.out_dirs['map'])
+
+    @property
+    def all_model_map_files(self):
+        """List of all jsoncontour and json files associated with model maps"""
+        if not os.path.exists(self.out_dirs['contour']):
+            raise FileNotFoundError('No data available for this experiment')
+        return os.listdir(self.out_dirs['contour'])
 
     def _update_custom_read_methods(self):
         for mcfg in self.model_config.values():
@@ -408,14 +425,8 @@ class AerocomEvaluation(object):
             self.colocation_settings.update(**val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
-                if key in self.obs_config:
-                    self._log.warning('Obs config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
                 self.obs_config[key] = ObsConfigEval(**val)
             elif 'model_id' in val:
-                if key in self.model_config:
-                    self._log.warning('Model config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
                 self.model_config[key] = ModelConfigEval(**val)
             else:
                 self.__dict__[key] = val
@@ -1020,24 +1031,57 @@ class AerocomEvaluation(object):
        return self._check_and_get_iface_names()
 
     def _process_map_var(self, model_name, var):
+        """
+        Process model data to create map json files
 
+        Parameters
+        ----------
+        model_name : str
+            name of model
+        var : str
+            name of variable
+
+        Raises
+        ------
+        ValueError
+            If vertical code of data is invalid
+        AttributeError
+            If the data has the incorrect number of dimensions or misses either
+            of time, latitude or longitude dimension.
+
+        Returns
+        -------
+        contourjson : dict
+            dictionary containing contour data
+        datajson : dict
+            dictionary containing model data
+        outname : str
+            basename of output json file
+
+        """
         from pyaerocom.web.web_maps_helpers import (calc_contour_json,
                                                     griddeddata_to_jsondict)
 
         data = self.read_model_data(model_name, var)
 
         vc = data.vert_code
-        if not isinstance(vc, str):
+        if not isinstance(vc, str) or vc=='':
             raise ValueError(f'Invalid vert_code {vc} in GriddedData')
         elif vc == 'ModelLevel':
             if not data.ndim == 4:
                 raise ValueError('Invalid ModelLevel file, needs to have '
                                  '4 dimensions (time, lat, lon, lev)')
             data = data.extract_surface_level()
+            vc = 'Surface'
+        elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
+            raise ValueError(f'Cannot process {vc} files. Supported vertical '
+                             f'codes are {self.JSON_SUPPORTED_VERT_SCHEMES}')
         if not data.has_time_dim:
             raise AttributeError('Data needs to have time dimension...')
         elif not data.has_latlon_dims:
             raise AttributeError('Data needs to have lat and lon dimensions')
+        elif not data.ndim == 3:
+            raise AttributeError('Data needs to be 3-dimensional')
 
         if not data.ts_type == 'monthly':
             data = data.resample_time('monthly')
@@ -1070,7 +1114,7 @@ class AerocomEvaluation(object):
         outname = f'{var}_{vc}_{model_name}'
         return (contourjson, datajson, outname)
 
-    def run_map_eval(self, model_name, var_name=None):
+    def run_map_eval(self, model_name, var_name=None, reanalyse_existing=True):
         """Run evaluation of map processing
 
         Create json files for model-maps display. This analysis does not
@@ -1085,15 +1129,17 @@ class AerocomEvaluation(object):
         var_name : str, optional
             name of variable to be processed. If None, all available
             observation variables are used.
+        rean
         """
         if var_name is None:
-            all_vars = self.all_obs_vars
+            all_vars = self.all_modelmap_vars
         else:
             all_vars = [var_name]
 
         model_cfg = self.get_model_config(model_name)
-        settings = self.colocation_settings
-        settings.update(**model_cfg)
+        settings = {}
+        settings.update(self.colocation_settings)
+        settings.update(model_cfg)
         outdir = self.out_dirs['contour']
 
         for var in all_vars:
@@ -1204,7 +1250,8 @@ class AerocomEvaluation(object):
 
         if self.add_maps:
             for model_name in model_list:
-                self.run_map_eval(model_name, var_name)
+                self.run_map_eval(model_name, var_name,
+                                  reanalyse_existing=reanalyse_existing)
 
         if not self.only_maps:
             for obs_name in obs_list:
@@ -1400,20 +1447,20 @@ class AerocomEvaluation(object):
         return table
 
     def _obs_config_asdict(self):
-        d = {}
+        output = {}
         for k, cfg in self.obs_config.items():
             as_dict = {}
             as_dict.update(**cfg)
-            d[k] = as_dict
-        return d
+            output[k] = as_dict
+        return output
 
     def _model_config_asdict(self):
-        d = {}
+        output = {}
         for k, cfg in self.model_config.items():
             as_dict = {}
             as_dict.update(**cfg)
-            d[k] = as_dict
-        return d
+            output[k] = as_dict
+        return output
 
     def delete_experiment_data(self, base_dir=None, proj_id=None, exp_id=None):
         """Delete all data associated with a certain experiment
@@ -1421,7 +1468,7 @@ class AerocomEvaluation(object):
         Parameters
         ----------
         base_dir : str, optional
-            basic output direcory (containg subdirs of all projects)
+            basic output direcory (containing subdirs of all projects)
         proj_name : str, optional
             name of project, if None, then this project is used
         exp_name : str, optional
@@ -1439,20 +1486,43 @@ class AerocomEvaluation(object):
             pass
         self.update_menu()
 
+    def _clean_modelmap_files(self):
+        all_vars = self.all_modelmap_vars
+        all_mods = self.all_model_names
+        out_dir = self.out_dirs['contour']
+
+        for file in os.listdir(out_dir):
+            spl = file.replace('.', '_').split('_')
+            if not len(spl) == 4:
+                raise ValueError(f'Invalid json map filename {file}')
+            var, vc, mod_name = spl[:3]
+            rm = (not var in all_vars or
+                  not mod_name in all_mods or
+                  not vc in self.JSON_SUPPORTED_VERT_SCHEMES)
+            if rm:
+                const.print_log.info(
+                    f'Removing invalid model maps file {file}'
+                    )
+                os.remove(os.path.join(out_dir, file))
+
     def clean_json_files(self, update_interface=False):
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
         """
+        self._clean_modelmap_files()
 
         for file in self.all_map_files:
-            (obs_name, obs_var, vert_code,
-            mod_name, mod_var) = self._info_from_map_file(file)
+            (obs_name, obs_var, vc,
+             mod_name, mod_var) = self._info_from_map_file(file)
+
             remove=False
             if not (obs_name in self.iface_names and
                     mod_name in self.model_config):
                 remove = True
             elif not obs_var in self._get_valid_obs_vars(obs_name):
+                remove = True
+            elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
                 remove = True
             else:
                 mcfg = self.model_config[mod_name]
@@ -1461,10 +1531,12 @@ class AerocomEvaluation(object):
                         remove=True
 
             if remove:
-                const.print_log.info('Removing outdated map file: {}'.format(file))
+                const.print_log.info(f'Removing outdated map file: {file}')
                 os.remove(os.path.join(self.out_dirs['map'], file))
+
         for fp in glob.glob('{}/*.json'.format(self.out_dirs['ts'])):
             self._check_clean_ts_file(fp)
+
         if update_interface:
             self.update_interface()
 
@@ -1486,9 +1558,11 @@ class AerocomEvaluation(object):
     def _check_clean_ts_file(self, fp):
         spl = os.path.basename(fp).split('OBS-')[-1].split(':')
         obs_name = spl[0]
-        obs_var = spl[1].split('_')[0]
-        if not (obs_name in self.obs_config and
-                obs_var in self._get_valid_obs_vars(obs_name)):
+        obs_var, vc, _ = spl[1].replace('.', '_').split('_')
+        rm = (not vc in self.JSON_SUPPORTED_VERT_SCHEMES or
+              not obs_name in self.obs_config or
+              not obs_var in self._get_valid_obs_vars(obs_name))
+        if rm:
             const.print_log.info('Removing outdated ts file: {}'.format(fp))
             os.remove(fp)
             return
@@ -1569,13 +1643,11 @@ class AerocomEvaluation(object):
 
 
         """
-        d = self.to_dict()
-        out_name = self.name_config_file_json
-
-        save_dict_json(d, os.path.join(output_dir, out_name),
+        asdict = self.to_dict()
+        outpath = os.path.join(output_dir, self.name_config_file_json)
+        save_dict_json(asdict, outpath,
                        ignore_nan=ignore_nan,
                        indent=indent)
-
 
     def load_config(self, proj_id, exp_id, config_dir=None):
         """Load configuration json file"""
