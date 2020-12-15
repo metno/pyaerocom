@@ -255,6 +255,16 @@ class ReadMscwCtm(object):
         GriddedData
         """
 
+        if isinstance(ts_type, dict):
+            try:
+                ts_type = ts_type[var_name]
+            except Exception:
+                const.print_log.info('Setting ts_type to None, since input '
+                                     'dict {} does not contain specification '
+                                     'variable to read {}'.format(ts_type,
+                                                                  var_name))
+                ts_type = None
+
         if self.filepath is None and self.data_dir is None:
             raise ValueError('filepath or data_dir must be set before reading.')
         elif self.data_dir is not None and ts_type is None:
