@@ -57,6 +57,14 @@ def test_read_emep_data(path_emep):
     assert isinstance(data, GriddedData)
     assert data.time.long_name == 'time'
     assert data.time.standard_name == 'time'
+    assert data.ts_type=='daily'
+
+    data = r.read_var('vmro3')
+    assert isinstance(data, GriddedData)
+    assert data.time.long_name == 'time'
+    assert data.time.standard_name == 'time'
+    assert data.ts_type=='daily'
+
 
 @testdata_unavail
 def test_read_emep_directory(path_emep):

@@ -11,6 +11,8 @@ import numpy as np
 import sys
 import os
 import glob
+
+from xarray.coding.times import infer_calendar_name
 import pyaerocom as pya
 from pyaerocom import const, print_log, logger
 from pyaerocom.exceptions import VarNotAvailableError, VariableDefinitionError
@@ -295,6 +297,8 @@ class ReadMscwCtm(object):
                 raise FileNotFoundError('Could not find file: {}'.format(filepath))
         elif self.filepath is not None:
             filepath = self.filepath
+            if ts_type is None:
+                ts_type = ts_type_from_filename(os.path.split(filepath)[-1])
 
         if var_name in self.AUX_REQUIRES:
             temp_cubes = []
