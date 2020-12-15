@@ -103,7 +103,7 @@ def test_empty_class_header(empty_cfg):
 
     #: timeout to check if one of the supported server locations can be
     #: accessed
-    assert cfg.SERVER_CHECK_TIMEOUT == 0.1 #s
+    assert cfg.SERVER_CHECK_TIMEOUT == 1 #s
 
     assert cfg._outhomename == 'MyPyaerocom'
     from pyaerocom import __dir__
@@ -237,7 +237,8 @@ def test_default_config():
     for obs_id in TestDataAccess._UNGRIDDED_READERS:
         assert obs_id in cfg.OBSLOCS_UNGRIDDED
     assert cfg.OBS_UNGRIDDED_POST == {}
-    assert cfg.SUPPLDIRS == {}
+    if not cfg.has_access_lustre:
+        assert cfg.SUPPLDIRS == {}
 
     search_dirs = [f'{mypydir}/{testdatadirname}/modeldata',
                    f'{mypydir}/{testdatadirname}/obsdata',

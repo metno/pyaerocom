@@ -191,7 +191,7 @@ class Config(object):
 
     #: timeout to check if one of the supported server locations can be
     #: accessed
-    SERVER_CHECK_TIMEOUT = 0.1 #s
+    SERVER_CHECK_TIMEOUT = 1 #s
 
     _outhomename = 'MyPyaerocom'
 
