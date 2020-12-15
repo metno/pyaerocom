@@ -38,6 +38,13 @@ def test_read_emep_read_var(path_emep):
         r.read_var('vmro3', 'daily')
 
 @testdata_unavail
+def test_ts_type_dict(path_emep):
+    data_dir = path_emep['data_dir']
+    r = ReadMscwCtm(data_dir=data_dir)
+    data = r.read_var('vmro3', ts_type={'vmro3':'daily'})
+    assert data.ts_type == 'daily'
+
+@testdata_unavail
 def test_read_emep_data(path_emep):
     path = path_emep['daily']
     r = ReadMscwCtm(filepath=path)
