@@ -8,7 +8,6 @@ import re
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    TS_TYPE_TO_NUMPY_FREQ,
-                                   PANDAS_RESAMPLE_OFFSETS,
                                    TS_TYPE_TO_SI,
                                    TS_TYPES)
 
@@ -19,7 +18,6 @@ class TsType(object):
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
-    RS_OFFSETS = PANDAS_RESAMPLE_OFFSETS
     TO_SI = TS_TYPE_TO_SI
 
     TS_MAX_VALS = {'hourly' : 24,
