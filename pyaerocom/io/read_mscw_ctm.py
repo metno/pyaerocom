@@ -344,8 +344,6 @@ class ReadMscwCtm(object):
             new_unit = '1'
         elif units == '' and prefix == 'AbsCoef':
             new_unit = '1/m'
-        elif units == 'mgS/m2' or units == 'mgN/m2':
-            raise NotImplementedError('Species specific units are not implemented.')
             new_unit = units
         return new_unit
 
