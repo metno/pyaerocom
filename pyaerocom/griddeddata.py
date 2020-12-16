@@ -810,13 +810,7 @@ class GriddedData(object):
         if not self.ndim in (3,4):
             raise DataDimensionError('Time series extraction requires at least 3 '
                             'coordinates in cube')
-# =============================================================================
-#         elif not len(self.cube.dim_coords) == self.ndim:
-#             raise DataDimensionError('Number of dimensions ({}) does not equal '
-#                                      'number of dimension coordinates ({})'
-#                                      .format(self.ndim,
-#                                              len(self.cube.dim_coords)))
-# =============================================================================
+
         order = self.COORDS_ORDER_TSERIES
         for i, coord in enumerate(order):
             dims = self.cube.coord_dims(coord)
@@ -831,20 +825,6 @@ class GriddedData(object):
 
             if not dims[0] == i:
                 raise DimensionOrderError('Invalid order of grid dimensions')
-# =============================================================================
-#
-#         check = self.dimcoord_names
-#         if not len(check) >= 3:
-#             raise DataDimensionError('One of the data dimension coordinates '
-#                                      'may not be defined')
-#
-#         for i, item in enumerate(check[:3]):
-#             if not item == order[i]:
-#                 raise DimensionOrderError('Invalid order of grid '
-#                                           'dimension, need {}, got {}'
-#                                           .format(order,
-#                                                   check))
-# =============================================================================
 
     def reorder_dimensions_tseries(self):
         """Reorders dimensions of data such that :func:`to_time_series` works
