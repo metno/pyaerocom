@@ -319,7 +319,7 @@ class ReadMscwCtm(object):
             data.attrs['units'] = self.preprocess_units(data.units, EMEP_prefix)
             cube = data.to_iris()
             if ts_type == 'hourly':
-                cube.coords()[0].convert_units('hours since 1900-01-01')
+                cube.coords('time').convert_units('hours since 1900-01-01')
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
 
             if EMEP_prefix in ['WDEP', 'DDEP']:
