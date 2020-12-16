@@ -8,6 +8,18 @@ from cartopy.mpl.geoaxes import GeoAxes
 from matplotlib.colors import ListedColormap
 from seaborn import color_palette
 
+# ToDo: this needs to be revisited and reorganised for later processing of
+# multiyear data which may be lower resolution than monthly.
+RES_TIME_INFO = {'monthly' : '%Y-%m-15'}
+
+def _get_timestamps_json(data):
+    tt = data.ts_type
+    if not data.ts_type in RES_TIME_INFO:
+        raise ValueError(f'GriddedData needs to be in either of the '
+                         f'supported resolutions: {RES_TIME_INFO.keys()}')
+    fmt = RES_TIME_INFO[tt]
+    return [pd.to_datetime(t).strftime(fmt) for t in data.time_stamps()]
+
 def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
 
     if not data.ts_type == 'monthly':
@@ -30,7 +42,7 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
 
     dd = {}
 
-    dd['time'] = [pd.to_datetime(t).strftime('%Y-%m-%d') for t in data.time_stamps()]
+    dd['time'] = _get_timestamps_json(data)
 
     nparr = stacked.data.astype(np.float64)
     for i, (lat, lon) in enumerate(stacked.station_name.values):
@@ -97,9 +109,8 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
     lons = data.longitude.points
 
     geojson = {}
-
-    for i, month in enumerate(data.time_stamps()):
-        date = str(month).split('T')[0]
+    tst = _get_timestamps_json(data)
+    for i, date in enumerate(tst):
         datamon = nparr[i]
         contour = ax.contourf(lons, lats, datamon,
                               transform=proj,
