@@ -754,10 +754,10 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     stat_num = len(obs_stat_data)
     coldata = np.empty((2, time_num, stat_num))*np.nan
 
-    lons = np.empty(stat_num) * np.nan
-    lats = np.empty(stat_num) * np.nan
-    alts = np.empty(stat_num) * np.nan
-    station_names = np.empty(stat_num) * np.nan
+    lons = [np.nan] * stat_num
+    lats = [np.nan] * stat_num
+    alts = [np.nan] * stat_num
+    station_names = [''] * stat_num
 
     ungridded_unit = None
     ts_type_src_ref = None
