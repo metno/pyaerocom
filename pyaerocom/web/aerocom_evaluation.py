@@ -1030,7 +1030,7 @@ class AerocomEvaluation(object):
     def iface_names(self):
        return self._check_and_get_iface_names()
 
-    def _process_map_var(self, model_name, var):
+    def _process_map_var(self, model_name, var, reanalyse_existing):
         """
         Process model data to create map json files
 
@@ -1040,24 +1040,16 @@ class AerocomEvaluation(object):
             name of model
         var : str
             name of variable
+        reanalyse_existing : bool
+            if True, already existing json files will be reprocessed
 
         Raises
         ------
         ValueError
-            If vertical code of data is invalid
+            If vertical code of data is invalid or not set
         AttributeError
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
-
-        Returns
-        -------
-        contourjson : dict
-            dictionary containing contour data
-        datajson : dict
-            dictionary containing model data
-        outname : str
-            basename of output json file
-
         """
         from pyaerocom.web.web_maps_helpers import (calc_contour_json,
                                                     griddeddata_to_jsondict)
@@ -1082,6 +1074,20 @@ class AerocomEvaluation(object):
             raise AttributeError('Data needs to have lat and lon dimensions')
         elif not data.ndim == 3:
             raise AttributeError('Data needs to be 3-dimensional')
+
+        outdir = self.out_dirs['contour']
+        outname = f'{var}_{vc}_{model_name}'
+
+        fp_json = os.path.join(outdir, f'{outname}.json')
+        fp_geojson = os.path.join(outdir, f'{outname}.geojson')
+
+        if not reanalyse_existing:
+            if os.path.exists(fp_json) and os.path.exists(fp_geojson):
+                const.print_log.info(
+                    f'Skipping processing of {outname}: data already exists.'
+                    )
+                return
+
 
         if not data.ts_type == 'monthly':
             data = data.resample_time('monthly')
@@ -1111,10 +1117,12 @@ class AerocomEvaluation(object):
         datajson = griddeddata_to_jsondict(data,
                                            lat_res_deg=lat_res,
                                            lon_res_deg=lon_res)
-        outname = f'{var}_{vc}_{model_name}'
-        return (contourjson, datajson, outname)
 
-    def run_map_eval(self, model_name, var_name=None, reanalyse_existing=True):
+        save_dict_json(contourjson, fp_geojson)
+        save_dict_json(datajson, fp_json)
+
+    def run_map_eval(self, model_name, var_name, reanalyse_existing,
+                     raise_exceptions):
         """Run evaluation of map processing
 
         Create json files for model-maps display. This analysis does not
@@ -1129,7 +1137,10 @@ class AerocomEvaluation(object):
         var_name : str, optional
             name of variable to be processed. If None, all available
             observation variables are used.
-        rean
+        reanalyse_existing : bool
+            if True, existing json files will be reprocessed
+        raise_exceptions : bool
+            if True, any exceptions that may occur will be raised
         """
         if var_name is None:
             all_vars = self.all_modelmap_vars
@@ -1140,28 +1151,21 @@ class AerocomEvaluation(object):
         settings = {}
         settings.update(self.colocation_settings)
         settings.update(model_cfg)
-        outdir = self.out_dirs['contour']
 
         for var in all_vars:
             const.print_log.info(f'Processing model maps for '
                                  f'{model_name} ({var})')
-            success = False
+
             try:
-                (contourjson,
-                 datajson,
-                 outname) = self._process_map_var(model_name, var)
-                success = True
-            except:
+                self._process_map_var(model_name, var,
+                                      reanalyse_existing)
+
+            except Exception:
+                if raise_exceptions:
+                    raise
                 const.print_log.warning(
                     f'Failed to process maps for {model_name} {var} data. '
                     f'Reason: {format_exc()}')
-            if success:
-                fp = os.path.join(outdir, f'{outname}.geojson')
-                save_dict_json(contourjson, fp)
-                fp = os.path.join(outdir, f'{outname}.json')
-                save_dict_json(datajson, fp)
-
-
 
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
                        update_interface=True,
@@ -1251,7 +1255,8 @@ class AerocomEvaluation(object):
         if self.add_maps:
             for model_name in model_list:
                 self.run_map_eval(model_name, var_name,
-                                  reanalyse_existing=reanalyse_existing)
+                                  reanalyse_existing=reanalyse_existing,
+                                  raise_exceptions=raise_exceptions)
 
         if not self.only_maps:
             for obs_name in obs_list:
