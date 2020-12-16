@@ -77,8 +77,6 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'monthly'  : '%b %Y',
                          'yearly'   : '%Y'}
 
-
-
 TS_TYPE_SECS = {'minutely': 60,
                 'hourly'  : 3600,
                 '3hourly' : 10800,
