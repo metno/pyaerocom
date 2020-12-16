@@ -15,6 +15,7 @@ from pyaerocom.exceptions import (ColocationError,
                                   DataUnitError,
                                   DimensionOrderError,
                                   MetaDataError,
+                                  TemporalResolutionError,
                                   TimeMatchError,
                                   VarNotAvailableError)
 from pyaerocom.filter import Filter
@@ -413,6 +414,10 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
     use_climatology_ref : bool
         if True, climatological timeseries are used from observations
 
+    Raises
+    ------
+    TemporalResolutionError
+        if obs sampling frequency is lower than desired output frequency
 
     Returns
     -------
@@ -740,16 +745,19 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     grid_stat_data = gridded_data.to_time_series(longitude=ungridded_lons,
                                                  latitude=ungridded_lats,
                                                  vert_scheme=vert_scheme)
-
-    pd_freq = TsType(col_freq).to_pandas_freq()
+    # colocation frequency
+    col_tst = TsType(col_freq)
+    pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
 
-    coldata = np.empty((2, len(time_idx), len(obs_stat_data)))
+    time_num = len(time_idx)
+    stat_num = len(obs_stat_data)
+    coldata = np.empty((2, time_num, stat_num))*np.nan
 
-    lons = []
-    lats = []
-    alts = []
-    station_names = []
+    lons = np.empty(stat_num) * np.nan
+    lats = np.empty(stat_num) * np.nan
+    alts = np.empty(stat_num) * np.nan
+    station_names = np.empty(stat_num) * np.nan
 
     ungridded_unit = None
     ts_type_src_ref = None
@@ -760,6 +768,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
+        # Add coordinates to arrays required for xarray.DataArray below
+        lons[i] = obs_stat.longitude
+        lats[i] = obs_stat.latitude
+        alts[i] = obs_stat.altitude
+        station_names[i] = obs_stat.station_name
+
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
         # but can vary from site to site)
@@ -810,26 +824,27 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             grid_stat.remove_outliers(var, low=low, high=high,
                                       check_unit=True)
 
-        _df = _colocate_site_data_helper(
+        try:
+            _df = _colocate_site_data_helper(
 
-            stat_data=grid_stat,
-            stat_data_ref=obs_stat,
-            var=var, var_ref=var_ref,
-            ts_type=col_freq,
-            resample_how=resample_how,
-            apply_time_resampling_constraints=apply_time_resampling_constraints,
-            min_num_obs=min_num_obs,
-            use_climatology_ref=use_climatology_ref)
+                stat_data=grid_stat,
+                stat_data_ref=obs_stat,
+                var=var, var_ref=var_ref,
+                ts_type=col_freq,
+                resample_how=resample_how,
+                apply_time_resampling_constraints=apply_time_resampling_constraints,
+                min_num_obs=min_num_obs,
+                use_climatology_ref=use_climatology_ref)
 
-        # assign the unified timeseries data to the colocated data array
-        coldata[0, :, i] = _df['ref'].values
-        coldata[1, :, i] = _df['data'].values
-
-        lons.append(obs_stat.longitude)
-        lats.append(obs_stat.latitude)
-        alts.append(obs_stat.altitude)
-        station_names.append(obs_stat.station_name)
-
+            # assign the unified timeseries data to the colocated data array
+            coldata[0, :, i] = _df['ref'].values
+            coldata[1, :, i] = _df['data'].values
+        except TemporalResolutionError as e:
+            # resolution of obsdata is too low
+            const.print_log.warning(
+                f'{var_ref} data from site {obs_stat.station_name} will '
+                f'not be added to ColocatedData. Reason: {e}'
+                )
     try:
         revision = ungridded_data.data_revision[dataset_ref]
     except Exception:
