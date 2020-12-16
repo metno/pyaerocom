@@ -12,7 +12,6 @@ import sys
 import os
 import glob
 
-from xarray.coding.times import infer_calendar_name
 import pyaerocom as pya
 from pyaerocom import const, print_log, logger
 from pyaerocom.exceptions import VarNotAvailableError, VariableDefinitionError
