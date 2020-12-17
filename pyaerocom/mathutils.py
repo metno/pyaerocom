@@ -714,6 +714,35 @@ def _compute_dry_helper(data, data_colname, rh_colname,
 
     return vals, rh_mean
 
+def compute_wdep_from_concprcpso4(data):
+    """Compute wdep from conc in precip and precip data
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    StationData
+        modified data object containing wdep data
+
+    """
+    conc_unit = data.get_unit('concprcpso4')
+    if not conc_unit.endswith('m-3'):
+        raise NotImplementedError('Can only handle concprcp unit ending with m-3')
+    pr_unit = data.get_unit('pr')
+    if not pr_unit == 'm':
+        data.convert_unit('pr', 'm')
+    wdep = data['concprcpso4'] * data['pr']
+    wdep_units = conc_unit.replace('m-3', 'm-2')
+
+    if not 'wetso4' in data.var_info:
+        data.var_info['wetso4'] = {}
+    data.var_info['wetso4']['units'] = wdep_units
+
+    return wdep
+
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
                   to_unit=None):
     """
