@@ -62,6 +62,9 @@ class TimeResampler(object):
         if not isinstance(min_num_obs, dict):
             raise ValueError('Invalid input for min_num_obs, need dictionary '
                              'or integer, got {}'.format(min_num_obs))
+
+        how_default = how if isinstance(how, str) else 'mean'
+
         valid = self.valid_base_ts_types
         from_mul = from_ts_type.mulfac
         if from_mul != 1:
@@ -79,12 +82,13 @@ class TimeResampler(object):
                 if isinstance(how, dict) and to in how and last_from in how[to]:
                     _how = how[to][last_from]
                 else:
-                    _how = 'mean'
+                    _how = how_default
                 min_num = min_num_obs[to][last_from]
                 last_from = to
                 idx.append((to, min_num, _how))
         if len(idx) == 0  or not idx[-1][0] == to_ts_type.val:
-            idx.append((to_ts_type.val, 0, 'mean'))
+            _how = how_default
+            idx.append((to_ts_type.val, 0, _how))
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
