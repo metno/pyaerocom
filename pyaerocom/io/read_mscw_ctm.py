@@ -11,6 +11,7 @@ import numpy as np
 import sys
 import os
 import glob
+
 import pyaerocom as pya
 from pyaerocom import const, print_log, logger
 from pyaerocom.exceptions import VarNotAvailableError, VariableDefinitionError
@@ -196,6 +197,9 @@ class ReadMscwCtm(object):
             val = None
         self._data_id = val
 
+    def __repr__(self):
+            return self.__str__()
+
     def __str__(self):
         s = 'Reader: ReadMscwCtm\n'
         s += "Available frequencies: {}\n".format(self.ts_types)
@@ -282,6 +286,8 @@ class ReadMscwCtm(object):
                 raise FileNotFoundError('Could not find file: {}'.format(filepath))
         elif self.filepath is not None:
             filepath = self.filepath
+            if ts_type is None:
+                ts_type = ts_type_from_filename(os.path.split(filepath)[-1])
 
         if var_name in self.AUX_REQUIRES:
             temp_cubes = []
@@ -302,6 +308,8 @@ class ReadMscwCtm(object):
             data.time.attrs['standard_name'] = 'time'
             data.attrs['units'] = self.preprocess_units(data.units, EMEP_prefix)
             cube = data.to_iris()
+            if ts_type == 'hourly':
+                cube.coord('time').convert_units('hours since 1900-01-01')
             gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
 
             if EMEP_prefix in ['WDEP', 'DDEP']:
@@ -324,9 +332,11 @@ class ReadMscwCtm(object):
         new_unit = units
         if units == '' and prefix == 'AOD': #
             new_unit = '1'
+        elif units == '' and prefix == 'AbsCoef':
+            new_unit = 'm-1'
+            new_unit = units
         elif units == 'mgS/m2' or units == 'mgN/m2':
             raise NotImplementedError('Species specific units are not implemented.')
-            new_unit = units
         return new_unit
 
 
