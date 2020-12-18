@@ -4,7 +4,6 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
-from traceback import format_exc
 import simplejson
 
 # internal pyaerocom imports
@@ -381,22 +380,18 @@ class AerocomEvaluation(object):
             self.colocation_settings.update(**val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
-                if key in self.obs_config:
-                    self._log.warning('Obs config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
                 self.obs_config[key] = ObsConfigEval(**val)
             elif 'model_id' in val:
-                if key in self.model_config:
-                    self._log.warning('Model config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
                 self.model_config[key] = ModelConfigEval(**val)
             else:
                 self.__dict__[key] = val
         elif key in self.__dict__:
             self.__dict__[key] = val
         else:
-            raise KeyError('Invalid input key {}. Cannot assign {}'
-                           .format(key, val))
+            const.print_log.warning(
+                f'Invalid input key {key} for AerocomEvaluation. Will be '
+                f'ignored'
+            )
 
     def __getitem__(self, key):
         if key in self.__dict__:
