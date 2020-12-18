@@ -1,3 +1,6 @@
+
+# Differences in pyaerocom source files between version 0.8.0 and 0.10.0
+
 Created automatically via:
 
 ```bash
@@ -9,12 +12,8 @@ And modified afterwards.
 ## New modules
 
 ### New feature modules
+
 -	pyaerocom/combine_vardata_ungridded.py
-
-### New ini files
-
--	pyaerocom/data/emep_variables.ini
--	pyaerocom/data/paths_local_database.ini
 -	pyaerocom/helpers_landsea_masks.py
 -	pyaerocom/io/read_ghost.py
 -	pyaerocom/io/read_mscw_ctm.py
@@ -23,6 +22,11 @@ And modified afterwards.
 -	pyaerocom/web/helpers_evaluation_iface.py
 -	pyaerocom/web/helpers_trends_iface.py
 -	pyaerocom/web/utils.py
+
+### New ini files
+
+-	pyaerocom/data/emep_variables.ini
+-	pyaerocom/data/paths_local_database.ini
 
 ### Others
 
