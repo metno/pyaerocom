@@ -1,5 +1,8 @@
 import os
 import pytest
+import json
+
+import numpy as np
 from pandas import DataFrame
 
 from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
@@ -117,6 +120,31 @@ def test_aerocom_evaluation_get_model_name(stp):
 
 def test_aerocom_evaluation___str__(stp):
     assert isinstance(str(stp), str)
+
+def test_aerocom_evaluation_output_files(stp, tmpdir):
+    stp.out_basedir = tmpdir
+    stp.run_evaluation(update_interface=False)
+
+    # Check that folders were created
+    for dir in stp.OUT_DIR_NAMES:
+        path = os.path.join(stp.exp_dir, dir)
+        assert os.path.isdir(path)
+
+    # Check values of one timeseries json file
+    json_path = os.path.join(stp.exp_dir, 'ts/EUROPE_OBS-AeronetSun:od550aer_Column.json')
+    with open(json_path) as f:
+        data = json.load(f)
+
+    data = data['TM5']
+    values = []
+    should_be = [0.12592844665050507, 0.1256496376978308, 0.16510479006400725,
+                 0.18525996804237366, ]
+    stats = ['monthly_mod', 'monthly_obs', 'yearly_obs', 'yearly_mod']
+    for stat in stats:
+        values.append(data[stat][0])
+    np.allclose(values, should_be, rtol=1e-8)
+    assert data['daily_obs'] == []
+    assert data['daily_mod'] == []
 
 def test_aerocom_evaluation_to_from_json(stp, tmpdir):
     stp.to_json(tmpdir)
