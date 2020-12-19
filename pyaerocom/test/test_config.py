@@ -237,7 +237,8 @@ def test_default_config():
     for obs_id in TestDataAccess._UNGRIDDED_READERS:
         assert obs_id in cfg.OBSLOCS_UNGRIDDED
     assert cfg.OBS_UNGRIDDED_POST == {}
-    assert cfg.SUPPLDIRS == {}
+    if not cfg.has_access_lustre:
+        assert cfg.SUPPLDIRS == {}
 
     search_dirs = [f'{mypydir}/{testdatadirname}/modeldata',
                    f'{mypydir}/{testdatadirname}/obsdata',

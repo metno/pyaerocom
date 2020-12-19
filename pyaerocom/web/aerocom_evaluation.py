@@ -395,22 +395,18 @@ class AerocomEvaluation(object):
             self.colocation_settings.update(**val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
-                if key in self.obs_config:
-                    self._log.warning('Obs config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
                 self.obs_config[key] = ObsConfigEval(**val)
             elif 'model_id' in val:
-                if key in self.model_config:
-                    self._log.warning('Model config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
                 self.model_config[key] = ModelConfigEval(**val)
             else:
                 self.__dict__[key] = val
         elif key in self.__dict__:
             self.__dict__[key] = val
         else:
-            raise KeyError('Invalid input key {}. Cannot assign {}'
-                           .format(key, val))
+            const.print_log.warning(
+                f'Invalid input key {key} for AerocomEvaluation. Will be '
+                f'ignored'
+            )
 
     def __getitem__(self, key):
         if key in self.__dict__:
@@ -550,11 +546,6 @@ class AerocomEvaluation(object):
             return matches[0]
         raise ValueError('Could not identify unique model name')
 
-# =============================================================================
-#     def make_regions_json(self):
-#         """Creates file regions.ini for web interface"""
-#         return make_regions_json()
-# =============================================================================
     def get_diurnal_only(self,obs_name,colocated_data):
         """
 
@@ -1004,7 +995,10 @@ class AerocomEvaluation(object):
 
     @property
     def iface_names(self):
-       return self._check_and_get_iface_names()
+        """
+        List of observation dataset names used in web interface
+        """
+        return self._check_and_get_iface_names()
 
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
                        update_interface=True,

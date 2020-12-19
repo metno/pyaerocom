@@ -691,10 +691,7 @@ class TrendsEvaluation(object):
 
     def from_json(self, config_file):
         """Load configuration from json config file"""
-# =============================================================================
-#         with open(config_file, 'r') as f:
-#             current = simplejson.load(f)
-# =============================================================================
+
         current = read_json(config_file)
         self.update(**current)
 
@@ -866,11 +863,6 @@ class TrendsEvaluation(object):
             fpath = os.path.join(self.out_dirs['map'], fname)
             current = read_json(fpath)
             res[fname] = list(current[0]['all'].keys())
-# =============================================================================
-#             with open(os.path.join(self.out_dirs['map'], fname), 'r') as fp:
-#                 current = simplejson.load(fp)
-#                 res[fname] = list(current[0]['all'].keys())
-# =============================================================================
         return res
 
     def get_obsvar_name_and_type(self, obs_var):

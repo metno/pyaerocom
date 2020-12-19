@@ -196,7 +196,7 @@ class ReadEbas(ReadUngriddedBase):
     IGNORE_WAVELENGTH = ['conceqbc']
 
     ASSUME_AAE_SHIFT_WVL = 1.0
-    ASSUME_AE_SHIFT_WVL = 1.5
+    ASSUME_AE_SHIFT_WVL = 1#.5
 
     IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
     # list of all available resolution codes (extracted from SQLite database)
@@ -515,79 +515,6 @@ class ReadEbas(ReadUngriddedBase):
         files = self._merge_lists(files_vars)
         return files
 
-# =============================================================================
-#     def get_file_listOLD(self, vars_to_retrieve=None, **constraints):
-#         """Get list of files for all variables to retrieve
-#
-#         Parameters
-#         ----------
-#         vars_to_retrieve : list
-#             list of variables that are supposed to be loaded
-#         **constraints
-#             further EBAS request constraints deviating from default (default
-#             info for each AEROCOM variable can be found in `ebas_config.ini <
-#             https://github.com/metno/pyaerocom/blob/master/pyaerocom/data/
-#             ebas_config.ini>`__). For details on possible input parameters
-#             see :class:`EbasSQLRequest` (or `this tutorial <http://aerocom.met.no
-#             /pyaerocom/tutorials.html#ebas-file-query-and-database-browser>`__)
-#
-#         Returns
-#         -------
-#         list
-#             unified list of file paths each containing either of the specified
-#             variables
-#         """
-#         if vars_to_retrieve is None:
-#             vars_to_retrieve = self.DEFAULT_VARS
-#         elif isinstance(vars_to_retrieve, str):
-#             vars_to_retrieve = [vars_to_retrieve]
-#
-#         # make sure variable names are input correctly
-#         vars_to_retrieve = self._precheck_vars_to_retrieve(vars_to_retrieve)
-#
-#         self.logger.info('Fetching data files. This might take a while...')
-#
-#         db = self.file_index
-#         files_vars = {}
-#         totnum = 0
-#         const.print_log.info('Retrieving EBAS files for variables\n{}'
-#                              .format(vars_to_retrieve))
-#         # directory containing NASA Ames files
-#         filedir = self.file_dir
-#         for var in vars_to_retrieve:
-#             info = self.get_ebas_var(var)
-#
-#             if 'station_names' in constraints:
-#                 stat_matches = self.find_station_matches(constraints['station_names'])
-#                 constraints['station_names'] = stat_matches
-#
-#             req = info.make_sql_request(**constraints)
-#
-#             const.logger.info('Retrieving EBAS file list for request:\n{}'
-#                               .format(req))
-#             filenames = db.get_file_names(req)
-#             self.sql_requests.append(req)
-#
-#             paths = []
-#             for file in filenames:
-#                 if file in self.IGNORE_FILES:
-#                     const.print_log.info('Ignoring flagged file {}'.format(file))
-#                     continue
-#                 paths.append(os.path.join(filedir, file))
-#             files_vars[var] = sorted(paths)
-#             num = len(paths)
-#             totnum += num
-#             self.logger.info('{} files found for variable {}'.format(num, var))
-#         if len(files_vars) == 0:
-#             raise IOError('No file could be retrieved for either of the '
-#                           'specified input variables: {}'
-#                           .format(vars_to_retrieve))
-#
-#         self._lists_orig = files_vars
-#         files = self._merge_lists(files_vars)
-#         return files
-# =============================================================================
-
     def _get_var_cols(self, ebas_var_info, data):
         """Get all columns in NASA Ames file matching input Aerocom variable
 
@@ -832,7 +759,7 @@ class ReadEbas(ReadUngriddedBase):
         return data_out
 
     def _find_wavelength_matches(self, col_matches, file, var_info):
-        """Find columns with wavelength closes to variable wavelenght
+        """Find columns with wavelength closes to variable wavelength
         """
         min_diff_wvl = 1e6
         matches = []
@@ -868,6 +795,7 @@ class ReadEbas(ReadUngriddedBase):
 
     def _find_closest_wavelength_cols(self, col_matches, file, var_info):
         """
+        Find wavelength columns
         """
         min_diff_wvl = 1e6
         matches = []
