@@ -22,6 +22,9 @@ And modified afterwards.
 -	pyaerocom/web/helpers_evaluation_iface.py
 -	pyaerocom/web/helpers_trends_iface.py
 -	pyaerocom/web/utils.py
+-	pyaerocom/scripts/cli.py
+-	pyaerocom/scripts/highlevel_utils.py
+-	pyaerocom/testdata_access.py
 
 ### New ini files
 
@@ -37,10 +40,7 @@ And modified afterwards.
 -	pyaerocom/_init_helpers.py
 -	pyaerocom/conftest.py
 -	pyaerocom/io/ghost_meta_keys.py
--	pyaerocom/scripts/cli.py
--	pyaerocom/scripts/highlevel_utils.py
 -	pyaerocom/scripts/read_colocation_files.py
--	pyaerocom/testdata_access.py
 -	pyaerocom/web/const.py
 
 ### New test-modules
