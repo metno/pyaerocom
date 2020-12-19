@@ -147,8 +147,7 @@ Please follow the instructions provided here, to retrieve access to the AeroCom 
 https://wiki.met.no/aerocom/data_retrieval
 
 **NOTE**: the users database does not contain any ground based observational data (such as EBAS, AERONET, etc.) but only the AeroCom model data available in the database as well as some gridded level 3 satellite datasets which may be used for model evaluation.
-
- Once you have access to the user database you may mount the file-system locally (e.g. via `sshfs` and register the data-paths you need in pyaerocom, for details see tutorials, more info below).
+Once you have access to the user database you may mount the file-system locally (e.g. via `sshfs` and register the data-paths you need in pyaerocom, for details see tutorials, more info below).
 
 Getting started
 ===============
