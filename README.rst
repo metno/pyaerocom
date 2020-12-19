@@ -25,23 +25,23 @@ Main features
 	- `CALIPSO CALIOP <https://www-calipso.larc.nasa.gov/>`__ Lidar observations.
 	- `ENVISAT AATSR <https://earth.esa.int/web/guest/missions/esa-operational-eo-missions/envisat/instruments/aatsr>`__.
 
+- Data harmonization tools following the `CF conventions <https://cfconventions.org/>`__.
 - Intuitive data objects for analysis of gridded data and ungridded (point-cloud) observations.
-- Sophisticated colocation routines for gridded / gridded com
-- This includes interfaces for conversion of data to data types of related data analysis libraries such as `pandas <https://pandas.pydata.org/>`__, `numpy <http://www.numpy.org/>`__, `xarray <http://xarray.pydata.org/en/stable/>`__ or `iris <https://scitools.org.uk/iris/docs/latest/>`__.
-- Colocation tools for gridded and ungridded datasets.
-- Harmonisation of variable and metadata conventions.
-- Data visualisation tools and interfaces to common plotting libraries such as `matplotlib <https://matplotlib.org/>`__ or `cartopy <https://scitools.org.uk/cartopy/docs/latest/>`__.
+- Sophisticated colocation routines for model evaluation and intercomparison of observations.
+- Interfaces for conversion of data to data types of related data analysis libraries such as `pandas <https://pandas.pydata.org/>`__, `numpy <http://www.numpy.org/>`__, `xarray <http://xarray.pydata.org/en/stable/>`__ or `iris <https://scitools.org.uk/iris/docs/latest/>`__.
+- Data visualization tools and interfaces to common plotting libraries such as `matplotlib <https://matplotlib.org/>`__ or `cartopy <https://scitools.org.uk/cartopy/docs/latest/>`__.
 - Tools for statistical analysis.
+- Toolbox for analysis of trends in time-series.
+- Tools to compute ensemble averages from multiple model outputs.
+- High-level tools for automated analyses of multi-model and multi-obs inter-comparison studies.
 
 Usage examples
 ^^^^^^^^^^^^^^
 
 - Processing of data for the new AeroCom `Model Evaluation interface <https://aerocom-evaluation.met.no/>`__
-- Processing and harmonisation of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__.
+- Processing and harmonization of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__.
 - pyaerocom was used for the model evaluation study by `Gliß et al., 2020 <https://acp.copernicus.org/preprints/acp-2019-1214/>`__
 - pyaerocom was used for the trends analysis by `Mortier et al., 2020 <https://acp.copernicus.org/articles/20/13355/2020/acp-20-13355-2020-discussion.html>`__
--
-
 
 AeroCom
 =======
