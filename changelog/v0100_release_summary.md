@@ -235,7 +235,7 @@ No relevant changes here (only some refacturing).
 - Most tests now uses a publicly available test dataset.
 - Implemented automatic CI testing in Github Actions.
 - Add **conftest.py** for defining session wide test fixtures.
-- Many more tests resulting in largely improved test coverage, [see here]([here](https://github.com/metno/pyaerocom/blob/master/changelog/diff_files_v080_v0100.md).
+- Many more tests resulting in largely improved test coverage, [see here](https://github.com/metno/pyaerocom/blob/master/changelog/diff_files_v080_v0100.md).
 
 ## Bug fixes
 
