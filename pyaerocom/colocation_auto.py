@@ -626,6 +626,9 @@ class Colocator(ColocationSetup):
             if not 'ts_type' in kwargs:
                 kwargs['ts_type'] = ts_type_read
 
+            if isinstance(kwargs['ts_type'], dict):
+                kwargs['ts_type'] = kwargs['ts_type'][var_name]
+
             return reader.read_var(var_name,
                                    start=start,
                                    stop=stop,

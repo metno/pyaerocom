@@ -182,7 +182,7 @@ class TestReadEBAS(object):
         assert reader.IGNORE_WAVELENGTH == ['conceqbc']
 
     def test_ASSUME_AE_SHIFT_WVL(self, reader):
-        assert reader.ASSUME_AE_SHIFT_WVL == 1.5
+        assert reader.ASSUME_AE_SHIFT_WVL == 1.0
 
     def test_ASSUME_AAE_SHIFT_WVL(self, reader):
         assert reader.ASSUME_AAE_SHIFT_WVL == 1.0

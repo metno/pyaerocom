@@ -388,37 +388,6 @@ class GriddedData(object):
     def base_year(self, val):
         self.change_base_year(val)
 
-# =============================================================================
-#     def change_base_year_OLD(self, new_year):
-#         """Changes base year of time dimension
-#
-#         Relevant, e.g. for climatological analyses
-#
-#         Parameters
-#         -----------
-#         new_year : int
-#             new base year (can also be other than integer if it is convertible)
-#         """
-#         if not self.has_time_dim:
-#             raise DataDimensionError('Data object has no time dimension ... ')
-#         if isinstance(new_year, str):
-#             try:
-#                 new_year = int(new_year)
-#                 if not new_year > -2000 and new_year < 20000:
-#                     raise ValueError('Need value between -2000 and 20000')
-#             except Exception as e:
-#                 raise ValueError(repr(e))
-#         from cf_units import Unit
-#         startyr = int(str(self.start.astype('datetime64[Y]')))
-#         diff = new_year - startyr
-#         u = self.time.units
-#         origin = u.utime().origin.year
-#         origin_new = u.utime().origin.year + diff
-#         self.time.units = Unit(u.origin.replace(str(origin),
-#                                                 str(origin_new)),
-#                                 calendar=u.calendar)
-# =============================================================================
-
     def change_base_year(self, new_year, inplace=True):
         """
         Changes base year of time dimension

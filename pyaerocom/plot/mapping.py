@@ -213,16 +213,6 @@ def init_multimap_grid(nrows, ncols, add_coastlines=True, remove_outline_map=Tru
         figsize=(w,h)
     fig = plt.figure(figsize=figsize)
 
-# =============================================================================
-#     axgr = AxesGrid(fig, 111, axes_class=axes_class,
-#                     nrows_ncols=(nrows, ncols),
-#                     axes_pad=(0.6, 0.5),
-#                     cbar_location='right',
-#                     cbar_mode="each",
-#                     cbar_pad="5%",
-#                     cbar_size='3%',
-#                     label_mode='')  # note the empty label_mode
-# =============================================================================
     axgr = AxesGrid(fig, 111, axes_class=axes_class,
                     nrows_ncols=(nrows, ncols),
                     axes_pad = (axes_pad_hor, axes_pad_vert),
@@ -257,57 +247,6 @@ def _init_width_ratios(width_ratios, ncols, add_cbar_axes):
     if not isinstance(width_ratios, list):
         raise ValueError('Invalid input for width ratio')
     return width_ratios
-
-def init_multimap_grid_v0(nrows, ncols, add_cbar_axes=False,
-                       add_coastlines=True, remove_outline_map=True,
-                       projection=None, width_ratios=None,
-                       figsize=None):
-    if projection is None:
-        projection = ccrs.PlateCarree()
-
-    width_ratios = _init_width_ratios(width_ratios, ncols, add_cbar_axes)
-    ncols_axes = len(width_ratios)
-
-    if figsize is None:
-        w = 20
-        wmap = int(w / ncols)
-        map_wh_aspect = 2 if not add_cbar_axes else 2
-        hmap = int(wmap / map_wh_aspect)
-        h = nrows * hmap
-        figsize=(w, h)
-
-    fig = plt.figure(figsize=figsize)
-    gs = fig.add_gridspec(ncols=ncols_axes, nrows=nrows,
-                          width_ratios=width_ratios)
-
-    axes_map = []
-    axes_cbar = []
-    for row in range(nrows):
-
-        axes_map_row = []
-        axes_cbar_row = []
-        for i in range(ncols_axes):
-            if not add_cbar_axes or i%2==0:
-                ax = fig.add_subplot(gs[row, i], projection=projection)
-                if add_coastlines:
-                    ax.coastlines(color='#e6e6e6')
-                if remove_outline_map:
-                    ax.outline_patch.set_edgecolor('white')
-                axes_map_row.append(ax)
-            else:
-                ax = fig.add_subplot(gs[row, i])
-                axes_cbar_row.append(ax)
-                ax.yaxis.tick_right()
-
-            axes_map.append(axes_map_row)
-            axes_cbar.append(axes_cbar_row)
-
-    axes_map = np.asarray(axes_map)
-    axes_cbar = np.asarray(axes_cbar)
-
-    #plt.subplots_adjust(wspace=0.05, hspace=0.04)
-    #fig.tight_layout()
-    return fig, axes_map, axes_cbar
 
 def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                             unit=None, xlim=(-180, 180), ylim=(-90, 90),
@@ -382,11 +321,9 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                                          'or 3D with time being the 3rd '
                                          'dimension')
             data.reorder_dimensions_tseries()
-            try:
-                data = data[0]
-            except Exception:
-                print()
-                data = data[0]
+
+            data = data[0]
+
         lons = data.longitude.points
         lats = data.latitude.points
         data = data.grid.data
