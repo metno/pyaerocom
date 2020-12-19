@@ -1,5 +1,9 @@
 |CI|
 
+Latest news
+===========
+Just before Christmas, we are happy to announce the official release of version 0.10.0. See `here <https://github.com/metno/pyaerocom/releases/tag/v0.10.0>`__ for an overview of what has changed.
+
 About
 =====
 
@@ -57,7 +61,7 @@ Citation
 
 If you use pyaerocom for your research and find it useful, please consider citing pyaerocom. DOI's and citation entries are available via Zenodo for recent releases here:
 
-https://zenodo.org/record/4159570#.X8dTdsJ7k5l
+https://zenodo.org/record/4362479#.X9425NZ7kUE
 
 
 Website and code documentation
