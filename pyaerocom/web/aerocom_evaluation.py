@@ -508,11 +508,6 @@ class AerocomEvaluation(object):
             return matches[0]
         raise ValueError('Could not identify unique model name')
 
-# =============================================================================
-#     def make_regions_json(self):
-#         """Creates file regions.ini for web interface"""
-#         return make_regions_json()
-# =============================================================================
     def get_diurnal_only(self,obs_name,colocated_data):
         """
 
@@ -962,7 +957,10 @@ class AerocomEvaluation(object):
 
     @property
     def iface_names(self):
-       return self._check_and_get_iface_names()
+        """
+        List of observation dataset names used in web interface
+        """
+        return self._check_and_get_iface_names()
 
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
                        update_interface=True,
