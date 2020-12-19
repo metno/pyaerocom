@@ -9,7 +9,7 @@ import xarray as xarr
 from pyaerocom import const
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.tstype import TsType
-from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ
+from pyaerocom.time_config import TS_TYPE_TO_PANDAS_FREQ, TS_TYPES
 from pyaerocom.helpers import (resample_time_dataarray,
                                resample_timeseries, isnumeric)
 
@@ -93,7 +93,7 @@ class TimeResampler(object):
 
         how_default = how if isinstance(how, str) else 'mean'
 
-        valid = self.valid_base_ts_types
+        valid = TS_TYPES
         from_mul = from_ts_type.mulfac
         from_base = from_ts_type.base
 
