@@ -38,10 +38,10 @@ Main features
 Usage examples
 ^^^^^^^^^^^^^^
 
-- Processing of data for the new AeroCom `Model Evaluation interface <https://aerocom-evaluation.met.no/>`__
+- Processing of data for the new AeroCom `Model Evaluation interface <https://aerocom-evaluation.met.no/>`__.
 - Processing and harmonization of observations for `Aerosol Trends interface <https://aerocom-trends.met.no/>`__.
-- pyaerocom was used for the model evaluation study by `Gliß et al., 2020 <https://acp.copernicus.org/preprints/acp-2019-1214/>`__
-- pyaerocom was used for the trends analysis by `Mortier et al., 2020 <https://acp.copernicus.org/articles/20/13355/2020/acp-20-13355-2020-discussion.html>`__
+- pyaerocom was used for the model evaluation study by `Gliß et al., 2020 <https://acp.copernicus.org/preprints/acp-2019-1214/>`__.
+- pyaerocom was used for the trends analysis by `Mortier et al., 2020 <https://acp.copernicus.org/articles/20/13355/2020/acp-20-13355-2020-discussion.html>`__.
 
 AeroCom
 =======
