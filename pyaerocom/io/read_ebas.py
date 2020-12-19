@@ -757,7 +757,7 @@ class ReadEbas(ReadUngriddedBase):
         return data_out
 
     def _find_wavelength_matches(self, col_matches, file, var_info):
-        """Find columns with wavelength closes to variable wavelenght
+        """Find columns with wavelength closes to variable wavelength
         """
         min_diff_wvl = 1e6
         matches = []
@@ -793,6 +793,7 @@ class ReadEbas(ReadUngriddedBase):
 
     def _find_closest_wavelength_cols(self, col_matches, file, var_info):
         """
+        Find wavelength columns
         """
         min_diff_wvl = 1e6
         matches = []
