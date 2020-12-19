@@ -7,18 +7,14 @@
 The Pyaerocom website
 ***************************
 
-Official website of Pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AEROCOM project <http://aerocom.met.no/protocol.html>`__.
-
-.. image:: tut03_intro_class_ReadGriddedMulti/tut03_intro_class_ReadGriddedMulti_14_0.png
-  :width: 600px
-  :align: center
+Official website of pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AEROCOM project <http://aerocom.met.no/protocol.html>`__.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    readme
-   tutorials
+   pyaerocom-tutorials/index
    api
 
 Indices and tables

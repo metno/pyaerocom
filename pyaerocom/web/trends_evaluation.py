@@ -19,6 +19,7 @@ from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _compute_trend_error,
                                       _get_season, _mid_season,
                                       _find_area, _years_from_periodstr)
+from pyaerocom.tstype import TsType
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.io import ReadGridded
 from pyaerocom.web.var_groups import var_groups
@@ -27,7 +28,7 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
 from pyaerocom.web.helpers_trends_iface import (update_menu_trends_iface,
                                                 get_all_config_files_trends_iface)
 
-from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 import simplejson
@@ -205,16 +206,17 @@ class TrendsEvaluation(object):
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 if key in self.obs_config:
-                    self._log.warning('Obs config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
+                    self._log.warning(
+                        f'Obs config for key {key} already exists and '
+                        f'will be overwritten')
                 self.obs_config[key] = ObsConfigEval(**val)
             elif 'model_id' in val:
                 if not 'mtype' in val:
                     raise KeyError('Need key "mtype" in specfication of model {}'
                                    .format(key))
                 if key in self.model_config:
-                    self._log.warning('Model config for key {}  already exists and '
-                                   'will be overwritten {}'.format(key))
+                    self._log.warning(f'Model config for key {key} already '
+                                      f'exists and will be overwritten')
                 self.model_config[key] = ModelConfigEval(**val)
             else:
                 self.__dict__[key] = val
@@ -689,10 +691,7 @@ class TrendsEvaluation(object):
 
     def from_json(self, config_file):
         """Load configuration from json config file"""
-# =============================================================================
-#         with open(config_file, 'r') as f:
-#             current = simplejson.load(f)
-# =============================================================================
+
         current = read_json(config_file)
         self.update(**current)
 
@@ -864,11 +863,6 @@ class TrendsEvaluation(object):
             fpath = os.path.join(self.out_dirs['map'], fname)
             current = read_json(fpath)
             res[fname] = list(current[0]['all'].keys())
-# =============================================================================
-#             with open(os.path.join(self.out_dirs['map'], fname), 'r') as fp:
-#                 current = simplejson.load(fp)
-#                 res[fname] = list(current[0]['all'].keys())
-# =============================================================================
         return res
 
     def get_obsvar_name_and_type(self, obs_var):
@@ -1116,29 +1110,33 @@ class TrendsEvaluation(object):
 
             vardata[keymap[cname]] = np.float64(cval)
         # the actual sampling frequency
-        freq = vardata['freq']
+        tst = vardata['freq']
+        try:
+            freq = TsType(tst)
+        except TemporalResolutionError:
+            if tst == 'native': # e.g. EARLINET
+                freq = TsType('daily')
+            else:
+                raise TemporalResolutionError(
+                    f'Skipping processing of {station.station_name} since '
+                    'temporal '
+                    f'resolution could not be inferred')
         if vardata['wavelength'] is None:
             try:
                 wvl = '{} nm'.format(const.VARS[var_name].wavelength_nm)
                 vardata['wavelength'] = wvl
             except Exception:
                 pass
-        ts_types = self.TS_TYPES
-        if freq in ts_types:
-            #raise AttributeError('Invalid temporal resolution code {}'.format(freq))
-            if ts_types.index(freq) <= ts_types.index('daily'):
-                to_freq = 'daily'
-                freq_name = 'dobs'
-            elif ts_types.index(freq) <= ts_types.index('monthly'):
-                to_freq = 'monthly'
-                freq_name = 'mobs'
-            else:
-                raise NotImplementedError
-        elif freq == 'n/d':
+        if freq >= TsType('daily'):
             to_freq = 'daily'
             freq_name = 'dobs'
+        elif freq >= TsType('monthly'):
+            to_freq = 'monthly'
+            freq_name = 'mobs'
         else:
-            raise AttributeError('Invalid ts_type {} in data...'.format())
+            raise TemporalResolutionError(
+                f'Skipping processing of {station.station_name} since temporal '
+                f'resolution {freq} is too low (need at least monthly)')
 
         s = station.to_timeseries(var_name, freq=to_freq,
                                   resample_how=self.avg_how,
@@ -1607,7 +1605,6 @@ class TrendsEvaluation(object):
         for var in vars_to_retrieve:
 
             all_stats = ungridded_data.to_station_data_all(vars_to_convert=var,
-                                                           merge_if_multi=True,
                                                            by_station_name=True)
             stations = all_stats['stats']
 

@@ -141,7 +141,7 @@ class GriddedData(object):
     def var_name_aerocom(self):
         """AeroCom variable name"""
         try:
-            return const.VARS[self.var_name].var_name
+            return const.VARS[self.var_name].var_name_aerocom
         except Exception:
             return None
 
@@ -376,37 +376,6 @@ class GriddedData(object):
     @base_year.setter
     def base_year(self, val):
         self.change_base_year(val)
-
-# =============================================================================
-#     def change_base_year_OLD(self, new_year):
-#         """Changes base year of time dimension
-#
-#         Relevant, e.g. for climatological analyses
-#
-#         Parameters
-#         -----------
-#         new_year : int
-#             new base year (can also be other than integer if it is convertible)
-#         """
-#         if not self.has_time_dim:
-#             raise DataDimensionError('Data object has no time dimension ... ')
-#         if isinstance(new_year, str):
-#             try:
-#                 new_year = int(new_year)
-#                 if not new_year > -2000 and new_year < 20000:
-#                     raise ValueError('Need value between -2000 and 20000')
-#             except Exception as e:
-#                 raise ValueError(repr(e))
-#         from cf_units import Unit
-#         startyr = int(str(self.start.astype('datetime64[Y]')))
-#         diff = new_year - startyr
-#         u = self.time.units
-#         origin = u.utime().origin.year
-#         origin_new = u.utime().origin.year + diff
-#         self.time.units = Unit(u.origin.replace(str(origin),
-#                                                 str(origin_new)),
-#                                 calendar=u.calendar)
-# =============================================================================
 
     def change_base_year(self, new_year, inplace=True):
         """
@@ -1397,7 +1366,7 @@ class GriddedData(object):
         for dim, val in dimcoord_vals.items():
             is_rng = isrange(val)
             if is_rng:
-                c = rng_funs[dim](val)
+                c = rng_funs[dim](*val)
                 constraints.append(c)
             else:
                 if dim == 'time':
@@ -2644,13 +2613,10 @@ if __name__=='__main__':
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close("all")
-
+    pya.initialise_testdata()
     # print("uses last changes ")
-    data = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer',
-                                                          start=2010).resample_time('yearly')
+    data = pya.io.ReadGridded('TM5-met2010_CTRL-TEST').read_var('od550aer',
+                                                                start=2010,
+                                                                ts_type='monthly')
 
-
-    data1 = data.remove_outliers(0.2, 0.4, inplace=False)
-
-    data.quickplot_map()
-    data1.quickplot_map()
+    data.sel(latitude=(30, 60), time=('6/2010', '10/2010'))

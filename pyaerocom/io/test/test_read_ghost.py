@@ -39,7 +39,12 @@ def ghost_eea_hourly():
 @lustre_unavail
 class TestReadGhost(object):
     PROVIDES_VARIABLES = ['concpm10',
+                          'concpm10al',
+                          'concpm10as',
                           'concpm25',
+                          'concpm1',
+                          'conccl',
+                          'concso4',
                           'vmrco',
                           'vmrno',
                           'vmrno2',
@@ -52,6 +57,11 @@ class TestReadGhost(object):
                           'concso2']
 
     INVDICT = {'pm10': 'concpm10',
+               'pm10al': 'concpm10al',
+               'pm10as': 'concpm10as',
+               'pm1': 'concpm1',
+               'sconccl': 'conccl',
+               'sconcso4': 'concso4',
                'pm2p5': 'concpm25',
                'sconcco': 'vmrco',
                'sconcno': 'vmrno',
@@ -80,7 +90,7 @@ class TestReadGhost(object):
         return getattr(self, fixture_name)
 
     def test_meta_keys(self):
-        assert len(self.default_reader.META_KEYS) == 143
+        assert len(self.default_reader.META_KEYS) == 142
 
     @pytest.mark.parametrize('fixture_name', ['ghost_eea_daily', 'ghost_eea_hourly'])
     def test_PROVIDES_VARIABLES(self, fixture_name):

@@ -50,7 +50,7 @@ class ReadEarlinet(ReadUngriddedBase):
     _FILEMASK = '*.*'
 
     #: version log of this class (for caching)
-    __version__ = "0.14_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.15_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EARLINET_NAME
@@ -70,14 +70,14 @@ class ReadEarlinet(ReadUngriddedBase):
     ALTITUDE_ID = 'Altitude'
 
     #: temporal resolution
-    TS_TYPE = 'n/d'
+    TS_TYPE = 'native'
 
     #: dictionary specifying the file search patterns for each variable
     VAR_PATTERNS_FILE = {'ec532aer'     : '*.e532',
                          'ec355aer'     : '*.e355',
-                         'bscatc532aer' : '*.b532',
-                         'bscatc355aer' : '*.b355',
-                         'bscatc1064aer': '*.b1064',
+                         'bsc532aer' : '*.b532',
+                         'bsc355aer' : '*.b355',
+                         'bsc1064aer': '*.b1064',
                          'zdust'        : '*.e*'}
 
     #: dictionary specifying the file column names (values) for each Aerocom
@@ -85,9 +85,9 @@ class ReadEarlinet(ReadUngriddedBase):
     VAR_NAMES_FILE = {'ec532aer'        : 'Extinction',
                       'ec355aer'        : 'Extinction',
                       'ec1064aer'       : 'Extinction',
-                      'bscatc532aer'    : 'Backscatter',
-                      'bscatc355aer'    : 'Backscatter',
-                      'bscatc1064aer'   : 'Backscatter',
+                      'bsc532aer'    : 'Backscatter',
+                      'bsc355aer'    : 'Backscatter',
+                      'bsc1064aer'   : 'Backscatter',
                       'zdust'           : 'DustLayerHeight'}
 
     #: metadata names that are supposed to be imported
@@ -688,8 +688,8 @@ if __name__=="__main__":
     r = ReadEarlinet()
 
     print(r.DATASET_PATH)
-
-    data = r.read(['ec532aer', 'bscatc532aer'])
+    files = r.get_file_list(['ec532aer', 'bsc532aer'])
+    data = r.read(['ec532aer', 'bsc532aer'], files=files[:20])
 
     data._check_index()
 

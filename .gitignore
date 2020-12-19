@@ -141,6 +141,7 @@ docs/**/*.png
 docs/tut0*.rst
 docs/add*.rst
 docs/tut1*.rst
+docs/pyaerocom-tutorials
 
 
 # Issues directory

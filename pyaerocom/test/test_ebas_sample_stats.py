@@ -15,8 +15,8 @@ from pyaerocom.conftest import lustre_unavail
 def test_ungriddeddata_jungfraujoch(data_scat_jungfraujoch_full):
     data = data_scat_jungfraujoch_full
 
-    assert data.shape == (245448, 12)# (227928, 12)
-    assert len(data.metadata) == 28
+    assert data.shape == (262968, 12)# (227928, 12)
+    assert len(data.metadata) == 30
 
     unique_coords = []
     unique_coords.extend(np.unique(data.latitude))
@@ -41,22 +41,22 @@ def test_scat_jungfraujoch(data_scat_jungfraujoch_full):
 
     assert 'sc550aer' in stat
     assert 'sc550aer' in stat.overlap
-    assert len(stat.overlap['sc550aer']) == 25789 #17466
+    assert len(stat.overlap['sc550aer']) == 30236 #17466
     assert stat['stat_merge_pref_attr'] == 'revision_date'
     assert int(stat['data_level']) == 2
 
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('1995-07-08T23:00:00'),
-                             np.datetime64('2018-12-31T23:00:00')])
+                             np.datetime64('2019-12-31T23:00:00')])
 
     vals = [stat['instrument_name'], stat['ts_type'], stat['PI'],
             len(stat.filename.split(';'))]
 
     npt.assert_array_equal(vals,
-                           ['Ecotech_Aurora3000_JFJ_dry; TSI_3563_JFJ_dry; IN3563',
+                           ['Ecotech_Aurora3000_JFJ_dry;TSI_3563_JFJ_dry;IN3563',
                             'hourly',
-                            'Bukowiecki, Nicolas; Baltensperger, Urs; Weingartner, Ernest',
-                            28])
+                            'Bukowiecki, Nicolas; Baltensperger, Urs;Brem, Benjamin;Weingartner, Ernest',
+                            30])
 
     d = stat.sc550aer
     vals = [d.mean(), d.std(), d.min(), d.max()]
@@ -75,22 +75,22 @@ def test_scat_jungfraujoch_lev3(data_scat_jungfraujoch_full):
 
     assert 'sc550aer' in stat
     assert 'sc550aer' in stat.overlap
-    assert len(stat.overlap['sc550aer']) == 25789 #17466
+    assert len(stat.overlap['sc550aer']) == 30236 #17466
     assert stat['stat_merge_pref_attr'] == 'revision_date'
     assert int(stat['data_level']) == 2
 
     npt.assert_array_equal([stat.dtime.min(), stat.dtime.max()],
                             [np.datetime64('1995-07-08T23:00:00'),
-                             np.datetime64('2018-12-31T23:00:00')])
+                             np.datetime64('2019-12-31T23:00:00')])
 
     vals = [stat['instrument_name'], stat['ts_type'], stat['PI'],
             len(stat.filename.split(';'))]
 
     npt.assert_array_equal(vals,
-                           ['Ecotech_Aurora3000_JFJ_dry; TSI_3563_JFJ_dry; IN3563',
+                           ['Ecotech_Aurora3000_JFJ_dry;TSI_3563_JFJ_dry;IN3563',
                             'hourly',
-                            'Bukowiecki, Nicolas; Baltensperger, Urs; Weingartner, Ernest',
-                            28])
+                            'Bukowiecki, Nicolas; Baltensperger, Urs;Brem, Benjamin;Weingartner, Ernest',
+                            30])
 
     d = stat.sc550aer
     vals = [d.mean(), d.std(), d.min(), d.max()]

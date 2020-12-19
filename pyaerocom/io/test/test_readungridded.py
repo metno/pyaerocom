@@ -46,7 +46,7 @@ def test_supported():
 
 @lustre_unavail
 def test_basic_attributes():
-    r = ReadUngridded()
+    r = ReadUngridded('AeronetSunV3Lev2.daily')
     assert not r.ignore_cache
     assert r.datasets_to_read == ['AeronetSunV3Lev2.daily']
     assert type(r.get_reader()).__name__ == 'ReadAeronetSunV3'
