@@ -588,10 +588,10 @@ class ReadGhost(ReadUngriddedBase):
                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
                     data_obj.add_chunk(chunksize)
 
-                for i, var_to_write in enumerate(vars_to_add):
+                for j, var_to_write in enumerate(vars_to_add):
                     values = stat[var_to_write]
 
-                    start = idx + i * num_times
+                    start = idx + j*num_times
                     stop = start + num_times
 
                     if not var_to_write in data_obj.var_idx:
@@ -635,5 +635,5 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
 
-    var = 'vmro3'
+    var = ['vmro3', 'vmrno2']
     obs = ReadGhost('GHOST.EBAS.daily').read(var)

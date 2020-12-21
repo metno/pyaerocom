@@ -47,29 +47,6 @@ class Region(BrowseDict):
         longitude range (min, max) covered by region
     lat_range : :obj:`list` or :obj:`tuple`
         latitude range (min, max) covered by region
-
-    Example
-    -------
-    Just initiate with a valid region ID
-
-        >>> from pyaerocom import Region("
-        >>> europe = Region("EUROPE")
-        >>> india = Region("INDIA")
-        >>> print(europe)
-        pyaeorocom Region
-        Name: EUROPE
-        Longitude range: [-20, 70]
-        Latitude range: [30, 80]
-        Longitude range (plots): [-20, 70]
-        Latitude range (plots): [30, 80]
-        >>> print(india)
-        pyaeorocom Region
-        Name: INDIA
-        Longitude range: [65, 90]
-        Latitude range: [5, 35]
-        Longitude range (plots): [50, 100]
-        Latitude range (plots): [0, 40]
-
     """
     def __init__(self, name="WORLD", lon_range=None, lat_range=None,
                  **kwargs):

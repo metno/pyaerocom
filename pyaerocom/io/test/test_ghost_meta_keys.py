@@ -154,7 +154,7 @@ desired_keys = [
 ]
 
 def test_ghost_meta_keys():
-    assert actual_keys == desired_keys
+    assert sorted(actual_keys) == sorted(desired_keys)
 
 if __name__ == '__main__':
     test_ghost_meta_keys()
