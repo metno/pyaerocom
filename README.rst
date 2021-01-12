@@ -2,7 +2,7 @@
 
 Latest news
 ===========
-Just before Christmas, we are happy to announce the official release of version 0.10.0. See `here <https://github.com/metno/pyaerocom/releases/tag/v0.10.0>`__ for an overview of what has changed.
+Version 0.10.0 was released just before Christmas 2020. See `here <https://github.com/metno/pyaerocom/releases/tag/v0.10.0>`__ for an overview of what has changed.
 
 About
 =====
