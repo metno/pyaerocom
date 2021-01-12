@@ -188,7 +188,6 @@ class ColocationSetup(BrowseDict):
                  model_ts_type_read=None,
                  obs_ts_type_read=None, flex_ts_type_gridded=True,
                  apply_time_resampling_constraints=None, min_num_obs=None,
-                 obs_keep_outliers=False,
                  obs_use_climatology=False,
                  colocate_time=False, basedir_coldata=None,
                  obs_name=None, model_name=None,
@@ -229,7 +228,6 @@ class ColocationSetup(BrowseDict):
         self.obs_id = obs_id
         self.obs_name = obs_name
         self.obs_data_dir = None
-        self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
         self.obs_add_meta = []
 
@@ -815,8 +813,12 @@ class Colocator(ColocationSetup):
         vars_to_read = self._init_obsvars_to_read(vars_to_read)
 
         obs_reader = ReadUngridded(self.obs_id, data_dir=self.obs_data_dir)
-        obs_vars = obs_reader.get_vars_supported(self.obs_id,
+        try:
+            obs_vars = obs_reader.get_vars_supported(self.obs_id,
                                                  vars_to_read)
+        except ValueError:
+            raise DataCoverageError('No observation variable matches found for '
+                                    '{}'.format(self.obs_id))
 
         if len(obs_vars) == 0:
             raise DataCoverageError('No observation variable matches found for '
