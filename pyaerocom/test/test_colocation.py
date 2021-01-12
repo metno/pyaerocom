@@ -56,9 +56,6 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
     (dict(),
      'monthly', (2,12,8), 0.315930,0.275671),
-    (dict(var_ref_outlier_ranges={'od550aer':[0.1,0.5]},
-          var_outlier_ranges={'od550aer':[0.1,0.2]}),
-     'monthly', (2,12,8), 0.227333,0.275671),
     (dict(apply_time_resampling_constraints=False),
      'monthly', (2,12,8), 0.316924,0.275671),
     (dict(filter_name='WORLD-wMOUNTAINS'),
