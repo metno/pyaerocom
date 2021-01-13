@@ -714,7 +714,40 @@ def _compute_dry_helper(data, data_colname, rh_colname,
 
     return vals, rh_mean
 
-def compute_wdep_from_concprcpso4(data):
+def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
+
+    vars_needed = (concprcp_var, 'pr')
+
+    if not all(x in data.data_flagged for x in vars_needed):
+        raise ValueError(f'Need flags for {vars_needed} to compute wet deposition')
+    from pyaerocom import TsType
+    tst = TsType(data.get_var_ts_type(concprcp_var))
+
+    freq_str = f' {tst.to_si()}-1'
+
+    conc_unit = data.get_unit(concprcp_var)
+
+    if not conc_unit.endswith('m-3'):
+        raise NotImplementedError('Can only handle concprcp unit ending with m-3')
+    pr_unit = data.get_unit('pr')
+    if not pr_unit == 'm':
+        data.convert_unit('pr', 'm')
+    wdep = data[concprcp_var] * data['pr']
+    wdep_units = conc_unit.replace('m-3', 'm-2')
+    wdep_units += freq_str
+    if not wdep_var in data.var_info:
+        data.var_info[wdep_var] = {}
+    data.var_info[wdep_var]['units'] = wdep_units
+
+    # set flags for wetso4
+    wdep_flags = np.zeros(len(wdep)).astype(bool)
+    wdep_flags[data.data_flagged[concprcp_var]] = True
+    wdep_flags[data.data_flagged['pr']] = True
+    data.data_flagged[wdep_var] = wdep_flags
+
+    return wdep
+
+def compute_wetso4_from_concprcpso4(data):
     """Compute wdep from conc in precip and precip data
 
     Parameters
@@ -728,20 +761,8 @@ def compute_wdep_from_concprcpso4(data):
         modified data object containing wdep data
 
     """
-    conc_unit = data.get_unit('concprcpso4')
-    if not conc_unit.endswith('m-3'):
-        raise NotImplementedError('Can only handle concprcp unit ending with m-3')
-    pr_unit = data.get_unit('pr')
-    if not pr_unit == 'm':
-        data.convert_unit('pr', 'm')
-    wdep = data['concprcpso4'] * data['pr']
-    wdep_units = conc_unit.replace('m-3', 'm-2')
+    return _compute_wdep_from_concprcp_helper(data, 'wetso4', 'concprcpso4')
 
-    if not 'wetso4' in data.var_info:
-        data.var_info['wetso4'] = {}
-    data.var_info['wetso4']['units'] = wdep_units
-
-    return wdep
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
                   to_unit=None):
