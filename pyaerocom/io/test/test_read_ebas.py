@@ -198,7 +198,8 @@ class TestReadEBAS(object):
              'check_correct_MAAP_wrong_wvl': False,
              'eval_flags': True,
              'keep_aux_vars': False,
-             'convert_units': True}
+             'convert_units': True,
+             'ensure_correct_freq': True}
 
     def test_opts(self, reader):
         opts = reader._opts
@@ -315,6 +316,31 @@ class TestReadEBAS(object):
         for k, v in desired.items():
             assert k in cols
             assert cols[k] == v
+
+    @pytest.mark.parametrize('ts_type,tol_percent,num_flagged', [
+        ('hourly', 5, 0),
+        ('daily', 5, 8760),
+        ('hourly', 0, 5840),
+        ])
+    def test__flag_incorrect_frequencies(self, reader, loaded_nasa_ames_example,
+                                         ts_type, tol_percent, num_flagged):
+        st = StationData()
+        from pyaerocom import TsType
+        TsType.TOL_SECS_PERCENT = tol_percent
+
+        num = len(loaded_nasa_ames_example.start_meas)
+        st.start_meas = loaded_nasa_ames_example.start_meas
+        st.stop_meas = loaded_nasa_ames_example.stop_meas
+        st.var_info['bla'] = dict(units='1')
+        st.bla = np.ones(num)
+        st.ts_type=ts_type
+
+
+        reader._flag_incorrect_frequencies(st)
+
+        assert 'bla' in st.data_flagged
+        flagged = st.data_flagged['bla']
+        assert flagged.sum() == num_flagged
 
     @pytest.mark.parametrize('var', ['sc550aer'])
     def test_get_ebas_var(self, reader, var):
