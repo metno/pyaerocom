@@ -31,6 +31,8 @@ class TsType(object):
                   "daily"   :  "days",
                   "monthly" :  "days"}
 
+    TOL_SECS_PERCENT = 5
+
     def __init__(self, val):
         self._mulfac = 1
         self._val = None
@@ -122,6 +124,15 @@ class TsType(object):
         if idx == len(self.VALID) - 1:
             raise IndexError('No lower resolution available than {}'.format(self))
         return TsType(self.VALID[idx+1])
+
+    @property
+    def tol_secs(self):
+        """Tolerance in seconds for current TsType"""
+        from cf_units import Unit
+        cf = self.to_si()
+        total_secs = 1 / Unit('s').convert(1, cf)
+        frac = self.TOL_SECS_PERCENT / 100
+        return int(np.ceil(frac*total_secs))
 
     def to_timedelta64(self):
         """
