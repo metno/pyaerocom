@@ -29,16 +29,18 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_sc700dryaer,
                                  compute_ac550dryaer,
                                  compute_ang4470dryaer_from_dry_scat,
-                                 compute_wdep_from_concprcpso4)
+                                 compute_wetso4_from_concprcpso4)
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.stationdata import StationData
+from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.exceptions import (NotInFileError, EbasFileError,
-                                  UnitConversionError)
+                                  UnitConversionError,
+                                  TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import BrowseDict
 from tqdm import tqdm
 
@@ -85,6 +87,11 @@ class ReadEbasOptions(BrowseDict):
         if True, variable units in EBAS files will be checked and attempted to
         be converted into AeroCom default unit for that variable. Defaults to
         True.
+    ensure_correct_freq : bool
+        if True, the frequency set in NASA Ames files (provided via attr
+        *resolution_code*) is checked using time differences inferred from
+        start and stop time of each measurement. Measurements that are not in
+        that resolution (within 5% tolerance level) will be flagged invalid.
     """
     #: Names of options that correspond to reading filter constraints
     _FILTER_IDS = ['prefer_statistics',
@@ -108,6 +115,8 @@ class ReadEbasOptions(BrowseDict):
         self.keep_aux_vars = False
 
         self.convert_units = True
+
+        self.ensure_correct_freq = True
 
         self.update(**args)
 
@@ -200,7 +209,7 @@ class ReadEbas(ReadUngriddedBase):
                 'sc700dryaer'    :   compute_sc700dryaer,
                 'ac550dryaer'    :   compute_ac550dryaer,
                 'ang4470dryaer'  :   compute_ang4470dryaer_from_dry_scat,
-                'wetso4'         :   compute_wdep_from_concprcpso4}
+                'wetso4'         :   compute_wetso4_from_concprcpso4}
 
     #: Custom reading options for individual variables. Keys need to be valid
     #: attributes of :class:`ReadEbasOptions` and anything specified here (for
@@ -224,9 +233,9 @@ class ReadEbas(ReadUngriddedBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    def __init__(self, dataset_to_read=None):
+    def __init__(self, dataset_to_read=None, data_dir=None):
 
-        super(ReadEbas, self).__init__(dataset_to_read)
+        super(ReadEbas, self).__init__(dataset_to_read, dataset_path=data_dir)
 
         self._opts = {'default' : ReadEbasOptions()}
 
@@ -1092,13 +1101,43 @@ class ReadEbas(ReadUngriddedBase):
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
                                 'are NaN in {}'.format(filename))
+
         data_out['dtime'] = file.time_stamps
+        data_out['start_meas'] = file.start_meas
+        data_out['stop_meas'] = file.stop_meas
+
+        if self.readopts_default.ensure_correct_freq:
+            self._flag_incorrect_frequencies(data_out)
 
         # compute additional variables (if applicable)
         data_out = self.compute_additional_vars(data_out,
                                                 vars_to_compute)
 
         return data_out
+
+    def _flag_incorrect_frequencies(self, filedata):
+
+        # time diffs in units of s for each measurement
+        dt = (filedata.stop_meas - filedata.start_meas).astype(float)
+        # frequency in file (supposedly)
+        tst = TsType(filedata.ts_type)
+        # number of seconds in period (e.g. 86400 for ts_type daily)
+        numsecs = tst.num_secs
+        # tolerance in seconds in period (5% of numsecs, as of 13.1.2021)
+        tolsecs = tst.tol_secs
+
+        diffarr = dt-numsecs
+
+        invalid = np.logical_or(diffarr<-tolsecs,
+                                diffarr>tolsecs)
+
+        num = len(filedata['start_meas'])
+        for var in filedata.var_info:
+            if not var in filedata.data_flagged:
+                filedata.data_flagged[var] = np.zeros(num).astype(bool)
+            filedata.data_flagged[var][invalid] = True
+        return filedata
+
 
     def _convert_varunit_stationdata(self, sd, var):
         from_unit = sd.var_info[var]['units']
@@ -1341,7 +1380,7 @@ class ReadEbas(ReadUngriddedBase):
                 station_data = self.read_file(_file,
                                               vars_to_retrieve=contains)
 
-            except (NotInFileError, EbasFileError) as e:
+            except (NotInFileError, EbasFileError, TemporalResolutionError) as e:
                 self.files_failed.append(_file)
                 self.logger.warning('Skipping reading of EBAS NASA Ames '
                                     'file: {}. Reason: {}'
@@ -1443,13 +1482,23 @@ class ReadEbas(ReadUngriddedBase):
         return data_obj
 
 if __name__=="__main__":
+    import matplotlib.pyplot as plt
     import pyaerocom as pya
+    import os
+    plt.close('all')
+    ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
+    reader = pya.io.ReadUngridded('EBASMC',
+                                  data_dir=ebas_local)
 
-    reader = pya.io.ReadUngridded()
-    reader = ReadEbas()
+    #reader = pya.io.ReadEbas(data_dir=ebas_local)
 
-    data = reader.read('sc550dryaer')
+    data = reader.read(vars_to_retrieve='wetso4')
 
+    data = data.apply_filters(data_level=2, set_flags_nan=True)
+
+    ax = data.plot_station_coordinates(markersize=20)
+    ax = data.plot_station_coordinates(start=2018, var_name='wetso4',
+                                       markersize=10, ax=ax, color='lime')
 
     #data.plot_timeseries('concs')
     #data = r.read('concso4')
