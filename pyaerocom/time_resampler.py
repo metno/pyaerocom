@@ -123,7 +123,7 @@ class TimeResampler(object):
                 last_from = to
                 idx.append((to, min_num, _how))
         if len(idx) == 0  or not idx[-1][0] == to_ts_type.val:
-            idx.append((to_ts_type.val, 0, 'mean'))
+            idx.append((to_ts_type.val, 0, how_default))
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,

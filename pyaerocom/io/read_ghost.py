@@ -145,7 +145,7 @@ class ReadGhost(ReadUngriddedBase):
     #: these need to be output variables in AeroCom convention (cf. file
     #: pyaerocom/data/variables.ini). See also :attr:`VARNAMES_DATA` for a
     #: mapping of variable names used in GHOST
-    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1','conccl','vmrco', 'vmrno',
+    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1','conccl', 'concso4','vmrco', 'vmrno',
                     'vmrno2', 'vmro3', 'vmrso2',]
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
@@ -155,6 +155,7 @@ class ReadGhost(ReadUngriddedBase):
                      'concpm25'  : 'pm2p5',
                      'concpm1'   : 'pm1',
                      'conccl'    : 'sconccl',
+                     'concso4'   : 'sconcso4',
                      'vmrco'     : 'sconcco',
                      'vmrno'     : 'sconcno',
                      'vmrno2'    : 'sconcno2',
@@ -586,10 +587,10 @@ class ReadGhost(ReadUngriddedBase):
                     #if totnum < data_obj._CHUNKSIZE, then the latter is used
                     data_obj.add_chunk(chunksize)
 
-                for i, var_to_write in enumerate(vars_to_add):
+                for j, var_to_write in enumerate(vars_to_add):
                     values = stat[var_to_write]
 
-                    start = idx + i * num_times
+                    start = idx + j*num_times
                     stop = start + num_times
 
                     if not var_to_write in data_obj.var_idx:
@@ -633,5 +634,5 @@ class ReadGhost(ReadUngriddedBase):
 if __name__ == '__main__':
     import pyaerocom as pya
 
-    var = 'vmro3'
+    var = ['vmro3', 'vmrno2']
     obs = ReadGhost('GHOST.EBAS.daily').read(var)
