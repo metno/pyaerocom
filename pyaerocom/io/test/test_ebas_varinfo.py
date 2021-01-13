@@ -82,14 +82,14 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('concprcpso4scavenging', ['sulphate_corrected', 'sulphate_total'],
              ['precip'], None, None, None, 1.0),
             ('concprcpnh4', ['ammonium'], ['precip'], None, None, None, 1.0),
-            ('wetso4', None, None, None, None, ['CONCPRCP_SO4', 'METEO_PREC'], 0.27397),
+            ('wetso4', None, None, None, None, ['concprcpso4'], 1),
             ('wetconcso4', ['sulphate_corrected'], ['precip'], None, None, None, 1.0),
             ('wetso4t', None, None, None, None, ['METEO_PREC', 'CONCPRCP_SO4T'], 0.27397),
             ('wetso4c', None, None, None, None, ['METEO_PREC', 'CONCPRCP_SO4C'], 0.27397),
             ('wetoxn', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NO3'], 0.27397),
             ('wetrdn', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NH4'], 0.27397),
             ('wetnh4', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NH4'], 0.27397),
-            ('precip', ['precipitation_amount_off', 'precipitation_amount'],
+            ('pr', ['precipitation_amount_off', 'precipitation_amount'],
              ['precip'], None, None, None, 1.0),
             ('wetconcph', ['pH'], ['precip'], None, None, None, 1.0),
             ('wetno3', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NO3'], 0.27397),
@@ -150,11 +150,3 @@ if __name__=='__main__':
     print()
     print('NOT OK')
     print(notok)
-
-# =============================================================================
-#     TESTDATA = []
-#     for var in EbasVarInfo.open_config():
-#         TESTDATA.append(to_tuple(var))
-#
-#     print(TESTDATA)
-# =============================================================================
