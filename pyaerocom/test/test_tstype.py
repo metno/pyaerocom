@@ -95,6 +95,18 @@ def test_TOL_SECS_PERCENT():
     assert TsType.TOL_SECS_PERCENT == 5
 
 @pytest.mark.parametrize('ts_type,should_be', [
+    ('minutely', 60),
+    ('3minutely', 180),
+    ('4minutely', 240),
+    ('daily', 86400),
+    ('weekly', 86400*7),
+    ('monthly', 2629743.831225) # not sure how cf_units calculates that
+    ])
+def test_num_secs(ts_type, should_be):
+    val = TsType(ts_type).num_secs
+    assert val == should_be
+
+@pytest.mark.parametrize('ts_type,should_be', [
     ('minutely', 3),
     ('3minutely', 9),
     ('4minutely', 12),
