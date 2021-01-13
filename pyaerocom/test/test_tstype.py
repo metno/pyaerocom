@@ -90,6 +90,22 @@ def test_to_timedelta64(ts_type, ref_time_str, np_dt_str, output_str):
     tref = np.datetime64(ref_time_str, np_dt_str)
     assert str(tref + TsType(ts_type).to_timedelta64()) == output_str
 
+
+def test_TOL_SECS_PERCENT():
+    assert TsType.TOL_SECS_PERCENT == 5
+
+@pytest.mark.parametrize('ts_type,should_be', [
+    ('minutely', 3),
+    ('3minutely', 9),
+    ('4minutely', 12),
+    ('daily', 4320),
+    ('weekly', 30240),
+    ('monthly', 131488)
+    ])
+def test_tol_secs(ts_type, should_be):
+    val = TsType(ts_type).tol_secs
+    assert val == should_be
+
 if __name__=="__main__":
 
     import sys
