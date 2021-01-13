@@ -29,7 +29,10 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_sc700dryaer,
                                  compute_ac550dryaer,
                                  compute_ang4470dryaer_from_dry_scat,
-                                 compute_wetso4_from_concprcpso4)
+                                 compute_wetso4_from_concprcpso4,
+                                 compute_wetno3_from_concprcpno3,
+                                 compute_wetnh4_from_concprcpnh4)
+
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.stationdata import StationData
@@ -195,6 +198,10 @@ class ReadEbas(ReadUngriddedBase):
                     'ang4470dryaer'  :   ['sc440dryaer',
                                           'sc700dryaer'],
                     'wetso4'         :   ['concprcpso4',
+                                          'pr'],
+                    'wetno3'         :   ['concprcpno3',
+                                          'pr'],
+                    'wetnh4'         :   ['concprcpnh4',
                                           'pr']}
 
     #: Meta information supposed to be migrated to computed variables
@@ -209,15 +216,19 @@ class ReadEbas(ReadUngriddedBase):
                 'sc700dryaer'    :   compute_sc700dryaer,
                 'ac550dryaer'    :   compute_ac550dryaer,
                 'ang4470dryaer'  :   compute_ang4470dryaer_from_dry_scat,
-                'wetso4'         :   compute_wetso4_from_concprcpso4}
+                'wetso4'         :   compute_wetso4_from_concprcpso4,
+                'wetno3'         :   compute_wetno3_from_concprcpno3,
+                'wetnh4'         :   compute_wetnh4_from_concprcpnh4}
 
     #: Custom reading options for individual variables. Keys need to be valid
     #: attributes of :class:`ReadEbasOptions` and anything specified here (for
     #: a given variable) will be overwritten from the defaults specified in
     #: the options class.
     VAR_READ_OPTS = {
-        # import also precip and concprcp when reading wetso4
+        # import also precip and concprcp when reading wetdep
         'wetso4'    : dict(keep_aux_vars=True),
+        'wetno3'    : dict(keep_aux_vars=True),
+        'wetnh4'    : dict(keep_aux_vars=True),
         # keep pr in mm
         'pr'        : dict(convert_units = False)
         }
@@ -1492,13 +1503,20 @@ if __name__=="__main__":
 
     #reader = pya.io.ReadEbas(data_dir=ebas_local)
 
-    data = reader.read(vars_to_retrieve='wetso4')
+
+    data = reader.read(vars_to_retrieve=['wetnh4',
+                                         'wetso4',
+                                         'wetno3'])
 
     data = data.apply_filters(data_level=2, set_flags_nan=True)
 
-    ax = data.plot_station_coordinates(markersize=20)
+    ax = data.plot_station_coordinates(markersize=10)
+    ax = data.plot_station_coordinates(start=2018, var_name='wetnh4',
+                                       markersize=80, ax=ax, color='lime')
+    ax = data.plot_station_coordinates(start=2018, var_name='wetno3',
+                                       markersize=25, ax=ax, color='b')
     ax = data.plot_station_coordinates(start=2018, var_name='wetso4',
-                                       markersize=10, ax=ax, color='lime')
+                                       markersize=5, ax=ax, color='y')
 
     #data.plot_timeseries('concs')
     #data = r.read('concso4')
