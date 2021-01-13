@@ -326,6 +326,8 @@ class TestReadEBAS(object):
                                          ts_type, tol_percent, num_flagged):
         st = StationData()
         from pyaerocom import TsType
+        _default_tol = TsType.TOL_SECS_PERCENT
+
         TsType.TOL_SECS_PERCENT = tol_percent
 
         num = len(loaded_nasa_ames_example.start_meas)
@@ -341,6 +343,7 @@ class TestReadEBAS(object):
         assert 'bla' in st.data_flagged
         flagged = st.data_flagged['bla']
         assert flagged.sum() == num_flagged
+        TsType.TOL_SECS_PERCENT = _default_tol
 
     @pytest.mark.parametrize('var', ['sc550aer'])
     def test_get_ebas_var(self, reader, var):
