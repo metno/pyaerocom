@@ -225,10 +225,6 @@ class ReadEbas(ReadUngriddedBase):
     #: a given variable) will be overwritten from the defaults specified in
     #: the options class.
     VAR_READ_OPTS = {
-        # import also precip and concprcp when reading wetdep
-        'wetso4'    : dict(keep_aux_vars=True),
-        'wetno3'    : dict(keep_aux_vars=True),
-        'wetnh4'    : dict(keep_aux_vars=True),
         # keep pr in mm
         'pr'        : dict(convert_units = False)
         }

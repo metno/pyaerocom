@@ -42,7 +42,7 @@ def reader():
 @testdata_unavail
 class TestReadEBAS(object):
 
-    PROVIDES_VARIABLES = ['DEFAULT',
+    PROVIDES_VARIABLES = sorted(['DEFAULT',
                          'sc550aer',
                          'sc440aer',
                          'sc700aer',
@@ -90,19 +90,13 @@ class TestReadEBAS(object):
                          'concprcpso4scavenging',
                          'concprcpnh4',
                          'wetso4',
-                         'wetconcso4',
-                         'wetso4t',
-                         'wetso4c',
-                         'wetoxn',
-                         'wetrdn',
                          'wetnh4',
-                         'pr',
-                         'wetconcph',
                          'wetno3',
+                         'pr',
                          'scavratioso4',
                          'test',
                          'concpm1',
-                         'conctnh']
+                         'conctnh'])
 
     def test_DATA_ID(self, reader):
         assert reader.data_id == 'EBASSubset'
