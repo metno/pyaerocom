@@ -310,7 +310,9 @@ class ReadMscwCtm(object):
             cube = data.to_iris()
             if ts_type == 'hourly':
                 cube.coord('time').convert_units('hours since 1900-01-01')
-            gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, convert_unit_on_init=False)
+            gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type,
+                                  check_unit=False,
+                                  convert_unit_on_init=False)
 
             if EMEP_prefix in ['WDEP', 'DDEP']:
                 implicit_to_explicit_rates(gridded, ts_type)
