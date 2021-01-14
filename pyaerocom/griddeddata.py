@@ -44,6 +44,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
 from pyaerocom.mathutils import closest_index, exponent
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
+from pyaerocom.units_helpers import UALIASES
 from pyaerocom.vert_coords import AltitudeAccess
 
 class GriddedData(object):
@@ -74,7 +75,16 @@ class GriddedData(object):
     var_name : :obj:`str`, optional
         variable name that is extracted if `input` is a file path. Irrelevant
         if `input` is preloaded Cube
-
+    check_unit : bool
+        if True, the assigned unit is checked and if it is an alias to another
+        unit the unit string will be updated. It will print a warning if the
+        unit is invalid or not equal the associated AeroCom unit for the input
+        variable. Set `convert_unit_on_init` to True, if you want an
+        automatic conversion to AeroCom units.
+    convert_unit_on_init : True
+        if True and if unit check indicates non-conformity with AeroCom unit
+        it will be converted automatically, and warning will be printed if that
+        conversion fails.
     """
     _grid = None
     _GRID_IO = const.GRID_IO
@@ -96,7 +106,8 @@ class GriddedData(object):
                    region             = None,
                    reader             = None)
 
-    def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
+    def __init__(self, input=None, var_name=None,
+                 check_unit=True, convert_unit_on_init=True,
                  **meta):
 
         if input is None:
@@ -121,9 +132,8 @@ class GriddedData(object):
             self.load_input(input, var_name)
 
         self.update_meta(**meta)
-
-        if self.has_data and self.var_name is not None and convert_unit_on_init:
-            self.check_unit()
+        if self.has_data and self.var_name is not None and check_unit:
+            self.check_unit(convert_unit_on_init)
 
     @property
     def var_name(self):
@@ -182,22 +192,7 @@ class GriddedData(object):
     @property
     def unit_ok(self):
         """Boolean specifying if variable unit is AeroCom default"""
-        from pyaerocom.exceptions import VariableDefinitionError
-        try:
-            var = const.VARS[self.cube.var_name]
-            to_unit = var.units
-            current_unit = self.units
-            if to_unit == current_unit: # string match e.g. both are m-1
-                return True
-            else:
-                # no string match, however, might still be the same
-                # e.g. m-1 and 1/m
-                if Unit(to_unit).convert(1, current_unit) == 1:
-                    self.units = to_unit
-                    return True
-                return False
-        except (VariableDefinitionError, ValueError):
-            return False
+        return self.check_unit()
 
     @property
     def suppl_info(self):
@@ -210,19 +205,21 @@ class GriddedData(object):
     def metadata(self):
         return self.cube.attributes
 
-    def check_unit(self):
-        """Check if unit of data is AeroCom default and convert if not
-        """
-        try:
-            if not self.unit_ok:
-                var = const.VARS[self.cube.var_name]
-                logger.info('Attempting unit conversion from {} to {}'
-                            .format(self.units, var.units))
-                self.convert_unit(var.units)
-        except (VariableDefinitionError, UnitConversionError,
-                MemoryError, ValueError) as e:
-            print_log.warning(f'Failed to convert unit of {self.data_id} '
-                              f'({self.var_name}). Reason: {e}')
+# =============================================================================
+#     def check_unit(self):
+#         """Check if unit is conform with AeroCom conventions
+#         """
+#         try:
+#             if not self.unit_ok:
+#                 var = const.VARS[self.cube.var_name]
+#                 logger.info('Attempting unit conversion from {} to {}'
+#                             .format(self.units, var.units))
+#                 self.convert_unit(var.units)
+#         except (VariableDefinitionError, UnitConversionError,
+#                 MemoryError, ValueError) as e:
+#             print_log.warning(f'Failed to convert unit of {self.data_id} '
+#                               f'({self.var_name}). Reason: {e}')
+# =============================================================================
 
     @property
     def data_revision(self):
@@ -682,7 +679,61 @@ class GriddedData(object):
             else:
                 raise UnitConversionError(e)
 
+    def _check_invalid_unit_alias(self):
+        """Check for units that have been invalidated by iris
 
+        iris lib relies on CF conventions and if the unit in the NetCDF file
+        is invalid, it will set the variable unit to UNKNOWN and put the
+        actually provided unit into the attributes. pyaerocom can handle
+        some of these invalid units, which is checked here and updated
+        accordingly
+
+        Parameters
+        ----------
+        cube : iris.cube.Cube
+            loaded instance of data Cube
+
+        Returns
+        -------
+        iris.cube.Cube
+            input cube that has been checked for supported units and updated
+            if applicable
+        """
+        cube = self.grid
+        if ('invalid_units' in cube.attributes and
+            cube.attributes['invalid_units'] in UALIASES):
+
+            from_unit = cube.attributes['invalid_units']
+            to_unit = UALIASES[from_unit]
+            const.print_log.info('Updating invalid unit in {} from {} to {}'
+                                 .format(repr(cube), from_unit, to_unit))
+
+            cube.units = to_unit
+        return cube
+
+    def check_unit(self, try_convert_if_wrong=False):
+        from pyaerocom.exceptions import VariableDefinitionError
+        self._check_invalid_unit_alias()
+        unit_ok = False
+        to_unit = None
+        try:
+            var = const.VARS[self.cube.var_name]
+            to_unit = var.units
+            current_unit = self.units
+            if to_unit == current_unit: # string match e.g. both are m-1
+                unit_ok = True
+            elif Unit(to_unit).convert(1, current_unit) == 1:
+                self.units = to_unit
+                const.print_log.info(
+                   f'Updating unit string from {current_unit} to {to_unit} '
+                   f'in GriddedData.')
+                unit_ok = True
+        except (VariableDefinitionError, ValueError) as e:
+            const.print_log.warning(f'Invalid unit in GriddedData (): {e}')
+
+        if not unit_ok and try_convert_if_wrong and isinstance(to_unit, str):
+            self.convert_unit(to_unit)
+        return unit_ok
 
 
     def convert_unit(self, new_unit):
@@ -2551,83 +2602,9 @@ class GriddedData(object):
     def __add__(self, other):
         raise NotImplementedError('Coming soon')
 
-    #sorted out
-    def _to_timeseries_iter_coords_2D(self, sample_points, scheme,
-                                      collapse_scalar):
-        """Extract time-series for provided input coordinates (lon, lat)
-
-        This method extracts the time-series at all input coordinates by
-        iterating over the coordinate locations, cropping the grid around the
-        coordinate and then interpolating it using
-        the provided interpolation scheme.
-
-        This method may be faster for a small number of coordinates (compared
-        to :func:`to_timeseries`). It may also be the better choice in case the
-        number of coordinates is too large in which case :func:`to_time_series`
-        may fail due to a MemoryError (i.e. the case where the final
-        interpolated object is too large to fit into memory).
-
-        Parameters
-        ----------
-        sample_points : list
-            coordinates (e.g. lon / lat) at which time series is supposed to be
-            retrieved
-        scheme : str or iris interpolator object
-            interpolation scheme (for details, see :func:`interpolate`)
-        collapse_scalar : bool
-            see :func:`interpolate`
-        **coords
-            additional keyword args that may be used to provide the interpolation
-            coordinates (for details, see :func:`interpolate`)
-
-        Returns
-        -------
-        list
-            list of result dictionaries for each coordinate. Dictionary keys
-            are: ``latitude, longitude, altitude, var_name``
-        """
-        raise NotImplementedError
-        if not scheme=="nearest":
-            raise NotImplementedError
-        self.check_dimcoords_tseries()
-
-        lats, lons = None, None
-        for val in sample_points:
-            name, vals = val[0], val[1]
-            if name == 'latitude':
-                lats = vals
-            elif name == 'longitude':
-                lons = vals
-
-        var = self.var_name
-        times = self.time_stamps()
-        grid_lats = self.latitude.points
-        grid_lons = self.longitude.points
-        result = []
-        totnum = len(lats)
-        for i, lat in enumerate(lats):
-            if i%10 == 0:
-                print('At coord {} of {}'.format(i+1, totnum))
-            lon = lons[i]
-
-            lat_idx = np.argmin(np.abs(grid_lats - lat))
-            lon_idx = np.argmin(np.abs(grid_lons - lon))
-
-            #: TODO review indexing [:,:] style vs. extract method vs. lazy data
-            C = iris.Constraint(latitude=grid_lats[lat_idx],
-                               longitude=grid_lons[lon_idx])
-
-            sub = self.extract(C)
-
-            vals = sub.grid.data
-            #sub = self.grid[:, lat_idx, lon_idx]
-            # first slice, then access data
-            data = pd.Series(vals, index=times)
-            result.append({'latitude'   :   lat,
-                           'longitude'  :   lon,
-                           'name'       :   self.name,
-                            var         :   data})
-        return result
+    def short_str(self):
+        """Short string representation"""
+        return f'{self.var_name} ({self.data_id})'
 
     ### Deprecated (but still supported) stuff
     @property
