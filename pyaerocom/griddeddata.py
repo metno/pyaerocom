@@ -1603,6 +1603,7 @@ class GriddedData(object):
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
         data = GriddedData(arr_out.to_iris(),
+                           check_unit=False,
                            convert_unit_on_init=False,
                            **self.metadata)
         data.metadata['ts_type'] = to_ts_type
@@ -1756,7 +1757,9 @@ class GriddedData(object):
         mask_iris = load_region_mask_iris(region_id)
 
         # Reads mask to griddedata
-        mask  = GriddedData(mask_iris, convert_unit_on_init=False)
+        mask  = GriddedData(mask_iris,
+                            check_unit=False,
+                            convert_unit_on_init=False)
         mask = mask.regrid(self.cube)
 
         #mask.quickplot_map(vmin=0, vmax=1)
@@ -1873,7 +1876,8 @@ class GriddedData(object):
                 data = data[time_range[0]:time_range[1]]
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
-        return GriddedData(data, convert_unit_on_init=False, **suppl)
+        return GriddedData(data, check_unit=False,
+                           convert_unit_on_init=False, **suppl)
 
     def get_area_weighted_timeseries(self, region=None):
         """Helper method to extract area weighted mean timeseries
@@ -2169,6 +2173,7 @@ class GriddedData(object):
 
         if isinstance(other, iris.cube.Cube):
             other = GriddedData(other,
+                                check_unit=False,
                                 convert_unit_on_init=False)
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
@@ -2181,6 +2186,7 @@ class GriddedData(object):
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
                                            lon_res_deg=lon_res_deg)
             other = GriddedData(dummy,
+                                check_unit=False,
                                 convert_unit_on_init=False)
 
         if not (self.has_latlon_dims * other.has_latlon_dims):
