@@ -727,8 +727,8 @@ class GriddedData(object):
 
         if not unit_ok and try_convert_if_wrong and isinstance(to_unit, str):
             const.print_log.warning(
-                f'Invalid unit {self.units} in GriddedData {self.short_str()}. '
-                f'Trying to convert ... '
+                f'Unit {self.units} in GriddedData {self.short_str()} is not '
+                f'AeroCom conform ({to_unit}). Trying to convert ... '
                 )
             try:
                 self.convert_unit(to_unit)
