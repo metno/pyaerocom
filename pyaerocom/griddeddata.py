@@ -651,15 +651,23 @@ class GriddedData(object):
 
     def _try_convert_non_cf_unit(self, new_unit):
         import pyaerocom.units_helpers as uh
+        from pyaerocom.time_config import SI_TO_TS_TYPE
         # check if it is deposition and if units are implicit
         try:
             fac = uh.get_unit_conversion_fac(self.units, new_unit,
                                              self.var_name)
         except Exception as e:
-            if uh.is_deposition(self.var_name):
-                tst = TsType(self.ts_type)
-                si = tst.to_si()
-                check_from = f'{self.units} {si}-1' # e.g. kg N m-2 h-1
+            if self.var_info.is_rate:
+                unit = str(self.units)
+                if not unit.endswith('-1'):
+                    raise NotImplementedError()
+
+                cf_freq = unit.split()[-1].split('-1')[0]
+
+                if not cf_freq in SI_TO_TS_TYPE:
+                    raise ValueError(f'Invalid rate unit {unit}, must end with '
+                                     f' h-1, d-1, etc...')
+                check_from = f'{self.units} {cf_freq}-1' # e.g. kg N m-2 h-1
                 check_to = f'{self.units} s-1' # -> kg N m-2 s-1
                 check_aerocom = self.var_info.units # what we want in the end
                 fac1 =  uh.get_unit_conversion_fac(check_from,
