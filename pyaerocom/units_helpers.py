@@ -93,7 +93,8 @@ UALIASES = {
     '/m'            : 'm-1'
     }
 
-WDEP_IMPLICIT_UNITS = [Unit('mg N m-2'), Unit('mg S m-2')]
+WDEP_IMPLICIT_UNITS = [Unit('mg N m-2'),
+                       Unit('mg S m-2')]
 PR_IMPLICIT_UNITS = [Unit('mm')]
 
 DEP_TEST_UNIT = 'kg m-2 s-1'
