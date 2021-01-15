@@ -32,7 +32,6 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
-from cf_units import Unit
 from collections import OrderedDict as od
 
 import fnmatch
@@ -2224,5 +2223,5 @@ if __name__=="__main__":
     reader = ReadGridded('EMEP.cams50.u3all')
     print(reader)
 
-    data = reader.read_var('concprcpoxs')
+    data = reader.read_var('wetoxs', try_convert_units=True)
 
