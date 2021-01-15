@@ -1497,23 +1497,23 @@ if __name__=="__main__":
     reader = pya.io.ReadUngridded('EBASMC',
                                   data_dir=ebas_local)
 
-    #reader = pya.io.ReadEbas(data_dir=ebas_local)
+    reader = pya.io.ReadEbas(data_dir=ebas_local)
 
 
-    data = reader.read(vars_to_retrieve=['wetnh4',
-                                         'wetso4',
-                                         'wetno3'])
+    data = reader.read(vars_to_retrieve='wetso4')
 
-    data = data.apply_filters(data_level=2, set_flags_nan=True)
-
-    ax = data.plot_station_coordinates(markersize=10)
-    ax = data.plot_station_coordinates(start=2018, var_name='wetnh4',
-                                       markersize=80, ax=ax, color='lime')
-    ax = data.plot_station_coordinates(start=2018, var_name='wetno3',
-                                       markersize=25, ax=ax, color='b')
-    ax = data.plot_station_coordinates(start=2018, var_name='wetso4',
-                                       markersize=5, ax=ax, color='y')
-
+# =============================================================================
+#     sizes = [120, 50, 10]
+#     colors = ['r', 'lime', 'b']
+#     ax=None
+#     for i, var in enumerate(['concca', 'concmg', 'conck']):
+#         print(var)
+#         data = reader.read(vars_to_retrieve=var)
+#         data = data.apply_filters(data_level=2, set_flags_nan=True)
+#         ax = data.plot_station_coordinates(var_name=var, markersize=sizes[i], start=2018,
+#                                            color=colors[i], ax=ax)
+#     ax.set_title('EBAS overview of sites for Ca, Mg, K with 2018 data')
+# =============================================================================
     #data.plot_timeseries('concs')
     #data = r.read('concso4')
 

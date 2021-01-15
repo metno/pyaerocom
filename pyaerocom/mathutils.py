@@ -721,19 +721,31 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f'Need flags for {vars_needed} to compute wet deposition')
     from pyaerocom import TsType
+    from pyaerocom.units_helpers import get_unit_conversion_fac
+
     tst = TsType(data.get_var_ts_type(concprcp_var))
 
-    freq_str = f' {tst.to_si()}-1'
+    ival = tst.to_si()
+
+    # get number of seconds in time interval specified by sampling frequency
+    secs_in_ival = get_unit_conversion_fac(ival, 's')
+
+    freq_str = f' s-1'
 
     conc_unit = data.get_unit(concprcp_var)
-
+    conc_data = data[concprcp_var]
     if not conc_unit.endswith('m-3'):
         raise NotImplementedError('Can only handle concprcp unit ending with m-3')
     pr_unit = data.get_unit('pr')
     if not pr_unit == 'm':
         data.convert_unit('pr', 'm')
-    wdep = data[concprcp_var] * data['pr']
+    pr_data = data['pr']
+    wdep = conc_data * pr_data
     wdep_units = conc_unit.replace('m-3', 'm-2')
+
+    if not secs_in_ival == 1:
+        wdep /= secs_in_ival
+    # in units of ts_type, that is, e.g. kg m-2 d
     wdep_units += freq_str
     if not wdep_var in data.var_info:
         data.var_info[wdep_var] = {}

@@ -23,7 +23,7 @@ from pyaerocom.region import (get_all_default_region_ids,
                               get_all_default_regions, Region)
 
 #from pyaerocom import __version__ as PYA_VERSION
-def make_info_string(stp):
+def make_info_str_eval_setup(stp):
     """
     Convert instance of :class:`AerocomEvaluation` into a descriptive string
 
