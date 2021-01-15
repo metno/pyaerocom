@@ -205,21 +205,6 @@ class GriddedData(object):
     def metadata(self):
         return self.cube.attributes
 
-# =============================================================================
-#     def check_unit(self):
-#         """Check if unit is conform with AeroCom conventions
-#         """
-#         try:
-#             if not self.unit_ok:
-#                 var = const.VARS[self.cube.var_name]
-#                 logger.info('Attempting unit conversion from {} to {}'
-#                             .format(self.units, var.units))
-#                 self.convert_unit(var.units)
-#         except (VariableDefinitionError, UnitConversionError,
-#                 MemoryError, ValueError) as e:
-#             print_log.warning(f'Failed to convert unit of {self.data_id} '
-#                               f'({self.var_name}). Reason: {e}')
-# =============================================================================
 
     @property
     def data_revision(self):
@@ -2655,5 +2640,4 @@ if __name__=='__main__':
     data = pya.io.ReadGridded('TM5-met2010_CTRL-TEST').read_var('od550aer',
                                                                 start=2010,
                                                                 ts_type='daily')
-
 
