@@ -1814,38 +1814,6 @@ class ReadGridded(object):
                 self.logger.warning(repr(e))
         return tuple(data)
 
-# =============================================================================
-#     def _check_correct_units_cube(self, cube):
-#         """Check for units that have been invalidated by iris
-#
-#         iris lib relies on CF conventions and if the unit in the NetCDF file
-#         is invalid, it will set the variable unit to UNKNOWN and put the
-#         actually provided unit into the attributes. pyaerocom can handle
-#         some of these invalid units, which is checked here and updated
-#         accordingly
-#
-#         Parameters
-#         ----------
-#         cube : iris.cube.Cube
-#             loaded instance of data Cube
-#
-#         Returns
-#         -------
-#         iris.cube.Cube
-#             input cube that has been checked for supported units and updated
-#             if applicable
-#         """
-#         if ('invalid_units' in cube.attributes and
-#             cube.attributes['invalid_units'] in UALIASES):
-#
-#             from_unit = cube.attributes['invalid_units']
-#             to_unit = UALIASES[from_unit]
-#             const.print_log.info('Updating invalid unit in {} from {} to {}'
-#                                  .format(repr(cube), from_unit, to_unit))
-#
-#             cube.units = to_unit
-#         return cube
-# =============================================================================
 
     def _load_files(self, files, var_name, perform_fmt_checks=None,
                     **kwargs):
@@ -2224,4 +2192,3 @@ if __name__=="__main__":
     print(reader)
 
     data = reader.read_var('wetoxs', try_convert_units=True)
-
