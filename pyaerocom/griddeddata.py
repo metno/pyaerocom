@@ -720,6 +720,7 @@ class GriddedData(object):
         return cube
 
     def check_unit(self, try_convert_if_wrong=False):
+        """Check if unit is correct"""
         from pyaerocom.exceptions import VariableDefinitionError
         self._check_invalid_unit_alias()
         unit_ok = False
@@ -736,11 +737,22 @@ class GriddedData(object):
                    f'Updating unit string from {current_unit} to {to_unit} '
                    f'in GriddedData.')
                 unit_ok = True
-        except (VariableDefinitionError, ValueError) as e:
-            const.print_log.warning(f'Invalid unit in GriddedData (): {e}')
+        except (VariableDefinitionError, ValueError):
+            pass
 
         if not unit_ok and try_convert_if_wrong and isinstance(to_unit, str):
-            self.convert_unit(to_unit)
+            const.print_log.warning(
+                f'Invalid unit {self.units} in GriddedData {self.short_str()}. '
+                f'Trying to convert ... '
+                )
+            try:
+                self.convert_unit(to_unit)
+                unit_ok = True
+            except Exception as e:
+                const.print_log.warning(
+                    f'Failed to convert unit from {self.units} to {to_unit}. '
+                    f'Reason: {e}')
+
         return unit_ok
 
 
