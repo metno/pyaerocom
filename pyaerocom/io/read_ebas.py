@@ -30,8 +30,11 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_ac550dryaer,
                                  compute_ang4470dryaer_from_dry_scat,
                                  compute_wetso4_from_concprcpso4,
+                                 compute_wetoxs_from_concprcpso4,
                                  compute_wetno3_from_concprcpno3,
-                                 compute_wetnh4_from_concprcpnh4)
+                                 compute_wetoxn_from_concprcpno3,
+                                 compute_wetnh4_from_concprcpnh4,
+                                 compute_wetrdn_from_concprcpnh4)
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
@@ -202,6 +205,12 @@ class ReadEbas(ReadUngriddedBase):
                     'wetno3'         :   ['concprcpno3',
                                           'pr'],
                     'wetnh4'         :   ['concprcpnh4',
+                                          'pr'],
+                    'wetoxs'         :   ['concprcpso4',
+                                          'pr'],
+                    'wetoxn'         :   ['concprcpno3',
+                                          'pr'],
+                    'wetrdn'         :   ['concprcpnh4',
                                           'pr']}
 
     #: Meta information supposed to be migrated to computed variables
@@ -216,9 +225,12 @@ class ReadEbas(ReadUngriddedBase):
                 'sc700dryaer'    :   compute_sc700dryaer,
                 'ac550dryaer'    :   compute_ac550dryaer,
                 'ang4470dryaer'  :   compute_ang4470dryaer_from_dry_scat,
-                'wetso4'         :   compute_wetso4_from_concprcpso4,
+                'wetso4'         :   compute_wetso4_from_concprcpso4, # kg m-2 s-1
+                'wetoxs'         :   compute_wetoxs_from_concprcpso4, # like wetso4 but in units of S mass (kg S m-2 s-1)
                 'wetno3'         :   compute_wetno3_from_concprcpno3,
-                'wetnh4'         :   compute_wetnh4_from_concprcpnh4}
+                'wetoxn'         :   compute_wetoxn_from_concprcpno3,
+                'wetnh4'         :   compute_wetnh4_from_concprcpnh4,
+                'wetrdn'         :   compute_wetrdn_from_concprcpnh4}
 
     #: Custom reading options for individual variables. Keys need to be valid
     #: attributes of :class:`ReadEbasOptions` and anything specified here (for
@@ -1497,10 +1509,10 @@ if __name__=="__main__":
     reader = pya.io.ReadUngridded('EBASMC',
                                   data_dir=ebas_local)
 
-    reader = pya.io.ReadEbas(data_dir=ebas_local)
+    #reader = pya.io.ReadEbas(data_dir=ebas_local)
 
 
-    data = reader.read(vars_to_retrieve='wetso4')
+    data = reader.read(vars_to_retrieve=['wetoxn', 'wetrdn'])
 
 # =============================================================================
 #     sizes = [120, 50, 10]

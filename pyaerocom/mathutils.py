@@ -807,6 +807,22 @@ def compute_wetno3_from_concprcpno3(data):
     """
     return _compute_wdep_from_concprcp_helper(data, 'wetno3', 'concprcpno3')
 
+def compute_wetoxn_from_concprcpno3(data):
+    """Compute wdep from conc in precip and precip data
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    StationData
+        modified data object containing wdep data
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxn', 'concprcpno3')
+
 def compute_wetnh4_from_concprcpnh4(data):
     """Compute wdep from conc in precip and precip data
 
@@ -823,6 +839,21 @@ def compute_wetnh4_from_concprcpnh4(data):
     """
     return _compute_wdep_from_concprcp_helper(data, 'wetnh4', 'concprcpnh4')
 
+def compute_wetrdn_from_concprcpnh4(data):
+    """Compute wdep from conc in precip and precip data
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    StationData
+        modified data object containing wdep data
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, 'wetrdn', 'concprcpnh4')
 
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
