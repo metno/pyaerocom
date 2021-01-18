@@ -634,44 +634,6 @@ class GriddedData(object):
                 const.print_log.warning('Could not update var_name, invalid input '
                                      '{} (need str)'.format(var_name))
 
-    def _try_convert_non_cf_unit(self, new_unit):
-        import pyaerocom.units_helpers as uh
-        from pyaerocom.time_config import SI_TO_TS_TYPE
-        # check if it is deposition and if units are implicit
-        try:
-            fac = uh.get_unit_conversion_fac(self.units, new_unit,
-                                             self.var_name)
-        except Exception as e:
-            if self.var_info.is_rate:
-                unit = str(self.units)
-                if not unit.endswith('-1'):
-                    raise NotImplementedError()
-
-                cf_freq = unit.split()[-1].split('-1')[0]
-
-                if not cf_freq in SI_TO_TS_TYPE:
-                    raise ValueError(f'Invalid rate unit {unit}, must end with '
-                                     f' h-1, d-1, etc...')
-                check_from = f'{self.units} {cf_freq}-1' # e.g. kg N m-2 h-1
-                check_to = f'{self.units} s-1' # -> kg N m-2 s-1
-                check_aerocom = self.var_info.units # what we want in the end
-                fac1 =  uh.get_unit_conversion_fac(check_from,
-                                                   check_to) #h-1 -> s-1
-                fac2 = uh.get_unit_conversion_fac(
-                    check_to,
-                    check_aerocom,
-                    self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
-                mulfac = fac1*fac2
-                new = self._grid * mulfac
-                new.attributes = self._grid.attributes
-                new.units = check_aerocom
-                self._grid = new
-                #self.units = check_aerocom
-
-
-            else:
-                raise UnitConversionError(e)
-
     def _check_invalid_unit_alias(self):
         """Check for units that have been invalidated by iris
 
@@ -700,7 +662,7 @@ class GriddedData(object):
             to_unit = UALIASES[from_unit]
             const.print_log.info('Updating invalid unit in {} from {} to {}'
                                  .format(repr(cube), from_unit, to_unit))
-
+            del cube.attributes['invalid_units']
             cube.units = to_unit
         return cube
 
@@ -740,13 +702,75 @@ class GriddedData(object):
 
         return unit_ok
 
-
-    def convert_unit(self, new_unit):
-        """Convert unit of data to new unit"""
+    def _try_convert_non_cf_unit(self, new_unit):
+        import pyaerocom.units_helpers as uh
+        from pyaerocom.time_config import SI_TO_TS_TYPE
+        current = str(self.units)
+        # check if it is deposition and if units are implicit
         try:
-            self.grid.convert_units(new_unit)
+            mulfac = uh.get_unit_conversion_fac(from_unit=current,
+                                                to_unit=new_unit,
+                                                var_name=self.var_name)
+            self._apply_unit_mulfac(new_unit, mulfac)
+
+        except Exception as e:
+            if self.var_info.is_rate:
+                unit = current
+                if not unit.endswith('-1'):
+                    self.units = unit = str(
+                        uh.check_rate_units_implicit(unit, self.ts_type))
+
+                cf_freq = unit.split()[-1].split('-1')[0]
+
+                if not cf_freq in SI_TO_TS_TYPE:
+                    raise ValueError(f'Invalid rate unit {unit}, must end with '
+                                     f' h-1, d-1, etc...')
+                check_to = unit.replace(f'{cf_freq}-1', 's-1')
+                fac1 =  uh.get_unit_conversion_fac(unit,
+                                                   check_to) # e.g. h-1 -> s-1
+
+                fac2 = uh.get_unit_conversion_fac(
+                            check_to,
+                            new_unit,
+                            self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
+                mulfac = fac1*fac2
+                self._apply_unit_mulfac(new_unit,
+                                        mulfac)
+
+            else:
+                raise UnitConversionError(
+                    f'Failed to convert unit to {new_unit} in '
+                    f'{self.short_str()}. Reason: {repr(e)}')
+            const.print_log.info(
+                f'Succesfully converted unit from {current} to {new_unit} in '
+                f'{self.short_str()}')
+
+    def _apply_unit_mulfac(self, new_unit, mulfac):
+
+        if mulfac != 1:
+            new_cube = self._grid * mulfac
+            new_cube.attributes.update(self._grid.attributes)
+            new_cube.var_name = self.var_name
+            self._grid = new_cube
+        self.units = new_unit
+        return self
+
+    def convert_unit(self, new_unit, inplace=True):
+        """Convert unit of data to new unit
+
+        Parameters
+        ----------
+        new_unit : str or cf_units.Unit
+            new unit of data
+        inplace : bool
+            convert in this instance or create a new one
+        """
+        data_out = self if inplace else self.copy()
+        try:
+            data_out.grid.convert_units(new_unit)
         except ValueError as e:
-            self._try_convert_non_cf_unit(new_unit)
+            data_out._try_convert_non_cf_unit(new_unit)
+        return data_out
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
@@ -2615,7 +2639,8 @@ class GriddedData(object):
 
     def short_str(self):
         """Short string representation"""
-        return f'{self.var_name} ({self.data_id})'
+        return (f'{self.var_name} ({self.data_id}, freq={self.ts_type}, '
+                f'unit={self.units})')
 
     ### Deprecated (but still supported) stuff
     @property
