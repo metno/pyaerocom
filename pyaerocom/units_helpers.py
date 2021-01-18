@@ -273,7 +273,6 @@ def _check_unit_conversion_fac(unit, test_unit, non_si_info=None):
                 return _check_unit_conversion_fac(check, test_unit)
     return False
 
-# def check_wdep_units()
 def check_rate_units_implicit(unit, ts_type):
 
     unit = Unit(unit)
