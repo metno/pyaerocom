@@ -2433,9 +2433,10 @@ class GriddedData(object):
     def area_weighted_mean(self):
         """Get area weighted mean"""
         ws = self.area_weights
-        return self.collapsed(coords=["longitude", "latitude"],
-                              aggregator=MEAN,
-                              weights=ws).grid.data
+        collapsed = self.collapsed(coords=["longitude", "latitude"],
+                                   aggregator=MEAN,
+                                   weights=ws)
+        return collapsed.grid.data
 
     def mean(self, areaweighted=True):
         """Mean value of data array
@@ -2447,7 +2448,9 @@ class GriddedData(object):
         """
         #make sure data is in memory
         if areaweighted:
-            return self.area_weighted_mean().mean()
+            avg = self.area_weighted_mean().mean()
+            return avg
+
         data = self.grid.data
         if self.is_masked:
             return data.data[~data.mask].mean()
