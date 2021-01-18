@@ -1653,7 +1653,7 @@ class ReadGridded(object):
         if 'new_val' in constraint:
             new_val = constraint['new_val']
         else:
-            new_val = np.ma.masked
+            new_val = np.nan #np.ma.masked
 
         operator_fun = self.CONSTRAINT_OPERATORS[constraint['operator']]
 
@@ -1667,12 +1667,22 @@ class ReadGridded(object):
             raise ValueError('Failed to apply filter. Shape mismatch')
 
         # needs both data objects to be loaded into memory
-        other_data._ensure_is_masked_array()
-        data._ensure_is_masked_array()
-        mask = operator_fun(other_data.cube.data,
+        #other_data._ensure_is_masked_array()
+        #data._ensure_is_masked_array()
+
+        other_arr = other_data.cube.core_data()
+        arr = data.cube.core_data()
+
+        # select all grid points where conition is fulfilled
+        mask = operator_fun(other_arr,
                             constraint['filter_val'])
 
-        data.cube.data[mask] = new_val
+        # set values to NaN where condition is fulfilled
+
+        arr = np.where(mask, new_val, arr)
+
+        # overwrite data in cube with the filtered data
+        data.cube.data = arr
         return data
 
     def _try_read_var(self, var_name, start, stop,
