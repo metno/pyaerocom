@@ -15,6 +15,7 @@ from pyaerocom.helpers import (seconds_in_periods,
                                resample_time_dataarray)
 
 from pyaerocom.time_config import SI_TO_TS_TYPE
+from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import UnitConversionError
 
 VARS = const.VARS
@@ -259,7 +260,7 @@ def implicit_to_explicit_rates(gridded, ts_type):
         new_gridded.units = '{} s-1'.format(gridded.units) # append rate to format
     return new_gridded
 
-def _check_unit(unit, test_unit, non_si_info=None):
+def _check_unit_conversion_fac(unit, test_unit, non_si_info=None):
     if non_si_info is None:
         non_si_info = []
     try:
@@ -269,21 +270,24 @@ def _check_unit(unit, test_unit, non_si_info=None):
         for substr in non_si_info:
             if substr in unit:
                 check = unit.replace(substr, '')
-                return _check_unit(check, test_unit)
+                return _check_unit_conversion_fac(check, test_unit)
     return False
 
-def check_wdep_units(gridded):
+# def check_wdep_units()
+def check_rate_units_implicit(unit, ts_type):
 
-    unit = Unit(gridded.units)
-    freq = TsType(gridded.ts_type)
+    unit = Unit(unit)
+
+    freq = TsType(ts_type)
     freq_si = freq.to_si()
 
     # check if unit is implicit and change if possible
     if any([unit == x for x in WDEP_IMPLICIT_UNITS]):
         unit = Unit(f'{unit} {freq_si}-1')
-        gridded.units = unit
     else:
-        if not _check_unit(str(unit), DEP_TEST_UNIT, DEP_TEST_NONSI_ATOMS):
+        if not _check_unit_conversion_fac(unit=str(unit),
+                                          test_unit=DEP_TEST_UNIT,
+                                          non_si_info=DEP_TEST_NONSI_ATOMS):
             raise ValueError(f'Cannot handle wet deposition unit {unit}')
 
     # Check if frequency in unit corresponds to sampling frequency (e.g.
@@ -291,21 +295,21 @@ def check_wdep_units(gridded):
     freq_si_str = f'{freq_si}-1'
     freq_si_str_alt = f'/{freq_si}'
     if freq_si_str_alt in str(unit):
-        # make sure frequencey is denoted as e.g. m s-1 instead of m/s
-        unit = str(unit).replace(freq_si_str_alt,
-                                 freq_si_str)
 
-        gridded.units = unit
+        # make sure frequencey is denoted as e.g. m s-1 instead of m/s
+        unit = Unit(str(unit).replace(freq_si_str_alt,
+                                      freq_si_str))
+
 
     # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
     # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
     if not freq_si_str in str(unit):
         raise NotImplementedError(f'Cannot yet handle wdep in {unit} but '
                                   f'{freq} sampling frequency')
-    return gridded
+    return unit
 
 def check_pr_units(gridded):
-
+    #ToDo: c
     unit = Unit(gridded.units)
     freq = TsType(gridded.ts_type)
     freq_si = freq.to_si()
@@ -399,6 +403,8 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
     if ts_type is None:
         ts_type = wdep.ts_type
 
+    wdep_tstype = TsType(wdep.ts_type)
+
     # get units from deposition input and precipitation; sometimes, they are
     # defined implicit, e.g. mm for precipitation, which is then already
     # accumulated over the provided time resolution in the data, that is, if
@@ -406,12 +412,14 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
     # unit is mm/h. In addition, wet deposition units may be in mass of main
     # atom (e.g. N, or S) which are not SI and thus, not handled properly by
     # CF units.
-    wdep = check_wdep_units(wdep)
+    wdep_unit = str(wdep.units)
+
+    wdep = check_rate_units_implicit(wdep_unit,
+                                     wdep_tstype)
     pr = check_pr_units(pr)
 
-    # get temporal resolution of wet deposition and convert to SI conform str
-    wdep_unit = str(wdep.units)
-    wdep_tstype = TsType(wdep.ts_type)
+
+
 
     # repeat the unit check steps done for wet deposition
     pr_unit = str(pr.units)
