@@ -775,6 +775,22 @@ def compute_wetso4_from_concprcpso4(data):
     """
     return _compute_wdep_from_concprcp_helper(data, 'wetso4', 'concprcpso4')
 
+def compute_wetoxs_from_concprcpso4(data):
+    """Compute wdep from conc in precip and precip data
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    StationData
+        modified data object containing wdep data
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxs', 'concprcpso4')
+
 def compute_wetno3_from_concprcpno3(data):
     """Compute wdep from conc in precip and precip data
 
