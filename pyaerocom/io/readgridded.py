@@ -135,11 +135,14 @@ class ReadGridded(object):
         searched using :func:`search_all_files`.
 
     """
-    CONSTRAINT_OPERATORS = {'==' : np.equal,
-                            '<'  : np.less,
-                            '<=' : np.less_equal,
-                            '>'  : np.greater,
-                            '>=' : np.greater_equal}
+    CONSTRAINT_OPERATORS = {
+                    '==' : np.equal,
+                    '!=' : np.not_equal,
+                    '<'  : np.less,
+                    '<=' : np.less_equal,
+                    '>'  : np.greater,
+                    '>=' : np.greater_equal
+                    }
 
 
     AUX_REQUIRES = {'ang4487aer'    : ('od440aer', 'od870aer'),
@@ -2019,20 +2022,6 @@ class ReadGridded(object):
                                                 self.years_avail,
                                                 self.ts_types,
                                                 self.vars_provided))
-# =============================================================================
-#         if self.data:
-#             s += "\nLoaded GriddedData objects:\n"
-#             for var_name, data in self.data.items():
-#                 s += "{}\n".format(data.short_str())
-# =============================================================================
-# =============================================================================
-#         if self.data_yearly:
-#             s += "\nLoaded GriddedData objects (individual years):\n"
-#             for var_name, yearly_data in self.data_yearly.items():
-#                 if yearly_data:
-#                     for year, data in yearly_data.items():
-#                         s += "{}\n".format(data.short_str())
-# =============================================================================
         return s.rstrip()
 
     ### DEPRECATED STUFF
@@ -2041,149 +2030,6 @@ class ReadGridded(object):
         """Deprecated name of attribute data_id"""
         const.print_log.warning(DeprecationWarning("Please use data_id"))
         return self.data_id
-
-class ReadGriddedMulti(object):
-    """Class for import of AEROCOM model data from multiple models
-
-    This class provides an interface to import model results from an arbitrary
-    number of models and specific for a certain time interval (that can be
-    defined, but must not be defined). Largely based on
-    :class:`ReadGridded`.
-
-    ToDo
-    ----
-
-    Sub-class from ReadGridded
-
-    Note
-    ----
-    The reading only works if files are stored using a valid file naming
-    convention. See package data file `file_conventions.ini <http://
-    aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__ for valid
-    keys. You may define your own fileconvention in this file, if you wish.
-
-    Attributes
-    ----------
-    data_ids : list
-        list containing string IDs of all models that should be imported
-    results : dict
-        dictionary containing :class:`ReadGridded` instances for each
-        name
-
-    Examples
-    --------
-    >>> import pyaerocom, pandas
-    >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
-    >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
-    >>> read = pyaerocom.io.ReadGriddedMulti(models, start, stop)
-    >>> print(read.data_ids)
-    ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
-    >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
-    >>> assert type(read_cam) == pyaerocom.io.ReadGridded
-    >>> for var in read_cam.vars: print(var)
-    abs550aer
-    deltaz3d
-    humidity3d
-    od440aer
-    od550aer
-    od550aer3d
-    od550aerh2o
-    od550dryaer
-    od550dust
-    od550lt1aer
-    od870aer
-    """
-
-    def __init__(self, data_ids):
-        const.print_log.warning(DeprecationWarning('ReadGriddedMulti class is '
-                                                   'deprecated and will not '
-                                                   'be further developed. '
-                                                   'Please use ReadGridded.'))
-        if isinstance(data_ids, str):
-            data_ids = [data_ids]
-        if not isinstance(data_ids, list) or not all([isinstance(x, str) for x in data_ids]):
-            raise IllegalArgumentError("Please provide string or list of strings")
-
-        self.data_ids = data_ids
-        #: dictionary containing instances of :class:`ReadGridded` for each
-        #: datset
-
-        self.readers = {}
-        #self.data = {}
-
-        self._init_readers()
-
-    def _init_readers(self):
-        for data_id in self.data_ids:
-            self.readers[data_id] = ReadGridded(data_id)
-
-    def read(self, vars_to_retrieve, start=None, stop=None,
-             ts_type=None, **kwargs):
-        """High level method to import data for multiple variables and models
-
-        Parameters
-        ----------
-        var_names : :obj:`str` or :obj:`list`
-            string IDs of all variables that are supposed to be imported
-        start : :obj:`Timestamp` or :obj:`str`, optional
-            start time of data import (if valid input, then the current
-            :attr:`start` will be overwritten)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
-            stop time of data import (if valid input, then the current
-            :attr:`start` will be overwritten)
-        ts_type : str
-            string specifying temporal resolution (choose from
-            "hourly", "3hourly", "daily", "monthly").If None, prioritised
-            of the available resolutions is used
-        flex_ts_type : bool
-            if True and if applicable, then another ts_type is used in case
-            the input ts_type is not available for this variable
-
-        Returns
-        -------
-        dict
-            loaded objects, keys are variable names, values are
-            instances of :class:`GridddedData`.
-
-        Examples
-        --------
-
-            >>> read = ReadGriddedMulti(names=["ECMWF_CAMS_REAN",
-            ...                                "ECMWF_OSUITE"])
-            >>> read.read(["od550aer", "od550so4", "od550bc"])
-
-        """
-        if isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-        out = {}
-        for data_id in self.data_ids:
-            if not data_id in self.readers:
-                self.readers[data_id] = ReadGridded(data_id)
-            reader = self.readers[data_id]
-            out[data_id] = {}
-            for var in vars_to_retrieve:
-                try:
-                    data = reader.read_var(var, start, stop, ts_type, **kwargs)
-                    out[data_id][var] = data
-                    #self.data[data_id][var] = data
-                except Exception as e:
-                    const.print_log.exception('Failed to read data of {}\n'
-                                            'Error message: {}'.format(data_id,
-                                                                       repr(e)))
-        return out
-
-    def __str__(self):
-        head = "Pyaerocom %s" %type(self).__name__
-        s = ("\n%s\n%s\n"
-             "Data-IDs: %s\n" %(head, len(head)*"-", self.data_ids))
-# =============================================================================
-#         if bool(self.data):
-#             s += "\nLoaded data:"
-#             for name, vardata in self.data.items():
-#                 for var, data in vardata.items():
-#                     s += "\n%s" %var
-# =============================================================================
-        return s
 
 if __name__=="__main__":
     import pyaerocom as pya
