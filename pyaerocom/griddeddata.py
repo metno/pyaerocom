@@ -725,14 +725,15 @@ class GriddedData(object):
                 if not cf_freq in SI_TO_TS_TYPE:
                     raise ValueError(f'Invalid rate unit {unit}, must end with '
                                      f' h-1, d-1, etc...')
-                check_to = unit.replace(f'{cf_freq}-1', 's-1')
+
+                check_to = unit.replace(f'{cf_freq}-1', f'{uh.RATES_FREQ_DEFAULT}-1')
                 fac1 =  uh.get_unit_conversion_fac(unit,
-                                                   check_to) # e.g. h-1 -> s-1
+                                                   check_to) # e.g. h-1 -> d-1
 
                 fac2 = uh.get_unit_conversion_fac(
                             check_to,
                             new_unit,
-                            self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
+                            self.var_name) # kg N m-2 d-1 -> kg m-2 d-1
                 mulfac = fac1*fac2
                 self._apply_unit_mulfac(new_unit,
                                         mulfac)
