@@ -116,7 +116,7 @@ class TimeResampler(object):
                         f'Updating min_num_obs={min_num} for {from_base}->'
                         f'{to} since input resolution is {from_ts_type}'
                         )
-                    min_num = int(np.ceil(min_num/from_mul))
+                    min_num = int(np.round(min_num/from_mul))
                     const.print_log.info(
                         f'New value: min_num_obs={min_num}'
                         )
