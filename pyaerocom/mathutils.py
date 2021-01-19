@@ -721,16 +721,11 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f'Need flags for {vars_needed} to compute wet deposition')
     from pyaerocom import TsType
-    from pyaerocom.units_helpers import get_unit_conversion_fac
+    from pyaerocom.units_helpers import get_unit_conversion_fac, RATES_FREQ_DEFAULT
 
     tst = TsType(data.get_var_ts_type(concprcp_var))
 
     ival = tst.to_si()
-
-    # get number of seconds in time interval specified by sampling frequency
-    secs_in_ival = get_unit_conversion_fac(ival, 's')
-
-    freq_str = f' s-1'
 
     conc_unit = data.get_unit(concprcp_var)
     conc_data = data[concprcp_var]
@@ -743,9 +738,11 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
     wdep = conc_data * pr_data
     wdep_units = conc_unit.replace('m-3', 'm-2')
 
-    if not secs_in_ival == 1:
-        wdep /= secs_in_ival
+    if not ival == RATES_FREQ_DEFAULT:
+        fac = get_unit_conversion_fac(ival, RATES_FREQ_DEFAULT)
+        wdep /= fac
     # in units of ts_type, that is, e.g. kg m-2 d
+    freq_str = f' {RATES_FREQ_DEFAULT}-1'
     wdep_units += freq_str
     if not wdep_var in data.var_info:
         data.var_info[wdep_var] = {}
@@ -759,7 +756,7 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
 
     return wdep
 
-def compute_wetso4_from_concprcpso4(data):
+def compute_wetoxs_from_concprcpoxs(data):
     """Compute wdep from conc in precip and precip data
 
     Parameters
@@ -773,9 +770,9 @@ def compute_wetso4_from_concprcpso4(data):
         modified data object containing wdep data
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetso4', 'concprcpso4')
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxs', 'concprcpoxs')
 
-def compute_wetoxs_from_concprcpso4(data):
+def compute_wetoxn_from_concprcpoxn(data):
     """Compute wdep from conc in precip and precip data
 
     Parameters
@@ -789,9 +786,9 @@ def compute_wetoxs_from_concprcpso4(data):
         modified data object containing wdep data
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetoxs', 'concprcpso4')
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxn', 'concprcpoxn')
 
-def compute_wetno3_from_concprcpno3(data):
+def compute_wetrdn_from_concprcprdn(data):
     """Compute wdep from conc in precip and precip data
 
     Parameters
@@ -805,55 +802,7 @@ def compute_wetno3_from_concprcpno3(data):
         modified data object containing wdep data
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetno3', 'concprcpno3')
-
-def compute_wetoxn_from_concprcpno3(data):
-    """Compute wdep from conc in precip and precip data
-
-    Parameters
-    ----------
-    StationData
-        data object containing concprcp and precip data
-
-    Returns
-    -------
-    StationData
-        modified data object containing wdep data
-
-    """
-    return _compute_wdep_from_concprcp_helper(data, 'wetoxn', 'concprcpno3')
-
-def compute_wetnh4_from_concprcpnh4(data):
-    """Compute wdep from conc in precip and precip data
-
-    Parameters
-    ----------
-    StationData
-        data object containing concprcp and precip data
-
-    Returns
-    -------
-    StationData
-        modified data object containing wdep data
-
-    """
-    return _compute_wdep_from_concprcp_helper(data, 'wetnh4', 'concprcpnh4')
-
-def compute_wetrdn_from_concprcpnh4(data):
-    """Compute wdep from conc in precip and precip data
-
-    Parameters
-    ----------
-    StationData
-        data object containing concprcp and precip data
-
-    Returns
-    -------
-    StationData
-        modified data object containing wdep data
-
-    """
-    return _compute_wdep_from_concprcp_helper(data, 'wetrdn', 'concprcpnh4')
+    return _compute_wdep_from_concprcp_helper(data, 'wetrdn', 'concprcprdn')
 
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
