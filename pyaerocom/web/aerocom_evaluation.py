@@ -386,7 +386,8 @@ class AerocomEvaluation(object):
     def update_summary_str(self):
         """Updates :attr:`summary_str` using :func:`make_info_str_eval_setup`"""
         try:
-            self.summary_str = make_info_str_eval_setup(self)
+            self.summary_str = make_info_str_eval_setup(self,
+                                                        add_header=False)
         except Exception as e:
             const.print_log.warning(
                 'Failed to create automatic summary string of AerocomEvaluation '
