@@ -29,12 +29,9 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_sc700dryaer,
                                  compute_ac550dryaer,
                                  compute_ang4470dryaer_from_dry_scat,
-                                 compute_wetso4_from_concprcpso4,
-                                 compute_wetoxs_from_concprcpso4,
-                                 compute_wetno3_from_concprcpno3,
-                                 compute_wetoxn_from_concprcpno3,
-                                 compute_wetnh4_from_concprcpnh4,
-                                 compute_wetrdn_from_concprcpnh4)
+                                 compute_wetoxs_from_concprcpoxs,
+                                 compute_wetoxn_from_concprcpoxn,
+                                 compute_wetrdn_from_concprcprdn)
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
@@ -149,7 +146,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.40_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.41_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -200,17 +197,11 @@ class ReadEbas(ReadUngriddedBase):
                                           'acrh'],
                     'ang4470dryaer'  :   ['sc440dryaer',
                                           'sc700dryaer'],
-                    'wetso4'         :   ['concprcpso4',
+                    'wetoxs'         :   ['concprcpoxs',
                                           'pr'],
-                    'wetno3'         :   ['concprcpno3',
+                    'wetoxn'         :   ['concprcpoxn',
                                           'pr'],
-                    'wetnh4'         :   ['concprcpnh4',
-                                          'pr'],
-                    'wetoxs'         :   ['concprcpso4',
-                                          'pr'],
-                    'wetoxn'         :   ['concprcpno3',
-                                          'pr'],
-                    'wetrdn'         :   ['concprcpnh4',
+                    'wetrdn'         :   ['concprcprdn',
                                           'pr']}
 
     #: Meta information supposed to be migrated to computed variables
@@ -220,17 +211,16 @@ class ReadEbas(ReadUngriddedBase):
                     'ac550dryaer'    :   'ac550aer'
                     }
     #: Functions supposed to be used for computation of auxiliary variables
-    AUX_FUNS = {'sc440dryaer'    :   compute_sc440dryaer,
+    AUX_FUNS = {
+                'sc440dryaer'    :   compute_sc440dryaer,
                 'sc550dryaer'    :   compute_sc550dryaer,
                 'sc700dryaer'    :   compute_sc700dryaer,
                 'ac550dryaer'    :   compute_ac550dryaer,
                 'ang4470dryaer'  :   compute_ang4470dryaer_from_dry_scat,
-                'wetso4'         :   compute_wetso4_from_concprcpso4, # kg m-2 s-1
-                'wetoxs'         :   compute_wetoxs_from_concprcpso4, # like wetso4 but in units of S mass (kg S m-2 s-1)
-                'wetno3'         :   compute_wetno3_from_concprcpno3,
-                'wetoxn'         :   compute_wetoxn_from_concprcpno3,
-                'wetnh4'         :   compute_wetnh4_from_concprcpnh4,
-                'wetrdn'         :   compute_wetrdn_from_concprcpnh4}
+                'wetoxs'         :   compute_wetoxs_from_concprcpoxs,
+                'wetoxn'         :   compute_wetoxn_from_concprcpoxn,
+                'wetrdn'         :   compute_wetrdn_from_concprcprdn
+                }
 
     #: Custom reading options for individual variables. Keys need to be valid
     #: attributes of :class:`ReadEbasOptions` and anything specified here (for
@@ -1512,7 +1502,7 @@ if __name__=="__main__":
     #reader = pya.io.ReadEbas(data_dir=ebas_local)
 
 
-    data = reader.read(vars_to_retrieve=['wetoxn', 'wetrdn'])
+    data = reader.read(vars_to_retrieve=['wetoxs'])
 
 # =============================================================================
 #     sizes = [120, 50, 10]
