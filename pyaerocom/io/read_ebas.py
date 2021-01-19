@@ -120,6 +120,7 @@ class ReadEbasOptions(BrowseDict):
         self.convert_units = True
 
         self.ensure_correct_freq = True
+        self.freq_from_start_stop_meas = True
 
         self.update(**args)
 
@@ -146,7 +147,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.41_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.42_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -1065,6 +1066,8 @@ class ReadEbas(ReadUngriddedBase):
 
         data_out = self._add_meta(data_out, file)
 
+        freq_ebas = data_out['ts_type'] # resolution code
+
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
@@ -1074,6 +1077,16 @@ class ReadEbas(ReadUngriddedBase):
 
             _col = file.var_defs[colnum]
             data = file.data[:, colnum]
+            if opts.freq_from_start_stop_meas:
+                tst = self._check_correct_freq(file, freq_ebas)
+                if tst != freq_ebas:
+                    const.print_log.info(
+                        f'Updating ts_type from {freq_ebas} (EBAS resolution_code) '
+                        f'to {tst} (derived from stop_meas-start_meas)'
+                        )
+                    data_out['ts_type'] = tst
+
+
 
             if opts.eval_flags:
                 invalid = ~file.flag_col_info[_col.flag_col].valid
@@ -1124,6 +1137,36 @@ class ReadEbas(ReadUngriddedBase):
 
         return data_out
 
+    def _check_correct_freq(self, file, freq_ebas):
+        # ToDo: should go into EbasNasaAmesFile class
+        dts = (file.stop_meas - file.start_meas).astype(int)
+        counts = np.bincount(dts)
+        most_common_dt = np.argmax(counts)
+        # frequency assoiated based on resolution code
+        rescode_tstype = TsType(freq_ebas)
+        rescode_numsecs = rescode_tstype.num_secs
+        rescode_tolsecs = rescode_tstype.tol_secs
+        lowlim = rescode_numsecs - rescode_tolsecs
+        highlim = rescode_numsecs + rescode_tolsecs
+        if np.logical_and(most_common_dt >= lowlim,
+                          most_common_dt <= highlim):
+            return freq_ebas
+
+        const.print_log.warning(
+            f'Detected wrong frequency {freq_ebas}. Trying to '
+            f'infer the correct frequency...')
+
+        for tst in TsType.VALID:
+            tstype = TsType(tst)
+            numsecs = tstype.num_secs
+            tolsecs = tstype.tol_secs
+            low, high = numsecs-tolsecs, numsecs+tolsecs
+            if np.logical_and(most_common_dt >= low,
+                              most_common_dt <= high):
+                return tst
+        raise TemporalResolutionError(
+            f'Failed to derive correct sampling frequency in {file.file_name}'
+            )
     def _flag_incorrect_frequencies(self, filedata):
 
         # time diffs in units of s for each measurement
@@ -1495,14 +1538,15 @@ if __name__=="__main__":
     import pyaerocom as pya
     import os
     plt.close('all')
-    ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
-    reader = pya.io.ReadUngridded('EBASMC',
-                                  data_dir=ebas_local)
+    #ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
+    reader = pya.io.ReadUngridded('EBASMC')#,
+                                  #data_dir=ebas_local)
 
-    #reader = pya.io.ReadEbas(data_dir=ebas_local)
+    reader = pya.io.ReadEbas()#data_dir=ebas_local)
 
 
-    data = reader.read(vars_to_retrieve=['wetoxs'])
+    data = reader.read(vars_to_retrieve=['concss'],
+                       station_names='Westerland')
 
 # =============================================================================
 #     sizes = [120, 50, 10]
