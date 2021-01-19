@@ -20,6 +20,8 @@ from pyaerocom.exceptions import UnitConversionError
 
 VARS = const.VARS
 
+RATES_FREQ_DEFAULT = 'd'
+
 # 1. DEFINITION OF ATOM and MOLECULAR MASSES
 
 # Atoms
