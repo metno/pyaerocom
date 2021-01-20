@@ -147,7 +147,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.44_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.45_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -1537,11 +1537,11 @@ if __name__=="__main__":
     import pyaerocom as pya
     import os
     plt.close('all')
-    #ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
+    ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
     reader = pya.io.ReadUngridded('EBASMC')#,
                                   #data_dir=ebas_local)
 
-    reader = pya.io.ReadEbas()#data_dir=ebas_local)
+    reader = pya.io.ReadEbas(data_dir=ebas_local)
 
     data = reader.read(vars_to_retrieve=['wetoxs'])
 
