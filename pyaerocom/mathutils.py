@@ -735,6 +735,10 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
     if not pr_unit == 'm':
         data.convert_unit('pr', 'm')
     pr_data = data['pr']
+
+    pr_zero = pr_data == 0
+    if pr_zero.sum() > 0:
+        conc_data[pr_zero] = 0
     wdep = conc_data * pr_data
     wdep_units = conc_unit.replace('m-3', 'm-2')
 
