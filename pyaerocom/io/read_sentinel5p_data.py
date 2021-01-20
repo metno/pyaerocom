@@ -897,7 +897,7 @@ class ReadL2Data(ReadL2DataBase):
                             gridded_var_data[var]['stddev'][lat_idx, lon_idx] = \
                                 np.nanstd(_data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]])
                             gridded_var_data[var]['numobs'][lat_idx, lon_idx] = \
-                                _data[var].data[lat_match_indexes[lon_match_indexes]].size
+                                _data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]].size
                             matching_points = matching_points + \
                                               _data[var].data[lat_match_indexes[lon_match_indexes[less_than_zero_indexes]]].size
                         except IndexError:
