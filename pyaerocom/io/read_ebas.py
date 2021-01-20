@@ -147,7 +147,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.42_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.44_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -1067,7 +1067,6 @@ class ReadEbas(ReadUngriddedBase):
         data_out = self._add_meta(data_out, file)
 
         freq_ebas = data_out['ts_type'] # resolution code
-
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
@@ -1544,6 +1543,7 @@ if __name__=="__main__":
 
     reader = pya.io.ReadEbas()#data_dir=ebas_local)
 
+    data = reader.read(vars_to_retrieve=['wetoxs'])
 
     data = reader.read(vars_to_retrieve=['concss'],
                        station_names='Westerland')
