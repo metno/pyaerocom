@@ -731,14 +731,19 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
     conc_data = data[concprcp_var]
     if not conc_unit.endswith('m-3'):
         raise NotImplementedError('Can only handle concprcp unit ending with m-3')
+    concprcp_flags = data.data_flagged[concprcp_var]
+
     pr_unit = data.get_unit('pr')
     if not pr_unit == 'm':
         data.convert_unit('pr', 'm')
     pr_data = data['pr']
+    pr_flags = data.data_flagged['pr']
 
     pr_zero = pr_data == 0
     if pr_zero.sum() > 0:
         conc_data[pr_zero] = 0
+        concprcp_flags[pr_zero] = False
+        pr_flags[pr_zero] = False
     wdep = conc_data * pr_data
     wdep_units = conc_unit.replace('m-3', 'm-2')
 
@@ -754,8 +759,8 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
 
     # set flags for wetso4
     wdep_flags = np.zeros(len(wdep)).astype(bool)
-    wdep_flags[data.data_flagged[concprcp_var]] = True
-    wdep_flags[data.data_flagged['pr']] = True
+    wdep_flags[concprcp_flags] = True
+    wdep_flags[pr_flags] = True
     data.data_flagged[wdep_var] = wdep_flags
 
     return wdep
