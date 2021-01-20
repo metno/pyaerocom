@@ -110,8 +110,9 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         xlim[0] = 0
         ylim[0] = 0
     elif any(x[0] < 0 for x in [xlim, ylim]):
-
-        low = 10**(float(exponent(abs(np.nanmin(y_vals))) - 1))
+        low = np.nanmin(y_vals)
+        if low != 0:
+            low = 10**(float(exponent(abs(low)) - 1))
         xlim[0] = low
         ylim[0] = low
     ax.set_xlim(xlim)

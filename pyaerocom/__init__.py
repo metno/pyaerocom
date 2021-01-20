@@ -28,6 +28,7 @@ from . import plot
 from . import interactive
 from . import web
 from . import scripts
+from . import var_groups
 
 from .vertical_profile import VerticalProfile
 from .stationdata import StationData

@@ -82,17 +82,11 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('concprcpso4scavenging', ['sulphate_corrected', 'sulphate_total'],
              ['precip'], None, None, None, 1.0),
             ('concprcpnh4', ['ammonium'], ['precip'], None, None, None, 1.0),
-            ('wetso4', None, None, None, None, ['CONCPRCP_SO4', 'METEO_PREC'], 0.27397),
-            ('wetconcso4', ['sulphate_corrected'], ['precip'], None, None, None, 1.0),
-            ('wetso4t', None, None, None, None, ['METEO_PREC', 'CONCPRCP_SO4T'], 0.27397),
-            ('wetso4c', None, None, None, None, ['METEO_PREC', 'CONCPRCP_SO4C'], 0.27397),
-            ('wetoxn', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NO3'], 0.27397),
-            ('wetrdn', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NH4'], 0.27397),
-            ('wetnh4', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NH4'], 0.27397),
-            ('precip', ['precipitation_amount_off', 'precipitation_amount'],
+            ('wetso4', None, None, None, None, ['concprcpso4'], 1),
+            ('wetno3', None, None, None, None, ['concprcpno3'], 1),
+            ('wetnh4', None, None, None, None, ['concprcpnh4'], 1),
+            ('pr', ['precipitation_amount_off', 'precipitation_amount'],
              ['precip'], None, None, None, 1.0),
-            ('wetconcph', ['pH'], ['precip'], None, None, None, 1.0),
-            ('wetno3', None, None, None, None, ['METEO_PREC', 'CONCPRCP_NO3'], 0.27397),
             ('scavratioso4', None, None, None, None, ['SCONC_SO4', 'CONCPRCP_SO4_SCAVENGING'], 1.0),
             ('test', ['aerosol_light_backscattering_coefficient'], ['aerosol'], None, None, None, 1.0)]
 
@@ -150,11 +144,3 @@ if __name__=='__main__':
     print()
     print('NOT OK')
     print(notok)
-
-# =============================================================================
-#     TESTDATA = []
-#     for var in EbasVarInfo.open_config():
-#         TESTDATA.append(to_tuple(var))
-#
-#     print(TESTDATA)
-# =============================================================================
