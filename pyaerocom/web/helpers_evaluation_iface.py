@@ -1102,7 +1102,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           web_iface_name,
                                           diurnal_only,
                                           regions_how=None,
-                                          zeros_to_nan=True):
+                                          zeros_to_nan=False):
 
     """Creates all json files for one ColocatedData object
 

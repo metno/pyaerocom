@@ -238,6 +238,8 @@ class AerocomEvaluation(object):
         self.region_groups = {}
         self.resample_how = None
 
+        self.zeros_to_nan = False
+
         self.summary_str = ''
         self._valid_obs_vars = {}
         if (len(settings)==0 and try_load_json and isinstance(proj_id, str)
@@ -641,7 +643,8 @@ class AerocomEvaluation(object):
                 regions_json=self.regions_file,
                 regions_how=self.regions_how,
                 web_iface_name=web_iface_name,
-                diurnal_only=diurnal_only)
+                diurnal_only=diurnal_only,
+                zeros_to_nan=self.zeros_to_nan)
                 #region_groups=self.region_groups)
 
     def get_vert_code(self, obs_name, obs_var):
