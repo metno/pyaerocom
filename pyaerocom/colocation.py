@@ -26,6 +26,23 @@ from pyaerocom.helpers import (to_pandas_timestamp,
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
+def get_highest_freq(obs_stat_data, var_ref):
+    obs_freqs = []
+    highest_obs_freq = None
+    for stat in obs_stat_data:
+        freq = stat.get_var_ts_type(var_ref)
+        if freq in obs_freqs:
+            continue
+        obs_freqs.append(freq)
+        _tst = TsType(freq)
+        if highest_obs_freq is None:
+            highest_obs_freq = _tst
+        if _tst > highest_obs_freq:
+            highest_obs_freq = _tst
+    if highest_obs_freq is None:
+        raise Exception('Unexpected....')
+    return (highest_obs_freq, obs_freqs)
+
 def _check_var_registered(var, aerocom_var, gridded_data):
     vars_avail = const.VARS.all_vars
     if not any([x in vars_avail for x in [var, aerocom_var]]):
@@ -708,6 +725,8 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         obs_start = start
         obs_stop = stop
 
+    # colocation frequency
+    col_tst = TsType(col_freq)
 
     latitude = gridded_data.latitude.points
     longitude = gridded_data.longitude.points
@@ -728,6 +747,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             )
 
     obs_stat_data = all_stats['stats']
+    highest_obs_freq, obs_freqs = get_highest_freq(obs_stat_data, var_ref)
+
+    if highest_obs_freq < col_tst:
+        col_tst = highest_obs_freq
+        col_freq = str(col_tst)
+
     ungridded_lons = all_stats['longitude']
     ungridded_lats = all_stats['latitude']
 
@@ -745,8 +770,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     grid_stat_data = gridded_data.to_time_series(longitude=ungridded_lons,
                                                  latitude=ungridded_lats,
                                                  vert_scheme=vert_scheme)
-    # colocation frequency
-    col_tst = TsType(col_freq)
+
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
 
