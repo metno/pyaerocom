@@ -1063,13 +1063,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
     data.longitude.attrs['units'] = str(gridded_data.longitude.units)
 
-    if col_freq != str(ts_type):
-        data = data.resample_time(to_ts_type=ts_type,
-                                  colocate_time=colocate_time,
-                                  apply_constraints=apply_time_resampling_constraints,
-                                  min_num_obs=min_num_obs,
-                                  how=resample_how,
-                                  **kwargs)
     return data
 
 def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
