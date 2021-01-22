@@ -557,8 +557,7 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
     # which will merge the time index
     merged = pd.concat([stat_data_ref[var_ref], stat_data[var]],
                        axis=1, keys=['ref', 'data'])
-    print(merged.head())
-    print(coltst)
+
     grid_ts = merged['data']
     obs_ts = merged['ref']
     # invalidate model where obs is NaN
@@ -992,21 +991,11 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                     apply_time_resampling_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     use_climatology_ref=use_climatology_ref)
-            try:
-                # assign the unified timeseries data to the colocated data array
-                coldata[0, :, i] = _df['ref'].values
-                coldata[1, :, i] = _df['data'].values
-            except ValueError:
-                _df = _colocate_site_data_helper_timecol(
 
-                    stat_data=grid_stat,
-                    stat_data_ref=obs_stat,
-                    var=var, var_ref=var_ref,
-                    ts_type=col_freq,
-                    resample_how=resample_how,
-                    apply_time_resampling_constraints=apply_time_resampling_constraints,
-                    min_num_obs=min_num_obs,
-                    use_climatology_ref=use_climatology_ref)
+            # assign the unified timeseries data to the colocated data array
+            coldata[0, :, i] = _df['ref'].values
+            coldata[1, :, i] = _df['data'].values
+
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
             const.print_log.warning(
