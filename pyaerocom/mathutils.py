@@ -251,36 +251,31 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         result['R_spearman'] = spearmanr(data, ref_data)[0]
         result['R_kendall'] = kendalltau(data, ref_data)[0]
 
-    # NMB, MNMB and FGE are constrained to positive values, thus negative
-    # values need to be removed
-    neg_ref = ref_data <= 0
-    neg_data = data <= 0
+    sum_diff = sum(difference, weights=weights)
+    sum_refdata = sum(ref_data, weights=weights)
 
-    use_indices = ~(neg_data + neg_ref)
-
-    diff_pos = difference[use_indices]
-    ref_data_pos = ref_data[use_indices]
-    data_pos = data[use_indices]
-    if weights is not None:
-        weights = weights[use_indices]
-
-    num_points_pos = len(data_pos)
-
-    if num_points_pos == 0:
-        result['nmb'] = np.nan
-        result['mnmb'] = np.nan
-        result['fge'] = np.nan
+    if sum_refdata == 0:
+        nmb = np.nan
     else:
-        result['nmb'] = (sum(diff_pos, weights=weights) /
-                         sum(ref_data_pos, weights=weights)) #*100.
+        nmb = sum_diff / sum_refdata
 
-        tmp = diff_pos / (data_pos + ref_data_pos)
+    sum_data_refdata = (data + ref_data)
+    # for MNMB, and FGE: don't divide by 0 ...
+    mask = ~np.isnan(sum_data_refdata)
+    num_points = mask.sum()
+    if num_points == 0:
+        mnmb = np.nan
+        fge = np.nan
+    else:
+        tmp = difference[mask] / sum_data_refdata[mask]
+        if weights is not None:
+            weights = weights[mask]
+        mnmb = 2. / num_points * sum(tmp, weights=weights)
+        fge = 2. / num_points * sum(np.abs(tmp), weights=weights)
 
-        result['mnmb'] = 2. / num_points_pos * sum(tmp, weights=weights)# * 100.
-        result['fge'] = 2. / num_points_pos * sum(np.abs(tmp), weights=weights) #* 100.
-
-    result['num_neg_data'] = np.sum(neg_data)
-    result['num_neg_refdata'] = np.sum(neg_ref)
+    result['nmb'] = nmb
+    result['mnmb'] = mnmb
+    result['fge'] = fge
 
     return result
 
