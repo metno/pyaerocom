@@ -84,15 +84,12 @@ class TestReadEBAS(object):
                          'vmrco',
                          'vmrno2',
                          'vmrno',
-                         'concprcpso4',
-                         'concprcpso4t',
-                         'concprcpso4c',
-                         'concprcpno3',
-                         'concprcpso4scavenging',
-                         'concprcpnh4',
-                         'wetso4', 'wetoxs',
-                         'wetnh4', 'wetoxn',
-                         'wetno3', 'wetrdn',
+                         'concprcpoxs',
+                         'concprcpoxn',
+                         'concprcprdn',
+                         'wetoxs',
+                         'wetoxn',
+                         'wetrdn',
                          'pr',
                          'scavratioso4',
                          'test',
@@ -197,7 +194,8 @@ class TestReadEBAS(object):
              'eval_flags': True,
              'keep_aux_vars': False,
              'convert_units': True,
-             'ensure_correct_freq': True}
+             'ensure_correct_freq': True,
+             'freq_from_start_stop_meas': True}
 
     def test_opts(self, reader):
         opts = reader._opts
