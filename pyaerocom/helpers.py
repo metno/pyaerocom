@@ -537,11 +537,6 @@ def get_lowest_resolution(ts_type, *ts_types):
     from pyaerocom.tstype import TsType
     lowest = TsType(ts_type)
     for freq in ts_types:
-# =============================================================================
-#         if not freq in all_ts_types:
-#             raise ValueError('Invalid input, only valid ts_type codes are '
-#                              'supported: {}'.format(all_ts_types))
-# =============================================================================
         _temp = TsType(freq)
         if _temp < lowest:
             lowest = _temp
