@@ -48,7 +48,7 @@ Usage examples
 - pyaerocom was used for the trends analysis by `Mortier et al., 2020 <https://acp.copernicus.org/articles/20/13355/2020/acp-20-13355-2020-discussion.html>`__.
 
 
-.. include:: AEROCOM_INTRO.rst
+.. literalinclude:: AEROCOMINTRO.rst
 
 
 Citation
