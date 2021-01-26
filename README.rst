@@ -47,7 +47,9 @@ Usage examples
 - pyaerocom was used for the model evaluation study by `Gliß et al., 2020 <https://acp.copernicus.org/preprints/acp-2019-1214/>`__.
 - pyaerocom was used for the trends analysis by `Mortier et al., 2020 <https://acp.copernicus.org/articles/20/13355/2020/acp-20-13355-2020-discussion.html>`__.
 
-.. include:: docs/AEROCOM_INTRO.rst
+
+.. include:: AEROCOM_INTRO.rst
+
 
 Citation
 ========
