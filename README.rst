@@ -1,4 +1,4 @@
-|CI|
+|CI| |Docs|
 
 Latest news
 ===========
@@ -175,3 +175,7 @@ However, you may still define file locations in your Python scripts yourself and
 
 .. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
    :target: https://github.com/metno/pyaerocom/actions
+
+.. |Docs| image:: https://readthedocs.org/projects/pyaerocom/badge/?version=latest
+	 :target: https://pyaerocom.readthedocs.io/en/latest/?badge=latest
+	 :alt: Documentation Status
