@@ -4,17 +4,15 @@
    contain the root `toctree` directive.
 
 ***************************
-The Pyaerocom website
+pyaerocom
 ***************************
 
-Official website of pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AEROCOM project <http://aerocom.met.no/protocol.html>`__.
+Official website of pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AeroCom project <http://aerocom.met.no>`__.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   readme
-   pyaerocom-tutorials/index
    api
 
 Indices and tables

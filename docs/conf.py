@@ -14,18 +14,19 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+
 # -- Project information -----------------------------------------------------
 
 project = 'pyaerocom'
 copyright = '2018, MET Norway'
-author = 'Jonas Gliss'
+author = 'Jonas Gliß'
+
 
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-
 extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.autodoc',
@@ -36,7 +37,18 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'nbsphinx']
+    'nbsphinx'
+]
+
+intersphinx_mapping = {
+
+    'python'    : ('https://docs.python.org/3', None),
+    'iris'      : ('https://scitools.org.uk/iris/docs/latest/', None),
+    'xarray'    : ('http://xarray.pydata.org/en/stable/', None),
+    'pandas'    : ('https://pandas.pydata.org/docs/', None),
+    'numpy'     : ('https://numpy.org/doc/stable/', None),
+    'scipy'     : ('https://docs.scipy.org/doc/scipy/reference/', None),
+    }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -45,10 +57,6 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-suppress_warnings = [
-    'nbsphinx',
-]
 
 
 # -- Options for HTML output -------------------------------------------------
