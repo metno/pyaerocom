@@ -145,7 +145,8 @@ class ReadGhost(ReadUngriddedBase):
     #: these need to be output variables in AeroCom convention (cf. file
     #: pyaerocom/data/variables.ini). See also :attr:`VARNAMES_DATA` for a
     #: mapping of variable names used in GHOST
-    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1','conccl', 'concso4','vmrco', 'vmrno',
+    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1',
+                    'conccl', 'concso4','vmrco', 'vmrno',
                     'vmrno2', 'vmro3', 'vmrso2',]
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
