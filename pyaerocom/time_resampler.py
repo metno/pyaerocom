@@ -27,7 +27,7 @@ class TimeResampler(object):
     DEFAULT_SAMPLING_CONSTRAINTS = const.OBS_MIN_NUM_RESAMPLE
     APPLY_CONSTRAINTS = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
     FREQS_SUPPORTED = TS_TYPE_TO_PANDAS_FREQ
-    AGGRS_UNIT_PRESERVE = ('mean', 'median', 'std', 'max', 'min')
+    AGGRS_UNIT_PRESERVE = ('mean', 'median', 'std', 'max', 'min','sum')
 
     def __init__(self, input_data=None):
         self.last_setup = None
