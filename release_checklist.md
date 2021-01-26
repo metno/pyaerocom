@@ -92,7 +92,7 @@
 
 ## Final steps (on GitHub)
 
-- Go to https://github.com/metno/pyaerocom
+- Go to https://github.com/metno/pyaerocom.
 - Create a release and annotate the correct version (look for **Releases** on the right side).
 - You may use the release summary as release text. If the release summary is rather extensive, you may also boil it down to the highlights and link to the release summary, but not needed really).
 - Publish the release. This should automatically create a new zenodo DOI, check here:
