@@ -859,11 +859,11 @@ def calc_climatology(s, start, stop, min_count=None,
 
     Parameters
     ----------
-    s : Series
+    s : pandas.Series
         time series data
-    start
+    start : numpy.datetime64 or similar
         start time of data used to compute climatology
-    stop
+    stop : numpy.datetime64 or similar
         start time of data used to compute climatology
     mincount_month : int, optional
         minimum number of observations required per aggregated month in
