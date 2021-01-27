@@ -745,8 +745,13 @@ class AerocomEvaluation(object):
                             var_name = self.model_config[model_name]['model_use_vars'][var_name]
                         except:
                             pass
+                        try:
+                            add_var_name = self.model_config[model_name]['model_add_vars'][var_name]
+                        except:
+                            pass
                         if not m['var_name'] == var_name:
-                            match = False
+                            if not m['var_name'] == add_var_name:
+                                match = False
                     if match:
                         files.append(os.path.join(coldata_dir, fname))
                 except Exception:
