@@ -1,9 +1,13 @@
 |CI| |Docs|
 
 **Website and Documentation:** https://pyaerocom.readthedocs.io/en/latest/
-**Installation:** https://pyaerocom.readthedocs.io/en/latest/install.html
+
+**Installation:** https://pyaerocom.readthedocs.io/en/latest/install.html  
+
 **Tutorials:** https://pyaerocom.readthedocs.io/en/latest/getstarted.html#tutorials-jupyter-notebooks
+
 **AeroCom:** https://aerocom.met.no
+
 **AeroVal** evaluation portal: https://aerocom-evaluation.met.no/
 
 .. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
