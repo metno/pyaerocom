@@ -1,5 +1,9 @@
 |CI| |Docs|
 
+=========
+pyaerocom
+=========
+
 **Website and Documentation:** https://pyaerocom.readthedocs.io/en/latest/
 
 **Installation:** https://pyaerocom.readthedocs.io/en/latest/install.html  
