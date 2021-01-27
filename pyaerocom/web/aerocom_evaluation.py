@@ -748,7 +748,7 @@ class AerocomEvaluation(object):
                         try:
                             add_var_name = self.model_config[model_name]['model_add_vars'][var_name]
                         except:
-                            pass
+                            add_var_name = None
                         if not m['var_name'] == var_name:
                             if not m['var_name'] == add_var_name:
                                 match = False
