@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 project = 'pyaerocom'
 copyright = '2018, MET Norway'
-author = 'Jonas Gliß'
+author = 'pyaerocom developers'
 
 
 # -- General configuration ---------------------------------------------------
