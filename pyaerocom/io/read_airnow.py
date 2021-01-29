@@ -90,22 +90,23 @@ class ReadAirNow(ReadUngriddedBase):
         'PERCENT' : '%',
         'PPB' : 'ppb',
         'PPM' : 'ppm',
-        'UG/M3' : 'ug m-2',
+        'UG/M3' : 'ug m-3',
         'WATTS/M2': 'W m-2'
         }
 
+
     VAR_MAP = {
         'concbc'    : 'BC',
-        'concco'    : 'CO',
-        'concnh3'   : 'NH3',
-        'concno'    : 'NO',
-        'concno2'   : 'NO2',
-        'concnox'   : 'NOX',
-        'concnoy'   : 'NOY',
-        'conco3'    : 'OZONE',
+        'vmrco'    : 'CO',
+        #'concnh3'   : 'NH3',
+        #'concno'    : 'NO',
+        'vmrno2'   : 'NO2',
+        #'concnox'   : 'NOX',
+        #'concnoy'   : 'NOY',
+        'vmro3'    : 'OZONE',
         'concpm10'  : 'PM10',
         'concpm25'  : 'PM2.5',
-        'concso2'   : 'SO2',
+        'vmrso2'   : 'SO2',
         }
 
     #: List of variables that are provided
@@ -298,6 +299,7 @@ class ReadAirNow(ReadUngriddedBase):
                 stat[var] = vals
                 unit = self.UNIT_MAP[units[0]]
                 stat['var_info'][var] = dict(units=unit)
+                print(var, unit)
                 stats.append(stat)
         return stats
 
@@ -378,7 +380,9 @@ class ReadAirNow(ReadUngriddedBase):
             loaded data object.
 
         """
-        if isinstance(vars_to_retrieve, str):
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
         files = self.get_file_list()
@@ -406,9 +410,9 @@ if __name__ == '__main__':
 
     #data = reader._read_file(test_file)
 
-    last_file = None
-    varis = ['concpm10', 'concpm25']
-    data = reader.read(varis, last_file=last_file)
+    last_file = 10
+    varis = None
+    data = reader.read('vmrso2', last_file=last_file)
 
     if last_file == 10 and varis == ['concpm10', 'concpm25']:
         assert len(data.unique_station_names) == 744
