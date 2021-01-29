@@ -6,7 +6,8 @@ import numpy as np
 from pyaerocom import const
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.exceptions import DataCoverageError
-from pyaerocom import UngriddedData, StationData
+from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.stationdata import StationData
 
 class ReadAirNow(ReadUngriddedBase):
 
