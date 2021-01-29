@@ -31,7 +31,7 @@ class ReadAirNow(ReadUngriddedBase):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: version log of this class (for caching)
-    __version__ = '0.1'
+    __version__ = '0.2'
 
     #: column delimiter
     FILE_COL_DELIM = '|'
