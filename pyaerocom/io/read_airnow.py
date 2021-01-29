@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+########################################################################
+#
+# This python module is part of the pyaerocom software
+#
+# License: GNU General Public License v3.0
+# More information: https://github.com/metno/pyaerocom
+# Documentation: https://pyaerocom.readthedocs.io/en/latest/
+# Copyright (C) 2017 met.no
+# Contact information: Norwegian Meteorological Institute (MET Norway)
+#
+########################################################################
+
 import os
 from glob import glob
 import pandas as pd
@@ -5,7 +19,6 @@ from tqdm import tqdm
 import numpy as np
 from pyaerocom import const
 from pyaerocom.io import ReadUngriddedBase
-from pyaerocom.exceptions import DataCoverageError
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.stationdata import StationData
 
@@ -59,7 +72,7 @@ class ReadAirNow(ReadUngriddedBase):
             'classification'    : str,
             'comment'           : str
             }
-    #:
+    #: Years in timestamps in the files are are 2-digit (e.g. 20 for 2020)
     BASEYEAR = 2000
 
     #: Name of dataset (OBS_ID)
@@ -95,10 +108,13 @@ class ReadAirNow(ReadUngriddedBase):
         'concso2'   : 'SO2',
         }
 
+    #: List of variables that are provided
     PROVIDES_VARIABLES = list(VAR_MAP.keys())
 
+    #: Default variables
     DEFAULT_VARS = PROVIDES_VARIABLES
 
+    #: Frequncy of measurements
     TS_TYPE = 'hourly'
 
     #: file containing station metadata
@@ -109,34 +125,110 @@ class ReadAirNow(ReadUngriddedBase):
         self.make_datetime64_array = np.vectorize(self._date_time_str_to_datetime64)
 
     def _date_time_str_to_datetime64(self, date, time):
+        """
+        Convert date and time string into datetime64 object
+
+        Parameters
+        ----------
+        date : str
+            date string as mm/dd/yy as in data files
+        time : str
+            time of the day as HH:MM
+
+        Returns
+        -------
+        datetime64[s]
+        """
         mm, dd, yy = date.split('/')
         HH, MM = time.split(':')
         yr=str(self.BASEYEAR + int(yy))
         # returns as datetime64[s]
         return np.datetime64(f'{yr}-{mm}-{dd}T{HH}:{MM}:00')
 
-    def _datetime_from_filename(self, filepath):
+    def _datetime64_from_filename(self, filepath):
+        """
+        Get timestamp from filename
+
+        Note
+        ----
+        This is not in use at the moment and the timestamps in the file may
+        differ within 1h around what the filename suggests. So be careful if
+        you want to use this method.
+
+        Parameters
+        ----------
+        filepath : str
+            path of file
+
+        Returns
+        -------
+        datetime64[s]
+        """
         fn = os.path.basename(filepath).split(self._FILETYPE)[0]
         assert len(fn) == 10
         tstr = f'{fn[:4]}-{fn[4:6]}-{fn[6:8]}T{fn[8:10]}:00:00'
         return np.datetime64(tstr)
 
     def get_file_list(self):
+        """
+        Retrieve list of data files
+
+        Returns
+        -------
+        list
+        """
         basepath = self.DATASET_PATH
         pattern = f'{basepath}{self._FILEMASK}'
         files = sorted(glob(pattern))
         return files
 
-    def _read_file(self, file, assert_same_dtime=True):
+    def _read_file(self, file):
+        """
+        Read one datafile using :func:`pandas.read_csv`
+
+        Parameters
+        ----------
+        file : str
+            file path
+
+        Returns
+        -------
+        df : pandas.DataFrame
+            DataFrame containing the file data
+
+        """
         df = pd.read_csv(file,sep=self.FILE_COL_DELIM,
                          names=self.FILE_COL_NAMES)
         return df
 
     def _read_files(self, files, vars_to_retrieve):
+        """
+        Read input variables from list of files
+
+        Parameters
+        ----------
+        files : list
+            list of data files
+        vars_to_retrieve : list
+            list of variables to retrieve
+
+        Raises
+        ------
+        NotImplementedError
+            if several timezones are assigned to the same station
+        AttributeError
+            if data unit is unkown
+
+        Returns
+        -------
+        stats : list
+            list of StationData objects
+
+        """
 
         stat_meta = self._init_station_metadata()
         stat_ids = list(stat_meta.keys())
-        print('read data file(s)')
+        const.print_log.info('Read AirNow data file(s)')
         # initialize empty dataframe
 
         varcol = self.FILE_COL_NAMES.index('variable')
@@ -172,8 +264,6 @@ class ReadAirNow(ReadUngriddedBase):
             subset = data[mask]
             dtime_subset = dtime[mask]
             statlist = np.unique(subset[:, statcol])
-
-
             for stat_id in statlist:
                 if not stat_id in stat_ids:
                     continue
@@ -212,15 +302,40 @@ class ReadAirNow(ReadUngriddedBase):
         return stats
 
     def read_file(self):
+        """
+        This method is not implemented (but needs to be declared for template)
+
+        Raises
+        ------
+        NotImplementedError
+        """
         raise NotImplementedError('Not needed for these data since the format '
                                   'is unsuitable...')
 
     def _read_metadata_file(self):
+        """
+        Read station metadatafile
+
+        Returns
+        -------
+        cfg : pandas.DataFrame
+            metadata dataframe
+
+        """
         fn = os.path.join(self.DATASET_PATH, self.STAT_METADATA_FILENAME)
         cfg = pd.read_csv(fn,sep=',', converters={'aqsid': lambda x: str(x)})
         return cfg
 
     def _init_station_metadata(self):
+        """
+        Initiate metadata for all stations
+
+        Returns
+        -------
+        dict
+            dictionary with metadata dictionaries for all stations
+
+        """
 
         cfg = self._read_metadata_file()
         meta_map = self.STATION_META_MAP
@@ -232,7 +347,6 @@ class ReadAirNow(ReadUngriddedBase):
 
         arr = cfg.values
         dtypes = self.STATION_META_DTYPES
-#        station_names = arr[:, col_idx['station_name']]
         stats = {}
         for row in arr:
             stat = {}
@@ -244,7 +358,26 @@ class ReadAirNow(ReadUngriddedBase):
         return stats
 
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
+        """
+        Read variable data
 
+        Parameters
+        ----------
+        vars_to_retrieve : str or list, optional
+            List of variables to be retrieved. The default is None.
+        first_file : int, optional
+            Index of first file to be read. The default is None, in which case
+            index 0 in file list is used.
+        last_file : int, optional
+            Index of last file to be read. The default is None, in which case
+            last index in file list is used.
+
+        Returns
+        -------
+        data : UngriddedData
+            loaded data object.
+
+        """
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
