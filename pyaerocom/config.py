@@ -33,7 +33,10 @@ from configparser import ConfigParser
 class Config(object):
     """Class containing relevant paths for read and write routines
 
-    TODO: write docstring
+    A loaded instance of this class is created on import of pyaerocom and
+    can be accessed via `pyaerocom.const`.
+
+    TODO: provide more information
     """
 
     # NAMES
