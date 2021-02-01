@@ -304,6 +304,59 @@ def get_all_names():
             raise Exception("Failed to access model IDs")
     return names
 
+def get_country_name_from_iso(iso_code=None,
+                              filename='country_codes.json',
+                              return_as_dict=False):
+    """get the country name from the 2 digit iso country code
+
+    the underlaying json file was taken from this github repository
+    https://github.com/lukes/ISO-3166-Countries-with-Regional-Codes
+
+    Parameters
+    ----------
+    iso_code : :obj:`str`
+        string containing the 2 character iso code of the country (e.g. no for Norway)
+    filename : :obj:`str` , optional
+        optional string with the json file to read
+    return_as_dict : :obj:`bool`, optional
+        flag to get the entire list of countries as a dictionary with the country codes
+        as keys and the country names as value
+        Useful if you have to get the names for a lot of country codes
+
+    Returns
+    -------
+    string with country name or dictionary with iso codes as keys and the country names as values
+    empty string if the country code was not found
+
+
+    Raises
+    ------
+    ValueError
+        if the country code ins invalid
+    """
+    if iso_code is None:
+        return_as_dict = True
+
+    import simplejson as json
+    with open(filename) as fh:
+        json_data = json.load(fh)
+
+    iso_dict = {}
+    for indict in json_data:
+        iso_dict[indict['alpha-2']] = indict['name']
+
+    if return_as_dict:
+        return iso_dict
+    else:
+        try:
+            ret_val = iso_dict[iso_code.upper()]
+        except KeyError:
+            ret_val = ''
+            raise ValueError
+        return ret_val
+
+
+
 if __name__=="__main__":
     #names = search_names()
     names = get_all_names()
