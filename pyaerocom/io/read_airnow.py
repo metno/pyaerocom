@@ -32,7 +32,7 @@ class ReadAirNow(ReadUngriddedBase):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: version log of this class (for caching)
-    __version__ = '0.3'
+    __version__ = '0.04'
 
     #: column delimiter
     FILE_COL_DELIM = '|'
@@ -73,6 +73,14 @@ class ReadAirNow(ReadUngriddedBase):
             'classification'    : str,
             'comment'           : str
             }
+
+    #: strings to be replaced in original station names
+    REPLACE_STATNAME = {'&' : 'and',
+                        '/' : ' ',
+                        ':' : ' ',
+                        '.' : ' ',
+                        "'" : ''}
+
     #: Years in timestamps in the files are are 2-digit (e.g. 20 for 2020)
     BASEYEAR = 2000
 
@@ -186,6 +194,25 @@ class ReadAirNow(ReadUngriddedBase):
         cfg = pd.read_csv(fn,sep=',', converters={'aqsid': lambda x: str(x)})
         return cfg
 
+    def _correct_station_name(self, station_name):
+        """
+        Remove unwanted chars from original station names
+
+        Parameters
+        ----------
+        station_name : str
+            original station name
+
+        Returns
+        -------
+        str
+            station name cleaned of chars defined in :attr:`REPLACE_STATNAME`
+
+        """
+        for search, replace in self.REPLACE_STATNAME.items():
+            station_name = station_name.replace(search, replace)
+        return station_name
+
     def _init_station_metadata(self):
         """
         Initiate metadata for all stations
@@ -213,6 +240,8 @@ class ReadAirNow(ReadUngriddedBase):
             for meta_key, col_num in col_idx.items():
                 stat[meta_key] = dtypes[meta_key](row[col_num])
             sid = stat['station_id']
+
+            stat['station_name'] = self._correct_station_name(stat['station_name'])
             stat['data_id'] = self.data_id
             stat['ts_type'] = self.TS_TYPE
             stats[sid] = stat
