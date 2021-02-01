@@ -18,6 +18,7 @@ import pandas as pd
 from tqdm import tqdm
 import numpy as np
 from pyaerocom import const
+from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.stationdata import StationData
@@ -31,7 +32,7 @@ class ReadAirNow(ReadUngriddedBase):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: version log of this class (for caching)
-    __version__ = '0.2'
+    __version__ = '0.3'
 
     #: column delimiter
     FILE_COL_DELIM = '|'
@@ -97,15 +98,15 @@ class ReadAirNow(ReadUngriddedBase):
 
     VAR_MAP = {
         'concbc'    : 'BC',
-        'vmrco'    : 'CO',
-        #'concnh3'   : 'NH3',
-        #'concno'    : 'NO',
-        'vmrno2'   : 'NO2',
-        #'concnox'   : 'NOX',
-        #'concnoy'   : 'NOY',
-        'vmro3'    : 'OZONE',
         'concpm10'  : 'PM10',
         'concpm25'  : 'PM2.5',
+        'vmrco'    : 'CO',
+        'vmrnh3'   : 'NH3',
+        'vmrno'    : 'NO',
+        'vmrno2'   : 'NO2',
+        'vmrnox'   : 'NOX',
+        'vmrnoy'   : 'NOY',
+        'vmro3'    : 'OZONE',
         'vmrso2'   : 'SO2',
         }
 
@@ -121,8 +122,9 @@ class ReadAirNow(ReadUngriddedBase):
     #: file containing station metadata
     STAT_METADATA_FILENAME = 'allStations_20191224.csv'
 
-    def __init__(self, data_dir=None):
-        super(ReadAirNow, self).__init__(None, dataset_path=data_dir)
+    def __init__(self, dataset_to_read=None, data_dir=None):
+        super(ReadAirNow, self).__init__(dataset_to_read=dataset_to_read,
+                                         dataset_path=data_dir)
         self.make_datetime64_array = np.vectorize(self._date_time_str_to_datetime64)
 
     def _date_time_str_to_datetime64(self, date, time):
@@ -169,6 +171,53 @@ class ReadAirNow(ReadUngriddedBase):
         assert len(fn) == 10
         tstr = f'{fn[:4]}-{fn[4:6]}-{fn[6:8]}T{fn[8:10]}:00:00'
         return np.datetime64(tstr)
+
+    def _read_metadata_file(self):
+        """
+        Read station metadatafile
+
+        Returns
+        -------
+        cfg : pandas.DataFrame
+            metadata dataframe
+
+        """
+        fn = os.path.join(self.DATASET_PATH, self.STAT_METADATA_FILENAME)
+        cfg = pd.read_csv(fn,sep=',', converters={'aqsid': lambda x: str(x)})
+        return cfg
+
+    def _init_station_metadata(self):
+        """
+        Initiate metadata for all stations
+
+        Returns
+        -------
+        dict
+            dictionary with metadata dictionaries for all stations
+
+        """
+
+        cfg = self._read_metadata_file()
+        meta_map = self.STATION_META_MAP
+
+        cols = list(cfg.columns.values)
+        col_idx = {}
+        for from_meta, to_meta in meta_map.items():
+            col_idx[to_meta] = cols.index(from_meta)
+
+        arr = cfg.values
+        dtypes = self.STATION_META_DTYPES
+        stats = {}
+        for row in arr:
+            stat = {}
+            for meta_key, col_num in col_idx.items():
+                stat[meta_key] = dtypes[meta_key](row[col_num])
+            sid = stat['station_id']
+            stat['data_id'] = self.data_id
+            stat['ts_type'] = self.TS_TYPE
+            stats[sid] = stat
+
+        return stats
 
     def get_file_list(self):
         """
@@ -253,7 +302,9 @@ class ReadAirNow(ReadUngriddedBase):
             if matches:
                 vardata = arr[mask]
                 arrs.append(vardata)
-
+        if len(arrs) == 0:
+            raise DataRetrievalError(
+                'None of the input variables could be found in input list')
         data = np.concatenate(arrs)
 
         dtime = self.make_datetime64_array(data[:, 0], data[:, 1])
@@ -299,7 +350,6 @@ class ReadAirNow(ReadUngriddedBase):
                 stat[var] = vals
                 unit = self.UNIT_MAP[units[0]]
                 stat['var_info'][var] = dict(units=unit)
-                print(var, unit)
                 stats.append(stat)
         return stats
 
@@ -313,51 +363,6 @@ class ReadAirNow(ReadUngriddedBase):
         """
         raise NotImplementedError('Not needed for these data since the format '
                                   'is unsuitable...')
-
-    def _read_metadata_file(self):
-        """
-        Read station metadatafile
-
-        Returns
-        -------
-        cfg : pandas.DataFrame
-            metadata dataframe
-
-        """
-        fn = os.path.join(self.DATASET_PATH, self.STAT_METADATA_FILENAME)
-        cfg = pd.read_csv(fn,sep=',', converters={'aqsid': lambda x: str(x)})
-        return cfg
-
-    def _init_station_metadata(self):
-        """
-        Initiate metadata for all stations
-
-        Returns
-        -------
-        dict
-            dictionary with metadata dictionaries for all stations
-
-        """
-
-        cfg = self._read_metadata_file()
-        meta_map = self.STATION_META_MAP
-
-        cols = list(cfg.columns.values)
-        col_idx = {}
-        for from_meta, to_meta in meta_map.items():
-            col_idx[to_meta] = cols.index(from_meta)
-
-        arr = cfg.values
-        dtypes = self.STATION_META_DTYPES
-        stats = {}
-        for row in arr:
-            stat = {}
-            for meta_key, col_num in col_idx.items():
-                stat[meta_key] = dtypes[meta_key](row[col_num])
-            sid = stat['station_id']
-            stats[sid] = stat
-
-        return stats
 
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
         """
