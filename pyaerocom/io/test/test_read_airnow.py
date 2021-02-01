@@ -26,7 +26,7 @@ class TestReadAirNow(object):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: version log of this class (for caching)
-    __version__ = '0.2'
+    __version__ = '0.3'
 
     #: column delimiter
     FILE_COL_DELIM = '|'
