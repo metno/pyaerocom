@@ -25,6 +25,8 @@ from pyaerocom.web.helpers_evaluation_iface import (
     delete_experiment_data_evaluation_iface,
     make_info_str_eval_setup)
 
+from pyaerocom.web.web_naming_conventions import VAR_MAPPING
+
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.colocateddata import ColocatedData
 
@@ -232,6 +234,7 @@ class AerocomEvaluation(object):
         self.model_ignore = []
 
         self.var_mapping = {}
+        self.var_mapping.update(VAR_MAPPING)
         self.var_order_menu = []
 
         self.regions_how = 'default'
@@ -427,6 +430,8 @@ class AerocomEvaluation(object):
             self._set_modelconfig(val)
         elif key == 'colocation_settings':
             self.colocation_settings.update(**val)
+        elif key == 'var_mapping':
+            self.var_mapping.update(val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 self.obs_config[key] = ObsConfigEval(**val)

@@ -48,25 +48,42 @@ from pyaerocom.units_helpers import UALIASES
 from pyaerocom.vert_coords import AltitudeAccess
 
 class GriddedData(object):
-    """Base class representing model data
+    """pyaerocom object representing gridded data (e.g. model diagnostics)
 
-    This class is largely based on the :class:`iris.Cube` object. However, this
-    object comes with an expanded functionality for convenience, for instance,
-    netCDF files can directly be loaded in the :class:`GriddedData` object,
-    whereas :class:`iris.cube.Cube` instances are typically created using
-    helper methods such as
+    Gridded data refers to data that can be represented on a regular,
+    multidimensional grid. In :mod:`pyaerocom` this comprises both model output
+    and diagnostics as well as gridded level 3 satellite data, typically with
+    dimensions `latitude, longitude, time` (for surface or columnar data) and
+    an additional dimension `lev` (or similar) for vertically resolved data.
 
-    1. :func:`iris.load` (returns
-    :class:`iris.cube.CubeList`, i.e. a list-like iterable object that contains
-    instances of :class:`Cube` objects, one for each variable) or
+    Under the hood, this data object is based on (but
+    not inherited from) the :class:`iris.cube.Cube` object, and makes large use
+    of the therein implemented functionality (many methods implemented here in
+    :class:`GriddedData` are simply wrappers for `Cube` methods.
 
-    2. :func:`iris.load_cube` which directly returns a :class:`iris.cube.Cube`
-    instance and typically requires specification of a variable constraint.
+    Note
+    ----
+    Note that the implemented functionality in this class is mostly limited to
+    what is needed in the pyaerocom API (e.g. for :mod:`pyaerocom.colocation`
+    routines or data import) and is not aimed at replacing or competing with
+    similar data classes such as :class:`iris.cube.Cube` or
+    :class:`xarray.DataArray`. Rather, dependent on the use case, one or
+    another of such gridded data objects is needed for optimal processing,
+    which is why :class:`GriddedData` provides methods and / or attributes to
+    convert to or from other such data classes (e.g. :attr:`GriddedData.cube`
+    is an instance of :class:`iris.cube.Cube` and method
+    :func:`GriddedData.to_xarray` can be used to convert to
+    :class:`xarray.DataArray`). Thus, :class:`GriddedData` can be considered
+    rather high-level as compared to the other mentioned data classes from
+    iris or xarray.
 
-    The :class:`GriddedData` object represents one variable in space and time, as
-    well as corresponding meta information. Since it is based on the https://github.com/SciTools/iris/issues/1977
-    :class:`iris.cube.Cube` it is optimised for netCDF files that follow the
-    CF conventions and may not work for files that do not follow this standard.
+
+    Note
+    ----
+    Since :class:`GriddedData` object is based on the
+    :class:`iris.cube.Cube` object it is optimised for netCDF files that follow
+    the CF conventions and may not work out of the box for files that do not
+    follow this standard.
 
     Parameters
     ----------
@@ -80,11 +97,11 @@ class GriddedData(object):
         unit the unit string will be updated. It will print a warning if the
         unit is invalid or not equal the associated AeroCom unit for the input
         variable. Set `convert_unit_on_init` to True, if you want an
-        automatic conversion to AeroCom units.
-    convert_unit_on_init : True
+        automatic conversion to AeroCom units. Defaults to True.
+    convert_unit_on_init : bool
         if True and if unit check indicates non-conformity with AeroCom unit
         it will be converted automatically, and warning will be printed if that
-        conversion fails.
+        conversion fails. Defaults to True.
     """
     _grid = None
     _GRID_IO = const.GRID_IO

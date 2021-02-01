@@ -846,10 +846,7 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
     Rspecific = 287.058 # J kg-1 K-1
 
     conversion_fac = 1/cf_units.Unit('mol mol-1').convert(1, vmr_unit)
-# =============================================================================
-#     if conversion_fac != 1:
-#         data *= conversion_fac #/ conversion_fac
-# =============================================================================
+
     airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
     mulfac = mmol_var / mmol_air * airdensity # kg m-3
     conc = data * mulfac # kg m-3
@@ -897,10 +894,6 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None,
     Rspecific = 287.058 # J kg-1 K-1
 
     conversion_fac = 1/cf_units.Unit('kg m-3').convert(1, conc_unit)
-# =============================================================================
-#     if conversion_fac != 1:
-#         data *= conversion_fac #/ conversion_fac
-# =============================================================================
     airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
     mulfac = mmol_var / mmol_air * airdensity # kg m-3
     vmr = data / mulfac # unitless

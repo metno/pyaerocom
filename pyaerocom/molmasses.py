@@ -62,3 +62,24 @@ def get_molmass(var_name):
 
     """
     return MOLMASSES[get_species(var_name)]
+
+def get_mmr_to_vmr_fac(var_name):
+    """
+    Get conversion factor for MMR -> VMR conversion for input variable
+
+    Note
+    ----
+    Assumes dry air molar mass
+
+    Parameters
+    ----------
+    var_name : str
+        Name of variable to be converted
+
+    Returns
+    -------
+    float
+        multiplication factor to convert MMR -> VMR
+
+    """
+    return get_molmass('air_dry') / get_molmass(var_name)

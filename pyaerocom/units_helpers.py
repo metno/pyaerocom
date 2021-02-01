@@ -11,8 +11,9 @@ import numpy as np
 
 from cf_units import Unit
 from pyaerocom import const
-from pyaerocom.helpers import (seconds_in_periods,
-                               resample_time_dataarray)
+from pyaerocom.helpers import (isnumeric,
+                               resample_time_dataarray,
+                               seconds_in_periods)
 
 from pyaerocom.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
@@ -98,8 +99,10 @@ UALIASES = {
     '/m'            : 'm-1'
     }
 
-WDEP_IMPLICIT_UNITS = [Unit('mg N m-2'),
-                       Unit('mg S m-2')]
+DEP_IMPLICIT_UNITS = [Unit('mg N m-2'),
+                      Unit('mg S m-2'),
+                      Unit('mg m-2')]
+
 PR_IMPLICIT_UNITS = [Unit('mm')]
 
 DEP_TEST_UNIT = 'kg m-2 s-1'
@@ -199,46 +202,20 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
         data *= conv_fac
     return data
 
-def convert_unit_back(data, from_unit, to_unit, var_name=None):
-    """Convert unit of data
-
-    Parameters
-    ----------
-    data : np.ndarray or similar
-        input data
-    from_unit : cf_units.Unit or str
-        current unit of input data
-    to_unit : cf_units.Unit or str
-        new unit of input data
-    var_name : str, optional
-        name of variable. If provided, method
-        :func:`_unit_conversion_fac_custom` is called before the standard unit
-        conversion is applied. That requires that `var_name` is specified in
-        :attr:`pyaerocom.molmasses.CONV_MUL_FACS`.
-
-    Returns
-    -------
-    data
-        data in new unit
-
-    """
-    raise NotImplementedError('This method does not work at the moment, and '
-                              'it is unclear what this was developed for, '
-                              'please contact Jonas Gliss or raise an issue '
-                              'on pyaerocom github repo.')
-
 def implicit_to_explicit_rates(gridded, ts_type):
     """
     Convert implicitly defined daily, monthly or yearly rates to
     per second. Update units and values accordingly.
     Some data should be per second but have units without time information
     information.
+
     Parameters
     ----------
     gridded : GriddedData
         Data to convert
     ts_type : str
         Temporal resolution of gridded.
+
     Returns
     -------
     GriddedData
@@ -285,7 +262,7 @@ def check_rate_units_implicit(unit, ts_type):
     freq_si = freq.to_si()
 
     # check if unit is implicit and change if possible
-    if any([unit == x for x in WDEP_IMPLICIT_UNITS]):
+    if any([unit == x for x in DEP_IMPLICIT_UNITS]):
         unit = Unit(f'{unit} {freq_si}-1')
     else:
         if not _check_unit_conversion_fac(unit=str(unit),
@@ -312,7 +289,7 @@ def check_rate_units_implicit(unit, ts_type):
     return unit
 
 def check_pr_units(gridded):
-    #ToDo: c
+    #ToDo: harmonise input and output with check_rate_units_implicit
     unit = Unit(gridded.units)
     freq = TsType(gridded.ts_type)
     freq_si = freq.to_si()
