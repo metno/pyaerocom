@@ -205,7 +205,6 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
 
-<<<<<<< HEAD
 def cube_multiply_constant(cube):
     pass
 
@@ -267,7 +266,8 @@ def conc_from_vmr_STP(cube,):
     cube_out = rho*mmr_cube
 
     return cube_out
-=======
+
+
 def mmr_to_vmr_cube(data):
     """
     Convert cube containing MMR data to VMR
@@ -311,4 +311,4 @@ def mmr_to_vmr_cube(data):
     cube.units = 'nmole mole-1'
     cube.var_name = vmrvar
     return cube
->>>>>>> dev-wetdep-eval
+
