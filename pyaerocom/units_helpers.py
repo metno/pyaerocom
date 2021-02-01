@@ -260,10 +260,14 @@ def check_rate_units_implicit(unit, ts_type):
     freq_si = freq.to_si()
 
     # check if unit is implicit and change if possible
-    if any([unit == x for x in DEP_IMPLICIT_UNITS]):
-        unit = Unit(f'{unit} {freq_si}-1')
-    else:
-        if not _check_unit_conversion_fac(unit=str(unit),
+    found = False
+    for imp_unit in DEP_IMPLICIT_UNITS:
+        if unit == imp_unit:
+            unit = f'{imp_unit} {freq_si}-1'
+            found=True
+            break
+
+    if not found and not _check_unit_conversion_fac(unit=str(unit),
                                           test_unit=DEP_TEST_UNIT,
                                           non_si_info=DEP_TEST_NONSI_ATOMS):
             raise ValueError(f'Cannot handle wet deposition unit {unit}')
