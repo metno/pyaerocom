@@ -110,6 +110,8 @@ class TestReadAirNow(object):
     #: file containing station metadata
     STAT_METADATA_FILENAME = 'allStations_20191224.csv'
 
+
+
 if __name__ == '__main__':
 
     import sys
