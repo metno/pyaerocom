@@ -12,6 +12,7 @@ import pytest
 from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.read_airnow import ReadAirNow
 
 @pytest.fixture(scope='module')
@@ -26,7 +27,7 @@ class TestReadAirNow(object):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: version log of this class (for caching)
-    __version__ = '0.3'
+    __version__ = '0.04'
 
     #: column delimiter
     FILE_COL_DELIM = '|'
@@ -67,6 +68,13 @@ class TestReadAirNow(object):
             'classification'    : str,
             'comment'           : str
             }
+
+    REPLACE_STATNAME = {'&' : 'and',
+                        '/' : ' ',
+                        ':' : ' ',
+                        '.' : ' ',
+                        "'" : ''}
+
     #: Years in timestamps in the files are are 2-digit (e.g. 20 for 2020)
     BASEYEAR = 2000
 
@@ -150,6 +158,9 @@ class TestReadAirNow(object):
     def test_STATION_META_DTYPES(self, reader):
         self._test_dict(self.STATION_META_DTYPES, reader.STATION_META_DTYPES)
 
+    def test_REPLACE_STATNAME(self, reader):
+        self._test_dict(self.REPLACE_STATNAME, reader.REPLACE_STATNAME)
+
     def test_BASEYEAR(self, reader):
         assert reader.BASEYEAR == self.BASEYEAR
 
@@ -198,6 +209,11 @@ class TestReadAirNow(object):
         assert colnames == self.META_COLNAMES
         assert cfg.values.shape == (2588, 13)
 
+    def test__correct_station_name(self, reader):
+        fakename = "Bla/blub.bla'blub:blaa & blub"
+        corr = reader._correct_station_name(fakename)
+        assert corr == "Bla blub blablub blaa and blub"
+
     def _test_station_meta(self, stat, **testargs):
         for key, val in testargs.items():
             assert key in stat, key
@@ -214,14 +230,14 @@ class TestReadAirNow(object):
                                 latitude=47.568000000000005,
                                 longitude=-52.702,
                                 altitude=7,
-                                station_name='Duckworth & Ordinance',
+                                station_name='Duckworth and Ordinance',
                                 station_id='000010101')
 
         self._test_station_meta(statlist['160550006'],
                                 latitude=47.681999999999995,
                                 longitude=-116.766,
                                 altitude=665.0,
-                                station_name="Coeur D' Alene - Teom",
+                                station_name='Coeur D Alene - Teom',
                                 station_id='160550006')
 
 
@@ -332,6 +348,23 @@ class TestReadAirNow(object):
             reader.read_file()
 
 
+    @pytest.mark.parametrize('vars_to_retrieve, num_meta_blocks,num_stats', [
+        ('concpm10', 196, 196),
+        (['concbc', 'concpm10', 'concpm25', 'vmrco', 'vmrno',
+          'vmrno2', 'vmrnox', 'vmrnoy', 'vmro3', 'vmrso2'], 2378, 1139)
+        ])
+    def test_read(self, reader, vars_to_retrieve, num_meta_blocks,
+                  num_stats):
+        data = reader.read(vars_to_retrieve)
+        if isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+        assert isinstance(data, UngriddedData)
+        assert len(data.metadata) == num_meta_blocks
+        assert len(data.unique_station_names) == num_stats
+        assert sorted(data.contains_vars) == sorted(vars_to_retrieve)
+
+
+
 
 
 
@@ -343,4 +376,5 @@ class TestReadAirNow(object):
 if __name__ == '__main__':
 
     import sys
+    print(list(ReadAirNow().VAR_MAP.keys()))
     pytest.main(sys.argv)
