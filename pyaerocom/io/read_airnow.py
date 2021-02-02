@@ -24,26 +24,28 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.stationdata import StationData
 
 class ReadAirNow(ReadUngriddedBase):
-
-    # data type of files
+    """
+    Reading routine for North-American Air Now observations
+    """
+    # Data type of files
     _FILETYPE = '.dat'
 
-    # to recursively retrieve list of data files
+    # File search mask to recursively retrieve list of data files
     _FILEMASK = f'/**/*{_FILETYPE}'
 
-    #: version log of this class (for caching)
+    #: Version log of this class (for caching)
     __version__ = '0.04'
 
-    #: column delimiter
+    #: Column delimiter
     FILE_COL_DELIM = '|'
 
-    #: columns in data files
+    #: Columns in data files
     FILE_COL_NAMES = ['date','time', 'station_id',
                       'station_name', 'time_zone',
                       'variable', 'unit', 'value',
                       'institute']
 
-    #: mapping of columns in station metadata file to pyaerocom standard
+    #: Mapping of columns in station metadata file to pyaerocom standard
     STATION_META_MAP = {
             'aqsid'             : 'station_id',
             'name'              : 'station_name',
@@ -59,6 +61,7 @@ class ReadAirNow(ReadUngriddedBase):
             'comment'           : 'comment'
             }
 
+    #: conversion functions for metadata dtypes
     STATION_META_DTYPES = {
             'station_id'        : str,
             'station_name'      : str,
@@ -85,12 +88,12 @@ class ReadAirNow(ReadUngriddedBase):
     BASEYEAR = 2000
 
     #: Name of dataset (OBS_ID)
-    DATA_ID = 'AirNow' #'GAWTADsubsetAasEtAl'
+    DATA_ID = 'AirNow'
 
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
 
-    #: units found in file
+    #: Units found in data files
     UNIT_MAP = {
         'C' : 'celcius',
         'M/S' : 'm s-1',
@@ -103,7 +106,7 @@ class ReadAirNow(ReadUngriddedBase):
         'WATTS/M2': 'W m-2'
         }
 
-
+    #: Variable names in data files
     VAR_MAP = {
         'concbc'    : 'BC',
         'concpm10'  : 'PM10',
