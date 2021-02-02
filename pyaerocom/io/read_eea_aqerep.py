@@ -457,7 +457,10 @@ class ReadEEAAQEREP(ReadUngriddedBase):
             metadata[meta_key]['variables'] = list(station_data.var_info.keys()) #vars_to_retrieve
             metadata[meta_key]['station_classification'] = self._metadata[_meta_key]['airqualitystationtype']
             metadata[meta_key]['area_classification'] = self._metadata[_meta_key]['airqualitystationarea']
-            metadata[meta_key]['country'] = _country_dict[metadata[meta_key]['country_code']]
+            try:
+                metadata[meta_key]['country'] = _country_dict[metadata[meta_key]['country_code']]
+            except KeyError:
+                pass
             metadata[meta_key]['var_info'] = station_data['var_info']
             metadata[meta_key]['website'] = self.WEBSITE
             metadata[meta_key]['data_product'] = self.DATA_PRODUCT
