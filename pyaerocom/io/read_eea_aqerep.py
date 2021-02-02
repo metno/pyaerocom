@@ -51,81 +51,102 @@ class ReadEEAAQEREP(ReadUngriddedBase):
     Extended class derived from  low-level base class :class: ReadUngriddedBase
     that contains some more functionallity.
     """
-    # Mask for identifying datafiles
+    #: Mask for identifying datafiles
     _FILEMASK = '*.csv'
 
-    # Version log of this class (for caching)
+    #: Version log of this class (for caching)
     __version__ = '0.01'
 
-    # Name of the dataset (OBS_ID)
+    #: Name of the dataset (OBS_ID)
     DATA_ID = const.EEA_NRT_NAME  # change this since we added more vars?
 
-    # List of all datasets supported by this interface
+    #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
 
-    # Temporal resolution flag for the supported dataset that is provided in a
-    # defined temporal resolution
+    #: Temporal resolution flag for the supported dataset that is provided in a
+    #: defined temporal resolution
     TS_TYPE = 'hourly'
 
-    # Dictionary specifying values corresponding to invalid measurements
-    # there's no value for NaNs in this data set. It uses an empty string
+    #: Dictionary specifying values corresponding to invalid measurements
+    #: there's no value for NaNs in this data set. It uses an empty string
     NAN_VAL ={}
 
-    # Dictionary specifying the file column names (values) for each Aerocom
-    # variable (keys)
+    #: Dictionary specifying the file column names (values) for each Aerocom
+    #: variable (keys)
     # There's only one variable in each file named concentration
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['vmro3'] = 'concentration'
     VAR_NAMES_FILE['concpm10'] = 'concentration'
     VAR_NAMES_FILE['concpm25'] = 'concentration'
 
-    # define the file masks here already...
-    # not sure if the var numbers are right at this point
+    #: file masks for the data files
     FILE_MASKS = {}
     FILE_MASKS['vmro3'] = '**/*_7_*_timeseries.csv'
     FILE_MASKS['concpm10'] = '**/*_5_*_timeseries.csv'
     FILE_MASKS['concpm25'] = '**/*_6001_*_timeseries.csv'
 
+    #: field name of the start time of the measurement (in lower case)
     START_TIME_NAME = 'datetimebegin'
+
+    #: filed name of the end time of the measurement (in lower case)
     END_TIME_NAME = 'datetimeend'
 
-    # dictionary that connects the EEA variable codes with aerocom variable names
+    #: dictionary that connects the EEA variable codes with aerocom variable names
     VAR_CODES = {}
     VAR_CODES['7'] = 'vmro3'
     VAR_CODES['5'] = 'concpm10'
     VAR_CODES['6001'] = 'concpm25'
 
-    # column name that holds the EEA variable code
+    #: column name that holds the EEA variable code
     VAR_CODE_NAME = 'airpollutantcode'
 
-    # List of variables that are provided by this dataset (will be extended
-    # by auxiliary variables on class init, for details see __init__ method of
-    # base class ReadUngriddedBase)
+    #: List of variables that are provided by this dataset (will be extended
+    #: by auxiliary variables on class init, for details see __init__ method of
+    #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
+    #: there's no general instrument name in the data
     INSTRUMENT_NAME = 'unknown'
 
+    #: max time steps to read per file (hourly data)
+    # to make numpy array allocation size static
     MAX_LINES_TO_READ = 24 * 366
 
-    # this will be prepended with data path later on
+    #: file name of the metadata file
+    #: this will be prepended with a data path later on
+    # this file is in principe updated once a day.
+    # so we night consider updating it from within the code later on.
+    # URL: https://discomap.eea.europa.eu/map/fme/metadata/PanEuropean_metadata.csv
     DEFAULT_METADATA_FILE = 'metadata.csv'
 
-    # country codes
-    COUNTRY_CODE_FILE = 'country_codes.json'
-
+    #: Name of latitude variable in metadata file
     LATITUDENAME = 'latitude'
+
+    #: name of longitude variable in metadata file
     LONGITUDENAME= 'longitude'
+
+    #: name of altitude variable in metadata file
     ALTITUDENAME = 'altitude'
 
+    #: this class reads the European Environment Agency's Eionet data
+    #: for details please read
+    #: https://www.eea.europa.eu/about-us/countries-and-eionet
     WEBSITE = 'https://discomap.eea.europa.eu/map/fme/AirQualityExport.htm'
+
+    #: Eionet offers 2 data revisions
+    #: E2a (near real time) and E1a (quality controlled)
+    #: this class reads the E2a data for now.
+    # But by changing the base path
+    # and this constant, it can also read the E1a data set
     DATA_PRODUCT = 'E2a'
 
     def __init__(self, data_dir=None):
         super(ReadEEAAQEREP, self).__init__(None, dataset_path=data_dir)
 
+    #: default variables for read method
     @property
     def DEFAULT_VARS(self):
-        return self.PROVIDES_VARIABLES
+        return [self.VAR_CODES['7']]
 
     @property
     def DATASET_NAME(self):
@@ -133,7 +154,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         return self.data_id
 
     def read_file(self, filename, vars_to_retrieve=None,
-                  vars_as_series=False, aerocom_var_name='vmro3'):
+                  vars_as_series=False):
         """Read a single EEA file
 
         Note that there's only a single variable in the file
@@ -163,6 +184,9 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         for var in vars_to_retrieve:
             if not var in self.PROVIDES_VARIABLES:
                 raise ValueError('Invalid input variable {}'.format(var))
+
+        # there's only one variable in the file
+        aerocom_var_name = vars_to_retrieve[0]
 
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
@@ -265,8 +289,9 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
         Returns
         -------
-        StationData
-            Dict-like object containing the results.
+        metadata
+            Dict-like object containing the results with the keys being a combination of the
+            station name and the variable and the values being all fields of the metadata file
 
         """
 
@@ -395,6 +420,9 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             Index of the last file in :obj:'file' to be read. If None, the very
             last file in the list is used.
+        metadatafile : :obj:'str', optional
+            full qualified path to metadata file. If None, the default metadata
+            file will be used
 
         Returns
         -------
@@ -466,8 +494,6 @@ class ReadEEAAQEREP(ReadUngriddedBase):
             metadata[meta_key]['data_product'] = self.DATA_PRODUCT
             metadata[meta_key]['station_name'] = self._metadata[_meta_key]['airqualitystationeoicode']
 
-
-
             # List with indices of this station for each variable
             num_times = len(station_data['dtime'])
             totnum = num_times * num_vars
@@ -531,11 +557,12 @@ if __name__ == "__main__":
     import logging
     r = ReadEEAAQEREP()
     r.logger.setLevel(logging.INFO)
-    data = r.read(vars_to_retrieve = ['vmro3'])
-    print('data read')
-
-    print(data['RO0217A'])
-    print(data['RO0217A']['vmro3'])
-    print('vars to retrieve:', data.vars_to_retrieve)
+    var_names_to_test = ['concpm25', 'vmro3','concpm10', ]
+    station_id = 'AT2KA71'
+    for var_name in var_names_to_test:
+        data = r.read(vars_to_retrieve = [var_name])
+        print('data read')
+        print(data[station_id])
+        print(data[station_id][var_name])
 
 
