@@ -6,6 +6,9 @@ from traceback import format_exc
 from pyaerocom import print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
+from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.molmasses import get_mmr_to_vmr_fac
+
 
 CUBE_MATHS = {'add'         :   iris.analysis.maths.add,
               'subtract'    :   iris.analysis.maths.subtract,
@@ -200,3 +203,47 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     cube_out.units = Unit('1')
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
+
+def mmr_to_vmr_cube(data):
+    """
+    Convert cube containing MMR data to VMR
+
+    Parameters
+    ----------
+    data : iris.Cube or GriddedData
+        input data object containing MMR data for a certain variable. Needs
+        to have `var_name` attr. assigned and valid MMR AeroCom variable name
+        (e.g. mmro3, mmrno2)
+
+    Raises
+    ------
+    AttributeError
+        if attr. `var_name` of input data does not start with mmr
+
+    Returns
+    -------
+    iris.Cube
+        cube containing mixing ratios expressed as VMR in units of nmole mole-1
+
+    """
+    from pyaerocom import GriddedData
+    var = data.var_name
+    if not var.startswith('mmr'):
+        raise AttributeError(
+            f'MMR to VMR can only be done for MMR variables (which must start '
+            f'with mmr, however, the var_name of the input data is {var}')
+
+    # make sure mmr is in correct units (the function will crash if not)
+    get_unit_conversion_fac(data.units, 'kg kg-1')
+    if isinstance(data, GriddedData):
+        data = data.cube
+
+    vmrvar = var.replace('mmr', 'vmr')
+
+    mulfac = get_mmr_to_vmr_fac(var) * 1e9 # 1e9 is to go to nmole mole-1
+
+    cube = data * mulfac
+    cube.attributes.update(data.attributes)
+    cube.units = 'nmole mole-1'
+    cube.var_name = vmrvar
+    return cube
