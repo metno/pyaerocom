@@ -241,8 +241,10 @@ class UngriddedData(object):
 
         var_count_glob = -1
         for stat in stats:
-            if not isinstance(stat, StationData):
-                raise ValueError('Need instances of StationData')
+            if isinstance(stat, dict):
+                stat = StationData(**stat)
+            elif not isinstance(stat, StationData):
+                raise ValueError('Need instances of StationData or dicts')
             metadata[meta_key] = od()
             metadata[meta_key].update(stat.get_meta(force_single_value=False,
                                                     quality_check=False,

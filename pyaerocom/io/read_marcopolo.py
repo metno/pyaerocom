@@ -3,9 +3,9 @@ import pandas as pd
 from tqdm import tqdm
 import numpy as np
 from pyaerocom.exceptions import DataRetrievalError
-from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io import ReadUngriddedBase
+
 
 class ReadMarcoPolo(ReadUngriddedBase):
     """
@@ -161,7 +161,8 @@ class ReadMarcoPolo(ReadUngriddedBase):
             timestamps = var_dtime[statmask]
             vals = var_values[statmask]
 
-            stat = StationData(**stat_meta[stat_id])
+            stat = {}
+            stat.update(stat_meta[stat_id])
 
             stat['dtime'] = timestamps
             stat['timezone'] ='unknown'
@@ -287,7 +288,7 @@ if __name__ == '__main__':
     files = reader.get_file_list()
     print(files)
 
-    data = reader.read('concpm10', last_file=1)
+    data = reader.read(['concpm10', 'concpm25', 'conco3', 'concno2'])
 
 # =============================================================================
 #     stats = data.to_station_data_all('concpm10')['stats']
