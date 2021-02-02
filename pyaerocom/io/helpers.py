@@ -13,6 +13,10 @@ from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
 
+#: country code file name
+#: will be prepended with the path later on
+COUNTRY_CODE_FILE = 'country_codes.json'
+
 def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
     """
     Check and if applicable, copy ebas_file_index.sqlite3 into cache dir
@@ -305,7 +309,7 @@ def get_all_names():
     return names
 
 def get_country_name_from_iso(iso_code=None,
-                              filename='country_codes.json',
+                              filename=None,
                               return_as_dict=False):
     """get the country name from the 2 digit iso country code
 
@@ -336,6 +340,11 @@ def get_country_name_from_iso(iso_code=None,
     """
     if iso_code is None:
         return_as_dict = True
+
+    if filename is None:
+        #set default file name
+        from pyaerocom import __dir__
+        filename = os.path.join(__dir__, 'io', COUNTRY_CODE_FILE)
 
     import simplejson as json
     with open(filename) as fh:
