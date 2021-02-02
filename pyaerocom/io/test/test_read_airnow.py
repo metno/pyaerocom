@@ -363,16 +363,6 @@ class TestReadAirNow(object):
         assert len(data.unique_station_names) == num_stats
         assert sorted(data.contains_vars) == sorted(vars_to_retrieve)
 
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
 
     import sys
