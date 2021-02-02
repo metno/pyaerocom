@@ -1,106 +1,300 @@
-import pyaerocom as pya
 import os
-import csv
-from glob import glob
 import pandas as pd
 from tqdm import tqdm
-from datetime import datetime
 import numpy as np
+from pyaerocom.exceptions import DataRetrievalError
+from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.io import ReadUngriddedBase
 
-# variables conversion and units dictionnary
-pyvars = {
-    'vmrco': {
-        'var': 'co',
-        'unit': 'nmole mole-1'
-    },
-    'vmrso2': {
-        'var': 'so2',
-        'unit': 'nmole mole-1'
-    },
-    'vmrno2': {
-        'var': 'no2',
-        'unit': 'nmole mole-1'
-    },
-    'vmro3': {
-        'var': 'o3',
-        'unit': 'nmole mole-1'
-    },
-    'concpm10': {
-        'var': 'pm10',
-        'unit': 'ug m-3'
-    },
-    'concpm25': {64Z
-        'var': 'pm2_5',
-        'unit': 'ug m-3'
-    }
-}
+class ReadMarcoPolo(ReadUngriddedBase):
+    """
+    Reading routine for chinese MarcoPolo observations
+    """
 
-def read_cams84_china(files, vars_to_retrieve=None):
+    #: Data type of files
+    _FILETYPE = '.csv'
 
-    # first, read configuration file
-    print('read configuration file')
-    path_cfg = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/CHINA_SON2020_MP_NRT'
-    fn = os.path.join(path_cfg,'station_info.xlsx')
-    cfg = pd.read_excel(fn,engine='openpyxl')
+    #: Filemask for glob data file search
+    _FILEMASK = f'*{_FILETYPE}'
 
-    # read data using pandas read_csv: faster than csv reading routines..?
-    # csv.DictReader took 271.47131180763245 seconds
-    # pd.read_csv took 101.79213833808899 seconds
-    print('read data file(s)')
-    # initialize empty dataframe
-    data = pd.DataFrame()
-    for i in tqdm(range(len(files))):
-        data = data.append(pd.read_csv(files[i],sep=','))
+    #: Column delimiter
+    FILE_COL_DELIM = ','
 
-    # convert dateTime from string to datetime and set as index
-    data['dateTime'] = pd.to_datetime(data['dateTime'].values)
-    data.set_index('dateTime', inplace=True)
+    #: Version log of this class (for caching)
+    __version__ = '0.01'
 
+    #: Default data ID
+    DATA_ID = 'MarcoPolo'
 
-    #list of available variables
-    av_data = ['vmrco', 'vmrso2', 'vmrno2', 'vmro3', 'concpm10', 'concpm25']
-    if vars_to_retrieve == None:
-        vars_to_retrieve = av_data
+    #: List of all datasets supported by this interface
+    SUPPORTED_DATASETS = [DATA_ID]
 
-    #convert dataframes to dictionnaries
-    dic_cfg = dict()
-    for column in cfg.columns:
-        dic_cfg[column] = np.array(cfg[column].values)
-    dic_data = dict()
-    for column in data.columns:
-        dic_data[column] = np.array(data[column].values)
+    #: Indices of columns in data files
+    FILE_COLS = {
+        'station_id'    : 0,
+        'datetime'      : 1,
+        'var_name'      : 2,
+        'value'         : 3
+        }
+    #: Mapping of columns in station metadata file to pyaerocom standard
+    STATION_META_MAP = {
+        'stationId'     : 'station_id',
+        'stationName'   : 'station_name',
+        'cityId'        : 'city_id',
+        'latitude'      : 'latitude',
+        'longitude'     : 'longitude',
+        'cityName'      : 'city'
+        }
 
-    # list of stationData objects
-    print('create stationData objects')
-    stationsData = []
-    for i in tqdm(range(len(dic_cfg['stationId']))):
+    #: conversion functions for metadata dtypes
+    STATION_META_DTYPES = {
+        'station_id'     : str,
+        'station_name'   : str,
+        'city_id'        : str,
+        'latitude'      : float,
+        'longitude'     : float,
+        'city'      : str
+        }
+
+    #: Variable names in data files
+    VAR_MAP = {
+        'concco': 'co',
+        'concso2': 'so2',
+        'concno2': 'no2',
+        'conco3': 'o3',
+        'concpm10': 'pm10',
+        'concpm25': 'pm2_5'
+        }
+
+    #: Variable units (not provided in data files)
+    VAR_UNITS = {
+        'concco'   : 'unknown',
+        'concso2'  : 'unknown',
+        'concno2'  : 'ug m-3', # mail from Henk Eskes, 1 Feb. 2021
+        'conco3'   : 'ug m-3', # mail from Henk Eskes, 1 Feb. 2021
+        'concpm10' : 'ug m-3', # mail from Henk Eskes, 1 Feb. 2021
+        'concpm25' : 'ug m-3' # mail from Henk Eskes, 1 Feb. 2021
+        }
+
+    PROVIDES_VARIABLES = list(VAR_MAP.keys())
+    DEFAULT_VARS = ['concpm10', 'concpm25', 'concno2', 'conco3']
+
+    TS_TYPE = 'hourly'
+
+    STAT_METADATA_FILENAME = 'station_info.xlsx'
+
+    def __init__(self, dataset_to_read=None, data_dir=None):
+        super(ReadMarcoPolo, self).__init__(dataset_to_read=dataset_to_read,
+                                         dataset_path=data_dir)
+
+        try:
+            import openpyxl
+        except ImportError:
+            raise ImportError(
+                'ReadMarcoPolo class needs package openpyxl '
+                'which is not part of the pyaerocom standard installation. '
+                'Please install openpyxl via conda or pip.')
+    def _read_metadata_file(self):
+        fn = os.path.join(self.DATASET_PATH, self.STAT_METADATA_FILENAME)
+        cfg = pd.read_excel(fn,engine='openpyxl')
+        return cfg
+
+    def _init_station_metadata(self):
+        """
+        Initiate metadata for all stations
+
+        Returns
+        -------
+        dict
+            dictionary with metadata dictionaries for all stations
+
+        """
+
+        cfg = self._read_metadata_file()
+
+        meta_map = self.STATION_META_MAP
+        dtypes = self.STATION_META_DTYPES
+
+        cols = list(cfg.columns.values)
+        col_idx = {}
+        for from_meta, to_meta in meta_map.items():
+            col_idx[to_meta] = cols.index(from_meta)
+
+        arr = cfg.values
+
+        stats = {}
+        for row in arr:
+            stat = {}
+            for meta_key, col_num in col_idx.items():
+                stat[meta_key] = dtypes[meta_key](row[col_num])
+            sid = stat['station_id']
+# =============================================================================
+#             sname, city = stat['station_name'], stat['city']
+#             sname = f'{sid} ({sname}, {city})'
+# =============================================================================
+            stat['station_name'] = sid
+            stat['data_id'] = self.data_id
+            stat['ts_type'] = self.TS_TYPE
+            stats[sid] = stat
+
+        return stats
+
+    def _read_file(self, file):
+        df = pd.read_csv(file, sep=self.FILE_COL_DELIM)
+        return df
+
+    def _make_station_data(self, var, var_stats_unique, stat_ids, var_stats,
+                           var_dtime, var_values, stat_meta):
+
+        units = self.VAR_UNITS
+        stats = []
+        for stat_id in var_stats_unique:
+            if not stat_id in stat_ids:
+                continue
+
+            statmask = var_stats == stat_id
+
+            if statmask.sum() == 0:
+                continue
+
+            timestamps = var_dtime[statmask]
+            vals = var_values[statmask]
+
+            stat = StationData(**stat_meta[stat_id])
+
+            stat['dtime'] = timestamps
+            stat['timezone'] ='unknown'
+            stat[var] = vals
+            unit = units[var]
+            stat['var_info'] = {}
+            stat['var_info'][var] = dict(units=unit)
+            stats.append(stat)
+        return stats
+
+    def _read_files(self, files, vars_to_retrieve):
+
+        filecols = self.FILE_COLS
+
+        stat_meta = self._init_station_metadata()
+
+        # get all station IDs found in the metadata file
+        stat_ids = list(stat_meta.keys())
+
+        arrs = []
+
+        varcol = filecols['var_name']
+        for i in tqdm(range(len(files))):
+            filedata = self._read_file(files[i])
+            arr = filedata.values
+
+            for i, var in enumerate(vars_to_retrieve):
+                filevar = self.VAR_MAP[var]
+                if i == 0:
+                    mask = arr[:, varcol] == filevar
+                else:
+                    mask = np.logical_or(mask, arr[:, varcol] == filevar)
+            matches = mask.sum()
+            if matches:
+                vardata = arr[mask]
+                arrs.append(vardata)
+        if len(arrs) == 0:
+            raise DataRetrievalError(
+                'None of the input variables could be found in input list')
+        data = np.concatenate(arrs)
+
+        dtime = data[:, filecols['datetime']].astype('datetime64[s]')
+
+        varis = data[:, varcol].astype(str)
+        values = data[:, filecols['value']].astype(np.float64)
+        statids = data[:, filecols['station_id']].astype(str)
+
+        stats = []
         for var in vars_to_retrieve:
-            try:
-                #initialize stationData object
-                stationData = pya.StationData()
+            var_in_file = self.VAR_MAP[var]
 
-                # fill stationData with cfg
-                stationData['data_id'] = 'CAMS84_CHINA'
-                stationData['station_name'] = dic_cfg['stationName'][i]
-                stationData['station_id'] = dic_cfg['stationId'][i]
-                stationData['latitude'] = dic_cfg['latitude'][i]
-                stationData['longitude'] = dic_cfg['longitude'][i]
-                stationData['ts_type'] = 'hourly'
+            varmask = varis == var_in_file
 
-                # fill stationData with data
-                mask = (dic_data['species'] == pyvars[var]['var']) & (dic_data['station_ID'] == stationData['station_id'])
-                stationData[var] = dic_data['value'][mask].astype('datetime64[s]')
+            var_values = values[varmask]
+            var_stats = statids[varmask]
+            var_dtime = dtime[varmask]
 
-                # for each variable, there needs to be an entry in the var_info dict
-                stationData['var_info'][var] = dict()
-                stationData['var_info'][var]['units'] = pyvars[var]['unit']
+            var_stats_unique = np.unique(var_stats)
 
-                stationsData.append(stationData)
-            except KeyError:
-                print("Available variables: ",av_data)
-                raise
-    return stationsData
+            var_stats = self._make_station_data(var, var_stats_unique,
+                                                stat_ids, var_stats,
+                                                var_dtime, var_values,
+                                                stat_meta)
+            stats.extend(var_stats)
 
-path_data = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/CHINA_SON2020_MP_NRT'
-files = glob(os.path.join(path_data, '*.csv'))
-data = read_cams84_china(files, ['concpm10','concpm25'])
+        return stats
+
+    def read_file(self):
+        """
+        This method is not implemented (but needs to be declared for template)
+
+        Raises
+        ------
+        NotImplementedError
+        """
+        raise NotImplementedError('Not needed for these data since the format '
+                                  'is unsuitable...')
+
+    def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
+        """
+        Read variable data
+
+        Parameters
+        ----------
+        vars_to_retrieve : str or list, optional
+            List of variables to be retrieved. The default is None.
+        first_file : int, optional
+            Index of first file to be read. The default is None, in which case
+            index 0 in file list is used.
+        last_file : int, optional
+            Index of last file to be read. The default is None, in which case
+            last index in file list is used.
+
+        Returns
+        -------
+        data : UngriddedData
+            loaded data object.
+
+        """
+        if vars_to_retrieve is None:
+            vars_to_retrieve = self.DEFAULT_VARS
+        elif isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
+
+        files = self.get_file_list()
+        if first_file is None:
+            first_file = 0
+        if last_file is None:
+            last_file = len(files)
+        files = files[first_file:last_file]
+
+        stats = self._read_files(files, vars_to_retrieve)
+
+        data = UngriddedData.from_station_data(stats)
+
+        return data
+
+if __name__ == '__main__':
+    path_data = '/home/jonasg/MyPyaerocom/data/obsdata/CHINA_SON2020_MP_NRT'
+
+    reader = ReadMarcoPolo(data_dir=path_data)
+
+    files = reader.get_file_list()
+    print(files)
+
+    data = reader.read('concpm10', last_file=1)
+
+# =============================================================================
+#     stats = data.to_station_data_all('concpm10')['stats']
+#
+#     stat = stats[0]
+#     stats[0].plot_timeseries('concpm10')
+# =============================================================================
+
+
+    #data = read_cams84_china(files, ['concpm10','concpm25'])
