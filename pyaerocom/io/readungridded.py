@@ -30,6 +30,7 @@ from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.io.read_gaw import ReadGAW
 from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_airnow import ReadAirNow
+from pyaerocom.io.read_marcopolo import ReadMarcoPolo
 
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
@@ -56,7 +57,9 @@ class ReadUngridded(object):
                          ReadGAW,
                          ReadAasEtal,
                          ReadGhost,
-                         ReadAirNow]
+                         ReadAirNow,
+                         ReadMarcoPolo]
+
     DONOTCACHE_NAME = 'DONOTCACHE'
     def __init__(self, datasets_to_read=None, vars_to_retrieve=None,
                  ignore_cache=False, data_dir=None):
