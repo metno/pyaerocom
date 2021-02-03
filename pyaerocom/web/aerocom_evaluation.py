@@ -755,8 +755,12 @@ class AerocomEvaluation(object):
                         except:
                             add_var_name = None
                         if not m['var_name'] == var_name:
-                            if not m['var_name'] == add_var_name:
-                                match = False
+                            if isinstance(add_var_name,list):
+                                if not m['var_name'] in add_var_name:
+                                    match = False
+                            else:
+                                if not m['var_name'] == add_var_name:
+                                    match = False
                     if match:
                         files.append(os.path.join(coldata_dir, fname))
                 except Exception:
