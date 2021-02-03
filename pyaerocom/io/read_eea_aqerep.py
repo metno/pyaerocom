@@ -60,7 +60,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
     _FILEMASK = '*.csv'
 
     #: Version log of this class (for caching)
-    __version__ = '0.02'
+    __version__ = '0.03'
 
     #: Column delimiter
     FILE_COL_DELIM = ','
@@ -156,6 +156,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
     def __init__(self, data_dir=None):
         super(ReadEEAAQEREP, self).__init__(None, dataset_path=data_dir)
+        self._metadata = None
 
     @property
     def DEFAULT_VARS(self):
@@ -411,11 +412,10 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         meta_key : `str`
             string with the internal station key
         """
-
         ret_data = {}
-        ret_data['latitude'] = self._metadata[meta_key][self.LATITUDENAME]
-        ret_data['longitude'] = self._metadata[meta_key][self.LONGITUDENAME]
-        ret_data['altitude'] = self._metadata[meta_key][self.ALTITUDENAME]
+        ret_data['latitude'] = float(self._metadata[meta_key][self.LATITUDENAME])
+        ret_data['longitude'] = float(self._metadata[meta_key][self.LONGITUDENAME])
+        ret_data['altitude'] = float(self._metadata[meta_key][self.ALTITUDENAME])
         return ret_data
 
     def read(self, vars_to_retrieve=None,
@@ -496,8 +496,6 @@ class ReadEEAAQEREP(ReadUngriddedBase):
             station_data = self.read_file(_file,
                                           var_name=var_name)
 
-            # only the variables in the file
-            num_vars = len(station_data.var_info.keys())
             # to find the metadata quickly, we use a string internally
             _meta_key = '{}__{}'.format(station_data['station_id'], station_data['airpollutantcode'])
 
@@ -524,12 +522,11 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
             # List with indices of this station for each variable
             num_times = len(station_data['dtime'])
-            totnum = num_times * num_vars
 
             # Check whether the size of the data object needs to be extended
-            if (idx + totnum) >= data_obj._ROWNO:
+            if (idx + num_times) >= data_obj._ROWNO:
                 # if totnum < data_obj._CHUNKSIZE, then the latter is used
-                data_obj.add_chunk(totnum)
+                data_obj.add_chunk(num_times)
 
             for var_idx, var in enumerate(list(station_data.var_info)):
                 # set invalid data to np.nan
@@ -544,12 +541,17 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
                 # Write common meta info for this station (data lon, lat and
                 # altitude are set to station locations)
-                data_obj._data[start:stop, data_obj._LATINDEX
-                ] = station_data['latitude']
-                data_obj._data[start:stop, data_obj._LONINDEX
-                ] = station_data['longitude']
-                data_obj._data[start:stop, data_obj._ALTITUDEINDEX
-                ] = station_data['altitude']
+
+                # Assigning lat, lon, alt is not needed since they are not
+                # assigned in the StationData
+# =============================================================================
+#                 data_obj._data[start:stop, data_obj._LATINDEX
+#                 ] = station_data['latitude']
+#                 data_obj._data[start:stop, data_obj._LONINDEX
+#                 ] = station_data['longitude']
+#                 data_obj._data[start:stop, data_obj._ALTITUDEINDEX
+#                 ] = station_data['altitude']
+# =============================================================================
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
@@ -565,7 +567,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
                 if not var in data_obj.var_idx:
                     data_obj.var_idx[var] = var_idx
 
-            idx += totnum
+            idx += num_times
             meta_key = meta_key + 1.
 
         # Shorten data_obj._data to the right number of points
