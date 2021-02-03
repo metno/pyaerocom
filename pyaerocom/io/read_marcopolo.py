@@ -2,10 +2,59 @@ import os
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
+from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
+from pyaerocom.helpers import varlist_aerocom
+from pyaerocom.mathutils import concx_to_vmrx
+from pyaerocom.molmasses import get_molmass
 from pyaerocom.ungriddeddata import UngriddedData
+from geonum import atmosphere as atm
 from pyaerocom.io import ReadUngriddedBase
 
+P_STD = atm.p0 # standard atmosphere pressure
+T_STD = atm.T0_STD # standard atmosphere temperature
+
+def _conc_to_vmr_marcopolo_stats(data, to_var, from_var,
+                                 p_pascal=None, T_kelvin=None,
+                                 mmol_air=None):
+    if p_pascal is None:
+        p_pascal = P_STD
+    if T_kelvin is None:
+        T_kelvin =  T_STD
+    if mmol_air is None:
+        mmol_air = get_molmass('air_dry')
+
+    for stat in data:
+        if not from_var in stat:
+            continue
+
+        concdata = stat[from_var]
+
+        mmol_var = get_molmass(to_var)
+        from_unit = stat['var_info'][from_var]['units']
+        to_unit = const.VARS[to_var].units
+        vmrvals = concx_to_vmrx(concdata,
+                             p_pascal=p_pascal,
+                             T_kelvin=T_kelvin,
+                             mmol_var= mmol_var,
+                             mmol_air=mmol_air,
+                             conc_unit=from_unit,
+                             to_unit=to_unit)
+        stat[to_var] = vmrvals
+        vi = {}
+        vi.update(stat['var_info'][from_var])
+        vi['computed'] = True
+        vi['units'] = to_unit
+        vi['units_info'] = (
+            f'The original data is provided as mass conc. in units of ug m-3 and '
+            f'was converted to ppb assuming a standard atmosphere '
+            f'(p={p_pascal/100}hPa, T={T_kelvin}K) assuming dry molar mass of air '
+            f'M_Air_dry={mmol_air}g/mol and total molecular mass of '
+            f'{from_var}={mmol_var}g/mol'
+            )
+        stat['var_info'][to_var] = vi
+
+    return data
 
 class ReadMarcoPolo(ReadUngriddedBase):
     """
@@ -77,6 +126,19 @@ class ReadMarcoPolo(ReadUngriddedBase):
         'concpm25' : 'ug m-3' # mail from Henk Eskes, 1 Feb. 2021
         }
 
+    #: Variables that are computed (cannot be read directly)
+    AUX_REQUIRES = {
+        'vmro3'  : ['conco3'],
+        'vmrno2' : ['concno2']
+        }
+
+    #: functions used to convert variables that are computed
+    AUX_FUNS = {
+        'vmro3'  : _conc_to_vmr_marcopolo_stats,
+        'vmrno2' : _conc_to_vmr_marcopolo_stats
+        }
+
+
     PROVIDES_VARIABLES = list(VAR_MAP.keys())
     DEFAULT_VARS = ['concpm10', 'concpm25', 'concno2', 'conco3']
 
@@ -95,6 +157,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
                 'ReadMarcoPolo class needs package openpyxl '
                 'which is not part of the pyaerocom standard installation. '
                 'Please install openpyxl via conda or pip.')
+
     def _read_metadata_file(self):
         fn = os.path.join(self.DATASET_PATH, self.STAT_METADATA_FILENAME)
         cfg = pd.read_excel(fn,engine='openpyxl')
@@ -160,6 +223,8 @@ class ReadMarcoPolo(ReadUngriddedBase):
 
             timestamps = var_dtime[statmask]
             vals = var_values[statmask]
+
+
 
             stat = {}
             stat.update(stat_meta[stat_id])
@@ -241,6 +306,18 @@ class ReadMarcoPolo(ReadUngriddedBase):
         raise NotImplementedError('Not needed for these data since the format '
                                   'is unsuitable...')
 
+    def compute_additional_vars(self, statlist_from_file, vars_to_compute):
+
+        for var in vars_to_compute:
+            fun = self.AUX_FUNS[var]
+            requires = self.AUX_REQUIRES[var]
+            # this will add the variable data to each station data in
+            # statlist_from_file
+            statlist_from_file = fun(statlist_from_file, var, *requires)
+
+
+        return statlist_from_file
+
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
         """
         Read variable data
@@ -267,6 +344,11 @@ class ReadMarcoPolo(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
+        # make sure to use AeroCom variable names in output data
+        vars_to_retrieve = varlist_aerocom(vars_to_retrieve)
+
+        vars_to_read, vars_to_compute = self.check_vars_to_retrieve(vars_to_retrieve)
+
         files = self.get_file_list()
         if first_file is None:
             first_file = 0
@@ -274,7 +356,9 @@ class ReadMarcoPolo(ReadUngriddedBase):
             last_file = len(files)
         files = files[first_file:last_file]
 
-        stats = self._read_files(files, vars_to_retrieve)
+        stats = self._read_files(files, vars_to_read)
+
+        stats = self.compute_additional_vars(stats, vars_to_compute)
 
         data = UngriddedData.from_station_data(stats)
 
@@ -285,10 +369,10 @@ if __name__ == '__main__':
 
     reader = ReadMarcoPolo(data_dir=path_data)
 
-    files = reader.get_file_list()
-    print(files)
+    #files = reader.get_file_list()
+    #print(files)
 
-    data = reader.read(['concpm10', 'concpm25', 'conco3', 'concno2'])
+    data = reader.read(['vmro3'], last_file=1)
 
 # =============================================================================
 #     stats = data.to_station_data_all('concpm10')['stats']
