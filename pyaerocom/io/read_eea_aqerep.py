@@ -154,9 +154,6 @@ class ReadEEAAQEREP(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = 'E2a'
 
-    #: Sampling frequency
-    TS_TYPE = 'hourly'
-
     def __init__(self, data_dir=None):
         super(ReadEEAAQEREP, self).__init__(None, dataset_path=data_dir)
 
