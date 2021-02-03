@@ -32,7 +32,7 @@ Example
 -------
 look at the end of the file
 """
-
+import cf_units
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -41,21 +41,29 @@ from pyaerocom import const
 from pyaerocom.stationdata import StationData
 import pandas as pd
 import os
-import sys
+from tqdm import tqdm
 from pyaerocom.io.helpers import get_country_name_from_iso
-import matplotlib.pyplot as plt
+
 
 class ReadEEAAQEREP(ReadUngriddedBase):
     """Class for reading EEA AQErep data
 
-    Extended class derived from  low-level base class :class: ReadUngriddedBase
-    that contains some more functionallity.
+    Extended class derived from  low-level base class
+    :class:`ReadUngriddedBase` that contains some more functionality.
+
+    Note
+    ----
+    Currently only single variable reading into an :class:`UngriddedData`
+    object is supported.
     """
     #: Mask for identifying datafiles
     _FILEMASK = '*.csv'
 
     #: Version log of this class (for caching)
-    __version__ = '0.01'
+    __version__ = '0.02'
+
+    #: Column delimiter
+    FILE_COL_DELIM = ','
 
     #: Name of the dataset (OBS_ID)
     DATA_ID = const.EEA_NRT_NAME  # change this since we added more vars?
@@ -75,13 +83,19 @@ class ReadEEAAQEREP(ReadUngriddedBase):
     #: variable (keys)
     # There's only one variable in each file named concentration
     VAR_NAMES_FILE = {}
-    VAR_NAMES_FILE['vmro3'] = 'concentration'
+    VAR_NAMES_FILE['conco3'] = 'concentration'
     VAR_NAMES_FILE['concpm10'] = 'concentration'
     VAR_NAMES_FILE['concpm25'] = 'concentration'
 
+
+    #: units of variables in files (needs to be defined for each variable supported)
+    VAR_UNITS_FILE = {
+        'µg/m3' : 'ug m-3'
+        }
+
     #: file masks for the data files
     FILE_MASKS = {}
-    FILE_MASKS['vmro3'] = '**/*_7_*_timeseries.csv'
+    FILE_MASKS['conco3'] = '**/*_7_*_timeseries.csv'
     FILE_MASKS['concpm10'] = '**/*_5_*_timeseries.csv'
     FILE_MASKS['concpm25'] = '**/*_6001_*_timeseries.csv'
 
@@ -93,7 +107,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
     #: dictionary that connects the EEA variable codes with aerocom variable names
     VAR_CODES = {}
-    VAR_CODES['7'] = 'vmro3'
+    VAR_CODES['7'] = 'conco3'
     VAR_CODES['5'] = 'concpm10'
     VAR_CODES['6001'] = 'concpm25'
 
@@ -140,12 +154,15 @@ class ReadEEAAQEREP(ReadUngriddedBase):
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = 'E2a'
 
+    #: Sampling frequency
+    TS_TYPE = 'hourly'
+
     def __init__(self, data_dir=None):
         super(ReadEEAAQEREP, self).__init__(None, dataset_path=data_dir)
 
-    #: default variables for read method
     @property
     def DEFAULT_VARS(self):
+        """List of default variables"""
         return [self.VAR_CODES['7']]
 
     @property
@@ -153,7 +170,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         """Name of the dataset"""
         return self.data_id
 
-    def read_file(self, filename, vars_to_retrieve=None,
+    def read_file(self, filename, var_name,
                   vars_as_series=False):
         """Read a single EEA file
 
@@ -163,9 +180,8 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         ----------
         filename : str
             Absolute path to filename to read.
-        vars_to_retrieve : :obj:`list`, optional
-            List of strings with variable names to read. If None, use :attr:
-                `DEFAULT_VARS`.
+        var_name : str
+            Name of variable in file.
         vars_as_series : bool
             If True, the data columns of all variables in the result dictionary
             are converted into pandas Series objects.
@@ -176,21 +192,15 @@ class ReadEEAAQEREP(ReadUngriddedBase):
             Dict-like object containing the results.
 
         """
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-
-        for var in vars_to_retrieve:
-            if not var in self.PROVIDES_VARIABLES:
-                raise ValueError('Invalid input variable {}'.format(var))
+        if not var_name in self.PROVIDES_VARIABLES:
+            raise ValueError('Invalid input variable {}'.format(var_name))
 
         # there's only one variable in the file
-        aerocom_var_name = vars_to_retrieve[0]
+        aerocom_var_name = var_name
 
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
-        file_delimiter = ','
+        file_delimiter = self.FILE_COL_DELIM
         # this lists the data to keep from the original read string
         # this becomes a time series
         file_indexes_to_keep = [11,13,14,15,16]
@@ -212,9 +222,11 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
             for idx in file_indexes_to_keep:
                 if idx in time_indexes:
-                    data_dict[header[idx]] = np.zeros(self.MAX_LINES_TO_READ, dtype='datetime64[s]')
+                    data_dict[header[idx]] = np.zeros(self.MAX_LINES_TO_READ,
+                                                      dtype='datetime64[s]')
                 else:
-                    data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ, dtype=np.float_)
+                    data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ,
+                                                      dtype=np.float_)
 
             # read the data...
             # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
@@ -222,7 +234,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
             for line in f:
                 rows = line.rstrip().split(file_delimiter)
                 if lineidx == 0:
-                    header_info = {}
+
                     for idx in header_indexes_to_keep:
                         if header[idx] != self.VAR_CODE_NAME:
                             data_dict[header[idx]] = rows[idx]
@@ -235,7 +247,8 @@ class ReadEEAAQEREP(ReadUngriddedBase):
                     if idx in time_indexes:
                         # make the time string ISO compliant so that numpy can directly read it
                         # this is not very time string forgiving but fast
-                        data_dict[header[idx]][lineidx] = np.datetime64(rows[idx][0:10]+'T'+rows[idx][11:19]+rows[idx][20:])
+                        dtstr = rows[idx][0:10]+'T'+rows[idx][11:19]+rows[idx][20:]
+                        data_dict[header[idx]][lineidx] = np.datetime64(dtstr)
                     else:
                         # data is not a time
                         # sometimes there's no value in the file. Set that to nan
@@ -245,6 +258,14 @@ class ReadEEAAQEREP(ReadUngriddedBase):
                             data_dict[header[idx]][lineidx] = np.nan
 
                 lineidx += 1
+
+        unit_in_file = data_dict['unitofmeasurement']
+        try:
+            unit = self.VAR_UNITS_FILE[unit_in_file]
+        except KeyError:
+            # this will raise an Exception if cf_units cannot handle. In
+            # which case the unit should be added in VAR_UNITS_FILE
+            unit = str(cf_units.Unit(unit_in_file))
 
         # Empty data object (a dictionary with extended functionality)
         data_out = StationData()
@@ -256,10 +277,12 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         data_out.instrument_name = self.INSTRUMENT_NAME
         data_out.country_code = data_dict['countrycode']
         data_out.ts_type = data_dict['averagingtime'] + 'ly'
+        # ToDo: check "variables" entry, it should not be needed anymore in UngriddedData
         data_out['variables'] = [aerocom_var_name]
         data_out['var_info'][aerocom_var_name] = od()
-        data_out['var_info'][aerocom_var_name]['units'] = 'ug m-3'
-        data_out['var_info'][aerocom_var_name]['ts_type'] = 'hourly'
+        data_out['var_info'][aerocom_var_name]['units'] = unit
+        # TsType is
+        #data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
 
         for key, value in data_dict.items():
             # adjust the variable name to aerocom standard
@@ -274,7 +297,8 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         # convert data vectors to pandas.Series (if attribute
         # vars_as_series=True)
         if vars_as_series:
-            data_out[aerocom_var_name] = pd.Series(data_out[aerocom_var_name], index=data_out['dtime'])
+            data_out[aerocom_var_name] = pd.Series(data_out[aerocom_var_name],
+                                                   index=data_out['dtime'])
 
         return data_out
 
@@ -364,14 +388,12 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         import glob, os
         from pyaerocom._lowlevel_helpers import list_to_shortstr
         from pyaerocom.exceptions import DataSourceError
-
         if pattern is None:
-            const.print_log.warning('_FILEMASK attr. must not be None...'
-                                    'using default pattern *.* for file search')
+            const.print_log.warning('using default pattern *.* for file search')
             pattern = '*.*'
         self.logger.info('Fetching data files. This might take a while...')
-        files = sorted(glob.glob(os.path.join(self.DATASET_PATH,
-                                              pattern), recursive=True))
+        fp = os.path.join(self.DATASET_PATH, pattern)
+        files = sorted(glob.glob(fp, recursive=True))
         if not len(files) > 0:
             all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
             raise DataSourceError('No files could be detected matching file '
@@ -435,9 +457,15 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
+        if len(vars_to_retrieve) > 1:
+            raise NotImplementedError('So far, only one variable can be read '
+                                      'at a time...')
+        var_name = vars_to_retrieve[0]
+        const.print_log.info('Reading EEA data')
         if files is None:
             if len(self.files) == 0:
-                self.get_file_list(self.FILE_MASKS[vars_to_retrieve[0]])
+                const.print_log.info('Retrieving file list')
+                files = self.get_file_list(self.FILE_MASKS[var_name])
             files = self.files
 
         if first_file is None:
@@ -458,15 +486,18 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         metadata = data_obj.metadata
         meta_idx = data_obj.meta_idx
 
+        const.print_log.info('Reading metadata file')
         # non compliant, but efficiently indexed metadata
         self._metadata = self._read_metadata_file(metadatafile)
 
         # returns a dict with country codes as keys and the country names as value
         _country_dict = get_country_name_from_iso()
+        const.print_log.info('Reading files...')
 
-        for i, _file in enumerate(files):
+        for i in tqdm(range(len(files))):
+            _file = files[i]
             station_data = self.read_file(_file,
-                                          vars_to_retrieve=vars_to_retrieve)
+                                          var_name=var_name)
 
             # only the variables in the file
             num_vars = len(station_data.var_info.keys())
@@ -555,14 +586,8 @@ if __name__ == "__main__":
     # Test that the reading routine works
     from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
     import logging
-    r = ReadEEAAQEREP()
-    r.logger.setLevel(logging.INFO)
-    var_names_to_test = ['concpm25', 'vmro3','concpm10', ]
-    station_id = 'AT2KA71'
-    for var_name in var_names_to_test:
-        data = r.read(vars_to_retrieve = [var_name])
-        print('data read')
-        print(data[station_id])
-        print(data[station_id][var_name])
+    ddir = '/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download'
+    reader = ReadEEAAQEREP(data_dir=ddir)
 
+    data = reader.read(['conco3'], last_file=1)
 
