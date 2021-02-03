@@ -33,17 +33,21 @@ Example
 look at the end of the file
 """
 import cf_units
-import numpy as np
 from collections import OrderedDict as od
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom import const
-from pyaerocom.stationdata import StationData
-import pandas as pd
+import numpy as np
 import os
+import pandas as pd
 from tqdm import tqdm
-from pyaerocom.io.helpers import get_country_name_from_iso
 
+from pyaerocom import const
+from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.stationdata import StationData
+from pyaerocom.tstype import TsType
+from pyaerocom.ungriddeddata import UngriddedData
+
+
+from pyaerocom.io.helpers import get_country_name_from_iso
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 
 class ReadEEAAQEREP(ReadUngriddedBase):
     """Class for reading EEA AQErep data
@@ -60,7 +64,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
     _FILEMASK = '*.csv'
 
     #: Version log of this class (for caching)
-    __version__ = '0.03'
+    __version__ = '0.04'
 
     #: Column delimiter
     FILE_COL_DELIM = ','
@@ -71,9 +75,14 @@ class ReadEEAAQEREP(ReadUngriddedBase):
     #: List of all datasets supported by this interface
     SUPPORTED_DATASETS = [DATA_ID]
 
-    #: Temporal resolution flag for the supported dataset that is provided in a
-    #: defined temporal resolution
-    TS_TYPE = 'hourly'
+    #: There is no global ts_type but it is specified in the data files...
+    TS_TYPE = 'variable'
+
+    #: sampling frequencies found in data files
+    TS_TYPES_FILE = {
+        'hour' : 'hourly',
+        'day'  : 'daily',
+        }
 
     #: Dictionary specifying values corresponding to invalid measurements
     #: there's no value for NaNs in this data set. It uses an empty string
@@ -274,7 +283,15 @@ class ReadEEAAQEREP(ReadUngriddedBase):
         data_out.filename = filename
         data_out.instrument_name = self.INSTRUMENT_NAME
         data_out.country_code = data_dict['countrycode']
-        data_out.ts_type = data_dict['averagingtime'] + 'ly'
+        freq = data_dict['averagingtime']
+        try:
+            tstype = self.TS_TYPES_FILE[freq]
+        except KeyError:
+            raise TemporalResolutionError(
+                f'Found invalid ts_type {freq}. Please register in class header '
+                f'attr TS_TYPES_FILE')
+
+        data_out.ts_type = tstype
         # ToDo: check "variables" entry, it should not be needed anymore in UngriddedData
         data_out['variables'] = [aerocom_var_name]
         data_out['var_info'][aerocom_var_name] = od()
@@ -409,7 +426,7 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
         Parameters
         ----------
-        meta_key : `str`
+        meta_key : str
             string with the internal station key
         """
         ret_data = {}
@@ -493,8 +510,11 @@ class ReadEEAAQEREP(ReadUngriddedBase):
 
         for i in tqdm(range(len(files))):
             _file = files[i]
-            station_data = self.read_file(_file,
-                                          var_name=var_name)
+            try:
+                station_data = self.read_file(_file, var_name=var_name)
+            except TemporalResolutionError as e:
+                const.print_log.warning(f'{repr(e)}. Skipping file...')
+                continue
 
             # to find the metadata quickly, we use a string internally
             _meta_key = '{}__{}'.format(station_data['station_id'], station_data['airpollutantcode'])
