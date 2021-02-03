@@ -39,7 +39,7 @@ from pyaerocom.molmasses import get_molmass
 import cf_units
 
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
-    mmol_air = get_molmass('air_dry')
+
     for stat in data:
         vmrdata = stat[vmrvar]
         meta = stat['meta']
