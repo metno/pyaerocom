@@ -254,8 +254,9 @@ class ReadEEAAQEREP(ReadUngriddedBase):
                     if idx in time_indexes:
                         # make the time string ISO compliant so that numpy can directly read it
                         # this is not very time string forgiving but fast
-                        dtstr = rows[idx][0:10]+'T'+rows[idx][11:19]+rows[idx][20:]
-                        data_dict[header[idx]][lineidx] = np.datetime64(dtstr)
+                        data_dict[header[idx]][lineidx] = np.datetime64(
+                            rows[idx][0:10]+'T'+rows[idx][11:19]+rows[idx][20:]
+                            )
                     else:
                         # data is not a time
                         # sometimes there's no value in the file. Set that to nan
@@ -430,9 +431,9 @@ class ReadEEAAQEREP(ReadUngriddedBase):
             string with the internal station key
         """
         ret_data = {}
-        ret_data['latitude'] = float(self._metadata[meta_key][self.LATITUDENAME])
-        ret_data['longitude'] = float(self._metadata[meta_key][self.LONGITUDENAME])
-        ret_data['altitude'] = float(self._metadata[meta_key][self.ALTITUDENAME])
+        ret_data['latitude'] = np.float(self._metadata[meta_key][self.LATITUDENAME])
+        ret_data['longitude'] = np.float(self._metadata[meta_key][self.LONGITUDENAME])
+        ret_data['altitude'] = np.float(self._metadata[meta_key][self.ALTITUDENAME])
         return ret_data
 
     def read(self, vars_to_retrieve=None,
