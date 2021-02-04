@@ -1121,7 +1121,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     ----
     Complete docstring
     """
-    coldata = _hack_fix_dryvelo3(coldata)
+    # coldata = _hack_fix_dryvelo3(coldata)
 
     if vert_code == 'ModelLevel':
         raise NotImplementedError('Coming soon...')
