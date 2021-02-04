@@ -81,8 +81,11 @@ class Config(object):
     #: EEA nmea
     EEA_NAME = 'EEAAQeRep'
 
-    #: EEA.NRT nmea
+    #: EEA.NRT name
     EEA_NRT_NAME = 'EEAAQeRep.NRT'
+
+    #: EEAV2 name
+    EEA_V2_NAME = 'EEAAQeRep.v2'
 
     #: Earlinet access name;
     EARLINET_NAME = 'EARLINET'
