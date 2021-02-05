@@ -1029,9 +1029,10 @@ class AerocomEvaluation(object):
                 if fnmatch(mname, search_pattern) and not mname in matches:
                     matches.append(mname)
         if len(matches) == 0:
-            raise KeyError('No observations could be found that match input {}.\n'
-                           'Choose from\n{}'
-                           .format(name_or_pattern, list(self.obs_config.keys())))
+            raise KeyError(
+                f'No observations could be found that match input '
+                f'{name_or_pattern}. Choose from {list(self.obs_config.keys())}'
+                )
         return matches
 
     def _check_and_get_iface_names(self):
@@ -1065,18 +1066,15 @@ class AerocomEvaluation(object):
                 f'No such super-observation {superobs_name}'
                 )
         sobs_cfg = self.obs_config[superobs_name]
-        if not sobs_cfg['superobs']:
+        if not sobs_cfg['is_superobs']:
             raise ValueError(f'Obs config entry for {superobs_name} is not '
-                             f'marked as a superobservation. Please add ')
-        if not 'obs_names' in sobs_cfg:
-            raise ValueError(
-                f'Missing entry obs_names in superobs config entry {sobs_cfg}'
-                )
+                             f'marked as a superobservation. Please add '
+                             f'is_superobs in config entry...')
 
         coldata_files = []
         coldata_resolutions = []
         vert_codes = []
-        obs_needed = sobs_cfg['obs_names']
+        obs_needed = sobs_cfg['obs_id']
         for obs_name in obs_needed:
             cdf = self.find_coldata_files(model_name, obs_name, var_name)
             if len(cdf) == 0 and try_colocate_if_missing:
@@ -1247,17 +1245,25 @@ class AerocomEvaluation(object):
                 if model_name in self.model_ignore:
                     self._log.info('Skipping model {}'.format(model_name))
                     continue
-
-                if not self.only_json:
-                    col = self.run_colocation(model_name, obs_name, var_name)
+                if self.obs_config[obs_name]['is_superobs']:
+                    try:
+                        self._run_superobs_entry(model_name, obs_name, var_name)
+                    except Exception as e:
+                        if raise_exceptions:
+                            raise
+                        const.print_log.warning(
+                            'failed to process superobs...')
                 else:
-                    col = None
-                if only_colocation:
-                    self._log.info('Skipping computation of json files for {}'
-                                   '/{}'.format(obs_name, model_name))
-                    continue
-                res = self.make_json_files(model_name, obs_name, var_name,
-                                           colocator=col)
+                    if not self.only_json:
+                        col = self.run_colocation(model_name, obs_name, var_name)
+                    else:
+                        col = None
+                    if only_colocation:
+                        self._log.info('Skipping computation of json files for {}'
+                                       '/{}'.format(obs_name, model_name))
+                        continue
+                    res = self.make_json_files(model_name, obs_name, var_name,
+                                               colocator=col)
 
         if update_interface:
             #self.clean_json_files()
