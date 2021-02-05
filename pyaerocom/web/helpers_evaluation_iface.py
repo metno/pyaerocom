@@ -142,13 +142,15 @@ def delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id):
         name of project, if None, then this project is used
     exp_name : str, optional
         name experiment, if None, then this project is used
+
     """
 
-    p = os.path.join(base_dir, proj_id, exp_id)
-    if not os.path.exists(p):
-        raise NameError('No such data directory found: {}'.format(p))
-
-    shutil.rmtree(p)
+    basedir = os.path.join(base_dir, proj_id, exp_id)
+    if not os.path.exists(basedir):
+        const.print_log.info('Nothing there to delete...')
+        return
+    const.print_log.info(f'Deleting everything under {basedir}')
+    shutil.rmtree(basedir)
 
 def get_all_config_files_evaluation_iface(config_dir):
     """
@@ -206,20 +208,7 @@ def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     new = sort_dict_by_name(current, pref_list=exp_order)
     write_json(new, menu_file, indent=4)
 
-def update_menu_evaluation_iface(config, ignore_experiments=None):
-    """Update menu for Aerocom Evaluation interface
-
-    The menu.json file is created based on the available json map files in the
-    map directory of an experiment.
-
-    Parameters
-    ----------
-    config : AerocomEvaluation
-        instance of config class that has all relevant paths specified
-    ignore_experiments : list, optional
-        list containing experiment IDs that may be in the current menu.json
-        file and that are supposed to be removed from it.
-    """
+def _get_available_results_dict(config):
     def var_dummy():
         """Helper that creates empty dict for variable info"""
         return {'type'      :   '',
@@ -227,28 +216,17 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
                 'name'      :   '',
                 'longname'  :   '',
                 'obs'       :   {}}
-
     new = {}
-    exp_id = config.exp_id
-    if ignore_experiments is None:
-        ignore_experiments = []
-    try:
-        tab = config.get_web_overview_table()
-    except FileNotFoundError:
-        import pandas as pd
-        tab = pd.DataFrame()
-
+    tab = config.get_web_overview_table()
     for index, info in tab.iterrows():
         obs_var, obs_name, vert_code, mod_name, mod_var = info
         if not obs_var in new:
-            const.print_log.info('Adding new observation variable: {}'
-                                 .format(obs_var))
             new[obs_var] = d = var_dummy()
             name, tp, cat = config.get_obsvar_name_and_type(obs_var)
 
             d['name'] = name
             d['type'] = tp
-            d['cat']  =cat
+            d['cat']  = cat
             d['longname'] = const.VARS[obs_var].description
         else:
             d = new[obs_var]
@@ -268,35 +246,86 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
         dobs_vert[mod_name] = {'dir' : mod_name,
                                'id'  : config.model_config[mod_name]['model_id'],
                                'var' : mod_var}
+    return new
 
-    if len(new)  > 0:
-        _new = {}
-        for var in config.var_order_menu:
-            try:
-                _new[var] = new[var]
-            except Exception:
-                const.print_log.info('No variable {} found'.format(var))
-        for var, info in new.items():
-            if not var in _new:
-                _new[var] = info
-        new = _new
+def _sort_menu_entries(avail, config):
+    """
+    Used in method :func:`update_menu_evaluation_iface`
+
+    Sorts results of different menu entries (i.e. variables, observations
+    and models).
+
+    Parameters
+    ----------
+    avail : dict
+        nested dictionary contining info about available results
+    config : AerocomEvaluation
+        Configuration class
+
+    Returns
+    -------
+    dict
+        input dictionary sorted in variable, obs and model layers. The order
+        of variables, observations and models may be specified in
+        AerocomEvaluation class and if not, alphabetic order is used.
+
+    """
+    # sort first layer (i.e. variables)
+    avail = sort_dict_by_name(avail, pref_list=config.var_order_menu)
 
     new_sorted = {}
-    for var, info in new.items():
+    for var, info in avail.items():
         new_sorted[var] = info
-        sorted_obs = sort_dict_by_name(info['obs'])
+        obs_order = config.obs_order_menu
+        sorted_obs = sort_dict_by_name(info['obs'],
+                                       pref_list=obs_order)
         new_sorted[var]['obs'] = sorted_obs
         for obs_name, vert_codes in sorted_obs.items():
             vert_codes_sorted = sort_dict_by_name(vert_codes)
             new_sorted[var]['obs'][obs_name] = vert_codes_sorted
             for vert_code, models in vert_codes_sorted.items():
-                models_sorted = sort_dict_by_name(models)
+                model_order = config.model_order_menu
+                models_sorted = sort_dict_by_name(models,
+                                                  pref_list=model_order)
                 new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
-    new_menu = {}
-    basedir = os.path.dirname(config.menu_file)
+    return new_sorted
+
+def _check_load_current_menu(config, ignore_experiments):
+    """
+    Load current menu.json file and return as dictionary
+
+    This is a private method used in :func:`update_menu_evaluation_iface`. It
+    also checks for outdated experiments for which no json files are
+    available anymore.
+
+    Parameters
+    ----------
+    config : AerocomEvaluation
+        instance of config class that has all relevant paths specified
+    ignore_experiments : list, optional
+        list of experiments that are supposed to be removed from the current
+        menu.
+
+    Returns
+    -------
+    dict
+        current menu as dictionary (cleared of outdated entries)
+
+
+    """
+    if ignore_experiments is None:
+        ignore_experiments = []
+    menu_file = config.menu_file
+    # toplevel directory under which all experiments for this project are
+    # stored. the menu.json is in there and contains all available experiments
+    # in addition to the on that is updated here.
+    basedir = os.path.dirname(menu_file)
+
+    # list of available experiments (sub directories in basedir)
     available_exps = os.listdir(basedir)
-    if os.path.exists(config.menu_file):
-        current = read_json(config.menu_file)
+    menu = {}
+    if os.path.exists(menu_file):
+        current = read_json(menu_file)
         for exp, submenu in current.items():
             if exp in ignore_experiments or len(submenu) == 0:
                 continue
@@ -304,19 +333,58 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
                 const.print_log.info('Removing outdated experiment {} from '
                                      'menu.json'.format(exp))
                 continue
-            new_menu[exp] = submenu
+            menu[exp] = submenu
 
-    if config.exp_id in new_menu:
+    if config.exp_id in menu:
         const.print_log.warning('Sub menu for experiment {} already exists in '
                                 'menu.json and will be overwritten'
                                 .format(config.exp_id))
-    if len(new_sorted) > 0:
-        new_menu[exp_id] = new_sorted
+    return menu
+
+def update_menu_evaluation_iface(config, ignore_experiments=None):
+    """Update menu for Aerocom Evaluation interface
+
+    The menu.json file is created based on the available json map files in the
+    map directory of an experiment.
+
+    Parameters
+    ----------
+    config : AerocomEvaluation
+        instance of config class that has all relevant paths specified
+    ignore_experiments : list, optional
+        list containing experiment IDs that may be in the current menu.json
+        file and that are supposed to be removed from it.
+    """
+
+    try:
+        avail = _get_available_results_dict(config)
+    except FileNotFoundError:
+        avail = {}
+
+    avail = _sort_menu_entries(avail, config)
+
+    menu = _check_load_current_menu(config, ignore_experiments)
+    if len(avail) > 0:
+        menu[config.exp_id] = avail
 
     with open(config.menu_file, 'w+') as f:
-        f.write(simplejson.dumps(new_menu, indent=4))
+        f.write(simplejson.dumps(menu, indent=4))
 
 def make_info_table_evaluation_iface(config):
+    """
+    Make an information table for an web experiment based on available results
+
+    Parameters
+    ----------
+    config : AerocomEvaluation
+        instance of evaluation class for the experiment
+
+    Returns
+    -------
+    dict
+        dictionary containing meta information
+
+    """
     from pyaerocom import ColocatedData
     import glob
     menu = config.menu_file
@@ -1053,9 +1121,10 @@ def _get_jsdate(coldata):
 
 def _resample_time_coldata(coldata, freq, colstp):
     return coldata.resample_time(freq,
-                apply_constraints=colstp.apply_time_resampling_constraints,
-                min_num_obs=colstp.min_num_obs,
-                colocate_time=colstp.colocate_time,
+                apply_constraints=colstp['apply_time_resampling_constraints'],
+                min_num_obs=colstp['min_num_obs'],
+                how=colstp['resample_how'],
+                colocate_time=colstp['colocate_time'],
                 inplace=False)
 
 def _init_data_default_frequencies(coldata, colocation_settings):
