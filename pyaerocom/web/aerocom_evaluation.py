@@ -6,6 +6,7 @@ import os
 import numpy as np
 import shutil
 import simplejson
+from traceback import format_exc
 
 
 # internal pyaerocom imports
@@ -247,7 +248,6 @@ class AerocomEvaluation(object):
                     )
 
             except Exception:
-                from traceback import format_exc
                 const.print_log.warning(
                     f'Failed to import config file for project {proj_id}, '
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
@@ -1059,18 +1059,8 @@ class AerocomEvaluation(object):
         """
         return self._check_and_get_iface_names()
 
-    def _run_superobs_entry(self, model_name, superobs_name, var_name,
-                            try_colocate_if_missing=True):
-        if not superobs_name in self.obs_config:
-            raise AttributeError(
-                f'No such super-observation {superobs_name}'
-                )
-        sobs_cfg = self.obs_config[superobs_name]
-        if not sobs_cfg['is_superobs']:
-            raise ValueError(f'Obs config entry for {superobs_name} is not '
-                             f'marked as a superobservation. Please add '
-                             f'is_superobs in config entry...')
-
+    def _run_superobs_entry_var(self, model_name, superobs_name, var_name,
+                                try_colocate_if_missing):
         coldata_files = []
         coldata_resolutions = []
         vert_codes = []
@@ -1094,7 +1084,7 @@ class AerocomEvaluation(object):
             vc = self.get_vert_code(obs_name, var_name)
             vert_codes.append(vc)
 
-        if len(np.unique(vert_codes)) > 1:
+        if len(np.unique(vert_codes)) > 1 or vert_codes[0] != self.get_vert_code(superobs_name, var_name):
             raise ValueError(
                 "Cannot merge observations with different vertical types into "
                 "super observation...")
@@ -1148,6 +1138,35 @@ class AerocomEvaluation(object):
                 web_iface_name=superobs_name,
                 diurnal_only=False
                 )
+
+    def _run_superobs_entry(self, model_name, superobs_name, var_name=None,
+                            raise_exceptions=None,
+                            try_colocate_if_missing=True):
+        if not superobs_name in self.obs_config:
+            raise AttributeError(
+                f'No such super-observation {superobs_name}'
+                )
+        sobs_cfg = self.obs_config[superobs_name]
+        if not sobs_cfg['is_superobs']:
+            raise ValueError(f'Obs config entry for {superobs_name} is not '
+                             f'marked as a superobservation. Please add '
+                             f'is_superobs in config entry...')
+        if isinstance(var_name, str):
+            process_vars = [var_name]
+        else:
+            process_vars = sobs_cfg['obs_vars']
+        for var_name in process_vars:
+            try:
+                self._run_superobs_entry_var(model_name,
+                                             superobs_name,
+                                             var_name,
+                                             try_colocate_if_missing)
+            except Exception:
+                if raise_exceptions:
+                    raise
+                const.print_log.warning(
+                    f'Failed to process superobs entry for {superobs_name},  '
+                    f'{model_name}, var {var_name}. Reason: {format_exc()}')
 
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
                        update_interface=True,
@@ -1247,7 +1266,8 @@ class AerocomEvaluation(object):
                     continue
                 if self.obs_config[obs_name]['is_superobs']:
                     try:
-                        self._run_superobs_entry(model_name, obs_name, var_name)
+                        self._run_superobs_entry(model_name, obs_name,
+                                                 var_name, raise_exceptions)
                     except Exception as e:
                         if raise_exceptions:
                             raise
