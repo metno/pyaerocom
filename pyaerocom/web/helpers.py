@@ -58,6 +58,9 @@ class ObsConfigEval(BrowseDict):
         vertical location code of observation instrument. This is used in
         the web interface for separating different categories of measurements
         such as "ground", "space" or "airborne".
+    is_superobs : bool
+        if True, this observation is a combination of several others which all
+        have to have their own obs config entry.
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
@@ -76,6 +79,8 @@ class ObsConfigEval(BrowseDict):
         self.obs_vert_type = None
         self.obs_aux_requires = {}
         self.instr_vert_loc = None
+
+        self.is_superobs=False
 
         self.read_opts_ungridded = None
 
@@ -107,7 +112,7 @@ class ObsConfigEval(BrowseDict):
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
 
-        if not isinstance(self.obs_id, (str, dict)):
+        if not self.is_superobs and not isinstance(self.obs_id, (str, dict)):
             raise ValueError('Invalid value for obs_id: {}. Need str or dict '
                          'or specification of ids and variables via '
                          'obs_compute_post'
