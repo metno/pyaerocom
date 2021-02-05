@@ -207,7 +207,7 @@ class UngriddedData(object):
                           .format(var, idx))
 
     @staticmethod
-    def from_station_data(stats):
+    def from_station_data(stats, add_meta_keys=None):
         """
         Create UngriddedData from input station data object(s)
 
@@ -215,6 +215,10 @@ class UngriddedData(object):
         ----------
         stats : list or StationData
             input data object(s)
+        add_meta_keys : list, optional
+            list of metadata keys that are supposed to be imported from the
+            input `StationData` objects, in addition to the default metadata
+            retrieved via :func:`StationData.get_meta`.
 
         Raises
         ------
@@ -228,7 +232,14 @@ class UngriddedData(object):
             ungridded data object created from input station data objects
 
         """
-
+        if add_meta_keys is None:
+            add_meta_keys = []
+        elif isinstance(add_meta_keys, str):
+            add_metad_keys = [add_meta_keys]
+        elif not isinstance(add_meta_keys, list):
+            raise ValueError(
+                f'Invalid input for add_meta_keys {add_meta_keys}... need list'
+                )
         if isinstance(stats, StationData):
             stats = [StationData]
         data_obj = UngriddedData(num_points=1000000)
@@ -249,6 +260,14 @@ class UngriddedData(object):
             metadata[meta_key].update(stat.get_meta(force_single_value=False,
                                                     quality_check=False,
                                                     add_none_vals=True))
+            for key in add_meta_keys:
+                try:
+                    val = stat[key]
+                except KeyError:
+                    val = 'undefined'
+
+                metadata[meta_key][key] = val
+
 
             metadata[meta_key]['var_info'] = od()
 
