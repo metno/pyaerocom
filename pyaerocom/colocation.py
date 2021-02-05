@@ -328,7 +328,9 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'obs_is_clim'       :   False,
             'pyaerocom'         :   pya_ver,
             'apply_constraints' :   apply_time_resampling_constraints,
-            'min_num_obs'       :   min_num_obs}
+            'min_num_obs'       :   min_num_obs,
+            'resample_how'      :   resample_how,
+            'outliers_removed'  :   remove_outliers}
 
     meta.update(regfilter.to_dict())
 
