@@ -72,6 +72,7 @@ if __name__ == "__main__":
         ReadEEAAQEREP_V2.FILE_MASKS['concso2'] = '**/AT*_1_*_timeseries.csv'
         ReadEEAAQEREP_V2.FILE_MASKS['concpm10'] = '**/XK*_5_*_timeseries.csv'
         ReadEEAAQEREP_V2.FILE_MASKS['conco3'] = '**/XK*_7_*_timeseries.csv'
+        ReadEEAAQEREP_V2.FILE_MASKS['vmro3'] = '**/XK*_7_*_timeseries.csv'
         ReadEEAAQEREP_V2.FILE_MASKS['concno2'] = '**/XK*_8_*_timeseries.csv'
         ReadEEAAQEREP_V2.FILE_MASKS['concno2'] = '**/AT*_8_*_timeseries.csv'
         ReadEEAAQEREP_V2.FILE_MASKS['concco'] = '**/AT*_10_*_timeseries.csv'
@@ -81,6 +82,7 @@ if __name__ == "__main__":
         station_id['concso2'] = 'AT31703'
         station_id['concpm10'] = 'XK0001A'
         station_id['conco3'] = 'XK0002A'
+        station_id['vmro3'] = 'XK0002A'
         station_id['concno2'] = 'XK0002A'
         station_id['concno2'] = 'AT31703'
         station_id['concco'] = 'XK0002A'
@@ -98,10 +100,22 @@ if __name__ == "__main__":
             data = r.read(vars_to_retrieve = [var_name])
             print('{} data read'.format(var_name))
             try:
-                print(data[station_id[var_name]])
-                print(data[station_id[var_name]][var_name])
+                stat_data = data[station_id[var_name]]
+                print('{} @ station {} mean: {} [{}]'.format(var_name, station_id[var_name],
+                                                             stat_data[var_name].mean(),
+                                                             stat_data['var_info'][var_name]['units']))
+                # print(data[station_id[var_name]])
+                # print(data[station_id[var_name]][var_name])
             except:
                 print('failed test var {}'.format(var_name))
                 pass
 
+    elif username == 'jonasg':
+        # Test that the reading routine works
+        from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+
+        ddir = '/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download'
+        reader = ReadEEAAQEREP_V2(data_dir=ddir)
+
+        data = reader.read(['conco3'], last_file=1)
 

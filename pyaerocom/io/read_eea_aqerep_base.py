@@ -45,9 +45,10 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
 
-
 from pyaerocom.io.helpers import get_country_name_from_iso
+from pyaerocom.io.helpers_units import unitconv_concx_to_vmrx
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+
 
 class ReadEEAAQEREPBase(ReadUngriddedBase):
     """Class for reading EEA AQErep data
@@ -80,41 +81,52 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
     #: sampling frequencies found in data files
     TS_TYPES_FILE = {
-        'hour' : 'hourly',
-        'day'  : 'daily',
-        }
+        'hour': 'hourly',
+        'day': 'daily',
+    }
 
     #: Dictionary specifying values corresponding to invalid measurements
     #: there's no value for NaNs in this data set. It uses an empty string
-    NAN_VAL ={}
+    NAN_VAL = {}
 
     #: Dictionary specifying the file column names (values) for each Aerocom
     #: variable (keys)
     # There's only one variable in each file named concentration
     VAR_NAMES_FILE = {}
     VAR_NAMES_FILE['concso2'] = 'concentration'
-    VAR_NAMES_FILE['concpm10'] = 'concentration'
     VAR_NAMES_FILE['conco3'] = 'concentration'
     VAR_NAMES_FILE['concno2'] = 'concentration'
     VAR_NAMES_FILE['concco'] = 'concentration'
     VAR_NAMES_FILE['concno'] = 'concentration'
+    VAR_NAMES_FILE['vmro3'] = 'concentration'
+    VAR_NAMES_FILE['concpm10'] = 'concentration'
     VAR_NAMES_FILE['concpm25'] = 'concentration'
-
 
     #: units of variables in files (needs to be defined for each variable supported)
     VAR_UNITS_FILE = {
-        'µg/m3' : 'ug m-3'
-        }
+        'µg/m3': 'ug m-3',
+        'mg/m3': 'mg m-3',
+        'ppb': 'ppb'
+    }
 
     #: file masks for the data files
     FILE_MASKS = {}
     FILE_MASKS['concso2'] = '**/*_1_*_timeseries.csv'
     FILE_MASKS['concpm10'] = '**/*_5_*_timeseries.csv'
     FILE_MASKS['conco3'] = '**/*_7_*_timeseries.csv'
+    FILE_MASKS['vmro3'] = '**/*_7_*_timeseries.csv'
     FILE_MASKS['concno2'] = '**/*_8_*_timeseries.csv'
     FILE_MASKS['concco'] = '**/*_10_*_timeseries.csv'
     FILE_MASKS['concno'] = '**/*_38_*_timeseries.csv'
     FILE_MASKS['concpm25'] = '**/*_6001_*_timeseries.csv'
+
+    # conversion factor between concX and vmrX
+    CONV_FACTOR = {}
+    CONV_FACTOR['vmro3'] = np.float_(0.5)
+
+    # unit of the converted property after the conversion
+    CONV_UNIT = {}
+    CONV_UNIT['vmro3'] = 'ppb'
 
     #: field name of the start time of the measurement (in lower case)
     START_TIME_NAME = 'datetimebegin'
@@ -158,7 +170,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     LATITUDENAME = 'latitude'
 
     #: name of longitude variable in metadata file
-    LONGITUDENAME= 'longitude'
+    LONGITUDENAME = 'longitude'
 
     #: name of altitude variable in metadata file
     ALTITUDENAME = 'altitude'
@@ -174,6 +186,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     # But by changing the base path
     # and this constant, it can also read the E1a data set
     DATA_PRODUCT = ''
+
+    AUX_REQUIRES = {'vmro3': ['conco3'], }
+
+    AUX_FUNS = {
+        'vmro3': unitconv_concx_to_vmrx, }
 
     def __init__(self, data_dir=None):
         super(ReadEEAAQEREPBase, self).__init__(None, dataset_path=data_dir)
@@ -222,11 +239,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         file_delimiter = self.FILE_COL_DELIM
         # this lists the data to keep from the original read string
         # this becomes a time series
-        file_indexes_to_keep = [11,13,14,15,16]
+        file_indexes_to_keep = [11, 13, 14, 15, 16]
         # this is some header information
-        header_indexes_to_keep = [0,3,8,9,10,12,]
+        header_indexes_to_keep = [0, 3, 8, 9, 10, 12, ]
         # These are the indexes with a time and are stored as np.datetime64
-        time_indexes = [13,14]
+        time_indexes = [13, 14]
 
         # read the file
         # file_data = []
@@ -258,7 +275,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         if header[idx] != self.VAR_CODE_NAME:
                             data_dict[header[idx]] = rows[idx]
                         else:
-                            #extract the EEA var code from the URL noted in the data file
+                            # extract the EEA var code from the URL noted in the data file
                             data_dict[header[idx]] = rows[idx].split('/')[-1]
 
                 for idx in file_indexes_to_keep:
@@ -267,8 +284,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         # make the time string ISO compliant so that numpy can directly read it
                         # this is not very time string forgiving but fast
                         data_dict[header[idx]][lineidx] = np.datetime64(
-                            rows[idx][0:10]+'T'+rows[idx][11:19]+rows[idx][20:]
-                            )
+                            rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
+                        )
                     else:
                         # data is not a time
                         # sometimes there's no value in the file. Set that to nan
@@ -280,6 +297,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 lineidx += 1
 
         unit_in_file = data_dict['unitofmeasurement']
+        # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES
+        if var_name in self.AUX_REQUIRES:
+            unit_in_file = self.CONV_UNIT[var_name]
+            data_dict[self.VAR_NAMES_FILE[var_name]] = \
+                data_dict[self.VAR_NAMES_FILE[var_name]] * self.CONV_FACTOR[var_name]
         try:
             unit = self.VAR_UNITS_FILE[unit_in_file]
         except KeyError:
@@ -310,7 +332,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         data_out['var_info'][aerocom_var_name] = od()
         data_out['var_info'][aerocom_var_name]['units'] = unit
         # TsType is
-        #data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
+        # data_out['var_info'][aerocom_var_name]['ts_type'] = self.TS_TYPE
 
         for key, value in data_dict.items():
             # adjust the variable name to aerocom standard
@@ -320,7 +342,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 data_out[aerocom_var_name] = value[:lineidx]
 
         # just assume hourly data for now
-        time_diff = np.timedelta64(30,'m')
+        time_diff = np.timedelta64(30, 'm')
         data_out['dtime'] = data_dict[self.START_TIME_NAME][:lineidx] + time_diff
         # convert data vectors to pandas.Series (if attribute
         # vars_as_series=True)
@@ -329,7 +351,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                                                    index=data_out['dtime'])
 
         return data_out
-
 
     def _read_metadata_file(self, filename=None):
         """Read EEA metadata file
@@ -377,7 +398,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         # data_dict[header[idx]] = rows[idx]
                         temp_dict[header[idx]] = rows[idx]
                     else:
-                        #extract the EEA var code from the URL noted in the data file
+                        # extract the EEA var code from the URL noted in the data file
                         # data_dict[header[idx]] = rows[idx].split('/')[-1]
                         temp_dict[header[idx]] = rows[idx].split('/')[-1]
 
@@ -390,7 +411,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         self.logger.info("Reading file {} done".format(filename))
         return struct_data
-
 
     def get_file_list(self, pattern=None):
         """Search all files to be read
@@ -427,9 +447,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             raise DataSourceError('No files could be detected matching file '
                                   'mask {} in dataset {}, files in folder {}:\n'
                                   'Files in folder:{}'.format(pattern,
-                                  self.dataset_to_read,
-                                  self.DATASET_PATH,
-                                  all_str))
+                                                              self.dataset_to_read,
+                                                              self.DATASET_PATH,
+                                                              all_str))
         self.files = files
         return files
 
@@ -501,7 +521,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             last_file = len(files)
 
         if metadatafile is None:
-            metadatafile = os.path.join(self.DATASET_PATH,self.DEFAULT_METADATA_FILE)
+            metadatafile = os.path.join(self.DATASET_PATH, self.DEFAULT_METADATA_FILE)
 
         files = files[first_file:last_file]
 
@@ -541,7 +561,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             meta_idx[meta_key] = od()
             metadata[meta_key].update(station_data.get_meta())
             metadata[meta_key].update(self.get_station_coords(_meta_key))
-            metadata[meta_key]['variables'] = list(station_data.var_info.keys()) #vars_to_retrieve
+            metadata[meta_key]['variables'] = list(station_data.var_info.keys())  # vars_to_retrieve
             metadata[meta_key]['station_classification'] = self._metadata[_meta_key]['airqualitystationtype']
             metadata[meta_key]['area_classification'] = self._metadata[_meta_key]['airqualitystationarea']
             try:
@@ -577,14 +597,14 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
                 # Assigning lat, lon, alt is not needed since they are not
                 # assigned in the StationData
-# =============================================================================
-#                 data_obj._data[start:stop, data_obj._LATINDEX
-#                 ] = station_data['latitude']
-#                 data_obj._data[start:stop, data_obj._LONINDEX
-#                 ] = station_data['longitude']
-#                 data_obj._data[start:stop, data_obj._ALTITUDEINDEX
-#                 ] = station_data['altitude']
-# =============================================================================
+                # =============================================================================
+                #                 data_obj._data[start:stop, data_obj._LATINDEX
+                #                 ] = station_data['latitude']
+                #                 data_obj._data[start:stop, data_obj._LONINDEX
+                #                 ] = station_data['longitude']
+                #                 data_obj._data[start:stop, data_obj._ALTITUDEINDEX
+                #                 ] = station_data['altitude']
+                # =============================================================================
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
@@ -605,21 +625,19 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         # Shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
-        #data_obj.data_revision[self.DATASET_NAME] = self.data_revision
+        # data_obj.data_revision[self.DATASET_NAME] = self.data_revision
         self.data = data_obj
         self._metadata = None
 
         return data_obj
 
 
-
 if __name__ == "__main__":
-
     # Test that the reading routine works
     from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
     import logging
+
     ddir = '/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download'
     reader = ReadEEAAQEREP(data_dir=ddir)
 
     data = reader.read(['conco3'], last_file=1)
-
