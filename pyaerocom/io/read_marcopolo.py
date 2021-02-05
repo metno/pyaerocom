@@ -71,7 +71,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
     FILE_COL_DELIM = ','
 
     #: Version log of this class (for caching)
-    __version__ = '0.01'
+    __version__ = '0.02'
 
     #: Default data ID
     DATA_ID = 'MarcoPolo'
@@ -191,15 +191,9 @@ class ReadMarcoPolo(ReadUngriddedBase):
             stat = {}
             for meta_key, col_num in col_idx.items():
                 stat[meta_key] = dtypes[meta_key](row[col_num])
-            sid = stat['station_id']
-# =============================================================================
-#             sname, city = stat['station_name'], stat['city']
-#             sname = f'{sid} ({sname}, {city})'
-# =============================================================================
-            stat['station_name'] = sid
             stat['data_id'] = self.data_id
             stat['ts_type'] = self.TS_TYPE
-            stats[sid] = stat
+            stats[stat['station_id']] = stat
 
         return stats
 
