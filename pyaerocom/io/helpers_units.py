@@ -1,4 +1,5 @@
 from scipy.constants import Avogadro
+import numpy as np
 
 def mass_to_nr_molecules(mass, mm):
     """ Calculating the number of molecules form mass and molarmass.
@@ -202,3 +203,29 @@ def unitconv_wet_depo_from_emep(data, time, ts_type = "monthly"):
     monthly_to_sec = days_in_month*24*60*60
     mass_pr_square_m_pr_sek = mass_SO4*10000/monthly_to_sec
     return mass_pr_square_m_pr_sek
+
+def unitconv_concx_to_vmrx(input_data, var_name):
+    """ calculates vmr from conc values.
+
+    Parameters
+    ---------------
+    input_data: ndarray
+        array of values in any arbitrary unit that fits to the conversion factor
+
+    var_name : float
+        conversion factor from input unit to output unit
+
+    Returns
+    ---------------------
+    output_data : ndarray
+        input data in output unit
+    """
+
+    conv_factors = {}
+    conv_factors['vmro3'] = np.float_(0.5)
+
+    try:
+        output_data = input_data * conv_factors[var_name]
+    except KeyError:
+        output_data = input_data
+    return output_data
