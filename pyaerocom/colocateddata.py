@@ -925,9 +925,9 @@ class ColocatedData(object):
                 for to, how in val.items():
                     for fr, num in how.items():
                         min_num_obs += f'{to},{fr},{num};'
-
-        if out is not None:
-            meta_out['_min_num_obs'] = min_num_obs
+                meta_out['_min_num_obs'] = min_num_obs
+            else:
+                meta_out[key] = val
         return meta_out
 
     def to_netcdf(self, out_dir, savename=None, **kwargs):
@@ -953,8 +953,9 @@ class ColocatedData(object):
             savename = self.savename_aerocom
         if not savename.endswith('.nc'):
             savename = '{}.nc'.format(savename)
-        arr = self.data
-        meta = self._prepare_meta_to_netcdf()
+        arr = self.data.copy()
+        arr.attrs = self._prepare_meta_to_netcdf()
+
         arr.to_netcdf(path=os.path.join(out_dir, savename), **kwargs)
 
     def _min_num_obs_fromstr(self, infostr):
