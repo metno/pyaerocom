@@ -347,9 +347,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
 
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
-              'var_name'    : ('data_source', meta['var_name']),
-              'var_units'   : ('data_source', meta['var_units']),
-              'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time,
               'latitude'    : lats,
               'longitude'   : lons}
@@ -863,6 +860,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'pyaerocom'         :   pya_ver,
             'apply_constraints' :   apply_time_resampling_constraints,
             'min_num_obs'       :   min_num_obs,
+            'resample_how'      :   resample_how,
             'outliers_removed'  :   remove_outliers}
 
 
@@ -870,9 +868,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],
-              'var_name'    : ('data_source', meta['var_name']),
-              'var_units'   : ('data_source', meta['var_units']),
-              'ts_type_src' : ('data_source', meta['ts_type_src']),
               'time'        : time_idx,
               'station_name': station_names,
               'latitude'    : ('station_name', lats),
