@@ -34,7 +34,7 @@ class ReadAirNow(ReadUngriddedBase):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: Version log of this class (for caching)
-    __version__ = '0.04'
+    __version__ = '0.06'
 
     #: Column delimiter
     FILE_COL_DELIM = '|'
@@ -55,26 +55,26 @@ class ReadAirNow(ReadUngriddedBase):
             'city'              : 'city',
             'address'           : 'address',
             'timezone'          : 'timezone',
-            'environment'       : 'environment',
+            'environment'       : 'area_classification',
+            'populationclass'   : 'station_classification',
             'modificationdate'  : 'modificationdate',
-            'populationclass'   : 'classification',
             'comment'           : 'comment'
             }
 
     #: conversion functions for metadata dtypes
     STATION_META_DTYPES = {
-            'station_id'        : str,
-            'station_name'      : str,
-            'latitude'          : float,
-            'longitude'         : float,
-            'altitude'          : float,
-            'city'              : str,
-            'address'           : str,
-            'timezone'          : str,
-            'environment'       : str,
-            'modificationdate'  : str,
-            'classification'    : str,
-            'comment'           : str
+            'station_id'                : str,
+            'station_name'              : str,
+            'latitude'                  : float,
+            'longitude'                 : float,
+            'altitude'                  : float,
+            'city'                      : str,
+            'address'                   : str,
+            'timezone'                  : str,
+            'area_classification'       : str,
+            'station_classification'    : str,
+            'modificationdate'          : str,
+            'comment'                   : str
             }
 
     #: strings to be replaced in original station names
@@ -431,7 +431,11 @@ class ReadAirNow(ReadUngriddedBase):
 
         stats = self._read_files(files, vars_to_retrieve)
 
-        data = UngriddedData.from_station_data(stats)
+        data = UngriddedData.from_station_data(stats,
+                                               add_meta_keys=['timezone',
+                                                              'area_classification',
+                                                              'station_classification']
+                                               )
 
         return data
 
