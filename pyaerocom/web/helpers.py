@@ -61,6 +61,9 @@ class ObsConfigEval(BrowseDict):
     is_superobs : bool
         if True, this observation is a combination of several others which all
         have to have their own obs config entry.
+    only_superobs : bool
+        this indicates whether this configuration is only to be used as part
+        of a superobs network, and not individually.
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
@@ -81,6 +84,7 @@ class ObsConfigEval(BrowseDict):
         self.instr_vert_loc = None
 
         self.is_superobs=False
+        self.only_superobs=False
 
         self.read_opts_ungridded = None
 
