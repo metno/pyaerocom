@@ -687,8 +687,6 @@ class AerocomEvaluation(object):
         """
         Synchronise content of heatmap json files with content of menu.json
 
-        Missing hea
-
         Raises
         ------
         ValueError
@@ -1064,7 +1062,7 @@ class AerocomEvaluation(object):
         coldata_files = []
         coldata_resolutions = []
         vert_codes = []
-        obs_needed = sobs_cfg['obs_id']
+        obs_needed = self.obs_config[superobs_name]['obs_id']
         for obs_name in obs_needed:
             cdf = self.find_coldata_files(model_name, obs_name, var_name)
             if len(cdf) == 0 and try_colocate_if_missing:
@@ -1273,6 +1271,11 @@ class AerocomEvaluation(object):
                             raise
                         const.print_log.warning(
                             'failed to process superobs...')
+                elif self.obs_config[obs_name]['only_superobs']:
+                    const.print_log.info(
+                        f'Skipping json processing of {obs_name}, as this is '
+                        f'marked to be used only as part of a superobs '
+                        f'network')
                 else:
                     if not self.only_json:
                         col = self.run_colocation(model_name, obs_name, var_name)
@@ -1288,7 +1291,7 @@ class AerocomEvaluation(object):
         if update_interface:
             #self.clean_json_files()
             self.update_interface()
-
+        const.print_log.info('Finished processing.')
         return res
 
     def info_string_evalrun(self, obs_list, model_list):
