@@ -599,9 +599,9 @@ def _check_flatten_latlon_dims(coldata):
                                                         'longitude'))
     return coldata
 
-def _prepare_default_regions_json():
+def _prepare_regions_json_helper(region_names):
     regs = {}
-    for regname in get_all_default_region_ids():
+    for regname in region_names:
         reg = Region(regname)
         regs[regname] = r = {}
         latr = reg.lat_range
@@ -612,22 +612,31 @@ def _prepare_default_regions_json():
         r['maxLon'] = lonr[1]
     return regs
 
+def _prepare_default_regions_json():
+    return _prepare_regions_json_helper(get_all_default_region_ids())
+
+def _prepare_htap_regions_json():
+    return _prepare_regions_json_helper(const.HTAP_REGIONS)
+
 def init_regions_web(coldata, regions_how):
     default_regs = _prepare_default_regions_json()
+    regs = {}
     if regions_how == 'default':
-        return default_regs
+        regs = default_regs
         #region_ids = get_all_default_region_ids()
     elif regions_how == 'country':
         regs = {}
         regs['WORLD'] = default_regs['WORLD']
         coldata.check_set_countries(True)
         regs.update(coldata.get_country_codes())
-        return regs
         #region_ids = coldata.countries_available
     elif regions_how == 'htap':
-        raise NotImplementedError('Support for HTAP regions is coming soon')
+        regs = {}
+        regs['WORLD'] = default_regs['WORLD']
+        regs.update(_prepare_htap_regions_json())
     else:
         raise ValueError('Invalid input for regions_how', regions_how)
+    return regs
 
 def update_regions_json(region_defs, regions_json):
     if os.path.exists(regions_json):
