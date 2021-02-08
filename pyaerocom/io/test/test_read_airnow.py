@@ -27,7 +27,7 @@ class TestReadAirNow(object):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: version log of this class (for caching)
-    __version__ = '0.04'
+    __version__ = '0.06'
 
     #: column delimiter
     FILE_COL_DELIM = '|'
@@ -40,33 +40,27 @@ class TestReadAirNow(object):
 
     #: mapping of columns in station metadata file to pyaerocom standard
     STATION_META_MAP = {
-            'aqsid'             : 'station_id',
-            'name'              : 'station_name',
-            'lat'               : 'latitude',
-            'lon'               : 'longitude',
-            'elevation'         : 'altitude',
-            'city'              : 'city',
-            'address'           : 'address',
-            'timezone'          : 'timezone',
-            'environment'       : 'environment',
-            'modificationdate'  : 'modificationdate',
-            'populationclass'   : 'classification',
-            'comment'           : 'comment'
+           'aqsid': 'station_id', 'name': 'station_name', 'lat': 'latitude',
+           'lon': 'longitude', 'elevation': 'altitude', 'city': 'city',
+           'address': 'address', 'timezone': 'timezone',
+           'environment': 'area_classification',
+           'populationclass': 'station_classification',
+           'modificationdate': 'modificationdate', 'comment': 'comment'
             }
 
     STATION_META_DTYPES = {
-            'station_id'        : str,
-            'station_name'      : str,
-            'latitude'          : float,
-            'longitude'         : float,
-            'altitude'          : float,
-            'city'              : str,
-            'address'           : str,
-            'timezone'          : str,
-            'environment'       : str,
-            'modificationdate'  : str,
-            'classification'    : str,
-            'comment'           : str
+            'station_id'            : str,
+            'station_name'          : str,
+            'latitude'              : float,
+            'longitude'             : float,
+            'altitude'              : float,
+            'city'                  : str,
+            'address'               : str,
+            'timezone'              : str,
+            'area_classification'   : str,
+            'modificationdate'      : str,
+            'station_classification': str,
+            'comment'               : str
             }
 
     REPLACE_STATNAME = {'&' : 'and',

@@ -34,7 +34,7 @@ def test_ObsConfigEval_keys():
     cfg = h.ObsConfigEval(obs_id='Bla', obs_vars='Blub', obs_vert_type='Column')
     keys = ['obs_id', 'obs_type', 'obs_vars', 'obs_ts_type_read',
             'obs_vert_type', 'obs_aux_requires', 'instr_vert_loc',
-            'read_opts_ungridded']
+            'is_superobs', 'only_superobs', 'read_opts_ungridded']
     assert len(keys) == len(cfg)
     assert [x in cfg for x in keys]
 
