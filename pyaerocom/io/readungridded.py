@@ -30,6 +30,7 @@ from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.io.read_gaw import ReadGAW
 from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
+from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_marcopolo import ReadMarcoPolo
 
@@ -60,7 +61,8 @@ class ReadUngridded(object):
                          ReadGhost,
                          ReadAirNow,
                          ReadMarcoPolo,
-                         ReadEEAAQEREP]
+                         ReadEEAAQEREP,
+                         ReadEEAAQEREP_V2]
 
     DONOTCACHE_NAME = 'DONOTCACHE'
     def __init__(self, datasets_to_read=None, vars_to_retrieve=None,
