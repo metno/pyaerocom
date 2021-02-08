@@ -345,7 +345,7 @@ def valid_default_region(name):
 if __name__=="__main__":
     import pyaerocom as pya
     res = {}
-    for reg in pya.const.HTAP_REGIONS:
+    for reg in pya.region_defs.HTAP_REGIONS:
 
         mask = pya.helpers_landsea_masks.load_region_mask_xr(reg)
         res[reg] = info = pya.helpers_landsea_masks.get_lat_lon_range_mask_region(mask)

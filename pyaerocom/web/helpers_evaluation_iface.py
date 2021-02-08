@@ -18,11 +18,11 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import DataDimensionError, TemporalResolutionError
+from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
-                              get_all_default_regions, Region)
+                              Region)
 
-#from pyaerocom import __version__ as PYA_VERSION
 def make_info_string(stp):
     """
     Convert instance of :class:`AerocomEvaluation` into a descriptive string
@@ -617,10 +617,10 @@ def _prepare_default_regions_json():
     return _prepare_regions_json_helper(get_all_default_region_ids())
 
 def _prepare_aerocom_regions_json():
-    return _prepare_regions_json_helper(const.OLD_AEROCOM_REGIONS)
+    return _prepare_regions_json_helper(OLD_AEROCOM_REGIONS)
 
 def _prepare_htap_regions_json():
-    return _prepare_regions_json_helper(const.HTAP_REGIONS)
+    return _prepare_regions_json_helper(HTAP_REGIONS_DEFAULT)
 
 def init_regions_web(coldata, regions_how):
     regborders, regs = {}, {}

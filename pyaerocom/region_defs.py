@@ -22,26 +22,27 @@ _AEROCOM_DEFS = {
     }
 
 _HTAP_DEFS = {
-    'PAN': {'lat_range': [-54.75, 11.55], 'lon_range': [-23.05, 109.55], 'lon_range_plot': [-23.05, 109.55]},
-    'EAS': {'lat_range': [18.25, 53.55], 'lon_range': [-107.05, -36.45], 'lon_range_plot': [-107.05, -36.45]},
-    'NAF': {'lat_range': [19.05, 37.25], 'lon_range': [-74.45, -38.05], 'lon_range_plot': [-74.45, -38.05]},
-    'MDE': {'lat_range': [12.15, 39.65], 'lon_range': [-79.25, -24.25], 'lon_range_plot': [-79.25, -24.25]},
-    'LAND': {'lat_range': [-59.45, 71.15], 'lon_range': [-142.35, 118.85], 'lon_range_plot': [-142.35, 118.85]},
-    'SAS': {'lat_range': [-9.75, 37.05], 'lon_range': [-74.05, 19.55], 'lon_range_plot': [-74.05, 19.55]},
-    'SPO': {'lat_range': [-89.95, -60.05], 'lon_range': [120.05, 179.95], 'lon_range_plot': [120.05, 179.95]},
-    'OCN': {'lat_range': [-59.95, 66.25], 'lon_range': [-132.55, 119.95], 'lon_range_plot': [-132.55, 119.95]},
-    'SEA': {'lat_range': [-11.65, 28.45], 'lon_range': [-56.85, 23.35], 'lon_range_plot': [-56.85, 23.35]},
-    'RBU': {'lat_range': [29.45, 66.25], 'lon_range': [-132.45, -58.85], 'lon_range_plot': [-132.45, -58.85]},
-    'EEUROPE': {'lat_range': [34.65, 59.55], 'lon_range': [-119.05, -69.25], 'lon_range_plot': [-119.05, -69.25]},
-    'NAM': {'lat_range': [18.95, 71.15], 'lon_range': [-142.35, -37.95], 'lon_range_plot': [-142.35, -37.95]},
-    'WEUROPE': {'lat_range': [27.75, 66.45], 'lon_range': [-132.95, -55.55], 'lon_range_plot': [-132.95, -55.55]},
-    'SAF': {'lat_range': [-54.45, 27.25], 'lon_range': [-54.55, 108.95], 'lon_range_plot': [-54.55, 108.95]},
-    'USA': {'lat_range': [18.95, 49.35], 'lon_range': [-98.75, -37.95], 'lon_range_plot': [-98.75, -37.95]},
-    'SAM': {'lat_range': [-59.45, 5.15], 'lon_range': [-10.35, 118.85], 'lon_range_plot': [-10.35, 118.85]},
-    'EUR': {'lat_range': [27.75, 66.45], 'lon_range': [-132.95, -55.55], 'lon_range_plot': [-132.95, -55.55]},
-    'NPO': {'lat_range': [59.85, 89.95], 'lon_range': [-179.95, -119.75], 'lon_range_plot': [-179.95, -119.75]},
-    'MCA': {'lat_range': [-4.15, 32.65], 'lon_range': [-65.35, 8.25], 'lon_range_plot': [-65.35, 8.25]}
-    }
+    'PAN': {'lat_range': [-54.74999999999966, 11.550000000000823], 'lon_range': [-179.15000000000006, 179.94999999998808]},
+    'EAS': {'lat_range': [18.25000000000084, 53.55000000000134], 'lon_range': [73.64999999999412, 145.74999999999002]},
+     'NAF': {'lat_range': [19.05000000000085, 37.25000000000111], 'lon_range': [-17.050000000005937, 35.74999999999427]},
+     'MDE': {'lat_range': [12.150000000000821, 39.65000000000114], 'lon_range': [34.24999999999425, 63.249999999994664]},
+     'LAND': {'lat_range': [-59.449999999999726, 71.15000000000109], 'lon_range': [-179.95000000000002, 179.94999999998808]},
+     'SAS': {'lat_range': [-9.749999999999135, 37.050000000001106], 'lon_range': [46.349999999994424, 97.34999999999278]},
+     'SPO': {'lat_range': [-89.94999999999831, -60.049999999999734], 'lon_range': [-179.95000000000002, 179.94999999998808]},
+     'OCN': {'lat_range': [-59.94999999999973, 66.25000000000136], 'lon_range': [-179.95000000000002, 179.94999999998808]},
+     'SEA': {'lat_range': [-11.649999999999128, 28.450000000000983], 'lon_range': [92.24999999999307, 155.94999999998944]},
+     'RBU': {'lat_range': [29.450000000000998, 66.25000000000136], 'lon_range': [-179.95000000000002, 179.94999999998808]},
+     'EEUROPE': {'lat_range': [34.65000000000107, 59.550000000001425], 'lon_range': [12.14999999999401, 44.7499999999944]},
+     'NAM': {'lat_range': [18.95000000000085, 71.15000000000109], 'lon_range': [-178.95000000000007, 179.7499999999881]},
+     'WEUROPE': {'lat_range': [27.750000000000973, 66.45000000000135], 'lon_range': [-31.25000000000614, 31.449999999994215]},
+     'SAF': {'lat_range': [-54.449999999999655, 27.250000000000966], 'lon_range': [-25.350000000006055, 77.5499999999939]},
+     'USA': {'lat_range': [18.95000000000085, 49.35000000000128], 'lon_range': [-159.75000000000117, -56.250000000006494]},
+     'SAM': {'lat_range': [-59.449999999999726, 5.150000000000846], 'lon_range': [-109.35000000000403, -26.250000000006068]},
+     'EUR': {'lat_range': [27.750000000000973, 66.45000000000135], 'lon_range': [-31.25000000000614, 44.7499999999944]},
+     'NPO': {'lat_range': [59.85000000000143, 89.95000000000002], 'lon_range': [-179.95000000000002, 179.94999999998808]},
+     'MCA': {'lat_range': [-4.149999999999155, 32.65000000000104], 'lon_range': [-118.35000000000352, -51.65000000000643]}
+ }
+
 
 _OTHER_REG_DEFS = {'NHEMISPHERE': {'lat_range': [0, 90], 'lon_range': [-180, 180], 'lon_range_plot': [-180, 180]},
                    'SHEMISPHERE': {'lat_range': [-90, 0], 'lon_range': [-180, 180], 'lon_range_plot': [-180, 180]}}
@@ -80,13 +81,12 @@ REGION_NAMES = {
     }
 
 OLD_AEROCOM_REGIONS = list(_AEROCOM_DEFS)
-HTAP_REGIONS = list(_HTAP_NAMES)
+HTAP_REGIONS_DEFAULT = list(_HTAP_NAMES)
+HTAP_REGIONS = list(_HTAP_DEFS)
 OTHER_REGIONS = list(_OTHER_REG_DEFS)
 
 for key in REGION_NAMES:
     assert key in REGION_DEFS, key
-print('BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
-
 
 
 
