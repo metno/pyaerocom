@@ -1249,9 +1249,10 @@ class ColocatedData(object):
 
         latr, lonr = self.data.attrs['lat_range'], self.data.attrs['lon_range']
         if np.equal(latr, lat_range).all() and np.equal(lonr, lon_range).all():
-            const.print_log.info('Filtering of lat_range={} and lon_range={} '
-                                 'results in unchanged object, returning self'
-                                 .format(lon_range, lat_range))
+            const.logger.info(
+                f'Filtering of lat_range={lat_range} and lon_range={lon_range} '
+                f'results in unchanged object'
+                )
             return self
 
         if lat_range[0] < latr[0]:

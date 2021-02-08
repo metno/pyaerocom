@@ -218,6 +218,50 @@ def check_all_htap_available():
     """
     return get_htap_mask_files(*available_htap_masks())
 
+def get_lat_lon_range_mask_region(mask, latdim_name=None,
+                                  londim_name=None):
+    """
+    Get outer lat/lon rectangle of a binary mask
+
+    Parameters
+    ----------
+    mask : xr.DataArray
+        binary mask
+    latdim_name : str, optional
+        Name of latitude dimension. The default is None, in which case lat is
+        assumed.
+    londim_name : str, optional
+        Name of longitude dimension. The default is None, in which case long is
+        assumed.
+
+    Returns
+    -------
+    dict
+        dictionary containing lat and lon ranges of the mask.
+
+    """
+    if latdim_name is None: # htap
+        latdim_name = 'lat'
+    if londim_name is None:
+        londim_name = 'long' #htap
+    assert isinstance(mask, xr.DataArray)
+    assert mask.dims == (latdim_name, londim_name)
+
+    data = mask.data
+    lats = mask.lat.data
+    lons = mask.long.data
+
+    lonmask = np.where(data.any(axis=0))[0] # flatten latitude dimenstion
+    firstidx, lastidx = lonmask.min(), lonmask.max()
+    lonr = sorted([lons[firstidx], lons[lastidx]])
+
+    latmask = np.where(data.any(axis=1))[0] # flatten latitude dimenstion
+    firstidx, lastidx = latmask.min(), latmask.max()
+    latr = sorted([lats[firstidx], lats[lastidx]])
+
+    return dict(lat_range=latr, lon_range=lonr)
+
+
 if __name__ == '__main__':
     files = check_all_htap_available()
 

@@ -27,6 +27,10 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
 
 from pyaerocom.exceptions import (DeprecationError, DataSourceError,
                                   DataIdError)
+from pyaerocom.region_defs import (REGION_DEFS,
+                                   OLD_AEROCOM_REGIONS,
+                                   HTAP_REGIONS)
+
 from pyaerocom.variable import VarCollection
 from configparser import ConfigParser
 
@@ -157,16 +161,12 @@ class Config(object):
     SENTINEL5P_NAME = 'Sentinel5P'
     AEOLUS_NAME = 'AeolusL2A'
 
-    OLD_AEROCOM_REGIONS = ['WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
-                           'EUROPE', 'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA',
-                           'NAMERICA']
+    OLD_AEROCOM_REGIONS = OLD_AEROCOM_REGIONS
 
     URL_HTAP_MASKS = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
 
-    HTAP_REGIONS = ['PAN', 'EAS', 'NAF', 'MDE', 'LAND',
-                    'SAS', 'SPO', 'OCN',  'SEA', 'RBU',
-                    'EEUROPE', 'NAM', 'WEUROPE', 'SAF',
-                    'USA', 'SAM', 'EUR', 'NPO', 'MCA']
+
+    HTAP_REGIONS = HTAP_REGIONS
 
     RM_CACHE_OUTDATED = True
 

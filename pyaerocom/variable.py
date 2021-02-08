@@ -569,11 +569,6 @@ class Variable(object):
         -------
         bool
             True, if default could be loaded, False if not
-
-        Raises
-        ------
-        IOError
-            if regions.ini file does not exist
         """
         if cfg is None:
             cfg = self.read_config()
