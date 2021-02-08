@@ -224,8 +224,7 @@ def unitconv_concx_to_vmrx(input_data, var_name):
     conv_factors = {}
     conv_factors['vmro3'] = np.float_(0.5)
 
-    try:
-        output_data = input_data * conv_factors[var_name]
-    except KeyError:
-        output_data = input_data
+    if not var_name in conv_factors:
+        raise ValueError(f'Cannot convert {var_name}, missing conversion factor...')
+    output_data = input_data * conv_factors[var_name]
     return output_data
