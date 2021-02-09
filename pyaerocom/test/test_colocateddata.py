@@ -33,9 +33,9 @@ def test_read_colocated_data(coldata_tm5_aeronet):
 
 @pytest.mark.parametrize('input_args,latrange,lonrange,numst', [
 ({'region_id': 'WORLD'}, (-90,90), (-180, 180),8),
-({'region_id': 'NHEMISPHERE'}, (0,90), (-180, 180),5),
+({'region_id': 'NHEMISPHERE'}, (0,90), (-180, 180), 5),
 ({'region_id': 'EUROPE'}, (40,72), (-10, 40),2),
-({'region_id': 'OCN'}, (-59.95,66.25), (-132.55,119.95),6),
+({'region_id': 'OCN'}, (-90,90), (-180, 180), 8),
 ])
 def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
                              latrange, lonrange,numst):
