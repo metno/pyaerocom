@@ -6,6 +6,7 @@ This module contains functionality related to regions in pyaerocom
 import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.helpers_landsea_masks import load_region_mask_xr
 from pyaerocom.region_defs import (REGION_DEFS, # all region definitions
                                    HTAP_REGIONS, # list of HTAP regions
                                    OLD_AEROCOM_REGIONS,
@@ -20,29 +21,29 @@ class Region(BrowseDict):
         ID of region (e.g. EUROPE)
     name : str
         name of region (e.g. Europe) used e.g. in plotting.
-    lon_range : :obj:`list` or :obj:`tuple`
+    lon_range : list
         longitude range (min, max) covered by region
-    lat_range : :obj:`list` or :obj:`tuple`
+    lat_range : list
         latitude range (min, max) covered by region
-    lon_range_plot : :obj:`list` or :obj:`tuple`
-        longitude range (min, max) used for plotting region. Defaults to
-        values of :attr:`lon_range` but may be extended, see e.g.
-        `the example of india <http://aerocom.met.no/DATA/SURFOBS/
-        ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png>`__
-    lat_range_plot : :obj:`list` or :obj:`tuple`
-        latitude range (min, max) used for plotting region. Defaults to
-        values of :attr:`lat_range` but may be extended, see e.g.
-        `the example of india <http://aerocom.met.no/DATA/SURFOBS/
-        ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png>`__
+    lon_range_plot : list
+        longitude range (min, max) used for plotting region.
+    lat_range_plot : list
+        latitude range (min, max) used for plotting region.
+    lon_ticks : list
+        list of longitude ticks used for plotting
+    lat_ticks : list
+        list of latitude ticks used for plotting
 
     Parameters
     ----------
     region_id : str
-        ID of region (e.g. "EUROPE")
-    lon_range : :obj:`list` or :obj:`tuple`
-        longitude range (min, max) covered by region
-    lat_range : :obj:`list` or :obj:`tuple`
-        latitude range (min, max) covered by region
+        ID of region (e.g. "EUROPE"). If the input region ID is registered as
+        a default region in :mod:`pyaerocom.region_defs`, then the default
+        information is automatically imported on class instantiation.
+    **kwargs
+        additional class attributes (see above for available default attributes).
+        Note, any attr. values provided by kwargs are preferred over
+        potentially defined default attrs. that are imported automatically.
     """
     def __init__(self, region_id=None,**kwargs):
 
@@ -62,6 +63,7 @@ class Region(BrowseDict):
         self.lon_ticks = None
         self.lat_ticks = None
 
+        self._mask_data = None
         if region_id in REGION_DEFS:
             self.import_default(region_id)
 
@@ -70,17 +72,16 @@ class Region(BrowseDict):
 
         self.update(**kwargs)
 
-    @property
     def is_htap(self):
         """Boolean specifying whether region is an HTAP binary region"""
-        return True if self._name in HTAP_REGIONS else False
+        return True if self.region_id in HTAP_REGIONS else False
 
     def import_default(self, region_id):
         """Import region definition
 
         Parameters
         ----------
-        name : str
+        region_id : str
             ID of region
 
         Raises
@@ -143,35 +144,71 @@ class Region(BrowseDict):
         lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
         return lat_ok * lon_ok
 
+    def mask_available(self):
+        if not self.is_htap():
+            return False
+        return True
+
+    def get_mask_data(self):
+        if not self.mask_available():
+            raise AttributeError(
+                f'No binary mask data available for region {self.region_id}.'
+                )
+        if self._mask_data is None:
+            self._mask_data = load_region_mask_xr(self.region_id)
+        return self._mask_data
+
+    def plot_mask(self, ax, color, alpha=0.2):
+
+        mask = self.get_mask_data()
+        #import numpy as np
+        data = mask.data
+        data[data==0] = np.nan
+        mask.data = data
+
+        mask.plot(ax=ax)
+        return ax
+
+    def plot_borders(self, ax, color, lw=2):
+        raise NotImplementedError('Coming soon...')
+
     def plot(self, ax=None):
         """
+        Plot this region
+
+        Draws a rectangle of the outer bounds of the region and if a binary
+        mask is available for this region, it will be plotted as well.
+
+        Parameters
+        ----------
+        ax : GeoAxes, optional
+            axes instance to be used for plotting. Defaults to None in which
+            case a new instance is created.
 
         Returns
         -------
-        ax
-            Map plot indicating region
+        GeoAxes
+            axes instance used for plotting
+
         """
         from cartopy.mpl.geoaxes import GeoAxes
         from pyaerocom.plot.mapping import init_map
         if ax is None:
             ax = init_map()
-        if not isinstance(ax, GeoAxes):
+        elif not isinstance(ax, GeoAxes):
             raise ValueError('Invalid input for ax: need cartopy GeoAxes..')
-        if not self.is_htap:
-            return ax
 
-        from pyaerocom.helpers_landsea_masks import load_region_mask_xr
+        if self.mask_available():
+            self.plot_mask(ax, color='r')
 
-        ax.axes.set_xlabel('Longitude')
-        ax.axes.set_ylabel('Latitude')
-        ax.axes.set_title("Region name: {}".format(self.name))
-        mask = load_region_mask_xr(self.name)
-        #import numpy as np
-        data = mask.data
-        data[data==0]=np.nan
-        mask.data = data
+        ax.set_xlabel('Longitude')
+        ax.set_ylabel('Latitude')
+        name = self.name
+        if not name ==  self.region_id:
+            name += f' (ID={self.region_id})'
 
-        mask.plot(ax=ax)
+        ax.set_title(name)
+
         return ax
 
     def __contains__(self, val):
@@ -343,16 +380,23 @@ def valid_default_region(name):
     return False
 
 if __name__=="__main__":
+    import matplotlib.pyplot as plt
+    plt.close('all')
     import pyaerocom as pya
     res = {}
-    for reg in pya.region_defs.HTAP_REGIONS:
+    reg = Region('NAM')
+    reg.plot()
 
-        mask = pya.helpers_landsea_masks.load_region_mask_xr(reg)
-        res[reg] = info = pya.helpers_landsea_masks.get_lat_lon_range_mask_region(mask)
-        lonr, latr = info['lon_range'], info['lat_range']
-
-
-        print(f'[{reg}]')
-        print(f'lon_range={lonr[0]:.3f},{lonr[1]:.3f}')
-        print(f'lat_range={latr[0]:.3f},{latr[1]:.3f}')
-        print()
+# =============================================================================
+#     for reg in pya.region_defs.HTAP_REGIONS:
+#
+#         mask = pya.helpers_landsea_masks.load_region_mask_xr(reg)
+#         res[reg] = info = pya.helpers_landsea_masks.get_lat_lon_range_mask_region(mask)
+#         lonr, latr = info['lon_range'], info['lat_range']
+#
+#
+#         print(f'[{reg}]')
+#         print(f'lon_range={lonr[0]:.3f},{lonr[1]:.3f}')
+#         print(f'lat_range={latr[0]:.3f},{latr[1]:.3f}')
+#         print()
+# =============================================================================
