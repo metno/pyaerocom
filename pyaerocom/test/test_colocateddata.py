@@ -32,10 +32,14 @@ def test_read_colocated_data(coldata_tm5_aeronet):
     assert mean_fixture == mean_loaded
 
 @pytest.mark.parametrize('input_args,latrange,lonrange,numst', [
-({'region_id': 'WORLD'}, (-90,90), (-180, 180),8),
-({'region_id': 'NHEMISPHERE'}, (0,90), (-180, 180), 5),
-({'region_id': 'EUROPE'}, (40,72), (-10, 40),2),
-({'region_id': 'OCN'}, (-90,90), (-180, 180), 8),
+    ({'region_id': 'RBU'}, (29.45, 66.26), (22, -170), 2), # crosses lon=180 border
+    ({'region_id': 'PAN'}, None, None, 0), # crosses lon=180 border
+    ({'region_id': 'NAM'}, None, None, 0), # crosses lon=180 border
+    ({'region_id': 'WORLD'}, (-90,90), (-180, 180),8),
+    ({'region_id': 'NHEMISPHERE'}, (0, 90), (-180, 180), 5),
+    ({'region_id': 'EUROPE'}, (40,72), (-10, 40),2),
+    ({'region_id': 'OCN'}, (-90,90), (-180, 180), 8),
+
 ])
 def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
                              latrange, lonrange,numst):
@@ -43,11 +47,20 @@ def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
     filtered = coldata_tm5_aeronet.apply_latlon_filter(**input_args)
 
     lats, lons = filtered.data.latitude.data, filtered.data.longitude.data
-    assert lats.min() > latrange[0]
-    assert lats.max() < latrange[1]
-    assert lons.min() > lonrange[0]
-    assert lons.max() < lonrange[1]
     assert len(filtered.data.station_name.data) == numst
+    if numst > 0:
+        assert lats.min() > latrange[0]
+        assert lats.max() < latrange[1]
+        if lonrange[0] < lonrange[1]:
+            assert lons.min() > lonrange[0]
+            assert lons.max() < lonrange[1]
+        else:
+            assert (-180 < lons.min() < lonrange[1] or
+                    lonrange[0] < lons.min() <  180)
+
+            assert (-180 < lons.max() < lonrange[1] or
+                    lonrange[0] < lons.max() <  180)
+
 
 @pytest.mark.parametrize('input_args,latrange,lonrange,numst', [
 
