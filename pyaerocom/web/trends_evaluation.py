@@ -410,31 +410,28 @@ class TrendsEvaluation(object):
 
         return maccess
 
-    def load_ungridded(self, network_id, vars_to_retrieve, **constraints):
+    def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
         """Load obsdata into instance of :class:`pyaerocom.UngriddedData`
 
+        Wrapper
         Parameters
         ----------
-        network_id : str
-            Name of network (if you don't know the options, check
-            `pyaerocom.const.OBS_IDS_UNGRIDDED`)
-        vars_to_retrieve
+        obs_name : str
+            Name of observation network
+        vars_to_read
             str or list / tuple of strings specifying AEROCOM variables that are
             supposed to be imported
-        **constraints
-            Further reading constraints passed to :func:`UngriddedData.read` and
-            from there, further passed to :func:`read`  of respective network
-            reading class.
 
         Returns
         -------
         UngriddedData
+            loaded data object
         """
-        import pyaerocom as pya
-        r = pya.io.ReadUngridded()
-        return r.read(datasets_to_read=network_id,
-                      vars_to_retrieve=vars_to_retrieve,
-                      **constraints)
+        from pyaerocom import Colocator
+        col = Colocator()
+        col.update(**self.obs_config[obs_name])
+        data = col.read_ungridded(vars_to_read)
+        return data
 
     def run_evaluation(self, obs_name=None, update_menu=True,
                        write_logfiles=None, clear_existing_json=None):
@@ -553,9 +550,7 @@ class TrendsEvaluation(object):
             print('Deleting existing files for run {}'.format(obs_name))
             self.clear_existing(obs_name)
 
-        obs_id = config['obs_id']
-
-        self._log.info('Running {} (NETWORK {})'.format(obs_name, obs_id))
+        self._log.info('Running {} (NETWORK {})'.format(obs_name, obs_name))
 
         constraints = config['read_opts_ungridded']
         if constraints is None:
@@ -583,13 +578,14 @@ class TrendsEvaluation(object):
 
         var_lists = self.get_var_groups(obs_name)
         for vars_to_retrieve in var_lists:
-            ungridded_data = self.load_ungridded(obs_id, vars_to_retrieve,
-                                                 **constraints)
+            ungridded_data = self.read_ungridded_obsdata(obs_name,
+                                                         vars_to_retrieve)
 
             if 'obs_filters' in config:
                 filters=config['obs_filters']
-                ungridded_data = ungridded_data.apply_filters(var_outlier_ranges=min_max,
-                                                              **filters)
+                ungridded_data = ungridded_data.apply_filters(
+                    var_outlier_ranges=min_max,
+                    **filters)
 
             if config['obs_vert_type']=='Profile':
                 files_created = self._run_single_3d(ungridded_data=ungridded_data,
@@ -1671,10 +1667,6 @@ class TrendsEvaluation(object):
                                   **alt_range)
         return files_created
 
-    def freq_gridded(self):
-        """Frequency used for any colocated gridded data"""
-        return self.GRIDDED_TS_TYPE
-
     def _run_gridded(self, obs_name, obs_var, mod_name, mod_var, stat_lats,
                      stat_lons, stat_names, min_dim, vert_which, files_created,
                      err_log=None, **alt_range):
@@ -1685,7 +1677,7 @@ class TrendsEvaluation(object):
 
         rf = mcfg['model_ts_type_read']
 
-        read_freq = self.freq_gridded()
+        read_freq = self.GRIDDED_TS_TYPE
         if rf is not None:
             if isinstance(rf, str):
                 read_freq = rf
@@ -1695,10 +1687,10 @@ class TrendsEvaluation(object):
         data = reader.read_var(mod_var, ts_type=read_freq,
                                ts_type_flex=True)
 
-        data = data.resample_time(to_ts_type=self.freq_gridded())
+        data = data.resample_time(to_ts_type=self.GRIDDED_TS_TYPE)
         stations = data.to_time_series(longitude=stat_lons,
                                        latitude=stat_lats,
-                                       add_meta=dict(station_name = stat_names))
+                                       add_meta=dict(station_name=stat_names))
 
         stats_processed = []
         map_data = []
