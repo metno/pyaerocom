@@ -332,6 +332,26 @@ class AerocomEvaluation(object):
             raise FileNotFoundError('No data available for this experiment')
         return os.listdir(self.out_dirs['map'])
 
+    @property
+    def raise_exceptions(self):
+        """Boolean specifying whether exceptions should be raised in analysis
+        """
+        return self.colocation_settings['raise_exceptions']
+
+    @raise_exceptions.setter
+    def raise_exceptions(self, val):
+        self.colocation_settings['raise_exceptions'] =  val
+
+    @property
+    def reanalyse_existing(self):
+        """Specifies whether existing colocated data files should be reanalysed
+        """
+        return self.colocation_settings['reanalyse_existing']
+
+    @reanalyse_existing.setter
+    def reanalyse_existing(self, val):
+        self.colocation_settings['reanalyse_existing'] = val
+
     def _update_custom_read_methods(self):
         for mcfg in self.model_config.values():
             if not 'model_read_aux' in mcfg:
@@ -849,8 +869,20 @@ class AerocomEvaluation(object):
         return remaining
 
     def delete_all_colocateddata_files(self, model_name, obs_name):
-        #model_id = self.get_model_id(model_name)
-        #obs_id = self.get_obs_id(obs_name)
+        """
+        Delete all
+        Parameters
+        ----------
+        model_name : TYPE
+            DESCRIPTION.
+        obs_name : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
         obs_vars = self.obs_config[obs_name]['obs_vars']
 
         for obs_var in obs_vars:
@@ -1034,6 +1066,20 @@ class AerocomEvaluation(object):
         return matches
 
     def _check_and_get_iface_names(self):
+        """
+        Get web interface names of all observations.
+
+        Raises
+        ------
+        ValueError
+            if value of one obsentry name is not a string.
+
+        Returns
+        -------
+        iface_names : list
+            list of obs names used in the web interface.
+
+        """
         obs_list = list(self.obs_config)
         iface_names = []
         for obs_name in obs_list:
@@ -1044,8 +1090,10 @@ class AerocomEvaluation(object):
                     pass
             except KeyError:
                 self.obs_config[obs_name]['web_interface_name'] = obs_name
-            if not isinstance(self.obs_config[obs_name]['web_interface_name'],str):
-                raise ValueError('Invalid value for web_iface_name in {}. Need str type'.format(obs_name))
+            if not isinstance(self.obs_config[obs_name]['web_interface_name'], str):
+                raise ValueError(
+                    f'Invalid value for web_iface_name in {obs_name}. Need str.'
+                    )
             iface_names.append(self.obs_config[obs_name]['web_interface_name'])
         iface_names = list(set(iface_names))
         return iface_names
@@ -1059,17 +1107,45 @@ class AerocomEvaluation(object):
 
     def _run_superobs_entry_var(self, model_name, superobs_name, var_name,
                                 try_colocate_if_missing):
+        """
+        Run evaluation of superobs entry
+
+        Parameters
+        ----------
+        model_name : str
+            name of model in :attr:`model_config`
+        superobs_name : str
+            name of super observation in :attr:`obs_config`
+        var_name : str
+            name of variable to be processed.
+        try_colocate_if_missing : bool
+            if True, then missing colocated data objects are computed on the
+            fly.
+
+        Raises
+        ------
+        ValueError
+            If multiple (or no) colocated data objects are available for
+            individual obs datasets of which the superobservation is comprised.
+
+        Returns
+        -------
+        None
+        """
         coldata_files = []
         coldata_resolutions = []
         vert_codes = []
         obs_needed = self.obs_config[superobs_name]['obs_id']
         for obs_name in obs_needed:
-            cdf = self.find_coldata_files(model_name, obs_name, var_name)
-            if len(cdf) == 0 and try_colocate_if_missing:
+            if self.reanalyse_existing:
                 self.run_colocation(model_name, obs_name, var_name)
                 cdf = self.find_coldata_files(model_name, obs_name, var_name)
-                if len(cdf) == 0:
-                    raise ValueError('....')
+            else:
+                cdf = self.find_coldata_files(model_name, obs_name, var_name)
+                if len(cdf) == 0 and try_colocate_if_missing:
+                    self.run_colocation(model_name, obs_name, var_name)
+                    cdf = self.find_coldata_files(model_name, obs_name, var_name)
+
             if len(cdf) != 1:
                 raise ValueError(
                     f'Fatal: Found multiple colocated data objects for '
@@ -1138,7 +1214,6 @@ class AerocomEvaluation(object):
                 )
 
     def _run_superobs_entry(self, model_name, superobs_name, var_name=None,
-                            raise_exceptions=None,
                             try_colocate_if_missing=True):
         if not superobs_name in self.obs_config:
             raise AttributeError(
@@ -1160,7 +1235,7 @@ class AerocomEvaluation(object):
                                              var_name,
                                              try_colocate_if_missing)
             except Exception:
-                if raise_exceptions:
+                if self.raise_exceptions:
                     raise
                 const.print_log.warning(
                     f'Failed to process superobs entry for {superobs_name},  '
@@ -1220,9 +1295,9 @@ class AerocomEvaluation(object):
         """
         res = None
         if reanalyse_existing is not None:
-            self.colocation_settings['reanalyse_existing'] = reanalyse_existing
+            self.reanalyse_existing = reanalyse_existing
         if raise_exceptions is not None:
-            self.colocation_settings['raise_exceptions'] = raise_exceptions
+            self.raise_exceptions = raise_exceptions
         if clear_existing_json is not None:
             self.clear_existing_json = clear_existing_json
         if only_colocation is not None:
@@ -1264,8 +1339,8 @@ class AerocomEvaluation(object):
                     continue
                 if self.obs_config[obs_name]['is_superobs']:
                     try:
-                        self._run_superobs_entry(model_name, obs_name,
-                                                 var_name, raise_exceptions)
+                        self._run_superobs_entry(model_name, obs_name, var_name,
+                                                 try_colocate_if_missing=True)
                     except Exception as e:
                         if raise_exceptions:
                             raise
