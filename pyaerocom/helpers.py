@@ -15,7 +15,8 @@ from pyaerocom.exceptions import (LongitudeConstraintError,
                                   DataCoverageError, MetaDataError,
                                   DataDimensionError,
                                   VariableDefinitionError,
-                                  ResamplingError, TemporalResolutionError)
+                                  ResamplingError,
+                                  TemporalResolutionError)
 from pyaerocom import logger, const
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
@@ -754,7 +755,12 @@ def merge_station_data(stats, var_name, pref_attr=None,
         merged = stats.pop(0)
 
         for i, stat in enumerate(stats):
-            merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
+            try:
+                merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
+            except TemporalResolutionError as e:
+                const.print_log.warning(
+                    f'Ignoring data from station {stat.station_name} '
+                    f'({var_name}). Reason: {repr(e)}.')
     else:
         from xarray import DataArray
         dtime = []
