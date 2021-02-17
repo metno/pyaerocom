@@ -12,8 +12,13 @@ from fnmatch import fnmatch
 import numpy as np
 import os, glob
 import pandas as pd
-from pyaerocom import const, __version__, Region
+from scipy.stats import kendalltau
+from scipy.stats.mstats import theilslopes
+import simplejson
+
+from pyaerocom import const, __version__
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
+from pyaerocom.region import Region
 from pyaerocom.helpers import isnumeric
 from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _compute_trend_error,
@@ -29,9 +34,7 @@ from pyaerocom.web.helpers_trends_iface import (update_menu_trends_iface,
                                                 get_all_config_files_trends_iface)
 
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from scipy.stats import kendalltau
-from scipy.stats.mstats import theilslopes
-import simplejson
+
 
 class TrendsEvaluation(object):
     """High-level analysis class to compute json files for trends interface
@@ -915,7 +918,7 @@ class TrendsEvaluation(object):
             regs[reg_name] = Region(reg_id)
         for reg_name, info in self._add_regions.items():
             try:
-                regs[reg_name] = Region(name=reg_name,
+                regs[reg_name] = Region(reg_name,
                                         lat_range=info['lat_range'],
                                         lon_range=info['lon_range'])
             except Exception:

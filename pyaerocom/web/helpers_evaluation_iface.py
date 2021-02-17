@@ -18,11 +18,11 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import DataDimensionError, TemporalResolutionError
+from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
-                              get_all_default_regions, Region)
+                              Region)
 
-#from pyaerocom import __version__ as PYA_VERSION
 def make_info_string(stp):
     """
     Convert instance of :class:`AerocomEvaluation` into a descriptive string
@@ -569,11 +569,6 @@ def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
     if not model_name in ovc:
         ovc[model_name] = {}
     mn = ovc[model_name]
-    if model_var in mn:
-        const.print_log.info('Overwriting existing heatmap statistics for '
-                             'model {}/{} ({}, {}, {}) in glob_stats.json'
-                             .format(model_name, model_var, obs_var, obs_name,
-                                     vert_code))
     mn[model_var] = result
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
@@ -599,54 +594,83 @@ def _check_flatten_latlon_dims(coldata):
                                                         'longitude'))
     return coldata
 
-def _prepare_regions_json_helper(region_names):
-    regs = {}
-    for regname in region_names:
-        reg = Region(regname)
-        regs[regname] = r = {}
+def _prepare_regions_json_helper(region_ids):
+    regborders, regs = {}, {}
+    for regid in region_ids:
+        reg = Region(regid)
+        name = reg.name
+        regs[name] = reg
+        regborders[name] = rinfo = {}
+
         latr = reg.lat_range
-        r['minLat'] = latr[0]
-        r['maxLat'] = latr[1]
         lonr = reg.lon_range
-        r['minLon'] = lonr[0]
-        r['maxLon'] = lonr[1]
-    return regs
+        if any(x is None for x in (latr, lonr)):
+            raise ValueError(f'Lat / lon range missing for region {regid}')
+        rinfo['minLat'] = latr[0]
+        rinfo['maxLat'] = latr[1]
+        rinfo['minLon'] = lonr[0]
+        rinfo['maxLon'] = lonr[1]
+
+    return (regborders, regs)
 
 def _prepare_default_regions_json():
     return _prepare_regions_json_helper(get_all_default_region_ids())
 
+def _prepare_aerocom_regions_json():
+    return _prepare_regions_json_helper(OLD_AEROCOM_REGIONS)
+
 def _prepare_htap_regions_json():
-    return _prepare_regions_json_helper(const.HTAP_REGIONS)
+    return _prepare_regions_json_helper(HTAP_REGIONS_DEFAULT)
 
 def init_regions_web(coldata, regions_how):
-    default_regs = _prepare_default_regions_json()
-    regs = {}
+    regborders, regs = {}, {}
+    regborders_default, regs_default = _prepare_default_regions_json()
     if regions_how == 'default':
-        regs = default_regs
-        #region_ids = get_all_default_region_ids()
-    elif regions_how == 'country':
-        regs = {}
-        regs['WORLD'] = default_regs['WORLD']
-        coldata.check_set_countries(True)
-        regs.update(coldata.get_country_codes())
-        #region_ids = coldata.countries_available
+        regborders, regs = regborders_default, regs_default
+    elif regions_how == 'aerocom':
+        regborders, regs = _prepare_aerocom_regions_json()
     elif regions_how == 'htap':
-        regs = {}
-        regs['WORLD'] = default_regs['WORLD']
-        regs.update(_prepare_htap_regions_json())
+        regborders['WORLD'] = regborders_default['WORLD']
+        regs['WORLD'] = regs_default['WORLD']
+        add_borders, add_regs = _prepare_htap_regions_json()
+        regborders.update(add_borders)
+        regs.update(add_regs)
+    elif regions_how == 'country':
+        regborders['WORLD'] = regborders_default['WORLD']
+        regs['WORLD'] = regs_default['WORLD']
+        coldata.check_set_countries(True)
+        regborders.update(coldata.get_country_codes())
     else:
         raise ValueError('Invalid input for regions_how', regions_how)
-    return regs
+
+    regnames = {}
+    for regname, reg in regs.items():
+        regnames[reg.region_id] = regname
+    return (regborders, regs, regnames)
 
 def update_regions_json(region_defs, regions_json):
+    """Check current regions.json for experiment and update if needed
+
+    Parameters
+    ----------
+    region_defs : dict
+        keys are names of region (not IDs!) values define rectangular borders
+    regions_json : str
+        regions.json file (if it does not exist it will be created).
+
+    Returns
+    -------
+    dict
+        current content of updated regions.json
+    """
     if os.path.exists(regions_json):
         current = read_json(regions_json)
     else:
         current = {}
 
-    for region_id, region_info in region_defs.items():
-        if not region_id in current:
-            current[region_id] = region_info
+    for region_name, region_info in region_defs.items():
+        if not region_name in current:
+            current[region_name] = region_info
     save_dict_json(current, regions_json)
     return current
 
@@ -870,10 +894,15 @@ def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
             dc +=1
     return ts_objs
 
-def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how,region_ids):
+def _process_weekly_object_to_country_time_series(repw_res,meta_glob,
+                                                  regions_how,region_ids):
     """
     Process the xarray.Dataset objects returned by _create_diurnal_weekly_data_object
     into a dictionary containing country average time series data and metadata.
+
+    ToDo
+    ----
+    Implement regions_how for other values than country based
 
     Parameters
     ----------
@@ -885,8 +914,8 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how
     regions_how : string
         String describing how regions are to be processed. Regional time series
         are only calculated if regions_how = country.
-    region_ids : list?
-        List of regional IDs
+    region_ids : dict
+        Dict containing mapping of region IDs and names.
 
     Returns
     -------
@@ -901,20 +930,21 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how
         print('Regional diurnal cycles are only implemented for country regions, skipping...')
         ts_objs_reg = None
     else:
-        for reg in region_ids:
-            ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
-            ts_data['station_name'] = reg
+        for regid, regname in region_ids.items():
+            ts_data = {
+                'time' : time,
+                'seasonal' : {'obs' : {},'mod' : {}},
+                'yearly' : {'obs' : {},'mod' : {}}
+                }
+            ts_data['station_name'] = regname
             ts_data.update(meta_glob)
 
-            for res,repw in repw_res.items():
-                if reg == 'WORLD':
+            for res, repw in repw_res.items():
+                if regid == 'WORLD':
                     subset = repw
                 else:
-                    subset = repw.where(repw.country == reg)
+                    subset = repw.where(repw.country == regid)
 
-                # if cd.has_latlon_dims:
-                #     avg = subset.data.mean(dim=('latitude', 'longitude'))
-                # else:
                 avg = subset.mean(dim='station_name')
                 obs_vals = avg[:,0,:]
                 mod_vals = avg[:,1,:]
@@ -944,8 +974,8 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
     regions_how : string
         Srting describing how regions are to be processed. Regional time series
         are only calculated if regions_how = country.
-    region_ids : list?
-        List of regional IDs.
+    region_ids : dict
+        Dict containing mapping of region IDs and names.
     meta_glob : dict
         Dictionary containing global metadata.
 
@@ -965,29 +995,15 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
     repw_res = {'seasonal':_create_diurnal_weekly_data_object(coldata, 'seasonal')['rep_week'],
                 'yearly':_create_diurnal_weekly_data_object(coldata, 'yearly')['rep_week'].expand_dims('period',axis=0),}
 
-    default_regs = get_all_default_regions(use_all_in_ini=False)
-
-
-    lats = repw_res['seasonal'].latitude.values.astype(np.float64)
-    lons = repw_res['seasonal'].longitude.values.astype(np.float64)
-
-    if 'altitude' in repw_res['seasonal'].coords:
-        alts = repw_res['seasonal'].altitude.values.astype(np.float64)
-    else:
-        alts = [np.nan]*len(lats)
-
-    if regions_how == 'country':
-        countries = repw_res['seasonal'].country.values
-
     ts_objs = _process_weekly_object_to_station_time_series(repw_res,meta_glob)
     ts_objs_reg = _process_weekly_object_to_country_time_series(repw_res,
                                                                 meta_glob,
                                                                 regions_how,
                                                                 region_ids)
 
-    return ts_objs,ts_objs_reg
+    return (ts_objs,ts_objs_reg)
 
-def _process_sites(data, jsdate, regions_how, meta_glob):
+def _process_sites(data, jsdate, regions, regions_how, meta_glob):
     ts_objs = []
 
     map_data = []
@@ -1001,7 +1017,6 @@ def _process_sites(data, jsdate, regions_how, meta_glob):
     mon = data['monthly']
 
     stats_dummy = _init_stats_dummy()
-    default_regs = get_all_default_regions(use_all_in_ini=False)
 
     lats = mon.data.latitude.values.astype(np.float64)
     lons = mon.data.longitude.values.astype(np.float64)
@@ -1024,11 +1039,15 @@ def _process_sites(data, jsdate, regions_how, meta_glob):
         stat_lon = lons[i]
         stat_alt = alts[i]
 
-        if regions_how == 'default':
+        if regions_how in ('default', 'htap'):
             region = find_closest_region_coord(stat_lat, stat_lon,
-                                               default_regs=default_regs)
+                                               regions=regions)
         elif regions_how == 'country':
             region = countries[i]
+        else:
+            raise ValueError(
+                f'Fatal: invalid value {regions_how} for regions_how'
+                )
 
         # station information for map view
         map_stat = {'site'      : stat_name,
@@ -1075,15 +1094,15 @@ def _process_regional_timeseries(data, jsdate, region_ids,
                                  regions_how, meta_glob):
     ts_objs = []
     check_countries = True if regions_how=='country' else False
-    for reg in region_ids:
+    for regid, regname in region_ids.items():
         ts_data = _init_ts_data()
-        ts_data['station_name'] = reg
+        ts_data['station_name'] = regname
         ts_data.update(meta_glob)
 
         for freq, cd in data.items():
             if not isinstance(cd, ColocatedData):
                 continue
-            subset = cd.filter_region(reg,
+            subset = cd.filter_region(regid,
                                       inplace=False,
                                       check_country_meta=check_countries)
             if cd.has_latlon_dims:
@@ -1105,22 +1124,19 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
     hm_all = dict(zip(('daily', 'monthly'), ({},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
-        for reg in region_ids:
+        for regid, regname in region_ids.items():
             if not freq in data or data[freq] == None:
-                hm_data[reg] = stats_dummy
+                hm_data[regname] = stats_dummy
             else:
                 coldata = data[freq]
 
-                filtered = coldata.filter_region(region_id=reg,
+                filtered = coldata.filter_region(region_id=regid,
                                                  check_country_meta=use_country)
 
                 stats = filtered.calc_statistics(use_area_weights=use_weights)
                 for k, v in stats.items():
-                    if not k=='NOTE':
-                        v = np.float64(v)
-                    stats[k] = v
-
-                hm_data[reg] = stats
+                    stats[k] = np.float64(v) # for json encoder...
+                hm_data[regname] = stats
     return hm_all
 
 def _get_jsdate(coldata):
@@ -1203,15 +1219,15 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     elif coldata.has_latlon_dims and regions_how=='country':
         raise NotImplementedError('Cannot yet apply country filtering for '
                                   '4D colocated data instances')
-    const.print_log.info('Computing json files for {} vs. {}'
-                         .format(model_name, obs_name))
-
-    if zeros_to_nan:
-        coldata = coldata.set_zeros_nan()
-
     # init some stuff
     obs_var = coldata.meta['var_name'][0]
     model_var = coldata.meta['var_name'][1]
+
+    const.print_log.info(
+        f'Computing json files for {model_name} ({model_var}) vs. '
+        f'{obs_name} ({obs_var})'
+        )
+
     meta_glob = _init_meta_glob(coldata,
                                 vert_code=vert_code,
                                 obs_name=obs_name,
@@ -1221,22 +1237,25 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         regions_how = 'default'
 
     # get region IDs
-    regions = init_regions_web(coldata, regions_how)
+    (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
 
-    update_regions_json(regions, regions_json)
-
-    region_ids = list(regions)
+    update_regions_json(regborders, regions_json)
 
     use_country = True if regions_how == 'country' else False
+
+    if zeros_to_nan:
+        coldata = coldata.set_zeros_nan()
 
     data, jsdate = _init_data_default_frequencies(coldata,
                                                   colocation_settings)
 
     if not diurnal_only:
         # FIRST: process data for heatmap json file
-        hm_all = _process_heatmap_data(data, region_ids, use_weights,
-                                        use_country=use_country,
-                                        meta_glob=meta_glob)
+        const.print_log.info('Processing heatmap data for all regions')
+        hm_all = _process_heatmap_data(data, regnames,
+                                       use_weights,
+                                       use_country=use_country,
+                                       meta_glob=meta_glob)
 
         for freq, hm_data in hm_all.items():
             if freq == 'daily':
@@ -1249,9 +1268,10 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
                                     vert_code, model_name, model_var)
 
+        const.print_log.info('Processing regional timeseries for all regions')
         ts_objs_regional = _process_regional_timeseries(data,
                                                         jsdate,
-                                                        region_ids,
+                                                        regnames,
                                                         regions_how,
                                                         meta_glob)
 
@@ -1259,9 +1279,11 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             #writes json file
             _write_stationdata_json(ts_data, out_dirs)
 
+        const.print_log.info('Processing individual site timeseries data')
         (map_data,
           scat_data,
           ts_objs) = _process_sites(data, jsdate,
+                                    regs,
                                     regions_how,
                                     meta_glob=meta_glob)
 
@@ -1283,7 +1305,10 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             _write_stationdata_json(ts_data, out_dirs)
 
     if coldata.ts_type == 'hourly':
-        ts_objs_weekly,ts_objs_weekly_reg = _process_sites_weekly_ts(coldata,regions_how, region_ids, meta_glob)
+        const.print_log.info('Processing diurnal profiles')
+        (ts_objs_weekly,
+         ts_objs_weekly_reg) = _process_sites_weekly_ts(coldata, regions_how,
+                                                        regnames, meta_glob)
         for ts_data_weekly in ts_objs_weekly:
             #writes json file
             _write_diurnal_week_stationdata_json(ts_data_weekly, out_dirs)

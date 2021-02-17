@@ -21,7 +21,7 @@ def test_filter_attributes():
     assert f.land_ocn == 'LAND'
     assert f.region_name == 'WORLD'
     assert f.name == 'WORLD-noMOUNTAINS-LAND'
-    assert not f.region.is_htap
+    assert not f.region.is_htap()
 
 @testdata_unavail
 @pytest.mark.parametrize('filter_name, mean',[

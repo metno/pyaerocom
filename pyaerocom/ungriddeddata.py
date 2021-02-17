@@ -557,6 +557,24 @@ class UngriddedData(object):
         return sorted(list(dict.fromkeys(self.station_name)))
 
     @property
+    def available_meta_keys(self):
+        """List of all available metadata keys
+
+        Note
+        ----
+        This is a list of all metadata keys that exist in this dataset, but
+        it does not mean that all of the keys are registered in all metadata
+        blocks, especially if the data is merged from different sources with
+        different metadata availability
+        """
+        metakeys = []
+        for meta in self.metadata.values():
+            for key in meta:
+                if not key in metakeys:
+                    metakeys.append(key)
+        return metakeys
+
+    @property
     def nonunique_station_names(self):
         """List of station names that occur more than once in metadata"""
         import collections
@@ -3060,33 +3078,4 @@ if __name__ == "__main__":
                                 data_dir=GHOST_EEA_LOCAL).read(vars_to_retrieve='vmro3')
 
 
-    MBlandforms_to_include = ['high altitude plains','water', 'very low plateaus',
-                        'plains', 'rugged lowlands','hills','high altitude plateaus',
-                        'mid altitude plateaus', 'nan','lowlands', 'mid altitude plains',
-                        'low plateaus',]
 
-    EEA_rural_station_types_to_include = ['background']
-    EEA_rural_area_types_to_include = ['rural','rural-near_city',
-                                       'rural-regional',
-                                       'rural-remote']
-
-
-    #Define filters for the obs subsets
-
-    standard_filter = {'set_flags_nan'  : True,
-                       'station_name'   : ['Innsbr*'],
-                       'negate'         : 'station_name'}
-
-    rural_filter = {'standardised_network_provided_station_classification':
-                    EEA_rural_station_types_to_include,
-                    'standardised_network_provided_area_classification':
-                        EEA_rural_area_types_to_include
-                    }
-
-    mountain_filter = {'altitude':[-20,1500],
-                       'ESDAC_Meybeck_landform_classification' :
-                           MBlandforms_to_include
-                      }
-    obs_filters = {**standard_filter,**rural_filter,**mountain_filter}
-
-    filtered = data.apply_filters(**obs_filters)

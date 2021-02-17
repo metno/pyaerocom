@@ -1177,15 +1177,26 @@ class ColocatedData(object):
         if not list(arr.dims).index('station_name') == 2:
             raise DataDimensionError('station_name must be 3. dimensional index')
 
-        mask = (np.logical_and(arr.longitude > lon_range[0],
-                               arr.longitude < lon_range[1]) &
-                np.logical_and(arr.latitude > lat_range[0],
-                               arr.latitude < lat_range[1]))
+        lons, lats = arr.longitude.data, arr.latitude.data
+
+        latmask = np.logical_and(lats > lat_range[0], lats < lat_range[1])
+        if lon_range[0] > lon_range[1]:
+            _either = np.logical_and(lons>=-180, lons<lon_range[1])
+            _or = np.logical_and(lons>lon_range[0], lons<=180)
+            lonmask = np.logical_or(_either, _or)
+        else:
+            lonmask = np.logical_and(lons > lon_range[0],
+                                     lons < lon_range[1])
+        mask = latmask & lonmask
 
         return arr[:,:,mask]
 
     @staticmethod
     def _filter_latlon_3d(arr, lat_range, lon_range):
+        if lon_range[0] > lon_range[1]:
+            raise NotImplementedError(
+                'Filtering longitude over 180 deg edge is not yet possible in '
+                '3D ColocatedData...')
         if not isinstance(lat_range, slice):
             lat_range = slice(lat_range[0], lat_range[1])
         if not isinstance(lon_range, slice):
@@ -1249,10 +1260,15 @@ class ColocatedData(object):
 
         latr, lonr = self.data.attrs['lat_range'], self.data.attrs['lon_range']
         if np.equal(latr, lat_range).all() and np.equal(lonr, lon_range).all():
-            const.print_log.info('Filtering of lat_range={} and lon_range={} '
-                                 'results in unchanged object, returning self'
-                                 .format(lon_range, lat_range))
+            const.logger.info(
+                f'Filtering of lat_range={lat_range} and lon_range={lon_range} '
+                f'results in unchanged object'
+                )
             return self
+        if lat_range[0] > lat_range[1]:
+            raise ValueError(
+                f'Lower latitude bound {lat_range[0]} cannot exceed upper '
+                f'latitude bound {lat_range[1]}')
 
         if lat_range[0] < latr[0]:
             lat_range[0] = latr[0]
