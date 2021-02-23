@@ -1,6 +1,5 @@
 # This only installs the requirments of pyaerocom, not pyaerocom itself.
 # Activate the environment and run "python setup.py install".
-
 channels:
   - conda-forge
 dependencies:
@@ -17,4 +16,3 @@ dependencies:
   - requests
   - reverse-geocode
   - tqdm
-

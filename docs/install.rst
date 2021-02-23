@@ -1,23 +1,20 @@
 Installation
 ============
 
-You have several options to install pyaerocom, the first one is the easiest, but may not refer to the most recent (non-released) version of pyaerocom. So please check first, which version you are interested in.
+You can install pyaerocom via conda, pip or from source.
 
 Via conda
 ^^^^^^^^^
 
-**NOTE:** This will install the latest release of pyaerocom.
-
-- It hence, may not include the most recent developments.
-- Requirements are installed automatically.
-
-If you use *conda* as a package manager, the easiest way to install pyaerocom (and all requirements, see previous section) is to use the build provided in the *nordicesmhub* conda channel::
+The easiest way to install pyaerocom and all requirements using conda. You can install pyaerocom into a pre-existing conda environment via::
 
 	conda install -c conda-forge pyaerocom
 
-This will install the latest release of pyaerocom including all requirements. Alternatively, you may install from source as described in the following.
+Or into a new conda environment (recommended) named *pya* via::
 
-**NOTE**: installation support via conda as described above is quite recent, so please let us know if you run into problems with the installation (best way to do this is by raising an issue `here <https://github.com/metno/pyaerocom/issues>`__).
+	conda create -c conda-forge --name pya pyaerocom
+
+This will install the latest release of pyaerocom including all requirements. Alternatively, you may install via  pip or from source as described in the following.
 
 Via PyPi
 ^^^^^^^^
@@ -42,7 +39,7 @@ Alternatively, if you plan to apply local changes to the pyaerocom source code, 
 
 	python setup.py develop
 
-You may also download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaerocom>`__ to install the very latest (not yet released) version of pyaerocom.
+You may also download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaerocom>`__ to install the very latest (not yet released) version of pyaerocom. Note, if you install in develop mode, make sure you do not have pyaerocom installed already in the site packages directory, check e.g. `conda list pyaerocom`.
 
 
 Requirements
