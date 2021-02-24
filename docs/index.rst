@@ -4,17 +4,22 @@
    contain the root `toctree` directive.
 
 ***************************
-The Pyaerocom website
+pyaerocom
 ***************************
 
-Official website of pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AEROCOM project <http://aerocom.met.no/protocol.html>`__.
+Official website of pyaerocom, a Python package containing reading, post analysis and visualisation tools for the `AeroCom project <http://aerocom.met.no>`__.
+
+.. figure:: biasmaps_fig5_glissetal2021.png
+
+  Bias maps of the AeroCom ensemble median compared to several observation records (Figure 5 from `Gliß et al., 2021 <https://acp.copernicus.org/articles/21/87/2021/acp-21-87-2021.html>`__, processed with pyaerocom)
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-   readme
-   pyaerocom-tutorials/index
+   intro
+   install
+   getstarted
    api
 
 Indices and tables
