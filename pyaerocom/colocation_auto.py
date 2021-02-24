@@ -661,7 +661,8 @@ class Colocator(ColocationSetup):
                                  'Colocator class, which is not a '
                                  'dictionary: {}'.format(obs_filters))
         for key, val in obs_filters.items():
-            if key in self: # can be handled
+            # keep ts_type filter in remaining (added on 17.2.21, 0.100 -> 0.10.1)
+            if key in self and not key == 'ts_type': # can be handled
                 if isinstance(self[key], dict) and isinstance(val, dict):
                     self[key].update(val)
                 else:
