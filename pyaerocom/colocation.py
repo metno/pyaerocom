@@ -821,9 +821,23 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             min_num_obs=min_num_obs,
             use_climatology_ref=use_climatology_ref)
 
-        # assign the unified timeseries data to the colocated data array
-        coldata[0, :, i] = _df['ref'].values
-        coldata[1, :, i] = _df['data'].values
+
+        # this try/except block was introduced on 23/2/2021 as temporary fix from
+        # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
+        # can end up resulting in incorrect number of timestamps after resampling
+        # (the error was discovered using EBASMC, concpm10, 2019 and colocation
+        # frequency monthly)
+        try:
+            # assign the unified timeseries data to the colocated data array
+            coldata[0, :, i] = _df['ref'].values
+            coldata[1, :, i] = _df['data'].values
+        except ValueError as e:
+            const.print_log.warning(
+                f'Failed to colocate time for station {obs_stat.station_name}. '
+                f'This station will be skipped (error: {e})'
+                )
+
+
 
         lons.append(obs_stat.longitude)
         lats.append(obs_stat.latitude)
