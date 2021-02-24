@@ -47,11 +47,13 @@ The PR for the release will automatically build the docs on ReadTheDocs (see Che
   python setup.py sdist bdist_wheel
   ```
   This will create a *.tar.gz* and *.whl* in *dist/* dir.
+
 - Check files
   ```bash
   twine check dist/*
   ```
   Make sure the files are okay.
+
 - Upload to pypitest:
   ```bash
   twine upload --repository-url https://test.pypi.org/legacy/ dist/*
@@ -90,4 +92,3 @@ The PR for the release will automatically build the docs on ReadTheDocs (see Che
 - **But**: You can check if your version is available here:
   https://anaconda.org/conda-forge/pyaerocom
   or via `conda search -c conda-forge pyaerocom`
-  Sorry, but there are just a few more things to do until the beer.
