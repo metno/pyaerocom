@@ -100,20 +100,6 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
             - list, list of filenames that were successfully loaded
     """
     from pyaerocom import const
-# =============================================================================
-#     if len(files) >= 1000:
-#         try:
-#             cubes =  _load_cubes_custom_multiproc(files, var_name,
-#                                                   file_convention,
-#                                                   perform_fmt_checks,
-#                                                   **kwargs)
-#             # if this worked, all input files were successfully loaded and the
-#             # function terminates, else, the retrieval is done file by file.
-#             # ... Maybe!
-#             return (cubes, files)
-#         except Exception:
-#             pass
-# =============================================================================
     cubes = []
     loaded_files = []
     print_where = False
