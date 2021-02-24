@@ -137,10 +137,6 @@ pyaerocom/_sorted_out
 issues/
 
 # Tutorials output for docs
-docs/**/*.png
-docs/tut0*.rst
-docs/add*.rst
-docs/tut1*.rst
 docs/pyaerocom-tutorials
 
 

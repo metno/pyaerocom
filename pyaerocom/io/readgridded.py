@@ -980,17 +980,6 @@ class ReadGridded(object):
 
         vals = AerocomDataID(data_id).values
         return vals
-# =============================================================================
-#         spl = data_id.split('_')
-#         name, meteo = '',''
-#         experiment = spl[-1]
-#         if len(spl) > 1:
-#             sspl = spl[0].split('-')
-#             if len(sspl) > 1:
-#                 name = sspl[0]
-#                 meteo = sspl[-1]
-#         return (name, meteo, experiment)
-# =============================================================================
 
     def _update_file_convention(self, files):
         """Update current file convention based on input files

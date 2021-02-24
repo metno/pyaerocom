@@ -419,11 +419,6 @@ class ReadUngriddedBase(abc.ABC):
         # first, check if input variables are alias names, and replace
         vars_to_retrieve = varlist_aerocom(vars_to_retrieve)
 
-# =============================================================================
-#         if not(all([x in self.PROVIDES_VARIABLES for x in vars_to_retrieve])):
-#             raise AttributeError("One or more of the desired variables is not "
-#                                  "supported by this dataset.")
-# =============================================================================
         repeat = True
         while repeat:
             repeat, vars_to_retrieve = self._add_additional_vars(vars_to_retrieve)

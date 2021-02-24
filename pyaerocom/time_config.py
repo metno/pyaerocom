@@ -12,9 +12,6 @@ TS_TYPES = ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly',
 
 # The following import was removed and the information about available unit
 # strings was copied from the netCDF4 module directly here
-# from netCDF4 import (microsec_units, millisec_units, sec_units, min_units,
-#                     hr_units, day_units)
-# from netCDF4._netCDF4 import _dateparse
 microsec_units = ['microseconds', 'microsecond', 'microsec', 'microsecs']
 millisec_units = ['milliseconds', 'millisecond', 'millisec', 'millisecs']
 sec_units = ['second', 'seconds', 'sec', 'secs', 's']
