@@ -28,23 +28,6 @@ from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
-def get_highest_freq(obs_stat_data, var_ref):
-    obs_freqs = []
-    highest_obs_freq = None
-    for stat in obs_stat_data:
-        freq = stat.get_var_ts_type(var_ref)
-        if freq in obs_freqs:
-            continue
-        obs_freqs.append(freq)
-        _tst = TsType(freq)
-        if highest_obs_freq is None:
-            highest_obs_freq = _tst
-        if _tst > highest_obs_freq:
-            highest_obs_freq = _tst
-    if highest_obs_freq is None:
-        raise Exception('Unexpected....')
-    return (highest_obs_freq, obs_freqs)
-
 def _check_var_registered(var, aerocom_var, gridded_data):
     vars_avail = const.VARS.all_vars
     if not any([x in vars_avail for x in [var, aerocom_var]]):
@@ -863,14 +846,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             ignore_index=ignore_station_names,
             **kwargs
             )
-
-# =============================================================================
-#     highest_obs_freq, obs_freqs = get_highest_freq(obs_stat_data, var_ref)
-#
-#     if highest_obs_freq < col_tst:
-#         col_tst = highest_obs_freq
-#         col_freq = str(col_tst)
-# =============================================================================
 
     obs_stat_data = all_stats['stats']
     ungridded_lons = all_stats['longitude']
