@@ -7,7 +7,8 @@ Definitions and helpers related to time conversion
 from iris import coord_categorisation
 from datetime import datetime
 
-TS_TYPES = ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly']
+TS_TYPES = ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly',
+            'native']
 
 # The following import was removed and the information about available unit
 # strings was copied from the netCDF4 module directly here
@@ -73,8 +74,6 @@ TS_TYPE_DATETIME_CONV = {None       : '%d.%m.%Y', #Default
                          'weekly'   : '%d.%m.%Y',
                          'monthly'  : '%b %Y',
                          'yearly'   : '%Y'}
-
-
 
 TS_TYPE_SECS = {'minutely': 60,
                 'hourly'  : 3600,

@@ -133,10 +133,12 @@ class TimeResampler(object):
 
         Parameters
         ----------
-        to_ts_type : str or pyaerocom.tstype.TsType
+        to_ts_type : str or TsType
             output resolution
         input_data : pandas.Series or xarray.DataArray
             data to be resampled
+        from_ts_type : str or TsType, optional
+            current temporal resolution of data
         how : str
             string specifying how the data is to be aggregated, default is mean
         apply_constraints : bool, optional
@@ -163,6 +165,9 @@ class TimeResampler(object):
         pandas.Series or xarray.DataArray
             resampled data object
         """
+        if str(from_ts_type) == 'native':
+            from_ts_type = None
+
         if how is None:
             how = 'mean'
 

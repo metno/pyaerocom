@@ -112,16 +112,17 @@ class GriddedData(object):
     SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude',
                               'profile']
 
-    _META_ADD = od(from_files         = [],
-                   data_id            = "n/d",
-                   var_name_read      = "n/d",
-                   ts_type            = "n/d",
-                   regridded          = False,
-                   outliers_removed   = False,
-                   computed           = False,
-                   concatenated       = False,
-                   region             = None,
-                   reader             = None)
+    _META_ADD = od(from_files           = [],
+                   data_id              = 'n/d',
+                   var_name_read        = 'n/d',
+                   ts_type              = 'n/d',
+                   vert_code            = None,
+                   regridded            = False,
+                   outliers_removed     = False,
+                   computed             = False,
+                   concatenated         = False,
+                   region               = None,
+                   reader               = None)
 
     def __init__(self, input=None, var_name=None,
                  check_unit=True, convert_unit_on_init=True,
@@ -186,15 +187,33 @@ class GriddedData(object):
 
     @property
     def ts_type(self):
-        """Temporal resolution"""
+        """
+        Temporal resolution of data
+        """
         if self.metadata['ts_type'] == 'n/d':
+            const.print_log.warning('ts_type is not set in GriddedData, trying '
+                                    'to infer.')
             self.infer_ts_type()
 
         return self.metadata['ts_type']
 
+    @ts_type.setter
+    def ts_type(self, val):
+        TsType(val) # this will raise an error if input is invalid
+        self.metadata['ts_type'] = val
+
+    @property
+    def vert_code(self):
+        """
+        Vertical code of data (e.g. Column, Surface, ModelLevel)
+        """
+        return self.metadata['vert_code']
+
     @property
     def standard_name(self):
-        """Standard name of variable"""
+        """
+        Standard name of variable
+        """
         return self.grid.standard_name
 
     @property
@@ -2648,12 +2667,14 @@ class GriddedData(object):
 
     def __str__(self):
         """For now, use string representation of underlying data"""
-        return ("pyaerocom.GriddedData: %s\nGrid data: %s"
-                %(self.name, self.grid.__str__()))
+        st = (f'pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n'
+              f'{self._grid.__str__()}')
+        return st
 
     def __repr__(self):
         """For now, use representation of underlying data"""
-        return "pyaerocom.GriddedData\nGrid data: %s" %self.grid.__repr__()
+        return (f'pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n'
+                f'{self._grid.__repr__()}')
 
     def __add__(self, other):
         raise NotImplementedError('Coming soon')
@@ -2686,4 +2707,5 @@ if __name__=='__main__':
     data = pya.io.ReadGridded('TM5-met2010_CTRL-TEST').read_var('od550aer',
                                                                 start=2010,
                                                                 ts_type='daily')
+
 
