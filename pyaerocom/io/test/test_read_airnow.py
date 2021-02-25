@@ -6,6 +6,7 @@ Created on Mon Feb  1 09:31:15 2021
 @author: jonasg
 """
 import numpy as np
+import numpy.testing as npt
 import os
 import pandas as pd
 import pytest
@@ -211,7 +212,10 @@ class TestReadAirNow(object):
     def _test_station_meta(self, stat, **testargs):
         for key, val in testargs.items():
             assert key in stat, key
-            assert stat[key] == val, (stat[key], val)
+            if isinstance(val, float):
+                npt.assert_allclose(stat[key], val, rtol=1e-3)
+            else:
+                assert stat[key] == val, (stat[key], val)
 
     def test__init_station_metadata(self, reader):
         statlist = reader._init_station_metadata()
@@ -221,14 +225,14 @@ class TestReadAirNow(object):
         assert statids[0] == '000010101'
         assert statids[1000] == '160550006'
         self._test_station_meta(statlist['000010101'],
-                                latitude=47.568000000000005,
+                                latitude=47.568,
                                 longitude=-52.702,
                                 altitude=7,
                                 station_name='Duckworth and Ordinance',
                                 station_id='000010101')
 
         self._test_station_meta(statlist['160550006'],
-                                latitude=47.681999999999995,
+                                latitude=47.682,
                                 longitude=-116.766,
                                 altitude=665.0,
                                 station_name='Coeur D Alene - Teom',
