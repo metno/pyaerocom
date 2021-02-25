@@ -59,7 +59,8 @@ TS_TYPE_TO_SI = {
     'hourly'  :     'h',
     'daily'   :     'd',
     'weekly'  :     'week',
-    'monthly' :     'month'
+    'monthly' :     'month',
+    'yearly'  :     'yr'
 }
 
 SI_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_SI.items()}

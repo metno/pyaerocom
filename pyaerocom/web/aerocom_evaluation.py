@@ -25,7 +25,10 @@ from pyaerocom.web.helpers_evaluation_iface import (
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
     compute_json_files_from_colocateddata,
-    delete_experiment_data_evaluation_iface)
+    delete_experiment_data_evaluation_iface,
+    make_info_str_eval_setup)
+
+from pyaerocom.web.web_naming_conventions import VAR_MAPPING
 
 
 
@@ -141,6 +144,25 @@ class AerocomEvaluation(object):
         mapping of variable names for menu in interface
     var_order_menu : list, optional
         order of variables in menu
+
+    Parameters
+    ----------
+    proj_id : str, optional
+        ID of project
+    exp_id : str, optional
+        experiment ID
+    config_dir : str, optional
+        directory where config json file is located. Needed if the configuration
+        is supposed to be load from a configuration file. The name of that file
+        is automatically inferred from input `proj_id` and `exp_id`, which need
+        to be specified.
+    try_load_json : bool
+        if True, and if a config json file can be inferred and found from the
+        former 3 input args, this configuration is loaded automatically.
+        Note also that settings can be provided via arg `**settings` when
+        instantiating the class. These are updated *after* the reading of the
+        json file, which will overwrite affected attributes defined in the json
+        file.
     """
     OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles',
                      'contour']
@@ -225,12 +247,16 @@ class AerocomEvaluation(object):
         self.model_ignore = []
 
         self.var_mapping = {}
+        self.var_mapping.update(VAR_MAPPING)
         self.var_order_menu = []
 
         self.regions_how = 'default'
         self.region_groups = {}
         self.resample_how = None
 
+        self.zeros_to_nan = False
+
+        self.summary_str = ''
         self._valid_obs_vars = {}
         if (len(settings)==0 and try_load_json and isinstance(proj_id, str)
             and isinstance(exp_id, str)):
@@ -392,12 +418,23 @@ class AerocomEvaluation(object):
                             method_name))
         return fun
 
+    def update_summary_str(self):
+        """Updates :attr:`summary_str` using :func:`make_info_str_eval_setup`"""
+        try:
+            self.summary_str = make_info_str_eval_setup(self,
+                                                        add_header=False)
+        except Exception as e:
+            const.print_log.warning(
+                'Failed to create automatic summary string of AerocomEvaluation '
+                f'setup class. Reason: {e}')
+
     def update(self, **settings):
         """Update current setup"""
         for k, v in settings.items():
             self[k] = v
         self.check_config()
         self.init_dirs()
+        self.update_summary_str()
         #self._update_custom_read_methods()
 
     def _set_obsconfig(self, val):
@@ -423,6 +460,8 @@ class AerocomEvaluation(object):
             self._set_modelconfig(val)
         elif key == 'colocation_settings':
             self.colocation_settings.update(**val)
+        elif key == 'var_mapping':
+            self.var_mapping.update(val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 self.obs_config[key] = ObsConfigEval(**val)
@@ -639,7 +678,8 @@ class AerocomEvaluation(object):
                 regions_json=self.regions_file,
                 regions_how=self.regions_how,
                 web_iface_name=web_iface_name,
-                diurnal_only=diurnal_only)
+                diurnal_only=diurnal_only,
+                zeros_to_nan=self.zeros_to_nan)
                 #region_groups=self.region_groups)
 
     def get_vert_code(self, obs_name, obs_var):
@@ -1648,9 +1688,11 @@ class AerocomEvaluation(object):
 
 
         """
+        self.update_summary_str()
         asdict = self.to_dict()
-        outpath = os.path.join(output_dir, self.name_config_file_json)
-        save_dict_json(asdict, outpath,
+        out_name = self.name_config_file_json
+
+        save_dict_json(asdict, os.path.join(output_dir, out_name),
                        ignore_nan=ignore_nan,
                        indent=indent)
 
@@ -1676,6 +1718,7 @@ class AerocomEvaluation(object):
         self.update(**current)
 
     def __str__(self):
+        self.update_summary_str()
         indent = 2
         _indent_str = indent*' '
         head = "Pyaerocom {}".format(type(self).__name__)
@@ -1701,12 +1744,12 @@ class AerocomEvaluation(object):
 if __name__ == '__main__':
     import pyaerocom as pya
 
+    config_dir = pya.const.OUTPUTDIR
 
+    stp = AerocomEvaluation(config_dir=config_dir)
     name = 'A useless experiment called blub, in the bla project.'
     descr = 'This experiment is indeed, completely useless!'
     stp = AerocomEvaluation('bla', 'blub', exp_name=name,
                             exp_descr=descr, exp_status='experimental')
 
 
-
-    pya.web.helpers_evaluation_ifac
