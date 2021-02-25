@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 def main():
+    import matplotlib
+    matplotlib.use('agg')
     from warnings import filterwarnings
     from argparse import ArgumentParser
     import os, sys
@@ -32,6 +33,8 @@ def main():
     p.add_argument('--onlyjson', action='store_true',
                    help=('Recompute json files from existing colocated NetCDF '
                          'files'))
+    p.add_argument('--onlymaps', action='store_true',
+                   help=('Process only model maps'))
 
     p.add_argument('-c', '--clear', action='store_true',
                    help='Delete (potentially) existing json files before rerun')
@@ -41,7 +44,6 @@ def main():
                    help='Remove an experiment from the web (deletes all json files associated)')
     p.add_argument('--warnings', action='store_true',
                    help='Display python warnings')
-
     args = p.parse_args()
     if args.exceptions:
         raise_exceptions = True
@@ -59,6 +61,11 @@ def main():
         onlyjson = True
     else:
         onlyjson = None
+    if args.onlymaps:
+        onlymaps = True
+    else:
+        onlymaps = None
+
     if not args.warnings:
         filterwarnings('ignore')
 
@@ -109,12 +116,17 @@ def main():
         print('RECOMPUTING EXISTING JSON FILES, NO COMPUTATION OF '
               'COLOCATED DATA OBJECTS WILL BE PERFORMED')
 
+    if onlymaps:
+        print('PROCESSING ONLY MAPS')
+        ae.add_maps = True
+
     ae.run_evaluation(model_name=args.model_name,
                       obs_name=args.obs_name,
                       reanalyse_existing=reanalyse_existing,
                       raise_exceptions=raise_exceptions,
                       clear_existing_json=clear_existing_json,
-                      only_json=onlyjson)
+                      only_json=onlyjson,
+                      only_maps=onlymaps)
 
 if __name__ == '__main__':
     main()

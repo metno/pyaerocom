@@ -25,6 +25,7 @@ from . import plot
 from . import interactive
 from . import web
 from . import scripts
+from . import var_groups
 
 # custom toplevel classes
 from .variable import Variable

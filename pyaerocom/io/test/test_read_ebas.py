@@ -42,7 +42,7 @@ def reader():
 @testdata_unavail
 class TestReadEBAS(object):
 
-    PROVIDES_VARIABLES = ['DEFAULT',
+    PROVIDES_VARIABLES = sorted(['DEFAULT',
                          'sc550aer',
                          'sc440aer',
                          'sc700aer',
@@ -83,26 +83,20 @@ class TestReadEBAS(object):
                          'vmrco',
                          'vmrno2',
                          'vmrno',
-                         'concprcpso4',
-                         'concprcpso4t',
-                         'concprcpso4c',
-                         'concprcpno3',
-                         'concprcpso4scavenging',
-                         'concprcpnh4',
-                         'wetso4',
-                         'wetconcso4',
-                         'wetso4t',
-                         'wetso4c',
+                         'concprcpoxs',
+                         'concprcpoxn',
+                         'concprcprdn',
+                         'wetoxs',
                          'wetoxn',
                          'wetrdn',
-                         'wetnh4',
-                         'precip',
-                         'wetconcph',
-                         'wetno3',
+                         'pr',
                          'scavratioso4',
                          'test',
                          'concpm1',
-                         'conctnh']
+                         'conctnh',
+                         'concca',
+                         'concmg',
+                         'conck'])
 
     def test_DATA_ID(self, reader):
         assert reader.data_id == 'EBASSubset'
@@ -198,15 +192,20 @@ class TestReadEBAS(object):
              'check_correct_MAAP_wrong_wvl': False,
              'eval_flags': True,
              'keep_aux_vars': False,
-             'merge_meta': False,
-             'convert_units': True}
+             'convert_units': True,
+             'ensure_correct_freq': True,
+             'freq_from_start_stop_meas': True}
 
     def test_opts(self, reader):
-        assert isinstance(reader.opts, ReadEbasOptions)
-        assert len(self.OPTS) == len(reader.opts)
-        for opt, val in reader.opts.items():
+        opts = reader._opts
+        assert isinstance(opts, dict)
+        assert 'default' in opts
+        assert isinstance(opts['default'], ReadEbasOptions)
+        assert len(self.OPTS) == len(opts['default'])
+        for opt, val in opts['default'].items():
             assert opt in self.OPTS
             assert val == self.OPTS[opt]
+
 
     def test_data_id(self, reader):
         assert reader.data_id == 'EBASSubset'
@@ -243,25 +242,6 @@ class TestReadEBAS(object):
 
         assert sorted(reader.PROVIDES_VARIABLES) == sorted(self.PROVIDES_VARIABLES)
 
-    def test_prefer_statistics(self, reader):
-        assert reader.prefer_statistics == ['arithmetic mean', 'median']
-
-    def test_ignore_statistics(self, reader):
-        assert reader.ignore_statistics == ['percentile:15.87',
-                                            'percentile:84.13']
-
-    def test_wavelength_tol_nm(self, reader):
-        assert reader.wavelength_tol_nm == 50
-
-    def test_keep_aux_vars(self, reader):
-        assert reader.keep_aux_vars == False
-
-    def test_merge_meta(self, reader):
-        assert reader.merge_meta == False
-
-    def test_eval_flags(self, reader):
-        assert reader.eval_flags == True
-
     def test_sqlite_database_file(self, reader):
         fp = reader.sqlite_database_file
         assert os.path.exists(fp)
@@ -269,7 +249,7 @@ class TestReadEBAS(object):
 
     @pytest.mark.parametrize('vars_to_retrieve,constraints,num_files', [
         ('sc550aer', {}, 1236),
-        ('sc550dryaer', {}, 1308),
+        ('sc550dryaer', {}, 1156),
         ('sc550dryaer', {'station_names': 'Jungfraujoch'}, 28),
         ('ac550aer', {}, 874),
         ('concpm10', {}, 4943),
@@ -331,6 +311,34 @@ class TestReadEBAS(object):
         for k, v in desired.items():
             assert k in cols
             assert cols[k] == v
+
+    @pytest.mark.parametrize('ts_type,tol_percent,num_flagged', [
+        ('hourly', 5, 0),
+        ('daily', 5, 8760),
+        ('hourly', 0, 5840),
+        ])
+    def test__flag_incorrect_frequencies(self, reader, loaded_nasa_ames_example,
+                                         ts_type, tol_percent, num_flagged):
+        st = StationData()
+        from pyaerocom import TsType
+        _default_tol = TsType.TOL_SECS_PERCENT
+
+        TsType.TOL_SECS_PERCENT = tol_percent
+
+        num = len(loaded_nasa_ames_example.start_meas)
+        st.start_meas = loaded_nasa_ames_example.start_meas
+        st.stop_meas = loaded_nasa_ames_example.stop_meas
+        st.var_info['bla'] = dict(units='1')
+        st.bla = np.ones(num)
+        st.ts_type=ts_type
+
+
+        reader._flag_incorrect_frequencies(st)
+
+        assert 'bla' in st.data_flagged
+        flagged = st.data_flagged['bla']
+        assert flagged.sum() == num_flagged
+        TsType.TOL_SECS_PERCENT = _default_tol
 
     @pytest.mark.parametrize('var', ['sc550aer'])
     def test_get_ebas_var(self, reader, var):

@@ -8,12 +8,13 @@ import shutil
 import simplejson
 from traceback import format_exc
 
-
 # internal pyaerocom imports
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
                                          chk_make_subdir)
 from pyaerocom import const
-#from pyaerocom.region import Region, get_all_default_region_ids
+from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.helpers import isnumeric
 
 from pyaerocom.io.helpers import save_dict_json
 
@@ -26,10 +27,12 @@ from pyaerocom.web.helpers_evaluation_iface import (
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
     compute_json_files_from_colocateddata,
-    delete_experiment_data_evaluation_iface)
+    delete_experiment_data_evaluation_iface,
+    make_info_str_eval_setup)
 
-from pyaerocom.colocation_auto import ColocationSetup, Colocator
-from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.web.web_naming_conventions import VAR_MAPPING
+
+
 
 class AerocomEvaluation(object):
     """Class for creating json files for Aerocom Evaluation interface
@@ -149,8 +152,28 @@ class AerocomEvaluation(object):
     obsorder_from_config : bool
         if True, then the order of the observations in the menu file (i.e. on
         the website) will be the same as defined in :attr:`obs_config`.
+
+    Parameters
+    ----------
+    proj_id : str, optional
+        ID of project
+    exp_id : str, optional
+        experiment ID
+    config_dir : str, optional
+        directory where config json file is located. Needed if the configuration
+        is supposed to be load from a configuration file. The name of that file
+        is automatically inferred from input `proj_id` and `exp_id`, which need
+        to be specified.
+    try_load_json : bool
+        if True, and if a config json file can be inferred and found from the
+        former 3 input args, this configuration is loaded automatically.
+        Note also that settings can be provided via arg `**settings` when
+        instantiating the class. These are updated *after* the reading of the
+        json file, which will overwrite affected attributes defined in the json
+        file.
     """
-    OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles']
+    OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles',
+                     'contour']
 
     #: Vertical layer ranges
     VERT_LAYERS = {'0-2km'  :   [0, 2000],
@@ -164,6 +187,7 @@ class AerocomEvaluation(object):
     #: vertical schemes that may be used for colocation
     VERT_SCHEMES = {'Surface' : 'surface'}
 
+    JSON_SUPPORTED_VERT_SCHEMES = ['Column', 'Surface']
     #: Attributes that are ignored when writing setup to json file
     JSON_CFG_IGNORE = ['add_methods', '_log', 'out_dirs']
 
@@ -207,6 +231,15 @@ class AerocomEvaluation(object):
         #: Directory that contains configuration files
         self.config_dir = config_dir
 
+        #: If True, process also model maps
+        self.add_maps = False
+
+        self.maps_res_deg = 5
+        self.maps_vmin_vmax = None
+
+        #: If True, process only maps (skip obs evaluation)
+        self.only_maps = False
+
         #: Output directories for different types of json files (will be filled
         #: in :func:`init_dirs`)
         self.out_dirs = {}
@@ -227,12 +260,16 @@ class AerocomEvaluation(object):
         self.model_ignore = []
 
         self.var_mapping = {}
+        self.var_mapping.update(VAR_MAPPING)
         self.var_order_menu = []
 
         self.regions_how = 'default'
         self.region_groups = {}
         self.resample_how = None
 
+        self.zeros_to_nan = False
+
+        self.summary_str = ''
         self._valid_obs_vars = {}
 
         self.modelorder_from_config = True
@@ -326,6 +363,16 @@ class AerocomEvaluation(object):
         return sorted(list(np.unique(obs_vars)))
 
     @property
+    def all_modelmap_vars(self):
+        """List of variables to be processed for model map display
+
+        Note
+        ----
+        For now this is just a wrapper for :attr:`all_obs_vars`
+        """
+        return self.all_obs_vars
+
+    @property
     def all_map_files(self):
         """List of all existing map files"""
         if not os.path.exists(self.out_dirs['map']):
@@ -351,6 +398,13 @@ class AerocomEvaluation(object):
     @reanalyse_existing.setter
     def reanalyse_existing(self, val):
         self.colocation_settings['reanalyse_existing'] = val
+
+    @property
+    def all_model_map_files(self):
+        """List of all jsoncontour and json files associated with model maps"""
+        if not os.path.exists(self.out_dirs['contour']):
+            raise FileNotFoundError('No data available for this experiment')
+        return os.listdir(self.out_dirs['contour'])
 
     def _update_custom_read_methods(self):
         for mcfg in self.model_config.values():
@@ -428,12 +482,23 @@ class AerocomEvaluation(object):
                             method_name))
         return fun
 
+    def update_summary_str(self):
+        """Updates :attr:`summary_str` using :func:`make_info_str_eval_setup`"""
+        try:
+            self.summary_str = make_info_str_eval_setup(self,
+                                                        add_header=False)
+        except Exception as e:
+            const.print_log.warning(
+                'Failed to create automatic summary string of AerocomEvaluation '
+                f'setup class. Reason: {e}')
+
     def update(self, **settings):
         """Update current setup"""
         for k, v in settings.items():
             self[k] = v
         self.check_config()
         self.init_dirs()
+        self.update_summary_str()
         #self._update_custom_read_methods()
 
     def _set_obsconfig(self, val):
@@ -459,6 +524,8 @@ class AerocomEvaluation(object):
             self._set_modelconfig(val)
         elif key == 'colocation_settings':
             self.colocation_settings.update(**val)
+        elif key == 'var_mapping':
+            self.var_mapping.update(val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
                 self.obs_config[key] = ObsConfigEval(**val)
@@ -687,7 +754,8 @@ class AerocomEvaluation(object):
                 regions_json=self.regions_file,
                 regions_how=self.regions_how,
                 web_iface_name=web_iface_name,
-                diurnal_only=diurnal_only)
+                diurnal_only=diurnal_only,
+                zeros_to_nan=self.zeros_to_nan)
                 #region_groups=self.region_groups)
 
     def get_vert_code(self, obs_name, obs_var):
@@ -1241,11 +1309,148 @@ class AerocomEvaluation(object):
                     f'Failed to process superobs entry for {superobs_name},  '
                     f'{model_name}, var {var_name}. Reason: {format_exc()}')
 
+    def _process_map_var(self, model_name, var, reanalyse_existing):
+        """
+        Process model data to create map json files
+
+        Parameters
+        ----------
+        model_name : str
+            name of model
+        var : str
+            name of variable
+        reanalyse_existing : bool
+            if True, already existing json files will be reprocessed
+
+        Raises
+        ------
+        ValueError
+            If vertical code of data is invalid or not set
+        AttributeError
+            If the data has the incorrect number of dimensions or misses either
+            of time, latitude or longitude dimension.
+        """
+        from pyaerocom.web.web_maps_helpers import (calc_contour_json,
+                                                    griddeddata_to_jsondict)
+
+        data = self.read_model_data(model_name, var)
+
+        vc = data.vert_code
+        if not isinstance(vc, str) or vc=='':
+            raise ValueError(f'Invalid vert_code {vc} in GriddedData')
+        elif vc == 'ModelLevel':
+            if not data.ndim == 4:
+                raise ValueError('Invalid ModelLevel file, needs to have '
+                                 '4 dimensions (time, lat, lon, lev)')
+            data = data.extract_surface_level()
+            vc = 'Surface'
+        elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
+            raise ValueError(f'Cannot process {vc} files. Supported vertical '
+                             f'codes are {self.JSON_SUPPORTED_VERT_SCHEMES}')
+        if not data.has_time_dim:
+            raise AttributeError('Data needs to have time dimension...')
+        elif not data.has_latlon_dims:
+            raise AttributeError('Data needs to have lat and lon dimensions')
+        elif not data.ndim == 3:
+            raise AttributeError('Data needs to be 3-dimensional')
+
+        outdir = self.out_dirs['contour']
+        outname = f'{var}_{vc}_{model_name}'
+
+        fp_json = os.path.join(outdir, f'{outname}.json')
+        fp_geojson = os.path.join(outdir, f'{outname}.geojson')
+
+        if not reanalyse_existing:
+            if os.path.exists(fp_json) and os.path.exists(fp_geojson):
+                const.print_log.info(
+                    f'Skipping processing of {outname}: data already exists.'
+                    )
+                return
+
+
+        if not data.ts_type == 'monthly':
+            data = data.resample_time('monthly')
+
+        data.check_unit()
+
+        vminmax = self.maps_vmin_vmax
+        if isinstance(vminmax, dict) and var in vminmax:
+            vmin, vmax = vminmax[var]
+        else:
+            vmin, vmax = None, None
+
+        # first calcualate and save geojson with contour levels
+        contourjson = calc_contour_json(data, vmin=vmin, vmax=vmax)
+
+        # now calculate pixel data json file (basically a json file
+        # containing monthly mean timeseries at each grid point at
+        # a lower resolution)
+        if isnumeric(self.maps_res_deg):
+            lat_res = self.maps_res_deg
+            lon_res = self.maps_res_deg
+        else:
+            lat_res = self.maps_res_deg['lat_res_deg']
+            lon_res = self.maps_res_deg['lon_res_deg']
+
+
+        datajson = griddeddata_to_jsondict(data,
+                                           lat_res_deg=lat_res,
+                                           lon_res_deg=lon_res)
+
+        save_dict_json(contourjson, fp_geojson)
+        save_dict_json(datajson, fp_json)
+
+    def run_map_eval(self, model_name, var_name, reanalyse_existing,
+                     raise_exceptions):
+        """Run evaluation of map processing
+
+        Create json files for model-maps display. This analysis does not
+        require any observation data but processes model output at all model
+        grid points, which is then displayed on the website in the maps
+        section.
+
+        Parameters
+        ----------
+        model_name : str
+            name of model to be processed
+        var_name : str, optional
+            name of variable to be processed. If None, all available
+            observation variables are used.
+        reanalyse_existing : bool
+            if True, existing json files will be reprocessed
+        raise_exceptions : bool
+            if True, any exceptions that may occur will be raised
+        """
+        if var_name is None:
+            all_vars = self.all_modelmap_vars
+        else:
+            all_vars = [var_name]
+
+        model_cfg = self.get_model_config(model_name)
+        settings = {}
+        settings.update(self.colocation_settings)
+        settings.update(model_cfg)
+
+        for var in all_vars:
+            const.print_log.info(f'Processing model maps for '
+                                 f'{model_name} ({var})')
+
+            try:
+                self._process_map_var(model_name, var,
+                                      reanalyse_existing)
+
+            except Exception:
+                if raise_exceptions:
+                    raise
+                const.print_log.warning(
+                    f'Failed to process maps for {model_name} {var} data. '
+                    f'Reason: {format_exc()}')
+
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
                        update_interface=True,
                        reanalyse_existing=None, raise_exceptions=None,
                        clear_existing_json=None, only_colocation=None,
-                       only_json=None):
+                       only_json=None, only_maps=None):
         """Create colocated data and json files for model / obs combination
 
         Parameters
@@ -1304,6 +1509,9 @@ class AerocomEvaluation(object):
             self.only_colocation = only_colocation
         if only_json is not None:
             self.only_json = only_json
+        if only_maps is not None:
+            self.only_maps = only_maps
+
         #self.iface_names = self._check_and_get_iface_names()
         if self.clear_existing_json:
             self.clean_json_files()
@@ -1322,46 +1530,55 @@ class AerocomEvaluation(object):
 
         self._update_custom_read_methods()
 
-        for obs_name in obs_list:
-            if obs_name in self.obs_ignore:
-                self._log.info('Skipping observation {}'.format(obs_name))
-                continue
+        # compute model maps (completely independent of obs-eval
+        # processing below)
+        if self.add_maps:
             for model_name in model_list:
-                if model_name == obs_name:
-                    msg = ('Cannot run same dataset against each other'
-                           '({} vs. {})'.format(model_name, model_name))
-                    self._log.info(msg)
-                    const.print_log.info(msg)
-                    continue
+                self.run_map_eval(model_name, var_name,
+                                  reanalyse_existing=reanalyse_existing,
+                                  raise_exceptions=raise_exceptions)
 
-                if model_name in self.model_ignore:
-                    self._log.info('Skipping model {}'.format(model_name))
+        if not self.only_maps:
+            for obs_name in obs_list:
+                if obs_name in self.obs_ignore:
+                    self._log.info('Skipping observation {}'.format(obs_name))
                     continue
-                if self.obs_config[obs_name]['is_superobs']:
-                    try:
-                        self._run_superobs_entry(model_name, obs_name, var_name,
-                                                 try_colocate_if_missing=True)
-                    except Exception as e:
-                        if raise_exceptions:
-                            raise
-                        const.print_log.warning(
-                            'failed to process superobs...')
-                elif self.obs_config[obs_name]['only_superobs']:
-                    const.print_log.info(
-                        f'Skipping json processing of {obs_name}, as this is '
-                        f'marked to be used only as part of a superobs '
-                        f'network')
-                else:
-                    if not self.only_json:
-                        col = self.run_colocation(model_name, obs_name, var_name)
-                    else:
-                        col = None
-                    if only_colocation:
-                        self._log.info('Skipping computation of json files for {}'
-                                       '/{}'.format(obs_name, model_name))
+                for model_name in model_list:
+                    if model_name == obs_name:
+                        msg = ('Cannot run same dataset against each other'
+                               '({} vs. {})'.format(model_name, model_name))
+                        self._log.info(msg)
+                        const.print_log.info(msg)
                         continue
-                    res = self.make_json_files(model_name, obs_name, var_name,
-                                               colocator=col)
+
+                    if model_name in self.model_ignore:
+                        self._log.info('Skipping model {}'.format(model_name))
+                        continue
+                    if self.obs_config[obs_name]['is_superobs']:
+                        try:
+                            self._run_superobs_entry(model_name, obs_name, var_name,
+                                                     try_colocate_if_missing=True)
+                        except Exception as e:
+                            if raise_exceptions:
+                                raise
+                            const.print_log.warning(
+                                'failed to process superobs...')
+                    elif self.obs_config[obs_name]['only_superobs']:
+                        const.print_log.info(
+                            f'Skipping json processing of {obs_name}, as this is '
+                            f'marked to be used only as part of a superobs '
+                            f'network')
+                    else:
+                        if not self.only_json:
+                            col = self.run_colocation(model_name, obs_name, var_name)
+                        else:
+                            col = None
+                        if only_colocation:
+                            self._log.info('Skipping computation of json files for {}'
+                                           '/{}'.format(obs_name, model_name))
+                            continue
+                        res = self.make_json_files(model_name, obs_name, var_name,
+                                                   colocator=col)
 
         if update_interface:
             #self.clean_json_files()
@@ -1506,14 +1723,12 @@ class AerocomEvaluation(object):
             - update and order heatmap file
         """
         self.update_menu(**opts)
-        # the following code is skipped when
         try:
             self.make_info_table_web()
             self.update_heatmap_json()
             self.to_json(self.exp_dir)
         except KeyError: # if no data is available for this experiment
             pass
-
 
     def update_menu(self, **opts):
         """Updates menu.json based on existing map json files"""
@@ -1531,20 +1746,20 @@ class AerocomEvaluation(object):
         return table
 
     def _obs_config_asdict(self):
-        d = {}
+        output = {}
         for k, cfg in self.obs_config.items():
             as_dict = {}
             as_dict.update(**cfg)
-            d[k] = as_dict
-        return d
+            output[k] = as_dict
+        return output
 
     def _model_config_asdict(self):
-        d = {}
+        output = {}
         for k, cfg in self.model_config.items():
             as_dict = {}
             as_dict.update(**cfg)
-            d[k] = as_dict
-        return d
+            output[k] = as_dict
+        return output
 
     def delete_experiment_data(self, base_dir=None, proj_id=None, exp_id=None,
                                also_coldata=True):
@@ -1553,7 +1768,7 @@ class AerocomEvaluation(object):
         Parameters
         ----------
         base_dir : str, optional
-            basic output direcory (containg subdirs of all projects)
+            basic output direcory (containing subdirs of all projects)
         proj_name : str, optional
             name of project, if None, then this project is used
         exp_name : str, optional
@@ -1581,20 +1796,43 @@ class AerocomEvaluation(object):
                 shutil.rmtree(coldir)
         self.update_menu()
 
+    def _clean_modelmap_files(self):
+        all_vars = self.all_modelmap_vars
+        all_mods = self.all_model_names
+        out_dir = self.out_dirs['contour']
+
+        for file in os.listdir(out_dir):
+            spl = file.replace('.', '_').split('_')
+            if not len(spl) == 4:
+                raise ValueError(f'Invalid json map filename {file}')
+            var, vc, mod_name = spl[:3]
+            rm = (not var in all_vars or
+                  not mod_name in all_mods or
+                  not vc in self.JSON_SUPPORTED_VERT_SCHEMES)
+            if rm:
+                const.print_log.info(
+                    f'Removing invalid model maps file {file}'
+                    )
+                os.remove(os.path.join(out_dir, file))
+
     def clean_json_files(self, update_interface=False):
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
         """
+        self._clean_modelmap_files()
 
         for file in self.all_map_files:
-            (obs_name, obs_var, vert_code,
-            mod_name, mod_var) = self._info_from_map_file(file)
+            (obs_name, obs_var, vc,
+             mod_name, mod_var) = self._info_from_map_file(file)
+
             remove=False
             if not (obs_name in self.iface_names and
                     mod_name in self.model_config):
                 remove = True
             elif not obs_var in self._get_valid_obs_vars(obs_name):
+                remove = True
+            elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
                 remove = True
             else:
                 mcfg = self.model_config[mod_name]
@@ -1603,10 +1841,12 @@ class AerocomEvaluation(object):
                         remove=True
 
             if remove:
-                const.print_log.info('Removing outdated map file: {}'.format(file))
+                const.print_log.info(f'Removing outdated map file: {file}')
                 os.remove(os.path.join(self.out_dirs['map'], file))
+
         for fp in glob.glob('{}/*.json'.format(self.out_dirs['ts'])):
             self._check_clean_ts_file(fp)
+
         if update_interface:
             self.update_interface()
 
@@ -1628,9 +1868,11 @@ class AerocomEvaluation(object):
     def _check_clean_ts_file(self, fp):
         spl = os.path.basename(fp).split('OBS-')[-1].split(':')
         obs_name = spl[0]
-        obs_var = spl[1].split('_')[0]
-        if not (obs_name in self.obs_config and
-                obs_var in self._get_valid_obs_vars(obs_name)):
+        obs_var, vc, _ = spl[1].replace('.', '_').split('_')
+        rm = (not vc in self.JSON_SUPPORTED_VERT_SCHEMES or
+              not obs_name in self.obs_config or
+              not obs_var in self._get_valid_obs_vars(obs_name))
+        if rm:
             const.print_log.info('Removing outdated ts file: {}'.format(fp))
             os.remove(fp)
             return
@@ -1699,20 +1941,25 @@ class AerocomEvaluation(object):
         """
         return '{}.json'.format(self.name_config_file)
 
-    def to_json(self, output_dir):
+    def to_json(self, output_dir, ignore_nan=True, indent=3):
         """Convert analysis configuration to json file and save
 
         Parameters
         ----------
         output_dir : str
             directory where the config json file is supposed to be stored
+        ignore_nan : bool
+            set NaNs to Null when writing
+
 
         """
-        d = self.to_dict()
+        self.update_summary_str()
+        asdict = self.to_dict()
         out_name = self.name_config_file_json
 
-        save_dict_json(d, os.path.join(output_dir, out_name), indent=3)
-
+        save_dict_json(asdict, os.path.join(output_dir, out_name),
+                       ignore_nan=ignore_nan,
+                       indent=indent)
 
     def load_config(self, proj_id, exp_id, config_dir=None):
         """Load configuration json file"""
@@ -1736,6 +1983,7 @@ class AerocomEvaluation(object):
         self.update(**current)
 
     def __str__(self):
+        self.update_summary_str()
         indent = 2
         _indent_str = indent*' '
         head = "Pyaerocom {}".format(type(self).__name__)
@@ -1761,7 +2009,9 @@ class AerocomEvaluation(object):
 if __name__ == '__main__':
     import pyaerocom as pya
 
+    config_dir = pya.const.OUTPUTDIR
 
+    stp = AerocomEvaluation(config_dir=config_dir)
     name = 'A useless experiment called blub, in the bla project.'
     descr = 'This experiment is indeed, completely useless!'
     stp = AerocomEvaluation('bla', 'blub', exp_name=name,

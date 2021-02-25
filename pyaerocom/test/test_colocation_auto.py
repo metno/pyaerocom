@@ -2,11 +2,35 @@ import os
 import pytest
 
 from pyaerocom.conftest import tda, does_not_raise_exception, testdata_unavail
-
-from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
+from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom import ColocatedData, GriddedData, UngriddedData
 from pyaerocom.io import ReadGridded, ReadMscwCtm
 from pyaerocom.exceptions import DataCoverageError
 from pyaerocom.io.aux_read_cubes import add_cubes
+
+default_setup = {'save_coldata': True, '_obs_cache_only': False,
+                 'obs_vars': None, 'obs_vert_type': None,
+                 'model_vert_type_alt': None, 'read_opts_ungridded': None,
+                 'obs_ts_type_read': None, 'model_use_vars': None,
+                 'model_add_vars': None, 'model_to_stp': False,
+                 'model_id': None, 'model_name': None, 'model_data_dir': None,
+                 'obs_id': None, 'obs_name': None, 'obs_data_dir': None,
+                 'obs_use_climatology': False, 'obs_add_meta': [],
+                 'gridded_reader_id': {'model': 'ReadGridded', 'obs': 'ReadGridded'},
+                 'start': None, 'stop': None, 'ts_type': None,
+                 'filter_name': None, 'apply_time_resampling_constraints': None,
+                 'min_num_obs': None, 'resample_how': None,
+                 'remove_outliers': False, 'model_remove_outliers': False,
+                 'obs_outlier_ranges': None, 'model_outlier_ranges': None,
+                 'harmonise_units': False, 'vert_scheme': None,
+                 'regrid_res_deg': None, 'ignore_station_names': None,
+                 'basedir_coldata': '/home/jonasg/MyPyaerocom/colocated_data',
+                 'model_ts_type_read': None, 'model_read_aux': None,
+                 'model_use_climatology': False, 'colocate_time': False,
+                 'flex_ts_type_gridded': True, 'reanalyse_existing': False,
+                 'raise_exceptions': False,
+                 'model_read_opts':None, 'model_rename_vars':{}
+                 }
 
 @testdata_unavail
 @pytest.fixture(scope='function')
@@ -22,6 +46,17 @@ def col_tm5_aero(model_id='TM5-met2010_CTRL-TEST',
 @pytest.fixture(scope='function')
 def col():
     return Colocator(raise_exceptions=True, reanalyze_existing=True)
+
+@pytest.mark.parametrize('stp,should_be', [
+    (ColocationSetup(), default_setup)
+    ])
+def test_colocation_setup(stp, should_be):
+    for key, val in stp.items():
+        if key == 'basedir_coldata':
+            assert os.path.exists(val)
+        else:
+            assert key in should_be
+            assert val == should_be[key], key
 
 def test_model_ts_type_read(col_tm5_aero):
     model_var = 'abs550aer'

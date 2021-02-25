@@ -96,7 +96,7 @@ from .read_marcopolo import ReadMarcoPolo
 from .read_eea_aqerep import ReadEEAAQEREP
 from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 
-from .readgridded import ReadGridded, ReadGriddedMulti
+from .readgridded import ReadGridded
 from .read_mscw_ctm import ReadMscwCtm
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead
