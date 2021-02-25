@@ -92,6 +92,15 @@ class ColocationSetup(BrowseDict):
         this via `model_use_vars = {'od550aer' : 'od550'}. NOTE: in this case,
         a model variable *od550aer* will be ignored, even if it exists
         (cf :attr:`model_add_vars`).
+    model_rename_vars : dict, optional
+        dictionary specifying if some model variables are supposed to be
+        renamed. Note: this is different from `model_use_vars` which basically
+        specifies which variables are to be read for a given obs variable.
+        This attribute enables renaming model variables and is, for instance,
+        useful if a model variable is wrong and pyaerocom would infer the wrong
+        unit, e.g. some models use abs550aer (column AAOD, unitless) for
+        absorption coefficients (ac550aer, unit=inverse length) which can
+        cause problems during the analysis.
     model_read_aux : :obj:`dict`, optional
         may be used to specify additional computation methods of variables from
         models. Keys are obs variables, values are dictionaries with keys
@@ -188,9 +197,11 @@ class ColocationSetup(BrowseDict):
                  filter_name=None,
                  regrid_res_deg=None, remove_outliers=True,
                  vert_scheme=None, harmonise_units=False,
-                 model_use_vars=None, model_add_vars=None,
+                 model_use_vars=None,
+                 model_rename_vars=None,model_add_vars=None,
                  model_read_aux=None, read_opts_ungridded=None,
                  obs_vert_type=None, model_vert_type_alt=None,
+                 model_read_opts=None,
                  var_outlier_ranges=None, var_ref_outlier_ranges=None,
                  model_ts_type_read=None,
                  obs_ts_type_read=None, flex_ts_type_gridded=True,
@@ -220,10 +231,15 @@ class ColocationSetup(BrowseDict):
         self.obs_vars = obs_vars
         self.obs_vert_type = obs_vert_type
         self.model_vert_type_alt = model_vert_type_alt
+        self.model_read_opts = model_read_opts
         self.read_opts_ungridded = read_opts_ungridded
         self.obs_ts_type_read = obs_ts_type_read
 
         self.model_use_vars = model_use_vars
+
+        if model_rename_vars is None:
+            model_rename_vars = {}
+        self.model_rename_vars = model_rename_vars
         self.model_add_vars = model_add_vars
         self.model_keep_outliers = model_keep_outliers
         self.model_to_stp = False
@@ -602,12 +618,21 @@ class Colocator(ColocationSetup):
             stop = kwargs.pop('stop')
         except KeyError:
             stop = self.stop
+
         if is_model:
             vert_which = self.obs_vert_type
             ts_type_read = self.model_ts_type_read
             if self.model_use_climatology:
                 start = 9999
                 stop = None
+
+            if var_name in self.model_rename_vars:
+                kwargs['rename_var'] = self.model_rename_vars[var_name]
+
+            mro = self.model_read_opts
+            if isinstance(mro, dict) and var_name in mro:
+                kwargs.update(mro[var_name])
+
         else:
             vert_which = None
             ts_type_read = self.obs_ts_type_read

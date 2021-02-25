@@ -5,21 +5,19 @@ General helper methods for the pyaerocom library.
 """
 import numpy as np
 import re
-
-from pyaerocom import const
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    TS_TYPE_TO_NUMPY_FREQ,
                                    TS_TYPE_TO_SI,
-                                   PANDAS_RESAMPLE_OFFSETS)
+                                   TS_TYPES)
+
 from pyaerocom.exceptions import TemporalResolutionError
 
 class TsType(object):
-    VALID = const.GRID_IO.TS_TYPES
+    VALID = TS_TYPES
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
-    RS_OFFSETS = PANDAS_RESAMPLE_OFFSETS
     TO_SI = TS_TYPE_TO_SI
 
     TS_MAX_VALS = {'hourly' : 24,
@@ -212,6 +210,8 @@ class TsType(object):
         return True if (self.__eq__(other) or self.__lt__(other)) else False
 
     def __eq__(self, other):
+        if isinstance(other, str):
+            other = TsType(other)
         return other.val == self.val
 
     def __call__(self):

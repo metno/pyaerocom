@@ -115,6 +115,8 @@ class TrendsEvaluation(object):
 
     #: mapping of metadata names between pyaerocom (keys) and json trends files
     #: (values)
+    #: ToDo: this should not be needed and the web tools should use the same
+    #: conventions as pyaerocom
     KEYMAP = od(var_name        = 'var_name',
                 station_name    = 'station',
                 latitude        = 'lat',
@@ -123,6 +125,7 @@ class TrendsEvaluation(object):
                 data_id         = 'data_id',
                 dataset_name    = 'dataset',
                 data_product    = 'product',
+                framework       = 'framework',
                 data_version    = 'data_version',
                 data_level      = 'data_level',
                 website         = 'website',
@@ -1110,20 +1113,16 @@ class TrendsEvaluation(object):
         try:
             freq = TsType(tst)
         except TemporalResolutionError:
-            if tst == 'native': # e.g. EARLINET
-                freq = TsType('daily')
-            else:
-                raise TemporalResolutionError(
-                    f'Skipping processing of {station.station_name} since '
-                    'temporal '
-                    f'resolution could not be inferred')
+            raise TemporalResolutionError(
+                f'Skipping processing of {station.station_name} trend for var '
+                f'{var_name} since temporal resolution {tst} is invalid')
         if vardata['wavelength'] is None:
             try:
                 wvl = '{} nm'.format(const.VARS[var_name].wavelength_nm)
                 vardata['wavelength'] = wvl
             except Exception:
                 pass
-        if freq >= TsType('daily'):
+        if tst=='native' or freq>=TsType('daily'):
             to_freq = 'daily'
             freq_name = 'dobs'
         elif freq >= TsType('monthly'):
