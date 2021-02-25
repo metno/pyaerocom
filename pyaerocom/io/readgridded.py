@@ -70,6 +70,7 @@ from pyaerocom.exceptions import (DataCoverageError,
                                   UnitConversionError,
                                   VarNotAvailableError,
                                   VariableDefinitionError)
+from pyaerocom.time_config import SI_TO_TS_TYPE
 
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
@@ -107,7 +108,7 @@ def check_wdep_units(gridded):
         unit = Unit(f'{unit} {freq_si}-1')
         gridded.units = unit
     else:
-        if not _check_unit(unit, DEP_TEST_UNIT, DEP_TEST_NONSI_ATOMS):
+        if not _check_unit(str(unit), DEP_TEST_UNIT, DEP_TEST_NONSI_ATOMS):
             raise ValueError(f'Cannot handle wet deposition unit {unit}')
 
     # Check if frequency in unit corresponds to sampling frequency (e.g.
@@ -138,12 +139,10 @@ def check_pr_units(gridded):
     if any([unit == x for x in PR_IMPLICIT_UNITS]):
         unit = f'{unit} {freq_si}-1'
         gridded.units = unit
-    else:
-        raise ValueError(f'Cannot handle precip unit {unit}')
 
     # Check if frequency in unit corresponds to sampling frequency (e.g.
     # ug m-2 h-1 for hourly data).
-    freq_si_str = f'{freq_si}-1'
+    freq_si_str = f' {freq_si}-1'
     freq_si_str_alt = f'/{freq_si}'
     if freq_si_str_alt in str(unit):
         # make sure frequencey is denoted as e.g. m s-1 instead of m/s
@@ -159,6 +158,31 @@ def check_pr_units(gridded):
                                   f'{freq} sampling frequency')
     return gridded
 
+def _check_prlim_units(prlim, prlim_units):
+    # ToDo: cumbersome for now, make it work first, then make it simpler...
+    if not prlim_units.endswith('-1'):
+        raise ValueError('Please specify prlim_unit as string ending with '
+                         '-1 (e.g. mm h-1) or similar')
+
+    spl = prlim_units.split()
+    if not len(spl) == 2:
+        raise ValueError('Invalid input for prlim_units (only one whitespace '
+                         'is allowed)')
+    # make sure to be in the correct length unit
+    mulfac = get_unit_conversion_fac(spl[0], 'm')
+    prlim *= mulfac
+
+    prlim_units = f'm {spl[1]}'
+    prlim_freq = spl[1][:-2] # it endswith -1
+    # convert the freque
+    if not prlim_freq in SI_TO_TS_TYPE:
+        raise ValueError(
+            f'frequency in prlim_units must be either of the '
+            f'following values: {list(SI_TO_TS_TYPE.keys())}.')
+
+    prlim_tstype = TsType(SI_TO_TS_TYPE[prlim_freq])
+    return (prlim, prlim_units, prlim_tstype)
+
 def _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit, prlim_set_under):
     if prlim_unit is None:
         raise ValueError(f'Please provide prlim_unit for prlim={prlim}')
@@ -173,8 +197,28 @@ def _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit, prlim_set_under):
 
     return wdeparr, prmask
 
+def _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit, from_tstype,
+                       to_tstype):
+    to_tstype_pd = to_tstype.to_pandas_freq()
+    to_tstype_si = to_tstype.to_si()
+
+    from_tstype_si = from_tstype.to_si()
+
+    wdeparr = resample_time_dataarray(wdeparr,
+                                      to_tstype_pd,
+                                      how='sum')
+    wdep_unit = wdep_unit.replace(f'{from_tstype_si}-1',
+                                  f'{to_tstype_si}-1')
+    prarr = resample_time_dataarray(prarr,
+                                    to_tstype_pd,
+                                    how='sum')
+    pr_unit = pr_unit.replace(f'{from_tstype_si}-1',
+                              f'{to_tstype_si}-1')
+
+    return (wdeparr, prarr, wdep_unit, pr_unit)
+
 def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
-                                        prlim=None, prlim_unit=None,
+                                        prlim=None, prlim_units=None,
                                         prlim_set_under=None):
 
     if ts_type is None:
@@ -192,14 +236,13 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
 
     # get temporal resolution of wet deposition and convert to SI conform str
     wdep_unit = str(wdep.units)
-    freq_wdep = TsType(wdep.ts_type)
+    wdep_tstype = TsType(wdep.ts_type)
 
     # repeat the unit check steps done for wet deposition
     pr_unit = str(pr.units)
-    freq_pr = TsType(pr.ts_type)
-    freq_pr_si = freq_pr.to_si()
+    pr_tstype = TsType(pr.ts_type)
 
-    if not freq_wdep == freq_pr:
+    if not wdep_tstype == pr_tstype:
         # ToDo: this can probably fixed via time resampling with how='sum'
         # for the higher resolution dataset, but for this first draft, this
         # is not allowed.
@@ -207,8 +250,8 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
                          'need to be in the same frequency...')
 
     # assign input frequency (just for making the code better readable)
-    from_freq = freq_wdep
-    from_freq_si = freq_pr_si
+    from_tstype = wdep_tstype
+    from_tstype_si = from_tstype.to_si()
 
     # convert data objects to xarray to do modifications and computation of
     # output variable
@@ -216,7 +259,7 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
     wdeparr = wdep.to_xarray()
 
     # Make sure precip unit is correct for concprcp=wdep/pr
-    pr_unit_calc = f'm {from_freq_si}-1'
+    pr_unit_calc = f'm {from_tstype_si}-1'
 
     # unit conversion factor for precip
     mulfac_pr = get_unit_conversion_fac(pr_unit, pr_unit_calc)
@@ -227,7 +270,7 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
 
     # Make sure wdep unit is correct for concprcp=wdep/pr
     wdep_unit_check_calc = wdep_unit.replace('N', '').replace('S', '')
-    wdep_unit_calc = f'ug m-2 {from_freq_si}-1'
+    wdep_unit_calc = f'ug m-2 {from_tstype_si}-1'
     mulfac_wdep = get_unit_conversion_fac(wdep_unit_check_calc, wdep_unit_calc)
 
     if mulfac_wdep != 1:
@@ -238,37 +281,48 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
             wdep_unit_calc = wdep_unit_calc.replace('ug', 'ug S')
         wdep_unit = wdep_unit_calc
 
+    # final output frequency (precip limit may be applied in higher resolution)
+    to_tstype = TsType(ts_type)
+    to_tstype_si = to_tstype.to_si()
+
     # apply prlim filter if applicable
-    prlim_applied = False
-    if prlim is not None and Unit(prlim_unit) == Unit(pr_unit):
-        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit,
+    apply_prlim, prlim_applied = False, False
+    if prlim is not None:
+        apply_prlim = True
+
+        prlim, prlim_units, prlim_tstype=_check_prlim_units(prlim, prlim_units)
+
+        if prlim_tstype == from_tstype:
+            wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
+                                          prlim_set_under)
+            prlim_applied = True
+
+    if apply_prlim and not prlim_applied and prlim_tstype > to_tstype:
+        # intermediate frequency where precip filter should be applied
+        (wdeparr,
+         prarr,
+         wdep_unit,
+         pr_unit) = _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit,
+                                       from_tstype, prlim_tstype)
+
+        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
                                       prlim_set_under)
         prlim_applied = True
+        from_tstype = prlim_tstype
 
-    to_freq = TsType(ts_type)
-    if not from_freq == to_freq:
-        to_freq_pd = to_freq.to_pandas_freq()
-        to_freq_si = to_freq.to_si()
+    if not from_tstype == to_tstype:
+        (wdeparr,
+         prarr,
+         wdep_unit,
+         pr_unit) = _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit,
+                                       from_tstype, to_tstype)
 
-        wdeparr = resample_time_dataarray(wdeparr,
-                                          to_freq_pd,
-                                          how='sum')
-        wdep_unit = wdep_unit.replace(f'{from_freq_si}-1',
-                                      f'{to_freq_si}-1')
-        prarr = resample_time_dataarray(prarr,
-                                        to_freq_pd,
-                                        how='sum')
-        pr_unit = pr_unit.replace(f'{from_freq_si}-1',
-                                  f'{to_freq_si}-1')
-
-    if not prlim_applied:
-        if prlim is not None:
-            if not Unit(pr_unit) == Unit(prlim_unit):
-                raise ValueError(f'Invalid input for prlim_unit: {prlim_unit}. Unit '
-                                 f'does not match with data unit {pr_unit}')
-            wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr,
-                                          prlim, prlim_unit,
-                                          prlim_set_under)
+    if apply_prlim and not prlim_applied:
+        if not to_tstype == prlim_tstype:
+            raise ValueError('... ... .. ')
+        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr,
+                                      prlim, prlim_units,
+                                      prlim_set_under)
 
     # set PR=0 to NaN (as we divide py PR)
     prarr.data[prarr.data==0] = np.nan
@@ -277,8 +331,9 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
 
     cube = concprcparr.to_iris()
     # infer output unit of concentration variable (should be ug m-3 or ug N m-3 or ug S m-3)
-    conc_unit_out = wdep_unit.replace('m-2', 'm-3').replace(f'{to_freq_si}-1', '').strip()
+    conc_unit_out = wdep_unit.replace('m-2', 'm-3').replace(f'{to_tstype_si}-1', '').strip()
     cube.units = conc_unit_out
+    cube.attributes['ts_type'] = str(to_tstype)
     return cube
 
 class ReadGridded(object):
@@ -360,9 +415,9 @@ class ReadGridded(object):
                     'vmrox'         : ('vmrno2', 'vmro3'),
                     'fmf550aer'     : ('od550lt1aer', 'od550aer'),
                     'concno3'       : ('concno3c', 'concno3f'),
-                    'concprcpoxn'   : ('wetoxn', 'pr')
-                    #'mec550*'       : ['od550*', 'load*'],
-                    #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
+                    'concprcpoxn'   : ('wetoxn', 'pr'),
+                    'concprcpoxs'   : ('wetoxs', 'pr'),
+                    'concprcprdn'   : ('wetrdn', 'pr'),
                     }
 
     AUX_ALT_VARS = {'od440aer'      :   ['od443aer'],
@@ -380,7 +435,9 @@ class ReadGridded(object):
                 'vmrox'         :   add_cubes,
                 'fmf550aer'     :   divide_cubes,
                 'concno3'       :   add_cubes,
-                'concprcpoxn'   :   compute_concprcp_from_pr_and_wetdep
+                'concprcpoxn'   :   compute_concprcp_from_pr_and_wetdep,
+                'concprcpoxs'   :   compute_concprcp_from_pr_and_wetdep,
+                'concprcprdn'   :   compute_concprcp_from_pr_and_wetdep
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
@@ -390,7 +447,15 @@ class ReadGridded(object):
     AUX_ADD_ARGS = {
         'concprcpoxn'   :   dict(ts_type='daily',
                                  prlim=0.1e-3,
-                                 prlim_unit='m d-1',
+                                 prlim_units='m d-1',
+                                 prlim_set_under=np.nan),
+        'concprcpoxs'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_units='m d-1',
+                                 prlim_set_under=np.nan),
+        'concprcprdn'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_units='m d-1',
                                  prlim_set_under=np.nan)
         }
 
@@ -1338,7 +1403,7 @@ class ReadGridded(object):
                     experiment=None, vert_which=None, flex_ts_type=True,
                     prefer_longer=False, vars_to_read=None, aux_fun=None,
                     try_convert_units=True, aux_add_args=None,
-                    **kwargs):
+                    rename_var=None, **kwargs):
         """Compute auxiliary variable
 
         Like :func:`read_var` but for auxiliary variables
@@ -1377,6 +1442,9 @@ class ReadGridded(object):
             the forme objects. This is, for instance, useful when computing
             concentration in precipitation from wet deposition and precipitation
             amount.
+        rename_var : str
+            if this is set, the `var_name` attribute of the output
+            `GriddedData` object will be updated accordingly.
         **kwargs
             additional keyword args passed to :func:`_load_var`
 
@@ -1416,6 +1484,7 @@ class ReadGridded(object):
                                       flex_ts_type=flex_ts_type,
                                       prefer_longer=prefer_longer,
                                       try_convert_units=try_convert_units,
+                                      rename_var=None,
                                       **kwargs)
             data.append(aux_data)
 
@@ -1435,8 +1504,10 @@ class ReadGridded(object):
                            computed=True,
                            convert_unit_on_init=try_convert_units,
                            **kwargs)
-
+        #data.ts_type = ts_type
         data.reader = self
+        if rename_var is not None:
+            data.var_name = rename_var
         return data
 
     def find_common_ts_type(self, vars_to_read, start=None, stop=None,
@@ -1659,8 +1730,8 @@ class ReadGridded(object):
                  ts_type=None, experiment=None, vert_which=None,
                  flex_ts_type=True, prefer_longer=False,
                  aux_vars=None, aux_fun=None,
-                 constraints=None,
-                 **kwargs):
+                 constraints=None, try_convert_units=True,
+                 rename_var=None, **kwargs):
         """Read model data for a specific variable
 
         This method searches all valid files for a given variable and for a
@@ -1719,6 +1790,14 @@ class ReadGridded(object):
             list of reading constraints (dict type). See
             :func:`check_constraint_valid` and :func:`apply_read_constraint`
             for details related to format of the individual constraints.
+        try_convert_units : bool
+            if True, then the unit of the variable data is checked against
+            AeroCom default unit for that variable and if it deviates, it is
+            attempted to be converted to the AeroCom default unit. Default is
+            True.
+        rename_var : str
+            if this is set, the `var_name` attribute of the output
+            `GriddedData` object will be updated accordingly.
         **kwargs
             additional keyword args parsed to :func:`_load_var`
 
@@ -1746,7 +1825,9 @@ class ReadGridded(object):
                                                                  ts_type)
         data = self._try_read_var(var_name, start, stop,
                                   ts_type, experiment, vert_which,
-                                  flex_ts_type, prefer_longer, **kwargs)
+                                  flex_ts_type, prefer_longer,
+                                  try_convert_units=try_convert_units,
+                                  rename_var=rename_var, **kwargs)
 
         if constraints is not None:
 
@@ -1871,7 +1952,9 @@ class ReadGridded(object):
 
     def _try_read_var(self, var_name, start, stop,
                   ts_type, experiment, vert_which,
-                  flex_ts_type, prefer_longer, **kwargs):
+                  flex_ts_type, prefer_longer,
+                  try_convert_units, rename_var,
+                  **kwargs):
         """Helper method used in :func:`read_var`
 
         See :func:`read_var` for description of input arguments.
@@ -1884,6 +1967,8 @@ class ReadGridded(object):
                                     vert_which=vert_which,
                                     flex_ts_type=flex_ts_type,
                                     prefer_longer=prefer_longer,
+                                    try_convert_units=try_convert_units,
+                                    rename_var=rename_var,
                                     **kwargs)
 
         try:
@@ -1895,6 +1980,8 @@ class ReadGridded(object):
                                   vert_which=vert_which,
                                   flex_ts_type=flex_ts_type,
                                   prefer_longer=prefer_longer,
+                                  try_convert_units=try_convert_units,
+                                  rename_var=rename_var,
                                   **kwargs)
 
         except VarNotAvailableError:
@@ -1906,6 +1993,8 @@ class ReadGridded(object):
                                         vert_which=vert_which,
                                         flex_ts_type=flex_ts_type,
                                         prefer_longer=prefer_longer,
+                                        try_convert_units=try_convert_units,
+                                        rename_var=rename_var,
                                         **kwargs)
         # this input variable was explicitely set to be computed, in which
         # case reading of that variable is ignored even if a file exists for
@@ -2120,7 +2209,8 @@ class ReadGridded(object):
 
     def _load_var(self, var_name, ts_type, start, stop,
                   experiment, vert_which, flex_ts_type,
-                  prefer_longer, try_convert_units=True,
+                  prefer_longer, try_convert_units,
+                  rename_var,
                   **kwargs):
         """Find files corresponding to input specs and load into GriddedData
 
@@ -2168,6 +2258,8 @@ class ReadGridded(object):
                 const.print_log.exception('Failed to crop time dimension in {}. '
                                           '(start: {}, stop: {})'
                                           .format(data, start, stop))
+        if rename_var is not None:
+            data.var_name = rename_var
         return data
 
     def _check_crop_time(self, data, start, stop):
@@ -2248,20 +2340,7 @@ class ReadGridded(object):
                                                 self.years_avail,
                                                 self.ts_types,
                                                 self.vars_provided))
-# =============================================================================
-#         if self.data:
-#             s += "\nLoaded GriddedData objects:\n"
-#             for var_name, data in self.data.items():
-#                 s += "{}\n".format(data.short_str())
-# =============================================================================
-# =============================================================================
-#         if self.data_yearly:
-#             s += "\nLoaded GriddedData objects (individual years):\n"
-#             for var_name, yearly_data in self.data_yearly.items():
-#                 if yearly_data:
-#                     for year, data in yearly_data.items():
-#                         s += "{}\n".format(data.short_str())
-# =============================================================================
+
         return s.rstrip()
 
     ### DEPRECATED STUFF
@@ -2405,15 +2484,14 @@ class ReadGriddedMulti(object):
         head = "Pyaerocom %s" %type(self).__name__
         s = ("\n%s\n%s\n"
              "Data-IDs: %s\n" %(head, len(head)*"-", self.data_ids))
-# =============================================================================
-#         if bool(self.data):
-#             s += "\nLoaded data:"
-#             for name, vardata in self.data.items():
-#                 for var, data in vardata.items():
-#                     s += "\n%s" %var
-# =============================================================================
+
         return s
 
 if __name__=="__main__":
     import pyaerocom as pya
+
+    reader = ReadGridded('EMEP.cams50.u3all')
+    print(reader)
+
+    data = reader.read_var('concprcpoxs')
 

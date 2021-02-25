@@ -11,6 +11,10 @@ import numpy as np
 from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.tstype import TsType
 
+def test_VALID():
+    assert TsType.VALID == ['minutely', 'hourly', 'daily', 'weekly', 'monthly',
+                            'yearly', 'native']
+
 def test_basic_operators():
     monthly = TsType('monthly')
     yearly = TsType('yearly')
@@ -51,7 +55,7 @@ def test_to_pandas_freq():
     ('daily', 'd', does_not_raise_exception()),
     ('minutely', 'min', does_not_raise_exception()),
     ('weekly', 'week', does_not_raise_exception()),
-    ('monthly', None, pytest.raises(ValueError)),
+    ('monthly', 'month',does_not_raise_exception()),
     ('4weekly', '4week', does_not_raise_exception()),
     ])
 def test_to_si(ts_type, value, raises):

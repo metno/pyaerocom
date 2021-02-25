@@ -129,7 +129,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.38_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.39_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -497,10 +497,7 @@ class ReadEbas(ReadUngriddedBase):
                     const.logger.info('Ignoring flagged file {}'.format(file))
                     continue
                 paths.append(os.path.join(filedir, file))
-# =============================================================================
-#                 if os.path.exists(fp):
-#                     paths.append(fp)
-# =============================================================================
+
             files_vars[var] = sorted(paths)
             num = len(paths)
             totnum += num
@@ -684,7 +681,7 @@ class ReadEbas(ReadUngriddedBase):
         data_out['data_id'] = self.data_id
         data_out['PI'] = file['data_originator']
         data_out['station_id'] = meta['station_code']
-
+        data_out['set_type_code'] = meta['set_type_code']
         data_out['station_name'] = name
         if name in self.MERGE_STATIONS:
             data_out['station_name'] = self.MERGE_STATIONS[name]
@@ -1039,10 +1036,10 @@ class ReadEbas(ReadUngriddedBase):
         data_out = StationData()
 
         data_out = self._add_meta(data_out, file)
+
         # store the raw EBAS meta dictionary (who knows what for later ;P )
         #data_out['ebas_meta'] = meta
         data_out['var_info'] = {}
-        #totnum = file.data.shape[0]
         for var, colnum  in var_cols.items():
             data_out['var_info'][var] = {}
 
@@ -1372,10 +1369,12 @@ class ReadEbas(ReadUngriddedBase):
         return data_obj
 
 if __name__=="__main__":
+    import pyaerocom as pya
 
-    reader = ReadEbas()
-    fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/AM0001R.20090101180000.20190424085012.precip_gauge..precip.1y.1d.AM01L_pg_01.AM01L_IC.lev2.nas'
-    data = reader.read_file(fp, 'concprcpno3')
+    reader = pya.io.ReadUngridded()
+#    reader = ReadEbas()
+    #fp = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/AM0001R.20090101180000.20190424085012.precip_gauge..precip.1y.1d.AM01L_pg_01.AM01L_IC.lev2.nas'
+    data = reader.read('EBASMC', 'sc550dryaer')
 
     #data.plot_timeseries('concs')
     #data = r.read('concso4')
