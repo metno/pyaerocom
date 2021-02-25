@@ -15,13 +15,16 @@ from pyaerocom.exceptions import (ColocationError,
                                   DataUnitError,
                                   DimensionOrderError,
                                   MetaDataError,
+                                  TemporalResolutionError,
                                   TimeMatchError,
                                   VarNotAvailableError)
 from pyaerocom.filter import Filter
 from pyaerocom.helpers import (to_pandas_timestamp,
                                to_datestring_YYYYMMDD,
                                make_datetime_index,
-                               isnumeric)
+                               isnumeric,
+                               get_lowest_resolution)
+from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
@@ -372,6 +375,10 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
     use_climatology_ref : bool
         if True, climatological timeseries are used from observations
 
+    Raises
+    ------
+    TemporalResolutionError
+        if obs sampling frequency is lower than desired output frequency
 
     Returns
     -------
@@ -382,7 +389,7 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
 
     # get grid and obs timeseries data (that may be sampled in arbitrary
     # time resolution, particularly the obs data)
-    grid_ts2 = stat_data.resample_time(
+    grid_ts = stat_data.resample_time(
                 var,
                 ts_type=ts_type,
                 how=resample_how,
@@ -391,12 +398,12 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
                 inplace=True)[var]
 
     if use_climatology_ref:
-        obs_ts2 = stat_data_ref.calc_climatology(
+        obs_ts = stat_data_ref.calc_climatology(
                 var_ref,
                 apply_constraints=apply_time_resampling_constraints,
                 min_num_obs=min_num_obs)[var_ref]
     else:
-        obs_ts2 = stat_data_ref.resample_time(
+        obs_ts = stat_data_ref.resample_time(
                     var_ref,
                     ts_type=ts_type,
                     how=resample_how,
@@ -405,7 +412,121 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
                     inplace=True)[var_ref]
 
     # fill up missing time stamps
-    return pd.concat([obs_ts2, grid_ts2], axis=1, keys=['ref', 'data'])
+    return pd.concat([obs_ts, grid_ts], axis=1, keys=['ref', 'data'])
+
+def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
+                               ts_type, resample_how,
+                               apply_time_resampling_constraints,
+                               min_num_obs,
+                               use_climatology_ref):
+    """
+    Helper method that colocates two timeseries from 2 StationData objects
+
+    Other than :func:`_colocate_site_data_helper` this method applies time
+    colocation in highest possible resolution (used if option `colocate_time`
+    is active in colocation routine :func:`colocate_gridded_ungridded`).
+
+    Used in main loop of :func:`colocate_gridded_ungridded`
+
+    Parameters
+    ----------
+    stat_data : StationData
+        first data object (usually the one that is to be compared with obs)
+    stat_data_ref : StationData
+        second data object (usually obs)
+    var : str
+        variable to be used from `stat_data`
+    var_ref : str
+        variable to be used from `stat_data_ref`
+    ts_type : str
+        output frequency
+    resample_how : str or dict
+        string specifying how data should be aggregated when resampling in time.
+        Default is "mean". Can also be a nested dictionary, e.g.
+        resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
+        to aggregate from hourly to daily, rather than the mean.
+    apply_time_resampling_constraints : bool, optional
+        if True, then time resampling constraints are applied as provided via
+        :attr:`min_num_obs` or if that one is unspecified, as defined in
+        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
+        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
+        (which defaults to True !!).
+    min_num_obs : int or dict, optional
+        minimum number of observations for resampling of time
+    use_climatology_ref : bool
+        if True, NotImplementedError is raised
+
+    Raises
+    ------
+    TemporalResolutionError
+        if model or obs sampling frequency is lower than desired output frequency
+    NotImplementedError
+        if input arg `use_climatology_ref` is True.
+
+    Returns
+    -------
+    pandas.DataFrame
+        dataframe containing the colocated input data (column names are
+        data and ref)
+    """
+    if use_climatology_ref:
+        raise NotImplementedError(
+            'Using observation climatology in colocation with option '
+            'colocate_time=True is not available yet ...')
+
+    grid_tst = stat_data.get_var_ts_type(var)
+    obs_tst = stat_data_ref.get_var_ts_type(var_ref)
+    coltst = TsType(get_lowest_resolution(grid_tst, obs_tst))
+    if coltst.mulfac != 1:
+        coltst = coltst.next_lower
+    stat_data.resample_time(
+        var_name=var,
+        ts_type=str(coltst),
+        how=resample_how,
+        apply_constraints=apply_time_resampling_constraints,
+        min_num_obs=min_num_obs,
+        inplace=True)
+
+    stat_data_ref.resample_time(
+        var_name=var_ref,
+        ts_type=str(coltst),
+        how=resample_how,
+        apply_constraints=apply_time_resampling_constraints,
+        min_num_obs=min_num_obs,
+        inplace=True)
+    # now both StationData objects are in the same resolution, but they still
+    # might have gaps in their time axis, thus concatenate them in a DataFrame,
+    # which will merge the time index
+    merged = pd.concat([stat_data_ref[var_ref], stat_data[var]],
+                       axis=1, keys=['ref', 'data'])
+
+    grid_ts = merged['data']
+    obs_ts = merged['ref']
+    # invalidate model where obs is NaN
+    obsnan = np.isnan(obs_ts.values)
+    grid_ts[obsnan] = np.nan
+
+    # now resample both to output frequency
+    resampler = TimeResampler()
+    obs_ts = resampler.resample(
+        to_ts_type=ts_type,
+        input_data=obs_ts,
+        from_ts_type=coltst,
+        how=resample_how,
+        apply_constraints=apply_time_resampling_constraints,
+        min_num_obs=min_num_obs
+        )
+
+    grid_ts = resampler.resample(
+        to_ts_type=ts_type,
+        input_data=grid_ts,
+        from_ts_type=coltst,
+        how=resample_how,
+        apply_constraints=apply_time_resampling_constraints,
+        min_num_obs=min_num_obs
+        )
+    # fill up missing time stamps
+    return pd.concat([obs_ts, grid_ts], axis=1, keys=['ref', 'data'])
 
 def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                start=None, stop=None, filter_name=None,
@@ -562,15 +683,17 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     grid_ts_type_src = gridded_data.ts_type
     grid_ts_type = TsType(gridded_data.ts_type)
     if isinstance(ts_type, str):
-        ts_type = TsType(ts_type)
-    if ts_type is None or grid_ts_type < ts_type:
-        ts_type = grid_ts_type
-    elif grid_ts_type > ts_type and not colocate_time:
-        gridded_data = gridded_data.resample_time(str(ts_type),
-                                                  apply_constraints=apply_time_resampling_constraints,
-                                                  min_num_obs=min_num_obs,
-                                                  how=resample_how)
-        grid_ts_type = ts_type
+        to_ts_type = TsType(ts_type)
+    if ts_type is None or grid_ts_type < to_ts_type:
+        to_ts_type = grid_ts_type
+    elif grid_ts_type > to_ts_type and not colocate_time:
+        gridded_data = gridded_data.resample_time(
+            str(to_ts_type),
+            apply_constraints=apply_time_resampling_constraints,
+            min_num_obs=min_num_obs,
+            how=resample_how
+            )
+        grid_ts_type = to_ts_type
 
     # get start / stop of gridded data as pandas.Timestamp
     grid_start = to_pandas_timestamp(gridded_data.start)
@@ -618,9 +741,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
     else:
-        col_freq = str(grid_ts_type)#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
+        col_freq = str(to_ts_type)#TS_TYPE_TO_PANDAS_FREQ[grid_ts_type]
         obs_start = start
         obs_stop = stop
+
+    # colocation frequency
+    col_tst = TsType(col_freq)
 
     # ToDo: move the following code into new function
     # GriddedData.get_latlon_ranges
@@ -663,15 +789,17 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                                  latitude=ungridded_lats,
                                                  vert_scheme=vert_scheme)
 
-    pd_freq = TsType(col_freq).to_pandas_freq()
+    pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
 
-    coldata = np.empty((2, len(time_idx), len(obs_stat_data)))
+    time_num = len(time_idx)
+    stat_num = len(obs_stat_data)
+    coldata = np.empty((2, time_num, stat_num))*np.nan
 
-    lons = []
-    lats = []
-    alts = []
-    station_names = []
+    lons = [np.nan] * stat_num
+    lats = [np.nan] * stat_num
+    alts = [np.nan] * stat_num
+    station_names = [''] * stat_num
 
     ungridded_unit = None
     ts_type_src_ref = None
@@ -682,6 +810,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
 
     # loop over all stations and append to colocated data object
     for i, obs_stat in enumerate(obs_stat_data):
+        # Add coordinates to arrays required for xarray.DataArray below
+        lons[i] = obs_stat.longitude
+        lats[i] = obs_stat.latitude
+        alts[i] = obs_stat.altitude
+        station_names[i] = obs_stat.station_name
+
         # ToDo: consider removing to keep ts_type_src_ref (this was probably
         # introduced for EBAS were the original data frequency is not constant
         # but can vary from site to site)
@@ -720,40 +854,52 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             if gridded_unit is None:
                 gridded_unit = obs_unit
 
-        _df = _colocate_site_data_helper(
-
-            stat_data=grid_stat,
-            stat_data_ref=obs_stat,
-            var=var, var_ref=var_ref,
-            ts_type=col_freq,
-            resample_how=resample_how,
-            apply_time_resampling_constraints=apply_time_resampling_constraints,
-            min_num_obs=min_num_obs,
-            use_climatology_ref=use_climatology_ref)
-
-
-        # this try/except block was introduced on 23/2/2021 as temporary fix from
-        # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
-        # can end up resulting in incorrect number of timestamps after resampling
-        # (the error was discovered using EBASMC, concpm10, 2019 and colocation
-        # frequency monthly)
         try:
-            # assign the unified timeseries data to the colocated data array
-            coldata[0, :, i] = _df['ref'].values
-            coldata[1, :, i] = _df['data'].values
-        except ValueError as e:
+            if colocate_time:
+                _df = _colocate_site_data_helper_timecol(
+
+                    stat_data=grid_stat,
+                    stat_data_ref=obs_stat,
+                    var=var, var_ref=var_ref,
+                    ts_type=col_freq,
+                    resample_how=resample_how,
+                    apply_time_resampling_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
+                    use_climatology_ref=use_climatology_ref)
+            else:
+                _df = _colocate_site_data_helper(
+
+                    stat_data=grid_stat,
+                    stat_data_ref=obs_stat,
+                    var=var, var_ref=var_ref,
+                    ts_type=col_freq,
+                    resample_how=resample_how,
+                    apply_time_resampling_constraints=apply_time_resampling_constraints,
+                    min_num_obs=min_num_obs,
+                    use_climatology_ref=use_climatology_ref)
+
+
+            # this try/except block was introduced on 23/2/2021 as temporary fix from
+            # v0.10.0 -> v0.10.1 as a result of multi-weekly obsdata (EBAS) that
+            # can end up resulting in incorrect number of timestamps after resampling
+            # (the error was discovered using EBASMC, concpm10, 2019 and colocation
+            # frequency monthly)
+            try:
+                # assign the unified timeseries data to the colocated data array
+                coldata[0, :, i] = _df['ref'].values
+                coldata[1, :, i] = _df['data'].values
+            except ValueError as e:
+                const.print_log.warning(
+                    f'Failed to colocate time for station {obs_stat.station_name}. '
+                    f'This station will be skipped (error: {e})'
+                    )
+
+        except TemporalResolutionError as e:
+            # resolution of obsdata is too low
             const.print_log.warning(
-                f'Failed to colocate time for station {obs_stat.station_name}. '
-                f'This station will be skipped (error: {e})'
+                f'{var_ref} data from site {obs_stat.station_name} will '
+                f'not be added to ColocatedData. Reason: {e}'
                 )
-
-
-
-        lons.append(obs_stat.longitude)
-        lats.append(obs_stat.latitude)
-        alts.append(obs_stat.altitude)
-        station_names.append(obs_stat.station_name)
-
     try:
         revision = ungridded_data.data_revision[dataset_ref]
     except Exception:
@@ -816,13 +962,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     data.longitude.attrs['standard_name'] = gridded_data.longitude.standard_name
     data.longitude.attrs['units'] = str(gridded_data.longitude.units)
 
-    if col_freq != str(ts_type):
-        data = data.resample_time(to_ts_type=ts_type,
-                                  colocate_time=colocate_time,
-                                  apply_constraints=apply_time_resampling_constraints,
-                                  min_num_obs=min_num_obs,
-                                  how=resample_how,
-                                  **kwargs)
     return data
 
 def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
@@ -892,13 +1031,8 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
             raise Exception
         elif not arr.dims[1] == 'time':
             raise Exception
-    # =============================================================================
-    #     const.logger.info(corrfacs)
-    #     const.logger.info('Before', arr[1, :, i].data)
-    #     corrfacs[0] = 1
-    # =============================================================================
         arr[1, :, i] *= corrfacs
-        #const.logger.info('After', arr[1, :, i].data)
+
     cfacs = np.asarray(cfacs)
 
     const.logger.info('Min: ', cfacs.min())

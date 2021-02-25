@@ -44,28 +44,46 @@ from pyaerocom.helpers import (get_time_rng_constraint,
 from pyaerocom.mathutils import closest_index, exponent
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
+from pyaerocom.units_helpers import UALIASES
 from pyaerocom.vert_coords import AltitudeAccess
 
 class GriddedData(object):
-    """Base class representing model data
+    """pyaerocom object representing gridded data (e.g. model diagnostics)
 
-    This class is largely based on the :class:`iris.Cube` object. However, this
-    object comes with an expanded functionality for convenience, for instance,
-    netCDF files can directly be loaded in the :class:`GriddedData` object,
-    whereas :class:`iris.cube.Cube` instances are typically created using
-    helper methods such as
+    Gridded data refers to data that can be represented on a regular,
+    multidimensional grid. In :mod:`pyaerocom` this comprises both model output
+    and diagnostics as well as gridded level 3 satellite data, typically with
+    dimensions `latitude, longitude, time` (for surface or columnar data) and
+    an additional dimension `lev` (or similar) for vertically resolved data.
 
-    1. :func:`iris.load` (returns
-    :class:`iris.cube.CubeList`, i.e. a list-like iterable object that contains
-    instances of :class:`Cube` objects, one for each variable) or
+    Under the hood, this data object is based on (but
+    not inherited from) the :class:`iris.cube.Cube` object, and makes large use
+    of the therein implemented functionality (many methods implemented here in
+    :class:`GriddedData` are simply wrappers for `Cube` methods.
 
-    2. :func:`iris.load_cube` which directly returns a :class:`iris.cube.Cube`
-    instance and typically requires specification of a variable constraint.
+    Note
+    ----
+    Note that the implemented functionality in this class is mostly limited to
+    what is needed in the pyaerocom API (e.g. for :mod:`pyaerocom.colocation`
+    routines or data import) and is not aimed at replacing or competing with
+    similar data classes such as :class:`iris.cube.Cube` or
+    :class:`xarray.DataArray`. Rather, dependent on the use case, one or
+    another of such gridded data objects is needed for optimal processing,
+    which is why :class:`GriddedData` provides methods and / or attributes to
+    convert to or from other such data classes (e.g. :attr:`GriddedData.cube`
+    is an instance of :class:`iris.cube.Cube` and method
+    :func:`GriddedData.to_xarray` can be used to convert to
+    :class:`xarray.DataArray`). Thus, :class:`GriddedData` can be considered
+    rather high-level as compared to the other mentioned data classes from
+    iris or xarray.
 
-    The :class:`GriddedData` object represents one variable in space and time, as
-    well as corresponding meta information. Since it is based on the https://github.com/SciTools/iris/issues/1977
-    :class:`iris.cube.Cube` it is optimised for netCDF files that follow the
-    CF conventions and may not work for files that do not follow this standard.
+
+    Note
+    ----
+    Since :class:`GriddedData` object is based on the
+    :class:`iris.cube.Cube` object it is optimised for netCDF files that follow
+    the CF conventions and may not work out of the box for files that do not
+    follow this standard.
 
     Parameters
     ----------
@@ -74,7 +92,16 @@ class GriddedData(object):
     var_name : :obj:`str`, optional
         variable name that is extracted if `input` is a file path. Irrelevant
         if `input` is preloaded Cube
-
+    check_unit : bool
+        if True, the assigned unit is checked and if it is an alias to another
+        unit the unit string will be updated. It will print a warning if the
+        unit is invalid or not equal the associated AeroCom unit for the input
+        variable. Set `convert_unit_on_init` to True, if you want an
+        automatic conversion to AeroCom units. Defaults to True.
+    convert_unit_on_init : bool
+        if True and if unit check indicates non-conformity with AeroCom unit
+        it will be converted automatically, and warning will be printed if that
+        conversion fails. Defaults to True.
     """
     _grid = None
     _GRID_IO = const.GRID_IO
@@ -85,18 +112,20 @@ class GriddedData(object):
     SUPPORTED_VERT_SCHEMES = ['mean', 'max', 'min', 'surface', 'altitude',
                               'profile']
 
-    _META_ADD = od(from_files         = [],
-                   data_id            = "n/d",
-                   var_name_read      = "n/d",
-                   ts_type            = "n/d",
-                   regridded          = False,
-                   outliers_removed   = False,
-                   computed           = False,
-                   concatenated       = False,
-                   region             = None,
-                   reader             = None)
+    _META_ADD = od(from_files           = [],
+                   data_id              = 'n/d',
+                   var_name_read        = 'n/d',
+                   ts_type              = 'n/d',
+                   vert_code            = None,
+                   regridded            = False,
+                   outliers_removed     = False,
+                   computed             = False,
+                   concatenated         = False,
+                   region               = None,
+                   reader               = None)
 
-    def __init__(self, input=None, var_name=None, convert_unit_on_init=True,
+    def __init__(self, input=None, var_name=None,
+                 check_unit=True, convert_unit_on_init=True,
                  **meta):
 
         if input is None:
@@ -121,9 +150,8 @@ class GriddedData(object):
             self.load_input(input, var_name)
 
         self.update_meta(**meta)
-
-        if self.has_data and self.var_name is not None and convert_unit_on_init:
-            self.check_unit()
+        if self.has_data and self.var_name is not None and check_unit:
+            self.check_unit(convert_unit_on_init)
 
     @property
     def var_name(self):
@@ -159,15 +187,33 @@ class GriddedData(object):
 
     @property
     def ts_type(self):
-        """Temporal resolution"""
+        """
+        Temporal resolution of data
+        """
         if self.metadata['ts_type'] == 'n/d':
+            const.print_log.warning('ts_type is not set in GriddedData, trying '
+                                    'to infer.')
             self.infer_ts_type()
 
         return self.metadata['ts_type']
 
+    @ts_type.setter
+    def ts_type(self, val):
+        TsType(val) # this will raise an error if input is invalid
+        self.metadata['ts_type'] = val
+
+    @property
+    def vert_code(self):
+        """
+        Vertical code of data (e.g. Column, Surface, ModelLevel)
+        """
+        return self.metadata['vert_code']
+
     @property
     def standard_name(self):
-        """Standard name of variable"""
+        """
+        Standard name of variable
+        """
         return self.grid.standard_name
 
     @property
@@ -182,22 +228,7 @@ class GriddedData(object):
     @property
     def unit_ok(self):
         """Boolean specifying if variable unit is AeroCom default"""
-        from pyaerocom.exceptions import VariableDefinitionError
-        try:
-            var = const.VARS[self.cube.var_name]
-            to_unit = var.units
-            current_unit = self.units
-            if to_unit == current_unit: # string match e.g. both are m-1
-                return True
-            else:
-                # no string match, however, might still be the same
-                # e.g. m-1 and 1/m
-                if Unit(to_unit).convert(1, current_unit) == 1:
-                    self.units = to_unit
-                    return True
-                return False
-        except (VariableDefinitionError, ValueError):
-            return False
+        return self.check_unit()
 
     @property
     def suppl_info(self):
@@ -210,19 +241,6 @@ class GriddedData(object):
     def metadata(self):
         return self.cube.attributes
 
-    def check_unit(self):
-        """Check if unit of data is AeroCom default and convert if not
-        """
-        try:
-            if not self.unit_ok:
-                var = const.VARS[self.cube.var_name]
-                logger.info('Attempting unit conversion from {} to {}'
-                            .format(self.units, var.units))
-                self.convert_unit(var.units)
-        except (VariableDefinitionError, UnitConversionError,
-                MemoryError, ValueError) as e:
-            print_log.warning(f'Failed to convert unit of {self.data_id} '
-                              f'({self.var_name}). Reason: {e}')
 
     @property
     def data_revision(self):
@@ -652,42 +670,144 @@ class GriddedData(object):
                 const.print_log.warning('Could not update var_name, invalid input '
                                      '{} (need str)'.format(var_name))
 
+    def _check_invalid_unit_alias(self):
+        """Check for units that have been invalidated by iris
+
+        iris lib relies on CF conventions and if the unit in the NetCDF file
+        is invalid, it will set the variable unit to UNKNOWN and put the
+        actually provided unit into the attributes. pyaerocom can handle
+        some of these invalid units, which is checked here and updated
+        accordingly
+
+        Parameters
+        ----------
+        cube : iris.cube.Cube
+            loaded instance of data Cube
+
+        Returns
+        -------
+        iris.cube.Cube
+            input cube that has been checked for supported units and updated
+            if applicable
+        """
+        cube = self.grid
+        if ('invalid_units' in cube.attributes and
+            cube.attributes['invalid_units'] in UALIASES):
+
+            from_unit = cube.attributes['invalid_units']
+            to_unit = UALIASES[from_unit]
+            const.print_log.info('Updating invalid unit in {} from {} to {}'
+                                 .format(repr(cube), from_unit, to_unit))
+            del cube.attributes['invalid_units']
+            cube.units = to_unit
+        return cube
+
+    def check_unit(self, try_convert_if_wrong=False):
+        """Check if unit is correct"""
+        from pyaerocom.exceptions import VariableDefinitionError
+        self._check_invalid_unit_alias()
+        unit_ok = False
+        to_unit = None
+        try:
+            var = const.VARS[self.cube.var_name]
+            to_unit = var.units
+            current_unit = self.units
+            if to_unit == current_unit: # string match e.g. both are m-1
+                unit_ok = True
+            elif Unit(to_unit).convert(1, current_unit) == 1:
+                self.units = to_unit
+                const.print_log.info(
+                   f'Updating unit string from {current_unit} to {to_unit} '
+                   f'in GriddedData.')
+                unit_ok = True
+        except (VariableDefinitionError, ValueError):
+            pass
+
+        if not unit_ok and try_convert_if_wrong and isinstance(to_unit, str):
+            const.print_log.warning(
+                f'Unit {self.units} in GriddedData {self.short_str()} is not '
+                f'AeroCom conform ({to_unit}). Trying to convert ... '
+                )
+            try:
+                self.convert_unit(to_unit)
+                unit_ok = True
+            except Exception as e:
+                const.print_log.warning(
+                    f'Failed to convert unit from {self.units} to {to_unit}. '
+                    f'Reason: {e}')
+
+        return unit_ok
+
     def _try_convert_non_cf_unit(self, new_unit):
         import pyaerocom.units_helpers as uh
+        from pyaerocom.time_config import SI_TO_TS_TYPE
+        current = str(self.units)
         # check if it is deposition and if units are implicit
         try:
-            fac = uh.get_unit_conversion_fac(self.units, new_unit,
-                                             self.var_name)
-        except :
-            if uh.is_deposition(self.var_name):
-                tst = TsType(self.ts_type)
-                si = tst.to_si()
-                check_from = f'{self.units} {si}-1' # e.g. kg N m-2 h-1
-                check_to = f'{self.units} s-1' # -> kg N m-2 s-1
-                check_aerocom = self.var_info.units # what we want in the end
-                fac1 =  uh.get_unit_conversion_fac(check_from,
-                                                   check_to) #h-1 -> s-1
-                fac2 = uh.get_unit_conversion_fac(
-                    check_to,
-                    check_aerocom,
-                    self.var_name) # kg N m-2 s-1 -> kg m-2 s-1
-                mulfac = fac1*fac2
-                self.cube *= mulfac
-                self.units = check_aerocom
+            mulfac = uh.get_unit_conversion_fac(from_unit=current,
+                                                to_unit=new_unit,
+                                                var_name=self.var_name)
+            self._apply_unit_mulfac(new_unit, mulfac)
 
+        except Exception as e:
+            if self.var_info.is_rate:
+                unit = current
+                if not unit.endswith('-1'):
+                    self.units = unit = str(
+                        uh.check_rate_units_implicit(unit, self.ts_type))
+
+                cf_freq = unit.split()[-1].split('-1')[0]
+
+                if not cf_freq in SI_TO_TS_TYPE:
+                    raise ValueError(f'Invalid rate unit {unit}, must end with '
+                                     f' h-1, d-1, etc...')
+
+                check_to = unit.replace(f'{cf_freq}-1', f'{uh.RATES_FREQ_DEFAULT}-1')
+                fac1 =  uh.get_unit_conversion_fac(unit,
+                                                   check_to) # e.g. h-1 -> d-1
+
+                fac2 = uh.get_unit_conversion_fac(
+                            check_to,
+                            new_unit,
+                            self.var_name) # kg N m-2 d-1 -> kg m-2 d-1
+                mulfac = fac1*fac2
+                self._apply_unit_mulfac(new_unit,
+                                        mulfac)
 
             else:
-                raise UnitConversionError('What a surprise...')
+                raise UnitConversionError(
+                    f'Failed to convert unit to {new_unit} in '
+                    f'{self.short_str()}. Reason: {repr(e)}')
+            const.print_log.info(
+                f'Succesfully converted unit from {current} to {new_unit} in '
+                f'{self.short_str()}')
 
+    def _apply_unit_mulfac(self, new_unit, mulfac):
 
+        if mulfac != 1:
+            new_cube = self._grid * mulfac
+            new_cube.attributes.update(self._grid.attributes)
+            new_cube.var_name = self.var_name
+            self._grid = new_cube
+        self.units = new_unit
+        return self
 
+    def convert_unit(self, new_unit, inplace=True):
+        """Convert unit of data to new unit
 
-    def convert_unit(self, new_unit):
-        """Convert unit of data to new unit"""
+        Parameters
+        ----------
+        new_unit : str or cf_units.Unit
+            new unit of data
+        inplace : bool
+            convert in this instance or create a new one
+        """
+        data_out = self if inplace else self.copy()
         try:
-            self.grid.convert_units(new_unit)
+            data_out.grid.convert_units(new_unit)
         except ValueError as e:
-            self._try_convert_non_cf_unit(new_unit)
+            data_out._try_convert_non_cf_unit(new_unit)
+        return data_out
 
     def time_stamps(self):
         """Convert time stamps into list of numpy datetime64 objects
@@ -776,13 +896,7 @@ class GriddedData(object):
         if not self.ndim in (3,4):
             raise DataDimensionError('Time series extraction requires at least 3 '
                             'coordinates in cube')
-# =============================================================================
-#         elif not len(self.cube.dim_coords) == self.ndim:
-#             raise DataDimensionError('Number of dimensions ({}) does not equal '
-#                                      'number of dimension coordinates ({})'
-#                                      .format(self.ndim,
-#                                              len(self.cube.dim_coords)))
-# =============================================================================
+
         order = self.COORDS_ORDER_TSERIES
         for i, coord in enumerate(order):
             dims = self.cube.coord_dims(coord)
@@ -797,20 +911,6 @@ class GriddedData(object):
 
             if not dims[0] == i:
                 raise DimensionOrderError('Invalid order of grid dimensions')
-# =============================================================================
-#
-#         check = self.dimcoord_names
-#         if not len(check) >= 3:
-#             raise DataDimensionError('One of the data dimension coordinates '
-#                                      'may not be defined')
-#
-#         for i, item in enumerate(check[:3]):
-#             if not item == order[i]:
-#                 raise DimensionOrderError('Invalid order of grid '
-#                                           'dimension, need {}, got {}'
-#                                           .format(order,
-#                                                   check))
-# =============================================================================
 
     def reorder_dimensions_tseries(self):
         """Reorders dimensions of data such that :func:`to_time_series` works
@@ -1569,6 +1669,7 @@ class GriddedData(object):
                                   apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
         data = GriddedData(arr_out.to_iris(),
+                           check_unit=False,
                            convert_unit_on_init=False,
                            **self.metadata)
         data.metadata['ts_type'] = to_ts_type
@@ -1722,7 +1823,9 @@ class GriddedData(object):
         mask_iris = load_region_mask_iris(region_id)
 
         # Reads mask to griddedata
-        mask  = GriddedData(mask_iris, convert_unit_on_init=False)
+        mask  = GriddedData(mask_iris,
+                            check_unit=False,
+                            convert_unit_on_init=False)
         mask = mask.regrid(self.cube)
 
         #mask.quickplot_map(vmin=0, vmax=1)
@@ -1839,7 +1942,8 @@ class GriddedData(object):
                 data = data[time_range[0]:time_range[1]]
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
-        return GriddedData(data, **suppl)
+        return GriddedData(data, check_unit=False,
+                           convert_unit_on_init=False, **suppl)
 
     def get_area_weighted_timeseries(self, region=None):
         """Helper method to extract area weighted mean timeseries
@@ -2041,7 +2145,6 @@ class GriddedData(object):
         if savename is None: #use AeroCom convention
             return self._to_netcdf_aerocom(out_dir, **kwargs)
         self._check_meta_netcdf()
-        savename = self.aerocom_savename(**kwargs)
         fp = os.path.join(out_dir, savename)
         iris.save(self.grid, fp)
 
@@ -2136,6 +2239,7 @@ class GriddedData(object):
 
         if isinstance(other, iris.cube.Cube):
             other = GriddedData(other,
+                                check_unit=False,
                                 convert_unit_on_init=False)
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
@@ -2148,6 +2252,7 @@ class GriddedData(object):
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
                                            lon_res_deg=lon_res_deg)
             other = GriddedData(dummy,
+                                check_unit=False,
                                 convert_unit_on_init=False)
 
         if not (self.has_latlon_dims * other.has_latlon_dims):
@@ -2365,9 +2470,10 @@ class GriddedData(object):
     def area_weighted_mean(self):
         """Get area weighted mean"""
         ws = self.area_weights
-        return self.collapsed(coords=["longitude", "latitude"],
-                              aggregator=MEAN,
-                              weights=ws).grid.data
+        collapsed = self.collapsed(coords=["longitude", "latitude"],
+                                   aggregator=MEAN,
+                                   weights=ws)
+        return collapsed.grid.data
 
     def mean(self, areaweighted=True):
         """Mean value of data array
@@ -2379,7 +2485,9 @@ class GriddedData(object):
         """
         #make sure data is in memory
         if areaweighted:
-            return self.area_weighted_mean().mean()
+            avg = self.area_weighted_mean().mean()
+            return avg
+
         data = self.grid.data
         if self.is_masked:
             return data.data[~data.mask].mean()
@@ -2559,93 +2667,22 @@ class GriddedData(object):
 
     def __str__(self):
         """For now, use string representation of underlying data"""
-        return ("pyaerocom.GriddedData: %s\nGrid data: %s"
-                %(self.name, self.grid.__str__()))
+        st = (f'pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n'
+              f'{self._grid.__str__()}')
+        return st
 
     def __repr__(self):
         """For now, use representation of underlying data"""
-        return "pyaerocom.GriddedData\nGrid data: %s" %self.grid.__repr__()
+        return (f'pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n'
+                f'{self._grid.__repr__()}')
 
     def __add__(self, other):
         raise NotImplementedError('Coming soon')
 
-    #sorted out
-    def _to_timeseries_iter_coords_2D(self, sample_points, scheme,
-                                      collapse_scalar):
-        """Extract time-series for provided input coordinates (lon, lat)
-
-        This method extracts the time-series at all input coordinates by
-        iterating over the coordinate locations, cropping the grid around the
-        coordinate and then interpolating it using
-        the provided interpolation scheme.
-
-        This method may be faster for a small number of coordinates (compared
-        to :func:`to_timeseries`). It may also be the better choice in case the
-        number of coordinates is too large in which case :func:`to_time_series`
-        may fail due to a MemoryError (i.e. the case where the final
-        interpolated object is too large to fit into memory).
-
-        Parameters
-        ----------
-        sample_points : list
-            coordinates (e.g. lon / lat) at which time series is supposed to be
-            retrieved
-        scheme : str or iris interpolator object
-            interpolation scheme (for details, see :func:`interpolate`)
-        collapse_scalar : bool
-            see :func:`interpolate`
-        **coords
-            additional keyword args that may be used to provide the interpolation
-            coordinates (for details, see :func:`interpolate`)
-
-        Returns
-        -------
-        list
-            list of result dictionaries for each coordinate. Dictionary keys
-            are: ``latitude, longitude, altitude, var_name``
-        """
-        raise NotImplementedError
-        if not scheme=="nearest":
-            raise NotImplementedError
-        self.check_dimcoords_tseries()
-
-        lats, lons = None, None
-        for val in sample_points:
-            name, vals = val[0], val[1]
-            if name == 'latitude':
-                lats = vals
-            elif name == 'longitude':
-                lons = vals
-
-        var = self.var_name
-        times = self.time_stamps()
-        grid_lats = self.latitude.points
-        grid_lons = self.longitude.points
-        result = []
-        totnum = len(lats)
-        for i, lat in enumerate(lats):
-            if i%10 == 0:
-                print('At coord {} of {}'.format(i+1, totnum))
-            lon = lons[i]
-
-            lat_idx = np.argmin(np.abs(grid_lats - lat))
-            lon_idx = np.argmin(np.abs(grid_lons - lon))
-
-            #: TODO review indexing [:,:] style vs. extract method vs. lazy data
-            C = iris.Constraint(latitude=grid_lats[lat_idx],
-                               longitude=grid_lons[lon_idx])
-
-            sub = self.extract(C)
-
-            vals = sub.grid.data
-            #sub = self.grid[:, lat_idx, lon_idx]
-            # first slice, then access data
-            data = pd.Series(vals, index=times)
-            result.append({'latitude'   :   lat,
-                           'longitude'  :   lon,
-                           'name'       :   self.name,
-                            var         :   data})
-        return result
+    def short_str(self):
+        """Short string representation"""
+        return (f'{self.var_name} ({self.data_id}, freq={self.ts_type}, '
+                f'unit={self.units})')
 
     ### Deprecated (but still supported) stuff
     @property

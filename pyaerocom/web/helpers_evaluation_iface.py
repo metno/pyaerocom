@@ -23,7 +23,7 @@ from pyaerocom.region import (get_all_default_region_ids,
                               get_all_default_regions, Region)
 
 #from pyaerocom import __version__ as PYA_VERSION
-def make_info_string(stp):
+def make_info_str_eval_setup(stp, add_header=True):
     """
     Convert instance of :class:`AerocomEvaluation` into a descriptive string
 
@@ -121,14 +121,13 @@ def make_info_string(stp):
         if not tst in obs_alt_time:
             obs_alt_time.append(tst)
 
-    #if len(obsalt_times) > 0:
     st = (
-        f'{stp.exp_id}: {stp.exp_name}\n{stp.exp_descr}\n'
         f'The experiment contains {modstr}'
         f'These models are evaluated against {obsnum} observational '
         f'dataset(s) and a total of {varnum} variables. '
         f'{obsvarstr}{timeinfo}{freqinfo}')
-
+    if add_header:
+        st =  f'{stp.exp_id}: {stp.exp_name}\n{stp.exp_descr}\n' + st
     return st
 
 def delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id):
@@ -326,8 +325,7 @@ def make_info_table_evaluation_iface(config):
     with open(menu, 'r') as f:
         menu = simplejson.load(f)
     if not config.exp_id in menu:
-        raise KeyError('No menu entry available for experiment {}'
-                       .format(config.exp_id))
+        raise KeyError(f'No menu entry available for experiment {config.exp_id}')
     table = {}
     exp = menu[config.exp_id]
     for obs_var, info in exp.items():
@@ -1103,7 +1101,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           web_iface_name,
                                           diurnal_only,
                                           regions_how=None,
-                                          zeros_to_nan=True):
+                                          zeros_to_nan=False):
 
     """Creates all json files for one ColocatedData object
 
