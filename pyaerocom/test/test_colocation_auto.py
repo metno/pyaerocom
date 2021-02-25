@@ -28,7 +28,8 @@ default_setup = {'save_coldata': True, '_obs_cache_only': False,
                  'model_ts_type_read': None, 'model_read_aux': None,
                  'model_use_climatology': False, 'colocate_time': False,
                  'flex_ts_type_gridded': True, 'reanalyse_existing': False,
-                 'raise_exceptions': False
+                 'raise_exceptions': False,
+                 'model_read_opts':None, 'model_rename_vars':{}
                  }
 
 @testdata_unavail
