@@ -28,6 +28,9 @@ from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io.read_ghost import ReadGhost
 import numpy as np
 
+def test_data_dirs():
+    assert 1 == 2
+
 @pytest.fixture(scope='module')
 def ghost_eea_daily():
     return ReadGhost('GHOST.EEA.daily')
@@ -38,36 +41,17 @@ def ghost_eea_hourly():
 
 @lustre_unavail
 class TestReadGhost(object):
-    PROVIDES_VARIABLES = ['concpm10',
-                          'concpm10al',
-                          'concpm10as',
-                          'concpm25',
-                          'concpm1',
-                          'conccl',
-                          'concso4',
-                          'vmrco',
-                          'vmrno',
-                          'vmrno2',
-                          'vmro3',
-                          'vmrso2',
-                          'concco',
-                          'concno',
-                          'concno2',
-                          'conco3',
-                          'concso2']
+    PROVIDES_VARIABLES = ['concpm10', 'concpm10al', 'concpm10as', 'concpm25',
+                          'concpm1', 'conccl', 'concso4', 'vmrco', 'vmrno',
+                          'vmrno2', 'vmro3', 'vmrso2', 'concno3', 'concnh4',
+                          'concco', 'concno', 'concno2', 'conco3', 'concso2']
 
-    INVDICT = {'pm10': 'concpm10',
-               'pm10al': 'concpm10al',
-               'pm10as': 'concpm10as',
-               'pm1': 'concpm1',
-               'sconccl': 'conccl',
-               'sconcso4': 'concso4',
-               'pm2p5': 'concpm25',
-               'sconcco': 'vmrco',
-               'sconcno': 'vmrno',
-               'sconcno2': 'vmrno2',
-               'sconco3': 'vmro3',
-               'sconcso2': 'vmrso2'}
+    INVDICT = {'pm10': 'concpm10', 'pm10al': 'concpm10al',
+               'pm10as': 'concpm10as', 'pm2p5': 'concpm25',
+               'pm1': 'concpm1', 'sconccl': 'conccl', 'sconcso4': 'concso4',
+               'sconcco': 'vmrco', 'sconcno': 'vmrno', 'sconcno2': 'vmrno2',
+               'sconco3': 'vmro3', 'sconcso2': 'vmrso2', 'sconcno3': 'concno3',
+               'sconcnh4': 'concnh4'}
 
     DEFAULT_VAR = 'conco3'
     DEFAULT_SITE = None
@@ -95,7 +79,8 @@ class TestReadGhost(object):
     @pytest.mark.parametrize('fixture_name', ['ghost_eea_daily', 'ghost_eea_hourly'])
     def test_PROVIDES_VARIABLES(self, fixture_name):
         reader = self.get_reader(fixture_name)
-        assert reader.PROVIDES_VARIABLES == self.PROVIDES_VARIABLES
+        assert len(reader.PROVIDES_VARIABLES) == len(self.PROVIDES_VARIABLES)
+        assert all([x in self.PROVIDES_VARIABLES for x in reader.PROVIDES_VARIABLES])
 
     def test_var_names_data_inv(self):
         invdict = self.default_reader.var_names_data_inv
@@ -119,8 +104,8 @@ class TestReadGhost(object):
         assert len(files) == filenum
         assert os.path.basename(files[-1]) == lastfilename
 
-    def test__ts_type_from_data_id(self):
-        assert self.get_reader('ghost_eea_daily')._ts_type_from_data_id() == 'daily'
+    def test__ts_type_from_DATASET_PATH(self):
+        assert self.get_reader('ghost_eea_daily')._ts_type_from_DATASET_PATH() == 'daily'
 
     @pytest.mark.parametrize('fixture_name,val', [
             ('ghost_eea_daily', 'daily'),
@@ -147,7 +132,7 @@ class TestReadGhost(object):
         ds = xr.open_dataset(file).isel(station=slice(10, 15))
 
         flagvar = 'qa'
-        numvalid = 142
+        numvalid = 155
         shape = (5,31)
 
         assert 'sconco3' in ds
@@ -171,7 +156,7 @@ class TestReadGhost(object):
         assert valid.sum() == numvalid
 
     @pytest.mark.parametrize('fixture_name,statnum,first_stat_name', [
-        ('ghost_eea_daily', 2290, 'Bleak House'),
+        ('ghost_eea_daily', 2276, 'Bleak House'),
         ])
     def test_read_file(self, fixture_name, statnum, first_stat_name):
         reader = self.get_reader(fixture_name)
@@ -182,40 +167,6 @@ class TestReadGhost(object):
         assert isinstance(first_stat, dict)
         assert first_stat['meta']['station_name'] == first_stat_name
 
-# =============================================================================
-# @lustre_unavail
-# def test_read_file(reader):
-#     from pyaerocom.stationdata import StationData
-#     file = reader.files[-3]
-#     assert os.path.basename(file) == 'Thessaloniki.lev30'
-#     data = reader.read_file(file)
-#     assert isinstance(data, StationData)
-#     assert data.latitude[0] == 40.63
-#     assert data.longitude[0] == 22.96
-#     assert data.station_name[0] == 'Thessaloniki'
-#     assert all(x in data for x in ['od550aer', 'ang4487aer'])
-#
-#     actual = [data['od550aer'][:10].mean(), data['ang4487aer'][:10].mean()]
-#     desired = [0.287, 1.787]
-#     npt.assert_allclose(actual, desired, rtol=1e-3)
-#
-#
-# @lustre_unavail
-# def test_read(reader):
-#     from pyaerocom.ungriddeddata import UngriddedData
-#     files = reader.files[2:4]
-#     assert all(os.path.basename(x) in ('Agoufou.lev30', 'Alta_Floresta.lev30')
-#                for x in files)
-#     data = reader.read(files=files)
-#
-#     assert isinstance(data, UngriddedData)
-#     assert data.unique_station_names == ['Agoufou', 'Alta_Floresta']
-#     assert data.contains_vars == ['od550aer', 'ang4487aer']
-#     assert data.contains_instruments == ['sun_photometer']
-#     assert data.shape == (11990, 12)
-#     npt.assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 0.676,
-#                         rtol=1e-3)
-# =============================================================================
 if __name__ == '__main__':
     import os
     import sys
