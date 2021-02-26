@@ -1,4 +1,5 @@
 from scipy.constants import Avogadro
+import numpy as np
 
 def mass_to_nr_molecules(mass, mm):
     """ Calculating the number of molecules form mass and molarmass.

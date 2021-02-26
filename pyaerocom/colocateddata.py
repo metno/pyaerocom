@@ -366,7 +366,7 @@ class ColocatedData(object):
         raise NotImplementedError(DeprecationWarning('This method has been '
                                                      'deprecated in v0.10.0'))
 
-    def resample_time(self, to_ts_type, how='mean',
+    def resample_time(self, to_ts_type, how=None,
                       apply_constraints=None, min_num_obs=None,
                       colocate_time=True, inplace=True, **kwargs):
         """Resample time dimension
@@ -411,8 +411,9 @@ class ColocatedData(object):
 
         col.data = data_arr
         col.data.attrs['colocate_time'] = colocate_time
-        col.data.attrs.update(res.last_setup)
-
+        trs = res.last_setup
+        trs['resample_how'] = trs.pop('how')
+        col.data.attrs.update(trs)
         return col
 
     def flatten_latlondim_station_name(self):
@@ -441,7 +442,7 @@ class ColocatedData(object):
         nparr = arr.data
 
         coords = {
-                    'data_source' : meta['data_source'],
+                    'data_source' : ['obs', 'mod'],
                     'time'        : time,
                     'station_name': stridx,
                     'latitude'    : ('station_name', lats),
@@ -879,6 +880,56 @@ class ColocatedData(object):
         #meta['ts_type_src'] = ts_type_src
         return meta
 
+    def get_time_resampling_settings(self):
+        """Returns a dictionary with relevant settings for temporal resampling
+
+        Returns
+        -------
+        dict
+        """
+        settings = {}
+        mapping = {
+            'apply_constraints'  : 'apply_time_resampling_constraints',
+            'min_num_obs'        : 'min_num_obs',
+            'resample_how'       : 'resample_how',
+            'colocate_time'      : 'colocate_time'
+            }
+        for from_key, to_key in mapping.items():
+            try:
+                settings[to_key] = self.meta[from_key]
+            except KeyError:
+                const.print_log.warning(
+                    f'Meta key {from_key} not defined in ColocatedData.meta...')
+                settings[to_key] = None
+        return settings
+
+    def _prepare_meta_to_netcdf(self):
+        """
+        Prepare metada for NetCDF format
+
+        Returns
+        -------
+        meta_out : dict
+            metadata ready for serialisation to NetCDF.
+
+        """
+        meta = self.data.attrs
+        meta_out = {}
+        for key, val in meta.items():
+            if val is None:
+                meta_out[key] = 'None'
+            elif isinstance(val, bool):
+                meta_out[key] = int(val)
+            elif key == 'min_num_obs' and isinstance(val, dict):
+                min_num_obs = ''
+                for to, how in val.items():
+                    for fr, num in how.items():
+                        min_num_obs += f'{to},{fr},{num};'
+                meta_out['_min_num_obs'] = min_num_obs
+            else:
+                meta_out[key] = val
+        return meta_out
+
     def to_netcdf(self, out_dir, savename=None, **kwargs):
         """Save data object as NetCDF file
 
@@ -902,22 +953,63 @@ class ColocatedData(object):
             savename = self.savename_aerocom
         if not savename.endswith('.nc'):
             savename = '{}.nc'.format(savename)
-        out = None
-        for k, v in self.data.attrs.items():
-            if v is None:
-                self.data.attrs[k] = 'None'
-            elif isinstance(v, bool):
-                self.data.attrs[k] = int(v)
-            if k == 'min_num_obs' and isinstance(v, dict):
-                out = ''
-                for to, how in v.items():
-                    for fr, num in how.items():
-                        out += '{},{},{};'.format(to, fr, num)
+        arr = self.data.copy()
+        arr.attrs = self._prepare_meta_to_netcdf()
 
-        if out is not None:
-            self.data.attrs['_min_num_obs'] = out
-            self.data.attrs.pop('min_num_obs')
-        self.data.to_netcdf(path=os.path.join(out_dir, savename), **kwargs)
+        arr.to_netcdf(path=os.path.join(out_dir, savename), **kwargs)
+
+    def _min_num_obs_fromstr(self, infostr):
+        """
+        Create min_num_obs resampling dictionary from string stored in NetCDF
+
+        Parameters
+        ----------
+        infostr : str
+            str _min_num_obs from attrs. in colocated NetCDF file
+
+        Returns
+        -------
+        info : dict
+            temporal resampling dictionary
+
+        """
+        info = {}
+        for val in infostr.split(';')[:-1]:
+            to, fr, num = val.split(',')
+            if not to in info:
+                info[to] = {}
+            if not fr in info[to]:
+                info[to][fr] = {}
+            info[to][fr] = int(num)
+        return info
+
+    def _meta_from_netcdf(self, imported_meta):
+        """
+        Convert imported metadata as stored in NetCDF file
+
+        Reason for this is that some meta values cannot be serialised when
+        storing as NetCDF (e.g. nested dictionary `min_num_obs` or None values)
+
+        Parameters
+        ----------
+        imported_meta : dict
+            metadata as read in from colocated NetCDF file
+
+        Returns
+        -------
+        meta : dict
+            converted meta
+
+        """
+        meta = {}
+        for key, val in imported_meta.items():
+            if val == 'None':
+                meta[key] = None
+            elif key == '_min_num_obs':
+                meta['min_num_obs'] = self._min_num_obs_fromstr(val)
+            else:
+                meta[key] = val
+        return meta
 
     def read_netcdf(self, file_path):
         """Read data from NetCDF file
@@ -926,24 +1018,17 @@ class ColocatedData(object):
         ----------
         file_path : str
             file path
-
         """
         try:
             self.get_meta_from_filename(file_path)
         except Exception as e:
-            raise NetcdfError('Invlid file name for ColocatedData: {}.Error: {}'
-                              .format(os.path.basename(file_path, repr(e))))
+            raise NetcdfError(
+                f'Invalid file name for ColocatedData: {file_path}. '
+                f'Error: {repr(e)}'
+                )
+
         arr = xarray.open_dataarray(file_path)
-        if '_min_num_obs' in arr.attrs:
-            info = {}
-            for val in arr.attrs['_min_num_obs'].split(';')[:-1]:
-                to, fr, num = val.split(',')
-                if not to in info:
-                    info[to] = {}
-                if not fr in info[to]:
-                    info[to][fr] = {}
-                info[to][fr] = int(num)
-            arr.attrs['min_num_obs'] = info
+        arr.attrs = self._meta_from_netcdf(arr.attrs)
         self.data = arr
         return self
 
@@ -1092,15 +1177,26 @@ class ColocatedData(object):
         if not list(arr.dims).index('station_name') == 2:
             raise DataDimensionError('station_name must be 3. dimensional index')
 
-        mask = (np.logical_and(arr.longitude > lon_range[0],
-                               arr.longitude < lon_range[1]) &
-                np.logical_and(arr.latitude > lat_range[0],
-                               arr.latitude < lat_range[1]))
+        lons, lats = arr.longitude.data, arr.latitude.data
+
+        latmask = np.logical_and(lats > lat_range[0], lats < lat_range[1])
+        if lon_range[0] > lon_range[1]:
+            _either = np.logical_and(lons>=-180, lons<lon_range[1])
+            _or = np.logical_and(lons>lon_range[0], lons<=180)
+            lonmask = np.logical_or(_either, _or)
+        else:
+            lonmask = np.logical_and(lons > lon_range[0],
+                                     lons < lon_range[1])
+        mask = latmask & lonmask
 
         return arr[:,:,mask]
 
     @staticmethod
     def _filter_latlon_3d(arr, lat_range, lon_range):
+        if lon_range[0] > lon_range[1]:
+            raise NotImplementedError(
+                'Filtering longitude over 180 deg edge is not yet possible in '
+                '3D ColocatedData...')
         if not isinstance(lat_range, slice):
             lat_range = slice(lat_range[0], lat_range[1])
         if not isinstance(lon_range, slice):
@@ -1164,10 +1260,15 @@ class ColocatedData(object):
 
         latr, lonr = self.data.attrs['lat_range'], self.data.attrs['lon_range']
         if np.equal(latr, lat_range).all() and np.equal(lonr, lon_range).all():
-            const.logger.info('Filtering of lat_range={} and lon_range={} '
-                              'results in unchanged object, returning self'
-                              .format(lon_range, lat_range))
+            const.logger.info(
+                f'Filtering of lat_range={lat_range} and lon_range={lon_range} '
+                f'results in unchanged object'
+                )
             return self
+        if lat_range[0] > lat_range[1]:
+            raise ValueError(
+                f'Lower latitude bound {lat_range[0]} cannot exceed upper '
+                f'latitude bound {lat_range[1]}')
 
         if lat_range[0] < latr[0]:
             lat_range[0] = latr[0]

@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
-from pyaerocom import const
-from pyaerocom.region import Region
+from pyaerocom import region
 
 class Filter(object):
     """Class that can be used to filter gridded and ungridded data objects
@@ -29,9 +27,6 @@ class Filter(object):
     NO_REGION_FILTER_NAME = 'WORLD'
     NO_ALTITUDE_FILTER_NAME = 'wMOUNTAINS'
 
-    AEROCOM_REGIONS = const.OLD_AEROCOM_REGIONS
-    HTAP_REGIONS = const.HTAP_REGIONS
-
     _DELIM = '-'
 
     def __init__(self, name=None, region=None, altitude_filter=None,
@@ -46,8 +41,6 @@ class Filter(object):
         else:
             self.name = '{}-{}'.format(self.NO_REGION_FILTER_NAME,
                                        self.NO_ALTITUDE_FILTER_NAME)
-
-        #self._check_if_htap_region_are_available_and_download()
 
     @property
     def name(self):
@@ -118,8 +111,8 @@ class Filter(object):
     def region(self):
         """Region associated with this filter (instance of :class:`Region`)"""
         r = self._region
-        if not isinstance(r, Region) or not r.name == self.region_name:
-            self._region = Region(self.region_name)
+        if not isinstance(r, region.Region) or not r.name == self.region_name:
+            self._region = region.Region(self.region_name)
         return self._region
 
     @property
@@ -159,7 +152,7 @@ class Filter(object):
     @property
     def valid_regions(self):
         """Names of valid regions (AeroCom regions and HTAP regions)"""
-        return self.AEROCOM_REGIONS + self.HTAP_REGIONS
+        return region.all()
 
     @property
     def land_ocn(self):
