@@ -15,7 +15,7 @@ from traceback import format_exc
 from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import (ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3,
-                          ReadEbas)
+                          ReadEbas, ReadAirNow)
 
 class TestDataAccess(object):
     #: That's were the testdata can be downloaded from
@@ -36,7 +36,8 @@ class TestDataAccess(object):
         'AeronetSunV3L2Subset.daily'    : 'obsdata/AeronetSunV3Lev2.daily/renamed',
         'AeronetSDAV3L2Subset.daily'    : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
         'AeronetInvV3L2Subset.daily'    : 'obsdata/AeronetInvV3Lev2.daily/renamed',
-        'EBASSubset'                    : 'obsdata/EBASMultiColumn'
+        'EBASSubset'                    : 'obsdata/EBASMultiColumn',
+        'AirNowSubset'                  : 'obsdata/AirNowSubset'
 
     }
 
@@ -44,7 +45,8 @@ class TestDataAccess(object):
         'AeronetSunV3L2Subset.daily'  : ReadAeronetSunV3,
         'AeronetSDAV3L2Subset.daily'  : ReadAeronetSdaV3,
         'AeronetInvV3L2Subset.daily'  : ReadAeronetInvV3,
-        'EBASSubset'                  : ReadEbas
+        'EBASSubset'                  : ReadEbas,
+        'AirNowSubset'                : ReadAirNow
     }
 
     def __init__(self, basedir=None):
