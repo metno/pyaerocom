@@ -28,18 +28,14 @@ from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io.read_ghost import ReadGhost
 import numpy as np
 
-def test_data_dirs():
-    assert 1 == 2
-
 @pytest.fixture(scope='module')
 def ghost_eea_daily():
-    return ReadGhost('GHOST.EEA.daily')
+    return ReadGhost('G.EEA.daily.Subset')
 
 @pytest.fixture(scope='module')
 def ghost_eea_hourly():
-    return ReadGhost('GHOST.EEA.hourly')
+    return ReadGhost('G.EEA.hourly.Subset')
 
-@lustre_unavail
 class TestReadGhost(object):
     PROVIDES_VARIABLES = ['concpm10', 'concpm10al', 'concpm10as', 'concpm25',
                           'concpm1', 'conccl', 'concso4', 'vmrco', 'vmrno',
@@ -90,9 +86,9 @@ class TestReadGhost(object):
 
     @pytest.mark.parametrize(
         'fixture_name,vars_to_read,pattern,filenum,lastfilename', [
-        ('ghost_eea_daily','vmro3',None,24,'sconco3_201912.nc'),
-        ('ghost_eea_hourly','vmro3',None,24,'sconco3_201912.nc'),
-        ('ghost_eea_daily','concpm10',None,24,'pm10_201912.nc'),
+        ('ghost_eea_daily','vmro3',None,1,'sconco3_201810.nc'),
+        ('ghost_eea_hourly','vmro3',None,1,'sconco3_201810.nc'),
+        ('ghost_eea_daily','concpm10',None,3,'pm10_201912.nc'),
         ('ghost_eea_daily','vmro3','*201810.nc',1,'sconco3_201810.nc'),
         ])
     def test_get_file_list(self, fixture_name, vars_to_read, pattern, filenum,
@@ -129,11 +125,11 @@ class TestReadGhost(object):
         reader = self.default_reader
         file = reader.files[-1]
         assert os.path.basename(file) == 'sconco3_201810.nc'
-        ds = xr.open_dataset(file).isel(station=slice(10, 15))
+        ds = xr.open_dataset(file)
 
         flagvar = 'qa'
-        numvalid = 155
-        shape = (5,31)
+        numvalid = 3
+        shape = (1,3)
 
         assert 'sconco3' in ds
         assert ds['sconco3'].shape == shape
@@ -156,7 +152,7 @@ class TestReadGhost(object):
         assert valid.sum() == numvalid
 
     @pytest.mark.parametrize('fixture_name,statnum,first_stat_name', [
-        ('ghost_eea_daily', 2276, 'Bleak House'),
+        ('ghost_eea_daily', 1, 'Bleak House'),
         ])
     def test_read_file(self, fixture_name, statnum, first_stat_name):
         reader = self.get_reader(fixture_name)
