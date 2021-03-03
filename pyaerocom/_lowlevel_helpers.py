@@ -238,10 +238,6 @@ def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):
 
     return OK
 
-def _is_interactive():
-    import __main__ as main
-    return not hasattr(main, '__file__')
-
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
     d = os.path.join(base, name)
