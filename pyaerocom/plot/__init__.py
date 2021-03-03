@@ -37,4 +37,3 @@ from .mapping import plot_griddeddata_on_map
 from .plotscatter import plot_scatter
 from .plotseries import plot_series_year
 from .heatmaps import df_to_heatmap
-from .plotsitelocation import plotsitelocation
