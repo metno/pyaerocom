@@ -1103,7 +1103,7 @@ def _process_regional_timeseries(data, jsdate, region_ids,
             subset = cd.filter_region(regid,
                                       inplace=False,
                                       check_country_meta=check_countries)
-            if cd.has_latlon_dims:
+            if subset.has_latlon_dims:
                 avg = subset.data.mean(dim=('latitude', 'longitude'))
             else:
                 avg = subset.data.mean(dim='station_name')
@@ -1133,7 +1133,13 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
 
                 stats = filtered.calc_statistics(use_area_weights=use_weights)
                 for k, v in stats.items():
-                    stats[k] = np.float64(v) # for json encoder...
+                    try:
+                        stats[k] = np.float64(v) # for json encoder...
+                    except Exception as e:
+                        # value is str (e.g. for weighted stats)
+                        # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
+                        stats[k] = v
+
                 hm_data[regname] = stats
     return hm_all
 
@@ -1314,6 +1320,11 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 #writes json file
                 _write_diurnal_week_stationdata_json(ts_data_weekly_reg, out_dirs)
+
+    const.print_log.info(
+        f'Finished computing json files for {model_name} ({model_var}) vs. '
+        f'{obs_name} ({obs_var})'
+        )
 
 if __name__ == '__main__':
     import pyaerocom as pya
