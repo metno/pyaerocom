@@ -36,4 +36,4 @@ jobs:
     - name: Display current branch
       run: git branch
     - name: Run pytest
-      run: pytest --cov=. --cov-report html
+      run: pytest #--cov=. --cov-report html
