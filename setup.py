@@ -22,7 +22,6 @@ setup(
                      'pyaerocom.io',
                      'pyaerocom.plot',
                      'pyaerocom.web',
-                     'pyaerocom.interactive',
                      'pyaerocom.web.cli',
                      'pyaerocom.test',
                      'pyaerocom.io.test',
