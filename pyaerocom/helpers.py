@@ -934,8 +934,10 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
     else:
         df = resampler.agg([how, 'count'])
         invalid = df['count'] < min_num_obs
-        df[how][invalid] = np.nan
         data = df[how]
+        if np.any(invalid):
+            data[invalid] = np.nan
+
     #print(freq, min_num_obs, how)
     if loffset is not None:
         data.index = data.index + pd.Timedelta(loffset)
