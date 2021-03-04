@@ -133,6 +133,27 @@ def corr(ref_data, data, weights=None):
         return pearsonr(ref_data, data)[0]
     return weighted_corr(ref_data, data, weights)
 
+def _nanmean_and_std(data):
+    """
+    Calculate mean and std for input data (may contain NaN's')
+
+    Parameters
+    ----------
+    data : list or numpy.ndarray
+        input data
+
+    Returns
+    -------
+    float
+        mean value of input data.
+    float
+        standard deviation of input data.
+
+    """
+    if np.all(np.isnan(data)):
+        return (np.nan,np.nan)
+    return (np.nanmean(data), np.nanstd(data))
+
 def calc_statistics(data, ref_data, lowlim=None, highlim=None,
                     min_num_valid=1, weights=None):
     """Calc statistical properties from two data arrays
@@ -205,10 +226,12 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
 
     result['totnum'] = float(len(mask))
     result['num_valid'] = float(num_points)
-    result['refdata_mean'] = np.nanmean(ref_data)
-    result['refdata_std'] = np.nanstd(ref_data)
-    result['data_mean'] = np.nanmean(data)
-    result['data_std'] = np.nanstd(data)
+    ref_mean, ref_std = _nanmean_and_std(ref_data)
+    data_mean, data_std = _nanmean_and_std(data)
+    result['refdata_mean'] = ref_mean
+    result['refdata_std'] = ref_std
+    result['data_mean'] = data_mean
+    result['data_std'] = data_std
     result['weighted'] = ws
 
     if not num_points >= min_num_valid:
@@ -255,7 +278,10 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     sum_refdata = sum(ref_data, weights=weights)
 
     if sum_refdata == 0:
-        nmb = np.nan
+        if sum_diff == 0:
+            nmb = 0
+        else:
+            nmb = np.nan
     else:
         nmb = sum_diff / sum_refdata
 
