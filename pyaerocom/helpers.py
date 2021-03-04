@@ -928,7 +928,7 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
         resampled time series object
     """
     freq, loffset = _get_pandas_freq_and_loffset(freq)
-    resampler = ts.resample(freq, loffset=loffset)
+    resampler = ts.resample(freq)#, loffset=loffset)
     if min_num_obs is None:
         data = resampler.agg(how)
     else:
@@ -937,6 +937,8 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
         df[how][invalid] = np.nan
         data = df[how]
     #print(freq, min_num_obs, how)
+    if loffset is not None:
+        data.index = data.index + pd.Timedelta(loffset)
     return data
 
 def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
