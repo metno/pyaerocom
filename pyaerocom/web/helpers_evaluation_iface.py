@@ -1118,7 +1118,8 @@ def _process_regional_timeseries(data, jsdate, region_ids,
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob):
-
+    #----------------------------------------------------------------------
+    # ADD stats for whole period, individual years, seasons,
     hm_all = dict(zip(('daily', 'monthly'), ({},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():

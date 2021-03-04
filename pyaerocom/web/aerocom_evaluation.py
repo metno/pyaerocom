@@ -720,7 +720,7 @@ class AerocomEvaluation(object):
         except:
             diurnal_only = False
         if not isinstance(diurnal_only,bool):
-            raise ValueError(f'Need Boolean dirunal_only for {obs_name}, got {type(diurnal_only)}')
+            raise ValueError(f'Need Boolean diurnal_only for {obs_name}, got {type(diurnal_only)}')
         ts_type = colocated_data.ts_type
         if diurnal_only and ts_type != 'hourly':
             raise NotImplementedError(f'diurnal processing is only available for ColocatedData with ts_type=hourly. Got diurnal_only={diurnal_only} for {obs_name} with ts_type {ts_type}')
