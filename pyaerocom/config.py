@@ -145,8 +145,8 @@ class Config(object):
     OBS_WAVELENGTH_TOL_NM = obs_io.OBS_WAVELENGTH_TOL_NM
 
     #: not used at the moment
-    GCOSPERCENTCRIT =   np.float(0.1)
-    GCOSABSCRIT     =   np.float(0.04)
+    GCOSPERCENTCRIT =   0.1
+    GCOSABSCRIT     =   0.04
 
     CLIM_START =2005
     CLIM_STOP = 2015
