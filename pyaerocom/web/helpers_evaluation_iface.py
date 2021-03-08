@@ -1002,6 +1002,9 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
     return (ts_objs,ts_objs_reg)
 
 def _process_sites(data, jsdate, regions, regions_how, meta_glob):
+    #----------------------------------------------------------------------
+    # MAP files: ADD stats for whole period, individual years, and seasons,
+    #----------------------------------------------------------------------
     ts_objs = []
 
     map_data = []
@@ -1119,7 +1122,8 @@ def _process_regional_timeseries(data, jsdate, region_ids,
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob):
     #----------------------------------------------------------------------
-    # ADD stats for whole period, individual years, seasons,
+    # ADD stats for whole period, individual years, and seasons,
+    #----------------------------------------------------------------------
     hm_all = dict(zip(('daily', 'monthly'), ({},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
@@ -1269,7 +1273,9 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                 fname = HEATMAP_FILENAME_EVAL_IFACE_MONTHLY
 
             hm_file = os.path.join(out_dirs['hm'], fname)
-
+            #----------------------------------------------------------------------
+            # ADD stats for whole period, individual years, and seasons,
+            #----------------------------------------------------------------------
             add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
                                     vert_code, model_name, model_var)
 
