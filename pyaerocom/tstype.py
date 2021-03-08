@@ -205,7 +205,7 @@ class TsType(object):
         """Convert to SI conform string (e.g. used for unit conversion)"""
         base = self.base
         if not base in self.TO_SI:
-            raise ValueError(f'Cannot convert {self} to SI unit string...')
+            raise ValueError(f'Cannot convert ts_type={self} to SI unit string...')
         si = self.TO_SI[base]
         return si if self.mulfac == 1 else f'{self.mulfac}{si}'
 
