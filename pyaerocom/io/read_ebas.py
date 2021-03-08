@@ -1079,7 +1079,7 @@ class ReadEbas(ReadUngriddedBase):
             if opts.freq_from_start_stop_meas:
                 tst = self._check_correct_freq(file, freq_ebas)
                 if tst != freq_ebas:
-                    const.print_log.info(
+                    const.logger.info(
                         f'Updating ts_type from {freq_ebas} (EBAS resolution_code) '
                         f'to {tst} (derived from stop_meas-start_meas)'
                         )
@@ -1139,9 +1139,12 @@ class ReadEbas(ReadUngriddedBase):
     def _check_correct_freq(self, file, freq_ebas):
         # ToDo: should go into EbasNasaAmesFile class
         dts = (file.stop_meas - file.start_meas).astype(int)
+        if np.min(dts) < 0:
+            raise TemporalResolutionError(
+                'Nasa Ames file contains neg. meas periods...')
         counts = np.bincount(dts)
         most_common_dt = np.argmax(counts)
-        # frequency assoiated based on resolution code
+        # frequency associated based on resolution code
         rescode_tstype = TsType(freq_ebas)
         rescode_numsecs = rescode_tstype.num_secs
         rescode_tolsecs = rescode_tstype.tol_secs
@@ -1151,20 +1154,25 @@ class ReadEbas(ReadUngriddedBase):
                           most_common_dt <= highlim):
             return freq_ebas
 
-        const.print_log.warning(
+        const.logger.warning(
             f'Detected wrong frequency {freq_ebas}. Trying to '
             f'infer the correct frequency...')
 
         for tst in TsType.VALID:
             tstype = TsType(tst)
-            numsecs = tstype.num_secs
-            tolsecs = tstype.tol_secs
+            try:
+                numsecs = tstype.num_secs
+                tolsecs = tstype.tol_secs
+            except ValueError:
+                continue
             low, high = numsecs-tolsecs, numsecs+tolsecs
             if np.logical_and(most_common_dt >= low,
                               most_common_dt <= high):
                 return tst
         raise TemporalResolutionError(
-            f'Failed to derive correct sampling frequency in {file.file_name}'
+            f'Failed to derive correct sampling frequency in {file.file_name}. '
+            f'Most common meas period is {most_common_dt}s and does not '
+            f'correspond to any of the supported base frequencies { TsType.VALID}'
             )
     def _flag_incorrect_frequencies(self, filedata):
 
@@ -1406,6 +1414,7 @@ class ReadEbas(ReadUngriddedBase):
         This method is not supposed to be called directly but is used in
         :func:`read` and serves the purpose of parallel loading of data
         """
+        self.files_failed = []
         data_obj = UngriddedData(num_points=1000000)
 
         # Add reading options to filter "history of UngriddedDataObject"
@@ -1423,8 +1432,9 @@ class ReadEbas(ReadUngriddedBase):
         # counter that is updated whenever a new variable appears during read
         # (is used for attr. var_idx in UngriddedData object)
         var_count_glob = -1
-        const.print_log.info('Reading EBAS data')
-        for i in tqdm(range(len(files))):
+        const.print_log.info(f'Reading EBAS data from {self.file_dir}')
+        num_files = len(files)
+        for i in tqdm(range(num_files)):
             _file = files[i]
             contains = files_contain[i]
             try:
@@ -1530,6 +1540,10 @@ class ReadEbas(ReadUngriddedBase):
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
 
+        num_failed = len(self.files_failed)
+        if num_failed > 0:
+            const.print_log.warning(
+                f'{num_failed} out of {num_files} could not be read...')
         return data_obj
 
 if __name__=="__main__":
@@ -1542,28 +1556,12 @@ if __name__=="__main__":
                                   #data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
-
-    data = reader.read(vars_to_retrieve=['wetoxs'])
-
-    data = reader.read(vars_to_retrieve=['concss'],
-                       station_names='Westerland')
-
 # =============================================================================
-#     sizes = [120, 50, 10]
-#     colors = ['r', 'lime', 'b']
-#     ax=None
-#     for i, var in enumerate(['concca', 'concmg', 'conck']):
-#         print(var)
-#         data = reader.read(vars_to_retrieve=var)
-#         data = data.apply_filters(data_level=2, set_flags_nan=True)
-#         ax = data.plot_station_coordinates(var_name=var, markersize=sizes[i], start=2018,
-#                                            color=colors[i], ax=ax)
-#     ax.set_title('EBAS overview of sites for Ca, Mg, K with 2018 data')
+#     reader.read_file('/home/jonasg/MyPyaerocom/data/obsdata/EBASMultiColumn/data/data/PL0005R.19950101060000.20181210133000.filter_1pack...3mo.1d.PL02L_f1p_5..lev2.nas',
+#                      ['concno3'])
 # =============================================================================
-    #data.plot_timeseries('concs')
-    #data = r.read('concso4')
-
-    #data = r.read('sc550dryaer')
-
-    #data.plot_station_timeseries('Eureka', 'vmro3')
-
+    data = reader.read(vars_to_retrieve=['concno3'])
+# =============================================================================
+#                        ,first_file=100,
+#                        last_file=200)
+# =============================================================================

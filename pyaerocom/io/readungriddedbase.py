@@ -156,7 +156,7 @@ class ReadUngriddedBase(abc.ABC):
     def DATASET_PATH(self):
         """Path to datafiles of specified dataset
 
-        Is retrieved automatically (if not specified explicitely on class
+        Is retrieved automatically (if not specified explicitly on class
         instantiation), based on network ID (:attr:`DATA_ID`)
         using :func:`get_obsnetwork_dir` (which uses the information in
         ``pyaerocom.const``).
@@ -164,6 +164,13 @@ class ReadUngriddedBase(abc.ABC):
         if self._dataset_path is not None and os.path.exists(self._dataset_path):
             return self._dataset_path
         return get_obsnetwork_dir(self.data_id)
+
+    @property
+    def data_dir(self):
+        """
+        Wrapper for :attr:`DATASET_PATH`
+        """
+        return self.DATASET_PATH
 
     @abc.abstractmethod
     def read_file(self, filename, vars_to_retrieve=None):
