@@ -80,6 +80,15 @@ class DataExtractionError(ValueError):
 class DataSearchError(IOError):
     pass
 
+class NasaAmesReadError(IOError):
+    pass
+
+class NasaAmesVariableError(AttributeError):
+    pass
+
+class NasaAmesTimedefError(AttributeError):
+    pass
+
 class NDimError(DataDimensionError):
     pass
 
