@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
 
     steps:
     - uses: actions/checkout@v2.3.4
@@ -28,12 +28,12 @@ jobs:
     - name: Install pytest
       run: |
         conda install -c conda-forge --file ./test-requirements.txt
-        conda info --envs
-        conda list pytest
-        which python
     - name: Install pyaerocom
       run: python ./setup.py install
-    - name: Display current branch
-      run: git branch
     - name: Run pytest
-      run: pytest --cov=. --cov-report html
+      run: pytest --cov=pyaerocom/ --cov-report xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.0.3
+      with:
+          file: ./coverage.xml
+          flags: unittests
