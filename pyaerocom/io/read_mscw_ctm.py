@@ -10,15 +10,12 @@ import xarray as xr
 import numpy as np
 import os
 import glob
-from time import time
-
 
 from pyaerocom import const
-from pyaerocom.exceptions import VarNotAvailableError, VariableDefinitionError
+from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.aux_read_cubes import add_cubes
 from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.variable import get_aliases
 from pyaerocom.units_helpers import implicit_to_explicit_rates
 
 class ReadMscwCtm(object):
@@ -147,6 +144,12 @@ class ReadMscwCtm(object):
         self._filedata = None
 
     @property
+    def filepath(self):
+        """
+        Path to data file
+        """
+        return os.path.join(self.data_dir, self.filename)
+    @property
     def filedata(self):
         """
         Loaded netcdf file (:class:`xarray.Dataset`)
@@ -211,15 +214,14 @@ class ReadMscwCtm(object):
         xarray.Dataset
 
         """
-        const.print_log.info(f'Opening {filepath}')
-        t0=time()
         fp=os.path.join(self.data_dir, self.filename)
+        const.print_log.info(f'Opening {fp}')
+
         if not os.path.exists(fp):
             raise FileNotFoundError('please specify existing data_dir and '
                                     'filename')
         ds = xr.open_dataset(fp)
         self._filedata = ds
-        const.print_log.info(f'Done (after {time()-t0:.1f} s)!')
         return ds
 
     def __repr__(self):
@@ -300,6 +302,40 @@ class ReadMscwCtm(object):
                 return fname
         raise ValueError('failed to infer filename from input ts_type={ts_type}')
 
+    def compute_var(self, var_name_aerocom, ts_type):
+        """Compute auxiliary variable
+
+        Like :func:`read_var` but for auxiliary variables
+        (cf. AUX_REQUIRES)
+
+        Parameters
+        ----------
+        var_name : str
+            variable that are supposed to be read
+        ts_type : str
+            string specifying temporal resolution.
+
+        Returns
+        -------
+        GriddedData
+            loaded data object
+        """
+        if not var_name_aerocom in self.AUX_REQUIRES:
+            raise AttributeError(
+                f'{var_name_aerocom} cannot be computed, only '
+                f'{list(self.AUX_REQUIRES)}')
+        temp_cubes = []
+        req = self.AUX_REQUIRES[var_name_aerocom]
+        aux_func = self.AUX_FUNS[var_name_aerocom]
+        const.print_log.info(
+                f'computing {var_name_aerocom} from {req} using {aux_func}'
+                )
+        for aux_var in self.AUX_REQUIRES[var_name_aerocom]:
+            temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
+
+        cube = aux_func(*temp_cubes)
+        return GriddedData(cube, var_name=var_name_aerocom,
+                           ts_type=ts_type, computed=True)
 
     def read_var(self, var_name, ts_type=None, **kwargs):
         """Load data for given variable.
@@ -329,22 +365,15 @@ class ReadMscwCtm(object):
             #that current file has different resolution
             self.filename = self.filename_from_ts_type(ts_type)
 
-        file_vars = self.var_map
-
         if var_name_aerocom in self.AUX_REQUIRES:
-            temp_cubes = []
-            for aux_var in self.AUX_REQUIRES[var_name_aerocom]:
-                temp_cubes.append(self.read_var(aux_var, ts_type=ts_type))
-            aux_func = self.AUX_FUNS[var_name_aerocom]
-            cube = aux_func(*temp_cubes)
-            gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type, computed=True)
+            gridded = self.compute_var(var_name_aerocom, ts_type)
         else:
-            gridded = self._gridded_from_filedata(var_name_aerocom)
+            gridded = self._gridded_from_filedata(var_name_aerocom, ts_type)
 
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = filepath # ReadGridded cannot concatenate several years of data if this is missing
+        gridded.metadata['from_files'] = self.filepath
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
@@ -352,11 +381,15 @@ class ReadMscwCtm(object):
                 del(gridded.metadata[metadata])
         return gridded
 
-    def _gridded_from_filedata(self, var_name_aerocom):
+    def _gridded_from_filedata(self, var_name_aerocom, ts_type):
         emep_var = self.var_map[var_name_aerocom]
 
         EMEP_prefix = emep_var.split('_')[0]
-        data = self.filedata
+        try:
+            data = self.filedata[emep_var]
+        except KeyError:
+            raise VarNotAvailableError(
+                f'{var_name_aerocom} ({emep_var}) not available in {self.filename}')
         data.attrs['long_name'] = var_name_aerocom
         data.time.attrs['long_name'] = 'time'
         data.time.attrs['standard_name'] = 'time'
@@ -364,12 +397,13 @@ class ReadMscwCtm(object):
         cube = data.to_iris()
         if ts_type == 'hourly':
             cube.coord('time').convert_units('hours since 1900-01-01')
-        gridded = GriddedData(cube, var_name=var_name, ts_type=ts_type,
-                              check_unit=False,
+        gridded = GriddedData(cube, var_name=var_name_aerocom,
+                              ts_type=ts_type, check_unit=False,
                               convert_unit_on_init=False)
 
         if EMEP_prefix in ['WDEP', 'DDEP']:
             implicit_to_explicit_rates(gridded, ts_type)
+        return gridded
 
     @staticmethod
     def preprocess_units(units, prefix=None):
@@ -405,4 +439,4 @@ if __name__ == '__main__':
 
 
     # Read variable that uses AUX_FUNS
-    data = reader.read_var('sconcno3', ts_type='daily')
+    data = reader.read_var('concno3', ts_type='daily')
