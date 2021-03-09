@@ -8,7 +8,6 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.colocation import colocate_gridded_gridded
 from pyaerocom.colocation import ColocatedData
 
-
 def test_read_emep():
     r = ReadMscwCtm()
     assert r.data_id == None
