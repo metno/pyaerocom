@@ -19,7 +19,7 @@ Official website of pyaerocom, a Python package containing reading, post analysi
 
    intro
    install
-   getstarted
+   pyaerocom-tutorials/index
    api
 
 Indices and tables
