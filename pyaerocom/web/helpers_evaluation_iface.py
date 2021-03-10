@@ -18,11 +18,11 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import DataDimensionError, TemporalResolutionError
+from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
-                              get_all_default_regions, Region)
+                              Region)
 
-#from pyaerocom import __version__ as PYA_VERSION
 def make_info_str_eval_setup(stp, add_header=True):
     """
     Convert instance of :class:`AerocomEvaluation` into a descriptive string
@@ -141,13 +141,15 @@ def delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id):
         name of project, if None, then this project is used
     exp_name : str, optional
         name experiment, if None, then this project is used
+
     """
 
-    p = os.path.join(base_dir, proj_id, exp_id)
-    if not os.path.exists(p):
-        raise NameError('No such data directory found: {}'.format(p))
-
-    shutil.rmtree(p)
+    basedir = os.path.join(base_dir, proj_id, exp_id)
+    if not os.path.exists(basedir):
+        const.print_log.info('Nothing there to delete...')
+        return
+    const.print_log.info(f'Deleting everything under {basedir}')
+    shutil.rmtree(basedir)
 
 def get_all_config_files_evaluation_iface(config_dir):
     """
@@ -205,20 +207,7 @@ def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     new = sort_dict_by_name(current, pref_list=exp_order)
     write_json(new, menu_file, indent=4)
 
-def update_menu_evaluation_iface(config, ignore_experiments=None):
-    """Update menu for Aerocom Evaluation interface
-
-    The menu.json file is created based on the available json map files in the
-    map directory of an experiment.
-
-    Parameters
-    ----------
-    config : AerocomEvaluation
-        instance of config class that has all relevant paths specified
-    ignore_experiments : list, optional
-        list containing experiment IDs that may be in the current menu.json
-        file and that are supposed to be removed from it.
-    """
+def _get_available_results_dict(config):
     def var_dummy():
         """Helper that creates empty dict for variable info"""
         return {'type'      :   '',
@@ -226,28 +215,17 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
                 'name'      :   '',
                 'longname'  :   '',
                 'obs'       :   {}}
-
     new = {}
-    exp_id = config.exp_id
-    if ignore_experiments is None:
-        ignore_experiments = []
-    try:
-        tab = config.get_web_overview_table()
-    except FileNotFoundError:
-        import pandas as pd
-        tab = pd.DataFrame()
-
+    tab = config.get_web_overview_table()
     for index, info in tab.iterrows():
         obs_var, obs_name, vert_code, mod_name, mod_var = info
         if not obs_var in new:
-            const.print_log.info('Adding new observation variable: {}'
-                                 .format(obs_var))
             new[obs_var] = d = var_dummy()
             name, tp, cat = config.get_obsvar_name_and_type(obs_var)
 
             d['name'] = name
             d['type'] = tp
-            d['cat']  =cat
+            d['cat']  = cat
             d['longname'] = const.VARS[obs_var].description
         else:
             d = new[obs_var]
@@ -267,35 +245,86 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
         dobs_vert[mod_name] = {'dir' : mod_name,
                                'id'  : config.model_config[mod_name]['model_id'],
                                'var' : mod_var}
+    return new
 
-    if len(new)  > 0:
-        _new = {}
-        for var in config.var_order_menu:
-            try:
-                _new[var] = new[var]
-            except Exception:
-                const.print_log.info('No variable {} found'.format(var))
-        for var, info in new.items():
-            if not var in _new:
-                _new[var] = info
-        new = _new
+def _sort_menu_entries(avail, config):
+    """
+    Used in method :func:`update_menu_evaluation_iface`
+
+    Sorts results of different menu entries (i.e. variables, observations
+    and models).
+
+    Parameters
+    ----------
+    avail : dict
+        nested dictionary contining info about available results
+    config : AerocomEvaluation
+        Configuration class
+
+    Returns
+    -------
+    dict
+        input dictionary sorted in variable, obs and model layers. The order
+        of variables, observations and models may be specified in
+        AerocomEvaluation class and if not, alphabetic order is used.
+
+    """
+    # sort first layer (i.e. variables)
+    avail = sort_dict_by_name(avail, pref_list=config.var_order_menu)
 
     new_sorted = {}
-    for var, info in new.items():
+    for var, info in avail.items():
         new_sorted[var] = info
-        sorted_obs = sort_dict_by_name(info['obs'])
+        obs_order = config.obs_order_menu
+        sorted_obs = sort_dict_by_name(info['obs'],
+                                       pref_list=obs_order)
         new_sorted[var]['obs'] = sorted_obs
         for obs_name, vert_codes in sorted_obs.items():
             vert_codes_sorted = sort_dict_by_name(vert_codes)
             new_sorted[var]['obs'][obs_name] = vert_codes_sorted
             for vert_code, models in vert_codes_sorted.items():
-                models_sorted = sort_dict_by_name(models)
+                model_order = config.model_order_menu
+                models_sorted = sort_dict_by_name(models,
+                                                  pref_list=model_order)
                 new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
-    new_menu = {}
-    basedir = os.path.dirname(config.menu_file)
+    return new_sorted
+
+def _check_load_current_menu(config, ignore_experiments):
+    """
+    Load current menu.json file and return as dictionary
+
+    This is a private method used in :func:`update_menu_evaluation_iface`. It
+    also checks for outdated experiments for which no json files are
+    available anymore.
+
+    Parameters
+    ----------
+    config : AerocomEvaluation
+        instance of config class that has all relevant paths specified
+    ignore_experiments : list, optional
+        list of experiments that are supposed to be removed from the current
+        menu.
+
+    Returns
+    -------
+    dict
+        current menu as dictionary (cleared of outdated entries)
+
+
+    """
+    if ignore_experiments is None:
+        ignore_experiments = []
+    menu_file = config.menu_file
+    # toplevel directory under which all experiments for this project are
+    # stored. the menu.json is in there and contains all available experiments
+    # in addition to the on that is updated here.
+    basedir = os.path.dirname(menu_file)
+
+    # list of available experiments (sub directories in basedir)
     available_exps = os.listdir(basedir)
-    if os.path.exists(config.menu_file):
-        current = read_json(config.menu_file)
+    menu = {}
+    if os.path.exists(menu_file):
+        current = read_json(menu_file)
         for exp, submenu in current.items():
             if exp in ignore_experiments or len(submenu) == 0:
                 continue
@@ -303,19 +332,58 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
                 const.print_log.info('Removing outdated experiment {} from '
                                      'menu.json'.format(exp))
                 continue
-            new_menu[exp] = submenu
+            menu[exp] = submenu
 
-    if config.exp_id in new_menu:
+    if config.exp_id in menu:
         const.print_log.warning('Sub menu for experiment {} already exists in '
                                 'menu.json and will be overwritten'
                                 .format(config.exp_id))
-    if len(new_sorted) > 0:
-        new_menu[exp_id] = new_sorted
+    return menu
+
+def update_menu_evaluation_iface(config, ignore_experiments=None):
+    """Update menu for Aerocom Evaluation interface
+
+    The menu.json file is created based on the available json map files in the
+    map directory of an experiment.
+
+    Parameters
+    ----------
+    config : AerocomEvaluation
+        instance of config class that has all relevant paths specified
+    ignore_experiments : list, optional
+        list containing experiment IDs that may be in the current menu.json
+        file and that are supposed to be removed from it.
+    """
+
+    try:
+        avail = _get_available_results_dict(config)
+    except FileNotFoundError:
+        avail = {}
+
+    avail = _sort_menu_entries(avail, config)
+
+    menu = _check_load_current_menu(config, ignore_experiments)
+    if len(avail) > 0:
+        menu[config.exp_id] = avail
 
     with open(config.menu_file, 'w+') as f:
-        f.write(simplejson.dumps(new_menu, indent=4))
+        f.write(simplejson.dumps(menu, indent=4))
 
 def make_info_table_evaluation_iface(config):
+    """
+    Make an information table for an web experiment based on available results
+
+    Parameters
+    ----------
+    config : AerocomEvaluation
+        instance of evaluation class for the experiment
+
+    Returns
+    -------
+    dict
+        dictionary containing meta information
+
+    """
     from pyaerocom import ColocatedData
     import glob
     menu = config.menu_file
@@ -325,8 +393,7 @@ def make_info_table_evaluation_iface(config):
     with open(menu, 'r') as f:
         menu = simplejson.load(f)
     if not config.exp_id in menu:
-        raise KeyError('No menu entry available for experiment {}'
-                       .format(config.exp_id))
+        raise KeyError(f'No menu entry available for experiment {config.exp_id}')
     table = {}
     exp = menu[config.exp_id]
     for obs_var, info in exp.items():
@@ -500,11 +567,6 @@ def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
     if not model_name in ovc:
         ovc[model_name] = {}
     mn = ovc[model_name]
-    if model_var in mn:
-        const.print_log.info('Overwriting existing heatmap statistics for '
-                             'model {}/{} ({}, {}, {}) in glob_stats.json'
-                             .format(model_name, model_var, obs_var, obs_name,
-                                     vert_code))
     mn[model_var] = result
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
@@ -530,45 +592,83 @@ def _check_flatten_latlon_dims(coldata):
                                                         'longitude'))
     return coldata
 
-def _prepare_default_regions_json():
-    regs = {}
-    for regname in get_all_default_region_ids():
-        reg = Region(regname)
-        regs[regname] = r = {}
+def _prepare_regions_json_helper(region_ids):
+    regborders, regs = {}, {}
+    for regid in region_ids:
+        reg = Region(regid)
+        name = reg.name
+        regs[name] = reg
+        regborders[name] = rinfo = {}
+
         latr = reg.lat_range
-        r['minLat'] = latr[0]
-        r['maxLat'] = latr[1]
         lonr = reg.lon_range
-        r['minLon'] = lonr[0]
-        r['maxLon'] = lonr[1]
-    return regs
+        if any(x is None for x in (latr, lonr)):
+            raise ValueError(f'Lat / lon range missing for region {regid}')
+        rinfo['minLat'] = latr[0]
+        rinfo['maxLat'] = latr[1]
+        rinfo['minLon'] = lonr[0]
+        rinfo['maxLon'] = lonr[1]
+
+    return (regborders, regs)
+
+def _prepare_default_regions_json():
+    return _prepare_regions_json_helper(get_all_default_region_ids())
+
+def _prepare_aerocom_regions_json():
+    return _prepare_regions_json_helper(OLD_AEROCOM_REGIONS)
+
+def _prepare_htap_regions_json():
+    return _prepare_regions_json_helper(HTAP_REGIONS_DEFAULT)
 
 def init_regions_web(coldata, regions_how):
-    default_regs = _prepare_default_regions_json()
+    regborders, regs = {}, {}
+    regborders_default, regs_default = _prepare_default_regions_json()
     if regions_how == 'default':
-        return default_regs
-        #region_ids = get_all_default_region_ids()
-    elif regions_how == 'country':
-        regs = {}
-        regs['WORLD'] = default_regs['WORLD']
-        coldata.check_set_countries(True)
-        regs.update(coldata.get_country_codes())
-        return regs
-        #region_ids = coldata.countries_available
+        regborders, regs = regborders_default, regs_default
+    elif regions_how == 'aerocom':
+        regborders, regs = _prepare_aerocom_regions_json()
     elif regions_how == 'htap':
-        raise NotImplementedError('Support for HTAP regions is coming soon')
+        regborders['WORLD'] = regborders_default['WORLD']
+        regs['WORLD'] = regs_default['WORLD']
+        add_borders, add_regs = _prepare_htap_regions_json()
+        regborders.update(add_borders)
+        regs.update(add_regs)
+    elif regions_how == 'country':
+        regborders['WORLD'] = regborders_default['WORLD']
+        regs['WORLD'] = regs_default['WORLD']
+        coldata.check_set_countries(True)
+        regborders.update(coldata.get_country_codes())
     else:
         raise ValueError('Invalid input for regions_how', regions_how)
 
+    regnames = {}
+    for regname, reg in regs.items():
+        regnames[reg.region_id] = regname
+    return (regborders, regs, regnames)
+
 def update_regions_json(region_defs, regions_json):
+    """Check current regions.json for experiment and update if needed
+
+    Parameters
+    ----------
+    region_defs : dict
+        keys are names of region (not IDs!) values define rectangular borders
+    regions_json : str
+        regions.json file (if it does not exist it will be created).
+
+    Returns
+    -------
+    dict
+        current content of updated regions.json
+    """
     if os.path.exists(regions_json):
         current = read_json(regions_json)
     else:
         current = {}
 
-    for region_id, region_info in region_defs.items():
-        if not region_id in current:
-            current[region_id] = region_info
+    for region_name, region_info in region_defs.items():
+        if not region_name in current:
+            current[region_name] = region_info
     save_dict_json(current, regions_json)
     return current
 
@@ -792,10 +892,15 @@ def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
             dc +=1
     return ts_objs
 
-def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how,region_ids):
+def _process_weekly_object_to_country_time_series(repw_res,meta_glob,
+                                                  regions_how,region_ids):
     """
     Process the xarray.Dataset objects returned by _create_diurnal_weekly_data_object
     into a dictionary containing country average time series data and metadata.
+
+    ToDo
+    ----
+    Implement regions_how for other values than country based
 
     Parameters
     ----------
@@ -807,8 +912,8 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how
     regions_how : string
         String describing how regions are to be processed. Regional time series
         are only calculated if regions_how = country.
-    region_ids : list?
-        List of regional IDs
+    region_ids : dict
+        Dict containing mapping of region IDs and names.
 
     Returns
     -------
@@ -823,20 +928,21 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,regions_how
         print('Regional diurnal cycles are only implemented for country regions, skipping...')
         ts_objs_reg = None
     else:
-        for reg in region_ids:
-            ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
-            ts_data['station_name'] = reg
+        for regid, regname in region_ids.items():
+            ts_data = {
+                'time' : time,
+                'seasonal' : {'obs' : {},'mod' : {}},
+                'yearly' : {'obs' : {},'mod' : {}}
+                }
+            ts_data['station_name'] = regname
             ts_data.update(meta_glob)
 
-            for res,repw in repw_res.items():
-                if reg == 'WORLD':
+            for res, repw in repw_res.items():
+                if regid == 'WORLD':
                     subset = repw
                 else:
-                    subset = repw.where(repw.country == reg)
+                    subset = repw.where(repw.country == regid)
 
-                # if cd.has_latlon_dims:
-                #     avg = subset.data.mean(dim=('latitude', 'longitude'))
-                # else:
                 avg = subset.mean(dim='station_name')
                 obs_vals = avg[:,0,:]
                 mod_vals = avg[:,1,:]
@@ -866,8 +972,8 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
     regions_how : string
         Srting describing how regions are to be processed. Regional time series
         are only calculated if regions_how = country.
-    region_ids : list?
-        List of regional IDs.
+    region_ids : dict
+        Dict containing mapping of region IDs and names.
     meta_glob : dict
         Dictionary containing global metadata.
 
@@ -887,29 +993,15 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
     repw_res = {'seasonal':_create_diurnal_weekly_data_object(coldata, 'seasonal')['rep_week'],
                 'yearly':_create_diurnal_weekly_data_object(coldata, 'yearly')['rep_week'].expand_dims('period',axis=0),}
 
-    default_regs = get_all_default_regions(use_all_in_ini=False)
-
-
-    lats = repw_res['seasonal'].latitude.values.astype(np.float64)
-    lons = repw_res['seasonal'].longitude.values.astype(np.float64)
-
-    if 'altitude' in repw_res['seasonal'].coords:
-        alts = repw_res['seasonal'].altitude.values.astype(np.float64)
-    else:
-        alts = [np.nan]*len(lats)
-
-    if regions_how == 'country':
-        countries = repw_res['seasonal'].country.values
-
     ts_objs = _process_weekly_object_to_station_time_series(repw_res,meta_glob)
     ts_objs_reg = _process_weekly_object_to_country_time_series(repw_res,
                                                                 meta_glob,
                                                                 regions_how,
                                                                 region_ids)
 
-    return ts_objs,ts_objs_reg
+    return (ts_objs,ts_objs_reg)
 
-def _process_sites(data, jsdate, regions_how, meta_glob):
+def _process_sites(data, jsdate, regions, regions_how, meta_glob):
     ts_objs = []
 
     map_data = []
@@ -923,7 +1015,6 @@ def _process_sites(data, jsdate, regions_how, meta_glob):
     mon = data['monthly']
 
     stats_dummy = _init_stats_dummy()
-    default_regs = get_all_default_regions(use_all_in_ini=False)
 
     lats = mon.data.latitude.values.astype(np.float64)
     lons = mon.data.longitude.values.astype(np.float64)
@@ -946,11 +1037,15 @@ def _process_sites(data, jsdate, regions_how, meta_glob):
         stat_lon = lons[i]
         stat_alt = alts[i]
 
-        if regions_how == 'default':
+        if regions_how in ('default', 'htap'):
             region = find_closest_region_coord(stat_lat, stat_lon,
-                                               default_regs=default_regs)
+                                               regions=regions)
         elif regions_how == 'country':
             region = countries[i]
+        else:
+            raise ValueError(
+                f'Fatal: invalid value {regions_how} for regions_how'
+                )
 
         # station information for map view
         map_stat = {'site'      : stat_name,
@@ -997,18 +1092,18 @@ def _process_regional_timeseries(data, jsdate, region_ids,
                                  regions_how, meta_glob):
     ts_objs = []
     check_countries = True if regions_how=='country' else False
-    for reg in region_ids:
+    for regid, regname in region_ids.items():
         ts_data = _init_ts_data()
-        ts_data['station_name'] = reg
+        ts_data['station_name'] = regname
         ts_data.update(meta_glob)
 
         for freq, cd in data.items():
             if not isinstance(cd, ColocatedData):
                 continue
-            subset = cd.filter_region(reg,
+            subset = cd.filter_region(regid,
                                       inplace=False,
                                       check_country_meta=check_countries)
-            if cd.has_latlon_dims:
+            if subset.has_latlon_dims:
                 avg = subset.data.mean(dim=('latitude', 'longitude'))
             else:
                 avg = subset.data.mean(dim='station_name')
@@ -1027,22 +1122,25 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
     hm_all = dict(zip(('daily', 'monthly'), ({},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
-        for reg in region_ids:
+        for regid, regname in region_ids.items():
             if not freq in data or data[freq] == None:
-                hm_data[reg] = stats_dummy
+                hm_data[regname] = stats_dummy
             else:
                 coldata = data[freq]
 
-                filtered = coldata.filter_region(region_id=reg,
+                filtered = coldata.filter_region(region_id=regid,
                                                  check_country_meta=use_country)
 
                 stats = filtered.calc_statistics(use_area_weights=use_weights)
                 for k, v in stats.items():
-                    if not k=='NOTE':
-                        v = np.float64(v)
-                    stats[k] = v
+                    try:
+                        stats[k] = np.float64(v) # for json encoder...
+                    except Exception as e:
+                        # value is str (e.g. for weighted stats)
+                        # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
+                        stats[k] = v
 
-                hm_data[reg] = stats
+                hm_data[regname] = stats
     return hm_all
 
 def _get_jsdate(coldata):
@@ -1052,9 +1150,10 @@ def _get_jsdate(coldata):
 
 def _resample_time_coldata(coldata, freq, colstp):
     return coldata.resample_time(freq,
-                apply_constraints=colstp.apply_time_resampling_constraints,
-                min_num_obs=colstp.min_num_obs,
-                colocate_time=colstp.colocate_time,
+                apply_constraints=colstp['apply_time_resampling_constraints'],
+                min_num_obs=colstp['min_num_obs'],
+                how=colstp['resample_how'],
+                colocate_time=colstp['colocate_time'],
                 inplace=False)
 
 def _init_data_default_frequencies(coldata, colocation_settings):
@@ -1137,15 +1236,15 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     elif coldata.has_latlon_dims and regions_how=='country':
         raise NotImplementedError('Cannot yet apply country filtering for '
                                   '4D colocated data instances')
-    const.print_log.info('Computing json files for {} vs. {}'
-                         .format(model_name, obs_name))
-
-    if zeros_to_nan:
-        coldata = coldata.set_zeros_nan()
-
     # init some stuff
     obs_var = coldata.meta['var_name'][0]
     model_var = coldata.meta['var_name'][1]
+
+    const.print_log.info(
+        f'Computing json files for {model_name} ({model_var}) vs. '
+        f'{obs_name} ({obs_var})'
+        )
+
     meta_glob = _init_meta_glob(coldata,
                                 vert_code=vert_code,
                                 obs_name=obs_name,
@@ -1155,22 +1254,25 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         regions_how = 'default'
 
     # get region IDs
-    regions = init_regions_web(coldata, regions_how)
+    (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
 
-    update_regions_json(regions, regions_json)
-
-    region_ids = list(regions)
+    update_regions_json(regborders, regions_json)
 
     use_country = True if regions_how == 'country' else False
+
+    if zeros_to_nan:
+        coldata = coldata.set_zeros_nan()
 
     data, jsdate = _init_data_default_frequencies(coldata,
                                                   colocation_settings)
 
     if not diurnal_only:
         # FIRST: process data for heatmap json file
-        hm_all = _process_heatmap_data(data, region_ids, use_weights,
-                                        use_country=use_country,
-                                        meta_glob=meta_glob)
+        const.print_log.info('Processing heatmap data for all regions')
+        hm_all = _process_heatmap_data(data, regnames,
+                                       use_weights,
+                                       use_country=use_country,
+                                       meta_glob=meta_glob)
 
         for freq, hm_data in hm_all.items():
             if freq == 'daily':
@@ -1183,9 +1285,10 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
                                     vert_code, model_name, model_var)
 
+        const.print_log.info('Processing regional timeseries for all regions')
         ts_objs_regional = _process_regional_timeseries(data,
                                                         jsdate,
-                                                        region_ids,
+                                                        regnames,
                                                         regions_how,
                                                         meta_glob)
 
@@ -1193,9 +1296,11 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             #writes json file
             _write_stationdata_json(ts_data, out_dirs)
 
+        const.print_log.info('Processing individual site timeseries data')
         (map_data,
           scat_data,
           ts_objs) = _process_sites(data, jsdate,
+                                    regs,
                                     regions_how,
                                     meta_glob=meta_glob)
 
@@ -1217,7 +1322,10 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             _write_stationdata_json(ts_data, out_dirs)
 
     if coldata.ts_type == 'hourly':
-        ts_objs_weekly,ts_objs_weekly_reg = _process_sites_weekly_ts(coldata,regions_how, region_ids, meta_glob)
+        const.print_log.info('Processing diurnal profiles')
+        (ts_objs_weekly,
+         ts_objs_weekly_reg) = _process_sites_weekly_ts(coldata, regions_how,
+                                                        regnames, meta_glob)
         for ts_data_weekly in ts_objs_weekly:
             #writes json file
             _write_diurnal_week_stationdata_json(ts_data_weekly, out_dirs)
@@ -1225,6 +1333,11 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 #writes json file
                 _write_diurnal_week_stationdata_json(ts_data_weekly_reg, out_dirs)
+
+    const.print_log.info(
+        f'Finished computing json files for {model_name} ({model_var}) vs. '
+        f'{obs_name} ({obs_var})'
+        )
 
 if __name__ == '__main__':
     import pyaerocom as pya

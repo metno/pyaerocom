@@ -16,28 +16,30 @@
 ### Documentation of changes since last release
 
 - Create a changelog file in *changelog* directory. You may use git log, see [here](https://github.com/metno/pyaerocom/blob/master/changelog/CHANGELOG_v080_v0100.rst) for an example.
-- Create a release summary, see [here](https://github.com/metno/pyaerocom/blob/master/changelog/v0100_release_summary.md) for an example. **NOTE**: You can use pycharm to compare diffs between 2 branches to see what are the main changes. Creating the release summary can be quite some work, but it is good to do it for documentation and also for a recap of what has actually happened since the last release.
+- Create a release summary, see [here](https://github.com/metno/pyaerocom/blob/master/changelog/v0100_release_summary.md) for an example (does not need to be a new file but can also be just specified in the provided text box when releasing on GitHub, see, e.g. [here]()). **NOTE**: You can use pycharm to compare diffs between 2 branches to see what are the main changes. Creating the release summary can be quite some work, but it is good to do it for documentation and also for a recap of what has actually happened since the last release.
 - Check that version is correct (file *VERSION.md*). For instance, for release of version 1.0.0 it should be set to either 1.0.0 or 1.0.0.rcX where X denotes iterations of release candidates.
-
-### Merge release branch into master
-
-- Update README.rst.
-- Merge release branch into master
 
 ### Check code documentation
 
-- Check content of code documentation source (mostly *.rst* files under *docs/* dir.)
-- Make sure you have [pyaerocom-tutorials](https://github.com/metno/pyaerocom-tutorials) repo is cloned in */docs* (needed to setup tutorials section in docs) ...  this needs further automation.
-  - Pull latest updates from the tutorials.
-  - Best to briefly check if all tutorials are in a good shape and up to date!
-- Check if new pyaerocom source code modules should be added in API section (*docs/api.rst*). All current API content is defined in:
-  https://raw.githubusercontent.com/metno/pyaerocom/master/docs/api.rst
-- Recompile docs (this will not be necessary as soon as we [automise this](https://github.com/metno/pyaerocom/issues/262), so not so much on this here).
+The PR for the release will automatically build the docs on ReadTheDocs (see Checks at the end of the PR). Please check and make sure the docs look alright.
 
+## Publish release
+
+- Merge release branch into master
+
+### 1. Release on GitHub
+
+- Go to https://github.com/metno/pyaerocom.
+- Create a release and annotate the correct version (look for **Releases** on the right side).
+- You may use the release summary as release text. If the release summary is rather extensive, you may also boil it down to the highlights and link to the release summary, but not needed really).
+- Publish the release. This should automatically create a new zenodo DOI, check here:
+  https://zenodo.org/record/4362479#.X9425NZ7kUE
+  (Versions can be accessed on the right).
+- You may want to check and update the info in the DOI (especially author names, etc).
 
 **NOTE:** Even if you are very certain that everything is perfect and ready for the official release you may want to do the below steps first using a version that denotes a release candidate since once the assigned version (e.g. 1.0.0) is published on PyPi, there is no way to correct that version later (e.g. if you forgot to add a new dependency).
 
-## Publish on PyPi
+### 2. Publish on PyPi
 
 - Make sure VERSION.md is correct
 - Package code:  
@@ -45,11 +47,13 @@
   python setup.py sdist bdist_wheel
   ```
   This will create a *.tar.gz* and *.whl* in *dist/* dir.
+
 - Check files
   ```bash
   twine check dist/*
   ```
   Make sure the files are okay.
+
 - Upload to pypitest:
   ```bash
   twine upload --repository-url https://test.pypi.org/legacy/ dist/*
@@ -66,7 +70,7 @@
   ```
 - **BUT**: you are almost there, but we also want to be able to install pyaerocom via conda (automatically with all requirements), so the beer has to wait !
 
-## Publish on conda-forge
+### 3. Publish on conda-forge
 
 - Fork [pyaerocom-feedstock](https://github.com/conda-forge/pyaerocom-feedstock) and clone your fork locally (if you have not already done so)
 - Update *recipe/meta.yaml*
@@ -88,15 +92,3 @@
 - **But**: You can check if your version is available here:
   https://anaconda.org/conda-forge/pyaerocom
   or via `conda search -c conda-forge pyaerocom`
-  Sorry, but there are just a few more things to do until the beer.
-
-## Final steps (on GitHub)
-
-- Go to https://github.com/metno/pyaerocom
-- Create a release and annotate the correct version (look for **Releases** on the right side).
-- You may use the release summary as release text. If the release summary is rather extensive, you may also boil it down to the highlights and link to the release summary, but not needed really).
-- Publish the release. This should automatically create a new zenodo DOI, check here:
-  https://zenodo.org/record/4362479#.X9425NZ7kUE
-  (Versions can be accessed on the right).
-- You may want to check and update the info in the DOI (especially author names, etc).
-- Fetch a beer and enjoy!

@@ -60,6 +60,7 @@ UCONV_MUL_FACS = pd.DataFrame([
     ['concoc'   , 'ug C/m3'     , 'ug m-3', 1.0],
     ['conctc'   , 'ug C/m3'     , 'ug m-3', 1.0],
     ['concno3'  , 'ug N/m3'     , 'ug m-3', M_NO3 / M_N],
+    ['concnh4'  , 'ug N/m3'     , 'ug m-3', M_NH4 / M_N],
     ['wetso4'   , 'kg S/ha'     , 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
     ['concso4pr', 'mg S/L'      , 'g m-3' , M_SO4 / M_S] # 1mg/L = 1g/m3
 
@@ -262,10 +263,14 @@ def check_rate_units_implicit(unit, ts_type):
     freq_si = freq.to_si()
 
     # check if unit is implicit and change if possible
-    if any([unit == x for x in DEP_IMPLICIT_UNITS]):
-        unit = Unit(f'{unit} {freq_si}-1')
-    else:
-        if not _check_unit_conversion_fac(unit=str(unit),
+    found = False
+    for imp_unit in DEP_IMPLICIT_UNITS:
+        if unit == imp_unit:
+            unit = f'{imp_unit} {freq_si}-1'
+            found=True
+            break
+
+    if not found and not _check_unit_conversion_fac(unit=str(unit),
                                           test_unit=DEP_TEST_UNIT,
                                           non_si_info=DEP_TEST_NONSI_ATOMS):
             raise ValueError(f'Cannot handle wet deposition unit {unit}')

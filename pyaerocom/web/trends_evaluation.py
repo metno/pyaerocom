@@ -12,8 +12,13 @@ from fnmatch import fnmatch
 import numpy as np
 import os, glob
 import pandas as pd
-from pyaerocom import const, __version__, Region
+from scipy.stats import kendalltau
+from scipy.stats.mstats import theilslopes
+import simplejson
+
+from pyaerocom import const, __version__
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
+from pyaerocom.region import Region
 from pyaerocom.helpers import isnumeric
 from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _compute_trend_error,
@@ -29,9 +34,7 @@ from pyaerocom.web.helpers_trends_iface import (update_menu_trends_iface,
                                                 get_all_config_files_trends_iface)
 
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from scipy.stats import kendalltau
-from scipy.stats.mstats import theilslopes
-import simplejson
+
 
 class TrendsEvaluation(object):
     """High-level analysis class to compute json files for trends interface
@@ -115,6 +118,8 @@ class TrendsEvaluation(object):
 
     #: mapping of metadata names between pyaerocom (keys) and json trends files
     #: (values)
+    #: ToDo: this should not be needed and the web tools should use the same
+    #: conventions as pyaerocom
     KEYMAP = od(var_name        = 'var_name',
                 station_name    = 'station',
                 latitude        = 'lat',
@@ -123,6 +128,7 @@ class TrendsEvaluation(object):
                 data_id         = 'data_id',
                 dataset_name    = 'dataset',
                 data_product    = 'product',
+                framework       = 'framework',
                 data_version    = 'data_version',
                 data_level      = 'data_level',
                 website         = 'website',
@@ -410,31 +416,28 @@ class TrendsEvaluation(object):
 
         return maccess
 
-    def load_ungridded(self, network_id, vars_to_retrieve, **constraints):
+    def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
         """Load obsdata into instance of :class:`pyaerocom.UngriddedData`
 
+        Wrapper
         Parameters
         ----------
-        network_id : str
-            Name of network (if you don't know the options, check
-            `pyaerocom.const.OBS_IDS_UNGRIDDED`)
-        vars_to_retrieve
+        obs_name : str
+            Name of observation network
+        vars_to_read
             str or list / tuple of strings specifying AEROCOM variables that are
             supposed to be imported
-        **constraints
-            Further reading constraints passed to :func:`UngriddedData.read` and
-            from there, further passed to :func:`read`  of respective network
-            reading class.
 
         Returns
         -------
         UngriddedData
+            loaded data object
         """
-        import pyaerocom as pya
-        r = pya.io.ReadUngridded()
-        return r.read(datasets_to_read=network_id,
-                      vars_to_retrieve=vars_to_retrieve,
-                      **constraints)
+        from pyaerocom import Colocator
+        col = Colocator()
+        col.update(**self.obs_config[obs_name])
+        data = col.read_ungridded(vars_to_read)
+        return data
 
     def run_evaluation(self, obs_name=None, update_menu=True,
                        write_logfiles=None, clear_existing_json=None):
@@ -553,9 +556,7 @@ class TrendsEvaluation(object):
             print('Deleting existing files for run {}'.format(obs_name))
             self.clear_existing(obs_name)
 
-        obs_id = config['obs_id']
-
-        self._log.info('Running {} (NETWORK {})'.format(obs_name, obs_id))
+        self._log.info('Running {} (NETWORK {})'.format(obs_name, obs_name))
 
         constraints = config['read_opts_ungridded']
         if constraints is None:
@@ -583,13 +584,14 @@ class TrendsEvaluation(object):
 
         var_lists = self.get_var_groups(obs_name)
         for vars_to_retrieve in var_lists:
-            ungridded_data = self.load_ungridded(obs_id, vars_to_retrieve,
-                                                 **constraints)
+            ungridded_data = self.read_ungridded_obsdata(obs_name,
+                                                         vars_to_retrieve)
 
             if 'obs_filters' in config:
                 filters=config['obs_filters']
-                ungridded_data = ungridded_data.apply_filters(var_outlier_ranges=min_max,
-                                                              **filters)
+                ungridded_data = ungridded_data.apply_filters(
+                    var_outlier_ranges=min_max,
+                    **filters)
 
             if config['obs_vert_type']=='Profile':
                 files_created = self._run_single_3d(ungridded_data=ungridded_data,
@@ -915,7 +917,7 @@ class TrendsEvaluation(object):
             regs[reg_name] = Region(reg_id)
         for reg_name, info in self._add_regions.items():
             try:
-                regs[reg_name] = Region(name=reg_name,
+                regs[reg_name] = Region(reg_name,
                                         lat_range=info['lat_range'],
                                         lon_range=info['lon_range'])
             except Exception:
@@ -1114,20 +1116,16 @@ class TrendsEvaluation(object):
         try:
             freq = TsType(tst)
         except TemporalResolutionError:
-            if tst == 'native': # e.g. EARLINET
-                freq = TsType('daily')
-            else:
-                raise TemporalResolutionError(
-                    f'Skipping processing of {station.station_name} since '
-                    'temporal '
-                    f'resolution could not be inferred')
+            raise TemporalResolutionError(
+                f'Skipping processing of {station.station_name} trend for var '
+                f'{var_name} since temporal resolution {tst} is invalid')
         if vardata['wavelength'] is None:
             try:
                 wvl = '{} nm'.format(const.VARS[var_name].wavelength_nm)
                 vardata['wavelength'] = wvl
             except Exception:
                 pass
-        if freq >= TsType('daily'):
+        if tst=='native' or freq>=TsType('daily'):
             to_freq = 'daily'
             freq_name = 'dobs'
         elif freq >= TsType('monthly'):
@@ -1671,10 +1669,6 @@ class TrendsEvaluation(object):
                                   **alt_range)
         return files_created
 
-    def freq_gridded(self):
-        """Frequency used for any colocated gridded data"""
-        return self.GRIDDED_TS_TYPE
-
     def _run_gridded(self, obs_name, obs_var, mod_name, mod_var, stat_lats,
                      stat_lons, stat_names, min_dim, vert_which, files_created,
                      err_log=None, **alt_range):
@@ -1685,7 +1679,7 @@ class TrendsEvaluation(object):
 
         rf = mcfg['model_ts_type_read']
 
-        read_freq = self.freq_gridded()
+        read_freq = self.GRIDDED_TS_TYPE
         if rf is not None:
             if isinstance(rf, str):
                 read_freq = rf
@@ -1695,10 +1689,10 @@ class TrendsEvaluation(object):
         data = reader.read_var(mod_var, ts_type=read_freq,
                                ts_type_flex=True)
 
-        data = data.resample_time(to_ts_type=self.freq_gridded())
+        data = data.resample_time(to_ts_type=self.GRIDDED_TS_TYPE)
         stations = data.to_time_series(longitude=stat_lons,
                                        latitude=stat_lats,
-                                       add_meta=dict(station_name = stat_names))
+                                       add_meta=dict(station_name=stat_names))
 
         stats_processed = []
         map_data = []

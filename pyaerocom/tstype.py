@@ -5,21 +5,19 @@ General helper methods for the pyaerocom library.
 """
 import numpy as np
 import re
-
-from pyaerocom import const
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    TS_TYPE_TO_NUMPY_FREQ,
                                    TS_TYPE_TO_SI,
-                                   PANDAS_RESAMPLE_OFFSETS)
+                                   TS_TYPES)
+
 from pyaerocom.exceptions import TemporalResolutionError
 
 class TsType(object):
-    VALID = const.GRID_IO.TS_TYPES
+    VALID = TS_TYPES
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
-    RS_OFFSETS = PANDAS_RESAMPLE_OFFSETS
     TO_SI = TS_TYPE_TO_SI
 
     TS_MAX_VALS = {'hourly' : 24,
@@ -85,9 +83,8 @@ class TsType(object):
             try:
                 val = self._from_pandas(val)
             except TemporalResolutionError:
-                raise TemporalResolutionError('Invalid input. Need any valid '
-                                              'ts_type: {}'
-                                              .format(self.VALID))
+                raise TemporalResolutionError(f'Invalid ts_type {val}. Valid '
+                                              f'ts_types are: {self.VALID}')
         if val in self.TS_MAX_VALS and ival != 1:
             if ival > self.TS_MAX_VALS[val]:
                 raise TemporalResolutionError('Invalid input for ts_type {}{}. '
@@ -208,7 +205,7 @@ class TsType(object):
         """Convert to SI conform string (e.g. used for unit conversion)"""
         base = self.base
         if not base in self.TO_SI:
-            raise ValueError(f'Cannot convert {self} to SI unit string...')
+            raise ValueError(f'Cannot convert ts_type={self} to SI unit string...')
         si = self.TO_SI[base]
         return si if self.mulfac == 1 else f'{self.mulfac}{si}'
 
@@ -235,6 +232,8 @@ class TsType(object):
         return True if (self.__eq__(other) or self.__lt__(other)) else False
 
     def __eq__(self, other):
+        if isinstance(other, str):
+            other = TsType(other)
         return other.val == self.val
 
     def __call__(self):
