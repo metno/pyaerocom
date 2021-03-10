@@ -84,7 +84,7 @@ class ReadMscwCtm(object):
                                                        data_dir)
         self.data_id = data_id
         if data_dir is not None:
-            self.data_dir=data_dir
+            self.data_dir = data_dir
         if filename is not None:
             self.filename = filename
 
