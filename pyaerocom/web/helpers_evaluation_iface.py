@@ -1094,15 +1094,15 @@ def _init_data_default_frequencies(coldata, colocation_settings):
 
     return (data_arrs, jsdate)
 
-def _hack_fix_dryvelo3(coldata):
-    if coldata.data.attrs['var_name'] == ['vmro3', 'dryvelo3']:
-        coldata.data.attrs['var_name'] = ['dryvelo3', 'dryvelo3']
-        coldata.data.var_name.values = np.array(['dryvelo3', 'dryvelo3'])
+# def _hack_fix_dryvelo3(coldata):
+#     if coldata.data.attrs['var_name'] == ['vmro3', 'dryvelo3']:
+#         coldata.data.attrs['var_name'] = ['dryvelo3', 'dryvelo3']
+#         coldata.data.var_name.values = np.array(['dryvelo3', 'dryvelo3'])
 
-    if coldata.data.attrs['var_name'] == ['vmro3', 'dryo3']:
-        coldata.data.attrs['var_name'] = ['dryo3', 'dryo3']
-        coldata.data.var_name.values = np.array(['dryo3', 'dryo3'])
-    return coldata
+#     if coldata.data.attrs['var_name'] == ['vmro3', 'dryo3']:
+#         coldata.data.attrs['var_name'] = ['dryo3', 'dryo3']
+#         coldata.data.var_name.values = np.array(['dryo3', 'dryo3'])
+#     return coldata
 
 
 def compute_json_files_from_colocateddata(coldata, obs_name,
