@@ -82,7 +82,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
                              regrid_res_deg=None, vert_scheme=None,
                              harmonise_units=True,
                              regrid_scheme='areaweighted',
-                             update_baseyear_gridded=None,
                              apply_time_resampling_constraints=None,
                              min_num_obs=None,
                              colocate_time=False,
@@ -131,13 +130,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
         if True and units cannot be harmonised).
     regrid_scheme : str
         iris scheme used for regridding (defaults to area weighted regridding)
-    update_baseyear_gridded : int, optional
-        optional input that can be set in order to redefine the time dimension
-        in the gridded data object to be analysed. E.g., if the data object
-        is a climatology (one year of data) that has set the base year of the
-        time dimension to a value other than the specified input start / stop
-        time this may be used to update the time in order to make colocation
-        possible.
     apply_time_resampling_constraints : bool, optional
         if True, then time resampling constraints are applied as provided via
         :attr:`min_num_obs` or if that one is unspecified, as defined in
@@ -187,10 +179,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     var, var_ref = gridded_data.var_name, gridded_data_ref.var_name
     aerocom_var = gridded_data.var_name_aerocom
     _check_var_registered(var, aerocom_var, gridded_data)
-
-    if update_baseyear_gridded is not None:
-        # update time dimension in gridded data
-        gridded_data.base_year = update_baseyear_gridded
 
     if regrid_res_deg is not None:
         gridded_data_ref = _regrid_gridded(gridded_data_ref,
@@ -532,8 +520,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                                harmonise_units=True,
                                regrid_scheme='areaweighted',
                                var_ref=None,
-                               update_baseyear_gridded=None,
-                               ignore_station_names=None,
                                apply_time_resampling_constraints=None,
                                min_num_obs=None,
                                colocate_time=False,
@@ -591,16 +577,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
         variable against which data in :attr:`gridded_data` is supposed to be
         compared. If None, then the same variable is used
         (i.e. `gridded_data.var_name`).
-    update_baseyear_gridded : int, optional
-        optional input that can be set in order to re-define the time dimension
-        in the gridded data object to be analysed. E.g., if the data object
-        is a climatology (one year of data) that has set the base year of the
-        time dimension to a value other than the specified input start / stop
-        time this may be used to update the time in order to make colocation
-        possible.
-    ignore_station_names : str or list, optional
-        station name or pattern or list of station names or patterns that should
-        be ignored
     apply_time_resampling_constraints : bool, optional
         if True, then time resampling constraints are applied as provided via
         :attr:`min_num_obs` or if that one is unspecified, as defined in
@@ -673,10 +649,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
                              'UngriddedData object to extract single datasets')
 
     dataset_ref = ungridded_data.contains_datasets[0]
-
-    if update_baseyear_gridded is not None:
-        # update time dimension in gridded data
-        gridded_data.base_year = update_baseyear_gridded
 
     grid_ts_type_src = gridded_data.ts_type
     grid_ts_type = TsType(gridded_data.ts_type)
@@ -764,7 +736,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             start=obs_start,
             stop=obs_stop,
             by_station_name=True,
-            ignore_index=ignore_station_names,
             **kwargs
             )
 
@@ -926,7 +897,6 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
             'revision_ref'      :   revision,
             'from_files'        :   files,
             'from_files_ref'    :   None,
-            'stations_ignored'  :   ignore_station_names,
             'colocate_time'     :   colocate_time,
             'obs_is_clim'       :   use_climatology_ref,
             'pyaerocom'         :   pya_ver,
