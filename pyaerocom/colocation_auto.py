@@ -41,22 +41,22 @@ class ColocationSetup(BrowseDict):
         ID of model to be used
     obs_id : str
         ID of observation network to be used
-    obs_vars : :obj:`str` or :obj:`list`, optional
+    obs_vars : str or list, optional
         variables to be analysed. If any of the provided variables to be
         analysed in the model data is not available in obsdata, the obsdata
         will be checked against potential alternative variables which are
         specified in :attr:`model_use_vars` and which can be specified in form of a
         dictionary for each . If None, all
         variables are analysed that are available both in model and obsdata.
-    ts_type
+    ts_type : str
         string specifying colocation frequency
     start
-        start time. Input can be anything that can be converted into
+        start time of colocation. Input can be anything that can be converted into
         :class:`pandas.Timestamp` using
         :func:`pyaerocom.helpers.to_pandas_timestamp`. If None, than the first
         available date in the model data is used.
     stop
-        stop time. Anything that can be converted into
+        stop time of colocation. Anything that can be converted into
         :class:`pandas.Timestamp` using
         :func:`pyaerocom.helpers.to_pandas_timestamp` or None. If None and if
         ``start`` is on resolution of year (e.g. ``start=2010``) then ``stop``
@@ -104,6 +104,12 @@ class ColocationSetup(BrowseDict):
         `vars_required` (list of required variables for computation of var
         and `fun` (method that takes list of read data objects and computes
         and returns var)
+    model_read_year : int, optional
+        can be set if modeldata does not cover intended start / stop period of
+        colocation (:attr:`start`, :attr:`stop`). Note: This feature is only
+        supported for single year analyses, that is, :attr:`stop` must be None
+        and :attr:`start` must be an integer indicating year of obsdata to be
+        used.
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
@@ -235,6 +241,8 @@ class ColocationSetup(BrowseDict):
             model_rename_vars = {}
         self.model_rename_vars = model_rename_vars
         self.model_add_vars = model_add_vars
+        self.model_read_year = None
+
         self.model_to_stp = False
 
         self.model_id = model_id
@@ -279,7 +287,6 @@ class ColocationSetup(BrowseDict):
 
         self.model_ts_type_read = model_ts_type_read
         self.model_read_aux = model_read_aux
-        self.model_use_climatology = False
 
         self.colocate_time = colocate_time
         self.flex_ts_type_gridded = True
@@ -635,9 +642,6 @@ class Colocator(ColocationSetup):
         if is_model:
             vert_which = self.obs_vert_type
             ts_type_read = self.model_ts_type_read
-            if self.model_use_climatology:
-                start = 9999
-                stop = None
 
             if var_name in self.model_rename_vars:
                 kwargs['rename_var'] = self.model_rename_vars[var_name]
@@ -803,12 +807,17 @@ class Colocator(ColocationSetup):
         except AttributeError:
             raise AttributeError(f'Input reader {reader} does not have attr. '
                                  'years_avail')
-
+        if 9999 in yrs_avail and len(yrs_avail) > 1:
+            raise ValueError(
+                f'failed to infer start / stop colocation period from model '
+                f'data (model ID={reader.data_id}). Reason: data contains '
+                f'both single year and climatological output: {yrs_avail}'
+                )
         first, last = yrs_avail[0], yrs_avail[-1]
         self.start = first
         if last > first:
-            self.stop=last
-        elif self.stop is not None:
+            self.stop = last
+        else:
             self.stop = None
 
     def _init_obsvars_to_read(self, vars_to_read=None):
@@ -858,6 +867,40 @@ class Colocator(ColocationSetup):
         for key, val in var_matches.items():
             print_log.info('{}\t{}'.format(key, val))
 
+    def _get_start_stop(self, model_reader):
+
+
+
+        if self.start is None:
+            self._infer_start_stop(model_reader)
+
+        if self.start == 9999:
+            self.model_read_year = 9999
+            self.start, self.stop = 2010, None
+            if not self.obs_use_climatology:
+                const.print_log.info(
+                    'Setting obs_use_climatology=True since start=9999'
+                    )
+                self.obs_use_climatology = True
+
+        single_year = True if isinstance(self.start, int) and self.stop is None else False
+        start_coloc, stop_coloc = start_stop(self.start, self.stop)
+
+        if self.model_read_year is not None:
+            if not single_year:
+                raise AttributeError(
+                    'Can only colocate individual years if model_read_var is '
+                    'provided. please set start to an integer and stop to None'
+                    )
+            model_start, model_stop = self.model_read_year, None
+        else:
+            model_start, model_stop = start_coloc, stop_coloc
+
+        if self.obs_use_climatology and not single_year:
+            raise NotImplementedError('')
+
+        return (start_coloc, stop_coloc, model_start, model_stop)
+
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         model_reader = self.instantiate_gridded_reader(what='model')
@@ -874,10 +917,9 @@ class Colocator(ColocationSetup):
         obs_vars = np.unique(list(var_matches.values())).tolist()
 
         data_objs = {}
-        if self.start is None:
-            self._infer_start_stop(model_reader)
 
-        start, stop = start_stop(self.start, self.stop)
+        (start_coloc, stop_coloc,
+         model_start, model_stop) = self._get_start_stop(model_reader)
 
         for model_var, obs_var in var_matches.items():
             ts_type = self.ts_type
@@ -889,8 +931,8 @@ class Colocator(ColocationSetup):
             try:
                 model_data = self._read_gridded(reader=model_reader,
                                                 var_name=model_var,
-                                                start=start,
-                                                stop=stop,
+                                                start=model_start,
+                                                stop=model_stop,
                                                 is_model=True)
             except Exception as e:
 
@@ -921,7 +963,8 @@ class Colocator(ColocationSetup):
             really_do_reanalysis = True
             if self.save_coldata:
                 really_do_reanalysis = False
-                savename = self._coldata_savename(model_data, start, stop,
+                savename = self._coldata_savename(model_data,
+                                                  start_coloc, stop_coloc,
                                                   ts_type, var_name=model_var)
 
                 file_exists = self._check_coldata_exists(model_data.data_id,
@@ -961,24 +1004,16 @@ class Colocator(ColocationSetup):
                 # (and caching) via obs_filters.
                 obs_data = self.read_ungridded(obs_var, obs_reader)
             try:
-                try:
-                    by=self.update_baseyear_gridded
-                    stop=None
-                except AttributeError:
-                    by=None
-                if self.model_use_climatology:
-                    by=start.year
                 coldata = colocate_gridded_ungridded(
                         gridded_data=model_data,
                         ungridded_data=obs_data,
                         ts_type=ts_type,
-                        start=start, stop=stop,
+                        start=start_coloc, stop=stop_coloc,
                         var_ref=obs_var,
                         filter_name=self.filter_name,
                         regrid_res_deg=self.regrid_res_deg,
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
-                        update_baseyear_gridded=by,
                         apply_time_resampling_constraints=self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
@@ -1113,9 +1148,6 @@ class Colocator(ColocationSetup):
                     else:
                         os.remove(os.path.join(out_dir, savename))
             try:
-                by=None
-                if self.model_use_climatology:
-                    by=to_pandas_timestamp(start).year
                 coldata = colocate_gridded_gridded(
                         gridded_data=model_data,
                         gridded_data_ref=obs_data,
@@ -1125,7 +1157,6 @@ class Colocator(ColocationSetup):
                         regrid_res_deg=self.regrid_res_deg,
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
-                        update_baseyear_gridded=by,
                         apply_time_resampling_constraints=\
                             self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
