@@ -1127,9 +1127,16 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                 hm_data[regname] = stats_dummy
             else:
                 coldata = data[freq]
+                year = data['yearly']
+                year.data = year.data.dropna(dim='station_name')
 
                 filtered = coldata.filter_region(region_id=regid,
                                                  check_country_meta=use_country)
+                filtered_yr = year.filter_region(region_id=regid,
+                                                 check_country_meta=use_country)
+                stations_to_keep = filtered_yr.data.dropna(
+                                dim='station_name').station_name.values
+                filtered.data = filtered.data.sel(station_name=stations_to_keep)
 
                 stats = filtered.calc_statistics(use_area_weights=use_weights)
                 for k, v in stats.items():
