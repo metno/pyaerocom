@@ -28,11 +28,13 @@ import numpy as np
 import numpy.testing as npt
 
 from pyaerocom import const
-from pyaerocom.conftest import testdata_unavail, NASA_AMES_FILEPATHS
+from pyaerocom.conftest import (testdata_unavail, NASA_AMES_FILEPATHS,
+                                does_not_raise_exception)
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 import pyaerocom.mathutils as mu
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 @pytest.fixture(scope='module')
 @testdata_unavail
@@ -212,10 +214,13 @@ class TestReadEBAS(object):
 
     def test_file_dir(self, reader):
         fd = reader.file_dir
+        assert reader._file_dir is None
         assert fd.endswith('data')
         assert os.path.exists(fd)
         with pytest.raises(FileNotFoundError):
             reader.file_dir = 42
+        reader.file_dir = fd #sets private attr _file_dir
+        assert reader._file_dir == reader.file_dir == fd
 
     def test_FILE_REQUEST_OPTS(self, reader):
         assert reader.FILE_REQUEST_OPTS == ['variables',
@@ -248,14 +253,14 @@ class TestReadEBAS(object):
         assert fp.endswith('ebas_file_index.sqlite3')
 
     @pytest.mark.parametrize('vars_to_retrieve,constraints,num_files', [
-        ('sc550aer', {}, 1236),
-        ('sc550dryaer', {}, 1156),
-        ('sc550dryaer', {'station_names': 'Jungfraujoch'}, 28),
-        ('ac550aer', {}, 874),
-        ('concpm10', {}, 4943),
-        ('conco3', {}, 5127),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, 139),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, 12179),
+        ('sc550aer', {}, 1291),
+        ('sc550dryaer', {}, 1182),
+        ('sc550dryaer', {'station_names': 'Jungfraujoch'}, 31),
+        ('ac550aer', {}, 917),
+        ('concpm10', {}, 5014),
+        ('conco3', {}, 5310),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, 145),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, 12530),
         ])
     def test_get_file_list(self, reader, vars_to_retrieve, constraints,
                            num_files):
@@ -393,7 +398,31 @@ class TestReadEBAS(object):
         for key, val in _meta.items():
             assert val == meta[key]
 
+    @pytest.mark.parametrize(
+        'vars_to_retrieve, first_file, last_file, files, constraints, exception', [
+            ('sc550aer',None,None,None,{},does_not_raise_exception())
+            ])
+    def test_read(self, reader, vars_to_retrieve, first_file,
+                  last_file, files, constraints, exception):
+        with exception:
+            data = reader.read(vars_to_retrieve, first_file,
+                      last_file, files, **constraints)
+            assert isinstance(data, UngriddedData)
+
 if __name__ == '__main__':
     import os
     import sys
     pytest.main(sys.argv)
+# =============================================================================
+#
+#     reader = ReadEbas('EBASSubset')
+#
+#     files = reader.get_file_list(['sc550aer'])
+#
+#     testfile = 'US0013R.20110101000000.20181031145000.nephelometer.aerosol_light_scattering_coefficient.aerosol.3mo.1h.US11L_Optec-NGN-2.US11L_IMPROVE_nephelometer_2004.lev2.nas'
+#
+#     for file in files:
+#         if testfile in file:
+#             print(42)
+#             break
+# =============================================================================

@@ -591,7 +591,7 @@ class ReadEbas(ReadUngriddedBase):
                 for key in self.IGNORE_COLS_CONTAIN:
                     if key in col_info:
                         ok = False
-                        const.logger.warning(f'ignore column {col_info}')
+                        const.print_log.warning(f'\nignore column {col_info}')
                         break
                 if ok:
                     col_matches.append(colnum)
@@ -697,14 +697,12 @@ class ReadEbas(ReadUngriddedBase):
                        f'{var} (EBAS varname: {comp})\nData period: {startstop}), '
                        f'\nStation {file.station_name} (col matches: {result_col})')
                 for col in result_col:
-                    colattrs = ', '.join(file.var_defs[col].keys())
-                    msg += f'\nCol attrs {col}: {colattrs}'
+                    msg += f'\nColumn {col}\n{file.var_defs[col]}'
 
                 msg += f'\nFilename: {file.file_name}'
                 msg += '\n\nTHIS FILE WILL BE SKIPPED\n'
                 const.print_log.warning(msg)
                 raise ValueError('failed to identify unique data column')
-
 
         return result_col[0]
 
@@ -1357,7 +1355,7 @@ class ReadEbas(ReadUngriddedBase):
         return (vars_to_retrieve + add)
 
     def read(self, vars_to_retrieve=None, first_file=None,
-             last_file=None, multiproc=False, files=None, **constraints):
+             last_file=None, files=None, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -1371,6 +1369,8 @@ class ReadEbas(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file
             in the list is used
+        files : list
+             list of files
         **constraints
             further reading constraints deviating from default (default
             info for each AEROCOM variable can be found in `ebas_config.ini <
@@ -1411,11 +1411,9 @@ class ReadEbas(ReadUngriddedBase):
         files = files[first_file:last_file]
         files_contain = files_contain[first_file:last_file]
 
-        if not multiproc:
-            data = self._read_files(files, vars_to_retrieve,
-                                    files_contain, constraints)
-        else:
-            raise NotImplementedError('Coming soon...')
+        data = self._read_files(files, vars_to_retrieve,
+                                files_contain, constraints)
+
         data.clear_meta_no_data()
 
         return data
@@ -1571,10 +1569,21 @@ if __name__=="__main__":
                                   #data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
+
+    files = reader.get_file_list('sc550aer')
+
+    testfile = 'US0013R.20110101000000.20181031145000.nephelometer.aerosol_light_scattering_coefficient.aerosol.3mo.1h.US11L_Optec-NGN-2.US11L_IMPROVE_nephelometer_2004.lev2.nas'
+
+    for file in files:
+        if testfile in file:
+            print(42)
+            break
 # =============================================================================
 #     reader.read_file('/home/jonasg/MyPyaerocom/data/obsdata/EBASMultiColumn/data/data/PL0005R.19950101060000.20181210133000.filter_1pack...3mo.1d.PL02L_f1p_5..lev2.nas',
 #                      ['concno3'])
 # =============================================================================
-    data = reader.read(vars_to_retrieve=['sc550dryaer'],
-                       first_file=0,
-                       last_file=None)
+# =============================================================================
+#     data = reader.read(vars_to_retrieve=['concoc'],
+#                        first_file=0,
+#                        last_file=None)
+# =============================================================================
