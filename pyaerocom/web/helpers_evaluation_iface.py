@@ -534,7 +534,7 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
         simplejson.dump(current, f, ignore_nan=True)
 
 def _add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
-                           model_name, model_var):
+                            model_name, model_var):
     fp = heatmap_file
     if os.path.exists(fp):
         with open(fp, 'r') as f:
