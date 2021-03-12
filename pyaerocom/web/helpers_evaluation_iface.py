@@ -472,15 +472,9 @@ def _write_stationdata_json(ts_data, out_dirs):
     out_dirs : list?
         list of file paths for writing data to
 
-    Raises
-    ------
-    Exception
-        Raised if opening json file fails
-
     Returns
     -------
     None.
-
 
     """
     filename = get_stationfile_name(ts_data['station_name'],
@@ -490,12 +484,8 @@ def _write_stationdata_json(ts_data, out_dirs):
 
     fp = os.path.join(out_dirs['ts'], filename)
     if os.path.exists(fp):
-        try:
-            with open(fp, 'r') as f:
-                current = simplejson.load(f)
-        except Exception as e:
-            raise Exception('Fatal: could not open existing json file: {}. '
-                            'Reason: {}'.format(fp, repr(e)))
+        with open(fp, 'r') as f:
+            current = simplejson.load(f)
     else:
         current = {}
     current[ts_data['model_name']] = ts_data
