@@ -9,7 +9,7 @@ from pyaerocom.web import helpers_evaluation_iface as h
 @pytest.mark.dependency()
 def test_get_stationfile_name():
     name = h.get_stationfile_name('bla', 'blub', 'var', 'invalid')
-    assert name == 'bla_OBS-blub:var_invalid.jsonINVALID'
+    assert name == 'bla_OBS-blub:var_invalid.json'
 
 def test_get_json_mapname():
     obs_name, obs_var, model_name, model_var, vert_code = ('bla', 'ovar', 'blub', 'var', 'invalid')
@@ -51,6 +51,7 @@ def test__write_stationdata_json(ts_data, out_dirs, raises, tmpdir):
                                        ts_data['vert_code'])
         fp = os.path.join(out_dirs['ts'], fname)
         assert os.path.exists(fp)
+
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
