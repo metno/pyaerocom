@@ -5,10 +5,11 @@ from pyaerocom.conftest import (coldata_tm5_aeronet,
                                 tempdir)
 
 from pyaerocom.web import helpers_evaluation_iface as h
+
 @pytest.mark.dependency()
 def test_get_stationfile_name():
     name = h.get_stationfile_name('bla', 'blub', 'var', 'invalid')
-    assert name == 'bla_OBS-blub:vardd_invalid.json'
+    assert name == 'bla_OBS-blub:var_invalid.jsonINVALID'
 
 def test_get_json_mapname():
     obs_name, obs_var, model_name, model_var, vert_code = ('bla', 'ovar', 'blub', 'var', 'invalid')
