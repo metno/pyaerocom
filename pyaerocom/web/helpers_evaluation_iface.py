@@ -620,6 +620,14 @@ def _prepare_aerocom_regions_json():
 def _prepare_htap_regions_json():
     return _prepare_regions_json_helper(HTAP_REGIONS_DEFAULT)
 
+def _prepare_country_regions(region_ids):
+    regs = {}
+    for regid in region_ids:
+        reg = Region(regid)
+        name = reg.name
+        regs[name] = reg
+    return regs
+
 def init_regions_web(coldata, regions_how):
     regborders, regs = {}, {}
     regborders_default, regs_default = _prepare_default_regions_json()
@@ -638,6 +646,8 @@ def init_regions_web(coldata, regions_how):
         regs['WORLD'] = regs_default['WORLD']
         coldata.check_set_countries(True)
         regborders.update(coldata.get_country_codes())
+        add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
+        regs.update(add_regs)
     else:
         raise ValueError('Invalid input for regions_how', regions_how)
 
