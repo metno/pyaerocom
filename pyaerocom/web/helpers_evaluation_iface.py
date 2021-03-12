@@ -533,16 +533,12 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
 
-def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
+def _add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
                            model_name, model_var):
     fp = heatmap_file
     if os.path.exists(fp):
-        try:
-            with open(fp, 'r') as f:
-                current = simplejson.load(f)
-        except Exception as e:
-            raise Exception('Fatal: could not open existing json file: {}. '
-                            'Reason: {}'.format(fp, repr(e)))
+        with open(fp, 'r') as f:
+            current = simplejson.load(f)
     else:
         current = {}
     if not obs_var in current:
@@ -1269,7 +1265,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
             hm_file = os.path.join(out_dirs['hm'], fname)
 
-            add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
+            _add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
                                     vert_code, model_name, model_var)
 
         const.print_log.info('Processing regional timeseries for all regions')
