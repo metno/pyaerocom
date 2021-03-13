@@ -177,7 +177,8 @@ def get_all_config_files_evaluation_iface(config_dir):
     for file in glob.glob('{}/*.json'.format(config_dir)):
         spl = os.path.basename(file).split('_')
         if not len(spl) == 3 or not spl[0] =='cfg':
-            raise NameError('Invalid config file name ', file)
+            const.logger.warning('Invalid config file name ', file)
+            continue
         proj, exp = spl[1], spl[2].split('.')[0]
         if not proj in results:
             results[proj] = {}
@@ -186,6 +187,9 @@ def get_all_config_files_evaluation_iface(config_dir):
 
 def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     """Reorder experiment order in evaluation interface
+
+    Puts experiment list into order as specified by `exp_order`, all
+    remaining experiments are sorted alphabetically.
 
     Parameters
     ----------
@@ -197,8 +201,7 @@ def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     """
     current = read_json(menu_file)
     if exp_order is None:
-        # keep the way it is
-        exp_order = list(current.keys())
+        exp_order = []
     elif isinstance(exp_order, str):
         exp_order = [exp_order]
     if not isinstance(exp_order, list):
