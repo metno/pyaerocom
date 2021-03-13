@@ -49,7 +49,8 @@ def test_get_all_config_files_evaluation_iface(cfgdir, mkfiles, raises,
     (['42', 'invalid'], does_not_raise_exception()),
     ('42', does_not_raise_exception()),
     ('43', does_not_raise_exception()),
-    (None, does_not_raise_exception())
+    (None, does_not_raise_exception()),
+    ({}, pytest.raises(ValueError))
     ])
 def test_reorder_experiments_menu_evaluation_iface(exp_order, raises,
                                                    tmpdir):
