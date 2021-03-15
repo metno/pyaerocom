@@ -33,7 +33,8 @@ TESTDATADIR = tda.testdatadir
 CHECK_PATHS = {
     'tm5': 'modeldata/TM5-met2010_CTRL-TEST/renamed',
     'tm5aod' : 'modeldata/TM5-met2010_CTRL-TEST/renamed/aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
-    'emep' : 'modeldata/EMEP_2017'
+    'emep' : 'modeldata/EMEP_2017',
+    'coldata_tm5_aeronet' : 'coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
     }
 
 TEST_VARS_AERONET = ['od550aer', 'ang4487aer']
@@ -130,7 +131,7 @@ def data_tm5():
 
 @pytest.fixture(scope='session')
 def coldata_tm5_aeronet():
-    fpath = tda.testdatadir.joinpath('coldata/od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc')
+    fpath = tda.testdatadir.joinpath(CHECK_PATHS['coldata_tm5_aeronet'])
     return cth._load_coldata_tm5_aeronet_from_scratch(fpath)
 
 @pytest.fixture(scope='session')
