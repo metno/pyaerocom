@@ -2,10 +2,14 @@ import pytest
 import simplejson
 import os
 from pyaerocom.conftest import (coldata_tm5_aeronet,
+                                coldata_tm5_tm5,
                                 does_not_raise_exception,
                                 tempdir)
-
+from pyaerocom import ColocatedData, Region
+from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
+from pyaerocom.region import get_all_default_region_ids
 from pyaerocom.web import helpers_evaluation_iface as h
+
 @pytest.mark.parametrize('base_dir, proj_id, exp_id', [
     ('/blaaa', 'blub', '42'), ('tmpdir', 'blub', '42'),
     ])
@@ -149,6 +153,89 @@ def test__add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_c
         with open(heatmap_file) as f:
             data = simplejson.load(f)
         assert data[obs_var][obs_name][vert_code][model_name][model_var] == result
+
+def test__init_stats_dummy():
+    dummy = h._init_stats_dummy()
+    assert list(dummy.keys()) == ['totnum', 'num_valid', 'refdata_mean',
+                                  'refdata_std', 'data_mean', 'data_std',
+                                  'weighted', 'rms', 'nmb', 'mnmb', 'fge']
+
+def test__check_flatten_latlon_dims_3d(coldata_tm5_aeronet):
+    cd = h._check_flatten_latlon_dims(coldata_tm5_aeronet)
+    assert isinstance(cd, ColocatedData)
+    assert 'station_name' in cd.data.dims
+
+def test__check_flatten_latlon_dims_4d(coldata_tm5_tm5):
+    cd = h._check_flatten_latlon_dims(coldata_tm5_tm5)
+    assert isinstance(cd, ColocatedData)
+    assert 'station_name' in cd.data.dims
+
+@pytest.mark.parametrize('region_ids,raises', [
+    ('blaaa', pytest.raises(ValueError)),
+    (['WORLD'], does_not_raise_exception()),
+    (['WORLD', 'EUROPE'], does_not_raise_exception()),
+    (['WORLD', 'OCN'], does_not_raise_exception()),
+    (['WORLD', 'Italy'], pytest.raises(ValueError)),
+
+    ])
+def test__prepare_regions_json_helper(region_ids,raises):
+    with raises:
+        regborders, regs = h._prepare_regions_json_helper(region_ids)
+        assert len(region_ids) == len(regborders) == len(regs)
+        for regid in region_ids:
+            reg = Region(regid)
+            name = reg.name
+            assert name in regborders and name in regs
+            assert regs[name].region_id == regid
+            assert regs[name].name == name
+            bd = regborders[name]
+            assert reg.lat_range == [bd['minLat'], bd['maxLat']]
+            assert reg.lon_range == [bd['minLon'], bd['maxLon']]
+
+def test__prepare_default_regions_json():
+    regborders, regs = h._prepare_default_regions_json()
+    regids = sorted([reg.region_id for reg in regs.values()])
+    default = sorted(get_all_default_region_ids())
+    assert default == regids
+
+def test__prepare_aerocom_regions_json():
+    regborders, regs = h._prepare_aerocom_regions_json()
+    regids = sorted([reg.region_id for reg in regs.values()])
+    default = sorted(OLD_AEROCOM_REGIONS)
+    assert default == regids
+
+def test__prepare_htap_regions_json():
+    regborders, regs = h._prepare_htap_regions_json()
+    regids = sorted([reg.region_id for reg in regs.values()])
+    default = sorted(HTAP_REGIONS_DEFAULT)
+    assert default == regids
+
+def test__prepare_country_regions():
+    regids = ['Italy', 'Germany']
+    regs = h._prepare_country_regions(regids)
+    assert isinstance(regs, dict)
+    assert len(regs) == len(regids)
+    for name, reg in regs.items():
+        assert isinstance(reg, Region)
+        assert reg.region_id in regids
+
+@pytest.mark.parametrize('regions_how,raises,regnum', [
+    ('bla', pytest.raises(ValueError), 0),
+    ('default', does_not_raise_exception(),10),
+    ('aerocom', does_not_raise_exception(),10),
+    ('htap', does_not_raise_exception(),15),
+    ('country', does_not_raise_exception(),9),
+
+    ])
+def test_init_regions_web(coldata_tm5_aeronet,regions_how,raises,regnum):
+    with raises:
+        regborders, regs, regnames = h.init_regions_web(coldata_tm5_aeronet,
+                                                        regions_how)
+        assert len(regnames) == len(regs) == len(regborders) == regnum
+        if regions_how == 'country':
+            for reg, brdr in regborders.items():
+                if not reg == 'WORLD':
+                    assert isinstance(brdr, str) # country code
 
 if __name__ == '__main__':
     import sys

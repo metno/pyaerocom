@@ -569,14 +569,6 @@ def _init_stats_dummy():
 
 def _check_flatten_latlon_dims(coldata):
     if not 'station_name' in coldata.data.coords:
-        if not coldata.data.ndim == 4:
-            raise DataDimensionError('Invalid number of dimensions. '
-                                     'Need 4, got: {}'
-                                     .format(coldata.data.dims))
-        elif not 'latitude' in coldata.data.dims and 'longitude' in coldata.data.dims:
-            raise DataDimensionError('Need latitude and longitude '
-                                     'dimension. Got {}'
-                                     .format(coldata.data.dims))
         coldata.data = coldata.data.stack(station_name=('latitude',
                                                         'longitude'))
     return coldata
