@@ -147,7 +147,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.45_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.46_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -237,6 +237,8 @@ class ReadEbas(ReadUngriddedBase):
     ASSUME_AE_SHIFT_WVL = 1#.5
 
     IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
+
+    IGNORE_COLS_CONTAIN = ['fraction', 'artifact']
     # list of all available resolution codes (extracted from SQLite database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
 
@@ -586,7 +588,11 @@ class ReadEbas(ReadUngriddedBase):
                     elif check_stats:
                         if not col_info['statistics'] in ebas_var_info['statistics']:
                             ok=False
-
+                for key in self.IGNORE_COLS_CONTAIN:
+                    if key in col_info:
+                        ok = False
+                        const.print_log.warning(f'\nignore column {col_info}')
+                        break
                 if ok:
                     col_matches.append(colnum)
         if len(col_matches) == 0:
@@ -685,12 +691,18 @@ class ReadEbas(ReadUngriddedBase):
                     result_col = _cols
 
             if len(result_col) > 1:
-                # multiple column matches were found, use the one that contains
-                # less NaNs
-                num_invalid = []
-                for colnum in result_col:
-                    num_invalid.append(np.isnan(file.data[:, colnum]).sum())
-                result_col = [result_col[np.argmin(num_invalid)]]
+                comp = ebas_var_info['component']
+                startstop = f'{file.time_stamps[0]} - {file.time_stamps[-1]}'
+                msg = (f'\n\nFATAL: could not resolve unique data column for '
+                       f'{var} (EBAS varname: {comp})\nData period: {startstop}), '
+                       f'\nStation {file.station_name} (col matches: {result_col})')
+                for col in result_col:
+                    msg += f'\nColumn {col}\n{file.var_defs[col]}'
+
+                msg += f'\nFilename: {file.file_name}'
+                msg += '\n\nTHIS FILE WILL BE SKIPPED\n'
+                const.print_log.warning(msg)
+                raise ValueError('failed to identify unique data column')
 
         return result_col[0]
 
@@ -1343,7 +1355,7 @@ class ReadEbas(ReadUngriddedBase):
         return (vars_to_retrieve + add)
 
     def read(self, vars_to_retrieve=None, first_file=None,
-             last_file=None, multiproc=False, files=None, **constraints):
+             last_file=None, files=None, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -1357,6 +1369,8 @@ class ReadEbas(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file
             in the list is used
+        files : list
+             list of files
         **constraints
             further reading constraints deviating from default (default
             info for each AEROCOM variable can be found in `ebas_config.ini <
@@ -1397,11 +1411,9 @@ class ReadEbas(ReadUngriddedBase):
         files = files[first_file:last_file]
         files_contain = files_contain[first_file:last_file]
 
-        if not multiproc:
-            data = self._read_files(files, vars_to_retrieve,
-                                    files_contain, constraints)
-        else:
-            raise NotImplementedError('Coming soon...')
+        data = self._read_files(files, vars_to_retrieve,
+                                files_contain, constraints)
+
         data.clear_meta_no_data()
 
         return data
@@ -1448,6 +1460,7 @@ class ReadEbas(ReadUngriddedBase):
                                     .format(_file, repr(e)))
                 continue
             except Exception as e:
+                self.files_failed.append(_file)
                 const.print_log.warning('Skipping reading of EBAS NASA Ames '
                                         'file: {}. Reason: {}'
                                         .format(_file, repr(e)))
@@ -1556,12 +1569,21 @@ if __name__=="__main__":
                                   #data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
+
+    files = reader.get_file_list('sc550aer')
+
+    testfile = 'US0013R.20110101000000.20181031145000.nephelometer.aerosol_light_scattering_coefficient.aerosol.3mo.1h.US11L_Optec-NGN-2.US11L_IMPROVE_nephelometer_2004.lev2.nas'
+
+    for file in files:
+        if testfile in file:
+            print(42)
+            break
 # =============================================================================
 #     reader.read_file('/home/jonasg/MyPyaerocom/data/obsdata/EBASMultiColumn/data/data/PL0005R.19950101060000.20181210133000.filter_1pack...3mo.1d.PL02L_f1p_5..lev2.nas',
 #                      ['concno3'])
 # =============================================================================
-    data = reader.read(vars_to_retrieve=['concno3'])
 # =============================================================================
-#                        ,first_file=100,
-#                        last_file=200)
+#     data = reader.read(vars_to_retrieve=['concoc'],
+#                        first_file=0,
+#                        last_file=None)
 # =============================================================================
