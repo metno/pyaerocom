@@ -158,6 +158,18 @@ class ReadMscwCtm(object):
             raise AttributeError('need data_dir to be set in data')
         return os.path.join(self.data_dir, self.filename)
 
+    @filepath.setter
+    def filepath(self, value):
+        if not isinstance(value, str):
+            raise ValueError('need str')
+        elif not os.path.exists(value):
+            raise FileNotFoundError(value)
+        elif not os.path.isfile(value):
+            raise ValueError(value)
+        ddir, fname = os.path.split(value)
+        self.data_dir = ddir
+        self.filename = fname
+
     @property
     def filedata(self):
         """
