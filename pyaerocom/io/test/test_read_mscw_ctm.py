@@ -58,7 +58,10 @@ def reader():
                       '_filedata': None, '_file_mask' : None,
                       '_files'    : None},
         does_not_raise_exception()),
-    ('blaaa',None,None,{},pytest.raises(FileNotFoundError))
+    ('blaaa',None,None,{},pytest.raises(FileNotFoundError)),
+    (EMEP_DIR,None,None,{},pytest.raises(ValueError) ),
+    (None,None,'blaaaa',{},pytest.raises(FileNotFoundError) ),
+    (None,None,EMEP_DIR+'/Base_month.nc',{},pytest.raises(ValueError) )
     ])
 def test_ReadMscwCtm__init__(filepath, data_id, data_dir,check,raises):
     with raises:
