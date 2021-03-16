@@ -107,11 +107,7 @@ def test_get_json_mapname():
           obs_var='ovar',
           vert_code='invalid',
           model_name='whatever'),'/invalid/42/imagine', pytest.raises(FileNotFoundError)),
-    (dict(station_name='bla',
-          web_iface_name='blub',
-          obs_var='ovar',
-          vert_code='invalid',
-          model_name='whatever'),{'ts':'tmpdir'}, does_not_raise_exception()),
+
     # repeat previous to check add entry in existing file
     (dict(station_name='bla',
           web_iface_name='blub',
