@@ -13,7 +13,7 @@ import glob
 
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
-from pyaerocom.io.aux_read_cubes import add_cubes
+from pyaerocom.io.aux_read_cubes import add_cubes, subtract_cubes
 from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import implicit_to_explicit_rates
@@ -46,7 +46,8 @@ class ReadMscwCtm(object):
     AUX_REQUIRES = {'depso4' : ['dryso4','wetso4'],
                     'concbc' : ['concbcf', 'concbcc'],
                     'concno3' : ['concno3c', 'concno3f'],
-                    'concoa' : ['concoac', 'concoaf']}
+                    'concoa' : ['concoac', 'concoaf'],
+                    'concpmgt25': ['concpm10', 'concpm25']}
 
     # Functions that are used to compute additional variables (i.e. one
     # for each variable defined in AUX_REQUIRES)
@@ -54,7 +55,8 @@ class ReadMscwCtm(object):
                 'concbc' : add_cubes,
                 'concno3' : add_cubes,
                 'conctno3' : add_cubes,
-                'concoa' : add_cubes
+                'concoa' : add_cubes,
+                'concpmgt25': subtract_cubes
                 }
 
     #: supported filename masks, placeholder is for frequencies
@@ -160,14 +162,6 @@ class ReadMscwCtm(object):
 
     @filepath.setter
     def filepath(self, value):
-# =============================================================================
-#         if not isinstance(value, str):
-#             raise ValueError('need str')
-#         elif not os.path.exists(value):
-#             raise FileNotFoundError(value)
-#         elif not os.path.isfile(value):
-#             raise ValueError(value)
-# =============================================================================
         ddir, fname = os.path.split(value)
         self.data_dir = ddir
         self.filename = fname
@@ -207,8 +201,6 @@ class ReadMscwCtm(object):
             current ts_type.
 
         """
-        if self.filename is None:
-            raise AttributeError('need filename to retrieve ts_type')
         return self.ts_type_from_filename(self.filename)
 
     @property
@@ -231,10 +223,7 @@ class ReadMscwCtm(object):
             raise AttributeError('please set data_dir first')
         tsts = []
         for file in self._files:
-            try:
-                tsts.append(self.ts_type_from_filename(file))
-            except ValueError:
-                pass
+            tsts.append(self.ts_type_from_filename(file))
         return tsts
 
     @property
