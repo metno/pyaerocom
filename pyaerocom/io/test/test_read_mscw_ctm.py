@@ -2,7 +2,8 @@ import pytest
 import os
 import xarray as xr
 from pyaerocom.conftest import (testdata_unavail,
-                                does_not_raise_exception)
+                                does_not_raise_exception,
+                                EMEP_DIR)
 import pyaerocom.exceptions as exc
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.griddeddata import GriddedData
@@ -177,6 +178,17 @@ def test_read_emep_has_var(reader, var_name, value, raises):
     with raises:
         assert reader.has_var(var_name) == value
 
+@pytest.mark.parametrize('value, raises',[
+    (None, pytest.raises(TypeError)),
+    ('', pytest.raises(FileNotFoundError)),
+    ('/tmp', pytest.raises(FileNotFoundError)),
+    (EMEP_DIR, pytest.raises(FileNotFoundError)),
+    (EMEP_DIR + '/Base_month.nc', does_not_raise_exception())
+
+    ])
+def test_read_emep_filepath(reader, value, raises):
+    with raises:
+        reader.filepath = value
 
 if __name__ == '__main__':
     import sys

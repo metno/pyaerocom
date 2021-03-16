@@ -160,12 +160,14 @@ class ReadMscwCtm(object):
 
     @filepath.setter
     def filepath(self, value):
-        if not isinstance(value, str):
-            raise ValueError('need str')
-        elif not os.path.exists(value):
-            raise FileNotFoundError(value)
-        elif not os.path.isfile(value):
-            raise ValueError(value)
+# =============================================================================
+#         if not isinstance(value, str):
+#             raise ValueError('need str')
+#         elif not os.path.exists(value):
+#             raise FileNotFoundError(value)
+#         elif not os.path.isfile(value):
+#             raise ValueError(value)
+# =============================================================================
         ddir, fname = os.path.split(value)
         self.data_dir = ddir
         self.filename = fname
