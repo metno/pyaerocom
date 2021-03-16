@@ -114,6 +114,7 @@ def test_ReadMscwCtm_var_map():
 @testdata_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
     ('blaaa', 'daily', pytest.raises(exc.VariableDefinitionError)),
+    ('od550gt1aer', 'daily', pytest.raises(exc.VarNotAvailableError)),
     ('vmro3', 'daily', does_not_raise_exception()),
     ('vmro3', None, does_not_raise_exception()),
     ('concpmgt25', 'daily', does_not_raise_exception())
