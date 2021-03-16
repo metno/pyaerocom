@@ -10,10 +10,31 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
+import os, sys, subprocess
+
+# -- clone pyaerocom-tutorials repo --------------------------------------
+TUTREPO = 'pyaerocom-tutorials'
+TUTURL = f'https://github.com/metno/{TUTREPO}.git'
+
+def init_tutorials():
+    if not 'conf.py' in os.listdir():
+        raise FileNotFoundError('Wrong directory...')
+
+    if not TUTREPO in os.listdir():
+        command = f'git clone {TUTURL}'
+        print(command)
+        subprocess.call(command, shell=True)
+    if not TUTREPO in os.listdir():
+        raise FileNotFoundError('Failed to clone pyaerocom-tutorials repo into '
+                                'pyaerocom/docs')
+
+print('Initiating pyaerocom-tutorials repo under pyaerocom/docs')
+init_tutorials()
+
+# -- Add paths ---------------------------------------
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
+
 
 
 # -- Project information -----------------------------------------------------
@@ -38,12 +59,13 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'nbsphinx'
 ]
 
 intersphinx_mapping = {
 
     'python'    : ('https://docs.python.org/3', None),
-    'iris'      : ('https://scitools.org.uk/iris/docs/latest/', None),
+    #'iris'      : ('https://scitools.org.uk/iris/docs/latest/', None),
     'xarray'    : ('http://xarray.pydata.org/en/stable/', None),
     'pandas'    : ('https://pandas.pydata.org/docs/', None),
     'numpy'     : ('https://numpy.org/doc/stable/', None),

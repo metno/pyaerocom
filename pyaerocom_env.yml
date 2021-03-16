@@ -16,3 +16,4 @@ dependencies:
   - requests
   - reverse-geocode
   - tqdm
+  - nbsphinx # for docs via rtd configuration file v2

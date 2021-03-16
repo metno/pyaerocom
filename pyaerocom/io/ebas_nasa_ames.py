@@ -12,14 +12,9 @@ import pandas as pd
 from collections import OrderedDict as od
 from datetime import datetime
 from pyaerocom._lowlevel_helpers import str_underline, dict_to_str
-from pyaerocom.exceptions import TimeZoneError
+from pyaerocom.exceptions import (TimeZoneError, NasaAmesReadError,
+                                  NasaAmesVariableError, NasaAmesTimedefError)
 from pyaerocom import const
-
-class NasaAmesReadError(IOError):
-    pass
-
-class NasaAmesVariableError(AttributeError):
-    pass
 
 class EbasColDef(dict):
     """Dict-like object for EBAS NASA Ames column definitions
@@ -714,9 +709,9 @@ class EbasNasaAmesFile(NasaAmesHeader):
         start = self.numarr_to_datetime64(offs, self.data[:,0], mulfac)
         stop = self.numarr_to_datetime64(offs, self.data[:,1], mulfac)
 
-
+        dt = stop - start
         # mid timestamps
-        self.time_stamps = start + (stop - start)*.5
+        self.time_stamps = start + dt*.5
         self.start_meas = start
         self.stop_meas = stop
 
@@ -817,20 +812,16 @@ class EbasNasaAmesFile(NasaAmesHeader):
         END_VAR_DEF = np.nan #will be set (info stored in header)
         IN_DATA = False
         data = []
-        _insert_invalid = None
         self.file = nasa_ames_file
         for line in open(nasa_ames_file):
-            #print(lc, _NUM_FIXLINES, line)
             if IN_DATA: #in data block (end of file)
-                if dc == 0:
-                    const.logger.debug(line)
                 try:
                     data.append(tuple([float(x.strip()) for x in line.strip().split()]))
                     #data.append([float(x.strip()) for x in line.strip().split()])
                 except Exception as e:
-                    data.append(_insert_invalid)
-                    const.logger.warning("Failed to read data row {}. "
-                                   "Error msg: {}".format(dc, repr(e)))
+                    const.print_log.warning(
+                        f"EbasNasaAmesFile: Failed to read data row {dc}. "
+                        f"Reason: {e}")
                 dc += 1
             elif lc < self._NUM_FIXLINES: #in header section (before column definitions)
                 try:
@@ -876,9 +867,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     if only_head:
                         return
                     const.logger.debug("REACHED DATA BLOCK")
-                    _insert_invalid = tuple([np.nan]*self.col_num)
-
-                #elif lc > self._NUM_FIXLINES + 3:
                 elif lc >= END_VAR_DEF + 2:
                     try:
                         name, val = line.split(":")

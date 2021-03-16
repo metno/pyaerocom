@@ -73,6 +73,7 @@ def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
 
 @testdata_unavail
 @rg_unavail
+@pytest.mark.dependency
 def test_check_set_country(aeronetsunv3lev2_subset):
     idx, countries = aeronetsunv3lev2_subset.check_set_country()
     assert len(idx) == len(aeronetsunv3lev2_subset.metadata)
