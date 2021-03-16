@@ -68,6 +68,9 @@ class ReadMscwCtm(object):
         'fullrun' : 'yearly',
 
     }
+
+    DEFAULT_FILE_NAME = 'Base_day.nc'
+
     def __init__(self, filepath=None, data_id=None, data_dir=None):
         self._data_dir = None
         # opened dataset (for performance boost), will be reset if data_dir is
@@ -85,8 +88,11 @@ class ReadMscwCtm(object):
         self.data_id = data_id
         if data_dir is not None:
             self.data_dir = data_dir
-        if filename is not None:
-            self.filename = filename
+
+        if filename is None:
+            filename = self.DEFAULT_FILE_NAME
+
+        self.filename = filename
 
     def _eval_input(self, filepath, data_id, data_dir):
         filename = None
@@ -148,7 +154,10 @@ class ReadMscwCtm(object):
         """
         Path to data file
         """
+        if self.data_dir is None:
+            raise AttributeError('need data_dir to be set in data')
         return os.path.join(self.data_dir, self.filename)
+
     @property
     def filedata(self):
         """
@@ -189,12 +198,36 @@ class ReadMscwCtm(object):
         return self.ts_type_from_filename(self.filename)
 
     @property
+    def ts_types(self):
+        """
+        List of available frequencies
+
+        Raises
+        ------
+        AttributeError
+            if :attr:`data_dir` is not set.
+
+        Returns
+        -------
+        list
+            list of available frequencies
+
+        """
+        if not isinstance(self._files, list):
+            raise AttributeError('please set data_dir first')
+        tsts = []
+        for file in self._files:
+            try:
+                tsts.append(self.ts_type_from_filename(file))
+            except ValueError:
+                pass
+        return tsts
+
+    @property
     def years_avail(self):
         """
         Years available in loaded dataset
         """
-        if self.filedata is None:
-            self.open_file()
         data = self.filedata
         years = data.time.dt.year.values
         years = list(np.unique(years))
@@ -214,28 +247,22 @@ class ReadMscwCtm(object):
         xarray.Dataset
 
         """
-        fp=os.path.join(self.data_dir, self.filename)
+        fp = self.filepath
         const.print_log.info(f'Opening {fp}')
 
-        if not os.path.exists(fp):
-            raise FileNotFoundError('please specify existing data_dir and '
-                                    'filename')
         ds = xr.open_dataset(fp)
         self._filedata = ds
         return ds
 
     def __repr__(self):
-            return self.__str__()
+        return self.__str__()
 
     def __str__(self):
-        s = 'Reader: ReadMscwCtm\n'
-        s += "Available frequencies: {}\n".format(self.ts_types)
-        s += "Available variables: {}\n".format(self.vars_provided)
-        return s
+        return 'ReadMscwCtm'
 
 
     def has_var(self, var_name):
-        """Check if variable is available
+        """Check if variable is supported
 
         Parameters
         ----------
@@ -268,7 +295,7 @@ class ReadMscwCtm(object):
         -------
         tstype : str
         """
-
+        filename = os.path.basename(filename)
         for substr, tstype in self.FREQ_CODES.items():
             if substr in filename:
                 return tstype
@@ -365,6 +392,7 @@ class ReadMscwCtm(object):
             #that current file has different resolution
             self.filename = self.filename_from_ts_type(ts_type)
 
+        ts_type = self.ts_type
         if var_name_aerocom in self.AUX_REQUIRES:
             gridded = self.compute_var(var_name_aerocom, ts_type)
         else:
@@ -384,7 +412,7 @@ class ReadMscwCtm(object):
     def _gridded_from_filedata(self, var_name_aerocom, ts_type):
         emep_var = self.var_map[var_name_aerocom]
 
-        EMEP_prefix = emep_var.split('_')[0]
+        prefix = emep_var.split('_')[0]
         try:
             data = self.filedata[emep_var]
         except KeyError:
@@ -393,7 +421,7 @@ class ReadMscwCtm(object):
         data.attrs['long_name'] = var_name_aerocom
         data.time.attrs['long_name'] = 'time'
         data.time.attrs['standard_name'] = 'time'
-        data.attrs['units'] = self.preprocess_units(data.units, EMEP_prefix)
+        data.attrs['units'] = self.preprocess_units(data.units, prefix)
         cube = data.to_iris()
         if ts_type == 'hourly':
             cube.coord('time').convert_units('hours since 1900-01-01')
@@ -401,7 +429,7 @@ class ReadMscwCtm(object):
                               ts_type=ts_type, check_unit=False,
                               convert_unit_on_init=False)
 
-        if EMEP_prefix in ['WDEP', 'DDEP']:
+        if prefix in ['WDEP', 'DDEP']:
             implicit_to_explicit_rates(gridded, ts_type)
         return gridded
 
