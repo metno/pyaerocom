@@ -85,7 +85,6 @@ def test_aerocom_evaluation_run_colocation(stp):
     assert isinstance(coldata, ColocatedData)
     assert coldata.shape == (2, 12, 8)
 
-
 def test_aerocom_evaluation_run_evaluation(stp):
     col_paths = stp.run_evaluation(update_interface=False,
                                    reanalyse_existing=False) #reuse model colocated data from prev. test

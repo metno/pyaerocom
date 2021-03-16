@@ -60,6 +60,7 @@ UCONV_MUL_FACS = pd.DataFrame([
     ['concoc'   , 'ug C/m3'     , 'ug m-3', 1.0],
     ['conctc'   , 'ug C/m3'     , 'ug m-3', 1.0],
     ['concno3'  , 'ug N/m3'     , 'ug m-3', M_NO3 / M_N],
+    ['concnh4'  , 'ug N/m3'     , 'ug m-3', M_NH4 / M_N],
     ['wetso4'   , 'kg S/ha'     , 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
     ['concso4pr', 'mg S/L'      , 'g m-3' , M_SO4 / M_S] # 1mg/L = 1g/m3
 

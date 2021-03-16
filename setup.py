@@ -13,9 +13,8 @@ with open('VERSION.md') as f:
 setup(
     name        =   'pyaerocom',
     version     =   version,
-    author      =   'Jonas Gliss',
-    author_email=   'jonas.gliss@met.no',
-    url         =   'https://github.com/jgliss/pyaerocom.git',
+    author      =   'MET Norway',
+    url         =   'https://github.com/metno/pyaerocom.git',
     license     =   'GPLv3',
     package_dir =   {'pyaerocom'      :   'pyaerocom'},
     packages    =   ['pyaerocom',

@@ -22,6 +22,7 @@ def test_cache_dir(cache_handler):
     assert comps[-3] == 'MyPyaerocom'
 
 @testdata_unavail
+@pytest.mark.dependency
 def test_write_custom(cache_handler, aeronetsunv3lev2_subset, tempdir):
     ch = cache_handler
     outfile = 'test_manual_caching.pkl'
@@ -44,6 +45,7 @@ def test_check_and_load_custom(cache_handler, aeronetsunv3lev2_subset,
     assert ch.loaded_data[filename].shape == aeronetsunv3lev2_subset.shape
 
 @testdata_unavail
+@pytest.mark.dependency
 def test_write(cache_handler, aeronetsunv3lev2_subset,
                        aeronet_sun_subset_reader):
     reader = aeronet_sun_subset_reader

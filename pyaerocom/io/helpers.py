@@ -344,7 +344,7 @@ def get_country_name_from_iso(iso_code=None,
     if filename is None:
         #set default file name
         from pyaerocom import __dir__
-        filename = os.path.join(__dir__, 'io', COUNTRY_CODE_FILE)
+        filename = os.path.join(__dir__, 'data', COUNTRY_CODE_FILE)
 
     import simplejson as json
     with open(filename) as fh:
