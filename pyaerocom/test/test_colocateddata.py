@@ -22,7 +22,8 @@ def test_meta_access_filename():
             'start': Timestamp('2010-01-01 00:00:00'),
             'stop': Timestamp('2010-12-31 00:00:00'),
             'data_source': ['EBAS-Lev3', 'CAM5-ATRAS']}
-    for k, v in ColocatedData.get_meta_from_filename(name).items():
+    _meta = ColocatedData.get_meta_from_filename(name)
+    for k, v in _meta.items():
         assert meta[k] == v
 
 def test_read_colocated_data(coldata_tm5_aeronet):

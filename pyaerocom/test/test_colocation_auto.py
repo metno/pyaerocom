@@ -51,6 +51,7 @@ def col():
     (ColocationSetup(), default_setup)
     ])
 def test_colocation_setup(stp, should_be):
+    assert len(stp) == len(should_be)
     for key, val in stp.items():
         if key == 'basedir_coldata':
             assert os.path.exists(val)
