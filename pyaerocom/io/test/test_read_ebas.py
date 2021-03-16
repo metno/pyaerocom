@@ -271,10 +271,10 @@ class TestReadEBAS(object):
         ('sc550dryaer', {}, 5),
         ('sc550dryaer', {'station_names': 'Jungfraujoch'}, 2),
         ('ac550aer', {}, 4),
-        ('concpm10', {}, 4),
-        ('conco3', {}, 4),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, 4),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, 17),
+        ('concpm10', {}, 6),
+        ('conco3', {}, 7),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, 5),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, 22),
         ])
     def test_get_file_list(self, reader, vars_to_retrieve, constraints,
                            num_files):
@@ -339,18 +339,7 @@ class TestReadEBAS(object):
 
     @pytest.mark.parametrize('filename,vars_to_retrieve,start,stop,totnum,'
                              'var_nanmeans,var_numnans,var_units,meta', [
-        (NASA_AMES_FILEPATHS['scatc_jfj'], ['scrh'],
-         np.datetime64('2018-01-01T00:30:00'),
-         np.datetime64('2018-12-31T23:29:59'),
-        8760,8.2679,78,['%'],
-        {'latitude': 46.5475, 'longitude': 7.985, 'altitude': 3580.0,
-         'filename': 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas',
-         'station_id': 'CH0001G', 'station_name': 'Jungfraujoch',
-         'instrument_name': 'TSI_3563_JFJ_dry',
-         'PI': 'Bukowiecki, Nicolas; Baltensperger, Urs',
-         'ts_type': 'hourly', 'data_id': 'EBASSubset', 'data_level': 2,
-         'revision_date': np.datetime64('2019-05-20T00:00:00'),
-         'framework' : 'ACTRIS CREATE EMEP GAW-WDCA'})
+
         ])
     def test_read_file(self, reader, filename, vars_to_retrieve, start,
                        stop, totnum, var_nanmeans, var_numnans, var_units,
