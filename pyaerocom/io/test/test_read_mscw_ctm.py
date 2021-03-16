@@ -5,7 +5,7 @@ from pyaerocom.conftest import (testdata_unavail,
                                 does_not_raise_exception,
                                 EMEP_DIR)
 import pyaerocom.exceptions as exc
-from pyaerocom.io import ReadMscwCtm
+from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
 from pyaerocom.griddeddata import GriddedData
 
 VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm',
@@ -268,6 +268,9 @@ def test_ReadMscwCtm__str__():
 def test_ReadMscwCtm__repr__():
     assert repr(ReadMscwCtm()) == 'ReadMscwCtm'
 
-if __name__ == '__main__':
+def test_ReadEMEP__init__():
+    assert isinstance(ReadEMEP(), ReadMscwCtm)
+
+if __name__ == '__main__': # pragma: no cover
     import sys
     pytest.main(sys.argv)
