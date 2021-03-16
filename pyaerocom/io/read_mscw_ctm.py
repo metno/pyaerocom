@@ -458,7 +458,7 @@ class ReadEMEP(ReadMscwCtm):
 
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
 
     EMEP_DIR = '/lustre/storeB/project/fou/kl/emep/ModelRuns/2020_REPORTING/EMEP01_rv4_35_2018_emepCRef2_XtraOut/'
 
