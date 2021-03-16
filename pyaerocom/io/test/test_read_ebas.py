@@ -27,9 +27,11 @@ import os
 import numpy as np
 import numpy.testing as npt
 
-from pyaerocom import const
-from pyaerocom.conftest import (testdata_unavail, NASA_AMES_FILEPATHS,
-                                does_not_raise_exception)
+import pyaerocom.exceptions as err
+from pyaerocom.conftest import (testdata_unavail, EBAS_FILES, EBAS_ISSUE_FILES,
+                                EBAS_FILEDIR, does_not_raise_exception,
+                                loaded_nasa_ames_example)
+
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 import pyaerocom.mathutils as mu
@@ -42,7 +44,7 @@ def reader():
     return ReadEbas('EBASSubset')
 
 @testdata_unavail
-class TestReadEBAS(object):
+class TestReadEbas(object):
 
     PROVIDES_VARIABLES = sorted(['DEFAULT',
                          'sc550aer',
@@ -283,9 +285,29 @@ class TestReadEBAS(object):
     def test__precheck_vars_to_retrieve(self, reader):
         assert reader._precheck_vars_to_retrieve(['sconco3']) == ['conco3']
 
-    @pytest.mark.skip(reason='Not implemented, is tested via read_file')
-    def test__get_var_cols(self, reader):
-        pass
+    @pytest.mark.parametrize('var,raises', [
+        ('sc550aer', does_not_raise_exception()),
+        ('blaaa', pytest.raises(err.VariableDefinitionError)),
+        ('abs550aer', pytest.raises(err.VarNotAvailableError)),
+
+        ])
+    def test_get_ebas_var(self, reader, var, raises):
+        with raises:
+            vi = reader.get_ebas_var(var)
+            assert isinstance(vi, EbasVarInfo)
+            assert var in reader._loaded_ebas_vars
+
+    @pytest.mark.parametrize('var,raises,colnums', [
+        ('sc550aer', does_not_raise_exception(), [14, 17, 20]),
+        ('ac550aer', pytest.raises(err.NotInFileError), None),
+        ('sc550dryaer', pytest.raises(err.NotInFileError), None),
+        ])
+    def test__get_var_cols(self, reader, loaded_nasa_ames_example,
+                           var, raises, colnums):
+        vi = EbasVarInfo(var)
+        with raises:
+            cols = reader._get_var_cols(vi, loaded_nasa_ames_example)
+            assert cols == colnums
 
     @pytest.mark.skip(reason='Not implemented, is tested via read_file')
     def test__find_best_data_column(self):
@@ -345,58 +367,16 @@ class TestReadEBAS(object):
         assert flagged.sum() == num_flagged
         TsType.TOL_SECS_PERCENT = _default_tol
 
-    @pytest.mark.parametrize('var', ['sc550aer'])
-    def test_get_ebas_var(self, reader, var):
-        vi = reader.get_ebas_var(var)
-        assert isinstance(vi, EbasVarInfo)
-        assert var in reader._loaded_ebas_vars
-
-    @pytest.mark.parametrize('filename,vars_to_retrieve,start,stop,totnum,'
-                             'var_nanmeans,var_numnans,var_units,meta', [
-        (NASA_AMES_FILEPATHS['scatc_jfj'], ['scrh'],
-         np.datetime64('2018-01-01T00:30:00'),
-         np.datetime64('2018-12-31T23:29:59'),
-        8760,8.2679,78,['%'],
-        {'latitude': 46.5475, 'longitude': 7.985, 'altitude': 3580.0,
-         'filename': 'CH0001G.20180101000000.20190520124723.nephelometer..aerosol.1y.1h.CH02L_TSI_3563_JFJ_dry.CH02L_Neph_3563.lev2.nas',
-         'station_id': 'CH0001G', 'station_name': 'Jungfraujoch',
-         'instrument_name': 'TSI_3563_JFJ_dry',
-         'PI': 'Bukowiecki, Nicolas; Baltensperger, Urs',
-         'ts_type': 'hourly', 'data_id': 'EBASSubset', 'data_level': 2,
-         'revision_date': np.datetime64('2019-05-20T00:00:00'),
-         'framework' : 'ACTRIS CREATE EMEP GAW-WDCA'})
+    @pytest.mark.parametrize('filename,vars_to_retrieve,raises', [
+        (EBAS_FILEDIR.joinpath(EBAS_FILES['sc550dryaer']['Jungfraujoch'][0]),
+         ['sc550aer'],does_not_raise_exception())
         ])
-    def test_read_file(self, reader, filename, vars_to_retrieve, start,
-                       stop, totnum, var_nanmeans, var_numnans, var_units,
-                       meta):
-        data = reader.read_file(filename=filename,
-                                vars_to_retrieve=vars_to_retrieve)
-        if isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-        assert isinstance(data, StationData)
-        assert isinstance(data, dict)
-        assert 'var_info' in data
-        assert [var in data for var in vars_to_retrieve]
-        assert [var in data['var_info'] for var in vars_to_retrieve]
-        assert data.dtime[0] == start
-        assert data.dtime[-1] == stop
-        assert len(data.dtime) == totnum
-        nanmeans = []
-        numnans = []
-        varunits = []
-        for i, var in enumerate(vars_to_retrieve):
-            assert isinstance(data[var], np.ndarray)
-            varunits.append(data['var_info'][var]['units'])
-            nanmeans.append(np.nanmean(data[var]))
-            numnans.append(np.isnan(data[var]).sum())
-        npt.assert_allclose(nanmeans, var_nanmeans, rtol=1e-3)
-        npt.assert_array_equal(numnans, var_numnans)
-        npt.assert_array_equal(varunits, var_units)
+    def test_read_file(self, reader, filename, vars_to_retrieve,raises):
+        with raises:
+            data = reader.read_file(filename=filename,
+                                    vars_to_retrieve=vars_to_retrieve)
+            assert isinstance(data, StationData)
 
-        _meta = data.get_meta()
-        assert len(_meta) == len(meta)
-        for key, val in _meta.items():
-            assert val == meta[key]
 
     @pytest.mark.parametrize(
         'vars_to_retrieve, first_file, last_file, files, constraints, exception', [
@@ -410,19 +390,5 @@ class TestReadEBAS(object):
             assert isinstance(data, UngriddedData)
 
 if __name__ == '__main__':
-    import os
     import sys
     pytest.main(sys.argv)
-# =============================================================================
-#
-#     reader = ReadEbas('EBASSubset')
-#
-#     files = reader.get_file_list(['sc550aer'])
-#
-#     testfile = 'US0013R.20110101000000.20181031145000.nephelometer.aerosol_light_scattering_coefficient.aerosol.3mo.1h.US11L_Optec-NGN-2.US11L_IMPROVE_nephelometer_2004.lev2.nas'
-#
-#     for file in files:
-#         if testfile in file:
-#             print(42)
-#             break
-# =============================================================================
