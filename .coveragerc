@@ -1,0 +1,8 @@
+[run]
+omit =
+  pyaerocom/conftest.py
+  pyaerocom/test/*
+  pyaerocom/io/test/*
+  pyaerocom/web/test/*
+  pyaerocom/plot/test/*
+  pyaerocom/scripts/test/*

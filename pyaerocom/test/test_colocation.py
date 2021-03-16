@@ -119,6 +119,7 @@ def test_colocate_gridded_gridded_same_new_var(data_tm5):
 @testdata_unavail
 def test_colocate_gridded_gridded_same(data_tm5):
     coldata = colocate_gridded_gridded(data_tm5, data_tm5)
+
     assert isinstance(coldata, ColocatedData)
     stats = coldata.calc_statistics()
     # check mean value
