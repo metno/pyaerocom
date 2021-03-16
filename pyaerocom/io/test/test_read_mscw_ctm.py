@@ -189,6 +189,7 @@ def test_read_emep_has_var(reader, var_name, value, raises):
 def test_read_emep_filepath(reader, value, raises):
     with raises:
         reader.filepath = value
+        assert os.path.samefile(reader.filepath, value)
 
 if __name__ == '__main__':
     import sys
