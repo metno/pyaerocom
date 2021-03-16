@@ -177,7 +177,8 @@ def get_all_config_files_evaluation_iface(config_dir):
     for file in glob.glob('{}/*.json'.format(config_dir)):
         spl = os.path.basename(file).split('_')
         if not len(spl) == 3 or not spl[0] =='cfg':
-            raise NameError('Invalid config file name ', file)
+            const.logger.warning('Invalid config file name ', file)
+            continue
         proj, exp = spl[1], spl[2].split('.')[0]
         if not proj in results:
             results[proj] = {}
@@ -186,6 +187,9 @@ def get_all_config_files_evaluation_iface(config_dir):
 
 def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     """Reorder experiment order in evaluation interface
+
+    Puts experiment list into order as specified by `exp_order`, all
+    remaining experiments are sorted alphabetically.
 
     Parameters
     ----------
@@ -197,8 +201,7 @@ def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     """
     current = read_json(menu_file)
     if exp_order is None:
-        # keep the way it is
-        exp_order = list(current.keys())
+        exp_order = []
     elif isinstance(exp_order, str):
         exp_order = [exp_order]
     if not isinstance(exp_order, list):
@@ -492,9 +495,34 @@ def _write_stationdata_json(ts_data, out_dir):
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
 
-def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
-                           model_name, model_var):
-    fp = heatmap_file
+def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
+    """
+    Minor modification of method _write_stationdata_json to allow a further
+    level of sub-directories
+
+    Parameters
+    ----------
+    ts_data : dict
+        A dictionary containing all processed time series data.
+    out_dirs : list
+        list of file paths for writing data to
+
+    Raises
+    ------
+    Exception
+        Raised if opening json file fails
+
+    Returns
+    -------
+    None.
+
+    """
+    filename = get_stationfile_name(ts_data['station_name'],
+                                    ts_data['web_iface_name'],
+                                    ts_data['obs_var'],
+                                    ts_data['vert_code'])
+
+    fp = os.path.join(out_dirs['ts'],'dw', filename)
     if os.path.exists(fp):
         try:
             with open(fp, 'r') as f:
@@ -502,6 +530,18 @@ def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
         except Exception as e:
             raise Exception('Fatal: could not open existing json file: {}. '
                             'Reason: {}'.format(fp, repr(e)))
+    else:
+        current = {}
+    current[ts_data['model_name']] = ts_data
+    with open(fp, 'w') as f:
+        simplejson.dump(current, f, ignore_nan=True)
+
+def _add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
+                            model_name, model_var):
+    fp = heatmap_file
+    if os.path.exists(fp):
+        with open(fp, 'r') as f:
+            current = simplejson.load(f)
     else:
         current = {}
     if not obs_var in current:
@@ -529,14 +569,6 @@ def _init_stats_dummy():
 
 def _check_flatten_latlon_dims(coldata):
     if not 'station_name' in coldata.data.coords:
-        if not coldata.data.ndim == 4:
-            raise DataDimensionError('Invalid number of dimensions. '
-                                     'Need 4, got: {}'
-                                     .format(coldata.data.dims))
-        elif not 'latitude' in coldata.data.dims and 'longitude' in coldata.data.dims:
-            raise DataDimensionError('Need latitude and longitude '
-                                     'dimension. Got {}'
-                                     .format(coldata.data.dims))
         coldata.data = coldata.data.stack(station_name=('latitude',
                                                         'longitude'))
     return coldata
@@ -1228,7 +1260,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
             hm_file = os.path.join(out_dirs['hm'], fname)
 
-            add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
+            _add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
                                     vert_code, model_name, model_var)
 
         const.print_log.info('Processing regional timeseries for all regions')
