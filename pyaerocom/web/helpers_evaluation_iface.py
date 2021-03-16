@@ -464,7 +464,7 @@ def get_json_mapname(obs_name, obs_var, model_name, model_var,
     return ('OBS-{}:{}_{}_MOD-{}:{}.json'
             .format(obs_name, obs_var, vert_code, model_name, model_var))
 
-def _write_stationdata_json(ts_data, out_dirs):
+def _write_stationdata_json(ts_data, out_dir):
     """
     This method writes time series data given in a dictionary to .json files
 
@@ -472,8 +472,8 @@ def _write_stationdata_json(ts_data, out_dirs):
     ----------
     ts_data : dict
         A dictionary containing all processed time series data.
-    out_dirs : list?
-        list of file paths for writing data to
+    out_dir : str or similar
+        output directory
 
     Returns
     -------
@@ -485,7 +485,7 @@ def _write_stationdata_json(ts_data, out_dirs):
                                     ts_data['obs_var'],
                                     ts_data['vert_code'])
 
-    fp = os.path.join(out_dirs['ts'], filename)
+    fp = os.path.join(out_dir, filename)
     if os.path.exists(fp):
         with open(fp, 'r') as f:
             current = simplejson.load(f)
@@ -1272,7 +1272,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
         for ts_data in ts_objs_regional:
             #writes json file
-            _write_stationdata_json(ts_data, out_dirs)
+            _write_stationdata_json(ts_data, out_dirs['ts'])
 
         const.print_log.info('Processing individual site timeseries data')
         (map_data,
@@ -1297,20 +1297,21 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
         for ts_data in ts_objs:
             #writes json file
-            _write_stationdata_json(ts_data, out_dirs)
+            _write_stationdata_json(ts_data, out_dirs['ts'])
 
     if coldata.ts_type == 'hourly':
         const.print_log.info('Processing diurnal profiles')
         (ts_objs_weekly,
          ts_objs_weekly_reg) = _process_sites_weekly_ts(coldata, regions_how,
                                                         regnames, meta_glob)
+        outdir = os.path.join(out_dirs['ts'],'dw')
         for ts_data_weekly in ts_objs_weekly:
             #writes json file
-            _write_diurnal_week_stationdata_json(ts_data_weekly, out_dirs)
+            _write_stationdata_json(ts_data_weekly, outdir)
         if ts_objs_weekly_reg != None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 #writes json file
-                _write_diurnal_week_stationdata_json(ts_data_weekly_reg, out_dirs)
+                _write_stationdata_json(ts_data_weekly_reg, outdir)
 
     const.print_log.info(
         f'Finished computing json files for {model_name} ({model_var}) vs. '
