@@ -1,39 +1,17 @@
-################################################################
-# config.py
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+########################################################################
 #
-# configuration class for the aerocom python tools
+# This python module is part of the pyaerocom software
 #
-# this file is part of the aerocom_pt package
+# License: GNU General Public License v3.0
+# More information: https://github.com/metno/pyaerocom
+# Documentation: https://pyaerocom.readthedocs.io/en/latest/
+# Copyright (C) 2017 met.no
+# Contact information: Norwegian Meteorological Institute (MET Norway)
 #
-#################################################################
-# Created 20171106 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
+########################################################################
 
-#Copyright (C) 2017 met.no
-#Contact information:
-#Norwegian Meteorological Institute
-#Box 43 Blindern
-#0313 OSLO
-#NORWAY
-#E-mail: jan.griesfeller@met.no
-#This program is free software; you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation; either version 3 of the License, or
-#(at your option) any later version.
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#GNU General Public License for more details.
-#You should have received a copy of the GNU General Public License
-#along with this program; if not, write to the Free Software
-#Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#MA 02110-1301, USA
-
-"""
-Provides access to pyaerocom specific configuration values
-"""
 import numpy as np
 import os
 import getpass
@@ -49,13 +27,20 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
 
 from pyaerocom.exceptions import (DeprecationError, DataSourceError,
                                   DataIdError)
+from pyaerocom.region_defs import (REGION_DEFS,
+                                   OLD_AEROCOM_REGIONS,
+                                   HTAP_REGIONS)
+
 from pyaerocom.variable import VarCollection
 from configparser import ConfigParser
 
 class Config(object):
     """Class containing relevant paths for read and write routines
 
-    TODO: write docstring
+    A loaded instance of this class is created on import of pyaerocom and
+    can be accessed via `pyaerocom.const`.
+
+    TODO: provide more information
     """
 
     # NAMES
@@ -99,6 +84,12 @@ class Config(object):
 
     #: EEA nmea
     EEA_NAME = 'EEAAQeRep'
+
+    #: EEA.NRT name
+    EEA_NRT_NAME = 'EEAAQeRep.NRT'
+
+    #: EEAV2 name
+    EEA_V2_NAME = 'EEAAQeRep.v2'
 
     #: Earlinet access name;
     EARLINET_NAME = 'EARLINET'
@@ -173,16 +164,12 @@ class Config(object):
     SENTINEL5P_NAME = 'Sentinel5P'
     AEOLUS_NAME = 'AeolusL2A'
 
-    OLD_AEROCOM_REGIONS = ['WORLD', 'ASIA', 'AUSTRALIA', 'CHINA',
-                           'EUROPE', 'INDIA', 'NAFRICA', 'SAFRICA', 'SAMERICA',
-                           'NAMERICA']
+    OLD_AEROCOM_REGIONS = OLD_AEROCOM_REGIONS
 
     URL_HTAP_MASKS = 'https://pyaerocom.met.no/pyaerocom-suppl/htap_masks/'
 
-    HTAP_REGIONS = ['PAN', 'EAS', 'NAF', 'MDE', 'LAND',
-                    'SAS', 'SPO', 'OCN',  'SEA', 'RBU',
-                    'EEUROPE', 'NAM', 'WEUROPE', 'SAF',
-                    'USA', 'SAM', 'EUR', 'NPO', 'MCA']
+
+    HTAP_REGIONS = HTAP_REGIONS
 
     RM_CACHE_OUTDATED = True
 

@@ -5,21 +5,19 @@ General helper methods for the pyaerocom library.
 """
 import numpy as np
 import re
-
-from pyaerocom import const
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    TS_TYPE_TO_NUMPY_FREQ,
                                    TS_TYPE_TO_SI,
-                                   PANDAS_RESAMPLE_OFFSETS)
+                                   TS_TYPES)
+
 from pyaerocom.exceptions import TemporalResolutionError
 
 class TsType(object):
-    VALID = const.GRID_IO.TS_TYPES
+    VALID = TS_TYPES
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
-    RS_OFFSETS = PANDAS_RESAMPLE_OFFSETS
     TO_SI = TS_TYPE_TO_SI
 
     TS_MAX_VALS = {'hourly' : 24,
@@ -30,6 +28,8 @@ class TsType(object):
     TSTR_TO_CF = {"hourly"  :  "hours",
                   "daily"   :  "days",
                   "monthly" :  "days"}
+
+    TOL_SECS_PERCENT = 5
 
     def __init__(self, val):
         self._mulfac = 1
@@ -83,9 +83,8 @@ class TsType(object):
             try:
                 val = self._from_pandas(val)
             except TemporalResolutionError:
-                raise TemporalResolutionError('Invalid input. Need any valid '
-                                              'ts_type: {}'
-                                              .format(self.VALID))
+                raise TemporalResolutionError(f'Invalid ts_type {val}. Valid '
+                                              f'ts_types are: {self.VALID}')
         if val in self.TS_MAX_VALS and ival != 1:
             if ival > self.TS_MAX_VALS[val]:
                 raise TemporalResolutionError('Invalid input for ts_type {}{}. '
@@ -122,6 +121,27 @@ class TsType(object):
         if idx == len(self.VALID) - 1:
             raise IndexError('No lower resolution available than {}'.format(self))
         return TsType(self.VALID[idx+1])
+
+    @property
+    def num_secs(self):
+        """Number of seconds in one period
+
+        Note
+        ----
+        Be aware that for monthly frequency the number of seconds is not well
+        defined!
+        """
+        from cf_units import Unit
+        cf = self.to_si()
+        total_secs = 1 / Unit('s').convert(1, cf)
+        return total_secs
+
+    @property
+    def tol_secs(self):
+        """Tolerance in seconds for current TsType"""
+        total_secs = self.num_secs
+        frac = self.TOL_SECS_PERCENT / 100
+        return int(np.ceil(frac*total_secs))
 
     def to_timedelta64(self):
         """
@@ -185,7 +205,7 @@ class TsType(object):
         """Convert to SI conform string (e.g. used for unit conversion)"""
         base = self.base
         if not base in self.TO_SI:
-            raise ValueError(f'Cannot convert {self} to SI unit string...')
+            raise ValueError(f'Cannot convert ts_type={self} to SI unit string...')
         si = self.TO_SI[base]
         return si if self.mulfac == 1 else f'{self.mulfac}{si}'
 
@@ -212,6 +232,8 @@ class TsType(object):
         return True if (self.__eq__(other) or self.__lt__(other)) else False
 
     def __eq__(self, other):
+        if isinstance(other, str):
+            other = TsType(other)
         return other.val == self.val
 
     def __call__(self):

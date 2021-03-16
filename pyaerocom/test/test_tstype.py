@@ -11,6 +11,10 @@ import numpy as np
 from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.tstype import TsType
 
+def test_VALID():
+    assert TsType.VALID == ['minutely', 'hourly', 'daily', 'weekly', 'monthly',
+                            'yearly', 'native']
+
 def test_basic_operators():
     monthly = TsType('monthly')
     yearly = TsType('yearly')
@@ -51,7 +55,7 @@ def test_to_pandas_freq():
     ('daily', 'd', does_not_raise_exception()),
     ('minutely', 'min', does_not_raise_exception()),
     ('weekly', 'week', does_not_raise_exception()),
-    ('monthly', None, pytest.raises(ValueError)),
+    ('monthly', 'month',does_not_raise_exception()),
     ('4weekly', '4week', does_not_raise_exception()),
     ])
 def test_to_si(ts_type, value, raises):
@@ -89,6 +93,34 @@ def test_next_lower():
 def test_to_timedelta64(ts_type, ref_time_str, np_dt_str, output_str):
     tref = np.datetime64(ref_time_str, np_dt_str)
     assert str(tref + TsType(ts_type).to_timedelta64()) == output_str
+
+
+def test_TOL_SECS_PERCENT():
+    assert TsType.TOL_SECS_PERCENT == 5
+
+@pytest.mark.parametrize('ts_type,should_be', [
+    ('minutely', 60),
+    ('3minutely', 180),
+    ('4minutely', 240),
+    ('daily', 86400),
+    ('weekly', 86400*7),
+    ('monthly', 2629743.831225) # not sure how cf_units calculates that
+    ])
+def test_num_secs(ts_type, should_be):
+    val = TsType(ts_type).num_secs
+    assert val == should_be
+
+@pytest.mark.parametrize('ts_type,should_be', [
+    ('minutely', 3),
+    ('3minutely', 9),
+    ('4minutely', 12),
+    ('daily', 4320),
+    ('weekly', 30240),
+    ('monthly', 131488)
+    ])
+def test_tol_secs(ts_type, should_be):
+    val = TsType(ts_type).tol_secs
+    assert val == should_be
 
 if __name__=="__main__":
 

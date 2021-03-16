@@ -7,8 +7,6 @@ import numpy as np
 import os
 from concurrent.futures import ThreadPoolExecutor
 import multiprocessing as mp
-from collections import OrderedDict
-
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions
@@ -90,7 +88,7 @@ def check_write_access(path, timeout=0.1):
             return False
     return run_timeout(path, timeout)
 
-class BrowseDict(OrderedDict):
+class BrowseDict(dict):
     """Dictionary with get / set attribute methods
 
     Example
@@ -197,13 +195,7 @@ def merge_dicts(dict1, dict2, discard_failing=True):
             else:
                 raise
     new['merge_failed'] = merge_failed
-# =============================================================================
-#     for k, v in kwargs.items():
-#         if k in new and v != new[k]:
-#             raise KeyError('Cannot add key {} since it already existed in '
-#                            'input dictionaries'.format(k))
-#         new[k] = v
-# =============================================================================
+
     return new
 
 def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):

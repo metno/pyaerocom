@@ -70,7 +70,7 @@ def test_TimeResampler_fun(data, expectation):
     (TsType('3hourly'), TsType('monthly'), min_num_obs_default, dict(monthly={'daily' : 'max'}),
      [('daily', 2, 'mean'), ('monthly', 7, 'max')]),
     (TsType('2daily'), TsType('weekly'), min_num_obs_custom, 'max',
-     [('weekly', 3, 'max')])
+     [('weekly', 2, 'max')])
     ])
 def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
                                   how, expected):

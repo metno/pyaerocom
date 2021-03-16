@@ -538,11 +538,6 @@ def get_lowest_resolution(ts_type, *ts_types):
     from pyaerocom.tstype import TsType
     lowest = TsType(ts_type)
     for freq in ts_types:
-# =============================================================================
-#         if not freq in all_ts_types:
-#             raise ValueError('Invalid input, only valid ts_type codes are '
-#                              'supported: {}'.format(all_ts_types))
-# =============================================================================
         _temp = TsType(freq)
         if _temp < lowest:
             lowest = _temp
@@ -865,11 +860,11 @@ def calc_climatology(s, start, stop, min_count=None,
 
     Parameters
     ----------
-    s : Series
+    s : pandas.Series
         time series data
-    start
+    start : numpy.datetime64 or similar
         start time of data used to compute climatology
-    stop
+    stop : numpy.datetime64 or similar
         start time of data used to compute climatology
     mincount_month : int, optional
         minimum number of observations required per aggregated month in

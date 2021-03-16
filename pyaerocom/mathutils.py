@@ -251,36 +251,31 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
         result['R_spearman'] = spearmanr(data, ref_data)[0]
         result['R_kendall'] = kendalltau(data, ref_data)[0]
 
-    # NMB, MNMB and FGE are constrained to positive values, thus negative
-    # values need to be removed
-    neg_ref = ref_data <= 0
-    neg_data = data <= 0
+    sum_diff = sum(difference, weights=weights)
+    sum_refdata = sum(ref_data, weights=weights)
 
-    use_indices = ~(neg_data + neg_ref)
-
-    diff_pos = difference[use_indices]
-    ref_data_pos = ref_data[use_indices]
-    data_pos = data[use_indices]
-    if weights is not None:
-        weights = weights[use_indices]
-
-    num_points_pos = len(data_pos)
-
-    if num_points_pos == 0:
-        result['nmb'] = np.nan
-        result['mnmb'] = np.nan
-        result['fge'] = np.nan
+    if sum_refdata == 0:
+        nmb = np.nan
     else:
-        result['nmb'] = (sum(diff_pos, weights=weights) /
-                         sum(ref_data_pos, weights=weights)) #*100.
+        nmb = sum_diff / sum_refdata
 
-        tmp = diff_pos / (data_pos + ref_data_pos)
+    sum_data_refdata = (data + ref_data)
+    # for MNMB, and FGE: don't divide by 0 ...
+    mask = ~np.isnan(sum_data_refdata)
+    num_points = mask.sum()
+    if num_points == 0:
+        mnmb = np.nan
+        fge = np.nan
+    else:
+        tmp = difference[mask] / sum_data_refdata[mask]
+        if weights is not None:
+            weights = weights[mask]
+        mnmb = 2. / num_points * sum(tmp, weights=weights)
+        fge = 2. / num_points * sum(np.abs(tmp), weights=weights)
 
-        result['mnmb'] = 2. / num_points_pos * sum(tmp, weights=weights)# * 100.
-        result['fge'] = 2. / num_points_pos * sum(np.abs(tmp), weights=weights) #* 100.
-
-    result['num_neg_data'] = np.sum(neg_data)
-    result['num_neg_refdata'] = np.sum(neg_ref)
+    result['nmb'] = nmb
+    result['mnmb'] = mnmb
+    result['fge'] = fge
 
     return result
 
@@ -714,6 +709,106 @@ def _compute_dry_helper(data, data_colname, rh_colname,
 
     return vals, rh_mean
 
+def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
+
+    vars_needed = (concprcp_var, 'pr')
+
+    if not all(x in data.data_flagged for x in vars_needed):
+        raise ValueError(f'Need flags for {vars_needed} to compute wet deposition')
+    from pyaerocom import TsType
+    from pyaerocom.units_helpers import get_unit_conversion_fac, RATES_FREQ_DEFAULT
+
+    tst = TsType(data.get_var_ts_type(concprcp_var))
+
+    ival = tst.to_si()
+
+    conc_unit = data.get_unit(concprcp_var)
+    conc_data = data[concprcp_var]
+    if not conc_unit.endswith('m-3'):
+        raise NotImplementedError('Can only handle concprcp unit ending with m-3')
+    concprcp_flags = data.data_flagged[concprcp_var]
+
+    pr_unit = data.get_unit('pr')
+    if not pr_unit == 'm':
+        data.convert_unit('pr', 'm')
+    pr_data = data['pr']
+    pr_flags = data.data_flagged['pr']
+
+    pr_zero = pr_data == 0
+    if pr_zero.sum() > 0:
+        conc_data[pr_zero] = 0
+        concprcp_flags[pr_zero] = False
+        pr_flags[pr_zero] = False
+    wdep = conc_data * pr_data
+    wdep_units = conc_unit.replace('m-3', 'm-2')
+
+    if not ival == RATES_FREQ_DEFAULT:
+        fac = get_unit_conversion_fac(ival, RATES_FREQ_DEFAULT)
+        wdep /= fac
+    # in units of ts_type, that is, e.g. kg m-2 d
+    freq_str = f' {RATES_FREQ_DEFAULT}-1'
+    wdep_units += freq_str
+    if not wdep_var in data.var_info:
+        data.var_info[wdep_var] = {}
+    data.var_info[wdep_var]['units'] = wdep_units
+
+    # set flags for wetso4
+    wdep_flags = np.zeros(len(wdep)).astype(bool)
+    wdep_flags[concprcp_flags] = True
+    wdep_flags[pr_flags] = True
+    data.data_flagged[wdep_var] = wdep_flags
+
+    return wdep
+
+def compute_wetoxs_from_concprcpoxs(data):
+    """Compute wdep from conc in precip and precip data
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    StationData
+        modified data object containing wdep data
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxs', 'concprcpoxs')
+
+def compute_wetoxn_from_concprcpoxn(data):
+    """Compute wdep from conc in precip and precip data
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    StationData
+        modified data object containing wdep data
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxn', 'concprcpoxn')
+
+def compute_wetrdn_from_concprcprdn(data):
+    """Compute wdep from conc in precip and precip data
+
+    Parameters
+    ----------
+    StationData
+        data object containing concprcp and precip data
+
+    Returns
+    -------
+    StationData
+        modified data object containing wdep data
+
+    """
+    return _compute_wdep_from_concprcp_helper(data, 'wetrdn', 'concprcprdn')
+
+
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
                   to_unit=None):
     """
@@ -751,10 +846,7 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
     Rspecific = 287.058 # J kg-1 K-1
 
     conversion_fac = 1/cf_units.Unit('mol mol-1').convert(1, vmr_unit)
-# =============================================================================
-#     if conversion_fac != 1:
-#         data *= conversion_fac #/ conversion_fac
-# =============================================================================
+
     airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
     mulfac = mmol_var / mmol_air * airdensity # kg m-3
     conc = data * mulfac # kg m-3
@@ -802,15 +894,12 @@ def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None,
     Rspecific = 287.058 # J kg-1 K-1
 
     conversion_fac = 1/cf_units.Unit('kg m-3').convert(1, conc_unit)
-# =============================================================================
-#     if conversion_fac != 1:
-#         data *= conversion_fac #/ conversion_fac
-# =============================================================================
+
     airdensity = p_pascal/(Rspecific * T_kelvin) # kg m-3
     mulfac = mmol_var / mmol_air * airdensity # kg m-3
     vmr = data / mulfac # unitless
     if to_unit is not None:
-        conversion_fac *= cf_units.Unit('kg m-3').convert(1, to_unit)
+        conversion_fac *= cf_units.Unit('mole mole-1').convert(1, to_unit)
     if not np.isclose(conversion_fac, 1, rtol=1e-7):
         vmr *= conversion_fac
     return vmr

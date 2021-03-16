@@ -12,8 +12,13 @@ from fnmatch import fnmatch
 import numpy as np
 import os, glob
 import pandas as pd
-from pyaerocom import const, __version__, Region
+from scipy.stats import kendalltau
+from scipy.stats.mstats import theilslopes
+import simplejson
+
+from pyaerocom import const, __version__
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
+from pyaerocom.region import Region
 from pyaerocom.helpers import isnumeric
 from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _compute_trend_error,
@@ -29,9 +34,7 @@ from pyaerocom.web.helpers_trends_iface import (update_menu_trends_iface,
                                                 get_all_config_files_trends_iface)
 
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
-from scipy.stats import kendalltau
-from scipy.stats.mstats import theilslopes
-import simplejson
+
 
 class TrendsEvaluation(object):
     """High-level analysis class to compute json files for trends interface
@@ -115,6 +118,8 @@ class TrendsEvaluation(object):
 
     #: mapping of metadata names between pyaerocom (keys) and json trends files
     #: (values)
+    #: ToDo: this should not be needed and the web tools should use the same
+    #: conventions as pyaerocom
     KEYMAP = od(var_name        = 'var_name',
                 station_name    = 'station',
                 latitude        = 'lat',
@@ -123,6 +128,7 @@ class TrendsEvaluation(object):
                 data_id         = 'data_id',
                 dataset_name    = 'dataset',
                 data_product    = 'product',
+                framework       = 'framework',
                 data_version    = 'data_version',
                 data_level      = 'data_level',
                 website         = 'website',
@@ -911,7 +917,7 @@ class TrendsEvaluation(object):
             regs[reg_name] = Region(reg_id)
         for reg_name, info in self._add_regions.items():
             try:
-                regs[reg_name] = Region(name=reg_name,
+                regs[reg_name] = Region(reg_name,
                                         lat_range=info['lat_range'],
                                         lon_range=info['lon_range'])
             except Exception:
@@ -1110,20 +1116,16 @@ class TrendsEvaluation(object):
         try:
             freq = TsType(tst)
         except TemporalResolutionError:
-            if tst == 'native': # e.g. EARLINET
-                freq = TsType('daily')
-            else:
-                raise TemporalResolutionError(
-                    f'Skipping processing of {station.station_name} since '
-                    'temporal '
-                    f'resolution could not be inferred')
+            raise TemporalResolutionError(
+                f'Skipping processing of {station.station_name} trend for var '
+                f'{var_name} since temporal resolution {tst} is invalid')
         if vardata['wavelength'] is None:
             try:
                 wvl = '{} nm'.format(const.VARS[var_name].wavelength_nm)
                 vardata['wavelength'] = wvl
             except Exception:
                 pass
-        if freq >= TsType('daily'):
+        if tst=='native' or freq>=TsType('daily'):
             to_freq = 'daily'
             freq_name = 'dobs'
         elif freq >= TsType('monthly'):
