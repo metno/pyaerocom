@@ -472,7 +472,7 @@ def _write_stationdata_json(ts_data, out_dir):
     ----------
     ts_data : dict
         A dictionary containing all processed time series data.
-    out_dir : str or aimilar
+    out_dir : str or similar
         output directory
 
     Returns
