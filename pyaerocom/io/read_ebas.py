@@ -569,7 +569,7 @@ class ReadEbas(ReadUngriddedBase):
 
         check_matrix = False if ebas_var_info['matrix'] is None else True
         check_stats = False if ebas_var_info['statistics'] is None else True
-
+        comps = []
         for colnum, col_info in enumerate(data.var_defs):
             if col_info.name in ebas_var_info.component: #candidate (name match)
                 ok = True
@@ -595,9 +595,18 @@ class ReadEbas(ReadUngriddedBase):
                         break
                 if ok:
                     col_matches.append(colnum)
+                    if not col_info.name in comps:
+                        comps.append(col_info.name)
         if len(col_matches) == 0:
             raise NotInFileError("Variable {} could not be found in "
                                  "file".format(ebas_var_info.var_name))
+        elif len(comps) > 1 and len(ebas_var_info.component) > 1:
+            for prefcomp in ebas_var_info.component:
+                if not prefcomp in comps:
+                    continue
+                col_matches = [colnum for colnum in col_matches if prefcomp == data.var_defs[colnum].name]
+                break
+
         return col_matches
 
     def _find_best_data_column(self, cols, ebas_var_info, file,
@@ -1570,20 +1579,6 @@ if __name__=="__main__":
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
 
-    files = reader.get_file_list('sc550aer')
-
-    testfile = 'US0013R.20110101000000.20181031145000.nephelometer.aerosol_light_scattering_coefficient.aerosol.3mo.1h.US11L_Optec-NGN-2.US11L_IMPROVE_nephelometer_2004.lev2.nas'
-
-    for file in files:
-        if testfile in file:
-            print(42)
-            break
-# =============================================================================
-#     reader.read_file('/home/jonasg/MyPyaerocom/data/obsdata/EBASMultiColumn/data/data/PL0005R.19950101060000.20181210133000.filter_1pack...3mo.1d.PL02L_f1p_5..lev2.nas',
-#                      ['concno3'])
-# =============================================================================
-# =============================================================================
-#     data = reader.read(vars_to_retrieve=['concoc'],
-#                        first_file=0,
-#                        last_file=None)
-# =============================================================================
+    data = reader.read(vars_to_retrieve=['concso4'],
+                       first_file=0,
+                       last_file=1)

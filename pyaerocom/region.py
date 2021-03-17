@@ -50,8 +50,13 @@ class Region(BrowseDict):
         if region_id is None:
             region_id = 'WORLD'
 
+        if region_id in REGION_NAMES:
+            name = REGION_NAMES[region_id]
+        else:
+            name = region_id
+
         self.region_id = region_id
-        self.name = region_id
+        self.name = name
 
         self.lon_range = None
         self.lat_range = None
@@ -67,8 +72,7 @@ class Region(BrowseDict):
         if region_id in REGION_DEFS:
             self.import_default(region_id)
 
-        if region_id in REGION_NAMES:
-            self.name = REGION_NAMES[region_id]
+
 
         self.update(**kwargs)
 
