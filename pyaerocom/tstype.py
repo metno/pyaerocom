@@ -5,6 +5,7 @@ General helper methods for the pyaerocom library.
 """
 import numpy as np
 import re
+from pyaerocom import const
 from pyaerocom.time_config import (PANDAS_FREQ_TO_TS_TYPE,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    TS_TYPE_TO_NUMPY_FREQ,
@@ -15,15 +16,17 @@ from pyaerocom.exceptions import TemporalResolutionError
 
 class TsType(object):
     VALID = TS_TYPES
+    VALID_ITER = VALID[:-1]
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
     TO_PANDAS = TS_TYPE_TO_PANDAS_FREQ
     TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
     TO_SI = TS_TYPE_TO_SI
 
-    TS_MAX_VALS = {'hourly' : 24,
-                   'daily'  : 7,
-                   'weekly' : 4,
-                   'monthly': 12}
+    TS_MAX_VALS = {'minutely' : 180, # up to 3hourly
+                   'hourly' : 168, #up to weekly
+                   'daily'  : 180, # up to 6 monthly
+                   'weekly' : 104, # up to ~2yearly
+                   'monthly': 120} # up to 10yearly
 
     TSTR_TO_CF = {"hourly"  :  "hours",
                   "daily"   :  "days",
@@ -45,19 +48,19 @@ class TsType(object):
     @mulfac.setter
     def mulfac(self, value):
         try:
-            self._mulfac = int(value)
+            value = int(value)
         except Exception:
             raise ValueError('mulfac needs to be int or convertible to int')
+        if self.base in self.TS_MAX_VALS and value > self.TS_MAX_VALS[self.base]:
+            raise ValueError(
+                f'Multiplication factor exceeds maximum allowed, which is '
+                f'{self.TS_MAX_VALS[self.base]}')
+        self._mulfac = value
 
     @property
     def base(self):
         """Base string (without multiplication factor, cf :attr:`mulfac`)"""
         return self._val
-
-    @property
-    def name(self):
-        """Name of ts_type (Wrapper for :attr:`val`)"""
-        return self.val
 
     @property
     def val(self):
@@ -115,14 +118,6 @@ class TsType(object):
         return self.TSTR_TO_CF[self.base]
 
     @property
-    def next_lower(self):
-        """Next lower resolution code"""
-        idx = self.VALID.index(self._val)
-        if idx == len(self.VALID) - 1:
-            raise IndexError('No lower resolution available than {}'.format(self))
-        return TsType(self.VALID[idx+1])
-
-    @property
     def num_secs(self):
         """Number of seconds in one period
 
@@ -163,18 +158,18 @@ class TsType(object):
         if self.mulfac > 1:
             return TsType(self._val)
 
-        idx = self.VALID.index(self._val)
+        idx = self.VALID_ITER.index(self._val)
         if idx == 0:
-            raise IndexError('No lower resolution available than {}'.format(self))
-        return TsType(self.VALID[idx-1])
+            raise IndexError('No higher resolution available than {}'.format(self))
+        return TsType(self.VALID_ITER[idx-1])
 
-    @staticmethod
-    def infer(self, datetime_index):
-        """Infer resolution based on input datateime_index
-
-        Uses :func:`pandas.infer_freq` to infer frequency
-        """
-        raise NotImplementedError
+    @property
+    def next_lower(self):
+        """Next lower resolution code"""
+        idx = self.VALID_ITER.index(self._val)
+        if idx == len(self.VALID_ITER) - 1:
+            raise IndexError(f'No lower resolution available than {self}')
+        return TsType(self.VALID_ITER[idx+1])
 
     @staticmethod
     def valid(val):
@@ -209,6 +204,61 @@ class TsType(object):
         si = self.TO_SI[base]
         return si if self.mulfac == 1 else f'{self.mulfac}{si}'
 
+    def check_match_total_seconds(self, total_seconds):
+        try:
+            numsecs = self.num_secs
+            tolsecs = self.tol_secs
+        except ValueError: #native / undefined
+            return False
+        low, high = numsecs-tolsecs, numsecs+tolsecs
+        if np.logical_and(total_seconds >= low,
+                          total_seconds <= high):
+            return True
+        return False
+
+    @staticmethod
+    def _infer_mulfac_total_seconds(base, total_seconds):
+        if base in TsType.TS_MAX_VALS:
+            maxnum = TsType.TS_MAX_VALS[base]
+        else:
+            maxnum = 2
+        for mulfac in range(1, maxnum):
+            tstype = TsType(f'{mulfac}{base}')
+            if tstype.check_match_total_seconds(total_seconds):
+                return tstype
+        raise TemporalResolutionError(
+            f'Period {total_seconds}s could not be associated with any '
+            f'allowed multiplication factor of base frequency {base}')
+
+
+    @staticmethod
+    def from_total_seconds(total_seconds):
+
+        candidates = []
+        candidates_diff = []
+        for tst in TsType.VALID_ITER:
+            tstype = TsType(tst)
+            if tstype.check_match_total_seconds(total_seconds):
+                return tstype
+            diff = total_seconds - tstype.num_secs
+            if diff > 0:
+                candidates.append(tst)
+                candidates_diff.append(diff)
+        if len(candidates) > 0:
+            # sort by the candidate that has the lowest dt
+            candidates_sorted = [c for _,c in sorted(zip(candidates_diff, candidates))]
+            for base_tst in candidates_sorted:
+                try:
+                    return TsType._infer_mulfac_total_seconds(base_tst, total_seconds)
+                except TemporalResolutionError as e:
+                    const.logger.info(e)
+                    continue
+
+        raise TemporalResolutionError(
+            f'failed to infer ts_type based on input dt={total_seconds} s'
+            )
+
+
 
     def _from_pandas(self, val):
         if not val in self.FROM_PANDAS:
@@ -221,8 +271,8 @@ class TsType(object):
         if self.val == other.val:
             return False
 
-        idx_this = self.VALID.index(self._val)
-        idx_other = self.VALID.index(other._val)
+        idx_this = self.VALID_ITER.index(self._val)
+        idx_other = self.VALID_ITER.index(other._val)
         if not idx_this == idx_other: #they have a different freq string
             return idx_this > idx_other
         #they have the same frequency string but different _mulfac attributes
@@ -286,6 +336,8 @@ if __name__=="__main__":
     print(TsType('16hourly').datetime64_str)
     print(TsType('16hourly').timedelta64_str)
     print(TsType('16hourly').cf_base_unit)
+
+    print(TsType.from_total_seconds(3800))
 # =============================================================================
 #
 #     class Num(object):
