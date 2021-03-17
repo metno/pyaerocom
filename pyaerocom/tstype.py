@@ -22,7 +22,7 @@ class TsType(object):
     TO_NUMPY =  TS_TYPE_TO_NUMPY_FREQ
     TO_SI = TS_TYPE_TO_SI
 
-    TS_MAX_VALS = {'minutely' : 180, # up to 3hourly
+    TS_MAX_VALS = {'minutely' : 360, # up to 6hourly
                    'hourly' : 168, #up to weekly
                    'daily'  : 180, # up to 6 monthly
                    'weekly' : 104, # up to ~2yearly

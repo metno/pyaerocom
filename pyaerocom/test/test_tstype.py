@@ -22,7 +22,7 @@ def test_TsType_VALID_ITER():
                                    'yearly']
 
 def test_TsType_TS_MAX_VALS():
-    assert TsType.TS_MAX_VALS == {'minutely': 180,
+    assert TsType.TS_MAX_VALS == {'minutely': 360,
                                   'hourly' : 168, #up to weekly
                                   'daily'  : 180, # up to 6 monthly
                                   'weekly' : 104, # up to ~2yearly
@@ -32,7 +32,8 @@ def test_TsType_TS_MAX_VALS():
     ('daily', 10, does_not_raise_exception()),
     ('daily', '10', does_not_raise_exception()),
     ('daily', '10.1', pytest.raises(ValueError)),
-    ('daily', 10.1, does_not_raise_exception())
+    ('daily', 10.1, does_not_raise_exception()),
+    ('daily', 200, pytest.raises(ValueError))
     ])
 def test_TsType_mulfac(base, mulfac, raises):
     tst = TsType(base)
