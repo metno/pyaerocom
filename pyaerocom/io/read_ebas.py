@@ -591,7 +591,7 @@ class ReadEbas(ReadUngriddedBase):
                 for key in self.IGNORE_COLS_CONTAIN:
                     if key in col_info:
                         ok = False
-                        const.print_log.warning(f'\nignore column {col_info}')
+                        const.logger.warning(f'\nignore column {col_info}')
                         break
                 if ok:
                     col_matches.append(colnum)
@@ -1569,4 +1569,4 @@ if __name__=="__main__":
                                   #data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
-    data = reader.read('concso4')
+    data = reader.read('concoc')
