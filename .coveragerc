@@ -6,3 +6,6 @@ omit =
   pyaerocom/web/test/*
   pyaerocom/plot/test/*
   pyaerocom/scripts/test/*
+  pyaerocom/web/helpers_trends_iface.py
+  pyaerocom/web/trends_evaluation.py
+  pyaerocom/web/cli/main_trends_evaluation.py
