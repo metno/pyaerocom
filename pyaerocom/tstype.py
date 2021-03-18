@@ -223,6 +223,19 @@ class TsType(object):
         return si if self.mulfac == 1 else f'{self.mulfac}{si}'
 
     def check_match_total_seconds(self, total_seconds):
+        """
+        Check if this object matches with input interval length in seconds
+
+        Parameters
+        ----------
+        total_seconds : int or float
+            interval length in units of seconds (e.g. 86400 for daily)
+
+        Returns
+        -------
+        bool
+
+        """
         try:
             numsecs = self.num_secs
             tolsecs = self.tol_secs
@@ -234,23 +247,47 @@ class TsType(object):
             return True
         return False
 
-
     @staticmethod
-    def _infer_mulfac_total_seconds(base, total_seconds):
+    def _try_infer_from_total_seconds(base, total_seconds):
+        """
+        Infer multiplication factor required to match input interval length
+
+        Not to be used directly, is used in :func:`from_total_seconds`.
+
+        Parameters
+        ----------
+        base : str
+            base frequency
+        total_seconds : int or float
+            interval length
+
+        Raises
+        ------
+        TemporalResolutionError
+            if TsType cannot be inferred
+
+        Returns
+        -------
+        TsType
+            inferred frequency
+
+        """
+
         if base in TsType.TS_MAX_VALS:
             maxnum = TsType.TS_MAX_VALS[base]
         else:
             maxnum = 2
         candidates = []
         dts = []
+        tstype = TsType(base)
         for mulfac in range(1, maxnum):
-            tstype = TsType(f'{mulfac}{base}')
+            tstype.mulfac = mulfac
             if tstype.check_match_total_seconds(total_seconds):
                 dt = total_seconds - tstype.num_secs
                 dts.append(dt)
-                candidates.append(tstype)
-                if dt < 0: #current candidate has larger number of seconds than input
-                    return candidates[np.argmin(np.abs(dts))]
+                candidates.append(TsType(f'{mulfac}{base}'))
+                if dt == 0 or dt < 0: #current candidate has larger number of seconds than input
+                    break
 
         if len(candidates) > 0:
             return candidates[np.argmin(np.abs(dts))]
@@ -262,7 +299,24 @@ class TsType(object):
 
     @staticmethod
     def from_total_seconds(total_seconds):
+        """
+        Try to infer TsType based on interval length
 
+        Parameters
+        ----------
+        total_seconds : int or float
+            total number of seconds
+
+        Raises
+        ------
+        TemporalResolutionError
+            If no TsType can be inferred for input number of seconds
+
+        Returns
+        -------
+        TsType
+
+        """
         candidates = []
         candidates_diff = []
         for tst in TsType.VALID_ITER:
@@ -278,7 +332,8 @@ class TsType(object):
             candidates_sorted = [c for _,c in sorted(zip(candidates_diff, candidates))]
             for base_tst in candidates_sorted:
                 try:
-                    return TsType._infer_mulfac_total_seconds(base_tst, total_seconds)
+                    return TsType._try_infer_from_total_seconds(base_tst,
+                                                                total_seconds)
                 except TemporalResolutionError as e:
                     const.logger.info(e)
                     continue

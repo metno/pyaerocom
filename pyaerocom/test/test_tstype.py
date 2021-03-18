@@ -21,6 +21,14 @@ def test_TsType_VALID_ITER():
     assert TsType.VALID_ITER == ['minutely', 'hourly', 'daily', 'weekly', 'monthly',
                                    'yearly']
 
+def test_TsType_TOL_SECS_PERCENT():
+    assert TsType.TOL_SECS_PERCENT == 5
+
+def test_TsType_TSTR_TO_CF():
+    assert TsType.TSTR_TO_CF == {"hourly"  :  "hours",
+                                  "daily"   :  "days",
+                                  "monthly" :  "days"}
+
 def test_TsType_TS_MAX_VALS():
     assert TsType.TS_MAX_VALS == {'minutely': 360,
                                   'hourly' : 168, #up to weekly
@@ -116,6 +124,32 @@ def test_TsType_check_match_total_seconds(ts_type, total_seconds, value, raises)
     with raises:
         assert TsType(ts_type).check_match_total_seconds(total_seconds) == value
 
+@pytest.mark.parametrize('base,total_seconds,val,raises', [
+    ('daily', 86400*2, '2daily', does_not_raise_exception()),
+    ('daily', 86400, 'daily', does_not_raise_exception()),
+    ('daily', 86000, 'daily', does_not_raise_exception()), #5% tolerance
+    ('yearly', 31556925, 'yearly', does_not_raise_exception()),
+    ('yearly', 31556925*2, '2yearly', pytest.raises(TemporalResolutionError)),
+    ])
+def test_TsType__try_infer_from_total_seconds(base,total_seconds,val,raises):
+    with raises:
+        tst = TsType._try_infer_from_total_seconds(base, total_seconds)
+        assert isinstance(tst, TsType)
+        assert str(tst) == val
+
+@pytest.mark.parametrize('total_seconds, value, raises', [
+    (86400*2, '2daily', does_not_raise_exception()),
+    (30, '2daily', pytest.raises(TemporalResolutionError)),
+    (3605, 'hourly', does_not_raise_exception()),
+    (1200, '20minutely', does_not_raise_exception()),
+    (31556925*2, '24monthly', does_not_raise_exception()),
+    (31556925*12, '12yearly', pytest.raises(TemporalResolutionError)),
+    ])
+def test_TsType_from_total_seconds(total_seconds, value, raises):
+    with raises:
+        tst = TsType.from_total_seconds(total_seconds)
+        assert tst.val == value
+
 @pytest.mark.parametrize('ts_type, value, raises', [
     ('minutely', None, pytest.raises(IndexError)),
     ('3minutely', 'minutely', does_not_raise_exception()),
@@ -135,7 +169,9 @@ def test_TsType_next_higher(ts_type, value, raises):
     ('3monthly', 'yearly',  does_not_raise_exception()),
     ('8daily', '2weekly',  does_not_raise_exception()),
     ('13monthly', '2yearly',  does_not_raise_exception()),
-    ('13monthly', '2yearly',  does_not_raise_exception())
+    ('13monthly', '2yearly',  does_not_raise_exception()),
+    ('1000yearly', '1001yearly', does_not_raise_exception()),
+    ('120monthly', None, pytest.raises(TemporalResolutionError))
 
     ])
 def test_TsType_next_lower(ts_type, value, raises):
@@ -150,10 +186,6 @@ def test_TsType_next_lower(ts_type, value, raises):
 def test_TsType_to_timedelta64(ts_type, ref_time_str, np_dt_str, output_str):
     tref = np.datetime64(ref_time_str, np_dt_str)
     assert str(tref + TsType(ts_type).to_timedelta64()) == output_str
-
-
-def test_TsType_TOL_SECS_PERCENT():
-    assert TsType.TOL_SECS_PERCENT == 5
 
 @pytest.mark.parametrize('ts_type,should_be', [
     ('minutely', 60),
@@ -179,17 +211,7 @@ def test_TsType_tol_secs(ts_type, should_be):
     val = TsType(ts_type).tol_secs
     assert val == should_be
 
-@pytest.mark.parametrize('total_seconds, value, raises', [
-    (86400*2, '2daily', does_not_raise_exception()),
-    (30, '2daily', pytest.raises(TemporalResolutionError)),
-    (3605, 'hourly', does_not_raise_exception()),
-    (1200, '20minutely', does_not_raise_exception())
 
-    ])
-def test_TsType_from_total_seconds(total_seconds, value, raises):
-    with raises:
-        tst = TsType.from_total_seconds(total_seconds)
-        assert tst.val == value
 
 @pytest.mark.parametrize('tst1,tst2,value,raises', [
     ('daily', 'daily', True, does_not_raise_exception()),
