@@ -74,30 +74,26 @@ class TsType(object):
         if val is None:
             raise TemporalResolutionError(
                 'Invalid input, please provide valid frequency string...')
-        ival=1
-        if val[-1].isdigit():
-            raise TemporalResolutionError('Invalid input for TsType: {}'
-                                          .format(val))
-        elif val[0].isdigit():
+        mulfac = 1
+        if val[0].isdigit():
             ivalstr = re.findall('\d+', val)[0]
             val = val.split(ivalstr)[-1]
-            ival = int(ivalstr)
+            mulfac = int(ivalstr)
         if not val in self.VALID:
             try:
                 val = self._from_pandas(val)
             except TemporalResolutionError:
-                raise TemporalResolutionError(f'Invalid ts_type {val}. Valid '
-                                              f'ts_types are: {self.VALID}')
-        if val in self.TS_MAX_VALS and ival != 1:
-            if ival > self.TS_MAX_VALS[val]:
-                raise TemporalResolutionError('Invalid input for ts_type {}{}. '
-                                              'Interval factor {} exceeds '
-                                              'maximum allowed for {}, which '
-                                              'is: {}'
-                                              .format(ival, val, ival, val,
-                                                      self.TS_MAX_VALS[val]))
+                raise TemporalResolutionError(
+                    f'Invalid input for ts_type {val}. Choose from {self.VALID}'
+                    )
+        if val in self.TS_MAX_VALS and mulfac != 1:
+            if mulfac > self.TS_MAX_VALS[val]:
+                raise TemporalResolutionError(
+                    f'Invalid input for ts_type {val}. Multiplication factor '
+                    f'{mulfac} exceeds maximum allowed for {val}, which is '
+                    f'{self.TS_MAX_VALS[val]}')
         self._val = val
-        self._mulfac = ival
+        self._mulfac = mulfac
 
     @property
     def datetime64_str(self):
@@ -165,11 +161,36 @@ class TsType(object):
 
     @property
     def next_lower(self):
-        """Next lower resolution code"""
+        """Next lower resolution code
+
+        This will go to the next lower base resolution, that is if current is
+        3daily, it will return weekly, however, if current exceeds next lower
+        base, it will iterate that base, that is, if current is 8daily, next
+        lower will be 2weekly (and not 9daily).
+        """
         idx = self.VALID_ITER.index(self._val)
         if idx == len(self.VALID_ITER) - 1:
-            raise IndexError(f'No lower resolution available than {self}')
-        return TsType(self.VALID_ITER[idx+1])
+            tst = TsType(self.base)
+            tst.mulfac = self.mulfac + 1
+            return tst
+        tst = TsType(self.VALID_ITER[idx+1])
+        if self.mulfac == 1 or self.num_secs < tst.num_secs:
+            return tst
+        try:
+            maxmul = self.TS_MAX_VALS[tst.base]
+        except:
+            maxmul = 10
+        numsecs = self.num_secs
+        for mulfac in range(1,maxmul+1):
+            tst.mulfac = mulfac
+            if numsecs < tst.num_secs:
+                return tst
+        raise TemporalResolutionError(
+            f'Failed to determine next lower resolution for {self}'
+            )
+
+
+
 
     @staticmethod
     def valid(val):
@@ -267,24 +288,27 @@ class TsType(object):
                                           .format(val))
         return self.FROM_PANDAS[val]
 
-    def __lt__(self, other):
-        if self.val == other.val:
-            return False
-
-        idx_this = self.VALID_ITER.index(self._val)
-        idx_other = self.VALID_ITER.index(other._val)
-        if not idx_this == idx_other: #they have a different freq string
-            return idx_this > idx_other
-        #they have the same frequency string but different _mulfac attributes
-        return self._mulfac > other._mulfac
-
-    def __le__(self, other):
-        return True if (self.__eq__(other) or self.__lt__(other)) else False
-
     def __eq__(self, other):
         if isinstance(other, str):
             other = TsType(other)
         return other.val == self.val
+
+    def __lt__(self, other):
+        if isinstance(other, str):
+            other = TsType(other)
+        nss, nso = self.num_secs, other.num_secs
+        # inverted comparison, i.e. if other has less seconds if has higher
+        # resolution
+        return nss > nso
+
+    def __le__(self, other):
+        return True if (self.__eq__(other) or self.__lt__(other)) else False
+
+    def __gt__(self, other):
+        return not self.__le__(other)
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
     def __call__(self):
         return self.val
@@ -302,51 +326,6 @@ if __name__=="__main__":
     daily = TsType('daily')
     monthly = TsType('monthly')
 
-    print('Monthly < daily:', monthly < daily)
-    print('Monthly == daily:', monthly == daily)
-    print('Daily == daily:', daily==daily)
-    print('Monthly <= daily:', monthly <= daily)
-    print('daily >= monthly:', daily   >= monthly)
-    print('daily > monthly:', daily > monthly)
-    print('Monthly >= daily:', monthly >= daily)
+    val = daily > monthly # __gt__ (is daily greater / higher res. than monthly?)
 
-    hourly = TsType('hourly')
-    hourly5 = TsType('5hourly')
-
-    print(hourly)
-    print(hourly5)
-
-    print('hourly == 5hourly:', hourly==hourly5)
-    print('hourly > 5hourly:', hourly>hourly5)
-
-    print(TsType('yearly').next_higher)
-
-    hourly = TsType('hourly')
-
-    daily = hourly.next_lower
-
-    print(hourly.next_lower)
-
-    unsorted = ['monthly', 'hourly', '5minutely', '3daily', 'daily']
-
-    sort = sort_ts_types(unsorted)
-
-    print(sort)
-
-    print(TsType('16hourly').datetime64_str)
-    print(TsType('16hourly').timedelta64_str)
-    print(TsType('16hourly').cf_base_unit)
-
-    print(TsType.from_total_seconds(3800))
-# =============================================================================
-#
-#     class Num(object):
-#         def __init__(self, val):
-#             self.val = val
-#
-#         def __lt__(self, other):
-#             print('Other is smaller than this')
-#             return self.val < other.val
-#
-#     print(Num(3) < Num(5))
-# =============================================================================
+    print(f'Is {daily} greater than {monthly}: {val}')
