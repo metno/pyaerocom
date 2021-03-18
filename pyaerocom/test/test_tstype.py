@@ -41,39 +41,104 @@ def test_TsType_mulfac(base, mulfac, raises):
         tst.mulfac = mulfac
         assert int(mulfac) == tst._mulfac == tst.mulfac
 
-def test_TsType_basic_operators():
-    monthly = TsType('monthly')
-    yearly = TsType('yearly')
-    daily = TsType('daily')
+@pytest.mark.parametrize('value,raises', [
+    ('3daily', does_not_raise_exception()),
+    ('blaa', pytest.raises(TemporalResolutionError)),
+    ('5000daily', pytest.raises(TemporalResolutionError))
+    ])
+def test_TsType_val(value, raises):
+    tst = TsType('daily')
+    with raises:
+        tst.val =  value
+        assert isinstance(tst.val, str)
+        assert tst.val == value
 
-    assert monthly < daily
-    assert monthly <= daily
-    assert monthly != daily
-    assert yearly < daily
-    assert not (yearly == daily)
-    assert monthly > yearly
-    assert monthly >= yearly
+@pytest.mark.parametrize('base, value, raises', [
+    ('native', None, pytest.raises(NotImplementedError)),
+    ('minutely', 'minutes', pytest.raises(NotImplementedError)),
+    ('hourly', 'hours', does_not_raise_exception()),
+    ('daily', 'days', does_not_raise_exception()),
+    ('monthly', 'days', does_not_raise_exception()),
+    ('yearly', 'days', pytest.raises(NotImplementedError)),
+    ])
+def test_TsType_cf_base_unit(base, value, raises):
+    tst = TsType(base)
+    with raises:
+        assert tst.cf_base_unit == value
 
-def test_TsType_basic_operators_pandas():
-    monthly = TsType('MS')
-    yearly = TsType('AS')
-    daily = TsType('D')
+@pytest.mark.parametrize('tst1,tst2,value,raises', [
+    ('daily', 'daily', True, does_not_raise_exception()),
+    (TsType('daily'), 'daily', True, does_not_raise_exception()),
+    ('daily', TsType('daily'), True, does_not_raise_exception()),
+    (TsType('daily'), TsType('monthly'), False, does_not_raise_exception()),
+    (TsType('3daily'), TsType('2daily'), False, does_not_raise_exception()),
+    (TsType('3daily'), TsType('daily'), False, does_not_raise_exception()),
+    ])
+def test_TsType__eq__(tst1, tst2, value, raises):
+    with raises:
+        same = tst1 == tst2
+        assert same == value
 
-    assert monthly < daily
-    assert monthly <= daily
-    assert monthly != daily
-    assert yearly < daily
-    assert not (yearly == daily)
-    assert monthly > yearly
-    assert monthly >= yearly
+@pytest.mark.parametrize('tst1,tst2,value,raises', [
+    (TsType('daily'), 'daily', False, does_not_raise_exception()),
+    (TsType('2daily'), TsType('monthly'), False, does_not_raise_exception()),
+    (TsType('2daily'), TsType('1daily'), True, does_not_raise_exception()),
+    ])
+def test_TsType__lt__(tst1, tst2, value, raises):
+    with raises:
+        val = tst1 < tst2
+        assert val == value
 
-def test_TsType_to_numpy_freq():
-    assert TsType('3hourly').to_numpy_freq() == '3h'
-    assert TsType('daily').to_numpy_freq() == '1D'
+@pytest.mark.parametrize('tst1,tst2,value,raises', [
+    (TsType('daily'), 'daily', True, does_not_raise_exception()),
+    (TsType('2daily'), TsType('monthly'), False, does_not_raise_exception()),
+    (TsType('2daily'), TsType('1daily'), True, does_not_raise_exception()),
+    ])
+def test_TsType__le__(tst1, tst2, value, raises):
+    with raises:
+        val = tst1 <= tst2
+        assert val == value
 
-def test_TsType_to_pandas_freq():
-    assert TsType('3hourly').to_pandas_freq() == '3H'
-    assert TsType('daily').to_pandas_freq() == 'D'
+@pytest.mark.parametrize('tst1,tst2,value,raises', [
+    (TsType('daily'), 'daily', False, does_not_raise_exception()),
+    (TsType('2daily'), TsType('monthly'), True, does_not_raise_exception()),
+    (TsType('2daily'), TsType('1daily'), False, does_not_raise_exception()),
+    ])
+def test_TsType__gt__(tst1, tst2, value, raises):
+    with raises:
+        val = tst1 > tst2
+        assert val == value
+
+@pytest.mark.parametrize('tst1,tst2,value,raises', [
+    (TsType('daily'), 'daily', True, does_not_raise_exception()),
+    (TsType('2daily'), TsType('monthly'), True, does_not_raise_exception()),
+    (TsType('2daily'), TsType('1daily'), False, does_not_raise_exception()),
+    (TsType('6daily'), TsType('MS'), True, does_not_raise_exception()),
+    (TsType('50daily'), TsType('MS'), False, does_not_raise_exception()),
+    ])
+def test_TsType__ge__(tst1, tst2, value, raises):
+    with raises:
+        val = tst1 >= tst2
+        assert val == value
+
+@pytest.mark.parametrize('tst,val,raises', [
+    ('3hourly','3h',does_not_raise_exception()),
+    ('daily','1D',does_not_raise_exception())
+    ])
+def test_TsType_to_numpy_freq(tst, val, raises):
+    tst = TsType(tst)
+    with raises:
+        assert tst.to_numpy_freq() == val
+
+@pytest.mark.parametrize('tst,val,raises', [
+    ('3hourly','3H',does_not_raise_exception()),
+    ('daily','D',does_not_raise_exception())
+    ])
+def test_TsType_to_pandas_freq(tst, val, raises):
+    tst = TsType(tst)
+    with raises:
+        assert tst.to_pandas_freq() == val
+
 
 @pytest.mark.parametrize('ts_type, value, raises', [
     ('hourly', 'h', does_not_raise_exception()),
@@ -87,11 +152,6 @@ def test_TsType_to_pandas_freq():
 def test_TsType_to_si(ts_type, value, raises):
     with raises:
         assert TsType(ts_type).to_si() == value
-
-def test_TsType_cf_base_unit():
-    assert TsType('daily').cf_base_unit == 'days'
-    assert TsType('monthly').cf_base_unit == 'days'
-    assert TsType('hourly').cf_base_unit == 'hours'
 
 @pytest.mark.parametrize('ts_type, value, raises', [
     ('minutely', None, pytest.raises(IndexError)),
@@ -107,7 +167,13 @@ def test_TsType_next_higher(ts_type, value, raises):
         assert TsType(ts_type).next_higher.val == value
 
 @pytest.mark.parametrize('ts_type, value, raises', [
-    ('yearly', None, pytest.raises(IndexError))
+    ('yearly', '2yearly', does_not_raise_exception()),
+    ('monthly', 'yearly', does_not_raise_exception()),
+    ('3monthly', 'yearly',  does_not_raise_exception()),
+    ('8daily', '2weekly',  does_not_raise_exception()),
+    ('13monthly', '2yearly',  does_not_raise_exception()),
+    ('13monthly', '2yearly',  does_not_raise_exception())
+
     ])
 def test_TsType_next_lower(ts_type, value, raises):
     with raises:
