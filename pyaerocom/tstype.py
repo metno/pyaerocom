@@ -189,9 +189,6 @@ class TsType(object):
             f'Failed to determine next lower resolution for {self}'
             )
 
-
-
-
     @staticmethod
     def valid(val):
         try:
@@ -237,16 +234,27 @@ class TsType(object):
             return True
         return False
 
+
     @staticmethod
     def _infer_mulfac_total_seconds(base, total_seconds):
         if base in TsType.TS_MAX_VALS:
             maxnum = TsType.TS_MAX_VALS[base]
         else:
             maxnum = 2
+        candidates = []
+        dts = []
         for mulfac in range(1, maxnum):
             tstype = TsType(f'{mulfac}{base}')
             if tstype.check_match_total_seconds(total_seconds):
-                return tstype
+                dt = total_seconds - tstype.num_secs
+                dts.append(dt)
+                candidates.append(tstype)
+                if dt < 0: #current candidate has larger number of seconds than input
+                    return candidates[np.argmin(np.abs(dts))]
+
+        if len(candidates) > 0:
+            return candidates[np.argmin(np.abs(dts))]
+
         raise TemporalResolutionError(
             f'Period {total_seconds}s could not be associated with any '
             f'allowed multiplication factor of base frequency {base}')
@@ -323,9 +331,5 @@ if __name__=="__main__":
 
     from pyaerocom.helpers import sort_ts_types
 
-    daily = TsType('daily')
-    monthly = TsType('monthly')
-
-    val = daily > monthly # __gt__ (is daily greater / higher res. than monthly?)
-
-    print(f'Is {daily} greater than {monthly}: {val}')
+    print(TsType.from_total_seconds(1200))
+    print(TsType.from_total_seconds(31556925*2))
