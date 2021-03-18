@@ -49,6 +49,10 @@ def test_TsType_mulfac(base, mulfac, raises):
         tst.mulfac = mulfac
         assert int(mulfac) == tst._mulfac == tst.mulfac
 
+def test_TsType_base():
+    tst = TsType('daily')
+    assert tst.base == tst._val == 'daily'
+
 @pytest.mark.parametrize('value,raises', [
     ('3daily', does_not_raise_exception()),
     ('blaa', pytest.raises(TemporalResolutionError)),
@@ -60,6 +64,13 @@ def test_TsType_val(value, raises):
         tst.val =  value
         assert isinstance(tst.val, str)
         assert tst.val == value
+
+def test_TsType_datetime64_str():
+    assert TsType('daily').datetime64_str == 'datetime64[1D]'
+
+def test_TsType_timedelta64_str():
+    assert TsType('daily').timedelta64_str == 'timedelta64[1D]'
+
 
 @pytest.mark.parametrize('base, value, raises', [
     ('native', None, pytest.raises(NotImplementedError)),
@@ -73,6 +84,67 @@ def test_TsType_cf_base_unit(base, value, raises):
     tst = TsType(base)
     with raises:
         assert tst.cf_base_unit == value
+
+@pytest.mark.parametrize('ts_type,should_be', [
+    ('minutely', 60),
+    ('3minutely', 180),
+    ('4minutely', 240),
+    ('daily', 86400),
+    ('weekly', 86400*7),
+    ('monthly', 2629743.831225) # not sure how cf_units calculates that
+    ])
+def test_TsType_num_secs(ts_type, should_be):
+    val = TsType(ts_type).num_secs
+    assert val == should_be
+
+@pytest.mark.parametrize('ts_type,should_be', [
+    ('minutely', 3),
+    ('3minutely', 9),
+    ('4minutely', 12),
+    ('daily', 4320),
+    ('weekly', 30240),
+    ('monthly', 131488)
+    ])
+def test_TsType_tol_secs(ts_type, should_be):
+    val = TsType(ts_type).tol_secs
+    assert val == should_be
+
+@pytest.mark.parametrize('ts_type,ref_time_str,np_dt_str,output_str', [
+    ('daily', '2010-10-01', 'D', '2010-10-02'),
+    ('2monthly', '2010-10', 'M', '2010-12'),
+    ('3hourly', '2010-10-01T15:00:00', 'h', '2010-10-01T18')
+    ])
+def test_TsType_to_timedelta64(ts_type, ref_time_str, np_dt_str, output_str):
+    tref = np.datetime64(ref_time_str, np_dt_str)
+    assert str(tref + TsType(ts_type).to_timedelta64()) == output_str
+
+@pytest.mark.parametrize('ts_type, value, raises', [
+    ('minutely', None, pytest.raises(IndexError)),
+    ('3minutely', 'minutely', does_not_raise_exception()),
+    ('hourly', 'minutely', does_not_raise_exception()),
+    ('3hourly', 'hourly', does_not_raise_exception()),
+    ('weekly', 'daily', does_not_raise_exception()),
+    ('monthly', 'weekly', does_not_raise_exception()),
+    ('yearly', 'monthly', does_not_raise_exception()),
+    ])
+def test_TsType_next_higher(ts_type, value, raises):
+    with raises:
+        assert TsType(ts_type).next_higher.val == value
+
+@pytest.mark.parametrize('ts_type, value, raises', [
+    ('yearly', '2yearly', does_not_raise_exception()),
+    ('monthly', 'yearly', does_not_raise_exception()),
+    ('3monthly', 'yearly',  does_not_raise_exception()),
+    ('8daily', '2weekly',  does_not_raise_exception()),
+    ('13monthly', '2yearly',  does_not_raise_exception()),
+    ('13monthly', '2yearly',  does_not_raise_exception()),
+    ('1000yearly', '1001yearly', does_not_raise_exception()),
+    ('120monthly', None, pytest.raises(TemporalResolutionError))
+
+    ])
+def test_TsType_next_lower(ts_type, value, raises):
+    with raises:
+        assert TsType(ts_type).next_lower.val == value
 
 @pytest.mark.parametrize('val,valid', [
     ('bla', False), ('60000daily', False), ('daily', True)
@@ -150,69 +222,6 @@ def test_TsType_from_total_seconds(total_seconds, value, raises):
         tst = TsType.from_total_seconds(total_seconds)
         assert tst.val == value
 
-@pytest.mark.parametrize('ts_type, value, raises', [
-    ('minutely', None, pytest.raises(IndexError)),
-    ('3minutely', 'minutely', does_not_raise_exception()),
-    ('hourly', 'minutely', does_not_raise_exception()),
-    ('3hourly', 'hourly', does_not_raise_exception()),
-    ('weekly', 'daily', does_not_raise_exception()),
-    ('monthly', 'weekly', does_not_raise_exception()),
-    ('yearly', 'monthly', does_not_raise_exception()),
-    ])
-def test_TsType_next_higher(ts_type, value, raises):
-    with raises:
-        assert TsType(ts_type).next_higher.val == value
-
-@pytest.mark.parametrize('ts_type, value, raises', [
-    ('yearly', '2yearly', does_not_raise_exception()),
-    ('monthly', 'yearly', does_not_raise_exception()),
-    ('3monthly', 'yearly',  does_not_raise_exception()),
-    ('8daily', '2weekly',  does_not_raise_exception()),
-    ('13monthly', '2yearly',  does_not_raise_exception()),
-    ('13monthly', '2yearly',  does_not_raise_exception()),
-    ('1000yearly', '1001yearly', does_not_raise_exception()),
-    ('120monthly', None, pytest.raises(TemporalResolutionError))
-
-    ])
-def test_TsType_next_lower(ts_type, value, raises):
-    with raises:
-        assert TsType(ts_type).next_lower.val == value
-
-@pytest.mark.parametrize('ts_type,ref_time_str,np_dt_str,output_str', [
-    ('daily', '2010-10-01', 'D', '2010-10-02'),
-    ('2monthly', '2010-10', 'M', '2010-12'),
-    ('3hourly', '2010-10-01T15:00:00', 'h', '2010-10-01T18')
-    ])
-def test_TsType_to_timedelta64(ts_type, ref_time_str, np_dt_str, output_str):
-    tref = np.datetime64(ref_time_str, np_dt_str)
-    assert str(tref + TsType(ts_type).to_timedelta64()) == output_str
-
-@pytest.mark.parametrize('ts_type,should_be', [
-    ('minutely', 60),
-    ('3minutely', 180),
-    ('4minutely', 240),
-    ('daily', 86400),
-    ('weekly', 86400*7),
-    ('monthly', 2629743.831225) # not sure how cf_units calculates that
-    ])
-def test_TsType_num_secs(ts_type, should_be):
-    val = TsType(ts_type).num_secs
-    assert val == should_be
-
-@pytest.mark.parametrize('ts_type,should_be', [
-    ('minutely', 3),
-    ('3minutely', 9),
-    ('4minutely', 12),
-    ('daily', 4320),
-    ('weekly', 30240),
-    ('monthly', 131488)
-    ])
-def test_TsType_tol_secs(ts_type, should_be):
-    val = TsType(ts_type).tol_secs
-    assert val == should_be
-
-
-
 @pytest.mark.parametrize('tst1,tst2,value,raises', [
     ('daily', 'daily', True, does_not_raise_exception()),
     (TsType('daily'), 'daily', True, does_not_raise_exception()),
@@ -267,6 +276,15 @@ def test_TsType__ge__(tst1, tst2, value, raises):
     with raises:
         val = tst1 >= tst2
         assert val == value
+
+def test_TsType__call__():
+    assert TsType('daily')() == 'daily'
+
+def test_TsType__str__():
+    assert str(TsType('daily')) == 'daily'
+
+def test_TsType__repr__():
+    assert repr(TsType('daily')) == 'daily'
 
 if __name__=="__main__":
 
