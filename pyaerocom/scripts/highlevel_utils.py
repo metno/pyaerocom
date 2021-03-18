@@ -8,9 +8,7 @@ Note
 These are utility methods and not so much processing or plotting methods. See
 e.g. highlevel_plotting.py for plotting methods.
 """
-from pyaerocom import const
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
-import glob, os
 
 def clear_cache():
     """
@@ -25,6 +23,3 @@ def browse_database(search_str_or_pattern):
     """
     from pyaerocom import browse_database
     return browse_database(search_str_or_pattern)
-
-if __name__=='__main__':
-    clear_cache()
