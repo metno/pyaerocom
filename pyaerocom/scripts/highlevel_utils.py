@@ -19,9 +19,6 @@ def clear_cache():
     ch = CacheHandlerUngridded()
     ch.delete_all_cache_files()
 
-    for f in glob.glob('{}/*'.format(const.CACHEDIR)):
-        os.remove(f)
-
 def browse_database(search_str_or_pattern):
     """
     Wrapper for :func:`pyaerocom.browse_database`
