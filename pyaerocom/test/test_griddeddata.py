@@ -10,13 +10,62 @@ import pytest
 import os
 import numpy.testing as npt
 from datetime import datetime
-from pyaerocom.conftest import TEST_RTOL, testdata_unavail
-from pyaerocom import GriddedData
+from pyaerocom.conftest import TEST_RTOL, testdata_unavail, does_not_raise_exception
+from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom import GriddedData, Variable
 
 TESTLATS =  [-10, 20]
 TESTLONS =  [-120, 69]
 
-### tests
+### ----------------------------------------------
+# More recent tests (more systematic)
+### ----------------------------------------------
+@pytest.mark.parametrize('val, raises', [
+    (None,pytest.raises(ValueError)),
+    ('Blaaa',does_not_raise_exception()),
+    ])
+def test_GriddedData_var_name(val, raises):
+    data = GriddedData()
+    assert data.var_name is None
+    with raises:
+        data.var_name = val
+        assert data.var_name == data.grid.var_name == val
+
+@pytest.mark.parametrize('var_name, var_name_aerocom, raises', [
+    ('Blaaa', None, does_not_raise_exception()),
+    ('od550aer', 'od550aer', does_not_raise_exception()),
+    ('scatc550aer', 'sc550aer', does_not_raise_exception()),
+    ])
+def test_GriddedData_var_name_aerocom(var_name, var_name_aerocom, raises):
+    data = GriddedData()
+    data.var_name = var_name
+    with raises:
+        assert data.var_name_aerocom == var_name_aerocom
+
+@pytest.mark.parametrize('var_name, raises', [
+    ('od550aer',does_not_raise_exception()),
+    ('blaaa',pytest.raises(VariableDefinitionError)),
+    ])
+def test_GriddedData_var_info(var_name, raises):
+    data = GriddedData()
+    data.var_name = var_name
+    with raises:
+        var_info = data.var_info
+        assert isinstance(var_info, Variable)
+
+def test_GriddedData_long_name():
+    data = GriddedData()
+    assert data.long_name is None
+    data.long_name = 'blaaa'
+    assert data.long_name == data.grid.long_name == 'blaaa'
+
+def test_GriddedData_suppl_info():
+    assert isinstance(GriddedData().suppl_info, dict)
+
+### ----------------------------------------------
+# Initial set of tests (not very systematic)
+### ----------------------------------------------
+
 @testdata_unavail
 def test_basic_properties(data_tm5):
 
