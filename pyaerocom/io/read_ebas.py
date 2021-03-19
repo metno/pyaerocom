@@ -147,7 +147,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.46_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.47_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -591,7 +591,7 @@ class ReadEbas(ReadUngriddedBase):
                 for key in self.IGNORE_COLS_CONTAIN:
                     if key in col_info:
                         ok = False
-                        const.print_log.warning(f'\nignore column {col_info}')
+                        const.logger.warning(f'\nignore column {col_info}')
                         break
                 if ok:
                     col_matches.append(colnum)
@@ -1166,35 +1166,26 @@ class ReadEbas(ReadUngriddedBase):
         counts = np.bincount(dts)
         most_common_dt = np.argmax(counts)
         # frequency associated based on resolution code
-        rescode_tstype = TsType(freq_ebas)
-        rescode_numsecs = rescode_tstype.num_secs
-        rescode_tolsecs = rescode_tstype.tol_secs
-        lowlim = rescode_numsecs - rescode_tolsecs
-        highlim = rescode_numsecs + rescode_tolsecs
-        if np.logical_and(most_common_dt >= lowlim,
-                          most_common_dt <= highlim):
+        if TsType(freq_ebas).check_match_total_seconds(most_common_dt):
             return freq_ebas
 
         const.logger.warning(
             f'Detected wrong frequency {freq_ebas}. Trying to '
             f'infer the correct frequency...')
+        try:
+            freq = TsType.from_total_seconds(most_common_dt)
+            return str(freq)
+        except TemporalResolutionError:
+            raise TemporalResolutionError(
+                f'Failed to derive correct sampling frequency in {file.file_name}. '
+                f'Most common meas period (stop_meas - start_meas) in file is '
+                f'{most_common_dt}s and does not '
+                f'correspond to any of the supported frequencies {TsType.VALID_ITER} '
+                f'or permutations of those frequencies within the allowed ranges '
+                f'{TsType.TS_MAX_VALS}'
+                )
 
-        for tst in TsType.VALID:
-            tstype = TsType(tst)
-            try:
-                numsecs = tstype.num_secs
-                tolsecs = tstype.tol_secs
-            except ValueError:
-                continue
-            low, high = numsecs-tolsecs, numsecs+tolsecs
-            if np.logical_and(most_common_dt >= low,
-                              most_common_dt <= high):
-                return tst
-        raise TemporalResolutionError(
-            f'Failed to derive correct sampling frequency in {file.file_name}. '
-            f'Most common meas period is {most_common_dt}s and does not '
-            f'correspond to any of the supported base frequencies { TsType.VALID}'
-            )
+
     def _flag_incorrect_frequencies(self, filedata):
 
         # time diffs in units of s for each measurement
@@ -1578,7 +1569,4 @@ if __name__=="__main__":
                                   #data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
-
-    data = reader.read(vars_to_retrieve=['concso4'],
-                       first_file=0,
-                       last_file=1)
+    data = reader.read('concoc')
