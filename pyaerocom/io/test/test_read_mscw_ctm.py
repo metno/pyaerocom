@@ -131,18 +131,15 @@ def test_ReadMscwCtm_read_var(path_emep,var_name,ts_type,raises):
 
 @testdata_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
-    ('blaaa', 'daily', pytest.raises(AttributeError)),
+    ('blaaa', 'daily', pytest.raises(KeyError)),
     ('concpmgt25', 'daily', does_not_raise_exception()),
     ('concpmgt25', 'monthly', does_not_raise_exception()),
     ])
-def test_ReadMscwCtm_compute_var(path_emep,var_name,ts_type,raises):
+def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
     r = ReadMscwCtm(data_dir=path_emep['data_dir'])
     with raises:
-        data = r.compute_var(var_name, ts_type)
-        assert isinstance(data, GriddedData)
-        assert data.ts_type is not None
-        assert data.ts_type == r.ts_type
-
+        data = r._compute_var(var_name, ts_type)
+        assert isinstance(data, xr.DataArray)
 
 @testdata_unavail
 def test_ReadMscwCtm_data(path_emep):
