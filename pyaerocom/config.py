@@ -239,9 +239,8 @@ class Config(object):
         self.logger = logger
 
         # Directories
-        self._cache_basedir = cache_dir
         self._outputdir = output_dir
-
+        self._cache_basedir = None
         self._colocateddatadir = colocateddata_dir
         self._filtermaskdir = None
         self._local_tmp_dir = None
@@ -539,8 +538,9 @@ class Config(object):
 
     @cache_basedir.setter
     def cache_basedir(self, val):
-        if check_write_access(val):
-            self._cache_basedir = os.path.abspath(val)
+        if not check_write_access(val):
+            raise ValueError(val)
+        self._cache_basedir = os.path.abspath(val)
 
 
     @property
@@ -560,6 +560,9 @@ class Config(object):
             raise ValueError('Cannot set cache directory. Input directory {} '
                              'does not exist or write '
                              'permission is not granted'.format(val))
+        spl = os.path.split(val)
+        if spl[-1] == self.user:
+            val = spl[0]
         self._cache_basedir = val
 
     @property
