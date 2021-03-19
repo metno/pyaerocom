@@ -36,6 +36,7 @@ from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 import pyaerocom.mathutils as mu
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 @pytest.fixture(scope='module')
 @testdata_unavail
@@ -215,10 +216,13 @@ class TestReadEbas(object):
 
     def test_file_dir(self, reader):
         fd = reader.file_dir
+        assert reader._file_dir is None
         assert fd.endswith('data')
         assert os.path.exists(fd)
         with pytest.raises(FileNotFoundError):
             reader.file_dir = 42
+        reader.file_dir = fd #sets private attr _file_dir
+        assert reader._file_dir == reader.file_dir == fd
 
     def test_FILE_REQUEST_OPTS(self, reader):
         assert reader.FILE_REQUEST_OPTS == ['variables',
@@ -373,6 +377,17 @@ class TestReadEbas(object):
                                     vars_to_retrieve=vars_to_retrieve)
             assert isinstance(data, StationData)
 
+
+    @pytest.mark.parametrize(
+        'vars_to_retrieve, first_file, last_file, files, constraints, exception', [
+            ('sc550aer',None,None,None,{},does_not_raise_exception())
+            ])
+    def test_read(self, reader, vars_to_retrieve, first_file,
+                  last_file, files, constraints, exception):
+        with exception:
+            data = reader.read(vars_to_retrieve, first_file,
+                      last_file, files, **constraints)
+            assert isinstance(data, UngriddedData)
 
 if __name__ == '__main__':
     import sys

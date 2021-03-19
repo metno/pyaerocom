@@ -103,17 +103,13 @@ class EbasColDef(dict):
         return s
 
     def __repr__(self):
-        s = "{}: ".format(type(self).__name__)
-        for k, v in self.items():
-            s += "{}={}, ".format(k, v)
-        return s
+        return str(self)
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "{}\n{}\n".format(head, len(head)*"-")
-        for k, v in self.items():
-            s += "{}: {}\n".format(k, v)
-        return s
+        colattrs = ''
+        for key, val in self.items():
+            colattrs += f'{key}: {val}, '
+        return colattrs[:-2]
 
 def _readline_ref_and_revision(line):
     spl = line.strip().split()
