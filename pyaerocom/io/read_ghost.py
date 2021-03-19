@@ -169,9 +169,8 @@ class ReadGhost(ReadUngriddedBase):
                      'vmrno2'    : 'sconcno2',
                      'vmro3'     : 'sconco3',
                      'vmrso2'    : 'sconcso2',
-
-                     'concno3'    : 'sconcno3',
-                     'concnh4'    : 'sconcnh4'
+                     'concno3'   : 'sconcno3',
+                     'concnh4'   : 'sconcnh4'
                      }
 
     AUX_REQUIRES = {'concco'    :  ['vmrco'],
@@ -662,6 +661,11 @@ class ReadGhost(ReadUngriddedBase):
 
 if __name__ == '__main__':
     import pyaerocom as pya
+    OBS_BASEDIR = '/home/jonasg/MyPyaerocom/data/obsdata'
 
-    var = ['vmro3', 'vmrno2']
-    obs = ReadGhost('GHOST.EBAS.daily').read(var)
+
+    # make sure it works also on lustre
+    GHOST_EBAS_DAILY_LOCAL =  os.path.join(OBS_BASEDIR, 'GHOST/data/EBAS/daily')
+    GHOST_EEA_DAILY_LOCAL = os.path.join(OBS_BASEDIR, 'GHOST/data/EEA_AQ_eReporting/daily')
+
+    obs = ReadGhost('GHOST.EBAS.daily', GHOST_EBAS_DAILY_LOCAL).read('concno')
