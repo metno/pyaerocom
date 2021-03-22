@@ -202,12 +202,6 @@ class ColocatedData(object):
         return self.data.attrs
 
     @property
-    def num_grid_points(self):
-        """Number of lon / lat grid points that contain data"""
-        const.print_log.warning(DeprecationWarning('OLD NAME: please use num_coords'))
-        return self.num_coords
-
-    @property
     def num_coords(self):
         """Total number of lat/lon coordinates"""
         if 'station_name' in self.coords:
