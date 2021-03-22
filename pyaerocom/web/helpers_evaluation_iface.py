@@ -12,7 +12,8 @@ from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import read_json, write_json
 from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_DAILY)
+                                 HEATMAP_FILENAME_EVAL_IFACE_DAILY,
+                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
@@ -1110,7 +1111,7 @@ def _process_regional_timeseries(data, jsdate, region_ids,
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob):
 
-    hm_all = dict(zip(('daily', 'monthly'), ({},{})))
+    hm_all = dict(zip(('daily', 'monthly','yearly'), ({},{},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
         for regid, regname in region_ids.items():
@@ -1268,6 +1269,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         for freq, hm_data in hm_all.items():
             if freq == 'daily':
                 fname = HEATMAP_FILENAME_EVAL_IFACE_DAILY
+            elif freq == 'yearly':
+                fname = HEATMAP_FILENAME_EVAL_IFACE_YEARLY
             else:
                 fname = HEATMAP_FILENAME_EVAL_IFACE_MONTHLY
 

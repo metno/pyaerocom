@@ -22,7 +22,8 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
 
 from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_DAILY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_MONTHLY)
+                                 HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
+                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY)
 from pyaerocom.web.helpers_evaluation_iface import (
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
@@ -772,7 +773,8 @@ class AerocomEvaluation(object):
     def _heatmap_files(self):
 
         return dict(daily=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_DAILY),
-                    monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY))
+                    monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY),
+                    yearly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_YEARLY))
 
     def update_heatmap_json(self):
         """
