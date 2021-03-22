@@ -13,110 +13,65 @@ import cf_units
 from datetime import datetime
 import iris
 from iris.experimental.equalise_cubes import equalise_attributes
-from numpy import datetime64, asarray, arange
-import os
-import pandas as pd
+import numpy as np
+from pathlib import Path
+from traceback import format_exc
 
 from pyaerocom import const, logger
 from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
                                   FileConventionError,
                                   UnresolvableTimeDefinitionError)
 
-from pyaerocom.helpers import cftime_to_datetime64
+from pyaerocom.helpers import (cftime_to_datetime64,
+                               make_datetimeindex_from_year)
 from pyaerocom.tstype import TsType
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
 
-def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None,
-                                 perform_fmt_checks=True, num_proc=None):
-    """Like :func:`load_cubes_custom` but faster
-
-    Uses multiprocessing module to distribute loading of multiple NetCDF files
-    into iris cube.
-
-    Parameters
-    ----------
-    file : list
-        netcdf file
-    var_name : str
-        name of variable to read
-    quality_check : bool
-        if True, then a quality check of data is performed against the
-        information provided in the filename
-    file_convention : :obj:`FileConventionRead`, optional
-        Aerocom file convention. If provided, then the data content (e.g.
-        dimension definitions) is tested against definition in file name
-    perform_fmt_checks : bool
-        if True, additional quality checks (and corrections) are (attempted to
-        be) performed.
-    num_proc : int
-        number of jobs
-
-    Returns
-    -------
-    iris.cube.CubeList
-        loaded data as Cube
-    """
-    import multiprocessing
-    from functools import partial
-    if num_proc is None:
-        num_proc = multiprocessing.cpu_count() * 2
-    func = partial(load_cube_custom,
-                   var_name=var_name, file_convention=file_convention,
-                   perform_fmt_checks=perform_fmt_checks)
-    p = multiprocessing.Pool(processes=num_proc)
-    return p.map(func, files)
-
 def load_cubes_custom(files, var_name=None, file_convention=None,
-                      perform_fmt_checks=True, **kwargs):
+                      perform_fmt_checks=None):
     """Load multiple NetCDF files into CubeList
+
+    Note
+    ----
+    This function does not apply any concatenation or merging of the variable
+    data in the individual files, it only loads the files into individual
+    instances of :class:`iris.cube.Cube`, which can be accessed via the
+    returned list.
 
     Parameters
     ----------
     files : list
-        netcdf file
+        list containing filepaths to all files that are supposed to be loaded.
     var_name : str
-        name of variable to read
-    quality_check : bool
-        if True, then a quality check of data is performed against the
-        information provided in the filename
+        name of variable to be imported from input files.
     file_convention : :obj:`FileConventionRead`, optional
         Aerocom file convention. If provided, then the data content (e.g.
         dimension definitions) is tested against definition in file name
     perform_fmt_checks : bool
         if True, additional quality checks (and corrections) are (attempted to
-        be) performed.
-    **kwargs
-        additional keyword args that are parsed to
-        :func:`_load_cubes_custom_multiproc` in case number of input files
-        is larger than 4.
+        be) performed. Defaults to None, in which case pyaerocom default is
+        used.
 
     Returns
     -------
-    tuple
-        2-element tuple containing:
-
-            - CubeList, containing loaded cubes
-            - list, list of filenames that were successfully loaded
+    list
+        loaded cube instances.
+    list
+        list containing all files from which the input variable could be
+        successfully loaded.
     """
-    from pyaerocom import const
     cubes = []
     loaded_files = []
-    print_where = False
-    if len(files) > 10:
-        mod = len(files) / 10
-        print_where = True
-    for i, _file in enumerate(files):
-        if print_where and i%mod==0:
-            const.print_log.info(os.path.basename(_file))
+    for _file in files:
         try:
-            cube = load_cube_custom(_file, var_name,
-                                    file_convention=file_convention)
+            cube = load_cube_custom(file=_file, var_name=var_name,
+                                    file_convention=file_convention,
+                                    perform_fmt_checks=perform_fmt_checks)
             cubes.append(cube)
             loaded_files.append(_file)
-        except Exception as e:
-            msg = ("Failed to load {} as Iris cube. Error: {}"
-                   .format(_file, repr(e)))
+        except Exception:
+            msg = f'Failed to load {_file}. Reason: {format_exc()}'
             const.logger.warning(msg)
 
             if const.WRITE_FILEIO_ERR_LOG:
@@ -148,6 +103,8 @@ def load_cube_custom(file, var_name=None, file_convention=None,
     iris.cube.Cube
         loaded data as Cube
     """
+    if isinstance(file, Path):
+        file = str(file) # iris load does not like PosixPath
     if perform_fmt_checks is None:
         perform_fmt_checks = const.GRID_IO.PERFORM_FMT_CHECKS
     cube_list = iris.load(file)
@@ -164,10 +121,11 @@ def load_cube_custom(file, var_name=None, file_convention=None,
     if var_name is None:
         if not len(cube_list) == 1:
             vars_avail = [c.var_name for c in cube_list]
-            raise NetcdfError('Could not load single cube from {}. Please '
-                              'specify var_name. Input file contains the '
-                              'following variables: {}'.format(file,
-                                                               vars_avail))
+            raise NetcdfError(
+                f'Could not load single cube from {file}. Please '
+                f'specify var_name. Input file contains the '
+                f'following variables: {vars_avail}'
+                )
         cube = cube_list[0]
         var_name = cube.var_name
     else:
@@ -303,8 +261,9 @@ def check_dim_coords_cube(cube):
 def _check_var_unit_cube(cube):
     var = cube.var_name
     if not var in const.VARS:
-        raise VariableDefinitionError('No such pyaerocom default variable: {}'
-                                      .format(cube.var_name))
+        raise VariableDefinitionError(
+            f'No such pyaerocom default variable: {cube.var_name}'
+            )
 
     u = cube.units
     if isinstance(u, str):
@@ -315,115 +274,39 @@ def _check_var_unit_cube(cube):
         cube.units = cf_units.Unit('1')
     return cube
 
-def check_time_coordOLD(cube, ts_type, year):
-    """Method that checks the time coordinate of an iris Cube
-
-    This method checks if the time dimension of a cube is accessible and
-    according to the standard (i.e. fully usable). It only checks, and does not
-    correct. For the latter, please see :func:`correct_time_coord`.
+def _get_info_from_filename(file, file_convention=None):
+    """Load meta-information from filename
 
     Parameters
     ----------
-    cube : Cube
-        cube containing data
-    ts_type : str
-        temporal resolution of data (e.g. "hourly", "daily"). This information
-        is e.g. encrypted in the filename of a NetCDF file and may be
-        accessed using :class:`pyaerocom.io.FileConventionRead`
-    year : int
-        interger specifying year of observation, e.g. 2017
-
-    Returns
-    -------
-    bool
-        True, if time dimension is ok, False if not
     """
-
-    ok = True
-    ts_type = TsType(ts_type)
-    test_idx = [0,1,2,7] #7, since last accessible index in a 3hourly dataset of one day is 7
-    try:
-        try:
-            t = cube.coord("time")
-        except Exception:
-            raise AttributeError("Cube does not contain time dimension")
-        if not isinstance(t, iris.coords.DimCoord):
-            raise AttributeError("Time is not a DimCoord instance")
-        try:
-            cftime_to_datetime64(0, cfunit=t.units)
-        except Exception:
-            raise ValueError("Could not convert time unit string")
-# =============================================================================
-#         tres_np = TSTR_TO_NP_TD[ts_type]
-#         conv = TSTR_TO_NP_DT[ts_type]
-# =============================================================================
-        tres_np = ts_type.timedelta64_str
-        conv = ts_type.datetime64_str_str
-
-        base = datetime64("{}-01-01 00:00:00".format(year)).astype(conv)
-        test_datenums = asarray(test_idx)
-        ts_nominal = base + test_datenums.astype(tres_np)
-        dts_nominal = ts_nominal[1:] - ts_nominal[:-1]
-        ts_values = cftime_to_datetime64(t[test_idx].points, cfunit=t.units).astype(conv)
-        dts_values = ts_values[1:] - ts_values[:-1]
-        if not all(ts_values == ts_nominal):
-            raise ValueError("Time match error, nominal dates for test array"
-                             "%s (unit=%s): %s\nReceived values after "
-                             "conversion: %s"
-                             %(test_datenums, t.units.origin,
-                               ts_nominal, ts_values))
-        elif not all(dts_values == dts_nominal):
-            raise ValueError("Time match error, time steps for test array"
-                             "%s (unit=%s): %s\nReceived values after "
-                             "conversion: %s"
-                             %(test_datenums, t.units.origin,
-                               dts_nominal, dts_values))
-    except Exception as e:
-        logger.warning("Invalid time dimension.\n"
-                       "Error message: {}".format(repr(e)))
-        ok = False
-    return ok
-
-def make_datetimeindex_from_year(freq, year):
-    """Create pandas datetime index
-
-    Parameters
-    ----------
-    freq : str
-        pandas frequency str
-    year : int
-        year
-
-    Returns
-    -------
-    pandas.DatetimeIndex
-        index object
-    """
-    start = datetime64("{}-01-01 00:00:00".format(year))
-    stop = datetime64("{}-12-31 23:59:59".format(year))
-    idx = pd.date_range(start=start, end=stop,
-                        freq=freq)
-
-    return idx
+    if file_convention is None:
+        file_convention = FileConventionRead(from_file=file)
+    return file_convention.get_info_from_file(file)
 
 def _check_correct_time_dim(cube, file, file_convention=None):
-    if file_convention is None:
-        try:
-            file_convention = FileConventionRead(from_file=file)
-        except Exception:
-            pass
+    """Check if time dimension in input Cube is correct
 
-    if not isinstance(file_convention, FileConventionRead):
+    Note
+    -----
+    Needs information about time dimension encoded in filename, since the
+    check is done against what is specified in the filename. E.g. AeroCom
+    format
+    Parameters
+    ----------
+    cube : iris.cube.Cube
+        loaded Cube instance, for which time dimension is supposed to be
+        checked
+    file : str
+        path to file from which the Cube was imported
+    file_convention : FileConventionRead
+        file naming convention specifying how time dimension information is
+        encoded in the filenames.
 
-        raise FileConventionError('Unknown file convention: {}'
-                                  .format(file_convention))
+    """
+    finfo = _get_info_from_filename(file, file_convention)
 
-    finfo = file_convention.get_info_from_file(file)
-    try:
-        ts_type = TsType(finfo['ts_type'])
-    except Exception:
-        raise FileConventionError('Invalid ts_type in file: {}'
-                                  .format(ts_type))
+    ts_type = TsType(finfo['ts_type'])
     year = finfo['year']
 
     if not const.MIN_YEAR <= year <= const.MAX_YEAR:
@@ -432,9 +315,9 @@ def _check_correct_time_dim(cube, file, file_convention=None):
         check_time_coord(cube, ts_type, year)
     except UnresolvableTimeDefinitionError as e:
         raise UnresolvableTimeDefinitionError(repr(e))
-    except Exception:
-        msg = ("Invalid time dimension coordinate in file {}. "
-               .format(os.path.basename(file)))
+    except Exception as e:
+        msg = (f'Invalid time dimension coordinate in file:\n{file}\nError:\n'
+               f'{format_exc()}')
         logger.warning(msg)
         if const.GRID_IO.CORRECT_TIME_FILENAME:
             logger.warning("Attempting to correct time coordinate "
@@ -528,6 +411,12 @@ def check_time_coord(cube, ts_type, year):
         raise ValueError('Last timestamp of data {} does not lie in last '
                          'period: {}'.format(t1, per1))
 
+def get_dim_names_cube(cube):
+    return [c.name() for c in cube.dim_coords]
+
+def get_coord_names_cube(cube):
+    return [c.name() for c in cube.coords()]
+
 def correct_time_coord(cube, ts_type, year):
     """Method that corrects the time coordinate of an iris Cube
 
@@ -562,28 +451,27 @@ def correct_time_coord(cube, ts_type, year):
                 if not dim_len in dim_lens: #candidate
                     tindex_cube = idx
     if tindex_cube is None:
-        raise NetcdfError('Failed to identify data index of time dimension in '
-                          'cube {}'.format(repr(cube)))
+        raise NetcdfError(f'Failed to identify data index of time dimension in '
+                          f'cube {repr(cube)}')
     tres_str = ts_type.cf_base_unit
     conv = ts_type.datetime64_str
-    tunit_str = '%s since %s-01-01 00:00:00' %(tres_str, year)
+    tunit_str = f'{tres_str} since {year}-01-01 00:00:00'
     num = cube.shape[tindex_cube]
 
     tunit = cf_units.Unit(tunit_str, calendar=cf_units.CALENDAR_STANDARD)
     tres_np = ts_type.timedelta64_str #TSTR_TO_NP_TD[ts_type]
-    base = datetime64("%s-01-01 00:00:00" %year).astype(conv)
-    times = base + arange(0, num, 1).astype(tres_np)
+    base = np.datetime64(f'{year}-01-01 00:00:00').astype(conv)
+    times = base + np.arange(0, num, 1).astype(tres_np)
+
     # see this thread https://github.com/matplotlib/matplotlib/issues/2259/
     times_dt = times.astype("datetime64[s]").astype(datetime)
-#    timestamps = datetime64(str(year)) +
-    time_nums = [tunit.date2num(t) for t in times_dt]
-    tcoord = iris.coords.DimCoord(time_nums, standard_name='time', units=tunit)
 
-    #tcoord_dim = cube.coord_dims('time')
-    try:
-        cube.remove_coord('time')
-    except Exception:
-        pass
+    time_nums = [tunit.date2num(t) for t in times_dt]
+    tcoord = iris.coords.DimCoord(time_nums, standard_name='time',
+                                  units=tunit)
+
+    cube.remove_coord('time')
+
     cube.add_dim_coord(tcoord, tindex_cube)
     cube.attributes['timedim-corrected'] = True
     return cube
