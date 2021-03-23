@@ -160,21 +160,20 @@ def add_file_to_log(filepath, err_msg):
         model_or_obs_id = 'others'
 
     logdir = const.LOGFILESDIR
-    found = False
-    logfile = os.path.join(logdir, model_or_obs_id + '.log')
-    if os.path.exists(logfile):
+
+    logfile = os.path.join(logdir, f'{model_or_obs_id}.log')
+
+    if os.path.exists(logfile): #check if this file is already flagged
         with open(logfile, 'r') as f:
             for line in f:
                 if filepath == line.strip():
-                    found = True
-                    break
+                    return #file is already flagged -> ignore
 
-    if not found:
-        with open(logfile, 'a+') as f:
-            f.write(filepath + '\n')
-        with open(os.path.join(logdir, model_or_obs_id + '_ERR.log'), 'a+') as ferr:
-            ferr.write('{}\n{}\n\n'.format(filepath,
-                                           err_msg))
+    logfile_err = os.path.join(logdir, f'{model_or_obs_id}_ERR.log')
+    with open(logfile, 'a+') as f:
+        f.write(f'{filepath}\n')
+    with open(logfile_err, 'a+') as ferr:
+        ferr.write(f'{filepath}\n{err_msg}\n\n')
 
 def get_standard_name(var_name):
     """Get standard name of aerocom variable
