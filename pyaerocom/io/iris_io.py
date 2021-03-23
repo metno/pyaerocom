@@ -108,15 +108,14 @@ def load_cube_custom(file, var_name=None, file_convention=None,
     if perform_fmt_checks is None:
         perform_fmt_checks = const.GRID_IO.PERFORM_FMT_CHECKS
     cube_list = iris.load(file)
-
     _num = len(cube_list)
     if _num != 1:
         if _num == 0:
             raise NetcdfError('Data from file {} could not be loaded using iris'
                               .format(file))
         else:
-            logger.warning('File {} contains more than one variable'
-                           .format(file))
+            logger.warning(f'File {file} contains more than one variable')
+
     cube = None
     if var_name is None:
         if not len(cube_list) == 1:
@@ -134,39 +133,51 @@ def load_cube_custom(file, var_name=None, file_convention=None,
                 cube = c
                 break
     if cube is None:
-        raise NetcdfError('Variable {} not available in file {}'.format(var_name,
-                                                                        file))
+        raise NetcdfError(
+            f'Variable {var_name} not available in file {file}'
+            )
     if perform_fmt_checks:
+        cube = _cube_quality_check(cube, file, file_convention)
+    return cube
+
+def _cube_quality_check(cube, file, file_convention=None):
+    """Perform quality check of loaded cube data
+
+    This includes the following checks (not all of them may be applicable):
+
+        - Make sure dimensionless variables have unit 1 (and not empty string)
+
+    """
+    try:
+        cube = _check_cube_unitless(cube)
+    except VariableDefinitionError:
+        pass
+
+    grid_io = const.GRID_IO
+    if grid_io.CHECK_TIME_FILENAME:
         try:
-            cube = _check_var_unit_cube(cube)
-        except VariableDefinitionError:
-            pass
+            cube = _check_correct_time_dim(cube, file,  file_convention)
+        except FileConventionError:
+            const.print_log.warning('WARNING: failed to check / validate '
+                                    'time dim. using information in '
+                                    'filename. Reason: invalid file name '
+                                    'convention')
+    else:
+        logger.warning("WARNING: Automatic check of time "
+                       "array in netCDF files is deactivated. "
+                       "This may cause problems in case "
+                       "the time dimension is not CF conform.")
+    if grid_io.CHECK_DIM_COORDS:
+        cube = check_dim_coords_cube(cube)
 
-        grid_io = const.GRID_IO
-        if grid_io.CHECK_TIME_FILENAME:
-            try:
-                cube = _check_correct_time_dim(cube, file,  file_convention)
-            except FileConventionError:
-                const.print_log.warning('WARNING: failed to check / validate '
-                                        'time dim. using information in '
-                                        'filename. Reason: invalid file name '
-                                        'convention')
-        else:
-            logger.warning("WARNING: Automatic check of time "
-                           "array in netCDF files is deactivated. "
-                           "This may cause problems in case "
-                           "the time dimension is not CF conform.")
-        if grid_io.CHECK_DIM_COORDS:
-            cube = check_dim_coords_cube(cube)
+    try:
+        if grid_io.DEL_TIME_BOUNDS:
+            cube.coord("time").bounds = None
+    except Exception:
+        logger.warning("Failed to access time coordinate in GriddedData")
 
-        try:
-            if grid_io.DEL_TIME_BOUNDS:
-                cube.coord("time").bounds = None
-        except Exception:
-            logger.warning("Failed to access time coordinate in GriddedData")
-
-        if grid_io.SHIFT_LONS:
-            cube = check_and_regrid_lons_cube(cube)
+    if grid_io.SHIFT_LONS:
+        cube = check_and_regrid_lons_cube(cube)
     return cube
 
 def check_and_regrid_lons_cube(cube):
@@ -190,13 +201,12 @@ def check_and_regrid_lons_cube(cube):
         True, if longitudes were on 0 -> 360 and have been rolled, else
         False
     """
-    from pyaerocom import print_log
-    try:
-        if cube.coord("longitude").points.max() > 180:
-            logger.info("Rolling longitudes to -180 -> 180 definition")
-            cube = cube.intersection(longitude=(-180, 180))
-    except Exception as e:
-        print_log.warning('Failed to roll longitudes: {}'.format(repr(e)))
+    if cube.coord("longitude").points.max() > 180:
+        const.print_log.info(
+            'Rearranging longitude dimension from 0 -> 360 '
+            'definition to -180 -> 180 definition'
+            )
+        cube = cube.intersection(longitude=(-180, 180))
     return cube
 
 def check_dim_coord_names_cube(cube):
@@ -258,19 +268,17 @@ def check_dim_coords_cube(cube):
     cube = check_dim_coord_names_cube(cube)
     return cube
 
-def _check_var_unit_cube(cube):
+def _check_cube_unitless(cube):
+    """Make sure unit in Cube is 1 if variable is dimensionless
+    """
     var = cube.var_name
     if not var in const.VARS:
         raise VariableDefinitionError(
             f'No such pyaerocom default variable: {cube.var_name}'
             )
 
-    u = cube.units
-    if isinstance(u, str):
-        u = cf_units.Unit(u)
-    if str(const.VARS[var].units) == '1' and u.is_unknown():
-        const.print_log.info('Overwriting unit {} in cube {} with value "1"'
-                             .format(str(u), var))
+    unit = cf_units.Unit(cube.units)
+    if str(const.VARS[var].units) == '1' and unit.is_unknown():
         cube.units = cf_units.Unit('1')
     return cube
 
@@ -385,13 +393,14 @@ def check_time_coord(cube, ts_type, year):
     if not num == num_per:
         if tidx[0].is_leap_year:
             if not _check_leap_year(num, num_per, ts_type):
-                raise UnresolvableTimeDefinitionError('Expected {} timestamps but '
-                                                  'data has {}'
-                                                  .format(len(tidx), num))
+                raise UnresolvableTimeDefinitionError(
+                    f'Expected {len(tidx)} timestamps but data has {num}'
+                    )
+
         else:
-            raise UnresolvableTimeDefinitionError('Expected {} timestamps but '
-                                                  'data has {}'
-                                                  .format(len(tidx), num))
+            raise UnresolvableTimeDefinitionError(
+                    f'Expected {len(tidx)} timestamps but data has {num}'
+                    )
 
     # ToDo: check why MS is not working for period conversion
     if freq == 'MS':
@@ -405,11 +414,13 @@ def check_time_coord(cube, ts_type, year):
     t0, t1 = cftime_to_datetime64([t.points[0], t.points[-1]], cfunit=t.units)
 
     if not per0.start_time <= t0 <= per0.end_time:
-        raise ValueError('First timestamp of data {} does not lie in first '
-                         'period: {}'.format(t0, per0))
+        raise ValueError(
+            f'First timestamp of data {t0} does not lie in first period: {per0}'
+            )
     elif not per1.start_time <= t1 <= per1.end_time:
-        raise ValueError('Last timestamp of data {} does not lie in last '
-                         'period: {}'.format(t1, per1))
+        raise ValueError(
+            f'Last timestamp of data {t1} does not lie in end period: {per1}'
+            )
 
 def get_dim_names_cube(cube):
     return [c.name() for c in cube.dim_coords]
@@ -439,8 +450,10 @@ def correct_time_coord(cube, ts_type, year):
     """
     tindex_cube = None
     dim_lens = []
+
     if isinstance(ts_type, str):
         ts_type = TsType(ts_type)
+
     for i, coord in enumerate(cube.dim_coords):
         dim_lens.append(len(coord.points))
         if coord.name() == 'time':
