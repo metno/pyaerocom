@@ -27,8 +27,7 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
 
 from pyaerocom.exceptions import (DeprecationError, DataSourceError,
                                   DataIdError)
-from pyaerocom.region_defs import (REGION_DEFS,
-                                   OLD_AEROCOM_REGIONS,
+from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 
 from pyaerocom.variable import VarCollection
@@ -241,6 +240,7 @@ class Config(object):
         # Directories
         self._cache_basedir = cache_dir
         self._outputdir = output_dir
+        self._logdir = None
 
         self._colocateddatadir = colocateddata_dir
         self._filtermaskdir = None
@@ -595,13 +595,10 @@ class Config(object):
     @property
     def LOGFILESDIR(self):
         """Directory where logfiles are stored"""
-        try:
-            logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
-            return logdir
-        except Exception as e:
-            self.print_log.info('Failed to access LOGFILESDIR: {}'
-                           'Deactivating file logging'.format(repr(e)))
-            self.WRITE_FILEIO_ERR_LOG = False
+        if self._logdir is None:
+            self._logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
+        return self._logdir
+
 
     @property
     def BASEDIR(self):
