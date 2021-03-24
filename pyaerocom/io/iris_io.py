@@ -108,14 +108,6 @@ def load_cube_custom(file, var_name=None, file_convention=None,
     if perform_fmt_checks is None:
         perform_fmt_checks = const.GRID_IO.PERFORM_FMT_CHECKS
     cube_list = iris.load(file)
-    _num = len(cube_list)
-    if _num != 1:
-        if _num == 0:
-            raise NetcdfError('Data from file {} could not be loaded using iris'
-                              .format(file))
-        else:
-            logger.warning(f'File {file} contains more than one variable')
-
     cube = None
     if var_name is None:
         if not len(cube_list) == 1:
@@ -148,6 +140,7 @@ def _cube_quality_check(cube, file, file_convention=None):
         - Make sure dimensionless variables have unit 1 (and not empty string)
 
     """
+    coords = get_coord_names_cube(cube)
     try:
         cube = _check_cube_unitless(cube)
     except VariableDefinitionError:
@@ -162,21 +155,14 @@ def _cube_quality_check(cube, file, file_convention=None):
                                     'time dim. using information in '
                                     'filename. Reason: invalid file name '
                                     'convention')
-    else:
-        logger.warning("WARNING: Automatic check of time "
-                       "array in netCDF files is deactivated. "
-                       "This may cause problems in case "
-                       "the time dimension is not CF conform.")
+
     if grid_io.CHECK_DIM_COORDS:
         cube = check_dim_coords_cube(cube)
 
-    try:
-        if grid_io.DEL_TIME_BOUNDS:
-            cube.coord("time").bounds = None
-    except Exception:
-        logger.warning("Failed to access time coordinate in GriddedData")
+    if 'time' in coords and grid_io.DEL_TIME_BOUNDS:
+        cube.coord('time').bounds = None
 
-    if grid_io.SHIFT_LONS:
+    if 'longitude' in coords and grid_io.SHIFT_LONS:
         cube = check_and_regrid_lons_cube(cube)
     return cube
 
@@ -324,20 +310,28 @@ def _check_correct_time_dim(cube, file, file_convention=None):
     except UnresolvableTimeDefinitionError as e:
         raise UnresolvableTimeDefinitionError(repr(e))
     except Exception as e:
-        msg = (f'Invalid time dimension coordinate in file:\n{file}\nError:\n'
-               f'{format_exc()}')
+        msg = (f'Invalid time dimension coordinate in file:\n{file}.\n'
+               f'Error: repr(e)\n')
         logger.warning(msg)
         if const.GRID_IO.CORRECT_TIME_FILENAME:
-            logger.warning("Attempting to correct time coordinate "
-                           "using information in file name")
+            add_msg = ('Attempting to correct time coordinate using '
+                       'information in file name')
+            msg += add_msg
+            logger.info(add_msg)
             try:
                 cube = correct_time_coord(cube,
                                           ts_type=finfo["ts_type"],
                                           year=finfo["year"])
-            except Exception:
-                pass
+            except Exception as e:
+                add_msg = (
+                    f'Unable to correct time dimension using the '
+                    f'information provided in the file name. Error:\n'
+                    f'{format_exc()}.\n\nThe file will be imported regardless!'
+                    )
+                msg += add_msg
+                const.print_log.warning(msg)
         if const.WRITE_FILEIO_ERR_LOG:
-            add_file_to_log(file, 'Invalid time dimension')
+            add_file_to_log(file, msg)
     return cube
 
 def _check_leap_year(num, num_per, ts_type):
@@ -372,14 +366,14 @@ def check_time_coord(cube, ts_type, year):
     """
     if isinstance(ts_type, str):
         ts_type = TsType(ts_type)
-    try:
-        t = cube.coord("time")
-    except Exception:
+    if not 'time' in get_coord_names_cube(cube):
         raise AttributeError("Cube does not contain time dimension")
-    if not isinstance(t, iris.coords.DimCoord):
+    tdim = cube.coord("time")
+
+    if not isinstance(tdim, iris.coords.DimCoord):
         raise AttributeError("Time is not a DimCoord instance")
     try:
-        cftime_to_datetime64(0, cfunit=t.units)
+        cftime_to_datetime64(0, cfunit=tdim.units)
     except Exception:
         raise ValueError("Could not convert time unit string")
 
@@ -388,7 +382,7 @@ def check_time_coord(cube, ts_type, year):
     tidx = make_datetimeindex_from_year(freq, year)
 
     num_per = len(tidx)
-    num = len(t.points)
+    num = len(tdim.points)
 
     if not num == num_per:
         if tidx[0].is_leap_year:
@@ -411,7 +405,8 @@ def check_time_coord(cube, ts_type, year):
     per1 = tidx[-1].to_period(freq)
 
     # first and last timestamp in data
-    t0, t1 = cftime_to_datetime64([t.points[0], t.points[-1]], cfunit=t.units)
+    t0, t1 = cftime_to_datetime64([tdim.points[0], tdim.points[-1]],
+                                  cfunit=tdim.units)
 
     if not per0.start_time <= t0 <= per0.end_time:
         raise ValueError(
@@ -428,6 +423,43 @@ def get_dim_names_cube(cube):
 def get_coord_names_cube(cube):
     return [c.name() for c in cube.coords()]
 
+def _get_time_index_cube(cube):
+    """
+    Get array index of time dimension for input Cube
+
+    Parameters
+    ----------
+    cube : iris.cube.Cube
+        data cube.
+
+    Raises
+    ------
+    IndexError
+        if index cannot be retrieved (e.g. data does not contain time
+        dimension).
+
+    Returns
+    -------
+    int
+
+    """
+    dim_names = get_dim_names_cube(cube)
+    if 'time' in dim_names:
+        return dim_names.index('time')
+
+    idx_miss = []
+    if cube.ndim != len(dim_names): #one dimension is missing
+        for idx in range(len(cube.shape)):
+            coords = cube.coords(contains_dimension=idx,
+                                 dim_coords=True)
+            if len(coords)==0:
+                idx_miss.append(idx)
+    if len(idx_miss) == 1:
+        return idx_miss[0]
+
+    raise IndexError(f'Failed to identify data index of time dimension in '
+                      f'cube {repr(cube)}')
+
 def correct_time_coord(cube, ts_type, year):
     """Method that corrects the time coordinate of an iris Cube
 
@@ -437,10 +469,10 @@ def correct_time_coord(cube, ts_type, year):
         cube containing data
     ts_type : TsType or str
         temporal resolution of data (e.g. "hourly", "daily"). This information
-        is e.g. encrypted in the filename of a NetCDF file and may be
+        is e.g. encoded in the filename of a NetCDF file and may be
         accessed using :class:`pyaerocom.io.FileConventionRead`
     year : int
-        interger specifying start year, e.g. 2017
+        integer specifying start year, e.g. 2017
 
     Returns
     -------
@@ -448,24 +480,12 @@ def correct_time_coord(cube, ts_type, year):
         the same instance of the input cube with corrected time dimension axis
 
     """
-    tindex_cube = None
-    dim_lens = []
+    tindex_cube = _get_time_index_cube(cube)
+    coords = get_coord_names_cube(cube)
 
     if isinstance(ts_type, str):
         ts_type = TsType(ts_type)
 
-    for i, coord in enumerate(cube.dim_coords):
-        dim_lens.append(len(coord.points))
-        if coord.name() == 'time':
-            tindex_cube = i
-    if tindex_cube is None:
-        if cube.ndim != len(cube.dim_coords): #one dimension is missing
-            for idx, dim_len in enumerate(cube.shape):
-                if not dim_len in dim_lens: #candidate
-                    tindex_cube = idx
-    if tindex_cube is None:
-        raise NetcdfError(f'Failed to identify data index of time dimension in '
-                          f'cube {repr(cube)}')
     tres_str = ts_type.cf_base_unit
     conv = ts_type.datetime64_str
     tunit_str = f'{tres_str} since {year}-01-01 00:00:00'
@@ -480,10 +500,19 @@ def correct_time_coord(cube, ts_type, year):
     times_dt = times.astype("datetime64[s]").astype(datetime)
 
     time_nums = [tunit.date2num(t) for t in times_dt]
-    tcoord = iris.coords.DimCoord(time_nums, standard_name='time',
-                                  units=tunit)
 
-    cube.remove_coord('time')
+    pd_freq = ts_type.to_pandas_freq()
+    num_expected = len(make_datetimeindex_from_year(pd_freq, year))
+    num_inferred = len(time_nums)
+    if not num_inferred == num_expected:
+        raise UnresolvableTimeDefinitionError(
+            f'expected {num_expected} timestamps for {year} and '
+            f'freq {ts_type} but got {num_inferred}')
+    tcoord = iris.coords.DimCoord(time_nums,
+                                  standard_name='time',
+                                  units=tunit)
+    if 'time' in coords:
+        cube.remove_coord('time')
 
     cube.add_dim_coord(tcoord, tindex_cube)
     cube.attributes['timedim-corrected'] = True
