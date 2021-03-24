@@ -4,9 +4,9 @@ import json
 
 import numpy as np
 from pandas import DataFrame
-
-from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
-from pyaerocom.conftest import tda
+from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom import ColocatedData, GriddedData, UngriddedData
+from pyaerocom.conftest import tda, does_not_raise_exception
 from pyaerocom.web import AerocomEvaluation
 from pyaerocom.io.aux_read_cubes import add_cubes
 
@@ -68,6 +68,28 @@ def stp_min(tmpdir):
 
 def test_aerocom_evaluation(stp_min):
     assert isinstance(stp_min, AerocomEvaluation)
+
+@pytest.mark.parametrize('kwargs, raises', [
+    ({}, pytest.raises(AttributeError)),
+    ({'proj_id' : 'Bla'}, pytest.raises(AttributeError)),
+    ({'proj_id' : 'Bla', 'exp_id' : 'blub',
+      'init_output_dirs' : False}, does_not_raise_exception()),
+    ({'proj_id' : 'Bla', 'exp_id' : 'blub'},
+     does_not_raise_exception()),
+    ({'proj_id' : 'Bla', 'exp_id' : 'blub',
+      'basedir_coldata' : '/home'}, pytest.raises(AttributeError)),
+
+    ])
+def test_AerocomEvaluation__init__(kwargs, raises):
+    with raises:
+        stp = AerocomEvaluation(**kwargs)
+        assert isinstance(stp.colocation_settings, ColocationSetup)
+        bdc = stp.colocation_settings['basedir_coldata']
+        if 'init_output_dirs' in kwargs and not kwargs['init_output_dirs']:
+            assert bdc is None
+        else:
+            cp = f'{stp.proj_id}/{stp.exp_id}'
+            assert bdc.endswith(cp)
 
 def test_aerocom_evaluation_run_colocation(stp):
 
@@ -148,7 +170,8 @@ def test_aerocom_evaluation_output_files(stp, tmpdir):
 def test_aerocom_evaluation_to_from_json(stp, tmpdir):
     stp.to_json(tmpdir)
     config_filename = 'cfg_{}_{}.json'.format(PROJ_ID, EXP_ID)
-    stp_new = AerocomEvaluation(proj_id='project2', exp_id='exp2', raise_exceptions=True)
+    stp_new = AerocomEvaluation(proj_id='project2', exp_id='exp2',
+                                raise_exceptions=True)
     stp_new.from_json(os.path.join(tmpdir, config_filename))
     for old, new in zip(dir(stp), dir(stp_new)):
         assert stp[old] == stp_new[new]

@@ -4,6 +4,7 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
+from pathlib import Path
 import shutil
 import simplejson
 from traceback import format_exc
@@ -171,6 +172,13 @@ class AerocomEvaluation(object):
         instantiating the class. These are updated *after* the reading of the
         json file, which will overwrite affected attributes defined in the json
         file.
+    init_output_dirs : bool
+        if True, all required output directories for json files and colocated
+        NetCDF files are already created when instantiating the class. This is
+        recommended if you intend to use individual methods of this class such
+        as :func:`run_colocation` or :func:`find_coldata_files` and is of
+        particular relevance for the storage location of the colocated data
+        files. Defaults to True.
     """
     OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles',
                      'contour']
@@ -198,9 +206,13 @@ class AerocomEvaluation(object):
             'raise_exceptions'    : 'Raise exceptions if they occur'
     }
 
+    #: status of experiment
     EXP_STATUS_VALS = ['public', 'experimental']
+
+    #: attributes that are not supported by this interface
+    FORBIDDEN_ATTRS = ['basedir_coldata']
     def __init__(self, proj_id=None, exp_id=None, config_dir=None,
-                 try_load_json=True, **settings):
+                 try_load_json=True, init_output_dirs=True, **settings):
 
         self._log = const.print_log
 
@@ -290,6 +302,8 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
+        if init_output_dirs:
+            self.init_dirs()
 
     @property
     def proj_dir(self):
@@ -514,7 +528,11 @@ class AerocomEvaluation(object):
         self._update_custom_read_methods()
 
     def __setitem__(self, key, val):
-        if key in self.colocation_settings:
+        if key in self.FORBIDDEN_ATTRS:
+            raise AttributeError(
+                f'Attr {key} is not allowed in AerocomEvaluation'
+                )
+        elif key in self.colocation_settings:
             self.colocation_settings[key] = val
         elif key == 'obs_config':
             self._set_obsconfig(val)
@@ -533,6 +551,7 @@ class AerocomEvaluation(object):
                 self.__dict__[key] = val
         elif key in self.__dict__:
             self.__dict__[key] = val
+
         else:
             const.print_log.warning(
                 f'Invalid input key {key} for AerocomEvaluation. Will be '
@@ -560,15 +579,29 @@ class AerocomEvaluation(object):
         self._check_init_col_outdir()
 
     def _check_init_col_outdir(self):
+        cs = self.colocation_settings
+
         cbd = self.coldata_basedir
-        if isinstance(cbd, str) and os.path.exists(cbd):
-            if not self.proj_id in cbd:
-                cbd1 = chk_make_subdir(cbd, self.proj_id)
-                col_out = chk_make_subdir(cbd1, self.exp_id)
-                const.print_log.info(
-                    f'Setting output directory for colocated data files to'
-                    f'{col_out}')
-                self.colocation_settings['basedir_coldata'] = col_out
+        if cbd is None:
+            # this will make sure the base directory exists (or crash) and
+            # returns a string
+            cbd = cs._check_basedir_coldata()
+        elif isinstance(cbd, Path):
+            cbd = str(cbd)
+
+        if not os.path.exists(cbd):
+            os.mkdir(cbd)
+
+        add_dirs = f'{self.proj_id}/{self.exp_id}'
+        if not cbd.endswith(add_dirs):
+            cbd = os.path.join(cbd, add_dirs)
+
+        os.makedirs(cbd, exist_ok=True)
+        const.print_log.info(
+            f'Setting output directory for colocated data files to:\n{cbd}'
+            )
+        self.coldata_basedir = cbd
+        self.colocation_settings['basedir_coldata'] = cbd
 
     def check_config(self):
         if not isinstance(self.proj_id, str):
@@ -986,8 +1019,7 @@ class AerocomEvaluation(object):
         if self.colocation_settings['reanalyse_existing']:
             self.delete_all_colocateddata_files(model_name, obs_name)
 
-        col = Colocator()
-        col.update(**self.colocation_settings)
+        col = Colocator(**self.colocation_settings)
 
         if not model_name in self.model_config:
             raise KeyError('No such model name in configuration: {}. Available '
