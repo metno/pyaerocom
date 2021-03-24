@@ -1114,7 +1114,9 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
     hm_all = dict(zip(('daily', 'monthly','yearly'), ({},{},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
+        print(freq)
         for regid, regname in region_ids.items():
+            print(regid,regname)
             if not freq in data or data[freq] == None:
                 hm_data[regname] = stats_dummy
             else:
