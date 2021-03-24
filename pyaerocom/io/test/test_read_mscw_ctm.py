@@ -54,14 +54,22 @@ def reader():
     return ReadMscwCtm()
 
 @pytest.mark.parametrize('filepath,data_id,data_dir,check,raises', [
+
+    (EMEP_DIR+'/Base_month.nc',None,None,{
+        'data_id'  : 'EMEP_2017',
+        'data_dir' : EMEP_DIR},
+        does_not_raise_exception()),
+
     (None,None,None, {'_data_dir' : None,'_filename' : 'Base_day.nc',
                       '_filedata': None, '_file_mask' : None,
                       '_files'    : None},
         does_not_raise_exception()),
     ('blaaa',None,None,{},pytest.raises(FileNotFoundError)),
-    (EMEP_DIR,None,None,{},pytest.raises(ValueError) ),
+    (EMEP_DIR,None,None,{},pytest.raises(ValueError)),
     (None,None,'blaaaa',{},pytest.raises(FileNotFoundError) ),
-    (None,None,EMEP_DIR+'/Base_month.nc',{},pytest.raises(ValueError) )
+    (None,None,EMEP_DIR+'/Base_month.nc',{},pytest.raises(ValueError)),
+
+
     ])
 def test_ReadMscwCtm__init__(filepath, data_id, data_dir,check,raises):
     with raises:
@@ -221,10 +229,6 @@ def test_ReadMscwCtm_preprocess_units():
     units = ''
     prefix = 'AOD'
     assert ReadMscwCtm().preprocess_units(units, prefix) == '1'
-
-    units = 'mgS/m2'
-    with pytest.raises(NotImplementedError):
-        ReadMscwCtm().preprocess_units(units)
 
 def test_ReadMscwCtm_open_file(path_emep):
     reader = ReadMscwCtm()
