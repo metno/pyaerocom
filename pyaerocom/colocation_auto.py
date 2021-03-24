@@ -6,6 +6,7 @@ Classes and methods to perform high-level colocation.
 from datetime import datetime
 import numpy as np
 import os
+from pathlib import Path
 import traceback
 
 from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
@@ -206,20 +207,18 @@ class ColocationSetup(BrowseDict):
 
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
-        try:
-            Filter(filter_name)
-        except Exception:
-            raise ValueError('Invalid input for filter_name {}'.format(filter_name))
+
+        if isinstance(basedir_coldata, Path):
+            basedir_coldata = str(basedir_coldata)
+        elif basedir_coldata is not None and not os.path.exists(basedir_coldata):
+            raise FileNotFoundError(
+                f'Input basedir_coldata does not exist: {basedir_coldata}'
+                )
+
+        Filter(filter_name) #crashes if input filter name is invalid
+
         self.save_coldata = save_coldata
-        if save_coldata:
-            if basedir_coldata is None:
-                basedir_coldata = const.COLOCATEDDATADIR
-                if not os.path.exists(basedir_coldata):
-                    const.print_log.info(f'Creating directory: {basedir_coldata}')
-                    os.mkdir(basedir_coldata)
-                elif not os.path.exists(basedir_coldata):
-                    raise ValueError(f'Input directory {basedir_coldata} does '
-                                     f'not exist')
+        self.basedir_coldata = basedir_coldata
 
         self._obs_cache_only = False
         self.obs_vars = obs_vars
@@ -275,8 +274,6 @@ class ColocationSetup(BrowseDict):
         self.regrid_res_deg = regrid_res_deg
         self.ignore_station_names = None
 
-        self.basedir_coldata = basedir_coldata
-
         self.model_ts_type_read = model_ts_type_read
         self.model_read_aux = model_read_aux
         self.model_use_climatology = False
@@ -290,6 +287,23 @@ class ColocationSetup(BrowseDict):
         self.raise_exceptions = False
 
         self.update(**kwargs)
+
+    def _check_basedir_coldata(self):
+        basedir_coldata = self.basedir_coldata
+        if basedir_coldata is None:
+            basedir_coldata = const.COLOCATEDDATADIR
+            if not os.path.exists(basedir_coldata):
+                const.print_log.info(f'Creating directory: {basedir_coldata}')
+                os.mkdir(basedir_coldata)
+        elif isinstance(basedir_coldata, Path):
+            basedir_coldata = str(basedir_coldata)
+        if isinstance(basedir_coldata, str) and not os.path.exists(basedir_coldata):
+            os.mkdir(basedir_coldata)
+        if not os.path.exists(basedir_coldata):
+            raise FileNotFoundError(
+                f'Output directory for colocated data files {basedir_coldata} '
+                f'does not exist')
+        self.basedir_coldata = basedir_coldata
 
     @property
     def basedir_logfiles(self):
@@ -314,9 +328,7 @@ class ColocationSetup(BrowseDict):
                 self[key].update(val)
             else:
                 self[key] = val
-        sd = self.basedir_coldata
-        if isinstance(sd, str) and not os.path.exists(sd):
-            os.mkdir(sd)
+
 
     def _check_outdated_outlier_defs(self):
         if 'var_outlier_ranges' in self:
@@ -387,6 +399,8 @@ class Colocator(ColocationSetup):
 
         """
         self.update(**opts)
+        if self.save_coldata:
+            self._check_basedir_coldata()
         self._check_outdated_outlier_defs()
         # ToDo: setting the defaults for time resampling here should be
         # unnecessary since this is done in TimeResampler. Ensure that and
@@ -926,6 +940,7 @@ class Colocator(ColocationSetup):
 
                 file_exists = self._check_coldata_exists(model_data.data_id,
                                                          savename)
+
 
                 out_dir = chk_make_subdir(self.basedir_coldata, self.model_id)
                 if file_exists:
