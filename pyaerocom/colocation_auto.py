@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import traceback
 
-from pyaerocom._lowlevel_helpers import BrowseDict, chk_make_subdir
+from pyaerocom._lowlevel_helpers import (BrowseDict, chk_make_subdir)
 from pyaerocom import const, print_log
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                get_lowest_resolution, start_stop)
@@ -289,6 +289,20 @@ class ColocationSetup(BrowseDict):
         self.update(**kwargs)
 
     def _check_basedir_coldata(self):
+        """
+        Make sure output directory for colocated data files exists
+
+        Raises
+        ------
+        FileNotFoundError
+            If :attr:`basedir_coldata` does not exist and cannot be created.
+
+        Returns
+        -------
+        str
+            current value of :attr:`basedir_coldata`
+
+        """
         basedir_coldata = self.basedir_coldata
         if basedir_coldata is None:
             basedir_coldata = const.COLOCATEDDATADIR
@@ -304,6 +318,7 @@ class ColocationSetup(BrowseDict):
                 f'Output directory for colocated data files {basedir_coldata} '
                 f'does not exist')
         self.basedir_coldata = basedir_coldata
+        return basedir_coldata
 
     @property
     def basedir_logfiles(self):
