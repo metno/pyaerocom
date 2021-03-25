@@ -1092,20 +1092,33 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_data.update(meta_glob)
 
         for freq, cd in data.items():
+            jsfreq = jsdate[freq]
             if not isinstance(cd, ColocatedData):
                 continue
-            subset = cd.filter_region(regid,
-                                      inplace=False,
-                                      check_country_meta=check_countries)
+            try:
+                subset = cd.filter_region(regid,
+                                          inplace=False,
+                                          check_country_meta=check_countries)
+            except DataCoverageError:
+                const.print_log.info(
+                    f'no data in {regid} ({freq}) to compute regional '
+                    f'timeseries'
+                    )
+                ts_data[f'{freq}_date'] = jsfreq
+                ts_data[f'{freq}_obs'] = [np.nan] * len(jsfreq)
+                ts_data[f'{freq}_mod'] = [np.nan] * len(jsfreq)
+                continue
+
+
             if subset.has_latlon_dims:
                 avg = subset.data.mean(dim=('latitude', 'longitude'))
             else:
                 avg = subset.data.mean(dim='station_name')
             obs_vals = avg[0].data.tolist()
             mod_vals = avg[1].data.tolist()
-            ts_data['{}_date'.format(freq)] = jsdate[freq]
-            ts_data['{}_obs'.format(freq)] = obs_vals
-            ts_data['{}_mod'.format(freq)] = mod_vals
+            ts_data[f'{freq}_date'] = jsfreq
+            ts_data[f'{freq}_obs'] = obs_vals
+            ts_data[f'{freq}_mod'] = mod_vals
 
         ts_objs.append(ts_data)
     return ts_objs
