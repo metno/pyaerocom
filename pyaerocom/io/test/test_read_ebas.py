@@ -183,7 +183,13 @@ class TestReadEbas(object):
         assert reader.ASSUME_AAE_SHIFT_WVL == 1.0
 
     def test_IGNORE_FILES(self, reader):
-        assert reader.IGNORE_FILES == ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
+        assert reader.IGNORE_FILES == [
+        'CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas',
+        'DK0022R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_22.DK01L_IC.lev2.nas',
+        'DK0012R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_12.DK01L_IC.lev2.nas',
+        'DK0008R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_08.DK01L_IC.lev2.nas',
+        'DK0005R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_05.DK01L_IC.lev2.nas'
+        ]
 
     OPTS = {'prefer_statistics': ['arithmetic mean', 'median'],
              'ignore_statistics': ['percentile:15.87', 'percentile:84.13'],
