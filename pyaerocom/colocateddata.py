@@ -299,6 +299,17 @@ class ColocatedData(object):
         """
         return self.calc_area_weights()
 
+    def get_station_names_obs_notnan(self):
+        if not self.dims == ('data_source', 'time', 'station_name'):
+            raise AttributeError(
+                'Need station_name dimension and dim order ')
+        all_sites = self.data['station_name'].values
+        obs_np = self.data[0].data
+        # axis=0 is time dimension
+        obs_nan = np.isnan(obs_np).all(axis=0)
+        sites_notnan = all_sites[~obs_nan]
+        return sites_notnan
+
     def get_country_codes(self):
         """
         Get country names and codes for all locations contained in these data
@@ -1380,7 +1391,7 @@ class ColocatedData(object):
         elif region_id in const.OLD_AEROCOM_REGIONS:
             return self.apply_latlon_filter(region_id=region_id,
                                             inplace=inplace)
-        raise RegionNotAvailable()
+        raise AttributeError()
 
     def get_regional_timeseries(self, region_id, **filter_kwargs):
         """

@@ -1109,15 +1109,10 @@ def _process_regional_timeseries(data, jsdate, region_ids,
     return ts_objs
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob):
+                          meta_glob, apply_annual_limit=True):
 
     hm_all = dict(zip(('daily', 'monthly','yearly'), ({},{},{})))
     stats_dummy = _init_stats_dummy()
-
-    year = data['yearly']
-
-    year.data = year.data.dropna(dim='station_name')
-
     for freq, hm_data in hm_all.items():
         print(freq)
         for regid, regname in region_ids.items():
@@ -1131,13 +1126,30 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
 
                 filtered = coldata.filter_region(region_id=regid,
                                                  check_country_meta=use_country)
-                filtered_yr = year.filter_region(region_id=regid,
-                                                 check_country_meta=use_country)
-                stations_to_keep = filtered_yr.data.dropna(
-                                dim='station_name').station_name.values
-                filtered.data = filtered.data.sel(station_name=stations_to_keep)
 
-                stats = filtered.calc_statistics(use_area_weights=use_weights)
+                # if all model and obsdata is NaN, use dummy stats (this can
+                # e.g., be the case if colocate_time=True and all obs is NaN,
+                # or if model domain is not covered by the region)
+# =============================================================================
+#                 if np.isnan(filtered.data.data).all():
+#                     hm_data[regname] = stats_dummy
+#                     continue
+# =============================================================================
+
+                if apply_annual_limit:
+
+                    year = data['yearly']
+
+                    filtered_yr = year.filter_region(
+                        region_id=regid,
+                        check_country_meta=use_country
+                        )
+                    stats_to_keep = filtered_yr.get_station_names_obs_notnan()
+                    filtered.data = filtered.data.sel(station_name=stats_to_keep)
+                try:
+                    stats = filtered.calc_statistics(use_area_weights=use_weights)
+                except:
+                    stats = filtered.calc_statistics(use_area_weights=use_weights)
                 for k, v in stats.items():
                     try:
                         stats[k] = np.float64(v) # for json encoder...
