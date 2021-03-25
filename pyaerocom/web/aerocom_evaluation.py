@@ -221,6 +221,7 @@ class AerocomEvaluation(object):
         self.only_json = False
 
         self.weighted_stats=False
+        self.annual_stats_constrained=False
 
         #: Base directory for output
         self.out_basedir = None
@@ -265,7 +266,6 @@ class AerocomEvaluation(object):
         self.var_order_menu = []
 
         self.regions_how = 'default'
-        self.region_groups = {}
         self.resample_how = None
 
         self.zeros_to_nan = False
@@ -739,8 +739,6 @@ class AerocomEvaluation(object):
         except:
             web_iface_name = obs_name
         diurnal_only = self.get_diurnal_only(obs_name,coldata)
-        if len(self.region_groups) > 0:
-            raise NotImplementedError('Filtering of grouped regions is not ready yet...')
 
         col = Colocator()
         col.update(**self.colocation_settings)
@@ -752,15 +750,17 @@ class AerocomEvaluation(object):
                 obs_name=obs_name,
                 model_name=model_name,
                 use_weights=self.weighted_stats,
-                vert_code=vert_code,
                 colocation_settings=col,
+                vert_code=vert_code,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
-                regions_how=self.regions_how,
                 web_iface_name=web_iface_name,
                 diurnal_only=diurnal_only,
-                zeros_to_nan=self.zeros_to_nan)
-                #region_groups=self.region_groups)
+                regions_how=self.regions_how,
+                zeros_to_nan=self.zeros_to_nan,
+                annual_stats_constrained=self.annual_stats_constrained
+                )
+
 
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
@@ -1277,8 +1277,7 @@ class AerocomEvaluation(object):
             arr['data_source'] = source_new #obs, model_id
             arr.attrs['data_source'] = source_new
             darrs.append(arr)
-        if not len(darrs) > 1:
-            raise ValueError('FATAL... please debug')
+
         merged = xr.concat(darrs, dim='station_name')
         coldata = ColocatedData(merged)
         return compute_json_files_from_colocateddata(
@@ -1286,13 +1285,15 @@ class AerocomEvaluation(object):
                 obs_name=superobs_name,
                 model_name=model_name,
                 use_weights=self.weighted_stats,
-                vert_code=vert_code,
                 colocation_settings=coldata.get_time_resampling_settings(),
+                vert_code=vert_code,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
-                regions_how=self.regions_how,
                 web_iface_name=superobs_name,
-                diurnal_only=False
+                diurnal_only=False,
+                regions_how=self.regions_how,
+                zeros_to_nan=self.zeros_to_nan,
+                annual_stats_constrained=self.annual_stats_constrained
                 )
 
     def _run_superobs_entry(self, model_name, superobs_name, var_name=None,

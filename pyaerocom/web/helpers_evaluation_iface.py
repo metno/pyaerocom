@@ -1218,17 +1218,6 @@ def _init_data_default_frequencies(coldata, colocation_settings):
 
     return (data_arrs, jsdate)
 
-# def _hack_fix_dryvelo3(coldata):
-#     if coldata.data.attrs['var_name'] == ['vmro3', 'dryvelo3']:
-#         coldata.data.attrs['var_name'] = ['dryvelo3', 'dryvelo3']
-#         coldata.data.var_name.values = np.array(['dryvelo3', 'dryvelo3'])
-
-#     if coldata.data.attrs['var_name'] == ['vmro3', 'dryo3']:
-#         coldata.data.attrs['var_name'] = ['dryo3', 'dryo3']
-#         coldata.data.var_name.values = np.array(['dryo3', 'dryo3'])
-#     return coldata
-
-
 def compute_json_files_from_colocateddata(coldata, obs_name,
                                           model_name, use_weights,
                                           colocation_settings,
@@ -1237,7 +1226,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           web_iface_name,
                                           diurnal_only,
                                           regions_how=None,
-                                          zeros_to_nan=False):
+                                          zeros_to_nan=False,
+                                          annual_stats_constrained=False):
 
     """Creates all json files for one ColocatedData object
 
@@ -1294,10 +1284,12 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     if not diurnal_only:
         # FIRST: process data for heatmap json file
         const.print_log.info('Processing heatmap data for all regions')
-        hm_all = _process_heatmap_data(data, regnames,
-                                       use_weights,
-                                       use_country=use_country,
-                                       meta_glob=meta_glob)
+        hm_all = _process_heatmap_data(
+            data, regnames, use_weights,
+            use_country=use_country,
+            meta_glob=meta_glob,
+            annual_stats_constrained=annual_stats_constrained
+            )
 
         for freq, hm_data in hm_all.items():
             if freq == 'daily':
