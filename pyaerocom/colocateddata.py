@@ -4,6 +4,7 @@ from pyaerocom import logger, const
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
+                                  DataCoverageError,
                                   DataSourceError,
                                   NetcdfError, VarNotAvailableError,
                                   MetaDataError)
@@ -57,7 +58,7 @@ class ColocatedData(object):
     IOError
         if init fails
     """
-    __version__ = '0.10'
+    __version__ = '0.11'
     def __init__(self, data=None, **kwargs):
         self._data = None
 
@@ -1165,17 +1166,11 @@ class ColocatedData(object):
                                      .format(country))
 
         what = 'country' if not use_country_code else 'country_code'
-        countries = arr[what]
-        country_dims = countries.dims
-        # some sanity checking (this can probably be done more elegant using
-        # xarray syntax, however, did not manage to use loc, sel, etc since
-        # country is not a dimension coordinate)
-        assert country_dims[0] == 'station_name'
-        assert len(country_dims) == 1
-
-        assert arr.ndim == 3
-        assert arr.dims[-1] == 'station_name'
         mask = arr[what] == country
+        if mask.sum() == 0:
+            raise DataCoverageError(
+                f'No data available in country {country} in ColocatedData'
+                )
         return arr[:,:,mask]
 
     @staticmethod
@@ -1199,6 +1194,11 @@ class ColocatedData(object):
             lonmask = np.logical_and(lons > lon_range[0],
                                      lons < lon_range[1])
         mask = latmask & lonmask
+        if mask.sum() == 0:
+            raise DataCoverageError(
+                f'No data available in latrange={lat_range} and '
+                f'lonrange={lon_range} in ColocatedData'
+                )
 
         return arr[:,:,mask]
 
@@ -1217,16 +1217,16 @@ class ColocatedData(object):
 
     def apply_country_filter(self, region_id, use_country_code=False,
                              inplace=False):
-        is_2d = self._check_latlon_coords()
+        data = self if inplace else self.copy()
+        is_2d = data._check_latlon_coords()
         if is_2d:
-            filtered = self._filter_country_2d(self.data, region_id,
-                                               use_country_code)
+            data.data = data._filter_country_2d(data.data, region_id,
+                                                use_country_code)
         else:
-            raise NotImplementedError('Cannot yet filter')
-        if inplace:
-            self.data = filtered
-            return self
-        return ColocatedData(filtered)
+            raise NotImplementedError(
+                'Cannot yet filter country for 3D ColocatedData object')
+
+        return data
 
     def apply_latlon_filter(self, lat_range=None, lon_range=None,
                             region_id=None, inplace=False):
