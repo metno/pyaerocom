@@ -231,7 +231,6 @@ class ReadEbas(ReadUngriddedBase):
         # keep pr in mm
         'pr'        : dict(convert_units = False)
         }
-    IGNORE_WAVELENGTH = ['conceqbc']
 
     ASSUME_AAE_SHIFT_WVL = 1.0
     ASSUME_AE_SHIFT_WVL = 1#.5
@@ -245,6 +244,8 @@ class ReadEbas(ReadUngriddedBase):
         'DK0005R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_05.DK01L_IC.lev2.nas'
     ]
 
+    #: Ignore data columns in NASA Ames files that contain any of the listed
+    #: attributes
     IGNORE_COLS_CONTAIN = ['fraction', 'artifact']
 
     # list of all available resolution codes (extracted from SQLite database)

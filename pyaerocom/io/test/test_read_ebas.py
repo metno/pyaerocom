@@ -176,9 +176,6 @@ class TestReadEbas(object):
             assert var in reader.AUX_FUNS
             assert reader.AUX_FUNS[var] == func
 
-    def test_IGNORE_WAVELENGTH(self, reader):
-        assert reader.IGNORE_WAVELENGTH == ['conceqbc']
-
     def test_ASSUME_AE_SHIFT_WVL(self, reader):
         assert reader.ASSUME_AE_SHIFT_WVL == 1.0
 
