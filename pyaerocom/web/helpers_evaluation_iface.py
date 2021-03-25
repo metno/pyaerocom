@@ -1110,7 +1110,8 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_objs.append(ts_data)
     return ts_objs
 
-def _get_stats_region(data, freq, regid, use_country, apply_annual_limit):
+def _get_stats_region(data, freq, regid, use_weights, use_country,
+                      apply_annual_limit):
     coldata = data[freq]
     filtered = coldata.filter_region(region_id=regid,
                                      check_country_meta=use_country)
@@ -1120,7 +1121,7 @@ def _get_stats_region(data, freq, regid, use_country, apply_annual_limit):
     # or if model domain is not covered by the region)
     if np.isnan(filtered.data.data).all():
         # use stats_dummy
-        raise ValueError(f'All data is NaN in {regid} ({freq})')
+        raise DataCoverageError(f'All data is NaN in {regid} ({freq})')
 
     if apply_annual_limit:
 
@@ -1132,7 +1133,9 @@ def _get_stats_region(data, freq, regid, use_country, apply_annual_limit):
             )
         stats_to_keep = filtered_yr.get_station_names_obs_notnan()
         if len(stats_to_keep) == 0:
-            raise ValueError(f'All data is NaN in {regid} ({freq})')
+            raise DataCoverageError(
+                f'No sites remaining in {regid} ({freq}) when applying annual '
+                f'coverage constraint.')
 
         filtered.data = filtered.data.sel(station_name=stats_to_keep)
 
@@ -1154,7 +1157,12 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
     for freq, hm_data in hm_all.items():
         for regid, regname in region_ids.items():
             if freq in data and data[freq] is not None:
-                stats = _get_stats_region()
+                try:
+                    stats = _get_stats_region(data, freq, regid, use_weights,
+                                              use_country, apply_annual_limit)
+                except DataCoverageError as e:
+                    const.print_log.info(e)
+                    stats = stats_dummy
             else:
                 stats = stats_dummy
             hm_data[regname] = stats
