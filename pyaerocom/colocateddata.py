@@ -5,12 +5,12 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
 from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
                                   DataSourceError,
-                                  DataExtractionError,
                                   NetcdfError, VarNotAvailableError,
                                   MetaDataError)
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.variable import Variable
-from pyaerocom.region import valid_default_region, Region
+from pyaerocom.region_defs import REGION_DEFS
+from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr, get_mask_value)
 
@@ -1388,10 +1388,10 @@ class ColocatedData(object):
 
         if region_id in const.HTAP_REGIONS:
             return self.apply_region_mask(region_id, inplace)
-        elif region_id in const.OLD_AEROCOM_REGIONS:
+        elif region_id in REGION_DEFS:
             return self.apply_latlon_filter(region_id=region_id,
                                             inplace=inplace)
-        raise AttributeError()
+        raise AttributeError(f'no such region defined {region_id}')
 
     def get_regional_timeseries(self, region_id, **filter_kwargs):
         """

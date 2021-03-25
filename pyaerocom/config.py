@@ -27,8 +27,7 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
 
 from pyaerocom.exceptions import (DeprecationError, DataSourceError,
                                   DataIdError)
-from pyaerocom.region_defs import (REGION_DEFS,
-                                   OLD_AEROCOM_REGIONS,
+from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 
 from pyaerocom.variable import VarCollection
