@@ -1242,7 +1242,9 @@ class ColocatedData(object):
         ColocatedData
             filtered data object
         """
-        is_2d = self._check_latlon_coords()
+        if not inplace:
+            data = self.copy()
+        is_2d = data._check_latlon_coords()
 
         if region_id is not None:
             reg = Region(region_id)
@@ -1258,13 +1260,13 @@ class ColocatedData(object):
         if lat_range is None:
             lat_range = [-90, 90]
 
-        latr, lonr = self.data.attrs['lat_range'], self.data.attrs['lon_range']
+        latr, lonr = data.data.attrs['lat_range'], data.data.attrs['lon_range']
         if np.equal(latr, lat_range).all() and np.equal(lonr, lon_range).all():
             const.logger.info(
                 f'Filtering of lat_range={lat_range} and lon_range={lon_range} '
                 f'results in unchanged object'
                 )
-            return self
+            return data
         if lat_range[0] > lat_range[1]:
             raise ValueError(
                 f'Lower latitude bound {lat_range[0]} cannot exceed upper '
@@ -1280,9 +1282,9 @@ class ColocatedData(object):
             lon_range[1] = lonr[1]
 
         if is_2d:
-            filtered = self._filter_latlon_2d(self.data, lat_range, lon_range)
+            filtered = data._filter_latlon_2d(data.data, lat_range, lon_range)
         else:
-            filtered = self._filter_latlon_3d(self.data, lat_range, lon_range)
+            filtered = data._filter_latlon_3d(data.data, lat_range, lon_range)
 
         if not isinstance(region_id, str):
             region_id = 'CUSTOM'
@@ -1295,10 +1297,9 @@ class ColocatedData(object):
         filtered.attrs['region'] = region_id
         filtered.attrs['lon_range'] = lon_range
         filtered.attrs['lat_range'] = lat_range
-        if inplace:
-            self.data = filtered
-            return self
-        return ColocatedData(filtered)
+
+        data.data = filtered
+        return data
 
     def apply_region_mask(self, region_id, inplace=False):
         """
@@ -1376,9 +1377,10 @@ class ColocatedData(object):
 
         if region_id in const.HTAP_REGIONS:
             return self.apply_region_mask(region_id, inplace)
-        else:
+        elif region_id in const.OLD_AEROCOM_REGIONS:
             return self.apply_latlon_filter(region_id=region_id,
                                             inplace=inplace)
+        raise RegionNotAvailable()
 
     def get_regional_timeseries(self, region_id, **filter_kwargs):
         """
