@@ -18,7 +18,9 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import DataDimensionError, TemporalResolutionError
+from pyaerocom.exceptions import (DataCoverageError,
+                                  DataDimensionError,
+                                  TemporalResolutionError)
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
@@ -1108,57 +1110,54 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_objs.append(ts_data)
     return ts_objs
 
+def _get_stats_region(data, freq, regid, use_country, apply_annual_limit):
+    coldata = data[freq]
+    filtered = coldata.filter_region(region_id=regid,
+                                     check_country_meta=use_country)
+
+    # if all model and obsdata is NaN, use dummy stats (this can
+    # e.g., be the case if colocate_time=True and all obs is NaN,
+    # or if model domain is not covered by the region)
+    if np.isnan(filtered.data.data).all():
+        # use stats_dummy
+        raise ValueError(f'All data is NaN in {regid} ({freq})')
+
+    if apply_annual_limit:
+
+        year = data['yearly']
+
+        filtered_yr = year.filter_region(
+            region_id=regid,
+            check_country_meta=use_country
+            )
+        stats_to_keep = filtered_yr.get_station_names_obs_notnan()
+        if len(stats_to_keep) == 0:
+            raise ValueError(f'All data is NaN in {regid} ({freq})')
+
+        filtered.data = filtered.data.sel(station_name=stats_to_keep)
+
+    stats = filtered.calc_statistics(use_area_weights=use_weights)
+    for k, v in stats.items():
+        try:
+            stats[k] = np.float64(v) # for json encoder...
+        except Exception as e:
+            # value is str (e.g. for weighted stats)
+            # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
+            stats[k] = v
+    return stats
+
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob, apply_annual_limit=True):
 
     hm_all = dict(zip(('daily', 'monthly','yearly'), ({},{},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
-        print(freq)
         for regid, regname in region_ids.items():
-            print(regid,regname)
-            if regid == 'Latvia':
-                print()
-            if not freq in data or data[freq] == None:
-                hm_data[regname] = stats_dummy
+            if freq in data and data[freq] is not None:
+                stats = _get_stats_region()
             else:
-                coldata = data[freq]
-
-                filtered = coldata.filter_region(region_id=regid,
-                                                 check_country_meta=use_country)
-
-                # if all model and obsdata is NaN, use dummy stats (this can
-                # e.g., be the case if colocate_time=True and all obs is NaN,
-                # or if model domain is not covered by the region)
-# =============================================================================
-#                 if np.isnan(filtered.data.data).all():
-#                     hm_data[regname] = stats_dummy
-#                     continue
-# =============================================================================
-
-                if apply_annual_limit:
-
-                    year = data['yearly']
-
-                    filtered_yr = year.filter_region(
-                        region_id=regid,
-                        check_country_meta=use_country
-                        )
-                    stats_to_keep = filtered_yr.get_station_names_obs_notnan()
-                    filtered.data = filtered.data.sel(station_name=stats_to_keep)
-                try:
-                    stats = filtered.calc_statistics(use_area_weights=use_weights)
-                except:
-                    stats = filtered.calc_statistics(use_area_weights=use_weights)
-                for k, v in stats.items():
-                    try:
-                        stats[k] = np.float64(v) # for json encoder...
-                    except Exception as e:
-                        # value is str (e.g. for weighted stats)
-                        # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
-                        stats[k] = v
-
-                hm_data[regname] = stats
+                stats = stats_dummy
+            hm_data[regname] = stats
     return hm_all
 
 def _get_jsdate(coldata):
