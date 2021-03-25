@@ -1111,7 +1111,7 @@ def _process_regional_timeseries(data, jsdate, region_ids,
     return ts_objs
 
 def _get_stats_region(data, freq, regid, use_weights, use_country,
-                      apply_annual_limit):
+                      annual_stats_constrained):
     coldata = data[freq]
     filtered = coldata.filter_region(region_id=regid,
                                      check_country_meta=use_country)
@@ -1123,7 +1123,7 @@ def _get_stats_region(data, freq, regid, use_weights, use_country,
         # use stats_dummy
         raise DataCoverageError(f'All data is NaN in {regid} ({freq})')
 
-    if apply_annual_limit:
+    if annual_stats_constrained:
 
         year = data['yearly']
 
@@ -1150,7 +1150,7 @@ def _get_stats_region(data, freq, regid, use_weights, use_country,
     return stats
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, apply_annual_limit=True):
+                          meta_glob, annual_stats_constrained=False):
 
     hm_all = dict(zip(('daily', 'monthly','yearly'), ({},{},{})))
     stats_dummy = _init_stats_dummy()
@@ -1159,7 +1159,7 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
             if freq in data and data[freq] is not None:
                 try:
                     stats = _get_stats_region(data, freq, regid, use_weights,
-                                              use_country, apply_annual_limit)
+                                              use_country, annual_stats_constrained)
                 except DataCoverageError as e:
                     const.print_log.info(e)
                     stats = stats_dummy
