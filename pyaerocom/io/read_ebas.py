@@ -147,7 +147,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.48_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.49_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -709,18 +709,43 @@ class ReadEbas(ReadUngriddedBase):
                     result_col = _cols
 
             if len(result_col) > 1:
-                comp = ebas_var_info['component']
-                startstop = f'{file.time_stamps[0]} - {file.time_stamps[-1]}'
-                msg = (f'\n\nFATAL: could not resolve unique data column for '
-                       f'{var} (EBAS varname: {comp})\nData period: {startstop}), '
-                       f'\nStation {file.station_name} (col matches: {result_col})')
-                for col in result_col:
-                    msg += f'\nColumn {col}\n{file.var_defs[col]}'
+                ok = False
+                add_msg = ''
+                try:
+                    if all(['tower_inlet_height' in file.var_defs[col] for col in result_col]):
+                        # choose the lowest
+                        lowest = 1e9
+                        best_col = None
+                        for col in result_col:
+                            heightstr = file.var_defs[col]['tower_inlet_height']
+                            if not heightstr.endswith(' m'):
+                                raise ValueError(
+                                    f'value of tower_inlet_height in col {col} '
+                                    f'is invalid: {heightstr} (needs to end '
+                                    f'with m)')
+                            height = float(heightstr.split()[0])
+                            if height < lowest:
+                                lowest = height
+                                best_col = col
+                        result_col = [best_col]
+                        ok = True
+                except Exception as e:
+                    add_msg += f'\n{repr(e)}'
 
-                msg += f'\nFilename: {file.file_name}'
-                msg += '\n\nTHIS FILE WILL BE SKIPPED\n'
-                const.print_log.warning(msg)
-                raise ValueError('failed to identify unique data column')
+                if not ok:
+                    comp = ebas_var_info['component']
+                    startstop = f'{file.time_stamps[0]} - {file.time_stamps[-1]}'
+                    msg = (f'\n\nFATAL: could not resolve unique data column for '
+                           f'{var} (EBAS varname: {comp})\nData period: {startstop}), '
+                           f'\nStation {file.station_name} (col matches: {result_col})')
+                    for col in result_col:
+                        msg += f'\nColumn {col}\n{file.var_defs[col]}'
+
+                    msg += f'\nFilename: {file.file_name}'
+                    msg += add_msg
+                    msg += '\n\nTHIS FILE WILL BE SKIPPED\n'
+                    const.print_log.warning(msg)
+                    raise ValueError('failed to identify unique data column')
 
         return result_col[0]
 
