@@ -24,7 +24,7 @@ default_setup = {'save_coldata': True, '_obs_cache_only': False,
                  'obs_outlier_ranges': None, 'model_outlier_ranges': None,
                  'harmonise_units': False, 'vert_scheme': None,
                  'regrid_res_deg': None, 'ignore_station_names': None,
-                 'basedir_coldata': '/home/jonasg/MyPyaerocom/colocated_data',
+                 'basedir_coldata': None,
                  'model_ts_type_read': None, 'model_read_aux': None,
                  'model_use_climatology': False, 'colocate_time': False,
                  'flex_ts_type_gridded': True, 'reanalyse_existing': False,
@@ -52,11 +52,8 @@ def col():
     ])
 def test_colocation_setup(stp, should_be):
     for key, val in stp.items():
-        if key == 'basedir_coldata':
-            assert os.path.exists(val)
-        else:
-            assert key in should_be
-            assert val == should_be[key], key
+        assert key in should_be
+        assert val == should_be[key], key
 
 def test_model_ts_type_read(col_tm5_aero):
     model_var = 'abs550aer'

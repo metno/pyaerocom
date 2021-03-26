@@ -2015,12 +2015,16 @@ class AerocomEvaluation(object):
         self.update_summary_str()
         indent = 2
         _indent_str = indent*' '
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "\n{}\n{}".format(head, len(head)*"-")
-        s += ('\nProject ID: {}'
-              '\nEperiment ID: {}'
-              '\nExperiment name: {}'
-              .format(self.proj_id, self.exp_id, self.exp_name))
+        head = f"pyaerocom {type(self).__name__}"
+        underline = len(head)*"-"
+        out_dirs = dict_to_str(self.out_dirs, indent=indent)
+        s = f"\n{head}\n{underline}"
+        s += (
+            f'\nProject ID (proj_id): {self.proj_id}'
+            f'\nExperiment ID (exp_id): {self.exp_id}'
+            f'\nExperiment name (exp_name): {self.exp_name}'
+            f'\nOutput directories for json files: {out_dirs}'
+            )
         s += '\ncolocation_settings: (will be updated for each run from model_config and obs_config entry)'
         for k, v in self.colocation_settings.items():
             s += '\n{}{}: {}'.format(_indent_str, k, v)
