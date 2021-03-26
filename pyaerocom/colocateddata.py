@@ -94,7 +94,7 @@ class ColocatedData(object):
                 data = xarray.DataArray(data, **kwargs)
                 self.data = data
             else:
-                raise IOError('Failed to interpret input {}'.format(data))
+                raise ValueError(f'Failed to interpret input {data}')
 
     @property
     def data(self):
@@ -119,10 +119,8 @@ class ColocatedData(object):
     @data.setter
     def data(self, val):
         if not isinstance(val, xarray.DataArray):
-            raise IOError('Invalid input for data attribute, need instance '
-                             'of xarray.DataArray')
-        if self._data is not None:
-            logger.warning('Overwriting existing data in ColocatedData object')
+            raise ValueError('Invalid input for data attribute, need instance '
+                          'of xarray.DataArray')
         self._data = val
 
     @property
@@ -201,10 +199,10 @@ class ColocatedData(object):
     @property
     def ts_type(self):
         """String specifying temporal resolution of data"""
-        if not "ts_type" in self.meta:
+        if not "ts_type" in self.metadata:
             raise ValueError('Colocated data object does not contain '
                              'information about temporal resolution')
-        return self.meta['ts_type']
+        return self.metadata['ts_type']
 
     @property
     def units(self):
@@ -213,6 +211,7 @@ class ColocatedData(object):
 
     @property
     def unitstr(self):
+        """String representation of obs and model units in this object"""
         unique = []
         u = self.units
         for val in u:
@@ -225,15 +224,9 @@ class ColocatedData(object):
         return ', '.join(unique)
 
     @property
-    def meta(self):
-        """Meta data"""
+    def metadata(self):
+        """Meta data dictionary (wrapper to :attr:`data.attrs`"""
         return self.data.attrs
-
-    @property
-    def num_grid_points(self):
-        """Number of lon / lat grid points that contain data"""
-        const.print_log.warning(DeprecationWarning('OLD NAME: please use num_coords'))
-        return self.num_coords
 
     @property
     def num_coords(self):
@@ -473,7 +466,7 @@ class ColocatedData(object):
         arr = self.stack(station_name=['latitude', 'longitude'],
                          inplace=False).data
         meta = {}
-        meta.update(self.meta)
+        meta.update(self.metadata)
         lats = arr.latitude.values
         lons = arr.longitude.values
         time = arr.time.values
@@ -679,9 +672,9 @@ class ColocatedData(object):
         if zeros.any():
             const.print_log.warning("Found 0's in ColocatedData ({},{},{}). "
                                     "These will be set to NaN for web processing"
-                                    .format(cd.meta['var_name'][0],
-                                            cd.meta['data_source'][0],
-                                            cd.meta['data_source'][1]))
+                                    .format(cd.metadata['var_name'][0],
+                                            cd.metadata['data_source'][0],
+                                            cd.metadata['data_source'][1]))
 
             cd.data.data[zeros] = np.nan
         return cd
@@ -698,7 +691,7 @@ class ColocatedData(object):
             dictionary containing statistical parameters
         """
         if constrain_val_range:
-            var = Variable(self.meta['var_name'][1])
+            var = Variable(self.metadata['var_name'][1])
             kwargs['lowlim'] = var.lower_limit
             kwargs['highlim'] = var.upper_limit
 
@@ -730,12 +723,12 @@ class ColocatedData(object):
         ax
             matplotlib axes instance
         """
-        meta = self.meta
+        meta = self.metadata
         num_points = self.num_coords_with_data
         vars_ = meta['var_name']
 
         if constrain_val_range:
-            var = Variable(self.meta['var_name'][0])
+            var = Variable(self.metadata['var_name'][0])
             kwargs['lowlim_stats'] = var.lower_limit
             kwargs['highlim_stats'] = var.upper_limit
 
@@ -822,10 +815,10 @@ class ColocatedData(object):
         DataSourceError
             if input data_source is not available in this object
         """
-        if not data_source in self.meta['data_source']:
+        if not data_source in self.metadata['data_source']:
             raise DataSourceError('No such data source {} in ColocatedData'
                                   .format(data_source))
-        if not var_name in self.meta['var_name']:
+        if not var_name in self.metadata['var_name']:
             raise VarNotAvailableError('No such variable {} in ColocatedData'
                                        .format(var_name))
 
@@ -854,10 +847,10 @@ class ColocatedData(object):
     @property
     def savename_aerocom(self):
         """Default save name for data object following AeroCom convention"""
-        start_str = self.meta['start_str']
-        stop_str = self.meta['stop_str']
+        start_str = self.metadata['start_str']
+        stop_str = self.metadata['stop_str']
 
-        source_info = self.meta['data_source']
+        source_info = self.metadata['data_source']
         data_ref_id = source_info[0]
         if len(source_info) > 2:
             model_id = 'MultiModels'
@@ -869,7 +862,7 @@ class ColocatedData(object):
                                       start_str,
                                       stop_str,
                                       self.ts_type,
-                                      self.meta['filter_name'])
+                                      self.metadata['filter_name'])
 
     @staticmethod
     def get_meta_from_filename(file_path):
@@ -931,7 +924,7 @@ class ColocatedData(object):
             }
         for from_key, to_key in mapping.items():
             try:
-                settings[to_key] = self.meta[from_key]
+                settings[to_key] = self.metadata[from_key]
             except KeyError:
                 const.print_log.warning(
                     f'Meta key {from_key} not defined in ColocatedData.meta...')
@@ -1486,12 +1479,36 @@ class ColocatedData(object):
         return s
 
     ### Deprecated (but still supported) stuff
+    # ToDo: v0.12.0
     @property
     def unit(self):
-        """Unit of data"""
-        const.print_log.warning(DeprecationWarning('Attr. unit is deprecated, '
-                                                'please use units instead'))
+        """DEPRECATED -> use :attr:`units`"""
+        const.print_log.warning(DeprecationWarning(
+            'Attr. ColocatedData.unit is deprecated (but still works), '
+            'please use ColocatedData.units. '
+            'Support guaranteed until pyaerocom v0.12.0'
+            ))
         return self.units
+
+    @property
+    def meta(self):
+        """DEPRECATED -> use :attr:`metadata`"""
+        const.print_log.warning(DeprecationWarning(
+            'Attr. ColocatedData.meta is deprecated (but still works), '
+            'please use ColocatedData.metadata'
+            'Support guaranteed until pyaerocom v0.12.0'
+            ))
+        return self.metadata
+
+    @property
+    def num_grid_points(self):
+        """DEPRECATED -> use :attr:`num_coords`"""
+        const.print_log.warning(DeprecationWarning(
+            'Attr. ColocatedData.num_grid_points is deprecated (but still '
+            'works), please use ColocatedData.num_coords'
+            'Support guaranteed until pyaerocom v0.12.0'
+            ))
+        return self.num_coords
 
 if __name__=="__main__":
 
