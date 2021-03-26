@@ -32,7 +32,7 @@ def make_info_str_eval_setup(stp, add_header=True):
 
     Note
     ----
-    BETA feature, this might crash!!
+    UNDER DEVELOPMENT -> this might crash!!
 
     Parameters
     ----------
@@ -41,7 +41,7 @@ def make_info_str_eval_setup(stp, add_header=True):
 
     Returns
     -------
-    st : str
+    str
         Long string representation of the input configuration.
 
     """
@@ -103,7 +103,7 @@ def make_info_str_eval_setup(stp, add_header=True):
         else:
             freqinfo += '. '
 
-    except pya.exceptions.TemporalResolutionError:
+    except TemporalResolutionError:
         freqinfo = (
         'The analysis is performed in the highest available '
         'resolution. '

@@ -109,6 +109,7 @@ from pyaerocom import change_verbosity
 change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
+EMEP_DIR =  str(TESTDATADIR.joinpath(CHECK_PATHS['emep']))
 # Paths to EMEP data
 @pytest.fixture(scope='session')
 def path_emep():

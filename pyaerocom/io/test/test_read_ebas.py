@@ -46,7 +46,8 @@ def reader():
 @testdata_unavail
 class TestReadEbas(object):
 
-    PROVIDES_VARIABLES = sorted(['DEFAULT',
+    PROVIDES_VARIABLES = sorted([
+                         'DEFAULT',
                          'sc550aer',
                          'sc440aer',
                          'sc700aer',
@@ -75,6 +76,8 @@ class TestReadEbas(object):
                          'concoc',
                          'conccoc',
                          'concec',
+                         'concec25',
+                         'conccoc25',
                          'concss',
                          'concnh3',
                          'concno3',
@@ -182,9 +185,6 @@ class TestReadEbas(object):
             assert var in reader.AUX_FUNS
             assert reader.AUX_FUNS[var] == func
 
-    def test_IGNORE_WAVELENGTH(self, reader):
-        assert reader.IGNORE_WAVELENGTH == ['conceqbc']
-
     def test_ASSUME_AE_SHIFT_WVL(self, reader):
         assert reader.ASSUME_AE_SHIFT_WVL == 1.0
 
@@ -192,7 +192,13 @@ class TestReadEbas(object):
         assert reader.ASSUME_AAE_SHIFT_WVL == 1.0
 
     def test_IGNORE_FILES(self, reader):
-        assert reader.IGNORE_FILES == ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
+        assert reader.IGNORE_FILES == [
+        'CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas',
+        'DK0022R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_22.DK01L_IC.lev2.nas',
+        'DK0012R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_12.DK01L_IC.lev2.nas',
+        'DK0008R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_08.DK01L_IC.lev2.nas',
+        'DK0005R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_05.DK01L_IC.lev2.nas'
+        ]
 
     OPTS = {'prefer_statistics': ['arithmetic mean', 'median'],
              'ignore_statistics': ['percentile:15.87', 'percentile:84.13'],
@@ -334,7 +340,7 @@ class TestReadEbas(object):
     @pytest.mark.skip(reason='Not implemented, is tested via read_file')
     def test__shift_wavelength(self):
         pass
-
+    @pytest.mark.skip(reason='Updated in more recent dev version, example file not in testdata anymore')
     def test_find_var_cols(self, reader, loaded_nasa_ames_example):
         var = ['sc550aer', 'scrh']
         desired = {'sc550aer' : 17,

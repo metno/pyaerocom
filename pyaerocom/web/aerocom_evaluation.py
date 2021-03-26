@@ -498,9 +498,7 @@ class AerocomEvaluation(object):
         for k, v in settings.items():
             self[k] = v
         self.check_config()
-        self.init_dirs()
         self.update_summary_str()
-        #self._update_custom_read_methods()
 
     def _set_obsconfig(self, val):
         cfg = {}
@@ -586,11 +584,11 @@ class AerocomEvaluation(object):
             raise AttributeError(f'exp_descr must be specified, '
                                  f'(current value: {self.exp_descr})')
 
-        elif not len(self.exp_descr.split()) > 10:
+        elif not len(self.exp_descr.split()) > 5:
             const.print_log.warning(
-                'Experiment description (attr. exp_descr) is either missing or '
-                'rather short (less than 10 words). Consider providing more '
-                'information here! Current: {self.exp_descr}'
+                f'Experiment description (attr. exp_descr) is either missing or '
+                f'rather short (less than 5 words). Consider providing more '
+                f'information here! Current: {self.exp_descr}'
                 )
 
         if not isinstance(self.exp_status, str):
@@ -1527,7 +1525,7 @@ class AerocomEvaluation(object):
         if only_maps is not None:
             self.only_maps = only_maps
 
-        #self.iface_names = self._check_and_get_iface_names()
+        self.init_dirs()
         if self.clear_existing_json:
             self.clean_json_files()
 
@@ -1596,7 +1594,6 @@ class AerocomEvaluation(object):
                                                    colocator=col)
 
         if update_interface:
-            #self.clean_json_files()
             self.update_interface()
         const.print_log.info('Finished processing.')
         return res
