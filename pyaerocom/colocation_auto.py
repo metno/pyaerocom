@@ -209,14 +209,7 @@ class ColocationSetup(BrowseDict):
             obs_vars = [obs_vars]
 
         if basedir_coldata is not None:
-            if isinstance(basedir_coldata, Path):
-                basedir_coldata = str(basedir_coldata)
-            if isinstance(basedir_coldata, str) and not os.path.exists(basedir_coldata):
-                os.mkdir(basedir_coldata)
-            else:
-                raise ValueError(
-                    f'Invalid input for basedir_coldata: {basedir_coldata}'
-                    )
+            basedir_coldata = self._check_input_basedir_coldata(basedir_coldata)
 
         Filter(filter_name) #crashes if input filter name is invalid
 
@@ -291,6 +284,35 @@ class ColocationSetup(BrowseDict):
 
         self.update(**kwargs)
 
+    def _check_input_basedir_coldata(self, basedir_coldata):
+        """
+        Make sure input basedir_coldata is str and exists
+
+        Parameters
+        ----------
+        basedir_coldata : str or Path
+            basic output directory for colocated data
+
+        Raises
+        ------
+        ValueError
+            If input is invalid.
+
+        Returns
+        -------
+        str
+            valid output directory
+
+        """
+        if isinstance(basedir_coldata, Path):
+            basedir_coldata = str(basedir_coldata)
+        if isinstance(basedir_coldata, str) and not os.path.exists(basedir_coldata):
+            os.mkdir(basedir_coldata)
+            return basedir_coldata
+        raise ValueError(
+            f'Invalid input for basedir_coldata: {basedir_coldata}'
+            )
+
     def _check_basedir_coldata(self):
         """
         Make sure output directory for colocated data files exists
@@ -345,6 +367,8 @@ class ColocationSetup(BrowseDict):
                         f'Cannot update dict {key} with non-dict input {val}'
                         )
                 self[key].update(val)
+            elif key == 'basedir_coldata':
+                self[key] = self._check_input_basedir_coldata(val)
             else:
                 self[key] = val
 
@@ -692,7 +716,7 @@ class Colocator(ColocationSetup):
             if not 'ts_type' in kwargs:
                 kwargs['ts_type'] = ts_type_read
 
-            if isinstance(kwargs['ts_type'], dict):
+            if isinstance(kwargs['ts_type'], dict) and var_name in kwargs:
                 kwargs['ts_type'] = kwargs['ts_type'][var_name]
 
             data = reader.read_var(var_name,
@@ -957,11 +981,10 @@ class Colocator(ColocationSetup):
                 savename = self._coldata_savename(model_data, start, stop,
                                                   ts_type, var_name=model_var)
 
+                out_dir = chk_make_subdir(self.basedir_coldata, self.model_id)
                 file_exists = self._check_coldata_exists(model_data.data_id,
                                                          savename)
 
-
-                out_dir = chk_make_subdir(self.basedir_coldata, self.model_id)
                 if file_exists:
                     if not self.reanalyse_existing:
                         if self._log:

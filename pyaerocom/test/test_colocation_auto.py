@@ -34,14 +34,16 @@ default_setup = {'save_coldata': True, '_obs_cache_only': False,
 
 @testdata_unavail
 @pytest.fixture(scope='function')
-def col_tm5_aero(model_id='TM5-met2010_CTRL-TEST',
-                 obs_id='AeronetSunV3L2Subset.daily',
-                 obs_vars='od550aer'):
-    coloc = Colocator(model_id=model_id, obs_id=obs_id, obs_vars=obs_vars)
-    coloc.raise_exceptions = True
-    coloc.reanalyse_existing = True
-    coloc.start = 2010
-    return coloc
+def tm5_aero_stp():
+    return dict(
+        model_id='TM5-met2010_CTRL-TEST',
+        obs_id='AeronetSunV3L2Subset.daily',
+        obs_vars='od550aer',
+        start = 2010,
+        raise_exceptions = True,
+        reanalyse_existing = True
+        )
+
 
 @pytest.fixture(scope='function')
 def col():
@@ -55,22 +57,38 @@ def test_colocation_setup(stp, should_be):
         assert key in should_be
         assert val == should_be[key], key
 
-def test_model_ts_type_read(col_tm5_aero):
-    model_var = 'abs550aer'
-    obs_var = 'od550aer'
-    col_tm5_aero.save_coldata = False
-    # Problem with saving since obs_id is different
-    # from obs_data.contains_dataset[0]...
-    col_tm5_aero.model_add_vars = {obs_var:model_var}
-    col_tm5_aero.model_ts_type_read = {model_var:'daily', obs_var:'monthly'}
-    data = col_tm5_aero._run_gridded_ungridded()
-    assert data[model_var].meta['ts_type_src'] == ['daily', 'daily']
-    assert data[obs_var].meta['ts_type_src'] == ['daily', 'monthly']
-
 def test_colocator(col):
     assert isinstance(col, Colocator)
     col.obs_vars = 'var'
     assert isinstance(col.obs_vars, str)
+
+@pytest.mark.parametrize('ts_type_desired, ts_type, flex, raises', [
+    ('minutely', 'daily', False, does_not_raise_exception()),
+    ])
+def test_colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
+                                      ts_type, flex, raises):
+    col = Colocator(**tm5_aero_stp)
+    obs_var = 'od550aer'
+    assert tm5_aero_stp['obs_vars'] == obs_var
+    col.save_coldata = False
+    col.flex_ts_type_gridded = flex
+    # Problem with saving since obs_id is different
+    # from obs_data.contains_dataset[0]...
+    col.model_ts_type_read = {obs_var : ts_type}
+    data = col._run_gridded_ungridded()
+    assert isinstance(data, dict)
+    assert obs_var in data
+    assert data[obs_var].meta['ts_type_src'] == ['daily', 'monthly']
+
+def test_colocator_model_add_vars(tm5_aero_stp):
+    col = Colocator(**tm5_aero_stp)
+    model_var = 'abs550aer'
+    obs_var = 'od550aer'
+    col.save_coldata = False
+    # Problem with saving since obs_id is different
+
+    col.model_add_vars = {obs_var : model_var}
+    assert data[model_var].meta['ts_type_src'] == ['daily', 'daily']
 
 def test_colocator_init_basedir_coldata(tmpdir):
     basedir = os.path.join(tmpdir, 'basedir')
@@ -88,34 +106,49 @@ def test_colocator__coldata_savename(data_tm5):
     assert isinstance(savename, str)
     assert savename == 'od550aer_REF-obs_MOD-model_20100101_20101231_monthly_WORLD.nc'
 
-def test_colocator_update(tmpdir):
-    col = Colocator(raise_exceptions=True)
-    col.update(test="test")
-    assert col.test == 'test'
 
-    obs_id = 'test'
-    col.update(obs_id=obs_id)
-    assert col.obs_id == obs_id
+def test_colocator_update_basedir_coldata(tmpdir):
+    col = Colocator(raise_exceptions=True)
 
     basedir = os.path.join(tmpdir, 'basedir')
     assert not os.path.isdir(basedir)
     col.update(basedir_coldata=basedir)
     assert os.path.isdir(basedir)
 
-@pytest.mark.parametrize('gridded_gridded',[False, True])
-def test_colocator_run(col_tm5_aero, gridded_gridded):
+@pytest.mark.parametrize('what,raises', [
+    (dict(blaa=42), does_not_raise_exception()),
+    (dict(obs_id='test', model_id='test'), does_not_raise_exception()),
+    (dict(gridded_reader_id='test'), pytest.raises(ValueError)),
+    (dict(gridded_reader_id={'test' : 42}), does_not_raise_exception()),
+    ])
+def test_colocator_update(what,raises):
+    colref = Colocator(raise_exceptions=True)
+    col = Colocator(raise_exceptions=True)
+    with raises:
+        col.update(**what)
+        for key, val in what.items():
+            if key in colref and isinstance(colref[key], dict):
+                colref[key].update(val)
+                assert col[key] == colref[key]
+            else:
+                assert col[key] == val
+
+
+@pytest.mark.parametrize('gridded_gridded', [False, True])
+def test_colocator_run(tm5_aero_stp, gridded_gridded):
+    col = Colocator(**tm5_aero_stp)
     if gridded_gridded:
-        col_tm5_aero.obs_id = col_tm5_aero.model_id
-    col_tm5_aero.run()
-    coldata = col_tm5_aero.data[col_tm5_aero.model_id][col_tm5_aero.obs_vars[0]]
+        col.obs_id = col.model_id
+    col.run()
+    coldata = col.data[col.model_id][col.obs_vars[0]]
     assert isinstance(coldata, ColocatedData)
 
-def test__run_gridded_ungridded(col_tm5_aero):
+def test_colocator__run_gridded_ungridded(tm5_aero_stp):
     obs_vars = col_tm5_aero.obs_vars[0]
     colocated_dict = col_tm5_aero._run_gridded_ungridded()
     assert isinstance(colocated_dict[obs_vars], ColocatedData)
 
-def test__run_gridded_gridded(col_tm5_aero):
+def test_colocator__run_gridded_gridded(col_tm5_aero):
     obs_vars = col_tm5_aero.obs_vars[0]
     col_tm5_aero.obs_id = col_tm5_aero.model_id
     colocated = col_tm5_aero._run_gridded_gridded(obs_vars)
