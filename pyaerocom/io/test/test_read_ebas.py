@@ -331,7 +331,7 @@ class TestReadEbas(object):
     @pytest.mark.skip(reason='Not implemented, is tested via read_file')
     def test__shift_wavelength(self):
         pass
-
+    @pytest.mark.skip(reason='Updated in more recent dev version, example file not in testdata anymore')
     def test_find_var_cols(self, reader, loaded_nasa_ames_example):
         var = ['sc550aer', 'scrh']
         desired = {'sc550aer' : 17,
