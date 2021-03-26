@@ -536,7 +536,7 @@ class GriddedData(object):
         try:
             return self.metadata['data_id']
         except KeyError:
-            return 'N/D'
+            return 'undefined'
 
     @property
     def is_climatology(self):
