@@ -321,6 +321,25 @@ class ColocatedData(object):
         return self.calc_area_weights()
 
     def get_station_names_obs_notnan(self):
+        """
+        Get list of all site names that contain at least one valid measurement
+
+        Note
+        -----
+        So far this only works for 3D colocated data that has a dimension
+        `station_name`.
+
+        Raises
+        ------
+        AttributeError
+            If data is not 3D colocated data object.
+
+        Returns
+        -------
+        numpy.ndarray
+            1D array with site location names
+
+        """
         if not self.dims == ('data_source', 'time', 'station_name'):
             raise AttributeError(
                 'Need station_name dimension and dim order ')
@@ -382,41 +401,77 @@ class ColocatedData(object):
         return obs.calc_area_weights()
 
     def min(self):
+        """
+        Wrapper for :func:`xarray.DataArray.min` called from :attr:`data`
+
+        Returns
+        -------
+        xarray.DataArray
+            minimum of data
+
+        """
         return self.data.min()
 
     def max(self):
-        return self.data.max()
-
-    def check_dimensions(self):
-        """Checks if data source and time dimension are at the right index
-
-        ToDo
-        ----
-        Check if this is needed. Little cumbersome at the moment, the data
-        object can / should be more flexible! Should
         """
-        raise NotImplementedError(DeprecationWarning('This method has been '
-                                                     'deprecated in v0.10.0'))
+        Wrapper for :func:`xarray.DataArray.max` called from :attr:`data`
+
+        Returns
+        -------
+        xarray.DataArray
+            maximum of data
+
+        """
+        return self.data.max()
 
     def resample_time(self, to_ts_type, how=None,
                       apply_constraints=None, min_num_obs=None,
                       colocate_time=True, inplace=True, **kwargs):
-        """Resample time dimension
+        """
+        Resample time dimension
+
+        The temporal resampling is done using :class:`TimeResampler`
 
         Parameters
         ----------
         to_ts_type : str
-            new temporal resolution (must be lower than current resolution)
+            desired output frequency.
+        how : str or dict, optional
+            aggregator used for resampling (e.g. max, min, mean, median). Can
+            also be hierarchical scheme via `dict`, similar to `min_num_obs`.
+            The default is None.
+        apply_constraints : bool, optional
+            Apply time resampling constraints. The default is None, in which
+            case pyaerocom default is used, that is,
+            :attr:`pyaerocom.Config.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` (
+            which is True by default in pyaerocom < v0.12.0, and probably also
+            after that).
+        min_num_obs : int or dict, optional
+            Minimum number of observations required to resample from current
+            frequency (:attr:`ts_type`) to desired output frequency. Only
+            relevant if `apply_constraints` evaluates to `True` (NOTE: can also
+            happen if `apply_constraints=None`, see prev. point). The default,
+            is None in which case the pyaerocom default is used, which
+            can be accessed via :attr:`pyaerocom.Config.`OBS_MIN_NUM_RESAMPLE`.
+            Note, that the default corresponds to a hierarchical scheme (`dict`,
+            pyaerocom < 0.12.0) and similar input is also accepted, e.g. if
+            you want ~75% sampling coverage and if the current ts_type is
+            `hourly` and output ts_type `monthly` you could input
+            `min_num_obs={'monthly': {'daily': 22}, 'daily': {'hourly': 18}}`.
+        colocate_time : bool, optional
+            If True, the modeldata is invalidated where obs is NaN, before
+            resampling. The default is True.
+        inplace : bool, optional
+            If True, modify this object directly, else make a copy and resample
+            that one. The default is True.
+        **kwargs
+            Addtitional keyword args passed to :func:`TimeResampler.resample`.
 
         Returns
         -------
         ColocatedData
-            new data object containing resampled data
+            Resampled colocated data object.
 
-        Raises
-        ------
-        TemporalResolutionError
-            if input resolution is higher than current resolution
         """
         if inplace:
             col = self
@@ -490,8 +545,12 @@ class ColocatedData(object):
     def stack(self, inplace=False, **kwargs):
         """Stack one or more dimensions
 
+        For details see :func:`xarray.DataArray.stack`.
+
         Parameters
         ----------
+        inplace : bool
+            modify this object or a copy.
         **kwargs
             input arguments passed to :func:`DataArray.stack`
 
@@ -499,10 +558,6 @@ class ColocatedData(object):
         -------
         ColocatedData
             stacked data object
-
-        Example
-        -------
-        coldata = coldata.stack(latlon=['latitude', 'longitude'])
         """
         if inplace:
             data = self
@@ -514,8 +569,12 @@ class ColocatedData(object):
     def unstack(self, inplace=False, **kwargs):
         """Unstack one or more dimensions
 
+        For details see :func:`xarray.DataArray.unstack`.
+
         Parameters
         ----------
+        inplace : bool
+            modify this object or a copy.
         **kwargs
             input arguments passed to :func:`DataArray.unstack`
 
@@ -555,6 +614,14 @@ class ColocatedData(object):
                 list(obs.longitude[~invalid].values))
 
     def _iter_stats(self):
+        """Create a list that can be used to iterate over station dimension
+
+        Returns
+        -------
+        list
+            list containing 3-element tuples, one for each site i, comprising
+            (latitude[i], longitude[i], station_name[i]).
+        """
         if not 'station_name' in self.data.dims:
             raise AttributeError('ColocatedData object has no dimension '
                                  'station_name. Consider stacking...')
@@ -568,19 +635,29 @@ class ColocatedData(object):
         return list(zip(lats, lons, stats))
 
     def _get_stat_coords(self):
+        """
+        Get station coordinates
+
+        Raises
+        ------
+        DataDimensionError
+            if data is 4D and does not have latitude and longitude dimension
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
         if self.ndim == 4:
             if not self.has_latlon_dims:
                 raise DataDimensionError('Invalid dimensions in 4D ColocatedData')
             lats, lons = self.data.latitude.data, self.data.longitude.data
             coords = np.dstack((np.meshgrid(lats, lons)))
             coords = coords.reshape(len(lats) * len(lons), 2)
-            return coords
-        if not 'latitude' in self.coords:
-            coords = self.data.station_name.data
-            if not isinstance(coords[0], tuple) or len(coords[0]) != 2:
-                raise ValueError('Cannot infer coordinates...')
-            return coords
-        return list(zip(self.latitude.data, self.longitude.data))
+        else:
+            coords = list(zip(self.latitude.data, self.longitude.data))
+        return coords
 
     def check_set_countries(self, inplace=True, assign_to_dim=None):
         """
