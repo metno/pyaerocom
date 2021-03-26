@@ -601,11 +601,7 @@ class ColocatedData(object):
 
         if not assign_to_dim in self.dims:
             raise DataDimensionError('No such dimension', assign_to_dim)
-# =============================================================================
-#         if self.has_latlon_dims: #4D data
-#             raise NotImplementedError('Cannot yet assign countries to 4D '
-#                                       'ColocatedData')
-# =============================================================================
+
         coldata = self if inplace else self.copy()
 
         if 'country' in coldata.data.coords:
