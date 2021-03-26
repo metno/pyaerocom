@@ -46,7 +46,8 @@ def reader():
 @testdata_unavail
 class TestReadEbas(object):
 
-    PROVIDES_VARIABLES = sorted(['DEFAULT',
+    PROVIDES_VARIABLES = sorted([
+                         'DEFAULT',
                          'sc550aer',
                          'sc440aer',
                          'sc700aer',
@@ -75,6 +76,8 @@ class TestReadEbas(object):
                          'concoc',
                          'conccoc',
                          'concec',
+                         'concec25',
+                         'conccoc25',
                          'concss',
                          'concnh3',
                          'concno3',
