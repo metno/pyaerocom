@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+
+import numpy as np
+import pandas as pd
+from pathlib import Path
+import os
+import xarray
+
 from pyaerocom import logger, const
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.helpers import to_pandas_timestamp
@@ -15,10 +23,6 @@ from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr, get_mask_value)
 
-import numpy as np
-import pandas as pd
-import os
-import xarray
 
 class ColocatedData(object):
     """Class representing colocated and unified data from two sources
@@ -31,14 +35,25 @@ class ColocatedData(object):
     Currently, it is not foreseen, that this object is instantiated from
     scratch, but it is rather created in and returned by objects / methods
     that perform colocation.
+
     The purpose of this object is thus, not the creation of colocated objects,
     but solely the analysis of such data as well as I/O features (e.g. save as
     / read from .nc files, convert to pandas.DataFrame, plot station time
-    series overlays, scatter plots, etc.)
+    series overlays, scatter plots, etc.).
 
-    In the current design, such an object comprises 3 dimensions, where the
-    first dimension (depth, index 0) is ALWAYS length 2 and specifies the two
-    datasets that were compared
+    In the current design, such an object comprises 3 or 4 dimensions, where
+    the first dimension (`data_source`, index 0) is ALWAYS length 2 and
+    specifies the two datasets that were co-located (index 0 is obs, index 1
+    is model). The second dimension is `time` and in case of 3D colocated data
+    the 3rd dimension is `station_name` while for 4D colocated data the 3rd and
+    4th dimension are latitude and longitude, respectively.
+
+    3D colocated data is typically created when a model is colocated with
+    station based ground based observations (
+    cf :func:`pyaerocom.colocation.colocate_gridded_ungridded`) while 4D
+    colocated data is created when a model is colocated with another model or
+    satellite observations, that cover large parts of Earth's surface (other
+    than discrete lat/lon pairs in the case of ground based station locations).
 
     Parameters
     ----------
@@ -47,8 +62,6 @@ class ColocatedData(object):
         Else, it is assumed that data is numpy array and that all further
         supplementary inputs (e.g. coords, dims) for the
         instantiation of :class:`DataArray` is provided via **kwargs.
-    ref_data_id : str, optional
-        ID of reference data
     **kwargs
         Additional keyword args that are passed to init of :class:`DataArray`
         in case input `data` is numpy array.
@@ -61,27 +74,44 @@ class ColocatedData(object):
     __version__ = '0.11'
     def __init__(self, data=None, **kwargs):
         self._data = None
-
         if data is not None:
-            # check if input is DataArray and if not, try to create instance
-            # of DataArray. If this fails, raise Exception
-            if isinstance(data, xarray.DataArray):
+            if isinstance(data, Path):
+                # make sure path is str instance
+                data = str(data)
+            if isinstance(data, str):
+                self.open(data)
+            elif isinstance(data, xarray.DataArray):
                 self.data = data
             elif isinstance(data, np.ndarray):
-                try:
-                    data = xarray.DataArray(data, **kwargs)
-                except Exception as e:
-                    raise IOError('Failed to initiate DataArray from input.\n'
-                                  'Error: {}'.format(repr(e)))
+                if not data.ndim in (3,4):
+                    raise DataDimensionError(
+                        'invalid input, need 3D or 4D numpy array'
+                        )
+                elif not data.shape[0] == 2:
+                    raise DataDimensionError(
+                        'first dimension (data_source) must be of length 2'
+                        '(obs, model)')
+                data = xarray.DataArray(data, **kwargs)
                 self.data = data
-            elif isinstance(data, str):
-                self.open(data)
             else:
                 raise IOError('Failed to interpret input {}'.format(data))
 
     @property
     def data(self):
-        """Data object (instance of :class:`xarray.DataArray`)"""
+        """:class:`xarray.DataArray` containing colocated data
+
+        Raises
+        ------
+        AttributeError
+            if data is not available
+
+        Returns
+        -------
+        xarray.DataArray
+            array containing colocated data and metadata (in fact, there is no
+            additional attributes to `ColocatedData` and everything is contained
+            in :attr:`data`).
+        """
         if self._data is None:
             raise AttributeError('No data available in this object')
         return self._data
@@ -179,11 +209,8 @@ class ColocatedData(object):
     @property
     def units(self):
         """Unit of data"""
-        try:
-            return self.data.attrs['var_units']
-        except KeyError:
-            logger.warning('Failed to access unit ColocatedData class (may be an '
-                        'old version of data)')
+        return self.data.attrs['var_units']
+
     @property
     def unitstr(self):
         unique = []
