@@ -616,11 +616,11 @@ class AerocomEvaluation(object):
             raise AttributeError(f'exp_descr must be specified, '
                                  f'(current value: {self.exp_descr})')
 
-        elif not len(self.exp_descr.split()) > 10:
+        elif not len(self.exp_descr.split()) > 5:
             const.print_log.warning(
-                'Experiment description (attr. exp_descr) is either missing or '
-                'rather short (less than 10 words). Consider providing more '
-                'information here! Current: {self.exp_descr}'
+                f'Experiment description (attr. exp_descr) is either missing or '
+                f'rather short (less than 5 words). Consider providing more '
+                f'information here! Current: {self.exp_descr}'
                 )
 
         if not isinstance(self.exp_status, str):

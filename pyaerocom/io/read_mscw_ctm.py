@@ -18,14 +18,46 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import implicit_to_explicit_rates
 
 def add_dataarrays(*arrs):
-    assert len(arrs) > 1
+    """
+    Add a bunch of :class:`xarray.DataArray` instances
+
+    Parameters
+    ----------
+    *arrs
+        input arrays (instances of :class:`xarray.DataArray` with same shape)
+
+    Returns
+    -------
+    xarray.DataArray
+        Added array
+
+    """
+    if not len(arrs) > 1:
+        raise ValueError('Need at least 2 input arrays to add')
     result = arrs[0]
     for arr in arrs[1:]:
         result += arr
     return result
 
 def subtract_dataarrays(*arrs):
-    assert len(arrs) > 1
+    """
+    Subtract a bunch of :class:`xarray.DataArray` instances from an array
+
+    Parameters
+    ----------
+    *arrs
+        input arrays (instances of :class:`xarray.DataArray` with same shape).
+        Subtraction is performed with respect to the first input array.
+
+
+    Returns
+    -------
+    xarray.DataArray
+        Diff array (all additional ones are subtracted from first array)
+
+    """
+    if not len(arrs) > 1:
+        raise ValueError('Need at least 2 input arrays to add')
     result = arrs[0]
     for arr in arrs[1:]:
         result -= arr
@@ -48,8 +80,6 @@ class ReadMscwCtm(object):
     ----------
     data_id : str
         ID of model
-    data_dir : str
-        Base directory of EMEP data, containing one or more netcdf files
     filename : str
         name of data file to be read.
     """
@@ -112,6 +142,39 @@ class ReadMscwCtm(object):
         self.filename = filename
 
     def _eval_input(self, filepath, data_id, data_dir):
+        """
+        Evaluate input (helper method for __init__)
+
+        Note, this method does not change the associated class attributes, it
+        just does some sanity checking on what the user inputs.
+
+        Parameters
+        ----------
+        filepath : str, optional
+            path to file to be read
+        data_id : str, optional
+            ID of dataset
+        data_dir : str, optional
+            directory containing EMEP data files
+
+        Raises
+        ------
+        FileNotFoundError
+            if any of input data_dir or filepath are provided but do not exist
+        ValueError
+            if any of input data_dir or filepath are provided but are not
+            a directory or file, respectively.
+
+        Returns
+        -------
+        tuple
+            3-element tuple containing (potentially updated / inferred values of):
+
+                - `data_dir`
+                - `filename`
+                - `data_id`
+
+        """
         filename = None
         if filepath is not None:
             if not isinstance(filepath, str) or not os.path.exists(filepath):
@@ -125,9 +188,8 @@ class ReadMscwCtm(object):
                 raise FileNotFoundError(f'{data_dir}')
             if not os.path.isdir(data_dir):
                 raise ValueError(f'{data_dir} is not a directory')
-
-            if data_id is None:
-                data_id = data_dir.split(os.sep)[-1]
+        if data_id is None and data_dir is not None:
+            data_id = data_dir.split(os.sep)[-1]
         return (data_dir,filename,data_id)
 
     @property
@@ -191,6 +253,28 @@ class ReadMscwCtm(object):
         return self._filedata
 
     def _check_files_in_data_dir(self, data_dir):
+        """
+        Check for data files in input data directory
+
+        Parameters
+        ----------
+        data_dir : str
+            directory to be searched.
+
+        Raises
+        ------
+        FileNotFoundError
+            if no EMEP files can be identified
+
+        Returns
+        -------
+        str
+            file mask used (is identified automatically based on
+            :attr:`FILE_MASKS`)
+        list
+            list of file matches
+
+        """
 
         for fmask in self.FILE_MASKS:
             matches = glob.glob(f'{data_dir}/{fmask}')
@@ -379,6 +463,30 @@ class ReadMscwCtm(object):
         return aux_func(*temp_arrs)
 
     def _load_var(self, var_name_aerocom, ts_type):
+        """
+        Load variable data as :class:`xarray.DataArray`.
+
+        This combines both, variables that can be read directly and auxiliary
+        variables that are computed.
+
+        Parameters
+        ----------
+        var_name_aerocom : str
+            variable name
+        ts_type : str
+            desired frequency
+
+        Raises
+        ------
+        VarNotAvailableError
+            if input variable is not available
+
+        Returns
+        -------
+        xarray.DataArray
+            loaded data
+
+        """
         if var_name_aerocom in self.var_map: #can be read
             return self._read_var_from_file(var_name_aerocom, ts_type)
         elif var_name_aerocom in self.AUX_REQUIRES:
@@ -443,6 +551,29 @@ class ReadMscwCtm(object):
         return gridded
 
     def _read_var_from_file(self, var_name_aerocom, ts_type):
+        """
+        Read variable data from file as :class:`xarray.DataArray`.
+
+        See also :func:`_load_var`
+
+        Parameters
+        ----------
+        var_name_aerocom : str
+            variable name
+        ts_type : str
+            desired frequency
+
+        Raises
+        ------
+        VarNotAvailableError
+            if input variable is not available
+
+        Returns
+        -------
+        xarray.DataArray
+            loaded data
+
+        """
         emep_var = self.var_map[var_name_aerocom]
         try:
             data = self.filedata[emep_var]
@@ -457,16 +588,27 @@ class ReadMscwCtm(object):
         return data
 
     @staticmethod
-    def preprocess_units(units, prefix=None):
-        new_unit = units
+    def preprocess_units(units, prefix):
+        """
+        Update units for certain variables
+
+        Parameters
+        ----------
+        units : str
+            Current unit of data
+        prefix : str, optional
+            Variable prefix (e.g. AOD, AbsCoeff).
+
+        Returns
+        -------
+        str
+            updated unit (where applicable)
+
+        """
         if units == '' and prefix == 'AOD': #
-            new_unit = '1'
+            return '1'
         elif units == '' and prefix == 'AbsCoef':
-            new_unit = 'm-1'
-            new_unit = units
-        elif units == 'mgS/m2' or units == 'mgN/m2':
-            raise NotImplementedError('Species specific units are not implemented.')
-        return new_unit
+            return 'm-1'
 
 class ReadEMEP(ReadMscwCtm):
     """Old name of :class:`ReadMscwCtm`."""
