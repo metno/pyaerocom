@@ -208,12 +208,15 @@ class ColocationSetup(BrowseDict):
         if isinstance(obs_vars, str):
             obs_vars = [obs_vars]
 
-        if isinstance(basedir_coldata, Path):
-            basedir_coldata = str(basedir_coldata)
-        elif basedir_coldata is not None and not os.path.exists(basedir_coldata):
-            raise FileNotFoundError(
-                f'Input basedir_coldata does not exist: {basedir_coldata}'
-                )
+        if basedir_coldata is not None:
+            if isinstance(basedir_coldata, Path):
+                basedir_coldata = str(basedir_coldata)
+            if isinstance(basedir_coldata, str) and not os.path.exists(basedir_coldata):
+                os.mkdir(basedir_coldata)
+            else:
+                raise ValueError(
+                    f'Invalid input for basedir_coldata: {basedir_coldata}'
+                    )
 
         Filter(filter_name) #crashes if input filter name is invalid
 
@@ -338,8 +341,9 @@ class ColocationSetup(BrowseDict):
         for key, val in kwargs.items():
             if key in self and isinstance(self[key], dict):
                 if not isinstance(val, dict):
-                    raise ValueError('Cannot update dict {} with non-dict input {}'
-                                     .format(key, val))
+                    raise ValueError(
+                        f'Cannot update dict {key} with non-dict input {val}'
+                        )
                 self[key].update(val)
             else:
                 self[key] = val
