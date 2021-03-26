@@ -731,7 +731,7 @@ class AerocomEvaluation(object):
     def compute_json_files_from_colocateddata(self, coldata, obs_name,
                                               model_name):
         """Creates all json files for one ColocatedData object"""
-        vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
+        vert_code = self.get_vert_code(obs_name, coldata.metadata['var_name'][0])
         try:
             web_iface_name = self.obs_config[obs_name]['web_interface_name']
         except:
@@ -1256,7 +1256,7 @@ class AerocomEvaluation(object):
         for fp in coldata_files:
             data = ColocatedData(fp)
             if data.ts_type != to_freq:
-                meta = data.meta
+                meta = data.metadata
                 try:
                     rshow = meta['resample_how']
                 except KeyError:

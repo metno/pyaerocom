@@ -444,7 +444,7 @@ def make_info_table_evaluation_iface(config):
                         continue
 
                     coldata = ColocatedData(files[0])
-                    for k, v in coldata.meta.items():
+                    for k, v in coldata.metadata.items():
                         if not k in SKIP_META:
                             if isinstance(v, (list, tuple)):
                                 if len(v) == 2:
@@ -673,7 +673,7 @@ def _init_data_default_frequenciesOLD(coldata, colocation_settings):
     data_arrs = dict.fromkeys(to_ts_types)
     jsdate = dict.fromkeys(to_ts_types)
 
-    ts_type = coldata.meta['ts_type']
+    ts_type = coldata.metadata['ts_type']
     for freq in to_ts_types:
         if ts_types_order.index(freq) < ts_types_order.index(ts_type):
             data_arrs[freq] = None
@@ -699,7 +699,7 @@ def _init_data_default_frequenciesOLD(coldata, colocation_settings):
     return (data_arrs, jsdate)
 
 def _init_meta_glob(coldata, **kwargs):
-    meta = coldata.meta
+    meta = coldata.metadata
 
     # create metadata dictionary that is shared among all timeseries files
     meta_glob = {}
@@ -1265,8 +1265,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         raise NotImplementedError('Cannot yet apply country filtering for '
                                   '4D colocated data instances')
     # init some stuff
-    obs_var = coldata.meta['var_name'][0]
-    model_var = coldata.meta['var_name'][1]
+    obs_var = coldata.metadata['var_name'][0]
+    model_var = coldata.metadata['var_name'][1]
 
     const.print_log.info(
         f'Computing json files for {model_name} ({model_var}) vs. '
@@ -1381,7 +1381,7 @@ if __name__ == '__main__':
 
     coldata = ColocatedData(colfile)
     out_dirs = stp.out_dirs
-    obs, mod = coldata.meta['data_source']
+    obs, mod = coldata.metadata['data_source']
 
     rgf = stp.regions_file
     compute_json_files_from_colocateddata(coldata, obs,
