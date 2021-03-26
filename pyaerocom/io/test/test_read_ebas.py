@@ -36,6 +36,7 @@ from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 import pyaerocom.mathutils as mu
 from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 @pytest.fixture(scope='module')
 @testdata_unavail
@@ -175,9 +176,6 @@ class TestReadEbas(object):
             assert var in reader.AUX_FUNS
             assert reader.AUX_FUNS[var] == func
 
-    def test_IGNORE_WAVELENGTH(self, reader):
-        assert reader.IGNORE_WAVELENGTH == ['conceqbc']
-
     def test_ASSUME_AE_SHIFT_WVL(self, reader):
         assert reader.ASSUME_AE_SHIFT_WVL == 1.0
 
@@ -185,7 +183,13 @@ class TestReadEbas(object):
         assert reader.ASSUME_AAE_SHIFT_WVL == 1.0
 
     def test_IGNORE_FILES(self, reader):
-        assert reader.IGNORE_FILES == ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas']
+        assert reader.IGNORE_FILES == [
+        'CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas',
+        'DK0022R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_22.DK01L_IC.lev2.nas',
+        'DK0012R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_12.DK01L_IC.lev2.nas',
+        'DK0008R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_08.DK01L_IC.lev2.nas',
+        'DK0005R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_05.DK01L_IC.lev2.nas'
+        ]
 
     OPTS = {'prefer_statistics': ['arithmetic mean', 'median'],
              'ignore_statistics': ['percentile:15.87', 'percentile:84.13'],
@@ -215,10 +219,13 @@ class TestReadEbas(object):
 
     def test_file_dir(self, reader):
         fd = reader.file_dir
+        assert reader._file_dir is None
         assert fd.endswith('data')
         assert os.path.exists(fd)
         with pytest.raises(FileNotFoundError):
             reader.file_dir = 42
+        reader.file_dir = fd #sets private attr _file_dir
+        assert reader._file_dir == reader.file_dir == fd
 
     def test_FILE_REQUEST_OPTS(self, reader):
         assert reader.FILE_REQUEST_OPTS == ['variables',
@@ -373,6 +380,17 @@ class TestReadEbas(object):
                                     vars_to_retrieve=vars_to_retrieve)
             assert isinstance(data, StationData)
 
+
+    @pytest.mark.parametrize(
+        'vars_to_retrieve, first_file, last_file, files, constraints, exception', [
+            ('sc550aer',None,None,None,{},does_not_raise_exception())
+            ])
+    def test_read(self, reader, vars_to_retrieve, first_file,
+                  last_file, files, constraints, exception):
+        with exception:
+            data = reader.read(vars_to_retrieve, first_file,
+                      last_file, files, **constraints)
+            assert isinstance(data, UngriddedData)
 
 if __name__ == '__main__':
     import sys

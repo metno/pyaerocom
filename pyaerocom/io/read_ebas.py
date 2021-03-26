@@ -147,7 +147,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.45_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.48_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -231,16 +231,23 @@ class ReadEbas(ReadUngriddedBase):
         # keep pr in mm
         'pr'        : dict(convert_units = False)
         }
-    IGNORE_WAVELENGTH = ['conceqbc']
 
     ASSUME_AAE_SHIFT_WVL = 1.0
     ASSUME_AE_SHIFT_WVL = 1#.5
 
-    IGNORE_FILES = ['CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas',
-                    'DK0022R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_22.DK01L_IC.lev2.nas',
-                    'DK0012R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_12.DK01L_IC.lev2.nas',
-                    'DK0008R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_08.DK01L_IC.lev2.nas',
-                    'DK0005R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_05.DK01L_IC.lev2.nas']
+    #: list of EBAS data files that are flagged invalid and will not be imported
+    IGNORE_FILES = [
+        'CA0420G.20100101000000.20190125102503.filter_absorption_photometer.aerosol_absorption_coefficient.aerosol.1y.1h.CA01L_Magee_AE31_ALT.CA01L_aethalometer.lev2.nas',
+        'DK0022R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_22.DK01L_IC.lev2.nas',
+        'DK0012R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_12.DK01L_IC.lev2.nas',
+        'DK0008R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_08.DK01L_IC.lev2.nas',
+        'DK0005R.20180101070000.20191014000000.bulk_sampler..precip.1y.15d.DK01L_bs_05.DK01L_IC.lev2.nas'
+    ]
+
+    #: Ignore data columns in NASA Ames files that contain any of the listed
+    #: attributes
+    IGNORE_COLS_CONTAIN = ['fraction', 'artifact']
+
     # list of all available resolution codes (extracted from SQLite database)
     # 1d 1h 1mo 1w 4w 30mn 2w 3mo 2d 3d 4d 12h 10mn 2h 5mn 6d 3h 15mn
 
@@ -571,7 +578,7 @@ class ReadEbas(ReadUngriddedBase):
 
         check_matrix = False if ebas_var_info['matrix'] is None else True
         check_stats = False if ebas_var_info['statistics'] is None else True
-
+        comps = []
         for colnum, col_info in enumerate(data.var_defs):
             if col_info.name in ebas_var_info.component: #candidate (name match)
                 ok = True
@@ -590,12 +597,25 @@ class ReadEbas(ReadUngriddedBase):
                     elif check_stats:
                         if not col_info['statistics'] in ebas_var_info['statistics']:
                             ok=False
-
+                for key in self.IGNORE_COLS_CONTAIN:
+                    if key in col_info:
+                        ok = False
+                        const.logger.warning(f'\nignore column {col_info}')
+                        break
                 if ok:
                     col_matches.append(colnum)
+                    if not col_info.name in comps:
+                        comps.append(col_info.name)
         if len(col_matches) == 0:
             raise NotInFileError("Variable {} could not be found in "
                                  "file".format(ebas_var_info.var_name))
+        elif len(comps) > 1 and len(ebas_var_info.component) > 1:
+            for prefcomp in ebas_var_info.component:
+                if not prefcomp in comps:
+                    continue
+                col_matches = [colnum for colnum in col_matches if prefcomp == data.var_defs[colnum].name]
+                break
+
         return col_matches
 
     def _find_best_data_column(self, cols, ebas_var_info, file,
@@ -689,12 +709,18 @@ class ReadEbas(ReadUngriddedBase):
                     result_col = _cols
 
             if len(result_col) > 1:
-                # multiple column matches were found, use the one that contains
-                # less NaNs
-                num_invalid = []
-                for colnum in result_col:
-                    num_invalid.append(np.isnan(file.data[:, colnum]).sum())
-                result_col = [result_col[np.argmin(num_invalid)]]
+                comp = ebas_var_info['component']
+                startstop = f'{file.time_stamps[0]} - {file.time_stamps[-1]}'
+                msg = (f'\n\nFATAL: could not resolve unique data column for '
+                       f'{var} (EBAS varname: {comp})\nData period: {startstop}), '
+                       f'\nStation {file.station_name} (col matches: {result_col})')
+                for col in result_col:
+                    msg += f'\nColumn {col}\n{file.var_defs[col]}'
+
+                msg += f'\nFilename: {file.file_name}'
+                msg += '\n\nTHIS FILE WILL BE SKIPPED\n'
+                const.print_log.warning(msg)
+                raise ValueError('failed to identify unique data column')
 
         return result_col[0]
 
@@ -1149,35 +1175,26 @@ class ReadEbas(ReadUngriddedBase):
         counts = np.bincount(dts)
         most_common_dt = np.argmax(counts)
         # frequency associated based on resolution code
-        rescode_tstype = TsType(freq_ebas)
-        rescode_numsecs = rescode_tstype.num_secs
-        rescode_tolsecs = rescode_tstype.tol_secs
-        lowlim = rescode_numsecs - rescode_tolsecs
-        highlim = rescode_numsecs + rescode_tolsecs
-        if np.logical_and(most_common_dt >= lowlim,
-                          most_common_dt <= highlim):
+        if TsType(freq_ebas).check_match_total_seconds(most_common_dt):
             return freq_ebas
 
         const.logger.warning(
             f'Detected wrong frequency {freq_ebas}. Trying to '
             f'infer the correct frequency...')
+        try:
+            freq = TsType.from_total_seconds(most_common_dt)
+            return str(freq)
+        except TemporalResolutionError:
+            raise TemporalResolutionError(
+                f'Failed to derive correct sampling frequency in {file.file_name}. '
+                f'Most common meas period (stop_meas - start_meas) in file is '
+                f'{most_common_dt}s and does not '
+                f'correspond to any of the supported frequencies {TsType.VALID_ITER} '
+                f'or permutations of those frequencies within the allowed ranges '
+                f'{TsType.TS_MAX_VALS}'
+                )
 
-        for tst in TsType.VALID:
-            tstype = TsType(tst)
-            try:
-                numsecs = tstype.num_secs
-                tolsecs = tstype.tol_secs
-            except ValueError:
-                continue
-            low, high = numsecs-tolsecs, numsecs+tolsecs
-            if np.logical_and(most_common_dt >= low,
-                              most_common_dt <= high):
-                return tst
-        raise TemporalResolutionError(
-            f'Failed to derive correct sampling frequency in {file.file_name}. '
-            f'Most common meas period is {most_common_dt}s and does not '
-            f'correspond to any of the supported base frequencies { TsType.VALID}'
-            )
+
     def _flag_incorrect_frequencies(self, filedata):
 
         # time diffs in units of s for each measurement
@@ -1347,7 +1364,7 @@ class ReadEbas(ReadUngriddedBase):
         return (vars_to_retrieve + add)
 
     def read(self, vars_to_retrieve=None, first_file=None,
-             last_file=None, multiproc=False, files=None, **constraints):
+             last_file=None, files=None, **constraints):
         """Method that reads list of files as instance of :class:`UngriddedData`
 
         Parameters
@@ -1361,6 +1378,8 @@ class ReadEbas(ReadUngriddedBase):
         last_file : :obj:`int`, optional
             index of last file in list to read. If None, the very last file
             in the list is used
+        files : list
+             list of files
         **constraints
             further reading constraints deviating from default (default
             info for each AEROCOM variable can be found in `ebas_config.ini <
@@ -1401,11 +1420,9 @@ class ReadEbas(ReadUngriddedBase):
         files = files[first_file:last_file]
         files_contain = files_contain[first_file:last_file]
 
-        if not multiproc:
-            data = self._read_files(files, vars_to_retrieve,
-                                    files_contain, constraints)
-        else:
-            raise NotImplementedError('Coming soon...')
+        data = self._read_files(files, vars_to_retrieve,
+                                files_contain, constraints)
+
         data.clear_meta_no_data()
 
         return data
@@ -1452,6 +1469,7 @@ class ReadEbas(ReadUngriddedBase):
                                     .format(_file, repr(e)))
                 continue
             except Exception as e:
+                self.files_failed.append(_file)
                 const.print_log.warning('Skipping reading of EBAS NASA Ames '
                                         'file: {}. Reason: {}'
                                         .format(_file, repr(e)))
@@ -1560,12 +1578,4 @@ if __name__=="__main__":
                                   #data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
-# =============================================================================
-#     reader.read_file('/home/jonasg/MyPyaerocom/data/obsdata/EBASMultiColumn/data/data/PL0005R.19950101060000.20181210133000.filter_1pack...3mo.1d.PL02L_f1p_5..lev2.nas',
-#                      ['concno3'])
-# =============================================================================
-    data = reader.read(vars_to_retrieve=['concno3'])
-# =============================================================================
-#                        ,first_file=100,
-#                        last_file=200)
-# =============================================================================
+    data = reader.read('concoc')
