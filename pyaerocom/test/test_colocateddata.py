@@ -7,16 +7,33 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import pytest
 import numpy as np
-from pandas import Timestamp
+import pandas as pd
 import xarray as xr
 from pyaerocom import ColocatedData
 from pyaerocom.exceptions import DataCoverageError, DataDimensionError
 from pyaerocom.conftest import TESTDATADIR, CHECK_PATHS, does_not_raise_exception
 
+def make_fake_4d_coldata():
+    _lats_fake = np.arange(30,70,10)
+    _lons_fake = np.arange(0,40,10)
+    _time_fake = pd.date_range('2010-01', '2010-03', freq='MS')
+    _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake)))
+
+    coords = {'data_source' : ['obs', 'mod'],
+              'time'        : _time_fake,
+              'latitude'    : _lats_fake,
+              'longitude'   : _lons_fake
+              }
+
+    dims = ['data_source', 'time', 'latitude', 'longitude']
+
+    return ColocatedData(data=_data_fake, coords=coords, dims=dims)
+
 EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS['coldata_tm5_aeronet'])
 
 COLDATA = ColocatedData(str(EXAMPLE_FILE))
 COLDATA_NODIMS = ColocatedData(np.ones((2,1,1)))
+COLDATA_4D_FAKE = make_fake_4d_coldata()
 
 @pytest.mark.parametrize('data,kwargs,raises', [
     (None, {}, pytest.raises(AttributeError)),
@@ -115,14 +132,27 @@ def test_ColocatedData_units(cd,raises):
         assert isinstance(val, list)
         assert [isinstance(x, str) for x in val]
 
+
+@pytest.mark.parametrize('cd,num_coords,raises', [
+    (COLDATA_NODIMS, 0, pytest.raises(ValueError)),
+    (COLDATA, 8, does_not_raise_exception()),
+    (COLDATA_4D_FAKE, 16, does_not_raise_exception())
+    ])
+def test_ColocatedData_get_coords_valid_obs(cd,num_coords,raises):
+    with raises:
+        val = cd.get_coords_valid_obs()
+        assert isinstance(val, list)
+        assert len(val) == 2
+        assert len(val[0]) == len(val[1]) == num_coords
+
 def test_meta_access_filename():
     name = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
 
     meta = {'var_name': 'absc550aer',
             'ts_type': 'daily',
             'filter_name': 'WORLD-noMOUNTAINS',
-            'start': Timestamp('2010-01-01 00:00:00'),
-            'stop': Timestamp('2010-12-31 00:00:00'),
+            'start': pd.Timestamp('2010-01-01 00:00:00'),
+            'stop': pd.Timestamp('2010-12-31 00:00:00'),
             'data_source': ['EBAS-Lev3', 'CAM5-ATRAS']}
     for k, v in ColocatedData.get_meta_from_filename(name).items():
         assert meta[k] == v
@@ -182,6 +212,5 @@ def test_filter_region(coldata_tm5_aeronet,input_args, latrange, lonrange,
     assert len(filtered.data.station_name.data) == numst
 
 if __name__=="__main__":
-
     import sys
     pytest.main(sys.argv)

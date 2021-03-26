@@ -607,11 +607,13 @@ class ColocatedData(object):
             stacked = obs.stack(x=['latitude', 'longitude'])
             invalid = stacked.isnull().all(dim='time')
             coords = stacked.x[~invalid].values
-            return list(zip(*list(coords)))
-
-        invalid = obs.isnull().all(dim='time')
-        return (list(obs.latitude[~invalid].values),
-                list(obs.longitude[~invalid].values))
+            coords = zip(*list(coords))
+        else:
+            invalid = obs.isnull().all(dim='time')
+            lats = list(obs.latitude[~invalid].values)
+            lons = list(obs.longitude[~invalid].values)
+            coords = (lats, lons)
+        return list(coords)
 
     def _iter_stats(self):
         """Create a list that can be used to iterate over station dimension
@@ -645,8 +647,8 @@ class ColocatedData(object):
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        list
+            list containing 2 element tuples (latitude, longitude)
 
         """
         if self.ndim == 4:
@@ -656,8 +658,8 @@ class ColocatedData(object):
             coords = np.dstack((np.meshgrid(lats, lons)))
             coords = coords.reshape(len(lats) * len(lons), 2)
         else:
-            coords = list(zip(self.latitude.data, self.longitude.data))
-        return coords
+            coords = zip(self.latitude.data, self.longitude.data)
+        return list(coords)
 
     def check_set_countries(self, inplace=True, assign_to_dim=None):
         """
