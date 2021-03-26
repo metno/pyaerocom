@@ -666,38 +666,6 @@ def update_regions_json(region_defs, regions_json):
     save_dict_json(current, regions_json)
     return current
 
-def _init_data_default_frequenciesOLD(coldata, colocation_settings):
-    ts_types_order = const.GRID_IO.TS_TYPES
-    to_ts_types = ['daily', 'monthly', 'yearly']
-
-    data_arrs = dict.fromkeys(to_ts_types)
-    jsdate = dict.fromkeys(to_ts_types)
-
-    ts_type = coldata.metadata['ts_type']
-    for freq in to_ts_types:
-        if ts_types_order.index(freq) < ts_types_order.index(ts_type):
-            data_arrs[freq] = None
-        elif ts_types_order.index(freq) == ts_types_order.index(ts_type):
-            data_arrs[freq] = coldata.data
-
-            js = (coldata.data.time.values.astype('datetime64[s]') -
-                  np.datetime64('1970', '[s]')).astype(int) * 1000
-            jsdate[freq] = js.tolist()
-
-        else:
-            colstp = colocation_settings
-            _a = coldata.resample_time(to_ts_type=freq,
-                                 apply_constraints=colstp.apply_time_resampling_constraints,
-                                 min_num_obs=colstp.min_num_obs,
-                                 colocate_time=colstp.colocate_time,
-                                 inplace=False).data
-            data_arrs[freq] = _a #= resample_time_dataarray(arr, freq=freq)
-
-            js = (_a.time.values.astype('datetime64[s]') -
-                  np.datetime64('1970', '[s]')).astype(int) * 1000
-            jsdate[freq] = js.tolist()
-    return (data_arrs, jsdate)
-
 def _init_meta_glob(coldata, **kwargs):
     meta = coldata.metadata
 
