@@ -618,6 +618,84 @@ class ReadEbas(ReadUngriddedBase):
 
         return col_matches
 
+    def _resolve_units_cols(self, var_name, result_col, file):
+        """
+        Identify data column with the correct unit for input variable
+
+        For instance, O3 is sometimes reported both as vmro3 (nmole mole-1) and
+        conco3 (ug m-3) in different columns of the file.
+
+        Parameters
+        ----------
+        var_name : str
+            AeroCom variable name.
+        result_col : list
+            list of columns numbers to be checked.
+        file : EbasNasaAmesFile
+            file data.
+
+        Returns
+        -------
+        list
+            list of column numbers that match the correct units.
+
+        """
+        to_unit =  str(self.var_info(var_name).units)
+        if not to_unit in ('', '1'):
+            _cols = []
+            for colnum in result_col:
+                try:
+                    from_unit = file.var_defs[colnum].units
+                    get_unit_conversion_fac(from_unit, to_unit, var_name)
+                    _cols.append(colnum)
+                except UnitConversionError:
+                    continue
+            if len(_cols) > 0:
+                result_col = _cols
+        return result_col
+
+    def _resolve_meas_height_cols(self, result_col, file):
+        """
+        Identify data column(s) with the lowest tower inlet height
+
+        Parameters
+        ----------
+        result_col : list
+            list of columns numbers to be checked. All columns need to have
+            attr. `tower_inlet_height`.
+        file : EbasNasaAmesFile
+            file data.
+
+        Raises
+        ------
+        ValueError
+            If conversion of tower_inlet_height values into float fails.
+
+        Returns
+        -------
+        list
+            list containing columns that match the lowest tower inlet height
+            (usually only 1 column, but who knows...)
+
+        """
+        lowest = 1e9
+        matches = []
+        for col in result_col:
+            heightstr = file.var_defs[col]['tower_inlet_height']
+            if not heightstr.endswith(' m'):
+                raise ValueError(
+                    f'value of tower_inlet_height in col {col} '
+                    f'is invalid: {heightstr} (needs to end '
+                    f'with m)')
+            height = float(heightstr.split()[0])
+            if height < lowest:
+                matches = [col]
+                lowest = height
+            elif height == lowest:
+                matches.append(col)
+        assert len(matches) > 0
+        return matches
+
     def _find_best_data_column(self, cols, ebas_var_info, file,
                                check_units_on_multimatch=True):
         """Find best match of data column for variable in multiple columns
@@ -626,8 +704,9 @@ class ReadEbas(ReadUngriddedBase):
         found for a given variable. For instance, if ``ac550aer``
 
         """
-        var = ebas_var_info.var_name
+        var = ebas_var_info['var_name']
         opts = self.get_read_opts(var)
+
         preferred_matrix = None
         idx_best_matrix_found = 9999
 
@@ -690,62 +769,35 @@ class ReadEbas(ReadUngriddedBase):
                     result_col.append(colnum)
                 elif idx == idx_best_statistics_found:
                     result_col.append(colnum)
-        num_matches = len(result_col)
-        if num_matches != 1:
-            if num_matches == 0:
-                raise ValueError('Note for developers: this should not happen, '
-                                 'please debug')
-            to_unit =  str(self.var_info(ebas_var_info['var_name']).units)
-            if check_units_on_multimatch and not to_unit in ('', '1'):
-                _cols = []
-                for colnum in result_col:
-                    try:
-                        from_unit = file.var_defs[colnum].units
-                        get_unit_conversion_fac(from_unit, to_unit, var)
-                        _cols.append(colnum)
-                    except UnitConversionError:
-                        continue
-                if len(_cols) > 0:
-                    result_col = _cols
 
-            if len(result_col) > 1:
-                ok = False
-                add_msg = ''
-                try:
-                    if all(['tower_inlet_height' in file.var_defs[col] for col in result_col]):
-                        # choose the lowest
-                        lowest = 1e9
-                        best_col = None
-                        for col in result_col:
-                            heightstr = file.var_defs[col]['tower_inlet_height']
-                            if not heightstr.endswith(' m'):
-                                raise ValueError(
-                                    f'value of tower_inlet_height in col {col} '
-                                    f'is invalid: {heightstr} (needs to end '
-                                    f'with m)')
-                            height = float(heightstr.split()[0])
-                            if height < lowest:
-                                lowest = height
-                                best_col = col
-                        result_col = [best_col]
-                        ok = True
-                except Exception as e:
-                    add_msg += f'\n{repr(e)}'
+        if len(result_col) > 1 and check_units_on_multimatch:
+            result_col = self._resolve_units_cols(var,
+                                                  result_col,
+                                                  file)
 
-                if not ok:
-                    comp = ebas_var_info['component']
-                    startstop = f'{file.time_stamps[0]} - {file.time_stamps[-1]}'
-                    msg = (f'\n\nFATAL: could not resolve unique data column for '
-                           f'{var} (EBAS varname: {comp})\nData period: {startstop}), '
-                           f'\nStation {file.station_name} (col matches: {result_col})')
-                    for col in result_col:
-                        msg += f'\nColumn {col}\n{file.var_defs[col]}'
+        add_msg = ''
+        if len(result_col)>1 and file.all_cols_contain(
+                result_col, 'tower_inlet_height'):
+            try:
+                result_col = self._resolve_meas_height_cols(result_col, file)
 
-                    msg += f'\nFilename: {file.file_name}'
-                    msg += add_msg
-                    msg += '\n\nTHIS FILE WILL BE SKIPPED\n'
-                    const.print_log.warning(msg)
-                    raise ValueError('failed to identify unique data column')
+            except (ValueError, AssertionError) as e:
+                add_msg += f'\n{repr(e)}'
+
+        if len(result_col) > 1:
+            comp = ebas_var_info['component']
+            startstop = f'{file.time_stamps[0]} - {file.time_stamps[-1]}'
+            msg = (f'\n\nFATAL: could not resolve unique data column for '
+                   f'{var} (EBAS varname: {comp})\nData period: {startstop}), '
+                   f'\nStation {file.station_name} (col matches: {result_col})')
+            for col in result_col:
+                msg += f'\nColumn {col}\n{file.var_defs[col]}'
+
+            msg += f'\nFilename: {file.file_name}'
+            msg += add_msg
+            msg += '\n\nTHIS FILE WILL BE SKIPPED\n'
+            const.print_log.warning(msg)
+            raise ValueError('failed to identify unique data column')
 
         return result_col[0]
 
