@@ -239,19 +239,11 @@ class EbasFlagCol(object):
 
     Attributes
     ----------
-    info : EbasColDef
-        EBAS column definition information for flag column (from file header)
     raw_data : ndarray
         raw flag column (containing X-digit floating point numbers)
 
     """
-    #from pyaerocom import const
-    #_FLAG_INFO = const.EBAS_FLAG_INFO
-    def __init__(self, raw_data, info, interpret_on_init=True):
-        if not raw_data.ndim == 1:
-            raise AttributeError("Need one dimensional numpy array for flag "
-                                 "column")
-        self.info = info
+    def __init__(self, raw_data, interpret_on_init=True):
         self.raw_data = raw_data
 
         self._decoded = None
@@ -482,7 +474,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
             if item.is_flag:
                 data = self.data[:, idx]
                 flag = EbasFlagCol(raw_data=data,
-                                   info=item,
                                    interpret_on_init=evaluate)
                 self.flag_col_info[idx] = flag
 

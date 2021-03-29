@@ -18,6 +18,34 @@ from pyaerocom.io import ebas_nasa_ames as ena
 def head():
     return ena.NasaAmesHeader
 
+@pytest.mark.parametrize('raw_data,raises,valid', [
+    (np.asarray([0]), does_not_raise_exception(), np.asarray([True])),
+    (np.asarray([0.66]), does_not_raise_exception(), np.asarray([True])),
+    (np.asarray([0.456]), does_not_raise_exception(), np.asarray([False])),
+    (np.asarray([0.999]), does_not_raise_exception(), np.asarray([False])),
+    (np.asarray([0.999100]), does_not_raise_exception(), np.asarray([True])),
+    (np.asarray([0.999100456]), does_not_raise_exception(), np.asarray([True])),
+    ])
+def test_EbasFlagCol(raw_data,raises,valid):
+    with raises:
+        fc = ena.EbasFlagCol(raw_data)
+        assert fc.valid == valid
+
+@pytest.mark.parametrize('raw_data,decoded', [
+    (np.asarray([0]), np.asarray([[0, 0, 0]])),
+    (np.asarray([0.10045666]), np.asarray([[100, 456, 660]])),
+    (np.asarray([0.10045666, 0]), np.asarray([[100, 456, 660],[0, 0, 0]])),
+    (np.asarray([0.10045666, 0.12]), np.asarray([[100, 456, 660],[120, 0, 0]])),
+    (np.asarray([0.10045666, 0.1234]), np.asarray([[100, 456, 660],[123, 400, 0]])),
+    ])
+def test_EbasFlagCol_decoded(raw_data, decoded):
+    fc = ena.EbasFlagCol(raw_data, False)
+    assert fc._decoded is None
+    dc = fc.decoded
+    assert fc._decoded is dc
+    assert decoded.ndim == 2
+    assert (dc == decoded).all()
+
 def test_NasaAmesHeader_NUM_FIXLINES(head):
     assert head._NUM_FIXLINES == 13
 
@@ -63,6 +91,43 @@ def test_EbasNasaAmesFile_data(filedata):
 def test_EbasNasaAmesFile_shape(filedata):
     assert filedata.shape == (8760, 24)
 
+def test_EbasNasaAmesFile_col_num(filedata):
+    assert filedata.col_num == 24
+
+def test_EbasNasaAmesFile_col_names(filedata):
+    names = filedata.col_names
+    assert names == ['starttime', 'endtime', 'pressure', 'relative_humidity',
+                     'temperature', 'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_backscattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'aerosol_light_scattering_coefficient',
+                     'numflag']
+
+
+def test_EbasNasaAmesFile_get_time_gaps_meas(filedata):
+    gaps = filedata.get_time_gaps_meas()
+    assert len(gaps) == 8759
+    assert np.unique(gaps).sum() == 0
+
+def test_EbasNasaAmesFile_get_dt_meas(filedata):
+    dt = filedata.get_dt_meas()
+    assert len(dt) == 8759
+    assert list(np.unique(dt)) == [3599.0, 3600.0, 3601.0]
+
 @pytest.mark.parametrize('update', [
     {'bla' : 42}, {'vol_num': 42}
     ])
@@ -79,8 +144,6 @@ def test_EbasNasaAmesFile_update(filedata, update):
             assert filedata._meta[key] == val
     filedata._head_fix = head_before
     filedata._meta = meta_before
-
-
 
 def test_EbasNasaAmesFile___str__(filedata):
     assert isinstance(filedata.__str__(), str)
