@@ -838,10 +838,17 @@ class Config(object):
             check.get_file_list()
         except DataSourceError:
             if 'renamed' in os.listdir(data_dir):
+                self.print_log.warning(
+                    f'Failed to register {obs_id} at {data_dir} using ungridded '
+                    f'reader {reader} but input dir has a renamed subdirectory, '
+                    f'trying to find valid data files in there instead'
+                )
                 chk_dir = os.path.join(data_dir, 'renamed')
                 self.OBSLOCS_UNGRIDDED.pop(obs_id)
                 self.add_ungridded_obs(obs_id, chk_dir, reader,
                                        check_read=True)
+            else:
+                raise
 
     def change_database(self, database_name='metno', keep_root=False):
         """

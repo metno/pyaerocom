@@ -9,3 +9,10 @@ omit =
   pyaerocom/web/helpers_trends_iface.py
   pyaerocom/web/trends_evaluation.py
   pyaerocom/web/cli/main_trends_evaluation.py
+
+[report]
+exclude_lines =
+  if __name__=='__main__':
+  if __name__=="__main__":
+  if __name__ == "__main__":
+  if __name__ == '__main__':
