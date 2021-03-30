@@ -17,7 +17,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import DataDimensionError, TemporalResolutionError
+from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
@@ -29,7 +29,7 @@ def make_info_str_eval_setup(stp, add_header=True):
 
     Note
     ----
-    BETA feature, this might crash!!
+    UNDER DEVELOPMENT -> this might crash!!
 
     Parameters
     ----------
@@ -38,7 +38,7 @@ def make_info_str_eval_setup(stp, add_header=True):
 
     Returns
     -------
-    st : str
+    str
         Long string representation of the input configuration.
 
     """
@@ -100,7 +100,7 @@ def make_info_str_eval_setup(stp, add_header=True):
         else:
             freqinfo += '. '
 
-    except pya.exceptions.TemporalResolutionError:
+    except TemporalResolutionError:
         freqinfo = (
         'The analysis is performed in the highest available '
         'resolution. '

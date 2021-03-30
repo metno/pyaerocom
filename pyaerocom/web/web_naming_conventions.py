@@ -31,6 +31,8 @@ VAR_MAPPING = {
     'concss'        : ['SS', '3D', 'Particle concentrations'],
     'conco3'        : ['O3', '3D', 'Gas concentrations'],
     'concso2'       : ['SO2', '3D', 'Gas concentrations'],
+    'concnh4'       : ['NH4', '3D', 'Gas concentrations'],
+    'concno3'       : ['NO3', '3D', 'Gas concentrations'],
     'vmro3'         : ['O3', '3D', 'Volume mixing ratios'],
     'vmrno2'        : ['NO2', '3D', 'Volume mixing ratios'],
 }
