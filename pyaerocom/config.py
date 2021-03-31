@@ -210,11 +210,7 @@ class Config(object):
 
     _LUSTRE_CHECK_PATH = '/project/aerocom/aerocom1/'
 
-    def __init__(self, basedir=None,
-                 output_dir=None, config_file=None,
-                 cache_dir=None, colocateddata_dir=None,
-                 write_fileio_err_log=True,
-                 activate_caching=True,
+    def __init__(self, config_file=None,
                  try_infer_environment=True):
 
         from pyaerocom import print_log, logger
@@ -222,9 +218,9 @@ class Config(object):
         self.logger = logger
 
         # Directories
-        self._outputdir = output_dir
+        self._outputdir = None
         self._cache_basedir = None
-        self._colocateddatadir = colocateddata_dir
+        self._colocateddatadir = None
         self._filtermaskdir = None
         self._local_tmp_dir = None
         self._downloaddatadir = None
@@ -232,7 +228,7 @@ class Config(object):
         self._rejected_access = []
 
         # Options
-        self._caching_active = activate_caching
+        self._caching_active = True
 
         self._var_param = None
         self._coords = None
@@ -243,23 +239,24 @@ class Config(object):
         self.SUPPLDIRS = od()
         self._search_dirs = []
 
-        self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
+        self.WRITE_FILEIO_ERR_LOG = True
 
         self.last_config_file = None
         self._ebas_flag_info = None
 
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
-        self.logger.info('Initiating pyaerocom configuration')
 
-        # checks and validates / invalidates input basedir and config_file
-        # if both are provided
-        (basedir,
-         config_file) = self._check_input_basedir_and_config_file(basedir,
-                                                                  config_file)
+        if config_file is not None:
+            if not os.path.exists(config_file):
+                raise FileNotFoundError(
+                    f'input config file does not exist {config_file}'
+                    )
+            elif not config_file.endswith('ini'):
+                raise ValueError('Need path to an ini file for input config_file')
 
-        if try_infer_environment and not isinstance(config_file, str):
-            self.logger.info('Checking database access...')
+            basedir, config_file = os.path.split(config_file)
+        elif try_infer_environment:
             try:
                 basedir, config_file = self.infer_basedir_and_config()
             except FileNotFoundError:
@@ -273,26 +270,6 @@ class Config(object):
                                        .format(repr(e)))
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
-
-    def _check_input_basedir_and_config_file(self, basedir, config_file):
-        if config_file is not None and not os.path.exists(config_file):
-            self.print_log.warning('Ignoring input config_file {} since it '
-                                   'does not exist'.format(config_file))
-            config_file = None
-
-        if basedir is not None:
-            if not self._check_access(basedir):
-                self.print_log.warning('Failed to establish access to input '
-                                       'basedir={}'.format(basedir))
-                basedir=None
-            else:
-                if config_file is None:
-                    try:
-                        config_file, _ = self._infer_config_from_basedir(basedir)
-                    except FileNotFoundError:
-                        basedir=None # config_file is None and basedir is None
-
-        return basedir, config_file
 
     def _check_access(self, loc, timeout=None):
         """Uses multiprocessing approach to check if location can be accessed
@@ -347,11 +324,9 @@ class Config(object):
                 if self._check_access(basedir):
                     _chk_dir = os.path.join(basedir,
                                             self._check_subdirs_cfg[cfg_id])
-
                     if self._check_access(_chk_dir):
-
                         return (basedir, self._config_files[cfg_id])
-        raise FileNotFoundError('Could not find access to any registered '
+        raise FileNotFoundError('Could not establish access to any registered '
                                 'database')
 
     @property

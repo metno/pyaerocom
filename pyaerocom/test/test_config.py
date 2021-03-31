@@ -6,14 +6,24 @@ Created on Mon Nov 25 15:27:28 2019
 @author: jonasg
 """
 import pytest
-import os
-from pyaerocom.conftest import does_not_raise_exception
+import os, tempfile
+from pyaerocom.conftest import does_not_raise_exception, PYADIR
 from pyaerocom import const as DEFAULT_CFG
+import pyaerocom.config as testmod
 import getpass
-
 USER = getpass.getuser()
 
-import pyaerocom.config as testmod
+_TEMPDIR = tempfile.mkdtemp()
+CFG_FILE_WRONG = os.path.join(_TEMPDIR, 'paths.txt')
+open(CFG_FILE_WRONG, 'w').close()
+
+CFG_FILE = os.path.join(PYADIR, 'data/paths.ini')
+
+def test_CFG_FILE_EXISTS():
+    assert os.path.exists(CFG_FILE)
+
+def test_CFG_FILE_WRONG_EXISTS():
+    assert os.path.exists(CFG_FILE_WRONG)
 
 @pytest.fixture(scope='module')
 def empty_cfg():
@@ -23,14 +33,23 @@ def empty_cfg():
 def test_Config_ALL_DATABASE_IDS(empty_cfg):
     assert empty_cfg.ALL_DATABASE_IDS == ['metno', 'users-db', 'local-db']
 
+@pytest.mark.parametrize('config_file,try_infer_environment,raises', [
+    (CFG_FILE_WRONG, False, pytest.raises(ValueError)),
+    (f'/home/{USER}/blaaaa.ini', False, pytest.raises(FileNotFoundError)),
+    (None, False, does_not_raise_exception()),
+    (None, True, does_not_raise_exception()),
+    (CFG_FILE, False, does_not_raise_exception())
+    ])
+def test_Config___init__(config_file,try_infer_environment,raises):
+    with raises:
+        cfg = testmod.Config(config_file, try_infer_environment)
+
 @pytest.mark.parametrize('cfg_id, basedir, init_obslocs_ungridded,init_data_search_dirs, raises, num_obs, num_dirs', [
     ('metno', None,False,False,does_not_raise_exception(),0,0),
     ('metno', None,True,False,does_not_raise_exception(),0,0),
     ('metno', None,True,True,does_not_raise_exception(),0,0),
     ('metno',f'/home/{USER}',True,True,does_not_raise_exception(),0,0),
     ('users-db', None,False,False,does_not_raise_exception(),0,0),
-
-
     ])
 def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded,
                             init_data_search_dirs, raises, num_obs,

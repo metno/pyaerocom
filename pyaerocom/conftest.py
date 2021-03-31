@@ -18,6 +18,7 @@ from pyaerocom.io import (ReadAasEtal, ReadEbas, ReadAeronetSunV3,
                           ReadAeronetSdaV3, ReadMscwCtm)
 
 from pyaerocom.test.synthetic_data import DataAccess
+from pyaerocom import __dir__ as PYADIR
 
 INIT_TESTDATA = True
 TEST_RTOL = 1e-4
