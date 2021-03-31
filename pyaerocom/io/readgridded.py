@@ -155,8 +155,6 @@ class ReadGridded(object):
                     'wetoa'         : ('wetpoa', 'wetsoa'),
                     'dryoa'         : ('drypoa', 'drysoa'),
                     'conc*'         : ('mmr*', 'rho'),
-                    # 'conc*'         : ('vmr*', 'ts', 'ps'),
-                    # 'conc*'         : ('vmr*',),
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
                     'mmr*'          : ('vmr*',),
                     'rho'           : ('ts','ps'),
