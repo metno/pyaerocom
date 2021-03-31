@@ -25,8 +25,7 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
                                          check_dir_access,
                                          check_write_access)
 
-from pyaerocom.exceptions import (DeprecationError, DataSourceError,
-                                  DataIdError)
+from pyaerocom.exceptions import (DataSourceError, DataIdError)
 
 from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
@@ -179,14 +178,12 @@ class Config(object):
     from pyaerocom import __dir__
     _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
-    _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
     _config_ini_localdb = os.path.join(__dir__, 'data', 'paths_local_database.ini')
 
     # this dictionary links environment ID's with corresponding ini files
     _config_files = {
             'metno'            : _config_ini_lustre,
             'users-db'         : _config_ini_user_server,
-            'testdata'         : _config_ini_testdata,
             'local-db'         : _config_ini_localdb
     }
 
@@ -195,23 +192,16 @@ class Config(object):
     _check_subdirs_cfg = {
             'metno'       : 'aerocom',
             'users-db'    : 'AMAP',
-            'testdata'    : 'modeldata',
             'local-db'    : 'modeldata'
     }
 
     _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
     _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
 
-    #_mask_location = '/home/hannas/Desktop/htap/'
-    # todo update to ~/MyPyaerocom/htap_masks/' ask jonas
-
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = od()
     _DB_SEARCH_SUBDIRS['lustre/storeA/project'] = 'metno'
-    #_DB_SEARCH_SUBDIRS['lustre/storeB/project/aerocom'] = 'metno'
     _DB_SEARCH_SUBDIRS['metno/aerocom_users_database'] = 'users-db'
-    _DB_SEARCH_SUBDIRS['pyaerocom-testdata/'] = 'testdata'
-    _DB_SEARCH_SUBDIRS['MyPyaerocom/pyaerocom-testdata'] = 'testdata'
     _DB_SEARCH_SUBDIRS['MyPyaerocom/data'] = 'local-db'
 
     DONOTCACHEFILE = None
@@ -902,11 +892,15 @@ class Config(object):
             basedir = str(self._resolve_basedir(locs, chk_dirs))
         except FileNotFoundError:
             basedir = None
-
+        repl_str = '${BASEDIR}'
         for loc in locs:
-            candidate = loc.replace('${BASEDIR}', basedir)
-            if not candidate in self._search_dirs:
-                self._search_dirs.append(candidate)
+            if repl_str in loc:
+                if basedir is None:
+                    continue
+                loc = loc.replace(repl_str, basedir)
+
+            if not loc in self._search_dirs:
+                self._search_dirs.append(loc)
         return True
 
     def _add_obsconfig(self, cr, basedir=None):
@@ -947,12 +941,14 @@ class Config(object):
                         chk = Path(path.replace(repl, chk_dir))
                         if self._check_access(chk):
                             dirconfirmed = str(chk_dir)
-
+        homedir = os.path.expanduser('~')
         for name, loc in candidates.items():
-            if '${BASEDIR}' in loc and dirconfirmed is not None:
-                loc = loc.replace('${BASEDIR}', dirconfirmed)
+            if repl in loc:
+                if dirconfirmed is None:
+                    continue
+                loc = loc.replace(repl, dirconfirmed)
             if '${HOME}' in loc:
-                loc = loc.replace('${HOME}', os.path.expanduser('~'))
+                loc = loc.replace('${HOME}', homedir)
 
             self.OBSLOCS_UNGRIDDED[name] = loc
 
