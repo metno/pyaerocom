@@ -15,6 +15,10 @@ USER = getpass.getuser()
 
 _TEMPDIR = tempfile.mkdtemp()
 CFG_FILE_WRONG = os.path.join(_TEMPDIR, 'paths.txt')
+
+LOCAL_DB_DIR = os.path.join(_TEMPDIR, 'data')
+os.makedirs(os.path.join(LOCAL_DB_DIR, 'modeldata'))
+os.makedirs(os.path.join(LOCAL_DB_DIR, 'obsdata'))
 open(CFG_FILE_WRONG, 'w').close()
 
 CFG_FILE = os.path.join(PYADIR, 'data/paths.ini')
@@ -24,6 +28,9 @@ def test_CFG_FILE_EXISTS():
 
 def test_CFG_FILE_WRONG_EXISTS():
     assert os.path.exists(CFG_FILE_WRONG)
+
+def test_LOCAL_DB_DIR_EXISTS():
+    assert os.path.exists(LOCAL_DB_DIR)
 
 @pytest.fixture(scope='module')
 def empty_cfg():
@@ -43,6 +50,24 @@ def test_Config_ALL_DATABASE_IDS(empty_cfg):
 def test_Config___init__(config_file,try_infer_environment,raises):
     with raises:
         cfg = testmod.Config(config_file, try_infer_environment)
+
+@pytest.mark.parametrize('basedir,raises,envid', [
+    ('/blaaa', pytest.raises(FileNotFoundError), None),
+    (LOCAL_DB_DIR, does_not_raise_exception(), 'local-db'),
+    ])
+def test_Config__infer_config_from_basedir(basedir,raises, envid):
+    cfg = testmod.Config(try_infer_environment=False)
+    with raises:
+        res = cfg._infer_config_from_basedir(basedir)
+        assert res[1] == envid
+
+def test_Config_has_access_lustre():
+    cfg = testmod.Config(try_infer_environment=False)
+    assert not cfg.has_access_lustre
+
+def test_Config_has_access_users_database():
+    cfg = testmod.Config(try_infer_environment=False)
+    assert not cfg.has_access_users_database
 
 @pytest.mark.parametrize('cfg_id, basedir, init_obslocs_ungridded,init_data_search_dirs, raises, num_obs, num_dirs', [
     ('metno', None,False,False,does_not_raise_exception(),0,0),
