@@ -6,7 +6,7 @@ from traceback import format_exc
 from pyaerocom import print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
-from pyaerocom.molmasses import *
+from pyaerocom.molmasses import get_molmass
 from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.molmasses import get_mmr_to_vmr_fac
 
@@ -205,8 +205,6 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     cube_out.attributes.update(merge_meta_cubes(cube1, cube2))
     return cube_out
 
-def cube_multiply_constant(cube):
-    pass
 
 def rho_from_ts_ps(ts, ps):
     R = 287.058 #R for dry air
