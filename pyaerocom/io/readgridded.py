@@ -181,8 +181,6 @@ class ReadGridded(object):
                 'dryoa'         :   add_cubes,
                 'sc550dryaer'   :   subtract_cubes,
                 'conc*'         :   multiply_cubes,
-                # 'conc'          :   conc_from_vmr,
-                # 'conc*'          :   conc_from_vmr_STP,
                 'mmr*'              :   mmr_from_vmr,
                 'concox'        :   add_cubes,
                 'vmrox'         :   add_cubes,
