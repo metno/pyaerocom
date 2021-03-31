@@ -7,7 +7,7 @@ import glob, os, pickle
 
 from pyaerocom import const
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.exceptions import (AerocomConnectionError, CacheReadError,
+from pyaerocom.exceptions import (CacheReadError,
                                   CacheWriteError)
 
 # TODO: Write data attribute list contains_vars in header of pickled file and

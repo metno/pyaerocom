@@ -198,46 +198,6 @@ def merge_dicts(dict1, dict2, discard_failing=True):
 
     return new
 
-def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):
-    """Check input function timeout performance
-
-    Uses multiprocessing module to test if input function finishes within a
-    certain time interval.
-
-    Note
-    ----
-    Please only use if method to call cannot raise an Exception as this is not
-    handled here in which case True is returned.
-
-    Parameters
-    ----------
-    fun : callable
-        function that is supposed to be tested
-    fun_args : tuple
-        function arguments
-    timeout_secs : float
-        timeout in seconds
-
-    Returns
-    -------
-    bool
-        True if function execution requires less time than input timeout, else
-        False
-    """
-
-    # Start foo as a process
-    OK = True
-    p = mp.Process(target=fun, name="test", args=fun_args)
-    p.start()
-    p.join(timeout_secs)
-    if p.is_alive():# Terminate foo
-        OK =False
-        p.terminate()
-        # Cleanup
-        p.join()
-
-    return OK
-
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""
     d = os.path.join(base, name)

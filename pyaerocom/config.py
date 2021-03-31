@@ -27,8 +27,8 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
 
 from pyaerocom.exceptions import (DeprecationError, DataSourceError,
                                   DataIdError)
-from pyaerocom.region_defs import (REGION_DEFS,
-                                   OLD_AEROCOM_REGIONS,
+
+from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 
 from pyaerocom.variable import VarCollection
@@ -144,10 +144,6 @@ class Config(object):
     #: Wavelength tolerance for observations imports
     OBS_WAVELENGTH_TOL_NM = obs_io.OBS_WAVELENGTH_TOL_NM
 
-    #: not used at the moment
-    GCOSPERCENTCRIT =   0.1
-    GCOSABSCRIT     =   0.04
-
     CLIM_START =2005
     CLIM_STOP = 2015
     CLIM_FREQ = 'daily'
@@ -156,9 +152,6 @@ class Config(object):
     CLIM_MIN_COUNT = dict(daily = 30, # at least 30 daily measurements in each month over whole period
                           monthly = 5) # analogue to daily ...
 
-    #names of the different obs networks
-    OBSNET_NONE = 'NONE'
-    NOMODELNAME = 'OBSERVATIONS-ONLY'
 
     # names for the satellite data sets
     SENTINEL5P_NAME = 'Sentinel5P'
@@ -311,11 +304,6 @@ class Config(object):
 
         return basedir, config_file
 
-    @property
-    def _config_ini(self):
-        # for backwards compatibility
-        return self._config_ini_lustre
-
     def _check_access(self, loc, timeout=None):
         """Uses multiprocessing approach to check if location can be accessed
 
@@ -349,37 +337,6 @@ class Config(object):
 
     def _basedirs_search_db(self):
         return [self.ROOTDIR, self.HOMEDIR]
-
-    def _check_env_access(self, basedir, env_id):
-        if not os.path.exists(basedir):
-            raise FileNotFoundError('Location not found: {}'.format(basedir))
-        if not env_id in self._check_subdirs_cfg:
-            raise ValueError('No such environment with ID {}. Choose from {}'
-                             .format(env_id,
-                                     list(self._check_subdirs_cfg.keys())))
-        return self._check_access(os.path.join(basedir,
-                                               self._check_subdirs_cfg[env_id]))
-
-    def _check_basedir_environment(self, basedir):
-        """Check if input basedir can be linked with one of the supported databases
-
-        Note
-        ----
-        Does not check if the path actually exists.
-        """
-        basedir = os.path.normpath(basedir)
-        import pathlib
-        new = pathlib.Path(basedir)
-        last = new.parts[-1]
-        for search_dir, env_id in self._DB_SEARCH_SUBDIRS.items():
-            if pathlib.Path(search_dir).parts[0] == last:
-                check = os.path.join(*new.parts[:-1], search_dir)
-                if self._check_access(check):
-                    self.print_log.info('Input path {} was identified to be '
-                                   'connected with database {} and will be '
-                                   'updated to {}'.format(basedir, env_id, check))
-                    return check
-        return basedir
 
     def _infer_config_from_basedir(self, basedir):
 
@@ -607,16 +564,6 @@ class Config(object):
             self.WRITE_FILEIO_ERR_LOG = False
 
     @property
-    def BASEDIR(self):
-        """DEPRECATED since v0.9.0: Base directory of data
-        """
-        msg=('BASEDIR attribute is deprecated, please see attrs. '
-             'DATA_SEARCH_DIRS for available search directories and '
-             'method add_data_search_dir for adding new locations. You can '
-             'still use the setter method for adding a database location')
-        raise DeprecationError(msg)
-
-    @property
     def DIR_INI_FILES(self):
         """Directory containing configuration files"""
         from pyaerocom import __dir__
@@ -650,28 +597,6 @@ class Config(object):
             return True
         except ModuleNotFoundError:
             return False
-
-    @property
-    def BASEMAP_AVAILABLE(self):
-        """
-        Boolean specifying if basemap library is installed
-
-        Returns
-        -------
-        bool
-
-        """
-        try:
-            from mpl_toolkits.basemap import Basemap
-            return True
-        except ModuleNotFoundError:
-            return False
-
-    def connect_database(self, location):
-        if not self._check_access(location):
-            raise FileNotFoundError('Cannot add {}: location does not exist')
-
-        raise NotImplementedError
 
     @property
     def EBAS_FLAGS_FILE(self):
@@ -837,40 +762,18 @@ class Config(object):
         try:
             check.get_file_list()
         except DataSourceError:
-            if 'renamed' in os.listdir(data_dir):
-                self.print_log.warning(
-                    f'Failed to register {obs_id} at {data_dir} using ungridded '
-                    f'reader {reader} but input dir has a renamed subdirectory, '
-                    f'trying to find valid data files in there instead'
-                )
-                chk_dir = os.path.join(data_dir, 'renamed')
-                self.OBSLOCS_UNGRIDDED.pop(obs_id)
-                self.add_ungridded_obs(obs_id, chk_dir, reader,
-                                       check_read=True)
-            else:
+            if not 'renamed' in os.listdir(data_dir):
                 raise
+            self.print_log.warning(
+                f'Failed to register {obs_id} at {data_dir} using ungridded '
+                f'reader {reader} but input dir has a renamed subdirectory, '
+                f'trying to find valid data files in there instead'
+            )
+            chk_dir = os.path.join(data_dir, 'renamed')
+            self.OBSLOCS_UNGRIDDED.pop(obs_id)
+            self.add_ungridded_obs(obs_id, chk_dir, reader,
+                                   check_read=True)
 
-    def change_database(self, database_name='metno', keep_root=False):
-        """
-        Changes the path setup for a specific data environment
-
-        Parameters
-        ----------
-        database_name : str
-            name of path environment for database. To see available database
-            ID's use :attr:`ALL_DATABASE_IDS`
-        keep_root : bool
-            if True, :attr:`BASEDIR` remains unchanged and paths in
-            corresponding ini files are set relative to current :attr:`BASEDIR`.
-            Else, :attr:`BASEDIR` is updated using the specifications
-            provided in the corresponding ini file.
-        """
-        raise NotImplementedError('This method is deprecated since v090 ...')
-        if not database_name in self.ALL_DATABASE_IDS:
-            raise ValueError('Unkown database name {}. Please choose from '
-                             '{}'.format(database_name, self.ALL_DATABASE_IDS))
-        self.read_config(self._config_files[database_name],
-                         keep_basedirs=keep_root)
 
     @property
     def ebas_flag_info(self):
@@ -897,12 +800,42 @@ class Config(object):
     def read_config(self, config_file, basedir=None,
                     init_obslocs_ungridded=False,
                     init_data_search_dirs=False):
-        #Read and import paths from ini file
+        """
+        Import paths from one of the config ini files
+
+        Parameters
+        ----------
+        config_file : str
+            file location of config ini file
+        basedir : str, optional
+            Base directory to be used for relative model and obs dirs specified
+            via BASEDIR in config file. If None, then the BASEDIR value in the
+            config file is used. The default is None.
+        init_obslocs_ungridded : bool, optional
+            If True, :attr:`OBSLOCS_UNGRIDDED` will be re-instantiated (i.e.
+            all currently set obs locations will be deleted).
+            The default is False.
+        init_data_search_dirs : bool, optional
+            If True, :attr:`DATA_SEARCH_DIRS` will be re-instantiated (i.e.
+            all currently set data search directories will be deleted).
+            The default is False.
+
+        Raises
+        ------
+        FileNotFoundError
+            If input config file is not a file or does not exist.
+
+        Returns
+        -------
+        None.
+
+        """
 
         if not os.path.isfile(config_file):
-            raise IOError("Configuration file paths.ini at %s does not exist "
-                          "or is not a file"
-                          %config_file)
+            raise FileNotFoundError(
+                f"Configuration file paths.ini at {config_file} does not exist "
+                f"or is not a file"
+                )
 
         if init_obslocs_ungridded:
             self.OBSLOCS_UNGRIDDED = od()

@@ -77,10 +77,6 @@ def test_empty_class_header(empty_cfg):
     assert cfg.CLIM_MIN_COUNT == dict(daily = 30,
                                      monthly = 5)
 
-    #names of the different obs networks
-    assert cfg.OBSNET_NONE == 'NONE'
-    assert cfg.NOMODELNAME == 'OBSERVATIONS-ONLY'
-
     # names for the satellite data sets
     assert cfg.SENTINEL5P_NAME == 'Sentinel5P'
     assert cfg.AEOLUS_NAME == 'AeolusL2A'
@@ -194,7 +190,6 @@ def test_default_config():
     assert cfg._outputdir == mypydir
     assert cfg.OUTPUTDIR == mypydir
 
-    assert cfg._cache_basedir == mkpath(mypydir, '_cache')
     assert cfg.CACHEDIR == mkpath(mypydir, f'_cache/{USER}')
 
     check = mkpath(mypydir, 'colocated_data')
