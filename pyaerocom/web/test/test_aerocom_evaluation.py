@@ -4,6 +4,7 @@ import json
 
 import numpy as np
 from pandas import DataFrame
+from pyaerocom import const
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
 from pyaerocom.conftest import tda, does_not_raise_exception
@@ -78,6 +79,7 @@ def test_aerocom_evaluation(stp_min):
      does_not_raise_exception()),
     ({'proj_id' : 'Bla', 'exp_id' : 'blub',
       'basedir_coldata' : '/home'}, pytest.raises(AttributeError)),
+
 
     ])
 def test_AerocomEvaluation__init__(kwargs, raises):
@@ -170,17 +172,14 @@ def test_aerocom_evaluation_output_files(stp, tmpdir):
 def test_aerocom_evaluation_to_from_json(stp, tmpdir):
     stp.to_json(tmpdir)
     config_filename = 'cfg_{}_{}.json'.format(PROJ_ID, EXP_ID)
-    stp_new = AerocomEvaluation(proj_id='project2', exp_id='exp2',
-                                raise_exceptions=True)
-    stp_new.from_json(os.path.join(tmpdir, config_filename))
-    for old, new in zip(dir(stp), dir(stp_new)):
-        assert stp[old] == stp_new[new]
 
-    stp_new = AerocomEvaluation(proj_id='project2', exp_id='exp2', raise_exceptions=True)
-    stp_new.config_dir = tmpdir
-    stp_new.load_config(PROJ_ID, EXP_ID)
-    for old, new in zip(dir(stp), dir(stp_new)):
-        assert stp[old] == stp_new[new]
+    cfg_fp = os.path.join(tmpdir, config_filename)
+    assert os.path.exists(cfg_fp)
+    stp_new = AerocomEvaluation(PROJ_ID, EXP_ID, config_dir=tmpdir,
+                                try_load_json=True)
+    assert stp.colocation_settings == stp_new.colocation_settings
+    assert stp.obs_config == stp_new.obs_config
+    assert stp.model_config == stp_new.model_config
 
 def test_aerocom_evaluation_read_model_data(stp):
     data = stp.read_model_data(MODEL_NAME, OBS_VARS)

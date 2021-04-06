@@ -306,8 +306,9 @@ class ColocationSetup(BrowseDict):
         """
         if isinstance(basedir_coldata, Path):
             basedir_coldata = str(basedir_coldata)
-        if isinstance(basedir_coldata, str) and not os.path.exists(basedir_coldata):
-            os.mkdir(basedir_coldata)
+        if isinstance(basedir_coldata, str):
+            if not os.path.exists(basedir_coldata):
+                os.mkdir(basedir_coldata)
             return basedir_coldata
         raise ValueError(
             f'Invalid input for basedir_coldata: {basedir_coldata}'
