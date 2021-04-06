@@ -106,7 +106,7 @@ class TrendsEngine(object):
                     f'least monthly resolution.'
                     )
             elif tst > TsType('daily'):
-                data.resample_time(self.var_name)
+                data.resample_time(self.var_name, )
         ts = data.to_timeseries(self.var_name)
 
         if ts_type == 'daily':
@@ -114,7 +114,6 @@ class TrendsEngine(object):
         else:
             self.monthly = data
 
-    def _calc_daily(self, ts,)
     @property
     def daily(self):
         """Daily timeseries"""
