@@ -95,7 +95,7 @@ class TestReadEbas(object):
                          'concnh4',
                          'conchno3',
                          'concsspm10',
-                         'concss25',
+                         'concsspm25',
                          'conctno3',
                          'concno2',
                          'conco3',
