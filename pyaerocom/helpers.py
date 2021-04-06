@@ -936,7 +936,6 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
         invalid = df['count'] < min_num_obs
         df[how][invalid] = np.nan
         data = df[how]
-    #print(freq, min_num_obs, how)
     return data
 
 def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
