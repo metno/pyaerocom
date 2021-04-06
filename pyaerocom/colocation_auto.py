@@ -22,7 +22,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.filter import Filter
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import (DataCoverageError,
+from pyaerocom.exceptions import (ColocationError, DataCoverageError,
                                   VariableDefinitionError)
 
 class ColocationSetup(BrowseDict):
@@ -474,7 +474,7 @@ class Colocator(ColocationSetup):
             self._write_log(msg)
             if self.raise_exceptions:
                 self._close_log()
-                raise Exception(traceback.format_exc())
+                raise ColocationError(traceback.format_exc())
         finally:
             self._close_log()
 
@@ -958,7 +958,7 @@ class Colocator(ColocationSetup):
 
                 if self.raise_exceptions:
                     self._close_log()
-                    raise Exception(msg)
+                    raise ColocationError(msg)
                 else:
                     continue
             ts_type_src = model_data.ts_type
@@ -980,7 +980,7 @@ class Colocator(ColocationSetup):
                 really_do_reanalysis = False
                 savename = self._coldata_savename(model_data, start, stop,
                                                   ts_type, var_name=model_var)
-
+                self._check_basedir_coldata()
                 out_dir = chk_make_subdir(self.basedir_coldata, self.model_id)
                 file_exists = self._check_coldata_exists(model_data.data_id,
                                                          savename)
@@ -1060,7 +1060,7 @@ class Colocator(ColocationSetup):
                 self._write_log(msg + '\n')
                 if self.raise_exceptions:
                     self._close_log()
-                    raise Exception(msg)
+                    raise ColocationError(msg)
 
         return data_objs
 
@@ -1110,7 +1110,7 @@ class Colocator(ColocationSetup):
 
                 if self.raise_exceptions:
                     self._close_log()
-                    raise Exception(msg)
+                    raise ColocationError(msg)
                 else:
                     continue
 
@@ -1132,7 +1132,7 @@ class Colocator(ColocationSetup):
 
                 if self.raise_exceptions:
                     self._close_log()
-                    raise Exception(msg)
+                    raise ColocationError(msg)
                 else:
                     continue
 
@@ -1149,6 +1149,7 @@ class Colocator(ColocationSetup):
                 ts_type = lowest
 
             if self.save_coldata:
+                self._check_basedir_coldata()
                 out_dir = chk_make_subdir(self.basedir_coldata,
                                           self.model_id)
 
@@ -1208,7 +1209,7 @@ class Colocator(ColocationSetup):
                 self._write_log(msg)
                 if self.raise_exceptions:
                     self._close_log()
-                    raise Exception(msg)
+                    raise ColocationError(msg)
         return data_objs
 
     def _init_log(self):
@@ -1269,6 +1270,7 @@ class Colocator(ColocationSetup):
 
     def _check_coldata_exists(self, model_id, coldata_savename):
         """Check if colocated data file exists"""
+        self._check_basedir_coldata()
         folder = os.path.join(self.basedir_coldata,
                               model_id)
         if not os.path.exists(folder):

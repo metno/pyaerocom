@@ -5,7 +5,7 @@ from pyaerocom.conftest import tda, does_not_raise_exception, testdata_unavail
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
 from pyaerocom.io import ReadGridded, ReadMscwCtm
-from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.exceptions import ColocationError, DataCoverageError
 from pyaerocom.io.aux_read_cubes import add_cubes
 
 default_setup = {'save_coldata': True, '_obs_cache_only': False,
@@ -63,7 +63,8 @@ def test_colocator(col):
     assert isinstance(col.obs_vars, str)
 
 @pytest.mark.parametrize('ts_type_desired, ts_type, flex, raises', [
-    ('minutely', 'daily', False, does_not_raise_exception()),
+    ('minutely', 'daily', False, pytest.raises(ColocationError)),
+    ('daily', 'monthly', False, does_not_raise_exception()),
     ])
 def test_colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
                                       ts_type, flex, raises):
@@ -72,13 +73,19 @@ def test_colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
     assert tm5_aero_stp['obs_vars'] == obs_var
     col.save_coldata = False
     col.flex_ts_type_gridded = flex
+    col.ts_type = ts_type
     # Problem with saving since obs_id is different
     # from obs_data.contains_dataset[0]...
-    col.model_ts_type_read = {obs_var : ts_type}
-    data = col._run_gridded_ungridded()
-    assert isinstance(data, dict)
-    assert obs_var in data
-    assert data[obs_var].meta['ts_type_src'] == ['daily', 'monthly']
+    col.model_ts_type_read = {obs_var : ts_type_desired}
+    with raises:
+        data = col._run_gridded_ungridded()
+        assert isinstance(data, dict)
+        assert obs_var in data
+        coldata = data[obs_var]
+        assert coldata.ts_type == ts_type
+        assert coldata.meta['ts_type_src'][0] == 'daily'
+        if not flex:
+            assert coldata.meta['ts_type_src'][1] == ts_type_desired
 
 def test_colocator_model_add_vars(tm5_aero_stp):
     col = Colocator(**tm5_aero_stp)
@@ -88,7 +95,11 @@ def test_colocator_model_add_vars(tm5_aero_stp):
     # Problem with saving since obs_id is different
 
     col.model_add_vars = {obs_var : model_var}
-    assert data[model_var].meta['ts_type_src'] == ['daily', 'daily']
+    data = col._run_gridded_ungridded(var_name=model_var)
+    assert isinstance(data, dict)
+    assert model_var in data
+    coldata = data[model_var]
+    assert coldata.var_name == ['od550aer', 'abs550aer']
 
 def test_colocator_init_basedir_coldata(tmpdir):
     basedir = os.path.join(tmpdir, 'basedir')
@@ -144,17 +155,21 @@ def test_colocator_run(tm5_aero_stp, gridded_gridded):
     assert isinstance(coldata, ColocatedData)
 
 def test_colocator__run_gridded_ungridded(tm5_aero_stp):
-    obs_vars = col_tm5_aero.obs_vars[0]
-    colocated_dict = col_tm5_aero._run_gridded_ungridded()
-    assert isinstance(colocated_dict[obs_vars], ColocatedData)
+    col = Colocator(**tm5_aero_stp)
+    data = col._run_gridded_ungridded()
+    for ovar in col.obs_vars:
+        assert ovar in data
+        assert isinstance(data[ovar], ColocatedData)
 
-def test_colocator__run_gridded_gridded(col_tm5_aero):
-    obs_vars = col_tm5_aero.obs_vars[0]
-    col_tm5_aero.obs_id = col_tm5_aero.model_id
-    colocated = col_tm5_aero._run_gridded_gridded(obs_vars)
-    assert isinstance(colocated[obs_vars], ColocatedData)
-    assert isinstance(col_tm5_aero.data, dict)
-    assert col_tm5_aero.data == {}
+def test_colocator__run_gridded_gridded(tm5_aero_stp):
+    col = Colocator(**tm5_aero_stp)
+    col.obs_id = col.model_id
+    ovar = col.obs_vars[0]
+    data = col._run_gridded_gridded(ovar)
+    assert ovar in data
+    assert isinstance(data[ovar], ColocatedData)
+    assert isinstance(col.data, dict)
+    assert col.data == {}
 
 def test_colocator_filter_name():
     with does_not_raise_exception():
@@ -284,14 +299,15 @@ def test_colocator__find_var_matches_model_add_vars(col):
     var_matches = col._find_var_matches(obs_var, r)
     assert var_matches == {model_var:obs_var, obs_var:obs_var}
 
-def test_model_add_vars(col_tm5_aero):
+def test_model_add_vars(tm5_aero_stp):
+    col = Colocator(**tm5_aero_stp)
     model_var = 'abs550aer'
     obs_var = 'od550aer'
-    col_tm5_aero.model_add_vars = {obs_var:model_var}
-    model_reader = ReadGridded(col_tm5_aero.model_id)
-    var_matches = col_tm5_aero._check_model_add_var(obs_var, model_reader, {})
+    col.model_add_vars = {obs_var:model_var}
+    model_reader = ReadGridded(col.model_id)
+    var_matches = col._check_model_add_var(obs_var, model_reader, {})
     assert var_matches == {model_var: obs_var}
-    var_matches = col_tm5_aero._find_var_matches([obs_var], model_reader)
+    var_matches = col._find_var_matches([obs_var], model_reader)
     assert len(var_matches) == 2
     assert (model_var in var_matches)
     assert (obs_var in var_matches)
