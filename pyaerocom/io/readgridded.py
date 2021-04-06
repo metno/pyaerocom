@@ -51,7 +51,11 @@ from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          divide_cubes,
                                          subtract_cubes,
-                                         add_cubes)
+                                         add_cubes,
+                                         mmr_from_vmr,
+                                         rho_from_ts_ps,
+                                         conc_from_vmr,
+                                         conc_from_vmr_STP)
 
 from pyaerocom.helpers import (to_pandas_timestamp,
                                sort_ts_types,
@@ -152,6 +156,8 @@ class ReadGridded(object):
                     'dryoa'         : ('drypoa', 'drysoa'),
                     'conc*'         : ('mmr*', 'rho'),
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
+                    'mmr*'          : ('vmr*',),
+                    'rho'           : ('ts','ps'),
                     'concox'        : ('concno2', 'conco3'),
                     'vmrox'         : ('vmrno2', 'vmro3'),
                     'fmf550aer'     : ('od550lt1aer', 'od550aer'),
@@ -165,6 +171,7 @@ class ReadGridded(object):
                     'od870aer'      :   ['od865aer'],
                     'ac550dryaer'   :   ['ac550aer']}
 
+
     AUX_FUNS = {'ang4487aer'    :   compute_angstrom_coeff_cubes,
                 'angabs4487aer' :   compute_angstrom_coeff_cubes,
                 'od550gt1aer'   :   subtract_cubes,
@@ -172,6 +179,7 @@ class ReadGridded(object):
                 'dryoa'         :   add_cubes,
                 'sc550dryaer'   :   subtract_cubes,
                 'conc*'         :   multiply_cubes,
+                'mmr*'              :   mmr_from_vmr,
                 'concox'        :   add_cubes,
                 'vmrox'         :   add_cubes,
                 'fmf550aer'     :   divide_cubes,
