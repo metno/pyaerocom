@@ -26,7 +26,6 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
                                          check_write_access)
 
 from pyaerocom.exceptions import (DataSourceError, DataIdError)
-
 from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 

@@ -47,7 +47,8 @@ def reader():
 @testdata_unavail
 class TestReadEbas(object):
 
-    PROVIDES_VARIABLES = sorted(['DEFAULT',
+    PROVIDES_VARIABLES = sorted([
+                         'DEFAULT',
                          'sc550aer',
                          'sc440aer',
                          'sc700aer',
@@ -74,12 +75,21 @@ class TestReadEbas(object):
                          'conctc',
                          'concoa',
                          'concoc',
+                         'concCec',
+                         'concCecpm25',
+                         'conCcoc',
+                         'conCcocpm25',
+                         'concNno3pm10', 
+                         'concNno3pm25', 
+                         'concNhno3', 
+                         'concNtno3', 
+                         'concNtnh',
                          'concss',
                          'concnh3',
                          'concno3',
                          'concnh4',
-                         'conchno3',
-                         'conctno3',
+                         'concsspm10',
+                         'concsspm25',
                          'concno2',
                          'conco3',
                          'concco',
@@ -98,7 +108,6 @@ class TestReadEbas(object):
                          'scavratioso4',
                          'test',
                          'concpm1',
-                         'conctnh',
                          'concca',
                          'concmg',
                          'conck'])
