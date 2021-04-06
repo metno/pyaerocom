@@ -13,6 +13,7 @@ import pandas as pd
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.metastandards import StationMetaData
 from pyaerocom import const
+from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom import StationData, TsType
 from pyaerocom.trends_helpers import (_init_trends_result_dict,
@@ -36,12 +37,11 @@ class TrendsSettings(BrowseDict):
 class TrendsEngine(object):
     """Result object for trends analysis
 
-    ToDo
-    ----
-    Input should accept timeseries data directly...
-
     Parameters
     ----------
+    data : StationData
+        input data containing variable data either in monthly, daily, or
+        higher resolution.
     var_name : str
         name of variable
 
@@ -98,7 +98,15 @@ class TrendsEngine(object):
             self.var_name = data.vars_available[0]
 
         ts_type = data.get_var_ts_type(self.var_name)
-        if not ts_type
+        if not ts_type in self.SUPPORTED_INPUT_FREQS:
+            tst = TsType(ts_type)
+            if not tst > TsType('monthly'):
+                raise TemporalResolutionError(
+                    f'Input data has too low resolution {ts_type}, need at '
+                    f'least monthly resolution.'
+                    )
+            elif tst > TsType('daily'):
+                data.resample_time(self.var_name)
         ts = data.to_timeseries(self.var_name)
 
         if ts_type == 'daily':
@@ -106,6 +114,7 @@ class TrendsEngine(object):
         else:
             self.monthly = data
 
+    def _calc_daily(self, ts,)
     @property
     def daily(self):
         """Daily timeseries"""
