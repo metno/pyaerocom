@@ -10,7 +10,11 @@ from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 import pandas as pd
 
+from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.metastandards import StationMetaData
+from pyaerocom import const
+from pyaerocom.time_resampler import TimeResampler
+from pyaerocom import StationData, TsType
 from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _compute_trend_error,
                                       _years_from_periodstr,
@@ -20,6 +24,14 @@ from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _get_yearly,
                                       _init_period_dates,
                                       SEASONS)
+
+class TrendsSettings(BrowseDict):
+    def __init__(self, **settings):
+        self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
+        self.apply_time_resampling_constraints = True
+        self.resample_how = 'mean'
+        self.min_num_years = 2
+
 
 class TrendsEngine(object):
     """Result object for trends analysis
@@ -55,8 +67,13 @@ class TrendsEngine(object):
     CMAP = get_cmap('bwr')
     NORM = Normalize(-10, 10)
 
-    def __init__(self, var_name=None, **kwargs):
+    SUPPORTED_INPUT_FREQS = ['daily', 'monthly']
+
+    def __init__(self, data=None, var_name=None):
+
         self.var_name = var_name
+        self.settings = TrendsSettings()
+
         self.meta = StationMetaData()
 
         self._daily = None
@@ -65,6 +82,29 @@ class TrendsEngine(object):
 
         self.results = od()
         self._mobs = None
+        if data is not None:
+            self._set_data(data)
+
+    def _set_data(self, data):
+        if not isinstance(data, StationData):
+            raise ValueError('Input data needs to be StationData')
+
+        if self.var_name is not None:
+            if not self.var_name in data:
+                raise ValueError(
+                    f'No {self.var_name} data in available in input StationData'
+                    )
+        elif len(data.vars_available) == 1:
+            self.var_name = data.vars_available[0]
+
+        ts_type = data.get_var_ts_type(self.var_name)
+        if not ts_type
+        ts = data.to_timeseries(self.var_name)
+
+        if ts_type == 'daily':
+            self.daily = data
+        else:
+            self.monthly = data
 
     @property
     def daily(self):
@@ -234,7 +274,9 @@ class TrendsEngine(object):
         return (s_data, s_period, td, tp, tdstr, tpstr)
 
     def compute_trend(self, start_year, stop_year, season=None,
-                      slope_confidence=.68):
+                      slope_confidence=None):
+        if season is None:
+            season = 'all'
         if slope_confidence is None:
             slope_confidence = .68
         if self._mobs is None:
@@ -244,22 +286,21 @@ class TrendsEngine(object):
         start_year, stop_year, period_str, yrs = _init_period(mobs, start_year,
                                                               stop_year)
 
-        if season in [None, 'all']:
-            seas = 'all'
-        elif season in SEASONS:
-            seas = season
+        if season != 'all' and not season in SEASONS:
+            raise ValueError(f'Invalid input for season, choose from {SEASONS}')
 
-        if not 'seas' in self.yearly:
-            self['yearly'][seas] = yearly = _get_yearly(mobs, seas, yrs)
+        if not season in self.yearly:
+            yearly = _get_yearly(mobs, season, yrs)
+            self.yearly[season] = yearly
         else:
-            yearly = self['yearly'][seas]
+            yearly = self['yearly'][season]
 
         dates = yearly.index.values
         values = yearly.values
         (start_date,
          stop_date,
          period_index,
-         num_dates_period) = _init_period_dates(start_year, stop_year, seas)
+         num_dates_period) = _init_period_dates(start_year, stop_year, season)
 
         # get period filter mask
         tmask = np.logical_and(dates>=start_date,
@@ -366,9 +407,9 @@ class TrendsEngine(object):
             result['reg0_{}'.format(start_year)] = v0p
             result['period'] = period_str
 
-        if not seas in self.results:
-            self.results[seas] = od()
-        self.results[seas][period_str] = result
+        if not season in self.results:
+            self.results[season] = od()
+        self.results[season][period_str] = result
 
         return result
 
