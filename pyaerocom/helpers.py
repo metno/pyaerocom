@@ -4,6 +4,7 @@
 General helper methods for the pyaerocom library.
 """
 from cf_units import Unit
+from collections import Counter
 from datetime import MINYEAR, datetime, date
 import iris
 import math as ma
@@ -358,35 +359,72 @@ def copy_coords_cube(to_cube, from_cube, inplace=True):
         to_cube.add_aux_factory(aux_fac)
     return to_cube
 
-def infer_time_resolution(time_stamps):
+def infer_time_resolution(time_stamps, dt_tol_percent=5,
+                          minfrac_most_common=0.8):
     """Infer time resolution based on input time-stamps
 
-    Uses the minimum time difference found in input array between consecutive
-    time stamps and based on that finds the corresponding AeroCom resolution
+    Calculates time difference *dt* between consecutive timestamps provided via
+    input array or list. Then it counts the most common *dt* (e.g. 86400 s for
+    daily). Before inferring the frequency it then checks all other *dts*
+    occurring in the input array to see if they are within a certain interval
+    around the most common one (e.g. +/- 5% as default, via arg
+    `dt_tol_percent`), that is, 86390 would be included if most common dt is
+    86400 s but not 80000s. Then it checks if the number of *dts* that
+    are within that tolerance level around the most common *dt* exceed a
+    certain fraction (arg `minfrac_most_common`) of the total number of *dts*
+    that occur in the input array (default is 80%). If that is the case, the
+    most common frequency is attempted to be derived using
+    :func:`TsType.from_total_seconds` based on the most common *dt* (in this
+    example that would be *daily*).
+
 
     Parameters
     ----------
-    time_stamps : pandas.DatetimeIndex
-        time stamps
+    time_stamps : pandas.DatetimeIndex, or similar
+        list of time stamps
+    dt_tol_percent : int
+        tolerance in percent of accepted range of time diffs with respect to
+        most common time difference.
+    minfrac_most_common : float
+        minimum required fraction of time diffs that have to be equal to, or
+        within tolerance range, the most common time difference.
 
-    Ret
+
+    Raises
+    ------
+    TemporalResolutionError
+        if frequency cannot be derived.
+
+    Returns
+    -------
+    str
+        inferred frequency
     """
-    import pandas as pd
-    from pyaerocom import const
+    from pyaerocom import TsType
 
     if not isinstance(time_stamps, pd.DatetimeIndex):
-        try:
-            time_stamps = pd.DatetimeIndex(time_stamps)
-        except Exception:
-            raise ValueError('Could not infer time resolution: failed to '
-                             'convert input to pandas.DatetimeIndex')
+        time_stamps = pd.DatetimeIndex(time_stamps)
     vals = time_stamps.values
-    highest_secs = abs(vals[1:] - vals[:-1]).min().astype('timedelta64[s]').astype(int)
 
-    for tp in const.GRID_IO.TS_TYPES:
-        if highest_secs <= TS_TYPE_SECS[tp]:
-            return tp
-    raise ValueError('Could not infer time resolution')
+    dts = (vals[1:] - vals[:-1]).astype('timedelta64[s]').astype(int)
+
+    if np.min(dts) < 0:
+        raise TemporalResolutionError(
+            'Nasa Ames file contains neg. meas periods...')
+
+    counts = Counter(dts).most_common()
+    most_common_dt, most_common_num = counts[0]
+    num_within_tol = most_common_num
+    lower = most_common_dt * (100 - dt_tol_percent)/100
+    upper = most_common_dt * (100 + dt_tol_percent)/100
+    for dt, num in counts[1:]:
+        if lower <= dt <= upper:
+            num_within_tol += num
+    frac_ok = num_within_tol / len(dts)
+    if not frac_ok > minfrac_most_common:
+        raise TemporalResolutionError('Failed to infer ts_type')
+    tst = TsType.from_total_seconds(most_common_dt)
+    return str(tst)
 
 def seconds_in_periods(timestamps, ts_type):
     """
@@ -652,6 +690,40 @@ def isrange(val):
         return True
     return False
 
+def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
+    has_errs = False
+    is_3d = []
+    stats = []
+    for stat in statlist:
+        if not var_name in stat:
+            raise DataCoverageError('All input stations must contain {} data'
+                                    .format(var_name))
+        elif pref_attr is not None and not pref_attr in stat:
+            raise MetaDataError('Cannot sort station relevance by attribute {}. '
+                                'At least one of the input stations does not '
+                                'contain this attribute'.format(pref_attr))
+        elif not isinstance(stat[var_name], pd.Series):
+            stat._to_ts_helper(var_name)
+        # this will raise MetaDataError or TemporalResolutionError if there is
+        # an unresolvable issue with sampling frequency
+        stat.get_var_ts_type(var_name)
+
+        is_3d.append(stat.check_if_3d(var_name))
+
+        if var_name in stat.data_err:
+            has_errs = True
+
+        stats.append(stat)
+    if np.any(is_3d):
+        if not np.all(is_3d):
+            raise ValueError('Merge error: some of the input stations contain '
+                             'altitude info (suggesting profile data), others '
+                             'not.')
+        is_3d = True
+    else:
+        is_3d = False
+    return (stats, is_3d, has_errs)
+
 def merge_station_data(stats, var_name, pref_attr=None,
                        sort_by_largest=True, fill_missing_nan=True,
                        add_meta_keys=None):
@@ -692,51 +764,15 @@ def merge_station_data(stats, var_name, pref_attr=None,
         requires that information about the temporal resolution (ts_type) of
         the data is available in each of the StationData objects.
     add_meta_keys : str or list, optional
-            additional non-standard metadata keys that are supposed to be
-            considered for merging.
+        additional non-standard metadata keys that are supposed to be
+        considered for merging.
     """
-    from pyaerocom import const
     if isinstance(var_name, list):
         if len(var_name) > 1:
             raise NotImplementedError('Merging of multivar data not yet possible')
         var_name = var_name[0]
 
-    # make sure the data is provided as pandas.Series object
-    is_3d, has_errs = False, False
-    for stat in stats:
-        if not var_name in stat:
-            raise DataCoverageError('All input station must contain {} data'
-                                    .format(var_name))
-        elif pref_attr is not None and not pref_attr in stat:
-            raise MetaDataError('Cannot sort station relevance by attribute {}. '
-                                'At least one of the input stations does not '
-                                'contain this attribute'.format(pref_attr))
-        elif not isinstance(stat[var_name], pd.Series):
-            try:
-                stat._to_ts_helper(var_name)
-            except Exception as e:
-                raise ValueError('Data needs to be provided as pandas Series in '
-                                 'individual station data objects. Attempted to'
-                                 'convert but failed with the following '
-                                 'exception: {}'.format(repr(e)))
-        elif fill_missing_nan:
-            try:
-                stat.get_var_ts_type(var_name)
-            except MetaDataError:
-                raise MetaDataError('Cannot merge StationData objects: one or '
-                                    'more of the provided objects does not '
-                                    'provide information about the ts_type of '
-                                    'the {} data, which is required when input '
-                                    'arg. fill_missing_nan is True.'.format(var_name))
-        if stat.check_if_3d(var_name):
-            is_3d = True
-        elif is_3d:
-            raise ValueError('Merge error: some of the input stations contain '
-                             'altitude info (suggesting profile data), others '
-                             'not.')
-        if var_name in stat.data_err:
-            has_errs = True
-
+    stats, is_3d, has_errs = _check_stats_merge(stats,var_name,pref_attr,fill_missing_nan)
     if not is_3d:
         if pref_attr is not None:
             stats.sort(key=lambda s: s[pref_attr])
@@ -775,7 +811,6 @@ def merge_station_data(stats, var_name, pref_attr=None,
             _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
 
         for i, stat in enumerate(stats):
-            #print(stat[var_name].values)
             if i == 0:
                 merged = stat
             else:
