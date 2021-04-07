@@ -3217,19 +3217,19 @@ if __name__ == '__main__':
 
     if args.emep:
         options['emepflag'] = args.emep
-        options['latmin'] = np.float(30.)
-        options['latmax'] = np.float(76.)
-        options['lonmin'] = np.float(-30.)
-        options['lonmax'] = np.float(45.)
+        options['latmin'] = float(30.)
+        options['latmax'] = float(76.)
+        options['lonmin'] = float(-30.)
+        options['lonmax'] = float(45.)
     else:
         options['emepflag'] = False
 
     if args.himalayas:
         options['himalayas'] = args.himalayas
-        options['latmin'] = np.float(10.)
-        options['latmax'] = np.float(50.)
-        options['lonmin'] = np.float(60.)
-        options['lonmax'] = np.float(110.)
+        options['latmin'] = float(10.)
+        options['latmax'] = float(50.)
+        options['lonmin'] = float(60.)
+        options['lonmax'] = float(110.)
     else:
         options['himalayas'] = False
 

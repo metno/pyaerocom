@@ -66,7 +66,6 @@ from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
                                   FileConventionError,
-                                  IllegalArgumentError,
                                   TemporalResolutionError,
                                   VarNotAvailableError,
                                   VariableDefinitionError)

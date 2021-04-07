@@ -831,42 +831,6 @@ class ColocatedData(object):
                             filter_name=meta['filter_name'],
                             **kwargs)
 
-    def _load_fake_data(self, num_stations=1000, num_tstamps=365):
-        raise NotImplementedError('Currently not working')
-        data = np.empty((2, num_tstamps, num_stations))
-
-        # supposed to be like station coordinate, i.e. the final data type
-        lons = np.linspace(10, 40, num_stations)
-        lats = np.linspace(30, 50, num_stations)
-
-        times = np.linspace(1,30, num_tstamps).astype('datetime64[D]')
-
-        times = times.astype('datetime64[ns]')
-
-        model = np.ones(num_tstamps).reshape((num_tstamps,1)) * np.linspace(1, 2, num_stations)
-
-        obs = np.ones(num_tstamps).reshape((num_tstamps,1))*2 * np.linspace(1, 1.5, num_stations)
-
-        data[0] = model
-        data[1] = obs
-
-        meta = {'ts_type'         : 'daily',
-                'ts_type_src'     : '3hourly',
-                'year'            : 1970,
-                'data_source'     : ['AeronetSunV2L2.daily', 'ECMWF_OSUITE'],
-                'var_name'        : 'od550aer',
-                'filter_name'     :  'WORLD-noMOUNTAINS',
-                'data_level'      : 'colocated'}
-
-        arr = xarray.DataArray(data, coords={'data_source'   : meta['data_source'],
-                                             'time'     : times,
-                                             'longitude': lons,
-                                             'latitude' : ('longitude', lats)},
-                                dims=['data_source', 'time', 'longitude'],
-                                name=meta['var_name'],
-                                attrs=meta)
-        self._data = arr
-
     def rename_variable(self, var_name, new_var_name, data_source,
                         inplace=True):
         """Rename a variable in this object
