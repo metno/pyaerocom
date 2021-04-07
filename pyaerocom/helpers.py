@@ -773,6 +773,9 @@ def merge_station_data(stats, var_name, pref_attr=None,
         var_name = var_name[0]
 
     stats, is_3d, has_errs = _check_stats_merge(stats,var_name,pref_attr,fill_missing_nan)
+    # ToDo: data_err is not handled at the moment for 2D data, needs r
+    # revision and should be done in StationData.merge, also 3D vs 2D
+    # should be handled by StationData directly...
     if not is_3d:
         if pref_attr is not None:
             stats.sort(key=lambda s: s[pref_attr])
