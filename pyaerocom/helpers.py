@@ -787,14 +787,8 @@ def merge_station_data(stats, var_name, pref_attr=None,
 
         # remove first station from the list
         merged = stats.pop(0)
-
         for i, stat in enumerate(stats):
-            try:
-                merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
-            except TemporalResolutionError as e:
-                const.print_log.warning(
-                    f'Ignoring data from station {stat.station_name} '
-                    f'({var_name}). Reason: {repr(e)}.')
+            merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
     else:
         from xarray import DataArray
         dtime = []
