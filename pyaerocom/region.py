@@ -3,172 +3,120 @@
 """
 This module contains functionality related to regions in pyaerocom
 """
-from os.path import join, exists
-from ast import literal_eval
-from collections import OrderedDict as od
-from configparser import ConfigParser
 import numpy as np
-#from pyaerocom import Config
-#const = Config()
-#from pyaerocom import __dir__
+
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.helpers_landsea_masks import load_region_mask_xr
+from pyaerocom.region_defs import (REGION_DEFS, # all region definitions
+                                   HTAP_REGIONS, # list of HTAP regions
+                                   OLD_AEROCOM_REGIONS,
+                                   REGION_NAMES) # custom names (dict)
 
 class Region(BrowseDict):
-    """Interface that specifies an AEROCOM region
-    
-    Note
-    ----
-    Extended dictionary-like object
-    
+    """Class specifying a region
+
     Attributes
     ----------
+    region_id : str
+        ID of region (e.g. EUROPE)
     name : str
-        ID of region (e.g. "EUROPE")
-    lon_range : :obj:`list` or :obj:`tuple`
+        name of region (e.g. Europe) used e.g. in plotting.
+    lon_range : list
         longitude range (min, max) covered by region
-    lat_range : :obj:`list` or :obj:`tuple`
+    lat_range : list
         latitude range (min, max) covered by region
-    lon_range_plot : :obj:`list` or :obj:`tuple`
-        longitude range (min, max) used for plotting region. Defaults to 
-        values of :attr:`lon_range` but may be extended, see e.g.
-        `the example of india <http://aerocom.met.no/DATA/SURFOBS/
-        ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png>`__
-    lat_range_plot : :obj:`list` or :obj:`tuple`
-        latitude range (min, max) used for plotting region. Defaults to 
-        values of :attr:`lat_range` but may be extended, see e.g.
-        `the example of india <http://aerocom.met.no/DATA/SURFOBS/
-        ECMWF_OSUITE_NRT/plots/OD550_AER_an2018_d20180319_INDIA_MAP.ps.png>`__
-    
+    lon_range_plot : list
+        longitude range (min, max) used for plotting region.
+    lat_range_plot : list
+        latitude range (min, max) used for plotting region.
+    lon_ticks : list
+        list of longitude ticks used for plotting
+    lat_ticks : list
+        list of latitude ticks used for plotting
+
     Parameters
     ----------
-    name : str
-        ID of region (e.g. "EUROPE")
-    lon_range : :obj:`list` or :obj:`tuple`
-        longitude range (min, max) covered by region
-    lat_range : :obj:`list` or :obj:`tuple`
-        latitude range (min, max) covered by region
-        
-    Example
-    -------
-    Just initiate with a valid region ID
-    
-        >>> from pyaerocom import Region("
-        >>> europe = Region("EUROPE")
-        >>> india = Region("INDIA")
-        >>> print(europe)
-        pyaeorocom Region
-        Name: EUROPE
-        Longitude range: [-20, 70]
-        Latitude range: [30, 80]
-        Longitude range (plots): [-20, 70]
-        Latitude range (plots): [30, 80]
-        >>> print(india)
-        pyaeorocom Region
-        Name: INDIA
-        Longitude range: [65, 90]
-        Latitude range: [5, 35]
-        Longitude range (plots): [50, 100]
-        Latitude range (plots): [0, 40]
-        
+    region_id : str
+        ID of region (e.g. "EUROPE"). If the input region ID is registered as
+        a default region in :mod:`pyaerocom.region_defs`, then the default
+        information is automatically imported on class instantiation.
+    **kwargs
+        additional class attributes (see above for available default attributes).
+        Note, any attr. values provided by kwargs are preferred over
+        potentially defined default attrs. that are imported automatically.
     """
-    def __init__(self, name="WORLD", lon_range=None, lat_range=None, 
-                 **kwargs):
-        self._name = name
-        # longitude / latitude range of data 
-        self.lon_range = lon_range
-        self.lat_range = lat_range
-        
+    def __init__(self, region_id=None,**kwargs):
+
+        if region_id is None:
+            region_id = 'WORLD'
+
+        if region_id in REGION_NAMES:
+            name = REGION_NAMES[region_id]
+        else:
+            name = region_id
+
+        self.region_id = region_id
+        self.name = name
+
+        self.lon_range = None
+        self.lat_range = None
+
         # longitude / latitude range of data in plots
         self.lon_range_plot = None
         self.lat_range_plot = None
-        
+
         self.lon_ticks = None
         self.lat_ticks = None
-        
-        if isinstance(name, str) and any([x == None for x in [lon_range, lat_range]]):
-           self.import_default(name) 
-        
-        for k, v in kwargs.items():
-            if k in self:
-                self[k] = v
-    
-    @property
-    def name(self):
-        """Name of region"""
-        return self._name
-    
-    @property
+
+        self._mask_data = None
+        if region_id in REGION_DEFS:
+            self.import_default(region_id)
+
+
+
+        self.update(**kwargs)
+
     def is_htap(self):
-        from pyaerocom import const
-        
-        if self._name in const.HTAP_REGIONS:
-            return True
-        else:
-            return False
-    
-    def import_default(self, name):
-        """Import information about default region
-        
+        """Boolean specifying whether region is an HTAP binary region"""
+        return True if self.region_id in HTAP_REGIONS else False
+
+    def import_default(self, region_id):
+        """Import region definition
+
         Parameters
         ----------
-        name : str
-            strind ID of region (must be specified in `regions.ini <https://
-            github.com/metno/pyaerocom/blob/master/pyaerocom/data/regions.ini>`__ 
-            file)
-            
+        region_id : str
+            ID of region
+
         Raises
         ------
-        IOError
-            if regions.ini file does not exist
-        NameError
-            if default region with ID specified by input parameter ``name`` 
-            cannot be found in regions.ini file
+        KeyError
+            if no region is registered for the input ID
         """
-        from pyaerocom import __dir__
-        name = name.upper()
-        fpath = join(__dir__, "data", "regions.ini")
-        if not exists(fpath):
-            raise IOError("Regions ini file could not be found: %s"
-                          %fpath)
-        conf_reader = ConfigParser()
-        conf_reader.read(fpath)
-        
-        if not name in conf_reader:
-            raise AttributeError("No default region available for %s" %name)
-        self._name = name
-        for key, val in conf_reader[name].items():
-            if key in self.keys():
-                if "," in val:
-                    #list of values
-                    val = list(literal_eval(val))#[float(x) for x in val.split(",")]
-                else:
-                    try:
-                        val = int(val)
-                    except Exception:
-                        pass
-                self[key] = val
+        self.update(REGION_DEFS[region_id])
+
         if self.lon_range_plot is None:
             self.lon_range_plot = self.lon_range
         if self.lat_range_plot is None:
             self.lat_range_plot = self.lat_range
-    
+
     @property
     def center_coordinate(self):
         """Center coordinate of this region"""
         latc = self.lat_range[0] + (self.lat_range[1] - self.lat_range[0])/2
         lonc = self.lon_range[0] + (self.lon_range[1] - self.lon_range[0])/2
         return (latc, lonc)
-    
+
     def distance_to_center(self, lat, lon):
         """Compute distance of input coordinate to center of this region
-        
+
         Parameters
         ----------
         lat : float
             latitude of coordinate
         lon : float
             longitude of coordinate
-        
+
         Returns
         -------
         float
@@ -176,22 +124,21 @@ class Region(BrowseDict):
         """
         from pyaerocom.geodesy import calc_distance
         cc = self.center_coordinate
-        return calc_distance(lat0=cc[0], 
-                             lon0=cc[1], 
-                             lat1=lat, 
+        return calc_distance(lat0=cc[0],
+                             lon0=cc[1],
+                             lat1=lat,
                              lon1=lon)
-        
+
     def contains_coordinate(self, lat, lon):
         """Check if input lat/lon coordinate is contained in region
-        
+
         Parameters
         ----------
         lat : float
             latitude of coordinate
         lon : float
             longitude of coordinate
-        
-        
+
         Returns
         -------
         bool
@@ -200,40 +147,74 @@ class Region(BrowseDict):
         lat_ok = self.lat_range[0] <= lat <= self.lat_range[1]
         lon_ok = self.lon_range[0] <= lon <= self.lon_range[1]
         return lat_ok * lon_ok
-    
+
+    def mask_available(self):
+        if not self.is_htap():
+            return False
+        return True
+
+    def get_mask_data(self):
+        if not self.mask_available():
+            raise AttributeError(
+                f'No binary mask data available for region {self.region_id}.'
+                )
+        if self._mask_data is None:
+            self._mask_data = load_region_mask_xr(self.region_id)
+        return self._mask_data
+
+    def plot_mask(self, ax, color, alpha=0.2):
+
+        mask = self.get_mask_data()
+        #import numpy as np
+        data = mask.data
+        data[data==0] = np.nan
+        mask.data = data
+
+        mask.plot(ax=ax)
+        return ax
+
+    def plot_borders(self, ax, color, lw=2):
+        raise NotImplementedError('Coming soon...')
+
     def plot(self, ax=None):
         """
-        
+        Plot this region
+
+        Draws a rectangle of the outer bounds of the region and if a binary
+        mask is available for this region, it will be plotted as well.
+
+        Parameters
+        ----------
+        ax : GeoAxes, optional
+            axes instance to be used for plotting. Defaults to None in which
+            case a new instance is created.
+
         Returns
         -------
-        ax 
-            Map plot indicating region
+        GeoAxes
+            axes instance used for plotting
+
         """
         from cartopy.mpl.geoaxes import GeoAxes
         from pyaerocom.plot.mapping import init_map
         if ax is None:
             ax = init_map()
-        if not isinstance(ax, GeoAxes):
+        elif not isinstance(ax, GeoAxes):
             raise ValueError('Invalid input for ax: need cartopy GeoAxes..')
-        if not self.is_htap:
-            return ax
-            #raise NotImplementedError('Coming soon')
-            
-        from pyaerocom.helpers_landsea_masks import load_region_mask_xr
-        
-        
-        ax.axes.set_xlabel('Longitude')
-        ax.axes.set_ylabel('Latitude')
-        ax.axes.set_title("Region name: {}".format(self.name))
-        mask = load_region_mask_xr(region_id=self.name)
-        #import numpy as np
-        data = mask.data 
-        data[data==0]=np.nan
-        mask.data = data
-        
-        mask.plot(ax=ax)
-        return ax        
-    
+
+        if self.mask_available():
+            self.plot_mask(ax, color='r')
+
+        ax.set_xlabel('Longitude')
+        ax.set_ylabel('Latitude')
+        name = self.name
+        if not name ==  self.region_id:
+            name += f' (ID={self.region_id})'
+
+        ax.set_title(name)
+
+        return ax
+
     def __contains__(self, val):
         if not isinstance(val, tuple):
             raise TypeError('Invalid input, need tuple')
@@ -241,201 +222,179 @@ class Region(BrowseDict):
             raise ValueError('Invalid input: coordinate must contain 2 '
                              'elements (lat, lon)')
         return self.contains_coordinate(lat=val[0], lon=val[1])
-        
+
     def __repr__(self):
        return ("Region %s %s" %(self.name, super(Region, self).__repr__()))
-   
+
     def __str__(self):
         s = ("pyaeorocom Region\nName: %s\n"
              "Longitude range: %s\n"
-             "Latitude range: %s\n" 
+             "Latitude range: %s\n"
              "Longitude range (plots): %s\n"
-             "Latitude range (plots): %s" 
+             "Latitude range (plots): %s"
              %(self.name, self.lon_range, self.lat_range,
                self.lon_range_plot, self.lat_range_plot))
         return s
 
 def all():
     """Wrapper for :func:`get_all_default_region_ids`"""
-    from pyaerocom import const
-    return get_all_default_region_ids() + const.HTAP_REGIONS
+    return list(REGION_DEFS)
 
-def get_all_default_region_ids(use_all_in_ini=False):
+def get_all_default_region_ids():
     """Get list containing IDs of all default regions
-    
-    Parameters
-    ----------
-    use_all_in_ini : bool
-        if True, then all regions defined in regions.ini are used, else, 
-        the list of regions, defined in header of :class:`Config`
-        
+
     Returns
     -------
     list
-        all default region IDs (sections in `regions.ini <https://github.com/
-        metno/pyaerocom/blob/master/pyaerocom/data/regions.ini>`__ file)
+        IDs of all predefined default regions
     """
-    if not use_all_in_ini:
-        from pyaerocom import const
-        return const.OLD_AEROCOM_REGIONS
-    from pyaerocom import __dir__
-    fpath = join(__dir__, "data", "regions.ini")
-    if not exists(fpath):
-        raise IOError("File conventions ini file could not be found: %s"
-                      %fpath)
-    conf_reader = ConfigParser()
-    conf_reader.read(fpath)
-    all_ids = []
-    for rid, region in conf_reader.items():
-        if not rid == "DEFAULT":
-            all_ids.append(rid)
-        
-    return all_ids
+    return OLD_AEROCOM_REGIONS
 
-def get_all_default_regions(use_all_in_ini=False):
-    """Get dictionary containing all default regions from region.ini file
-    
-    Note
-    ----
-        The values are already :class:`Region` instances, use 
-        :func:`get_all_default_region_ids`
-    
+def _get_regions_helper(reg_ids):
+    """
+    Get dictionary of :class:`Region` instances for input IDs
+
+    Parameters
+    ----------
+    reg_ids : list
+        list of region IDs
+
     Returns
     -------
     dict
-        dictionary containing all default regions that are found in 
-        the `regions.ini <https://github.com/metno/pyaerocom/blob/
-        master/pyaerocom/data/regions.ini>`__ file
-        
+        keys are input region IDs, values are loaded :class:`Region` instances
     """
-    all_regions = od()
-    if not use_all_in_ini:
-        from pyaerocom import const
-        for region in const.OLD_AEROCOM_REGIONS:
-            all_regions[region] = Region(region)
-        return all_regions
-    from pyaerocom import __dir__      
-    fpath = join(__dir__, "data", "regions.ini")
-    if not exists(fpath):
-        raise IOError("File conventions ini file could not be found: %s"
-                      %fpath)
-    conf_reader = ConfigParser()
-    conf_reader.read(fpath)
-    
-    for region in conf_reader:
-        if not region == "DEFAULT": # TODO this should be updated right Jonas?
-            all_regions[region] = Region(region)
-        
-    return all_regions
-  
+    regs = {}
+    for reg in reg_ids:
+        reg[reg] = Region(reg)
+    return regs
+
+def get_old_aerocom_default_regions():
+    """
+    Load dictionary with default AeroCom regions
+
+    Returns
+    -------
+    dict
+        keys are region ID's, values are instances of :class:`Region`
+    """
+    return _get_regions_helper(OLD_AEROCOM_REGIONS)
+
+
+def get_htap_regions():
+    """
+    Load dictionary with HTAP regions
+
+    Returns
+    -------
+    dict
+        keys are region ID's, values are instances of :class:`Region`
+    """
+    return _get_regions_helper(HTAP_REGIONS)
+
+def get_all_default_regions():
+    """Get dictionary containing all default regions from region.ini file
+
+    Returns
+    -------
+    dict
+        dictionary containing all default regions; keys are region ID's, values
+        are instances of :class:`Region`.
+
+    """
+    return get_old_aerocom_default_regions()
+
 #: ToDO: check how to handle methods properly with HTAP regions...
-def get_regions_coord(lat, lon, default_regs=None, **add_regions):
+def get_regions_coord(lat, lon, regions=None):
     """Get all regions that contain input coordinate
-    
+
     Note
     ----
     This does not yet include HTAP, since this causes troules in automated
     AeroCom processing
-    
+
     Parameters
     ----------
     lat : float
         latitude of coordinate
     lon : float
         longitude of coordinate
-    **add_regions
-        additional regions other than default regions, that are supposed to 
-        be considered
-        
+    regions : dict, optional
+        dictionary containing instances of :class:`Region` as values, which
+        are considered. If None, then all default regions are used.
+
     Returns
     -------
     list
         list of regions that contain this coordinate
     """
-     
-    regs = []
-    if default_regs is None:
-        default_regs = get_all_default_regions(use_all_in_ini=False)
-    for an, ar in add_regions.items():
-        if isinstance(ar, Region):      
-            if not ar.is_htap:
-                default_regs[an] = ar
 
-    for rname, reg in default_regs.items():
-        if rname == 'WORLD':
+    matches = []
+    if regions is None:
+        regions = get_all_default_regions(use_all_in_ini=False)
+    for rname, reg in regions.items():
+        if rname == 'WORLD': # always True
             continue
         if reg.contains_coordinate(lat, lon):
-            regs.append(rname)
-    if len(regs) == 0:
-        regs.append('WORLD')
-    return regs
+            matches.append(rname)
+    if len(matches) == 0:
+        matches.append('WORLD')
+    return matches
 
-def find_closest_region_coord(lat, lon, default_regs=None, **add_regions):
+def find_closest_region_coord(lat, lon, regions=None):
     """Find region that has it's center closest to input coordinate
-    
+
     Parameters
     ----------
     lat : float
         latitude of coordinate
     lon : float
         longitude of coordinate
-    **add_regions
-        additional regions other than default regions, that are supposed to 
-        be considered
-        
+    regions : dict, optional
+        dictionary containing instances of :class:`Region` as values, which
+        are considered. If None, then all default regions are used.
+
     Returns
     -------
     str
-        name of sqaure region
-    """ 
-    regs = get_regions_coord(lat, lon, default_regs=default_regs, 
-                             **add_regions)
-    
-    if len(regs) == 1:
-        return regs[0]
-    else:
-        default_ids = get_all_default_region_ids()
-        min_dist = 1e6
-        best = None
-        for rname in regs:
-            if rname in default_ids:
-                r = Region(rname)
-            else:
-                r = add_regions[rname]
-            d = r.distance_to_center(lat, lon)
-            if d < min_dist:
-                min_dist = d
-                best=rname
-        return best
+        region ID of identified region
+    """
+    if regions is None:
+        regions = get_all_default_regions(use_all_in_ini=False)
 
-def valid_region(name):
-    """Boolean specifying whether input region is valid or not"""
-    if isinstance(name, str):
-        return True if name.upper() in get_all_default_region_ids() else False
-    return False
+    matches = get_regions_coord(lat, lon, regions)
+
+    if len(matches) == 1:
+        return matches[0]
+
+    min_dist = 1e6
+    best = None
+    for match in matches:
+        region = regions[match]
+        dist = region.distance_to_center(lat, lon)
+        if dist < min_dist:
+            min_dist = dist
+            best=match
+    return best
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
-    r = Region("EUR")
-    ax = r.plot()
-    
-    import numpy as np
-    from pyaerocom.helpers_landsea_masks import load_region_mask_xr
-    
-    mask = load_region_mask_xr(region_id=['EUR', 'PAN'])
-    
-    raise Exception
-    
-    
-    
-    print(r.is_htap)
-    r.import_default("EUROPE")
-        
-    all_ids = get_all_default_region_ids(True)
-    
-    lat, lon = 10, 20
-    reg = find_closest_region_coord(lat, lon)
-    
-    print(reg)
-    print(valid_region('europe'))
+    import pyaerocom as pya
+    res = {}
+    reg = Region('NAM')
+    reg.plot()
+
+# =============================================================================
+#     for reg in pya.region_defs.HTAP_REGIONS:
+#
+#         mask = pya.helpers_landsea_masks.load_region_mask_xr(reg)
+#         res[reg] = info = pya.helpers_landsea_masks.get_lat_lon_range_mask_region(mask)
+#         lonr, latr = info['lon_range'], info['lat_range']
+#
+#
+#         print(f'[{reg}]')
+#         print(f'lon_range={lonr[0]:.3f},{lonr[1]:.3f}')
+#         print(f'lat_range={latr[0]:.3f},{latr[1]:.3f}')
+#         print()
+# =============================================================================

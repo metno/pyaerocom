@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Mar 13 09:56:54 2020
-
-@author: jonasg
-"""
 
 VAR_PREFIXES = ['vmr', 'mmr', 'conc', 'sconc', 'wet', 'dry']
 
@@ -13,7 +8,11 @@ MOLMASSES = {'air_dry'  : 28.9647,
              'o3'       : 48,
              'so2'      : 64.066,
              'so4'      : 96.06,
-             'no2'      : 46.0055}
+             'no'       : 30.01,
+             'no2'      : 46.0055,
+             'hno3'     : 63.01,
+             'nh3'      : 17.031,
+             'co'       : 28.010}
 
 class UnkownSpeciesError(ValueError):
     pass
@@ -47,7 +46,7 @@ def get_species(var_name):
                 return species
     raise UnkownSpeciesError('Could not infer atom / molecule/ species from '
                              'var_name {}'.format(var_name))
-    
+
 def get_molmass(var_name):
     """
     Get molar mass for input variable
@@ -65,11 +64,23 @@ def get_molmass(var_name):
     """
     return MOLMASSES[get_species(var_name)]
 
+def get_mmr_to_vmr_fac(var_name):
+    """
+    Get conversion factor for MMR -> VMR conversion for input variable
 
-            
-            
+    Note
+    ----
+    Assumes dry air molar mass
 
-                    
+    Parameters
+    ----------
+    var_name : str
+        Name of variable to be converted
 
+    Returns
+    -------
+    float
+        multiplication factor to convert MMR -> VMR
 
-
+    """
+    return get_molmass('air_dry') / get_molmass(var_name)

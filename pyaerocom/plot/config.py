@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 """
-Global configurations for plotting 
+Global configurations for plotting
 """
 from matplotlib.pyplot import get_cmap
-    
+
 from pyaerocom._lowlevel_helpers import BrowseDict
 from warnings import warn
 
 _cmap_lighttheme = "Blues"
 
 DEFAULT_THEME = "light"
-_COLOR_THEMES = dict(light = dict(name="light", 
-                                  cmap_map=_cmap_lighttheme, 
+_COLOR_THEMES = dict(light = dict(name="light",
+                                  cmap_map=_cmap_lighttheme,
                                   cmap_map_div='bwr_r',
                                   color_coastline ="k"),
-                     dark = dict(name="dark", 
-                                 cmap_map="viridis", 
+                     dark = dict(name="dark",
+                                 cmap_map="viridis",
                                  cmap_map_div='PuOr_r',
                                  color_coastline ="#e6e6e6"))
 
@@ -38,7 +38,7 @@ SCAT_ANNOT_XYPOS = [(.01, 0.95),
 
 class MapPlotSettings(BrowseDict):
     """Class specifying predefined plot settings for a species and region
-    
+
     Parameters
     ----------
     variable : :obj:`str` or :obj
@@ -51,16 +51,15 @@ class MapPlotSettings(BrowseDict):
         self.cbar_bounds = None
         self.lon_ticks = None
         self.lat_ticks = None
-    
+
         self.load_input(variable, region, kwargs)
-    
+
     def load_input(self, variable, region, **kwargs):
         raise NotImplementedError
-        
-    
+
 class ColorTheme(object):
     """Pyaerocom class specifiying plotting color theme
-    
+
     Attributes
     ----------
     name : str
@@ -74,8 +73,8 @@ class ColorTheme(object):
         crosses 0)
     cmap_map_div_shifted : bool
         boolean specifying whether center of diverging colormaps for map plots
-        is supposed to be shifted to 0 
-        
+        is supposed to be shifted to 0
+
     Example
     -------
     Load default color theme
@@ -98,63 +97,63 @@ class ColorTheme(object):
             warn("Invalid name for color theme, using default theme")
             name = DEFAULT_THEME
         self.load_default(name)
-    
+
     def load_default(self, theme_name="dark"):
         """Load default color theme
-        
+
         Parameters
         ----------
         theme_name : str
             name of default theme
-        
+
         Raises
         ------
         ValueError
             if ``theme_name`` is not a valid default theme
-            
+
         """
         if not theme_name in _COLOR_THEMES:
             raise ValueError("Default theme with name %s is not available. "
                              "Choose from %s" %_COLOR_THEMES)
         self.from_dict(_COLOR_THEMES[theme_name])
-    
+
     def from_dict(self, info_dict):
         """Import theme information from dictionary
-        
+
         info_dict : dict
             dictionary containing theme settings
         """
         for k, v in info_dict.items():
             if k in self.__dict__:
                 self[k] = v
-    
+
     def to_dict(self):
         """Convert this object into dictionary
-        
+
         Returns
         -------
         dict
             dictionary representation of this object
-            
+
         """
         d = {}
         for k, v in self.__dict__.items():
             d[k] = v
         return d
-    
+
     def __setitem__(self, key, value):
         if key in self.__dict__:
             self.__dict__[key] = value
-    
+
     def __repr__(self):
         return self.name
-    
+
     def __str__(self):
         s = "pyaerocom ColorTheme"
         for k, v in self.__dict__.items():
             s += "\n%s : %s" %(k, v)
         return s
-    
+
 COLOR_THEME = ColorTheme(DEFAULT_THEME)
 
 def get_color_theme(theme_name="dark"):
@@ -167,9 +166,6 @@ def get_color_theme(theme_name="dark"):
 if __name__=="__main__":
     print(ColorTheme("dark"))
     print(ColorTheme("light"))
-    
+
     import doctest
     doctest.testmod()
-
-
-

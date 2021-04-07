@@ -38,7 +38,6 @@ import logging
 from pyaerocom import const
 from pyaerocom.ungriddeddata import UngriddedData
 
-
 class ReadL2DataBase(ReadUngriddedBase):
     """Interface for reading various satellite's L2 data
 
@@ -117,8 +116,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         self._DATAINDEX01 = UngriddedData._DATAINDEX
         self._COLNO = 12
 
-        self._ROWNO = 100000
-        self._CHUNKSIZE = 10000
+        self._CHUNKSIZE = 100000
 
         self.GROUP_DELIMITER = '/'
 
@@ -313,12 +311,12 @@ class ReadL2DataBase(ReadUngriddedBase):
         self.read_failed = []
         temp_files = {}
 
-        data_obj = UngriddedData(num_points=self._COLNO, chunksize=self._CHUNKSIZE)
+        data_obj = UngriddedData(num_points=self._CHUNKSIZE)
         meta_key = 0.0
         idx = 0
 
         # check if the supplied file is a supported archive file (tar in this case)
-        # and extract the files with supported suffixes to const._cachedir
+        # and extract the files with supported suffixes to const.CACHEDIR
         non_archive_files = []
         for idx, _file in enumerate(sorted(files)):
             # temp = 'reading file: {}'.format(_file)
@@ -630,8 +628,6 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         All the data points in data are considered!
 
-
-
         """
         import numpy as np
         import time
@@ -777,7 +773,6 @@ class ReadL2DataBase(ReadUngriddedBase):
             gridded_var_data[var]['stddev'] = grid_array_prot.copy()
             gridded_var_data[var]['numobs'] = grid_array_prot.copy()
 
-
         return data_for_gridding, \
                gridded_var_data,
 
@@ -844,8 +839,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         >>> m.scatter(x,y,3,marker='o',color='k')
         >>> plt.show()
 
-
-
         >>> infile='/lustre/storeB/project/fou/kl/vals5p/aerocom/Sentinel5P/renamed/aerocom.Sentinel5P.daily.sconcno2.2018.nc'
         >>> import xarray as xr
         >>> import cartopy.crs as ccrs
@@ -862,7 +855,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         >>> plot=mean_data.plot.pcolormesh(ax=ax, cmap='jet', transform=ccrs.PlateCarree(), robust=True, levels=16)
         >>> ax.coastlines()
         >>> ax.set_global()
-
 
         """
 

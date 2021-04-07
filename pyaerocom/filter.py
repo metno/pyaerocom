@@ -2,22 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-      
-from pyaerocom import const
-from pyaerocom.region import Region
+from pyaerocom import region
 
 class Filter(object):
     """Class that can be used to filter gridded and ungridded data objects
-    
+
     Note
     ----
     - BETA version (currently being tested)
     - Can only filter spatially
     - Might be renamed to RegionFilter at some point in the future
-    
+
     Todo
     ----
-    Include also temporal filtering and other filter options (e.g. variable, 
+    Include also temporal filtering and other filter options (e.g. variable,
     etc.)
     """
     #: dictionary specifying altitude filters
@@ -28,41 +26,35 @@ class Filter(object):
 
     NO_REGION_FILTER_NAME = 'WORLD'
     NO_ALTITUDE_FILTER_NAME = 'wMOUNTAINS'
-    
-    AEROCOM_REGIONS = const.OLD_AEROCOM_REGIONS
-    HTAP_REGIONS = const.HTAP_REGIONS
-    
+
     _DELIM = '-'
-    
+
     def __init__(self, name=None, region=None, altitude_filter=None,
                  land_ocn=None, **kwargs):
         # default name (i.e. corresponds to no filtering)
         self._name = None
-        
+
         # this will be used to store instance of Region associated with filter
         self._region = None
         if name is not None:
             self.name = name
         else:
-            self.name = '{}-{}'.format(self.NO_REGION_FILTER_NAME, 
+            self.name = '{}-{}'.format(self.NO_REGION_FILTER_NAME,
                                        self.NO_ALTITUDE_FILTER_NAME)
-            
-    
-        #self._check_if_htap_region_are_available_and_download()
-        
+
     @property
     def name(self):
-        """Name of filter 
-        
+        """Name of filter
+
         String containing up to 3 substrings (delimited using dash -)
         containing: <region_id>-<altitude_filter>-<land_or_sea_only_info>
         """
         return self._name
-    
+
     @name.setter
     def name(self, val):
         self._name = self._check_name_valid(val)
-        
+
     def _check_name_valid(self, val):
         if not isinstance(val, list):
             if not isinstance(val, str):
@@ -89,7 +81,7 @@ class Filter(object):
                     if reg is not None:
                         raise ValueError('Only one region may be specified')
                     reg = entry
-                
+
             elif entry in self.valid_alt_filter_codes:
                 if alt_filter is not None:
                     raise ValueError('Only one altitude filter can be specified')
@@ -100,44 +92,44 @@ class Filter(object):
             reg = 'WORLD'
         if alt_filter is None:
             alt_filter = 'wMOUNTAINS'
-            
+
         lst = [reg, alt_filter]
         if landsea is not None:
             lst.append(landsea)
         return '{}'.format(self._DELIM).join(lst)
-    
-    @property     
+
+    @property
     def spl(self):
         return self._name.split(self._DELIM)
-    
+
     @property
     def region_name(self):
         """Name of region"""
         return self.spl[0]
-    
+
     @property
     def region(self):
         """Region associated with this filter (instance of :class:`Region`)"""
         r = self._region
-        if not isinstance(r, Region) or not r.name == self.region_name:
-            self._region = Region(self.region_name)
+        if not isinstance(r, region.Region) or not r.name == self.region_name:
+            self._region = region.Region(self.region_name)
         return self._region
-    
+
     @property
     def lon_range(self):
         """Longitude range of region"""
         return self.region.lon_range
-    
+
     @property
     def lat_range(self):
         """Latitude range of region"""
         return self.region.lat_range
-    
+
     @property
     def alt_range(self):
         """Altitude range of filter"""
         return self.ALTITUDE_FILTERS[self.spl[1]]
-    
+
     def from_list(self, lst):
         """Set filter name based on input list"""
         if not isinstance(lst, list):
@@ -146,54 +138,54 @@ class Filter(object):
             raise ValueError('Maximum length 3 of individual filter entries '
                              'exceeded for input {}'.format(lst))
         self.name = '-'.join(lst)
-        
+
     @property
     def valid_alt_filter_codes(self):
         """Valid codes for altitude filters"""
         return list(self.ALTITUDE_FILTERS.keys())
-    
-    @property 
+
+    @property
     def valid_land_sea_filter_codes(self):
         """Codes specifying land/sea filters"""
         return self.LAND_OCN_FILTERS
-    
+
     @property
     def valid_regions(self):
         """Names of valid regions (AeroCom regions and HTAP regions)"""
-        return self.AEROCOM_REGIONS + self.HTAP_REGIONS        
-    
+        return region.all()
+
     @property
     def land_ocn(self):
         return None if len(self.spl) < 3 else self.spl[2]
-    
+
     def to_dict(self):
         """Convert filter to dictionary"""
-        return {'region'    :   self.region_name, 
+        return {'region'    :   self.region_name,
                 'lon_range' :   self.lon_range,
                 'lat_range' :   self.lat_range,
-                'alt_range' :   self.alt_range, 
+                'alt_range' :   self.alt_range,
                 'land_sea'  :   self.land_ocn}
-    
+
     def apply(self, data_obj):
         """Apply filter to data object
-        
+
         Parameters
         ----------
         data_obj : :obj:`UngriddedData`, :obj:`GriddedData`
             input data object that is supposed to be filtered
-            
+
         Returns
         -------
         :obj:`UngriddedData`, :obj:`GriddedData`
             filtered data object
-            
+
         Raises
         ------
         IOError
             if input is invalid
         """
         spl = self.spl
-        
+
         if spl[0] != self.NO_REGION_FILTER_NAME:
             data_obj = data_obj.filter_region(spl[0])
         if spl[1] != self.NO_ALTITUDE_FILTER_NAME:
@@ -202,43 +194,41 @@ class Filter(object):
         if len(spl) > 2:
             data_obj = data_obj.filter_region(spl[2])
         return data_obj
-        
+
     def __call__(self, data_obj):
         return self.apply(data_obj)
-    
-    
+
 if __name__=="__main__":
     import pyaerocom as pya
     import matplotlib.pyplot as plt
-    
+
     plt.close('all')
-    
+
     f = Filter("EEUROPE")
-    
+
     obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
     modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
-    
-    coldata = pya.colocation.colocate_gridded_ungridded(modeldata, 
+
+    coldata = pya.colocation.colocate_gridded_ungridded(modeldata,
                                                         obsdata,
                                                         apply_time_resampling_constraints=False,
                                                         ts_type='daily',
                                                         filter_name='WORLD-wMOUNTAINS')
-    
+
     coldataf = f(coldata)
-    
+
     pya.plot.mapping.plot_nmb_map_colocateddata(coldataf)
     coldataf.plot_scatter()
-    
+
     obsf = f(obsdata)
-    
+
     modf = f(modeldata)
-    
-    coldataf1 = pya.colocation.colocate_gridded_ungridded(modf, 
+
+    coldataf1 = pya.colocation.colocate_gridded_ungridded(modf,
                                                           obsf,
                                                           apply_time_resampling_constraints=False,
                                                           ts_type='daily',
                                                           filter_name='WORLD-wMOUNTAINS')
-    
+
     pya.plot.mapping.plot_nmb_map_colocateddata(coldataf1)
     coldataf1.plot_scatter()
-    

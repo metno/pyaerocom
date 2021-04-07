@@ -3,10 +3,9 @@
 """
 Metadata keys from GHOST that only depend on station dimension
 
-THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION 
+THESE SHOULD BE ALWAYS THE SAME ACCORDING TO INFORMATION INFORMATION
 PROVIDED BY BSC
 """
-
 
 GHOST_META_KEYS = [
     'EDGAR_v4.3.2_annual_average_BC_emissions',
@@ -66,6 +65,7 @@ GHOST_META_KEYS = [
     'administrative_country_division_1',
     'administrative_country_division_2',
     'altitude',
+    'area_classification',
     'associated_networks',
     'city',
     'climatology',
@@ -80,11 +80,13 @@ GHOST_META_KEYS = [
     'distance_to_junction',
     'distance_to_kerb',
     'distance_to_source',
-    'horizontal_geodetic_datum',
+    'land_use',
     'latitude',
     'longitude',
+    'main_emission_source',
     'measurement_altitude',
     'measurement_methodology',
+    'measurement_scale',
     'measuring_instrument_calibration_scale',
     'measuring_instrument_documented_absorption_cross_section',
     'measuring_instrument_documented_accuracy',
@@ -115,11 +117,11 @@ GHOST_META_KEYS = [
     'measuring_instrument_reported_zero_drift',
     'measuring_instrument_reported_zonal_drift',
     'measuring_instrument_sampling_type',
-    'measuring_instrument_volume_standard_pressure',
-    'measuring_instrument_volume_standard_temperature',
     'network',
     'network_maintenance_details',
     'network_miscellaneous_details',
+    'network_provided_volume_standard_pressure',
+    'network_provided_volume_standard_temperature',
     'network_qa_details',
     'network_sampling_details',
     'network_uncertainty_details',
@@ -141,16 +143,11 @@ GHOST_META_KEYS = [
     'sample_preparation_techniques',
     'sample_preparation_types',
     'sampling_height',
-    'standardised_network_provided_area_classification',
-    'standardised_network_provided_land_use',
-    'standardised_network_provided_main_emission_source',
-    'standardised_network_provided_measurement_scale',
-    'standardised_network_provided_station_classification',
-    'standardised_network_provided_terrain',
+    'station_classification',
     'station_name',
     'station_reference',
     'station_timezone',
     'street_type',
-    'street_width'
+    'street_width',
+    'terrain',
 ]
-

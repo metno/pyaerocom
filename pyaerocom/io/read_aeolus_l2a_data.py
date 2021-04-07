@@ -79,18 +79,17 @@ class ReadL2Data(ReadL2DataBase):
     DATA_ID = const.AEOLUS_NAME
     # Flag if the dataset contains all years or not
     DATASET_IS_YEARLY = False
-    
+
     SUPPORTED_DATASETS = []
     SUPPORTED_DATASETS.append(DATA_ID)
 
     TS_TYPE = 'undefined'
-    
+
     _EC355NAME = 'ec355aer'
     _BS355NAME = 'bs355aer'
     _LODNAME = 'lod'
     _SRNAME = 'sr'
     _CASENAME = 'case'
-
 
     _QANAME = 'qa_index'
     DEFAULT_VARS = [_EC355NAME]
@@ -111,7 +110,6 @@ class ReadL2Data(ReadL2DataBase):
         # stored in rads in self.data already
         # trades RAM for speed
         self.rads_in_array_flag = False
-        
 
         self.SUPPORTED_RETRIEVALS = []
         self.SUPPORTED_RETRIEVALS.append('sca')
@@ -182,8 +180,7 @@ class ReadL2Data(ReadL2DataBase):
         self._UPPERALTITUDEINDEX = self._RAYLEIGHALTITUDEINDEX + 1
         self._COLNO = self._UPPERALTITUDEINDEX + 1
 
-        self._ROWNO = 100000
-        self._CHUNKSIZE = 10000
+        self._CHUNKSIZE = 100000
         self._HEIGHTSTEPNO = 24
 
         # variable names for the different retrievals
@@ -208,7 +205,6 @@ class ReadL2Data(ReadL2DataBase):
         # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/longitude_of_height_bin
         # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/latitude_of_height_bin
         # /geolocation[?]/measurement_geolocation[?]/rayleigh_geolocation_height_bin[25]/altitude_of_height_bin
-
 
         # self.RETRIEVAL_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/qc_flag'
         self.CODA_READ_PARAMETERS['sca']['metadata'][self._QANAME] = 'sca_pcd/profile_pcd_bins/processing_qc_flag'
@@ -283,7 +279,6 @@ class ReadL2Data(ReadL2DataBase):
         self.INDEX_DICT.update({self._RAYLEIGHLONNAME: self._RAYLEIGHLONINDEX})
         self.INDEX_DICT.update({self._RAYLEIGHALTITUDENAME: self._RAYLEIGHALTITUDEINDEX})
 
-
         # dictionary to store array sizes of an element in self.data
         # SIZE_DICT = {}
         self.SIZE_DICT.update({self._LATBOUNDSNAME: self._LATBOUNDSSIZE})
@@ -345,7 +340,6 @@ class ReadL2Data(ReadL2DataBase):
         self.NETCDF_VAR_ATTRIBUTES[self._UPPERALTITUDENAME]['long_name'] = 'lower altitude'
         self.NETCDF_VAR_ATTRIBUTES[self._UPPERALTITUDENAME]['standard_name'] = 'altitude'
         self.NETCDF_VAR_ATTRIBUTES[self._UPPERALTITUDENAME]['units'] = 'm'
-
 
         self.TEX_UNITS = {}
         self.TEX_UNITS[self._EC355NAME] = r'$10^{-6} \cdot m^{-1}$'
@@ -797,7 +791,6 @@ class ReadL2Data(ReadL2DataBase):
                 else:
                     pass
 
-
                 if var == self._QANAME:
                     file_data[var+'_anded'] = {}
                     for idx, key in enumerate(file_data[self._TIME_NAME]):
@@ -885,9 +878,9 @@ class ReadL2Data(ReadL2DataBase):
 
                         if index_pointer >= self._ROWNO:
                             # add another array chunk to self.data
-                            data = np.append(data, np.empty([self._CHUNKSIZE, self._COLNO], dtype=np.float_),
-                                             axis=0)
-                            self._ROWNO += self._CHUNKSIZE
+                            chunk = np.empty([self._CHUNKSIZE, self._COLNO],
+                                             dtype=np.float_)
+                            data = np.append(data, chunk, axis=0)
 
                 # return only the needed elements...
                 if np.isnan(data[index_pointer, self.INDEX_DICT[var]]):
@@ -1257,7 +1250,6 @@ class ReadL2Data(ReadL2DataBase):
             return ret_data
 
     ###################################################################################
-
 
     def to_netcdf_simple(self, netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc',
                          global_attributes=None, vars_to_write=None,
@@ -1844,9 +1836,7 @@ class ReadL2Data(ReadL2DataBase):
                 else:
                     out_struct[codaRec._registeredFields[idx]] = codaRec[idx]
 
-
         return out_struct
-
 
     ###################################################################################
     def to_netcdf_data(self,filename, coda_data, grouping='names', verbose=False):
@@ -1923,14 +1913,11 @@ class ReadL2Data(ReadL2DataBase):
                     var_name = lev1_name
                     ds[var_name] = coda_data[lev1_name]
 
-
                     for lev3_name in coda_data[lev1_name][lev2_name]:
                         pass
         else:
             pass
             # use netcdf4 groups to build the hierarchy
-
-
 
         # datetimedata = pd.to_datetime(self.data[:, self._TIMEINDEX].astype('datetime64[s]'))
         # pointnumber = np.arange(0, len(datetimedata))
@@ -1956,7 +1943,6 @@ class ReadL2Data(ReadL2DataBase):
                           plot_time = True, arcgis_background=False):
         """small routine to plot the satellite track on a map
 
-
         """
 
         import matplotlib.pyplot as plt
@@ -1978,7 +1964,6 @@ class ReadL2Data(ReadL2DataBase):
         if max_index == 0:
             self.logger.info('plotmap: no points to plot! Returning.')
             return
-
 
         if bbox:
             pass
@@ -2078,10 +2063,8 @@ class ReadL2Data(ReadL2DataBase):
                          fontsize='xx-small',
                          ha='center')
 
-
         plt.savefig(plotfilename, dpi=300)
         plt.close()
-
 
     ###################################################################################
     def plot_profile_v2(self, plotfilename, data_to_plot=None, vars_to_plot = ['ec355aer'], retrieval_name=None,
@@ -2090,8 +2073,6 @@ class ReadL2Data(ReadL2DataBase):
                         plot_nbins=20.,
                         linear_time=False):
         """plot sample profile plot
-
-
 
         """
         import matplotlib.pyplot as plt
@@ -2160,7 +2141,6 @@ class ReadL2Data(ReadL2DataBase):
                 time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index )
                 time_cut_start_index = idx
                 idx_time = time
-
 
         time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index + 1)
 
@@ -2373,8 +2353,6 @@ class ReadL2Data(ReadL2DataBase):
                         linear_time=False):
         """plot sample profile plot
 
-
-
         """
         import matplotlib.pyplot as plt
         import matplotlib
@@ -2443,7 +2421,6 @@ class ReadL2Data(ReadL2DataBase):
                 time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index )
                 time_cut_start_index = idx
                 idx_time = time
-
 
         time_index_dict[idx_time] = np.arange(time_cut_start_index, time_cut_end_index + 1)
 
@@ -2542,7 +2519,6 @@ class ReadL2Data(ReadL2DataBase):
                 elif nansum == 0:
                     # set all heights of the plotted profile to 0 since nothing was detected
                     out_arr[time_step_idx,:] = 0.
-
 
                 # elif len(var_data) == 1:
                 #     pass
@@ -2708,7 +2684,6 @@ class ReadL2Data(ReadL2DataBase):
                         # print('lon {}, matched {}'.format(grid_lon, _data[match_indexes, self._LONINDEX]))
                         match_lon_data.extend(_data[match_indexes, self._LONINDEX])
 
-
                         for var in vars:
                             less_than_zero_indexes = np.where(_data[match_indexes,self.INDEX_DICT[var]] > 0.)[0]
                             neg_points += (match_indexes.size - less_than_zero_indexes.size)
@@ -2776,7 +2751,6 @@ class ReadL2Data(ReadL2DataBase):
         grid_data_prot = {}
         gridded_var_data = {}
         data_for_gridding = {}
-
 
         try:
             dummy = levels.any()
@@ -2960,7 +2934,6 @@ class ReadL2Data(ReadL2DataBase):
             gridded_var_data[self._ALTITUDENAME] = model_data[self._ALTITUDENAME].data.copy()
 
             data_for_gridding = {}
-
 
             start_time = time.perf_counter()
             obs_times = _data[:,self._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
@@ -3198,7 +3171,6 @@ if __name__ == '__main__':
         else:
             INTERPOL_TO_MODEL_GRID_FLAG = False
 
-
     try:
         if args.retrieval:
             options['retrieval'] = args.retrieval
@@ -3245,22 +3217,21 @@ if __name__ == '__main__':
 
     if args.emep:
         options['emepflag'] = args.emep
-        options['latmin'] = np.float(30.)
-        options['latmax'] = np.float(76.)
-        options['lonmin'] = np.float(-30.)
-        options['lonmax'] = np.float(45.)
+        options['latmin'] = float(30.)
+        options['latmax'] = float(76.)
+        options['lonmin'] = float(-30.)
+        options['lonmax'] = float(45.)
     else:
         options['emepflag'] = False
 
     if args.himalayas:
         options['himalayas'] = args.himalayas
-        options['latmin'] = np.float(10.)
-        options['latmax'] = np.float(50.)
-        options['lonmin'] = np.float(60.)
-        options['lonmax'] = np.float(110.)
+        options['latmin'] = float(10.)
+        options['latmax'] = float(50.)
+        options['lonmin'] = float(60.)
+        options['lonmax'] = float(110.)
     else:
         options['himalayas'] = False
-
 
     # if args.readpaths:
     #     options['readpaths'] = args.readpaths.split(',')
@@ -3278,7 +3249,6 @@ if __name__ == '__main__':
             options['listpaths'] = False
     except AttributeError:
         options['listpaths'] = False
-
 
     if args.verbose:
         options['verbose'] = True
@@ -3441,7 +3411,6 @@ if __name__ == '__main__':
         obj.logger.info('reading topography file {}'.format(options['topofile']))
         topo_data = xr.open_dataset(options['topofile'])
 
-
         #truncate Aeolus times to hour
 
         aeolus_times_rounded = data_numpy[:,obj._TIMEINDEX].astype('datetime64[s]').astype('datetime64[h]')
@@ -3592,18 +3561,3 @@ if __name__ == '__main__':
                              global_attributes=global_attributes,
                              data_to_write=gridded_var_data,
                              gridded=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

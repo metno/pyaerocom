@@ -6,7 +6,7 @@
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
-BUILDDIR      = ../../pyaerocom-docs/_build
+BUILDDIR      = _build
 
 # Put it first so that "make" without argument is like "make help".
 help:

@@ -163,7 +163,7 @@ class ReadAeronetSunV2(ReadAeronetBase):
 
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
-        data_out.data_id = self.DATA_ID
+        data_out.data_id = self.data_id
 
         #create empty array for all variables that are supposed to be read
         for var in vars_to_read:
@@ -259,7 +259,6 @@ if __name__=="__main__":
     print(data)
 
     stats = first_ten.to_station_data_all()
-
 
     read = ReadAeronetSunV2(const.AERONET_SUN_V2L2_AOD_ALL_POINTS_NAME)
     data = read.read_first_file(vars_to_retrieve=['ang4487aer',

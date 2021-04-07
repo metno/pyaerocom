@@ -27,24 +27,23 @@ def _make_station_data1():
              data_level=2,
              country='norway',
              data_version=2)
-             
+
     stat.update(d)
-    
-    START = '2003'
+
+    START = '2000'
     NUM_YEARS = 5
     NUM = NUM_YEARS * 12
     idx = np.datetime64(START) + np.arange(NUM).astype('timedelta64[M]')
-    
+
     stat.dtime = pd.DatetimeIndex(idx).shift(14, 'D')
 
     stat.ec550aer = np.ones(NUM)*30
     stat.od550aer = np.ones(NUM)
-    
+
     stat.var_info['ec550aer'] = {'units' : 'm-1'}
     stat.var_info['od550aer'] = {'units' : '1'}
-    
+
     return stat
-    
 
 def _make_station_data2():
     """Create an example synthetic instance of StationData class"""
@@ -62,24 +61,22 @@ def _make_station_data2():
              data_level=3,
              country='norway',
              data_version=2)
-             
+
     stat.update(d)
-    
+
     START = '2007'
     NUM_DAYS = 277
-    
+
     stat.dtime = np.datetime64(START) + np.arange(NUM_DAYS).astype('timedelta64[D]')
 
     stat.ec550aer = np.ones(NUM_DAYS) -.5
     stat.od550aer = np.ones(NUM_DAYS)
-    stat.conco3 = np.ones(NUM_DAYS)
-    stat.conco3[20:50] = np.nan
-    stat.conco3[55:100] = 3
-    stat.ts_type = 'daily'
+    stat.conco3 = np.arange(NUM_DAYS)
+
     stat.var_info['ec550aer'] = {'units' : 'Mm-1'}
     stat.var_info['od550aer'] = {'units' : '1'}
     stat.var_info['conco3']  = {'units' : 'ug m-3'}
-    
+
     return stat
 
 def _make_ungridded_data():
@@ -91,13 +88,13 @@ class DataAccess:
     """Factory for loading and accessing of data objects"""
     _LOADERS = dict(station_data1 = _make_station_data1,
                     station_data2 = _make_station_data2)
-    
+
     def __getitem__(self, key):
         if key in self.__dict__: # item is loaded
             return self.__dict__[key]
         data = self._LOADERS[key]()
         self.__dict__[key] = data
         return data
-    
+
 if __name__ == '__main__':
     acc = DataAccess()
