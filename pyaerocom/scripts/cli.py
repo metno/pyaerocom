@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 23 15:03:51 2020
-
-@author: jonasg
+pyaerocom main CLI (accessible via pya command)
 """
 
 from argparse import ArgumentParser

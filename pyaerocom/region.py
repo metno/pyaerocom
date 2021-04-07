@@ -377,12 +377,6 @@ def find_closest_region_coord(lat, lon, regions=None):
             best=match
     return best
 
-def valid_default_region(name):
-    """Boolean specifying whether input region is valid or not"""
-    if isinstance(name, str):
-        return True if name.upper() in get_all_default_region_ids() else False
-    return False
-
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')

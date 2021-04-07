@@ -7,7 +7,7 @@ import glob, os, pickle
 
 from pyaerocom import const
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.exceptions import (AerocomConnectionError, CacheReadError,
+from pyaerocom.exceptions import (CacheReadError,
                                   CacheWriteError)
 
 # TODO: Write data attribute list contains_vars in header of pickled file and
@@ -29,13 +29,7 @@ class CacheHandlerUngridded(object):
         dictionary containing successfully loaded instances of single variable
         :class:`UngriddedData` objects (keys are variable names)
     """
-    __version__ = '1.11'
-    #: Directory of cache files
-    try:
-        CACHE_DIR = const.CACHEDIR
-    except Exception:
-        CACHE_DIR = None
-        const.logger.exception('Pyaerocom cache directory is not defined')
+    __version__ = '1.12'
     #: Cache file header keys that are checked (and required unchanged) when
     #: reading a cache file
     CACHE_HEAD_KEYS = ['pyaerocom_version',
@@ -80,10 +74,7 @@ class CacheHandlerUngridded(object):
         """Directory where cache data objects are stored"""
         if self._cache_dir is not None:
             return self._cache_dir
-        if self.CACHE_DIR is None or not os.path.exists(self.CACHE_DIR):
-            raise FileNotFoundError('Cache directory does not exist: {}'
-                                    .format(self.CACHE_DIR))
-        return self.CACHE_DIR
+        return const.CACHEDIR
 
     @cache_dir.setter
     def cache_dir(self, val):
