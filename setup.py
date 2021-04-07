@@ -21,7 +21,6 @@ setup(
                      'pyaerocom.io',
                      'pyaerocom.plot',
                      'pyaerocom.web',
-                     'pyaerocom.interactive',
                      'pyaerocom.web.cli',
                      'pyaerocom.test',
                      'pyaerocom.io.test',
@@ -55,8 +54,7 @@ setup(
     long_description_content_type='text/x-rst',
     entry_points = {'console_scripts' : [
             'pya=pyaerocom.scripts.cli:main',
-            'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main',
-            'pyaerotrends=pyaerocom.web.cli.main_trends_evaluation:main'
+            'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main'
             ]},
     zip_safe = False
 )

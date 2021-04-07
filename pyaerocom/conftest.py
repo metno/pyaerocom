@@ -18,6 +18,7 @@ from pyaerocom.io import (ReadAasEtal, ReadEbas, ReadAeronetSunV3,
                           ReadAeronetSdaV3, ReadMscwCtm)
 
 from pyaerocom.test.synthetic_data import DataAccess
+from pyaerocom import __dir__ as PYADIR
 
 INIT_TESTDATA = True
 TEST_RTOL = 1e-4
@@ -109,6 +110,7 @@ from pyaerocom import change_verbosity
 change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
+EMEP_DIR =  str(TESTDATADIR.joinpath(CHECK_PATHS['emep']))
 # Paths to EMEP data
 @pytest.fixture(scope='session')
 def path_emep():

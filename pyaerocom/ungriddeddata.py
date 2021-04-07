@@ -116,7 +116,7 @@ class UngriddedData(object):
     # the location (e.g denotes lat = 300.12345)
     # used to code lat and long in a single number for a uniqueness test
     _LOCATION_PRECISION = 5
-    _LAT_OFFSET = np.float(90.)
+    _LAT_OFFSET = 90.
 
     STANDARD_META_KEYS = STANDARD_META_KEYS
 

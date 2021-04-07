@@ -442,7 +442,7 @@ class Colocator(ColocationSetup):
             data_dir = self.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
         reader = reader_class(data_id=data_id, data_dir=data_dir)
-        if hasattr(reader, 'filepath') and hasattr(self, 'filepath'):
+        if isinstance(reader, ReadMscwCtm) and hasattr(self, 'filepath'):
             reader.filepath = self.filepath
         return reader
 
@@ -483,9 +483,15 @@ class Colocator(ColocationSetup):
     def _check_model_add_var(self, var_name, model_reader, var_matches):
         if isinstance(self.model_add_vars, dict) and var_name in self.model_add_vars: #observation variable
             add_var = self.model_add_vars[var_name]
-            self._check_add_model_read_aux(add_var, model_reader)
-            if model_reader.has_var(add_var):
-                var_matches[add_var] = var_name
+            if isinstance(add_var,list):
+                for add_v in add_var:
+                    self._check_add_model_read_aux(add_v, model_reader)
+                    if model_reader.has_var(add_v):
+                        var_matches[add_v] = var_name
+            else:
+                self._check_add_model_read_aux(add_var, model_reader)
+                if model_reader.has_var(add_var):
+                    var_matches[add_var] = var_name
         return var_matches
 
     def _find_var_matches(self, obs_vars, model_reader, var_name=None):

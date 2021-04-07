@@ -50,7 +50,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     coldata = colocate_gridded_ungridded(data, aeronetsunv3lev2_subset,
                                          var_ref='od550aer')
 
-    assert coldata.meta['var_name'] == ['od550aer', 'Blaaa']
+    assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
@@ -114,7 +114,7 @@ def test_colocate_gridded_gridded_same_new_var(data_tm5):
     data.var_name = 'Blaaa'
     coldata = colocate_gridded_gridded(data, data_tm5)
 
-    assert coldata.meta['var_name'] == ['od550aer', 'Blaaa']
+    assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
 
 @testdata_unavail
 def test_colocate_gridded_gridded_same(data_tm5):

@@ -35,6 +35,10 @@ from pyaerocom.web.helpers_trends_iface import (update_menu_trends_iface,
 
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError
 
+const.print_log.warning(DeprecationWarning(
+    'Module pyaerocom/web/trends_evaluation.py will be removed as of '
+    'release 0.12.0 which will incorporate trends computation in AeroVal '
+    'interface (via AerocomEvaluation class)'))
 
 class TrendsEvaluation(object):
     """High-level analysis class to compute json files for trends interface
