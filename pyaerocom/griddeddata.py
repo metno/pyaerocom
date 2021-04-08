@@ -1674,7 +1674,6 @@ class GriddedData(object):
                            **self.metadata)
         data.metadata['ts_type'] = to_ts_type
         data.metadata.update(rs.last_setup)
-
         # in case of these aggregators, the data unit can be kept
         # ToDo: this is a quick fix and needs revision, should also check
         # if this can be handled automatically by iris, since iris knows

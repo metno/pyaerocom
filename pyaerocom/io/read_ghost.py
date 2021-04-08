@@ -121,6 +121,7 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
+
     #: version of the reader
     __version__ = '0.0.13'
 
@@ -192,7 +193,7 @@ class ReadGhost(ReadUngriddedBase):
 
     # This is the default list of flags that mark bad / invalid data, as
     # provided by Dene: [0, 1, 2, 3, 6, 20, 21, 22, 72, 75, 82, 83, 90, 91,
-    #92, 105, 110, 111, 112, 113, 115, 132, 133]
+    #92, 105 (removed), 110, 111, 112, 113, 115, 132, 133]
 
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
