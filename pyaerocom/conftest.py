@@ -15,9 +15,10 @@ import pyaerocom.testdata_access as td
 from pyaerocom.griddeddata import GriddedData
 
 from pyaerocom.io import (ReadAasEtal, ReadEbas, ReadAeronetSunV3,
-                          ReadAeronetSdaV3, ReadMscwCtm)
+                          ReadAeronetSdaV3)
 
 from pyaerocom.test.synthetic_data import DataAccess
+from pyaerocom import __dir__ as PYADIR
 
 INIT_TESTDATA = True
 TEST_RTOL = 1e-4
@@ -194,6 +195,18 @@ def tempdir(tmpdir_factory):
     """Temporary directory for dumping data shared between tests"""
     tmpdir= tmpdir_factory.mktemp('data')
     return tmpdir
+
+@pytest.fixture(scope='session')
+def statlist():
+    data = {}
+    stats = cth.create_fake_stationdata_list()
+    data['all'] = stats
+    data['od550aer'] = [stat.copy() for stat in stats if stat.has_var('od550aer')]
+    pm10sites = [stat.copy() for stat in stats if stat.has_var('concpm10')]
+    data['concpm10_X'] = pm10sites
+    data['concpm10_X2'] = [stat.copy() for stat in pm10sites[:3]]
+    data['concpm10'] = [stat.copy() for stat in pm10sites[:2]]
+    return data
 
 @contextmanager
 def does_not_raise_exception():

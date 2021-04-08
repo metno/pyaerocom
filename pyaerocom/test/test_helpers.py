@@ -6,13 +6,15 @@ Created on Thu Apr 12 14:45:43 2018
 @author: jonasg
 """
 import numpy as np
+import numpy.testing as npt
 import pytest
 import xarray as xr
 from pandas import Series, date_range, Timestamp
 
-from pyaerocom import helpers
+from pyaerocom import helpers, StationData
 from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom.exceptions import DataCoverageError
+from pyaerocom.exceptions import (DataCoverageError, TemporalResolutionError,
+                                  UnitConversionError)
 
 def test_get_standarad_name():
     assert (helpers.get_standard_name('od550aer') ==
@@ -26,17 +28,43 @@ def test_get_lowest_resolution():
                                          'hourly',
                                          'monthly',
                                          'yearly') == 'yearly'
-def test_isnumeric():
-    assert helpers.isnumeric(3)
-    assert helpers.isnumeric(3.3455)
-    assert helpers.isnumeric(np.complex(1, 2))
+@pytest.mark.parametrize('val', [3, 3.3455, np.complex(1,2)])
+def test_isnumeric(val):
+    assert helpers.isnumeric(val)
 
-def test_isrange():
-    assert helpers.isrange((0, 1))
-    assert helpers.isrange([10, 20])
+@pytest.mark.parametrize('val,result', [
+    ((0, 1), True),
+    ([10,20], True),
+    ([10,20,30], False),
+    ])
+def test_isrange(val,result):
+    assert helpers.isrange(val) == result
 
-def test_merge_station_data():
-    pass
+@pytest.mark.parametrize('use,var_name,pref_attr,sort_by_largest,fill_missing_nan,add_meta_keys,raises,num,tst,mean', [
+    ('concpm10', 'concpm10',None,True,True,None,does_not_raise_exception(),730,'daily',17.93),
+    ('concpm10', 'concpm10','awesomeness',True,True,None,does_not_raise_exception(),730,'daily',17.93),
+    ('concpm10', 'concpm10','awesomeness',False,True,None,does_not_raise_exception(),730,'daily',15),
+    ('concpm10_X2', 'concpm10',None,True,True,None,pytest.raises(UnitConversionError),None,None,None),
+    ('all', 'concpm10',None,True,True,None,pytest.raises(TemporalResolutionError),None,None,None),
+    ('concpm10_X', 'concpm10',None,True,True,None,pytest.raises(TemporalResolutionError),None,None,None),
+    ('od550aer', 'od550aer',None,True,True,None,does_not_raise_exception(),67,'60daily',0.51),
+    ('od550aer', 'od550aer','awesomeness',True,True,None,does_not_raise_exception(),67,'60daily',0.59),
+    ('od550aer', 'od550aer','awesomeness',False,True,None,does_not_raise_exception(),67,'60daily',0.51),
+    ('od550aer', 'concpm10',None,True,True,None,pytest.raises(DataCoverageError),None,None,None),
+
+    ])
+def test_merge_station_data(statlist,use,var_name,pref_attr,sort_by_largest,fill_missing_nan,add_meta_keys,raises,num,tst,mean):
+    with raises:
+        stats = [x.copy() for x in statlist[use]]
+        stat = helpers.merge_station_data(stats,var_name,pref_attr,
+                                   sort_by_largest,fill_missing_nan,
+                                   add_meta_keys)
+        assert isinstance(stat, StationData)
+        vardata = stat[var_name]
+        assert len(vardata) == num
+        assert stat.get_var_ts_type(var_name) == tst
+        avg = np.mean(vardata)
+        npt.assert_allclose(avg, mean, rtol=1e-2)
 
 def test__get_pandas_freq_and_loffset():
     val = helpers._get_pandas_freq_and_loffset('monthly')

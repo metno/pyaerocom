@@ -41,7 +41,7 @@ def fakedata_hourly():
     return pd.Series(data, idx)
 
 @pytest.mark.parametrize('data, expectation',[
-    (pd.Series(), does_not_raise_exception()),
+    (pd.Series(dtype=np.float64), does_not_raise_exception()),
     (xr.DataArray(), does_not_raise_exception()),
     (np.asarray([1]), pytest.raises(ValueError)),
     (GriddedData(), pytest.raises(ValueError)),
@@ -54,7 +54,7 @@ def test_TimeResampler_input_data(data, expectation):
 
 
 @pytest.mark.parametrize('data, expectation',[
-    (pd.Series(), resample_timeseries),
+    (pd.Series(dtype=np.float64), resample_timeseries),
     (xr.DataArray(), resample_time_dataarray),
     ])
 def test_TimeResampler_fun(data, expectation):
