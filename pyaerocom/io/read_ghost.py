@@ -21,6 +21,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
+import cf_units
 import glob
 import os
 import numpy as np
@@ -29,17 +30,40 @@ import xarray as xr
 
 import pyaerocom as pya
 from pyaerocom import const
+from pyaerocom.exceptions import DataSourceError
 from pyaerocom.mathutils import vmrx_to_concx
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.time_config import TS_TYPES
+from pyaerocom.tstype import TsType
 from pyaerocom.molmasses import get_molmass
-import cf_units
 
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
+    """
+    Convert VMR data to mass concentration for list of GHOST StationData objects
 
+    Note
+    ----
+    This is a private function used in :class:`ReadGhost` and is not supposed
+    to be used directly.
+
+    Parameters
+    ----------
+    data : list
+        list of :class:`StationData` objects containing VMR data (e.g. vmrno2)
+    mconcvar : str
+        Name of mass concentration variable (e.g. concno2)
+    vmrvar : str
+        Name of VMR variable (e.g. vmrno2)
+
+    Returns
+    -------
+    data : list
+        list of modified :class:`StationData` objects that include computed
+        mass concentrations in addition to VMR data.
+
+    """
     for stat in data:
         vmrdata = stat[vmrvar]
         meta = stat['meta']
@@ -66,7 +90,13 @@ def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):
 class ReadGhost(ReadUngriddedBase):
     """Reading interface for GHOST data
 
-    First version of GHOST reading class for reading in pyaerocom
+    This reader supports both reading of provided EEA and EBAS datasets.
+    It may not have implemented all variables provided in the input data, you
+    can check all provided variables via :attr:`PROVIDES_VARIABLES`. If you
+    find one variable missing in this reading routine, you can register it
+    yourself in the class header (see :attr:`VARNAMES_DATA` below) from a
+    forked pyaerocom repo and send a pull request, or you can contact us about
+    it.
 
     Note
     ----
@@ -74,31 +104,7 @@ class ReadGhost(ReadUngriddedBase):
     Please have a look at that and make sure you understand the idea behind
     it.
 
-    TODO
-    ----
-    - Revise after file format is finalised as there may be ways to make it
-    more efficient. E.g. if files remain single variable, the read_file
-    method does not need to be able to handle multiple variables. Also the
-    chunk extension check in read could be done then before looping over
-    all sites, etc..
-    - Test if evaluation of flags works properly.
-    - Translate default metadata names (e.g. measuring_instrument_name ->
-    instrument_name, check class StationMetaData in pyaerocom/metastandards.py)
-    - Translate variable names and make sure to read them in the correct unit
-    (e.g. sconco3 [mmol mmol-1] -> conco3 [ug m-3], cf.
-    pyaerocom/data/variables.ini).
-    - Check with Dene and agree on, e.g. 10 sites, and compare time series data
-    for each variable, both with and without removal of invalid measurements
-    using default qa flags specified in attr. DEFAULT_FLAGS_INVALID.
-    - Investigate data from a few sites that is also available in EBAS database
-    and compare timeseries.
-    - Write a few tests (e.g. mean value at site X, variable Y for a certain
-    time interval)
-    - We need a strategy how to handle caching of `UngriddedData` instances
-    in :class:`ReadUngridded` for different combinations of QA flags (since
-    they are evaluated during reading).
-
-    Information about data quality(Email from D. Bowdalo 2.3.2020)
+    Information about data quality (Email from D. Bowdalo 2.3.2020)
     --------------------------------------------------------------
     Inside is hourly and daily resolution data for O3, NO, NO2, CO, SO2, PM2.5
     and PM10 for 2018 and 2019.
@@ -115,12 +121,17 @@ class ReadGhost(ReadUngriddedBase):
     lot of the 2019 E2a data is flagged by EEA as preliminary, and therefore
     flagged by my processing accordingly.
     """
-    __version__ = '0.0.12'
+
+    #: version of the reader
+    __version__ = '0.0.13'
 
     _FILEMASK = '*.nc'
 
+    #: Default data ID
     DATA_ID = 'GHOST.EEA.daily'
 
+
+    #: IDs of supported datasets
     SUPPORTED_DATASETS = ['GHOST.EEA.monthly',
                           'GHOST.EEA.hourly',
                           'GHOST.EEA.daily',
@@ -128,26 +139,23 @@ class ReadGhost(ReadUngriddedBase):
                           'GHOST.EBAS.hourly',
                           'GHOST.EBAS.daily',]
 
+    #: sampling frequencies of supported datasets
     TS_TYPES = {'GHOST.EEA.monthly'   : 'monthly',
-                'GHOST.EEA.hourly'   : 'hourly',
-                'GHOST.EEA.daily'    : 'daily',
-                'GHOST.EBAS.monthly'   : 'monthly',
+                'GHOST.EEA.hourly'    : 'hourly',
+                'GHOST.EEA.daily'     : 'daily',
+                'GHOST.EBAS.monthly'  : 'monthly',
                 'GHOST.EBAS.hourly'   : 'hourly',
                 'GHOST.EBAS.daily'    : 'daily'}
 
+    #: List of GHOST metadata keys
     META_KEYS = GHOST_META_KEYS
 
+    #: Names of flag variables in GHOST NetCDF files
     FLAG_VARS = ['flag', 'qa']
 
+    #:
     FLAG_DIMNAMES = {'qa'   : 'N_qa_codes',
                      'flag' : 'N_flag_codes'}
-
-    #: these need to be output variables in AeroCom convention (cf. file
-    #: pyaerocom/data/variables.ini). See also :attr:`VARNAMES_DATA` for a
-    #: mapping of variable names used in GHOST
-    VARS_TO_READ = ['concpm10','concpm10al', 'concpm10as', 'concpm25','concpm1',
-                    'conccl', 'concso4','vmrco', 'vmrno',
-                    'vmrno2', 'vmro3', 'vmrso2',]
 
     #: dictionary mapping GHOST variable names to AeroCom variable names
     VARNAMES_DATA = {'concpm10'  : 'pm10',
@@ -162,6 +170,8 @@ class ReadGhost(ReadUngriddedBase):
                      'vmrno2'    : 'sconcno2',
                      'vmro3'     : 'sconco3',
                      'vmrso2'    : 'sconcso2',
+                     'concno3'   : 'sconcno3',
+                     'concnh4'   : 'sconcnh4'
                      }
 
     AUX_REQUIRES = {'concco'    :  ['vmrco'],
@@ -183,7 +193,7 @@ class ReadGhost(ReadUngriddedBase):
 
     # This is the default list of flags that mark bad / invalid data, as
     # provided by Dene: [0, 1, 2, 3, 6, 20, 21, 22, 72, 75, 82, 83, 90, 91,
-    #92, 105, 110, 111, 112, 113, 115, 132, 133]
+    #92, 105 (removed), 110, 111, 112, 113, 115, 132, 133]
 
     #: Default flags used to invalidate data points (these may be either from
     #: provided flag or qa variable, or both, currently only from qa variable)
@@ -198,7 +208,7 @@ class ReadGhost(ReadUngriddedBase):
         """
         list of variable names that can be retrieved through this interface
         """
-        return self.VARS_TO_READ + list(self.AUX_FUNS)
+        return list(self.VARNAMES_DATA) + list(self.AUX_FUNS)
 
     @property
     def DEFAULT_VARS(self):
@@ -226,10 +236,7 @@ class ReadGhost(ReadUngriddedBase):
         try:
             return self.TS_TYPES[self.data_id]
         except KeyError:
-            try:
-                return self._ts_type_from_data_id()
-            except:
-                return 'undefined'
+            return self._ts_type_from_DATASET_PATH()
 
     def get_file_list(self, vars_to_read=None, pattern=None):
         """
@@ -271,8 +278,7 @@ class ReadGhost(ReadUngriddedBase):
             _dir = os.path.join(self.DATASET_PATH, var)
             _files = glob.glob('{}/{}'.format(_dir, pattern))
             if len(_files) == 0:
-                raise ValueError('Could not find any data files for '
-                                 'variable {}'.format(var))
+                raise DataSourceError(f'Could not find any data files for {var}')
             files.extend(_files)
 
         self.files = sorted(files)
@@ -312,13 +318,13 @@ class ReadGhost(ReadUngriddedBase):
             return True
         return False
 
-    def _ts_type_from_data_id(self):
-        if '.' in self.data_id:
-            ts_type = self.data_id.split('.')[-1]
-            if ts_type in TS_TYPES:
-                self.TS_TYPES[self.data_id] = ts_type
-                return ts_type
-        raise AttributeError('Failed to retrieve ts_type from data_id')
+    def _ts_type_from_DATASET_PATH(self):
+        try:
+            freq = str(TsType(os.path.basename(self.DATASET_PATH)))
+        except Exception as e:
+            freq = 'undefined'
+        self.TS_TYPES[self.data_id] = freq
+        return freq
 
     def _eval_flags(self, vardata, invalidate_flags, ds):
         valid = np.ones_like(vardata).astype(bool)
@@ -453,6 +459,28 @@ class ReadGhost(ReadUngriddedBase):
         return statlist_from_file
 
     def compute_additional_vars(self, statlist_from_file, vars_to_compute):
+        """
+        Compute additional variables for all sites
+
+        Parameters
+        ----------
+        statlist_from_file : list
+            list of :class:`StationData` objects containing variable data that
+            can be read from the data files.
+        vars_to_compute : list
+            list of variables to be computed from the variables contained in
+            `statlist_from_file`.
+
+        Returns
+        -------
+        statlist_from_file : list
+            list of modified :class:`StationData` objects, containing computed
+            variables in addition to the data that was contained in them
+            initially
+        vars_added : list
+            list of variables that could be successfully added
+
+        """
         vars_added = []
         for var in vars_to_compute:
             first_stat = statlist_from_file[0]
@@ -475,21 +503,21 @@ class ReadGhost(ReadUngriddedBase):
 
     def read(self, vars_to_retrieve=None, files=None, first_file=None,
              last_file=None, pattern=None, check_time=True, **kwargs):
-        """Read data files into `UngriddedData` object
+        """Read data files into :class:`UngriddedData` object
 
         Parameters
         ----------
-        vars_to_retrieve : :obj:`list` or similar, optional,
-            list containing variable IDs that are supposed to be read. If None,
-            all variables in :attr:`PROVIDES_VARIABLES` are loaded
-        files : :obj:`list`, optional
+        vars_to_retrieve : list, optional
+            list containing variables that are supposed to be read. If None,
+            :attr:`DEFAULT_VARS` is used.
+        files : list, optional
             list of files to be read. If None, then the file list is used that
             is returned on :func:`get_file_list`.
-        first_file : :obj:`int`, optional
-            index of first file in file list to read. If None, the very first
+        first_file : int, optional
+            index of first file in file list to read. If None, the first
             file in the list is used
-        last_file : :obj:`int`, optional
-            index of last file in list to read. If None, the very last file
+        last_file : int, optional
+            index of last file in list to read. If None, the last file
             in the list is used
          file_pattern : str, optional
             string pattern for file search (cf :func:`get_file_list`)
@@ -634,6 +662,11 @@ class ReadGhost(ReadUngriddedBase):
 
 if __name__ == '__main__':
     import pyaerocom as pya
+    OBS_BASEDIR = '/home/jonasg/MyPyaerocom/data/obsdata'
 
-    var = ['vmro3', 'vmrno2']
-    obs = ReadGhost('GHOST.EBAS.daily').read(var)
+
+    # make sure it works also on lustre
+    GHOST_EBAS_DAILY_LOCAL =  os.path.join(OBS_BASEDIR, 'GHOST/data/EBAS/daily')
+    GHOST_EEA_DAILY_LOCAL = os.path.join(OBS_BASEDIR, 'GHOST/data/EEA_AQ_eReporting/daily')
+
+    obs = ReadGhost('GHOST.EBAS.daily', GHOST_EBAS_DAILY_LOCAL).read('concno')

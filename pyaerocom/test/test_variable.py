@@ -35,13 +35,13 @@ def test_get_emep_variables():
     assert variables['conco3'] == 'SURF_ug_O3'
 
 def test_VarCollection_add_var():
-    var = Variable(var_name='concpmgt25',
+    var = Variable(var_name='concpmgt10',
                    units='ug m-3',
-                   long_name='PM mass greater than 2.5 um')
+                   long_name='PM mass greater than 10 um')
 
     const.VARS.add_var(var)
-    assert 'concpmgt25' in const.VARS
-    var1 = const.VARS['concpmgt25']
+    assert 'concpmgt10' in const.VARS
+    var1 = const.VARS['concpmgt10']
     assert var1.var_name == var.var_name
     assert var1.var_name_aerocom == var.var_name_aerocom
     assert var1.units == var.units

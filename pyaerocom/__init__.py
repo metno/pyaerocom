@@ -22,7 +22,6 @@ from . import ungriddeddata
 from . import colocation
 from . import io
 from . import plot
-from . import interactive
 from . import web
 from . import scripts
 from . import var_groups

@@ -60,6 +60,7 @@ UCONV_MUL_FACS = pd.DataFrame([
     ['concoc'   , 'ug C/m3'     , 'ug m-3', 1.0],
     ['conctc'   , 'ug C/m3'     , 'ug m-3', 1.0],
     ['concno3'  , 'ug N/m3'     , 'ug m-3', M_NO3 / M_N],
+    ['concnh4'  , 'ug N/m3'     , 'ug m-3', M_NH4 / M_N],
     ['wetso4'   , 'kg S/ha'     , 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
     ['concso4pr', 'mg S/L'      , 'g m-3' , M_SO4 / M_S] # 1mg/L = 1g/m3
 
@@ -86,11 +87,13 @@ UALIASES = {
     'mgS/m**2/h'    : 'mg S m-2 h-1',
     'mgSm-2h-1'     : 'mg S m-2 h-1',
     'mgSm**-2h-1'   : 'mg S m-2 h-1',
+    'mgS/m2/d'      : 'mg S m-2 d-1',
     ## nitrogen species
     'mgN/m2/h'      : 'mg N m-2 h-1',
     'mgN/m**2/h'    : 'mg N m-2 h-1',
     'mgNm-2h-1'     : 'mg N m-2 h-1',
     'mgNm**-2h-1'   : 'mg N m-2 h-1',
+    'mgN/m2/d'      : 'mg N m-2 d-1',
     ## others
     'MM/H'          : 'mm h-1',
     # others

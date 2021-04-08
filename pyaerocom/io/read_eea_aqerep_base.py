@@ -471,9 +471,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             string with the internal station key
         """
         ret_data = {}
-        ret_data['latitude'] = np.float(self._metadata[meta_key][self.LATITUDENAME])
-        ret_data['longitude'] = np.float(self._metadata[meta_key][self.LONGITUDENAME])
-        ret_data['altitude'] = np.float(self._metadata[meta_key][self.ALTITUDENAME])
+        ret_data['latitude'] = float(self._metadata[meta_key][self.LATITUDENAME])
+        ret_data['longitude'] = float(self._metadata[meta_key][self.LONGITUDENAME])
+        ret_data['altitude'] = float(self._metadata[meta_key][self.ALTITUDENAME])
         return ret_data
 
     def read(self, vars_to_retrieve=None,

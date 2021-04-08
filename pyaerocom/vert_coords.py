@@ -14,12 +14,10 @@ UNDER DEVELOPMENT -> NOT READY YET
 """
 
 from pyaerocom import const
-from pyaerocom.exceptions import (CoordinateNameError, CoordinateError,
+from pyaerocom.exceptions import (CoordinateNameError,
                                   VariableNotFoundError,
                                   VariableDefinitionError,
-                                  AltitudeAccessError,
                                   DataDimensionError)
-from pyaerocom.helpers import get_standard_unit
 
 def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
     """Convert atmosphere sigma coordinate to pressure in Pa

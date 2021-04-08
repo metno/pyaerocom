@@ -22,7 +22,8 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
 
 from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_DAILY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_MONTHLY)
+                                 HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
+                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY)
 from pyaerocom.web.helpers_evaluation_iface import (
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
@@ -220,6 +221,7 @@ class AerocomEvaluation(object):
         self.only_json = False
 
         self.weighted_stats=False
+        self.annual_stats_constrained=False
 
         #: Base directory for output
         self.out_basedir = None
@@ -264,7 +266,6 @@ class AerocomEvaluation(object):
         self.var_order_menu = []
 
         self.regions_how = 'default'
-        self.region_groups = {}
         self.resample_how = None
 
         self.zeros_to_nan = False
@@ -497,9 +498,7 @@ class AerocomEvaluation(object):
         for k, v in settings.items():
             self[k] = v
         self.check_config()
-        self.init_dirs()
         self.update_summary_str()
-        #self._update_custom_read_methods()
 
     def _set_obsconfig(self, val):
         cfg = {}
@@ -585,11 +584,11 @@ class AerocomEvaluation(object):
             raise AttributeError(f'exp_descr must be specified, '
                                  f'(current value: {self.exp_descr})')
 
-        elif not len(self.exp_descr.split()) > 10:
+        elif not len(self.exp_descr.split()) > 5:
             const.print_log.warning(
-                'Experiment description (attr. exp_descr) is either missing or '
-                'rather short (less than 10 words). Consider providing more '
-                'information here! Current: {self.exp_descr}'
+                f'Experiment description (attr. exp_descr) is either missing or '
+                f'rather short (less than 5 words). Consider providing more '
+                f'information here! Current: {self.exp_descr}'
                 )
 
         if not isinstance(self.exp_status, str):
@@ -722,21 +721,22 @@ class AerocomEvaluation(object):
         if not isinstance(diurnal_only,bool):
             raise ValueError(f'Need Boolean diurnal_only for {obs_name}, got {type(diurnal_only)}')
         ts_type = colocated_data.ts_type
-        if diurnal_only and ts_type != 'hourly':
-            raise NotImplementedError(f'diurnal processing is only available for ColocatedData with ts_type=hourly. Got diurnal_only={diurnal_only} for {obs_name} with ts_type {ts_type}')
+        try:
+            if diurnal_only and ts_type != 'hourly':
+                raise NotImplementedError
+        except:
+            print(f'Diurnal processing is only available for ColocatedData with ts_type=hourly. Got diurnal_only={diurnal_only} for {obs_name} with ts_type {ts_type}.')
         return diurnal_only
 
     def compute_json_files_from_colocateddata(self, coldata, obs_name,
                                               model_name):
         """Creates all json files for one ColocatedData object"""
-        vert_code = self.get_vert_code(obs_name, coldata.meta['var_name'][0])
+        vert_code = self.get_vert_code(obs_name, coldata.metadata['var_name'][0])
         try:
             web_iface_name = self.obs_config[obs_name]['web_interface_name']
         except:
             web_iface_name = obs_name
         diurnal_only = self.get_diurnal_only(obs_name,coldata)
-        if len(self.region_groups) > 0:
-            raise NotImplementedError('Filtering of grouped regions is not ready yet...')
 
         col = Colocator()
         col.update(**self.colocation_settings)
@@ -748,15 +748,17 @@ class AerocomEvaluation(object):
                 obs_name=obs_name,
                 model_name=model_name,
                 use_weights=self.weighted_stats,
-                vert_code=vert_code,
                 colocation_settings=col,
+                vert_code=vert_code,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
-                regions_how=self.regions_how,
                 web_iface_name=web_iface_name,
                 diurnal_only=diurnal_only,
-                zeros_to_nan=self.zeros_to_nan)
-                #region_groups=self.region_groups)
+                regions_how=self.regions_how,
+                zeros_to_nan=self.zeros_to_nan,
+                annual_stats_constrained=self.annual_stats_constrained
+                )
+
 
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
@@ -769,7 +771,8 @@ class AerocomEvaluation(object):
     def _heatmap_files(self):
 
         return dict(daily=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_DAILY),
-                    monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY))
+                    monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY),
+                    yearly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_YEARLY))
 
     def update_heatmap_json(self):
         """
@@ -1244,7 +1247,7 @@ class AerocomEvaluation(object):
         for fp in coldata_files:
             data = ColocatedData(fp)
             if data.ts_type != to_freq:
-                meta = data.meta
+                meta = data.metadata
                 try:
                     rshow = meta['resample_how']
                 except KeyError:
@@ -1263,8 +1266,7 @@ class AerocomEvaluation(object):
             arr['data_source'] = source_new #obs, model_id
             arr.attrs['data_source'] = source_new
             darrs.append(arr)
-        if not len(darrs) > 1:
-            raise ValueError('FATAL... please debug')
+
         merged = xr.concat(darrs, dim='station_name')
         coldata = ColocatedData(merged)
         return compute_json_files_from_colocateddata(
@@ -1272,13 +1274,15 @@ class AerocomEvaluation(object):
                 obs_name=superobs_name,
                 model_name=model_name,
                 use_weights=self.weighted_stats,
-                vert_code=vert_code,
                 colocation_settings=coldata.get_time_resampling_settings(),
+                vert_code=vert_code,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
-                regions_how=self.regions_how,
                 web_iface_name=superobs_name,
-                diurnal_only=False
+                diurnal_only=False,
+                regions_how=self.regions_how,
+                zeros_to_nan=self.zeros_to_nan,
+                annual_stats_constrained=self.annual_stats_constrained
                 )
 
     def _run_superobs_entry(self, model_name, superobs_name, var_name=None,
@@ -1512,7 +1516,7 @@ class AerocomEvaluation(object):
         if only_maps is not None:
             self.only_maps = only_maps
 
-        #self.iface_names = self._check_and_get_iface_names()
+        self.init_dirs()
         if self.clear_existing_json:
             self.clean_json_files()
 
@@ -1581,7 +1585,6 @@ class AerocomEvaluation(object):
                                                    colocator=col)
 
         if update_interface:
-            #self.clean_json_files()
             self.update_interface()
         const.print_log.info('Finished processing.')
         return res

@@ -12,14 +12,8 @@ import pandas as pd
 from collections import OrderedDict as od
 from datetime import datetime
 from pyaerocom._lowlevel_helpers import str_underline, dict_to_str
-from pyaerocom.exceptions import TimeZoneError
+from pyaerocom.exceptions import (TimeZoneError, NasaAmesReadError)
 from pyaerocom import const
-
-class NasaAmesReadError(IOError):
-    pass
-
-class NasaAmesVariableError(AttributeError):
-    pass
 
 class EbasColDef(dict):
     """Dict-like object for EBAS NASA Ames column definitions
@@ -95,30 +89,14 @@ class EbasColDef(dict):
     def __setattr__(self, key, val):
         self[key] = val
 
-    def to_str(self):
-        s = '{}_{}'.format(self.name, self.unit)
-        if 'wavelength' in self:
-            s += '_{}nm'.format(self.get_wavelength_nm())
-        if 'matrix' in self:
-            s += '_{}'.format(self.matrix)
-        if 'statistics' in self:
-            s += '_{}'.format(self.statistics)
-        if 'data_level' in self:
-            s += '_L{}'.format(self.data_level)
-        return s
-
     def __repr__(self):
-        s = "{}: ".format(type(self).__name__)
-        for k, v in self.items():
-            s += "{}={}, ".format(k, v)
-        return s
+        return str(self)
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "{}\n{}\n".format(head, len(head)*"-")
-        for k, v in self.items():
-            s += "{}: {}\n".format(k, v)
-        return s
+        colattrs = ''
+        for key, val in self.items():
+            colattrs += f'{key}: {val}, '
+        return colattrs[:-2]
 
 def _readline_ref_and_revision(line):
     spl = line.strip().split()
@@ -223,10 +201,7 @@ class NasaAmesHeader(object):
 
     def update(self, **kwargs):
         for k, v in kwargs.items():
-            try:
-                self[k] = v
-            except Exception:
-                const.logger.warning("Invalid attribute: {}".format(k))
+            self[k] = v
 
     def __getattr__(self, key):
         if key in self._head_fix:
@@ -264,19 +239,11 @@ class EbasFlagCol(object):
 
     Attributes
     ----------
-    info : EbasColDef
-        EBAS column definition information for flag column (from file header)
     raw_data : ndarray
         raw flag column (containing X-digit floating point numbers)
 
     """
-    #from pyaerocom import const
-    #_FLAG_INFO = const.EBAS_FLAG_INFO
-    def __init__(self, raw_data, info, interpret_on_init=True):
-        if not raw_data.ndim == 1:
-            raise AttributeError("Need one dimensional numpy array for flag "
-                                 "column")
-        self.info = info
+    def __init__(self, raw_data, interpret_on_init=True):
         self.raw_data = raw_data
 
         self._decoded = None
@@ -443,10 +410,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
         if not self.timezone.lower() == "utc":
             raise TimeZoneError("Timezones other than UTC are not yet supported")
         return self.ref_date
-# =============================================================================
-#         return np.datetime64(datetime.strptime(self.startdate, "%Y%m%d%H%M%S"),
-#                              's')
-# =============================================================================
 
     @property
     def time_unit(self):
@@ -474,198 +437,27 @@ class EbasNasaAmesFile(NasaAmesHeader):
         totnum = len(num_arr)
         if totnum == 0:
             raise AttributeError("No data available in file")
-# =============================================================================
-#         elif totnum == 1:
-#             num_arr = np.asarray([num_arr])
-# =============================================================================
         return basedate + (num_arr * mulfac_to_sec).astype("timedelta64[s]")
 
-    def get_colnames_unique(self):
-        """Create a list of unique column names"""
-        names = []
-        for i, colinfo in enumerate(self.var_defs):
-            s = colinfo.to_str()
-            if not s in names:
-                names.append(s)
-            else:
-                s += '(Col{})'.format(i)
-                names.append(s)
-        return names
-
-    def _find_col_matches(self, var_name=None, wavelength_nm=None,
-                          statistics=None, data_level=None,  **kwargs):
-        """Find indices of columns that match input constraints
+    def all_cols_contain(self, colnums, what):
+        """
+        Check if all input columns contain input attr `what`
 
         Parameters
         ----------
-        var_name : :obj:`str`, optional
-            EBAS variable name (e.g. aerosol_light_scattering_coefficient).
-            If specified, only columns corresponding to this variable name
-            will be extracted into the dataframe
-        wavelength_nm : :obj:`int`, :obj:`tuple`, optional
-            wavelength (or wavelength range -> list or tuple input) in nm. If
-            specified, only columns containing wavelength dependent data as
-            specified are extracted and put into the Dataframe
-        statistics : :obj:`str`, optional
-            specify column statistics (e.g. arithmetic mean)
-        data_level : float
-            data level of column
+        colnums : list
+            list of column numbers
+        what : str
+            name of attribute (e.g. `matrix`, `statistics`,
+            `tower_inlet_height`)
+
+        Returns
+        -------
+        bool
+            True if all input columns contain `what` attr., else False.
 
         """
-        try: #statistics is defined globally
-            stats_glob = self.statistics
-        except Exception: #statistics is not defined globally
-            stats_glob = None
-
-        if isinstance(wavelength_nm, str):
-            raise ValueError("Wavelength needs to be integer or float or range"
-                             "(i.e. 2-element tuple or list)")
-
-        try:
-            if not len(wavelength_nm) == 2:
-                raise Exception
-            wvl_rng = True
-        except Exception:
-            wvl_rng = False
-
-        if statistics is not None:
-            if isinstance(statistics, str): # input for statistics is string, else ...
-                stats_str = True
-            else: # ... input for statistics is assumed to be tuple or list of strings
-                stats_str = False
-        if data_level is not None:
-            try:
-                data_level_glob = float(self.data_level)
-                if not data_level_glob:
-                    raise Exception #is undefined
-            except Exception:
-                data_level_glob = None
-        cols = []
-        for i, colinfo in enumerate(self.var_defs):
-            if var_name is not None and not colinfo.name == var_name:
-                continue
-            if wavelength_nm is not None:
-                try: #column contains wavalength information
-                    wvl = colinfo.get_wavelength_nm()
-                    if wvl_rng:
-                        if not wavelength_nm[0] <= wvl <= wavelength_nm[1]:
-                            continue
-                    else:
-                        if not wvl == wavelength_nm:
-                            continue
-                except Exception: #column does not contain wavelength information (skip)
-                    continue
-            if statistics is not None:
-                if 'statistics' in colinfo:
-                    col_stats = colinfo['statistics']
-                else:
-                    col_stats = stats_glob
-                if col_stats is None: # no statistics info available for column
-                    continue
-                if stats_str and not col_stats == statistics:
-                    continue
-                elif not col_stats in statistics:
-                    continue
-            if data_level is not None:
-                if 'data_level' in colinfo:
-                    col_lev = float(colinfo.data_level)
-                else:
-                    col_lev = data_level_glob
-                if col_lev is None:
-                    continue
-                if not col_lev == data_level:
-                    continue
-            cols.append(i)
-        return cols
-
-    def _find_col(self, var_name, statistics='arithmetic mean', **kwargs):
-        idx = self._find_col_matches(var_name, statistics=statistics,
-                                     **kwargs)
-        #cols = self.get_colnames_unique()
-        if len(idx) == 0:
-            raise ValueError('No matches could be found for input specs')
-        elif len(idx) > 1:
-
-            msg = ('Multiple matches found for input variable, please specify '
-                   'further constraints. The following column matches were '
-                   'found:\n')
-            for _idx in idx:
-                msg += '{}\n'.format(self.var_defs[_idx])
-
-            raise ValueError(msg)
-        return idx[0]
-
-    def to_dataframe(self, var_name=None, wavelength_nm=None,
-                     statistics=None):
-        """Convert table to dataframe
-
-        Parameters
-        ----------
-        var_name : :obj:`str`, optional
-            EBAS variable name (e.g. aerosol_light_scattering_coefficient).
-            If specified, only columns corresponding to this variable name
-            will be extracted into the dataframe
-        wavelength_nm : :obj:`int`, :obj:`tuple`, optional
-            wavelength (or wavelength range -> list or tuple input) in nm. If
-            specified, only columns containing wavelength dependent data as
-            specified are extracted and put into the Dataframe
-        statistics : :obj:`str`, optional
-            specify column statistics (e.g. arithmetic mean)
-
-        """
-        cols = self.get_colnames_unique()
-        if all([x == None for x in (var_name, wavelength_nm, statistics)]):
-            return pd.DataFrame(data=self.data,
-                                index=self.time_stamps,
-                                columns=cols)
-        else:
-            matches = self._find_col_matches(var_name, wavelength_nm,
-                                             statistics)
-            if len(matches) == 0:
-                raise ValueError('No column matches could be found for input '
-                                 'specs')
-            _cols = []
-            for idx in matches:
-                _cols.append(cols[idx])
-            return pd.DataFrame(data=self.data[:, matches],
-                                index=self.time_stamps,
-                                columns=_cols)
-
-    def plot_var(self, var_name, statistics='arithmetic mean', ax=None,
-                 style=None, **kwargs):
-        """Plot time series of one column
-
-        If percentiles are available, they will be plotted as shaded area
-
-        Parameters
-        ----------
-        var_name : str
-            EBAS variable name
-        statistics : str
-            statistics specifications
-        """
-        idx = self._find_col(var_name, statistics='arithmetic mean', **kwargs)
-        colinfo = self.var_defs[idx]
-        try :
-            idx_err_low = self._find_col(var_name,
-                                         statistics=self.ERR_LOW_STATS,
-                                         **kwargs)
-            idx_err_high = self._find_col(var_name,
-                                          statistics=self.ERR_HIGH_STATS,
-                                          **kwargs)
-        except Exception:
-            idx_err_high, idx_err_low = None, None
-            print('Could not find percentile columns')
-
-        s = pd.Series(self.data[:, idx], self.time_stamps)
-        if s.isnull().all():
-            raise ValueError('All values are NaN in column {} are NaN'.format(repr(colinfo)))
-
-        if ax is None:
-            import matplotlib.pyplot as plt
-            fig, ax = plt.subplots()
-        s.plot(style=style, ax=ax)
-        return ax
+        return all([what in self.var_defs[col] for col in colnums])
 
     def assign_flagcols(self):
         _prev = 0
@@ -682,23 +474,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
             if item.is_flag:
                 data = self.data[:, idx]
                 flag = EbasFlagCol(raw_data=data,
-                                   info=item,
                                    interpret_on_init=evaluate)
                 self.flag_col_info[idx] = flag
-
-    def _set_invalid_flags_nan_col(self, colnum):
-        raise NotImplementedError
-        info = self.var_defs[colnum]
-        flag_col = info.flag_col
-        if flag_col is None:
-            raise ValueError('No flag column is assigned to data column {}\n{}'
-                             .format(colnum, info))
-
-    def set_invalid_flags_nan(self, colnum=None):
-        """Use flag column information to identify and remove invalid measurements"""
-        if len(self.flag_col_info) == 0:
-            self.init_flags()
-        raise NotImplementedError
 
     def compute_time_stamps(self):
         """Compute time stamps from first two data columns"""
@@ -714,9 +491,9 @@ class EbasNasaAmesFile(NasaAmesHeader):
         start = self.numarr_to_datetime64(offs, self.data[:,0], mulfac)
         stop = self.numarr_to_datetime64(offs, self.data[:,1], mulfac)
 
-
+        dt = stop - start
         # mid timestamps
-        self.time_stamps = start + (stop - start)*.5
+        self.time_stamps = start + dt*.5
         self.start_meas = start
         self.stop_meas = stop
 
@@ -817,20 +594,16 @@ class EbasNasaAmesFile(NasaAmesHeader):
         END_VAR_DEF = np.nan #will be set (info stored in header)
         IN_DATA = False
         data = []
-        _insert_invalid = None
         self.file = nasa_ames_file
         for line in open(nasa_ames_file):
-            #print(lc, _NUM_FIXLINES, line)
             if IN_DATA: #in data block (end of file)
-                if dc == 0:
-                    const.logger.debug(line)
                 try:
                     data.append(tuple([float(x.strip()) for x in line.strip().split()]))
                     #data.append([float(x.strip()) for x in line.strip().split()])
                 except Exception as e:
-                    data.append(_insert_invalid)
-                    const.logger.warning("Failed to read data row {}. "
-                                   "Error msg: {}".format(dc, repr(e)))
+                    const.print_log.warning(
+                        f"EbasNasaAmesFile: Failed to read data row {dc}. "
+                        f"Reason: {e}")
                 dc += 1
             elif lc < self._NUM_FIXLINES: #in header section (before column definitions)
                 try:
@@ -876,9 +649,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     if only_head:
                         return
                     const.logger.debug("REACHED DATA BLOCK")
-                    _insert_invalid = tuple([np.nan]*self.col_num)
-
-                #elif lc > self._NUM_FIXLINES + 3:
                 elif lc >= END_VAR_DEF + 2:
                     try:
                         name, val = line.split(":")
@@ -969,22 +739,3 @@ class EbasNasaAmesFile(NasaAmesHeader):
         s += "\n\n{}".format(str_underline("Data", indent=3))
         s += "\n{}".format(self._data_short_str())
         return s
-
-if __name__=="__main__":
-    DIR_MC = "/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EBASMultiColumn/data/data/"
-    FILES_MC = ['US0035R.20150826222034.20160117041718.nephelometer..pm10.5mn.1h.US06L_TSI_3563_BND_pm10.US06L_scat_coef.lev2.nas']
-
-    file_mc = os.path.join(DIR_MC, FILES_MC[0])
-
-    mc = EbasNasaAmesFile(file_mc)
-    print(mc)
-
-    #alert = EbasNasaAmesFile(DIR_MC + FILES_MC[1])
-    #print(alert)
-
-    #df = alert.to_dataframe()
-
-    #idx = alert._find_col_matches('aerosol_absorption_coefficient',
-    #                              statistics='arithmetic mean')
-
-    #alert.plot_var('aerosol_absorption_coefficient', data_level=2)

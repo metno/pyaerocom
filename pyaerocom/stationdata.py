@@ -755,10 +755,6 @@ class StationData(StationMetaData):
 
             from pyaerocom.helpers import get_lowest_resolution
             ts_type = get_lowest_resolution(ts_type, ts_type1)
-        from pyaerocom.tstype import TsType
-        _tt = TsType(ts_type)
-        if _tt.mulfac != 1:
-            ts_type = _tt.next_lower.val
         return ts_type
 
     def _update_var_timeinfo(self):
@@ -899,7 +895,6 @@ class StationData(StationMetaData):
         StationData
             this object that has merged the other station
         """
-        #self.merge_meta_same_station(other, **add_meta_keys)
         self.merge_vardata(other, var_name)
         self.merge_meta_same_station(other, add_meta_keys=add_meta_keys)
 
@@ -1662,7 +1657,7 @@ class StationData(StationMetaData):
             elif isinstance(v, pd.Series):
                 series += "\n{} (Series, {} items)".format(k, len(v))
             else:
-                if v == '':
+                if isinstance(v,str) and v == '':
                     v = '<empty_str>'
                 s += "\n{}: {}".format(k,v)
         if arrays:

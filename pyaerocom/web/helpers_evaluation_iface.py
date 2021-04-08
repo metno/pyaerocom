@@ -12,12 +12,15 @@ from pyaerocom._lowlevel_helpers import sort_dict_by_name
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import read_json, write_json
 from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_DAILY)
+                                 HEATMAP_FILENAME_EVAL_IFACE_DAILY,
+                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import DataDimensionError, TemporalResolutionError
+from pyaerocom.exceptions import (DataCoverageError,
+                                  DataDimensionError,
+                                  TemporalResolutionError)
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
@@ -29,7 +32,7 @@ def make_info_str_eval_setup(stp, add_header=True):
 
     Note
     ----
-    BETA feature, this might crash!!
+    UNDER DEVELOPMENT -> this might crash!!
 
     Parameters
     ----------
@@ -38,7 +41,7 @@ def make_info_str_eval_setup(stp, add_header=True):
 
     Returns
     -------
-    st : str
+    str
         Long string representation of the input configuration.
 
     """
@@ -100,7 +103,7 @@ def make_info_str_eval_setup(stp, add_header=True):
         else:
             freqinfo += '. '
 
-    except pya.exceptions.TemporalResolutionError:
+    except TemporalResolutionError:
         freqinfo = (
         'The analysis is performed in the highest available '
         'resolution. '
@@ -177,7 +180,8 @@ def get_all_config_files_evaluation_iface(config_dir):
     for file in glob.glob('{}/*.json'.format(config_dir)):
         spl = os.path.basename(file).split('_')
         if not len(spl) == 3 or not spl[0] =='cfg':
-            raise NameError('Invalid config file name ', file)
+            const.logger.warning('Invalid config file name ', file)
+            continue
         proj, exp = spl[1], spl[2].split('.')[0]
         if not proj in results:
             results[proj] = {}
@@ -186,6 +190,9 @@ def get_all_config_files_evaluation_iface(config_dir):
 
 def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     """Reorder experiment order in evaluation interface
+
+    Puts experiment list into order as specified by `exp_order`, all
+    remaining experiments are sorted alphabetically.
 
     Parameters
     ----------
@@ -197,8 +204,7 @@ def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     """
     current = read_json(menu_file)
     if exp_order is None:
-        # keep the way it is
-        exp_order = list(current.keys())
+        exp_order = []
     elif isinstance(exp_order, str):
         exp_order = [exp_order]
     if not isinstance(exp_order, list):
@@ -438,7 +444,7 @@ def make_info_table_evaluation_iface(config):
                         continue
 
                     coldata = ColocatedData(files[0])
-                    for k, v in coldata.meta.items():
+                    for k, v in coldata.metadata.items():
                         if not k in SKIP_META:
                             if isinstance(v, (list, tuple)):
                                 if len(v) == 2:
@@ -461,7 +467,7 @@ def get_json_mapname(obs_name, obs_var, model_name, model_var,
     return ('OBS-{}:{}_{}_MOD-{}:{}.json'
             .format(obs_name, obs_var, vert_code, model_name, model_var))
 
-def _write_stationdata_json(ts_data, out_dirs):
+def _write_stationdata_json(ts_data, out_dir):
     """
     This method writes time series data given in a dictionary to .json files
 
@@ -469,18 +475,12 @@ def _write_stationdata_json(ts_data, out_dirs):
     ----------
     ts_data : dict
         A dictionary containing all processed time series data.
-    out_dirs : list?
-        list of file paths for writing data to
-
-    Raises
-    ------
-    Exception
-        Raised if opening json file fails
+    out_dir : str or similar
+        output directory
 
     Returns
     -------
     None.
-
 
     """
     filename = get_stationfile_name(ts_data['station_name'],
@@ -488,14 +488,10 @@ def _write_stationdata_json(ts_data, out_dirs):
                                     ts_data['obs_var'],
                                     ts_data['vert_code'])
 
-    fp = os.path.join(out_dirs['ts'], filename)
+    fp = os.path.join(out_dir, filename)
     if os.path.exists(fp):
-        try:
-            with open(fp, 'r') as f:
-                current = simplejson.load(f)
-        except Exception as e:
-            raise Exception('Fatal: could not open existing json file: {}. '
-                            'Reason: {}'.format(fp, repr(e)))
+        with open(fp, 'r') as f:
+            current = simplejson.load(f)
     else:
         current = {}
     current[ts_data['model_name']] = ts_data
@@ -543,16 +539,12 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
 
-def add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
-                           model_name, model_var):
+def _add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
+                            model_name, model_var):
     fp = heatmap_file
     if os.path.exists(fp):
-        try:
-            with open(fp, 'r') as f:
-                current = simplejson.load(f)
-        except Exception as e:
-            raise Exception('Fatal: could not open existing json file: {}. '
-                            'Reason: {}'.format(fp, repr(e)))
+        with open(fp, 'r') as f:
+            current = simplejson.load(f)
     else:
         current = {}
     if not obs_var in current:
@@ -580,14 +572,6 @@ def _init_stats_dummy():
 
 def _check_flatten_latlon_dims(coldata):
     if not 'station_name' in coldata.data.coords:
-        if not coldata.data.ndim == 4:
-            raise DataDimensionError('Invalid number of dimensions. '
-                                     'Need 4, got: {}'
-                                     .format(coldata.data.dims))
-        elif not 'latitude' in coldata.data.dims and 'longitude' in coldata.data.dims:
-            raise DataDimensionError('Need latitude and longitude '
-                                     'dimension. Got {}'
-                                     .format(coldata.data.dims))
         coldata.data = coldata.data.stack(station_name=('latitude',
                                                         'longitude'))
     return coldata
@@ -620,6 +604,14 @@ def _prepare_aerocom_regions_json():
 def _prepare_htap_regions_json():
     return _prepare_regions_json_helper(HTAP_REGIONS_DEFAULT)
 
+def _prepare_country_regions(region_ids):
+    regs = {}
+    for regid in region_ids:
+        reg = Region(regid)
+        name = reg.name
+        regs[name] = reg
+    return regs
+
 def init_regions_web(coldata, regions_how):
     regborders, regs = {}, {}
     regborders_default, regs_default = _prepare_default_regions_json()
@@ -638,6 +630,8 @@ def init_regions_web(coldata, regions_how):
         regs['WORLD'] = regs_default['WORLD']
         coldata.check_set_countries(True)
         regborders.update(coldata.get_country_codes())
+        add_regs = _prepare_country_regions(coldata.get_country_codes().keys())
+        regs.update(add_regs)
     else:
         raise ValueError('Invalid input for regions_how', regions_how)
 
@@ -672,40 +666,8 @@ def update_regions_json(region_defs, regions_json):
     save_dict_json(current, regions_json)
     return current
 
-def _init_data_default_frequenciesOLD(coldata, colocation_settings):
-    ts_types_order = const.GRID_IO.TS_TYPES
-    to_ts_types = ['daily', 'monthly', 'yearly']
-
-    data_arrs = dict.fromkeys(to_ts_types)
-    jsdate = dict.fromkeys(to_ts_types)
-
-    ts_type = coldata.meta['ts_type']
-    for freq in to_ts_types:
-        if ts_types_order.index(freq) < ts_types_order.index(ts_type):
-            data_arrs[freq] = None
-        elif ts_types_order.index(freq) == ts_types_order.index(ts_type):
-            data_arrs[freq] = coldata.data
-
-            js = (coldata.data.time.values.astype('datetime64[s]') -
-                  np.datetime64('1970', '[s]')).astype(int) * 1000
-            jsdate[freq] = js.tolist()
-
-        else:
-            colstp = colocation_settings
-            _a = coldata.resample_time(to_ts_type=freq,
-                                 apply_constraints=colstp.apply_time_resampling_constraints,
-                                 min_num_obs=colstp.min_num_obs,
-                                 colocate_time=colstp.colocate_time,
-                                 inplace=False).data
-            data_arrs[freq] = _a #= resample_time_dataarray(arr, freq=freq)
-
-            js = (_a.time.values.astype('datetime64[s]') -
-                  np.datetime64('1970', '[s]')).astype(int) * 1000
-            jsdate[freq] = js.tolist()
-    return (data_arrs, jsdate)
-
 def _init_meta_glob(coldata, **kwargs):
-    meta = coldata.meta
+    meta = coldata.metadata
 
     # create metadata dictionary that is shared among all timeseries files
     meta_glob = {}
@@ -1101,51 +1063,93 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_data.update(meta_glob)
 
         for freq, cd in data.items():
+            jsfreq = jsdate[freq]
             if not isinstance(cd, ColocatedData):
                 continue
-            subset = cd.filter_region(regid,
-                                      inplace=False,
-                                      check_country_meta=check_countries)
+            try:
+                subset = cd.filter_region(regid,
+                                          inplace=False,
+                                          check_country_meta=check_countries)
+            except DataCoverageError:
+                const.print_log.info(
+                    f'no data in {regid} ({freq}) to compute regional '
+                    f'timeseries'
+                    )
+                ts_data[f'{freq}_date'] = jsfreq
+                ts_data[f'{freq}_obs'] = [np.nan] * len(jsfreq)
+                ts_data[f'{freq}_mod'] = [np.nan] * len(jsfreq)
+                continue
+
+
             if subset.has_latlon_dims:
                 avg = subset.data.mean(dim=('latitude', 'longitude'))
             else:
                 avg = subset.data.mean(dim='station_name')
             obs_vals = avg[0].data.tolist()
             mod_vals = avg[1].data.tolist()
-            ts_data['{}_date'.format(freq)] = jsdate[freq]
-            ts_data['{}_obs'.format(freq)] = obs_vals
-            ts_data['{}_mod'.format(freq)] = mod_vals
+            ts_data[f'{freq}_date'] = jsfreq
+            ts_data[f'{freq}_obs'] = obs_vals
+            ts_data[f'{freq}_mod'] = mod_vals
 
         ts_objs.append(ts_data)
     return ts_objs
 
+def _get_stats_region(data, freq, regid, use_weights, use_country,
+                      annual_stats_constrained):
+    coldata = data[freq]
+    filtered = coldata.filter_region(region_id=regid,
+                                     check_country_meta=use_country)
+
+    # if all model and obsdata is NaN, use dummy stats (this can
+    # e.g., be the case if colocate_time=True and all obs is NaN,
+    # or if model domain is not covered by the region)
+    if np.isnan(filtered.data.data).all():
+        # use stats_dummy
+        raise DataCoverageError(f'All data is NaN in {regid} ({freq})')
+
+    if annual_stats_constrained:
+
+        year = data['yearly']
+
+        filtered_yr = year.filter_region(
+            region_id=regid,
+            check_country_meta=use_country
+            )
+        stats_to_keep = filtered_yr.get_station_names_obs_notnan()
+        if len(stats_to_keep) == 0:
+            raise DataCoverageError(
+                f'No sites remaining in {regid} ({freq}) when applying annual '
+                f'coverage constraint.')
+
+        filtered.data = filtered.data.sel(station_name=stats_to_keep)
+
+    stats = filtered.calc_statistics(use_area_weights=use_weights)
+    for k, v in stats.items():
+        try:
+            stats[k] = np.float64(v) # for json encoder...
+        except Exception as e:
+            # value is str (e.g. for weighted stats)
+            # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
+            stats[k] = v
+    return stats
+
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob):
-    #----------------------------------------------------------------------
-    # ADD stats for whole period, individual years, and seasons,
-    #----------------------------------------------------------------------
-    hm_all = dict(zip(('daily', 'monthly'), ({},{})))
+                          meta_glob, annual_stats_constrained=False):
+
+    hm_all = dict(zip(('daily', 'monthly','yearly'), ({},{},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
         for regid, regname in region_ids.items():
-            if not freq in data or data[freq] == None:
-                hm_data[regname] = stats_dummy
+            if freq in data and data[freq] is not None:
+                try:
+                    stats = _get_stats_region(data, freq, regid, use_weights,
+                                              use_country, annual_stats_constrained)
+                except DataCoverageError as e:
+                    const.print_log.info(e)
+                    stats = stats_dummy
             else:
-                coldata = data[freq]
-
-                filtered = coldata.filter_region(region_id=regid,
-                                                 check_country_meta=use_country)
-
-                stats = filtered.calc_statistics(use_area_weights=use_weights)
-                for k, v in stats.items():
-                    try:
-                        stats[k] = np.float64(v) # for json encoder...
-                    except Exception as e:
-                        # value is str (e.g. for weighted stats)
-                        # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
-                        stats[k] = v
-
-                hm_data[regname] = stats
+                stats = stats_dummy
+            hm_data[regname] = stats
     return hm_all
 
 def _get_jsdate(coldata):
@@ -1206,7 +1210,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           web_iface_name,
                                           diurnal_only,
                                           regions_how=None,
-                                          zeros_to_nan=False):
+                                          zeros_to_nan=False,
+                                          annual_stats_constrained=False):
 
     """Creates all json files for one ColocatedData object
 
@@ -1214,6 +1219,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     ----
     Complete docstring
     """
+    # coldata = _hack_fix_dryvelo3(coldata)
+
     if vert_code == 'ModelLevel':
         raise NotImplementedError('Coming soon...')
 
@@ -1229,8 +1236,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         raise NotImplementedError('Cannot yet apply country filtering for '
                                   '4D colocated data instances')
     # init some stuff
-    obs_var = coldata.meta['var_name'][0]
-    model_var = coldata.meta['var_name'][1]
+    obs_var = coldata.metadata['var_name'][0]
+    model_var = coldata.metadata['var_name'][1]
 
     const.print_log.info(
         f'Computing json files for {model_name} ({model_var}) vs. '
@@ -1261,22 +1268,24 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     if not diurnal_only:
         # FIRST: process data for heatmap json file
         const.print_log.info('Processing heatmap data for all regions')
-        hm_all = _process_heatmap_data(data, regnames,
-                                       use_weights,
-                                       use_country=use_country,
-                                       meta_glob=meta_glob)
+        hm_all = _process_heatmap_data(
+            data, regnames, use_weights,
+            use_country=use_country,
+            meta_glob=meta_glob,
+            annual_stats_constrained=annual_stats_constrained
+            )
 
         for freq, hm_data in hm_all.items():
             if freq == 'daily':
                 fname = HEATMAP_FILENAME_EVAL_IFACE_DAILY
+            elif freq == 'yearly':
+                fname = HEATMAP_FILENAME_EVAL_IFACE_YEARLY
             else:
                 fname = HEATMAP_FILENAME_EVAL_IFACE_MONTHLY
 
             hm_file = os.path.join(out_dirs['hm'], fname)
-            #----------------------------------------------------------------------
-            # ADD stats for whole period, individual years, and seasons,
-            #----------------------------------------------------------------------
-            add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
+
+            _add_entry_heatmap_json(hm_file, hm_data, web_iface_name, obs_var,
                                     vert_code, model_name, model_var)
 
         const.print_log.info('Processing regional timeseries for all regions')
@@ -1288,7 +1297,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
         for ts_data in ts_objs_regional:
             #writes json file
-            _write_stationdata_json(ts_data, out_dirs)
+            _write_stationdata_json(ts_data, out_dirs['ts'])
 
         const.print_log.info('Processing individual site timeseries data')
         (map_data,
@@ -1313,20 +1322,21 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
         for ts_data in ts_objs:
             #writes json file
-            _write_stationdata_json(ts_data, out_dirs)
+            _write_stationdata_json(ts_data, out_dirs['ts'])
 
     if coldata.ts_type == 'hourly':
         const.print_log.info('Processing diurnal profiles')
         (ts_objs_weekly,
          ts_objs_weekly_reg) = _process_sites_weekly_ts(coldata, regions_how,
                                                         regnames, meta_glob)
+        outdir = os.path.join(out_dirs['ts'],'dw')
         for ts_data_weekly in ts_objs_weekly:
             #writes json file
-            _write_diurnal_week_stationdata_json(ts_data_weekly, out_dirs)
+            _write_stationdata_json(ts_data_weekly, outdir)
         if ts_objs_weekly_reg != None:
             for ts_data_weekly_reg in ts_objs_weekly_reg:
                 #writes json file
-                _write_diurnal_week_stationdata_json(ts_data_weekly_reg, out_dirs)
+                _write_stationdata_json(ts_data_weekly_reg, outdir)
 
     const.print_log.info(
         f'Finished computing json files for {model_name} ({model_var}) vs. '
@@ -1342,7 +1352,7 @@ if __name__ == '__main__':
 
     coldata = ColocatedData(colfile)
     out_dirs = stp.out_dirs
-    obs, mod = coldata.meta['data_source']
+    obs, mod = coldata.metadata['data_source']
 
     rgf = stp.regions_file
     compute_json_files_from_colocateddata(coldata, obs,

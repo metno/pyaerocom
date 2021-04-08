@@ -13,16 +13,14 @@ with open('VERSION.md') as f:
 setup(
     name        =   'pyaerocom',
     version     =   version,
-    author      =   'Jonas Gliss',
-    author_email=   'jonas.gliss@met.no',
-    url         =   'https://github.com/jgliss/pyaerocom.git',
+    author      =   'MET Norway',
+    url         =   'https://github.com/metno/pyaerocom.git',
     license     =   'GPLv3',
     package_dir =   {'pyaerocom'      :   'pyaerocom'},
     packages    =   ['pyaerocom',
                      'pyaerocom.io',
                      'pyaerocom.plot',
                      'pyaerocom.web',
-                     'pyaerocom.interactive',
                      'pyaerocom.web.cli',
                      'pyaerocom.test',
                      'pyaerocom.io.test',
@@ -56,8 +54,7 @@ setup(
     long_description_content_type='text/x-rst',
     entry_points = {'console_scripts' : [
             'pya=pyaerocom.scripts.cli:main',
-            'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main',
-            'pyaerotrends=pyaerocom.web.cli.main_trends_evaluation:main'
+            'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main'
             ]},
     zip_safe = False
 )
