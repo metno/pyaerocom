@@ -8,6 +8,13 @@ import simplejson
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import sort_dict_by_name
 
+from warnings import warn
+
+const.print_log.warning(DeprecationWarning(
+    'Module pyaerocom/web/helpers_trends_interface.py will be removed as of '
+    'release 0.12.0 which will incorporate trends computation in AeroVal '
+    'interface (via AerocomEvaluation class)'))
+
 def get_all_config_files_trends_iface(config_dir):
     """Get all configuration files of trends interface
 

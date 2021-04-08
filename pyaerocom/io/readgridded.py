@@ -32,7 +32,6 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
-from cf_units import Unit
 from collections import OrderedDict as od
 
 import fnmatch
@@ -52,289 +51,31 @@ from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          divide_cubes,
                                          subtract_cubes,
-                                         add_cubes)
+                                         add_cubes,
+                                         mmr_from_vmr,
+                                         rho_from_ts_ps,
+                                         conc_from_vmr,
+                                         conc_from_vmr_STP)
 
 from pyaerocom.helpers import (to_pandas_timestamp,
                                sort_ts_types,
                                get_highest_resolution,
-                               isnumeric,
-                               resample_time_dataarray)
+                               isnumeric)
 
-from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
                                   FileConventionError,
-                                  IllegalArgumentError,
                                   TemporalResolutionError,
-                                  UnitConversionError,
                                   VarNotAvailableError,
                                   VariableDefinitionError)
-from pyaerocom.time_config import SI_TO_TS_TYPE
 
 from pyaerocom.io.fileconventions import FileConventionRead
 from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
-
-WDEP_IMPLICIT_UNITS = [Unit('mg N m-2'), Unit('mg S m-2')]
-PR_IMPLICIT_UNITS = [Unit('mm')]
-
-DEP_TEST_UNIT = 'kg m-2 s-1'
-DEP_TEST_NONSI_ATOMS = ['N', 'S']
-
-def _check_unit(unit, test_unit, non_si_info=None):
-    if non_si_info is None:
-        non_si_info = []
-    try:
-        get_unit_conversion_fac(unit, DEP_TEST_UNIT)
-        return True
-    except UnitConversionError:
-        for substr in non_si_info:
-            if substr in unit:
-                check = unit.replace(substr, '')
-                return _check_unit(check, test_unit)
-    return False
-
-def check_wdep_units(gridded):
-
-    unit = Unit(gridded.units)
-    freq = TsType(gridded.ts_type)
-    freq_si = freq.to_si()
-
-    # check if unit is implicit and change if possible
-    if any([unit == x for x in WDEP_IMPLICIT_UNITS]):
-        unit = Unit(f'{unit} {freq_si}-1')
-        gridded.units = unit
-    else:
-        if not _check_unit(str(unit), DEP_TEST_UNIT, DEP_TEST_NONSI_ATOMS):
-            raise ValueError(f'Cannot handle wet deposition unit {unit}')
-
-    # Check if frequency in unit corresponds to sampling frequency (e.g.
-    # ug m-2 h-1 for hourly data).
-    freq_si_str = f'{freq_si}-1'
-    freq_si_str_alt = f'/{freq_si}'
-    if freq_si_str_alt in str(unit):
-        # make sure frequencey is denoted as e.g. m s-1 instead of m/s
-        unit = str(unit).replace(freq_si_str_alt,
-                                 freq_si_str)
-
-        gridded.units = unit
-
-    # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
-    # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
-    if not freq_si_str in str(unit):
-        raise NotImplementedError(f'Cannot yet handle wdep in {unit} but '
-                                  f'{freq} sampling frequency')
-    return gridded
-
-def check_pr_units(gridded):
-
-    unit = Unit(gridded.units)
-    freq = TsType(gridded.ts_type)
-    freq_si = freq.to_si()
-
-    # check if precip unit is implicit
-    if any([unit == x for x in PR_IMPLICIT_UNITS]):
-        unit = f'{unit} {freq_si}-1'
-        gridded.units = unit
-
-    # Check if frequency in unit corresponds to sampling frequency (e.g.
-    # ug m-2 h-1 for hourly data).
-    freq_si_str = f' {freq_si}-1'
-    freq_si_str_alt = f'/{freq_si}'
-    if freq_si_str_alt in str(unit):
-        # make sure frequencey is denoted as e.g. m s-1 instead of m/s
-        unit = str(unit).replace(freq_si_str_alt,
-                                 freq_si_str)
-
-        gridded.units = unit
-
-    # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
-    # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
-    if not freq_si_str in str(unit):
-        raise NotImplementedError(f'Cannot yet handle wdep in {unit} but '
-                                  f'{freq} sampling frequency')
-    return gridded
-
-def _check_prlim_units(prlim, prlim_units):
-    # ToDo: cumbersome for now, make it work first, then make it simpler...
-    if not prlim_units.endswith('-1'):
-        raise ValueError('Please specify prlim_unit as string ending with '
-                         '-1 (e.g. mm h-1) or similar')
-
-    spl = prlim_units.split()
-    if not len(spl) == 2:
-        raise ValueError('Invalid input for prlim_units (only one whitespace '
-                         'is allowed)')
-    # make sure to be in the correct length unit
-    mulfac = get_unit_conversion_fac(spl[0], 'm')
-    prlim *= mulfac
-
-    prlim_units = f'm {spl[1]}'
-    prlim_freq = spl[1][:-2] # it endswith -1
-    # convert the freque
-    if not prlim_freq in SI_TO_TS_TYPE:
-        raise ValueError(
-            f'frequency in prlim_units must be either of the '
-            f'following values: {list(SI_TO_TS_TYPE.keys())}.')
-
-    prlim_tstype = TsType(SI_TO_TS_TYPE[prlim_freq])
-    return (prlim, prlim_units, prlim_tstype)
-
-def _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit, prlim_set_under):
-    if prlim_unit is None:
-        raise ValueError(f'Please provide prlim_unit for prlim={prlim}')
-    elif prlim_set_under is None:
-        raise ValueError(f'Please provide prlim_set_under for prlim={prlim}')
-    elif not isnumeric(prlim_set_under):
-        raise ValueError(f'Please provide a numerical value or np.nan for '
-                         f'prlim_set_under, got {prlim_set_under}')
-
-    prmask = prarr.data < prlim
-    wdeparr.data[prmask] = prlim_set_under
-
-    return wdeparr, prmask
-
-def _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit, from_tstype,
-                       to_tstype):
-    to_tstype_pd = to_tstype.to_pandas_freq()
-    to_tstype_si = to_tstype.to_si()
-
-    from_tstype_si = from_tstype.to_si()
-
-    wdeparr = resample_time_dataarray(wdeparr,
-                                      to_tstype_pd,
-                                      how='sum')
-    wdep_unit = wdep_unit.replace(f'{from_tstype_si}-1',
-                                  f'{to_tstype_si}-1')
-    prarr = resample_time_dataarray(prarr,
-                                    to_tstype_pd,
-                                    how='sum')
-    pr_unit = pr_unit.replace(f'{from_tstype_si}-1',
-                              f'{to_tstype_si}-1')
-
-    return (wdeparr, prarr, wdep_unit, pr_unit)
-
-def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
-                                        prlim=None, prlim_units=None,
-                                        prlim_set_under=None):
-
-    if ts_type is None:
-        ts_type = wdep.ts_type
-
-    # get units from deposition input and precipitation; sometimes, they are
-    # defined implicit, e.g. mm for precipitation, which is then already
-    # accumulated over the provided time resolution in the data, that is, if
-    # the data is hourly and precip is in units of mm, then it means the the
-    # unit is mm/h. In addition, wet deposition units may be in mass of main
-    # atom (e.g. N, or S) which are not SI and thus, not handled properly by
-    # CF units.
-    wdep = check_wdep_units(wdep)
-    pr = check_pr_units(pr)
-
-    # get temporal resolution of wet deposition and convert to SI conform str
-    wdep_unit = str(wdep.units)
-    wdep_tstype = TsType(wdep.ts_type)
-
-    # repeat the unit check steps done for wet deposition
-    pr_unit = str(pr.units)
-    pr_tstype = TsType(pr.ts_type)
-
-    if not wdep_tstype == pr_tstype:
-        # ToDo: this can probably fixed via time resampling with how='sum'
-        # for the higher resolution dataset, but for this first draft, this
-        # is not allowed.
-        raise ValueError('Input precipitation and wetdeposition fields '
-                         'need to be in the same frequency...')
-
-    # assign input frequency (just for making the code better readable)
-    from_tstype = wdep_tstype
-    from_tstype_si = from_tstype.to_si()
-
-    # convert data objects to xarray to do modifications and computation of
-    # output variable
-    prarr = pr.to_xarray()
-    wdeparr = wdep.to_xarray()
-
-    # Make sure precip unit is correct for concprcp=wdep/pr
-    pr_unit_calc = f'm {from_tstype_si}-1'
-
-    # unit conversion factor for precip
-    mulfac_pr = get_unit_conversion_fac(pr_unit, pr_unit_calc)
-
-    if mulfac_pr != 1:
-        prarr *= mulfac_pr
-        pr_unit = pr_unit_calc
-
-    # Make sure wdep unit is correct for concprcp=wdep/pr
-    wdep_unit_check_calc = wdep_unit.replace('N', '').replace('S', '')
-    wdep_unit_calc = f'ug m-2 {from_tstype_si}-1'
-    mulfac_wdep = get_unit_conversion_fac(wdep_unit_check_calc, wdep_unit_calc)
-
-    if mulfac_wdep != 1:
-        wdeparr *= mulfac_wdep
-        if 'N' in wdep_unit:
-            wdep_unit_calc = wdep_unit_calc.replace('ug', 'ug N')
-        elif 'S' in wdep_unit:
-            wdep_unit_calc = wdep_unit_calc.replace('ug', 'ug S')
-        wdep_unit = wdep_unit_calc
-
-    # final output frequency (precip limit may be applied in higher resolution)
-    to_tstype = TsType(ts_type)
-    to_tstype_si = to_tstype.to_si()
-
-    # apply prlim filter if applicable
-    apply_prlim, prlim_applied = False, False
-    if prlim is not None:
-        apply_prlim = True
-
-        prlim, prlim_units, prlim_tstype=_check_prlim_units(prlim, prlim_units)
-
-        if prlim_tstype == from_tstype:
-            wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
-                                          prlim_set_under)
-            prlim_applied = True
-
-    if apply_prlim and not prlim_applied and prlim_tstype > to_tstype:
-        # intermediate frequency where precip filter should be applied
-        (wdeparr,
-         prarr,
-         wdep_unit,
-         pr_unit) = _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit,
-                                       from_tstype, prlim_tstype)
-
-        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
-                                      prlim_set_under)
-        prlim_applied = True
-        from_tstype = prlim_tstype
-
-    if not from_tstype == to_tstype:
-        (wdeparr,
-         prarr,
-         wdep_unit,
-         pr_unit) = _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit,
-                                       from_tstype, to_tstype)
-
-    if apply_prlim and not prlim_applied:
-        if not to_tstype == prlim_tstype:
-            raise ValueError('... ... .. ')
-        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr,
-                                      prlim, prlim_units,
-                                      prlim_set_under)
-
-    # set PR=0 to NaN (as we divide py PR)
-    prarr.data[prarr.data==0] = np.nan
-
-    concprcparr = wdeparr / prarr
-
-    cube = concprcparr.to_iris()
-    # infer output unit of concentration variable (should be ug m-3 or ug N m-3 or ug S m-3)
-    conc_unit_out = wdep_unit.replace('m-2', 'm-3').replace(f'{to_tstype_si}-1', '').strip()
-    cube.units = conc_unit_out
-    cube.attributes['ts_type'] = str(to_tstype)
-    return cube
+from pyaerocom.units_helpers import compute_concprcp_from_pr_and_wetdep
 
 class ReadGridded(object):
     """Class for reading gridded files based on network or model ID
@@ -397,11 +138,14 @@ class ReadGridded(object):
         searched using :func:`search_all_files`.
 
     """
-    CONSTRAINT_OPERATORS = {'==' : np.equal,
-                            '<'  : np.less,
-                            '<=' : np.less_equal,
-                            '>'  : np.greater,
-                            '>=' : np.greater_equal}
+    CONSTRAINT_OPERATORS = {
+                    '==' : np.equal,
+                    '!=' : np.not_equal,
+                    '<'  : np.less,
+                    '<=' : np.less_equal,
+                    '>'  : np.greater,
+                    '>=' : np.greater_equal
+                    }
 
 
     AUX_REQUIRES = {'ang4487aer'    : ('od440aer', 'od870aer'),
@@ -411,6 +155,8 @@ class ReadGridded(object):
                     'dryoa'         : ('drypoa', 'drysoa'),
                     'conc*'         : ('mmr*', 'rho'),
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
+                    'mmr*'          : ('vmr*',),
+                    'rho'           : ('ts','ps'),
                     'concox'        : ('concno2', 'conco3'),
                     'vmrox'         : ('vmrno2', 'vmro3'),
                     'fmf550aer'     : ('od550lt1aer', 'od550aer'),
@@ -424,6 +170,7 @@ class ReadGridded(object):
                     'od870aer'      :   ['od865aer'],
                     'ac550dryaer'   :   ['ac550aer']}
 
+
     AUX_FUNS = {'ang4487aer'    :   compute_angstrom_coeff_cubes,
                 'angabs4487aer' :   compute_angstrom_coeff_cubes,
                 'od550gt1aer'   :   subtract_cubes,
@@ -431,6 +178,7 @@ class ReadGridded(object):
                 'dryoa'         :   add_cubes,
                 'sc550dryaer'   :   subtract_cubes,
                 'conc*'         :   multiply_cubes,
+                'mmr*'              :   mmr_from_vmr,
                 'concox'        :   add_cubes,
                 'vmrox'         :   add_cubes,
                 'fmf550aer'     :   divide_cubes,
@@ -1928,7 +1676,7 @@ class ReadGridded(object):
         if 'new_val' in constraint:
             new_val = constraint['new_val']
         else:
-            new_val = np.ma.masked
+            new_val = np.nan #np.ma.masked
 
         operator_fun = self.CONSTRAINT_OPERATORS[constraint['operator']]
 
@@ -1942,12 +1690,22 @@ class ReadGridded(object):
             raise ValueError('Failed to apply filter. Shape mismatch')
 
         # needs both data objects to be loaded into memory
-        other_data._ensure_is_masked_array()
-        data._ensure_is_masked_array()
-        mask = operator_fun(other_data.cube.data,
+        #other_data._ensure_is_masked_array()
+        #data._ensure_is_masked_array()
+
+        other_arr = other_data.cube.core_data()
+        arr = data.cube.core_data()
+
+        # select all grid points where conition is fulfilled
+        mask = operator_fun(other_arr,
                             constraint['filter_val'])
 
-        data.cube.data[mask] = new_val
+        # set values to NaN where condition is fulfilled
+
+        arr = np.where(mask, new_val, arr)
+
+        # overwrite data in cube with the filtered data
+        data.cube.data = arr
         return data
 
     def _try_read_var(self, var_name, start, stop,
@@ -2100,36 +1858,6 @@ class ReadGridded(object):
                 self.logger.warning(repr(e))
         return tuple(data)
 
-    def _check_correct_units_cube(self, cube):
-        """Check for units that have been invalidated by iris
-
-        iris lib relies on CF conventions and if the unit in the NetCDF file
-        is invalid, it will set the variable unit to UNKNOWN and put the
-        actually provided unit into the attributes. pyaerocom can handle
-        some of these invalid units, which is checked here and updated
-        accordingly
-
-        Parameters
-        ----------
-        cube : iris.cube.Cube
-            loaded instance of data Cube
-
-        Returns
-        -------
-        iris.cube.Cube
-            input cube that has been checked for supported units and updated
-            if applicable
-        """
-        if ('invalid_units' in cube.attributes and
-            cube.attributes['invalid_units'] in UALIASES):
-
-            from_unit = cube.attributes['invalid_units']
-            to_unit = UALIASES[from_unit]
-            const.print_log.info('Updating invalid unit in {} from {} to {}'
-                                 .format(repr(cube), from_unit, to_unit))
-
-            cube.units = to_unit
-        return cube
 
     def _load_files(self, files, var_name, perform_fmt_checks=None,
                     **kwargs):
@@ -2157,8 +1885,6 @@ class ReadGridded(object):
         cubes, loaded_files = load_cubes_custom(files, var_name,
                                                 perform_fmt_checks=perform_fmt_checks,
                                                 **kwargs)
-        for cube in cubes:
-            cube = self._check_correct_units_cube(cube)
 
         if len(loaded_files) == 0:
             raise IOError("None of the input files could be loaded in {}"
@@ -2340,7 +2066,6 @@ class ReadGridded(object):
                                                 self.years_avail,
                                                 self.ts_types,
                                                 self.vars_provided))
-
         return s.rstrip()
 
     ### DEPRECATED STUFF
@@ -2350,148 +2075,10 @@ class ReadGridded(object):
         const.print_log.warning(DeprecationWarning("Please use data_id"))
         return self.data_id
 
-class ReadGriddedMulti(object):
-    """Class for import of AEROCOM model data from multiple models
-
-    This class provides an interface to import model results from an arbitrary
-    number of models and specific for a certain time interval (that can be
-    defined, but must not be defined). Largely based on
-    :class:`ReadGridded`.
-
-    ToDo
-    ----
-
-    Sub-class from ReadGridded
-
-    Note
-    ----
-    The reading only works if files are stored using a valid file naming
-    convention. See package data file `file_conventions.ini <http://
-    aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__ for valid
-    keys. You may define your own fileconvention in this file, if you wish.
-
-    Attributes
-    ----------
-    data_ids : list
-        list containing string IDs of all models that should be imported
-    results : dict
-        dictionary containing :class:`ReadGridded` instances for each
-        name
-
-    Examples
-    --------
-    >>> import pyaerocom, pandas
-    >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
-    >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
-    >>> read = pyaerocom.io.ReadGriddedMulti(models, start, stop)
-    >>> print(read.data_ids)
-    ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
-    >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
-    >>> assert type(read_cam) == pyaerocom.io.ReadGridded
-    >>> for var in read_cam.vars: print(var)
-    abs550aer
-    deltaz3d
-    humidity3d
-    od440aer
-    od550aer
-    od550aer3d
-    od550aerh2o
-    od550dryaer
-    od550dust
-    od550lt1aer
-    od870aer
-    """
-
-    def __init__(self, data_ids):
-        const.print_log.warning(DeprecationWarning('ReadGriddedMulti class is '
-                                                   'deprecated and will not '
-                                                   'be further developed. '
-                                                   'Please use ReadGridded.'))
-        if isinstance(data_ids, str):
-            data_ids = [data_ids]
-        if not isinstance(data_ids, list) or not all([isinstance(x, str) for x in data_ids]):
-            raise IllegalArgumentError("Please provide string or list of strings")
-
-        self.data_ids = data_ids
-        #: dictionary containing instances of :class:`ReadGridded` for each
-        #: datset
-
-        self.readers = {}
-        #self.data = {}
-
-        self._init_readers()
-
-    def _init_readers(self):
-        for data_id in self.data_ids:
-            self.readers[data_id] = ReadGridded(data_id)
-
-    def read(self, vars_to_retrieve, start=None, stop=None,
-             ts_type=None, **kwargs):
-        """High level method to import data for multiple variables and models
-
-        Parameters
-        ----------
-        var_names : :obj:`str` or :obj:`list`
-            string IDs of all variables that are supposed to be imported
-        start : :obj:`Timestamp` or :obj:`str`, optional
-            start time of data import (if valid input, then the current
-            :attr:`start` will be overwritten)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
-            stop time of data import (if valid input, then the current
-            :attr:`start` will be overwritten)
-        ts_type : str
-            string specifying temporal resolution (choose from
-            "hourly", "3hourly", "daily", "monthly").If None, prioritised
-            of the available resolutions is used
-        flex_ts_type : bool
-            if True and if applicable, then another ts_type is used in case
-            the input ts_type is not available for this variable
-
-        Returns
-        -------
-        dict
-            loaded objects, keys are variable names, values are
-            instances of :class:`GridddedData`.
-
-        Examples
-        --------
-
-            >>> read = ReadGriddedMulti(names=["ECMWF_CAMS_REAN",
-            ...                                "ECMWF_OSUITE"])
-            >>> read.read(["od550aer", "od550so4", "od550bc"])
-
-        """
-        if isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-        out = {}
-        for data_id in self.data_ids:
-            if not data_id in self.readers:
-                self.readers[data_id] = ReadGridded(data_id)
-            reader = self.readers[data_id]
-            out[data_id] = {}
-            for var in vars_to_retrieve:
-                try:
-                    data = reader.read_var(var, start, stop, ts_type, **kwargs)
-                    out[data_id][var] = data
-                    #self.data[data_id][var] = data
-                except Exception as e:
-                    const.print_log.exception('Failed to read data of {}\n'
-                                            'Error message: {}'.format(data_id,
-                                                                       repr(e)))
-        return out
-
-    def __str__(self):
-        head = "Pyaerocom %s" %type(self).__name__
-        s = ("\n%s\n%s\n"
-             "Data-IDs: %s\n" %(head, len(head)*"-", self.data_ids))
-
-        return s
-
 if __name__=="__main__":
     import pyaerocom as pya
 
     reader = ReadGridded('EMEP.cams50.u3all')
     print(reader)
 
-    data = reader.read_var('concprcpoxs')
-
+    data = reader.read_var('wetoxs', try_convert_units=True)

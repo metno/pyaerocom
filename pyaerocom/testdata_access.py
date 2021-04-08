@@ -15,7 +15,7 @@ from traceback import format_exc
 from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import (ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3,
-                          ReadEbas)
+                          ReadEbas, ReadAirNow, ReadGhost)
 
 class TestDataAccess(object):
     #: That's were the testdata can be downloaded from
@@ -36,7 +36,13 @@ class TestDataAccess(object):
         'AeronetSunV3L2Subset.daily'    : 'obsdata/AeronetSunV3Lev2.daily/renamed',
         'AeronetSDAV3L2Subset.daily'    : 'obsdata/AeronetSDAV3Lev2.daily/renamed',
         'AeronetInvV3L2Subset.daily'    : 'obsdata/AeronetInvV3Lev2.daily/renamed',
-        'EBASSubset'                    : 'obsdata/EBASMultiColumn'
+        'EBASSubset'                    : 'obsdata/EBASMultiColumn',
+        'AirNowSubset'                  : 'obsdata/AirNowSubset',
+        'G.EEA.daily.Subset'            : 'obsdata/GHOST/data/EEA_AQ_eReporting/daily',
+        'G.EEA.hourly.Subset'           : 'obsdata/GHOST/data/EEA_AQ_eReporting/hourly',
+        'G.EBAS.daily.Subset'            : 'obsdata/GHOST/data/EBAS/daily',
+        'G.EBAS.hourly.Subset'           : 'obsdata/GHOST/data/EBAS/hourly'
+
 
     }
 
@@ -44,7 +50,13 @@ class TestDataAccess(object):
         'AeronetSunV3L2Subset.daily'  : ReadAeronetSunV3,
         'AeronetSDAV3L2Subset.daily'  : ReadAeronetSdaV3,
         'AeronetInvV3L2Subset.daily'  : ReadAeronetInvV3,
-        'EBASSubset'                  : ReadEbas
+        'EBASSubset'                  : ReadEbas,
+        'AirNowSubset'                : ReadAirNow,
+        'G.EEA.daily.Subset'          : ReadGhost,
+        'G.EEA.hourly.Subset'         : ReadGhost,
+        'G.EBAS.daily.Subset'          : ReadGhost,
+        'G.EBAS.hourly.Subset'         : ReadGhost,
+
     }
 
     def __init__(self, basedir=None):
@@ -184,7 +196,7 @@ class TestDataAccess(object):
                 try:
                     const.add_ungridded_obs(name, ddir,
                                             reader=reader,
-                                            check_read=True)
+                                            check_read=False)
                 except Exception as e:
                     const.print_log.warning(
                         f'Failed to instantiate testdata since ungridded '

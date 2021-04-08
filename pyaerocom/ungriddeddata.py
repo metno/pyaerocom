@@ -116,7 +116,7 @@ class UngriddedData(object):
     # the location (e.g denotes lat = 300.12345)
     # used to code lat and long in a single number for a uniqueness test
     _LOCATION_PRECISION = 5
-    _LAT_OFFSET = np.float(90.)
+    _LAT_OFFSET = 90.
 
     STANDARD_META_KEYS = STANDARD_META_KEYS
 
@@ -207,7 +207,7 @@ class UngriddedData(object):
                           .format(var, idx))
 
     @staticmethod
-    def from_station_data(stats):
+    def from_station_data(stats, add_meta_keys=None):
         """
         Create UngriddedData from input station data object(s)
 
@@ -215,6 +215,10 @@ class UngriddedData(object):
         ----------
         stats : list or StationData
             input data object(s)
+        add_meta_keys : list, optional
+            list of metadata keys that are supposed to be imported from the
+            input `StationData` objects, in addition to the default metadata
+            retrieved via :func:`StationData.get_meta`.
 
         Raises
         ------
@@ -228,7 +232,14 @@ class UngriddedData(object):
             ungridded data object created from input station data objects
 
         """
-
+        if add_meta_keys is None:
+            add_meta_keys = []
+        elif isinstance(add_meta_keys, str):
+            add_metad_keys = [add_meta_keys]
+        elif not isinstance(add_meta_keys, list):
+            raise ValueError(
+                f'Invalid input for add_meta_keys {add_meta_keys}... need list'
+                )
         if isinstance(stats, StationData):
             stats = [StationData]
         data_obj = UngriddedData(num_points=1000000)
@@ -241,12 +252,22 @@ class UngriddedData(object):
 
         var_count_glob = -1
         for stat in stats:
-            if not isinstance(stat, StationData):
-                raise ValueError('Need instances of StationData')
+            if isinstance(stat, dict):
+                stat = StationData(**stat)
+            elif not isinstance(stat, StationData):
+                raise ValueError('Need instances of StationData or dicts')
             metadata[meta_key] = od()
             metadata[meta_key].update(stat.get_meta(force_single_value=False,
                                                     quality_check=False,
                                                     add_none_vals=True))
+            for key in add_meta_keys:
+                try:
+                    val = stat[key]
+                except KeyError:
+                    val = 'undefined'
+
+                metadata[meta_key][key] = val
+
 
             metadata[meta_key]['var_info'] = od()
 
@@ -534,6 +555,24 @@ class UngriddedData(object):
     def unique_station_names(self):
         """List of unique station names"""
         return sorted(list(dict.fromkeys(self.station_name)))
+
+    @property
+    def available_meta_keys(self):
+        """List of all available metadata keys
+
+        Note
+        ----
+        This is a list of all metadata keys that exist in this dataset, but
+        it does not mean that all of the keys are registered in all metadata
+        blocks, especially if the data is merged from different sources with
+        different metadata availability
+        """
+        metakeys = []
+        for meta in self.metadata.values():
+            for key in meta:
+                if not key in metakeys:
+                    metakeys.append(key)
+        return metakeys
 
     @property
     def nonunique_station_names(self):
@@ -3039,33 +3078,4 @@ if __name__ == "__main__":
                                 data_dir=GHOST_EEA_LOCAL).read(vars_to_retrieve='vmro3')
 
 
-    MBlandforms_to_include = ['high altitude plains','water', 'very low plateaus',
-                        'plains', 'rugged lowlands','hills','high altitude plateaus',
-                        'mid altitude plateaus', 'nan','lowlands', 'mid altitude plains',
-                        'low plateaus',]
 
-    EEA_rural_station_types_to_include = ['background']
-    EEA_rural_area_types_to_include = ['rural','rural-near_city',
-                                       'rural-regional',
-                                       'rural-remote']
-
-
-    #Define filters for the obs subsets
-
-    standard_filter = {'set_flags_nan'  : True,
-                       'station_name'   : ['Innsbr*'],
-                       'negate'         : 'station_name'}
-
-    rural_filter = {'standardised_network_provided_station_classification':
-                    EEA_rural_station_types_to_include,
-                    'standardised_network_provided_area_classification':
-                        EEA_rural_area_types_to_include
-                    }
-
-    mountain_filter = {'altitude':[-20,1500],
-                       'ESDAC_Meybeck_landform_classification' :
-                           MBlandforms_to_include
-                      }
-    obs_filters = {**standard_filter,**rural_filter,**mountain_filter}
-
-    filtered = data.apply_filters(**obs_filters)

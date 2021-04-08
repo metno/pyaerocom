@@ -116,7 +116,7 @@ class TimeResampler(object):
                         f'Updating min_num_obs={min_num} for {from_base}->'
                         f'{to} since input resolution is {from_ts_type}'
                         )
-                    min_num = int(np.ceil(min_num/from_mul))
+                    min_num = int(np.round(min_num/from_mul))
                     const.print_log.info(
                         f'New value: min_num_obs={min_num}'
                         )
@@ -191,29 +191,8 @@ class TimeResampler(object):
 
         if from_ts_type is None:
             apply_constraints = False
-
-        if not apply_constraints:
-            freq = to_ts_type.to_pandas_freq()
-            if not isinstance(how, str):
-                raise ValueError('Temporal resampling without constraints can '
-                                 'only use string type argument how (e.g. '
-                                 'how=mean). Got {}'.format(how))
-            if how in self.AGGRS_UNIT_PRESERVE:
-                self._last_units_preserved = True
-            else:
-                self._last_units_preserved = False
-            return self.fun(self.input_data, freq=freq,
-                            how=how, **kwargs)
-
-        if isinstance(from_ts_type, str):
+        elif isinstance(from_ts_type, str):
             from_ts_type = TsType(from_ts_type)
-
-        if not isinstance(from_ts_type, TsType):
-            raise ValueError('Invalid input for from_ts_type: {}. Need valid '
-                             'str or TsType. Input arg from_ts_type is '
-                             'required if resampling using hierarchical '
-                             'constraints (arg apply_constraints) is activated'
-                             .format(from_ts_type.val))
 
         if to_ts_type > from_ts_type:
             raise TemporalResolutionError('Cannot resample time-series from {} '
@@ -229,6 +208,26 @@ class TimeResampler(object):
             self._last_units_preserved = True
             return self.fun(self.input_data, freq=freq, how='mean',
                             **kwargs)
+
+        if not apply_constraints:
+            freq = to_ts_type.to_pandas_freq()
+            if not isinstance(how, str):
+                raise ValueError('Temporal resampling without constraints can '
+                                 'only use string type argument how (e.g. '
+                                 'how=mean). Got {}'.format(how))
+            if how in self.AGGRS_UNIT_PRESERVE:
+                self._last_units_preserved = True
+            else:
+                self._last_units_preserved = False
+            return self.fun(self.input_data, freq=freq,
+                            how=how, **kwargs)
+
+        if not isinstance(from_ts_type, TsType):
+            raise ValueError('Invalid input for from_ts_type: {}. Need valid '
+                             'str or TsType. Input arg from_ts_type is '
+                             'required if resampling using hierarchical '
+                             'constraints (arg apply_constraints) is activated'
+                             .format(from_ts_type.val))
 
         _idx = self._gen_idx(from_ts_type, to_ts_type, min_num_obs, how)
         data = self.input_data

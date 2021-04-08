@@ -5,7 +5,7 @@ from ast import literal_eval
 import re, fnmatch
 from cf_units import Unit
 from configparser import ConfigParser
-from pyaerocom import logger, print_log
+from pyaerocom import logger, print_log, var_groups
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
@@ -29,7 +29,8 @@ class VarNameInfo(object):
         'ang*'  :   'Column',
         'load*' :   'Column',
         'wet*'  :   'Surface',
-        'dry*'  :   'Surface'}
+        'dry*'  :   'Surface',
+        'emi*'  :   'Surface'}
 
     def __init__(self, var_name):
         self.var_name = var_name.lower()
@@ -101,13 +102,6 @@ class VarNameInfo(object):
             raise VariableDefinitionError('Wavelength could not be extracted '
                                           'from variable name')
         return self._nums[0]
-
-    @property
-    def is_optical_density(self):
-        """Boolean specifying whether variable is an optical depth"""
-        if re.match(self.PATTERNS['od'], self.var_name) and self.contains_wavelength_nm:
-            return True
-        return False
 
     def in_wavelength_range(self, low, high):
         """Boolean specifying whether variable is within wavelength range
@@ -435,27 +429,110 @@ class Variable(object):
 
     @property
     def var_name_aerocom(self):
+        """AeroCom variable name of the input variable"""
         vna = self._var_name_aerocom
         return self.var_name if vna is None else vna
 
     @property
     def var_name_input(self):
         """Input variable (in lowercase)"""
-        return self._var_name_input.lower()
+        return self._var_name_input
 
     @property
     def is_3d(self):
         """True if str '3d' is contained in :attr:`var_name_input`"""
-        return True if '3d' in self.var_name_input else False
+        return True if '3d' in self.var_name_input.lower() else False
 
     @property
     def is_wavelength_dependent(self):
+        """Indicates whether this variable is wavelength dependent"""
         return True if self.wavelength_nm is not None else False
 
     @property
-    def is_dry(self):
-        """True if str 'dry' is contained in :attr:`var_name_input`"""
-        return True if 'dry' in self.var_name_input else False
+    def is_at_dry_conditions(self):
+        """Indicate whether variable denotes dry conditions"""
+        var_name = self.var_name_aerocom
+        if var_name.startswith('dry'): # dry deposition
+            return False
+        return True if 'dry' in var_name else False
+
+    @property
+    def is_deposition(self):
+        """
+        Indicates whether input variables is a deposition rate
+
+        Note
+        ----
+        This funtion only identifies wet and dry deposition based on the variable
+        names, there might be other variables that are deposition variables but
+        cannot be identified by this function.
+
+        Parameters
+        ----------
+        var_name : str
+            Name of variable to be checked
+
+        Returns
+        -------
+        bool
+            If True, then variable name denotes a deposition variables
+
+        """
+        var_name = self.var_name_aerocom
+        if var_name.startswith(var_groups.drydep_startswith):
+            return True
+        elif var_name.startswith(var_groups.wetdep_startswith):
+            return True
+        elif var_name in var_groups.dep_add_vars:
+            return True
+        return False
+
+    @property
+    def is_emission(self):
+        """
+        Indicates whether input variables is an emission rate
+
+        Note
+        ----
+        This funtion only identifies wet and dry deposition based on the variable
+        names, there might be other variables that are deposition variables but
+        cannot be identified by this function.
+
+        Parameters
+        ----------
+        var_name : str
+            Name of variable to be checked
+
+        Returns
+        -------
+        bool
+            If True, then variable name denotes a deposition variables
+
+        """
+        var_name = self.var_name_aerocom
+        if var_name.startswith(var_groups.emi_startswith):
+            return True
+        elif var_name in var_groups.emi_add_vars:
+            return True
+        return False
+
+    @property
+    def is_rate(self):
+        """Indicates whether variable name is a rate
+
+        Rates include e.g. deposition or emission rate variables
+
+        Returns
+        -------
+        bool
+        """
+        if self.is_emission:
+            return True
+        elif self.is_deposition:
+            return True
+        elif self.var_name_aerocom in var_groups.rate_add_vars:
+            return True
+        return False
 
     @property
     def is_alias(self):
@@ -513,7 +590,9 @@ class Variable(object):
 
     @property
     def var_name_info(self):
+
         return VarNameInfo(self.var_name)
+
 
     @property
     def aliases(self):
@@ -571,11 +650,6 @@ class Variable(object):
         -------
         bool
             True, if default could be loaded, False if not
-
-        Raises
-        ------
-        IOError
-            if regions.ini file does not exist
         """
         if cfg is None:
             cfg = self.read_config()

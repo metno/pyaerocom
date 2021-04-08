@@ -50,15 +50,12 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     coldata = colocate_gridded_ungridded(data, aeronetsunv3lev2_subset,
                                          var_ref='od550aer')
 
-    assert coldata.meta['var_name'] == ['od550aer', 'Blaaa']
+    assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
     (dict(),
      'monthly', (2,12,8), 0.315930,0.275671),
-    (dict(var_ref_outlier_ranges={'od550aer':[0.1,0.5]},
-          var_outlier_ranges={'od550aer':[0.1,0.2]}),
-     'monthly', (2,12,8), 0.227333,0.275671),
     (dict(apply_time_resampling_constraints=False),
      'monthly', (2,12,8), 0.316924,0.275671),
     (dict(filter_name='WORLD-wMOUNTAINS'),
@@ -117,11 +114,12 @@ def test_colocate_gridded_gridded_same_new_var(data_tm5):
     data.var_name = 'Blaaa'
     coldata = colocate_gridded_gridded(data, data_tm5)
 
-    assert coldata.meta['var_name'] == ['od550aer', 'Blaaa']
+    assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
 
 @testdata_unavail
 def test_colocate_gridded_gridded_same(data_tm5):
     coldata = colocate_gridded_gridded(data_tm5, data_tm5)
+
     assert isinstance(coldata, ColocatedData)
     stats = coldata.calc_statistics()
     # check mean value

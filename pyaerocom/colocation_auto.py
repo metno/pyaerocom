@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-High level module containing analysis classes and methods to perform
-colocation.
-
-NOTE
-----
-
-This module will be deprecated soon but most of the code will be refactored
-into colocation.py module.
+Classes and methods to perform high-level colocation.
 """
 from datetime import datetime
 import numpy as np
@@ -72,12 +65,16 @@ class ColocationSetup(BrowseDict):
     filter_name : str
         name of filter to be applied. If None, AeroCom default is used
         (i.e. `pyaerocom.const.DEFAULT_REG_FILTER`)
-    regrid_res_deg : :obj:`int`, optional
+    regrid_res_deg : int, optional
         resolution in degrees for regridding of model grid (done before
         colocation)
     remove_outliers : bool
-        if True, outliers are removed from model and obs data before colocation,
-        else not.
+        if True, outliers are removed from obs data before colocation,
+        else not. Is also accessible via :attr:`obs_remove_outliers`.
+    model_remove_outliers : bool
+        if True, outliers are removed from model data (normally this should be
+        set to False, as the models are supposed to be assessed, including
+        outlier cases). Default is False.
     vert_scheme : :obj:`str`, optional
         vertical scheme used for colocation
     harmonise_units : bool
@@ -124,8 +121,8 @@ class ColocationSetup(BrowseDict):
     model_vert_type_alt : str or dict, optional
         like :attr:`obs_vert_type` but is used in case of exception cases, i.e.
         where the `obs_vert_type` is not available in the models.
-    var_outlier_ranges : :obj:`dict`, optional
-        dictionary specifying outlier ranges for individual variables.
+    obs_outlier_ranges : :obj:`dict`, optional
+        dictionary specifying outlier ranges for individual obs variables.
         (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
     model_ts_type_read : :obj:`str` or :obj:`dict`, optional
         may be specified to explicitly define the reading frequency of the
@@ -160,10 +157,6 @@ class ColocationSetup(BrowseDict):
         resample_how={'conco3': 'daily': {'hourly' : 'max'}}} would use the
         maximum value to aggregate from hourly to daily for variable conco3,
         rather than the mean.
-    model_keep_outliers : bool
-        if True, no outliers are removed from model data
-    obs_keep_outliers : bool
-        if True, no outliers are removed from obs / reference data
     obs_use_climatology : bool
         BETA if True, pyaerocom default climatology is computed from observation
         stations (so far only possible for unrgidded / gridded colocation)
@@ -194,20 +187,18 @@ class ColocationSetup(BrowseDict):
 
     def __init__(self, model_id=None, obs_id=None, obs_vars=None,
                  ts_type=None, start=None, stop=None,
-                 filter_name=None,
-                 regrid_res_deg=None, remove_outliers=True,
+                 filter_name=None, regrid_res_deg=None,
+                 remove_outliers=False, model_remove_outliers=False,
                  vert_scheme=None, harmonise_units=False,
                  model_use_vars=None,
                  model_rename_vars=None,model_add_vars=None,
                  model_read_aux=None, read_opts_ungridded=None,
                  obs_vert_type=None, model_vert_type_alt=None,
+                 obs_outlier_ranges=None, model_outlier_ranges=None,
                  model_read_opts=None,
-                 var_outlier_ranges=None, var_ref_outlier_ranges=None,
                  model_ts_type_read=None,
                  obs_ts_type_read=None, flex_ts_type_gridded=True,
                  apply_time_resampling_constraints=None, min_num_obs=None,
-                 model_keep_outliers=True,
-                 obs_keep_outliers=False,
                  obs_use_climatology=False,
                  colocate_time=False, basedir_coldata=None,
                  obs_name=None, model_name=None,
@@ -223,9 +214,12 @@ class ColocationSetup(BrowseDict):
         if save_coldata:
             if basedir_coldata is None:
                 basedir_coldata = const.COLOCATEDDATADIR
-            if not os.path.exists(basedir_coldata):
-                const.print_log.info('Creating directory: {}'.format(basedir_coldata))
-                os.mkdir(basedir_coldata)
+                if not os.path.exists(basedir_coldata):
+                    const.print_log.info(f'Creating directory: {basedir_coldata}')
+                    os.mkdir(basedir_coldata)
+                elif not os.path.exists(basedir_coldata):
+                    raise ValueError(f'Input directory {basedir_coldata} does '
+                                     f'not exist')
 
         self._obs_cache_only = False
         self.obs_vars = obs_vars
@@ -241,7 +235,6 @@ class ColocationSetup(BrowseDict):
             model_rename_vars = {}
         self.model_rename_vars = model_rename_vars
         self.model_add_vars = model_add_vars
-        self.model_keep_outliers = model_keep_outliers
         self.model_to_stp = False
 
         self.model_id = model_id
@@ -251,7 +244,6 @@ class ColocationSetup(BrowseDict):
         self.obs_id = obs_id
         self.obs_name = obs_name
         self.obs_data_dir = None
-        self.obs_keep_outliers = obs_keep_outliers
         self.obs_use_climatology = obs_use_climatology
         self.obs_add_meta = []
 
@@ -266,15 +258,17 @@ class ColocationSetup(BrowseDict):
 
         self.filter_name = filter_name
 
-        self.remove_outliers = remove_outliers
-
         # OPtions related to time resampling
-        self.apply_time_resampling_constraints=apply_time_resampling_constraints
-        self.min_num_obs=min_num_obs
-        self.resample_how=None
+        self.apply_time_resampling_constraints = apply_time_resampling_constraints
+        self.min_num_obs = min_num_obs
+        self.resample_how = None
 
-        self.var_outlier_ranges = var_outlier_ranges
-        self.var_ref_outlier_ranges = var_ref_outlier_ranges
+        self.remove_outliers = remove_outliers
+        self.model_remove_outliers = model_remove_outliers
+
+        # Custom outlier ranges for model and obs
+        self.obs_outlier_ranges = obs_outlier_ranges
+        self.model_outlier_ranges = model_outlier_ranges
 
         self.harmonise_units = harmonise_units
         self.vert_scheme = vert_scheme
@@ -324,6 +318,29 @@ class ColocationSetup(BrowseDict):
         if isinstance(sd, str) and not os.path.exists(sd):
             os.mkdir(sd)
 
+    def _check_outdated_outlier_defs(self):
+        if 'var_outlier_ranges' in self:
+            if self.model_outlier_ranges is not None:
+                raise AttributeError('Please remove var_outlier_ranges '
+                                     'from your setup')
+            const.print_log.warning(
+                'WARNING (ColocationSetup): Model variable outlier '
+                'ranges is specified via old attr. name var_outlier_ranges. '
+                'This will be assigned to attr. model_outlier_ranges which '
+                'should be used in the future!')
+            self.model_outlier_ranges = self.var_outlier_ranges
+
+        if 'var_ref_outlier_ranges' in self:
+            if self.obs_outlier_ranges is not None:
+                raise AttributeError('Please remove var_ref_outlier_ranges '
+                                     'from your setup')
+            const.print_log.warning(
+                'WARNING (ColocationSetup): Obs variable outlier '
+                'ranges is specified via old attr. name var_ref_outlier_ranges. '
+                'This will be assigned to attr. obs_outlier_ranges which '
+                'should be used in the future!')
+            self.obs_outlier_ranges = self.var_ref_outlier_ranges
+
 class Colocator(ColocationSetup):
     """High level class for running colocation
 
@@ -370,6 +387,7 @@ class Colocator(ColocationSetup):
 
         """
         self.update(**opts)
+        self._check_outdated_outlier_defs()
         # ToDo: setting the defaults for time resampling here should be
         # unnecessary since this is done in TimeResampler. Ensure that and
         # remove here
@@ -424,7 +442,7 @@ class Colocator(ColocationSetup):
             data_dir = self.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
         reader = reader_class(data_id=data_id, data_dir=data_dir)
-        if hasattr(reader, 'filepath') and hasattr(self, 'filepath'):
+        if isinstance(reader, ReadMscwCtm) and hasattr(self, 'filepath'):
             reader.filepath = self.filepath
         return reader
 
@@ -465,9 +483,15 @@ class Colocator(ColocationSetup):
     def _check_model_add_var(self, var_name, model_reader, var_matches):
         if isinstance(self.model_add_vars, dict) and var_name in self.model_add_vars: #observation variable
             add_var = self.model_add_vars[var_name]
-            self._check_add_model_read_aux(add_var, model_reader)
-            if model_reader.has_var(add_var):
-                var_matches[add_var] = var_name
+            if isinstance(add_var,list):
+                for add_v in add_var:
+                    self._check_add_model_read_aux(add_v, model_reader)
+                    if model_reader.has_var(add_v):
+                        var_matches[add_v] = var_name
+            else:
+                self._check_add_model_read_aux(add_var, model_reader)
+                if model_reader.has_var(add_var):
+                    var_matches[add_var] = var_name
         return var_matches
 
     def _find_var_matches(self, obs_vars, model_reader, var_name=None):
@@ -546,7 +570,7 @@ class Colocator(ColocationSetup):
                                   is_model=True,
                                   **kwargs)
 
-    def read_ungridded(self, vars_to_read=None):
+    def read_ungridded(self, vars_to_read=None, obs_reader=None):
         """Helper to read UngriddedData
 
         Note
@@ -565,47 +589,42 @@ class Colocator(ColocationSetup):
             loaded data object
 
         """
-        if isinstance(vars_to_read, str):
+        if obs_reader is None:
+            (obs_reader,
+             vars_to_read) = self._init_ungridded_reader_and_vars(vars_to_read)
+        elif isinstance(vars_to_read, str):
             vars_to_read = [vars_to_read]
 
-        obs_reader = ReadUngridded(self.obs_id, data_dir=self.obs_data_dir)
-        if vars_to_read is None:
-            vars_to_read = self.obs_vars
-        obs_vars = []
-        for var in vars_to_read:
-            if var in obs_reader.get_reader(self.obs_id).PROVIDES_VARIABLES:
-                obs_vars.append(var)
-            else:
-                const.print_log.warning('Variable {} is not supported by {} '
-                                     'and will be skipped'
-                                     .format(var, self.obs_id))
-        if len(obs_vars) == 0:
-            raise DataCoverageError('No observation variable matches found for '
-                                    '{}'.format(self.obs_id))
-
         if self.read_opts_ungridded is not None:
-            ropts = self.read_opts_ungridded
+            readobs_filters_pre = self.read_opts_ungridded
         else:
-            ropts = {}
-        obs_data = obs_reader.read(datasets_to_read=self.obs_id,
-                                   vars_to_retrieve=obs_vars,
-                                   **ropts)
+            readobs_filters_pre = {}
+
         if 'obs_filters' in self:
-            remaining_filters = self._eval_obs_filters()
-            obs_data = obs_data.apply_filters(**remaining_filters)
+            readobs_filters_post = self._eval_obs_filters()
+        else:
+            readobs_filters_post = None
+
+        obs_data = obs_reader.read(
+            vars_to_retrieve=vars_to_read,
+            only_cached=self._obs_cache_only,
+            filter_post=readobs_filters_post,
+            **readobs_filters_pre)
 
         if self.remove_outliers:
-            #self._update_var_outlier_ranges(obs_vars=obs_vars)
-            for var in obs_vars:
-                low, high=None, None
-                try:
-                    low, high = self.var_ref_outlier_ranges[var]
-                except Exception:
-                    pass
+            for var in vars_to_read:
+                oor = self.obs_outlier_ranges
+                if isinstance(oor, dict) and var in oor:
+                    low, high = oor[var]
+                else:
+                    low, high = None, None
+                obs_data.remove_outliers(var,low=low,high=high,
+                                         inplace=True,
+                                         move_to_trash=False)
 
-                obs_data.remove_outliers(var, inplace=True,
-                                         low=low, high=high)
         return obs_data
+
+
     # ToDo: cumbersome (together with _find_var_matches, review whole handling
     # of vertical codes for variable mappings...)
     def _read_gridded(self, reader, var_name, is_model=True, **kwargs):
@@ -649,7 +668,7 @@ class Colocator(ColocationSetup):
             if isinstance(kwargs['ts_type'], dict):
                 kwargs['ts_type'] = kwargs['ts_type'][var_name]
 
-            return reader.read_var(var_name,
+            data = reader.read_var(var_name,
                                    start=start,
                                    stop=stop,
                                    flex_ts_type=self.flex_ts_type_gridded,
@@ -671,12 +690,38 @@ class Colocator(ColocationSetup):
                                          '{} ({})'
                                          .format(reader.data_id, var_name)))
 
-            return reader.read_var(var_name,
+            data = reader.read_var(var_name,
                                    start=start,
                                    stop=stop,
                                    ts_type=ts_type_read,
                                    flex_ts_type=self.flex_ts_type_gridded,
                                    vert_which=vt)
+
+        # remove outliers if applicable
+        if is_model:
+            rm_outliers = self.model_remove_outliers
+            outlier_ranges = self.model_outlier_ranges
+        else:
+            rm_outliers = self.remove_outliers
+            outlier_ranges = self.obs_outlier_ranges
+
+        if outlier_ranges is not None and not rm_outliers:
+            const.print_log.warning(
+                f'WARNING: Found definition of outlier ranges for {var_name} '
+                f'({data.data_id})but outlier removal is deactivated. Consider '
+                f'checking your setup (note: model or obs outlier removal can be '
+                f'activated via attrs. model_remove_outliers and remove_outliers, '
+                f'respectively')
+
+
+        if rm_outliers:
+            if isinstance(outlier_ranges, dict) and var_name in outlier_ranges:
+                low, high = outlier_ranges[var_name]
+            else:
+                low, high = None, None
+            data.check_unit()
+            data.remove_outliers(low, high, inplace=True)
+        return data
 
     def _eval_obs_filters(self):
         obs_filters = self['obs_filters']
@@ -772,34 +817,67 @@ class Colocator(ColocationSetup):
         elif self.stop is not None:
             self.stop = None
 
-    def _run_gridded_ungridded(self, var_name=None):
-        """Analysis method for gridded vs. ungridded data"""
-        print_log.info('PREPARING colocation of {} vs. {}'
-                       .format(self.model_id, self.obs_id))
+    def _init_obsvars_to_read(self, vars_to_read=None):
+        """
+        Init variables to read
 
-        model_reader = self.instantiate_gridded_reader(what='model')
+        Parameters
+        ----------
+        vars_to_read : str or list, optional
+            Variable or list of variable names to be read. The default is None,
+            in which case `self.obs_vars` is used.
+
+        Returns
+        -------
+        vars_to_read : list
+            List of variables to be read
+
+        """
+        if isinstance(vars_to_read, str):
+            vars_to_read = [vars_to_read]
+
+        if vars_to_read is None:
+            vars_to_read = self.obs_vars
+        return vars_to_read
+
+    def _init_ungridded_reader_and_vars(self, vars_to_read=None):
+
+        vars_to_read = self._init_obsvars_to_read(vars_to_read)
+
         obs_reader = ReadUngridded(self.obs_id, data_dir=self.obs_data_dir)
-
-        obs_vars = obs_reader.get_vars_supported(self.obs_id,
-                                                 self.obs_vars)
+        try:
+            obs_vars = obs_reader.get_vars_supported(self.obs_id,
+                                                 vars_to_read)
+        except ValueError:
+            raise DataCoverageError('No observation variable matches found for '
+                                    '{}'.format(self.obs_id))
 
         if len(obs_vars) == 0:
             raise DataCoverageError('No observation variable matches found for '
                                     '{}'.format(self.obs_id))
+        return (obs_reader, obs_vars)
 
-        var_matches = self._find_var_matches(obs_vars, model_reader,
-                                             var_name)
-
+    def _print_coloc_info(self, var_matches):
         print_log.info('The following variable combinations will be colocated\n'
                        'MODEL-VAR\tOBS-VAR')
+
         for key, val in var_matches.items():
             print_log.info('{}\t{}'.format(key, val))
 
-        # get list of unique observation variables
-        obs_vars = np.unique(list(var_matches.values())).tolist()
+    def _run_gridded_ungridded(self, var_name=None):
+        """Analysis method for gridded vs. ungridded data"""
+        model_reader = self.instantiate_gridded_reader(what='model')
 
-        if self.remove_outliers:
-            self._update_var_outlier_ranges(var_matches)
+        obs_reader, obs_vars = self._init_ungridded_reader_and_vars()
+
+        var_matches = self._find_var_matches(obs_vars,
+                                             model_reader,
+                                             var_name)
+        self._print_coloc_info(var_matches)
+
+        # get list of unique observation variables for which also model
+        # output is available
+        obs_vars = np.unique(list(var_matches.values())).tolist()
 
         data_objs = {}
         if self.start is None:
@@ -808,9 +886,6 @@ class Colocator(ColocationSetup):
         start, stop = start_stop(self.start, self.stop)
 
         for model_var, obs_var in var_matches.items():
-
-            # ToDo: consider removing outliers already here.
-            #if 'obs_filters' in self:
             ts_type = self.ts_type
             print_log.info('Running {} / {} ({}, {})'.format(self.model_id,
                                                              self.obs_id,
@@ -890,22 +965,7 @@ class Colocator(ColocationSetup):
                 # deactivate caching in most cases. Better way is probably to
                 # provide filtering of ungridded observations "after" reading
                 # (and caching) via obs_filters.
-                if self.read_opts_ungridded is not None:
-                    readobs_filters_pre = self.read_opts_ungridded
-                else:
-                    readobs_filters_pre = {}
-
-                # ToDo: consider removing outliers already here.
-                if 'obs_filters' in self:
-                    readobs_filters_post = self._eval_obs_filters()
-                else:
-                    readobs_filters_post = None
-
-                obs_data = obs_reader.read(
-                    vars_to_retrieve=obs_var,
-                    only_cached=self._obs_cache_only,
-                    filter_post=readobs_filters_post,
-                    **readobs_filters_pre)
+                obs_data = self.read_ungridded(obs_var, obs_reader)
             try:
                 try:
                     by=self.update_baseyear_gridded
@@ -915,7 +975,6 @@ class Colocator(ColocationSetup):
                 if self.model_use_climatology:
                     by=start.year
                 coldata = colocate_gridded_ungridded(
-
                         gridded_data=model_data,
                         ungridded_data=obs_data,
                         ts_type=ts_type,
@@ -923,19 +982,15 @@ class Colocator(ColocationSetup):
                         var_ref=obs_var,
                         filter_name=self.filter_name,
                         regrid_res_deg=self.regrid_res_deg,
-                        remove_outliers=self.remove_outliers,
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
-                        var_outlier_ranges=self.var_outlier_ranges,
-                        var_ref_outlier_ranges=self.var_ref_outlier_ranges,
                         update_baseyear_gridded=by,
                         apply_time_resampling_constraints=self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
-                        var_keep_outliers=self.model_keep_outliers,
-                        var_ref_keep_outliers=self.obs_keep_outliers,
                         use_climatology_ref=self.obs_use_climatology,
-                        resample_how=rshow)
+                        resample_how=rshow
+                        )
 
                 if self.model_to_stp:
                     coldata = correct_model_stp_coldata(coldata)
@@ -978,11 +1033,6 @@ class Colocator(ColocationSetup):
         obs_vars = self.obs_vars
 
         var_matches = self._find_var_matches(obs_vars, model_reader, var_name)
-
-        if self.remove_outliers:
-            self._update_var_outlier_ranges(var_matches)
-
-        #all_ts_types = const.GRID_IO.TS_TYPES
 
         ts_type = self.ts_type
 
@@ -1079,19 +1129,15 @@ class Colocator(ColocationSetup):
                         start=start, stop=stop,
                         filter_name=self.filter_name,
                         regrid_res_deg=self.regrid_res_deg,
-                        remove_outliers=self.remove_outliers,
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
-                        var_outlier_ranges=self.var_outlier_ranges,
-                        var_ref_outlier_ranges=self.var_ref_outlier_ranges,
                         update_baseyear_gridded=by,
                         apply_time_resampling_constraints=\
                             self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
-                        var_keep_outliers=self.model_keep_outliers,
-                        var_ref_keep_outliers=self.obs_keep_outliers,
-                        resample_how=rshow)
+                        resample_how=rshow
+                        )
                 if self.save_coldata:
                     self._save_coldata(coldata, savename, out_dir, model_var,
                                        model_data, obs_var)
@@ -1183,28 +1229,6 @@ class Colocator(ColocationSetup):
         self.file_status[coldata_savename] = 'exists_not'
         return False
 
-    def _update_var_outlier_ranges(self, var_matches=None, obs_vars=None,
-                                   mod_vars=None):
-        if isinstance(var_matches, dict):
-            obs_vars = list(var_matches.values())
-            mod_vars = list(var_matches.keys())
-
-        oor = self.var_ref_outlier_ranges
-        mor = self.var_outlier_ranges
-
-        if isinstance(mor, dict) and isinstance(mod_vars, list):
-            for mvar in mod_vars:
-                mname = const.VARS[mvar].var_name
-                if mname != mvar and mvar in mor and not mname in mor:
-                    self.var_outlier_ranges[mname] = mor[mvar]
-
-        if isinstance(oor, dict) and isinstance(obs_vars, list):
-            for ovar in obs_vars:
-                oname = const.VARS[ovar].var_name
-                if (oname != ovar and ovar in oor and not oname in oor):
-                    self.var_ref_outlier_ranges[oname] = oor[ovar]
-
-
     def __call__(self, **kwargs):
         raise NotImplementedError
         self.update(**kwargs)
@@ -1213,16 +1237,17 @@ class Colocator(ColocationSetup):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
-
-    obs_dir = '/home/jonasg/MyPyaerocom/testdata-minimal/modeldata/TM5-met2010_CTRL-TEST/renamed'
-    MODEL_ID =  'CAM5.3-Oslo_AP3-CTRL2016-PD'
-    col = Colocator(model_id = MODEL_ID,
-                    obs_data_dir=obs_dir,
-                    obs_id='TM5-met2010_CTRL-TEST',
+    model = 'AEROCOM-MEDIAN-2x3-GLISSETAL2020-1_AP3-CTRL'
+    col = Colocator(model_id=model,
+                    obs_id='AeronetSunV3Lev2.daily',
                     obs_vars=['od550aer'],
+                    remove_outliers=True,
+                    model_remove_outliers=True,
+                    model_outlier_ranges={'od550aer': (0.3, 0.6)},
+                    obs_outlier_ranges={'od550aer': (0.2, 0.3)},
                     start=2010)
 
     col.run(reanalyse_existing=True)
 
-    data = col.data[MODEL_ID]['od550aer']
+    data = col.data[model]['od550aer']
     data.plot_scatter(loglog=True)

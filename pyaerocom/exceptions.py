@@ -20,12 +20,6 @@
 """
 Module containing pyaerocom custom exceptions
 """
-class AerocomConnectionError(IOError):
-    pass
-
-class AltitudeAccessError(ValueError):
-    pass
-
 class CachingError(IOError):
     pass
 
@@ -39,9 +33,6 @@ class ColocationError(ValueError):
     pass
 
 class CoordinateError(ValueError):
-    pass
-
-class CoordinateNotFoundError(CoordinateError):
     pass
 
 class CoordinateNameError(CoordinateError):
@@ -80,7 +71,7 @@ class DataExtractionError(ValueError):
 class DataSearchError(IOError):
     pass
 
-class NDimError(DataDimensionError):
+class NasaAmesReadError(IOError):
     pass
 
 class EbasFileError(ValueError):
@@ -90,9 +81,6 @@ class InitialisationError(ValueError):
     pass
 
 class FileConventionError(IOError):
-    pass
-
-class IllegalArgumentError(ValueError):
     pass
 
 class LongitudeConstraintError(ValueError):
@@ -142,7 +130,4 @@ class VariableDefinitionError(IOError):
     pass
 
 class VariableNotFoundError(IOError):
-    pass
-
-class YearNotAvailableError(DataCoverageError):
     pass

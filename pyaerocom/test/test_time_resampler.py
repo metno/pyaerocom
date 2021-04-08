@@ -41,7 +41,7 @@ def fakedata_hourly():
     return pd.Series(data, idx)
 
 @pytest.mark.parametrize('data, expectation',[
-    (pd.Series(), does_not_raise_exception()),
+    (pd.Series(dtype=np.float64), does_not_raise_exception()),
     (xr.DataArray(), does_not_raise_exception()),
     (np.asarray([1]), pytest.raises(ValueError)),
     (GriddedData(), pytest.raises(ValueError)),
@@ -54,7 +54,7 @@ def test_TimeResampler_input_data(data, expectation):
 
 
 @pytest.mark.parametrize('data, expectation',[
-    (pd.Series(), resample_timeseries),
+    (pd.Series(dtype=np.float64), resample_timeseries),
     (xr.DataArray(), resample_time_dataarray),
     ])
 def test_TimeResampler_fun(data, expectation):
@@ -70,7 +70,7 @@ def test_TimeResampler_fun(data, expectation):
     (TsType('3hourly'), TsType('monthly'), min_num_obs_default, dict(monthly={'daily' : 'max'}),
      [('daily', 2, 'mean'), ('monthly', 7, 'max')]),
     (TsType('2daily'), TsType('weekly'), min_num_obs_custom, 'max',
-     [('weekly', 3, 'max')])
+     [('weekly', 2, 'max')])
     ])
 def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
                                   how, expected):

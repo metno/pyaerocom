@@ -7,8 +7,6 @@ import numpy as np
 import os
 from concurrent.futures import ThreadPoolExecutor
 import multiprocessing as mp
-from collections import OrderedDict
-
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions
@@ -90,7 +88,7 @@ def check_write_access(path, timeout=0.1):
             return False
     return run_timeout(path, timeout)
 
-class BrowseDict(OrderedDict):
+class BrowseDict(dict):
     """Dictionary with get / set attribute methods
 
     Example
@@ -197,58 +195,8 @@ def merge_dicts(dict1, dict2, discard_failing=True):
             else:
                 raise
     new['merge_failed'] = merge_failed
-# =============================================================================
-#     for k, v in kwargs.items():
-#         if k in new and v != new[k]:
-#             raise KeyError('Cannot add key {} since it already existed in '
-#                            'input dictionaries'.format(k))
-#         new[k] = v
-# =============================================================================
+
     return new
-
-def check_fun_timeout_multiproc(fun, fun_args=(), timeout_secs=1):
-    """Check input function timeout performance
-
-    Uses multiprocessing module to test if input function finishes within a
-    certain time interval.
-
-    Note
-    ----
-    Please only use if method to call cannot raise an Exception as this is not
-    handled here in which case True is returned.
-
-    Parameters
-    ----------
-    fun : callable
-        function that is supposed to be tested
-    fun_args : tuple
-        function arguments
-    timeout_secs : float
-        timeout in seconds
-
-    Returns
-    -------
-    bool
-        True if function execution requires less time than input timeout, else
-        False
-    """
-
-    # Start foo as a process
-    OK = True
-    p = mp.Process(target=fun, name="test", args=fun_args)
-    p.start()
-    p.join(timeout_secs)
-    if p.is_alive():# Terminate foo
-        OK =False
-        p.terminate()
-        # Cleanup
-        p.join()
-
-    return OK
-
-def _is_interactive():
-    import __main__ as main
-    return not hasattr(main, '__file__')
 
 def chk_make_subdir(base, name):
     """Check if sub-directory exists in parent directory"""

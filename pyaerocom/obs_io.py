@@ -87,16 +87,11 @@ class AuxInfoUngridded(object):
             elif not var in self.aux_merge_how:
                 raise ValueError('Missing information about how {} should '
                                  'be merged (aux_merge_how)'.format(var))
-
-            if self.aux_merge_how[var] == 'eval':
+            merge_how = self.aux_merge_how[var]
+            if merge_how == 'eval':
                 if not var in self.aux_funs:
                     raise ValueError('Specification of computation function is '
                                      'missing for var {}'.format(var))
-# =============================================================================
-#                 elif not var in self.aux_units:
-#                     raise ValueError('Specification of unit is missing for var {}'
-#                                      .format(var))
-# =============================================================================
                 fun = self.aux_funs[var]
 
                 if not isinstance(fun, str):
@@ -113,7 +108,7 @@ class AuxInfoUngridded(object):
                 for _var in var_info:
                     obsvar = ObsVarCombi(aux_id, _var)
                     obsvarstr = str(obsvar)
-                    if not obsvarstr in fun:
+                    if merge_how == 'eval' and not obsvarstr in fun:
                         raise ValueError('Mismatch between aux_requires and '
                                          'aux_funs for variable {}. No such '
                                          'obs;var string {} in computation '
