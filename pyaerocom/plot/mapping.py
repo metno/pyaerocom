@@ -661,9 +661,9 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         raise NotImplementedError('Dimension error...')
 
     if ref_label is None:
-        ref_label = coldata.meta['data_source'][0]
+        ref_label = coldata.metadata['data_source'][0]
     if data_label is None:
-        data_label = coldata.meta['data_source'][1]
+        data_label = coldata.metadata['data_source'][1]
 
     if in_percent:
         data *= 100

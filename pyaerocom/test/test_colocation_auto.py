@@ -68,8 +68,8 @@ def test_model_ts_type_read(col_tm5_aero):
     col_tm5_aero.model_add_vars = {obs_var:model_var}
     col_tm5_aero.model_ts_type_read = {model_var:'daily', obs_var:'monthly'}
     data = col_tm5_aero._run_gridded_ungridded()
-    assert data[model_var].meta['ts_type_src'] == ['daily', 'daily']
-    assert data[obs_var].meta['ts_type_src'] == ['daily', 'monthly']
+    assert data[model_var].metadata['ts_type_src'] == ['daily', 'daily']
+    assert data[obs_var].metadata['ts_type_src'] == ['daily', 'monthly']
 
 def test_colocator(col):
     assert isinstance(col, Colocator)

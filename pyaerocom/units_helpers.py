@@ -87,11 +87,13 @@ UALIASES = {
     'mgS/m**2/h'    : 'mg S m-2 h-1',
     'mgSm-2h-1'     : 'mg S m-2 h-1',
     'mgSm**-2h-1'   : 'mg S m-2 h-1',
+    'mgS/m2/d'      : 'mg S m-2 d-1',
     ## nitrogen species
     'mgN/m2/h'      : 'mg N m-2 h-1',
     'mgN/m**2/h'    : 'mg N m-2 h-1',
     'mgNm-2h-1'     : 'mg N m-2 h-1',
     'mgNm**-2h-1'   : 'mg N m-2 h-1',
+    'mgN/m2/d'      : 'mg N m-2 d-1',
     ## others
     'MM/H'          : 'mm h-1',
     # others

@@ -3,12 +3,12 @@
 channels:
   - conda-forge
 dependencies:
-  - iris >=2.1.0, <3.0.0
+  - iris >=2.1.0
   - xarray >=0.16.0
   - cartopy >=0.16.0
   - matplotlib >=3.0.1
   - scipy >=1.1.0
-  - pandas >=0.23.0, <=1.2.2
+  - pandas >=0.23.0
   - seaborn >=0.8.0
   - geonum
   - numpy

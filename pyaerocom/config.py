@@ -25,8 +25,7 @@ from pyaerocom._lowlevel_helpers import (list_to_shortstr,
                                          check_dir_access,
                                          check_write_access)
 
-from pyaerocom.exceptions import (DeprecationError, DataSourceError,
-                                  DataIdError)
+from pyaerocom.exceptions import (DataSourceError, DataIdError)
 from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 
@@ -143,10 +142,6 @@ class Config(object):
     #: Wavelength tolerance for observations imports
     OBS_WAVELENGTH_TOL_NM = obs_io.OBS_WAVELENGTH_TOL_NM
 
-    #: not used at the moment
-    GCOSPERCENTCRIT =   np.float(0.1)
-    GCOSABSCRIT     =   np.float(0.04)
-
     CLIM_START =2005
     CLIM_STOP = 2015
     CLIM_FREQ = 'daily'
@@ -155,9 +150,6 @@ class Config(object):
     CLIM_MIN_COUNT = dict(daily = 30, # at least 30 daily measurements in each month over whole period
                           monthly = 5) # analogue to daily ...
 
-    #names of the different obs networks
-    OBSNET_NONE = 'NONE'
-    NOMODELNAME = 'OBSERVATIONS-ONLY'
 
     # names for the satellite data sets
     SENTINEL5P_NAME = 'Sentinel5P'
@@ -185,14 +177,12 @@ class Config(object):
     from pyaerocom import __dir__
     _config_ini_lustre = os.path.join(__dir__, 'data', 'paths.ini')
     _config_ini_user_server = os.path.join(__dir__, 'data', 'paths_user_server.ini')
-    _config_ini_testdata = os.path.join(__dir__, 'data', 'paths_testdata.ini')
     _config_ini_localdb = os.path.join(__dir__, 'data', 'paths_local_database.ini')
 
     # this dictionary links environment ID's with corresponding ini files
     _config_files = {
             'metno'            : _config_ini_lustre,
             'users-db'         : _config_ini_user_server,
-            'testdata'         : _config_ini_testdata,
             'local-db'         : _config_ini_localdb
     }
 
@@ -201,23 +191,16 @@ class Config(object):
     _check_subdirs_cfg = {
             'metno'       : 'aerocom',
             'users-db'    : 'AMAP',
-            'testdata'    : 'modeldata',
             'local-db'    : 'modeldata'
     }
 
     _var_info_file = os.path.join(__dir__, 'data', 'variables.ini')
     _coords_info_file = os.path.join(__dir__, 'data', 'coords.ini')
 
-    #_mask_location = '/home/hannas/Desktop/htap/'
-    # todo update to ~/MyPyaerocom/htap_masks/' ask jonas
-
     # these are searched in preferred order both in root and home
     _DB_SEARCH_SUBDIRS = od()
     _DB_SEARCH_SUBDIRS['lustre/storeA/project'] = 'metno'
-    #_DB_SEARCH_SUBDIRS['lustre/storeB/project/aerocom'] = 'metno'
     _DB_SEARCH_SUBDIRS['metno/aerocom_users_database'] = 'users-db'
-    _DB_SEARCH_SUBDIRS['pyaerocom-testdata/'] = 'testdata'
-    _DB_SEARCH_SUBDIRS['MyPyaerocom/pyaerocom-testdata'] = 'testdata'
     _DB_SEARCH_SUBDIRS['MyPyaerocom/data'] = 'local-db'
 
     DONOTCACHEFILE = None
@@ -226,11 +209,7 @@ class Config(object):
 
     _LUSTRE_CHECK_PATH = '/project/aerocom/aerocom1/'
 
-    def __init__(self, basedir=None,
-                 output_dir=None, config_file=None,
-                 cache_dir=None, colocateddata_dir=None,
-                 write_fileio_err_log=True,
-                 activate_caching=True,
+    def __init__(self, config_file=None,
                  try_infer_environment=True):
 
         from pyaerocom import print_log, logger
@@ -238,11 +217,10 @@ class Config(object):
         self.logger = logger
 
         # Directories
-        self._cache_basedir = cache_dir
-        self._outputdir = output_dir
+        self._outputdir = None
+        self._cache_basedir = None
+        self._colocateddatadir = None
         self._logdir = None
-
-        self._colocateddatadir = colocateddata_dir
         self._filtermaskdir = None
         self._local_tmp_dir = None
         self._downloaddatadir = None
@@ -250,7 +228,7 @@ class Config(object):
         self._rejected_access = []
 
         # Options
-        self._caching_active = activate_caching
+        self._caching_active = True
 
         self._var_param = None
         self._coords = None
@@ -261,23 +239,24 @@ class Config(object):
         self.SUPPLDIRS = od()
         self._search_dirs = []
 
-        self.WRITE_FILEIO_ERR_LOG = write_fileio_err_log
+        self.WRITE_FILEIO_ERR_LOG = True
 
         self.last_config_file = None
         self._ebas_flag_info = None
 
         #: Settings for reading and writing of gridded data
         self.GRID_IO = GridIO()
-        self.logger.info('Initiating pyaerocom configuration')
 
-        # checks and validates / invalidates input basedir and config_file
-        # if both are provided
-        (basedir,
-         config_file) = self._check_input_basedir_and_config_file(basedir,
-                                                                  config_file)
+        if config_file is not None:
+            if not os.path.exists(config_file):
+                raise FileNotFoundError(
+                    f'input config file does not exist {config_file}'
+                    )
+            elif not config_file.endswith('ini'):
+                raise ValueError('Need path to an ini file for input config_file')
 
-        if try_infer_environment and not isinstance(config_file, str):
-            self.logger.info('Checking database access...')
+            basedir, config_file = os.path.split(config_file)
+        elif try_infer_environment:
             try:
                 basedir, config_file = self.infer_basedir_and_config()
             except FileNotFoundError:
@@ -291,31 +270,6 @@ class Config(object):
                                        .format(repr(e)))
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
-
-    def _check_input_basedir_and_config_file(self, basedir, config_file):
-        if config_file is not None and not os.path.exists(config_file):
-            self.print_log.warning('Ignoring input config_file {} since it '
-                                   'does not exist'.format(config_file))
-            config_file = None
-
-        if basedir is not None:
-            if not self._check_access(basedir):
-                self.print_log.warning('Failed to establish access to input '
-                                       'basedir={}'.format(basedir))
-                basedir=None
-            else:
-                if config_file is None:
-                    try:
-                        config_file, _ = self._infer_config_from_basedir(basedir)
-                    except FileNotFoundError:
-                        basedir=None # config_file is None and basedir is None
-
-        return basedir, config_file
-
-    @property
-    def _config_ini(self):
-        # for backwards compatibility
-        return self._config_ini_lustre
 
     def _check_access(self, loc, timeout=None):
         """Uses multiprocessing approach to check if location can be accessed
@@ -351,37 +305,6 @@ class Config(object):
     def _basedirs_search_db(self):
         return [self.ROOTDIR, self.HOMEDIR]
 
-    def _check_env_access(self, basedir, env_id):
-        if not os.path.exists(basedir):
-            raise FileNotFoundError('Location not found: {}'.format(basedir))
-        if not env_id in self._check_subdirs_cfg:
-            raise ValueError('No such environment with ID {}. Choose from {}'
-                             .format(env_id,
-                                     list(self._check_subdirs_cfg.keys())))
-        return self._check_access(os.path.join(basedir,
-                                               self._check_subdirs_cfg[env_id]))
-
-    def _check_basedir_environment(self, basedir):
-        """Check if input basedir can be linked with one of the supported databases
-
-        Note
-        ----
-        Does not check if the path actually exists.
-        """
-        basedir = os.path.normpath(basedir)
-        import pathlib
-        new = pathlib.Path(basedir)
-        last = new.parts[-1]
-        for search_dir, env_id in self._DB_SEARCH_SUBDIRS.items():
-            if pathlib.Path(search_dir).parts[0] == last:
-                check = os.path.join(*new.parts[:-1], search_dir)
-                if self._check_access(check):
-                    self.print_log.info('Input path {} was identified to be '
-                                   'connected with database {} and will be '
-                                   'updated to {}'.format(basedir, env_id, check))
-                    return check
-        return basedir
-
     def _infer_config_from_basedir(self, basedir):
 
         basedir = os.path.normpath(basedir)
@@ -401,11 +324,9 @@ class Config(object):
                 if self._check_access(basedir):
                     _chk_dir = os.path.join(basedir,
                                             self._check_subdirs_cfg[cfg_id])
-
                     if self._check_access(_chk_dir):
-
                         return (basedir, self._config_files[cfg_id])
-        raise FileNotFoundError('Could not find access to any registered '
+        raise FileNotFoundError('Could not establish access to any registered '
                                 'database')
 
     @property
@@ -539,8 +460,9 @@ class Config(object):
 
     @cache_basedir.setter
     def cache_basedir(self, val):
-        if check_write_access(val):
-            self._cache_basedir = os.path.abspath(val)
+        if not check_write_access(val):
+            raise ValueError(val)
+        self._cache_basedir = os.path.abspath(val)
 
 
     @property
@@ -560,6 +482,9 @@ class Config(object):
             raise ValueError('Cannot set cache directory. Input directory {} '
                              'does not exist or write '
                              'permission is not granted'.format(val))
+        spl = os.path.split(val)
+        if spl[-1] == self.user:
+            val = spl[0]
         self._cache_basedir = val
 
     @property
@@ -601,16 +526,6 @@ class Config(object):
 
 
     @property
-    def BASEDIR(self):
-        """DEPRECATED since v0.9.0: Base directory of data
-        """
-        msg=('BASEDIR attribute is deprecated, please see attrs. '
-             'DATA_SEARCH_DIRS for available search directories and '
-             'method add_data_search_dir for adding new locations. You can '
-             'still use the setter method for adding a database location')
-        raise DeprecationError(msg)
-
-    @property
     def DIR_INI_FILES(self):
         """Directory containing configuration files"""
         from pyaerocom import __dir__
@@ -644,28 +559,6 @@ class Config(object):
             return True
         except ModuleNotFoundError:
             return False
-
-    @property
-    def BASEMAP_AVAILABLE(self):
-        """
-        Boolean specifying if basemap library is installed
-
-        Returns
-        -------
-        bool
-
-        """
-        try:
-            from mpl_toolkits.basemap import Basemap
-            return True
-        except ModuleNotFoundError:
-            return False
-
-    def connect_database(self, location):
-        if not self._check_access(location):
-            raise FileNotFoundError('Cannot add {}: location does not exist')
-
-        raise NotImplementedError
 
     @property
     def EBAS_FLAGS_FILE(self):
@@ -831,40 +724,18 @@ class Config(object):
         try:
             check.get_file_list()
         except DataSourceError:
-            if 'renamed' in os.listdir(data_dir):
-                self.print_log.warning(
-                    f'Failed to register {obs_id} at {data_dir} using ungridded '
-                    f'reader {reader} but input dir has a renamed subdirectory, '
-                    f'trying to find valid data files in there instead'
-                )
-                chk_dir = os.path.join(data_dir, 'renamed')
-                self.OBSLOCS_UNGRIDDED.pop(obs_id)
-                self.add_ungridded_obs(obs_id, chk_dir, reader,
-                                       check_read=True)
-            else:
+            if not 'renamed' in os.listdir(data_dir):
                 raise
+            self.print_log.warning(
+                f'Failed to register {obs_id} at {data_dir} using ungridded '
+                f'reader {reader} but input dir has a renamed subdirectory, '
+                f'trying to find valid data files in there instead'
+            )
+            chk_dir = os.path.join(data_dir, 'renamed')
+            self.OBSLOCS_UNGRIDDED.pop(obs_id)
+            self.add_ungridded_obs(obs_id, chk_dir, reader,
+                                   check_read=True)
 
-    def change_database(self, database_name='metno', keep_root=False):
-        """
-        Changes the path setup for a specific data environment
-
-        Parameters
-        ----------
-        database_name : str
-            name of path environment for database. To see available database
-            ID's use :attr:`ALL_DATABASE_IDS`
-        keep_root : bool
-            if True, :attr:`BASEDIR` remains unchanged and paths in
-            corresponding ini files are set relative to current :attr:`BASEDIR`.
-            Else, :attr:`BASEDIR` is updated using the specifications
-            provided in the corresponding ini file.
-        """
-        raise NotImplementedError('This method is deprecated since v090 ...')
-        if not database_name in self.ALL_DATABASE_IDS:
-            raise ValueError('Unkown database name {}. Please choose from '
-                             '{}'.format(database_name, self.ALL_DATABASE_IDS))
-        self.read_config(self._config_files[database_name],
-                         keep_basedirs=keep_root)
 
     @property
     def ebas_flag_info(self):
@@ -891,12 +762,42 @@ class Config(object):
     def read_config(self, config_file, basedir=None,
                     init_obslocs_ungridded=False,
                     init_data_search_dirs=False):
-        #Read and import paths from ini file
+        """
+        Import paths from one of the config ini files
+
+        Parameters
+        ----------
+        config_file : str
+            file location of config ini file
+        basedir : str, optional
+            Base directory to be used for relative model and obs dirs specified
+            via BASEDIR in config file. If None, then the BASEDIR value in the
+            config file is used. The default is None.
+        init_obslocs_ungridded : bool, optional
+            If True, :attr:`OBSLOCS_UNGRIDDED` will be re-instantiated (i.e.
+            all currently set obs locations will be deleted).
+            The default is False.
+        init_data_search_dirs : bool, optional
+            If True, :attr:`DATA_SEARCH_DIRS` will be re-instantiated (i.e.
+            all currently set data search directories will be deleted).
+            The default is False.
+
+        Raises
+        ------
+        FileNotFoundError
+            If input config file is not a file or does not exist.
+
+        Returns
+        -------
+        None.
+
+        """
 
         if not os.path.isfile(config_file):
-            raise IOError("Configuration file paths.ini at %s does not exist "
-                          "or is not a file"
-                          %config_file)
+            raise FileNotFoundError(
+                f"Configuration file paths.ini at {config_file} does not exist "
+                f"or is not a file"
+                )
 
         if init_obslocs_ungridded:
             self.OBSLOCS_UNGRIDDED = od()
@@ -963,11 +864,15 @@ class Config(object):
             basedir = str(self._resolve_basedir(locs, chk_dirs))
         except FileNotFoundError:
             basedir = None
-
+        repl_str = '${BASEDIR}'
         for loc in locs:
-            candidate = loc.replace('${BASEDIR}', basedir)
-            if not candidate in self._search_dirs:
-                self._search_dirs.append(candidate)
+            if repl_str in loc:
+                if basedir is None:
+                    continue
+                loc = loc.replace(repl_str, basedir)
+
+            if not loc in self._search_dirs:
+                self._search_dirs.append(loc)
         return True
 
     def _add_obsconfig(self, cr, basedir=None):
@@ -1008,12 +913,14 @@ class Config(object):
                         chk = Path(path.replace(repl, chk_dir))
                         if self._check_access(chk):
                             dirconfirmed = str(chk_dir)
-
+        homedir = os.path.expanduser('~')
         for name, loc in candidates.items():
-            if '${BASEDIR}' in loc and dirconfirmed is not None:
-                loc = loc.replace('${BASEDIR}', dirconfirmed)
+            if repl in loc:
+                if dirconfirmed is None:
+                    continue
+                loc = loc.replace(repl, dirconfirmed)
             if '${HOME}' in loc:
-                loc = loc.replace('${HOME}', os.path.expanduser('~'))
+                loc = loc.replace('${HOME}', homedir)
 
             self.OBSLOCS_UNGRIDDED[name] = loc
 
