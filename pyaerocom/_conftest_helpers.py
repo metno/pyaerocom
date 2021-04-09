@@ -8,6 +8,7 @@ Created on Tue Feb 11 15:57:09 2020
 from pyaerocom import StationData, ColocatedData, Filter
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 
 def _load_coldata_tm5_aeronet_from_scratch(file_path):
@@ -118,9 +119,9 @@ def _create_fake_coldata():
 
     dtime = pd.date_range('2000-01-01', '2019-12-31', freq='MS') + np.timedelta64(14, 'D')
 
-    lats = [-80, 0, 70]
-    lons = [-150, 0, 100]
-    alts = [0, 100, 2000]
+    lats = [-80, 0, 70, 0.1]
+    lons = [-150, 0, 100, 0.1]
+    alts = [0, 100, 2000, 10]
 
     timenum = len(dtime)
     statnum = len(lats)
@@ -132,17 +133,24 @@ def _create_fake_coldata():
     data = np.ones((2, timenum, statnum))
     xrange_modulation = np.linspace(0,np.pi*40,240)
     data[1] += 0.1 #+10% model bias
-    # modify first site
+
+    # 1. SITE: modify first site (sin , cos waves)
     data[0,:,0] += np.sin(xrange_modulation)
-    data[1,:,0] += np.cos(xrange_modulation) # phase shifted to mod
+    data[1,:,0] += np.cos(xrange_modulation) # phase shifted to obs
 
     years = dtime.year.values
-    # modify second site
+    # 2. SITE: modify second site (yearly stepwise increase, double as
+    # pronounced in obs than in model)
     c = 0
     for year in np.unique(years):
         mask = years == year
-        data[:,mask,1] += c
+        data[0,mask,1] += c*0.4
+        data[1,mask,1] += c*0.2
         c+=1
+
+    # 3 SITE: add noise to model and obs
+    data[0,:,2] += np.random.rand(timenum)
+    data[1,:,2] += np.random.rand(timenum)
 
     meta = {
             'data_source'       :   ['fakeobs',
@@ -188,7 +196,8 @@ def _create_fake_coldata():
 
 if __name__ == '__main__':
     import pyaerocom as pya
-    #midmonth 20 timestamps
+    import matplotlib.pyplot as plt
+    plt.close('all')
     cd = _create_fake_coldata()
 
     stats = cd.calc_statistics()
@@ -197,11 +206,27 @@ if __name__ == '__main__':
 
     arr = cd.data
 
+    # ONE WAY: flatten certain dimensions and compute stats from that
     avg_alltimes = np.nanmean(arr.data, axis=1)
     obs, mod = avg_alltimes[0], avg_alltimes[1]
 
     stats_spatial = pya.mathutils.calc_statistics(mod, obs)
     print('Spatial stats')
     print(stats_spatial)
-    #cd.plot_scatter()
+
+    avg_allsites = np.nanmean(arr.data, axis=2)
+    obs, mod = avg_allsites[0], avg_allsites[1]
+
+    stats_temporal = pya.mathutils.calc_statistics(mod, obs)
+    print('Temporal stats')
+    print(stats_temporal)
+
+    # OTHER WAY: calculate corr for each entry in one dimension (e.g. corr for
+    # each site or corr for january from all sites) and then
+    corr_time = xr.corr(arr[1],arr[0], dim='time')
+    corr_stats = xr.corr(arr[1],arr[0], dim='station_name')
+
+    cd.plot_scatter()
+
+
 
