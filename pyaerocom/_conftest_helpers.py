@@ -5,7 +5,7 @@ Created on Tue Feb 11 15:57:09 2020
 
 @author: jonasg
 """
-from pyaerocom import StationData
+from pyaerocom import StationData, ColocatedData, Filter
 import numpy as np
 import pandas as pd
 
@@ -111,9 +111,97 @@ def create_fake_stationdata_list():
     stats.append(stat_werr)
     return stats
 
+def _create_fake_coldata():
+    var = 'concpm10'
+    filter_name = 'WORLD-wMOUNTAINS'
+    regfilter = Filter(name=filter_name)
+
+    dtime = pd.date_range('2000-01-01', '2019-12-31', freq='MS') + np.timedelta64(14, 'D')
+
+    lats = [-80, 0, 70]
+    lons = [-150, 0, 100]
+    alts = [0, 100, 2000]
+
+    timenum = len(dtime)
+    statnum = len(lats)
+    c = 1
+    statnames = []
+    for lat in lats:
+        statnames.append(f'FakeStation{c}')
+        c+=1
+    data = np.ones((2, timenum, statnum))
+    xrange_modulation = np.linspace(0,np.pi*40,240)
+    data[1] += 0.1 #+10% model bias
+    # modify first site
+    data[0,:,0] += np.sin(xrange_modulation)
+    data[1,:,0] += np.cos(xrange_modulation) # phase shifted to mod
+
+    years = dtime.year.values
+    # modify second site
+    c = 0
+    for year in np.unique(years):
+        mask = years == year
+        data[:,mask,1] += c
+        c+=1
+
+    meta = {
+            'data_source'       :   ['fakeobs',
+                                     'fakemod'],
+            'var_name'          :   [var,var],
+            'ts_type'           :   'monthly', # will be updated below if resampling
+            'filter_name'       :   filter_name,
+            'ts_type_src'       :   ['monthly', 'daily'],
+            'start_str'         :   dtime[0].strftime('%Y%m%d'),
+            'stop_str'          :   dtime[-1].strftime('%Y%m%d'),
+            'var_units'         :   ['ug m-3','ug m-3'],
+            'vert_scheme'       :   'surface',
+            'data_level'        :   3,
+            'revision_ref'      :   '20210409',
+            'from_files'        :   [],
+            'from_files_ref'    :   None,
+            'stations_ignored'  :   None,
+            'colocate_time'     :   False,
+            'obs_is_clim'       :   False,
+            'pyaerocom'         :   '0.11.0',
+            'apply_constraints' :   True,
+            'min_num_obs'       :   3,
+            'resample_how'      :   None}
+
+
+    meta.update(regfilter.to_dict())
+
+
+    # create coordinates of DataArray
+    coords = {'data_source' : meta['data_source'],
+              'time'        : dtime,
+              'station_name': statnames,
+              'latitude'    : ('station_name', lats),
+              'longitude'   : ('station_name', lons),
+              'altitude'    : ('station_name', alts)
+              }
+
+    dims = ['data_source', 'time', 'station_name']
+    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var,
+                         attrs=meta)
+
+    return cd
+
 if __name__ == '__main__':
     import pyaerocom as pya
-    stats = create_fake_stationdata_list()
+    #midmonth 20 timestamps
+    cd = _create_fake_coldata()
 
-    for stat in stats:
-        print(stat)
+    stats = cd.calc_statistics()
+    print('Normal stats')
+    print(stats)
+
+    arr = cd.data
+
+    avg_alltimes = np.nanmean(arr.data, axis=1)
+    obs, mod = avg_alltimes[0], avg_alltimes[1]
+
+    stats_spatial = pya.mathutils.calc_statistics(mod, obs)
+    print('Spatial stats')
+    print(stats_spatial)
+    #cd.plot_scatter()
+
