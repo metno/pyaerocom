@@ -216,7 +216,8 @@ def coldata():
         'tm5_aeronet'   : ColocatedData(str(EXAMPLE_FILE)),
         'fake_nodims'  : ColocatedData(np.ones((2,1,1))),
         'fake_3d'       : cth._create_fake_coldata_3d(),
-        'fake_4d'       : cth._create_fake_coldata_4d()
+        'fake_4d'       : cth._create_fake_coldata_4d(),
+        'fake_5d'       : cth._create_fake_coldata_5d()
         }
 
 @contextmanager

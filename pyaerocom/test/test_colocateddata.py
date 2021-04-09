@@ -7,6 +7,7 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import pytest
 import numpy as np
+import numpy.testing as npt
 import pandas as pd
 import xarray as xr
 from pyaerocom import ColocatedData
@@ -118,11 +119,36 @@ def test_ColocatedData_units(coldata,which,raises):
         assert isinstance(val, list)
         assert [isinstance(x, str) for x in val]
 
+@pytest.mark.parametrize('which,raises,result', [
+    ('fake_5d', pytest.raises(DataDimensionError), None),
+    ('tm5_aeronet', does_not_raise_exception(),8),
+    ('fake_nodims', pytest.raises(DataDimensionError), None),
+    ('fake_3d', does_not_raise_exception(), 4),
+    ('fake_4d', does_not_raise_exception(), 16),
+
+    ])
+def test_ColocatedData_num_coords(coldata,which,raises,result):
+    cd = coldata[which]
+    with raises:
+        output = cd.num_coords
+        assert output == result
+
+@pytest.mark.parametrize('which,raises,result', [
+    ('tm5_aeronet', does_not_raise_exception(),8),
+    ('fake_nodims', pytest.raises(DataDimensionError), None),
+    ('fake_3d', does_not_raise_exception(), 4),
+    ('fake_4d', does_not_raise_exception(), 15)
+    ])
+def test_ColocatedData_num_coords_with_data(coldata,which,raises,result):
+    cd = coldata[which]
+    with raises:
+        output = cd.num_coords_with_data
+        assert output == result
 
 @pytest.mark.parametrize('which,num_coords,raises', [
     ('fake_nodims', 0, pytest.raises(ValueError)),
     ('tm5_aeronet', 8, does_not_raise_exception()),
-    ('fake_4d', 16, does_not_raise_exception())
+    ('fake_4d', 15, does_not_raise_exception())
     ])
 def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
     cd = coldata[which]
@@ -131,6 +157,21 @@ def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
         assert isinstance(val, list)
         assert len(val) == 2
         assert len(val[0]) == len(val[1]) == num_coords
+
+@pytest.mark.parametrize('which,args,raises,result', [
+    ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
+    ])
+def test_ColocatedData_calc_statistics(coldata,which,args,raises,result):
+    cd = coldata[which]
+    with raises:
+        output = cd.calc_statistics(**args)
+        assert isinstance(output, dict)
+        for key,val in result.items():
+            assert key in output
+            if isinstance(val, str):
+                assert output[key] == val
+            else:
+                npt.assert_allclose(output[key], val, rtol=1e-3)
 
 def test_meta_access_filename():
     name = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'

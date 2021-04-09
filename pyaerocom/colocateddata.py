@@ -230,34 +230,36 @@ class ColocatedData(object):
 
     @property
     def num_coords(self):
-        """Total number of lat/lon coordinates"""
-        if 'station_name' in self.coords:
-            return len(self.data.station_name)
-
-        elif self.ndim == 4:
-            if not all([x in self.data.dims for x in ('longitude', 'latitude')]):
-                raise AttributeError('Cannot determine grid points. Either '
-                                     'longitude or latitude are not contained '
-                                     'in 4D data object, which contains the '
-                                     'following dimensions: {}'.self.data.dims)
-            return len(self.data.longitude) * len(self.data.latitude)
-        elif not self.has_time_dim:
-            if self.has_latlon_dims:
-                return np.prod(self.data[0].shape)
-        raise DataDimensionError('Could not infer number of coordinates')
+        """Total number of lat/lon coordinate pairs"""
+        obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
+        if not 'station_name' in obj.coords:
+            raise DataDimensionError('Need dimension station_name')
+        elif not obj.ndim == 3:
+            raise DataDimensionError(
+                'Number of coordinates can only be retrieved for 3D data'
+                )
+        return len(obj.data.station_name)
 
     @property
     def num_coords_with_data(self):
-        """Number of lat/lon coordinates that contain at least one datapoint
+        """Number of lat/lon coordinate pairs that contain at least one datapoint
 
-        Todo
+        Note
         ----
-        check 4D data
+        Occurrence of valid data is only checked for obsdata (first index in
+        data_source dimension).
         """
-        if self.has_time_dim:
-            return (self.data[0].count(dim='time') > 0).data.sum()
-        # TODO: ADDED IN A RUSH BY JGLISS ON 17.06.2020, check!
-        return (self.data[0].count() > 0).data.sum()
+        obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
+        if not 'station_name' in obj.coords:
+            raise DataDimensionError('Need dimension station_name')
+        elif not obj.ndim == 3:
+            raise DataDimensionError(
+                'Number of coordinates can only be retrieved for 3D data'
+                )
+        obs = obj.data[0]
+        if obj.has_time_dim:
+            return (obs.count(dim='time') > 0).data.sum()
+        return (obs.count() > 0).data.sum()
 
     @property
     def has_time_dim(self):
@@ -512,35 +514,23 @@ class ColocatedData(object):
             new colocated data object with dimension station_name and lat lon
             arrays as additional coordinates
         """
-        if not 'latitude' in self.dims or not 'longitude' in self.dims:
-            raise AttributeError('Need latitude and longitude dimension')
-        elif 'station_name' in self.dims:
-            raise AttributeError('Cannot stack lat lon dimensions to new dim '
-                                 'station_name as it already exists in data')
+        if not self.has_latlon_dims:
+            raise DataDimensionError('Need latitude and longitude dimensions')
+
+        newdims = []
+        for dim in self.dims:
+            if dim == 'latitude':
+                newdims.append('station_name')
+            elif dim == 'longitude':
+                continue
+            else:
+                newdims.append(dim)
 
         arr = self.stack(station_name=['latitude', 'longitude'],
                          inplace=False).data
-        meta = {}
-        meta.update(self.metadata)
-        lats = arr.latitude.values
-        lons = arr.longitude.values
-        time = arr.time.values
-        stridx = [str(x) for x in arr.station_name.values]
-        nparr = arr.data
 
-        coords = {
-                    'data_source' : ['obs', 'mod'],
-                    'time'        : time,
-                    'station_name': stridx,
-                    'latitude'    : ('station_name', lats),
-                    'longitude'   : ('station_name', lons)
-        }
-
-        dims = ['data_source', 'time', 'station_name']
-
-        output = ColocatedData(data=nparr, coords=coords, dims=dims,
-                               name=self.name, attrs=meta)
-        return output
+        arr = arr.transpose(*newdims)
+        return ColocatedData(arr)
 
     def stack(self, inplace=False, **kwargs):
         """Stack one or more dimensions
