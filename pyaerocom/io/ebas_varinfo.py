@@ -36,8 +36,6 @@ class EbasVarInfo(BrowseDict):
         multiplicative scale factor that is applied in order to convert
         EBAS variable into AeroCom variable (e.g. 1.4 for conversion of
         EBAS OC measurement to AeroCom concoa variable)
-    old_name : str
-        old variable name (refers to outdated conventions, currently not used)
 
     Parameters
     ----------
@@ -71,9 +69,6 @@ class EbasVarInfo(BrowseDict):
         #: scale factor for conversion to Aerocom units
         self.scale_factor = 1
 
-        #: old variable name
-        self.old_name = None
-
         #imports default information and, on top, variable information (if
         # applicable)
         if init:
@@ -87,10 +82,14 @@ class EbasVarInfo(BrowseDict):
 
     @staticmethod
     def open_config():
+        """Open ebas_config.ini file with `ConfigParser`
+
+        Returns
+        -------
+        ConfigParser
+        """
         from pyaerocom import __dir__
         fpath = os.path.join(__dir__, "data", "ebas_config.ini")
-        if not os.path.exists(fpath):
-            raise IOError("Ebas config file could not be found: {}".format(fpath))
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
         return conf_reader
@@ -135,9 +134,7 @@ class EbasVarInfo(BrowseDict):
         for key in self.keys():
             if key in var_info:
                 val = var_info[key]
-                if key in ('var_name', 'old_name') :
-                    self[key] = val
-                elif key == 'scale_factor':
+                if key == 'scale_factor':
                     self[key] = float(val.split('#')[0].strip())
                 else:
                     self[key] = list(dict.fromkeys([x for x in val.split(',')]))
@@ -242,57 +239,6 @@ class EbasVarInfo(BrowseDict):
         for k, v in self.items():
                 s += "\n%s: %s" %(k,v)
         return s
-
-def check_all_variables():
-    """Helper function that checks all EBAS variables against SQL database
-
-    For all variables, see file ``ebas_config.ini`` in data directory
-
-    Raises
-    ------
-    AttributeError
-        if one of the variable definitions in the ini file is not according to
-        requirements
-    """
-    # TODO: check this method...
-    raise NotImplementedError('This method needs review and should be moved '
-                              'into another module...')
-    from pyaerocom.io import EbasFileIndex
-    all_vars = EbasVarInfo.PROVIDES_VARIABLES()
-    db = EbasFileIndex()
-    db_info = {'component'     :   db.ALL_VARIABLES,
-               'matrix'        :   db.ALL_MATRICES,
-               'instrument'    :   db.ALL_INSTRUMENTS,
-               'statistics'    :   db.ALL_STATISTICS_PARAMS}
-
-    errors = []
-    checked_vars = []
-    for varname in all_vars:
-        info = EbasVarInfo(varname)
-        print('Checking variable {}'.format(varname))
-        if varname in checked_vars:
-            errors.append('Variable {} is defined more than once'.format(varname))
-        checked_vars.append(varname)
-        for attr, items_db in db_info.items():
-            vals_to_check = info[attr]
-            if vals_to_check is not None:
-                if not isinstance(vals_to_check, list):
-                    raise AttributeError('Please check attribute {} of '
-                                         'variable {}'.format(attr, varname))
-                for item in vals_to_check:
-                    if not item in items_db:
-                        s=''
-                        for compname, db_vals in db_info.items():
-                            if item in db_vals:
-                                s += ('\nAdditional info: ID {} was found in '
-                                      'databes attr {}'.format(item, compname))
-                        errors.append(("No such {} ({}) in database. Please "
-                                       "check variable {}.{}".format(attr,
-                                                                     item,
-                                                                     varname,
-                                                                     s)))
-
-    return errors
 
 if __name__=="__main__":
     print(EbasVarInfo('concso2'))

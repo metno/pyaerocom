@@ -7,6 +7,7 @@ Created on Wed Feb 19 15:28:03 2020
 """
 import pytest
 from pyaerocom import const
+from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 
 TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
@@ -95,8 +96,8 @@ def test_open_config():
     from configparser import ConfigParser
     assert isinstance(EbasVarInfo.open_config(), ConfigParser)
 
-def test_var_names_ini():
-    pass
+def test_var_name_aerocom():
+    assert EbasVarInfo('sconcno3').var_name_aerocom == 'concno3'
 
 @pytest.mark.parametrize(('var_name, component, matrix, instrument, '
                           'statistics, requires, scale_factor'), TESTDATA)
@@ -111,6 +112,37 @@ def test_varinfo(var_name, component, matrix, instrument, statistics,
     assert var.statistics == statistics
     assert var.requires == requires
     assert var.scale_factor == scale_factor
+
+def test_to_dict():
+    info = EbasVarInfo('concpm10')
+    dic = info.to_dict()
+    assert isinstance(dic, dict)
+    for key, val in dic.items():
+        assert getattr(info, key) == val
+
+@pytest.mark.parametrize('var,constraints,raises', [
+    (None, {}, pytest.raises(AttributeError)),
+    ('sc550dryaer', {}, pytest.raises(ValueError)),
+    ('concpm10', {}, does_not_raise_exception()),
+    ('concpm10', {'bla': 42}, does_not_raise_exception()),
+    # ToDo: the following example should actually be checked and maybe raise an Exception already here
+    # (i.e. start_date is a valid constraint but 42 is not allowed as input)
+    ('concpm10', {'start_date': 42}, does_not_raise_exception()),
+    ])
+def test_make_sql_request(var,constraints,raises):
+    if var is None:
+        info = EbasVarInfo('concpm10')
+        info.component = None
+    else:
+        info = EbasVarInfo(var)
+    with raises:
+        req = info.make_sql_request(**constraints)
+        from pyaerocom.io import EbasSQLRequest
+        assert isinstance(req, EbasSQLRequest)
+
+def test___str__():
+    s = EbasVarInfo('concpm10').__str__()
+    assert isinstance(s, str)
 
 if __name__=='__main__':
 

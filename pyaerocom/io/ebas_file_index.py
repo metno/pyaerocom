@@ -66,13 +66,15 @@ class EbasSQLRequest(BrowseDict):
         self.statistics = statistics
         self.datalevel = datalevel
 
-    def update(self, verbose=True, **kwargs):
+    def update(self, **kwargs):
         for k, v in kwargs.items():
             if k in self:
                 self[k] = v
             else:
-                if verbose:
-                    print("Unknown request key {} (value {})".format(k, v))
+                const.print_log.warning(
+                    f"Unknown EBAS SQL request key {k} (value {v})"
+                    )
+
 
     @staticmethod
     def _var2sql(var):
