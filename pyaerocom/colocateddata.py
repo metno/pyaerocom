@@ -748,38 +748,45 @@ class ColocatedData(object):
             cd.data.data[zeros] = np.nan
         return cd
 
-    def calc_statistics(self, constrain_val_range=False,
-                        use_area_weights=False, **kwargs):
+    def calc_statistics(self, use_area_weights=False,
+                        add_spatial_temporal_corr=False,
+                        **kwargs):
         """Calculate statistics from model and obs data
 
-        Wrapper for function :func:`pyaerocom.mathutils.calc_statistics`
+        Calculate standard statistics for model assessment. Uses
+        :func:`pyaerocom.mathutils.calc_statistics`.
+
+        Parameters
+        ----------
+        use_area_weights : bool
+            if True and if data is 4D (i.e. has lat and lon dimension), then
+            area weights are applied when caluclating the statistics based on
+            the coordinate cell sizes.
+        add_spatial_temporal_corr : bool
+            if True spatial and temporal Pearson correlation are computed as
+            well.
+        **kwargs
+            additional keyword args passed to :func:`pyaerocom.mathutils.calc_statistics`
 
         Returns
         -------
         dict
             dictionary containing statistical parameters
         """
-        if constrain_val_range:
-            var = Variable(self.metadata['var_name'][1])
-            kwargs['lowlim'] = var.lower_limit
-            kwargs['highlim'] = var.upper_limit
-
+        if add_spatial_temporal_corr:
+            raise NotImplementedError('Coming soon...')
         if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
             kwargs['weights'] = self.area_weights[0].flatten()
-        elif 'weights' in kwargs:
-            raise ValueError('Invalid input combination: weights are provided '
-                             'but use_area_weights is set to False...')
 
-
+        nc, ncd = self.num_coords, self.num_coords_with_data
         stats = calc_statistics(self.data.values[1].flatten(),
                                 self.data.values[0].flatten(),
                                 **kwargs)
-
-        stats['num_coords_with_data'] = self.num_coords_with_data
-        stats['num_coords_tot'] = self.num_coords
+        stats['num_coords_tot'] = nc
+        stats['num_coords_with_data'] = ncd
         return stats
 
-    def plot_scatter(self, constrain_val_range=False,  **kwargs):
+    def plot_scatter(self, **kwargs):
         """Create scatter plot of data
 
         Parameters
@@ -795,11 +802,6 @@ class ColocatedData(object):
         meta = self.metadata
         num_points = self.num_coords_with_data
         vars_ = meta['var_name']
-
-        if constrain_val_range:
-            var = Variable(self.metadata['var_name'][0])
-            kwargs['lowlim_stats'] = var.lower_limit
-            kwargs['highlim_stats'] = var.upper_limit
 
         if vars_[0] != vars_[1]:
             var_ref = vars_[0]

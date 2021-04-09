@@ -160,18 +160,15 @@ def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
 
 @pytest.mark.parametrize('which,args,raises,result', [
     ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
+    ('fake_3d', {}, does_not_raise_exception(),{}),
+    ('fake_4d', {}, does_not_raise_exception(),{}),
+    ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
     ])
 def test_ColocatedData_calc_statistics(coldata,which,args,raises,result):
     cd = coldata[which]
     with raises:
         output = cd.calc_statistics(**args)
         assert isinstance(output, dict)
-        for key,val in result.items():
-            assert key in output
-            if isinstance(val, str):
-                assert output[key] == val
-            else:
-                npt.assert_allclose(output[key], val, rtol=1e-3)
 
 def test_meta_access_filename():
     name = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
