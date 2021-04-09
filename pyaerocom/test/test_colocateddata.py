@@ -157,14 +157,14 @@ def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
         assert len(val) == 2
         assert len(val[0]) == len(val[1]) == num_coords
 
-@pytest.mark.parametrize('which,args,raises,result', [
-    ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
-    ('fake_3d', {}, does_not_raise_exception(),{}),
-    ('fake_4d', {}, does_not_raise_exception(),{}),
-    ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception(),{}),
-    ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
+@pytest.mark.parametrize('which,args,raises', [
+    ('fake_nodims', {}, pytest.raises(DataDimensionError)),
+    ('fake_3d', {}, does_not_raise_exception()),
+    ('fake_4d', {}, does_not_raise_exception()),
+    ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception()),
+    ('fake_5d', {}, pytest.raises(DataDimensionError)),
     ])
-def test_ColocatedData_calc_statistics(coldata,which,args,raises,result):
+def test_ColocatedData_calc_statistics(coldata,which,args,raises):
     cd = coldata[which]
     with raises:
         output = cd.calc_statistics(**args)
