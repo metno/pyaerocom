@@ -7,7 +7,6 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import pytest
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 import xarray as xr
 from pyaerocom import ColocatedData
@@ -162,6 +161,7 @@ def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
     ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
     ('fake_3d', {}, does_not_raise_exception(),{}),
     ('fake_4d', {}, does_not_raise_exception(),{}),
+    ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception(),{}),
     ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
     ])
 def test_ColocatedData_calc_statistics(coldata,which,args,raises,result):

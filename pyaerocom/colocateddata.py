@@ -17,7 +17,6 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
                                   NetcdfError, VarNotAvailableError,
                                   MetaDataError)
 from pyaerocom.plot.plotscatter import plot_scatter
-from pyaerocom.variable import Variable
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
