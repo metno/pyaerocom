@@ -6,6 +6,7 @@ Created on Tue Feb 11 15:57:09 2020
 @author: jonasg
 """
 import pytest
+import numpy as np
 
 from contextlib import contextmanager
 
@@ -13,7 +14,7 @@ from pyaerocom import const
 import pyaerocom._conftest_helpers as cth
 import pyaerocom.testdata_access as td
 from pyaerocom.griddeddata import GriddedData
-
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.io import (ReadAasEtal, ReadEbas, ReadAeronetSunV3,
                           ReadAeronetSdaV3)
 
@@ -207,6 +208,16 @@ def statlist():
     data['concpm10_X2'] = [stat.copy() for stat in pm10sites[:3]]
     data['concpm10'] = [stat.copy() for stat in pm10sites[:2]]
     return data
+
+@pytest.fixture(scope='session')
+def coldata():
+    EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS['coldata_tm5_aeronet'])
+    return {
+        'tm5_aeronet'   : ColocatedData(str(EXAMPLE_FILE)),
+        'fake_nodims'  : ColocatedData(np.ones((2,1,1))),
+        'fake_3d'       : cth._create_fake_coldata_3d(),
+        'fake_4d'       : cth._create_fake_coldata_4d()
+        }
 
 @contextmanager
 def does_not_raise_exception():

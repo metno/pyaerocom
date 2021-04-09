@@ -112,7 +112,7 @@ def create_fake_stationdata_list():
     stats.append(stat_werr)
     return stats
 
-def _create_fake_coldata():
+def _create_fake_coldata_3d():
     var = 'concpm10'
     filter_name = 'WORLD-wMOUNTAINS'
     regfilter = Filter(name=filter_name)
@@ -193,6 +193,22 @@ def _create_fake_coldata():
                          attrs=meta)
 
     return cd
+
+def _create_fake_coldata_4d():
+    _lats_fake = np.arange(30,70,10)
+    _lons_fake = np.arange(0,40,10)
+    _time_fake = pd.date_range('2010-01', '2010-03', freq='MS')
+    _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake)))
+
+    coords = {'data_source' : ['obs', 'mod'],
+              'time'        : _time_fake,
+              'latitude'    : _lats_fake,
+              'longitude'   : _lons_fake
+              }
+
+    dims = ['data_source', 'time', 'latitude', 'longitude']
+
+    return ColocatedData(data=_data_fake, coords=coords, dims=dims)
 
 if __name__ == '__main__':
     import pyaerocom as pya

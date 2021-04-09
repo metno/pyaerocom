@@ -13,28 +13,7 @@ from pyaerocom import ColocatedData
 from pyaerocom.exceptions import DataCoverageError, DataDimensionError
 from pyaerocom.conftest import TESTDATADIR, CHECK_PATHS, does_not_raise_exception
 
-def make_fake_4d_coldata():
-    _lats_fake = np.arange(30,70,10)
-    _lons_fake = np.arange(0,40,10)
-    _time_fake = pd.date_range('2010-01', '2010-03', freq='MS')
-    _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake)))
-
-    coords = {'data_source' : ['obs', 'mod'],
-              'time'        : _time_fake,
-              'latitude'    : _lats_fake,
-              'longitude'   : _lons_fake
-              }
-
-    dims = ['data_source', 'time', 'latitude', 'longitude']
-
-    return ColocatedData(data=_data_fake, coords=coords, dims=dims)
-
 EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS['coldata_tm5_aeronet'])
-
-COLDATA = ColocatedData(str(EXAMPLE_FILE))
-COLDATA_NODIMS = ColocatedData(np.ones((2,1,1)))
-COLDATA_4D_FAKE = make_fake_4d_coldata()
-
 @pytest.mark.parametrize('data,kwargs,raises', [
     (None, {}, pytest.raises(AttributeError)),
     (EXAMPLE_FILE, {}, does_not_raise_exception()),
@@ -67,78 +46,86 @@ def test_ColocatedData_name():
     cd.name = 'bla'
     assert cd.name == cd.data.name == 'bla'
 
-@pytest.mark.parametrize('cd,raises', [
-    (COLDATA_NODIMS, pytest.raises(AttributeError)),
-    (COLDATA, does_not_raise_exception())
+@pytest.mark.parametrize('which,raises', [
+    ('fake_nodims', pytest.raises(AttributeError)),
+    ('tm5_aeronet', does_not_raise_exception())
     ])
-def test_ColocatedData_data_source(cd,raises):
+def test_ColocatedData_data_source(coldata, which, raises):
+    cd = coldata[which]
     with raises:
         ds = cd.data_source
         assert isinstance(ds, xr.DataArray)
         assert len(ds) == 2
 
-@pytest.mark.parametrize('cd,raises', [
-    (COLDATA_NODIMS, pytest.raises(AttributeError)),
-    (COLDATA, does_not_raise_exception())
+@pytest.mark.parametrize('which,raises', [
+    ('fake_nodims', pytest.raises(AttributeError)),
+    ('tm5_aeronet', does_not_raise_exception())
     ])
-def test_ColocatedData_var_name(cd,raises):
+def test_ColocatedData_var_name(coldata, which, raises):
+    cd = coldata[which]
     with raises:
         val = cd.var_name
         assert isinstance(val, list)
 
-@pytest.mark.parametrize('cd,raises', [
-    (COLDATA_NODIMS, pytest.raises(AttributeError)),
-    (COLDATA, does_not_raise_exception())
+@pytest.mark.parametrize('which,raises', [
+    ('fake_nodims', pytest.raises(AttributeError)),
+    ('tm5_aeronet', does_not_raise_exception())
     ])
-def test_ColocatedData_latitude(cd,raises):
+def test_ColocatedData_latitude(coldata, which, raises):
+    cd = coldata[which]
     with raises:
         val = cd.latitude
         assert isinstance(val, xr.DataArray)
 
-@pytest.mark.parametrize('cd,raises', [
-    (COLDATA_NODIMS, pytest.raises(AttributeError)),
-    (COLDATA, does_not_raise_exception())
+@pytest.mark.parametrize('which,raises', [
+    ('fake_nodims', pytest.raises(AttributeError)),
+    ('tm5_aeronet', does_not_raise_exception())
     ])
-def test_ColocatedData_longitude(cd,raises):
+def test_ColocatedData_longitude(coldata, which, raises):
+    cd = coldata[which]
     with raises:
         val = cd.longitude
         assert isinstance(val, xr.DataArray)
 
-@pytest.mark.parametrize('cd,raises', [
-    (COLDATA_NODIMS, pytest.raises(AttributeError)),
-    (COLDATA, does_not_raise_exception())
+@pytest.mark.parametrize('which,raises', [
+    ('fake_nodims', pytest.raises(AttributeError)),
+    ('tm5_aeronet', does_not_raise_exception())
     ])
-def test_ColocatedData_time(cd,raises):
+def test_ColocatedData_time(coldata,which,raises):
+    cd = coldata[which]
     with raises:
         val = cd.time
         assert isinstance(val, xr.DataArray)
 
-@pytest.mark.parametrize('cd,raises', [
-    (COLDATA_NODIMS, pytest.raises(ValueError)),
-    (COLDATA, does_not_raise_exception())
+@pytest.mark.parametrize('which,raises', [
+    ('fake_nodims', pytest.raises(ValueError)),
+    ('tm5_aeronet', does_not_raise_exception())
     ])
-def test_ColocatedData_ts_type(cd,raises):
+def test_ColocatedData_ts_type(coldata,which,raises):
+    cd = coldata[which]
     with raises:
         val = cd.ts_type
         assert isinstance(val, str)
 
-@pytest.mark.parametrize('cd,raises', [
-    (COLDATA_NODIMS, pytest.raises(KeyError)),
-    (COLDATA, does_not_raise_exception())
+@pytest.mark.parametrize('which,raises', [
+    ('fake_nodims', pytest.raises(KeyError)),
+    ('tm5_aeronet', does_not_raise_exception())
     ])
-def test_ColocatedData_units(cd,raises):
+def test_ColocatedData_units(coldata,which,raises):
+    cd = coldata[which]
     with raises:
         val = cd.units
         assert isinstance(val, list)
         assert [isinstance(x, str) for x in val]
 
 
-@pytest.mark.parametrize('cd,num_coords,raises', [
-    (COLDATA_NODIMS, 0, pytest.raises(ValueError)),
-    (COLDATA, 8, does_not_raise_exception()),
-    (COLDATA_4D_FAKE, 16, does_not_raise_exception())
+@pytest.mark.parametrize('which,num_coords,raises', [
+    ('fake_nodims', 0, pytest.raises(ValueError)),
+    ('tm5_aeronet', 8, does_not_raise_exception()),
+    ('fake_4d', 16, does_not_raise_exception())
     ])
-def test_ColocatedData_get_coords_valid_obs(cd,num_coords,raises):
+def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
+    cd = coldata[which]
     with raises:
         val = cd.get_coords_valid_obs()
         assert isinstance(val, list)
