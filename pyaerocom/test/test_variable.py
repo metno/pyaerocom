@@ -11,7 +11,6 @@ from pyaerocom.variable import get_emep_variables
     ('od550csaer', 'od550aer'),
     ('latitude', 'lat'),
     ('abs550oc', 'abs550oa'),
-    ('ABS550aer', 'abs550aer'),
     ('sconcss', 'concss'),
 
     ])
@@ -21,10 +20,11 @@ def test_var_name_aerocom(var_name, var_name_aerocom):
 def test_alias_var():
     assert 'od550csaer' == Variable('od550aer')
 
-def test_alias_families():
-    var = Variable('SCONCSO4')
 
-    assert var.var_name_input == 'SCONCSO4'
+def test_alias_families():
+    var = Variable('sconcso4')
+
+    assert var.var_name_input == 'sconcso4'
     assert var.var_name == 'sconcso4'
     assert var.var_name_aerocom == 'concso4'
     assert var.units == 'ug m-3'
