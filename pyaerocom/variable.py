@@ -33,7 +33,7 @@ class VarNameInfo(object):
         'emi*'  :   'Surface'}
 
     def __init__(self, var_name):
-        self.var_name = var_name.lower()
+        self.var_name = var_name
         self._nums = []
         try:
             self._nums = self._numbers_in_string(var_name)
@@ -374,7 +374,6 @@ class Variable(object):
 
     @staticmethod
     def _check_input_var_name(var_name):
-        var_name = var_name.lower()
         if '3d' in var_name:
             var_name = var_name.replace('3d','')
         return var_name
@@ -383,7 +382,6 @@ class Variable(object):
         # save orig. input for whatever reasons
         self._var_name_input = var_name
 
-        # var_name in lowercase and cleaned up (3d and dry removed if applicable)
         self.var_name = var_name = self._check_input_var_name(var_name)
         self._var_name_aerocom = None
 
@@ -435,7 +433,7 @@ class Variable(object):
 
     @property
     def var_name_input(self):
-        """Input variable (in lowercase)"""
+        """Input variable"""
         return self._var_name_input
 
     @property
@@ -768,7 +766,7 @@ class VarCollection(object):
         aliases.ini.
         """
         if self._all_vars is None:
-            all_vars = [k.lower() for k in self._cfg_parser.keys()]
+            all_vars = [k for k in self._cfg_parser.keys()]
             all_vars.extend(self._vars_added.keys())
             #all_vars.extend(list(_read_alias_ini()))
             self._all_vars = all_vars
