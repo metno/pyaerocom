@@ -239,8 +239,3 @@ class EbasVarInfo(BrowseDict):
         for k, v in self.items():
                 s += "\n%s: %s" %(k,v)
         return s
-
-if __name__=="__main__":
-    print(EbasVarInfo('concso2'))
-
-    print(get_all_components('ang4470dryaer'))
