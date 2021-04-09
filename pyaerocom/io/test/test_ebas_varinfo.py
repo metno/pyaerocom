@@ -7,6 +7,7 @@ Created on Wed Feb 19 15:28:03 2020
 """
 import pytest
 from pyaerocom import const
+from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 
 TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
@@ -21,7 +22,7 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('sc700dryaer', None, None, None, None, ['sc700aer', 'scrh'], 1),
             ('ang4470dryaer', None, None, None, None, ['sc440dryaer', 'sc700dryaer'], 1),
             ('sc550lt1aer', ['aerosol_light_scattering_coefficient'],
-             ['pm25', ' pm1'], None, None, None, 1.0),
+             ['pm25', 'pm1'], None, None, None, 1.0),
             ('bsc550aer', ['aerosol_light_backscattering_coefficient'],
              ['aerosol', 'pm10', 'pm25'], None, None, None, 1.0),
             ('ac550aer', ['aerosol_absorption_coefficient'], ['aerosol', 'pm10'],
@@ -38,13 +39,13 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
              ['instrument', 'aerosol', 'met', 'pm10', 'pm25', 'pm1'],
              None, None, None, 1),
             ('concso4', ['sulphate_corrected', 'sulphate_total'],
-             ['pm25', 'pm10', 'aerosol'], None, None, None, 1),
+             ['aerosol', 'pm10', 'pm25'], None, None, None, 1),
             ('concso2', ['sulphur_dioxide'], ['air'], None, None, None, 1.0),
             ('concpm10', ['pm10_mass'], ['pm10'], None, None, None, 1.0),
             ('concpm25', ['pm25_mass'], ['pm25'], None, None, None, 1.0),
-            ('concso4t', ['sulphate_total'], ['pm25', 'pm10', 'aerosol'], None, None,
+            ('concso4t', ['sulphate_total'], ['aerosol', 'pm10', 'pm25'], None, None,
              None, 1.0),
-            ('concso4c', ['sulphate_corrected'], ['pm25', 'pm10', 'aerosol'], None,
+            ('concso4c', ['sulphate_corrected'], ['aerosol', 'pm10', 'pm25'], None,
              None, None, 1.0),
             ('concbc', ['elemental_carbon'], ['pm25', 'pm10', 'pm1', 'aerosol'],
              ['denuder', 'ecoc_monitor', 'filter_1pack', 'filter_2pack',
@@ -56,17 +57,17 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
              ['aerosol', 'pm1', 'pm10', 'pm25'],
              ['filter_absorption_photometer'], None, None, 1),
             ('conctc', ['total_carbon'],
-             ['pm10','aerosol','pm25'], None, None, None, 1.0),
-            ('concoa', ['organic_carbon'], ['pm10', 'aerosol', 'pm25'],
+             ['pm25', 'pm10','aerosol'], None, None, None, 1.0),
+            ('concoa', ['organic_carbon'], ['pm25', 'pm10', 'aerosol', 'pm1'],
              None, None, None, 1.4),
-            ('concoc', ['organic_carbon'], ['pm10', 'aerosol', 'pm25','pm1'],
+            ('concoc', ['organic_carbon'], ['pm25', 'pm10', 'aerosol', 'pm1'],
              None, None, None, 1),
             ('concss', ['sodium'], ['pm10', 'aerosol', 'pm25', 'pm1', 'air'],
              None, None, None, 3.27),
             ('concnh3', ['ammonia'], ['air'], None, None, None, 1.0),
             ('concno3', ['nitrate'], ['pm10','aerosol','pm25'],
              None, None, None, 1.0),
-            ('concnh4', ['ammonium'], ['pm10','pm25','aerosol'],
+            ('concnh4', ['ammonium'], ['pm10','aerosol','pm25'],
              None, None, None, 1.0),
             ('concNhno3', ['nitric_acid'], ['air'], None, None, None, 1.0),
             ('concNtno3', ['sum_nitric_acid_and_nitrate'], ['air+aerosol'],
@@ -82,9 +83,8 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('wetoxn', None, None, None, None, ['concprcpoxn'], 1),
             ('wetrdn', None, None, None, None, ['concprcprdn'], 1),
             ('pr', ['precipitation_amount_off', 'precipitation_amount'],
-             ['precip'], None, None, None, 1.0),
-            ('scavratioso4', None, None, None, None, ['SCONC_SO4', 'CONCPRCP_SO4_SCAVENGING'], 1.0),
-            ('test', ['aerosol_light_backscattering_coefficient'], ['aerosol'], None, None, None, 1.0)]
+             ['precip'], None, None, None, 1.0)
+            ]
 
 def test_init_empty():
     try:
@@ -96,8 +96,8 @@ def test_open_config():
     from configparser import ConfigParser
     assert isinstance(EbasVarInfo.open_config(), ConfigParser)
 
-def test_var_names_ini():
-    pass
+def test_var_name_aerocom():
+    assert EbasVarInfo('sconcno3').var_name_aerocom == 'concno3'
 
 @pytest.mark.parametrize(('var_name, component, matrix, instrument, '
                           'statistics, requires, scale_factor'), TESTDATA)
@@ -112,6 +112,37 @@ def test_varinfo(var_name, component, matrix, instrument, statistics,
     assert var.statistics == statistics
     assert var.requires == requires
     assert var.scale_factor == scale_factor
+
+def test_to_dict():
+    info = EbasVarInfo('concpm10')
+    dic = info.to_dict()
+    assert isinstance(dic, dict)
+    for key, val in dic.items():
+        assert getattr(info, key) == val
+
+@pytest.mark.parametrize('var,constraints,raises', [
+    (None, {}, pytest.raises(AttributeError)),
+    ('sc550dryaer', {}, pytest.raises(ValueError)),
+    ('concpm10', {}, does_not_raise_exception()),
+    ('concpm10', {'bla': 42}, does_not_raise_exception()),
+    # ToDo: the following example should actually be checked and maybe raise an Exception already here
+    # (i.e. start_date is a valid constraint but 42 is not allowed as input)
+    ('concpm10', {'start_date': 42}, does_not_raise_exception()),
+    ])
+def test_make_sql_request(var,constraints,raises):
+    if var is None:
+        info = EbasVarInfo('concpm10')
+        info.component = None
+    else:
+        info = EbasVarInfo(var)
+    with raises:
+        req = info.make_sql_request(**constraints)
+        from pyaerocom.io import EbasSQLRequest
+        assert isinstance(req, EbasSQLRequest)
+
+def test___str__():
+    s = EbasVarInfo('concpm10').__str__()
+    assert isinstance(s, str)
 
 if __name__=='__main__':
 
