@@ -237,6 +237,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
     cd = _create_fake_coldata_3d()
+    cd = _create_fake_coldata_4d()
     cd5 = _create_fake_coldata_5d()
 
     stats = cd.calc_statistics()

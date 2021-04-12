@@ -7,6 +7,7 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import pytest
 import numpy as np
+import numpy.testing as npt
 import pandas as pd
 import xarray as xr
 from pyaerocom import ColocatedData
@@ -157,18 +158,70 @@ def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
         assert len(val) == 2
         assert len(val[0]) == len(val[1]) == num_coords
 
-@pytest.mark.parametrize('which,args,raises', [
-    ('fake_nodims', {}, pytest.raises(DataDimensionError)),
-    ('fake_3d', {}, does_not_raise_exception()),
-    ('fake_4d', {}, does_not_raise_exception()),
-    ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception()),
-    ('fake_5d', {}, pytest.raises(DataDimensionError)),
+@pytest.mark.parametrize('which,args,raises,chk', [
+    ('tm5_aeronet', {}, does_not_raise_exception(),{'nmb':-0.129,
+                                                    'R':0.853}),
+    ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
+    ('fake_3d', {}, does_not_raise_exception(),{}),
+    ('fake_4d', {}, does_not_raise_exception(),{'nmb':0}),
+    ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception(),{'nmb':0}),
+    ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
     ])
-def test_ColocatedData_calc_statistics(coldata,which,args,raises):
+def test_ColocatedData_calc_statistics(coldata,which,args,raises,chk):
     cd = coldata[which]
     with raises:
         output = cd.calc_statistics(**args)
         assert isinstance(output, dict)
+        for key, val in chk.items():
+            assert key in output
+            res = output[key]
+            if isinstance(res, str):
+                assert res == val
+            else:
+                npt.assert_allclose(res, val, rtol=1e-2)
+
+@pytest.mark.parametrize('which,args,raises,chk', [
+    ('tm5_aeronet', {}, does_not_raise_exception(),{'nmb':-0.065,
+                                                    'R':0.679}),
+    ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
+    ('fake_3d', {}, does_not_raise_exception(),{}),
+    ('fake_4d', {}, does_not_raise_exception(),{'nmb':0}),
+    ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
+    ])
+def test_ColocatedData_calc_temporal_statistics(coldata,which,args,raises,chk):
+    cd = coldata[which]
+    with raises:
+        output = cd.calc_temporal_statistics(**args)
+        assert isinstance(output, dict)
+        for key, val in chk.items():
+            assert key in output
+            res = output[key]
+            if isinstance(res, str):
+                assert res == val
+            else:
+                npt.assert_allclose(res, val, rtol=1e-2)
+
+@pytest.mark.parametrize('which,args,raises,chk', [
+    ('tm5_aeronet', {}, does_not_raise_exception(),{'nmb':-0.304,
+                                                    'R':0.893}),
+    ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
+    ('fake_3d', {}, does_not_raise_exception(),{}),
+    ('fake_4d', {}, does_not_raise_exception(),{'nmb':0}),
+    ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception(),{'nmb':0}),
+    ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
+    ])
+def test_ColocatedData_calc_spatial_statistics(coldata,which,args,raises,chk):
+    cd = coldata[which]
+    with raises:
+        output = cd.calc_spatial_statistics(**args)
+        assert isinstance(output, dict)
+        for key, val in chk.items():
+            assert key in output
+            res = output[key]
+            if isinstance(res, str):
+                assert res == val
+            else:
+                npt.assert_allclose(res, val, rtol=1e-2)
 
 def test_meta_access_filename():
     name = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'

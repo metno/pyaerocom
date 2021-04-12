@@ -747,33 +747,36 @@ class ColocatedData(object):
             cd.data.data[zeros] = np.nan
         return cd
 
-    def calc_statistics(self, use_area_weights=False,
-                        add_spatial_temporal_corr=False,
-                        **kwargs):
+    def calc_statistics(self, use_area_weights=False,**kwargs):
         """Calculate statistics from model and obs data
 
-        Calculate standard statistics for model assessment. Uses
-        :func:`pyaerocom.mathutils.calc_statistics`.
+        Calculate standard statistics for model assessment. This is done by
+        taking all model and obs data points in this object as input for
+        :func:`pyaerocom.mathutils.calc_statistics`. For instance, if the
+        object is 3D with dimensions `data_source` (obs, model), `time` (e.g.
+        12 monthly values) and `station_name` (e.g. 4 sites), then the input
+        arrays for model and obs into
+        :func:`pyaerocom.mathutils.calc_statistics` will be each of size
+        12x4.
+
+        See also :func:`calc_temporal_statistics` and
+        :func:`calc_spatial_statistics`.
 
         Parameters
         ----------
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
             area weights are applied when caluclating the statistics based on
-            the coordinate cell sizes.
-        add_spatial_temporal_corr : bool
-            if True spatial and temporal Pearson correlation are computed as
-            well.
+            the coordinate cell sizes. Defaults to False.
         **kwargs
-            additional keyword args passed to :func:`pyaerocom.mathutils.calc_statistics`
+            additional keyword args passed to
+            :func:`pyaerocom.mathutils.calc_statistics`
 
         Returns
         -------
         dict
             dictionary containing statistical parameters
         """
-        if add_spatial_temporal_corr:
-            raise NotImplementedError('Coming soon...')
         if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
             kwargs['weights'] = self.area_weights[0].flatten()
 
@@ -781,6 +784,83 @@ class ColocatedData(object):
         stats = calc_statistics(self.data.values[1].flatten(),
                                 self.data.values[0].flatten(),
                                 **kwargs)
+
+        stats['num_coords_tot'] = nc
+        stats['num_coords_with_data'] = ncd
+        return stats
+
+    def calc_temporal_statistics(self, **kwargs):
+        """Calculate *temporal* statistics from model and obs data
+
+        *Temporal* statistics is computed by averaging first the spatial
+        dimension(s) (that is, `station_name` for 3D data, and
+        `latitude` and `longitude` for 4D data), so that only `data_source` and
+        `time` remains as dimensions. These 2D data are then used to calculate
+        standard statistics using :func:`pyaerocom.mathutils.calc_statistics`.
+
+        See also :func:`calc_statistics` and
+        :func:`calc_spatial_statistics`.
+
+        Parameters
+        ----------
+        **kwargs
+            additional keyword args passed to
+            :func:`pyaerocom.mathutils.calc_statistics`
+
+        Returns
+        -------
+        dict
+            dictionary containing statistical parameters
+        """
+        nc, ncd = self.num_coords, self.num_coords_with_data
+        if self.ndim == 3:
+            arr = self.data.mean(dim='station_name')
+        else:
+            arr = self.data.mean(dim=('latitude', 'longitude'))
+        obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
+        stats = calc_statistics(mod, obs, **kwargs)
+        stats['num_coords_tot'] = nc
+        stats['num_coords_with_data'] = ncd
+        return stats
+
+    def calc_spatial_statistics(self, use_area_weights=False, **kwargs):
+        """Calculate *spatial* statistics from model and obs data
+
+        *Spatial* statistics is computed by averaging first the time
+        dimension and then, if data is 4D, flattening lat / lon dimensions into
+        new station_name dimension, so that the resulting dimensions are
+        `data_source` and `station_name`. These 2D data are then used to
+        calculate standard statistics using
+        :func:`pyaerocom.mathutils.calc_statistics`.
+
+        See also :func:`calc_statistics` and
+        :func:`calc_temporal_statistics`.
+
+        Parameters
+        ----------
+        use_area_weights : bool
+            if True and if data is 4D (i.e. has lat and lon dimension), then
+            area weights are applied when caluclating the statistics based on
+            the coordinate cell sizes. Defaults to False.
+        **kwargs
+            additional keyword args passed to
+            :func:`pyaerocom.mathutils.calc_statistics`
+
+        Returns
+        -------
+        dict
+            dictionary containing statistical parameters
+        """
+        if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
+            weights = self.area_weights[0] #3D (time, lat, lon)
+            assert self.dims[1] == 'time'
+            kwargs['weights'] = np.nanmean(weights, axis=0).flatten()
+
+        nc, ncd = self.num_coords, self.num_coords_with_data
+        arr = self.data.mean(dim='time')
+
+        obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
+        stats = calc_statistics(mod, obs, **kwargs)
         stats['num_coords_tot'] = nc
         stats['num_coords_with_data'] = ncd
         return stats

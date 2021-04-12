@@ -112,7 +112,8 @@ change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
 EMEP_DIR =  str(TESTDATADIR.joinpath(CHECK_PATHS['emep']))
-# Paths to EMEP data
+
+
 @pytest.fixture(scope='session')
 def path_emep():
     paths = {}
@@ -123,7 +124,6 @@ def path_emep():
     paths['data_dir'] = str(emep_path)
     return paths
 
-# Example GriddedData object (TM5 model)
 @pytest.fixture(scope='session')
 def data_tm5():
     fpath = tda.testdatadir.joinpath(CHECK_PATHS['tm5aod'])
@@ -179,7 +179,6 @@ def data_scat_jungfraujoch():
 def data_scat_jungfraujoch_full():
     r = ReadEbas()
     return r.read('sc550aer', station_names='Jungfrau*')
-
 
 @pytest.fixture(scope='session')
 def loaded_nasa_ames_example():
