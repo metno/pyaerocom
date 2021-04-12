@@ -875,31 +875,51 @@ class ColocatedData(object):
 
         Returns
         -------
-        ax
+        Axes
             matplotlib axes instance
         """
         meta = self.metadata
         num_points = self.num_coords_with_data
-        vars_ = meta['var_name']
+        try:
+            vars_ = meta['var_name']
+        except KeyError:
+            vars_ = ['N/D', 'N/D']
+        try:
+            xn, yn = meta['data_source']
+        except KeyError:
+            xn, yn = 'N/D', 'N/D'
 
         if vars_[0] != vars_[1]:
             var_ref = vars_[0]
         else:
             var_ref = None
+        try:
+            tst = meta['ts_type']
+        except KeyError:
+            tst = 'N/D'
+        try:
+            fn = meta['filter_name']
+        except KeyError:
+            fn = 'N/D'
+        try:
+            unit = self.unitstr
+        except KeyError:
+            unit = 'N/D'
+
         # ToDo: include option to use area weighted stats in plotting
         # routine...
         return plot_scatter(x_vals=self.data.values[0].flatten(),
                             y_vals=self.data.values[1].flatten(),
                             var_name=vars_[1],
                             var_name_ref = var_ref,
-                            x_name=meta['data_source'][0],
-                            y_name=meta['data_source'][1],
+                            x_name=xn,
+                            y_name=yn,
                             start=self.start,
                             stop=self.stop,
-                            unit=self.unitstr,
-                            ts_type=meta['ts_type'],
+                            unit=unit,
+                            ts_type=tst,
                             stations_ok=num_points,
-                            filter_name=meta['filter_name'],
+                            filter_name=fn,
                             **kwargs)
 
     def rename_variable(self, var_name, new_var_name, data_source,

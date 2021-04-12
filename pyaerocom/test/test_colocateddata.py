@@ -6,6 +6,7 @@ Created on Thu Apr 12 14:45:43 2018
 @author: jonasg
 """
 import pytest
+from matplotlib.axes import Axes
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
@@ -223,6 +224,19 @@ def test_ColocatedData_calc_spatial_statistics(coldata,which,args,raises,chk):
             else:
                 npt.assert_allclose(res, val, rtol=1e-2)
 
+@pytest.mark.parametrize('which,args,raises', [
+    ('tm5_aeronet', {}, does_not_raise_exception()),
+    ('fake_nodims', {}, pytest.raises(DataDimensionError)),
+    ('fake_3d', {}, does_not_raise_exception()),
+    ('fake_4d', {}, does_not_raise_exception()),
+    ('fake_5d', {}, pytest.raises(DataDimensionError)),
+    ])
+def test_ColocatedData_plot_scatter(coldata,which,args,raises):
+    cd = coldata[which]
+    with raises:
+        output = cd.plot_scatter(**args)
+        assert isinstance(output, Axes)
+
 def test_meta_access_filename():
     name = 'absc550aer_REF-EBAS-Lev3_MOD-CAM5-ATRAS_20100101_20101231_daily_WORLD-noMOUNTAINS.nc'
 
@@ -278,16 +292,16 @@ def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
 ({'region_id': 'EUROPE'}, (40,72), (-10, 40),2),
 ({'region_id': 'OCN'}, (-59.95,66.25), (-132.55,119.95),1),
 ])
-def test_filter_region(coldata_tm5_aeronet,input_args, latrange, lonrange,
-                       numst):
+def test_ColocatedData_filter_region(
+        coldata_tm5_aeronet,input_args, latrange, lonrange,numst):
     filtered = coldata_tm5_aeronet.filter_region(**input_args)
-
     lats, lons = filtered.data.latitude.data, filtered.data.longitude.data
     assert lats.min() > latrange[0]
     assert lats.max() < latrange[1]
     assert lons.min() > lonrange[0]
     assert lons.max() < lonrange[1]
     assert len(filtered.data.station_name.data) == numst
+
 
 if __name__=="__main__":
     import sys

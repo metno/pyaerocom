@@ -144,7 +144,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                'ts_type'        :   (0.8, 0.1),
                'filter_name'    :   (0.8, 0.06)}
 
-    var_str = var_name# + VARS.unit_str
+    var_str = var_name
     _ndig = abs(exponent(statistics['refdata_mean']) - 2)
     if unit is None:
         unit = 'N/D'
