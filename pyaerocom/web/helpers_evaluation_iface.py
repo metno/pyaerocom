@@ -1120,17 +1120,12 @@ def _get_stats_region(data, freq, regid, use_weights, use_country,
         filtered.data = filtered.data.sel(station_name=stats_to_keep)
 
     stats = filtered.calc_statistics(use_area_weights=use_weights)
-    try:
-        temp_stats = filtered.calc_temporal_statistics()
-        spatial_stats = filtered.calc_spatial_statistics(
-            use_area_weights=use_weights)
-        stats['R_temporal'] = temp_stats['R']
-        stats['R_spatial'] = spatial_stats['R']
-    except:
-        temp_stats = filtered.calc_temporal_statistics()
-        spatial_stats = filtered.calc_spatial_statistics(
-            use_area_weights=use_weights)
 
+    temp_stats = filtered.calc_temporal_statistics()
+    spatial_stats = filtered.calc_spatial_statistics(
+        use_area_weights=use_weights)
+    stats['R_temporal'] = temp_stats['R']
+    stats['R_spatial'] = spatial_stats['R']
     for k, v in stats.items():
         try:
             stats[k] = np.float64(v) # for json encoder...
