@@ -153,9 +153,10 @@ def test__add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_c
 
 def test__init_stats_dummy():
     dummy = h._init_stats_dummy()
-    assert list(dummy.keys()) == ['totnum', 'num_valid', 'refdata_mean',
-                                  'refdata_std', 'data_mean', 'data_std',
-                                  'weighted', 'rms', 'nmb', 'mnmb', 'fge']
+    keys =  sorted(list(dummy.keys()))
+    assert keys == ['R', 'R_kendall', 'R_spearman', 'data_mean', 'data_std',
+                    'fge', 'mnmb', 'nmb', 'num_valid', 'refdata_mean',
+                    'refdata_std', 'rms', 'totnum', 'weighted']
 
 def test__check_flatten_latlon_dims_3d(coldata_tm5_aeronet):
     cd = h._check_flatten_latlon_dims(coldata_tm5_aeronet)
