@@ -23,8 +23,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                          x_name=None, y_name=None, start=None, stop=None,
                          ts_type=None, unit=None, stations_ok=None,
                          filter_name=None, lowlim_stats=None,
-                         highlim_stats=None, loglog=None, savefig=False,
-                         save_dir=None, save_name=None, ax=None, figsize=None,
+                         highlim_stats=None, loglog=None, ax=None, figsize=None,
                          fontsize_base=11, fontsize_annot=None,
                          marker='+', color='k', alpha=0.5,
                          **kwargs):
@@ -51,8 +50,8 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
 
     Returns
     -------
-    axes
-        instance of :class:`matplotlib.axes`
+    matplotlib.axes.Axes
+        plot axes
     """
 
     if isinstance(y_vals, list):
@@ -124,9 +123,6 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     ax.set_ylabel('{}'.format(y_name), fontsize=fontsize_base+4)
 
     ax.set_title(title, fontsize=fontsize_base+4)
-
-    #ax.xaxis.set_major_formatter(ScalarFormatter())
-    #ax.yaxis.set_major_formatter(ScalarFormatter())
 
     ax.tick_params(labelsize=fontsize_base)
 
@@ -208,10 +204,4 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                         fontsize=fontsize_annot, color='black')
 
     ax.set_aspect('equal')
-
-    if savefig:
-        if any([x is None for x in (save_dir, save_name)]):
-            raise IOError
-
-        fig.savefig(os.path.join(save_dir, save_name))
     return ax
