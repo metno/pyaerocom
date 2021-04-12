@@ -1,10 +1,7 @@
 import pytest
 import simplejson
 import os
-from pyaerocom.conftest import (coldata_tm5_aeronet,
-                                coldata_tm5_tm5,
-                                does_not_raise_exception,
-                                tempdir)
+from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom import ColocatedData, Region
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import get_all_default_region_ids
