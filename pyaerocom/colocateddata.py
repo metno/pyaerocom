@@ -170,12 +170,24 @@ class ColocatedData(object):
         return self.data.longitude
 
     @property
+    def lon_range(self):
+        """Longitude range covered by this data object"""
+        lons = self.longitude.values
+        return (np.nanmin(lons), np.nanmax(lons))
+
+    @property
     def latitude(self):
         """Array of latitude coordinates"""
         if not 'latitude' in self.data.coords:
             raise AttributeError('ColocatedData does not include latitude '
                                  'coordinate')
         return self.data.latitude
+
+    @property
+    def lat_range(self):
+        """Latitude range covered by this data object"""
+        lats = self.latitude.values
+        return (np.nanmin(lats), np.nanmax(lats))
 
     @property
     def time(self):
@@ -747,7 +759,7 @@ class ColocatedData(object):
             cd.data.data[zeros] = np.nan
         return cd
 
-    def calc_statistics(self, use_area_weights=False,**kwargs):
+    def calc_statistics(self, use_area_weights=False, **kwargs):
         """Calculate statistics from model and obs data
 
         Calculate standard statistics for model assessment. This is done by
@@ -789,7 +801,7 @@ class ColocatedData(object):
         stats['num_coords_with_data'] = ncd
         return stats
 
-    def calc_temporal_statistics(self, **kwargs):
+    def calc_temporal_statistics(self,aggr=None,**kwargs):
         """Calculate *temporal* statistics from model and obs data
 
         *Temporal* statistics is computed by averaging first the spatial
@@ -803,6 +815,9 @@ class ColocatedData(object):
 
         Parameters
         ----------
+        aggr : str, optional
+            aggreagator to be used, currently only mean and median are
+            supported. Defaults to mean.
         **kwargs
             additional keyword args passed to
             :func:`pyaerocom.mathutils.calc_statistics`
@@ -812,18 +827,29 @@ class ColocatedData(object):
         dict
             dictionary containing statistical parameters
         """
+        if aggr is None:
+            aggr = 'mean'
         nc, ncd = self.num_coords, self.num_coords_with_data
         if self.ndim == 3:
-            arr = self.data.mean(dim='station_name')
+            dim = 'station_name'
         else:
-            arr = self.data.mean(dim=('latitude', 'longitude'))
+            dim = ('latitude', 'longitude')
+
+        if aggr == 'mean':
+            arr = self.data.mean(dim=dim)
+        elif aggr == 'median':
+            arr = self.data.median(dim=dim)
+        else:
+            raise ValueError(
+                'So far only mean and median are supported aggregators'
+                )
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
         stats = calc_statistics(mod, obs, **kwargs)
         stats['num_coords_tot'] = nc
         stats['num_coords_with_data'] = ncd
         return stats
 
-    def calc_spatial_statistics(self, use_area_weights=False, **kwargs):
+    def calc_spatial_statistics(self,aggr=None,use_area_weights=False,**kwargs):
         """Calculate *spatial* statistics from model and obs data
 
         *Spatial* statistics is computed by averaging first the time
@@ -838,6 +864,9 @@ class ColocatedData(object):
 
         Parameters
         ----------
+        aggr : str, optional
+            aggreagator to be used, currently only mean and median are
+            supported. Defaults to mean.
         use_area_weights : bool
             if True and if data is 4D (i.e. has lat and lon dimension), then
             area weights are applied when caluclating the statistics based on
@@ -851,13 +880,26 @@ class ColocatedData(object):
         dict
             dictionary containing statistical parameters
         """
+        if aggr is None:
+            aggr = 'mean'
         if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
             weights = self.area_weights[0] #3D (time, lat, lon)
             assert self.dims[1] == 'time'
             kwargs['weights'] = np.nanmean(weights, axis=0).flatten()
 
         nc, ncd = self.num_coords, self.num_coords_with_data
-        arr = self.data.mean(dim='time')
+        # ToDo: find better solution to parse aggregator without if conditions,
+        # e.g. xr.apply_ufunc or similar, with core aggregators that are
+        # supported being defined in some dictionary in some pyaerocom config
+        # module or class. Also aggregation could go into a separate method...
+        if aggr == 'mean':
+            arr = self.data.mean(dim='time')
+        elif aggr == 'median':
+            arr = self.data.median(dim='time')
+        else:
+            raise ValueError(
+                'So far only mean and median are supported aggregators'
+                )
 
         obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
         stats = calc_statistics(mod, obs, **kwargs)
@@ -1335,7 +1377,8 @@ class ColocatedData(object):
 
         lons, lats = arr.longitude.data, arr.latitude.data
 
-        latmask = np.logical_and(lats > lat_range[0], lats < lat_range[1])
+        latmask = np.logical_and(lats > lat_range[0],
+                                 lats < lat_range[1])
         if lon_range[0] > lon_range[1]:
             _either = np.logical_and(lons>=-180, lons<lon_range[1])
             _or = np.logical_and(lons>lon_range[0], lons<=180)
@@ -1403,8 +1446,8 @@ class ColocatedData(object):
         ColocatedData
             filtered data object
         """
-        if not inplace:
-            data = self.copy()
+        data = self if inplace else self.copy()
+
         is_2d = data._check_latlon_coords()
 
         if region_id is not None:
@@ -1421,27 +1464,10 @@ class ColocatedData(object):
         if lat_range is None:
             lat_range = [-90, 90]
 
-        latr, lonr = data.data.attrs['lat_range'], data.data.attrs['lon_range']
-        if np.equal(latr, lat_range).all() and np.equal(lonr, lon_range).all():
-            const.logger.info(
-                f'Filtering of lat_range={lat_range} and lon_range={lon_range} '
-                f'results in unchanged object'
-                )
-            return data
         if lat_range[0] > lat_range[1]:
             raise ValueError(
                 f'Lower latitude bound {lat_range[0]} cannot exceed upper '
                 f'latitude bound {lat_range[1]}')
-
-        if lat_range[0] < latr[0]:
-            lat_range[0] = latr[0]
-        if lat_range[1] > latr[1]:
-            lat_range[1] = latr[1]
-        if lon_range[0] < lonr[0]:
-            lon_range[0] = lonr[0]
-        if lon_range[1] > lonr[1]:
-            lon_range[1] = lonr[1]
-
         if is_2d:
             filtered = data._filter_latlon_2d(data.data, lat_range, lon_range)
         else:
@@ -1456,8 +1482,6 @@ class ColocatedData(object):
 
         filtered.attrs['filter_name'] = '{}-{}'.format(region_id, alt_info)
         filtered.attrs['region'] = region_id
-        filtered.attrs['lon_range'] = lon_range
-        filtered.attrs['lat_range'] = lat_range
 
         data.data = filtered
         return data
