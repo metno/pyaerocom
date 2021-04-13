@@ -99,6 +99,30 @@ def test_ColocatedData_time(coldata,which,raises):
         val = cd.time
         assert isinstance(val, xr.DataArray)
 
+@pytest.mark.parametrize('which,raises,value', [
+    ('fake_nodims', pytest.raises(AttributeError), None),
+    ('tm5_aeronet', does_not_raise_exception(), (-43.2, 43.9)),
+    ('fake_4d', does_not_raise_exception(), (30, 60)),
+    ])
+def test_ColocatedData_lat_range(coldata,which,raises,value):
+    cd = coldata[which]
+    with raises:
+        val = cd.lat_range
+        assert len(val) == 2
+        npt.assert_allclose(val, value, rtol=1e-1)
+
+@pytest.mark.parametrize('which,raises,value', [
+    ('fake_nodims', pytest.raises(AttributeError), None),
+    ('tm5_aeronet', does_not_raise_exception(), (-65.3, 121.5)),
+    ('fake_4d', does_not_raise_exception(), (0, 30)),
+    ])
+def test_ColocatedData_lon_range(coldata,which,raises,value):
+    cd = coldata[which]
+    with raises:
+        val = cd.lon_range
+        assert len(val) == 2
+        npt.assert_allclose(val, value, rtol=1e-1)
+
 @pytest.mark.parametrize('which,raises', [
     ('fake_nodims', pytest.raises(ValueError)),
     ('tm5_aeronet', does_not_raise_exception())
@@ -188,6 +212,10 @@ def test_ColocatedData_calc_statistics(coldata,which,args,raises,chk):
     ('fake_3d', {}, does_not_raise_exception(),{}),
     ('fake_4d', {}, does_not_raise_exception(),{'nmb':0}),
     ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
+    ('tm5_aeronet', {'aggr' : 'median'},
+     does_not_raise_exception(),{'nmb':-0.0136, 'R':0.851}),
+    ('tm5_aeronet', {'aggr' : 'max'},
+     pytest.raises(ValueError),None),
     ])
 def test_ColocatedData_calc_temporal_statistics(coldata,which,args,raises,chk):
     cd = coldata[which]
@@ -210,6 +238,10 @@ def test_ColocatedData_calc_temporal_statistics(coldata,which,args,raises,chk):
     ('fake_4d', {}, does_not_raise_exception(),{'nmb':0}),
     ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception(),{'nmb':0}),
     ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
+    ('tm5_aeronet', {'aggr' : 'median'},
+     does_not_raise_exception(),{'nmb':-0.42, 'R':0.81}),
+    ('tm5_aeronet', {'aggr' : 'max'},
+     pytest.raises(ValueError),None),
     ])
 def test_ColocatedData_calc_spatial_statistics(coldata,which,args,raises,chk):
     cd = coldata[which]
@@ -285,23 +317,35 @@ def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
                 assert (-180 < lons.max() < lonrange[1] or
                         lonrange[0] < lons.max() <  180)
 
+@pytest.mark.parametrize('which,input_args,raises,latrange,lonrange,numst', [
+('fake_4d',{'region_id': 'EUROPE'}, does_not_raise_exception(),
+ (40,72),(-10, 40),12),
+('fake_4d',{'region_id': 'France', 'check_country_meta':True},
+ pytest.raises(DataDimensionError),(40,72),(-10, 40),12),
+('tm5_aeronet',{'region_id': 'NHEMISPHERE'}, does_not_raise_exception(),
+ (0,90), (-180, 180),5),
+('tm5_aeronet',{'region_id': 'EUROPE'}, does_not_raise_exception(),
+ (40,72), (-10, 40),2),
+('tm5_aeronet',{'region_id': 'OCN'}, does_not_raise_exception(),
+ (-59.95,66.25), (-132.55,119.95),1),
+('tm5_aeronet',{'region_id': 'Brazil','check_country_meta' : True},
+ does_not_raise_exception(),(-59.95,66.25), (-132.55,119.95),1),
 
-@pytest.mark.parametrize('input_args,latrange,lonrange,numst', [
-
-({'region_id': 'NHEMISPHERE'}, (0,90), (-180, 180),5),
-({'region_id': 'EUROPE'}, (40,72), (-10, 40),2),
-({'region_id': 'OCN'}, (-59.95,66.25), (-132.55,119.95),1),
 ])
-def test_ColocatedData_filter_region(
-        coldata_tm5_aeronet,input_args, latrange, lonrange,numst):
-    filtered = coldata_tm5_aeronet.filter_region(**input_args)
-    lats, lons = filtered.data.latitude.data, filtered.data.longitude.data
-    assert lats.min() > latrange[0]
-    assert lats.max() < latrange[1]
-    assert lons.min() > lonrange[0]
-    assert lons.max() < lonrange[1]
-    assert len(filtered.data.station_name.data) == numst
+def test_ColocatedData_filter_region(coldata,which,input_args,raises,latrange,lonrange,numst):
+    cd = coldata[which]
+    with raises:
+        if 'check_country_meta' in input_args:
+            cd= cd.copy()
+            cd.check_set_countries()
 
+        filtered = cd.filter_region(**input_args)
+        lats, lons = filtered.data.latitude.data, filtered.data.longitude.data
+        assert lats.min() >= latrange[0]
+        assert lats.max() <= latrange[1]
+        assert lons.min() >= lonrange[0]
+        assert lons.max() <= lonrange[1]
+        assert filtered.num_coords == numst
 
 if __name__=="__main__":
     import sys
