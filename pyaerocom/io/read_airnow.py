@@ -441,21 +441,6 @@ class ReadAirNow(ReadUngriddedBase):
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    path_data = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/MACC_INSITU_AirNow'
-    path_data = '/home/jonasg/MyPyaerocom/data/obsdata/MACC_INSITU_AirNow'
+    reader = ReadAirNow()
 
-    test_file =  path_data + '/202001/2020010100.dat'
-    reader = ReadAirNow(data_dir=path_data)
-
-    #data = reader._read_file(test_file)
-
-    last_file = 10
-    varis = None
-    data = reader.read('vmrso2', last_file=last_file)
-
-    if last_file == 10 and varis == ['concpm10', 'concpm25']:
-        assert len(data.unique_station_names) == 744
-    data.plot_station_coordinates()
-    #data1 = _read_file_alt(files[0])
+    reader.read('concpm10',first_file=0)
