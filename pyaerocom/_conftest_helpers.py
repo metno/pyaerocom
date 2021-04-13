@@ -209,7 +209,8 @@ def _create_fake_coldata_4d():
     dims = ['data_source', 'time', 'latitude', 'longitude']
     # set all NaN in one obs coordinate
     _data_fake[0,:,0,0] = np.nan
-    return ColocatedData(data=_data_fake, coords=coords, dims=dims)
+    meta = {'ts_type' : 'monthly'}
+    return ColocatedData(data=_data_fake, coords=coords, dims=dims, attrs=meta)
 
 def _create_fake_coldata_5d():
     _lats_fake = [10,20]
