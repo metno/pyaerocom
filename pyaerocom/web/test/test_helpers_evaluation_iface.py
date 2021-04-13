@@ -1,10 +1,13 @@
 import pytest
-import simplejson
+import glob
 import os
+import simplejson
+
 from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom import ColocatedData, Region
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import get_all_default_region_ids
+from pyaerocom.web import AerocomEvaluation
 from pyaerocom.web import helpers_evaluation_iface as h
 
 @pytest.mark.parametrize('base_dir, proj_id, exp_id', [
@@ -231,6 +234,58 @@ def test_init_regions_web(coldata_tm5_aeronet,regions_how,raises,regnum):
             for reg, brdr in regborders.items():
                 if not reg == 'WORLD':
                     assert isinstance(brdr, str) # country code
+
+@pytest.mark.parametrize('which,obs_name,model_name,use_weights,'
+                         'vert_code,web_iface_name,diurnal_only,'
+                         'regions_how,zeros_to_nan,annual_stats_constrained,'
+                         'raises,fnumdirs', [
+    ('fake_4d', 'bla','blub',False,'Column',None,False,None,False,True,
+     does_not_raise_exception(),{'ts' : 18,'map' : 1}),
+
+
+
+
+    ('tm5_aeronet','bla','blub',False,'Column',None,False,None,False,False,
+     does_not_raise_exception(),{'ts' : 18,'map' : 1, 'contour' : 0,
+                                 'profiles' : 0, 'hm' : 3, 'scat': 1,
+                                 'ts/dw' : 0}),
+    ('tm5_aeronet','bla','blub',False,'Column',None,False,None,False,True,
+     does_not_raise_exception(),{'ts' : 18,'map' : 1}),
+
+    ])
+def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
+                                          model_name, use_weights,
+                                          vert_code,web_iface_name,
+                                          diurnal_only,regions_how,
+                                          zeros_to_nan,
+                                          annual_stats_constrained,raises,
+                                          fnumdirs):
+    outdir = str(tmpdir)
+    proj = 'proj'
+    exp = 'exp'
+    stp = AerocomEvaluation(proj_id=proj, exp_id=exp,out_basedir=outdir)
+    stp.init_dirs()
+    cs = stp.colocation_settings
+    out_dirs = stp.out_dirs
+    regions_json = stp.regions_file
+    cd = coldata[which]
+
+    with raises:
+        h.compute_json_files_from_colocateddata(cd,obs_name,model_name,
+                                                use_weights,cs,vert_code,
+                                                out_dirs,regions_json,
+                                                web_iface_name,
+                                                diurnal_only,
+                                                regions_how,
+                                                zeros_to_nan,
+                                                annual_stats_constrained)
+        outbase = os.path.join(outdir, f'{proj}/{exp}')
+        assert os.path.isdir(outbase)
+        for subdir, num in fnumdirs.items():
+            fp = os.path.join(outbase, subdir)
+            assert os.path.isdir(fp)
+            files = glob.glob(f'{fp}/*.json')
+            assert len(files) == num
 
 if __name__ == '__main__':
     import sys
