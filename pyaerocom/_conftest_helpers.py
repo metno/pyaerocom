@@ -146,7 +146,12 @@ def _create_fake_coldata_3d():
         mask = years == year
         data[0,mask,1] += c*0.4
         data[1,mask,1] += c*0.2
-        c+=1
+
+    # set the first and last 10 months of obs to NaN to violate 25% coverage
+    # constraint of first and last year to test option annual_stats_constrained
+    # in json conversion routines
+    data[0,:10,1] = np.nan
+    data[0,-10:,1] = np.nan
 
     # 3 SITE: add noise to model and obs
     data[0,:,2] += np.random.rand(timenum)
@@ -195,9 +200,9 @@ def _create_fake_coldata_3d():
     return cd
 
 def _create_fake_coldata_4d():
-    _lats_fake = np.arange(30,70,10)
-    _lons_fake = np.arange(0,40,10)
-    _time_fake = pd.date_range('2010-01', '2010-03', freq='MS')
+    _lats_fake = np.arange(30,60,10)
+    _lons_fake = np.arange(10,30,10)
+    _time_fake = pd.date_range('2010-01', '2010-05', freq='MS')
     _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake)))
 
     coords = {'data_source' : ['obs', 'mod'],
@@ -207,8 +212,9 @@ def _create_fake_coldata_4d():
               }
 
     dims = ['data_source', 'time', 'latitude', 'longitude']
-    # set all NaN in one obs coordinate
-    _data_fake[0,:,0,0] = np.nan
+    # set some obs vals NaN (whole coord 1,1, and only first 2 timestamps 0,0)
+    _data_fake[0,:,1,1] = np.nan
+    _data_fake[0,:2,0,0] = np.nan
     meta = {'ts_type' : 'monthly'}
     return ColocatedData(data=_data_fake, coords=coords, dims=dims, attrs=meta)
 
@@ -237,37 +243,45 @@ if __name__ == '__main__':
     import pyaerocom as pya
     import matplotlib.pyplot as plt
     plt.close('all')
-    cd = _create_fake_coldata_3d()
     cd = _create_fake_coldata_4d()
-    cd5 = _create_fake_coldata_5d()
+    yearly = cd.resample_time('yearly')
 
-    stats = cd.calc_statistics()
-    print('Normal stats')
-    print(stats)
 
-    arr = cd.data
+    arr_hr = cd.copy().data
+    arr_yr = yearly.data
 
-    # ONE WAY: flatten certain dimensions and compute stats from that
-    avg_alltimes = np.nanmean(arr.data, axis=1)
-    obs, mod = avg_alltimes[0], avg_alltimes[1]
+    yrs_hr = arr_hr.time.dt.year
+    yrs_avail = arr_yr.time.dt.year
 
-    stats_spatial = pya.mathutils.calc_statistics(mod, obs)
-    print('Spatial stats')
-    print(stats_spatial)
+    obs_allyrs = arr_yr[0]
+    for i, yr in enumerate(yrs_avail):
+        obs_yr = obs_allyrs[i]
+        nan_sites_yr = obs_yr.isnull()
+        if not nan_sites_yr.any():
+            continue
+        scond = nan_sites_yr
+        tcond = yrs_hr == yr
 
-    avg_allsites = np.nanmean(arr.data, axis=2)
-    obs, mod = avg_allsites[0], avg_allsites[1]
+        arr_hr.data[:,tcond.data, scond.data] = np.nan
 
-    stats_temporal = pya.mathutils.calc_statistics(mod, obs)
-    print('Temporal stats')
-    print(stats_temporal)
+    filtered = ColocatedData(arr_hr)
 
-    # OTHER WAY: calculate corr for each entry in one dimension (e.g. corr for
-    # each site or corr for january from all sites) and then
-    corr_time = xr.corr(arr[1],arr[0], dim='time')
-    corr_stats = xr.corr(arr[1],arr[0], dim='station_name')
 
-    cd.plot_scatter()
+
+
+
+
+
+
+
+
+
+
+
+
+    #cd.plot_scatter()
+
+
 
 
 
