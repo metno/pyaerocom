@@ -333,36 +333,6 @@ class ColocatedData(object):
         """
         return self.calc_area_weights()
 
-    def get_station_names_obs_notnan(self):
-        """
-        Get list of all site names that contain at least one valid measurement
-
-        Note
-        -----
-        So far this only works for 3D colocated data that has a dimension
-        `station_name`.
-
-        Raises
-        ------
-        AttributeError
-            If data is not 3D colocated data object.
-
-        Returns
-        -------
-        numpy.ndarray
-            1D array with site location names
-
-        """
-        if not self.dims == ('data_source', 'time', 'station_name'):
-            raise AttributeError(
-                'Need station_name dimension and dim order ')
-        all_sites = self.data['station_name'].values
-        obs_np = self.data[0].data
-        # axis=0 is time dimension
-        obs_nan = np.isnan(obs_np).all(axis=0)
-        sites_notnan = all_sites[~obs_nan]
-        return sites_notnan
-
     def get_country_codes(self):
         """
         Get country names and codes for all locations contained in these data
@@ -439,7 +409,7 @@ class ColocatedData(object):
 
     def resample_time(self, to_ts_type, how=None,
                       apply_constraints=None, min_num_obs=None,
-                      colocate_time=True, inplace=True, **kwargs):
+                      colocate_time=False, inplace=False, **kwargs):
         """
         Resample time dimension
 
@@ -506,7 +476,7 @@ class ColocatedData(object):
                                 apply_constraints=apply_constraints,
                                 min_num_obs=min_num_obs, **kwargs)
 
-        data_arr.attrs.update(col.meta)
+        data_arr.attrs.update(col.metadata)
         data_arr.attrs['ts_type'] = str(to_ts_type)
 
         col.data = data_arr
