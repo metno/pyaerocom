@@ -1,6 +1,7 @@
-import pytest
 import glob
+import numpy as np
 import os
+import pytest
 import simplejson
 
 from pyaerocom.conftest import does_not_raise_exception
@@ -235,14 +236,51 @@ def test_init_regions_web(coldata_tm5_aeronet,regions_how,raises,regnum):
                 if not reg == 'WORLD':
                     assert isinstance(brdr, str) # country code
 
+@pytest.mark.parametrize('which,raises,ncd,omc,mmc', [
+    ('fake_3d', does_not_raise_exception(), 4, False, False)
+    ])
+def test__apply_annual_constraint(coldata,which,raises,ncd,omc,mmc):
+    cd = coldata[which]
+    yearly = cd.resample_time('yearly', inplace=False, colocate_time=False)
+    with raises:
+        result = h._apply_annual_constraint(cd.copy(), yearly)
+        assert isinstance(cd, ColocatedData)
+        assert not cd is result # make sure fixture has not been modified, the function applied it directly to the input data
+        assert result.shape == cd.shape
+        assert result.num_coords_with_data == ncd
+        omean_before = np.nanmean(cd.data[0].data)
+        mmean_before = np.nanmean(cd.data[1].data)
+
+        omean = np.nanmean(result.data[0].data)
+        mmean = np.nanmean(result.data[1].data)
+
+        omean_same = np.allclose(omean, omean_before, rtol=1e-5)
+        mmean_same = np.allclose(mmean, mmean_before, rtol=1e-5)
+
+        if omc:
+            assert omean_same
+        else:
+            assert not omean_same
+        if mmc:
+            assert mmean_same
+        else:
+            assert not mmean_same
+
+
 @pytest.mark.parametrize('which,obs_name,model_name,use_weights,'
                          'vert_code,web_iface_name,diurnal_only,'
                          'regions_how,zeros_to_nan,annual_stats_constrained,'
                          'raises,fnumdirs', [
-    ('fake_4d', 'bla','blub',False,'Column',None,False,None,False,True,
-     does_not_raise_exception(),{'ts' : 18,'map' : 1}),
+    ('fake_4d', 'bla','blub',True,'Column',None,False,None,False,True,
+     does_not_raise_exception(),{'ts' : 15,'map' : 1}),
 
+    ('fake_3d', 'bla','blub',False,'Column',None,False,None,False,False,
+     does_not_raise_exception(),{'ts' : 14,'map' : 1}),
+    ('fake_3d', 'bla','blub',True,'Column',None,False,None,False,True,
+     does_not_raise_exception(),{'ts' : 14,'map' : 1}),
 
+    ('fake_4d', 'bla','blub',False,'Column',None,False,None,False,False,
+     does_not_raise_exception(),{'ts' : 15,'map' : 1}),
 
 
     ('tm5_aeronet','bla','blub',False,'Column',None,False,None,False,False,

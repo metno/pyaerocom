@@ -102,7 +102,7 @@ def test_ColocatedData_time(coldata,which,raises):
 @pytest.mark.parametrize('which,raises,value', [
     ('fake_nodims', pytest.raises(AttributeError), None),
     ('tm5_aeronet', does_not_raise_exception(), (-43.2, 43.9)),
-    ('fake_4d', does_not_raise_exception(), (30, 60)),
+    ('fake_4d', does_not_raise_exception(), (30, 50)),
     ])
 def test_ColocatedData_lat_range(coldata,which,raises,value):
     cd = coldata[which]
@@ -114,7 +114,7 @@ def test_ColocatedData_lat_range(coldata,which,raises,value):
 @pytest.mark.parametrize('which,raises,value', [
     ('fake_nodims', pytest.raises(AttributeError), None),
     ('tm5_aeronet', does_not_raise_exception(), (-65.3, 121.5)),
-    ('fake_4d', does_not_raise_exception(), (0, 30)),
+    ('fake_4d', does_not_raise_exception(), (10, 20)),
     ])
 def test_ColocatedData_lon_range(coldata,which,raises,value):
     cd = coldata[which]
@@ -145,11 +145,12 @@ def test_ColocatedData_units(coldata,which,raises):
         assert [isinstance(x, str) for x in val]
 
 @pytest.mark.parametrize('which,raises,result', [
+    ('fake_4d', does_not_raise_exception(), 6),
     ('fake_5d', pytest.raises(DataDimensionError), None),
     ('tm5_aeronet', does_not_raise_exception(),8),
     ('fake_nodims', pytest.raises(DataDimensionError), None),
     ('fake_3d', does_not_raise_exception(), 4),
-    ('fake_4d', does_not_raise_exception(), 16),
+
 
     ])
 def test_ColocatedData_num_coords(coldata,which,raises,result):
@@ -162,7 +163,7 @@ def test_ColocatedData_num_coords(coldata,which,raises,result):
     ('tm5_aeronet', does_not_raise_exception(),8),
     ('fake_nodims', pytest.raises(DataDimensionError), None),
     ('fake_3d', does_not_raise_exception(), 4),
-    ('fake_4d', does_not_raise_exception(), 15)
+    ('fake_4d', does_not_raise_exception(), 5)
     ])
 def test_ColocatedData_num_coords_with_data(coldata,which,raises,result):
     cd = coldata[which]
@@ -173,7 +174,7 @@ def test_ColocatedData_num_coords_with_data(coldata,which,raises,result):
 @pytest.mark.parametrize('which,num_coords,raises', [
     ('fake_nodims', 0, pytest.raises(ValueError)),
     ('tm5_aeronet', 8, does_not_raise_exception()),
-    ('fake_4d', 15, does_not_raise_exception())
+    ('fake_4d', 5, does_not_raise_exception())
     ])
 def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
     cd = coldata[which]
@@ -187,7 +188,7 @@ def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
     ('tm5_aeronet', {}, does_not_raise_exception(),{'nmb':-0.129,
                                                     'R':0.853}),
     ('fake_nodims', {}, pytest.raises(DataDimensionError),{}),
-    ('fake_3d', {}, does_not_raise_exception(),{}),
+    ('fake_3d', {}, does_not_raise_exception(),{'num_coords_with_data': 4}), # has random numbers in it so nmb, R check is risky with rtol=1e-2
     ('fake_4d', {}, does_not_raise_exception(),{'nmb':0}),
     ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception(),{'nmb':0}),
     ('fake_5d', {}, pytest.raises(DataDimensionError),{}),
@@ -319,9 +320,9 @@ def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
 
 @pytest.mark.parametrize('which,input_args,raises,latrange,lonrange,numst', [
 ('fake_4d',{'region_id': 'EUROPE'}, does_not_raise_exception(),
- (40,72),(-10, 40),12),
+ (40,72),(-10, 40),4),
 ('fake_4d',{'region_id': 'France', 'check_country_meta':True},
- pytest.raises(DataDimensionError),(40,72),(-10, 40),12),
+ pytest.raises(DataDimensionError),None, None, None),
 ('tm5_aeronet',{'region_id': 'NHEMISPHERE'}, does_not_raise_exception(),
  (0,90), (-180, 180),5),
 ('tm5_aeronet',{'region_id': 'EUROPE'}, does_not_raise_exception(),
@@ -330,7 +331,6 @@ def test_apply_latlon_filter(coldata_tm5_aeronet, input_args,
  (-59.95,66.25), (-132.55,119.95),1),
 ('tm5_aeronet',{'region_id': 'Brazil','check_country_meta' : True},
  does_not_raise_exception(),(-59.95,66.25), (-132.55,119.95),1),
-
 ])
 def test_ColocatedData_filter_region(coldata,which,input_args,raises,latrange,lonrange,numst):
     cd = coldata[which]
