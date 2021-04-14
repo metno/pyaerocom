@@ -443,10 +443,12 @@ class ColocatedData(object):
             `min_num_obs={'monthly': {'daily': 22}, 'daily': {'hourly': 18}}`.
         colocate_time : bool, optional
             If True, the modeldata is invalidated where obs is NaN, before
-            resampling. The default is True.
+            resampling. The default is False (updated in v0.11.0, before was
+            True).
         inplace : bool, optional
             If True, modify this object directly, else make a copy and resample
-            that one. The default is True.
+            that one. The default is False (updated in v0.11.0, before was
+            True).
         **kwargs
             Addtitional keyword args passed to :func:`TimeResampler.resample`.
 
