@@ -202,7 +202,7 @@ def _create_fake_coldata_3d():
 def _create_fake_coldata_4d():
     _lats_fake = np.arange(30,60,10)
     _lons_fake = np.arange(10,30,10)
-    _time_fake = pd.date_range('2010-01', '2010-05', freq='MS')
+    _time_fake = pd.date_range('2010-01', '2010-03', freq='MS')
     _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake)))
 
     coords = {'data_source' : ['obs', 'mod'],
@@ -212,9 +212,9 @@ def _create_fake_coldata_4d():
               }
 
     dims = ['data_source', 'time', 'latitude', 'longitude']
-    # set some obs vals NaN (whole coord 1,1, and only first 2 timestamps 0,0)
+    # set some obs vals NaN
     _data_fake[0,:,1,1] = np.nan
-    _data_fake[0,:2,0,0] = np.nan
+    _data_fake[0,0,0,0] = np.nan
     meta = {'ts_type' : 'monthly'}
     return ColocatedData(data=_data_fake, coords=coords, dims=dims, attrs=meta)
 
