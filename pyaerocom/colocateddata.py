@@ -17,7 +17,6 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
                                   NetcdfError, VarNotAvailableError,
                                   MetaDataError)
 from pyaerocom.plot.plotscatter import plot_scatter
-from pyaerocom.variable import Variable
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
@@ -171,12 +170,24 @@ class ColocatedData(object):
         return self.data.longitude
 
     @property
+    def lon_range(self):
+        """Longitude range covered by this data object"""
+        lons = self.longitude.values
+        return (np.nanmin(lons), np.nanmax(lons))
+
+    @property
     def latitude(self):
         """Array of latitude coordinates"""
         if not 'latitude' in self.data.coords:
             raise AttributeError('ColocatedData does not include latitude '
                                  'coordinate')
         return self.data.latitude
+
+    @property
+    def lat_range(self):
+        """Latitude range covered by this data object"""
+        lats = self.latitude.values
+        return (np.nanmin(lats), np.nanmax(lats))
 
     @property
     def time(self):
@@ -230,34 +241,36 @@ class ColocatedData(object):
 
     @property
     def num_coords(self):
-        """Total number of lat/lon coordinates"""
-        if 'station_name' in self.coords:
-            return len(self.data.station_name)
-
-        elif self.ndim == 4:
-            if not all([x in self.data.dims for x in ('longitude', 'latitude')]):
-                raise AttributeError('Cannot determine grid points. Either '
-                                     'longitude or latitude are not contained '
-                                     'in 4D data object, which contains the '
-                                     'following dimensions: {}'.self.data.dims)
-            return len(self.data.longitude) * len(self.data.latitude)
-        elif not self.has_time_dim:
-            if self.has_latlon_dims:
-                return np.prod(self.data[0].shape)
-        raise DataDimensionError('Could not infer number of coordinates')
+        """Total number of lat/lon coordinate pairs"""
+        obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
+        if not 'station_name' in obj.coords:
+            raise DataDimensionError('Need dimension station_name')
+        elif not obj.ndim == 3:
+            raise DataDimensionError(
+                'Number of coordinates can only be retrieved for 3D data'
+                )
+        return len(obj.data.station_name)
 
     @property
     def num_coords_with_data(self):
-        """Number of lat/lon coordinates that contain at least one datapoint
+        """Number of lat/lon coordinate pairs that contain at least one datapoint
 
-        Todo
+        Note
         ----
-        check 4D data
+        Occurrence of valid data is only checked for obsdata (first index in
+        data_source dimension).
         """
-        if self.has_time_dim:
-            return (self.data[0].count(dim='time') > 0).data.sum()
-        # TODO: ADDED IN A RUSH BY JGLISS ON 17.06.2020, check!
-        return (self.data[0].count() > 0).data.sum()
+        obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
+        if not 'station_name' in obj.coords:
+            raise DataDimensionError('Need dimension station_name')
+        elif not obj.ndim == 3:
+            raise DataDimensionError(
+                'Number of coordinates can only be retrieved for 3D data'
+                )
+        obs = obj.data[0]
+        if obj.has_time_dim:
+            return (obs.count(dim='time') > 0).data.sum()
+        return (obs.count() > 0).data.sum()
 
     @property
     def has_time_dim(self):
@@ -319,36 +332,6 @@ class ColocatedData(object):
         Wrapper for :func:`calc_area_weights`
         """
         return self.calc_area_weights()
-
-    def get_station_names_obs_notnan(self):
-        """
-        Get list of all site names that contain at least one valid measurement
-
-        Note
-        -----
-        So far this only works for 3D colocated data that has a dimension
-        `station_name`.
-
-        Raises
-        ------
-        AttributeError
-            If data is not 3D colocated data object.
-
-        Returns
-        -------
-        numpy.ndarray
-            1D array with site location names
-
-        """
-        if not self.dims == ('data_source', 'time', 'station_name'):
-            raise AttributeError(
-                'Need station_name dimension and dim order ')
-        all_sites = self.data['station_name'].values
-        obs_np = self.data[0].data
-        # axis=0 is time dimension
-        obs_nan = np.isnan(obs_np).all(axis=0)
-        sites_notnan = all_sites[~obs_nan]
-        return sites_notnan
 
     def get_country_codes(self):
         """
@@ -426,7 +409,7 @@ class ColocatedData(object):
 
     def resample_time(self, to_ts_type, how=None,
                       apply_constraints=None, min_num_obs=None,
-                      colocate_time=True, inplace=True, **kwargs):
+                      colocate_time=False, inplace=False, **kwargs):
         """
         Resample time dimension
 
@@ -460,10 +443,12 @@ class ColocatedData(object):
             `min_num_obs={'monthly': {'daily': 22}, 'daily': {'hourly': 18}}`.
         colocate_time : bool, optional
             If True, the modeldata is invalidated where obs is NaN, before
-            resampling. The default is True.
+            resampling. The default is False (updated in v0.11.0, before was
+            True).
         inplace : bool, optional
             If True, modify this object directly, else make a copy and resample
-            that one. The default is True.
+            that one. The default is False (updated in v0.11.0, before was
+            True).
         **kwargs
             Addtitional keyword args passed to :func:`TimeResampler.resample`.
 
@@ -493,7 +478,7 @@ class ColocatedData(object):
                                 apply_constraints=apply_constraints,
                                 min_num_obs=min_num_obs, **kwargs)
 
-        data_arr.attrs.update(col.meta)
+        data_arr.attrs.update(col.metadata)
         data_arr.attrs['ts_type'] = str(to_ts_type)
 
         col.data = data_arr
@@ -512,35 +497,23 @@ class ColocatedData(object):
             new colocated data object with dimension station_name and lat lon
             arrays as additional coordinates
         """
-        if not 'latitude' in self.dims or not 'longitude' in self.dims:
-            raise AttributeError('Need latitude and longitude dimension')
-        elif 'station_name' in self.dims:
-            raise AttributeError('Cannot stack lat lon dimensions to new dim '
-                                 'station_name as it already exists in data')
+        if not self.has_latlon_dims:
+            raise DataDimensionError('Need latitude and longitude dimensions')
+
+        newdims = []
+        for dim in self.dims:
+            if dim == 'latitude':
+                newdims.append('station_name')
+            elif dim == 'longitude':
+                continue
+            else:
+                newdims.append(dim)
 
         arr = self.stack(station_name=['latitude', 'longitude'],
                          inplace=False).data
-        meta = {}
-        meta.update(self.metadata)
-        lats = arr.latitude.values
-        lons = arr.longitude.values
-        time = arr.time.values
-        stridx = [str(x) for x in arr.station_name.values]
-        nparr = arr.data
 
-        coords = {
-                    'data_source' : ['obs', 'mod'],
-                    'time'        : time,
-                    'station_name': stridx,
-                    'latitude'    : ('station_name', lats),
-                    'longitude'   : ('station_name', lons)
-        }
-
-        dims = ['data_source', 'time', 'station_name']
-
-        output = ColocatedData(data=nparr, coords=coords, dims=dims,
-                               name=self.name, attrs=meta)
-        return output
+        arr = arr.transpose(*newdims)
+        return ColocatedData(arr)
 
     def stack(self, inplace=False, **kwargs):
         """Stack one or more dimensions
@@ -758,38 +731,155 @@ class ColocatedData(object):
             cd.data.data[zeros] = np.nan
         return cd
 
-    def calc_statistics(self, constrain_val_range=False,
-                        use_area_weights=False, **kwargs):
+    def calc_statistics(self, use_area_weights=False, **kwargs):
         """Calculate statistics from model and obs data
 
-        Wrapper for function :func:`pyaerocom.mathutils.calc_statistics`
+        Calculate standard statistics for model assessment. This is done by
+        taking all model and obs data points in this object as input for
+        :func:`pyaerocom.mathutils.calc_statistics`. For instance, if the
+        object is 3D with dimensions `data_source` (obs, model), `time` (e.g.
+        12 monthly values) and `station_name` (e.g. 4 sites), then the input
+        arrays for model and obs into
+        :func:`pyaerocom.mathutils.calc_statistics` will be each of size
+        12x4.
+
+        See also :func:`calc_temporal_statistics` and
+        :func:`calc_spatial_statistics`.
+
+        Parameters
+        ----------
+        use_area_weights : bool
+            if True and if data is 4D (i.e. has lat and lon dimension), then
+            area weights are applied when caluclating the statistics based on
+            the coordinate cell sizes. Defaults to False.
+        **kwargs
+            additional keyword args passed to
+            :func:`pyaerocom.mathutils.calc_statistics`
 
         Returns
         -------
         dict
             dictionary containing statistical parameters
         """
-        if constrain_val_range:
-            var = Variable(self.metadata['var_name'][1])
-            kwargs['lowlim'] = var.lower_limit
-            kwargs['highlim'] = var.upper_limit
-
         if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
             kwargs['weights'] = self.area_weights[0].flatten()
-        elif 'weights' in kwargs:
-            raise ValueError('Invalid input combination: weights are provided '
-                             'but use_area_weights is set to False...')
 
-
+        nc, ncd = self.num_coords, self.num_coords_with_data
         stats = calc_statistics(self.data.values[1].flatten(),
                                 self.data.values[0].flatten(),
                                 **kwargs)
 
-        stats['num_coords_with_data'] = self.num_coords_with_data
-        stats['num_coords_tot'] = self.num_coords
+        stats['num_coords_tot'] = nc
+        stats['num_coords_with_data'] = ncd
         return stats
 
-    def plot_scatter(self, constrain_val_range=False,  **kwargs):
+    def calc_temporal_statistics(self,aggr=None,**kwargs):
+        """Calculate *temporal* statistics from model and obs data
+
+        *Temporal* statistics is computed by averaging first the spatial
+        dimension(s) (that is, `station_name` for 3D data, and
+        `latitude` and `longitude` for 4D data), so that only `data_source` and
+        `time` remains as dimensions. These 2D data are then used to calculate
+        standard statistics using :func:`pyaerocom.mathutils.calc_statistics`.
+
+        See also :func:`calc_statistics` and
+        :func:`calc_spatial_statistics`.
+
+        Parameters
+        ----------
+        aggr : str, optional
+            aggreagator to be used, currently only mean and median are
+            supported. Defaults to mean.
+        **kwargs
+            additional keyword args passed to
+            :func:`pyaerocom.mathutils.calc_statistics`
+
+        Returns
+        -------
+        dict
+            dictionary containing statistical parameters
+        """
+        if aggr is None:
+            aggr = 'mean'
+        nc, ncd = self.num_coords, self.num_coords_with_data
+        if self.ndim == 3:
+            dim = 'station_name'
+        else:
+            dim = ('latitude', 'longitude')
+
+        if aggr == 'mean':
+            arr = self.data.mean(dim=dim)
+        elif aggr == 'median':
+            arr = self.data.median(dim=dim)
+        else:
+            raise ValueError(
+                'So far only mean and median are supported aggregators'
+                )
+        obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
+        stats = calc_statistics(mod, obs, **kwargs)
+        stats['num_coords_tot'] = nc
+        stats['num_coords_with_data'] = ncd
+        return stats
+
+    def calc_spatial_statistics(self,aggr=None,use_area_weights=False,**kwargs):
+        """Calculate *spatial* statistics from model and obs data
+
+        *Spatial* statistics is computed by averaging first the time
+        dimension and then, if data is 4D, flattening lat / lon dimensions into
+        new station_name dimension, so that the resulting dimensions are
+        `data_source` and `station_name`. These 2D data are then used to
+        calculate standard statistics using
+        :func:`pyaerocom.mathutils.calc_statistics`.
+
+        See also :func:`calc_statistics` and
+        :func:`calc_temporal_statistics`.
+
+        Parameters
+        ----------
+        aggr : str, optional
+            aggreagator to be used, currently only mean and median are
+            supported. Defaults to mean.
+        use_area_weights : bool
+            if True and if data is 4D (i.e. has lat and lon dimension), then
+            area weights are applied when caluclating the statistics based on
+            the coordinate cell sizes. Defaults to False.
+        **kwargs
+            additional keyword args passed to
+            :func:`pyaerocom.mathutils.calc_statistics`
+
+        Returns
+        -------
+        dict
+            dictionary containing statistical parameters
+        """
+        if aggr is None:
+            aggr = 'mean'
+        if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
+            weights = self.area_weights[0] #3D (time, lat, lon)
+            assert self.dims[1] == 'time'
+            kwargs['weights'] = np.nanmean(weights, axis=0).flatten()
+
+        nc, ncd = self.num_coords, self.num_coords_with_data
+        # ToDo: find better solution to parse aggregator without if conditions,
+        # e.g. xr.apply_ufunc or similar, with core aggregators that are
+        # supported being defined in some dictionary in some pyaerocom config
+        # module or class. Also aggregation could go into a separate method...
+        if aggr == 'mean':
+            arr = self.data.mean(dim='time')
+        elif aggr == 'median':
+            arr = self.data.median(dim='time')
+        else:
+            raise ValueError(
+                'So far only mean and median are supported aggregators'
+                )
+
+        obs, mod = arr[0].values.flatten(), arr[1].values.flatten()
+        stats = calc_statistics(mod, obs, **kwargs)
+        stats['num_coords_tot'] = nc
+        stats['num_coords_with_data'] = ncd
+        return stats
+
+    def plot_scatter(self, **kwargs):
         """Create scatter plot of data
 
         Parameters
@@ -799,36 +889,51 @@ class ColocatedData(object):
 
         Returns
         -------
-        ax
+        Axes
             matplotlib axes instance
         """
         meta = self.metadata
         num_points = self.num_coords_with_data
-        vars_ = meta['var_name']
-
-        if constrain_val_range:
-            var = Variable(self.metadata['var_name'][0])
-            kwargs['lowlim_stats'] = var.lower_limit
-            kwargs['highlim_stats'] = var.upper_limit
+        try:
+            vars_ = meta['var_name']
+        except KeyError:
+            vars_ = ['N/D', 'N/D']
+        try:
+            xn, yn = meta['data_source']
+        except KeyError:
+            xn, yn = 'N/D', 'N/D'
 
         if vars_[0] != vars_[1]:
             var_ref = vars_[0]
         else:
             var_ref = None
+        try:
+            tst = meta['ts_type']
+        except KeyError:
+            tst = 'N/D'
+        try:
+            fn = meta['filter_name']
+        except KeyError:
+            fn = 'N/D'
+        try:
+            unit = self.unitstr
+        except KeyError:
+            unit = 'N/D'
+
         # ToDo: include option to use area weighted stats in plotting
         # routine...
         return plot_scatter(x_vals=self.data.values[0].flatten(),
                             y_vals=self.data.values[1].flatten(),
                             var_name=vars_[1],
                             var_name_ref = var_ref,
-                            x_name=meta['data_source'][0],
-                            y_name=meta['data_source'][1],
+                            x_name=xn,
+                            y_name=yn,
                             start=self.start,
                             stop=self.stop,
-                            unit=self.unitstr,
-                            ts_type=meta['ts_type'],
+                            unit=unit,
+                            ts_type=tst,
                             stations_ok=num_points,
-                            filter_name=meta['filter_name'],
+                            filter_name=fn,
                             **kwargs)
 
     def rename_variable(self, var_name, new_var_name, data_source,
@@ -1244,7 +1349,8 @@ class ColocatedData(object):
 
         lons, lats = arr.longitude.data, arr.latitude.data
 
-        latmask = np.logical_and(lats > lat_range[0], lats < lat_range[1])
+        latmask = np.logical_and(lats > lat_range[0],
+                                 lats < lat_range[1])
         if lon_range[0] > lon_range[1]:
             _either = np.logical_and(lons>=-180, lons<lon_range[1])
             _or = np.logical_and(lons>lon_range[0], lons<=180)
@@ -1312,8 +1418,8 @@ class ColocatedData(object):
         ColocatedData
             filtered data object
         """
-        if not inplace:
-            data = self.copy()
+        data = self if inplace else self.copy()
+
         is_2d = data._check_latlon_coords()
 
         if region_id is not None:
@@ -1330,27 +1436,10 @@ class ColocatedData(object):
         if lat_range is None:
             lat_range = [-90, 90]
 
-        latr, lonr = data.data.attrs['lat_range'], data.data.attrs['lon_range']
-        if np.equal(latr, lat_range).all() and np.equal(lonr, lon_range).all():
-            const.logger.info(
-                f'Filtering of lat_range={lat_range} and lon_range={lon_range} '
-                f'results in unchanged object'
-                )
-            return data
         if lat_range[0] > lat_range[1]:
             raise ValueError(
                 f'Lower latitude bound {lat_range[0]} cannot exceed upper '
                 f'latitude bound {lat_range[1]}')
-
-        if lat_range[0] < latr[0]:
-            lat_range[0] = latr[0]
-        if lat_range[1] > latr[1]:
-            lat_range[1] = latr[1]
-        if lon_range[0] < lonr[0]:
-            lon_range[0] = lonr[0]
-        if lon_range[1] > lonr[1]:
-            lon_range[1] = lonr[1]
-
         if is_2d:
             filtered = data._filter_latlon_2d(data.data, lat_range, lon_range)
         else:
@@ -1365,8 +1454,6 @@ class ColocatedData(object):
 
         filtered.attrs['filter_name'] = '{}-{}'.format(region_id, alt_info)
         filtered.attrs['region'] = region_id
-        filtered.attrs['lon_range'] = lon_range
-        filtered.attrs['lat_range'] = lat_range
 
         data.data = filtered
         return data
