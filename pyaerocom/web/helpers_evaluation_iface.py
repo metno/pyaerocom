@@ -1106,6 +1106,28 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_objs.append(ts_data)
     return ts_objs
 
+def _apply_annual_constraint(coldata, yearly):
+
+    arr_yr = yearly.data
+    yrs_cd = coldata.data.time.dt.year
+    yrs_avail = arr_yr.time.dt.year
+    obs_allyrs = arr_yr[0]
+    for i, yr in enumerate(yrs_avail):
+        obs_yr = obs_allyrs[i]
+        nan_sites_yr = obs_yr.isnull()
+        if not nan_sites_yr.any():
+            continue
+        scond = nan_sites_yr.data
+        tcond = (yrs_cd == yr).data
+        # workaround since numpy sometimes throws IndexError if tcond and
+        # scond are attempted to be applied directly via
+        # coldata.data.data[:,tcond, scond] = np.nan
+        tsel = coldata.data.data[:,tcond]
+        tsel[:,:,scond] = np.nan
+        coldata.data.data[:,tcond] = tsel
+
+    return coldata
+
 def _get_stats_region(data, freq, regid, use_weights, use_country,
                       annual_stats_constrained):
     coldata = data[freq]
@@ -1120,20 +1142,12 @@ def _get_stats_region(data, freq, regid, use_weights, use_country,
         raise DataCoverageError(f'All data is NaN in {regid} ({freq})')
 
     if annual_stats_constrained:
-
-        year = data['yearly']
-
-        filtered_yr = year.filter_region(
+        yearly = data['yearly']
+        yearly_filtered = yearly.filter_region(
             region_id=regid,
             check_country_meta=use_country
             )
-        stats_to_keep = filtered_yr.get_station_names_obs_notnan()
-        if len(stats_to_keep) == 0:
-            raise DataCoverageError(
-                f'No sites remaining in {regid} ({freq}) when applying annual '
-                f'coverage constraint.')
-
-        filtered.data = filtered.data.sel(station_name=stats_to_keep)
+        filtered = _apply_annual_constraint(filtered, yearly_filtered)
 
     stats = filtered.calc_statistics(use_area_weights=use_weights)
 
