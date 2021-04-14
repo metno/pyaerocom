@@ -5,7 +5,10 @@ Created on Tue Feb 11 15:57:09 2020
 
 @author: jonasg
 """
+import matplotlib
+matplotlib.use('Agg')
 import pytest
+import numpy as np
 
 from contextlib import contextmanager
 
@@ -13,7 +16,7 @@ from pyaerocom import const
 import pyaerocom._conftest_helpers as cth
 import pyaerocom.testdata_access as td
 from pyaerocom.griddeddata import GriddedData
-
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.io import (ReadAasEtal, ReadEbas, ReadAeronetSunV3,
                           ReadAeronetSdaV3)
 
@@ -111,7 +114,8 @@ change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
 EMEP_DIR =  str(TESTDATADIR.joinpath(CHECK_PATHS['emep']))
-# Paths to EMEP data
+
+
 @pytest.fixture(scope='session')
 def path_emep():
     paths = {}
@@ -122,7 +126,6 @@ def path_emep():
     paths['data_dir'] = str(emep_path)
     return paths
 
-# Example GriddedData object (TM5 model)
 @pytest.fixture(scope='session')
 def data_tm5():
     fpath = tda.testdatadir.joinpath(CHECK_PATHS['tm5aod'])
@@ -179,7 +182,6 @@ def data_scat_jungfraujoch_full():
     r = ReadEbas()
     return r.read('sc550aer', station_names='Jungfrau*')
 
-
 @pytest.fixture(scope='session')
 def loaded_nasa_ames_example():
     if not TESTDATA_AVAIL:
@@ -207,6 +209,17 @@ def statlist():
     data['concpm10_X2'] = [stat.copy() for stat in pm10sites[:3]]
     data['concpm10'] = [stat.copy() for stat in pm10sites[:2]]
     return data
+
+@pytest.fixture(scope='session')
+def coldata():
+    EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS['coldata_tm5_aeronet'])
+    return {
+        'tm5_aeronet'   : ColocatedData(str(EXAMPLE_FILE)),
+        'fake_nodims'  : ColocatedData(np.ones((2,1,1))),
+        'fake_3d'       : cth._create_fake_coldata_3d(),
+        'fake_4d'       : cth._create_fake_coldata_4d(),
+        'fake_5d'       : cth._create_fake_coldata_5d()
+        }
 
 @contextmanager
 def does_not_raise_exception():

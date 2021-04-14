@@ -50,7 +50,8 @@ def test__nanmean_and_std(data,expected):
 perfect_stats_num1_mean1 = {'totnum': 1.0, 'num_valid': 1.0, 'refdata_mean': 1.0,
                        'refdata_std': 0.0, 'data_mean': 1.0, 'data_std': 0.0,
                        'weighted': False, 'rms': 0.0, 'nmb': 0.0,
-                       'mnmb': 0.0, 'fge': 0.0}
+                       'mnmb': 0.0, 'fge': 0.0, 'R': np.nan,
+                       'R_kendall' : np.nan, 'R_spearman' : np.nan}
 perfect_stats_num2_mean1 = {}
 perfect_stats_num2_mean1.update(perfect_stats_num1_mean1)
 perfect_stats_num2_mean1['totnum'] =2

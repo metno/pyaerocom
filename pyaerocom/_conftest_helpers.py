@@ -5,9 +5,10 @@ Created on Tue Feb 11 15:57:09 2020
 
 @author: jonasg
 """
-from pyaerocom import StationData
+from pyaerocom import StationData, ColocatedData, Filter
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 
 def _load_coldata_tm5_aeronet_from_scratch(file_path):
@@ -111,9 +112,176 @@ def create_fake_stationdata_list():
     stats.append(stat_werr)
     return stats
 
+def _create_fake_coldata_3d():
+    var = 'concpm10'
+    filter_name = 'WORLD-wMOUNTAINS'
+    regfilter = Filter(name=filter_name)
+
+    dtime = pd.date_range('2000-01-01', '2019-12-31', freq='MS') + np.timedelta64(14, 'D')
+
+    lats = [-80, 0, 70, 0.1]
+    lons = [-150, 0, 100, 0.1]
+    alts = [0, 100, 2000, 10]
+
+    timenum = len(dtime)
+    statnum = len(lats)
+    c = 1
+    statnames = []
+    for lat in lats:
+        statnames.append(f'FakeStation{c}')
+        c+=1
+    data = np.ones((2, timenum, statnum))
+    xrange_modulation = np.linspace(0,np.pi*40,240)
+    data[1] += 0.1 #+10% model bias
+
+    # 1. SITE: modify first site (sin , cos waves)
+    data[0,:,0] += np.sin(xrange_modulation)
+    data[1,:,0] += np.cos(xrange_modulation) # phase shifted to obs
+
+    years = dtime.year.values
+    # 2. SITE: modify second site (yearly stepwise increase, double as
+    # pronounced in obs than in model)
+    c = 0
+    for year in np.unique(years):
+        mask = years == year
+        data[0,mask,1] += c*0.4
+        data[1,mask,1] += c*0.2
+
+    # set the first and last 10 months of obs to NaN to violate 25% coverage
+    # constraint of first and last year to test option annual_stats_constrained
+    # in json conversion routines
+    data[0,:10,1] = np.nan
+    data[0,-10:,1] = np.nan
+
+    # 3 SITE: add noise to model and obs
+    data[0,:,2] += np.random.rand(timenum)
+    data[1,:,2] += np.random.rand(timenum)
+
+    meta = {
+            'data_source'       :   ['fakeobs',
+                                     'fakemod'],
+            'var_name'          :   [var,var],
+            'ts_type'           :   'monthly', # will be updated below if resampling
+            'filter_name'       :   filter_name,
+            'ts_type_src'       :   ['monthly', 'daily'],
+            'start_str'         :   dtime[0].strftime('%Y%m%d'),
+            'stop_str'          :   dtime[-1].strftime('%Y%m%d'),
+            'var_units'         :   ['ug m-3','ug m-3'],
+            'vert_scheme'       :   'surface',
+            'data_level'        :   3,
+            'revision_ref'      :   '20210409',
+            'from_files'        :   [],
+            'from_files_ref'    :   None,
+            'stations_ignored'  :   None,
+            'colocate_time'     :   False,
+            'obs_is_clim'       :   False,
+            'pyaerocom'         :   '0.11.0',
+            'apply_constraints' :   True,
+            'min_num_obs'       :   3,
+            'resample_how'      :   None}
+
+
+    meta.update(regfilter.to_dict())
+
+
+    # create coordinates of DataArray
+    coords = {'data_source' : meta['data_source'],
+              'time'        : dtime,
+              'station_name': statnames,
+              'latitude'    : ('station_name', lats),
+              'longitude'   : ('station_name', lons),
+              'altitude'    : ('station_name', alts)
+              }
+
+    dims = ['data_source', 'time', 'station_name']
+    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var,
+                         attrs=meta)
+
+    return cd
+
+def _create_fake_coldata_4d():
+    _lats_fake = np.arange(30,60,10)
+    _lons_fake = np.arange(10,30,10)
+    _time_fake = pd.date_range('2010-01', '2010-03', freq='MS')
+    _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake)))
+
+    coords = {'data_source' : ['obs', 'mod'],
+              'time'        : _time_fake,
+              'latitude'    : _lats_fake,
+              'longitude'   : _lons_fake
+              }
+
+    dims = ['data_source', 'time', 'latitude', 'longitude']
+    # set some obs vals NaN
+    _data_fake[0,:,1,1] = np.nan
+    _data_fake[0,0,0,0] = np.nan
+    meta = {'ts_type' : 'monthly'}
+    return ColocatedData(data=_data_fake, coords=coords, dims=dims, attrs=meta)
+
+def _create_fake_coldata_5d():
+    _lats_fake = [10,20]
+    _lons_fake = [42,43]
+    _time_fake = pd.date_range('2010-01', '2010-03', freq='MS')
+    _wvl_fake = [100,200,300]
+    _data_fake = np.ones((2, len(_time_fake), len(_lats_fake), len(_lons_fake), len(_wvl_fake)))
+
+    coords = {'data_source' : ['fakeobs', 'fakemod'],
+              'time'        : _time_fake,
+              'latitude'    : _lats_fake,
+              'longitude'   : _lons_fake,
+              'wvl'         : _wvl_fake
+              }
+
+    dims = ['data_source', 'time', 'latitude', 'longitude','wvl']
+    # set all NaN in one obs coordinate
+    arr = xr.DataArray(data=_data_fake, coords=coords, dims=dims)
+    cd = ColocatedData(np.ones((2,2,2)))
+    cd.data = arr
+    return cd
+
 if __name__ == '__main__':
     import pyaerocom as pya
-    stats = create_fake_stationdata_list()
+    import matplotlib.pyplot as plt
+    plt.close('all')
+    cd = _create_fake_coldata_4d()
+    yearly = cd.resample_time('yearly')
 
-    for stat in stats:
-        print(stat)
+
+    arr_hr = cd.copy().data
+    arr_yr = yearly.data
+
+    yrs_hr = arr_hr.time.dt.year
+    yrs_avail = arr_yr.time.dt.year
+
+    obs_allyrs = arr_yr[0]
+    for i, yr in enumerate(yrs_avail):
+        obs_yr = obs_allyrs[i]
+        nan_sites_yr = obs_yr.isnull()
+        if not nan_sites_yr.any():
+            continue
+        scond = nan_sites_yr
+        tcond = yrs_hr == yr
+
+        arr_hr.data[:,tcond.data, scond.data] = np.nan
+
+    filtered = ColocatedData(arr_hr)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #cd.plot_scatter()
+
+
+
+
+
