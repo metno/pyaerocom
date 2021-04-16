@@ -5,8 +5,8 @@ import json
 import numpy as np
 from pandas import DataFrame
 
-from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData
-from pyaerocom.conftest import tda
+from pyaerocom import Colocator, ColocatedData, GriddedData, UngriddedData, const
+from pyaerocom.conftest import tda, does_not_raise_exception
 from pyaerocom.web import AerocomEvaluation
 from pyaerocom.io.aux_read_cubes import add_cubes
 
@@ -67,11 +67,39 @@ def stp_min(tmpdir):
                              raise_exceptions=True,
                              out_basedir=str(tmpdir))
 
-
-def test_aerocom_evaluation(stp_min):
+def test_AerocomEvaluation_type(stp_min):
     assert isinstance(stp_min, AerocomEvaluation)
 
-def test_aerocom_evaluation_run_colocation(stp):
+@pytest.mark.parametrize('args,raises,chk_attrs', [
+    ({},pytest.raises(TypeError),{}),
+    ({'proj_id':'bla'},pytest.raises(TypeError),{}),
+    ({'proj_id':'bla', 'exp_id' : 'blub'},
+     does_not_raise_exception(),{'out_dirs':{}}),
+
+    ])
+def test_AerocomEvaluation___init__(args,raises,chk_attrs):
+    with raises:
+        stp = AerocomEvaluation(**args)
+        assert isinstance(stp, AerocomEvaluation)
+        for key, val in chk_attrs.items():
+            _val = getattr(stp, key)
+            assert _val == val
+
+def test_AerocomEvaluation_init_dirs_default():
+    stp = AerocomEvaluation('bla','blub')
+    stp.init_dirs()
+    bdir = stp.out_basedir
+    dirs_keys = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles', 'contour']
+    assert os.path.exists(bdir)
+    assert os.path.samefile(const.OUTPUTDIR, bdir)
+    dirs = stp.out_dirs
+    assert isinstance(dirs, dict)
+    for key, val in dirs.items():
+        assert key in dirs_keys
+        assert os.path.exists(val)
+
+
+def test_AerocomEvaluation_run_colocation(stp):
 
     mid = 'TM5-met2010_CTRL-TEST'
     var_name = 'od550aer'
@@ -87,42 +115,42 @@ def test_aerocom_evaluation_run_colocation(stp):
     assert isinstance(coldata, ColocatedData)
     assert coldata.shape == (2, 12, 8)
 
-def test_aerocom_evaluation_run_evaluation(stp):
+def test_AerocomEvaluation_run_evaluation(stp):
     col_paths = stp.run_evaluation(update_interface=False,
                                    reanalyse_existing=False) #reuse model colocated data from prev. test
     assert len(col_paths) == 1
     assert os.path.isfile(col_paths[0])
 
-def test_aerocom_evaluation_get_web_overview_table(stp, tmpdir):
+def test_AerocomEvaluation_get_web_overview_table(stp, tmpdir):
     stp.update()
     stp.run_evaluation(update_interface=False)
     table = stp.get_web_overview_table()
     assert isinstance(table, DataFrame)
     assert len(table) > 0
 
-def test_aerocom_evaluation_get_custom_read_method_model_file(stp,
+def test_AerocomEvaluation_get_custom_read_method_model_file(stp,
                                                               model_config_aux):
     stp.add_methods_file = METHODS_FILE
     stp.model_config = model_config_aux
     fun = stp.get_custom_read_method_model('add_cubes')
     assert fun == add_cubes
 
-def test_aerocom_evaluation_get_custom_read_method_model_parameter(stp,
+def test_AerocomEvaluation_get_custom_read_method_model_parameter(stp,
                                                                    model_config_aux):
     stp.add_methods={'add_cubes':add_cubes}
     fun = stp.get_custom_read_method_model('add_cubes')
     assert fun == add_cubes
 
-def test_aerocom_evaluation_all_obs_vars(stp):
+def test_AerocomEvaluation_all_obs_vars(stp):
     assert stp.all_obs_vars == [OBS_VARS]
 
-def test_aerocom_evaluation_get_model_name(stp):
+def test_AerocomEvaluation_get_model_name(stp):
     assert stp.get_model_name(MODEL_ID) == MODEL_NAME
 
-def test_aerocom_evaluation___str__(stp):
+def test_AerocomEvaluation___str__(stp):
     assert isinstance(str(stp), str)
 
-def test_aerocom_evaluation_output_files(stp, tmpdir):
+def test_AerocomEvaluation_output_files(stp, tmpdir):
     stp.out_basedir = tmpdir
     stp.run_evaluation(update_interface=False)
 
@@ -147,7 +175,7 @@ def test_aerocom_evaluation_output_files(stp, tmpdir):
     assert data['daily_obs'] == []
     assert data['daily_mod'] == []
 
-def test_aerocom_evaluation_to_from_json(stp, tmpdir):
+def test_AerocomEvaluation_to_from_json(stp, tmpdir):
     stp.to_json(tmpdir)
     config_filename = 'cfg_{}_{}.json'.format(PROJ_ID, EXP_ID)
     stp_new = AerocomEvaluation(proj_id='project2', exp_id='exp2', raise_exceptions=True)
@@ -161,13 +189,13 @@ def test_aerocom_evaluation_to_from_json(stp, tmpdir):
     for old, new in zip(dir(stp), dir(stp_new)):
         assert stp[old] == stp_new[new]
 
-def test_aerocom_evaluation_read_model_data(stp):
+def test_AerocomEvaluation_read_model_data(stp):
     data = stp.read_model_data(MODEL_NAME, OBS_VARS)
     assert isinstance(data, GriddedData)
     with pytest.raises(ValueError):
         stp.read_model_data('model_name', 'od550aer')
 
-def test_aerocom_evaluation_read_ungridded_obsdata(stp):
+def test_AerocomEvaluation_read_ungridded_obsdata(stp):
     data = stp.read_ungridded_obsdata(OBS_NAME, vars_to_read=[OBS_VARS])
     assert isinstance(data, UngriddedData)
 
@@ -175,16 +203,16 @@ def test_aerocom_evaluation_read_ungridded_obsdata(stp):
     ('TM*', [MODEL_NAME], 'find_model_matches'),
     ('Aero*', [OBS_NAME], 'find_obs_matches'),
 ])
-def test_aerocom_evaluation_find_matches(stp, search, expected, fun_name):
+def test_AerocomEvaluation_find_matches(stp, search, expected, fun_name):
     search_fun = getattr(AerocomEvaluation, fun_name)
     assert search_fun(stp, search) == expected
 
-# @ejgal: keep these tests until deciding if test_aerocom_evaluation_find_matches is ok
-# def test_aerocom_evaluation_find_model_matches(stp):
+# @ejgal: keep these tests until deciding if test_AerocomEvaluation_find_matches is ok
+# def test_AerocomEvaluation_find_model_matches(stp):
 #     matches = stp.find_model_matches('TM*')
 #     assert matches == [MODEL_NAME]
 #
-# def test_aerocom_evaluation_find_obs_matches(stp):
+# def test_AerocomEvaluation_find_obs_matches(stp):
 #     matches = stp.find_obs_matches('Aero*')
 #     assert matches == [OBS_NAME]
 
@@ -192,21 +220,21 @@ def test_aerocom_evaluation_find_matches(stp, search, expected, fun_name):
     ([MODEL_NAME], 'all_model_names'),
     ([OBS_NAME], 'all_obs_names'),
 ])
-def test_aerocom_evaluation_all_names(stp, expected, property):
+def test_AerocomEvaluation_all_names(stp, expected, property):
     assert getattr(stp, property) == expected
 
-# @ejgal: keep these tests until deciding if test_aerocom_evaluation_all_names is ok.
-# def test_aerocom_evaluation_all_model_names(stp):
+# @ejgal: keep these tests until deciding if test_AerocomEvaluation_all_names is ok.
+# def test_AerocomEvaluation_all_model_names(stp):
 #     assert stp.all_model_names == [MODEL_NAME]
 #
-# def test_aerocom_evaluation_all_obs_names(stp):
+# def test_AerocomEvaluation_all_obs_names(stp):
 #     assert stp.all_obs_names == [OBS_NAME]
 
-def test_aerocom_evaluation_find_obs_name(stp):
+def test_AerocomEvaluation_find_obs_name(stp):
     obs_name = stp.find_obs_name(OBS_ID, OBS_VARS)
     assert obs_name == OBS_NAME
 
-def test_aerocom_evaluation_find_model_name(stp):
+def test_AerocomEvaluation_find_model_name(stp):
     model_name = stp.find_model_name(MODEL_ID)
     assert model_name == MODEL_NAME
 
@@ -214,7 +242,7 @@ def test_aerocom_evaluation_find_model_name(stp):
     ('proj_id', ['project'], AttributeError),
     ('exp_id', ['exp'], AttributeError)
 ])
-def test_aerocom_evaluation_check_config(stp_min, key, val, expected):
+def test_AerocomEvaluation_check_config(stp_min, key, val, expected):
     stp_min[key] = val
     with pytest.raises(expected):
         stp_min.check_config()
@@ -223,7 +251,7 @@ def test_aerocom_evaluation_check_config(stp_min, key, val, expected):
     ('model_config', MODEL_NAME, 'model_id'),
     ('obs_config', OBS_NAME, 'obs_id')
 ])
-def test_aerocom_evaluation_check_config_model_obs(stp, config_name, name, id):
+def test_AerocomEvaluation_check_config_model_obs(stp, config_name, name, id):
     del stp[config_name][name][id]
     with pytest.raises(KeyError):
         stp.check_config()
