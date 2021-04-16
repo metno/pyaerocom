@@ -1242,16 +1242,11 @@ class ReadEbas(ReadUngriddedBase):
                         data_out.var_info[var]['converted_from_units'] = from_unit
                         data_out.var_info[var]['units_conv_fac'] = cfac
                         data_out[var] *= cfac
-
-
-
-
-
-
-                    print(file.meta.keys())
-                    print()
-                    print(var_info)
-                    raise UnitConversionError('Coming soon....')
+                    else:
+                        print(file.meta.keys())
+                        print()
+                        print(var_info)
+                        raise UnitConversionError('Coming soon....')
 
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
