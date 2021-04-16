@@ -177,8 +177,13 @@ def _create_fake_coldata_3d():
             'obs_is_clim'       :   False,
             'pyaerocom'         :   '0.11.0',
             'apply_constraints' :   True,
-            'min_num_obs'       :   3,
-            'resample_how'      :   None}
+            'min_num_obs'       :   dict(monthly=dict(daily=15),
+                                         daily=dict(hourly=12)
+                                         ),
+            'resample_how'      :   dict(monthly=dict(daily='sum'),
+                                         daily=dict(hourly='max')
+                                         )
+            }
 
 
     meta.update(regfilter.to_dict())
@@ -234,7 +239,10 @@ def _create_fake_coldata_3d_hourly():
             'var_name'          :   [var,var],
             'ts_type'           :   'hourly',
             'filter_name'       :   filter_name,
-            'var_units'         :   ['nmole mole-1','nmole mole-1']
+            'var_units'         :   ['nmole mole-1','nmole mole-1'],
+            'min_num_obs'       :   dict(hourly=dict(minutely=15),
+                                         minutely=dict(secondly=15)
+                                         )
             }
 
 
