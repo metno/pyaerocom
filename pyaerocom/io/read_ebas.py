@@ -31,7 +31,9 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_ang4470dryaer_from_dry_scat,
                                  compute_wetoxs_from_concprcpoxs,
                                  compute_wetoxn_from_concprcpoxn,
-                                 compute_wetrdn_from_concprcprdn)
+                                 compute_wetrdn_from_concprcprdn,
+                                 vmrx_to_concx,
+                                 concx_to_vmrx)
 
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
@@ -615,7 +617,6 @@ class ReadEbas(ReadUngriddedBase):
                     continue
                 col_matches = [colnum for colnum in col_matches if prefcomp == data.var_defs[colnum].name]
                 break
-
         return col_matches
 
     def _resolve_units_cols(self, var_name, result_col, file):
@@ -1224,7 +1225,33 @@ class ReadEbas(ReadUngriddedBase):
             data_out['var_info'][var].update(var_info)
 
             if opts.convert_units:
-                data_out = self._convert_varunit_stationdata(data_out, var)
+                try:
+                    data_out = self._convert_varunit_stationdata(data_out, var)
+                except UnitConversionError:
+                    from geonum.atmosphere import p0, T0_STD
+                    from pyaerocom.molmasses import get_molmass
+                    mmol = get_molmass(var)
+                    from_unit = var_info['units']
+                    to_unit = self.var_info(var).units
+                    if var.startswith('vmr'):
+                        cfac = concx_to_vmrx(1, p0, T0_STD,
+                                             from_unit,
+                                             mmol,
+                                             to_unit=to_unit)
+                        data_out.var_info[var]['units'] = to_unit
+                        data_out.var_info[var]['converted_from_units'] = from_unit
+                        data_out.var_info[var]['units_conv_fac'] = cfac
+                        data_out[var] *= cfac
+
+
+
+
+
+
+                    print(file.meta.keys())
+                    print()
+                    print(var_info)
+                    raise UnitConversionError('Coming soon....')
 
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
@@ -1648,11 +1675,10 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     import pyaerocom as pya
-    import os
+
     plt.close('all')
-    ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
-    reader = pya.io.ReadUngridded('EBASMC')#,
-                                  #data_dir=ebas_local)
+    ebas_local = '/home/jonasg/MyPyaerocom/data/obsdata/EBASMultiColumn/data'
+    reader = pya.io.ReadUngridded('EBASMC', data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
-    data = reader.read('concoc')
+    data = reader.read('vmro3')
