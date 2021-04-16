@@ -200,7 +200,7 @@ class AerocomEvaluation(object):
     }
 
     EXP_STATUS_VALS = ['public', 'experimental']
-    def __init__(self, proj_id=None, exp_id=None, config_dir=None,
+    def __init__(self, proj_id, exp_id, config_dir=None,
                  try_load_json=True, **settings):
 
         self._log = const.print_log
@@ -291,6 +291,10 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
+# =============================================================================
+#         if self.out_basedir is not None:
+#             self.init_dirs()
+# =============================================================================
 
     @property
     def proj_dir(self):
@@ -559,6 +563,7 @@ class AerocomEvaluation(object):
         check_dirs_exist(**outdirs)
         self.out_dirs = outdirs
         self._check_init_col_outdir()
+        return outdirs
 
     def _check_init_col_outdir(self):
         cbd = self.coldata_basedir
@@ -573,11 +578,11 @@ class AerocomEvaluation(object):
 
     def check_config(self):
         if not isinstance(self.proj_id, str):
-            raise AttributeError(f'proj_id must be specified, '
+            raise AttributeError(f'proj_id must be str, '
                                  f'(current value: {self.proj_id})')
 
         if not isinstance(self.exp_id, str):
-            raise AttributeError(f'exp_id must be specified, '
+            raise AttributeError(f'exp_id must be str, '
                                  f'(current value: {self.exp_id})')
 
         if not isinstance(self.exp_descr, str):
