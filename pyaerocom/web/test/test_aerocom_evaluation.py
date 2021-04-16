@@ -55,8 +55,10 @@ def model_config_aux(model_config):
 def stp(model_config, obs_config,tmpdir):
     return AerocomEvaluation(proj_id=PROJ_ID, exp_id=EXP_ID,
                              model_config=model_config,
-                             obs_config=obs_config, start=START, ts_type=TS_TYPE,
-                             raise_exceptions=True, reanalyse_existing=True,
+                             obs_config=obs_config, start=START,
+                             ts_type=TS_TYPE,
+                             raise_exceptions=True,
+                             reanalyse_existing=True,
                              out_basedir=str(tmpdir))
 
 @pytest.fixture(scope='function')

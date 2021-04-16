@@ -1,6 +1,7 @@
 [run]
 omit =
   pyaerocom/conftest.py
+  pyaerocom/_conftest_helpers.py
   pyaerocom/test/*
   pyaerocom/io/test/*
   pyaerocom/web/test/*

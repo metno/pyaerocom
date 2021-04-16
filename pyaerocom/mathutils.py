@@ -268,11 +268,14 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result['rms'] = np.sqrt(np.average(diffsquare, weights=weights))
 
     # NO implementation to apply weights yet ...
-
     if num_points > 1:
         result['R'] = corr(data, ref_data, weights)
         result['R_spearman'] = spearmanr(data, ref_data)[0]
         result['R_kendall'] = kendalltau(data, ref_data)[0]
+    else:
+        result['R'] = np.nan
+        result['R_spearman'] = np.nan
+        result['R_kendall'] = np.nan
 
     sum_diff = sum(difference, weights=weights)
     sum_refdata = sum(ref_data, weights=weights)
