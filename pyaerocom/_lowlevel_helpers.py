@@ -269,7 +269,7 @@ def sort_dict_by_name(d, pref_list=None):
             s[k] = d[k]
     return s
 
-def dict_to_str(dictionary, s="", indent=0, ignore_null=False):
+def dict_to_str(dictionary, s=None, indent=0, ignore_null=False):
     """Custom function to convert dictionary into string (e.g. for print)
 
     Parameters
@@ -300,6 +300,8 @@ def dict_to_str(dictionary, s="", indent=0, ignore_null=False):
         BlaBlub: 2
 
     """
+    if s is None:
+        s = ''
     for k, v in dictionary.items():
         if ignore_null and v is None:
             continue
@@ -321,6 +323,5 @@ def str_underline(s, indent=0):
     return s
 
 if __name__ == '__main__':
-    from copy import deepcopy
     d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
     print(d)
