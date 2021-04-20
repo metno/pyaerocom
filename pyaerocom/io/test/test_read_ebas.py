@@ -210,8 +210,10 @@ class TestReadEbas(object):
              'eval_flags': True,
              'keep_aux_vars': False,
              'convert_units': True,
+             'try_convert_vmr_conc' : True,
              'ensure_correct_freq': True,
-             'freq_from_start_stop_meas': True}
+             'freq_from_start_stop_meas': True,
+             }
 
     def test_opts(self, reader):
         opts = reader._opts
@@ -393,12 +395,14 @@ class TestReadEbas(object):
         'measurement_height': '50.0 m', 'instrument_name': 'uv_abs_kre_0050',
         'detection_limit': '1.0 nmol/mol',
         '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K", 'matrix': 'air', 'statistics': 'arithmetic mean'}}
+
+
     @pytest.mark.parametrize('filename,vars_to_retrieve,raises,check_attrs', [
         (EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES['o3_tower']), 'vmro3',
          does_not_raise_exception(), {'var_info' : vmro3_tower_var_info}),
-
         (EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES['o3_tower']), 'conco3',
          does_not_raise_exception(), {'var_info' : conco3_tower_var_info}),
+
 
         (EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES['pm10_tstype']), 'concpm10',
          does_not_raise_exception(), {'ts_type' : '2daily'}),
@@ -433,11 +437,14 @@ class TestReadEbas(object):
 
     @pytest.mark.parametrize(
         'vars_to_retrieve,first_file,last_file,files,constraints,num_meta,num_stats,raises', [
+            ('conco3',None,None,get_ebas_filelist('conco3'),{}, 4, 4, does_not_raise_exception()),
+            ('vmro3',None,None,get_ebas_filelist('conco3'),{}, 4, 4, does_not_raise_exception()),
             ('concpm10',None,None,get_ebas_filelist('concpm10'),{}, 4, 4, does_not_raise_exception()),
             ('sc550aer',None,None,None,{}, 5, 4, does_not_raise_exception()),
             ('sc550dryaer',None,None,get_ebas_filelist('sc550dryaer'),{}, 5, 4, does_not_raise_exception()),
             ('ac550aer',None,None,get_ebas_filelist('sc550dryaer'),{}, 4, 4, pytest.raises(DataCoverageError)),
             ('ac550aer',None,None,get_ebas_filelist('ac550aer'),{}, 4, 4, does_not_raise_exception()),
+
 
 
             ])

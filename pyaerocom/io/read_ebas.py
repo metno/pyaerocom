@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
-
+from geonum.atmosphere import p0, T0_STD
 import os, re
 import fnmatch
 import numpy as np
@@ -34,7 +34,7 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_wetrdn_from_concprcprdn,
                                  vmrx_to_concx,
                                  concx_to_vmrx)
-
+from pyaerocom.molmasses import get_molmass
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.stationdata import StationData
@@ -71,6 +71,19 @@ class ReadEbasOptions(BrowseDict):
         but file contains 3 columns of that variable, e.g. at 520, 530 and
         540 nm), then the closest wavelength to the queried wavelength is used
         within the specified tolerance level.
+    shift_wavelengths : bool
+        (only for wavelength dependent variables).
+        If True, and a data columns candidate is valid within wavelength
+        tolerance around desired wavelength, that column will be considered
+        to be used for data import. Defaults to True.
+    assume_default_ae_if_unavail : bool
+        assume an Angstrom Exponent for applying wavelength shifts of data. See
+        :attr:`ReadEbas.ASSUME_AE_SHIFT_WVL` and
+        :attr:`ReadEbas.ASSUME_AAE_SHIFT_WVL` for AE and AAE assumptions
+        related to scattering and absorption coeffs. Defaults to True.
+    check_correct_MAAP_wrong_wvl : bool
+        (BETA, do not use): set correct wavelength for certain absorption coeff
+        measurements. Defaults to False.
     eval_flags : bool
         If True, the flag columns in the NASA Ames files are read and decoded
         (using :func:`EbasFlagCol.decode`) and the (up to 3 flags for each
@@ -84,19 +97,26 @@ class ReadEbasOptions(BrowseDict):
         :func:`ReadEbas.read` (e.g. if sc550dryaer is requested, this
         requires reading of sc550aer and scrh. The latter 2 will be
         written to the data object if this parameter evaluates to True)
-    merge_meta : bool
-        if True, then :func:`UngriddedData.merge_common_meta` will be called
-        at the end of :func:`ReadEbas.read` (merges common metadata blocks
-        together)
     convert_units : bool
         if True, variable units in EBAS files will be checked and attempted to
         be converted into AeroCom default unit for that variable. Defaults to
         True.
+    try_convert_vmr_conc : bool
+        attempt to convert vmr data to conc if user requires conc (e.g. user
+        wants conco3 but file only contains vmro3), and vice versa.
     ensure_correct_freq : bool
         if True, the frequency set in NASA Ames files (provided via attr
         *resolution_code*) is checked using time differences inferred from
         start and stop time of each measurement. Measurements that are not in
         that resolution (within 5% tolerance level) will be flagged invalid.
+    freq_from_start_stop_meas : bool
+        infer frequency from start / stop intervals of individual
+        measurements.
+
+    Parameters
+    ----------
+    **args
+        key / value pairs specifying any of the supported settings.
     """
     #: Names of options that correspond to reading filter constraints
     _FILTER_IDS = ['prefer_statistics',
@@ -120,6 +140,7 @@ class ReadEbasOptions(BrowseDict):
         self.keep_aux_vars = False
 
         self.convert_units = True
+        self.try_convert_vmr_conc = True
 
         self.ensure_correct_freq = True
         self.freq_from_start_stop_meas = True
@@ -1022,8 +1043,12 @@ class ReadEbas(ReadUngriddedBase):
                     if opts.assume_default_ae_if_unavail:
                         if var.startswith('ac'):
                             ae = self.ASSUME_AAE_SHIFT_WVL
-                        else:
+                        elif var.startswith('sc'):
                             ae = self.ASSUME_AE_SHIFT_WVL
+                        else:
+                            raise NotImplementedError(
+                                f'No Angstrom exponent specified for {var}'
+                                )
                         avg_before = np.nanmean(data)
                         data = self._shift_wavelength(vals=data,
                                                   from_wvl=wvlcol,
@@ -1132,6 +1157,43 @@ class ReadEbas(ReadUngriddedBase):
             var_cols[var] = col
         return var_cols
 
+    def _try_convert_vmr_conc(self, data_out, var, var_info):
+        mmol = get_molmass(var)
+        mmol_air = get_molmass('air_dry')
+        from_unit = var_info['units']
+        to_unit = self.var_info(var).units
+        if var.startswith('vmr'): #assume variable is concX
+            concvar = var.replace('vmr', 'conc')
+            to_unit_pre = self.var_info(concvar).units
+
+            cfac_pre = get_unit_conversion_fac(from_unit,
+                                               to_unit_pre,
+                                               var_name=concvar)
+
+            cfac = concx_to_vmrx(data=1,
+                                 p_pascal=p0,
+                                 T_kelvin=T0_STD,
+                                 conc_unit=to_unit_pre,
+                                 mmol_var=mmol,
+                                 mmol_air=mmol_air,
+                                 to_unit=to_unit)
+            cfac *= cfac_pre
+        elif var.startswith('conc'): #assume variable is vmrX
+            cfac = vmrx_to_concx(data=1,
+                                 p_pascal=p0,
+                                 T_kelvin=T0_STD,
+                                 vmr_unit=from_unit,
+                                 mmol_var=mmol,
+                                 mmol_air=mmol_air,
+                                 to_unit=to_unit)
+        else:
+            raise UnitConversionError('Data is neither vmr nor conc')
+        data_out.var_info[var]['units'] = to_unit
+        data_out.var_info[var]['converted_from_units'] = from_unit
+        data_out.var_info[var]['units_conv_fac'] = cfac
+        data_out[var] *= cfac
+        return data_out
+
     def get_ebas_var(self, var_name):
         """Get instance of :class:`EbasVarInfo` for input AeroCom variable"""
         if not var_name in self._loaded_ebas_vars:
@@ -1228,25 +1290,12 @@ class ReadEbas(ReadUngriddedBase):
                 try:
                     data_out = self._convert_varunit_stationdata(data_out, var)
                 except UnitConversionError:
-                    from geonum.atmosphere import p0, T0_STD
-                    from pyaerocom.molmasses import get_molmass
-                    mmol = get_molmass(var)
-                    from_unit = var_info['units']
-                    to_unit = self.var_info(var).units
-                    if var.startswith('vmr'):
-                        cfac = concx_to_vmrx(1, p0, T0_STD,
-                                             from_unit,
-                                             mmol,
-                                             to_unit=to_unit)
-                        data_out.var_info[var]['units'] = to_unit
-                        data_out.var_info[var]['converted_from_units'] = from_unit
-                        data_out.var_info[var]['units_conv_fac'] = cfac
-                        data_out[var] *= cfac
+                    if opts.try_convert_vmr_conc:
+                        data_out = self._try_convert_vmr_conc(data_out,
+                                                              var,
+                                                              var_info) #raises UnitConversionError if it is not possible
                     else:
-                        print(file.meta.keys())
-                        print()
-                        print(var_info)
-                        raise UnitConversionError('Coming soon....')
+                        raise
 
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
@@ -1412,6 +1461,23 @@ class ReadEbas(ReadUngriddedBase):
         return self._opts[var_name]
 
     def _check_constraints(self, constraints):
+        """
+        Separate sqlite constraints (for file retrieval) from reading options
+
+        Parameters
+        ----------
+        constraints : dict
+            constraints and options
+
+        Returns
+        -------
+        constraints_new : dict
+            input constraints that have been filtered for options that can
+            be handled by :class:`ReadEbasOptions`.
+        update_opts : dict
+            key / value pairs of input dict that are handled by
+            :class:`ReadEbasOptions`.
+        """
         constraints_new = {}
         update_opts = {}
         for key, val in constraints.items():
@@ -1425,6 +1491,23 @@ class ReadEbas(ReadUngriddedBase):
         return (constraints_new, update_opts)
 
     def _init_read_opts(self, vars_to_retrieve, constraints):
+        """
+        Initiate reading options and constraints
+
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            list of variables to be retrieved
+        constraints : dict
+            reading constraints and options.
+
+        Returns
+        -------
+        constraints : dict
+            updated constraints (e.g. attributes of
+            that can be handled in file requests using :class:`EbasSQLRequest`).
+
+        """
         constraints, update_opts = self._check_constraints(constraints)
         for var in vars_to_retrieve:
             # the following method returns default opts if this variable is not
@@ -1676,4 +1759,4 @@ if __name__=="__main__":
     reader = pya.io.ReadUngridded('EBASMC', data_dir=ebas_local)
 
     reader = pya.io.ReadEbas(data_dir=ebas_local)
-    data = reader.read('vmro3')
+    data = reader.read('vmrno2')
