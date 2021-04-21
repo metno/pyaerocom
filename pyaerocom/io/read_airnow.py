@@ -351,19 +351,12 @@ class ReadAirNow(ReadUngriddedBase):
         vars_to_retrieve : list
             list of variables to be retrieved from input data.
 
-        Raises
-        ------
-        NotImplementedError
-            DESCRIPTION.
-
         Returns
         -------
-        stats : TYPE
-            DESCRIPTION.
+        stats : list
+            list of :class:`StationData` objects, one for each var and station.
 
         """
-
-        #const.print_log.info('Concatenating arrays from individual files')
         data = np.concatenate(arrs)
 
         const.print_log.info('Converting filedata to list os StationData')
@@ -386,34 +379,26 @@ class ReadAirNow(ReadUngriddedBase):
             subset = data[mask]
             dtime_subset = dtime[mask]
             statlist = np.unique(subset[:, statcol])
-            for stat_id in tqdm(statlist):
-                if not stat_id in tqdm(stat_ids, desc=var):
+            for stat_id in tqdm(statlist, desc=var):
+                if not stat_id in stat_ids:
                     continue
                 statmask = subset[:, statcol] == stat_id
                 if statmask.sum() == 0:
                     continue
                 statdata = subset[statmask]
                 timestamps = dtime_subset[statmask]
-
+                # timezone offsets
+                toffs = statdata[:, tzonecol].astype(int)
                 stat = StationData(**stat_meta[stat_id])
-                offs = np.unique(statdata[:, tzonecol])
 
-                if not len(offs) == 1:
-                    const.print_log.warning(
-                        f'Encountered several timezones for station'
-                        f'{stat.station_name} (ID: {stat_id}), detected '
-                        f'timezone offsets: {offs}. Skipping this site.'
-                        )
-                    continue
-
-                # account for timezone
-                timedelta = np.timedelta64(int(offs[0]), 'h')
                 vals = statdata[:, valcol]
                 units = np.unique(statdata[:, unitcol])
                 # errors that did not occur in v0 but that may occur
                 assert len(units) == 1
                 assert units[0] in self.UNIT_MAP
-                stat['dtime'] = timestamps + timedelta
+                toffs = toffs.astype('timedelta64[h]')
+                timestamps += toffs
+                stat['dtime'] = timestamps
                 stat['timezone'] ='UTC'
                 stat[var] = vals
                 unit = self.UNIT_MAP[units[0]]
@@ -477,6 +462,7 @@ class ReadAirNow(ReadUngriddedBase):
 
 
 if __name__ == '__main__':
-    reader = ReadAirNow()
+    loc =  '/home/jonasg/MyPyaerocom/data/obsdata/MACC_INSITU_AirNow'
+    reader = ReadAirNow(data_dir=loc)
 
-    reader.read('concpm25',first_file=8000)
+    reader.read('concpm25',last_file=10)
