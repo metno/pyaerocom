@@ -8,6 +8,9 @@ from pyaerocom.io import ReadGridded, ReadMscwCtm
 from pyaerocom.exceptions import ColocationError, DataCoverageError
 from pyaerocom.io.aux_read_cubes import add_cubes
 
+HOME = os.path.expanduser('~')
+COL_OUT_DEFAULT = os.path.join(HOME, 'MyPyaerocom/colocated_data')
+
 default_setup = {'save_coldata': True, '_obs_cache_only': False,
                  'obs_vars': None, 'obs_vert_type': None,
                  'model_vert_type_alt': None, 'read_opts_ungridded': None,
@@ -24,7 +27,7 @@ default_setup = {'save_coldata': True, '_obs_cache_only': False,
                  'obs_outlier_ranges': None, 'model_outlier_ranges': None,
                  'harmonise_units': False, 'vert_scheme': None,
                  'regrid_res_deg': None, 'ignore_station_names': None,
-                 'basedir_coldata': None,
+                 'basedir_coldata': COL_OUT_DEFAULT,
                  'model_ts_type_read': None, 'model_read_aux': None,
                  'model_use_climatology': False, 'colocate_time': False,
                  'flex_ts_type_gridded': True, 'reanalyse_existing': False,
@@ -53,9 +56,12 @@ def col():
     (ColocationSetup(), default_setup)
     ])
 def test_colocation_setup(stp, should_be):
-    for key, val in stp.items():
-        assert key in should_be
-        assert val == should_be[key], key
+    for key, val in should_be.items():
+        assert key in stp
+        if key == 'basedir_coldata':
+            assert os.path.samefile(val, stp['basedir_coldata'])
+        else:
+            assert val == stp[key], key
 
 def test_colocator(col):
     assert isinstance(col, Colocator)
