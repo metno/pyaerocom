@@ -9,6 +9,7 @@ import pytest
 from matplotlib.axes import Axes
 import numpy as np
 import numpy.testing as npt
+import os
 import pandas as pd
 import xarray as xr
 from pyaerocom import ColocatedData
@@ -346,6 +347,36 @@ def test_ColocatedData_filter_region(coldata,which,input_args,raises,latrange,lo
         assert lons.min() >= lonrange[0]
         assert lons.max() <= lonrange[1]
         assert filtered.num_coords == numst
+
+@pytest.mark.parametrize('which,raises,filename', [
+    ('tm5_aeronet',does_not_raise_exception(),
+     'od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'),
+    ('fake_3d_hr',does_not_raise_exception(),
+     'vmro3_REF-fakeobs_MOD-fakemod_20180110_20180117_hourly_WORLD-wMOUNTAINS.nc'),
+    ('fake_3d',does_not_raise_exception(),
+     'concpm10_REF-fakeobs_MOD-fakemod_20000115_20191215_monthly_WORLD-wMOUNTAINS.nc')
+
+    ])
+def test_ColocatedData_to_netcdf(coldata, tempdir, which, raises, filename):
+    cd = coldata[which]
+    fp = cd.to_netcdf(tempdir)
+    assert os.path.exists(fp)
+    assert os.path.basename(fp) == filename
+
+@pytest.mark.parametrize('filename,raises', [
+    ('od550aer_REF-AeronetSunV3L2Subset.daily_MOD-TM5_AP3-CTRL2016_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc',
+     does_not_raise_exception()),
+    ('vmro3_REF-fakeobs_MOD-fakemod_20180110_20180117_hourly_WORLD-wMOUNTAINS.nc',
+     does_not_raise_exception()),
+    ('concpm10_REF-fakeobs_MOD-fakemod_20000115_20191215_monthly_WORLD-wMOUNTAINS.nc',
+     does_not_raise_exception())
+    ])
+def test_ColocatedData_read_netcdf(tempdir,filename,raises):
+    fp = os.path.join(tempdir, filename)
+    assert os.path.exists(fp)
+    with raises:
+        cd = ColocatedData().read_netcdf(fp)
+        assert isinstance(cd, ColocatedData)
 
 if __name__=="__main__":
     import sys

@@ -79,6 +79,16 @@ def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
 
 @pytest.mark.parametrize('args,output_len,output_numnotnan,lup', [
     (dict(to_ts_type='monthly',from_ts_type='hourly',
+          how=dict(monthly=dict(daily='sum'),
+                   daily=dict(hourly='max')
+                   ),
+          min_num_obs=dict(monthly=dict(daily=15),
+                           daily=dict(hourly=1)
+                           ),
+          apply_constraints=True), 1, 0, False),
+    (dict(to_ts_type='monthly',from_ts_type='hourly',
+          apply_constraints=False), 1, 1, True),
+    (dict(to_ts_type='monthly',from_ts_type='hourly',
           how=dict(daily=dict(hourly='sum')),
           apply_constraints=True,
           min_num_obs=min_num_obs_custom), 1, 0, False),

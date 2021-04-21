@@ -131,7 +131,7 @@ def _create_fake_coldata_3d():
         statnames.append(f'FakeStation{c}')
         c+=1
     data = np.ones((2, timenum, statnum))
-    xrange_modulation = np.linspace(0,np.pi*40,240)
+    xrange_modulation = np.linspace(0,np.pi*40, timenum)
     data[1] += 0.1 #+10% model bias
 
     # 1. SITE: modify first site (sin , cos waves)
@@ -177,8 +177,73 @@ def _create_fake_coldata_3d():
             'obs_is_clim'       :   False,
             'pyaerocom'         :   '0.11.0',
             'apply_constraints' :   True,
-            'min_num_obs'       :   3,
-            'resample_how'      :   None}
+            'min_num_obs'       :   dict(monthly=dict(daily=15),
+                                         daily=dict(hourly=12)
+                                         ),
+            'resample_how'      :   dict(monthly=dict(daily='sum'),
+                                         daily=dict(hourly='max')
+                                         )
+            }
+
+
+    meta.update(regfilter.to_dict())
+
+
+    # create coordinates of DataArray
+    coords = {'data_source' : meta['data_source'],
+              'time'        : dtime,
+              'station_name': statnames,
+              'latitude'    : ('station_name', lats),
+              'longitude'   : ('station_name', lons),
+              'altitude'    : ('station_name', alts)
+              }
+
+    dims = ['data_source', 'time', 'station_name']
+    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var,
+                         attrs=meta)
+
+    return cd
+
+def _create_fake_coldata_3d_hourly():
+    var = 'vmro3'
+    filter_name = 'WORLD-wMOUNTAINS'
+    regfilter = Filter(name=filter_name)
+
+    dtime = pd.date_range('2018-01-10T00:00:00', '2018-01-17T23:59:00', freq='h')
+
+    lats = [-80]
+    lons = [-150]
+    alts = [10]
+
+    timenum = len(dtime)
+    statnum = len(lats)
+    c = 1
+    statnames = []
+    for lat in lats:
+        statnames.append(f'FakeStation{c}')
+        c+=1
+    data = np.ones((2, timenum, statnum))
+    xrange_modulation = np.linspace(0,np.pi*40, timenum)
+    signal = np.sin(xrange_modulation)
+    data[1] += 0.1 #+10% model bias
+
+    # 1. SITE: modify first site (sin , cos waves)
+    data[0,:,0] += signal
+    data[1,:,0] += signal
+    data[0, :36, 0] = np.nan # invalidate first 1.5 days in obs
+
+
+    meta = {
+            'data_source'       :   ['fakeobs',
+                                     'fakemod'],
+            'var_name'          :   [var,var],
+            'ts_type'           :   'hourly',
+            'filter_name'       :   filter_name,
+            'var_units'         :   ['nmole mole-1','nmole mole-1'],
+            'min_num_obs'       :   dict(hourly=dict(minutely=15),
+                                         minutely=dict(secondly=15)
+                                         )
+            }
 
 
     meta.update(regfilter.to_dict())
@@ -243,43 +308,9 @@ if __name__ == '__main__':
     import pyaerocom as pya
     import matplotlib.pyplot as plt
     plt.close('all')
-    cd = _create_fake_coldata_4d()
-    yearly = cd.resample_time('yearly')
+    cd = _create_fake_coldata_3d_hourly()
 
-
-    arr_hr = cd.copy().data
-    arr_yr = yearly.data
-
-    yrs_hr = arr_hr.time.dt.year
-    yrs_avail = arr_yr.time.dt.year
-
-    obs_allyrs = arr_yr[0]
-    for i, yr in enumerate(yrs_avail):
-        obs_yr = obs_allyrs[i]
-        nan_sites_yr = obs_yr.isnull()
-        if not nan_sites_yr.any():
-            continue
-        scond = nan_sites_yr
-        tcond = yrs_hr == yr
-
-        arr_hr.data[:,tcond.data, scond.data] = np.nan
-
-    filtered = ColocatedData(arr_hr)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #cd.plot_scatter()
+    cd.plot_scatter()
 
 
 

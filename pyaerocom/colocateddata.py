@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
+from ast import literal_eval
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -10,7 +10,8 @@ import xarray
 
 from pyaerocom import logger, const
 from pyaerocom.mathutils import calc_statistics
-from pyaerocom.helpers import to_pandas_timestamp
+from pyaerocom.helpers import (to_pandas_timestamp,to_datestring_YYYYMMDD,
+                               isnumeric)
 from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
                                   DataCoverageError,
                                   DataSourceError,
@@ -20,8 +21,8 @@ from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
-from pyaerocom.helpers_landsea_masks import (load_region_mask_xr, get_mask_value)
-
+from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
+                                             get_mask_value)
 
 class ColocatedData(object):
     """Class representing colocated and unified data from two sources
@@ -995,8 +996,21 @@ class ColocatedData(object):
     @property
     def savename_aerocom(self):
         """Default save name for data object following AeroCom convention"""
-        start_str = self.metadata['start_str']
-        stop_str = self.metadata['stop_str']
+        # ToDo: start_str and stop_str should actually be decorator attributes
+        # and not set in metadata, but this will need some checking in the
+        # web tools, regarding the file conventions of the stored NetCDF files
+        # needs also updates in colocation.py
+        try:
+            start_str = self.metadata['start_str']
+        except KeyError:
+            start_str = to_datestring_YYYYMMDD(self.start)
+            self.metadata['start_str'] = start_str
+        try:
+            stop_str = self.metadata['stop_str']
+        except KeyError:
+            stop_str = to_datestring_YYYYMMDD(self.stop)
+            self.metadata['stop_str'] = stop_str
+
 
         source_info = self.metadata['data_source']
         data_ref_id = source_info[0]
@@ -1096,12 +1110,8 @@ class ColocatedData(object):
                 meta_out[key] = 'None'
             elif isinstance(val, bool):
                 meta_out[key] = int(val)
-            elif key == 'min_num_obs' and isinstance(val, dict):
-                min_num_obs = ''
-                for to, how in val.items():
-                    for fr, num in how.items():
-                        min_num_obs += f'{to},{fr},{num};'
-                meta_out['_min_num_obs'] = min_num_obs
+            elif isinstance(val, dict):
+                meta_out[f'CONV!{key}'] = str(val)
             else:
                 meta_out[key] = val
         return meta_out
@@ -1121,6 +1131,11 @@ class ColocatedData(object):
         **kwargs
             additional, optional keyword arguments passed to
             :func:`xarray.DataArray.to_netdcf`
+
+        Returns
+        -------
+        str
+            file path of stored object.
         """
         if 'path' in kwargs:
             raise IOError('Path needs to be specified using input parameters '
@@ -1131,33 +1146,9 @@ class ColocatedData(object):
             savename = '{}.nc'.format(savename)
         arr = self.data.copy()
         arr.attrs = self._prepare_meta_to_netcdf()
-
-        arr.to_netcdf(path=os.path.join(out_dir, savename), **kwargs)
-
-    def _min_num_obs_fromstr(self, infostr):
-        """
-        Create min_num_obs resampling dictionary from string stored in NetCDF
-
-        Parameters
-        ----------
-        infostr : str
-            str _min_num_obs from attrs. in colocated NetCDF file
-
-        Returns
-        -------
-        info : dict
-            temporal resampling dictionary
-
-        """
-        info = {}
-        for val in infostr.split(';')[:-1]:
-            to, fr, num = val.split(',')
-            if not to in info:
-                info[to] = {}
-            if not fr in info[to]:
-                info[to][fr] = {}
-            info[to][fr] = int(num)
-        return info
+        fp = os.path.join(out_dir, savename)
+        arr.to_netcdf(path=fp, **kwargs)
+        return fp
 
     def _meta_from_netcdf(self, imported_meta):
         """
@@ -1181,8 +1172,9 @@ class ColocatedData(object):
         for key, val in imported_meta.items():
             if val == 'None':
                 meta[key] = None
-            elif key == '_min_num_obs':
-                meta['min_num_obs'] = self._min_num_obs_fromstr(val)
+            elif key.startswith('CONV!'):
+                key = key[5:]
+                meta[key] = literal_eval(val)
             else:
                 meta[key] = val
         return meta
@@ -1596,17 +1588,16 @@ class ColocatedData(object):
         return self.data.__contains__(val)
 
     def __repr__(self):
-        return repr(self.data)
+        tp = type(self).__name__
+        dstr = '<empty>' if self._data is None else repr(self._data)
+        return f'pyaerocom.{tp}: data: {dstr}'
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "\n{}\n{}".format(head, len(head)*"-")
-        try:
-            data_str = str(self.data)
-            s += '\nData: {}'.format(data_str)
-        except Exception:
-            pass
-        return s
+        tp = type(self).__name__
+        head = f'pyaerocom.{tp}'
+        underline = len(head)*'-'
+        dstr = '<empty>' if self._data is None else str(self._data)
+        return f'{head}\n{underline}\ndata (DataArray): {dstr}'
 
     ### Deprecated (but still supported) stuff
     # ToDo: v0.12.0
@@ -1645,30 +1636,12 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     import pyaerocom as pya
     plt.close('all')
-    coldir = '/home/jonasg/github/aerocom_evaluation/coldata/PIII-optics2019-P/NorESM2-met2010_AP3-CTRL/'
-    fname = 'od550csaer_REF-MODIS6.1-aqua_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
-    #fname = 'od550csaer_REF-AeronetSun_MOD-NorESM2_20100101_20101231_monthly_WORLD-noMOUNTAINS.nc'
 
-    coldata = ColocatedData(coldir + fname)
+    dic = dict(monthly=3, daily=dict(minutely=4000, hourly=10),
+               bla='blablub',
+               lst=[1,2,3]
+               )
 
-    #ts = coldata.get_regional_timeseries('EUROPE')
+    st = _dict_to_str(dic)
 
-    from time import time
-    t0 = time()
-    sub0 = coldata.filter_region('EUROPE')
-    dt0 = time() - t0
-
-    stacked = coldata.flatten_latlondim_station_name()
-
-    t1 = time()
-    sub1 = stacked.filter_region('EUROPE')
-    dt1 = time() - t1
-
-    print('Not stacked: {:.3f} s'.format(dt0))
-    print('Stacked: {:.3f} s'.format(dt1))
-
-    #c1 = coldata.check_set_countries(inplace=False)
-
-    #c1.filter_region('Germany', check_country_meta=True, inplace=True)
-
-    #c1.plot_coordinates()
+    print(st)
