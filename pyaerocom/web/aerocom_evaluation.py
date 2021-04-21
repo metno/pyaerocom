@@ -606,7 +606,7 @@ class AerocomEvaluation(object):
         else:
             col_out = os.path.join(cbd, add_dirs)
         if not os.path.exists(col_out):
-            const.print_log(
+            const.print_log.info(
                 f'Creating output directory for colocated data files: {col_out}')
             os.makedirs(col_out, exist_ok=True)
         else:
