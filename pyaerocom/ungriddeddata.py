@@ -235,7 +235,7 @@ class UngriddedData(object):
         if add_meta_keys is None:
             add_meta_keys = []
         elif isinstance(add_meta_keys, str):
-            add_metad_keys = [add_meta_keys]
+            add_meta_keys = [add_meta_keys]
         elif not isinstance(add_meta_keys, list):
             raise ValueError(
                 f'Invalid input for add_meta_keys {add_meta_keys}... need list'
