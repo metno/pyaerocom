@@ -34,7 +34,7 @@ class ReadAirNow(ReadUngriddedBase):
     _FILEMASK = f'/**/*{_FILETYPE}'
 
     #: Version log of this class (for caching)
-    __version__ = '0.06'
+    __version__ = '0.07'
 
     #: Column delimiter
     FILE_COL_DELIM = '|'
@@ -136,7 +136,16 @@ class ReadAirNow(ReadUngriddedBase):
     def __init__(self, dataset_to_read=None, data_dir=None):
         super(ReadAirNow, self).__init__(dataset_to_read=dataset_to_read,
                                          dataset_path=data_dir)
-        self.make_datetime64_array = np.vectorize(self._date_time_str_to_datetime64)
+        self.make_datetime64_array = np.vectorize(
+            self._date_time_str_to_datetime64)
+        self._station_metadata = None
+
+    @property
+    def station_metadata(self):
+        """Dictionary containing global metadata for each site"""
+        if self._station_metadata is None:
+            self._init_station_metadata()
+        return self._station_metadata
 
     def _date_time_str_to_datetime64(self, date, time):
         """
@@ -226,7 +235,6 @@ class ReadAirNow(ReadUngriddedBase):
             dictionary with metadata dictionaries for all stations
 
         """
-
         cfg = self._read_metadata_file()
         meta_map = self.STATION_META_MAP
 
@@ -248,7 +256,7 @@ class ReadAirNow(ReadUngriddedBase):
             stat['data_id'] = self.data_id
             stat['ts_type'] = self.TS_TYPE
             stats[sid] = stat
-
+        self._station_metadata = stats
         return stats
 
     def get_file_list(self):
@@ -307,18 +315,9 @@ class ReadAirNow(ReadUngriddedBase):
             list of StationData objects
 
         """
-
-        stat_meta = self._init_station_metadata()
-        stat_ids = list(stat_meta.keys())
         const.print_log.info('Read AirNow data file(s)')
         # initialize empty dataframe
-
         varcol = self.FILE_COL_NAMES.index('variable')
-        statcol = self.FILE_COL_NAMES.index('station_id')
-        tzonecol = self.FILE_COL_NAMES.index('time_zone')
-        unitcol = self.FILE_COL_NAMES.index('unit')
-        valcol = self.FILE_COL_NAMES.index('value')
-
         arrs = []
         for i in tqdm(range(len(files))):
             fp = files[i]
@@ -326,10 +325,11 @@ class ReadAirNow(ReadUngriddedBase):
             arr = filedata.values
 
             for i, var in enumerate(vars_to_retrieve):
+                cond = arr[:, varcol]==self.VAR_MAP[var]
                 if i == 0:
-                    mask = arr[:, varcol] == self.VAR_MAP[var]
+                    mask = cond
                 else:
-                    mask = np.logical_or(mask, arr[:, varcol] == self.VAR_MAP[var])
+                    mask = np.logical_or(mask, cond)
             matches = mask.sum()
             if matches:
                 vardata = arr[mask]
@@ -337,19 +337,57 @@ class ReadAirNow(ReadUngriddedBase):
         if len(arrs) == 0:
             raise DataRetrievalError(
                 'None of the input variables could be found in input list')
+        return self._filedata_to_statlist(arrs, vars_to_retrieve)
+
+    def _filedata_to_statlist(self, arrs, vars_to_retrieve):
+        """
+        Convert loaded filedata into list of StationData objects
+
+        Parameters
+        ----------
+        arrs : list
+            list of numpy arrays extracted from each file
+            (see :func:`_read_files`).
+        vars_to_retrieve : list
+            list of variables to be retrieved from input data.
+
+        Raises
+        ------
+        NotImplementedError
+            DESCRIPTION.
+
+        Returns
+        -------
+        stats : TYPE
+            DESCRIPTION.
+
+        """
+
+        #const.print_log.info('Concatenating arrays from individual files')
         data = np.concatenate(arrs)
+
+        const.print_log.info('Converting filedata to list os StationData')
+        stat_meta = self.station_metadata
+        stat_ids = list(stat_meta.keys())
+        varcol = self.FILE_COL_NAMES.index('variable')
+        statcol = self.FILE_COL_NAMES.index('station_id')
+        tzonecol = self.FILE_COL_NAMES.index('time_zone')
+        unitcol = self.FILE_COL_NAMES.index('unit')
+        valcol = self.FILE_COL_NAMES.index('value')
+
 
         dtime = self.make_datetime64_array(data[:, 0], data[:, 1])
         stats = []
         for var in vars_to_retrieve:
+
             # extract only variable data (should speed things up)
             var_in_file = self.VAR_MAP[var]
             mask = data[:, varcol] == var_in_file
             subset = data[mask]
             dtime_subset = dtime[mask]
             statlist = np.unique(subset[:, statcol])
-            for stat_id in statlist:
-                if not stat_id in stat_ids:
+            for stat_id in tqdm(statlist):
+                if not stat_id in tqdm(stat_ids, desc=var):
                     continue
                 statmask = subset[:, statcol] == stat_id
                 if statmask.sum() == 0:
@@ -360,23 +398,21 @@ class ReadAirNow(ReadUngriddedBase):
                 stat = StationData(**stat_meta[stat_id])
                 offs = np.unique(statdata[:, tzonecol])
 
-
                 if not len(offs) == 1:
-                    raise NotImplementedError(
-                        f'Encountered several timezones for station ID {stat_id}'
+                    const.print_log.warning(
+                        f'Encountered several timezones for station'
+                        f'{stat.station_name} (ID: {stat_id}), detected '
+                        f'timezone offsets: {offs}. Skipping this site.'
                         )
+                    continue
+
                 # account for timezone
                 timedelta = np.timedelta64(int(offs[0]), 'h')
                 vals = statdata[:, valcol]
                 units = np.unique(statdata[:, unitcol])
-                if len(units) != 1:
-                    raise NotImplementedError(
-                        f'Encountered several units for {var}'
-                        )
-                elif not units[0] in self.UNIT_MAP:
-                    raise AttributeError(
-                        'Encountered unregistered unit {units[0]} for {var}'
-                        )
+                # errors that did not occur in v0 but that may occur
+                assert len(units) == 1
+                assert units[0] in self.UNIT_MAP
                 stat['dtime'] = timestamps + timedelta
                 stat['timezone'] ='UTC'
                 stat[var] = vals
@@ -421,7 +457,7 @@ class ReadAirNow(ReadUngriddedBase):
             vars_to_retrieve = self.DEFAULT_VARS
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
-
+        self._init_station_metadata()
         files = self.get_file_list()
         if first_file is None:
             first_file = 0
@@ -443,4 +479,4 @@ class ReadAirNow(ReadUngriddedBase):
 if __name__ == '__main__':
     reader = ReadAirNow()
 
-    reader.read('concpm10',first_file=0)
+    reader.read('concpm25',first_file=8000)
