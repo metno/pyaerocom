@@ -291,6 +291,8 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
+        if self.out_basedir is not None:
+            self.init_dirs()
 
     @property
     def proj_dir(self):
