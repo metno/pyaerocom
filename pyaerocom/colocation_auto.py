@@ -210,6 +210,8 @@ class ColocationSetup(BrowseDict):
 
         if basedir_coldata is not None:
             basedir_coldata = self._check_input_basedir_coldata(basedir_coldata)
+        else:
+            basedir_coldata = const.COLOCATEDDATADIR
 
         Filter(filter_name) #crashes if input filter name is invalid
 
