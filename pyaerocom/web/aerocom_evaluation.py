@@ -236,7 +236,7 @@ class AerocomEvaluation(object):
         self.annual_stats_constrained=False
 
         #: Base directory for output
-        self.out_basedir = const.OUTPUTDIR
+        self.out_basedir = os.path.join(const.OUTPUTDIR, 'aeroval')
 
         #: Base directory to store colocated data (sub dirs for proj and
         #: experiment will be created automatically)
@@ -255,7 +255,7 @@ class AerocomEvaluation(object):
         self.only_maps = False
 
         #: Output directories for different types of json files (will be filled
-        #: in :func:`init_dirs`)
+        #: in :func:`init_json_output_dirs`)
         self._out_dirs = {}
 
         #: Dictionary specifying default settings for colocation
@@ -303,8 +303,9 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
+        self._check_init_col_outdir()
         if init_output_dirs:
-            self.init_dirs()
+            self.init_json_output_dirs()
 
     @property
     def proj_dir(self):
@@ -319,14 +320,12 @@ class AerocomEvaluation(object):
     @property
     def coldata_dir(self):
         """Base directory for colocated data files"""
-        if self.coldata_basedir is None:
-            self._check_init_col_outdir()
         return self.colocation_settings['basedir_coldata']
 
     @property
     def out_dirs(self):
         if len(self._out_dirs) == 0:
-            self.init_dirs()
+            self.init_json_output_dirs()
         return self._out_dirs
 
     @property
@@ -573,19 +572,18 @@ class AerocomEvaluation(object):
         elif key in self.colocation_settings:
             return self.colocation_settings[key]
 
-    def init_dirs(self, out_basedir=None):
-        """Check and create directories"""
+    def init_json_output_dirs(self, out_basedir=None):
+        """Check and create directories for json files"""
         if out_basedir is not None:
             self.out_basedir = out_basedir
         if not os.path.exists(self.out_basedir):
-            raise FileNotFoundError(self.out_basedir)
+            os.mkdir(self.out_basedir)
         check_dirs_exist(self.out_basedir, self.proj_dir, self.exp_dir)
         outdirs = {}
         for dname in self.OUT_DIR_NAMES:
             outdirs[dname] = os.path.join(self.exp_dir, dname)
         check_dirs_exist(**outdirs)
         self._out_dirs = outdirs
-        self._check_init_col_outdir()
         return outdirs
 
     def _check_init_col_outdir(self):
@@ -607,11 +605,14 @@ class AerocomEvaluation(object):
             col_out = cbd
         else:
             col_out = os.path.join(cbd, add_dirs)
-
-        os.makedirs(cbd, exist_ok=True)
-        const.print_log.info(
-            f'Setting output directory for colocated data files to:\n{col_out}'
-            )
+        if not os.path.exists(col_out):
+            const.print_log(
+                f'Creating output directory for colocated data files: {col_out}')
+            os.makedirs(col_out, exist_ok=True)
+        else:
+            const.print_log.info(
+                f'Setting output directory for colocated data files to:\n{col_out}'
+                )
         self.coldata_basedir = cbd
         self.colocation_settings['basedir_coldata'] = col_out
 
@@ -1559,7 +1560,6 @@ class AerocomEvaluation(object):
         if only_maps is not None:
             self.only_maps = only_maps
 
-        self.init_dirs()
         if self.clear_existing_json:
             self.clean_json_files()
 

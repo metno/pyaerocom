@@ -94,13 +94,14 @@ def test_AerocomEvaluation___init__(args,raises,chk_attrs):
             _val = getattr(stp, key)
             assert _val == val
 
-def test_AerocomEvaluation_init_dirs_default():
+def test_AerocomEvaluation_init_json_output_dirs_default():
     stp = AerocomEvaluation('bla','blub')
-    stp.init_dirs()
+    stp.init_json_output_dirs()
     bdir = stp.out_basedir
     dirs_keys = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles', 'contour']
     assert os.path.exists(bdir)
-    assert os.path.samefile(const.OUTPUTDIR, bdir)
+    default_out = os.path.join(const.OUTPUTDIR, 'aeroval')
+    assert os.path.samefile(default_out, bdir)
     dirs = stp.out_dirs
     assert isinstance(dirs, dict)
     for key, val in dirs.items():
