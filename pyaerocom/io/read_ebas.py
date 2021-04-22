@@ -162,6 +162,11 @@ class ReadEbas(ReadUngriddedBase):
     dataset_to_read
         string specifying either of the supported datasets that are defined
         in ``SUPPORTED_DATASETS``
+    data_dir : str
+        directory where data is located (NOTE: needs to point to the
+        directory that contains the "ebas_file_index.sqlite3" file and not
+        to the underlying directory "data" which contains the actual
+        NASA Ames files.)
 
     TODO
     ----
