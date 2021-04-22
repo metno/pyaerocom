@@ -145,9 +145,10 @@ class ReadEarlinet(ReadUngriddedBase):
 # =============================================================================
     EXCLUDE_CASES = ['cirrus.txt']
 
-    def __init__(self, dataset_to_read=None):
+    def __init__(self, data_id=None, data_dir=None):
         # initiate base class
-        super(ReadEarlinet, self).__init__(dataset_to_read)
+        super(ReadEarlinet, self).__init__(data_id=data_id,
+                                           data_dir=data_dir)
         # make sure everything is properly set up
         if not all([x in self.VAR_PATTERNS_FILE for x in self.PROVIDES_VARIABLES]):
             raise AttributeError("Please specify file search masks in "
@@ -587,7 +588,7 @@ class ReadEarlinet(ReadUngriddedBase):
         """Get list of filenames that are supposed to be ignored"""
         exclude = []
         import glob
-        files = glob.glob('{}/EXCLUDE/*.txt'.format(self.DATASET_PATH))
+        files = glob.glob('{}/EXCLUDE/*.txt'.format(self.data_dir))
         for i, file in enumerate(files):
             if not os.path.basename(file) in self.EXCLUDE_CASES:
                 continue
@@ -662,7 +663,7 @@ class ReadEarlinet(ReadUngriddedBase):
             patterns.append(_pattern)
 
         matches = []
-        for root, dirnames, files in os.walk(self.DATASET_PATH):
+        for root, dirnames, files in os.walk(self.data_dir):
             paths = [os.path.join(root, f) for f in files]
             for _pattern in patterns:
                 for path in paths:
@@ -687,7 +688,7 @@ if __name__=="__main__":
     plt.close('all')
     r = ReadEarlinet()
 
-    print(r.DATASET_PATH)
+    print(r.data_dir)
     files = r.get_file_list(['ec532aer', 'bsc532aer'])
     data = r.read(['ec532aer', 'bsc532aer'], files=files[:20])
 

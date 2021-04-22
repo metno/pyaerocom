@@ -55,7 +55,9 @@ class ReadL2Data(ReadL2DataBase):
     __version__ = "0.02"
     DATA_ID = const.SENTINEL5P_NAME
 
-    DATASET_PATH = '/lustre/storeB/project/fou/kl/vals5p/download'
+    # jgliss commented out DATASET_PATH on 22.4.21 since it is not used
+    # Note that DATASET_PATH is deprecated as of v0.11.0, use data_dir
+    # DATASET_PATH = '/lustre/storeB/project/fou/kl/vals5p/download'
     # Flag if the dataset contains all years or not
     DATASET_IS_YEARLY = False
 
@@ -70,9 +72,10 @@ class ReadL2Data(ReadL2DataBase):
 
     TS_TYPE = 'undefined'
 
-    def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False,
+    def __init__(self, data_id=None, index_pointer=0,
+                 loglevel=logging.INFO, verbose=False,
                  read_averaging_kernel=True):
-        super(ReadL2Data, self).__init__(dataset_to_read)
+        super(ReadL2Data, self).__init__(data_id)
         self.verbose = verbose
         self.metadata = {}
         self.data = None

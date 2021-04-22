@@ -239,8 +239,8 @@ class TestReadAirNow(object):
                                 station_id='160550006')
 
 
-    def test_DATASET_PATH_EXISTS(self, reader):
-        assert os.path.exists(reader.DATASET_PATH)
+    def test_data_dir_exists(self, reader):
+        assert os.path.exists(reader.data_dir)
 
     def test_get_file_list(self, reader):
         files = reader.get_file_list()

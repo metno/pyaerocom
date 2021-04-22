@@ -133,9 +133,9 @@ class ReadAirNow(ReadUngriddedBase):
     #: file containing station metadata
     STAT_METADATA_FILENAME = 'allStations_20191224.csv'
 
-    def __init__(self, dataset_to_read=None, data_dir=None):
-        super(ReadAirNow, self).__init__(dataset_to_read=dataset_to_read,
-                                         dataset_path=data_dir)
+    def __init__(self, data_id=None, data_dir=None):
+        super(ReadAirNow, self).__init__(data_id=data_id,
+                                         data_dir=data_dir)
         self.make_datetime64_array = np.vectorize(self._date_time_str_to_datetime64)
 
     def _date_time_str_to_datetime64(self, date, time):
@@ -193,7 +193,7 @@ class ReadAirNow(ReadUngriddedBase):
             metadata dataframe
 
         """
-        fn = os.path.join(self.DATASET_PATH, self.STAT_METADATA_FILENAME)
+        fn = os.path.join(self.data_dir, self.STAT_METADATA_FILENAME)
         cfg = pd.read_csv(fn,sep=',', converters={'aqsid': lambda x: str(x)})
         return cfg
 
@@ -259,7 +259,7 @@ class ReadAirNow(ReadUngriddedBase):
         -------
         list
         """
-        basepath = self.DATASET_PATH
+        basepath = self.data_dir
         pattern = f'{basepath}{self._FILEMASK}'
         files = sorted(glob(pattern))
         return files

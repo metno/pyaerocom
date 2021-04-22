@@ -721,7 +721,7 @@ class Config(object):
             reading interface
         """
         check = reader(obs_id)
-        path = check.DATASET_PATH
+        path = check.data_dir
         assert path == data_dir
         try:
             check.get_file_list()

@@ -17,7 +17,7 @@ class CacheHandlerUngridded(object):
 
     Cache filename mask is
 
-    <dataset_to_read>_<var>.pkl
+    <data_id>_<var>.pkl
 
     e.g. EBASMC_scatc550aer.pkl
 
@@ -60,12 +60,7 @@ class CacheHandlerUngridded(object):
     def reader(self, val):
         from pyaerocom.io import ReadUngriddedBase
         if not isinstance(val, ReadUngriddedBase):
-            try:
-                val = val.get_reader()
-                if not isinstance(val, ReadUngriddedBase):
-                    raise TypeError('Invalid input for reader')
-            except Exception:
-                raise TypeError('Invalid input for reader')
+            raise TypeError('Invalid input for reader')
         self._reader = val
         self.loaded_data = {}
 
@@ -84,9 +79,9 @@ class CacheHandlerUngridded(object):
         self._cache_dir = val
 
     @property
-    def dataset_to_read(self):
+    def data_id(self):
         """Data ID of the associated dataset"""
-        return self.reader.dataset_to_read
+        return self.reader.data_id
 
     @property
     def src_data_dir(self):
@@ -94,7 +89,7 @@ class CacheHandlerUngridded(object):
 
         Needed to check whether an existing cache file is outdated
         """
-        return self.reader.DATASET_PATH
+        return self.reader.data_dir
 
     def default_file_name(self, var_name):
         """File name of cache file
@@ -110,7 +105,7 @@ class CacheHandlerUngridded(object):
         str
             file name of pickle file
         """
-        name = '_'.join([self.dataset_to_read, var_name])
+        name = '_'.join([self.data_id, var_name])
         return name + '.pkl'
 
     def file_path(self, var_or_file_name, cache_dir=None):
