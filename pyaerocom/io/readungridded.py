@@ -12,7 +12,8 @@
 #
 ########################################################################
 
-import os, logging
+import os
+import logging
 from pathlib import Path
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (DataRetrievalError,
@@ -38,7 +39,7 @@ from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.helpers import varlist_aerocom
 
-from pyaerocom import const, print_log
+from pyaerocom import const, print_log, logger
 
 class ReadUngridded(object):
     """Factory class for reading of ungridded data based on obsnetwork ID
@@ -47,6 +48,11 @@ class ReadUngridded(object):
     of inidividual observation datasets; including, reading of multiple
     datasets and post computation of new variables based on datasets that can
     be read.
+
+    Parameters
+    ----------
+    COMING SOON
+
     """
     SUPPORTED_READERS = [ReadAeronetInvV3,
                          ReadAeronetInvV2,
@@ -65,57 +71,56 @@ class ReadUngridded(object):
                          ReadEEAAQEREP_V2]
 
     DONOTCACHE_NAME = 'DONOTCACHE'
-    def __init__(self, datasets_to_read=None, vars_to_retrieve=None,
-                 ignore_cache=False, data_dir=None):
+    def __init__(self, data_ids=None, vars_to_retrieve=None,
+                 ignore_cache=False, data_dirs=None):
 
-        #will be assigned in setter method of dataset_to_read
-        self._datasets_to_read = []
+        #will be assigned in setter method of data_ids
+        self._data_ids = []
         self._vars_to_retrieve = None
-        self._data_dir = {}
+        self._data_dirs = {}
 
         #: dictionary containing reading classes for each dataset to read (will
-        #: be filled in setter of datasets_to_read)
+        #: be accessed via get_reader)
         self._readers = {}
 
-        if datasets_to_read is not None:
-            self.datasets_to_read = datasets_to_read
+        if data_ids is not None:
+            self.data_ids = data_ids
 
         if vars_to_retrieve is not None:
             self.vars_to_retrieve = vars_to_retrieve
 
-        # initiate a logger for this class
-        self.logger = logging.getLogger(__name__)
-
-        if data_dir is not None:
-            self.data_dir=data_dir
+        if data_dirs is not None:
+            self.data_dirs = data_dirs
 
         if vars_to_retrieve is not None:
             self.vars_to_retrieve = vars_to_retrieve
 
         if ignore_cache:
-            self.logger.info('Deactivating caching')
+            logger.info('Deactivating caching')
             const.CACHING = False
 
     @property
-    def data_dir(self):
-        """Data directory(ies) for dataset(s) to read"""
-        return self._data_dir
+    def data_dirs(self):
+        """
+        dict: Data directory(ies) for dataset(s) to read (keys are data IDs)
+        """
+        return self._data_dirs
 
-    @data_dir.setter
-    def data_dir(self, val):
+    @data_dirs.setter
+    def data_dirs(self, val):
         if isinstance(val, Path):
             val = str(val)
-        dsr = self.datasets_to_read
+        dsr = self.data_ids
         if len(dsr) < 2 and isinstance(val, str):
             val = {dsr[0] : val}
         elif not isinstance(val, dict):
-            raise ValueError('Invalid input data_dir ({}); needs to be a '
-                             'dictionary for each dataset that is supposed to '
-                             'be read ({})'.format(val, dsr))
-
-        for ds, data_dir in val.items():
+            raise ValueError(
+                'Invalid input for data_dirs ({val}); needs to be a '
+                'dictionary.'
+                )
+        for data_dir in val.values():
             assert os.path.exists(data_dir), f'{data_dir} does not exist'
-        self._data_dir = val
+        self._data_dirs = val
 
     @property
     def vars_to_retrieve(self):
@@ -136,16 +141,27 @@ class ReadUngridded(object):
         self._vars_to_retrieve = val
 
     @property
-    def DATASET_PATH(self):
-        """Data directory of dataset to read
+    def post_compute(self):
+        """Information about datasets that can be computed in post"""
+        return const.OBS_UNGRIDDED_POST
 
-        Raises exception if more than one dataset to read is specified
+    @property
+    def SUPPORTED_DATASETS(self):
         """
-        if not len(self._datasets_to_read) == 1:
-            raise ValueError('Conflict: multiple datasets are assigned to be '
-                             'read, but dataset path can only be retrieved for '
-                             'single dataset retrievals')
-        return self.get_reader(self._datasets_to_read[0]).DATASET_PATH
+        Returns list of strings containing all supported dataset names
+        """
+        lst = []
+        for reader in self.SUPPORTED_READERS:
+            lst.extend(reader.SUPPORTED_DATASETS)
+        lst.extend(self.post_compute)
+        return lst
+
+    @property
+    def supported_datasets(self):
+        """
+        Wrapper for :attr:`SUPPORTED_DATASETS`
+        """
+        return self.SUPPORTED_DATASETS
 
     def _check_donotcachefile(self):
         """Check if donotcache file exists
@@ -171,95 +187,94 @@ class ReadUngridded(object):
         return False
 
     @property
-    def dataset_to_read(self):
-        """Helper that returns the dataset to be read
+    def data_ids(self):
+        """List of datasets supposed to be read"""
+        return self._data_ids
+
+    @data_ids.setter
+    def data_ids(self, val):
+        if isinstance(val, str):
+            val = [val]
+        elif not isinstance(val, (tuple, list)):
+            raise IOError('Invalid input for parameter data_ids')
+        self._data_ids = val
+
+    @property
+    def data_id(self):
+        """
+        ID of dataset
 
         Note
-        ----
-        Only works if a single dataset is assigned in :attr:`datasets_to_read`,
-        else throws an ValueError.
+        -----
+        Only works if exactly one dataset is assigned to the reader, that is,
+        length of :attr:`data_ids` is 1.
 
         Raises
         ------
-        ValueError
-            if :attr:`datasets_to_read` contains no or more than one entry.
+        AttributeError
+            if number of items in :attr:`data_ids` is unequal one.
+
+        Returns
+        -------
+        str
+            data ID
+
         """
-        dsr = self.datasets_to_read
-        if len(dsr) == 0:
-            raise ValueError('Could not fetch reader class. No dataset '
-                             'assigned in attr. datasets_to_read')
-        elif len(dsr) > 1:
-            raise ValueError('Could not fetch reader class. More than one '
-                             'dataset is assigned in attr. '
-                             'datasets_to_read')
-        return dsr[0]
+        nids = len(self.data_ids)
+        if nids== 0:
+            raise AttributeError('No data_id assigned')
+        elif nids > 1:
+            raise AttributeError('Multiple data_ids assigned')
+        return self.data_ids[0]
 
-    @property
-    def datasets_to_read(self):
-        """List of datasets supposed to be read"""
-        return self._datasets_to_read
-
-    @datasets_to_read.setter
-    def datasets_to_read(self, datasets):
-        if isinstance(datasets, str):
-            datasets = [datasets]
-        elif not isinstance(datasets, (tuple, list)):
-            raise IOError('Invalid input for parameter datasets_to_read')
-        avail = []
-        for ds in datasets:
-            if ds in const.OBS_UNGRIDDED_POST: # no reader available
-                avail.append(ds)
-            else:
-                try:
-                    self.find_read_class(ds)
-                    avail.append(ds)
-                except NetworkNotSupported:
-                    print_log.warning('Removing {} from list of datasets to read '
-                                      'in ReadUngridded class. Reason: network '
-                                      'not supported or data is not available'
-                                      .format(ds))
-        self._datasets_to_read = avail
-
-    def dataset_provides_variables(self, dataset_to_read=None):
+    def dataset_provides_variables(self, data_id=None):
         """List of variables provided by a certain dataset"""
-        if dataset_to_read is None:
-            dataset_to_read = self.dataset_to_read
-        if dataset_to_read in self._readers:
-            return self._readers[dataset_to_read].PROVIDES_VARIABLES
-        return self.find_read_class(dataset_to_read).PROVIDES_VARIABLES
+        if data_id is None:
+            data_id = self.data_id
+        if not data_id in self._readers:
+            reader = self.get_lowlevel_reader(data_id)
+        else:
+            reader = self._readers[data_id]
+        return reader.PROVIDES_VARIABLES
 
-    def get_reader(self, dataset_to_read=None):
-        """Helper method that returns loaded reader class
+    def get_reader(self, data_id):
+        const.print_log.warning(DeprecationWarning(
+            'this method was renamed to get_lowlevel_reader, please use the '
+            'new name'
+            ))
+        return self.get_lowlevel_reader(data_id)
+
+    def get_lowlevel_reader(self, data_id=None):
+        """Helper method that returns initiated reader class for input ID
 
         Parameters
         -----------
-        dataset_to_read : str
+        data_id : str
             Name of dataset
 
         Returns
         -------
         ReadUngriddedBase
             instance of reading class (needs to be implementation of base
-            class :class:`ReadUngriddedBase`)
-
-        Raises
-        ------
-        NetworkNotSupported
-            if network is not supported by pyaerocom
-        NetworkNotImplemented
-            if network is supported but no reading routine is implemented yet
+            class :class:`ReadUngriddedBase`).
         """
-        if dataset_to_read is None:
-            dataset_to_read = self.dataset_to_read
-        elif not dataset_to_read in self.supported_datasets:
-            raise NetworkNotSupported('Could not fetch reader class: Input '
-                                      'network {} is not supported by '
-                                      'ReadUngridded'.format(dataset_to_read))
-        if not dataset_to_read in self._readers:
-            self.find_read_class(dataset_to_read)
-        return self._readers[dataset_to_read]
+        if data_id is None:
+            if len(self.data_ids) != 1:
+                raise ValueError('Please specify dataset')
+        if not data_id in self.supported_datasets:
+            raise NetworkNotSupported(f'Could not fetch reader class: Input '
+                                      f'network {data_id} is not supported by '
+                                      f'ReadUngridded')
+        elif not data_id in self.data_ids:
+            self.data_ids.append(data_id)
 
-    def find_read_class(self, dataset_to_read):
+        if not data_id in self._readers:
+            _cls = self._find_read_class(data_id)
+            reader = self._init_lowlevel_reader(_cls, data_id)
+            self._readers[data_id] = reader
+        return self._readers[data_id]
+
+    def _find_read_class(self, data_id):
         """Find reading class for dataset name
 
         Loops over all reading classes available in :attr:`SUPPORTED_READERS`
@@ -269,7 +284,7 @@ class ReadUngridded(object):
 
         Parameters
         -----------
-        dataset_to_read : str
+        data_id : str
             Name of dataset
 
         Returns
@@ -280,53 +295,48 @@ class ReadUngridded(object):
 
         Raises
         ------
-        NetworkNotSupported
-            if network is not supported by pyaerocom
         NetworkNotImplemented
             if network is supported but no reading routine is implemented yet
 
         """
-        if dataset_to_read in self._readers:
-            return self._readers[dataset_to_read]
-
         for _cls in self.SUPPORTED_READERS:
-            if dataset_to_read in _cls.SUPPORTED_DATASETS:
-                try:
-                    self._readers[dataset_to_read] = _cls(dataset_to_read)
-                except Exception as e:
-                    raise DataRetrievalError('Failed to instantiate reader for '
-                                             'dataset {}. Reason: {}'
-                                             .format(dataset_to_read, repr(e)))
-                return self._readers[dataset_to_read]
-        raise NetworkNotImplemented('Could not find reading class for dataset '
-                                    '{}'.format(dataset_to_read))
+            if data_id in _cls.SUPPORTED_DATASETS:
+                return _cls
+        raise NetworkNotImplemented(f'Could not find reading class for dataset '
+                                    f'{data_id}')
 
-    def _get_data_dir(self, dataset_to_read):
-        """Helper to retrieve data directory for a given dataset (if available)
+    def _init_lowlevel_reader(self, reader, data_id):
+        """
+        Initiate lowlevel reader for input data ID
 
         Parameters
         ----------
-        dataset_to_read : str
-            ID of dataset to be imported
+        reader
+            reader class (not instantiated)
+        data_id : str
+            ID of dataset to be isntantiated with input reader
 
         Returns
         -------
-        str or None
-            directory path if a data directory is specified, else None.
-        """
-        data_dir = self.data_dir
-        if isinstance(data_dir, str):
-            return data_dir
-        elif isinstance(data_dir, dict) and dataset_to_read in data_dir:
-            return data_dir[dataset_to_read]
-        return None
+        ReadUngriddedBase
+            instantiated reader class for input ID.
 
-    def _get_vars_to_retrieve(self, dataset_to_read):
+        """
+        if data_id in self.data_dirs:
+            ddir = self.data_dirs[data_id]
+            const.print_log.info(
+                f'Reading {data_id} from specified data loaction: {ddir}'
+            )
+        else:
+            ddir = None
+        return reader(data_id=data_id, data_dir=ddir)
+
+    def _get_vars_to_retrieve(self, data_id):
         """Helper to retrieve variables to be read for a given dataset
 
         Parameters
         ----------
-        dataset_to_read : str
+        data_id : str
             ID of dataset to be imported
 
         Raises
@@ -344,19 +354,19 @@ class ReadUngridded(object):
         if isinstance(vtr, list):
             return vtr
         #vars_to_retrieve is a dict (dataset specific)
-        if not dataset_to_read in vtr:
+        if not data_id in vtr:
             raise DataRetrievalError(
-                'Missing specification of vars_to_retrieve for {}'
-                .format(dataset_to_read))
-        return vtr[dataset_to_read]
+                f'Missing specification of vars_to_retrieve for {data_id}'
+                )
+        return vtr[data_id]
 
-    def read_dataset(self, dataset_to_read, vars_to_retrieve=None,
+    def read_dataset(self, data_id, vars_to_retrieve=None,
                      only_cached=False, filter_post=None, **kwargs):
         """Read dataset into an instance of :class:`ReadUngridded`
 
         Parameters
         ----------
-        dataset_to_read : str
+        data_id : str
             name of dataset
         vars_to_retrieve : str or list
             variable or list of variables to be imported
@@ -370,7 +380,7 @@ class ReadUngridded(object):
             introduced in pyaerocom version 0.10.0 and should be used
             preferably over **kwargs. There is a certain flexibility with
             respect to how these filters can be defined, for instance, sub
-            dicts for each `dataset_to_read`. The most common way would be
+            dicts for each `data_id`. The most common way would be
             to provide directly the input needed for
             `UngriddedData.apply_filters`. If you want to read multiple variables
             from one or more datasets, and if you want to apply variable
@@ -401,7 +411,7 @@ class ReadUngridded(object):
             print_log.info('Received additional reading constraints, '
                            'ignoring caching')
 
-        reader = self.get_reader(dataset_to_read)
+        reader = self.get_lowlevel_reader(data_id)
 
         if vars_to_retrieve is not None:
             # Note: self.vars_to_retrieve may be None as well, then
@@ -413,20 +423,6 @@ class ReadUngridded(object):
 
         vars_to_retrieve = varlist_aerocom(self.vars_to_retrieve)
 
-        # data_dir will be None in most cases, but can be specified when
-        # creating the instance, by default, data_dir is inferred automatically
-        # in the reading class, using database location
-        data_dir = self._get_data_dir(dataset_to_read)
-        if data_dir is not None:
-            if not os.path.exists(data_dir):
-                raise FileNotFoundError(
-                    'Trying to read {} from specified data_dir {} failed. '
-                    'Directory does not exist'.format(dataset_to_read, data_dir)
-                    )
-            reader._dataset_path = data_dir
-            const.print_log.info('Reading {} from specified data loaction: {}'
-                                 .format(dataset_to_read, data_dir))
-
         # Since this interface enables to load multiple datasets, each of
         # which support a number of variables, here, only the variables are
         # considered that are supported by the dataset
@@ -435,7 +431,7 @@ class ReadUngridded(object):
         if len(vars_available) == 0:
             raise DataRetrievalError('None of the input variables ({}) is '
                                      'supported by {} interface'
-                                     .format(vars_to_retrieve, dataset_to_read))
+                                     .format(vars_to_retrieve, data_id))
         cache = CacheHandlerUngridded(reader)
         if not self.ignore_cache:
             # initate cache handler
@@ -444,7 +440,7 @@ class ReadUngridded(object):
                     cache.check_and_load(var,
                                          force_use_outdated=only_cached)
                 except Exception:
-                    self.logger.exception('Fatal: compatibility error between '
+                    logger.exception('Fatal: compatibility error between '
                                           'old cache file {} and current version '
                                           'of code ')
 
@@ -487,7 +483,7 @@ class ReadUngridded(object):
 
         if filter_post is not None:
             filters = self._eval_filter_post(filter_post,
-                                             dataset_to_read,
+                                             data_id,
                                              vars_available)
             if not isinstance(filter_post, dict):
                 raise ValueError(
@@ -496,16 +492,16 @@ class ReadUngridded(object):
             data_out = data_out.apply_filters(**filters)
         return data_out
 
-    def _eval_filter_post(self, filter_post, dataset_to_read, vars_available):
+    def _eval_filter_post(self, filter_post, data_id, vars_available):
         if not isinstance(filter_post, dict):
             raise ValueError(f'input filter_post must be dict, got '
                              f'{type(filter_post)}')
 
-        if dataset_to_read in filter_post:
+        if data_id in filter_post:
             # filters are specified specifically for that dataset
-            subset = filter_post[dataset_to_read]
+            subset = filter_post[data_id]
             return self._eval_filter_post(subset,
-                                          dataset_to_read,
+                                          data_id,
                                           vars_available)
         filters = {}
         for key, val in filter_post.items():
@@ -540,13 +536,13 @@ class ReadUngridded(object):
                 filters[key] = val
         return filters
 
-    def read_dataset_post(self, dataset_to_read, vars_to_retrieve,
+    def read_dataset_post(self, data_id, vars_to_retrieve,
                           only_cached=False, filter_post=None, **kwargs):
         """Read dataset into an instance of :class:`ReadUngridded`
 
         Parameters
         ----------
-        dataset_to_read : str
+        data_id : str
             name of dataset
         vars_to_retrieve : list
             variable or list of variables to be imported
@@ -560,7 +556,7 @@ class ReadUngridded(object):
             introduced in pyaerocom version 0.10.0 and should be used
             preferably over **kwargs. There is a certain flexibility with
             respect to how these filters can be defined, for instance, sub
-            dicts for each `dataset_to_read`. The most common way would be
+            dicts for each `data_id`. The most common way would be
             to provide directly the input needed for
             `UngriddedData.apply_filters`. If you want to read multiple variables
             from one or more datasets, and if you want to apply variable
@@ -583,7 +579,7 @@ class ReadUngridded(object):
         UngriddedData
             data object
         """
-        aux_info = self.post_compute[dataset_to_read]
+        aux_info = self.post_compute[data_id]
         loaded = []
         for var in vars_to_retrieve:
             input_data_ids_vars = []
@@ -591,7 +587,7 @@ class ReadUngridded(object):
             for aux_id, aux_vars in aux_info_var.items():
                 if aux_id in self.post_compute:
                     aux_data = self.read_dataset_post(
-                                    dataset_to_read=aux_id,
+                                    data_id=aux_id,
                                     vars_to_retrieve=aux_vars,
                                     only_cached=only_cached,
                                     **kwargs)
@@ -640,16 +636,16 @@ class ReadUngridded(object):
             first.append(data)
         return first
 
-    def read(self, datasets_to_read=None, vars_to_retrieve=None,
+    def read(self, data_ids=None, vars_to_retrieve=None,
              only_cached=False, filter_post=None, **kwargs):
         """Read observations
 
-        Iter over all datasets in :attr:`datasets_to_read`, call
+        Iter over all datasets in :attr:`data_ids`, call
         :func:`read_dataset` and append to data object
 
         Parameters
         ----------
-        datasets_to_read : str or list
+        data_ids : str or list
             data ID or list of all datasets to be imported
         vars_to_retrieve : str or list
             variable or list of variables to be imported
@@ -663,7 +659,7 @@ class ReadUngridded(object):
             introduced in pyaerocom version 0.10.0 and should be used
             preferably over **kwargs. There is a certain flexibility with
             respect to how these filters can be defined, for instance, sub
-            dicts for each `dataset_to_read`. The most common way would be
+            dicts for each `data_id`. The most common way would be
             to provide directly the input needed for
             `UngriddedData.apply_filters`. If you want to read multiple variables
             from one or more datasets, and if you want to apply variable
@@ -685,22 +681,21 @@ class ReadUngridded(object):
         -------
         >>> import pyaerocom.io.readungridded as pio
         >>> from pyaerocom import const
-        >>> obj = pio.ReadUngridded(dataset_to_read=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME)
+        >>> obj = pio.ReadUngridded(data_id=const.AERONET_SUN_V3L15_AOD_ALL_POINTS_NAME)
         >>> obj.read()
         >>> print(obj)
         >>> print(obj.metadata[0.]['latitude'])
 
         """
-        if datasets_to_read is not None:
-            self.datasets_to_read = datasets_to_read
+        if data_ids is not None:
+            self.data_ids = data_ids
         if vars_to_retrieve is not None:
             self.vars_to_retrieve = vars_to_retrieve
 
         data = UngriddedData()
-        for ds in self.datasets_to_read:
+        for ds in self.data_ids:
             read_vars = self._get_vars_to_retrieve(ds)
-            self.logger.info('Reading {} data, variables: {}'
-                             .format(ds, read_vars))
+            logger.info(f'Reading {ds} data, variables: {read_vars}')
             if ds in self.post_compute:
                 data.append(self.read_dataset_post(ds, read_vars,
                                                    only_cached=only_cached,
@@ -712,31 +707,8 @@ class ReadUngridded(object):
                                               filter_post=filter_post,
                                               **kwargs))
 
-            self.logger.info('Successfully imported {} data'.format(ds))
+            logger.info('Successfully imported {} data'.format(ds))
         return data
-
-    @property
-    def post_compute(self):
-        """Information about datasets that can be computed in post"""
-        return const.OBS_UNGRIDDED_POST
-
-    @property
-    def SUPPORTED_DATASETS(self):
-        """
-        Returns list of strings containing all supported dataset names
-        """
-        lst = []
-        for reader in self.SUPPORTED_READERS:
-            lst.extend(reader.SUPPORTED_DATASETS)
-        lst.extend(self.post_compute)
-        return lst
-
-    @property
-    def supported_datasets(self):
-        """
-        Wrapper for :attr:`SUPPORTED_DATASETS`
-        """
-        return self.SUPPORTED_DATASETS
 
     def get_vars_supported(self, obs_id, vars_desired):
         """
@@ -786,12 +758,15 @@ class ReadUngridded(object):
 
     def __str__(self):
         s=''
-        for ds in self.datasets_to_read:
+        for ds in self.data_ids:
             s += '\n{}'.format(self.get_reader(ds))
         return s
 
 if __name__=="__main__":
+    import pyaerocom as pya
+    ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
+    reader = ReadUngridded(['blaaaa'],
+                           data_dirs={'EBASMC' : ebas_local}
+                           )
 
-    reader = ReadUngridded()
-
-    data = reader.read('AirNow', 'concpm10')
+    data = reader.read('EBASMC', 'ac550aer')
