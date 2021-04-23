@@ -750,7 +750,7 @@ class ReadUngridded(object):
 
         else:
             # check if variable can be read from a dataset on disk
-            _oreader = self.get_reader(obs_id)
+            _oreader = self.get_lowlevel_reader(obs_id)
             for var in varlist_aerocom(vars_desired):
                 if _oreader.var_supported(var):
                     obs_vars.append(var)
@@ -759,7 +759,7 @@ class ReadUngridded(object):
     def __str__(self):
         s=''
         for ds in self.data_ids:
-            s += '\n{}'.format(self.get_reader(ds))
+            s += '\n{}'.format(self.self.get_lowlevel_reader(ds))
         return s
 
 if __name__=="__main__":
