@@ -907,7 +907,7 @@ class Colocator(ColocationSetup):
         obs_reader = ReadUngridded(self.obs_id, data_dirs=self.obs_data_dir)
         try:
             obs_vars = obs_reader.get_vars_supported(self.obs_id,
-                                                 vars_to_read)
+                                                     vars_to_read)
         except ValueError:
             raise DataCoverageError('No observation variable matches found for '
                                     '{}'.format(self.obs_id))
