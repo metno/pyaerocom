@@ -200,8 +200,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         'vmrno2': NotImplementedError(),
         }
 
-    def __init__(self, data_dir=None):
-        super(ReadEEAAQEREPBase, self).__init__(None, data_dir=data_dir)
+    def __init__(self, data_id=None, data_dir=None):
+        super(ReadEEAAQEREPBase, self).__init__(data_id=data_id,
+                                                data_dir=data_dir)
         self._metadata = None
 
     @property
