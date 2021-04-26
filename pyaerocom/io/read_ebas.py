@@ -44,6 +44,7 @@ from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.exceptions import (NotInFileError, EbasFileError,
+                                  MetaDataError,
                                   UnitConversionError,
                                   TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -198,11 +199,6 @@ class ReadEbas(ReadUngriddedBase):
 
     MERGE_STATIONS = {'Birkenes' : 'Birkenes II'}
                       #'Trollhaugen'    : 'Troll'}
-    # TODO: check and redefine
-    #: default variables for read method
-    DEFAULT_VARS = ['ac550aer', # light absorption coefficient
-                    'sc550aer'] # light scattering coefficient
-
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1mn'  :   'minutely',
                      '1h'   :   'hourly',
@@ -323,6 +319,17 @@ class ReadEbas(ReadUngriddedBase):
         self._all_stats = None
 
     @property
+    def DEFAULT_VARS(self):
+        """
+        list: list of default variables to be read
+
+        Note
+        ----
+        Currently a wrapper for :attr:`PROVIDES_VARIABLES`
+        """
+        return self.PROVIDES_VARIABLES
+
+    @property
     def file_dir(self):
         """Directory containing EBAS NASA Ames files"""
         if self._file_dir is not None:
@@ -399,8 +406,6 @@ class ReadEbas(ReadUngriddedBase):
         mapping = {}
         for var, lst in lists.items():
             for fpath in lst:
-                if fpath in mapping:
-                    raise Exception('FATAL: logical error -> this should not occur...')
                 mapping[fpath] = [var]
                 for other_var, other_lst in lists.items():
                     if not var == other_var:
@@ -429,7 +434,7 @@ class ReadEbas(ReadUngriddedBase):
             self._all_stats = self.file_index.ALL_STATION_NAMES
         return self._all_stats
 
-    def find_station_matches(self, stats_or_patterns):
+    def _find_station_matches(self, stats_or_patterns):
         # ToDo: this should probably not be part of this class
         """Find all stations names that match input list of names or patterns
         """
@@ -438,8 +443,8 @@ class ReadEbas(ReadUngriddedBase):
         stats = []
         if isinstance(val, str):
             val = [val]
-        elif isinstance(val, tuple):
-            val = [x for x in val]
+        if not isinstance(val, list):
+            raise ValueError('Need list or string...')
 
         for name in val:
             if '*' in name:
@@ -485,11 +490,7 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
         out = []
         for var in vars_to_retrieve:
-            name = self.var_info(var).var_name_aerocom
-            if name in out:
-                raise ValueError('Variable {} is input more than once in {}'
-                                 .format(var, vars_to_retrieve))
-            out.append(name)
+            out.append(self.var_info(var).var_name_aerocom)
         return out
 
     def get_file_list(self, vars_to_retrieve=None, **constraints):
@@ -535,7 +536,7 @@ class ReadEbas(ReadUngriddedBase):
 
             if 'station_names' in constraints:
                 try:
-                    stat_matches = self.find_station_matches(
+                    stat_matches = self._find_station_matches(
                         constraints['station_names'])
                 except FileNotFoundError:
                     continue
@@ -1162,11 +1163,41 @@ class ReadEbas(ReadUngriddedBase):
             var_cols[var] = col
         return var_cols
 
-    def _try_convert_vmr_conc(self, data_out, var, var_info):
+    def _try_get_pt_conversion(self,  meta):
+        if ('volume_std._temperature' in meta and
+            'volume_std._pressure' in meta):
+            try:
+                pstr, punit = meta['volume_std._pressure'].split()
+                tstr , tunit = meta['volume_std._temperature'].split()
+                pconv = get_unit_conversion_fac(punit, 'Pa')
+                tconv = get_unit_conversion_fac(tunit, 'K')
+                p = float(pstr) * pconv
+                T = float(tstr) * tconv
+            except Exception:
+                raise MetaDataError(
+                    'Failed to convert information strings for p and T into '
+                    'floating point numbers with units P and K, respectively')
+            return (p,T)
+        raise MetaDataError('Info not available in metadata')
+
+    def _try_convert_vmr_conc(self, data_out, var, var_info, meta):
         mmol = get_molmass(var)
         mmol_air = get_molmass('air_dry')
         from_unit = var_info['units']
         to_unit = self.var_info(var).units
+        try:
+            # try get pressure and temperature used for unit conversion from
+            # column info
+            p, T = self._try_get_pt_conversion(var_info)
+        except MetaDataError:
+            try:
+                # try get pressure and temperature used for unit conversion from
+                # file metadata (could happen for single column NASA Ames files)
+                p, T = self._try_get_pt_conversion(meta)
+            except MetaDataError:
+                # use US standard pressure and temperature
+                p, T = p0, T0_STD
+
         if var.startswith('vmr'): #assume variable is concX
             concvar = var.replace('vmr', 'conc')
             to_unit_pre = self.var_info(concvar).units
@@ -1176,8 +1207,8 @@ class ReadEbas(ReadUngriddedBase):
                                                var_name=concvar)
 
             cfac = concx_to_vmrx(data=1,
-                                 p_pascal=p0,
-                                 T_kelvin=T0_STD,
+                                 p_pascal=p,
+                                 T_kelvin=T,
                                  conc_unit=to_unit_pre,
                                  mmol_var=mmol,
                                  mmol_air=mmol_air,
@@ -1185,8 +1216,8 @@ class ReadEbas(ReadUngriddedBase):
             cfac *= cfac_pre
         elif var.startswith('conc'): #assume variable is vmrX
             cfac = vmrx_to_concx(data=1,
-                                 p_pascal=p0,
-                                 T_kelvin=T0_STD,
+                                 p_pascal=p,
+                                 T_kelvin=T,
                                  vmr_unit=from_unit,
                                  mmol_var=mmol,
                                  mmol_air=mmol_air,
@@ -1298,7 +1329,8 @@ class ReadEbas(ReadUngriddedBase):
                     if opts.try_convert_vmr_conc:
                         data_out = self._try_convert_vmr_conc(data_out,
                                                               var,
-                                                              var_info) #raises UnitConversionError if it is not possible
+                                                              var_info,
+                                                              file.meta) #raises UnitConversionError if it is not possible
                     else:
                         raise
 
