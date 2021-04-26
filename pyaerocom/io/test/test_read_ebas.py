@@ -45,7 +45,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 @pytest.fixture(scope='module')
 @testdata_unavail
 def reader():
-    return ReadEbas('EBASSubset')
+    r = ReadEbas('EBASSubset')
+    return r
 
 @testdata_unavail
 class TestReadEbas(object):
@@ -296,8 +297,13 @@ class TestReadEbas(object):
         merged = reader._merge_lists(reader._lists_orig)
         assert merged == lst
 
-    def test_find_station_matches(self, reader):
-        assert reader.find_station_matches('*fraujo*') == ['Jungfraujoch']
+    @pytest.mark.parametrize('val,raises,output', [
+        ('*fraujo*', does_not_raise_exception(), ['Jungfraujoch']),
+        (42, pytest.raises(ValueError), None)
+        ])
+    def test__find_station_matches(self, reader,val,raises,output):
+        with raises:
+            assert reader._find_station_matches(val) == output
 
     def test__precheck_vars_to_retrieve(self, reader):
         assert reader._precheck_vars_to_retrieve(['sconco3']) == ['conco3']

@@ -400,8 +400,6 @@ class ReadEbas(ReadUngriddedBase):
         mapping = {}
         for var, lst in lists.items():
             for fpath in lst:
-                if fpath in mapping:
-                    raise Exception('FATAL: logical error -> this should not occur...')
                 mapping[fpath] = [var]
                 for other_var, other_lst in lists.items():
                     if not var == other_var:
@@ -430,7 +428,7 @@ class ReadEbas(ReadUngriddedBase):
             self._all_stats = self.file_index.ALL_STATION_NAMES
         return self._all_stats
 
-    def find_station_matches(self, stats_or_patterns):
+    def _find_station_matches(self, stats_or_patterns):
         # ToDo: this should probably not be part of this class
         """Find all stations names that match input list of names or patterns
         """
@@ -439,8 +437,8 @@ class ReadEbas(ReadUngriddedBase):
         stats = []
         if isinstance(val, str):
             val = [val]
-        elif isinstance(val, tuple):
-            val = [x for x in val]
+        if not isinstance(val, list):
+            raise ValueError('Need list or string...')
 
         for name in val:
             if '*' in name:
@@ -536,7 +534,7 @@ class ReadEbas(ReadUngriddedBase):
 
             if 'station_names' in constraints:
                 try:
-                    stat_matches = self.find_station_matches(
+                    stat_matches = self._find_station_matches(
                         constraints['station_names'])
                 except FileNotFoundError:
                     continue
