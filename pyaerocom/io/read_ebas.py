@@ -199,11 +199,6 @@ class ReadEbas(ReadUngriddedBase):
 
     MERGE_STATIONS = {'Birkenes' : 'Birkenes II'}
                       #'Trollhaugen'    : 'Troll'}
-    # TODO: check and redefine
-    #: default variables for read method
-    DEFAULT_VARS = ['ac550aer', # light absorption coefficient
-                    'sc550aer'] # light scattering coefficient
-
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1mn'  :   'minutely',
                      '1h'   :   'hourly',
@@ -322,6 +317,17 @@ class ReadEbas(ReadUngriddedBase):
         self.files_contain = []
 
         self._all_stats = None
+
+    @property
+    def DEFAULT_VARS(self):
+        """
+        list: list of default variables to be read
+
+        Note
+        ----
+        Currently a wrapper for :attr:`PROVIDES_VARIABLES`
+        """
+        return self.PROVIDES_VARIABLES
 
     @property
     def file_dir(self):
@@ -484,11 +490,7 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
         out = []
         for var in vars_to_retrieve:
-            name = self.var_info(var).var_name_aerocom
-            if name in out:
-                raise ValueError('Variable {} is input more than once in {}'
-                                 .format(var, vars_to_retrieve))
-            out.append(name)
+            out.append(self.var_info(var).var_name_aerocom)
         return out
 
     def get_file_list(self, vars_to_retrieve=None, **constraints):

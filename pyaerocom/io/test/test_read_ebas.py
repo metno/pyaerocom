@@ -139,7 +139,7 @@ class TestReadEbas(object):
         assert reader.MERGE_STATIONS == {'Birkenes' : 'Birkenes II'}
 
     def test_DEFAULT_VARS(self, reader):
-        assert reader.DEFAULT_VARS == ['ac550aer','sc550aer']
+        assert reader.DEFAULT_VARS == reader.PROVIDES_VARIABLES
 
     def test_TS_TYPE_CODES(self, reader):
         assert reader.TS_TYPE_CODES == {'1mn'  :   'minutely',
@@ -298,6 +298,7 @@ class TestReadEbas(object):
         assert merged == lst
 
     @pytest.mark.parametrize('val,raises,output', [
+        ('Bla', pytest.raises(FileNotFoundError), []),
         ('*fraujo*', does_not_raise_exception(), ['Jungfraujoch']),
         (42, pytest.raises(ValueError), None)
         ])
@@ -305,8 +306,15 @@ class TestReadEbas(object):
         with raises:
             assert reader._find_station_matches(val) == output
 
-    def test__precheck_vars_to_retrieve(self, reader):
-        assert reader._precheck_vars_to_retrieve(['sconco3']) == ['conco3']
+    @pytest.mark.parametrize('val,raises,output', [
+        (['sconco3'], does_not_raise_exception(), ['conco3']),
+        (None, does_not_raise_exception(), None)
+        ])
+    def test__precheck_vars_to_retrieve(self, reader,val,raises,output):
+        if val is None:
+            output = reader.PROVIDES_VARIABLES
+        with raises:
+            assert reader._precheck_vars_to_retrieve(val) == output
 
     @pytest.mark.parametrize('var,raises', [
         ('sc550aer', does_not_raise_exception()),
