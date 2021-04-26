@@ -4,6 +4,7 @@ from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
+from pathlib import Path
 import shutil
 import simplejson
 from traceback import format_exc
@@ -172,6 +173,13 @@ class AerocomEvaluation(object):
         instantiating the class. These are updated *after* the reading of the
         json file, which will overwrite affected attributes defined in the json
         file.
+    init_output_dirs : bool
+        if True, all required output directories for json files and colocated
+        NetCDF files are already created when instantiating the class. This is
+        recommended if you intend to use individual methods of this class such
+        as :func:`run_colocation` or :func:`find_coldata_files` and is of
+        particular relevance for the storage location of the colocated data
+        files. Defaults to True.
     """
     OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles',
                      'contour']
@@ -199,9 +207,13 @@ class AerocomEvaluation(object):
             'raise_exceptions'    : 'Raise exceptions if they occur'
     }
 
+    #: status of experiment
     EXP_STATUS_VALS = ['public', 'experimental']
-    def __init__(self, proj_id=None, exp_id=None, config_dir=None,
-                 try_load_json=True, **settings):
+
+    #: attributes that are not supported by this interface
+    FORBIDDEN_ATTRS = ['basedir_coldata']
+    def __init__(self, proj_id, exp_id, config_dir=None,
+                 try_load_json=True, init_output_dirs=False, **settings):
 
         self._log = const.print_log
 
@@ -224,7 +236,7 @@ class AerocomEvaluation(object):
         self.annual_stats_constrained=False
 
         #: Base directory for output
-        self.out_basedir = None
+        self.out_basedir = os.path.join(const.OUTPUTDIR, 'aeroval')
 
         #: Base directory to store colocated data (sub dirs for proj and
         #: experiment will be created automatically)
@@ -243,8 +255,8 @@ class AerocomEvaluation(object):
         self.only_maps = False
 
         #: Output directories for different types of json files (will be filled
-        #: in :func:`init_dirs`)
-        self.out_dirs = {}
+        #: in :func:`init_json_output_dirs`)
+        self._out_dirs = {}
 
         #: Dictionary specifying default settings for colocation
         self.colocation_settings = ColocationSetup()
@@ -291,6 +303,9 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
+        self._check_init_col_outdir()
+        if init_output_dirs:
+            self.init_json_output_dirs()
 
     @property
     def proj_dir(self):
@@ -306,6 +321,12 @@ class AerocomEvaluation(object):
     def coldata_dir(self):
         """Base directory for colocated data files"""
         return self.colocation_settings['basedir_coldata']
+
+    @property
+    def out_dirs(self):
+        if len(self._out_dirs) == 0:
+            self.init_json_output_dirs()
+        return self._out_dirs
 
     @property
     def regions_file(self):
@@ -515,7 +536,11 @@ class AerocomEvaluation(object):
         self._update_custom_read_methods()
 
     def __setitem__(self, key, val):
-        if key in self.colocation_settings:
+        if key in self.FORBIDDEN_ATTRS:
+            raise AttributeError(
+                f'Attr {key} is not allowed in AerocomEvaluation'
+                )
+        elif key in self.colocation_settings:
             self.colocation_settings[key] = val
         elif key == 'obs_config':
             self._set_obsconfig(val)
@@ -534,6 +559,7 @@ class AerocomEvaluation(object):
                 self.__dict__[key] = val
         elif key in self.__dict__:
             self.__dict__[key] = val
+
         else:
             const.print_log.warning(
                 f'Invalid input key {key} for AerocomEvaluation. Will be '
@@ -546,38 +572,57 @@ class AerocomEvaluation(object):
         elif key in self.colocation_settings:
             return self.colocation_settings[key]
 
-    def init_dirs(self, out_basedir=None):
-        """Check and create directories"""
+    def init_json_output_dirs(self, out_basedir=None):
+        """Check and create directories for json files"""
         if out_basedir is not None:
             self.out_basedir = out_basedir
-        if self.out_basedir is None:
-            self.out_basedir = const.OUTPUTDIR
+        if not os.path.exists(self.out_basedir):
+            os.mkdir(self.out_basedir)
         check_dirs_exist(self.out_basedir, self.proj_dir, self.exp_dir)
         outdirs = {}
         for dname in self.OUT_DIR_NAMES:
             outdirs[dname] = os.path.join(self.exp_dir, dname)
         check_dirs_exist(**outdirs)
-        self.out_dirs = outdirs
-        self._check_init_col_outdir()
+        self._out_dirs = outdirs
+        return outdirs
 
     def _check_init_col_outdir(self):
+        cs = self.colocation_settings
+
         cbd = self.coldata_basedir
-        if isinstance(cbd, str) and os.path.exists(cbd):
-            if not self.proj_id in cbd:
-                cbd1 = chk_make_subdir(cbd, self.proj_id)
-                col_out = chk_make_subdir(cbd1, self.exp_id)
-                const.print_log.info(
-                    f'Setting output directory for colocated data files to'
-                    f'{col_out}')
-                self.colocation_settings['basedir_coldata'] = col_out
+        if cbd is None:
+            # this will make sure the base directory exists (or crash) and
+            # returns a string
+            cbd = cs._check_basedir_coldata()
+        elif isinstance(cbd, Path):
+            cbd = str(cbd)
+
+        if not os.path.exists(cbd):
+            os.mkdir(cbd)
+
+        add_dirs = f'{self.proj_id}/{self.exp_id}'
+        if cbd.endswith(add_dirs):
+            col_out = cbd
+        else:
+            col_out = os.path.join(cbd, add_dirs)
+        if not os.path.exists(col_out):
+            const.print_log.info(
+                f'Creating output directory for colocated data files: {col_out}')
+            os.makedirs(col_out, exist_ok=True)
+        else:
+            const.print_log.info(
+                f'Setting output directory for colocated data files to:\n{col_out}'
+                )
+        self.coldata_basedir = cbd
+        self.colocation_settings['basedir_coldata'] = col_out
 
     def check_config(self):
         if not isinstance(self.proj_id, str):
-            raise AttributeError(f'proj_id must be specified, '
+            raise AttributeError(f'proj_id must be str, '
                                  f'(current value: {self.proj_id})')
 
         if not isinstance(self.exp_id, str):
-            raise AttributeError(f'exp_id must be specified, '
+            raise AttributeError(f'exp_id must be str, '
                                  f'(current value: {self.exp_id})')
 
         if not isinstance(self.exp_descr, str):
@@ -991,8 +1036,7 @@ class AerocomEvaluation(object):
         if self.colocation_settings['reanalyse_existing']:
             self.delete_all_colocateddata_files(model_name, obs_name)
 
-        col = Colocator()
-        col.update(**self.colocation_settings)
+        col = Colocator(**self.colocation_settings)
 
         if not model_name in self.model_config:
             raise KeyError('No such model name in configuration: {}. Available '
@@ -1516,7 +1560,6 @@ class AerocomEvaluation(object):
         if only_maps is not None:
             self.only_maps = only_maps
 
-        self.init_dirs()
         if self.clear_existing_json:
             self.clean_json_files()
 
@@ -1989,12 +2032,16 @@ class AerocomEvaluation(object):
         self.update_summary_str()
         indent = 2
         _indent_str = indent*' '
-        head = "Pyaerocom {}".format(type(self).__name__)
-        s = "\n{}\n{}".format(head, len(head)*"-")
-        s += ('\nProject ID: {}'
-              '\nEperiment ID: {}'
-              '\nExperiment name: {}'
-              .format(self.proj_id, self.exp_id, self.exp_name))
+        head = f"pyaerocom {type(self).__name__}"
+        underline = len(head)*"-"
+        out_dirs = dict_to_str(self.out_dirs, indent=indent)
+        s = f"\n{head}\n{underline}"
+        s += (
+            f'\nProject ID (proj_id): {self.proj_id}'
+            f'\nExperiment ID (exp_id): {self.exp_id}'
+            f'\nExperiment name (exp_name): {self.exp_name}'
+            f'\nOutput directories for json files: {out_dirs}'
+            )
         s += '\ncolocation_settings: (will be updated for each run from model_config and obs_config entry)'
         for k, v in self.colocation_settings.items():
             s += '\n{}{}: {}'.format(_indent_str, k, v)
