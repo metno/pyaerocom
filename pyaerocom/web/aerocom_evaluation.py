@@ -227,6 +227,8 @@ class AerocomEvaluation(object):
 
         self.exp_status = 'experimental'
 
+        self.pi = None
+
         self.clear_existing_json = True
 
         self.only_colocation = False
@@ -303,6 +305,9 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
+        if self.pi is None:
+            from getpass import getuser
+            self.pi = getuser()
         self._check_init_col_outdir()
         if init_output_dirs:
             self.init_json_output_dirs()

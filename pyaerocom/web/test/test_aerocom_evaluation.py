@@ -74,6 +74,13 @@ def stp_min(tmpdir):
 def test_AerocomEvaluation_type(stp_min):
     assert isinstance(stp_min, AerocomEvaluation)
 
+def test_AerocomEvaluation_autoset_pi():
+    stp = AerocomEvaluation('bla', 'blub')
+    from getpass import getuser
+    pi = getuser()
+    assert stp.pi == pi
+
+
 @pytest.mark.parametrize('args,raises,chk_attrs', [
     ({},pytest.raises(TypeError),{}),
     ({'proj_id':'bla'}, pytest.raises(TypeError),{}),
