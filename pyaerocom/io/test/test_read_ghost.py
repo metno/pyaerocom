@@ -100,8 +100,8 @@ class TestReadGhost(object):
         assert len(files) == filenum
         assert os.path.basename(files[-1]) == lastfilename
 
-    def test__ts_type_from_DATASET_PATH(self):
-        assert self.get_reader('ghost_eea_daily')._ts_type_from_DATASET_PATH() == 'daily'
+    def test__ts_type_from_data_dir(self):
+        assert self.get_reader('ghost_eea_daily')._ts_type_from_data_dir() == 'daily'
 
     @pytest.mark.parametrize('fixture_name,val', [
             ('ghost_eea_daily', 'daily'),

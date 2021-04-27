@@ -111,7 +111,6 @@ def create_varinfo_table(model_ids, vars_or_var_patterns, read_data=False,
             failed.append(model)
 
     df = pd.DataFrame(result, columns=header)
-    #df.set_index(['Var'], inplace=True)
     if sort_by_cols:
         df.sort_values(sort_by_cols, inplace=True)
     return df

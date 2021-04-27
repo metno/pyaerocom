@@ -1840,7 +1840,7 @@ class AerocomEvaluation(object):
             if os.path.normpath(coldir).endswith(chk) and os.path.exists(coldir):
                 const.print_log.info(f'Deleting everything under {coldir}')
                 shutil.rmtree(coldir)
-        self.update_menu()
+        self.update_menu(delete_mode=True)
 
     def _clean_modelmap_files(self):
         all_vars = self.all_modelmap_vars

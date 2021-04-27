@@ -146,9 +146,9 @@ class ReadMarcoPolo(ReadUngriddedBase):
 
     STAT_METADATA_FILENAME = 'station_info.xlsx'
 
-    def __init__(self, dataset_to_read=None, data_dir=None):
-        super(ReadMarcoPolo, self).__init__(dataset_to_read=dataset_to_read,
-                                         dataset_path=data_dir)
+    def __init__(self, data_id=None, data_dir=None):
+        super(ReadMarcoPolo, self).__init__(data_id=data_id,
+                                            data_dir=data_dir)
 
         try:
             import openpyxl
@@ -159,7 +159,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
                 'Please install openpyxl via conda or pip.')
 
     def _read_metadata_file(self):
-        fn = os.path.join(self.DATASET_PATH, self.STAT_METADATA_FILENAME)
+        fn = os.path.join(self.data_dir, self.STAT_METADATA_FILENAME)
         cfg = pd.read_excel(fn,engine='openpyxl')
         return cfg
 

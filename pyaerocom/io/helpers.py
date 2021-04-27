@@ -11,7 +11,9 @@ from time import time
 
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
-from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
+from pyaerocom.exceptions import (VarNotAvailableError,
+                                  VariableDefinitionError,
+                                  )
 
 #: country code file name
 #: will be prepended with the path later on
@@ -231,13 +233,13 @@ def get_obsnetwork_dir(obs_id):
         if directory does not exist
     """
     if not obs_id in const.OBSLOCS_UNGRIDDED:
-        raise ValueError("Observation network ID {} does not exist"
-                         .format(obs_id))
+        raise ValueError(f"Observation network ID {obs_id} does not exist")
 
     data_dir = const.OBSLOCS_UNGRIDDED[obs_id]
     if not os.path.exists(data_dir):
-        raise IOError("Data directory {} of observation network {} does not "
-                      "exists".format(data_dir, obs_id))
+        raise FileNotFoundError(
+            f'Data directory {data_dir} for observation network {obs_id} does '
+            f'not exist')
     return data_dir
 
 def save_dict_json(d, fp, ignore_nan=True, indent=None):

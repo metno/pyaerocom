@@ -3093,7 +3093,8 @@ if __name__ == "__main__":
     GHOST_EEA_LOCAL = os.path.join(OBS_LOCAL, 'GHOST/data/EEA_AQ_eReporting/daily')
 
     data = pya.io.ReadUngridded('GHOST.EEA.daily',
-                                data_dir=GHOST_EEA_LOCAL).read(vars_to_retrieve='vmro3')
+                                data_dirs=GHOST_EEA_LOCAL).read(
+                                    vars_to_retrieve='vmro3')
 
 
 
