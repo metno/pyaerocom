@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from fnmatch import fnmatch
+from getpass import getuser
 import glob
 import os
 import numpy as np
@@ -10,31 +11,29 @@ import simplejson
 from traceback import format_exc
 
 # internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
-                                         chk_make_subdir)
+from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
 from pyaerocom import const
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.helpers import isnumeric
+from pyaerocom.helpers import isnumeric, start_stop
 
 from pyaerocom.io.helpers import save_dict_json
 
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
 
-from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_DAILY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY)
 from pyaerocom.web.helpers_evaluation_iface import (
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
-    compute_json_files_from_colocateddata,
     delete_experiment_data_evaluation_iface,
     make_info_str_eval_setup)
 
+from pyaerocom.web.helpers_json_conversion import (
+    compute_json_files_from_colocateddata,
+    get_heatmap_filename
+    )
+
 from pyaerocom.web.web_naming_conventions import VAR_MAPPING
-
-
 
 class AerocomEvaluation(object):
     """Class for creating json files for Aerocom Evaluation interface
@@ -212,6 +211,8 @@ class AerocomEvaluation(object):
 
     #: attributes that are not supported by this interface
     FORBIDDEN_ATTRS = ['basedir_coldata']
+
+    DEFAULT_STATISTICS_FREQS = ['daily', 'monthly', 'yearly']
     def __init__(self, proj_id, exp_id, config_dir=None,
                  try_load_json=True, init_output_dirs=False, **settings):
 
@@ -227,7 +228,9 @@ class AerocomEvaluation(object):
 
         self.exp_status = 'experimental'
 
-        self.pi = None
+        self.pi = getuser()
+        self.statistics_freqs = self.DEFAULT_STATISTICS_FREQS
+        self.statistics_periods = None
 
         self.clear_existing_json = True
 
@@ -305,12 +308,52 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
-        if self.pi is None:
-            from getpass import getuser
-            self.pi = getuser()
         self._check_init_col_outdir()
+
+        if self.statistics_periods is not None:
+            self.check_periods()
         if init_output_dirs:
             self.init_json_output_dirs()
+
+    @property
+    def start_stop_colocation(self):
+        """
+        tuple: values of start and stop in :attr:`colocation_settings`
+        """
+        return (self.colocation_settings['start'],
+                self.colocation_settings['stop'])
+
+    def _period_from_colocation_settings(self):
+        start, stop = start_stop(*self.start_stop_colocation,
+                                 stop_sub_sec=False)
+        y0, y1 = start.year, stop.year
+        assert y0 <= y1
+        if y0 == y1:
+            return str(y0)
+        else:
+            return f'{y0}-{y1}'
+
+    def check_set_periods(self):
+        periods = self.statistics_periods
+        if periods is None:
+            periods = [self._period_from_colocation_settings()]
+
+        _checked = []
+        if not isinstance(periods, list):
+            raise AttributeError('statistics_periods needs to be a list')
+        for per in periods:
+            if not isinstance(per, str):
+                raise ValueError('All periods need to be strings')
+            spl = [x.strip() for x in per.split('-')]
+            if len(spl) > 2:
+                raise ValueError(
+                    f'Invalid value for period ({per}), can be either single '
+                    f'years or period of years (e.g. 2000-2010).'
+                    )
+            _per = '-'.join([str(int(val)) for val in spl])
+            _checked.append(_per)
+        self.statistics_periods = _checked
+        return _checked
 
     @property
     def proj_dir(self):
@@ -740,58 +783,77 @@ class AerocomEvaluation(object):
             return matches[0]
         raise ValueError('Could not identify unique model name')
 
-    def get_diurnal_only(self,obs_name,colocated_data):
+    def get_diurnal_only(self, obs_name, colocated_data):
         """
+        Check if colocated data is flagged for only diurnal processing
 
         Parameters
         ----------
         obs_name : string
             Name of observational subset
         colocated_data : ColocatedData
-            A ColocatedData object that will be checked for the presence of
-            parameter 'diurnal_only'.
-
-        Raises
-        ------
-        ValueError
-            Raised if colocated_data has 'diurnal_only' set, but it is not a boolean
-        NotImplementedError
-            Raised if colocated_data has ts_type != 'hourly'
+            A ColocatedData object that will be checked for suitability of
+            diurnal processing.
 
         Returns
         -------
         diurnal_only : bool
-
-
         """
         try:
             diurnal_only = self.obs_config[obs_name]['diurnal_only']
-        except:
+        except KeyError:
             diurnal_only = False
-        if not isinstance(diurnal_only,bool):
-            raise ValueError(f'Need Boolean diurnal_only for {obs_name}, got {type(diurnal_only)}')
+
         ts_type = colocated_data.ts_type
         try:
             if diurnal_only and ts_type != 'hourly':
                 raise NotImplementedError
         except:
-            print(f'Diurnal processing is only available for ColocatedData with ts_type=hourly. Got diurnal_only={diurnal_only} for {obs_name} with ts_type {ts_type}.')
+            const.print_log.warning(
+                f'Diurnal processing is only available for ColocatedData with '
+                f'ts_type=hourly. Got diurnal_only={diurnal_only} for '
+                f'{obs_name} with ts_type {ts_type}.')
         return diurnal_only
+
+    def _get_web_iface_name(self, obs_name):
+        """
+        Get webinterface name for obs entry
+
+        Note
+        ----
+        Normally this is the key of the obsentry in :attr:`obs_config`,
+        however, it might be specified explicitly via key `web_interface_name`
+        in the corresponding value.
+
+        Parameters
+        ----------
+        obs_name : str
+            name of obs entry (must be key in :attr:`obs_config`).
+
+        Returns
+        -------
+        str
+            obs name to be used in the web interface.
+
+        """
+        if not 'web_interface_name' in self.obs_config[obs_name]:
+            return obs_name
+        return self.obs_config[obs_name]['web_interface_name']
 
     def compute_json_files_from_colocateddata(self, coldata, obs_name,
                                               model_name):
         """Creates all json files for one ColocatedData object"""
         vert_code = self.get_vert_code(obs_name, coldata.metadata['var_name'][0])
-        try:
-            web_iface_name = self.obs_config[obs_name]['web_interface_name']
-        except:
-            web_iface_name = obs_name
+        web_iface_name = self._get_web_iface_name(obs_name)
+
         diurnal_only = self.get_diurnal_only(obs_name,coldata)
 
         col = Colocator()
         col.update(**self.colocation_settings)
         col.update(**self.obs_config[obs_name])
         col.update(**self.get_model_config(model_name))
+
+        periods = self.check_set_periods()
 
         return compute_json_files_from_colocateddata(
                 coldata=coldata,
@@ -804,6 +866,8 @@ class AerocomEvaluation(object):
                 regions_json=self.regions_file,
                 web_iface_name=web_iface_name,
                 diurnal_only=diurnal_only,
+                statistics_freqs=self.statistics_freqs,
+                statistics_periods=periods,
                 regions_how=self.regions_how,
                 zeros_to_nan=self.zeros_to_nan,
                 annual_stats_constrained=self.annual_stats_constrained
@@ -819,10 +883,14 @@ class AerocomEvaluation(object):
 
     @property
     def _heatmap_files(self):
-
-        return dict(daily=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_DAILY),
-                    monthly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_MONTHLY),
-                    yearly=os.path.join(self.out_dirs['hm'], HEATMAP_FILENAME_EVAL_IFACE_YEARLY))
+        """
+        dict: Dictionary containing heatmap files for this experiment
+        """
+        dirloc = os.path.join(self.out_dirs['hm'])
+        files = {}
+        for freq in self.statistics_freqs:
+            files[freq] = os.path.join(dirloc, get_heatmap_filename(freq))
+        return files
 
     def update_heatmap_json(self):
         """
@@ -1329,6 +1397,7 @@ class AerocomEvaluation(object):
                 regions_json=self.regions_file,
                 web_iface_name=superobs_name,
                 diurnal_only=False,
+                statistics_freqs=self.statistics_freqs,
                 regions_how=self.regions_how,
                 zeros_to_nan=self.zeros_to_nan,
                 annual_stats_constrained=self.annual_stats_constrained
@@ -2062,14 +2131,6 @@ class AerocomEvaluation(object):
         return s
 
 if __name__ == '__main__':
-    import pyaerocom as pya
-
-    config_dir = pya.const.OUTPUTDIR
-
-    stp = AerocomEvaluation(config_dir=config_dir)
-    name = 'A useless experiment called blub, in the bla project.'
-    descr = 'This experiment is indeed, completely useless!'
-    stp = AerocomEvaluation('bla', 'blub', exp_name=name,
-                            exp_descr=descr, exp_status='experimental')
+    stp = AerocomEvaluation('bla', 'blub')
 
 

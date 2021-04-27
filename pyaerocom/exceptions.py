@@ -20,6 +20,9 @@
 """
 Module containing pyaerocom custom exceptions
 """
+class AeroValConfigError(ValueError):
+    pass
+
 class CachingError(IOError):
     pass
 

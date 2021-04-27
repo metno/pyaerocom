@@ -74,12 +74,6 @@ def stp_min(tmpdir):
 def test_AerocomEvaluation_type(stp_min):
     assert isinstance(stp_min, AerocomEvaluation)
 
-def test_AerocomEvaluation_autoset_pi():
-    stp = AerocomEvaluation('bla', 'blub')
-    from getpass import getuser
-    pi = getuser()
-    assert stp.pi == pi
-
 
 @pytest.mark.parametrize('args,raises,chk_attrs', [
     ({},pytest.raises(TypeError),{}),
@@ -100,6 +94,45 @@ def test_AerocomEvaluation___init__(args,raises,chk_attrs):
         for key, val in chk_attrs.items():
             _val = getattr(stp, key)
             assert _val == val
+
+def test_AerocomEvaluation_autoset_pi():
+    stp = AerocomEvaluation('bla', 'blub')
+    from getpass import getuser
+    pi = getuser()
+    assert stp.pi == pi
+
+def test_AerocomEvaluation_DEFAULT_STATISTICS_FREQS(stp_min):
+    assert stp_min.DEFAULT_STATISTICS_FREQS == ['daily', 'monthly', 'yearly']
+
+def test_AerocomEvaluation_statistics_freqs(stp_min):
+    assert stp_min.statistics_freqs == stp_min.DEFAULT_STATISTICS_FREQS
+
+def test_AerocomEvaluation_start_stop_colocation(stp):
+    assert stp.start_stop_colocation == (START, None)
+
+def test_AerocomEvaluation__heatmap_files(tmpdir):
+    stp = AerocomEvaluation('bla', 'blub', out_basedir=tmpdir)
+    hm_files = stp._heatmap_files
+    assert len(hm_files) == len(stp.statistics_freqs)
+    for freq, fp in hm_files.items():
+        assert freq in stp.statistics_freqs
+        assert os.path.basename(fp) == f'glob_stats_{freq}.json'
+
+def test_AerocomEvaluation__get_web_iface_name():
+    stp = AerocomEvaluation('bla', 'blub',
+                            obs_config={
+                                'obs1' : dict(obs_id='obs_id1',
+                                              obs_vars='var1',
+                                              obs_vert_type='Column',
+                                              web_interface_name='bla'),
+                                'obs2' : dict(obs_id='obs_id1',
+                                              obs_vars='var1',
+                                              obs_vert_type='Column')
+                                }
+                            )
+    assert stp._get_web_iface_name('obs1') == 'bla'
+    assert stp._get_web_iface_name('obs2') == 'obs2'
+
 
 def test_AerocomEvaluation_init_json_output_dirs_default():
     stp = AerocomEvaluation('bla','blub')

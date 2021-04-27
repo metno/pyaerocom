@@ -1193,7 +1193,7 @@ def _check_climatology_timestamp(t):
     raise ValueError('Failed to identify {} as climatological timestamp...'
                      .format(t))
 
-def start_stop(start, stop=None):
+def start_stop(start, stop=None, stop_sub_sec=True):
     """Create pandas timestamps from input start / stop values
 
     Note
@@ -1208,6 +1208,11 @@ def start_stop(start, stop=None):
         start time (any format that can be converted to pandas.Timestamp)
     stop
         stop time (any format that can be converted to pandas.Timestamp)
+    stop_sub_sec : bool
+        if True and if input for stop is a year (e.g. 2015) then one second
+        is subtracted from stop timestamp (e.g. if input stop is
+        2015 and denotes "until 2015", then for the returned stop timestamp
+        one second will be subtracted, so it would be 31.12.2014 23:59:59).
 
     Returns
     -------
@@ -1240,7 +1245,7 @@ def start_stop(start, stop=None):
             if isnumeric(stop):
                 subt_sec = True
             stop = to_pandas_timestamp(stop)
-            if subt_sec:
+            if subt_sec and stop_sub_sec:
                 stop = stop - pd.Timedelta(1, 's')
         except pd.errors.OutOfBoundsDatetime:
             stop = _check_climatology_timestamp(stop)
