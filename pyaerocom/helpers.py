@@ -975,8 +975,6 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
         data = df[how]
         if np.any(invalid):
             data[invalid] = np.nan
-
-    #print(freq, min_num_obs, how)
     if loffset is not None:
         data.index = data.index + pd.Timedelta(loffset)
     return data
