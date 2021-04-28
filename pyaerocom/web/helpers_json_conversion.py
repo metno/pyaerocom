@@ -20,6 +20,8 @@ from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
                               Region)
 
+SEASONS = ['all', 'DJF', 'MAM', 'JJA', 'SON']
+
 def get_heatmap_filename(ts_type):
     return f'glob_stats_{ts_type}.json'
 
@@ -676,8 +678,7 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_objs.append(ts_data)
     return ts_objs
 
-def _apply_annual_constraint(coldata, yearly):
-
+def _apply_annual_constraint_helper(coldata, yearly):
     arr_yr = yearly.data
     yrs_cd = coldata.data.time.dt.year
     yrs_avail = arr_yr.time.dt.year
@@ -698,31 +699,55 @@ def _apply_annual_constraint(coldata, yearly):
 
     return coldata
 
-def _get_stats_region(data, freq, regid, use_weights, use_country,
-                      annual_stats_constrained):
-    coldata = data[freq]
-    filtered = coldata.filter_region(region_id=regid,
-                                     check_country_meta=use_country)
+def _apply_annual_constraint(data):
+    """
+    Apply annual filter to data
+
+    Parameters
+    ----------
+    data : dict
+        keys are frequencies, values are corresponding
+        instances of `ColocatedData` in that resolution, or None, if colocated
+        data is not available in that resolution (see also
+        :func:`_init_data_default_frequencies`).
+
+    Raises
+    ------
+    AeroValConfigError
+        If colocated data in yearly resolution is not available in input data
+
+    Returns
+    -------
+    output : dict
+        like input `data` but with annual constrained applied.
+
+    """
+    output = {}
+    if not 'yearly' in data or data['yearly'] is None:
+        raise AeroValConfigError(
+            'Cannot apply annual_stats_constrained option. '
+            'Please add "yearly" in your setup (see attribute '
+            '"statistics_json" in AerocomEvaluation class)')
+    yearly = data['yearly']
+    for tst, cd in data.items():
+        if cd is None:
+            output[tst] = None
+        elif tst == 'yearly':
+            output[tst] = yearly
+        else:
+            output[tst] = _apply_annual_constraint_helper(cd, yearly)
+    return output
+
+def _get_stats_region(data, regid, use_weights, use_country):
+    filtered = data.filter_region(region_id=regid,
+                                  check_country_meta=use_country)
 
     # if all model and obsdata is NaN, use dummy stats (this can
     # e.g., be the case if colocate_time=True and all obs is NaN,
     # or if model domain is not covered by the region)
     if np.isnan(filtered.data.data).all():
         # use stats_dummy
-        raise DataCoverageError(f'All data is NaN in {regid} ({freq})')
-
-    if annual_stats_constrained:
-        if not 'yearly' in data:
-            raise AeroValConfigError(
-                'Cannot apply annual_stats_constrained option. '
-                'Please add "yearly" in your setup (see attribute '
-                '"statistics_json" in AerocomEvaluation class)')
-        yearly = data['yearly']
-        yearly_filtered = yearly.filter_region(
-            region_id=regid,
-            check_country_meta=use_country
-            )
-        filtered = _apply_annual_constraint(filtered, yearly_filtered)
+        raise DataCoverageError(f'All data is NaN in {regid}')
 
     stats = filtered.calc_statistics(use_area_weights=use_weights)
 
@@ -797,28 +822,54 @@ def _calc_temporal_corr(coldata):
     corr_time = xr.corr(arr[1], arr[0], dim='time')
     return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
+def _period_to_timeslice(period):
+    spl = period.split('-')
+    if len(spl) == 1:
+        return slice(spl[0],spl[0])
+    elif len(spl) == 2:
+        return slice(*spl)
+    raise ValueError(period)
+
+def _select_period_season_coldata(coldata, period, season):
+    tslice = _period_to_timeslice(period)
+    arr = coldata.data.sel(time=tslice)
+    if len(arr.time) == 0:
+        raise DataCoverageError(f'No data available in period {period}')
+    if season != 'all':
+        if not season in arr.season:
+            raise DataCoverageError(f'No data available in {season} in '
+                                    f'period {period}')
+        mask = arr['season'] == season
+        arr = arr.sel(time=arr['time'][mask])
+
+    return ColocatedData(arr)
+
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, statistics_freqs, statistics_periods,
-                          annual_stats_constrained=False):
+                          meta_glob, statistics_periods):
 
-    hm_all = dict(zip(statistics_freqs, ({},{},{})))
+    hm_all = {}
     stats_dummy = _init_stats_dummy()
-    for freq, hm_data in hm_all.items():
+    for freq, coldata in data.items():
+        hm_all[freq] = hm_freq = {}
+        use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
-            if freq in data and data[freq] is not None:
-                for period in statistics_periods:
+            hm_freq[regname] = {}
+            for per in statistics_periods:
+                if use_dummy:
+                    stats = stats_dummy
+                else:
+                    for season in SEASONS:
+                        try:
+                            subset = _select_period_season_coldata(coldata,
+                                                                   per,
+                                                                   season)
 
-                    try:
-                        stats = _get_stats_region(data, freq,
-                                                  regid, use_weights,
-                                                  use_country,
-                                                  annual_stats_constrained)
-                    except DataCoverageError as e:
-                        const.print_log.info(e)
-                        stats = stats_dummy
-            else:
-                stats = stats_dummy
-            hm_data[regname] = stats
+                            stats = _get_stats_region(subset, regid,
+                                                      use_weights, use_country)
+                        except DataCoverageError:
+                            stats = stats_dummy
+
+                        hm_freq[regname][f'{per}-{season}'] = stats
     return hm_all
 
 def _get_jsdate(coldata):
@@ -835,6 +886,30 @@ def _resample_time_coldata(coldata, freq, colstp):
                 inplace=False)
 
 def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
+    """
+    Compute one colocated data object for each desired statistics frequency
+
+    Parameters
+    ----------
+    coldata : ColocatedData
+        Initial colocated data in a certain frequency
+    colocation_settings : dict or similar
+        colocation settings containing information about temporal resampling
+        that is to be applied for downsampling.
+    to_ts_types : list
+        list of desired frequencies for which statistical parameters are being
+        computed.
+
+    Returns
+    -------
+    dict
+        keys are elements of `to_ts_types`, values are corresponding
+        instances of `ColocatedData` in that resolution, or None, if resolution
+        is higher than original resolution of input `coldata`.
+    dict
+        like `data_arrs` but values are jsdate instances.
+
+    """
 
     data_arrs = dict.fromkeys(to_ts_types)
     jsdate = dict.fromkeys(to_ts_types)
@@ -846,13 +921,14 @@ def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
         if from_tst < to_tst:
             continue
         elif from_tst == to_tst:
-            data_arrs[to] = coldata.copy()
-            jsdate[to] = _get_jsdate(coldata)
+            cd = coldata.copy()
         else:
             cd = _resample_time_coldata(coldata, to,
                                         colocation_settings)
-            data_arrs[to] = cd
-            jsdate[to] = _get_jsdate(cd)
+        # add season coordinate for later filtering
+        cd.data['season'] = cd.data.time.dt.season
+        data_arrs[to] = cd
+        jsdate[to] = _get_jsdate(cd)
 
     return (data_arrs, jsdate)
 
@@ -922,6 +998,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     data, jsdate = _init_data_default_frequencies(coldata,
                                                   colocation_settings,
                                                   statistics_freqs)
+    if annual_stats_constrained:
+        data = _apply_annual_constraint(data)
 
     if not diurnal_only:
         # FIRST: process data for heatmap json file
@@ -930,9 +1008,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             data, regnames, use_weights,
             use_country=use_country,
             meta_glob=meta_glob,
-            statistics_freqs=statistics_freqs,
-            statistics_periods=statistics_periods,
-            annual_stats_constrained=annual_stats_constrained
+            statistics_periods=statistics_periods
             )
 
         for freq, hm_data in hm_all.items():
@@ -956,11 +1032,11 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
         const.print_log.info('Processing individual site timeseries data')
         (map_data,
-          scat_data,
-          ts_objs) = _process_sites(data, jsdate,
-                                    regs,
-                                    regions_how,
-                                    meta_glob=meta_glob)
+         scat_data,
+         ts_objs) = _process_sites(data, jsdate,
+                                   regs,
+                                   regions_how,
+                                   meta_glob=meta_glob)
 
         dirs = out_dirs
 
