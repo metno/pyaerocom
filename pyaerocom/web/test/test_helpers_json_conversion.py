@@ -15,33 +15,33 @@ from pyaerocom.web import helpers_json_conversion as h
 @pytest.mark.dependency
 def test_get_stationfile_name():
     name = h.get_stationfile_name('bla', 'blub', 'var', 'invalid')
-    assert name == 'bla_OBS-blub:var_invalid.json'
+    assert name == 'bla_blub-var_invalid.json'
 
 def test_get_json_mapname():
     obs_name, obs_var, model_name, model_var, vert_code = ('bla', 'ovar', 'blub', 'var', 'invalid')
     name = h.get_json_mapname(obs_name, obs_var, model_name, model_var, vert_code)
-    assert name == 'OBS-bla:ovar_invalid_MOD-blub:var.json'
+    assert name == 'bla-ovar_invalid_blub-var.json'
 
 @pytest.mark.parametrize('ts_data, out_dir, raises', [
     (None,'',pytest.raises(TypeError)),
     ({},'',pytest.raises(KeyError)),
     (dict(station_name='bla',
-          web_iface_name='blub',
+          obs_name='blub',
           obs_var='ovar',
           vert_code='invalid'),'',pytest.raises(KeyError)),
     (dict(station_name='bla',
-          web_iface_name='blub',
+          obs_name='blub',
           obs_var='ovar',
           vert_code='invalid'),'/invalid/42/imagine',pytest.raises(KeyError)),
     (dict(station_name='bla',
-          web_iface_name='blub',
+          obs_name='blub',
           obs_var='ovar',
           vert_code='invalid',
           model_name='whatever'),'/invalid/42/imagine', pytest.raises(FileNotFoundError)),
 
     # repeat previous to check add entry in existing file
     (dict(station_name='bla',
-          web_iface_name='blub',
+          obs_name='blub',
           obs_var='ovar',
           vert_code='invalid',
           model_name='whatever'),'tmpdir', does_not_raise_exception()),
@@ -54,7 +54,7 @@ def test__write_stationdata_json(ts_data, out_dir, raises, tmpdir):
             out_dir = tmpdir
         h._write_stationdata_json(ts_data, out_dir)
         fname = h.get_stationfile_name(ts_data['station_name'],
-                                       ts_data['web_iface_name'],
+                                       ts_data['obs_name'],
                                        ts_data['obs_var'],
                                        ts_data['vert_code'])
         fp = os.path.join(out_dir, fname)
@@ -88,16 +88,6 @@ def test__init_stats_dummy():
     assert keys == ['R', 'R_kendall', 'R_spearman', 'data_mean', 'data_std',
                     'fge', 'mnmb', 'nmb', 'num_valid', 'refdata_mean',
                     'refdata_std', 'rms', 'totnum', 'weighted']
-
-def test__check_flatten_latlon_dims_3d(coldata_tm5_aeronet):
-    cd = h._check_flatten_latlon_dims(coldata_tm5_aeronet)
-    assert isinstance(cd, ColocatedData)
-    assert 'station_name' in cd.data.dims
-
-def test__check_flatten_latlon_dims_4d(coldata_tm5_tm5):
-    cd = h._check_flatten_latlon_dims(coldata_tm5_tm5)
-    assert isinstance(cd, ColocatedData)
-    assert 'station_name' in cd.data.dims
 
 @pytest.mark.parametrize('region_ids,raises', [
     ('blaaa', pytest.raises(ValueError)),
@@ -197,13 +187,13 @@ def test__apply_annual_constraint_helper(coldata,which,raises,ncd,omc,mmc):
             assert not mmean_same
 
 @pytest.mark.parametrize('which,obs_name,model_name,use_weights,'
-                         'vert_code,web_iface_name,diurnal_only,'
+                         'vert_code,diurnal_only,'
                          'statistics_freqs,statistics_periods,'
                          'regions_how,zeros_to_nan,annual_stats_constrained,'
                          'raises,fnumdirs', [
-    ('fake_4d', 'bla','blub',True,'Column',None,False,
+    ('fake_4d', 'bla','blub',True,'Column',False,
      ['daily','monthly','yearly'],['2010'],None,False,True,
-     does_not_raise_exception(),{'ts' : 15,'map' : 1}),
+     does_not_raise_exception(),{'ts' : 14,'map' : 1}),
 
 # =============================================================================
 #     ('fake_3d', 'bla','blub',False,'Column',None,False,
@@ -228,10 +218,9 @@ def test__apply_annual_constraint_helper(coldata,which,raises,ncd,omc,mmc):
     ])
 def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
                                           model_name, use_weights,
-                                          vert_code,web_iface_name,
-                                          diurnal_only, statistics_freqs,
-                                          statistics_periods, regions_how,
-                                          zeros_to_nan,
+                                          vert_code, diurnal_only,
+                                          statistics_freqs, statistics_periods,
+                                          regions_how, zeros_to_nan,
                                           annual_stats_constrained,raises,
                                           fnumdirs):
     outdir = str(tmpdir)
@@ -248,7 +237,6 @@ def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
         h.compute_json_files_from_colocateddata(cd,obs_name,model_name,
                                                 use_weights,cs,vert_code,
                                                 out_dirs,regions_json,
-                                                web_iface_name,
                                                 diurnal_only,
                                                 statistics_freqs,
                                                 statistics_periods,
