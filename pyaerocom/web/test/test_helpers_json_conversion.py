@@ -6,6 +6,7 @@ import simplejson
 
 from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom import ColocatedData, Region
+from pyaerocom.exceptions import AeroValConfigError
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import get_all_default_region_ids
 from pyaerocom.web import AerocomEvaluation
@@ -195,25 +196,29 @@ def test__apply_annual_constraint_helper(coldata,which,raises,ncd,omc,mmc):
      ['daily','monthly','yearly'],['2010'],None,False,True,
      does_not_raise_exception(),{'ts' : 14,'map' : 1}),
 
-# =============================================================================
-#     ('fake_3d', 'bla','blub',False,'Column',None,False,
-#      ['monthly'],['2010'],None,False,False,
-#      does_not_raise_exception(),{'ts' : 14,'map' : 1}),
-#     ('fake_3d', 'bla','blub',True,'Column',None,False,
-#      ['monthly'],['2010'],None,False,True,
-#      does_not_raise_exception(),{'ts' : 14,'map' : 1}),
-#
-#     ('fake_4d', 'bla','blub',False,'Column',None,False,None,False,False,
-#      does_not_raise_exception(),{'ts' : 15,'map' : 1}),
-#
-#
-#     ('tm5_aeronet','bla','blub',False,'Column',None,False,None,False,False,
-#      does_not_raise_exception(),{'ts' : 18,'map' : 1, 'contour' : 0,
-#                                  'profiles' : 0, 'hm' : 3, 'scat': 1,
-#                                  'ts/dw' : 0}),
-#     ('tm5_aeronet','bla','blub',False,'Column',None,False,None,False,True,
-#      does_not_raise_exception(),{'ts' : 18,'map' : 1}),
-# =============================================================================
+    ('fake_4d', 'bla','blub',False,'Column',False,
+     ['monthly'],['2010'],None,False,False,
+     does_not_raise_exception(),{'ts' : 16,'map' : 1}),
+
+    ('fake_3d', 'bla','blub',False,'Column',False,
+     ['monthly'],['2010'],None,False,False,
+     does_not_raise_exception(),{'ts' : 14,'map' : 1}),
+
+    ('fake_3d', 'bla','blub',True,'Column',False,
+     ['monthly'],['2010'],None,False,True,
+     pytest.raises(AeroValConfigError),None),
+
+
+
+    ('tm5_aeronet','bla','blub',False,'Column',False,
+     ['monthly'],['2010'],None,False,False,
+     does_not_raise_exception(),{'ts' : 18,'map' : 1, 'contour' : 0,
+                                 'profiles' : 0, 'hm' : 1, 'scat': 1,
+                                 'ts/dw' : 0}),
+
+    ('tm5_aeronet','bla','blub',False,'Column',False,
+     ['monthly', 'yearly'],['2010'],None,False,True,
+     does_not_raise_exception(),{'ts' : 17,'map' : 1}),
 
     ])
 def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
