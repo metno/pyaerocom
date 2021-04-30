@@ -59,7 +59,6 @@ class TestReadEbas(object):
                          'sc550dryaer',
                          'sc440dryaer',
                          'sc700dryaer',
-                         'ang4470dryaer',
                          'sc550lt1aer',
                          'bsc550aer',
                          'ac550aer',
@@ -273,22 +272,24 @@ class TestReadEbas(object):
         assert os.path.exists(fp)
         assert fp.endswith('ebas_file_index.sqlite3')
 
-    @pytest.mark.parametrize('vars_to_retrieve,constraints', [
-        ('sc550aer', {}),
-        ('sc550dryaer', {}),
-        ('sc550dryaer', {'station_names': 'Jungfraujoch'}),
-        ('ac550aer', {}),
-        ('concpm10', {}),
-        ('conco3', {}),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}),
+    @pytest.mark.parametrize('vars_to_retrieve,constraints,raises', [
+        ('vmrno', {}, does_not_raise_exception()),
+        ('vmrno', {'station_names' : 'xkcd'}, pytest.raises(FileNotFoundError)),
+        ('sc550aer', {}, does_not_raise_exception()),
+        ('sc550dryaer', {}, does_not_raise_exception()),
+        ('sc550dryaer', {'station_names': 'Jungfraujoch'}, does_not_raise_exception()),
+        ('ac550aer', {}, does_not_raise_exception()),
+        ('concpm10', {}, does_not_raise_exception()),
+        ('conco3', {}, does_not_raise_exception()),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, does_not_raise_exception()),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, does_not_raise_exception()),
         ])
-    def test_get_file_list(self, reader, vars_to_retrieve, constraints):
+    def test_get_file_list(self,reader,vars_to_retrieve,constraints,raises):
+        with raises:
+            lst = reader.get_file_list(vars_to_retrieve, **constraints)
 
-        lst = reader.get_file_list(vars_to_retrieve, **constraints)
-
-        assert isinstance(lst, list)
-        assert len(lst) > 0
+            assert isinstance(lst, list)
+            assert len(lst) > 0
 
     def test__merge_lists(self, reader):
         var = ['sc550aer', 'ac550aer']

@@ -228,7 +228,7 @@ class EbasVarInfo(BrowseDict):
                         # ToDo: check if this can be generalised better
                         raise ValueError(
                             f'Variable conflict in EBAS SQL request: '
-                            f'{var} cannot depent on itself...')
+                            f'{_var} cannot depent on itself...')
                     requests[_var] = _req
 
         return requests

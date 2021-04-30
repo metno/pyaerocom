@@ -493,13 +493,13 @@ class ReadEbas(ReadUngriddedBase):
             out.append(self.var_info(var).var_name_aerocom)
         return out
 
-    def get_file_list(self, vars_to_retrieve=None, **constraints):
+    def get_file_list(self, vars_to_retrieve, **constraints):
         """Get list of files for all variables to retrieve
 
         Parameters
         ----------
-        vars_to_retrieve : list
-            list of variables that are supposed to be loaded
+        vars_to_retrieve : list or str
+            list of variables that are supposed to be read
         **constraints
             further EBAS request constraints deviating from default (default
             info for each AEROCOM variable can be found in `ebas_config.ini <
@@ -514,9 +514,8 @@ class ReadEbas(ReadUngriddedBase):
             unified list of file paths each containing either of the specified
             variables
         """
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
+
+        if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
         # make sure variable names are input correctly
@@ -556,10 +555,10 @@ class ReadEbas(ReadUngriddedBase):
                         continue
                     paths.append(os.path.join(filedir, file))
 
-                files_vars[var] = sorted(paths)
+                files_vars[_var] = sorted(paths)
                 num = len(paths)
                 totnum += num
-                self.logger.info('{} files found for variable {}'.format(num, var))
+                self.logger.info('{} files found for variable {}'.format(num, _var))
 
         if len(files_vars) == 0:
             raise FileNotFoundError('No files could be retrieved for either '
