@@ -213,7 +213,8 @@ class ColocationSetup(BrowseDict):
         else:
             basedir_coldata = const.COLOCATEDDATADIR
 
-        Filter(filter_name) #crashes if input filter name is invalid
+        #crashes if input filter name is invalid
+        self.filter_name = Filter(filter_name).name
 
         self.save_coldata = save_coldata
         self.basedir_coldata = basedir_coldata
@@ -423,6 +424,33 @@ class Colocator(ColocationSetup):
         self.data = {}
 
         self.file_status = {}
+        self._model_reader = None
+
+    @property
+    def obs_is_ungridded(self):
+        """
+        bool: True if obs_id refers to an ungridded observation, else False
+        """
+        return True if self.obs_id in self.UNGRIDDED_IDS else False
+
+    @property
+    def model_reader(self):
+        if self._model_reader is not None:
+            if self._model_reader.data_id == self.model_id:
+                return self._model_reader
+            const.print_log.info(
+                f'Reloading outdated model reader. ID of current reader: '
+                f'{self._model_reader.data_id}. New ID: {self.model_id}'
+                )
+        self._model_reader = self.instantiate_gridded_reader(what='model')
+        return self._model_reader
+
+    @property
+    def obs_reader(self):
+        reader = self._obs_reader
+        if reader is not None:
+            raise NotImplementedError('coming soon')
+        raise NotImplementedError('coming soon')
 
     def _write_log(self, msg):
         if self.logging:
@@ -448,20 +476,10 @@ class Colocator(ColocationSetup):
         if self.save_coldata:
             self._check_basedir_coldata()
         self._check_outdated_outlier_defs()
-        # ToDo: setting the defaults for time resampling here should be
-        # unnecessary since this is done in TimeResampler. Ensure that and
-        # remove here
-        if self.apply_time_resampling_constraints is None:
-            self.apply_time_resampling_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
-
-        if self.apply_time_resampling_constraints is True and self.min_num_obs is None:
-            self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
-
         try:
             self._init_log()
-        except Exception as e:
-            const.print_log.warning('Deactivating logging in Colocator. Reason: {}'
-                                    .format(repr(e)))
+        except Exception:
+            const.print_log.warning('Deactivating logging in Colocator')
             self.logging = False
 
         self._write_log('\n\nModel: {}\n'.format(self.model_id))
@@ -926,18 +944,15 @@ class Colocator(ColocationSetup):
 
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
-        model_reader = self.instantiate_gridded_reader(what='model')
-
+        model_reader = self.model_reader
+        self.model_id = 'BLAAAAAAAAAAAAAAAAA'
+        model_reader = self.model_reader
         obs_reader, obs_vars = self._init_ungridded_reader_and_vars()
 
         var_matches = self._find_var_matches(obs_vars,
                                              model_reader,
                                              var_name)
         self._print_coloc_info(var_matches)
-
-        # get list of unique observation variables for which also model
-        # output is available
-        obs_vars = np.unique(list(var_matches.values())).tolist()
 
         data_objs = {}
         if self.start is None:
@@ -947,10 +962,10 @@ class Colocator(ColocationSetup):
 
         for model_var, obs_var in var_matches.items():
             ts_type = self.ts_type
-            print_log.info('Running {} / {} ({}, {})'.format(self.model_id,
-                                                             self.obs_id,
-                                                             model_var,
-                                                             obs_var))
+            print_log.info(
+                f'Running {self.model_id} ({model_var}) vs. '
+                f'{self.obs_id} ({obs_var})'
+                )
 
             try:
                 model_data = self._read_gridded(reader=model_reader,
@@ -960,8 +975,9 @@ class Colocator(ColocationSetup):
                                                 is_model=True)
             except Exception as e:
 
-                msg = ('Failed to load gridded data: {} / {}. Reason {}'
-                       .format(self.model_id, model_var, repr(e)))
+                msg = (
+                    f'Failed to load gridded data: {self.model_id} '
+                    f'({model_var}). Reason {e}')
                 const.print_log.warning(msg)
                 self._write_log(msg + '\n')
 
@@ -1075,14 +1091,11 @@ class Colocator(ColocationSetup):
 
     def _run_gridded_gridded(self, var_name=None):
 
-        model_reader = ReadGridded(self.model_id,
-                                   data_dir=self.model_data_dir)
-
+        model_reader = self.instantiate_gridded_reader(what='model')
         if self.start is None:
             self._infer_start_stop(model_reader)
 
         start, stop = start_stop(self.start, self.stop)
-        model_reader = self.instantiate_gridded_reader(what='model')
         obs_reader = self.instantiate_gridded_reader(what='obs')
 
         if 'obs_filters' in self:
@@ -1238,44 +1251,45 @@ class Colocator(ColocationSetup):
             self._log.close()
             self._log = None
 
-    def _coldata_savename(self, model_data, start=None, stop=None,
-                           ts_type=None, var_name=None):
-        """Based on current setup, get savename of colocated data file
+    def get_model_name(self):
+        if self.model_name is None:
+            if self.model_id is None:
+                raise AttributeError('Neither model_name nor model_id are set')
+            return self.model_id
+        return self.model_name
+
+    def get_obs_name(self):
+        if self.obs_name is None:
+            if self.obs_id is None:
+                raise AttributeError('Neither obs_name nor obs_id are set')
+            return self.obs_id
+        return self.obs_name
+
+    def get_start_str(self):
+        if self.start is None:
+            raise AttributeError('start time is not set')
+        return to_datestring_YYYYMMDD(to_pandas_timestamp(self.start))
+
+    def get_stop_str(self):
+        if self.stop is None:
+            raise AttributeError('stop time is not set')
+        return to_datestring_YYYYMMDD(to_pandas_timestamp(self.stop))
+
+    def _coldata_savename(self, var_name):
+        """Get filename of colocated data file for saving
         """
-        if start is None:
-            start = model_data.start
-        else:
-            start = to_pandas_timestamp(start)
-        if stop is None:
-            stop = model_data.stop
-        else:
-            stop = to_pandas_timestamp(stop)
-        if ts_type is None:
-            ts_type = model_data.ts_type
+        if self.ts_type is None:
+            raise AttributeError('ts_type is not set')
 
-        if var_name is None:
-            var_name = model_data.var_name
-        start_str = to_datestring_YYYYMMDD(start)
-        stop_str = to_datestring_YYYYMMDD(stop)
-
-        if isinstance(self.obs_name, str):
-            obs_id = self.obs_name
-        else:
-            obs_id = self.obs_id
-
-        if isinstance(self.model_name, str):
-            model_id = self.model_name
-        else:
-            model_id = model_data.data_id
-
-        col_data_name = ColocatedData._aerocom_savename(var_name=var_name,
-                                                        obs_id=obs_id,
-                                                        model_id=model_id,
-                                                        start_str=start_str,
-                                                        stop_str=stop_str,
-                                                        ts_type=ts_type,
-                                                        filter_name=self.filter_name)
-        return col_data_name + '.nc'
+        return ColocatedData._aerocom_savename(
+            var_name=var_name,
+            obs_id=self.get_obs_name(),
+            model_id=self.get_model_name(),
+            start_str=self.get_start_str(),
+            stop_str=self.get_stop_str(),
+            ts_type=self.ts_type,
+            filter_name=self.filter_name
+            ) + '.nc'
 
     def _check_coldata_exists(self, model_id, coldata_savename):
         """Check if colocated data file exists"""
@@ -1291,25 +1305,7 @@ class Colocator(ColocationSetup):
         self.file_status[coldata_savename] = 'exists_not'
         return False
 
-    def __call__(self, **kwargs):
-        raise NotImplementedError
-        self.update(**kwargs)
-        self.run()
-
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
-    model = 'AEROCOM-MEDIAN-2x3-GLISSETAL2020-1_AP3-CTRL'
-    col = Colocator(model_id=model,
-                    obs_id='AeronetSunV3Lev2.daily',
-                    obs_vars=['od550aer'],
-                    remove_outliers=True,
-                    model_remove_outliers=True,
-                    model_outlier_ranges={'od550aer': (0.3, 0.6)},
-                    obs_outlier_ranges={'od550aer': (0.2, 0.3)},
-                    start=2010)
-
-    col.run(reanalyse_existing=True)
-
-    data = col.data[model]['od550aer']
-    data.plot_scatter(loglog=True)
+    col = Colocator()
