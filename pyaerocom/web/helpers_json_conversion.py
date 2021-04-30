@@ -8,9 +8,8 @@ import numpy as np
 import simplejson
 import xarray as xr
 from pyaerocom import const
-from pyaerocom.helpers import get_lowest_resolution
 from pyaerocom.io.helpers import save_dict_json
-from pyaerocom.web.helpers import read_json, write_json
+from pyaerocom.web.helpers import read_json
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.tstype import TsType
@@ -69,6 +68,12 @@ def _write_stationdata_json(ts_data, out_dir):
     current[ts_data['model_name']] = ts_data
     with open(fp, 'w') as f:
         simplejson.dump(current, f, ignore_nan=True)
+
+def _write_site_data(ts_objs, dirloc):
+    """Write list of station timeseries files to json"""
+    for ts_data in ts_objs:
+        #writes json file
+        _write_stationdata_json(ts_data, dirloc)
 
 def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
     """
@@ -538,6 +543,7 @@ def _process_sites_weekly_ts(coldata,regions_how,region_ids,meta_glob):
 
 def _init_site_coord_arrays(data):
     found = False
+    jsdates = {}
     for freq, cd in data.items():
         if cd is None:
             continue
@@ -557,7 +563,8 @@ def _init_site_coord_arrays(data):
             found = True
         else:
             assert all(cd.data.station_name.values == sites)
-    return (sites, lats, lons, alts, countries)
+        jsdates[freq] = cd.data.jsdate.values.tolist()
+    return (sites, lats, lons, alts, countries, jsdates)
 
 def _get_stat_regions(lats, lons, regions):
     regs = []
@@ -567,27 +574,23 @@ def _get_stat_regions(lats, lons, regions):
     return regs
 
 
-def _process_sites(data, jsdate, regions, regions_how, meta_glob,
-                   statistics_periods):
-    stats_dummy = _init_stats_dummy()
+def _process_sites(data, regions, regions_how, meta_glob):
+
     freqs = list(data.keys())
-    (sites, lats, lons, alts, countries) = _init_site_coord_arrays(data)
+    (sites, lats, lons, alts, countries, jsdates) = _init_site_coord_arrays(data)
     if regions_how == 'country':
         regs = countries
     else:
         regs = _get_stat_regions(lats, lons, regions)
 
     ts_objs = []
-    scat_data = {}
     site_indices = []
-    map_data = []
-    lowest_res = get_lowest_resolution(*data.keys())
+    map_meta = []
 
     for i, site in enumerate(sites):
-        site = str(site)
         # init empty timeseries data object
         site_meta = {
-            'station_name'  :   site,
+            'station_name'  :   str(site),
             'latitude'      :   lats[i],
             'longitude'     :   lons[i],
             'altitude'      :   alts[i],
@@ -603,17 +606,10 @@ def _process_sites(data, jsdate, regions, regions_how, meta_glob,
                 if np.all(np.isnan(sitedata)):
                     #skip this site, all is NaN
                     continue
-                ts_data[f'{freq}_date'] = jsdate[freq]
+                ts_data[f'{freq}_date'] = jsdates[freq]
                 ts_data[f'{freq}_obs'] = sitedata[0].tolist()
                 ts_data[f'{freq}_mod'] = sitedata[1].tolist()
                 has_data = True
-                if freq == lowest_res:
-                    # add only sites to scatter data that have data available
-                    # in the lowest of the input resolutions (e.g. yearly)
-                    scat_data[site] = {}
-                    scat_data[site][f'{freq}_obs'] = ts_data[f'{freq}_obs']
-                    scat_data[site][f'{freq}_mod'] = ts_data[f'{freq}_mod']
-                    scat_data[site]['region'] = regs[i]
         if has_data: #site is valid
             # register ts_data
             ts_objs.append(ts_data)
@@ -621,10 +617,24 @@ def _process_sites(data, jsdate, regions, regions_how, meta_glob,
             # below.
             site_indices.append(i)
             # init map data for each valid site
-            map_data.append({**site_meta})
+            map_meta.append({**site_meta})
 
-    # compute map statistics for all sites that have data. Statistics are
-    # computed in all input periods and for all seasons.
+    return (ts_objs, map_meta, site_indices)
+
+def _get_statistics(obs_vals, mod_vals):
+    stats = calc_statistics(mod_vals, obs_vals,
+                            min_num_valid=STATISTICS_MIN_NUM)
+
+    for k, v in stats.items():
+        stats[k] = np.float64(v)
+    return stats
+
+def _process_map_and_scat(data, map_data, site_indices, statistics_periods,
+                          scatter_freq):
+
+    stats_dummy = _init_stats_dummy()
+    scat_data = {}
+    scat_dummy = [np.nan]
     for freq, cd in data.items():
         use_dummy = True if cd is None else False
         for per in statistics_periods:
@@ -634,6 +644,7 @@ def _process_sites(data, jsdate, regions, regions_how, meta_glob,
                         subset = _select_period_season_coldata(cd,
                                                                per,
                                                                season)
+                        jsdate = subset.data.jsdate.values.tolist()
                     except (DataCoverageError, TemporalResolutionError):
                         use_dummy = True
                 for i, map_stat in zip(site_indices, map_data):
@@ -645,17 +656,31 @@ def _process_sites(data, jsdate, regions, regions_how, meta_glob,
                     else:
                         obs_vals = subset.data.data[0, :, i]
                         mod_vals = subset.data.data[1, :, i]
-                        stats = calc_statistics(mod_vals, obs_vals,
-                                                min_num_valid=STATISTICS_MIN_NUM)
+                        stats = _get_statistics(obs_vals, mod_vals)
 
-                    for k, v in stats.items():
-                        stats[k] = np.float64(v)
-                    map_stat[freq][f'{per}-{season}'] = stats
+                    perstr = f'{per}-{season}'
+                    map_stat[freq][perstr] = stats
+                    if freq == scatter_freq:
+                        # add only sites to scatter data that have data available
+                        # in the lowest of the input resolutions (e.g. yearly)
+                        site = map_stat['station_name']
+                        if not site in scat_data:
+                            scat_data[site] = {}
+                            scat_data[site]['latitude'] = map_stat['latitude']
+                            scat_data[site]['longitude'] = map_stat['longitude']
+                            scat_data[site]['altitude'] = map_stat['altitude']
+                            scat_data[site]['region'] = map_stat['region']
+                        if use_dummy:
+                            obs = mod = jsdate = scat_dummy
+                        else:
+                            obs, mod = obs_vals.tolist(), mod_vals.tolist()
+                        scat_data[site][perstr] = {'obs':obs,'mod':mod,
+                                                   'date':jsdate}
 
-    return (map_data, scat_data, ts_objs)
 
-def _process_regional_timeseries(data, jsdate, region_ids,
-                                 regions_how, meta_glob):
+    return (map_data, scat_data)
+
+def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
     ts_objs = []
     freqs = list(data.keys())
     check_countries = True if regions_how=='country' else False
@@ -665,9 +690,9 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_data.update(meta_glob)
 
         for freq, cd in data.items():
-            jsfreq = jsdate[freq]
             if cd is None:
                 continue
+            jsfreq = cd.data.jsdate.values.tolist()
             try:
                 subset = cd.filter_region(regid,
                                           inplace=False,
@@ -892,10 +917,11 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                         hm_freq[regname][f'{per}-{season}'] = stats
     return hm_all
 
-def _get_jsdate(coldata):
-    js = (coldata.data.time.values.astype('datetime64[s]') -
-          np.datetime64('1970', '[s]')).astype(int) * 1000
-    return js.tolist()
+def _get_jsdate(nparr):
+    dt = nparr.astype('datetime64[s]')
+    offs = np.datetime64('1970', 's')
+    return (dt-offs).astype(int)*1000
+
 
 def _resample_time_coldata(coldata, freq, colstp):
     return coldata.resample_time(freq,
@@ -932,7 +958,6 @@ def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
     """
 
     data_arrs = dict.fromkeys(to_ts_types)
-    jsdate = dict.fromkeys(to_ts_types)
 
     from_tst = TsType(coldata.ts_type)
 
@@ -946,11 +971,14 @@ def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
             cd = _resample_time_coldata(coldata, to,
                                         colocation_settings)
         # add season coordinate for later filtering
-        cd.data['season'] = cd.data.time.dt.season
+        arr = cd.data
+        arr['season'] = arr.time.dt.season
+        jsdates = _get_jsdate(arr.time.values)
+        arr = arr.assign_coords(jsdate=('time', jsdates))
+        cd.data = arr
         data_arrs[to] = cd
-        jsdate[to] = _get_jsdate(cd)
 
-    return (data_arrs, jsdate)
+    return data_arrs
 
 def compute_json_files_from_colocateddata(coldata, obs_name,
                                           model_name, use_weights,
@@ -960,9 +988,10 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                           diurnal_only,
                                           statistics_freqs,
                                           statistics_periods,
-                                          regions_how=None,
-                                          zeros_to_nan=False,
-                                          annual_stats_constrained=False):
+                                          scatter_freq,
+                                          regions_how,
+                                          zeros_to_nan,
+                                          annual_stats_constrained):
 
     """Creates all json files for one ColocatedData object
 
@@ -984,6 +1013,11 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     elif coldata.has_latlon_dims and regions_how=='country':
         raise NotImplementedError('Cannot yet apply country filtering for '
                                   '4D colocated data instances')
+    elif not scatter_freq in statistics_freqs:
+        raise AeroValConfigError(
+            f'Scatter plot frequency {scatter_freq} is not in '
+            f'{statistics_freqs}'
+            )
     # init some stuff
     if 'var_name' in coldata.metadata:
         obs_var = coldata.metadata['var_name'][0]
@@ -1000,8 +1034,6 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
                                 vert_code=vert_code,
                                 obs_name=obs_name,
                                 model_name=model_name)
-    if regions_how is None:
-        regions_how = 'default'
 
     # get region IDs
     (regborders, regs, regnames) = init_regions_web(coldata, regions_how)
@@ -1013,9 +1045,9 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     if zeros_to_nan:
         coldata = coldata.set_zeros_nan()
 
-    data, jsdate = _init_data_default_frequencies(coldata,
-                                                  colocation_settings,
-                                                  statistics_freqs)
+    data = _init_data_default_frequencies(coldata,
+                                          colocation_settings,
+                                          statistics_freqs)
     if annual_stats_constrained:
         data = _apply_annual_constraint(data)
 
@@ -1038,28 +1070,27 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
         const.print_log.info('Processing regional timeseries for all regions')
         ts_objs_regional = _process_regional_timeseries(data,
-                                                        jsdate,
                                                         regnames,
                                                         regions_how,
                                                         meta_glob)
 
-        for ts_data in ts_objs_regional:
-            #writes json file
-            _write_stationdata_json(ts_data, out_dirs['ts'])
-
+        _write_site_data(ts_objs_regional, out_dirs['ts'])
         if coldata.has_latlon_dims:
             for cd in data.values():
                 if cd is not None:
                     cd.data = cd.flatten_latlondim_station_name().data
 
         const.print_log.info('Processing individual site timeseries data')
-        (map_data,
-         scat_data,
-         ts_objs) = _process_sites(data, jsdate,
-                                   regs,
-                                   regions_how,
-                                   meta_glob,
-                                   statistics_periods)
+        (ts_objs,
+         map_meta,
+         site_indices) = _process_sites(data, regs, regions_how, meta_glob)
+
+        _write_site_data(ts_objs, out_dirs['ts'])
+
+        map_data, scat_data = _process_map_and_scat(data, map_meta,
+                                                    site_indices,
+                                                    statistics_periods,
+                                                    scatter_freq)
 
         map_name = get_json_mapname(obs_name, obs_var, model_name,
                                     model_var, vert_code)
@@ -1072,9 +1103,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         with open(outfile_scat, 'w') as f:
             simplejson.dump(scat_data, f, ignore_nan=True)
 
-        for ts_data in ts_objs:
-            #writes json file
-            _write_stationdata_json(ts_data, out_dirs['ts'])
+
 
     if coldata.ts_type == 'hourly':
         const.print_log.info('Processing diurnal profiles')

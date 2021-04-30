@@ -7,12 +7,13 @@ import os
 import numpy as np
 from pathlib import Path
 import shutil
-import simplejson
 from traceback import format_exc
 
 # internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str)
+from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
+                                         sort_dict_by_name)
 from pyaerocom import const
+from pyaerocom.helpers import get_lowest_resolution
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.helpers import isnumeric, start_stop
@@ -23,8 +24,6 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
 
 from pyaerocom.web.helpers_evaluation_iface import (
-    update_menu_evaluation_iface,
-    make_info_table_evaluation_iface,
     delete_experiment_data_evaluation_iface,
     make_info_str_eval_setup)
 
@@ -231,6 +230,7 @@ class AerocomEvaluation(object):
         self.pi = getuser()
         self.statistics_freqs = self.DEFAULT_STATISTICS_FREQS
         self.statistics_periods = None
+        self.scatter_freq = None
 
         self.clear_existing_json = True
 
@@ -312,6 +312,8 @@ class AerocomEvaluation(object):
 
         if self.statistics_periods is not None:
             self.check_periods()
+        if self.scatter_freq is None:
+            self.scatter_freq = get_lowest_resolution(*self.statistics_freqs)
         if init_output_dirs:
             self.init_json_output_dirs()
 
@@ -384,7 +386,23 @@ class AerocomEvaluation(object):
     @property
     def menu_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.proj_dir, 'menu.json')
+        return os.path.join(self.exp_dir, 'menu.json')
+
+    @property
+    def experiments_file(self):
+        """json file containing region specifications"""
+        return os.path.join(self.proj_dir, 'experiments.json')
+
+    @property
+    def results_available(self):
+        """
+        bool: True if results are available for this experiment, else False
+        """
+        if not self.exp_id in os.listdir(self.proj_id):
+            return False
+        elif not len(self.all_map_files) > 0:
+            return False
+        return True
 
     @property
     def model_order_menu(self):
@@ -443,11 +461,19 @@ class AerocomEvaluation(object):
         return self.all_obs_vars
 
     @property
-    def all_map_files(self):
+    def available_map_files(self):
         """List of all existing map files"""
         if not os.path.exists(self.out_dirs['map']):
             raise FileNotFoundError('No data available for this experiment')
-        return os.listdir(self.out_dirs['map'])
+        files = []
+        for file in os.listdir(self.out_dirs['map']):
+            if file.endswith('.json'):
+                files.append(file)
+        return files
+
+    @property
+    def all_map_files(self):
+        raise NotImplementedError()
 
     @property
     def raise_exceptions(self):
@@ -855,24 +881,23 @@ class AerocomEvaluation(object):
 
         periods = self.check_set_periods()
 
-        return compute_json_files_from_colocateddata(
+        compute_json_files_from_colocateddata(
                 coldata=coldata,
-                obs_name=obs_name,
+                obs_name=web_iface_name,
                 model_name=model_name,
                 use_weights=self.weighted_stats,
                 colocation_settings=col,
                 vert_code=vert_code,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
-                web_iface_name=web_iface_name,
                 diurnal_only=diurnal_only,
                 statistics_freqs=self.statistics_freqs,
                 statistics_periods=periods,
+                scatter_freq = self.scatter_freq,
                 regions_how=self.regions_how,
                 zeros_to_nan=self.zeros_to_nan,
                 annual_stats_constrained=self.annual_stats_constrained
                 )
-
 
     def get_vert_code(self, obs_name, obs_var):
         """Get vertical code name for obs / var combination"""
@@ -907,15 +932,8 @@ class AerocomEvaluation(object):
                 const.print_log.warning('Skipping heatmap file {} (for {} freq). '
                                         'File does not exist'.format(fp, freq))
                 continue
-            with open(self.menu_file, 'r') as f:
-                menu = simplejson.load(f)
-            with open(fp, 'r') as f:
-                data = simplejson.load(f)
-            if not self.exp_id in menu:
-                raise ValueError('No entry found in menu.json for experiment {}'
-                                 .format(self.exp_id))
-
-            menu = menu[self.exp_id]
+            menu = read_json(self.menu_file)
+            data = read_json(fp)
             hm = {}
             for var, info in menu.items():
                 obs_dict = info['obs']
@@ -1783,7 +1801,7 @@ class AerocomEvaluation(object):
         tab = []
         from pandas import DataFrame
         for f in self.all_map_files:
-            if f.endswith('.json') and f.startswith('OBS'):
+            if f.endswith('.json'):
                 (obs_name, obs_var,
                  vert_code,
                  mod_name, mod_var) = self._info_from_map_file(f)
@@ -1833,7 +1851,7 @@ class AerocomEvaluation(object):
                               'Using variable name'.format(obs_var))
         return (name, tp, cat)
 
-    def update_interface(self, **opts):
+    def update_interface(self):
         """Update web interface
 
         Things done here:
@@ -1842,7 +1860,7 @@ class AerocomEvaluation(object):
             - Make web info table json (tab informations in interface)
             - update and order heatmap file
         """
-        self.update_menu(**opts)
+        self.update_menu()
         try:
             self.make_info_table_web()
             self.update_heatmap_json()
@@ -1850,9 +1868,180 @@ class AerocomEvaluation(object):
         except KeyError: # if no data is available for this experiment
             pass
 
-    def update_menu(self, **opts):
-        """Updates menu.json based on existing map json files"""
-        update_menu_evaluation_iface(self, **opts)
+    def update_menu(self):
+        """Update menu
+
+        The menu.json file is created based on the available json map files in the
+        map directory of an experiment.
+
+        Parameters
+        ----------
+        menu_file : str
+            path to json menu file
+        delete_mode : bool
+            if True, then no attempts are being made to find json files for the
+            experiment specified in `config`.
+
+        """
+        avail = self._get_available_results_dict()
+        avail = self._sort_menu_entries(avail)
+        write_json(avail, self.menu_file, indent=4)
+
+    def _sort_menu_entries(self, avail):
+        """
+        Used in method :func:`update_menu_evaluation_iface`
+
+        Sorts results of different menu entries (i.e. variables, observations
+        and models).
+
+        Parameters
+        ----------
+        avail : dict
+            nested dictionary contining info about available results
+        config : AerocomEvaluation
+            Configuration class
+
+        Returns
+        -------
+        dict
+            input dictionary sorted in variable, obs and model layers. The order
+            of variables, observations and models may be specified in
+            AerocomEvaluation class and if not, alphabetic order is used.
+
+        """
+        # sort first layer (i.e. variables)
+        avail = sort_dict_by_name(avail, pref_list=config.var_order_menu)
+
+        new_sorted = {}
+        for var, info in avail.items():
+            new_sorted[var] = info
+            obs_order = config.obs_order_menu
+            sorted_obs = sort_dict_by_name(info['obs'],
+                                           pref_list=obs_order)
+            new_sorted[var]['obs'] = sorted_obs
+            for obs_name, vert_codes in sorted_obs.items():
+                vert_codes_sorted = sort_dict_by_name(vert_codes)
+                new_sorted[var]['obs'][obs_name] = vert_codes_sorted
+                for vert_code, models in vert_codes_sorted.items():
+                    model_order = config.model_order_menu
+                    models_sorted = sort_dict_by_name(models,
+                                                      pref_list=model_order)
+                    new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
+        return new_sorted
+
+    def _get_available_results_dict(self):
+        def var_dummy():
+            """Helper that creates empty dict for variable info"""
+            return {'type'      :   '',
+                    'cat'       :   '',
+                    'name'      :   '',
+                    'longname'  :   '',
+                    'obs'       :   {}}
+        new = {}
+        tab = self.get_web_overview_table()
+        for index, info in tab.iterrows():
+            obs_var, obs_name, vert_code, mod_name, mod_var = info
+            if not obs_var in new:
+                new[obs_var] = d = var_dummy()
+                name, tp, cat = self.get_obsvar_name_and_type(obs_var)
+
+                d['name'] = name
+                d['type'] = tp
+                d['cat']  = cat
+                d['longname'] = const.VARS[obs_var].description
+            else:
+                d = new[obs_var]
+
+            if not obs_name in d['obs']:
+                d['obs'][obs_name] = dobs = {}
+            else:
+                dobs = d['obs'][obs_name]
+
+            if not vert_code in dobs:
+                dobs[vert_code] = dobs_vert = {}
+            else:
+                dobs_vert = dobs[vert_code]
+            if mod_name in dobs_vert:
+                const.print_log.warning('Overwriting old entry for {}: {}'
+                                        .format(mod_name, dobs_vert[mod_name]))
+            model_id = self.model_config[mod_name]['model_id']
+            dobs_vert[mod_name] = {'dir' : mod_name,
+                                   'id'  : model_id,
+                                   'var' : mod_var}
+        return new
+
+    def make_info_table_evaluation_iface(self):
+        """
+        Make an information table for an web experiment based on menu.json
+
+        Returns
+        -------
+        dict
+            dictionary containing meta information
+
+        """
+        if not os.path.exists(self.menu_file):
+            raise FileNotFoundError(f'No menu.json found for {self.exp_id}')
+
+        SKIP_META = ['data_source', 'var_name', 'lon_range',
+                     'lat_range', 'alt_range']
+        menu = read_json(self.menu_file)
+        with open(self.menu_file, 'r') as f:
+            menu = simplejson.load(f)
+        table = {}
+        for obs_var, info in exp.items():
+            for obs_name, vert_types in info['obs'].items():
+                for vert_type, models in vert_types.items():
+                    for mname, minfo in models.items():
+                        if not mname in table:
+                            table[mname] = mi = {}
+                            mi['id'] = model_id = minfo['id']
+                        else:
+                            mi = table[mname]
+                            model_id = mi['id']
+                            if minfo['id'] != mi['id']:
+                                raise KeyError('Unexpected error: conflict in model ID and name')
+
+                        try:
+                            mo = mi['obs']
+                        except Exception:
+                            mi['obs'] = mo = {}
+                        if 'var' in minfo:
+                            mvar = minfo['var']
+                        else:
+                            mvar = obs_var
+                        if not obs_var in mo:
+                            mo[obs_var] = oi = {}
+                        else:
+                            oi = mo[obs_var]
+                        if obs_name in oi:
+                            raise Exception
+                        oi[obs_name] = motab = {}
+                        motab['model_var'] = mvar
+                        motab['obs_id'] = config.get_obs_id(obs_name)
+                        files = glob.glob('{}/{}/{}*REF-{}*.nc'
+                                          .format(config.coldata_dir,
+                                                  model_id, mvar, obs_name))
+
+                        if not len(files) == 1:
+                            if len(files) > 1:
+                                motab['MULTIFILES'] = len(files)
+                            else:
+                                motab['NOFILES'] = True
+                            continue
+
+                        coldata = ColocatedData(files[0])
+                        for k, v in coldata.metadata.items():
+                            if not k in SKIP_META:
+                                if isinstance(v, (list, tuple)):
+                                    if len(v) == 2:
+                                        motab['{}_obs'.format(k)] = str(v[0])
+                                        motab['{}_mod'.format(k)] = str(v[1])
+                                    else:
+                                        motab[k] = ';'.join([str(x) for x in v])
+                                else:
+                                    motab[k] = str(v)
+        return table
 
     def make_info_table_web(self):
         """Make and safe table with detailed infos about processed data files
@@ -1861,6 +2050,7 @@ class AerocomEvaluation(object):
         """
         table = make_info_table_evaluation_iface(self)
         outname = os.path.join(self.exp_dir, 'minfo.json')
+        write_json()
         with open(outname, 'w+') as f:
             f.write(simplejson.dumps(table, indent=2))
         return table

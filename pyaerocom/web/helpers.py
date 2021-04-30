@@ -238,7 +238,7 @@ def read_json(file_path):
         data = simplejson.load(f)
     return data
 
-def write_json(data_dict, file_path, indent=4):
+def write_json(data_dict, file_path, **kwargs):
     """Save json file
 
     Parameters
@@ -247,6 +247,9 @@ def write_json(data_dict, file_path, indent=4):
         dictionary that can be written to json file
     file_path : str
         output file path
+    **kwargs
+        additional keyword args passed to :func:`simplejson.dumps` (e.g.
+        indent, )
     """
     with open(file_path, 'w+') as f:
-        f.write(simplejson.dumps(data_dict, indent=4))
+        simplejson.dump(data_dict, f, **kwargs)

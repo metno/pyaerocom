@@ -13,6 +13,12 @@ from pyaerocom.web import AerocomEvaluation
 from pyaerocom.web import helpers_json_conversion as h
 
 
+def test__get_jsdate():
+    arr = np.asarray([np.datetime64(np.datetime64('1970', 'D'))])
+    val = h._get_jsdate(arr)
+    assert len(val) == 1
+    assert val[0] == 0
+
 @pytest.mark.dependency
 def test_get_stationfile_name():
     name = h.get_stationfile_name('bla', 'blub', 'var', 'invalid')
@@ -189,35 +195,35 @@ def test__apply_annual_constraint_helper(coldata,which,raises,ncd,omc,mmc):
 
 @pytest.mark.parametrize('which,obs_name,model_name,use_weights,'
                          'vert_code,diurnal_only,'
-                         'statistics_freqs,statistics_periods,'
+                         'statistics_freqs,statistics_periods,scatter_freq,'
                          'regions_how,zeros_to_nan,annual_stats_constrained,'
                          'raises,fnumdirs', [
     ('fake_4d', 'bla','blub',True,'Column',False,
-     ['daily','monthly','yearly'],['2010'],None,False,True,
+     ['daily', 'monthly', 'yearly'],['2010'], 'yearly','default',False,True,
      does_not_raise_exception(),{'ts' : 14,'map' : 1}),
 
     ('fake_4d', 'bla','blub',False,'Column',False,
-     ['monthly'],['2010'],None,False,False,
+     ['monthly'],['2010'],'monthly','default',False,False,
      does_not_raise_exception(),{'ts' : 16,'map' : 1}),
 
     ('fake_3d', 'bla','blub',False,'Column',False,
-     ['monthly'],['2010'],None,False,False,
+     ['monthly'],['2010'],'monthly','default',False,False,
      does_not_raise_exception(),{'ts' : 14,'map' : 1}),
 
     ('fake_3d', 'bla','blub',True,'Column',False,
-     ['monthly'],['2010'],None,False,True,
+     ['monthly'],['2010'],'monthly','default',False,True,
      pytest.raises(AeroValConfigError),None),
 
 
 
     ('tm5_aeronet','bla','blub',False,'Column',False,
-     ['monthly'],['2010'],None,False,False,
+     ['monthly'],['2010'],'monthly','default',False,False,
      does_not_raise_exception(),{'ts' : 18,'map' : 1, 'contour' : 0,
                                  'profiles' : 0, 'hm' : 1, 'scat': 1,
                                  'ts/dw' : 0}),
 
     ('tm5_aeronet','bla','blub',False,'Column',False,
-     ['monthly', 'yearly'],['2010'],None,False,True,
+     ['monthly', 'yearly'],['2010'],'yearly','default',False,True,
      does_not_raise_exception(),{'ts' : 17,'map' : 1}),
 
     ])
@@ -225,6 +231,7 @@ def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
                                           model_name, use_weights,
                                           vert_code, diurnal_only,
                                           statistics_freqs, statistics_periods,
+                                          scatter_freq,
                                           regions_how, zeros_to_nan,
                                           annual_stats_constrained,raises,
                                           fnumdirs):
@@ -245,6 +252,7 @@ def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
                                                 diurnal_only,
                                                 statistics_freqs,
                                                 statistics_periods,
+                                                scatter_freq,
                                                 regions_how,
                                                 zeros_to_nan,
                                                 annual_stats_constrained)
