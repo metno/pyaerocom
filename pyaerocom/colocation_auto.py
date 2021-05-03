@@ -425,6 +425,7 @@ class Colocator(ColocationSetup):
 
         self.file_status = {}
         self._model_reader = None
+        self._obs_reader = None
 
     @property
     def obs_is_ungridded(self):
@@ -449,8 +450,18 @@ class Colocator(ColocationSetup):
     def obs_reader(self):
         reader = self._obs_reader
         if reader is not None:
-            raise NotImplementedError('coming soon')
-        raise NotImplementedError('coming soon')
+            if reader.data_id == self.obs_id:
+                return reader
+            const.print_log.info(
+                f'Reloading outdated obs reader. ID of current reader: '
+                f'{reader.data_id}. New ID: {self.obs_id}'
+                )
+        if self.obs_is_ungridded:
+            self._obs_reader = ReadUngridded(self.obs_id,
+                                             data_dirs=self.obs_data_dir)
+        else:
+            self._obs_reader = self.instantiate_gridded_reader(what='obs')
+        return self._obs_reader
 
     def _write_log(self, msg):
         if self.logging:
@@ -922,7 +933,7 @@ class Colocator(ColocationSetup):
 
         vars_to_read = self._init_obsvars_to_read(vars_to_read)
 
-        obs_reader = ReadUngridded(self.obs_id, data_dirs=self.obs_data_dir)
+        obs_reader = self.obs_reader
         try:
             obs_vars = obs_reader.get_vars_supported(self.obs_id,
                                                      vars_to_read)
@@ -945,8 +956,7 @@ class Colocator(ColocationSetup):
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         model_reader = self.model_reader
-        self.model_id = 'BLAAAAAAAAAAAAAAAAA'
-        model_reader = self.model_reader
+
         obs_reader, obs_vars = self._init_ungridded_reader_and_vars()
 
         var_matches = self._find_var_matches(obs_vars,
@@ -1003,8 +1013,7 @@ class Colocator(ColocationSetup):
             really_do_reanalysis = True
             if self.save_coldata:
                 really_do_reanalysis = False
-                savename = self._coldata_savename(model_data, start, stop,
-                                                  ts_type, var_name=model_var)
+                savename = self._coldata_savename(var_name=model_var)
                 self._check_basedir_coldata()
                 out_dir = chk_make_subdir(self.basedir_coldata, self.model_id)
                 file_exists = self._check_coldata_exists(model_data.data_id,
@@ -1091,12 +1100,12 @@ class Colocator(ColocationSetup):
 
     def _run_gridded_gridded(self, var_name=None):
 
-        model_reader = self.instantiate_gridded_reader(what='model')
+        model_reader = self.model_reader
         if self.start is None:
             self._infer_start_stop(model_reader)
 
         start, stop = start_stop(self.start, self.stop)
-        obs_reader = self.instantiate_gridded_reader(what='obs')
+        obs_reader = self.obs_reader
 
         if 'obs_filters' in self:
             obs_filters = self._eval_obs_filters()
