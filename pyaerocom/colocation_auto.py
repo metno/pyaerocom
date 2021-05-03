@@ -192,7 +192,7 @@ class ColocationSetup(BrowseDict):
                  remove_outliers=False, model_remove_outliers=False,
                  vert_scheme=None, harmonise_units=False,
                  model_use_vars=None,
-                 model_rename_vars=None,model_add_vars=None,
+                 model_rename_vars=None, model_add_vars=None,
                  model_read_aux=None, read_opts_ungridded=None,
                  obs_vert_type=None, model_vert_type_alt=None,
                  obs_outlier_ranges=None, model_outlier_ranges=None,
@@ -205,62 +205,76 @@ class ColocationSetup(BrowseDict):
                  obs_name=None, model_name=None,
                  save_coldata=True, **kwargs):
 
-        if isinstance(obs_vars, str):
-            obs_vars = [obs_vars]
-
-        if basedir_coldata is not None:
-            basedir_coldata = self._check_input_basedir_coldata(basedir_coldata)
-        else:
-            basedir_coldata = const.COLOCATEDDATADIR
-
-        #crashes if input filter name is invalid
-        self.filter_name = Filter(filter_name).name
-
-        self.save_coldata = save_coldata
-        self.basedir_coldata = basedir_coldata
-
-        self._obs_cache_only = False
-        self.obs_vars = obs_vars
-        self.obs_vert_type = obs_vert_type
-        self.model_vert_type_alt = model_vert_type_alt
-        self.model_read_opts = model_read_opts
-        self.read_opts_ungridded = read_opts_ungridded
-        self.obs_ts_type_read = obs_ts_type_read
-
-        self.model_use_vars = model_use_vars
-
-        if model_rename_vars is None:
-            model_rename_vars = {}
-        self.model_rename_vars = model_rename_vars
-        self.model_add_vars = model_add_vars
-        self.model_to_stp = False
-
-        self.model_id = model_id
-        self.model_name = model_name
-        self.model_data_dir = None
-
-        self.obs_id = obs_id
-        self.obs_name = obs_name
-        self.obs_data_dir = None
-        self.obs_use_climatology = obs_use_climatology
-        self.obs_add_meta = []
-
-        self.gridded_reader_id = {
-         'model' : 'ReadGridded',
-         'obs' : 'ReadGridded'}
-
         self.start = start
         self.stop = stop
 
         self.ts_type = ts_type
 
-        self.filter_name = filter_name
+        #crashes if input filter name is invalid
+        self.filter_name = Filter(filter_name).name
 
-        # OPtions related to time resampling
+        if basedir_coldata is not None:
+            basedir_coldata = self._check_input_basedir_coldata(basedir_coldata)
+        else:
+            basedir_coldata = const.COLOCATEDDATADIR
+        self.basedir_coldata = basedir_coldata
+        self.save_coldata = save_coldata
+
+        # Attributes related to obs data
+        # ID of observation dataset
+        self.obs_id = obs_id
+        # name of obs dataset
+        self.obs_name = obs_name
+        # variables to be used, note that an attr. model_vars does not exist
+        # and by default, model variables for colocation are the same as obs
+        # variables. See model_use_vars and model_add_vars to modify which
+        # model variables are supposed to be used for each obs variable.
+        self.obs_vars = obs_vars
+
+        self.obs_data_dir = None
+        self.obs_use_climatology = obs_use_climatology
+
+        # only relevant if obs is ungridded
+        self._obs_cache_only = False
+
+        self.obs_vert_type = obs_vert_type
+        self.obs_ts_type_read = obs_ts_type_read
+
+        # Attributes related to model data
+        self.model_id = model_id
+        self.model_name = model_name
+        self.model_data_dir = None
+
+        self.model_vert_type_alt = model_vert_type_alt
+        self.model_read_opts = model_read_opts
+
+        self.read_opts_ungridded = read_opts_ungridded
+
+        if model_use_vars is None:
+            model_use_vars = {}
+        self.model_use_vars = model_use_vars
+        if model_rename_vars is None:
+            model_rename_vars = {}
+        self.model_rename_vars = model_rename_vars
+        if model_add_vars is None:
+            model_add_vars = {}
+        self.model_add_vars = model_add_vars
+        self.model_to_stp = False
+
+        self.model_ts_type_read = model_ts_type_read
+        self.model_read_aux = model_read_aux
+        self.model_use_climatology = False
+
+        self.gridded_reader_id = {'model'    : 'ReadGridded',
+                                  'obs'      : 'ReadGridded'}
+
+
+        # Options related to time resampling
         self.apply_time_resampling_constraints = apply_time_resampling_constraints
         self.min_num_obs = min_num_obs
         self.resample_how = None
 
+        # Options related to outlier removal
         self.remove_outliers = remove_outliers
         self.model_remove_outliers = model_remove_outliers
 
@@ -273,9 +287,7 @@ class ColocationSetup(BrowseDict):
         self.regrid_res_deg = regrid_res_deg
         self.ignore_station_names = None
 
-        self.model_ts_type_read = model_ts_type_read
-        self.model_read_aux = model_read_aux
-        self.model_use_climatology = False
+
 
         self.colocate_time = colocate_time
         self.flex_ts_type_gridded = True
@@ -363,7 +375,7 @@ class ColocationSetup(BrowseDict):
     def __dir__(self):
         return self.keys()
 
-    def update(self, **kwargs):
+    def update(self, check_attrs=True, **kwargs):
         for key, val in kwargs.items():
             if key in self and isinstance(self[key], dict):
                 if not isinstance(val, dict):
@@ -375,7 +387,6 @@ class ColocationSetup(BrowseDict):
                 self[key] = self._check_input_basedir_coldata(val)
             else:
                 self[key] = val
-
 
     def _check_outdated_outlier_defs(self):
         if 'var_outlier_ranges' in self:
@@ -436,6 +447,9 @@ class Colocator(ColocationSetup):
 
     @property
     def model_reader(self):
+        """
+        Model data reader
+        """
         if self._model_reader is not None:
             if self._model_reader.data_id == self.model_id:
                 return self._model_reader
@@ -448,6 +462,9 @@ class Colocator(ColocationSetup):
 
     @property
     def obs_reader(self):
+        """
+        Observation data reader
+        """
         reader = self._obs_reader
         if reader is not None:
             if reader.data_id == self.obs_id:
@@ -582,6 +599,17 @@ class Colocator(ColocationSetup):
                 if model_reader.has_var(add_var):
                     var_matches[add_var] = var_name
         return var_matches
+
+    def get_valid_model_vars(self, var_name):
+
+    def init_variable_access(self):
+        # 1. check all obs variables
+        tab = []
+
+        obsv = self.obs_vars
+        if isinstance(obsv, str):
+            obsv = [obsv]
+
 
     def _find_var_matches(self, obs_vars, model_reader, var_name=None):
         """Find variable matches in model data for input obs variables"""
@@ -906,46 +934,6 @@ class Colocator(ColocationSetup):
         elif self.stop is not None:
             self.stop = None
 
-    def _init_obsvars_to_read(self, vars_to_read=None):
-        """
-        Init variables to read
-
-        Parameters
-        ----------
-        vars_to_read : str or list, optional
-            Variable or list of variable names to be read. The default is None,
-            in which case `self.obs_vars` is used.
-
-        Returns
-        -------
-        vars_to_read : list
-            List of variables to be read
-
-        """
-        if isinstance(vars_to_read, str):
-            vars_to_read = [vars_to_read]
-
-        if vars_to_read is None:
-            vars_to_read = self.obs_vars
-        return vars_to_read
-
-    def _init_ungridded_reader_and_vars(self, vars_to_read=None):
-
-        vars_to_read = self._init_obsvars_to_read(vars_to_read)
-
-        obs_reader = self.obs_reader
-        try:
-            obs_vars = obs_reader.get_vars_supported(self.obs_id,
-                                                     vars_to_read)
-        except ValueError:
-            raise DataCoverageError('No observation variable matches found for '
-                                    '{}'.format(self.obs_id))
-
-        if len(obs_vars) == 0:
-            raise DataCoverageError('No observation variable matches found for '
-                                    '{}'.format(self.obs_id))
-        return (obs_reader, obs_vars)
-
     def _print_coloc_info(self, var_matches):
         print_log.info('The following variable combinations will be colocated\n'
                        'MODEL-VAR\tOBS-VAR')
@@ -956,8 +944,7 @@ class Colocator(ColocationSetup):
     def _run_gridded_ungridded(self, var_name=None):
         """Analysis method for gridded vs. ungridded data"""
         model_reader = self.model_reader
-
-        obs_reader, obs_vars = self._init_ungridded_reader_and_vars()
+        obs_reader = self.obs_reader
 
         var_matches = self._find_var_matches(obs_vars,
                                              model_reader,
