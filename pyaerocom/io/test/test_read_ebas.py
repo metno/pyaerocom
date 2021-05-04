@@ -26,14 +26,17 @@ import pytest
 import os
 import numpy as np
 
+from pyaerocom import const
 import pyaerocom.exceptions as err
 from pyaerocom.conftest import (testdata_unavail, EBAS_FILES,
                                 EBAS_ISSUE_FILES,
                                 EBAS_FILEDIR, does_not_raise_exception)
 
 from pyaerocom.exceptions import (DataCoverageError,
+                                  MetaDataError,
                                   TemporalResolutionError)
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
+from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 import pyaerocom.mathutils as mu
 from pyaerocom.stationdata import StationData
@@ -42,7 +45,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 @pytest.fixture(scope='module')
 @testdata_unavail
 def reader():
-    return ReadEbas('EBASSubset')
+    r = ReadEbas('EBASSubset')
+    return r
 
 @testdata_unavail
 class TestReadEbas(object):
@@ -55,7 +59,6 @@ class TestReadEbas(object):
                          'sc550dryaer',
                          'sc440dryaer',
                          'sc700dryaer',
-                         'ang4470dryaer',
                          'sc550lt1aer',
                          'bsc550aer',
                          'ac550aer',
@@ -135,7 +138,7 @@ class TestReadEbas(object):
         assert reader.MERGE_STATIONS == {'Birkenes' : 'Birkenes II'}
 
     def test_DEFAULT_VARS(self, reader):
-        assert reader.DEFAULT_VARS == ['ac550aer','sc550aer']
+        assert reader.DEFAULT_VARS == reader.PROVIDES_VARIABLES
 
     def test_TS_TYPE_CODES(self, reader):
         assert reader.TS_TYPE_CODES == {'1mn'  :   'minutely',
@@ -210,8 +213,10 @@ class TestReadEbas(object):
              'eval_flags': True,
              'keep_aux_vars': False,
              'convert_units': True,
+             'try_convert_vmr_conc' : True,
              'ensure_correct_freq': True,
-             'freq_from_start_stop_meas': True}
+             'freq_from_start_stop_meas': True,
+             }
 
     def test_opts(self, reader):
         opts = reader._opts
@@ -267,23 +272,24 @@ class TestReadEbas(object):
         assert os.path.exists(fp)
         assert fp.endswith('ebas_file_index.sqlite3')
 
-    @pytest.mark.parametrize('vars_to_retrieve,constraints,num_files', [
-        ('sc550aer', {}, 1291),
-        ('sc550dryaer', {}, 1182),
-        ('sc550dryaer', {'station_names': 'Jungfraujoch'}, 31),
-        ('ac550aer', {}, 917),
-        ('concpm10', {}, 5014),
-        ('conco3', {}, 5310),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, 145),
-        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, 12530),
+    @pytest.mark.parametrize('vars_to_retrieve,constraints,raises', [
+        ('vmrno', {}, does_not_raise_exception()),
+        ('vmrno', {'station_names' : 'xkcd'}, pytest.raises(FileNotFoundError)),
+        ('sc550aer', {}, does_not_raise_exception()),
+        ('sc550dryaer', {}, does_not_raise_exception()),
+        ('sc550dryaer', {'station_names': 'Jungfraujoch'}, does_not_raise_exception()),
+        ('ac550aer', {}, does_not_raise_exception()),
+        ('concpm10', {}, does_not_raise_exception()),
+        ('conco3', {}, does_not_raise_exception()),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {'station_names': '*Kose*'}, does_not_raise_exception()),
+        (['sc550aer', 'ac550aer', 'concpm10', 'conco3'], {}, does_not_raise_exception()),
         ])
-    def test_get_file_list(self, reader, vars_to_retrieve, constraints,
-                           num_files):
+    def test_get_file_list(self,reader,vars_to_retrieve,constraints,raises):
+        with raises:
+            lst = reader.get_file_list(vars_to_retrieve, **constraints)
 
-        lst = reader.get_file_list(vars_to_retrieve, **constraints)
-
-        assert isinstance(lst, list)
-        assert len(lst)==num_files
+            assert isinstance(lst, list)
+            assert len(lst) > 0
 
     def test__merge_lists(self, reader):
         var = ['sc550aer', 'ac550aer']
@@ -292,11 +298,24 @@ class TestReadEbas(object):
         merged = reader._merge_lists(reader._lists_orig)
         assert merged == lst
 
-    def test_find_station_matches(self, reader):
-        assert reader.find_station_matches('*fraujo*') == ['Jungfraujoch']
+    @pytest.mark.parametrize('val,raises,output', [
+        ('Bla', pytest.raises(FileNotFoundError), []),
+        ('*fraujo*', does_not_raise_exception(), ['Jungfraujoch']),
+        (42, pytest.raises(ValueError), None)
+        ])
+    def test__find_station_matches(self, reader,val,raises,output):
+        with raises:
+            assert reader._find_station_matches(val) == output
 
-    def test__precheck_vars_to_retrieve(self, reader):
-        assert reader._precheck_vars_to_retrieve(['sconco3']) == ['conco3']
+    @pytest.mark.parametrize('val,raises,output', [
+        (['sconco3'], does_not_raise_exception(), ['conco3']),
+        (None, does_not_raise_exception(), None)
+        ])
+    def test__precheck_vars_to_retrieve(self, reader,val,raises,output):
+        if val is None:
+            output = reader.PROVIDES_VARIABLES
+        with raises:
+            assert reader._precheck_vars_to_retrieve(val) == output
 
     @pytest.mark.parametrize('var,raises', [
         ('sc550aer', does_not_raise_exception()),
@@ -393,12 +412,14 @@ class TestReadEbas(object):
         'measurement_height': '50.0 m', 'instrument_name': 'uv_abs_kre_0050',
         'detection_limit': '1.0 nmol/mol',
         '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K", 'matrix': 'air', 'statistics': 'arithmetic mean'}}
+
+
     @pytest.mark.parametrize('filename,vars_to_retrieve,raises,check_attrs', [
         (EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES['o3_tower']), 'vmro3',
          does_not_raise_exception(), {'var_info' : vmro3_tower_var_info}),
-
         (EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES['o3_tower']), 'conco3',
          does_not_raise_exception(), {'var_info' : conco3_tower_var_info}),
+
 
         (EBAS_FILEDIR.joinpath(EBAS_ISSUE_FILES['pm10_tstype']), 'concpm10',
          does_not_raise_exception(), {'ts_type' : '2daily'}),
@@ -431,14 +452,30 @@ class TestReadEbas(object):
                 files.append(str(fp))
         return files
 
+    def test__try_get_pt_conversion(self, reader):
+        fname = 'CH0001G.19910101000000.20181029122358.uv_abs.ozone.air.1y.1h.CH01L_TEI94C_1.CH01L_O3..nas'
+        fp = os.path.join(reader.file_dir, fname)
+        assert os.path.exists(fp)
+        data = EbasNasaAmesFile(fp)
+        with pytest.raises(MetaDataError):
+            reader._try_get_pt_conversion(data.meta)
+        p, T = reader._try_get_pt_conversion(data.var_defs[2])
+        assert p == 65300 #Pa
+        assert T == 265.15 #K
+
+
     @pytest.mark.parametrize(
         'vars_to_retrieve,first_file,last_file,files,constraints,num_meta,num_stats,raises', [
+            ('concno2',None,None,get_ebas_filelist('concno2'),{}, 2, 2, does_not_raise_exception()),
+            ('vmrno2',None,None,get_ebas_filelist('vmrno2'),{}, 2, 2, does_not_raise_exception()),
+            ('vmrno2',None,None,get_ebas_filelist('vmrno2') + get_ebas_filelist('concno2'), {}, 4, 4, does_not_raise_exception()),
+            ('conco3',None,None,get_ebas_filelist('conco3'),{}, 4, 4, does_not_raise_exception()),
+            ('vmro3',None,None,get_ebas_filelist('conco3'),{}, 4, 4, does_not_raise_exception()),
             ('concpm10',None,None,get_ebas_filelist('concpm10'),{}, 4, 4, does_not_raise_exception()),
             ('sc550aer',None,None,None,{}, 5, 4, does_not_raise_exception()),
             ('sc550dryaer',None,None,get_ebas_filelist('sc550dryaer'),{}, 5, 4, does_not_raise_exception()),
             ('ac550aer',None,None,get_ebas_filelist('sc550dryaer'),{}, 4, 4, pytest.raises(DataCoverageError)),
             ('ac550aer',None,None,get_ebas_filelist('ac550aer'),{}, 4, 4, does_not_raise_exception()),
-
 
             ])
     def test_read(self, reader, vars_to_retrieve, first_file,
@@ -449,6 +486,13 @@ class TestReadEbas(object):
             assert isinstance(data, UngriddedData)
             assert len(data.metadata) == num_meta
             assert len(data.unique_station_names) == num_stats
+            if isinstance(vars_to_retrieve, str):
+                vars_to_retrieve = [vars_to_retrieve]
+            for meta in data.metadata.values():
+                for var in vars_to_retrieve:
+                    if var in meta['var_info']:
+                        unit_desired = const.VARS[var].units
+                        assert meta['var_info'][var]['units'] == unit_desired
 
 if __name__ == '__main__':
     import sys

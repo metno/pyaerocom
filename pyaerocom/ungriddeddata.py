@@ -25,7 +25,6 @@ from pyaerocom.helpers import (same_meta_dict,
 
 from pyaerocom.metastandards import STANDARD_META_KEYS
 from pyaerocom.units_helpers import get_unit_conversion_fac
-from pyaerocom.metastandards import StationMetaData
 
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
                                              get_mask_value)
@@ -146,6 +145,24 @@ class UngriddedData(object):
         self.filter_hist = od()
 
     def _get_data_revision_helper(self, data_id):
+        """
+        Helper method to get last data revision
+
+        Parameters
+        ----------
+        data_id : str
+            ID of dataset for which revision is to be retrieved
+
+        Raises
+        ------
+        MetaDataError
+            If multiple revisions are found for this dataset.
+
+        Returns
+        -------
+        latest revision (None if no revision is available).
+
+        """
         rev = None
         for meta in self.metadata.values():
             if meta['data_id'] == data_id:
@@ -153,7 +170,7 @@ class UngriddedData(object):
                     rev = meta['data_revision']
                 elif not meta['data_revision'] == rev:
                     raise MetaDataError('Found different data revisions for '
-                                         'dataset {}'.format(data_id))
+                                        'dataset {}'.format(data_id))
         if data_id in self.data_revision:
             if not rev == self.data_revision[data_id]:
                 raise MetaDataError('Found different data revisions for '
@@ -202,9 +219,10 @@ class UngriddedData(object):
                 var_idx_data = np.unique(self._data[indices, self._VARINDEX])
                 assert len(var_idx_data) == 1, ('Found multiple variable indices for '
                           'var {}: {}'.format(var, var_idx_data))
-                assert var_idx_data[0] == vars_avail[var], ('Mismatch between variable '
-                          'index assigned in data and var_idx for {} in meta-block'
-                          .format(var, idx))
+                assert var_idx_data[0] == vars_avail[var], (
+                    f'Mismatch between {var} index assigned in data and '
+                    f'var_idx for {idx} in meta-block'
+                    )
 
     @staticmethod
     def from_station_data(stats, add_meta_keys=None):
@@ -235,7 +253,7 @@ class UngriddedData(object):
         if add_meta_keys is None:
             add_meta_keys = []
         elif isinstance(add_meta_keys, str):
-            add_metad_keys = [add_meta_keys]
+            add_meta_keys = [add_meta_keys]
         elif not isinstance(add_meta_keys, list):
             raise ValueError(
                 f'Invalid input for add_meta_keys {add_meta_keys}... need list'
