@@ -86,7 +86,7 @@ class ObsConfigEval(BrowseDict):
         self.is_superobs=False
         self.only_superobs=False
 
-        self.read_opts_ungridded = None
+        self.read_opts_ungridded = {}
 
         self.update(**kwargs)
         self.check_cfg()
