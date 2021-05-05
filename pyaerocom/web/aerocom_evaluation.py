@@ -264,7 +264,7 @@ class AerocomEvaluation(object):
         self._out_dirs = {}
 
         #: Dictionary specifying default settings for colocation
-        self.colocation_settings = ColocationSetup()
+        self.colocation_settings = ColocationSetup(save_coldata=True)
 
         self.add_methods_file = None
         self.add_methods = {}
@@ -978,7 +978,7 @@ class AerocomEvaluation(object):
 
         files = []
         model_id = self.get_model_id(model_name)
-        coldata_dir = os.path.join(self.coldata_dir, model_id)
+        coldata_dir = os.path.join(self.coldata_dir, model_name)
         if os.path.exists(coldata_dir):
             for fname in os.listdir(coldata_dir):
                 try:
@@ -1037,7 +1037,6 @@ class AerocomEvaluation(object):
         converted = []
 
         files = self.find_coldata_files(model_name, obs_name, var_name)
-
 
         if colocator is not None:
             files = self._check_process_colfiles(files, colocator)
