@@ -13,17 +13,18 @@ from traceback import format_exc
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
                                          sort_dict_by_name)
 from pyaerocom import const
+from pyaerocom.exceptions import AeroValConfigError
 from pyaerocom.helpers import get_lowest_resolution
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.helpers import isnumeric, start_stop
 
 from pyaerocom.io.helpers import save_dict_json
-
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json, write_json)
 
 from pyaerocom.web.helpers_evaluation_iface import (
+    _check_statistics_periods, _get_min_max_year_periods,
     delete_experiment_data_evaluation_iface,
     make_info_str_eval_setup)
 
@@ -132,16 +133,10 @@ class AerocomEvaluation(object):
         dictionary containing configuration details for individual observations
         (i.e. instances of :class:`ObsConfigEval` for each observation) used
         for the analysis.
-    obs_ignore : list, optional
-        list of observations that are supposed to be ignored in analysis
-        (keys from :attr:`obs_config`)
     model_config : dict
         dictionary containing configuration details for individual models
         (i.e. instances of :class:`ModelConfigEval` for each model) used
         for the analysis.
-    model_ignore : list, optional
-        list of models that are supposed to be ignored in analysis
-        (keys from :attr:`model_config`)
     var_mapping : dict
         mapping of variable names for menu in interface
     var_order_menu : list, optional
@@ -211,7 +206,11 @@ class AerocomEvaluation(object):
     #: attributes that are not supported by this interface
     FORBIDDEN_ATTRS = ['basedir_coldata']
 
-    DEFAULT_STATISTICS_FREQS = ['daily', 'monthly', 'yearly']
+    #: default statistics frequencies for web tools
+    DEFAULT_STATISTICS_FREQS = ['monthly', 'yearly']
+
+    #: Allowed zoom regions for web map displays
+    _ALLOWED_ZOOM_REGIONS = ['World', 'Europe']
     def __init__(self, proj_id, exp_id, config_dir=None,
                  try_load_json=True, init_output_dirs=False, **settings):
 
@@ -220,20 +219,16 @@ class AerocomEvaluation(object):
         self.proj_id = proj_id
 
         self.exp_id = exp_id
-
         self.exp_name = None
-
         self.exp_descr = ''
-
         self.exp_status = 'experimental'
+        self.exp_pi = getuser()
 
-        self.pi = getuser()
         self.statistics_freqs = self.DEFAULT_STATISTICS_FREQS
         self.statistics_periods = None
-        self.scatter_freq = None
+        self.main_freq = None
 
         self.clear_existing_json = True
-
         self.only_colocation = False
         self.only_json = False
 
@@ -252,12 +247,14 @@ class AerocomEvaluation(object):
 
         #: If True, process also model maps
         self.add_maps = False
+        #: If True, process only maps (skip obs evaluation)
+        self.only_maps = False
 
         self.maps_res_deg = 5
         self.maps_vmin_vmax = None
+        self.map_zoom_default = 'World'
 
-        #: If True, process only maps (skip obs evaluation)
-        self.only_maps = False
+
 
         #: Output directories for different types of json files (will be filled
         #: in :func:`init_json_output_dirs`)
@@ -272,11 +269,8 @@ class AerocomEvaluation(object):
         #: Dictionary containing configurations for observations
         self.obs_config = {}
 
-        self.obs_ignore = []
-
         #: Dictionary containing configurations for models
         self.model_config = {}
-        self.model_ignore = []
 
         self.var_mapping = {}
         self.var_mapping.update(VAR_MAPPING)
@@ -284,8 +278,6 @@ class AerocomEvaluation(object):
 
         self.regions_how = 'default'
         self.resample_how = None
-
-        self.zeros_to_nan = False
 
         self.summary_str = ''
         self._valid_obs_vars = {}
@@ -308,12 +300,6 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
-        self._check_init_col_outdir()
-
-        if self.statistics_periods is not None:
-            self.check_periods()
-        if self.scatter_freq is None:
-            self.scatter_freq = get_lowest_resolution(*self.statistics_freqs)
         if init_output_dirs:
             self.init_json_output_dirs()
 
@@ -324,38 +310,6 @@ class AerocomEvaluation(object):
         """
         return (self.colocation_settings['start'],
                 self.colocation_settings['stop'])
-
-    def _period_from_colocation_settings(self):
-        start, stop = start_stop(*self.start_stop_colocation,
-                                 stop_sub_sec=False)
-        y0, y1 = start.year, stop.year
-        assert y0 <= y1
-        if y0 == y1:
-            return str(y0)
-        else:
-            return f'{y0}-{y1}'
-
-    def check_set_periods(self):
-        periods = self.statistics_periods
-        if periods is None:
-            periods = [self._period_from_colocation_settings()]
-
-        _checked = []
-        if not isinstance(periods, list):
-            raise AttributeError('statistics_periods needs to be a list')
-        for per in periods:
-            if not isinstance(per, str):
-                raise ValueError('All periods need to be strings')
-            spl = [x.strip() for x in per.split('-')]
-            if len(spl) > 2:
-                raise ValueError(
-                    f'Invalid value for period ({per}), can be either single '
-                    f'years or period of years (e.g. 2000-2010).'
-                    )
-            _per = '-'.join([str(int(val)) for val in spl])
-            _checked.append(_per)
-        self.statistics_periods = _checked
-        return _checked
 
     @property
     def proj_dir(self):
@@ -502,6 +456,39 @@ class AerocomEvaluation(object):
             raise FileNotFoundError('No data available for this experiment')
         return os.listdir(self.out_dirs['contour'])
 
+    def _period_from_colocation_settings(self):
+        start, stop = start_stop(*self.start_stop_colocation,
+                                 stop_sub_sec=False)
+        y0, y1 = start.year, stop.year
+        assert y0 <= y1
+        if y0 == y1:
+            return str(y0)
+        else:
+            return f'{y0}-{y1}'
+
+    def _check_time_config(self):
+        periods = self.statistics_periods
+        colstart = self.colocation_settings['start']
+        colstop = self.colocation_settings['stop']
+
+        if periods is None:
+            if colstart is None:
+                raise AeroValConfigError(
+                    'Either statistics_periods or start must be set...'
+                    )
+            per = self._period_from_colocation_settings()
+            periods = [per]
+            const.print_log.info(
+                f'statistics_periods is not set, inferred {per} from start '
+                f'/ stop settings.')
+
+        self.statistics_periods = _check_statistics_periods(periods)
+        start, stop = _get_min_max_year_periods(self.statistics_periods)
+        if colstart is None:
+            self.colocation_settings['start'] = start
+        if colstop is None:
+            self.colocation_settings['stop'] = stop + 1 # add 1 year since we want to include stop year
+
     def _update_custom_read_methods(self):
         for mcfg in self.model_config.values():
             if not 'model_read_aux' in mcfg:
@@ -631,6 +618,11 @@ class AerocomEvaluation(object):
                 self.model_config[key] = ModelConfigEval(**val)
             else:
                 self.__dict__[key] = val
+        elif key == 'map_zoom_default':
+            if not val in self._ALLOWED_ZOOM_REGIONS:
+                raise ValueError(
+                    f'Invalid input for map_zoom_default, choose from '
+                    f'{self._ALLOWED_ZOOM_REGIONS}')
         elif key in self.__dict__:
             self.__dict__[key] = val
 
@@ -736,6 +728,7 @@ class AerocomEvaluation(object):
             elif not 'model_id' in v:
                 raise KeyError('Model configuration for {} does not contain '
                                'model_id'.format(k))
+
         for k, v in self.obs_config.items():
             if '_' in k or ':' in k:
                 raise NameError('Obs config name must not contain _ (underscore) or colon')
@@ -746,6 +739,7 @@ class AerocomEvaluation(object):
             elif not 'obs_id' in v:
                 raise KeyError('Obs configuration for {} does not contain '
                                'obs_id'.format(k))
+
 
     def get_model_name(self, model_id):
         """Get model name for input model ID
@@ -866,36 +860,30 @@ class AerocomEvaluation(object):
             return obs_name
         return self.obs_config[obs_name]['web_interface_name']
 
-    def compute_json_files_from_colocateddata(self, coldata, obs_name,
-                                              model_name):
+    def compute_json_files_from_colocateddata(self, coldata):
         """Creates all json files for one ColocatedData object"""
-        vert_code = self.get_vert_code(obs_name, coldata.metadata['var_name'][0])
+        obs_var = coldata.metadata['var_name'][0]
+        obs_name = coldata.obs_name
+        vert_code = self.get_vert_code(obs_name, obs_var)
         web_iface_name = self._get_web_iface_name(obs_name)
+        if web_iface_name != obs_name:
+            coldata.metadata['obs_name'] = web_iface_name
 
-        diurnal_only = self.get_diurnal_only(obs_name,coldata)
-
-        col = Colocator()
-        col.update(**self.colocation_settings)
-        col.update(**self.obs_config[obs_name])
-        col.update(**self.get_model_config(model_name))
-
-        periods = self.check_set_periods()
+        if self.main_freq is None:
+            self.main_freq = get_lowest_resolution(*self.statistics_freqs)
+        diurnal_only = self.get_diurnal_only(obs_name, coldata)
 
         compute_json_files_from_colocateddata(
                 coldata=coldata,
-                obs_name=web_iface_name,
-                model_name=model_name,
                 use_weights=self.weighted_stats,
-                colocation_settings=col,
                 vert_code=vert_code,
                 out_dirs=self.out_dirs,
                 regions_json=self.regions_file,
                 diurnal_only=diurnal_only,
                 statistics_freqs=self.statistics_freqs,
-                statistics_periods=periods,
-                scatter_freq = self.scatter_freq,
+                statistics_periods=self.statistics_periods,
+                main_freq = self.main_freq,
                 regions_how=self.regions_how,
-                zeros_to_nan=self.zeros_to_nan,
                 annual_stats_constrained=self.annual_stats_constrained
                 )
 
@@ -1008,26 +996,14 @@ class AerocomEvaluation(object):
                 self._log.warning(msg)
         return files
 
-    def make_json_files(self, model_name, obs_name, var_name=None,
-                        colocator=None):
+    def make_json_files(self, files):
         """Convert colocated data file(s) in model data directory into json
 
         Parameters
         ----------
-        model_name : str
-            name of model run
-        obs_name : str
-            name of observation network
-        var_name : str, optional
-            name of variable supposed to be analysed. If None, then all
-            variables available for observation network are used (defined in
-            :attr:`obs_config` for each entry). Defaults to None.
-        colocator : Colocator, optional
-            instance of colocator class containing information about which
-            files to process (e.g. created in :func:`run_evaluation`). If None,
-            than all colocated data files are processed that are located in the
-            corresponding colocation data directory and that match the input
-            specs.
+        files : list
+            list of colocated data files that are supposed to be converted to
+            json files.
 
         Returns
         -------
@@ -1035,123 +1011,43 @@ class AerocomEvaluation(object):
             list of colocated data files that were converted
         """
         converted = []
-
-        files = self.find_coldata_files(model_name, obs_name, var_name)
-
-        if colocator is not None:
-            files = self._check_process_colfiles(files, colocator)
-
-        if len(files) == 0:
-            const.print_log.info('Nothing to do...')
-            return converted
         for file in files:
-            const.print_log.info('Processing file {}'.format(file))
-            d = ColocatedData(file)
-            self.compute_json_files_from_colocateddata(d, obs_name, model_name)
+            const.print_log.info(f'Processing: {file}')
+            coldata = ColocatedData(file)
+            self.compute_json_files_from_colocateddata(coldata)
             converted.append(file)
         return converted
 
-    def _check_process_colfiles(self, files, colocator):
-        remaining = []
-        for file in files:
-            fname = os.path.basename(file)
-            if not fname in colocator.file_status:
-                const.print_log.info('Skipping computation of json files from '
-                                     'colocated data file {}. This file is not '
-                                     'part of this experiment (obs config)'
-                                     .format(fname))
-                continue
-            if colocator.file_status[fname] == 'skipped':
-                const.print_log.info('Recomputing json files for existing '
-                                     'colocated data file')
-            elif not colocator.file_status[fname] == 'saved':
-                const.print_log.info('Skipping computation of json files from '
-                                     'colocated data file {}. Colocator object '
-                                     'has marked this file as {} (need either '
-                                     'status skipped or saved)'
-                                     .format(fname, colocator.file_status[fname]))
-                continue
-            remaining.append(file)
-        return remaining
-
-    def delete_all_colocateddata_files(self, model_name, obs_name):
-        """
-        Delete all
-        Parameters
-        ----------
-        model_name : TYPE
-            DESCRIPTION.
-        obs_name : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
-        """
-        obs_vars = self.obs_config[obs_name]['obs_vars']
-
-        for obs_var in obs_vars:
-            files = glob.glob('{}/{}/{}*REF-{}*.nc'
-                              .format(self.coldata_dir, model_name, obs_var,
-                                      obs_name))
-            for file in files:
-                const.print_log.info('DELETING FILE: {}'.format(file))
-                os.remove(file)
-
-    def run_colocation(self, model_name, obs_name, var_name=None):
-        """Run colocation for model / obs combination
-
-        Parameters
-        ----------
-        model_name : str or list, optional
-            Name or pattern specifying model that is supposed to be analysed.
-            Can also be a list of names or patterns to specify multiple models.
-            If None (default), then all models are run that are part of this
-            experiment.
-        obs_name : :obj:`str`, or :obj:`list`, optional
-            Like :attr:`model_name`, but for specification(s) of observations
-            that are supposed to be used. If None (default) all observations
-            are used.
-        var_name : str, optional
-            name of variable supposed to be analysed. If None, then all
-            variables available for observation network are used (defined in
-            :attr:`obs_config` for each entry). Defaults to None.
-
-        Returns
-        -------
-        Colocator
-            instance of colocation class
-        """
-        if self.colocation_settings['reanalyse_existing']:
-            self.delete_all_colocateddata_files(model_name, obs_name)
-
+    def init_colocator(self, model_name, obs_name):
         col = Colocator(**self.colocation_settings)
-
         if not model_name in self.model_config:
-            raise KeyError('No such model name in configuration: {}. Available '
-                           'names: {}'.format(model_name,
-                                              self.all_model_names))
+            raise KeyError(
+                f'No such model name {model_name}. '
+                f'Available models: {self.all_model_names}'
+                )
         elif not obs_name in self.obs_config:
-            raise KeyError('No such obs name in configuration: {}. Available '
-                           'names: {}'.format(obs_name, self.all_obs_names))
-
+            raise KeyError(
+                f'No such obs name {obs_name}. '
+                f'Available names: {self.all_obs_names}'
+                )
         obs_cfg = self.obs_config[obs_name]
+        # ToDo: cumbersome, should not be needed to be checked... at least not
+        # here...
         if obs_cfg['obs_vert_type'] in self.VERT_SCHEMES and not 'vert_scheme' in obs_cfg:
             obs_cfg['vert_scheme'] = self.VERT_SCHEMES[obs_cfg['obs_vert_type']]
 
         col.update(**obs_cfg)
         col.update(**self.get_model_config(model_name))
 
-        const.print_log.info('Running colocation of {} against {}'
-                             .format(model_name, obs_name))
+        const.print_log.info(
+            f'Running colocation of {model_name} against {obs_name}'
+            )
         # for specifying the model and obs names in the colocated data file
         col.model_name = model_name
         col.obs_name = obs_name
-
-        # run colocation
-        col.run(var_name)
-
+        if col.start is None or col.stop is None:
+            raise ValueError('start and / or stop not set, please run '
+                             '_check_time_config first.')
         return col
 
     def get_model_config(self, model_name):
@@ -1539,8 +1435,7 @@ class AerocomEvaluation(object):
         save_dict_json(contourjson, fp_geojson)
         save_dict_json(datajson, fp_json)
 
-    def run_map_eval(self, model_name, var_name, reanalyse_existing,
-                     raise_exceptions):
+    def run_map_eval(self, model_name, var_name):
         """Run evaluation of map processing
 
         Create json files for model-maps display. This analysis does not
@@ -1576,20 +1471,55 @@ class AerocomEvaluation(object):
 
             try:
                 self._process_map_var(model_name, var,
-                                      reanalyse_existing)
+                                      self.reanalyse_existing)
 
             except Exception:
-                if raise_exceptions:
+                if self.raise_exceptions:
                     raise
                 const.print_log.warning(
                     f'Failed to process maps for {model_name} {var} data. '
                     f'Reason: {format_exc()}')
 
+    def _run_single_entry(self, model_name, obs_name, var_name):
+        if model_name == obs_name:
+            msg = ('Cannot run same dataset against each other'
+                   '({} vs. {})'.format(model_name, model_name))
+            self._log.info(msg)
+            const.print_log.info(msg)
+            return
+
+        if self.obs_config[obs_name]['is_superobs']:
+            try:
+                self._run_superobs_entry(model_name, obs_name, var_name,
+                                         try_colocate_if_missing=True)
+            except Exception:
+                if self.raise_exceptions:
+                    raise
+                const.print_log.warning(
+                    'failed to process superobs...')
+        elif self.obs_config[obs_name]['only_superobs']:
+            const.print_log.info(
+                f'Skipping json processing of {obs_name}, as this is '
+                f'marked to be used only as part of a superobs '
+                f'network')
+        else:
+            col = self.init_colocator(model_name, obs_name)
+            if self.only_json:
+                files_to_convert = col.get_available_coldata_files()
+            else:
+                col.run(var_name)
+                files_to_convert = col.files_written
+
+            if self.only_colocation:
+                self._log.info(
+                    f'FLAG ACTIVE: only_colocation: Skipping '
+                    f'computation of json files for {obs_name} /'
+                    f'{model_name} combination.')
+                return
+            self.make_json_files(files_to_convert)
+
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
-                       update_interface=True,
-                       reanalyse_existing=None, raise_exceptions=None,
-                       clear_existing_json=None, only_colocation=None,
-                       only_json=None, only_maps=None):
+                       update_interface=True, **kwargs):
         """Create colocated data and json files for model / obs combination
 
         Parameters
@@ -1612,24 +1542,8 @@ class AerocomEvaluation(object):
             online are updated after the run, including the the menu.json file
             and also, the model info table (minfo.json) file is created and
             saved in :attr:`exp_dir`.
-        reanalyse_existing : Bool, optional
-            if True, existing colocated data files are ignored. If None, the
-            class default will be used (defined in config file)
-        raise_exceptions : bool, optional
-            if True, exceptions during colocation will be raised if they occur
-            (for debugging). If None, the class default will be used (defined
-            in config file)
-        clear_existing_json : bool, optional
-            if True, existing json files for model / obs combination will be
-            deleted before rerun. If None, the
-            class default will be used (defined in config file)
-        only_colocation : bool, optional
-            if True, only colocation will be performed and no json files will
-            be created. If None, the class default will be used (defined in
-            config file)
-        only_json : bool, optional
-            if True, no colocation will be performed and only existing
-            colocated data files will be re-processed.
+        **kwargs
+            additional config args or options passed to :func:`update`
 
         Returns
         -------
@@ -1637,19 +1551,9 @@ class AerocomEvaluation(object):
             list containing all colocated data objects that have been converted
             to json files.
         """
-        res = None
-        if reanalyse_existing is not None:
-            self.reanalyse_existing = reanalyse_existing
-        if raise_exceptions is not None:
-            self.raise_exceptions = raise_exceptions
-        if clear_existing_json is not None:
-            self.clear_existing_json = clear_existing_json
-        if only_colocation is not None:
-            self.only_colocation = only_colocation
-        if only_json is not None:
-            self.only_json = only_json
-        if only_maps is not None:
-            self.only_maps = only_maps
+        self.update(**kwargs)
+        self._check_init_col_outdir()
+        self._check_time_config()
 
         if self.clear_existing_json:
             self.clean_json_files()
@@ -1672,56 +1576,16 @@ class AerocomEvaluation(object):
         # processing below)
         if self.add_maps:
             for model_name in model_list:
-                self.run_map_eval(model_name, var_name,
-                                  reanalyse_existing=reanalyse_existing,
-                                  raise_exceptions=raise_exceptions)
+                self.run_map_eval(model_name, var_name)
 
         if not self.only_maps:
             for obs_name in obs_list:
-                if obs_name in self.obs_ignore:
-                    self._log.info('Skipping observation {}'.format(obs_name))
-                    continue
                 for model_name in model_list:
-                    if model_name == obs_name:
-                        msg = ('Cannot run same dataset against each other'
-                               '({} vs. {})'.format(model_name, model_name))
-                        self._log.info(msg)
-                        const.print_log.info(msg)
-                        continue
-
-                    if model_name in self.model_ignore:
-                        self._log.info('Skipping model {}'.format(model_name))
-                        continue
-                    if self.obs_config[obs_name]['is_superobs']:
-                        try:
-                            self._run_superobs_entry(model_name, obs_name, var_name,
-                                                     try_colocate_if_missing=True)
-                        except Exception as e:
-                            if raise_exceptions:
-                                raise
-                            const.print_log.warning(
-                                'failed to process superobs...')
-                    elif self.obs_config[obs_name]['only_superobs']:
-                        const.print_log.info(
-                            f'Skipping json processing of {obs_name}, as this is '
-                            f'marked to be used only as part of a superobs '
-                            f'network')
-                    else:
-                        if not self.only_json:
-                            col = self.run_colocation(model_name, obs_name, var_name)
-                        else:
-                            col = None
-                        if only_colocation:
-                            self._log.info('Skipping computation of json files for {}'
-                                           '/{}'.format(obs_name, model_name))
-                            continue
-                        res = self.make_json_files(model_name, obs_name, var_name,
-                                                   colocator=col)
+                    self._run_single_entry(model_name, obs_name, var_name)
 
         if update_interface:
             self.update_interface()
         const.print_log.info('Finished processing.')
-        return res
 
     def info_string_evalrun(self, obs_list, model_list):
         """Short information string that summarises settings for evaluation run
@@ -1804,9 +1668,8 @@ class AerocomEvaluation(object):
                 (obs_name, obs_var,
                  vert_code,
                  mod_name, mod_var) = self._info_from_map_file(f)
-                if mod_name in self.model_ignore:
-                    continue
-                elif not mod_name in self.model_config:
+
+                if not mod_name in self.model_config:
                     const.print_log.warning('Found outdated json map file: {}. '
                                             'Will be ignored'.format(f))
                     continue
@@ -2265,10 +2128,11 @@ class AerocomEvaluation(object):
         self.update_summary_str()
         asdict = self.to_dict()
         out_name = self.name_config_file_json
-
-        save_dict_json(asdict, os.path.join(output_dir, out_name),
+        fp = os.path.join(output_dir, out_name)
+        save_dict_json(asdict, fp,
                        ignore_nan=ignore_nan,
                        indent=indent)
+        return fp
 
     def load_config(self, proj_id, exp_id, config_dir=None):
         """Load configuration json file"""
@@ -2277,19 +2141,20 @@ class AerocomEvaluation(object):
                 config_dir = self.config_dir
             else:
                 config_dir = '.'
-        files = glob.glob('{}/cfg_{}_{}.json'.format(config_dir, proj_id,
-                          exp_id))
+        files = glob.glob(f'{config_dir}/cfg_{proj_id}_{exp_id}.json')
         if len(files) == 0:
-            raise ValueError('No config file could be found in {} for '
-                             'project {} and experiment {}'.format(config_dir,
-                              proj_id, exp_id))
-        self.from_json(files[0])
+            raise ValueError(
+                f'No config file could be found in {config_dir} for '
+                f'project {proj_id} and experiment {exp_id}'
+                )
+        self.update(**read_json(files[0]))
 
-    def from_json(self, config_file):
+    @staticmethod
+    def from_json(config_file):
         """Load configuration from json config file"""
-        with open(config_file, 'r') as f:
-            current = simplejson.load(f)
-        self.update(**current)
+        settings = read_json(config_file)
+        stp = AerocomEvaluation(**settings)
+        return stp
 
     def __str__(self):
         self.update_summary_str()

@@ -20,7 +20,6 @@ from pyaerocom.exceptions import (ColocationError,
                                   VarNotAvailableError)
 from pyaerocom.filter import Filter
 from pyaerocom.helpers import (to_pandas_timestamp,
-                               to_datestring_YYYYMMDD,
                                make_datetime_index,
                                isnumeric,
                                get_lowest_resolution)
@@ -277,8 +276,6 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
             'ts_type'           :   grid_ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [ref_ts_type_src, grid_ts_type_src],
-            'start_str'         :   to_datestring_YYYYMMDD(start),
-            'stop_str'          :   to_datestring_YYYYMMDD(stop),
             'var_units'         :   [str(gridded_data_ref.units),
                                      str(gridded_data.units)],
             'vert_scheme'       :   vert_scheme,
@@ -911,16 +908,12 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     files = [os.path.basename(x) for x in gridded_data.from_files]
 
     meta = {
-            'data_source'       :   [dataset_ref,
-                                     gridded_data.name],
+            'data_source'       :   [dataset_ref, gridded_data.name],
             'var_name'          :   [var_ref, var],
             'ts_type'           :   col_freq, # will be updated below if resampling
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [ts_type_src_ref, grid_ts_type_src],
-            'start_str'         :   to_datestring_YYYYMMDD(start),
-            'stop_str'          :   to_datestring_YYYYMMDD(stop),
-            'var_units'         :   [ungridded_unit,
-                                     gridded_unit],
+            'var_units'         :   [ungridded_unit, gridded_unit],
             'vert_scheme'       :   vert_scheme,
             'data_level'        :   3,
             'revision_ref'      :   revision,

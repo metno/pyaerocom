@@ -8,8 +8,11 @@ import numpy as np
 import simplejson
 import xarray as xr
 from pyaerocom import const
+from pyaerocom.helpers import make_datetime_index, start_stop
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import read_json
+from pyaerocom.web.helpers_evaluation_iface import (_period_str_to_timeslice,
+                                                    _get_min_max_year_periods)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.tstype import TsType
@@ -20,6 +23,8 @@ from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
                               Region)
+
+from time import time
 
 SEASONS = ['all', 'DJF', 'MAM', 'JJA', 'SON']
 STATISTICS_MIN_NUM = 3
@@ -630,7 +635,7 @@ def _get_statistics(obs_vals, mod_vals):
     return stats
 
 def _process_map_and_scat(data, map_data, site_indices, statistics_periods,
-                          scatter_freq):
+                          main_freq):
 
     stats_dummy = _init_stats_dummy()
     scat_data = {}
@@ -660,7 +665,7 @@ def _process_map_and_scat(data, map_data, site_indices, statistics_periods,
 
                     perstr = f'{per}-{season}'
                     map_stat[freq][perstr] = stats
-                    if freq == scatter_freq:
+                    if freq == main_freq:
                         # add only sites to scatter data that have data available
                         # in the lowest of the input resolutions (e.g. yearly)
                         site = map_stat['station_name']
@@ -779,25 +784,15 @@ def _apply_annual_constraint(data):
             output[tst] = _apply_annual_constraint_helper(cd, yearly)
     return output
 
-def _get_stats_region(data, regid, use_weights, use_country):
-    filtered = data.filter_region(region_id=regid,
-                                  check_country_meta=use_country)
+def _get_extended_stats(coldata, use_weights):
 
-    # if all model and obsdata is NaN, use dummy stats (this can
-    # e.g., be the case if colocate_time=True and all obs is NaN,
-    # or if model domain is not covered by the region)
-    if np.isnan(filtered.data.data).all():
-        # use stats_dummy
-        raise DataCoverageError(f'All data is NaN in {regid}')
-
-    stats = filtered.calc_statistics(use_area_weights=use_weights)
+    stats = coldata.calc_statistics(use_area_weights=use_weights)
 
     (stats['R_spatial_mean'],
-     stats['R_spatial_median']) = _calc_spatial_corr(filtered, use_weights)
+     stats['R_spatial_median']) = _calc_spatial_corr(coldata, use_weights)
 
     (stats['R_temporal_mean'],
-     stats['R_temporal_median']) = _calc_temporal_corr(filtered)
-
+     stats['R_temporal_median']) = _calc_temporal_corr(coldata)
 
     for k, v in stats.items():
         try:
@@ -863,16 +858,10 @@ def _calc_temporal_corr(coldata):
     corr_time = xr.corr(arr[1], arr[0], dim='time')
     return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
-def _period_to_timeslice(period):
-    spl = period.split('-')
-    if len(spl) == 1:
-        return slice(spl[0],spl[0])
-    elif len(spl) == 2:
-        return slice(*spl)
-    raise ValueError(period)
-
 def _select_period_season_coldata(coldata, period, season):
-    tslice = _period_to_timeslice(period)
+    tslice = _period_str_to_timeslice(period)
+    # expensive, try use solution with numpy indexing directly...
+    # also, keep an eye on: https://github.com/pydata/xarray/issues/2799
     arr = coldata.data.sel(time=tslice)
     if len(arr.time) == 0:
         raise DataCoverageError(f'No data available in period {period}')
@@ -892,46 +881,119 @@ def _select_period_season_coldata(coldata, period, season):
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob, statistics_periods):
 
-    hm_all = {}
+    output = {}
     stats_dummy = _init_stats_dummy()
     for freq, coldata in data.items():
-        hm_all[freq] = hm_freq = {}
+        output[freq] = hm_freq = {}
         use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
             hm_freq[regname] = {}
             for per in statistics_periods:
-                if use_dummy:
-                    stats = stats_dummy
-                else:
-                    for season in SEASONS:
+                for season in SEASONS:
+                    perstr = f'{per}-{season}'
+                    if use_dummy:
+                        stats = stats_dummy
+                    else:
                         try:
                             subset = _select_period_season_coldata(coldata,
                                                                    per,
                                                                    season)
 
-                            stats = _get_stats_region(subset, regid,
-                                                      use_weights, use_country)
+                            subset = subset.filter_region(region_id=regid,
+                                                          check_country_meta=use_country)
+
+                            stats = _get_extended_stats(subset, use_weights)
                         except (DataCoverageError, TemporalResolutionError):
                             stats = stats_dummy
 
-                        hm_freq[regname][f'{per}-{season}'] = stats
-    return hm_all
+                    hm_freq[regname][perstr] = stats
+    return output
+
+def _map_indices(outer_idx, inner_idx):
+    """
+    Find index positions of inner array contained in outer array
+
+    Note
+    ----
+    Both outer and inner index arrays must be strictly monotonous
+
+    Parameters
+    ----------
+    outer_idx : np.ndarray
+        numerical value array (e.g. numerical timestamps in yearly resolution
+        from 2010-2020). Must be strictly monotonous.
+    inner_idx : np.ndarray
+        inner value array, must be contained in outer array, e.g.
+        numerical timestamps in yearly resolution from 2012-2014, all values
+        in this array must be contained
+
+    Returns
+    -------
+    mappingg : np.ndarray
+        same shape as `outer_idx` with values -1 where no matches are found
+        and else, corresponding indices of `inner_idx`
+
+    Example
+    -------
+    `outer_idx`: [2010, 2011, 2012, 2013, 2014, 2015]
+    `inner_idx`: [2011, 2012]
+    `mapping`  : [-1, 0, 1, -1, -1, -1]
+
+    """
+    inner_start, inner_stop = inner_idx[0], inner_idx[-1]
+    mapping = np.ones_like(outer_idx)*-1
+    count = 0
+    indata = False
+    for i, idx in enumerate(outer_idx):
+        if inner_start == idx:
+            indata = True
+        elif inner_stop < idx:
+            break
+        if indata:
+            mapping[i] = count
+            # sanity checking, will fail, e.g. if input data is not monotonuos
+            assert inner_idx[count] == idx
+            count +=1
+    return mapping
+
+def _process_statistics_timeseries(data, statistics_periods, freq, region_ids,
+                                   use_weights, use_country, meta_glob):
+    coldata = data[freq]
+    output = {}
+    start, stop = _start_stop_from_periods(statistics_periods)
+    timeidx = make_datetime_index(start, stop, freq).values
+    jsdate = _get_jsdate(timeidx)
+    tidx = _map_indices(jsdate, coldata.data.jsdate.values)
+    stats_dummy = _init_stats_dummy()
+    for regid, regname in region_ids.items():
+        output[regname] = {}
+        try:
+            subset = coldata.filter_region(region_id=regid,
+                                        check_country_meta=use_country)
+            nparr = subset.data.data
+            use_dummy = False
+        except DataCoverageError:
+            use_dummy = True
+            nparr = None
+        for js, idx in zip(jsdate, tidx):
+            if idx == -1 or use_dummy:
+                stats = stats_dummy
+            else:
+                try:
+                    arr = nparr[:, idx]
+                    stats = _get_statistics(arr[0], arr[1])
+                except DataCoverageError:
+                    stats = stats_dummy
+            # select that period and calc statistics
+            output[regname][js] = stats
+    return output
 
 def _get_jsdate(nparr):
     dt = nparr.astype('datetime64[s]')
     offs = np.datetime64('1970', 's')
     return (dt-offs).astype(int)*1000
 
-
-def _resample_time_coldata(coldata, freq, colstp):
-    return coldata.resample_time(freq,
-                apply_constraints=colstp['apply_time_resampling_constraints'],
-                min_num_obs=colstp['min_num_obs'],
-                how=colstp['resample_how'],
-                colocate_time=colstp['colocate_time'],
-                inplace=False)
-
-def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
+def _init_data_default_frequencies(coldata, to_ts_types):
     """
     Compute one colocated data object for each desired statistics frequency
 
@@ -939,9 +1001,6 @@ def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
     ----------
     coldata : ColocatedData
         Initial colocated data in a certain frequency
-    colocation_settings : dict or similar
-        colocation settings containing information about temporal resampling
-        that is to be applied for downsampling.
     to_ts_types : list
         list of desired frequencies for which statistical parameters are being
         computed.
@@ -968,8 +1027,8 @@ def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
         elif from_tst == to_tst:
             cd = coldata.copy()
         else:
-            cd = _resample_time_coldata(coldata, to,
-                                        colocation_settings)
+            cd = coldata.resample_time(to, settings_from_meta=True,
+                                       inplace=False)
         # add season coordinate for later filtering
         arr = cd.data
         arr['season'] = arr.time.dt.season
@@ -980,17 +1039,19 @@ def _init_data_default_frequencies(coldata, colocation_settings, to_ts_types):
 
     return data_arrs
 
-def compute_json_files_from_colocateddata(coldata, obs_name,
-                                          model_name, use_weights,
-                                          colocation_settings,
+def _start_stop_from_periods(statistics_periods):
+    start, stop = _get_min_max_year_periods(statistics_periods)
+    return start_stop(start, stop+1)
+
+def compute_json_files_from_colocateddata(coldata,
+                                          use_weights,
                                           vert_code, out_dirs,
                                           regions_json,
                                           diurnal_only,
                                           statistics_freqs,
                                           statistics_periods,
-                                          scatter_freq,
+                                          main_freq,
                                           regions_how,
-                                          zeros_to_nan,
                                           annual_stats_constrained):
 
     """Creates all json files for one ColocatedData object
@@ -999,6 +1060,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     ----
     Complete docstring
     """
+    t00 = time()
     if vert_code == 'ModelLevel':
         raise NotImplementedError('Coming (not so) soon...')
 
@@ -1013,9 +1075,9 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     elif coldata.has_latlon_dims and regions_how=='country':
         raise NotImplementedError('Cannot yet apply country filtering for '
                                   '4D colocated data instances')
-    elif not scatter_freq in statistics_freqs:
+    elif not main_freq in statistics_freqs:
         raise AeroValConfigError(
-            f'Scatter plot frequency {scatter_freq} is not in '
+            f'Scatter plot frequency {main_freq} is not in '
             f'{statistics_freqs}'
             )
     # init some stuff
@@ -1024,6 +1086,9 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         model_var = coldata.metadata['var_name'][1]
     else:
         obs_var = model_var = 'UNDEFINED'
+
+    model_name = coldata.model_name
+    obs_name = coldata.obs_name
 
     const.print_log.info(
         f'Computing json files for {model_name} ({model_var}) vs. '
@@ -1042,23 +1107,24 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
 
     use_country = True if regions_how == 'country' else False
 
-    if zeros_to_nan:
-        coldata = coldata.set_zeros_nan()
-
     data = _init_data_default_frequencies(coldata,
-                                          colocation_settings,
                                           statistics_freqs)
     if annual_stats_constrained:
         data = _apply_annual_constraint(data)
 
     if not diurnal_only:
+        stats_ts = _process_statistics_timeseries(data,
+                                                  statistics_periods,
+                                                  main_freq,
+                                                  regnames,
+                                                  use_weights,
+                                                  use_country,
+                                                  meta_glob)
+
         const.print_log.info('Processing heatmap data for all regions')
-        hm_all = _process_heatmap_data(
-            data, regnames, use_weights,
-            use_country=use_country,
-            meta_glob=meta_glob,
-            statistics_periods=statistics_periods
-            )
+        hm_all = _process_heatmap_data(data, regnames, use_weights,
+                                       use_country, meta_glob,
+                                       statistics_periods)
 
         for freq, hm_data in hm_all.items():
             fname = get_heatmap_filename(freq)
@@ -1090,7 +1156,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         map_data, scat_data = _process_map_and_scat(data, map_meta,
                                                     site_indices,
                                                     statistics_periods,
-                                                    scatter_freq)
+                                                    main_freq)
 
         map_name = get_json_mapname(obs_name, obs_var, model_name,
                                     model_var, vert_code)
@@ -1124,6 +1190,9 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         f'{obs_name} ({obs_var})'
         )
 
+    dt = time() - t00
+    print(f'Time expired (TOTAL): {dt:.2f} s')
+
 if __name__ == '__main__':
     import pyaerocom as pya
     stp = pya.web.AerocomEvaluation('test', 'test')
@@ -1136,10 +1205,8 @@ if __name__ == '__main__':
     obs, mod = coldata.metadata['data_source']
 
     rgf = stp.regions_file
-    compute_json_files_from_colocateddata(coldata, obs,
-                                          mod,
+    compute_json_files_from_colocateddata(coldata,
                                           use_weights=False,
-                                          colocation_settings=stp.colocation_settings,
                                           vert_code='Column',
                                           out_dirs=out_dirs,
                                           regions_how='country',

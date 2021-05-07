@@ -4,8 +4,10 @@
 Classes and methods to perform high-level colocation.
 """
 from datetime import datetime
+import glob
 import os
 from pathlib import Path
+import pandas as pd
 import traceback
 
 from pyaerocom._lowlevel_helpers import (BrowseDict, chk_make_subdir)
@@ -21,7 +23,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (ColocationError, DataCoverageError,
-                                  DeprecationError)
+                                  DeprecationError, VarNotAvailableError)
 
 class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
@@ -250,6 +252,8 @@ class ColocationSetup(BrowseDict):
         self.obs_remove_outliers = False
         self.model_remove_outliers = False
 
+        self.zeros_to_nan = False
+
         # Custom outlier ranges for model and obs
         self.obs_outlier_ranges = {}
         self.model_outlier_ranges = {}
@@ -380,9 +384,9 @@ class Colocator(ColocationSetup):
     }
 
     STATUS_CODES = {
-        1 : 'OK',
-        2 : 'NOT OK: Missing model variable',
-        3 : 'NOT OK: Missing obs variable',
+        1 : 'SUCCESS',
+        2 : 'NOT OK: Missing/invalid model variable',
+        3 : 'NOT OK: Missing/invalid obs variable',
         4 : 'NOT OK: Failed to read model variable',
         5 : 'NOT OK: Colocation failed',
         }
@@ -395,7 +399,8 @@ class Colocator(ColocationSetup):
         self._loaded_model_data = {}
         self.data = {}
 
-        self._data_status = []
+        self._processing_status = []
+        self.files_written = []
 
         self._model_reader = None
         self._obs_reader = None
@@ -551,35 +556,12 @@ class Colocator(ColocationSetup):
                                          move_to_trash=False)
         return obs_data
 
-    def _check_load_model_data(self, var_matches):
-        filtered, ts_types = {}, {}
-        for mvar, ovar in var_matches.items():
-            try:
-                mdata = self.get_model_data(mvar)
-                filtered[mvar] = ovar
-                ts_types[mvar] = mdata.ts_type
-                if mvar == 'abs550aer':
-                    raise Exception('FAKE EXCEPTION')
-
-            except Exception as e:
-                msg = (
-                    f'Failed to load model data: {self.model_id} ({mvar}). '
-                    f'Reason {e}')
-                const.print_log.warning(msg)
-                self._write_log(msg + '\n')
-                self._data_status.append([mvar, ovar, 4])
-                if self.raise_exceptions:
-                    raise ColocationError(msg)
-        return filtered, ts_types
-
-
     def prepare_run(self, var_name=None):
         try:
             self._init_log()
         except Exception:
             const.print_log.warning('Deactivating logging in Colocator')
             self.logging = False
-        self._data_status = []
 
         if isinstance(self.obs_vars, str):
             self.obs_vars = [self.obs_vars]
@@ -618,37 +600,182 @@ class Colocator(ColocationSetup):
 
         """
         self.update(**opts)
-
-        vars_to_process = self.prepare_run(var_name)
+        # ToDo: see if the following could be solved via custom context manager
+        try:
+            vars_to_process = self.prepare_run(var_name)
+        except Exception:
+            if self.raise_exceptions:
+                self._print_processing_status()
+                self._write_log('ABORTED: raise_exceptions is True\n')
+                self._close_log()
+                raise
         if len(vars_to_process) > 0:
             self._print_coloc_info(vars_to_process)
         else:
             const.print_log.info('Nothing to colocate...')
         for mod_var, obs_var in vars_to_process.items():
+
             mname = self.get_model_name()
+            self.data[mname] = {}
             try:
                 if self.obs_is_ungridded:
                     coldata = self._run_gridded_ungridded(mod_var, obs_var)
                 else:
                     coldata = self._run_gridded_gridded(mod_var, obs_var)
-                self.data[mname] = coldata
+                self.data[mname][mod_var] = coldata
+                self._processing_status.append([mod_var, obs_var, 1])
             except Exception:
                 msg = ('Failed to perform analysis: {}\n'
                        .format(traceback.format_exc()))
                 const.print_log.warning(msg)
-                self._data_status.append([mod_var, obs_var, 5])
+                self._processing_status.append([mod_var, obs_var, 5])
                 self._write_log(msg)
                 if self.raise_exceptions:
+                    self._print_processing_status()
+                    self._write_log('ABORTED: raise_exceptions is True\n')
+                    self._close_log()
                     raise ColocationError(traceback.format_exc())
-            finally:
-                self._close_log()
+        self._write_log('Colocation finished')
+        self._close_log()
+        self._print_processing_status()
 
+    @property
+    def model_vars(self):
+        """
+        List of all model variables specified in config
+
+        Note
+        ----
+        This method does not check if the variables are valid or available.
+
+        Returns
+        -------
+        list
+            list of all model variables specified in this setup.
+
+        """
+        ovars = self.obs_vars
+        model_vars = []
+        for ovar in ovars:
+            if ovar in self.model_use_vars:
+                model_vars.append(self.model_use_vars[ovar])
+            else:
+                model_vars.append(ovar)
+
+        for ovar, mvars in self.model_add_vars.items():
+            if not ovar in ovars:
+                const.print_log.warning(
+                    f'Found entry in model_add_vars for obsvar {ovar} which '
+                    f'is not specified in attr obs_vars, and will thus be '
+                    f'ignored')
+            model_vars += mvars
+        return model_vars
+
+    def check_available_coldata_files(self):
+        self._check_set_start_stop()
+
+        def check_meta_match(meta, **kwargs):
+            for key, val in kwargs.items():
+                if not meta[key] == val:
+                    return False
+            return True
+
+        mname = self.get_model_name()
+        oname = self.get_obs_name()
+        model_vars = self.model_vars
+        obs_vars = self.obs_vars
+        start, stop = self.get_start_str(), self.get_stop_str()
+        mask = f'{self.output_dir}/*.nc'
+        all_files = glob.glob(mask)
+        valid = []
+        invalid = []
+        for file in all_files:
+            try:
+                meta = ColocatedData.get_meta_from_filename(file)
+            except Exception:
+                invalid.append(file)
+                continue
+            candidate =  check_meta_match(meta, model_name=mname, obs_name=oname,
+                                          start=start, stop=stop)
+            if (candidate and meta['model_var'] in model_vars and meta['obs_var'] in obs_vars):
+                valid.append(file)
+            else:
+                invalid.append(file)
+        if len(invalid) > 0:
+            const.print_log.warning(
+                f'Found invalid colocated data files, consider deleting them '
+                f'using method Colocator.delete_invalid_coldata_files')
+        return (valid, invalid)
+
+    def get_available_coldata_files(self):
+        """
+        Get list of available colocated data files for this setup
+
+        Returns
+        -------
+        list
+            list of paths for valid NetCDF files.
+
+        """
+        return self.check_available_coldata_files()[0]
+
+    def delete_invalid_coldata_files(self, dry_run=False):
+        """
+        Find and delete invalid colocated NetCDF files
+
+        Invalid NetCDF files are identified via model and obs name specified
+        in this setup and by list of variable specified for model and obs,
+        respectively, see also :func:`check_available_coldata_files`.
+
+        Parameters
+        ----------
+        dry_run : bool, optional
+            If True, then no files are deleted but a print statement is
+            provided for each file that would be deleted. The default is False.
+
+
+        Returns
+        -------
+        list
+            List of invalid files that have been (would be) deleted.
+
+        """
+        invalid = self.check_available_coldata_files()[1]
+        if len(invalid) == 0:
+            const.print_log.info('No invalid colocated data files found.')
+        else:
+            for file in invalid:
+                if dry_run:
+                    const.print_log.info(f'Would delete {file}')
+                else:
+                    os.remove(file)
+        return invalid
+
+
+
+    def _check_load_model_data(self, var_matches):
+        filtered, ts_types = {}, {}
+        for mvar, ovar in var_matches.items():
+            try:
+                mdata = self.get_model_data(mvar)
+                filtered[mvar] = ovar
+                ts_types[mvar] = mdata.ts_type
+            except Exception as e:
+                msg = (
+                    f'Failed to load model data: {self.model_id} ({mvar}). '
+                    f'Reason {e}')
+                const.print_log.warning(msg)
+                self._write_log(msg + '\n')
+                self._processing_status.append([mvar, ovar, 4])
+                if self.raise_exceptions:
+                    raise ColocationError(msg)
+        return filtered, ts_types
 
     def _filter_var_matches_files_not_exist(self, var_matches, ts_types):
         filtered = {}
         for mvar, ovar in var_matches.items():
             ts_type = ts_types[mvar]
-            fname = self._coldata_savename(mvar, ts_type)
+            fname = self._coldata_savename(ovar, mvar, ts_type)
             fp = os.path.join(self.output_dir, fname)
             if not os.path.exists(fp):
                 filtered[mvar] = ovar
@@ -729,20 +856,39 @@ class Colocator(ColocationSetup):
             for ovar in self.obs_vars:
                 if oreader.has_var(ovar):
                     avail.append(ovar)
-        if len(avail) == 0:
-            raise DataCoverageError(
-                f'None of the specified obs variables for {self.obs_id} '
-                f'({self.obs_vars}) are supported...')
+
         if len(self.obs_vars) > len(avail):
             for ovar in self.obs_vars:
                 if not ovar in avail:
-
                     const.print_log.warning(
                         f'Obs variable {ovar} is not available in {self.obs_id} '
                         f'and will be ignored'
                         )
-                    self._data_status.append([None, ovar, 3])
+                    self._processing_status.append([None, ovar, 3])
+
+            if self.raise_exceptions:
+                invalid = [var for var in self.obs_vars if not var in avail]
+                invalid = '; '.join(invalid)
+                raise DataCoverageError(
+                    f'Invalid obs var(s) for {self.obs_id}: {invalid}')
+
             self.obs_vars = avail
+
+    @property
+    def processing_status(self):
+        head = ['Model Var', 'Obs Var', 'Status']
+        tab = []
+        for mvar, ovar, key in self._processing_status:
+            tab.append([mvar, ovar, self.STATUS_CODES[key]])
+        return pd.DataFrame(tab, columns=head)
+
+    def _print_processing_status(self):
+
+        mname = self.get_model_name()
+        oname = self.get_obs_name()
+        const.print_log.info(
+            f'Colocation processing status for {mname} vs. {oname}')
+        const.print_log.info(self.processing_status)
 
     def _filter_var_matches_var_name(self, var_matches, var_name):
         filtered = {}
@@ -758,6 +904,7 @@ class Colocator(ColocationSetup):
         # dictionary that will map model variables (keys) with observation variables (values)
         var_matches = {}
 
+        all_ok = True
         muv = self.model_use_vars
         modreader = self.model_reader
         for ovar in self.obs_vars:
@@ -769,7 +916,8 @@ class Colocator(ColocationSetup):
             if modreader.has_var(mvar):
                 var_matches[mvar] = ovar
             else:
-                self._data_status.append([mvar, ovar, 2])
+                self._processing_status.append([mvar, ovar, 2])
+                all_ok = False
 
             if ovar in self.model_add_vars: #observation variable
                 addvars = self.model_add_vars[ovar]
@@ -778,12 +926,13 @@ class Colocator(ColocationSetup):
                     if modreader.has_var(addvar):
                         var_matches[addvar] = ovar
                     else:
-                        self._data_status.append([addvar, ovar, 2])
+                        self._processing_status.append([addvar, ovar, 2])
+                        all_ok = False
 
-        if len(var_matches) == 0:
+        if not all_ok and self.raise_exceptions:
             raise DataCoverageError(
-                f'No variable matches found between {self.model_id} and '
-                f'{self.obs_id} for input vars: {self.obs_vars}')
+                'Some model variables are not available')
+
         return var_matches
 
     # ToDo: cumbersome (together with _find_var_matches, review whole handling
@@ -906,31 +1055,15 @@ class Colocator(ColocationSetup):
                 remaining[key] = val
         return remaining
 
-    def _check_rename_vars_coldata(self, coldata, model_var, obs_var):
-        mvar = coldata.metadata['var_name'][1]
-        mid = coldata.metadata['data_source'][1]
-        assert mid == self.model_id
-        if model_var != mvar:
-            coldata.rename_variable(mvar,
-                                    model_var,
-                                    mid)
-        if obs_var in self.model_add_vars:
-            modvars = self.model_add_vars[obs_var]
-            if model_var in modvars:
-                coldata.rename_variable(obs_var,
-                                        model_var,
-                                        self.obs_id)
-        return coldata
-
     def _save_coldata(self, coldata):
         """Helper for saving colocateddata"""
-        model_var = coldata.metadata['var_name'][1]
-        savename = self._coldata_savename(model_var, coldata.ts_type)
+        obs_var, mod_var = coldata.metadata['var_name']
+        savename = self._coldata_savename(obs_var, mod_var, coldata.ts_type)
         fp = coldata.to_netcdf(self.output_dir, savename=savename)
-        if self._log:
-            msg = f'WRITE: {fp}\n'
-            self._write_log(msg)
-            const.print_log.info(msg)
+        self.files_written.append(fp)
+        msg = f'WRITE: {fp}\n'
+        self._write_log(msg)
+        const.print_log.info(msg)
 
     def _eval_resample_how(self, model_var, obs_var):
         rshow = self.resample_how
@@ -956,18 +1089,18 @@ class Colocator(ColocationSetup):
         elif self.stop is not None:
             self.stop = None
 
-    def _coldata_savename(self, var_name, ts_type):
+    def _coldata_savename(self, obs_var, mod_var, ts_type):
         """Get filename of colocated data file for saving
         """
-        return ColocatedData._aerocom_savename(
-            var_name=var_name,
-            obs_id=self.get_obs_name(),
-            model_id=self.get_model_name(),
+        name = ColocatedData._aerocom_savename(
+            obs_var=obs_var, obs_id=self.get_obs_name(),
+            mod_var=mod_var, mod_id=self.get_model_name(),
             start_str=self.get_start_str(),
             stop_str=self.get_stop_str(),
             ts_type=ts_type,
             filter_name=self.filter_name
-            ) + '.nc'
+            )
+        return f'{name}.nc'
 
     def _run_gridded_ungridded(self, model_var, obs_var):
         """Analysis method for gridded vs. ungridded data"""
@@ -1016,7 +1149,12 @@ class Colocator(ColocationSetup):
                 use_climatology_ref=self.obs_use_climatology,
                 resample_how=rshow
                 )
-        self._check_rename_vars_coldata(coldata, model_var, obs_var)
+
+        coldata.data.attrs['model_name'] = self.get_model_name()
+        coldata.data.attrs['obs_name'] = self.get_obs_name()
+
+        if self.zeros_to_nan:
+            coldata = coldata.set_zeros_nan()
         if self.model_to_stp:
             coldata = correct_model_stp_coldata(coldata)
         if self.save_coldata:
@@ -1178,18 +1316,17 @@ class Colocator(ColocationSetup):
                 continue
             log.write(f'{key}: {val}\n')
 
+    def _write_log(self, msg):
+        if self.logging:
+            self._log.write(msg)
+
     def _close_log(self):
         if self._log is not None:
             self._log.close()
             self._log = None
 
-    def _write_log(self, msg):
-        if self.logging:
-            try:
-                self._log.write(msg)
-            except Exception as e:
-                const.print_log.warning('Deactivating logging in Colocator. Reason: {}'
-                                        .format(repr(e)))
+
+
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

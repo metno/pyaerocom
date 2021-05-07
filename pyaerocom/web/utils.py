@@ -93,8 +93,7 @@ def compute_model_average_and_diversity(cfg, var_name,
     if model_names is None:
         model_names = []
         for mname in cfg.model_config:
-            if not mname in cfg.model_ignore:
-                model_names.append(mname)
+            model_names.append(mname)
 
     # make sure the input model names exist and are names and not ID's
     # also takes care of case where input is dictionary

@@ -195,7 +195,7 @@ def test__apply_annual_constraint_helper(coldata,which,raises,ncd,omc,mmc):
 
 @pytest.mark.parametrize('which,obs_name,model_name,use_weights,'
                          'vert_code,diurnal_only,'
-                         'statistics_freqs,statistics_periods,scatter_freq,'
+                         'statistics_freqs,statistics_periods,main_freq,'
                          'regions_how,zeros_to_nan,annual_stats_constrained,'
                          'raises,fnumdirs', [
     ('fake_4d', 'bla','blub',True,'Column',False,
@@ -231,7 +231,7 @@ def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
                                           model_name, use_weights,
                                           vert_code, diurnal_only,
                                           statistics_freqs, statistics_periods,
-                                          scatter_freq,
+                                          main_freq,
                                           regions_how, zeros_to_nan,
                                           annual_stats_constrained,raises,
                                           fnumdirs):
@@ -252,7 +252,7 @@ def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
                                                 diurnal_only,
                                                 statistics_freqs,
                                                 statistics_periods,
-                                                scatter_freq,
+                                                main_freq,
                                                 regions_how,
                                                 zeros_to_nan,
                                                 annual_stats_constrained)
