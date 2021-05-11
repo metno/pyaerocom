@@ -575,6 +575,10 @@ class ReadEbas(ReadUngriddedBase):
 
         self._lists_orig = files_vars
         files = self._merge_lists(files_vars)
+        if len(files) == 0:
+            raise FileNotFoundError(
+                f'No files could be found for {vars_to_retrieve} and reading '
+                f'constraints {constraints}.')
         return files
 
     def _merge_auxvar_lists(self, aux_var, files_aux_req):
