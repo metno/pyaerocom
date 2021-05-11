@@ -5,12 +5,11 @@ Created on Mon Apr 15 14:00:44 2019
 """
 import os
 import numpy as np
-import simplejson
 import xarray as xr
 from pyaerocom import const
 from pyaerocom.helpers import make_datetime_index, start_stop
 from pyaerocom.io.helpers import save_dict_json
-from pyaerocom.web.helpers import read_json
+from pyaerocom.web.helpers import read_json, write_json
 from pyaerocom.web.helpers_evaluation_iface import (_period_str_to_timeslice,
                                                     _get_min_max_year_periods)
 from pyaerocom.colocateddata import ColocatedData
@@ -66,13 +65,11 @@ def _write_stationdata_json(ts_data, out_dir):
 
     fp = os.path.join(out_dir, filename)
     if os.path.exists(fp):
-        with open(fp, 'r') as f:
-            current = simplejson.load(f)
+        current = read_json(fp)
     else:
         current = {}
     current[ts_data['model_name']] = ts_data
-    with open(fp, 'w') as f:
-        simplejson.dump(current, f, ignore_nan=True)
+    write_json(current, fp, ignore_nan=True)
 
 def _write_site_data(ts_objs, dirloc):
     """Write list of station timeseries files to json"""
@@ -109,24 +106,17 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
 
     fp = os.path.join(out_dirs['ts'],'dw', filename)
     if os.path.exists(fp):
-        try:
-            with open(fp, 'r') as f:
-                current = simplejson.load(f)
-        except Exception as e:
-            raise Exception('Fatal: could not open existing json file: {}. '
-                            'Reason: {}'.format(fp, repr(e)))
+        current = read_json(fp)
     else:
         current = {}
     current[ts_data['model_name']] = ts_data
-    with open(fp, 'w') as f:
-        simplejson.dump(current, f, ignore_nan=True)
+    write_json(current, fp, ignore_nan=True)
 
-def _add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
+def _add_entry_json(heatmap_file, result, obs_name, obs_var, vert_code,
                             model_name, model_var):
     fp = heatmap_file
     if os.path.exists(fp):
-        with open(fp, 'r') as f:
-            current = simplejson.load(f)
+        current = read_json(fp)
     else:
         current = {}
     if not obs_var in current:
@@ -142,8 +132,7 @@ def _add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_code,
         ovc[model_name] = {}
     mn = ovc[model_name]
     mn[model_var] = result
-    with open(fp, 'w') as f:
-        simplejson.dump(current, f, ignore_nan=True)
+    write_json(current, fp, ignore_nan=True)
 
 def _init_stats_dummy():
     # dummy for statistics dictionary for locations without data
@@ -850,11 +839,15 @@ def _calc_temporal_corr(coldata):
         median temporal correlation
 
     """
+    if len(coldata.time) < 3:
+        return np.nan, np.nan
     arr = coldata.data
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
     obs_ok = arr[0].count(dim='time') > 2
     arr = arr.where(obs_ok, drop=True)
+    if np.prod(arr.shape) == 0:
+        return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim='time')
     return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
@@ -985,7 +978,7 @@ def _process_statistics_timeseries(data, statistics_periods, freq, region_ids,
                 except DataCoverageError:
                     stats = stats_dummy
             # select that period and calc statistics
-            output[regname][js] = stats
+            output[regname][str(js)] = stats
     return output
 
 def _get_jsdate(nparr):
@@ -1121,6 +1114,10 @@ def compute_json_files_from_colocateddata(coldata,
                                                   use_country,
                                                   meta_glob)
 
+        ts_file = os.path.join(out_dirs['hm'], 'stats_ts.json')
+        _add_entry_json(ts_file, stats_ts, obs_name, obs_var,
+                        vert_code, model_name, model_var)
+
         const.print_log.info('Processing heatmap data for all regions')
         hm_all = _process_heatmap_data(data, regnames, use_weights,
                                        use_country, meta_glob,
@@ -1131,8 +1128,8 @@ def compute_json_files_from_colocateddata(coldata,
 
             hm_file = os.path.join(out_dirs['hm'], fname)
 
-            _add_entry_heatmap_json(hm_file, hm_data, obs_name, obs_var,
-                                    vert_code, model_name, model_var)
+            _add_entry_json(hm_file, hm_data, obs_name, obs_var,
+                            vert_code, model_name, model_var)
 
         const.print_log.info('Processing regional timeseries for all regions')
         ts_objs_regional = _process_regional_timeseries(data,
@@ -1162,14 +1159,10 @@ def compute_json_files_from_colocateddata(coldata,
                                     model_var, vert_code)
 
         outfile_map =  os.path.join(out_dirs['map'], map_name)
-        with open(outfile_map, 'w') as f:
-            simplejson.dump(map_data, f, ignore_nan=True)
+        write_json(map_data, outfile_map, ignore_nan=True)
 
         outfile_scat =  os.path.join(out_dirs['scat'], map_name)
-        with open(outfile_scat, 'w') as f:
-            simplejson.dump(scat_data, f, ignore_nan=True)
-
-
+        write_json(scat_data, outfile_scat, ignore_nan=True)
 
     if coldata.ts_type == 'hourly':
         const.print_log.info('Processing diurnal profiles')

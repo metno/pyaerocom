@@ -5,6 +5,7 @@ from getpass import getuser
 import glob
 import os
 import numpy as np
+import pandas as pd
 from pathlib import Path
 import shutil
 from traceback import format_exc
@@ -13,7 +14,7 @@ from traceback import format_exc
 from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
                                          sort_dict_by_name)
 from pyaerocom import const
-from pyaerocom.exceptions import AeroValConfigError
+from pyaerocom.exceptions import AeroValConfigError, FileConventionError
 from pyaerocom.helpers import get_lowest_resolution
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.colocateddata import ColocatedData
@@ -261,7 +262,8 @@ class AerocomEvaluation(object):
         self._out_dirs = {}
 
         #: Dictionary specifying default settings for colocation
-        self.colocation_settings = ColocationSetup(save_coldata=True)
+        self.colocation_settings = ColocationSetup(save_coldata=True,
+                                                   keep_data=False)
 
         self.add_methods_file = None
         self.add_methods = {}
@@ -398,11 +400,25 @@ class AerocomEvaluation(object):
 
     @property
     def all_obs_vars(self):
-        """List of all obs variables"""
+        """List of unique obs variables"""
         obs_vars = []
         for oname, ocfg in self.obs_config.items():
             obs_vars.extend(ocfg['obs_vars'])
         return sorted(list(np.unique(obs_vars)))
+
+    @property
+    def all_model_vars(self):
+        """List of unique model variables for processing"""
+        mod_vars = self.all_obs_vars
+        for mname, mcfg in self.model_config.items():
+            for mvar in mcfg.model_use_vars.values():
+                if not mvar in mod_vars:
+                    mod_vars.append(mvar)
+            for mvars in mcfg.model_add_vars.values():
+                for mvar in mvars:
+                    if not mvar in mod_vars:
+                        mod_vars.append(mvar)
+        return mod_vars
 
     @property
     def all_modelmap_vars(self):
@@ -413,21 +429,6 @@ class AerocomEvaluation(object):
         For now this is just a wrapper for :attr:`all_obs_vars`
         """
         return self.all_obs_vars
-
-    @property
-    def available_map_files(self):
-        """List of all existing map files"""
-        if not os.path.exists(self.out_dirs['map']):
-            raise FileNotFoundError('No data available for this experiment')
-        files = []
-        for file in os.listdir(self.out_dirs['map']):
-            if file.endswith('.json'):
-                files.append(file)
-        return files
-
-    @property
-    def all_map_files(self):
-        raise NotImplementedError()
 
     @property
     def raise_exceptions(self):
@@ -589,10 +590,26 @@ class AerocomEvaluation(object):
 
         self.obs_config = cfg
 
+    @staticmethod
+    def _check_type_cfg_entry(val, cls):
+        if not isinstance(val, cls):
+            val = cls(**val)
+        return val
+
     def _set_modelconfig(self, val):
+        """Set :attr:`model_config`
+
+        Parameters
+        -----------
+        val : dict
+            dictionary with model config entries, keys are model names, values
+            are either instances of :class:`dict` or of
+            :class:`ModelConfigEval`. If values are dicts, they will be
+            converted to :class:`ModelConfigEval`.
+        """
         cfg = {}
-        for k, v in val.items():
-            cfg[k] = ModelConfigEval(**v)
+        for key, mcfg in val.items():
+            cfg[key] = self._check_type_cfg_entry(mcfg, ModelConfigEval)
         self.model_config = cfg
         self._update_custom_read_methods()
 
@@ -717,28 +734,40 @@ class AerocomEvaluation(object):
                                     .format(self.exp_name, self.exp_id))
             self.exp_name = self.exp_id
 
+        self._check_model_config()
+        self._check_obs_config()
 
-        for k, v in self.model_config.items():
-            if '_' in k or ':' in k:
-                raise NameError('Model config name must not contain _ (underscore) or colon.')
-            elif len(k) > 20:
-                print('Long model ID: {}. Consider renaming'.format(k))
-            elif len(k) > 25:
-                raise ValueError('Too long model ID: {} (max 20 chars)'.format(k))
-            elif not 'model_id' in v:
-                raise KeyError('Model configuration for {} does not contain '
-                               'model_id'.format(k))
+    def _check_model_config(self):
+        for mname, cfg in self.model_config.items():
+            if '_' in mname:
+                raise AttributeError(
+                    f'Invalid model name {mname}: '
+                    f'must not contain _ (underscore).')
+            elif len(mname) > 20:
+                const.print_log.warning(
+                    f'Long model name: {mname}. Consider renaming')
+            elif len(mname) > 25:
+                raise ValueError(
+                    f'Model name too long: {mname} (max 25 chars)')
+            if not isinstance(cfg, ModelConfigEval):
+                self.model_config[mname] = self._check_type_cfg_entry(cfg,
+                                                            ModelConfigEval)
 
-        for k, v in self.obs_config.items():
-            if '_' in k or ':' in k:
-                raise NameError('Obs config name must not contain _ (underscore) or colon')
-            elif len(k) > 15:
-                print('Long obs ID: {}. Consider renaming'.format(k))
-            elif len(k) > 20:
-                raise ValueError('Too long obs ID: {} (max 20 chars)'.format(k))
-            elif not 'obs_id' in v:
-                raise KeyError('Obs configuration for {} does not contain '
-                               'obs_id'.format(k))
+    def _check_obs_config(self):
+        for oname, cfg in self.obs_config.items():
+            if '_' in oname:
+                raise AttributeError(
+                    f'Invalid obs name {oname}: '
+                    f'must not contain _ (underscore).')
+            elif len(oname) > 20:
+                const.print_log.warning(
+                    f'Long obs name: {oname}. Consider renaming')
+            elif len(oname) > 25:
+                raise ValueError(
+                    f'Obs name too long: {oname} (max 25 chars)')
+            if not isinstance(cfg, ObsConfigEval):
+                self.obs_config[oname] = self._check_type_cfg_entry(cfg,
+                                                            ObsConfigEval)
 
 
     def get_model_name(self, model_id):
@@ -1651,66 +1680,49 @@ class AerocomEvaluation(object):
 
     @staticmethod
     def _info_from_map_file(filename):
-        f = filename
-        obs_info = f.split('OBS-')[1].split('_MOD')[0].split('_')
-        obs_name, obs_var = obs_info[0].split(':')
-        vert_code = obs_info[1]
-        mod_name, mod_var =  f.split('MOD-')[1].split('.json')[0].split(':')
-        return (obs_name, obs_var, vert_code, mod_name, mod_var)
+        spl = os.path.basename(filename).split('.json')[0].split('_')
+        if not len(spl) == 3:
+            raise FileConventionError(
+                f'Invalid map filename: {filename}'
+                )
+        obsinfo = spl[0]
+        vert_code = spl[1]
+        modinfo = spl[2]
 
-    def get_web_overview_table(self):
-        """Computes overview table based on existing map files"""
-        iface_names = self.iface_names
-        tab = []
-        from pandas import DataFrame
-        for f in self.all_map_files:
-            if f.endswith('.json'):
-                (obs_name, obs_var,
-                 vert_code,
-                 mod_name, mod_var) = self._info_from_map_file(f)
+        mspl = modinfo.split('-')
+        mvar = mspl[-1]
+        mname = '-'.join(mspl[:-1])
 
-                if not mod_name in self.model_config:
-                    const.print_log.warning('Found outdated json map file: {}. '
-                                            'Will be ignored'.format(f))
-                    continue
-                elif not obs_name in iface_names:
-                    const.print_log.warning('Found outdated json map file: {}. '
-                                            'Will be ignored'.format(f))
-                    continue
-                mcfg = self.model_config[mod_name]
-                if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
-                    if mcfg['model_use_vars'][obs_var] != mod_var:
-                        const.print_log.warning('Ignoring map file {}'
-                                                .format(f))
-                        continue
-                tab.append([obs_var, obs_name, vert_code, mod_name, mod_var])
-        if len(tab) == 0:
-            raise FileNotFoundError('No json files could be found')
-        return DataFrame(tab, columns=['Var' , 'Obs', 'vert',
-                                       'Model', 'Model var'])
+        ospl = obsinfo.split('-')
+        ovar = ospl[-1]
+        oname = '-'.join(ospl[:-1])
+        return (oname, ovar, vert_code, mname, mvar)
 
-    def get_obsvar_name_and_type(self, obs_var):
+    def _get_var_name_and_type(self, var_name):
         """Get menu name and type of observation variable
 
         Parameters
         ----------
-        obs_var : str
-            Name of observation variable
+        var_name : str
+            Name of variable
 
         Returns
         -------
         str
             menu name of this variable
         str
-            menu category of this variable
+            vertical type of this variable (2D, 3D)
+        str
+            variable category
+
         """
 
         try:
-            name, tp, cat = self.var_mapping[obs_var]
+            name, tp, cat = self.var_mapping[var_name]
         except Exception:
-            name, tp, cat = obs_var, 'UNDEFINED', 'UNDEFINED'
-            self._log.warning('Missing menu name definition for var {}. '
-                              'Using variable name'.format(obs_var))
+            name, tp, cat = var_name, 'UNDEFINED', 'UNDEFINED'
+            self._log.warning(
+                'Missing menu name definition for var {var_name}.')
         return (name, tp, cat)
 
     def update_interface(self):
@@ -1791,6 +1803,51 @@ class AerocomEvaluation(object):
                     new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
         return new_sorted
 
+    def _get_meta_from_map_files(self):
+        """List of all existing map files"""
+        dirloc = self.out_dirs['map']
+        if not os.path.exists(dirloc):
+            raise FileNotFoundError('No data available for this experiment')
+        files = glob.glob(f'{dirloc}/*.json')
+        tab = []
+        if len(files) > 0:
+            obs_names = self.iface_names
+            obs_vars = self.all_obs_vars
+            mod_names = self.all_model_names
+            mod_vars = self.all_model_vars
+
+            for file in files:
+                (obs_name, obs_var,
+                 vert_code,
+                 mod_name, mod_var) = self._info_from_map_file(file)
+
+                if not mod_name in mod_names:
+                    const.print_log.warning(
+                        f'Found outdated json map file (model name): {file}. '
+                        f'Will be ignored'
+                        )
+                    continue
+                elif not obs_name in obs_names:
+                    const.print_log.warning(
+                        f'Found outdated json map file (obs name): {file}. '
+                        f'Will be ignored'
+                        )
+                    continue
+                elif not obs_var in obs_vars:
+                    const.print_log.warning(
+                        f'Found outdated json map file (obs var): {file}. '
+                        f'Will be ignored'
+                        )
+                    continue
+                elif not mod_var in mod_vars:
+                    const.print_log.warning(
+                        f'Found outdated json map file (mod var): {file}. '
+                        f'Will be ignored'
+                        )
+                    continue
+                tab.append([obs_var, obs_name, vert_code, mod_name, mod_var])
+        return tab
+
     def _get_available_results_dict(self):
         def var_dummy():
             """Helper that creates empty dict for variable info"""
@@ -1800,36 +1857,36 @@ class AerocomEvaluation(object):
                     'longname'  :   '',
                     'obs'       :   {}}
         new = {}
-        tab = self.get_web_overview_table()
-        for index, info in tab.iterrows():
-            obs_var, obs_name, vert_code, mod_name, mod_var = info
-            if not obs_var in new:
-                new[obs_var] = d = var_dummy()
-                name, tp, cat = self.get_obsvar_name_and_type(obs_var)
-
+        tab = self._get_meta_from_map_files()
+        for row in tab:
+            obs_var, obs_name, vert_code, mod_name, mod_var = row
+            modvarname = mod_var + '*' if mod_var != obs_var else mod_var
+            if not modvarname in new:
+                new[modvarname] = d = var_dummy()
+                name, tp, cat = self._get_var_name_and_type(mod_var)
                 d['name'] = name
                 d['type'] = tp
                 d['cat']  = cat
-                d['longname'] = const.VARS[obs_var].description
+                d['longname'] = const.VARS[mod_var].description
             else:
-                d = new[obs_var]
+                d = new[modvarname]
 
             if not obs_name in d['obs']:
                 d['obs'][obs_name] = dobs = {}
             else:
                 dobs = d['obs'][obs_name]
-
-            if not vert_code in dobs:
-                dobs[vert_code] = dobs_vert = {}
+            if not obs_var in dobs:
+                dobs[obs_var] = dobsvar = {}
             else:
-                dobs_vert = dobs[vert_code]
-            if mod_name in dobs_vert:
-                const.print_log.warning('Overwriting old entry for {}: {}'
-                                        .format(mod_name, dobs_vert[mod_name]))
+                dobsvar = dobs[obs_var]
+            if not vert_code in dobsvar:
+                dobsvar[vert_code] = dobs_vert = {}
+            else:
+                dobs_vert = dobsvar[vert_code]
             model_id = self.model_config[mod_name]['model_id']
-            dobs_vert[mod_name] = {'dir' : mod_name,
-                                   'id'  : model_id,
-                                   'var' : mod_var}
+            dobs_vert[mod_name] = {'model_id'  : model_id,
+                                   'model_var' : mod_var,
+                                   'obs_var'   : obs_var}
         return new
 
     def make_info_table_evaluation_iface(self):

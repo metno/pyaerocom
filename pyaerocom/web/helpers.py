@@ -190,16 +190,22 @@ class ModelConfigEval(BrowseDict):
     ----------
     model_id : str
         ID of model run in AeroCom database (e.g. 'ECMWF_CAMS_REAN')
-    model_ts_type_read : :obj:`str` or :obj:`dict`, optional
+    model_ts_type_read : str or dict, optional
         may be specified to explicitly define the reading frequency of the
         model data. Not to be confused with :attr:`ts_type`, which specifies
         the frequency used for colocation. Can be specified variable specific
         by providing a dictionary.
-    model_use_vars : :obj:`dict`, optional
+    model_use_vars : dict
         dictionary that specifies mapping of model variables. Keys are
-        observation variables, values are the corresponding model variables
+        observation variables, values are strings specifying the corresponding
+        model variable to be used
         (e.g. model_use_vars=dict(od550aer='od550csaer'))
-    model_read_aux : :obj:`dict`, optional
+    model_add_vars : dict
+        dictionary that specifies additional model variables. Keys are
+        observation variables, values are lists of strings specifying the
+        corresponding model variables to be used
+        (e.g. model_use_vars=dict(od550aer=['od550csaer', 'od550so4']))
+    model_read_aux : dict
         may be used to specify additional computation methods of variables from
         models. Keys are obs variables, values are dictionaries with keys
         `vars_required` (list of required variables for computation of var
@@ -210,6 +216,7 @@ class ModelConfigEval(BrowseDict):
         self.model_id = model_id
         self.model_ts_type_read = None
         self.model_use_vars = {}
+        self.model_add_vars = {}
         self.model_read_aux = {}
 
         self.update(**kwargs)
@@ -217,9 +224,14 @@ class ModelConfigEval(BrowseDict):
 
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
-        if not isinstance(self.model_id, str):
-            raise ValueError('Invalid input for model_id {}. Need str.'
-                             .format(self.model_id))
+        assert isinstance(self.model_id, str)
+        assert isinstance(self.model_add_vars, dict)
+        assert isinstance(self.model_use_vars, dict)
+        assert isinstance(self.model_read_aux, dict)
+        for key, val in self.model_add_vars.items():
+            assert isinstance(val, list)
+        for key, val in self.model_use_vars.items():
+            assert isinstance(val, str)
 
 def read_json(file_path):
     """Read json file
@@ -251,5 +263,5 @@ def write_json(data_dict, file_path, **kwargs):
         additional keyword args passed to :func:`simplejson.dumps` (e.g.
         indent, )
     """
-    with open(file_path, 'w+') as f:
+    with open(file_path, 'w') as f:
         simplejson.dump(data_dict, f, **kwargs)

@@ -994,7 +994,9 @@ class ColocatedData(object):
             obj = self.copy()
         arr = obj.data
         idx = arr.attrs['data_source'].index(data_source)
+        arr.attrs['var_name_orig'] = arr.attrs['var_name']
         arr.attrs['var_name'][idx] = new_var_name
+
         if var_name == arr.name:
             arr.name = new_var_name
         obj.data = arr

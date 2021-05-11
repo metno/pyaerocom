@@ -176,6 +176,9 @@ class ColocationSetup(BrowseDict):
         specify model, else obs_id will be used
     save_coldata : bool
         if True, colocated data objects are saved as NetCDF file.
+    keep_data : bool
+        if True, then all colocated data objects computed when running
+        :func:`run` will be stored in :attr:`data`. Defaults to True.
     """
     #: Dictionary specifying alternative vertical types that may be used to
     #: read model data. E.g. consider the variable is  ec550aer,
@@ -266,6 +269,7 @@ class ColocationSetup(BrowseDict):
 
         self.reanalyse_existing = False
         self.raise_exceptions = False
+        self.keep_data = True
 
         self.update(**kwargs)
         self._check_outdated_outlier_defs()
@@ -613,6 +617,7 @@ class Colocator(ColocationSetup):
             self._print_coloc_info(vars_to_process)
         else:
             const.print_log.info('Nothing to colocate...')
+        data_out = {}
         for mod_var, obs_var in vars_to_process.items():
 
             mname = self.get_model_name()
@@ -622,7 +627,9 @@ class Colocator(ColocationSetup):
                     coldata = self._run_gridded_ungridded(mod_var, obs_var)
                 else:
                     coldata = self._run_gridded_gridded(mod_var, obs_var)
-                self.data[mname][mod_var] = coldata
+                if not mod_var in data_out:
+                    data_out[mod_var] = {}
+                data_out[mod_var][obs_var] = coldata
                 self._processing_status.append([mod_var, obs_var, 1])
             except Exception:
                 msg = ('Failed to perform analysis: {}\n'
@@ -638,6 +645,9 @@ class Colocator(ColocationSetup):
         self._write_log('Colocation finished')
         self._close_log()
         self._print_processing_status()
+        if self.keep_data:
+            self.data = data_out
+        return data_out
 
     @property
     def model_vars(self):
@@ -935,8 +945,6 @@ class Colocator(ColocationSetup):
 
         return var_matches
 
-    # ToDo: cumbersome (together with _find_var_matches, review whole handling
-    # of vertical codes for variable mappings...)
     def _get_ts_type_read(self, var_name, is_model):
         if not self.flex_ts_type_gridded:
             # gridded data needs to be available in specified colocation
@@ -965,8 +973,6 @@ class Colocator(ColocationSetup):
             if self.model_use_climatology:
                 # overwrite start and stop to read climatology file for model
                 start, stop = 9999, None
-            if var_name in self.model_rename_vars:
-                kwargs['rename_var'] = self.model_rename_vars[var_name]
             if var_name in self.model_read_opts:
                 kwargs.update(self.model_read_opts[var_name])
 
@@ -1058,7 +1064,16 @@ class Colocator(ColocationSetup):
     def _save_coldata(self, coldata):
         """Helper for saving colocateddata"""
         obs_var, mod_var = coldata.metadata['var_name']
-        savename = self._coldata_savename(obs_var, mod_var, coldata.ts_type)
+        if mod_var in self.model_rename_vars:
+            mvar = self.model_rename_vars[mod_var]
+            const.print_log.info(
+                f'Renaming model variable from {mod_var} to {mvar} in '
+                f'ColocatedData before saving to NetCDF.')
+            coldata.rename_variable(mod_var, mvar,
+                                    self.model_id)
+        else:
+            mvar = mod_var
+        savename = self._coldata_savename(obs_var, mvar, coldata.ts_type)
         fp = coldata.to_netcdf(self.output_dir, savename=savename)
         self.files_written.append(fp)
         msg = f'WRITE: {fp}\n'
