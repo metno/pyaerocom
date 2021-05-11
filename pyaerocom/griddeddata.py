@@ -171,7 +171,7 @@ class GriddedData(object):
         """AeroCom variable name"""
         try:
             return const.VARS[self.var_name].var_name_aerocom
-        except Exception:
+        except VariableDefinitionError:
             return None
 
     @property

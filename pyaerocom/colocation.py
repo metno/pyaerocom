@@ -27,6 +27,11 @@ from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
+def _resolve_var_name(gridded_data):
+    var = gridded_data.var_name
+    aerocom_var = gridded_data.var_name_aerocom
+
+    _check_var_registered(var, aerocom_var, gridded_data)
 def _check_var_registered(var, aerocom_var, gridded_data):
     vars_avail = const.VARS.all_vars
     if not any([x in vars_avail for x in [var, aerocom_var]]):
@@ -185,6 +190,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
 
     var, var_ref = gridded_data.var_name, gridded_data_ref.var_name
     aerocom_var = gridded_data.var_name_aerocom
+    aerocom_var_ref = gridded_data_ref.var_name_aerocom
     _check_var_registered(var, aerocom_var, gridded_data)
 
     if update_baseyear_gridded is not None:
@@ -273,6 +279,7 @@ def colocate_gridded_gridded(gridded_data, gridded_data_ref, ts_type=None,
     meta = {'data_source'       :   [gridded_data_ref.data_id,
                                      gridded_data.data_id],
             'var_name'          :   [var_ref, var],
+            'var_name_input'    :   [var_ref, var],
             'ts_type'           :   grid_ts_type,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [ref_ts_type_src, grid_ts_type_src],
@@ -647,10 +654,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     except DimensionOrderError:
         gridded_data.reorder_dimensions_tseries()
 
-    var = gridded_data.var_name
-    aerocom_var = gridded_data.var_name_aerocom
-
-    _check_var_registered(var, aerocom_var, gridded_data)
+    var, aerocom_var = _resolve_var_name(gridded_data)
 
     if var_ref is None:
         if aerocom_var is not None:
@@ -910,6 +914,7 @@ def colocate_gridded_ungridded(gridded_data, ungridded_data, ts_type=None,
     meta = {
             'data_source'       :   [dataset_ref, gridded_data.name],
             'var_name'          :   [var_ref, var],
+            'var_name_input'    :   [var_ref, var],
             'ts_type'           :   col_freq, # will be updated below if resampling
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [ts_type_src_ref, grid_ts_type_src],
