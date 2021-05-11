@@ -493,6 +493,14 @@ class ReadEbas(ReadUngriddedBase):
             out.append(self.var_info(var).var_name_aerocom)
         return out
 
+    def _check_add_station_filter_sqlquery(self, constraints):
+        if 'station_names' in constraints:
+            stat_matches = self._find_station_matches(
+                constraints['station_names'])
+
+            constraints['station_names'] = stat_matches
+        return constraints
+
     def get_file_list(self, vars_to_retrieve, **constraints):
         """Get list of files for all variables to retrieve
 
@@ -525,26 +533,21 @@ class ReadEbas(ReadUngriddedBase):
 
         db = self.file_index
         files_vars = {}
-        totnum = 0
+        files_aux_req = {}
         const.logger.info('Retrieving EBAS files for variables\n{}'
                           .format(vars_to_retrieve))
         # directory containing NASA Ames files
         filedir = self.file_dir
         for var in vars_to_retrieve:
             info = self.get_ebas_var(var)
-
-            if 'station_names' in constraints:
-                try:
-                    stat_matches = self._find_station_matches(
-                        constraints['station_names'])
-                except FileNotFoundError:
-                    continue
-                constraints['station_names'] = stat_matches
+            try:
+                constraints = self._check_add_station_filter_sqlquery(constraints)
+            except FileNotFoundError:
+                # skip this variable
+                continue
 
             requests = info.make_sql_requests(**constraints)
             for _var, req in requests.items():
-                const.logger.info('Retrieving EBAS file list for request:\n{}'
-                                  .format(req))
                 filenames = db.get_file_names(req)
                 self.sql_requests.append(req)
 
@@ -555,20 +558,59 @@ class ReadEbas(ReadUngriddedBase):
                         continue
                     paths.append(os.path.join(filedir, file))
 
-                files_vars[_var] = sorted(paths)
-                num = len(paths)
-                totnum += num
-                self.logger.info('{} files found for variable {}'.format(num, _var))
 
-        if len(files_vars) == 0:
-            raise FileNotFoundError('No files could be retrieved for either '
-                                    'of the specified input variables and '
-                                    'constraints : {} ({})'
-                                    .format(vars_to_retrieve, constraints))
+                if _var in vars_to_retrieve:
+                    # this variable is actually to be imported
+                    files_vars[_var] = sorted(paths)
+                else:
+                    # auxiliary variable that is needed to compute one of the
+                    # input variables. This variable potentially also requires
+                    # other variables to be read, and the corresponding file
+                    # list are merged in a separate step below.
+                    files_aux_req[_var] = sorted(paths)
+
+        for _var in vars_to_retrieve:
+            if not _var in files_vars:
+                files_vars[_var] = self._merge_auxvar_lists(_var, files_aux_req)
 
         self._lists_orig = files_vars
         files = self._merge_lists(files_vars)
         return files
+
+    def _merge_auxvar_lists(self, aux_var, files_aux_req):
+        """
+        Merge lists of variables required for input aux_var
+
+        Parameters
+        ----------
+        aux_var : str
+            Name of auxiliary variable that is computed from other variables.
+            Must be contained in :attr:`AUX_REQUIRES` and must have entry
+            `requires` in file `ebas_config.ini`.
+        files_aux_req : dict
+            dictionary containing file lists for all auxiliary variables needed
+            to compute input variable `aux_var` (see :attr:`AUX_REQUIRES`).
+
+        Returns
+        -------
+        list
+            list of all filenames that contain all required variables for input
+            variable `aux_var`.
+        """
+        _required = self.get_ebas_var(aux_var).requires
+        if _required is None:
+            return []
+        remaining = None
+        for _vreq in _required:
+            if not _vreq in files_aux_req:
+                return []
+            _lst = files_aux_req[_vreq]
+            if remaining is None:
+                remaining = _lst
+            else:
+                remaining = np.intersect1d(remaining, _lst)
+        return remaining
+
 
     def _get_var_cols(self, ebas_var_info, data):
         """Get all columns in NASA Ames file matching input Aerocom variable
@@ -1791,8 +1833,5 @@ if __name__=="__main__":
     import pyaerocom as pya
 
     plt.close('all')
-    ebas_local = '/home/jonasg/MyPyaerocom/data/obsdata/EBASMultiColumn/data'
-    reader = pya.io.ReadUngridded('EBASMC', data_dir=ebas_local)
-
-    reader = pya.io.ReadEbas(data_dir=ebas_local)
-    data = reader.read('vmrno2')
+    reader = pya.io.ReadEbas()
+    data = reader.read('sc550dryaer')
