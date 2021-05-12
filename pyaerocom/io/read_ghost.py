@@ -169,6 +169,7 @@ class ReadGhost(ReadUngriddedBase):
                      'vmrno'     : 'sconcno',
                      'vmrno2'    : 'sconcno2',
                      'vmro3'     : 'sconco3',
+                     'vmro3_copy': 'sconco3', 
                      'vmrso2'    : 'sconcso2',
                      'concno3'   : 'sconcno3',
                      'concnh4'   : 'sconcnh4'
