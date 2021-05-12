@@ -507,21 +507,20 @@ class ReadUngridded(object):
         if _caching is not None:
             const.CACHING = _caching
 
-        if filter_post is not None:
+        if filter_post:
             filters = self._eval_filter_post(filter_post,
                                              data_id,
                                              vars_available)
-            if not isinstance(filter_post, dict):
-                raise ValueError(
-                    f'Invalid input for filter_post in ReadUngridded: '
-                    f'{filter_post}. Need dictionary.')
             data_out = data_out.apply_filters(**filters)
         return data_out
 
     def _eval_filter_post(self, filter_post, data_id, vars_available):
+        filters = {}
         if not isinstance(filter_post, dict):
             raise ValueError(f'input filter_post must be dict, got '
                              f'{type(filter_post)}')
+        elif len(filter_post) == 0:
+            return filters
 
         if data_id in filter_post:
             # filters are specified specifically for that dataset
@@ -529,7 +528,7 @@ class ReadUngridded(object):
             return self._eval_filter_post(subset,
                                           data_id,
                                           vars_available)
-        filters = {}
+
         for key, val in filter_post.items():
             if key == 'ignore_station_names':
                 if isinstance(val, (str, list)):

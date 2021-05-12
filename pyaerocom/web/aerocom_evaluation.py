@@ -5,7 +5,6 @@ from getpass import getuser
 import glob
 import os
 import numpy as np
-import pandas as pd
 from pathlib import Path
 import shutil
 from traceback import format_exc
@@ -1508,6 +1507,43 @@ class AerocomEvaluation(object):
                 const.print_log.warning(
                     f'Failed to process maps for {model_name} {var} data. '
                     f'Reason: {format_exc()}')
+
+    def delete_invalid_coldata_files(self, dry_run=False):
+        """
+        Find and delete invalid colocated NetCDF files
+
+        Invalid NetCDF files are identified via model and obs name specified
+        in this setup and by list of variable specified for model and obs,
+        respectively, see also :func:`check_available_coldata_files`.
+
+        Parameters
+        ----------
+        dry_run : bool, optional
+            If True, then no files are deleted but a print statement is
+            provided for each file that would be deleted. The default is False.
+
+
+        Returns
+        -------
+        list
+            List of invalid files that have been (would be) deleted.
+
+        """
+        raise NotImplementedError
+        for mod in self.all_model_names:
+            for obs in self.all_obs_names:
+                col = self.init_colocator(mod, obs)
+
+        invalid = self.check_available_coldata_files()[1]
+        if len(invalid) == 0:
+            const.print_log.info('No invalid colocated data files found.')
+        else:
+            for file in invalid:
+                if dry_run:
+                    const.print_log.info(f'Would delete {file}')
+                else:
+                    os.remove(file)
+        return invalid
 
     def _run_single_entry(self, model_name, obs_name, var_name):
         if model_name == obs_name:

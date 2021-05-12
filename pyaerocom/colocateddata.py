@@ -15,7 +15,7 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
                                   NetcdfError, VarNotAvailableError,
                                   MetaDataError)
 from pyaerocom.geodesy import get_country_info_coords
-from pyaerocom.helpers import (to_pandas_timestamp,to_datestring_YYYYMMDD)
+from pyaerocom.helpers import (to_datestring_YYYYMMDD)
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
                                              get_mask_value)
 from pyaerocom.mathutils import calc_statistics

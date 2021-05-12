@@ -78,7 +78,7 @@ def make_info_str_eval_setup(stp, add_header=True):
 
     try:
         freq = str(TsType(colstp.ts_type))
-        flexfreq = colstp.flex_ts_type_gridded
+        flexfreq = colstp.flex_ts_type
         freqinfo = f'The default colocation frequency is {freq}'
         if flexfreq:
             freqinfo += (

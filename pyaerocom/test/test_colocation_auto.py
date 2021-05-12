@@ -30,7 +30,7 @@ default_setup = {'save_coldata': True, '_obs_cache_only': False,
                  'basedir_coldata': COL_OUT_DEFAULT,
                  'model_ts_type_read': None, 'model_read_aux': None,
                  'model_use_climatology': False, 'colocate_time': False,
-                 'flex_ts_type_gridded': True, 'reanalyse_existing': False,
+                 'flex_ts_type': True, 'reanalyse_existing': False,
                  'raise_exceptions': False,
                  'model_read_opts':None, 'model_rename_vars':{}
                  }
@@ -78,7 +78,7 @@ def test_colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
     obs_var = 'od550aer'
     assert tm5_aero_stp['obs_vars'] == obs_var
     col.save_coldata = False
-    col.flex_ts_type_gridded = flex
+    col.flex_ts_type = flex
     col.ts_type = ts_type
     # Problem with saving since obs_id is different
     # from obs_data.contains_dataset[0]...
