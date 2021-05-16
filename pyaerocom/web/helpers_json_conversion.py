@@ -974,7 +974,8 @@ def _process_statistics_timeseries(data, statistics_periods, freq, region_ids,
             else:
                 try:
                     arr = nparr[:, idx]
-                    stats = _get_statistics(arr[0], arr[1])
+                    stats = _get_statistics(arr[0].flatten(),
+                                            arr[1].flatten())
                 except DataCoverageError:
                     stats = stats_dummy
             # select that period and calc statistics
@@ -1106,6 +1107,7 @@ def compute_json_files_from_colocateddata(coldata,
         data = _apply_annual_constraint(data)
 
     if not diurnal_only:
+
         stats_ts = _process_statistics_timeseries(data,
                                                   statistics_periods,
                                                   main_freq,
@@ -1113,7 +1115,6 @@ def compute_json_files_from_colocateddata(coldata,
                                                   use_weights,
                                                   use_country,
                                                   meta_glob)
-
         ts_file = os.path.join(out_dirs['hm'], 'stats_ts.json')
         _add_entry_json(ts_file, stats_ts, obs_name, obs_var,
                         vert_code, model_name, model_var)

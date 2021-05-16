@@ -728,13 +728,17 @@ class GriddedData(object):
                 f'Unit {self.units} in GriddedData {self.short_str()} is not '
                 f'AeroCom conform ({to_unit}). Trying to convert ... '
                 )
-            try:
-                self.convert_unit(to_unit)
+            if self.var_info.units == '1' and self.units.is_unknown():
+                self.units = '1'
                 unit_ok = True
-            except Exception as e:
-                const.print_log.warning(
-                    f'Failed to convert unit from {self.units} to {to_unit}. '
-                    f'Reason: {e}')
+            else:
+                try:
+                    self.convert_unit(to_unit)
+                    unit_ok = True
+                except Exception as e:
+                    const.print_log.warning(
+                        f'Failed to convert unit from {self.units} to {to_unit}. '
+                        f'Reason: {e}')
 
         return unit_ok
 
