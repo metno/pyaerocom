@@ -83,13 +83,12 @@ class EbasSQLRequest(BrowseDict):
                 var = tuple(var)
             else:
                 var = var[0]
+
         if isinstance(var, tuple):
             return "{}".format(var)
         elif isinstance(var, str):
             return "(\'{}\')".format(var)
-        else:
-            raise ValueError("Invalid value encountered, need list, tuple or "
-                             "str, got {}".format(type(var)))
+        raise ValueError('Invalid value...')
 
     def make_file_query_str(self, distinct=True, **kwargs):
         """Wrapper for base method :func:`make_query_str`
@@ -108,15 +107,15 @@ class EbasSQLRequest(BrowseDict):
         """
         return self.make_query_str(distinct=distinct, **kwargs)
 
-    def make_query_str(self, what="filename",
+    def make_query_str(self, what=None,
                        distinct=True, **kwargs):
         """Translate current class state into SQL query command string
 
         Parameters
         ----------
-        what : :obj:`str` or :obj:`tuple`
+        what : str or tuple, optional
             what columns to retrieve (e.g. comp_name for all variables) from
-            table specified.
+            table specified. Defaults to None, in which case "filename" is used
         distinct : bool
             return unique files
         **kwargs
@@ -128,7 +127,9 @@ class EbasSQLRequest(BrowseDict):
             SQL file request command for current specs
         """
         self.update(**kwargs)
-        if not isinstance(what, str): #tuple or list of parameters to be retrieved
+        if what is None:
+            what = "filename"
+        elif not isinstance(what, str): #tuple or list of parameters to be retrieved
             what = ",".join(what)
 
         if distinct:
