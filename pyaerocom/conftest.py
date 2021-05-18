@@ -115,6 +115,9 @@ change_verbosity('critical', const.print_log)
 
 EMEP_DIR =  str(TESTDATADIR.joinpath(CHECK_PATHS['emep']))
 
+EBAS_SQLite_DB = EBAS_FILEDIR.parent.joinpath('ebas_file_index.sqlite3')
+
+assert EBAS_SQLite_DB.exists()
 
 @pytest.fixture(scope='session')
 def path_emep():
