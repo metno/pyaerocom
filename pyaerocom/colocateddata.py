@@ -20,7 +20,6 @@ from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
                                              get_mask_value)
 from pyaerocom.mathutils import calc_statistics
 
-
 from pyaerocom.plot.plotscatter import plot_scatter
 from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.region import Region

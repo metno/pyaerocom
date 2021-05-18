@@ -690,6 +690,7 @@ class Colocator(ColocationSetup):
 
         """
         self.update(**opts)
+        data_out = {}
         # ToDo: see if the following could be solved via custom context manager
         try:
             vars_to_process = self.prepare_run(var_name)
@@ -699,11 +700,8 @@ class Colocator(ColocationSetup):
                 self._write_log('ABORTED: raise_exceptions is True\n')
                 self._close_log()
                 raise
-        if len(vars_to_process) > 0:
-            self._print_coloc_info(vars_to_process)
-        else:
-            const.print_log.info('Nothing to colocate...')
-        data_out = {}
+            vars_to_process = {}
+        self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
             mname = self.get_model_name()
             try:
@@ -1323,6 +1321,9 @@ class Colocator(ColocationSetup):
         return coldata
 
     def _print_coloc_info(self, var_matches):
+        if not var_matches:
+            const.print_log.info('Nothing to colocate')
+            return
         const.print_log.info(
             'The following variable combinations will be colocated\n'
             'MODEL-VAR\tOBS-VAR')

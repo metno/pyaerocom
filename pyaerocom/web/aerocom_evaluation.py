@@ -206,11 +206,18 @@ class AerocomEvaluation(object):
     #: attributes that are not supported by this interface
     FORBIDDEN_ATTRS = ['basedir_coldata']
 
-    #: default statistics frequencies for web tools
-    DEFAULT_STATISTICS_FREQS = ['monthly', 'yearly']
+    DEFAULTS = dict(
+        # output frequencies for which statistics are computed
+        statistics_freqs = ['monthly', 'yearly'],
+        # regrid resolution for gridded/gridded colocation
+        regrid_res_deg = 5,
+
+        )
 
     #: Allowed zoom regions for web map displays
     _ALLOWED_ZOOM_REGIONS = ['World', 'Europe']
+
+
     def __init__(self, proj_id, exp_id, config_dir=None,
                  try_load_json=True, init_output_dirs=False, **settings):
 
@@ -224,7 +231,7 @@ class AerocomEvaluation(object):
         self.exp_status = 'experimental'
         self.exp_pi = getuser()
 
-        self.statistics_freqs = self.DEFAULT_STATISTICS_FREQS
+        self.statistics_freqs = self.DEFAULTS['statistics_freqs']
         self.statistics_periods = None
         self.main_freq = None
 
@@ -254,15 +261,15 @@ class AerocomEvaluation(object):
         self.maps_vmin_vmax = None
         self.map_zoom_default = 'World'
 
-
-
         #: Output directories for different types of json files (will be filled
         #: in :func:`init_json_output_dirs`)
         self._out_dirs = {}
 
         #: Dictionary specifying default settings for colocation
-        self.colocation_settings = ColocationSetup(save_coldata=True,
-                                                   keep_data=False)
+        self.colocation_settings = ColocationSetup(
+            save_coldata=True,
+            keep_data=False,
+            regrid_res_deg=self.DEFAULTS['regrid_res_deg'])
 
         self.add_methods_file = None
         self.add_methods = {}
@@ -301,6 +308,7 @@ class AerocomEvaluation(object):
                     f'experiment {exp_id}. Reason:\n{format_exc()}'
                     )
         self.update(**settings)
+
         if init_output_dirs:
             self.init_json_output_dirs()
 
