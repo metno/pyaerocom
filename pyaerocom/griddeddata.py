@@ -14,6 +14,7 @@ import pandas as pd
 from pathlib import Path
 
 from pyaerocom import const, logger, print_log
+from pyaerocom._warnings_management import filter_warnings
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (CoordinateError,
@@ -1767,6 +1768,8 @@ class GriddedData(object):
     def add_aggregator(self, aggr_name):
         raise NotImplementedError
 
+    @filter_warnings(const.FILTER_IRIS_WARNINGS,
+                     messages=["Using DEFAULT_SPHERICAL_EARTH_RADIUS."])
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         if not self.has_latlon_dims:

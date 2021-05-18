@@ -399,7 +399,8 @@ class ColocatedData(object):
             self.data.longitude.attrs['units'] = 'degrees'
         arr = self.data
         from pyaerocom import GriddedData
-        obs = GriddedData(arr.to_iris())
+        obs = GriddedData(arr.to_iris(),
+                          check_unit=False, convert_unit_on_init=False)
         return obs.calc_area_weights()
 
     def min(self):

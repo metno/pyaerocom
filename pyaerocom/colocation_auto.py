@@ -497,6 +497,14 @@ class Colocator(ColocationSetup):
             os.mkdir(loc)
         return loc
 
+    @property
+    def processing_status(self):
+        head = ['Model Var', 'Obs Var', 'Status']
+        tab = []
+        for mvar, ovar, key in self._processing_status:
+            tab.append([mvar, ovar, self.STATUS_CODES[key]])
+        return pd.DataFrame(tab, columns=head)
+
     def get_model_name(self):
         """
         Get name of model
@@ -593,59 +601,28 @@ class Colocator(ColocationSetup):
                                   is_model=True,
                                   **kwargs)
 
-    def _read_ungridded(self, var_name):
-        """Helper to read UngriddedData
-
-        Note
-        ----
-        reading is restricted to single variable UngriddedData objects here,
-        due to multiple possibilities for variable specific obs filter
-        definitions and because the colocation is done sequentially for each
-        variable.
+    def prepare_run(self, var_name=None):
+        """
+        Prepare colocation run for current setup.
 
         Parameters
         ----------
-        vars_to_read : str or list, optional
-            variables that should be read from obs-network (:attr:`obs_id`)
+        var_name : str, optional
+            Variable name that is supposed to be analysed. The default is None,
+            in which case all defined variables are attempted to be colocated.
+
+        Raises
+        ------
+        AttributeError
+            If no observation variables are defined (:attr:`obs_vars` empty).
 
         Returns
         -------
-        UngriddedData
-            loaded data object
+        vars_to_process : dict
+            Mapping of variables to be processed, keys are model vars, values
+            are obs vars.
 
         """
-        obs_reader = self.obs_reader
-        obs_filters_post = self._eval_obs_filters(var_name)
-
-        obs_data = obs_reader.read(
-            vars_to_retrieve=var_name,
-            only_cached=self._obs_cache_only,
-            filter_post=obs_filters_post,
-            **self.read_opts_ungridded)
-
-        if self.obs_remove_outliers:
-            oor = self.obs_outlier_ranges
-            if var_name in oor:
-                low, high = oor[var_name]
-            else:
-                var_info = const.VARS[var_name]
-                low, high = var_info.minimum, var_info.maximum
-            obs_data.remove_outliers(var_name,
-                                     low=low,high=high,
-                                     inplace=True,
-                                     move_to_trash=False)
-        return obs_data
-
-    def _check_obs_filters(self):
-        obs_vars = self.obs_vars
-        if any([x in self.obs_filters for x in obs_vars]):
-            # variable specific obs_filters
-            for ovar in obs_vars:
-                if not ovar in self.obs_filters:
-                    self.obs_filters[ovar] = {}
-
-
-    def prepare_run(self, var_name=None):
         try:
             self._init_log()
         except Exception:
@@ -680,14 +657,24 @@ class Colocator(ColocationSetup):
     def run(self, var_name=None, **opts):
         """Perform colocation for current setup
 
-        The current setup comprises at least
+        See also :func:`prepare_run`.
 
         Parameters
         ----------
+        var_name : str, optional
+            Variable name that is supposed to be analysed. The default is None,
+            in which case all defined variables are attempted to be colocated.
+
         **opts
             keyword args that may be specified to change the current setup
             before colocation
 
+        Returns
+        -------
+        dict
+            nested dictionary, where keys are model variables, values are
+            dictionaries comprising key / value pairs of obs variables and
+            associated instances of :class:`ColocatedData`.
         """
         self.update(**opts)
         data_out = {}
@@ -703,7 +690,6 @@ class Colocator(ColocationSetup):
             vars_to_process = {}
         self._print_coloc_info(vars_to_process)
         for mod_var, obs_var in vars_to_process.items():
-            mname = self.get_model_name()
             try:
                 coldata = self._run_helper(mod_var, obs_var)
                 if not mod_var in data_out:
@@ -768,6 +754,57 @@ class Colocator(ColocationSetup):
                 meta['obs_var'] in obs_vars):
                 valid.append(file)
         return valid
+
+    def _read_ungridded(self, var_name):
+        """Helper to read UngriddedData
+
+        Note
+        ----
+        reading is restricted to single variable UngriddedData objects here,
+        due to multiple possibilities for variable specific obs filter
+        definitions and because the colocation is done sequentially for each
+        variable.
+
+        Parameters
+        ----------
+        vars_to_read : str or list, optional
+            variables that should be read from obs-network (:attr:`obs_id`)
+
+        Returns
+        -------
+        UngriddedData
+            loaded data object
+
+        """
+        obs_reader = self.obs_reader
+        obs_filters_post = self._eval_obs_filters(var_name)
+
+        obs_data = obs_reader.read(
+            vars_to_retrieve=var_name,
+            only_cached=self._obs_cache_only,
+            filter_post=obs_filters_post,
+            **self.read_opts_ungridded)
+
+        if self.obs_remove_outliers:
+            oor = self.obs_outlier_ranges
+            if var_name in oor:
+                low, high = oor[var_name]
+            else:
+                var_info = const.VARS[var_name]
+                low, high = var_info.minimum, var_info.maximum
+            obs_data.remove_outliers(var_name,
+                                     low=low,high=high,
+                                     inplace=True,
+                                     move_to_trash=False)
+        return obs_data
+
+    def _check_obs_filters(self):
+        obs_vars = self.obs_vars
+        if any([x in self.obs_filters for x in obs_vars]):
+            # variable specific obs_filters
+            for ovar in obs_vars:
+                if not ovar in self.obs_filters:
+                    self.obs_filters[ovar] = {}
 
     def _check_load_model_data(self, var_matches):
         """
@@ -918,14 +955,6 @@ class Colocator(ColocationSetup):
                     f'Invalid obs var(s) for {self.obs_id}: {invalid}')
 
             self.obs_vars = avail
-
-    @property
-    def processing_status(self):
-        head = ['Model Var', 'Obs Var', 'Status']
-        tab = []
-        for mvar, ovar, key in self._processing_status:
-            tab.append([mvar, ovar, self.STATUS_CODES[key]])
-        return pd.DataFrame(tab, columns=head)
 
     def _print_processing_status(self):
 
