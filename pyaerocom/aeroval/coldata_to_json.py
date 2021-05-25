@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr 15 14:00:44 2019
+Helpers for conversion of ColocatedData to JSON files for web interface.
 """
 import os
 import numpy as np

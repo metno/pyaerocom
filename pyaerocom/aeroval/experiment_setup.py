@@ -21,9 +21,8 @@ from pyaerocom.helpers import isnumeric, start_stop
 
 from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.aeroval.obsconfigeval import (ObsConfigEval)
-from pyaerocom.aeroval.modelconfigeval import ModelConfigEval
+from pyaerocom.aeroval.modelentry import ModelConfigEval
 
-from pyaerocom.aeroval.projectmanager import ProjectManager
 from pyaerocom.aeroval.helpers import (
     _check_statistics_periods, _get_min_max_year_periods,
     delete_experiment_data_evaluation_iface,
@@ -37,7 +36,7 @@ from pyaerocom.aeroval.coldata_to_json import (
 from pyaerocom.aeroval.var_names_web import VAR_MAPPING
 
 class ExperimentSetup:
-    """Class for creating json files for Aerocom Evaluation interface
+    """Class representing a full setup for an AeroVal experiment
 
     High level interface for computation of colocated netcdf files and json
     files for `AeroVal interface
@@ -160,13 +159,6 @@ class ExperimentSetup:
         is supposed to be load from a configuration file. The name of that file
         is automatically inferred from input `proj_id` and `exp_id`, which need
         to be specified.
-    try_load_json : bool
-        if True, and if a config json file can be inferred and found from the
-        former 3 input args, this configuration is loaded automatically.
-        Note also that settings can be provided via arg `**settings` when
-        instantiating the class. These are updated *after* the reading of the
-        json file, which will overwrite affected attributes defined in the json
-        file.
     init_output_dirs : bool
         if True, all required output directories for json files and colocated
         NetCDF files are already created when instantiating the class. This is
@@ -220,7 +212,7 @@ class ExperimentSetup:
 
 
     def __init__(self, proj_id, exp_id, config_dir=None,
-                 try_load_json=True, init_output_dirs=False, **settings):
+                 init_output_dirs=False, **settings):
 
         self._log = const.print_log
 
@@ -294,19 +286,6 @@ class ExperimentSetup:
         self.modelorder_from_config = True
         self.obsorder_from_config = True
 
-        if (len(settings)==0 and try_load_json and isinstance(proj_id, str)
-            and isinstance(exp_id, str)):
-            try:
-                self.load_config(proj_id, exp_id, config_dir)
-                const.print_log.info(
-                    f'Found and imported config file for project {proj_id}, '
-                    f'experiment {exp_id}'
-                    )
-            except Exception:
-                const.print_log.warning(
-                    f'Failed to import config file for project {proj_id}, '
-                    f'experiment {exp_id}. Reason:\n{format_exc()}'
-                    )
         self.update(**settings)
 
         if init_output_dirs:
@@ -589,7 +568,7 @@ class ExperimentSetup:
     def update(self, **settings):
         """Update current setup"""
         for k, v in settings.items():
-            self[k] = v
+            self.__setitem__(k, v)
 
     def _set_obsconfig(self, val):
         cfg = {}
@@ -648,14 +627,10 @@ class ExperimentSetup:
                 raise ValueError(
                     f'Invalid input for map_zoom_default, choose from '
                     f'{self._ALLOWED_ZOOM_REGIONS}')
-        elif key in self.__dict__:
-            self.__dict__[key] = val
+        elif not key in self.__dict__:
+            raise ValueError(key, val)
 
-        else:
-            const.print_log.warning(
-                f'Invalid input key {key} for AerocomEvaluation. Will be '
-                f'ignored'
-            )
+        self.__dict__[key] = val
 
     def __getitem__(self, key):
         if key in self.__dict__:
@@ -1593,7 +1568,7 @@ class ExperimentSetup:
             self.make_json_files(files_to_convert)
 
     def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
-                       update_interface=True, **kwargs):
+                       update_interface=True):
         """Create colocated data and json files for model / obs combination
 
         Parameters
@@ -1616,8 +1591,6 @@ class ExperimentSetup:
             online are updated after the run, including the the menu.json file
             and also, the model info table (minfo.json) file is created and
             saved in :attr:`exp_dir`.
-        **kwargs
-            additional config args or options passed to :func:`update`
 
         Returns
         -------
@@ -1625,7 +1598,6 @@ class ExperimentSetup:
             list containing all colocated data objects that have been converted
             to json files.
         """
-        self.update(**kwargs)
         self._check_init_col_outdir()
         self._check_time_config()
 
