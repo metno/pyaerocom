@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
-
+from geonum.atmosphere import p0, T0_STD
 import os, re
 import fnmatch
 import numpy as np
@@ -31,8 +31,10 @@ from pyaerocom.mathutils import (compute_sc550dryaer,
                                  compute_ang4470dryaer_from_dry_scat,
                                  compute_wetoxs_from_concprcpoxs,
                                  compute_wetoxn_from_concprcpoxn,
-                                 compute_wetrdn_from_concprcprdn)
-
+                                 compute_wetrdn_from_concprcprdn,
+                                 vmrx_to_concx,
+                                 concx_to_vmrx)
+from pyaerocom.molmasses import get_molmass
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
 from pyaerocom.stationdata import StationData
@@ -42,6 +44,7 @@ from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.exceptions import (NotInFileError, EbasFileError,
+                                  MetaDataError,
                                   UnitConversionError,
                                   TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import BrowseDict
@@ -69,6 +72,19 @@ class ReadEbasOptions(BrowseDict):
         but file contains 3 columns of that variable, e.g. at 520, 530 and
         540 nm), then the closest wavelength to the queried wavelength is used
         within the specified tolerance level.
+    shift_wavelengths : bool
+        (only for wavelength dependent variables).
+        If True, and a data columns candidate is valid within wavelength
+        tolerance around desired wavelength, that column will be considered
+        to be used for data import. Defaults to True.
+    assume_default_ae_if_unavail : bool
+        assume an Angstrom Exponent for applying wavelength shifts of data. See
+        :attr:`ReadEbas.ASSUME_AE_SHIFT_WVL` and
+        :attr:`ReadEbas.ASSUME_AAE_SHIFT_WVL` for AE and AAE assumptions
+        related to scattering and absorption coeffs. Defaults to True.
+    check_correct_MAAP_wrong_wvl : bool
+        (BETA, do not use): set correct wavelength for certain absorption coeff
+        measurements. Defaults to False.
     eval_flags : bool
         If True, the flag columns in the NASA Ames files are read and decoded
         (using :func:`EbasFlagCol.decode`) and the (up to 3 flags for each
@@ -82,19 +98,26 @@ class ReadEbasOptions(BrowseDict):
         :func:`ReadEbas.read` (e.g. if sc550dryaer is requested, this
         requires reading of sc550aer and scrh. The latter 2 will be
         written to the data object if this parameter evaluates to True)
-    merge_meta : bool
-        if True, then :func:`UngriddedData.merge_common_meta` will be called
-        at the end of :func:`ReadEbas.read` (merges common metadata blocks
-        together)
     convert_units : bool
         if True, variable units in EBAS files will be checked and attempted to
         be converted into AeroCom default unit for that variable. Defaults to
         True.
+    try_convert_vmr_conc : bool
+        attempt to convert vmr data to conc if user requires conc (e.g. user
+        wants conco3 but file only contains vmro3), and vice versa.
     ensure_correct_freq : bool
         if True, the frequency set in NASA Ames files (provided via attr
         *resolution_code*) is checked using time differences inferred from
         start and stop time of each measurement. Measurements that are not in
         that resolution (within 5% tolerance level) will be flagged invalid.
+    freq_from_start_stop_meas : bool
+        infer frequency from start / stop intervals of individual
+        measurements.
+
+    Parameters
+    ----------
+    **args
+        key / value pairs specifying any of the supported settings.
     """
     #: Names of options that correspond to reading filter constraints
     _FILTER_IDS = ['prefer_statistics',
@@ -118,6 +141,7 @@ class ReadEbasOptions(BrowseDict):
         self.keep_aux_vars = False
 
         self.convert_units = True
+        self.try_convert_vmr_conc = True
 
         self.ensure_correct_freq = True
         self.freq_from_start_stop_meas = True
@@ -139,6 +163,11 @@ class ReadEbas(ReadUngriddedBase):
     dataset_to_read
         string specifying either of the supported datasets that are defined
         in ``SUPPORTED_DATASETS``
+    data_dir : str
+        directory where data is located (NOTE: needs to point to the
+        directory that contains the "ebas_file_index.sqlite3" file and not
+        to the underlying directory "data" which contains the actual
+        NASA Ames files.)
 
     TODO
     ----
@@ -170,11 +199,6 @@ class ReadEbas(ReadUngriddedBase):
 
     MERGE_STATIONS = {'Birkenes' : 'Birkenes II'}
                       #'Trollhaugen'    : 'Troll'}
-    # TODO: check and redefine
-    #: default variables for read method
-    DEFAULT_VARS = ['ac550aer', # light absorption coefficient
-                    'sc550aer'] # light scattering coefficient
-
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1mn'  :   'minutely',
                      '1h'   :   'hourly',
@@ -295,6 +319,17 @@ class ReadEbas(ReadUngriddedBase):
         self._all_stats = None
 
     @property
+    def DEFAULT_VARS(self):
+        """
+        list: list of default variables to be read
+
+        Note
+        ----
+        Currently a wrapper for :attr:`PROVIDES_VARIABLES`
+        """
+        return self.PROVIDES_VARIABLES
+
+    @property
     def file_dir(self):
         """Directory containing EBAS NASA Ames files"""
         if self._file_dir is not None:
@@ -371,8 +406,6 @@ class ReadEbas(ReadUngriddedBase):
         mapping = {}
         for var, lst in lists.items():
             for fpath in lst:
-                if fpath in mapping:
-                    raise Exception('FATAL: logical error -> this should not occur...')
                 mapping[fpath] = [var]
                 for other_var, other_lst in lists.items():
                     if not var == other_var:
@@ -401,7 +434,7 @@ class ReadEbas(ReadUngriddedBase):
             self._all_stats = self.file_index.ALL_STATION_NAMES
         return self._all_stats
 
-    def find_station_matches(self, stats_or_patterns):
+    def _find_station_matches(self, stats_or_patterns):
         # ToDo: this should probably not be part of this class
         """Find all stations names that match input list of names or patterns
         """
@@ -410,8 +443,8 @@ class ReadEbas(ReadUngriddedBase):
         stats = []
         if isinstance(val, str):
             val = [val]
-        elif isinstance(val, tuple):
-            val = [x for x in val]
+        if not isinstance(val, list):
+            raise ValueError('Need list or string...')
 
         for name in val:
             if '*' in name:
@@ -457,20 +490,24 @@ class ReadEbas(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
         out = []
         for var in vars_to_retrieve:
-            name = self.var_info(var).var_name_aerocom
-            if name in out:
-                raise ValueError('Variable {} is input more than once in {}'
-                                 .format(var, vars_to_retrieve))
-            out.append(name)
+            out.append(self.var_info(var).var_name_aerocom)
         return out
 
-    def get_file_list(self, vars_to_retrieve=None, **constraints):
+    def _check_add_station_filter_sqlquery(self, constraints):
+        if 'station_names' in constraints:
+            stat_matches = self._find_station_matches(
+                constraints['station_names'])
+
+            constraints['station_names'] = stat_matches
+        return constraints
+
+    def get_file_list(self, vars_to_retrieve, **constraints):
         """Get list of files for all variables to retrieve
 
         Parameters
         ----------
-        vars_to_retrieve : list
-            list of variables that are supposed to be loaded
+        vars_to_retrieve : list or str
+            list of variables that are supposed to be read
         **constraints
             further EBAS request constraints deviating from default (default
             info for each AEROCOM variable can be found in `ebas_config.ini <
@@ -485,9 +522,8 @@ class ReadEbas(ReadUngriddedBase):
             unified list of file paths each containing either of the specified
             variables
         """
-        if vars_to_retrieve is None:
-            vars_to_retrieve = self.DEFAULT_VARS
-        elif isinstance(vars_to_retrieve, str):
+
+        if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
 
         # make sure variable names are input correctly
@@ -497,26 +533,21 @@ class ReadEbas(ReadUngriddedBase):
 
         db = self.file_index
         files_vars = {}
-        totnum = 0
+        files_aux_req = {}
         const.logger.info('Retrieving EBAS files for variables\n{}'
                           .format(vars_to_retrieve))
         # directory containing NASA Ames files
         filedir = self.file_dir
         for var in vars_to_retrieve:
             info = self.get_ebas_var(var)
-
-            if 'station_names' in constraints:
-                try:
-                    stat_matches = self.find_station_matches(
-                        constraints['station_names'])
-                except FileNotFoundError:
-                    continue
-                constraints['station_names'] = stat_matches
+            try:
+                constraints = self._check_add_station_filter_sqlquery(constraints)
+            except FileNotFoundError:
+                # skip this variable
+                continue
 
             requests = info.make_sql_requests(**constraints)
             for _var, req in requests.items():
-                const.logger.info('Retrieving EBAS file list for request:\n{}'
-                                  .format(req))
                 filenames = db.get_file_names(req)
                 self.sql_requests.append(req)
 
@@ -527,20 +558,63 @@ class ReadEbas(ReadUngriddedBase):
                         continue
                     paths.append(os.path.join(filedir, file))
 
-                files_vars[var] = sorted(paths)
-                num = len(paths)
-                totnum += num
-                self.logger.info('{} files found for variable {}'.format(num, var))
 
-        if len(files_vars) == 0:
-            raise FileNotFoundError('No files could be retrieved for either '
-                                    'of the specified input variables and '
-                                    'constraints : {} ({})'
-                                    .format(vars_to_retrieve, constraints))
+                if _var in vars_to_retrieve:
+                    # this variable is actually to be imported
+                    files_vars[_var] = sorted(paths)
+                else:
+                    # auxiliary variable that is needed to compute one of the
+                    # input variables. This variable potentially also requires
+                    # other variables to be read, and the corresponding file
+                    # list are merged in a separate step below.
+                    files_aux_req[_var] = sorted(paths)
+
+        for _var in vars_to_retrieve:
+            if not _var in files_vars:
+                files_vars[_var] = self._merge_auxvar_lists(_var, files_aux_req)
 
         self._lists_orig = files_vars
         files = self._merge_lists(files_vars)
+        if len(files) == 0:
+            raise FileNotFoundError(
+                f'No files could be found for {vars_to_retrieve} and reading '
+                f'constraints {constraints}.')
         return files
+
+    def _merge_auxvar_lists(self, aux_var, files_aux_req):
+        """
+        Merge lists of variables required for input aux_var
+
+        Parameters
+        ----------
+        aux_var : str
+            Name of auxiliary variable that is computed from other variables.
+            Must be contained in :attr:`AUX_REQUIRES` and must have entry
+            `requires` in file `ebas_config.ini`.
+        files_aux_req : dict
+            dictionary containing file lists for all auxiliary variables needed
+            to compute input variable `aux_var` (see :attr:`AUX_REQUIRES`).
+
+        Returns
+        -------
+        list
+            list of all filenames that contain all required variables for input
+            variable `aux_var`.
+        """
+        _required = self.get_ebas_var(aux_var).requires
+        if _required is None:
+            return []
+        remaining = None
+        for _vreq in _required:
+            if not _vreq in files_aux_req:
+                return []
+            _lst = files_aux_req[_vreq]
+            if remaining is None:
+                remaining = _lst
+            else:
+                remaining = np.intersect1d(remaining, _lst)
+        return remaining
+
 
     def _get_var_cols(self, ebas_var_info, data):
         """Get all columns in NASA Ames file matching input Aerocom variable
@@ -615,7 +689,6 @@ class ReadEbas(ReadUngriddedBase):
                     continue
                 col_matches = [colnum for colnum in col_matches if prefcomp == data.var_defs[colnum].name]
                 break
-
         return col_matches
 
     def _resolve_units_cols(self, var_name, result_col, file):
@@ -1021,8 +1094,12 @@ class ReadEbas(ReadUngriddedBase):
                     if opts.assume_default_ae_if_unavail:
                         if var.startswith('ac'):
                             ae = self.ASSUME_AAE_SHIFT_WVL
-                        else:
+                        elif var.startswith('sc'):
                             ae = self.ASSUME_AE_SHIFT_WVL
+                        else:
+                            raise NotImplementedError(
+                                f'No Angstrom exponent specified for {var}'
+                                )
                         avg_before = np.nanmean(data)
                         data = self._shift_wavelength(vals=data,
                                                   from_wvl=wvlcol,
@@ -1131,6 +1208,73 @@ class ReadEbas(ReadUngriddedBase):
             var_cols[var] = col
         return var_cols
 
+    def _try_get_pt_conversion(self,  meta):
+        if ('volume_std._temperature' in meta and
+            'volume_std._pressure' in meta):
+            try:
+                pstr, punit = meta['volume_std._pressure'].split()
+                tstr , tunit = meta['volume_std._temperature'].split()
+                pconv = get_unit_conversion_fac(punit, 'Pa')
+                tconv = get_unit_conversion_fac(tunit, 'K')
+                p = float(pstr) * pconv
+                T = float(tstr) * tconv
+            except Exception:
+                raise MetaDataError(
+                    'Failed to convert information strings for p and T into '
+                    'floating point numbers with units P and K, respectively')
+            return (p,T)
+        raise MetaDataError('Info not available in metadata')
+
+    def _try_convert_vmr_conc(self, data_out, var, var_info, meta):
+        mmol = get_molmass(var)
+        mmol_air = get_molmass('air_dry')
+        from_unit = var_info['units']
+        to_unit = self.var_info(var).units
+        try:
+            # try get pressure and temperature used for unit conversion from
+            # column info
+            p, T = self._try_get_pt_conversion(var_info)
+        except MetaDataError:
+            try:
+                # try get pressure and temperature used for unit conversion from
+                # file metadata (could happen for single column NASA Ames files)
+                p, T = self._try_get_pt_conversion(meta)
+            except MetaDataError:
+                # use US standard pressure and temperature
+                p, T = p0, T0_STD
+
+        if var.startswith('vmr'): #assume variable is concX
+            concvar = var.replace('vmr', 'conc')
+            to_unit_pre = self.var_info(concvar).units
+
+            cfac_pre = get_unit_conversion_fac(from_unit,
+                                               to_unit_pre,
+                                               var_name=concvar)
+
+            cfac = concx_to_vmrx(data=1,
+                                 p_pascal=p,
+                                 T_kelvin=T,
+                                 conc_unit=to_unit_pre,
+                                 mmol_var=mmol,
+                                 mmol_air=mmol_air,
+                                 to_unit=to_unit)
+            cfac *= cfac_pre
+        elif var.startswith('conc'): #assume variable is vmrX
+            cfac = vmrx_to_concx(data=1,
+                                 p_pascal=p,
+                                 T_kelvin=T,
+                                 vmr_unit=from_unit,
+                                 mmol_var=mmol,
+                                 mmol_air=mmol_air,
+                                 to_unit=to_unit)
+        else:
+            raise UnitConversionError('Data is neither vmr nor conc')
+        data_out.var_info[var]['units'] = to_unit
+        data_out.var_info[var]['converted_from_units'] = from_unit
+        data_out.var_info[var]['units_conv_fac'] = cfac
+        data_out[var] *= cfac
+        return data_out
+
     def get_ebas_var(self, var_name):
         """Get instance of :class:`EbasVarInfo` for input AeroCom variable"""
         if not var_name in self._loaded_ebas_vars:
@@ -1224,7 +1368,16 @@ class ReadEbas(ReadUngriddedBase):
             data_out['var_info'][var].update(var_info)
 
             if opts.convert_units:
-                data_out = self._convert_varunit_stationdata(data_out, var)
+                try:
+                    data_out = self._convert_varunit_stationdata(data_out, var)
+                except UnitConversionError:
+                    if opts.try_convert_vmr_conc:
+                        data_out = self._try_convert_vmr_conc(data_out,
+                                                              var,
+                                                              var_info,
+                                                              file.meta) #raises UnitConversionError if it is not possible
+                    else:
+                        raise
 
         if len(data_out['var_info']) == 0:
             raise EbasFileError('All data columns of specified input variables '
@@ -1390,6 +1543,23 @@ class ReadEbas(ReadUngriddedBase):
         return self._opts[var_name]
 
     def _check_constraints(self, constraints):
+        """
+        Separate sqlite constraints (for file retrieval) from reading options
+
+        Parameters
+        ----------
+        constraints : dict
+            constraints and options
+
+        Returns
+        -------
+        constraints_new : dict
+            input constraints that have been filtered for options that can
+            be handled by :class:`ReadEbasOptions`.
+        update_opts : dict
+            key / value pairs of input dict that are handled by
+            :class:`ReadEbasOptions`.
+        """
         constraints_new = {}
         update_opts = {}
         for key, val in constraints.items():
@@ -1403,6 +1573,23 @@ class ReadEbas(ReadUngriddedBase):
         return (constraints_new, update_opts)
 
     def _init_read_opts(self, vars_to_retrieve, constraints):
+        """
+        Initiate reading options and constraints
+
+        Parameters
+        ----------
+        vars_to_retrieve : list
+            list of variables to be retrieved
+        constraints : dict
+            reading constraints and options.
+
+        Returns
+        -------
+        constraints : dict
+            updated constraints (e.g. attributes of
+            that can be handled in file requests using :class:`EbasSQLRequest`).
+
+        """
         constraints, update_opts = self._check_constraints(constraints)
         for var in vars_to_retrieve:
             # the following method returns default opts if this variable is not
@@ -1648,11 +1835,7 @@ class ReadEbas(ReadUngriddedBase):
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     import pyaerocom as pya
-    import os
-    plt.close('all')
-    ebas_local = os.path.join(pya.const.OUTPUTDIR, 'data/obsdata/EBASMultiColumn/data')
-    reader = pya.io.ReadUngridded('EBASMC')#,
-                                  #data_dir=ebas_local)
 
-    reader = pya.io.ReadEbas(data_dir=ebas_local)
-    data = reader.read('concoc')
+    plt.close('all')
+    reader = pya.io.ReadEbas()
+    data = reader.read('sc550dryaer')

@@ -164,9 +164,9 @@ def test_to_time_series(data_tm5):
 @testdata_unavail
 def test_change_baseyear(data_tm5):
     cp = data_tm5.copy()
-    cp.change_base_year(901)
+    cp.change_base_year(1901)
 
-    assert str(cp.time.units) == 'days since 901-01-01 00:00:00'
+    assert str(cp.time.units) == 'days since 1901-01-01 00:00:00'
 
 @testdata_unavail
 @pytest.mark.parametrize('kwargs,result', [

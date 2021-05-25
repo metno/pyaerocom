@@ -33,15 +33,15 @@ aod_cube_notime.remove_coord('time')
 
 aod_cube_wrongtime = aod_cube.copy()
 tc = aod_cube_wrongtime.coord('time')
-pts = list(tc._points_dm._real_array)
+pts = list(tc._values_dm._real_array)
 pts.append(70000)
-tc._points_dm._real_array = np.asarray(pts)
+tc._values_dm._real_array = np.asarray(pts)
 
 aod_cube_wrongtime2 = aod_cube.copy()
 tc = aod_cube_wrongtime2.coord('time')
-pts = list(tc._points_dm._real_array)
+pts = list(tc._values_dm._real_array)
 pts[-1] = 70000
-tc._points_dm._real_array = np.asarray(pts)
+tc._values_dm._real_array = np.asarray(pts)
 
 aod_cube_wrongtime3 = aod_cube.copy()
 tc = aod_cube_wrongtime3.coord('time')
@@ -107,7 +107,7 @@ def test_get_dimnames_cube():
      None,does_not_raise_exception(),['time', 'latitude', 'longitude']),
     (aod_cube_notime,'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
      FileConventionRead('aerocom2'),does_not_raise_exception(),
-     ['latitude', 'longitude']),
+     ['time', 'latitude', 'longitude']),
     (aod_cube_wrongtime, 'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
      None, pytest.raises(UnresolvableTimeDefinitionError), None),
     ])
@@ -155,7 +155,7 @@ def test_check_dim_coord_names_cube(cube, raises):
 
 @pytest.mark.parametrize('cube,file,raises', [
     (aod_cube_wrongtime3, 'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_daily.nc',
-     pytest.raises(UnresolvableTimeDefinitionError)),
+     does_not_raise_exception()),
     (aod_cube, 'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
      does_not_raise_exception()),
     (aod_cube, 'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_-1_monthly.nc',
