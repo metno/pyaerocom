@@ -9,8 +9,8 @@ from pyaerocom import ColocatedData, Region
 from pyaerocom.exceptions import AeroValConfigError
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import get_all_default_region_ids
-from pyaerocom.web import AerocomEvaluation
-from pyaerocom.web import helpers_json_conversion as h
+from pyaerocom.aeroval import AerocomEvaluation
+from pyaerocom.aeroval import coldata_to_json as h
 
 
 def test__get_jsdate():

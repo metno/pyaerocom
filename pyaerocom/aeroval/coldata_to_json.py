@@ -9,9 +9,8 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom.helpers import make_datetime_index, start_stop
 from pyaerocom.io.helpers import save_dict_json
-from pyaerocom.web.helpers import read_json, write_json
-from pyaerocom.web.helpers_evaluation_iface import (_period_str_to_timeslice,
-                                                    _get_min_max_year_periods)
+from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
+                                       _get_min_max_year_periods, read_json, write_json)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.tstype import TsType

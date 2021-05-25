@@ -11,7 +11,7 @@ import os
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
-from pyaerocom.web import AerocomEvaluation
+from pyaerocom.aeroval import ExperimentSetup
 
 def compute_model_average_and_diversity(cfg, var_name,
                                         model_names=None,
@@ -68,7 +68,7 @@ def compute_model_average_and_diversity(cfg, var_name,
         corresponding diversity field, computed using definition from
         Textor et al., 2006 (ACP) DOI: 10.5194/acp-6-1777-2006
     """
-    if not isinstance(cfg, AerocomEvaluation):
+    if not isinstance(cfg, ExperimentSetup):
         raise ValueError
     if model_use_vars is None:
         model_use_vars = {}

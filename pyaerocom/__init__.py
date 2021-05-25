@@ -22,7 +22,7 @@ from . import ungriddeddata
 from . import colocation
 from . import io
 from . import plot
-from . import web
+from . import aeroval
 from . import scripts
 from . import var_groups
 

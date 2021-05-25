@@ -20,27 +20,28 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.helpers import isnumeric, start_stop
 
 from pyaerocom.io.helpers import save_dict_json
-from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
-                                   read_json, write_json)
+from pyaerocom.aeroval.obsconfigeval import (ObsConfigEval)
+from pyaerocom.aeroval.modelconfigeval import ModelConfigEval
 
-from pyaerocom.web.helpers_evaluation_iface import (
+from pyaerocom.aeroval.projectmanager import ProjectManager
+from pyaerocom.aeroval.helpers import (
     _check_statistics_periods, _get_min_max_year_periods,
     delete_experiment_data_evaluation_iface,
-    make_info_str_eval_setup)
+    make_info_str_eval_setup, read_json, write_json)
 
-from pyaerocom.web.helpers_json_conversion import (
+from pyaerocom.aeroval.coldata_to_json import (
     compute_json_files_from_colocateddata,
     get_heatmap_filename
     )
 
-from pyaerocom.web.web_naming_conventions import VAR_MAPPING
+from pyaerocom.aeroval.var_names_web import VAR_MAPPING
 
-class AerocomEvaluation(object):
+class ExperimentSetup:
     """Class for creating json files for Aerocom Evaluation interface
 
     High level interface for computation of colocated netcdf files and json
-    files for `Aerocom Evaluation interface
-    <https://aerocom-trends.met.no/evaluation/web/>`__. The processing is
+    files for `AeroVal interface
+    <https://aeroval.met.no>`__. The processing is
     done *per experiment*. See class attributes for setup options.
     An *experiment* denotes a setup comprising one or more observation
     networks (specified in :attr:`obs_config`) and the specification of one
@@ -214,7 +215,7 @@ class AerocomEvaluation(object):
 
         )
 
-    #: Allowed zoom regions for web map displays
+    #: Allowed zoom regions for aeroval map displays
     _ALLOWED_ZOOM_REGIONS = ['World', 'Europe']
 
 
@@ -301,7 +302,6 @@ class AerocomEvaluation(object):
                     f'Found and imported config file for project {proj_id}, '
                     f'experiment {exp_id}'
                     )
-
             except Exception:
                 const.print_log.warning(
                     f'Failed to import config file for project {proj_id}, '
@@ -311,6 +311,9 @@ class AerocomEvaluation(object):
 
         if init_output_dirs:
             self.init_json_output_dirs()
+
+        self.check_config()
+        self.update_summary_str()
 
     @property
     def start_stop_colocation(self):
@@ -587,8 +590,6 @@ class AerocomEvaluation(object):
         """Update current setup"""
         for k, v in settings.items():
             self[k] = v
-        self.check_config()
-        self.update_summary_str()
 
     def _set_obsconfig(self, val):
         cfg = {}
@@ -818,7 +819,7 @@ class AerocomEvaluation(object):
         raise KeyError('Cannot find setup for ID {}'.format(obs_name))
 
     def find_obs_name(self, obs_id, obs_var):
-        """Find web menu name of obs dataset based on obs_id and variable
+        """Find aeroval menu name of obs dataset based on obs_id and variable
         """
         matches = []
         for obs_name, info in self.obs_config.items():
@@ -829,7 +830,7 @@ class AerocomEvaluation(object):
         raise ValueError('Could not identify unique obs name')
 
     def find_model_name(self, model_id):
-        """Find web menu name of model dataset based on model_id
+        """Find aeroval menu name of model dataset based on model_id
         """
         matches = []
         for model_name, info in self.model_config.items():
@@ -889,7 +890,7 @@ class AerocomEvaluation(object):
         Returns
         -------
         str
-            obs name to be used in the web interface.
+            obs name to be used in the aeroval interface.
 
         """
         if not 'web_interface_name' in self.obs_config[obs_name]:
@@ -1204,7 +1205,7 @@ class AerocomEvaluation(object):
 
     def _check_and_get_iface_names(self):
         """
-        Get web interface names of all observations.
+        Get aeroval interface names of all observations.
 
         Raises
         ------
@@ -1214,7 +1215,7 @@ class AerocomEvaluation(object):
         Returns
         -------
         iface_names : list
-            list of obs names used in the web interface.
+            list of obs names used in the aeroval interface.
 
         """
         obs_list = list(self.obs_config)
@@ -1238,7 +1239,7 @@ class AerocomEvaluation(object):
     @property
     def iface_names(self):
         """
-        List of observation dataset names used in web interface
+        List of observation dataset names used in aeroval interface
         """
         return self._check_and_get_iface_names()
 
@@ -1401,8 +1402,8 @@ class AerocomEvaluation(object):
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
         """
-        from pyaerocom.web.web_maps_helpers import (calc_contour_json,
-                                                    griddeddata_to_jsondict)
+        from pyaerocom.aeroval.modelmaps_helpers import (calc_contour_json,
+                                                         griddeddata_to_jsondict)
 
         data = self.read_model_data(model_name, var)
 
@@ -1770,12 +1771,12 @@ class AerocomEvaluation(object):
         return (name, tp, cat)
 
     def update_interface(self):
-        """Update web interface
+        """Update aeroval interface
 
         Things done here:
 
             - Update menu file
-            - Make web info table json (tab informations in interface)
+            - Make aeroval info table json (tab informations in interface)
             - update and order heatmap file
         """
         self.update_menu()
@@ -1935,7 +1936,7 @@ class AerocomEvaluation(object):
 
     def make_info_table_evaluation_iface(self):
         """
-        Make an information table for an web experiment based on menu.json
+        Make an information table for an aeroval experiment based on menu.json
 
         Returns
         -------

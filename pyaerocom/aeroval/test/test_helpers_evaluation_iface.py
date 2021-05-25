@@ -3,7 +3,7 @@ import pytest
 import simplejson
 
 from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom.web import helpers_evaluation_iface as h
+from pyaerocom.aeroval import helpers as h
 
 @pytest.mark.parametrize('base_dir, proj_id, exp_id', [
     ('/blaaa', 'blub', '42'), ('tmpdir', 'blub', '42'),

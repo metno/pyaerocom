@@ -11,7 +11,7 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.ungriddeddata import UngriddedData
 
 from pyaerocom.conftest import tda, does_not_raise_exception
-from pyaerocom.web import AerocomEvaluation
+from pyaerocom.aeroval import AerocomEvaluation
 from pyaerocom.io.aux_read_cubes import add_cubes
 
 PROJ_ID = 'project'

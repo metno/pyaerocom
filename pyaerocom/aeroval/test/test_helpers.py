@@ -7,7 +7,7 @@ Created on Mon Jun  8 10:13:05 2020
 """
 import pytest
 
-from pyaerocom.web import helpers as h
+from pyaerocom.aeroval import obsconfigeval as h
 from pyaerocom.conftest import does_not_raise_exception
 
 @pytest.mark.parametrize('input_args,expectation', [

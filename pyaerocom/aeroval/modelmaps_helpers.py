@@ -70,7 +70,7 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
     try:
         import geojsoncontour
     except ModuleNotFoundError:
-        raise ModuleNotFoundError('Map processing for web interface requires '
+        raise ModuleNotFoundError('Map processing for aeroval interface requires '
                                   'library geojsoncontour which is not part of the '
                                   'standard installation of pyaerocom.')
 
