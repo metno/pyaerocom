@@ -16,4 +16,5 @@ dependencies:
   - requests
   - reverse-geocode
   - tqdm
+  - openpyxl
   - nbsphinx # for docs via rtd configuration file v2

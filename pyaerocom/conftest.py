@@ -115,6 +115,9 @@ change_verbosity('critical', const.print_log)
 
 EMEP_DIR =  str(TESTDATADIR.joinpath(CHECK_PATHS['emep']))
 
+EBAS_SQLite_DB = EBAS_FILEDIR.parent.joinpath('ebas_file_index.sqlite3')
+
+assert EBAS_SQLite_DB.exists()
 
 @pytest.fixture(scope='session')
 def path_emep():
@@ -218,7 +221,8 @@ def coldata():
         'fake_nodims'  : ColocatedData(np.ones((2,1,1))),
         'fake_3d'       : cth._create_fake_coldata_3d(),
         'fake_4d'       : cth._create_fake_coldata_4d(),
-        'fake_5d'       : cth._create_fake_coldata_5d()
+        'fake_5d'       : cth._create_fake_coldata_5d(),
+        'fake_3d_hr'    : cth._create_fake_coldata_3d_hourly()
         }
 
 @contextmanager
