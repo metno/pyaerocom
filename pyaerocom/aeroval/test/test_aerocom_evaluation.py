@@ -233,7 +233,7 @@ def test_AerocomEvaluation_to_from_json(stp, tmpdir):
     assert os.path.exists(cfg_fp)
     stp_new = AerocomEvaluation(PROJ_ID, EXP_ID, config_dir=tmpdir,
                                 try_load_json=True)
-    assert stp.colocation_settings == stp_new.colocation_settings
+    assert stp.cfg_colocation == stp_new.cfg_colocation
     assert stp.obs_config == stp_new.obs_config
     assert stp.model_config == stp_new.model_config
 

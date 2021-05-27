@@ -35,10 +35,11 @@ def make_info_str_eval_setup(stp, add_header=True):
         Long string representation of the input configuration.
 
     """
+    raise NotImplementedError('Under revision')
     modelnum = len(stp.model_config)
     obsnum = len(stp.obs_config)
     varnum = len(stp.all_obs_vars)
-    colstp = stp.colocation_settings
+    colstp = stp.cfg_colocation
 
     if modelnum > 0:
 
@@ -254,7 +255,6 @@ def _get_min_max_year_periods(statistics_periods):
             stopyr = perstop
     return startyr, stopyr
 
-
 def read_json(file_path):
     """Read json file
 
@@ -271,7 +271,6 @@ def read_json(file_path):
     with open(file_path, 'r') as f:
         data = simplejson.load(f)
     return data
-
 
 def write_json(data_dict, file_path, **kwargs):
     """Save json file

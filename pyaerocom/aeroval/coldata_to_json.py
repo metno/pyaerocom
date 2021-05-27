@@ -8,7 +8,6 @@ import numpy as np
 import xarray as xr
 from pyaerocom import const
 from pyaerocom.helpers import make_datetime_index, start_stop
-from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
                                        _get_min_max_year_periods, read_json, write_json)
 from pyaerocom.colocateddata import ColocatedData
@@ -227,7 +226,7 @@ def update_regions_json(region_defs, regions_json):
     for region_name, region_info in region_defs.items():
         if not region_name in current:
             current[region_name] = region_info
-    save_dict_json(current, regions_json)
+    write_json(current, regions_json)
     return current
 
 def _init_meta_glob(coldata, **kwargs):

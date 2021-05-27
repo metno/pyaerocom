@@ -1,7 +1,7 @@
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 
-class ModelConfigEval(BrowseDict):
+class ModelEntry(BrowseDict):
     """Modeln configuration for evaluation (dictionary)
 
     Note

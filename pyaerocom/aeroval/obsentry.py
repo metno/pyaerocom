@@ -14,7 +14,7 @@ from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.metastandards import DataSource
 from pyaerocom.exceptions import InitialisationError
 
-class ObsConfigEval(BrowseDict):
+class ObsEntry(BrowseDict):
     """Observation configuration for evaluation (dictionary)
 
     Note

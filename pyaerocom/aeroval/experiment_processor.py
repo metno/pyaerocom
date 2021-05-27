@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from fnmatch import fnmatch
-from getpass import getuser
 import glob
 import os
 import numpy as np
@@ -10,179 +9,37 @@ import shutil
 from traceback import format_exc
 
 # internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (check_dirs_exist, dict_to_str,
-                                         sort_dict_by_name)
+from pyaerocom._lowlevel_helpers import (check_dirs_exist, sort_dict_by_name)
 from pyaerocom import const
 from pyaerocom.exceptions import AeroValConfigError, FileConventionError
 from pyaerocom.helpers import get_lowest_resolution
-from pyaerocom.colocation_auto import ColocationSetup, Colocator
+from pyaerocom.colocation_auto import Colocator
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.helpers import isnumeric, start_stop
 
-from pyaerocom.io.helpers import save_dict_json
-from pyaerocom.aeroval.obsconfigeval import (ObsConfigEval)
-from pyaerocom.aeroval.modelentry import ModelConfigEval
+from pyaerocom.aeroval.obsentry import (ObsEntry)
+from pyaerocom.aeroval.modelentry import ModelEntry
 
 from pyaerocom.aeroval.helpers import (
     _check_statistics_periods, _get_min_max_year_periods,
     delete_experiment_data_evaluation_iface,
-    make_info_str_eval_setup, read_json, write_json)
+    read_json, write_json)
 
 from pyaerocom.aeroval.coldata_to_json import (
     compute_json_files_from_colocateddata,
     get_heatmap_filename
     )
 
-from pyaerocom.aeroval.var_names_web import VAR_MAPPING
+from pyaerocom.aeroval.setupclasses import EvalSetup
 
-class ExperimentSetup:
-    """Class representing a full setup for an AeroVal experiment
-
-    High level interface for computation of colocated netcdf files and json
-    files for `AeroVal interface
-    <https://aeroval.met.no>`__. The processing is
-    done *per experiment*. See class attributes for setup options.
-    An *experiment* denotes a setup comprising one or more observation
-    networks (specified in :attr:`obs_config`) and the specification of one
-    or more model runs via :attr:`model_config`. These two configuration
-    attributes are dictionaries, where keys correspond to the name of the
-    obs / model (as it should appear online) and values specify relevant
-    information for importing the data (see also classes
-    :class:`ModelConfigEval` and :class:`ObsConfigEval`).
-
-    In addition to :attr:`model_config, obs_config`, there are more setup
-    settings and options, some of which NEED to be specified (e.g.
-    :attr:`proj_id, exp_id, out_basedir`) and others that may be explicitly
-    specified if desired (e.g. :attr:`harmonise_units, remove_outliers,
-    clear_existing_json`).
-
-    The analysis (which can be run via :func:`run_evaluation`) can be summarised
-    as follows: for each combination of *variable / obs / model* create one
-    colocated NetCDF file and based on this colocated (single variable) NetCDF
-    file compute all relevant json files for the interface.
-
-    General settings for the colocation (e.g. colocation frequency, start /
-    stop time) can be specified in :attr:`colocation_settings` (for details
-    see :class:`pyaerocom.ColocationSetup`). The colocation routine uses the
-    variables specified in the obs_config entry of the observation network that
-    is supposed to be colocated. If these variables are not provided in a
-    model run or are named differently, then the corresponding model variable
-    that is supposed to be colocated with the observation variable can be
-    specified in the corresponding model entry in :attr:`model_config` via
-    model_use_vars (mapping). Note that this may lead to unit conversion errors
-    if the mapped model variable has a different AeroCom default unit and if
-    outlier ranges are not specified explicitely (see info below).
-
-    If :attr:`remove_outliers` is True, then custom outlier ranges for
-    individual variables may be specified in corresponding entry of model in
-    :attr:`model_config`, or, for observation variables
-    in :attr:`obs_config`, respectively.
-    NOTE: for each variable that has not specified an outlier range here, the
-    AeroCom default is used, which is specified in pyaerocom data file
-    variables.ini. In the latter case, a unit check is performed in order to
-    make sure the retrieved default outlier ranges are valid. This can cause
-    errors in the colocation if, for instance, a model variable name is used
-    that has a different AerocCom default unit than the used observation
-    variable.
-
-    Attributes
-    ----------
-    proj_id : str
-        ID of project
-    exp_id : str
-        ID of experiment
-    exp_name : :obj:`str`, optional
-        name of experiment
-    exp_descr : str
-        string that explains in more detail what this project is about.
-    clear_existing_json : bool
-        Boolean specifying whether existing json files should be deleted for
-        var / obs / model combination before rerunning
-    out_basedir : str
-        basic output directory which defines all further output paths for json
-        files
-    out_dirs : dict
-        dictionary that specifies the output paths for the different types of
-        json files (e.g. map, ts, etc.). Is filled automatically using
-        :attr:`out_basedir, proj_id, exp_id`. Non existing paths are
-        automatically created.
-    colocation_settings : dict
-        dictionary specifying settings and options for the colocation routine
-        (cf. :class:`pyaerocom.ColocationSetup` for available options).
-        Note: the options that are specified in this dictionary are to be
-        understood as global colocation options (for all model / obs
-        combinations defining this experiment). They may be refined or
-        overwritten as required on an individual basis in the definitions for
-        the observations (:attr:`obs_config`) and / or in the model definitions
-        (:attr:`model_config`), respectively. The logical order that defines
-        the colocation settings for a certain run (that is, a combination of
-        `var_name, obs_name, model_name`) is:
-        is:
-
-            1. Import `dict` :attr:`colocation_settings` (global)
-            2. Update `dict` with settings from :attr:`obs_config` for \
-            `obs_name` (defines `var_name`)
-            3. Update `dict` with settings from :attr:`model_config` for \
-            `model_name`
-
-    add_methods_file : str, optional
-        file specifying custom reading methods
-    add_methods : dict
-        dictionary containing additional reading method
-    obs_config : dict
-        dictionary containing configuration details for individual observations
-        (i.e. instances of :class:`ObsConfigEval` for each observation) used
-        for the analysis.
-    model_config : dict
-        dictionary containing configuration details for individual models
-        (i.e. instances of :class:`ModelConfigEval` for each model) used
-        for the analysis.
-    var_mapping : dict
-        mapping of variable names for menu in interface
-    var_order_menu : list, optional
-        order of variables in menu
-    modelorder_from_config : bool
-        if True, then the order of the models in the menu file (i.e. on the
-        website) will be the same as defined in :attr:`model_config`.
-    obsorder_from_config : bool
-        if True, then the order of the observations in the menu file (i.e. on
-        the website) will be the same as defined in :attr:`obs_config`.
-
-    Parameters
-    ----------
-    proj_id : str, optional
-        ID of project
-    exp_id : str, optional
-        experiment ID
-    config_dir : str, optional
-        directory where config json file is located. Needed if the configuration
-        is supposed to be load from a configuration file. The name of that file
-        is automatically inferred from input `proj_id` and `exp_id`, which need
-        to be specified.
-    init_output_dirs : bool
-        if True, all required output directories for json files and colocated
-        NetCDF files are already created when instantiating the class. This is
-        recommended if you intend to use individual methods of this class such
-        as :func:`run_colocation` or :func:`find_coldata_files` and is of
-        particular relevance for the storage location of the colocated data
-        files. Defaults to True.
+class ExperimentProcessor:
+    """Composite class representing a full setup for an AeroVal experiment
     """
-    OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles',
-                     'contour']
-
-    #: Vertical layer ranges
-    VERT_LAYERS = {'0-2km'  :   [0, 2000],
-                   '2-5km'  :   [2000, 5000],
-                   '5-10km' :   [5000, 10000]}
-
-    #: Allowed options for vertical codes
-    VERT_CODES = ['Surface', 'Column']
-    VERT_CODES.extend(VERT_LAYERS)
-
     #: vertical schemes that may be used for colocation
     VERT_SCHEMES = {'Surface' : 'surface'}
 
     JSON_SUPPORTED_VERT_SCHEMES = ['Column', 'Surface']
+
     #: Attributes that are ignored when writing setup to json file
     JSON_CFG_IGNORE = ['add_methods', '_log', 'out_dirs']
 
@@ -192,115 +49,22 @@ class ExperimentSetup:
             'only_colocation'     : 'Run only colocation (no json files computed)',
             'raise_exceptions'    : 'Raise exceptions if they occur'
     }
-
-    #: status of experiment
-    EXP_STATUS_VALS = ['public', 'experimental']
-
     #: attributes that are not supported by this interface
     FORBIDDEN_ATTRS = ['basedir_coldata']
-
-    DEFAULTS = dict(
-        # output frequencies for which statistics are computed
-        statistics_freqs = ['monthly', 'yearly'],
-        # regrid resolution for gridded/gridded colocation
-        regrid_res_deg = 5,
-
-        )
-
-    #: Allowed zoom regions for aeroval map displays
-    _ALLOWED_ZOOM_REGIONS = ['World', 'Europe']
-
-
-    def __init__(self, proj_id, exp_id, config_dir=None,
-                 init_output_dirs=False, **settings):
-
-        self._log = const.print_log
-
-        self.proj_id = proj_id
-
-        self.exp_id = exp_id
-        self.exp_name = None
-        self.exp_descr = ''
-        self.exp_status = 'experimental'
-        self.exp_pi = getuser()
-
-        self.statistics_freqs = self.DEFAULTS['statistics_freqs']
-        self.statistics_periods = None
-        self.main_freq = None
-
-        self.clear_existing_json = True
-        self.only_colocation = False
-        self.only_json = False
-
-        self.weighted_stats=False
-        self.annual_stats_constrained=False
-
-        #: Base directory for output
-        self.out_basedir = os.path.join(const.OUTPUTDIR, 'aeroval')
-
-        #: Base directory to store colocated data (sub dirs for proj and
-        #: experiment will be created automatically)
-        self.coldata_basedir = None
-
-        #: Directory that contains configuration files
-        self.config_dir = config_dir
-
-        #: If True, process also model maps
-        self.add_maps = False
-        #: If True, process only maps (skip obs evaluation)
-        self.only_maps = False
-
-        self.maps_res_deg = 5
-        self.maps_vmin_vmax = None
-        self.map_zoom_default = 'World'
-
-        #: Output directories for different types of json files (will be filled
-        #: in :func:`init_json_output_dirs`)
-        self._out_dirs = {}
-
-        #: Dictionary specifying default settings for colocation
-        self.colocation_settings = ColocationSetup(
-            save_coldata=True,
-            keep_data=False,
-            regrid_res_deg=self.DEFAULTS['regrid_res_deg'])
-
-        self.add_methods_file = None
-        self.add_methods = {}
-
-        #: Dictionary containing configurations for observations
-        self.obs_config = {}
-
-        #: Dictionary containing configurations for models
-        self.model_config = {}
-
-        self.var_mapping = {}
-        self.var_mapping.update(VAR_MAPPING)
-        self.var_order_menu = []
-
-        self.regions_how = 'default'
-        self.resample_how = None
-
-        self.summary_str = ''
+    _log = const.print_log
+    def __init__(self, cfg):
+        if not isinstance(cfg, EvalSetup):
+            raise ValueError()
+        self.cfg = cfg
         self._valid_obs_vars = {}
-
-        self.modelorder_from_config = True
-        self.obsorder_from_config = True
-
-        self.update(**settings)
-
-        if init_output_dirs:
-            self.init_json_output_dirs()
-
-        self.check_config()
-        self.update_summary_str()
 
     @property
     def start_stop_colocation(self):
         """
-        tuple: values of start and stop in :attr:`colocation_settings`
+        tuple: values of start and stop in :attr:`cfg_colocation`
         """
-        return (self.colocation_settings['start'],
-                self.colocation_settings['stop'])
+        return (self.cfg_colocation['start'],
+                self.cfg_colocation['stop'])
 
     @property
     def proj_dir(self):
@@ -315,7 +79,7 @@ class ExperimentSetup:
     @property
     def coldata_dir(self):
         """Base directory for colocated data files"""
-        return self.colocation_settings['basedir_coldata']
+        return self.cfg_colocation['basedir_coldata']
 
     @property
     def out_dirs(self):
@@ -420,26 +184,6 @@ class ExperimentSetup:
         return self.all_obs_vars
 
     @property
-    def raise_exceptions(self):
-        """Boolean specifying whether exceptions should be raised in analysis
-        """
-        return self.colocation_settings['raise_exceptions']
-
-    @raise_exceptions.setter
-    def raise_exceptions(self, val):
-        self.colocation_settings['raise_exceptions'] =  val
-
-    @property
-    def reanalyse_existing(self):
-        """Specifies whether existing colocated data files should be reanalysed
-        """
-        return self.colocation_settings['reanalyse_existing']
-
-    @reanalyse_existing.setter
-    def reanalyse_existing(self, val):
-        self.colocation_settings['reanalyse_existing'] = val
-
-    @property
     def all_model_map_files(self):
         """List of all jsoncontour and json files associated with model maps"""
         if not os.path.exists(self.out_dirs['contour']):
@@ -458,8 +202,8 @@ class ExperimentSetup:
 
     def _check_time_config(self):
         periods = self.statistics_periods
-        colstart = self.colocation_settings['start']
-        colstop = self.colocation_settings['stop']
+        colstart = self.cfg_colocation['start']
+        colstop = self.cfg_colocation['stop']
 
         if periods is None:
             if colstart is None:
@@ -475,9 +219,9 @@ class ExperimentSetup:
         self.statistics_periods = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(self.statistics_periods)
         if colstart is None:
-            self.colocation_settings['start'] = start
+            self.cfg_colocation['start'] = start
         if colstop is None:
-            self.colocation_settings['stop'] = stop + 1 # add 1 year since we want to include stop year
+            self.cfg_colocation['stop'] = stop + 1 # add 1 year since we want to include stop year
 
     def _update_custom_read_methods(self):
         for mcfg in self.model_config.values():
@@ -549,21 +293,12 @@ class ExperimentSetup:
                 raise ValueError('File {} does not contain custom read '
                                  'method: {}'.format(fp, method_name))
             fun = mod.FUNS[method_name]
-        #fun = self.add_methods[name]
+
         if not callable(fun):
             raise TypeError('{} ({}) is not a callable object'.format(fun,
                             method_name))
         return fun
 
-    def update_summary_str(self):
-        """Updates :attr:`summary_str` using :func:`make_info_str_eval_setup`"""
-        try:
-            self.summary_str = make_info_str_eval_setup(self,
-                                                        add_header=False)
-        except Exception as e:
-            const.print_log.warning(
-                'Failed to create automatic summary string of AerocomEvaluation '
-                f'setup class. Reason: {e}')
 
     def update(self, **settings):
         """Update current setup"""
@@ -573,7 +308,7 @@ class ExperimentSetup:
     def _set_obsconfig(self, val):
         cfg = {}
         for k, v in val.items():
-            cfg[k] = ObsConfigEval(**v)
+            cfg[k] = ObsEntry(**v)
 
         self.obs_config = cfg
 
@@ -591,12 +326,12 @@ class ExperimentSetup:
         val : dict
             dictionary with model config entries, keys are model names, values
             are either instances of :class:`dict` or of
-            :class:`ModelConfigEval`. If values are dicts, they will be
-            converted to :class:`ModelConfigEval`.
+            :class:`ModelEntry`. If values are dicts, they will be
+            converted to :class:`ModelEntry`.
         """
         cfg = {}
         for key, mcfg in val.items():
-            cfg[key] = self._check_type_cfg_entry(mcfg, ModelConfigEval)
+            cfg[key] = self._check_type_cfg_entry(mcfg, ModelEntry)
         self.model_config = cfg
         self._update_custom_read_methods()
 
@@ -605,21 +340,21 @@ class ExperimentSetup:
             raise AttributeError(
                 f'Attr {key} is not allowed in AerocomEvaluation'
                 )
-        elif key in self.colocation_settings:
-            self.colocation_settings[key] = val
+        elif key in self.cfg_colocation:
+            self.cfg_colocation[key] = val
         elif key == 'obs_config':
             self._set_obsconfig(val)
         elif key == 'model_config':
             self._set_modelconfig(val)
-        elif key == 'colocation_settings':
-            self.colocation_settings.update(**val)
+        elif key == 'cfg_colocation':
+            self.cfg_colocation.update(**val)
         elif key == 'var_mapping':
             self.var_mapping.update(val)
         elif isinstance(key, str) and isinstance(val, dict):
             if 'obs_id' in val:
-                self.obs_config[key] = ObsConfigEval(**val)
+                self.obs_config[key] = ObsEntry(**val)
             elif 'model_id' in val:
-                self.model_config[key] = ModelConfigEval(**val)
+                self.model_config[key] = ModelEntry(**val)
             else:
                 self.__dict__[key] = val
         elif key == 'map_zoom_default':
@@ -635,8 +370,8 @@ class ExperimentSetup:
     def __getitem__(self, key):
         if key in self.__dict__:
             return self.__dict__[key]
-        elif key in self.colocation_settings:
-            return self.colocation_settings[key]
+        elif key in self.cfg_colocation:
+            return self.cfg_colocation[key]
 
     def init_json_output_dirs(self, out_basedir=None):
         """Check and create directories for json files"""
@@ -653,7 +388,7 @@ class ExperimentSetup:
         return outdirs
 
     def _check_init_col_outdir(self):
-        cs = self.colocation_settings
+        cs = self.cfg_colocation
 
         cbd = self.coldata_basedir
         if cbd is None:
@@ -680,45 +415,8 @@ class ExperimentSetup:
                 f'Setting output directory for colocated data files to:\n{col_out}'
                 )
         self.coldata_basedir = cbd
-        self.colocation_settings['basedir_coldata'] = col_out
+        self.cfg_colocation['basedir_coldata'] = col_out
 
-    def check_config(self):
-        if not isinstance(self.proj_id, str):
-            raise AttributeError(f'proj_id must be str, '
-                                 f'(current value: {self.proj_id})')
-
-        if not isinstance(self.exp_id, str):
-            raise AttributeError(f'exp_id must be str, '
-                                 f'(current value: {self.exp_id})')
-
-        if not isinstance(self.exp_descr, str):
-            raise AttributeError(f'exp_descr must be specified, '
-                                 f'(current value: {self.exp_descr})')
-
-        elif not len(self.exp_descr.split()) > 5:
-            const.print_log.warning(
-                f'Experiment description (attr. exp_descr) is either missing or '
-                f'rather short (less than 5 words). Consider providing more '
-                f'information here! Current: {self.exp_descr}'
-                )
-
-        if not isinstance(self.exp_status, str):
-            raise AttributeError(f'exp_status must be specified, '
-                                 f'(current value: {self.exp_status})')
-        elif not self.exp_status in self.EXP_STATUS_VALS:
-            raise ValueError(
-                f'Invalid input for exp_status ({self.exp_status}). '
-                f'Choose from: {self.EXP_STATUS_VALS}.')
-
-
-        if not isinstance(self.exp_name, str):
-            const.print_log.warning('exp_name must be string, got {}. Using '
-                                    'exp_id {} for experiment name'
-                                    .format(self.exp_name, self.exp_id))
-            self.exp_name = self.exp_id
-
-        self._check_model_config()
-        self._check_obs_config()
 
     def _check_model_config(self):
         for mname, cfg in self.model_config.items():
@@ -732,9 +430,9 @@ class ExperimentSetup:
             elif len(mname) > 25:
                 raise ValueError(
                     f'Model name too long: {mname} (max 25 chars)')
-            if not isinstance(cfg, ModelConfigEval):
+            if not isinstance(cfg, ModelEntry):
                 self.model_config[mname] = self._check_type_cfg_entry(cfg,
-                                                            ModelConfigEval)
+                                                                      ModelEntry)
 
     def _check_obs_config(self):
         for oname, cfg in self.obs_config.items():
@@ -748,9 +446,9 @@ class ExperimentSetup:
             elif len(oname) > 25:
                 raise ValueError(
                     f'Obs name too long: {oname} (max 25 chars)')
-            if not isinstance(cfg, ObsConfigEval):
+            if not isinstance(cfg, ObsEntry):
                 self.obs_config[oname] = self._check_type_cfg_entry(cfg,
-                                                            ObsConfigEval)
+                                                                    ObsEntry)
 
 
     def get_model_name(self, model_id):
@@ -872,8 +570,9 @@ class ExperimentSetup:
             return obs_name
         return self.obs_config[obs_name]['web_interface_name']
 
-    def compute_json_files_from_colocateddata(self, coldata):
+    def coldata_to_json(self, file):
         """Creates all json files for one ColocatedData object"""
+        coldata = ColocatedData(file)
         obs_var = coldata.metadata['var_name'][0]
         obs_name = coldata.obs_name
         vert_code = self.get_vert_code(obs_name, obs_var)
@@ -954,9 +653,7 @@ class ExperimentSetup:
 
                             hm_data = data[var][obs][vc][mod][modvar]
                             hm[var][obs][vc][mod][modvar] = hm_data
-
-            with open(fp, 'w') as f:
-                simplejson.dump(hm, f, ignore_nan=True)
+            write_json(hm, fp, ignore_nan=True)
 
     def find_coldata_files(self, model_name, obs_name, var_name=None):
         """Find colocated data files for a certain model/obs/var combination
@@ -977,7 +674,6 @@ class ExperimentSetup:
         """
 
         files = []
-        model_id = self.get_model_id(model_name)
         coldata_dir = os.path.join(self.coldata_dir, model_name)
         if os.path.exists(coldata_dir):
             for fname in os.listdir(coldata_dir):
@@ -1002,7 +698,7 @@ class ExperimentSetup:
             msg = ('Could not find any colocated data files for model {}, '
                    'obs {}'
                    .format(model_name, obs_name))
-            if self.colocation_settings['raise_exceptions']:
+            if self.cfg_colocation['raise_exceptions']:
                 raise IOError(msg)
             else:
                 self._log.warning(msg)
@@ -1025,13 +721,12 @@ class ExperimentSetup:
         converted = []
         for file in files:
             const.print_log.info(f'Processing: {file}')
-            coldata = ColocatedData(file)
-            self.compute_json_files_from_colocateddata(coldata)
+            self.coldata_to_json(file)
             converted.append(file)
         return converted
 
     def init_colocator(self, model_name, obs_name):
-        col = Colocator(**self.colocation_settings)
+        col = Colocator(**self.cfg_colocation)
         if not model_name in self.model_config:
             raise KeyError(
                 f'No such model name {model_name}. '
@@ -1421,7 +1116,7 @@ class ExperimentSetup:
         data.check_unit()
 
         vminmax = self.maps_vmin_vmax
-        if isinstance(vminmax, dict) and var in vminmax:
+        if var in self.cfg_model_maps['vmin_vmax']:
             vmin, vmax = vminmax[var]
         else:
             vmin, vmax = None, None
@@ -1443,9 +1138,8 @@ class ExperimentSetup:
         datajson = griddeddata_to_jsondict(data,
                                            lat_res_deg=lat_res,
                                            lon_res_deg=lon_res)
-
-        save_dict_json(contourjson, fp_geojson)
-        save_dict_json(datajson, fp_json)
+        write_json(contourjson, fp_geojson, ignore_nan=True)
+        write_json(datajson, fp_json, ignore_nan=True)
 
     def run_map_eval(self, model_name, var_name):
         """Run evaluation of map processing
@@ -1474,7 +1168,7 @@ class ExperimentSetup:
 
         model_cfg = self.get_model_config(model_name)
         settings = {}
-        settings.update(self.colocation_settings)
+        settings.update(self.cfg_colocation)
         settings.update(model_cfg)
 
         for var in all_vars:
@@ -1677,7 +1371,7 @@ class ExperimentSetup:
         #mcfg = self.get_model_config(model_name)
 
         col = Colocator()
-        col.update(**self.colocation_settings)
+        col.update(**self.cfg_colocation)
         col.update(**self.get_model_config(model_name))
         #col.update(**kwargs)
 
@@ -1689,7 +1383,7 @@ class ExperimentSetup:
         """Read observation network"""
 
         col = Colocator()
-        col.update(**self.colocation_settings)
+        col.update(**self.cfg_colocation)
         col.update(**self.obs_config[obs_name])
 
         data = col.read_ungridded(vars_to_read)
@@ -2035,7 +1729,7 @@ class ExperimentSetup:
         except NameError:
             pass
         if also_coldata:
-            coldir = self.colocation_settings['basedir_coldata']
+            coldir = self.cfg_colocation['basedir_coldata']
             chk = os.path.normpath(f'{self.proj_id}/{self.exp_id}')
             if os.path.normpath(coldir).endswith(chk) and os.path.exists(coldir):
                 const.print_log.info(f'Deleting everything under {coldir}')
@@ -2173,7 +1867,7 @@ class ExperimentSetup:
         str
             name of config file
         """
-        return 'cfg_{}_{}'.format(self.proj_id, self.exp_id)
+        return
 
     @property
     def name_config_file_json(self):
@@ -2187,78 +1881,11 @@ class ExperimentSetup:
         """
         return '{}.json'.format(self.name_config_file)
 
-    def to_json(self, output_dir, ignore_nan=True, indent=3):
-        """Convert analysis configuration to json file and save
-
-        Parameters
-        ----------
-        output_dir : str
-            directory where the config json file is supposed to be stored
-        ignore_nan : bool
-            set NaNs to Null when writing
-
-
-        """
-        self.update_summary_str()
-        asdict = self.to_dict()
-        out_name = self.name_config_file_json
-        fp = os.path.join(output_dir, out_name)
-        save_dict_json(asdict, fp,
-                       ignore_nan=ignore_nan,
-                       indent=indent)
-        return fp
-
-    def load_config(self, proj_id, exp_id, config_dir=None):
-        """Load configuration json file"""
-        if config_dir is None:
-            if self.config_dir is not None:
-                config_dir = self.config_dir
-            else:
-                config_dir = '.'
-        files = glob.glob(f'{config_dir}/cfg_{proj_id}_{exp_id}.json')
-        if len(files) == 0:
-            raise ValueError(
-                f'No config file could be found in {config_dir} for '
-                f'project {proj_id} and experiment {exp_id}'
-                )
-        self.update(**read_json(files[0]))
-
-    @staticmethod
-    def from_json(config_file):
-        """Load configuration from json config file"""
-        settings = read_json(config_file)
-        stp = AerocomEvaluation(**settings)
-        return stp
-
     def __str__(self):
-        self.update_summary_str()
-        indent = 2
-        _indent_str = indent*' '
-        head = f"pyaerocom {type(self).__name__}"
-        underline = len(head)*"-"
-        out_dirs = dict_to_str(self.out_dirs, indent=indent)
-        s = f"\n{head}\n{underline}"
-        s += (
-            f'\nProject ID (proj_id): {self.proj_id}'
-            f'\nExperiment ID (exp_id): {self.exp_id}'
-            f'\nExperiment name (exp_name): {self.exp_name}'
-            f'\nOutput directories for json files: {out_dirs}'
-            )
-        s += '\ncolocation_settings: (will be updated for each run from model_config and obs_config entry)'
-        for k, v in self.colocation_settings.items():
-            s += '\n{}{}: {}'.format(_indent_str, k, v)
-        s += '\n\nobs_config:'
-        for k, v in self.obs_config.items():
-            s += '\n\n{}{}:'.format(_indent_str, k)
-            s = dict_to_str(v, s, indent=indent+2)
-        s += '\n\nmodel_config:'
-        for k, v in self.model_config.items():
-            s += '\n\n{}{}:'.format(_indent_str,  k)
-            s = dict_to_str(v, s, indent=indent+2)
-
-        return s
+        raise NotImplementedError('Under revision')
 
 if __name__ == '__main__':
-    stp = AerocomEvaluation('bla', 'blub')
+    stp = ExperimentProcessor('bla', 'blub')
+    stp.to_json('/home/jonasg/MyPyaerocom/tmp/')
 
 

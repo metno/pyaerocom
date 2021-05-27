@@ -88,7 +88,7 @@ def check_write_access(path, timeout=0.1):
             return False
     return run_timeout(path, timeout)
 
-class BrowseDict(dict):
+class BrowseDict:
     """Dictionary with get / set attribute methods
 
     Example
@@ -97,20 +97,71 @@ class BrowseDict(dict):
     >>> print(d.bla)
     3
     """
-    def __getattr__(self, key):
-        try:
-            return self.__getitem__(key)
-        except KeyError:
-            raise AttributeError(key)
-
-    def __setattr__(self, key, val):
-        self.__setitem__(key, val)
-
     def __dir__(self):
-        return self.keys()
+        return list(self.__dict__.keys())
+
+    def __contains__(self, key):
+        return True if key in dir(self) else False
 
     def __str__(self):
-        return dict_to_str(self)
+        return str(self.__dict__)
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, val):
+        setattr(self, key, val)
+
+    def __len__(self):
+        return len(self.__dict__)
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+    def items(self):
+        for attr in self:
+            yield attr, getattr(self, attr)
+
+    def keys(self):
+        return self.__dict__.keys()
+
+    def values(self):
+        return self.__dict__.values()
+
+    def update(self, **kwargs):
+        for key, val in kwargs.items():
+            self.__setitem__(key, val)
+
+    def to_dict(self):
+        return self.__dict__
+
+    def pretty_str(self):
+        return dict_to_str(self.to_dict())
+
+class ConstrainedContainer(BrowseDict):
+    CONSTRAINT_VALS = {}
+    def __setitem__(self, key, val):
+        self._check_valid(key, val)
+        setattr(self, key, val)
+
+    def _check_valid(self, key, val):
+        """make sure no new attr is added
+
+        Note
+        ----
+        Only used in __setitem__ not in __setattr__.
+        """
+        current = type(getattr(self, key))
+        if not key in self:
+            raise ValueError(f'Invalid key {key}')
+        elif not isinstance(val, current):
+            raise ValueError(f'Invalid type {type(val)}, need {current}')
+        elif key in self.CONSTRAINT_VALS:
+            self._assert_constraint(key, val)
+
+    def _assert_constraint(self, key, val):
+        if not val in self.CONSTRAINT_VALS[key]:
+            raise ValueError(key, val)
 
 def merge_dicts(dict1, dict2, discard_failing=True):
     """Merge two dictionaries

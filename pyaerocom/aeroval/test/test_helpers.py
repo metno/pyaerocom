@@ -7,7 +7,7 @@ Created on Mon Jun  8 10:13:05 2020
 """
 import pytest
 
-from pyaerocom.aeroval import obsconfigeval as h
+from pyaerocom.aeroval import obsentry as h
 from pyaerocom.conftest import does_not_raise_exception
 
 @pytest.mark.parametrize('input_args,expectation', [
@@ -22,16 +22,16 @@ from pyaerocom.conftest import does_not_raise_exception
                       obs_vert_type='Slant-Column'), pytest.raises(ValueError)),
 
     ])
-def test_ObsConfigEval(input_args,expectation):
+def test_ObsEntry(input_args,expectation):
     with expectation:
-        cfg = h.ObsConfigEval(**input_args)
+        cfg = h.ObsEntry(**input_args)
         for key, val in input_args.items():
             if key=='obs_vars' and isinstance(val, str):
                 val = [val]
             assert cfg[key] == val
 
-def test_ObsConfigEval_keys():
-    cfg = h.ObsConfigEval(obs_id='Bla', obs_vars='Blub', obs_vert_type='Column')
+def test_ObsEntry_keys():
+    cfg = h.ObsEntry(obs_id='Bla', obs_vars='Blub', obs_vert_type='Column')
     keys = ['obs_id', 'obs_type', 'obs_vars', 'obs_ts_type_read',
             'obs_vert_type', 'obs_aux_requires', 'instr_vert_loc',
             'is_superobs', 'only_superobs', 'read_opts_ungridded']

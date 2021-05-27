@@ -193,7 +193,6 @@ class ColocationSetup(BrowseDict):
                  ts_type=None, start=None, stop=None, basedir_coldata=None,
                  save_coldata=False, **kwargs):
 
-
         self.model_id = model_id
         self.obs_id = obs_id
         self.obs_vars = obs_vars

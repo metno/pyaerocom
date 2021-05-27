@@ -11,7 +11,7 @@ import os
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
-from pyaerocom.aeroval import ExperimentSetup
+from pyaerocom.aeroval import ExperimentProcessor
 
 def compute_model_average_and_diversity(cfg, var_name,
                                         model_names=None,
@@ -68,16 +68,16 @@ def compute_model_average_and_diversity(cfg, var_name,
         corresponding diversity field, computed using definition from
         Textor et al., 2006 (ACP) DOI: 10.5194/acp-6-1777-2006
     """
-    if not isinstance(cfg, ExperimentSetup):
+    if not isinstance(cfg, ExperimentProcessor):
         raise ValueError
     if model_use_vars is None:
         model_use_vars = {}
     if ignore_models is None:
         ignore_models = []
     if year is None:
-        year = cfg.colocation_settings.start
+        year = cfg.cfg_colocation.start
 
-    if cfg.colocation_settings.stop is not None:
+    if cfg.cfg_colocation.stop is not None:
         raise ValueError('Can only compute average model for single year '
                          'analyses')
     if avg_how =='mean':
