@@ -61,7 +61,7 @@ class ExperimentProcessor:
     @property
     def start_stop_colocation(self):
         """
-        tuple: values of start and stop in :attr:`cfg_colocation`
+        tuple: values of start and stop in :attr:`colocation_opts`
         """
         return (self.cfg_colocation['start'],
                 self.cfg_colocation['stop'])
@@ -346,7 +346,7 @@ class ExperimentProcessor:
             self._set_obsconfig(val)
         elif key == 'model_config':
             self._set_modelconfig(val)
-        elif key == 'cfg_colocation':
+        elif key == 'colocation_opts':
             self.cfg_colocation.update(**val)
         elif key == 'var_mapping':
             self.var_mapping.update(val)

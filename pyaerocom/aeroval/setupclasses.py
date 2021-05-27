@@ -78,24 +78,24 @@ class EvalSetup(ConstrainedContainer):
     This represents the level at which json I/O happens for configuration
     setup files.
     """
-    def __init__(self, proj_id: str, exp_id:str, **kwargs):
+    def __init__(self, proj_id:str, exp_id:str, **kwargs):
         self.proj_info =  ProjectInfo(proj_id=proj_id)
         self.exp_info = ExperimentInfo(exp_id=exp_id)
 
-        self.cfg_modelmaps = ModelMapsSetup()
-        self.cfg_colocation = ColocationSetup(
+        self.modelmaps_opts = ModelMapsSetup()
+        self.colocation_opts = ColocationSetup(
                                     save_coldata=True,
                                     keep_data=False,
                                     regrid_res_deg=5
                                     )
-        self.cfg_stats = StatisticsSetup(
+        self.statistics_opts = StatisticsSetup(
                                     weighted_stats=True,
                                     annual_stats_constrained=False
                                     )
-        self.cfg_webdisp = WebDisplaySetup(add_maps=False)
+        self.webdisp_opts = WebDisplaySetup(add_maps=False)
 
-        self.opts_processing = EvalRunOptions()
-        self.cfg_addmethods = AddMethodsSetup()
+        self.processing_opts = EvalRunOptions()
+        self.addmethods_cfg = AddMethodsSetup()
         self.obs_cfg = {}
         self.model_cfg = {}
         self.var_mapping = VAR_MAPPING

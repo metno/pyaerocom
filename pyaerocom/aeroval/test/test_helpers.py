@@ -32,7 +32,7 @@ def test_ObsEntry(input_args,expectation):
 
 def test_ObsEntry_keys():
     cfg = h.ObsEntry(obs_id='Bla', obs_vars='Blub', obs_vert_type='Column')
-    keys = ['obs_id', 'obs_type', 'obs_vars', 'obs_ts_type_read',
+    keys = ['obs_id', 'obs_vars', 'obs_ts_type_read',
             'obs_vert_type', 'obs_aux_requires', 'instr_vert_loc',
             'is_superobs', 'only_superobs', 'read_opts_ungridded']
     assert len(keys) == len(cfg)

@@ -6,7 +6,6 @@ Small helper utility functions for pyaerocom
 import numpy as np
 import os
 from concurrent.futures import ThreadPoolExecutor
-import multiprocessing as mp
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions
@@ -88,57 +87,81 @@ def check_write_access(path, timeout=0.1):
             return False
     return run_timeout(path, timeout)
 
-class BrowseDict:
-    """Dictionary with get / set attribute methods
+def _class_name(obj):
+    """Returns class name of an object"""
+    return type(obj).__name__
 
-    Example
-    -------
-    >>> d = BrowseDict(bla = 3, blub = 4)
-    >>> print(d.bla)
-    3
+from collections.abc import MutableMapping
+class BrowseDict(MutableMapping):
+    """Dictionary-like object with getattr and setattr options
+
+    Extended dictionary that supports dynamic value generation (i.e. if an
+    assigned value is callable, it will be executed on demand).
     """
-    def __dir__(self):
-        return list(self.__dict__.keys())
+    def __init__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
 
-    def __contains__(self, key):
-        return True if key in dir(self) else False
-
-    def __str__(self):
-        return str(self.__dict__)
+    # The next five methods are requirements of the ABC.
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
     def __getitem__(self, key):
-        return getattr(self, key)
+        try:
+            return getattr(self, key)
+        except AttributeError as e:
+            raise KeyError(e)
 
-    def __setitem__(self, key, val):
-        setattr(self, key, val)
-
-    def __len__(self):
-        return len(self.__dict__)
+    def __delitem__(self, key):
+        del self.__dict__[key]
 
     def __iter__(self):
         return iter(self.__dict__)
 
-    def items(self):
-        for attr in self:
-            yield attr, getattr(self, attr)
+    def __len__(self):
+        return len(self.__dict__)
 
-    def keys(self):
-        return self.__dict__.keys()
-
-    def values(self):
-        return self.__dict__.values()
-
-    def update(self, **kwargs):
-        for key, val in kwargs.items():
-            self.__setitem__(key, val)
+    def __repr__(self):
+        '''echoes class, id, & reproducible representation in the REPL'''
+        _repr = repr(self.__dict__)
+        return f'{_class_name(self)}: {_repr}'
 
     def to_dict(self):
-        return self.__dict__
+        return dict(self)
 
     def pretty_str(self):
         return dict_to_str(self.to_dict())
 
+    def __str__(self):
+        s = ''
+        for k, v in self.items():
+            s += '\n{}: {}'.format(k, v)
+        return s
+
 class ConstrainedContainer(BrowseDict):
+    """Restrictive dict-like class with fixed keys
+
+    This class enables to create dict-like objects that have a fixed set of
+    keys and value types (once assigned). Optional values may be instantiated
+    as None, in which case the first time instantiation definecs its type.
+
+    Note
+    ----
+    The limitations for assignments are only restricted to setitem operations
+    and attr assignment via "." works like in every other class.
+
+    Example
+    -------
+    class MyContainer(ConstrainedContainer):
+        def __init__(self):
+            self.val1 = 1
+            self.val2 = 2
+            self.option = None
+
+    >>> mc = MyContainer()
+    >>> mc['option'] = 42
+    """
+    #: key / value pairs of constrained settings: keys are keys of this dict
+    #: and values are lists of allowed values for that key
     CONSTRAINT_VALS = {}
     def __setitem__(self, key, val):
         self._check_valid(key, val)
@@ -151,11 +174,14 @@ class ConstrainedContainer(BrowseDict):
         ----
         Only used in __setitem__ not in __setattr__.
         """
-        current = type(getattr(self, key))
+        current = getattr(self, key)
+        current_tp = type(current)
         if not key in self:
             raise ValueError(f'Invalid key {key}')
-        elif not isinstance(val, current):
-            raise ValueError(f'Invalid type {type(val)}, need {current}')
+        elif not current is None and not isinstance(val, current_tp):
+            raise ValueError(
+                f'Invalid type {type(val)} for key: {key}. Need {current_tp} '
+                f'(Current value: {current})')
         elif key in self.CONSTRAINT_VALS:
             self._assert_constraint(key, val)
 
@@ -375,4 +401,17 @@ def str_underline(s, indent=0):
 
 if __name__ == '__main__':
     d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
-    print(d)
+
+    d.update(**{'mypy': 55})
+    class CDict(ConstrainedContainer):
+        def __init__(self):
+            self.bla = 1
+            self.blub = 2
+            self.option = None
+
+    cd = CDict()
+    print(cd)
+    cd['option'] = 42
+    cd['option'] = {}
+
+    cd.update(**{'mypy': 55})

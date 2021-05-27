@@ -240,7 +240,7 @@ def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
     exp = 'exp'
     stp = AerocomEvaluation(proj_id=proj, exp_id=exp,out_basedir=outdir)
     stp.init_json_output_dirs()
-    cs = stp.cfg_colocation
+    cs = stp.colocation_opts
     out_dirs = stp.out_dirs
     regions_json = stp.regions_file
     cd = coldata[which]

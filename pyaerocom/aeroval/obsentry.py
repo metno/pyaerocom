@@ -10,11 +10,11 @@ ToDo
 """
 from traceback import format_exc
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom._lowlevel_helpers import ConstrainedContainer
 from pyaerocom.metastandards import DataSource
 from pyaerocom.exceptions import InitialisationError
 
-class ObsEntry(BrowseDict):
+class ObsEntry(ConstrainedContainer):
     """Observation configuration for evaluation (dictionary)
 
     Note
@@ -26,10 +26,6 @@ class ObsEntry(BrowseDict):
     obs_id : str
         ID of observation network in AeroCom database
         (e.g. 'AeronetSunV3Lev2.daily')
-    obs_type : str
-        specifies whether data is gridded or ungridded. Choose from 'gridded'
-        or 'ungridded'. This is optional, but some functionality will not work
-        if it is not set (such as registering auxiliary variables).
     obs_vars : list
         list of pyaerocom variable names that are supposed to be analysed
         (e.g. ['od550aer', 'ang4487aer'])
@@ -68,17 +64,17 @@ class ObsEntry(BrowseDict):
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
     """
     SUPPORTED_VERT_CODES = ['Column', 'Profile', 'Surface']
-    ALT_NAMES_VERT_CODES = dict(ModelLevel = 'Profile')
+    ALT_NAMES_VERT_CODES = dict(ModelLevel='Profile')
 
     SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
+
     def __init__(self, **kwargs):
 
         self.obs_id = None
-        self.obs_type = None
 
         self.obs_vars = None
         self.obs_ts_type_read = None
-        self.obs_vert_type = None
+        self.obs_vert_type = ''
         self.obs_aux_requires = {}
         self.instr_vert_loc = None
 
@@ -91,19 +87,11 @@ class ObsEntry(BrowseDict):
         self.check_cfg()
         self.check_add_obs()
 
+    # ToDo: this does not belong here.
     def check_add_obs(self):
-        """Check if this dataset is an auxiliary post dataset"""
-        if not isinstance(self.obs_aux_requires, dict):
-            raise ValueError(
-                f'Invalid value obs_aux_requires={self.obs_aux_requires}'
-                f'Need dict...'
-                )
-        elif len(self.obs_aux_requires) > 0:
-            if not self.obs_type == 'ungridded':
-                raise NotImplementedError(
-                    'Cannot initialise auxiliary setup for {}. Aux obs reading '
-                    'is so far only possible for ungridded observations.'
-                    .format(self.obs_id))
+        """Check if this dataset is an auxiliary post dataset
+        """
+        if len(self.obs_aux_requires) > 0:
             try:
                 const.add_ungridded_post_dataset(**self)
             except Exception:
@@ -169,8 +157,8 @@ class ObsEntry(BrowseDict):
         """
         if ovt in self.ALT_NAMES_VERT_CODES:
             _ovt = self.ALT_NAMES_VERT_CODES[ovt]
-            const.print_log.warning('Please use {} for obs_vert_code '
-                                        'and not {}'.format(_ovt, ovt))
+            const.print_log.warning(
+                f'Please use {_ovt} for obs_vert_code and not {ovt}')
             return _ovt
         valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES.keys())
         raise ValueError('Invalid value for obs_vert_type: {}. '

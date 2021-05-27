@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 import traceback
 
-from pyaerocom._lowlevel_helpers import (BrowseDict, chk_make_subdir)
+from pyaerocom._lowlevel_helpers import (ConstrainedContainer, chk_make_subdir)
 from pyaerocom import const
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                get_lowest_resolution, start_stop)
@@ -25,7 +25,7 @@ from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (ColocationError, DataCoverageError,
                                   DeprecationError)
 
-class ColocationSetup(BrowseDict):
+class ColocationSetup(ConstrainedContainer):
     """Setup class for model / obs intercomparison
 
     An instance of this setup class can be used to run a colocation analysis
@@ -249,7 +249,7 @@ class ColocationSetup(BrowseDict):
         # Options related to time resampling
         self.apply_time_resampling_constraints = True
         self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
-        self.resample_how = None
+        self.resample_how = 'mean'
 
         # Options related to outlier removal
         self.obs_remove_outliers = False
@@ -263,7 +263,7 @@ class ColocationSetup(BrowseDict):
 
         self.harmonise_units = False
         self.vert_scheme = None
-        self.regrid_res_deg = None
+        self.regrid_res_deg = 5
 
         self.colocate_time = False
 
@@ -342,26 +342,10 @@ class ColocationSetup(BrowseDict):
         p = chk_make_subdir(self.basedir_coldata, 'logfiles')
         return p
 
-    @property
-    def UNGRIDDED_IDS(self):
-        """ID's of all supported ungridded datasets"""
-        return get_all_supported_ids_ungridded()
-
-    def __dir__(self):
-        return self.keys()
-
-    def update(self, check_attrs=True, **kwargs):
-        for key, val in kwargs.items():
-            if key in self and isinstance(self[key], dict):
-                if not isinstance(val, dict):
-                    raise ValueError(
-                        f'Cannot update dict {key} with non-dict input {val}'
-                        )
-                self[key].update(val)
-            elif key == 'basedir_coldata':
-                self[key] = self._check_input_basedir_coldata(val)
-            else:
-                self[key] = val
+    def __setitem__(self, key, val):
+        if key == 'basedir_coldata':
+            val = self._check_input_basedir_coldata(val)
+        super(ColocationSetup, self).__setitem__(key, val)
 
     def _check_outdated_outlier_defs(self):
         check = ['var_outlier_ranges', 'var_ref_outlier_ranges',

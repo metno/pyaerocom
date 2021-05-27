@@ -39,7 +39,7 @@ def make_info_str_eval_setup(stp, add_header=True):
     modelnum = len(stp.model_config)
     obsnum = len(stp.obs_config)
     varnum = len(stp.all_obs_vars)
-    colstp = stp.cfg_colocation
+    colstp = stp.colocation_opts
 
     if modelnum > 0:
 
@@ -255,6 +255,7 @@ def _get_min_max_year_periods(statistics_periods):
             stopyr = perstop
     return startyr, stopyr
 
+
 def read_json(file_path):
     """Read json file
 
@@ -271,6 +272,7 @@ def read_json(file_path):
     with open(file_path, 'r') as f:
         data = simplejson.load(f)
     return data
+
 
 def write_json(data_dict, file_path, **kwargs):
     """Save json file
