@@ -100,7 +100,6 @@ class EvalSetup(ConstrainedContainer):
         self.model_cfg = {}
         self.var_mapping = VAR_MAPPING
         self.path_manager = OutputPathManager()
-        self.summary_str = ''
         self.update(**kwargs)
 
     @property
@@ -123,16 +122,6 @@ class EvalSetup(ConstrainedContainer):
         str: Savename of config file: cfg_<proj_id>_<exp_id>.json
         """
         return f'cfg_{self.proj_id}_{self.exp_id}.json'
-
-    def update_summary_str(self) -> None:
-        """Updates :attr:`summary_str` using :func:`make_info_str_eval_setup`"""
-        try:
-            self.summary_str = make_info_str_eval_setup(self,
-                                                        add_header=False)
-        except Exception as e:
-            const.print_log.warning(
-                'Failed to create automatic summary string of '
-                f'setup class. Reason: {e}')
 
     def to_dict(self) -> dict:
         """
@@ -190,4 +179,4 @@ class EvalSetup(ConstrainedContainer):
 if __name__ == '__main__':
     stp = EvalSetup('bla', 'blub')
     stp.update(res_deg=10)
-    stp.to_dict()
+    d = stp.to_dict()
