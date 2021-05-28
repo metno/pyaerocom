@@ -1447,33 +1447,6 @@ def get_constraint(lon_range=None, lat_range=None,
     -------
     iris.Constraint
         the combined constraint from all valid input parameters
-
-    Examples
-    --------
-    The following example shows how to crop over the meridian
-
-    >>> from pyaerocom.helpers import get_constraint
-    >>> from pyaerocom.io.fileconventions import FileConventionRead
-    >>> from iris import load
-    >>> from pyaerocom.io.testfiles import get
-    >>> files = get()
-    >>> fname = files['models']['aatsr_su_v4.3']
-    >>> convention = FileConventionRead().from_file(fname)
-    >>> meta_info = convention.get_info_from_file(fname)
-    >>> for k, v in meta_info.items(): print(k, v)
-    year 2008
-    var_name od550aer
-    ts_type daily
-    >>> cubes = load(fname)
-    >>> lons = cubes[0].coord("longitude").points
-    >>> meridian_centre = True if lons.max() > 180 else False
-    >>> year = meta_info["year"]
-    >>> c = get_constraint(lon_range=(50, 150),
-    ...                    lat_range=(20, 60),
-    ...                    time_range=("%s-02-05" %year, "%s-02-25" %year))
-    >>> cube_crop = cubes.extract(c)[0]
-    >>> cube_crop.shape
-    (21, 40, 100)
     """
     constraints = []
     if lon_range is not None:

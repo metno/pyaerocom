@@ -5,7 +5,7 @@ from pyaerocom._lowlevel_helpers import ConstrainedContainer
 
 class OutputPathManager(ConstrainedContainer):
     OUT_DIR_NAMES = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles', 'contour']
-
+    PRIVATE_KEYS = ['_out_dirs']
     def __init__(self, out_basedir: str = None, **kwargs):
         #: Base directory for output
         if out_basedir is None:

@@ -2518,12 +2518,6 @@ class GriddedData(object):
         if self.latitude.bounds is None:
             self.latitude.guess_bounds()
 
-    def _init_testdata_default(self):
-        """Helper method that loads ECMWF_OSUITE test data"""
-        from pyaerocom.io.testfiles import get
-        self.load_input(get()["models"]["ecmwf_osuite"], var_name="od550aer")
-        return self
-
     @property
     def _size_GB(self):
         """Size of original data files from which this object is created

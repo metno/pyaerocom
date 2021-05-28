@@ -163,9 +163,29 @@ class ConstrainedContainer(BrowseDict):
     #: key / value pairs of constrained settings: keys are keys of this dict
     #: and values are lists of allowed values for that key
     CONSTRAINT_VALS = {}
+
+    #: use private keys to
+    PRIVATE_KEYS = []
     def __setitem__(self, key, val):
         self._check_valid(key, val)
         setattr(self, key, val)
+
+    def json_repr(self) -> dict:
+        """
+        Convert object to serializable json dict
+
+        Returns
+        -------
+        dict
+            content of class
+
+        """
+        output = {}
+        for key, val in self.items():
+            if isinstance(val, ConstrainedContainer):
+                val = val.json_repr()
+            output[key] = val
+        return output
 
     def _check_valid(self, key, val):
         """make sure no new attr is added

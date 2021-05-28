@@ -79,7 +79,7 @@ class EvalSetup(ConstrainedContainer):
     setup files.
     """
     def __init__(self, proj_id:str, exp_id:str, **kwargs):
-        self.proj_info =  ProjectInfo(proj_id=proj_id)
+        self.proj_info = ProjectInfo(proj_id=proj_id)
         self.exp_info = ExperimentInfo(exp_id=exp_id)
 
         self.modelmaps_opts = ModelMapsSetup()
@@ -123,26 +123,6 @@ class EvalSetup(ConstrainedContainer):
         """
         return f'cfg_{self.proj_id}_{self.exp_id}.json'
 
-    def to_dict(self) -> dict:
-        """
-        Convert to dictionary
-
-        Returns
-        -------
-        dict
-            dict representation of the setup
-
-        """
-        output = {}
-        self.update_summary_str()
-        for key, val in self.items():
-            if isinstance(val, ConstrainedContainer):
-                output[key] = val.to_dict()
-            else:
-                output[key] = val
-        return output
-
-    @staticmethod
     def to_json(self, outdir, ignore_nan=True, indent=3):
         """
         Save configuration as JSON file
@@ -158,7 +138,7 @@ class EvalSetup(ConstrainedContainer):
 
         """
         filepath = os.path.join(outdir, self.json_filename)
-        write_json(self.to_dict(), filepath,
+        write_json(self.json_repr(), filepath,
                    ignore_nan=ignore_nan,
                    indent=indent)
 
@@ -179,4 +159,4 @@ class EvalSetup(ConstrainedContainer):
 if __name__ == '__main__':
     stp = EvalSetup('bla', 'blub')
     stp.update(res_deg=10)
-    d = stp.to_dict()
+    d = stp.json_repr()
