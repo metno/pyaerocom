@@ -50,6 +50,7 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
 
+    python_requires = '>=3.6,<4',
     install_requires    =   [],
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),
