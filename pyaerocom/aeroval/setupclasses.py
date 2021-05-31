@@ -2,12 +2,13 @@
 from getpass import getuser
 import os
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import ConstrainedContainer
+from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
+                                         NestedContainer)
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.aeroval.var_names_web import VAR_MAPPING
 from pyaerocom.aeroval.filemanagement import OutputPathManager
-from pyaerocom.aeroval.helpers import (make_info_str_eval_setup, read_json,
-                                       write_json)
+from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
+from pyaerocom.aeroval.helpers import (read_json, write_json)
 
 class ModelMapsSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
@@ -20,10 +21,11 @@ class StatisticsSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
-        self.freqs = self.DEFAULT_FREQS
+        self.statistics_freqs = self.DEFAULT_FREQS
         self.main_freq = self.DEFAULT_FREQS[0]
-        self.periods = []
+        self.statistics_periods = []
         self.add_trends = False
+        self.seasonal_stats = True
         self.update(**kwargs)
 
 class WebDisplaySetup(ConstrainedContainer):
@@ -72,7 +74,7 @@ class AddMethodsSetup(ConstrainedContainer):
         self.add_methods = {}
         self.update(**kwargs)
 
-class EvalSetup(ConstrainedContainer):
+class EvalSetup(NestedContainer, ConstrainedContainer):
     """Composite class representing a whole analysis setup
 
     This represents the level at which json I/O happens for configuration
@@ -86,7 +88,9 @@ class EvalSetup(ConstrainedContainer):
         self.colocation_opts = ColocationSetup(
                                     save_coldata=True,
                                     keep_data=False,
-                                    regrid_res_deg=5
+                                    regrid_res_deg=5,
+                                    min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
+                                    resample_how='mean'
                                     )
         self.statistics_opts = StatisticsSetup(
                                     weighted_stats=True,
@@ -96,10 +100,12 @@ class EvalSetup(ConstrainedContainer):
 
         self.processing_opts = EvalRunOptions()
         self.addmethods_cfg = AddMethodsSetup()
-        self.obs_cfg = {}
-        self.model_cfg = {}
+
+        self.obs_cfg = ObsCollection()
+        self.model_cfg = ModelCollection()
+
         self.var_mapping = VAR_MAPPING
-        self.path_manager = OutputPathManager()
+        self.path_manager = OutputPathManager(self.proj_id, self.exp_id)
         self.update(**kwargs)
 
     @property
@@ -148,15 +154,10 @@ class EvalSetup(ConstrainedContainer):
         settings = read_json(filepath)
         return EvalSetup(**settings)
 
-    def __setitem__(self, key, val):
-        if key in self:
-            setattr(self, key, val)
-        for attr, subcfg in self.items():
-            if isinstance(subcfg, ConstrainedContainer) and key in subcfg:
-                setattr(subcfg, key, val)
 
 
 if __name__ == '__main__':
-    stp = EvalSetup('bla', 'blub')
+    stp = EvalSetup('bla', 'blub', addmethods_cfg={'add_methods_file': 'bla'})
+    stp['bla'] = 42
     stp.update(res_deg=10)
     d = stp.json_repr()

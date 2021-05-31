@@ -9,15 +9,7 @@ from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aeroval.obsentry import ObsEntry
 from pyaerocom.aeroval.modelentry import ModelEntry
 
-class EvalEntryCollection(BrowseDict):
-
-    ITEM_TYPE = None
-    def __setitem__(self, key, val):
-        if not isinstance(val, self.ITEM_TYPE):
-            val = self.ITEM_TYPE(**val)
-        super(EvalEntryCollection, self).__setitem__(key, val)
-
-class ObsCollection(EvalEntryCollection):
+class ObsCollection(BrowseDict):
     """
     Dict-like object that represents a collection of obs entries
 
@@ -31,7 +23,7 @@ class ObsCollection(EvalEntryCollection):
     """
     ITEM_TYPE = ObsEntry
 
-class ModelCollection(EvalEntryCollection):
+class ModelCollection(BrowseDict):
     ITEM_TYPE = ModelEntry
 
 

@@ -11,7 +11,10 @@ import os
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
-from pyaerocom.aeroval import ExperimentProcessor
+from pyaerocom.aeroval import ExperimentProcessor, EvalSetup
+
+def make_config_template(proj_id, exp_id):
+    return EvalSetup(proj_id, exp_id)
 
 def compute_model_average_and_diversity(cfg, var_name,
                                         model_names=None,
@@ -275,3 +278,6 @@ def compute_model_average_and_diversity(cfg, var_name,
                                            comment=commentq3))
 
     return (avg_out, div_out, q1_out, q3_out, std_out)
+
+if __name__ == '__main__':
+    print(make_config_template('bla', 'blub'))

@@ -189,6 +189,9 @@ class ColocationSetup(ConstrainedContainer):
     #: exists, it will load it and extract the surface level.
     OBS_VERT_TYPES_ALT = {'Surface'    :   'ModelLevel'}
 
+    #: do not raise Exception if invalid item is attempted to be assigned
+    #: (Overwritten from base class)
+    CRASH_ON_INVALID = False
     def __init__(self, model_id=None, obs_id=None, obs_vars=None,
                  ts_type=None, start=None, stop=None, basedir_coldata=None,
                  save_coldata=False, **kwargs):
@@ -1377,4 +1380,5 @@ class Colocator(ColocationSetup):
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
-    col = Colocator()
+    col = ColocationSetup()
+    col.update(bla=42)

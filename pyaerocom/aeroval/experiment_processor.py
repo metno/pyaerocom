@@ -43,12 +43,6 @@ class ExperimentProcessor:
     #: Attributes that are ignored when writing setup to json file
     JSON_CFG_IGNORE = ['add_methods', '_log', 'out_dirs']
 
-    _OPTS_NAMES_OUTPUT = {
-            'clear_existing_json' : 'Delete existing json files before reanalysis',
-            'reanalyse_existing'  : 'Reanalyse existing colocated NetCDF files',
-            'only_colocation'     : 'Run only colocation (no json files computed)',
-            'raise_exceptions'    : 'Raise exceptions if they occur'
-    }
     #: attributes that are not supported by this interface
     FORBIDDEN_ATTRS = ['basedir_coldata']
     _log = const.print_log
@@ -75,17 +69,6 @@ class ExperimentProcessor:
     def exp_dir(self):
         """Experiment directory"""
         return os.path.join(self.proj_dir, self.exp_id)
-
-    @property
-    def coldata_dir(self):
-        """Base directory for colocated data files"""
-        return self.cfg_colocation['basedir_coldata']
-
-    @property
-    def out_dirs(self):
-        if len(self._out_dirs) == 0:
-            self.init_json_output_dirs()
-        return self._out_dirs
 
     @property
     def regions_file(self):
@@ -372,51 +355,6 @@ class ExperimentProcessor:
             return self.__dict__[key]
         elif key in self.cfg_colocation:
             return self.cfg_colocation[key]
-
-    def init_json_output_dirs(self, out_basedir=None):
-        """Check and create directories for json files"""
-        if out_basedir is not None:
-            self.out_basedir = out_basedir
-        if not os.path.exists(self.out_basedir):
-            os.mkdir(self.out_basedir)
-        check_dirs_exist(self.out_basedir, self.proj_dir, self.exp_dir)
-        outdirs = {}
-        for dname in self.OUT_DIR_NAMES:
-            outdirs[dname] = os.path.join(self.exp_dir, dname)
-        check_dirs_exist(**outdirs)
-        self._out_dirs = outdirs
-        return outdirs
-
-    def _check_init_col_outdir(self):
-        cs = self.cfg_colocation
-
-        cbd = self.coldata_basedir
-        if cbd is None:
-            # this will make sure the base directory exists (or crash) and
-            # returns a string
-            cbd = cs._check_basedir_coldata()
-        elif isinstance(cbd, Path):
-            cbd = str(cbd)
-
-        if not os.path.exists(cbd):
-            os.mkdir(cbd)
-
-        add_dirs = f'{self.proj_id}/{self.exp_id}'
-        if cbd.endswith(add_dirs):
-            col_out = cbd
-        else:
-            col_out = os.path.join(cbd, add_dirs)
-        if not os.path.exists(col_out):
-            const.print_log.info(
-                f'Creating output directory for colocated data files: {col_out}')
-            os.makedirs(col_out, exist_ok=True)
-        else:
-            const.print_log.info(
-                f'Setting output directory for colocated data files to:\n{col_out}'
-                )
-        self.coldata_basedir = cbd
-        self.cfg_colocation['basedir_coldata'] = col_out
-
 
     def _check_model_config(self):
         for mname, cfg in self.model_config.items():

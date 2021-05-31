@@ -1640,10 +1640,10 @@ class StationData(StationMetaData):
                 else:
                     s += ' <empty_dict>'
             elif isinstance(v, list):
-                s += list_to_shortstr(v, name=k)
+                s += f'{k} : {list_to_shortstr(v)}'
             elif isinstance(v, np.ndarray):
                 if v.ndim==1:
-                    arrays += list_to_shortstr(v, name=k)
+                    arrays += f'{k} : {list_to_shortstr(v)}'
                 else:
                     arrays += "\n{} (ndarray, shape {})".format(k, v.shape)
                     arrays += "\n{}".format(v)

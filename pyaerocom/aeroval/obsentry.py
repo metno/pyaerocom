@@ -10,11 +10,11 @@ ToDo
 """
 from traceback import format_exc
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import ConstrainedContainer
+from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.metastandards import DataSource
 from pyaerocom.exceptions import InitialisationError
 
-class ObsEntry(ConstrainedContainer):
+class ObsEntry(BrowseDict):
     """Observation configuration for evaluation (dictionary)
 
     Note
@@ -70,9 +70,9 @@ class ObsEntry(ConstrainedContainer):
 
     def __init__(self, **kwargs):
 
-        self.obs_id = None
+        self.obs_id = ''
 
-        self.obs_vars = None
+        self.obs_vars = []
         self.obs_ts_type_read = None
         self.obs_vert_type = ''
         self.obs_aux_requires = {}
@@ -85,20 +85,6 @@ class ObsEntry(ConstrainedContainer):
 
         self.update(**kwargs)
         self.check_cfg()
-        self.check_add_obs()
-
-    # ToDo: this does not belong here.
-    def check_add_obs(self):
-        """Check if this dataset is an auxiliary post dataset
-        """
-        if len(self.obs_aux_requires) > 0:
-            try:
-                const.add_ungridded_post_dataset(**self)
-            except Exception:
-                raise InitialisationError(
-                    'Cannot initialise auxiliary reading setup for {}. '
-                    'Reason:\n{}'.format(self.obs_id, format_exc()))
-
 
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
