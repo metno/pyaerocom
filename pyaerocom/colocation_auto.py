@@ -14,7 +14,6 @@ from pyaerocom._lowlevel_helpers import (ConstrainedContainer, chk_make_subdir)
 from pyaerocom import const
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                get_lowest_resolution, start_stop)
-from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.colocation import (colocate_gridded_gridded,
                                   colocate_gridded_ungridded,
                                   correct_model_stp_coldata)
@@ -76,8 +75,6 @@ class ColocationSetup(ConstrainedContainer):
         if True, outliers are removed from model data (normally this should be
         set to False, as the models are supposed to be assessed, including
         outlier cases). Default is False.
-    vert_scheme : :obj:`str`, optional
-        vertical scheme used for colocation
     harmonise_units : bool
         if True, units are attempted to be harmonised (note: raises Exception
         if True and units cannot be harmonised).
@@ -265,7 +262,6 @@ class ColocationSetup(ConstrainedContainer):
         self.model_outlier_ranges = {}
 
         self.harmonise_units = False
-        self.vert_scheme = None
         self.regrid_res_deg = 5
 
         self.colocate_time = False
@@ -358,6 +354,16 @@ class ColocationSetup(ConstrainedContainer):
                 raise DeprecationError(
                     f'Attribute {attr} is deprecated since v0.12.0'
                 )
+
+    def _period_from_start_stop(self):
+        start, stop = start_stop(self.start, self.stop,
+                                 stop_sub_sec=False)
+        y0, y1 = start.year, stop.year
+        assert y0 <= y1
+        if y0 == y1:
+            return str(y0)
+        else:
+            return f'{y0}-{y1}'
 
 class Colocator(ColocationSetup):
     """High level class for running colocation
@@ -1231,7 +1237,6 @@ class Colocator(ColocationSetup):
                 var_ref=obs_var,
                 filter_name=self.filter_name,
                 regrid_res_deg=self.regrid_res_deg,
-                vert_scheme=self.vert_scheme,
                 harmonise_units=self.harmonise_units,
                 update_baseyear_gridded=baseyr,
                 apply_time_resampling_constraints=self.apply_time_resampling_constraints,
@@ -1293,7 +1298,6 @@ class Colocator(ColocationSetup):
             stop=self.stop,
             filter_name=self.filter_name,
             regrid_res_deg=self.regrid_res_deg,
-            vert_scheme=self.vert_scheme,
             harmonise_units=self.harmonise_units,
             update_baseyear_gridded=baseyr,
             apply_time_resampling_constraints=\

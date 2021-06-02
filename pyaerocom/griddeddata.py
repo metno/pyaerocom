@@ -872,13 +872,7 @@ class GriddedData(object):
             start, stop = start_stop_from_year(year)
             yield self.crop(time_range=(start, stop))
 
-    def check_coord_order(self):
-        """Wrapper for :func:`check_dimcoords_tseries`"""
-        logger.warning(DeprecationWarning('Method was renamed, please use '
-                                          'check_dimcoords_tseries'))
-        return self.check_dimcoords_tseries()
-
-    def check_dimcoords_tseries(self):
+    def check_dimcoords_tseries(self) -> None:
         """Check order of dimension coordinates for time series retrieval
 
         For computation of time series at certain lon / lat coordinates, the
@@ -893,63 +887,58 @@ class GriddedData(object):
         DataDimensionError
             if dimension of data is not supported (currently, 3D or 4D data
             is supported)
+        NotImplementedError
+            if one of the required coordinates is associated with more than
+            one dimension.
         DimensionOrderError
             if dimensions are not in the right order (in which case
             :func:`reorder_dimensions_tseries` may be used to catch the
             Exception)
         """
         if not self.ndim in (3,4):
-            raise DataDimensionError('Time series extraction requires at least 3 '
-                            'coordinates in cube')
-
-        order = self.COORDS_ORDER_TSERIES
-        for i, coord in enumerate(order):
+            raise DataDimensionError(
+                'Time series extraction requires at least 3 dimensions')
+        # list of coordinates needed for timeseries extraction.
+        needed = self.COORDS_ORDER_TSERIES
+        for i, coord in enumerate(needed):
             dims = self.cube.coord_dims(coord)
             if len(dims) == 0:
-                raise DataDimensionError('Coord {} is not associated with a '
-                                         'data dimension in cube'
-                                         .format(coord))
+                raise DataDimensionError(f'Coord {coord} is not associated '
+                                         f'with a data dimension in cube')
             elif len(dims) > 1:
-                raise NotImplementedError('Coord {} is associated with '
-                                          'multiple dimensions. This cannot '
-                                          'yet be handled...'.format(coord))
-
+                raise NotImplementedError(f'Coord {coord} is associated with '
+                                          f'multiple dimensions. This cannot '
+                                          f'yet be handled...')
             if not dims[0] == i:
                 raise DimensionOrderError('Invalid order of grid dimensions')
 
-    def reorder_dimensions_tseries(self):
-        """Reorders dimensions of data such that :func:`to_time_series` works
+    def reorder_dimensions_tseries(self) -> None:
+        """Transpose dimensions of data such that :func:`to_time_series` works
+
+        Raises
+        ------
+        DataDimensionError
+            if not all needed coordinates are available
+        NotImplementedError
+            if one of the required coordinates is associated with more than
+            one dimension.
+
         """
-        order = self.COORDS_ORDER_TSERIES
+        # list of coordinates needed for timeseries extraction.
+        needed = self.COORDS_ORDER_TSERIES
         new_order = []
         #coord_names = [c.name() for c in self.grid.dim_coords]
-        for coord in order:
+        for coord in needed:
             dims = self.cube.coord_dims(coord)
             if len(dims) == 0:
-                raise DataDimensionError('Coord {} is not associated with a '
-                                         'data dimension in cube'
-                                         .format(coord))
+                raise DataDimensionError(f'Coord {coord} is not associated '
+                                         f'with a data dimension in cube')
             elif len(dims) > 1:
-                raise NotImplementedError('Coord {} is associated with '
+                raise NotImplementedError(f'Coord {coord} is associated with '
                                           'multiple dimensions. This cannot '
-                                          'yet be handled...'.format(coord))
+                                          'yet be handled...')
             new_order.append(dims[0])
 
-        if not len(new_order) == self.ndim:
-            for i in range(self.ndim):
-                if not i in new_order:
-                    new_order.append(i)
-        self.transpose(new_order)
-        self.check_dimcoords_tseries()
-
-    def reorder_dimensions_tseries_old(self):
-        """Reorders dimensions of data such that :func:`to_time_series` works
-        """
-        order = self.COORDS_ORDER_TSERIES
-        new_order = []
-        coord_names = [c.name() for c in self.grid.dim_coords]
-        for coord_name in order:
-            new_order.append(coord_names.index(coord_name))
         if not len(new_order) == self.ndim:
             for i in range(self.ndim):
                 if not i in new_order:
@@ -1112,12 +1101,6 @@ class GriddedData(object):
                                  .format(self.shape))
         # if the method makes it to this point, it is 3 or 4 dimensional
         # and the first 3 dimensions are time, latitude, longitude.
-# =============================================================================
-#         lens = [len(x[1]) for x in sample_points]
-#         if not all([lens[0]==x for x in lens]):
-#             raise ValueError("Arrays for sample coordinates must have the "
-#                              "same lengths")
-# =============================================================================
         if self.ndim == 3: #data does not contain vertical dimension
             if use_iris:
                 if sample_points is None:

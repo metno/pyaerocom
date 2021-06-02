@@ -11,8 +11,7 @@ from pyaerocom import logger, const
 from pyaerocom import __version__ as pya_ver
 
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.exceptions import (ColocationError,
-                                  DataUnitError,
+from pyaerocom.exceptions import (DataUnitError,
                                   DimensionOrderError,
                                   MetaDataError,
                                   TemporalResolutionError,
@@ -105,7 +104,7 @@ def _ensure_gridded_gridded_same_freq(data, data_ref,
 
 def colocate_gridded_gridded(data, data_ref, ts_type=None,
                              start=None, stop=None, filter_name=None,
-                             regrid_res_deg=None, vert_scheme=None,
+                             regrid_res_deg=None,
                              harmonise_units=True,
                              regrid_scheme='areaweighted',
                              update_baseyear_gridded=None,
@@ -147,11 +146,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         resolution (if input is integer, both lat and lon are regridded to that
         resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
         to specify regrid resolutions, respectively).
-    vert_scheme : str
-        string specifying scheme used to reduce the dimensionality in case
-        input grid data contains vertical dimension. Example schemes are
-        `mean, surface, altitude`, for details see
-        :func:`GriddedData.to_time_series`.
     harmonise_units : bool
         if True, units are attempted to be harmonised (note: raises Exception
         if True and units cannot be harmonised).
@@ -191,11 +185,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         instance of colocated data
 
     """
-
-    if vert_scheme is not None:
-        raise NotImplementedError(f'This type of colocation is not implemented '
-                                  f'for gridded / gridded colocation... ({vert_scheme})')
-
     if filter_name is None:
         filter_name = const.DEFAULT_REG_FILTER
 
@@ -261,7 +250,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         'filter_name'       :   filter_name,
         'ts_type_src'       :   ts_type_src,
         'var_units'         :   [str(data_ref.units), str(data.units)],
-        'vert_scheme'       :   vert_scheme,
         'data_level'        :   3,
         'revision_ref'      :   data_ref.data_revision,
         'from_files'        :   files,
@@ -550,7 +538,7 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
 
 def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                                start=None, stop=None, filter_name=None,
-                               regrid_res_deg=None, vert_scheme=None,
+                               regrid_res_deg=None,
                                harmonise_units=True,
                                regrid_scheme='areaweighted',
                                var_ref=None,
@@ -600,11 +588,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
         resolution (if input is integer, both lat and lon are regridded to that
         resolution, if input is dict, use keys `lat_res_deg` and `lon_res_deg`
         to specify regrid resolutions, respectively).
-    vert_scheme : str
-        string specifying scheme used to reduce the dimensionality in case
-        input grid data contains vertical dimension. Example schemes are
-        `mean, surface, altitude`, for details see
-        :func:`GriddedData.to_time_series`.
     harmonise_units : bool
         if True, units are attempted to be harmonised (note: raises Exception
         if True and units cannot be harmonised).
@@ -752,16 +735,9 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
         raise VarNotAvailableError('Variable {} is not available in specified '
                                    'time interval ({}-{})'
                                    .format(var_ref, start, stop))
-    # make sure the gridded data is in the right dimension
-    if data.ndim > 3:
-        if vert_scheme is None:
-            vert_scheme = 'mean'
-        if not vert_scheme in data.SUPPORTED_VERT_SCHEMES:
-            raise ValueError('Vertical scheme {} is not supported'.format(vert_scheme))
 
     grid_stat_data = data.to_time_series(longitude=ungridded_lons,
-                                                 latitude=ungridded_lats,
-                                                 vert_scheme=vert_scheme)
+                                                 latitude=ungridded_lats)
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -892,7 +868,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
             'filter_name'       :   filter_name,
             'ts_type_src'       :   [ts_type_src_ref, ts_type_src_data],
             'var_units'         :   [data_ref_unit, data_unit],
-            'vert_scheme'       :   vert_scheme,
             'data_level'        :   3,
             'revision_ref'      :   revision,
             'from_files'        :   files,
