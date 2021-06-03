@@ -262,8 +262,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         'resample_how'      :   resample_how
         }
 
-    meta.update(regfilter.to_dict())
-
     data_np = data.grid.data
     if isinstance(data_np, np.ma.core.MaskedArray):
         data_np = data_np.filled(np.nan)
@@ -879,8 +877,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
             'min_num_obs'       :   min_num_obs,
             'resample_how'      :   resample_how}
 
-
-    meta.update(regfilter.to_dict())
 
     # create coordinates of DataArray
     coords = {'data_source' : meta['data_source'],

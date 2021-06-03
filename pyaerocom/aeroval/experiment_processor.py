@@ -1,27 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from fnmatch import fnmatch
 import glob
 import os
 import numpy as np
-from pathlib import Path
 import shutil
 from traceback import format_exc
 
 # internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (check_dirs_exist, sort_dict_by_name)
+from pyaerocom._lowlevel_helpers import (sort_dict_by_name)
 from pyaerocom import const
-from pyaerocom.exceptions import AeroValConfigError, FileConventionError
+from pyaerocom.exceptions import FileConventionError
 from pyaerocom.helpers import get_lowest_resolution
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.helpers import isnumeric, start_stop
-
-from pyaerocom.aeroval.obsentry import (ObsEntry)
-from pyaerocom.aeroval.modelentry import ModelEntry
+from pyaerocom.helpers import isnumeric
 
 from pyaerocom.aeroval.helpers import (
-    _check_statistics_periods, _get_min_max_year_periods,
     delete_experiment_data_evaluation_iface,
     read_json, write_json)
 
@@ -32,11 +26,156 @@ from pyaerocom.aeroval.coldata_to_json import (
 
 from pyaerocom.aeroval.setupclasses import EvalSetup
 
+class MapProcessor:
+
+    @property
+    def all_modelmap_vars(self):
+        """List of variables to be processed for model map display
+
+        Note
+        ----
+        For now this is just a wrapper for :attr:`all_obs_vars`
+        """
+        return self.all_obs_vars
+
+    def run_map_eval(self, model_name, var_name):
+        """Run evaluation of map processing
+
+        Create json files for model-maps display. This analysis does not
+        require any observation data but processes model output at all model
+        grid points, which is then displayed on the website in the maps
+        section.
+
+        Parameters
+        ----------
+        model_name : str
+            name of model to be processed
+        var_name : str, optional
+            name of variable to be processed. If None, all available
+            observation variables are used.
+        reanalyse_existing : bool
+            if True, existing json files will be reprocessed
+        raise_exceptions : bool
+            if True, any exceptions that may occur will be raised
+        """
+        if var_name is None:
+            all_vars = self.all_modelmap_vars
+        else:
+            all_vars = [var_name]
+
+        model_cfg = self.get_model_config(model_name)
+        settings = {}
+        settings.update(self.cfg_colocation)
+        settings.update(model_cfg)
+
+        for var in all_vars:
+            const.print_log.info(f'Processing model maps for '
+                                 f'{model_name} ({var})')
+
+            try:
+                self._process_map_var(model_name, var,
+                                      self.reanalyse_existing)
+
+            except Exception:
+                if self.raise_exceptions:
+                    raise
+                const.print_log.warning(
+                    f'Failed to process maps for {model_name} {var} data. '
+                    f'Reason: {format_exc()}')
+
+    def _process_map_var(self, model_name, var, reanalyse_existing):
+        """
+        Process model data to create map json files
+
+        Parameters
+        ----------
+        model_name : str
+            name of model
+        var : str
+            name of variable
+        reanalyse_existing : bool
+            if True, already existing json files will be reprocessed
+
+        Raises
+        ------
+        ValueError
+            If vertical code of data is invalid or not set
+        AttributeError
+            If the data has the incorrect number of dimensions or misses either
+            of time, latitude or longitude dimension.
+        """
+        from pyaerocom.aeroval.modelmaps_helpers import (calc_contour_json,
+                                                         griddeddata_to_jsondict)
+
+        data = self.read_model_data(model_name, var)
+
+        vc = data.vert_code
+        if not isinstance(vc, str) or vc=='':
+            raise ValueError(f'Invalid vert_code {vc} in GriddedData')
+        elif vc == 'ModelLevel':
+            if not data.ndim == 4:
+                raise ValueError('Invalid ModelLevel file, needs to have '
+                                 '4 dimensions (time, lat, lon, lev)')
+            data = data.extract_surface_level()
+            vc = 'Surface'
+        elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
+            raise ValueError(f'Cannot process {vc} files. Supported vertical '
+                             f'codes are {self.JSON_SUPPORTED_VERT_SCHEMES}')
+        if not data.has_time_dim:
+            raise AttributeError('Data needs to have time dimension...')
+        elif not data.has_latlon_dims:
+            raise AttributeError('Data needs to have lat and lon dimensions')
+        elif not data.ndim == 3:
+            raise AttributeError('Data needs to be 3-dimensional')
+
+        outdir = self.out_dirs['contour']
+        outname = f'{var}_{vc}_{model_name}'
+
+        fp_json = os.path.join(outdir, f'{outname}.json')
+        fp_geojson = os.path.join(outdir, f'{outname}.geojson')
+
+        if not reanalyse_existing:
+            if os.path.exists(fp_json) and os.path.exists(fp_geojson):
+                const.print_log.info(
+                    f'Skipping processing of {outname}: data already exists.'
+                    )
+                return
+
+
+        if not data.ts_type == 'monthly':
+            data = data.resample_time('monthly')
+
+        data.check_unit()
+
+        vminmax = self.maps_vmin_vmax
+        if var in self.cfg_model_maps['vmin_vmax']:
+            vmin, vmax = vminmax[var]
+        else:
+            vmin, vmax = None, None
+
+        # first calcualate and save geojson with contour levels
+        contourjson = calc_contour_json(data, vmin=vmin, vmax=vmax)
+
+        # now calculate pixel data json file (basically a json file
+        # containing monthly mean timeseries at each grid point at
+        # a lower resolution)
+        if isnumeric(self.maps_res_deg):
+            lat_res = self.maps_res_deg
+            lon_res = self.maps_res_deg
+        else:
+            lat_res = self.maps_res_deg['lat_res_deg']
+            lon_res = self.maps_res_deg['lon_res_deg']
+
+
+        datajson = griddeddata_to_jsondict(data,
+                                           lat_res_deg=lat_res,
+                                           lon_res_deg=lon_res)
+        write_json(contourjson, fp_geojson, ignore_nan=True)
+        write_json(datajson, fp_json, ignore_nan=True)
+
 class ExperimentProcessor:
     """Composite class representing a full setup for an AeroVal experiment
     """
-    #: vertical schemes that may be used for colocation
-    VERT_SCHEMES = {'Surface' : 'surface'}
 
     JSON_SUPPORTED_VERT_SCHEMES = ['Column', 'Surface']
 
@@ -50,51 +189,14 @@ class ExperimentProcessor:
         if not isinstance(cfg, EvalSetup):
             raise ValueError()
         self.cfg = cfg
-        self._valid_obs_vars = {}
 
     @property
-    def start_stop_colocation(self):
-        """
-        tuple: values of start and stop in :attr:`colocation_opts`
-        """
-        return (self.cfg_colocation['start'],
-                self.cfg_colocation['stop'])
+    def model_config(self):
+        return self.cfg.model_cfg
 
     @property
-    def proj_dir(self):
-        """Project directory"""
-        return os.path.join(self.out_basedir, self.proj_id)
-
-    @property
-    def exp_dir(self):
-        """Experiment directory"""
-        return os.path.join(self.proj_dir, self.exp_id)
-
-    @property
-    def regions_file(self):
-        """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'regions.json')
-
-    @property
-    def menu_file(self):
-        """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'menu.json')
-
-    @property
-    def experiments_file(self):
-        """json file containing region specifications"""
-        return os.path.join(self.proj_dir, 'experiments.json')
-
-    @property
-    def results_available(self):
-        """
-        bool: True if results are available for this experiment, else False
-        """
-        if not self.exp_id in os.listdir(self.proj_id):
-            return False
-        elif not len(self.all_map_files) > 0:
-            return False
-        return True
+    def obs_config(self):
+        return self.cfg.obs_cfg
 
     @property
     def model_order_menu(self):
@@ -124,23 +226,8 @@ class ExperimentProcessor:
             order.extend(self.obs_config.keys())
         return order
 
-    @property
-    def all_model_names(self):
-        """List of all model names"""
-        return list(self.model_config)
 
-    @property
-    def all_obs_names(self):
-        """List of all obs names"""
-        return list(self.obs_config)
 
-    @property
-    def all_obs_vars(self):
-        """List of unique obs variables"""
-        obs_vars = []
-        for oname, ocfg in self.obs_config.items():
-            obs_vars.extend(ocfg['obs_vars'])
-        return sorted(list(np.unique(obs_vars)))
 
     @property
     def all_model_vars(self):
@@ -157,299 +244,11 @@ class ExperimentProcessor:
         return mod_vars
 
     @property
-    def all_modelmap_vars(self):
-        """List of variables to be processed for model map display
-
-        Note
-        ----
-        For now this is just a wrapper for :attr:`all_obs_vars`
-        """
-        return self.all_obs_vars
-
-    @property
     def all_model_map_files(self):
         """List of all jsoncontour and json files associated with model maps"""
         if not os.path.exists(self.out_dirs['contour']):
             raise FileNotFoundError('No data available for this experiment')
         return os.listdir(self.out_dirs['contour'])
-
-    def _period_from_colocation_settings(self):
-        start, stop = start_stop(*self.start_stop_colocation,
-                                 stop_sub_sec=False)
-        y0, y1 = start.year, stop.year
-        assert y0 <= y1
-        if y0 == y1:
-            return str(y0)
-        else:
-            return f'{y0}-{y1}'
-
-    def _check_time_config(self):
-        periods = self.statistics_periods
-        colstart = self.cfg_colocation['start']
-        colstop = self.cfg_colocation['stop']
-
-        if periods is None:
-            if colstart is None:
-                raise AeroValConfigError(
-                    'Either statistics_periods or start must be set...'
-                    )
-            per = self._period_from_colocation_settings()
-            periods = [per]
-            const.print_log.info(
-                f'statistics_periods is not set, inferred {per} from start '
-                f'/ stop settings.')
-
-        self.statistics_periods = _check_statistics_periods(periods)
-        start, stop = _get_min_max_year_periods(self.statistics_periods)
-        if colstart is None:
-            self.cfg_colocation['start'] = start
-        if colstop is None:
-            self.cfg_colocation['stop'] = stop + 1 # add 1 year since we want to include stop year
-
-    def _update_custom_read_methods(self):
-        for mcfg in self.model_config.values():
-            if not 'model_read_aux' in mcfg:
-                continue
-            maux = mcfg['model_read_aux']
-            if maux is None:
-                continue
-            elif not isinstance(maux, dict):
-                raise ValueError('Require dict, got {}'.format(maux))
-            for varcfg in maux.values():
-                err_msg_base = ('Invalid definition of model_read_aux')
-                if not isinstance(varcfg, dict):
-                    raise ValueError('{}: value needs to be dictionary'
-                                     .format(err_msg_base))
-                if not all([x in varcfg for x in ['vars_required', 'fun']]):
-                    raise ValueError('{}: require specification of keys '
-                                     'vars_required and fun'
-                                     .format(err_msg_base))
-                if not isinstance(varcfg['fun'], str):
-                    raise ValueError('Names of custom methods need to be strings')
-
-                name = varcfg['fun']
-                fun = self.get_custom_read_method_model(name)
-                if not name in self.add_methods:
-                    self.add_methods[name] = fun
-
-    def get_custom_read_method_model(self, method_name):
-        """Get custom read method for computation of model variables during read
-
-        Parameters
-        ----------
-        method_name : str
-            name of method
-
-        Returns
-        -------
-        callable
-            corresponding python method
-
-        Raises
-        ------
-        ValueError
-            if no method with the input name can be accessed
-        """
-        if method_name in self.add_methods:
-            fun = self.add_methods[method_name]
-        else:
-            import sys, importlib
-            fp = self.add_methods_file
-
-            if fp is None or not os.path.exists(fp):
-                raise ValueError('Failed to access custom read method {}'
-                                 .format(method_name))
-            try:
-                moddir = os.path.dirname(fp)
-                if not moddir in sys.path:
-                    sys.path.append(moddir)
-                modname = os.path.basename(fp).split('.')[0]
-                if '.' in modname:
-                    raise NameError('Invalid name for module: {} (file name must '
-                                    'not contain .)'.format(fp))
-                mod = importlib.import_module(modname)
-            except Exception as e:
-                raise ImportError('Failed to import module containing '
-                                  'additional custom model read methods '
-                                  '.Error: {}'.format(repr(e)))
-            if not method_name in mod.FUNS:
-                raise ValueError('File {} does not contain custom read '
-                                 'method: {}'.format(fp, method_name))
-            fun = mod.FUNS[method_name]
-
-        if not callable(fun):
-            raise TypeError('{} ({}) is not a callable object'.format(fun,
-                            method_name))
-        return fun
-
-
-    def update(self, **settings):
-        """Update current setup"""
-        for k, v in settings.items():
-            self.__setitem__(k, v)
-
-    def _set_obsconfig(self, val):
-        cfg = {}
-        for k, v in val.items():
-            cfg[k] = ObsEntry(**v)
-
-        self.obs_config = cfg
-
-    @staticmethod
-    def _check_type_cfg_entry(val, cls):
-        if not isinstance(val, cls):
-            val = cls(**val)
-        return val
-
-    def _set_modelconfig(self, val):
-        """Set :attr:`model_config`
-
-        Parameters
-        -----------
-        val : dict
-            dictionary with model config entries, keys are model names, values
-            are either instances of :class:`dict` or of
-            :class:`ModelEntry`. If values are dicts, they will be
-            converted to :class:`ModelEntry`.
-        """
-        cfg = {}
-        for key, mcfg in val.items():
-            cfg[key] = self._check_type_cfg_entry(mcfg, ModelEntry)
-        self.model_config = cfg
-        self._update_custom_read_methods()
-
-    def __setitem__(self, key, val):
-        if key in self.FORBIDDEN_ATTRS:
-            raise AttributeError(
-                f'Attr {key} is not allowed in AerocomEvaluation'
-                )
-        elif key in self.cfg_colocation:
-            self.cfg_colocation[key] = val
-        elif key == 'obs_config':
-            self._set_obsconfig(val)
-        elif key == 'model_config':
-            self._set_modelconfig(val)
-        elif key == 'colocation_opts':
-            self.cfg_colocation.update(**val)
-        elif key == 'var_mapping':
-            self.var_mapping.update(val)
-        elif isinstance(key, str) and isinstance(val, dict):
-            if 'obs_id' in val:
-                self.obs_config[key] = ObsEntry(**val)
-            elif 'model_id' in val:
-                self.model_config[key] = ModelEntry(**val)
-            else:
-                self.__dict__[key] = val
-        elif key == 'map_zoom_default':
-            if not val in self._ALLOWED_ZOOM_REGIONS:
-                raise ValueError(
-                    f'Invalid input for map_zoom_default, choose from '
-                    f'{self._ALLOWED_ZOOM_REGIONS}')
-        elif not key in self.__dict__:
-            raise ValueError(key, val)
-
-        self.__dict__[key] = val
-
-    def __getitem__(self, key):
-        if key in self.__dict__:
-            return self.__dict__[key]
-        elif key in self.cfg_colocation:
-            return self.cfg_colocation[key]
-
-    def _check_model_config(self):
-        for mname, cfg in self.model_config.items():
-            if '_' in mname:
-                raise AttributeError(
-                    f'Invalid model name {mname}: '
-                    f'must not contain _ (underscore).')
-            elif len(mname) > 20:
-                const.print_log.warning(
-                    f'Long model name: {mname}. Consider renaming')
-            elif len(mname) > 25:
-                raise ValueError(
-                    f'Model name too long: {mname} (max 25 chars)')
-            if not isinstance(cfg, ModelEntry):
-                self.model_config[mname] = self._check_type_cfg_entry(cfg,
-                                                                      ModelEntry)
-
-    def _check_obs_config(self):
-        for oname, cfg in self.obs_config.items():
-            if '_' in oname:
-                raise AttributeError(
-                    f'Invalid obs name {oname}: '
-                    f'must not contain _ (underscore).')
-            elif len(oname) > 20:
-                const.print_log.warning(
-                    f'Long obs name: {oname}. Consider renaming')
-            elif len(oname) > 25:
-                raise ValueError(
-                    f'Obs name too long: {oname} (max 25 chars)')
-            if not isinstance(cfg, ObsEntry):
-                self.obs_config[oname] = self._check_type_cfg_entry(cfg,
-                                                                    ObsEntry)
-
-
-    def get_model_name(self, model_id):
-        """Get model name for input model ID
-
-        Parameters
-        ----------
-        model_id : str
-            AeroCom ID of model
-
-        Returns
-        -------
-        str
-            name of model
-
-        Raises
-        ------
-        AttributeError
-            if no match could be found
-        """
-        for mname, mcfg in self.model_config.items():
-            if mname == model_id or mcfg['model_id'] == model_id:
-                return mname
-        raise AttributeError('No match could be found for input name {}'
-                             .format(model_id))
-
-    def get_model_id(self, model_name):
-        """Get AeroCom ID for model name
-        """
-        for name, info in self.model_config.items():
-            if name == model_name:
-                return info['model_id']
-        raise KeyError('Cannot find setup for ID {}'.format(model_name))
-
-    def get_obs_id(self, obs_name):
-        """Get AeroCom ID for obs name
-        """
-        for name, info in self.obs_config.items():
-            if name == obs_name:
-                return info['obs_id']
-        raise KeyError('Cannot find setup for ID {}'.format(obs_name))
-
-    def find_obs_name(self, obs_id, obs_var):
-        """Find aeroval menu name of obs dataset based on obs_id and variable
-        """
-        matches = []
-        for obs_name, info in self.obs_config.items():
-            if info['obs_id'] == obs_id and obs_var in info['obs_vars']:
-                matches.append(obs_name)
-        if len(matches) == 1:
-            return matches[0]
-        raise ValueError('Could not identify unique obs name')
-
-    def find_model_name(self, model_id):
-        """Find aeroval menu name of model dataset based on model_id
-        """
-        matches = []
-        for model_name, info in self.model_config.items():
-            if info['model_id'] == model_id:
-                matches.append(model_name)
-        if len(matches) == 1:
-            return matches[0]
-        raise ValueError('Could not identify unique model name')
 
     def get_diurnal_only(self, obs_name, colocated_data):
         """
@@ -663,153 +462,33 @@ class ExperimentProcessor:
             converted.append(file)
         return converted
 
-    def init_colocator(self, model_name, obs_name):
-        col = Colocator(**self.cfg_colocation)
-        if not model_name in self.model_config:
-            raise KeyError(
-                f'No such model name {model_name}. '
-                f'Available models: {self.all_model_names}'
-                )
-        elif not obs_name in self.obs_config:
-            raise KeyError(
-                f'No such obs name {obs_name}. '
-                f'Available names: {self.all_obs_names}'
-                )
-        obs_cfg = self.obs_config[obs_name]
-        # ToDo: cumbersome, should not be needed to be checked... at least not
-        # here...
-        if obs_cfg['obs_vert_type'] in self.VERT_SCHEMES and not 'vert_scheme' in obs_cfg:
-            obs_cfg['vert_scheme'] = self.VERT_SCHEMES[obs_cfg['obs_vert_type']]
+    def init_colocator(self, model_name:str=None,
+                       obs_name:str=None) -> Colocator:
+        """
+        Instantate colocation engine
 
-        col.update(**obs_cfg)
-        col.update(**self.get_model_config(model_name))
+        Parameters
+        ----------
+        model_name : str, optional
+            name of model. The default is None.
+        obs_name : str, optional
+            name of obs. The default is None.
 
-        const.print_log.info(
-            f'Running colocation of {model_name} against {obs_name}'
-            )
-        # for specifying the model and obs names in the colocated data file
-        col.model_name = model_name
-        col.obs_name = obs_name
-        if col.start is None or col.stop is None:
-            raise ValueError('start and / or stop not set, please run '
-                             '_check_time_config first.')
+        Returns
+        -------
+        Colocator
+
+        """
+        col = Colocator(**self.cfg.colocation_opts)
+        if obs_name:
+            obs_cfg = self.cfg.get_obs_entry(obs_name)
+            col.import_from(obs_cfg)
+        if model_name:
+            mod_cfg = self.cfg.get_model_entry(model_name)
+            col.import_from(mod_cfg)
+        outdir = self.cfg.path_manager.get_coldata_dir()
+        col.basedir_coldata = outdir
         return col
-
-    def get_model_config(self, model_name):
-        """Get model configuration
-
-        Since the configuration files for experiments are in json format, they
-        do not allow the storage of executable custom methods for model data
-        reading. Instead, these can be specified in a python module that may
-        be specified via :attr:`add_methods_file` and that contains a
-        dictionary `FUNS` that maps the method names with the callable methods.
-
-        As a result, this means that, by default, custom read methods for
-        individual models in :attr:`model_config` do not contain the
-        callable methods but only the names. This method will take care of
-        handling this and will return a dictionary where potential custom
-        method strings have been converted to the corresponding callable
-        methods.
-
-        Parameters
-        ----------
-        model_name : str
-            name of model run
-
-        Returns
-        -------
-        dict
-            Dictionary that specifies the model setup ready for the analysis
-        """
-        mcfg = self.model_config[model_name]
-        outcfg = {}
-        if not 'model_id' in mcfg:
-            raise ValueError('Model configuration for {} is missing '
-                             'specification of model_id '.format(model_name))
-        for key, val in mcfg.items():
-
-            if key != 'model_read_aux':
-                outcfg[key] = val
-            else:
-                outcfg[key] = d = {}
-                for var, rcfg in val.items():
-                    d[var] = {}
-                    d[var]['vars_required'] = rcfg['vars_required']
-                    fun_str = rcfg['fun']
-                    if not isinstance(fun_str, str):
-                        raise Exception('Unexpected error. Custom method defs. '
-                                        'need to be strings, got {}'.format(fun_str))
-                    d[var]['fun'] = self.get_custom_read_method_model(fun_str)
-        return outcfg
-
-    def find_model_matches(self, name_or_pattern):
-        """Find model names that match input search pattern(s)
-
-        Parameters
-        ----------
-        name_or_pattern : :obj:`str`, or :obj:`list`
-            Name or pattern specifying model search string. Can also be a list
-            of names or patterns to search for multiple models.
-
-        Returns
-        -------
-        list
-            list of model names (i.e. keys of :attr:`model_config`) that match
-            the input search string(s) or pattern(s)
-
-        Raises
-        ------
-        KeyError
-            if no matches can be found
-        """
-
-        if isinstance(name_or_pattern, str):
-            name_or_pattern = [name_or_pattern]
-        from fnmatch import fnmatch
-        matches = []
-        for search_pattern in name_or_pattern:
-            for mname in self.model_config:
-                if fnmatch(mname, search_pattern) and not mname in matches:
-                    matches.append(mname)
-        if len(matches) == 0:
-            raise KeyError('No models could be found that match input {}'
-                           .format(name_or_pattern))
-        return matches
-
-    def find_obs_matches(self, name_or_pattern):
-        """Find model names that match input search pattern(s)
-
-        Parameters
-        ----------
-        name_or_pattern : :obj:`str`, or :obj:`list`
-            Name or pattern specifying obs search string. Can also be a list
-            of names or patterns to search for multiple obs networks.
-
-        Returns
-        -------
-        list
-            list of model names (i.e. keys of :attr:`obs_config`) that match
-            the input search string(s) or pattern(s)
-
-        Raises
-        ------
-        KeyError
-            if no matches can be found
-        """
-
-        if isinstance(name_or_pattern, str):
-            name_or_pattern = [name_or_pattern]
-        matches = []
-        for search_pattern in name_or_pattern:
-            for mname in self.obs_config:
-                if fnmatch(mname, search_pattern) and not mname in matches:
-                    matches.append(mname)
-        if len(matches) == 0:
-            raise KeyError(
-                f'No observations could be found that match input '
-                f'{name_or_pattern}. Choose from {list(self.obs_config.keys())}'
-                )
-        return matches
 
     def _check_and_get_iface_names(self):
         """
@@ -989,140 +668,9 @@ class ExperimentProcessor:
                     f'Failed to process superobs entry for {superobs_name},  '
                     f'{model_name}, var {var_name}. Reason: {format_exc()}')
 
-    def _process_map_var(self, model_name, var, reanalyse_existing):
-        """
-        Process model data to create map json files
-
-        Parameters
-        ----------
-        model_name : str
-            name of model
-        var : str
-            name of variable
-        reanalyse_existing : bool
-            if True, already existing json files will be reprocessed
-
-        Raises
-        ------
-        ValueError
-            If vertical code of data is invalid or not set
-        AttributeError
-            If the data has the incorrect number of dimensions or misses either
-            of time, latitude or longitude dimension.
-        """
-        from pyaerocom.aeroval.modelmaps_helpers import (calc_contour_json,
-                                                         griddeddata_to_jsondict)
-
-        data = self.read_model_data(model_name, var)
-
-        vc = data.vert_code
-        if not isinstance(vc, str) or vc=='':
-            raise ValueError(f'Invalid vert_code {vc} in GriddedData')
-        elif vc == 'ModelLevel':
-            if not data.ndim == 4:
-                raise ValueError('Invalid ModelLevel file, needs to have '
-                                 '4 dimensions (time, lat, lon, lev)')
-            data = data.extract_surface_level()
-            vc = 'Surface'
-        elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
-            raise ValueError(f'Cannot process {vc} files. Supported vertical '
-                             f'codes are {self.JSON_SUPPORTED_VERT_SCHEMES}')
-        if not data.has_time_dim:
-            raise AttributeError('Data needs to have time dimension...')
-        elif not data.has_latlon_dims:
-            raise AttributeError('Data needs to have lat and lon dimensions')
-        elif not data.ndim == 3:
-            raise AttributeError('Data needs to be 3-dimensional')
-
-        outdir = self.out_dirs['contour']
-        outname = f'{var}_{vc}_{model_name}'
-
-        fp_json = os.path.join(outdir, f'{outname}.json')
-        fp_geojson = os.path.join(outdir, f'{outname}.geojson')
-
-        if not reanalyse_existing:
-            if os.path.exists(fp_json) and os.path.exists(fp_geojson):
-                const.print_log.info(
-                    f'Skipping processing of {outname}: data already exists.'
-                    )
-                return
 
 
-        if not data.ts_type == 'monthly':
-            data = data.resample_time('monthly')
 
-        data.check_unit()
-
-        vminmax = self.maps_vmin_vmax
-        if var in self.cfg_model_maps['vmin_vmax']:
-            vmin, vmax = vminmax[var]
-        else:
-            vmin, vmax = None, None
-
-        # first calcualate and save geojson with contour levels
-        contourjson = calc_contour_json(data, vmin=vmin, vmax=vmax)
-
-        # now calculate pixel data json file (basically a json file
-        # containing monthly mean timeseries at each grid point at
-        # a lower resolution)
-        if isnumeric(self.maps_res_deg):
-            lat_res = self.maps_res_deg
-            lon_res = self.maps_res_deg
-        else:
-            lat_res = self.maps_res_deg['lat_res_deg']
-            lon_res = self.maps_res_deg['lon_res_deg']
-
-
-        datajson = griddeddata_to_jsondict(data,
-                                           lat_res_deg=lat_res,
-                                           lon_res_deg=lon_res)
-        write_json(contourjson, fp_geojson, ignore_nan=True)
-        write_json(datajson, fp_json, ignore_nan=True)
-
-    def run_map_eval(self, model_name, var_name):
-        """Run evaluation of map processing
-
-        Create json files for model-maps display. This analysis does not
-        require any observation data but processes model output at all model
-        grid points, which is then displayed on the website in the maps
-        section.
-
-        Parameters
-        ----------
-        model_name : str
-            name of model to be processed
-        var_name : str, optional
-            name of variable to be processed. If None, all available
-            observation variables are used.
-        reanalyse_existing : bool
-            if True, existing json files will be reprocessed
-        raise_exceptions : bool
-            if True, any exceptions that may occur will be raised
-        """
-        if var_name is None:
-            all_vars = self.all_modelmap_vars
-        else:
-            all_vars = [var_name]
-
-        model_cfg = self.get_model_config(model_name)
-        settings = {}
-        settings.update(self.cfg_colocation)
-        settings.update(model_cfg)
-
-        for var in all_vars:
-            const.print_log.info(f'Processing model maps for '
-                                 f'{model_name} ({var})')
-
-            try:
-                self._process_map_var(model_name, var,
-                                      self.reanalyse_existing)
-
-            except Exception:
-                if self.raise_exceptions:
-                    raise
-                const.print_log.warning(
-                    f'Failed to process maps for {model_name} {var} data. '
-                    f'Reason: {format_exc()}')
 
     def delete_invalid_coldata_files(self, dry_run=False):
         """
@@ -1185,13 +733,13 @@ class ExperimentProcessor:
                 f'network')
         else:
             col = self.init_colocator(model_name, obs_name)
-            if self.only_json:
+            if self.cfg.processing_opts.only_json:
                 files_to_convert = col.get_available_coldata_files()
             else:
                 col.run(var_name)
                 files_to_convert = col.files_written
 
-            if self.only_colocation:
+            if self.cfg.processing_opts.only_colocation:
                 self._log.info(
                     f'FLAG ACTIVE: only_colocation: Skipping '
                     f'computation of json files for {obs_name} /'
@@ -1230,33 +778,19 @@ class ExperimentProcessor:
             list containing all colocated data objects that have been converted
             to json files.
         """
-        self._check_init_col_outdir()
-        self._check_time_config()
+        self.cfg._check_time_config()
+        model_list = self.cfg.model_cfg.keylist(model_name)
+        obs_list = self.cfg.obs_cfg.keylist(obs_name)
 
-        if self.clear_existing_json:
-            self.clean_json_files()
-
-        if model_name is None:
-            model_list = list(self.model_config)
-        else:
-            model_list = self.find_model_matches(model_name)
-
-        if obs_name is None:
-            obs_list = list(self.obs_config)
-        else:
-            obs_list = self.find_obs_matches(obs_name)
-
-        self._log.info(self.info_string_evalrun(obs_list, model_list))
-
-        self._update_custom_read_methods()
+        const.print_log.info('Start processing')
 
         # compute model maps (completely independent of obs-eval
         # processing below)
-        if self.add_maps:
+        if self.cfg.webdisp_opts.add_maps:
             for model_name in model_list:
                 self.run_map_eval(model_name, var_name)
 
-        if not self.only_maps:
+        if not self.cfg.processing_opts.only_maps:
             for obs_name in obs_list:
                 for model_name in model_list:
                     self._run_single_entry(model_name, obs_name, var_name)
@@ -1265,39 +799,6 @@ class ExperimentProcessor:
             self.update_interface()
         const.print_log.info('Finished processing.')
 
-    def info_string_evalrun(self, obs_list, model_list):
-        """Short information string that summarises settings for evaluation run
-
-        Parameters
-        ----------
-        obs_list
-            list of observation names supposed to be processed
-        model_list : list
-            list of model names supposed to be processed
-
-        Returns
-        -------
-        str
-            info string
-        """
-        s = ('\nRunning analysis:\n'
-             'Obs. names: {}\n'
-             'Model names: {}\n'
-             'Remove outliers: {}\n'
-             'Harmonise units: {}'
-             .format(obs_list, model_list, self['remove_outliers'],
-                     self['harmonise_units']))
-        for k, i in self._OPTS_NAMES_OUTPUT.items():
-            s += '\n{}: {}'.format(i, self[k])
-        s += '\n'
-        return s
-
-    def check_read_model(self, model_name, var_name,  **kwargs):
-        const.print_log.warning(DeprecationWarning('Deprecated name of method '
-                                                   'read_model_data. Please '
-                                                   'use new name'))
-
-        return self.read_model_data(model_name, var_name,  **kwargs)
 
     def read_model_data(self, model_name, var_name,
                         **kwargs):
@@ -1305,14 +806,11 @@ class ExperimentProcessor:
 
         """
         if not model_name in self.model_config:
-            raise ValueError('No such model available {}'.format(model_name))
-        #mcfg = self.get_model_config(model_name)
+            raise ValueError(f'No such model available {model_name}')
 
         col = Colocator()
-        col.update(**self.cfg_colocation)
-        col.update(**self.get_model_config(model_name))
-        #col.update(**kwargs)
-
+        col.update(**self.cfg.colocation_opts)
+        col.update(**self.cfg.get_model_config(model_name))
         data = col.read_model_data(var_name, **kwargs)
 
         return data

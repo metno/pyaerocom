@@ -72,8 +72,6 @@ class Region(BrowseDict):
         if region_id in REGION_DEFS:
             self.import_default(region_id)
 
-
-
         self.update(**kwargs)
 
     def is_htap(self):
@@ -382,7 +380,7 @@ if __name__=="__main__":
     plt.close('all')
     import pyaerocom as pya
     res = {}
-    reg = Region('NAM')
+    reg = Region('EUROPE')
     reg.plot()
 
 # =============================================================================

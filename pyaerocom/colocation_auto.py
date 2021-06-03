@@ -20,6 +20,7 @@ from pyaerocom.colocation import (colocate_gridded_gridded,
 from pyaerocom.colocateddata import ColocatedData
 
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
+from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (ColocationError, DataCoverageError,
                                   DeprecationError)
@@ -355,7 +356,7 @@ class ColocationSetup(ConstrainedContainer):
                     f'Attribute {attr} is deprecated since v0.12.0'
                 )
 
-    def _period_from_start_stop(self):
+    def _period_from_start_stop(self) -> str:
         start, stop = start_stop(self.start, self.stop,
                                  stop_sub_sec=False)
         y0, y1 = start.year, stop.year
@@ -439,7 +440,8 @@ class Colocator(ColocationSetup):
         """
         bool: True if obs_id refers to an ungridded observation, else False
         """
-        return True if self.obs_id in self.UNGRIDDED_IDS else False
+        return (True if self.obs_id in get_all_supported_ids_ungridded()
+                else False)
 
     @property
     def model_reader(self):

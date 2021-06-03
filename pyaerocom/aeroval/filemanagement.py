@@ -1,60 +1,31 @@
 # -*- coding: utf-8 -*-
 import os
-from pathlib import Path
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import ConstrainedContainer
-
-
-class DirLoc:
-    def __init__(self, default=None, assert_exists=True):
-        if default is None:
-            default = ''
-        self.assert_exists = assert_exists
-        self.__set__(self, default)
-
-    def __set_name__(self, owner, name):
-        self.name = name
-
-    def __get__(self, instance, owner):
-        try:
-            val = instance.__dict__[self.name]
-        except (KeyError, AttributeError):
-            val = self.val
-        if not os.path.exists(val):
-            const.print_log.info('creating', val)
-            os.makedirs(val)
-        return val
-
-    def __set__(self, instance, value):
-
-        if isinstance(value, Path):
-            value = str(value)
-        elif not isinstance(value, str):
-            raise ValueError(value)
-        try:
-            instance.__dict__[self.name] = value
-        except AttributeError:
-            self.val = value
+from pyaerocom._lowlevel_helpers import (ConstrainedContainer, DirLoc,
+                                         StrType, JSONFile)
 
 class OutputPathManager(ConstrainedContainer):
     JSON_SUBDIRS = ['map', 'ts', 'ts/dw', 'scat', 'hm', 'profiles', 'contour']
 
     json_basedir = DirLoc(
         default=os.path.join(const.OUTPUTDIR, 'aeroval/data'),
-        assert_exists=False)
+        assert_exists=True,
+        auto_create=True,
+        logger=const.print_log,
+        tooltip='Base directory for json output files')
 
     coldata_basedir =DirLoc(
         default=os.path.join(const.OUTPUTDIR, 'aeroval/coldata'),
-        assert_exists=False)
+        assert_exists=True,
+        auto_create=True,
+        logger=const.print_log,
+        tooltip='Base directory for colocated data output files (NetCDF)')
 
     ADD_GLOB = ['coldata_basedir', 'json_basedir']
+    proj_id = StrType()
+    exp_id = StrType()
     def __init__(self, proj_id:str, exp_id:str,
-                 json_basedir:str=None, coldata_basedir:str=None
-                 ):
-        #: Base directory for output
-        if not all([isinstance(x, str) for x in (proj_id, exp_id)]):
-            raise ValueError('invalid input (both must be str)', proj_id,
-                             exp_id)
+                 json_basedir:str=None, coldata_basedir:str=None):
         self.proj_id = proj_id
         self.exp_id = exp_id
         if coldata_basedir:
@@ -80,10 +51,73 @@ class OutputPathManager(ConstrainedContainer):
             out[subdir] = loc
         return out
 
+class ProjectOutput:
+    """JSON output for project"""
+    proj_id = StrType()
+    json_basedir = DirLoc(assert_exists=True)
+    experiments_file = JSONFile(assert_exists=True)
+
+    def __init__(self, proj_id:str, json_basedir:str):
+        self.proj_id = proj_id
+        self.json_basedir = json_basedir
+
+    @property
+    def proj_dir(self):
+        """Project directory"""
+        return os.path.join(self.json_basedir, self.proj_id)
+
+    @property
+    def experiments_file(self):
+        """json file containing region specifications"""
+        return os.path.join(self.proj_dir, 'experiments.json')
+
+    @property
+    def available_experiments(self):
+        raise NotImplementedError()
+
+
+class ExperimentOutput(ProjectOutput):
+    """JSON output for experiment"""
+    exp_id = StrType()
+    def __init__(self, exp_id:str, proj_id:str, json_basedir:str):
+        super(ExperimentOutput, self).__init__(proj_id, json_basedir)
+        self.exp_id = exp_id
+
+    @property
+    def exp_dir(self):
+        """Experiment directory"""
+        return os.path.join(self.proj_dir, self.exp_id)
+
+    @property
+    def regions_file(self):
+        """json file containing region specifications"""
+        return os.path.join(self.exp_dir, 'regions.json')
+
+    @property
+    def menu_file(self):
+        """json file containing region specifications"""
+        return os.path.join(self.exp_dir, 'menu.json')
+
+    @property
+    def results_available(self):
+        """
+        bool: True if results are available for this experiment, else False
+        """
+        if not self.exp_id in os.listdir(self.proj_id):
+            return False
+        elif not len(self.all_map_files) > 0:
+            return False
+        return True
+
+
+
 
 if __name__ == '__main__':
     m = OutputPathManager('bla', 'blub')
-    m.update(coldata_basedir='/')
+    print(m)
+    bd = os.path.join(const.OUTPUTDIR, 'tmp')
+    pr = ExperimentOutput('bla', 'blub', json_basedir=bd)
+    pr.experiments_file
 
-    print(m.keys())
-    print(m.values())
+
+

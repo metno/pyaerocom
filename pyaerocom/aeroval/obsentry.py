@@ -8,13 +8,12 @@ ToDo
 - the configuration classes could inherit from a base class or could be more unified
 
 """
-from traceback import format_exc
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings
 from pyaerocom.metastandards import DataSource
-from pyaerocom.exceptions import InitialisationError
+from pyaerocom.aeroval._lowlev import EvalEntry
 
-class ObsEntry(BrowseDict):
+class ObsEntry(EvalEntry, BrowseDict):
     """Observation configuration for evaluation (dictionary)
 
     Note
@@ -68,6 +67,7 @@ class ObsEntry(BrowseDict):
 
     SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
 
+    obs_vars = ListOfStrings()
     def __init__(self, **kwargs):
 
         self.obs_id = ''
@@ -85,6 +85,18 @@ class ObsEntry(BrowseDict):
 
         self.update(**kwargs)
         self.check_cfg()
+
+    def get_all_vars(self) -> list:
+        """
+        Get list of all variables associated with this entry
+
+        Returns
+        -------
+        list
+            DESCRIPTION.
+
+        """
+        return self.obs_vars
 
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""

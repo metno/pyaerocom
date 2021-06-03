@@ -4,10 +4,45 @@
 Small helper utility functions for pyaerocom
 """
 import numpy as np
-import os
+import os, abc, logging, simplejson
+from pathlib import Path
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
 from pyaerocom import print_log
+
+def read_json(file_path):
+    """Read json file
+
+    Parameters
+    ----------
+    file_path : str
+        json file path
+
+    Returns
+    -------
+    dict
+        content as dictionary
+    """
+    with open(file_path, 'r') as f:
+        data = simplejson.load(f)
+    return data
+
+
+def write_json(data_dict, file_path, **kwargs):
+    """Save json file
+
+    Parameters
+    ----------
+    data_dict : dict
+        dictionary that can be written to json file
+    file_path : str
+        output file path
+    **kwargs
+        additional keyword args passed to :func:`simplejson.dumps` (e.g.
+        indent, )
+    """
+    with open(file_path, 'w') as f:
+        simplejson.dump(data_dict, f, **kwargs)
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions
@@ -93,6 +128,132 @@ def _class_name(obj):
     """Returns class name of an object"""
     return type(obj).__name__
 
+class Validator(abc.ABC):
+
+    def __set_name__(self, owner, name):
+        self._name = name
+
+    def __get__(self, obj, objtype=None):
+        try:
+            return obj.__dict__[self._name]
+        except (AttributeError, KeyError):
+            raise AttributeError('value not set...')
+
+    def __set__(self, obj, val):
+        val = self.validate(val)
+        obj.__dict__[self._name] = val
+
+    @abc.abstractmethod
+    def validate(self, val):
+        pass
+
+class StrType(Validator):
+    def validate(self, val):
+        if not isinstance(val, str):
+            raise ValueError(f'need str, got {val}')
+        return val
+
+class DictType(Validator):
+    def validate(self, val):
+        if not isinstance(val, dict):
+            raise ValueError(f'need dict, got {val}')
+        return val
+
+class FlexList(Validator):
+    """list that can be instantated via input str, tuple or list"""
+    def validate(self, val):
+        if isinstance(val, str):
+            val = [val]
+        elif isinstance(val, tuple):
+            val = list(val)
+        elif not isinstance(val, list):
+            raise ValueError(f'failed to convert {val} to list')
+        return val
+
+class ListOfStrings(FlexList):
+    def validate(self, val):
+        # make sure to have a list
+        val = super(ListOfStrings, self).validate(val)
+        # make sure all entries are strings
+        if not all([isinstance(x, str) for x in val]):
+            raise ValueError(f'not all items are str type in input list {val}')
+        return val
+
+class Loc(abc.ABC):
+    """Abstract descriptor representing a path location
+
+    Descriptor???
+    See here: https://docs.python.org/3/howto/descriptor.html#complete-practical-example
+
+    Note
+    ----
+    - Child classes need to implement :func:`create`
+    - value is allowed to be `None` in which case no checks are performed
+    """
+    def __init__(self, default=None, assert_exists=False,
+                 auto_create=False, tooltip=None, logger=None):
+        self.assert_exists = assert_exists
+        self.auto_create = auto_create
+        self.tooltip = '' if tooltip is None else tooltip
+        self.logger = logging.getLogger() if logger is None else logger
+        self.__set__(self, default)
+
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        try:
+            val = obj.__dict__[self.name]
+        except (KeyError, AttributeError):
+            val = self.default
+        return val
+
+    def __set__(self, obj, value):
+        value = self.validate(value)
+        try:
+            obj.__dict__[self.name] = value
+        except AttributeError:
+            self.default = value
+
+    def validate(self, value):
+        if value is None:
+            return value
+        elif isinstance(value, Path):
+            value = str(value)
+        if not isinstance(value, str):
+            raise ValueError(value)
+        if self.assert_exists and not os.path.exists(value):
+            if self.auto_create:
+                self.create(value)
+            else:
+                raise FileNotFoundError(value)
+        return value
+
+    @abc.abstractmethod
+    def create(self, value):
+        pass
+
+class DirLoc(Loc):
+
+    def create(self, value):
+        os.makedirs(value, exist_ok=True)
+        self.logger.info(f'created directory {value}')
+
+class AsciiFileLoc(Loc):
+    def create(self, value):
+        self.logger.info(f'create ascii file {value}')
+        open(value, 'w').close()
+
+class JSONFile(Loc):
+    def create(self, value):
+        write_json({}, value)
+        self.logger.info(f'created json file {value}')
+
+    def validate(self, value):
+        value = super(JSONFile, self).validate(value)
+        if value is not None and not value.endswith('json'):
+            raise ValueError('need .json file ending')
+
 class BrowseDict(MutableMapping):
     """Dictionary-like object with getattr and setattr options
 
@@ -100,16 +261,18 @@ class BrowseDict(MutableMapping):
     assigned value is callable, it will be executed on demand).
     """
     ADD_GLOB = []
+    FORBIDDEN_CHARS_KEYS = []
+    MAXLEN_KEYS = 1e3
     ITEM_TYPE = None
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
     @property
-    def name(self):
+    def _class_name(self):
         return _class_name(self)
 
     def keys(self):
-        return set(list(self.__dict__) + self.ADD_GLOB)
+        return list(self.__dict__.keys()) + self.ADD_GLOB
 
     def _get_glob_vals(self):
         return [getattr(self, x) for x in self.ADD_GLOB]
@@ -121,15 +284,25 @@ class BrowseDict(MutableMapping):
         for key in self.keys():
             yield key, getattr(self, key)
 
-    # The next five methods are requirements of the ABC.
-    def __setitem__(self, key, val):
-        self._setitem_checker(key, val)
+    def __setitem__(self, key, val) -> None:
+        key, val, ok = self._setitem_checker(key, val)
+        if not ok:
+            return
         if self.ITEM_TYPE is not None and not isinstance(val, self.ITEM_TYPE):
             val = self.ITEM_TYPE(**val)
+        if isinstance(key, str):
+            if len(key) > self.MAXLEN_KEYS:
+                raise KeyError(
+                    f'key {key} exceeds max length of {self.MAXLEN_KEYS}')
+            for char in self.FORBIDDEN_CHARS_KEYS:
+                if char in key:
+                    raise KeyError(
+                    f'key {key} must not contain char {char}')
         setattr(self, key, val)
 
+
     def _setitem_checker(self, key, val):
-        return key, val
+        return key, val, True
 
     def __getitem__(self, key):
         try:
@@ -152,13 +325,44 @@ class BrowseDict(MutableMapping):
         return f'{_class_name(self)}: {_repr}'
 
     def to_dict(self):
-        return dict(self)
+        out = {}
+        for key, val in self.items():
+            out[key] = val
+        return out
+
+    def import_from(self, other) -> None:
+        """
+        Import key value pairs from other object
+
+        Other than :func:`update` this method will silently ignore input
+        keys that are not contained in this object.
+
+        Parameters
+        ----------
+        other : dict or BrowseDict
+            other dict-like object containing content to be updated.
+
+        Raises
+        ------
+        ValueError
+            If input is inalid type.
+
+        Returns
+        -------
+        None
+
+        """
+        if not isinstance(other, (dict, BrowseDict)):
+            raise ValueError('need dict-like object')
+        for key, val in other.items():
+            if key in self:
+                self[key] = val
 
     def pretty_str(self):
         return dict_to_str(self.to_dict())
 
     def __str__(self):
-        return str(self.__dict__)
+        return str(self.to_dict())
 
 class ConstrainedContainer(BrowseDict):
     """Restrictive dict-like class with fixed keys
@@ -234,9 +438,9 @@ class ConstrainedContainer(BrowseDict):
             if self.CRASH_ON_INVALID:
                 raise ValueError(f'Invalid key {key}')
             print_log.warning(
-                f'Invalid key {key} in {self.name}. Will be ignored.'
+                f'Invalid key {key} in {self._class_name}. Will be ignored.'
                 )
-            return
+            return key, val, False
 
         current = getattr(self, key)
         val = self._check_valtype(key, val)
@@ -248,7 +452,7 @@ class ConstrainedContainer(BrowseDict):
                 f'(Current value: {current})')
         elif key in self.CONSTRAINT_VALS:
             self._assert_constraint(key, val)
-        return key, val
+        return key, val, True
 
     def _assert_constraint(self, key, val):
         if not val in self.CONSTRAINT_VALS[key]:

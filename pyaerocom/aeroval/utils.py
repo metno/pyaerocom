@@ -71,6 +71,7 @@ def compute_model_average_and_diversity(cfg, var_name,
         corresponding diversity field, computed using definition from
         Textor et al., 2006 (ACP) DOI: 10.5194/acp-6-1777-2006
     """
+    raise NotImplementedError('under revision...')
     if not isinstance(cfg, ExperimentProcessor):
         raise ValueError
     if model_use_vars is None:

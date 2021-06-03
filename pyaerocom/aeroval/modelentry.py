@@ -1,7 +1,9 @@
-from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom._lowlevel_helpers import (BrowseDict, ListOfStrings, DictType,
+                                         StrType)
+from pyaerocom.aeroval.aux_io_helpers import check_aux_info
+from pyaerocom.aeroval._lowlev import EvalEntry
 
-
-class ModelEntry(BrowseDict):
+class ModelEntry(EvalEntry, BrowseDict):
     """Modeln configuration for evaluation (dictionary)
 
     Note
@@ -34,15 +36,26 @@ class ModelEntry(BrowseDict):
         and `fun` (method that takes list of read data objects and computes
         and returns var)
     """
+    model_id = StrType()
+    model_use_vars = DictType()
+    model_add_vars = DictType()
+    model_read_aux = DictType()
+
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
-        self.model_ts_type_read = None
+        self.model_ts_type_read = ''
         self.model_use_vars = {}
         self.model_add_vars = {}
         self.model_read_aux = {}
 
         self.update(**kwargs)
         self.check_cfg()
+
+    def get_all_vars(self):
+        muv = list(self.model_use_vars.values())
+        mav = list(self.model_add_vars.values())
+        mra = list(self.model_read_aux.keys())
+        return list(set(muv + mav + mra))
 
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
@@ -54,3 +67,9 @@ class ModelEntry(BrowseDict):
             assert isinstance(val, list)
         for key, val in self.model_use_vars.items():
             assert isinstance(val, str)
+
+    def _check_update_aux_funcs(self, funcs):
+        mra = {}
+        for var, aux_info in self.model_read_aux.items():
+            mra[var] = check_aux_info(funcs=funcs, **aux_info)
+        self.model_read_aux = mra

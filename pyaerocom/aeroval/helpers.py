@@ -7,11 +7,9 @@ TO BE DELETED
 """
 import os, glob, shutil
 
-import simplejson
-
 from pyaerocom import const
 from pyaerocom.helpers import start_stop_str
-from pyaerocom._lowlevel_helpers import sort_dict_by_name
+from pyaerocom._lowlevel_helpers import sort_dict_by_name, read_json, write_json
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import TemporalResolutionError
@@ -254,38 +252,3 @@ def _get_min_max_year_periods(statistics_periods):
         if perstop > stopyr:
             stopyr = perstop
     return startyr, stopyr
-
-
-def read_json(file_path):
-    """Read json file
-
-    Parameters
-    ----------
-    file_path : str
-        json file path
-
-    Returns
-    -------
-    dict
-        content as dictionary
-    """
-    with open(file_path, 'r') as f:
-        data = simplejson.load(f)
-    return data
-
-
-def write_json(data_dict, file_path, **kwargs):
-    """Save json file
-
-    Parameters
-    ----------
-    data_dict : dict
-        dictionary that can be written to json file
-    file_path : str
-        output file path
-    **kwargs
-        additional keyword args passed to :func:`simplejson.dumps` (e.g.
-        indent, )
-    """
-    with open(file_path, 'w') as f:
-        simplejson.dump(data_dict, f, **kwargs)
