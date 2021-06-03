@@ -12,10 +12,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: s-weigand/setup-conda@v1.0.5
       with:
         python-version: ${{ matrix.python-version }}
-    - uses: s-weigand/setup-conda@v1.0.5
     - name: Conda info
       run: |
         conda --version
