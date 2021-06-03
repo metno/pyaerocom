@@ -6,6 +6,7 @@ Created on Mon Apr 15 14:00:44 2019
 import os, glob, shutil
 import numpy as np
 import simplejson
+import xarray as xr
 from pyaerocom import const
 from pyaerocom.helpers import start_stop_str
 from pyaerocom._lowlevel_helpers import sort_dict_by_name
@@ -19,7 +20,6 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (DataCoverageError,
-                                  DataDimensionError,
                                   TemporalResolutionError)
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
@@ -671,18 +671,33 @@ def _init_meta_glob(coldata, **kwargs):
 
     # create metadata dictionary that is shared among all timeseries files
     meta_glob = {}
-    meta_glob['pyaerocom_version'] = meta['pyaerocom']
-    #meta_glob['obs_name'] = obs_name
-    #meta_glob['model_name'] = model_name
-    meta_glob['obs_var'] = meta['var_name'][0]
-    meta_glob['obs_unit'] = meta['var_units'][0]
-    #meta_glob['vert_code'] = vert_code
-    meta_glob['obs_freq_src'] = meta['ts_type_src'][0]
-    meta_glob['obs_revision'] = meta['revision_ref']
-
-    meta_glob['mod_var'] = meta['var_name'][1]
-    meta_glob['mod_unit'] = meta['var_units'][1]
-    meta_glob['mod_freq_src'] = meta['ts_type_src'][1]
+    NDSTR = 'UNDEFINED'
+    try:
+        meta_glob['pyaerocom_version'] = meta['pyaerocom']
+    except KeyError:
+        meta_glob['pyaerocom_version'] = NDSTR
+    try:
+        meta_glob['obs_var'] = meta['var_name'][0]
+        meta_glob['mod_var'] = meta['var_name'][1]
+    except KeyError:
+        meta_glob['obs_var'] = NDSTR
+        meta_glob['mod_var'] = NDSTR
+    try:
+        meta_glob['obs_unit'] = meta['var_units'][0]
+        meta_glob['mod_unit'] = meta['var_units'][1]
+    except KeyError:
+        meta_glob['obs_unit'] = NDSTR
+        meta_glob['mod_unit'] = NDSTR
+    try:
+        meta_glob['obs_freq_src'] = meta['ts_type_src'][0]
+        meta_glob['mod_freq_src'] = meta['ts_type_src'][1]
+    except KeyError:
+        meta_glob['obs_freq_src'] = NDSTR
+        meta_glob['mod_freq_src'] = NDSTR
+    try:
+        meta_glob['obs_revision'] = meta['revision_ref']
+    except KeyError:
+        meta_glob['obs_revision'] = NDSTR
     meta_glob.update(kwargs)
     return meta_glob
 
@@ -1091,6 +1106,28 @@ def _process_regional_timeseries(data, jsdate, region_ids,
         ts_objs.append(ts_data)
     return ts_objs
 
+def _apply_annual_constraint(coldata, yearly):
+
+    arr_yr = yearly.data
+    yrs_cd = coldata.data.time.dt.year
+    yrs_avail = arr_yr.time.dt.year
+    obs_allyrs = arr_yr[0]
+    for i, yr in enumerate(yrs_avail):
+        obs_yr = obs_allyrs[i]
+        nan_sites_yr = obs_yr.isnull()
+        if not nan_sites_yr.any():
+            continue
+        scond = nan_sites_yr.data
+        tcond = (yrs_cd == yr).data
+        # workaround since numpy sometimes throws IndexError if tcond and
+        # scond are attempted to be applied directly via
+        # coldata.data.data[:,tcond, scond] = np.nan
+        tsel = coldata.data.data[:,tcond]
+        tsel[:,:,scond] = np.nan
+        coldata.data.data[:,tcond] = tsel
+
+    return coldata
+
 def _get_stats_region(data, freq, regid, use_weights, use_country,
                       annual_stats_constrained):
     coldata = data[freq]
@@ -1105,22 +1142,22 @@ def _get_stats_region(data, freq, regid, use_weights, use_country,
         raise DataCoverageError(f'All data is NaN in {regid} ({freq})')
 
     if annual_stats_constrained:
-
-        year = data['yearly']
-
-        filtered_yr = year.filter_region(
+        yearly = data['yearly']
+        yearly_filtered = yearly.filter_region(
             region_id=regid,
             check_country_meta=use_country
             )
-        stats_to_keep = filtered_yr.get_station_names_obs_notnan()
-        if len(stats_to_keep) == 0:
-            raise DataCoverageError(
-                f'No sites remaining in {regid} ({freq}) when applying annual '
-                f'coverage constraint.')
-
-        filtered.data = filtered.data.sel(station_name=stats_to_keep)
+        filtered = _apply_annual_constraint(filtered, yearly_filtered)
 
     stats = filtered.calc_statistics(use_area_weights=use_weights)
+
+    (stats['R_spatial_mean'],
+     stats['R_spatial_median']) = _calc_spatial_corr(filtered, use_weights)
+
+    (stats['R_temporal_mean'],
+     stats['R_temporal_median']) = _calc_temporal_corr(filtered)
+
+
     for k, v in stats.items():
         try:
             stats[k] = np.float64(v) # for json encoder...
@@ -1129,6 +1166,61 @@ def _get_stats_region(data, freq, regid, use_weights, use_country,
             # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
             stats[k] = v
     return stats
+
+def _calc_spatial_corr(coldata, use_weights):
+    """
+    Compute spatial correlation both for median and mean aggregation
+
+    Parameters
+    ----------
+    coldata : ColocatedData
+        Input data.
+    use_weights : bool
+        Apply area weights or not.
+
+    Returns
+    -------
+    float
+        mean spatial correlation
+    float
+        median spatial correlation
+
+    """
+    return (coldata.calc_spatial_statistics(
+                                aggr='mean',
+                                use_area_weights=use_weights
+                                )['R'],
+            coldata.calc_spatial_statistics(
+                                aggr='median',
+                                use_area_weights=use_weights
+                                )['R']
+            )
+
+
+def _calc_temporal_corr(coldata):
+    """
+    Compute temporal correlation both for median and mean aggregation
+
+    Parameters
+    ----------
+    coldata : ColocatedData
+        Input data.
+
+    Returns
+    -------
+    float
+        mean temporal correlation
+    float
+        median temporal correlation
+
+    """
+    arr = coldata.data
+    # Use only sites that contain at least 3 valid data points (otherwise
+    # correlation will be 1).
+    obs_ok = arr[0].count(dim='time') > 2
+    arr = arr.where(obs_ok, drop=True)
+    corr_time = xr.corr(arr[1], arr[0], dim='time')
+    return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob, annual_stats_constrained=False):
@@ -1233,8 +1325,11 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         raise NotImplementedError('Cannot yet apply country filtering for '
                                   '4D colocated data instances')
     # init some stuff
-    obs_var = coldata.metadata['var_name'][0]
-    model_var = coldata.metadata['var_name'][1]
+    if 'var_name' in coldata.metadata:
+        obs_var = coldata.metadata['var_name'][0]
+        model_var = coldata.metadata['var_name'][1]
+    else:
+        obs_var = model_var = 'UNDEFINED'
 
     const.print_log.info(
         f'Computing json files for {model_name} ({model_var}) vs. '

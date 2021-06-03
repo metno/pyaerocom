@@ -1,13 +1,14 @@
+import glob
+import numpy as np
+import os
 import pytest
 import simplejson
-import os
-from pyaerocom.conftest import (coldata_tm5_aeronet,
-                                coldata_tm5_tm5,
-                                does_not_raise_exception,
-                                tempdir)
+
+from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom import ColocatedData, Region
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import get_all_default_region_ids
+from pyaerocom.web import AerocomEvaluation
 from pyaerocom.web import helpers_evaluation_iface as h
 
 @pytest.mark.parametrize('base_dir, proj_id, exp_id', [
@@ -153,9 +154,10 @@ def test__add_entry_heatmap_json(heatmap_file, result, obs_name, obs_var, vert_c
 
 def test__init_stats_dummy():
     dummy = h._init_stats_dummy()
-    assert list(dummy.keys()) == ['totnum', 'num_valid', 'refdata_mean',
-                                  'refdata_std', 'data_mean', 'data_std',
-                                  'weighted', 'rms', 'nmb', 'mnmb', 'fge']
+    keys =  sorted(list(dummy.keys()))
+    assert keys == ['R', 'R_kendall', 'R_spearman', 'data_mean', 'data_std',
+                    'fge', 'mnmb', 'nmb', 'num_valid', 'refdata_mean',
+                    'refdata_std', 'rms', 'totnum', 'weighted']
 
 def test__check_flatten_latlon_dims_3d(coldata_tm5_aeronet):
     cd = h._check_flatten_latlon_dims(coldata_tm5_aeronet)
@@ -233,6 +235,95 @@ def test_init_regions_web(coldata_tm5_aeronet,regions_how,raises,regnum):
             for reg, brdr in regborders.items():
                 if not reg == 'WORLD':
                     assert isinstance(brdr, str) # country code
+
+@pytest.mark.parametrize('which,raises,ncd,omc,mmc', [
+    ('fake_3d', does_not_raise_exception(), 4, False, False)
+    ])
+def test__apply_annual_constraint(coldata,which,raises,ncd,omc,mmc):
+    cd = coldata[which]
+    yearly = cd.resample_time('yearly', inplace=False, colocate_time=False)
+    with raises:
+        result = h._apply_annual_constraint(cd.copy(), yearly)
+        assert isinstance(cd, ColocatedData)
+        assert not cd is result # make sure fixture has not been modified, the function applied it directly to the input data
+        assert result.shape == cd.shape
+        assert result.num_coords_with_data == ncd
+        omean_before = np.nanmean(cd.data[0].data)
+        mmean_before = np.nanmean(cd.data[1].data)
+
+        omean = np.nanmean(result.data[0].data)
+        mmean = np.nanmean(result.data[1].data)
+
+        omean_same = np.allclose(omean, omean_before, rtol=1e-5)
+        mmean_same = np.allclose(mmean, mmean_before, rtol=1e-5)
+
+        if omc:
+            assert omean_same
+        else:
+            assert not omean_same
+        if mmc:
+            assert mmean_same
+        else:
+            assert not mmean_same
+
+
+@pytest.mark.parametrize('which,obs_name,model_name,use_weights,'
+                         'vert_code,web_iface_name,diurnal_only,'
+                         'regions_how,zeros_to_nan,annual_stats_constrained,'
+                         'raises,fnumdirs', [
+    ('fake_4d', 'bla','blub',True,'Column',None,False,None,False,True,
+     does_not_raise_exception(),{'ts' : 15,'map' : 1}),
+
+    ('fake_3d', 'bla','blub',False,'Column',None,False,None,False,False,
+     does_not_raise_exception(),{'ts' : 14,'map' : 1}),
+    ('fake_3d', 'bla','blub',True,'Column',None,False,None,False,True,
+     does_not_raise_exception(),{'ts' : 14,'map' : 1}),
+
+    ('fake_4d', 'bla','blub',False,'Column',None,False,None,False,False,
+     does_not_raise_exception(),{'ts' : 15,'map' : 1}),
+
+
+    ('tm5_aeronet','bla','blub',False,'Column',None,False,None,False,False,
+     does_not_raise_exception(),{'ts' : 18,'map' : 1, 'contour' : 0,
+                                 'profiles' : 0, 'hm' : 3, 'scat': 1,
+                                 'ts/dw' : 0}),
+    ('tm5_aeronet','bla','blub',False,'Column',None,False,None,False,True,
+     does_not_raise_exception(),{'ts' : 18,'map' : 1}),
+
+    ])
+def test_compute_json_files_from_colocateddata(coldata, tmpdir, which, obs_name,
+                                          model_name, use_weights,
+                                          vert_code,web_iface_name,
+                                          diurnal_only,regions_how,
+                                          zeros_to_nan,
+                                          annual_stats_constrained,raises,
+                                          fnumdirs):
+    outdir = str(tmpdir)
+    proj = 'proj'
+    exp = 'exp'
+    stp = AerocomEvaluation(proj_id=proj, exp_id=exp,out_basedir=outdir)
+    stp.init_json_output_dirs()
+    cs = stp.colocation_settings
+    out_dirs = stp.out_dirs
+    regions_json = stp.regions_file
+    cd = coldata[which]
+
+    with raises:
+        h.compute_json_files_from_colocateddata(cd,obs_name,model_name,
+                                                use_weights,cs,vert_code,
+                                                out_dirs,regions_json,
+                                                web_iface_name,
+                                                diurnal_only,
+                                                regions_how,
+                                                zeros_to_nan,
+                                                annual_stats_constrained)
+        outbase = os.path.join(outdir, f'{proj}/{exp}')
+        assert os.path.isdir(outbase)
+        for subdir, num in fnumdirs.items():
+            fp = os.path.join(outbase, subdir)
+            assert os.path.isdir(fp)
+            files = glob.glob(f'{fp}/*.json')
+            assert len(files) == num
 
 if __name__ == '__main__':
     import sys

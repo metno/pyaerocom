@@ -9,6 +9,7 @@ import pytest
 from pyaerocom import const
 from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
+from pyaerocom.io.ebas_file_index import EbasSQLRequest
 
 TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('sc550aer', ['aerosol_light_scattering_coefficient'],
@@ -20,7 +21,6 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('sc550dryaer', None, None, None, None, ['sc550aer', 'scrh'], 1),
             ('sc440dryaer', None, None, None, None, ['sc440aer', 'scrh'], 1),
             ('sc700dryaer', None, None, None, None, ['sc700aer', 'scrh'], 1),
-            ('ang4470dryaer', None, None, None, None, ['sc440dryaer', 'sc700dryaer'], 1),
             ('sc550lt1aer', ['aerosol_light_scattering_coefficient'],
              ['pm25', 'pm1'], None, None, None, 1.0),
             ('bsc550aer', ['aerosol_light_backscattering_coefficient'],
@@ -122,12 +122,14 @@ def test_to_dict():
 
 @pytest.mark.parametrize('var,constraints,raises', [
     (None, {}, pytest.raises(AttributeError)),
+    ('sc700dryaer', {}, pytest.raises(ValueError)),
     ('sc550dryaer', {}, pytest.raises(ValueError)),
     ('concpm10', {}, does_not_raise_exception()),
     ('concpm10', {'bla': 42}, does_not_raise_exception()),
     # ToDo: the following example should actually be checked and maybe raise an Exception already here
     # (i.e. start_date is a valid constraint but 42 is not allowed as input)
     ('concpm10', {'start_date': 42}, does_not_raise_exception()),
+
     ])
 def test_make_sql_request(var,constraints,raises):
     if var is None:
@@ -139,6 +141,21 @@ def test_make_sql_request(var,constraints,raises):
         req = info.make_sql_request(**constraints)
         from pyaerocom.io import EbasSQLRequest
         assert isinstance(req, EbasSQLRequest)
+
+@pytest.mark.parametrize('var,constraints,raises,num', [
+    ('concpm10', {}, does_not_raise_exception(), 1),
+    ('sc700dryaer', {}, does_not_raise_exception(), 2),
+    ('sc550dryaer', {}, does_not_raise_exception(), 2),
+    ('sc440dryaer', {}, does_not_raise_exception(), 2),
+    ])
+def test_make_sql_requests(var,constraints,raises,num):
+    info = EbasVarInfo(var)
+    with raises:
+        reqs = info.make_sql_requests(**constraints)
+        assert isinstance(reqs, dict)
+        assert len(reqs) == num
+        for key, req in reqs.items():
+            assert isinstance(req, EbasSQLRequest)
 
 def test___str__():
     s = EbasVarInfo('concpm10').__str__()
