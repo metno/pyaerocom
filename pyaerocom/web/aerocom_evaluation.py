@@ -24,7 +24,8 @@ from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
 
 from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_DAILY,
                                  HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY)
+                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY,
+                                 HEATMAP_FILENAME_EVAL_IFACE_HOURLY)
 from pyaerocom.web.helpers_evaluation_iface import (
     update_menu_evaluation_iface,
     make_info_table_evaluation_iface,
