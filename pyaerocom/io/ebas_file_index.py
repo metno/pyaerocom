@@ -269,7 +269,7 @@ class EbasFileIndex(object):
     def get_table_columns(self, table_name):
         """Get all columns of a table in SQLite database file"""
         req = f"select * from {table_name} where 1=0;"
-        with sqlite3.connect(self.database) as con:
+        with sqlite3.connect(str(self.database)) as con:
             cur = con.cursor()
             cur.execute(req)
             return [f[0] for f in cur.description]
@@ -293,7 +293,7 @@ class EbasFileIndex(object):
         """
         if isinstance(request, EbasSQLRequest):
             request = request.make_query_str()
-        with sqlite3.connect(self.database) as con:
+        with sqlite3.connect(str(self.database)) as con:
             cur = con.cursor()
             cur.execute(request)
             return [f for f in cur.fetchall()]
