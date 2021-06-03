@@ -53,7 +53,26 @@ setup(
     ],
 
     python_requires = '>=3.6,<4',
-    install_requires    =   [],
+    install_requires = [
+        'scitools-iris>=2.1.0',
+        'scitools-pyke>=1.1.1',
+        'xarray>=0.16.0',
+        'cartopy>=0.16.0',
+        'matplotlib>=3.0.1',
+        'scipy>=1.1.0',
+        'pandas>=0.23.0',
+        'seaborn>=0.8.0',
+        'geonum',
+        'LatLon23', # required by geonum
+        'SRTM.py', # required by geonum
+        'numpy',
+        'simplejson',
+        'requests',
+        'reverse-geocode',
+        'tqdm',
+        'openpyxl',
+        'nbsphinx', # for docs via rtd configuration file v2
+    ],
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),
     long_description = readme,
