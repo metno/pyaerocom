@@ -7,7 +7,6 @@ ToDos
 - Review outlier removal
 """
 from collections import OrderedDict as od
-import datetime
 from fnmatch import fnmatch
 import numpy as np
 import os, glob
@@ -30,6 +29,7 @@ from pyaerocom.io import ReadGridded
 from pyaerocom.web.var_groups import var_groups
 from pyaerocom.web.helpers import (ObsConfigEval, ModelConfigEval,
                                    read_json)
+from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.web.helpers_trends_iface import (update_menu_trends_iface,
                                                 get_all_config_files_trends_iface)
 
@@ -193,8 +193,8 @@ class TrendsEvaluation(object):
 
         # options
         self.slope_alpha = 0.68
-        self.min_dim = 5
-        self.avg_how = 'mean'
+        self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
+        self.resample_how = 'mean'
 
         self.delete_outdated = True
         self.clear_existing_json = True
@@ -334,8 +334,6 @@ class TrendsEvaluation(object):
             if '_' in run:
                 raise AttributeError('Invalid name: {} (no underscores allowed)'
                                      .format(run))
-            if cfg.obs_id == 'EBASMC':
-                check_ebas_default()
             if 'models' in cfg:
                 for model in cfg['models']:
                     if not model in self.model_config:
@@ -570,14 +568,16 @@ class TrendsEvaluation(object):
         if write_logfiles:
             outlier_log, err_log, files_log = self._init_logfiles(obs_name)
 
-        if 'var_outlier_ranges' in config:
-            min_max = config['var_outlier_ranges']
+        if 'min_num_obs' in config:
+            min_num_obs = config['min_num_obs']
         else:
-            min_max = {}
-        if 'min_dim' in config:
-            min_dim = config['min_dim']
+            min_num_obs = self.min_num_obs
+
+        if 'resample_how' in config:
+            resample_how = config['resample_how']
         else:
-            min_dim = self.min_dim
+            resample_how = self.resample_how
+
         if 'models' in config:
             models = config['models']
         else:
@@ -591,16 +591,11 @@ class TrendsEvaluation(object):
             ungridded_data = self.read_ungridded_obsdata(obs_name,
                                                          vars_to_retrieve)
 
-            if 'obs_filters' in config:
-                filters=config['obs_filters']
-                ungridded_data = ungridded_data.apply_filters(
-                    var_outlier_ranges=min_max,
-                    **filters)
-
             if config['obs_vert_type']=='Profile':
                 files_created = self._run_single_3d(ungridded_data=ungridded_data,
                                                     vars_to_retrieve=vars_to_retrieve,
-                                                    min_dim=min_dim,
+                                                    min_num_obs=min_num_obs,
+                                                    resample_how=resample_how,
                                                     models=models,
                                                     name=obs_name,
                                                     files_created=files_created,
@@ -608,7 +603,8 @@ class TrendsEvaluation(object):
             else:
                 files_created = self._run_single_2d(ungridded_data=ungridded_data,
                                                     vars_to_retrieve=vars_to_retrieve,
-                                                    min_dim=min_dim,
+                                                    min_num_obs=min_num_obs,
+                                                    resample_how=resample_how,
                                                     models=models,
                                                     name=obs_name,
                                                     vert_which=config['obs_vert_type'],
@@ -1032,48 +1028,8 @@ class TrendsEvaluation(object):
                              'data to json. Reason: {}'.format(repr(e)))
         return filename
 
-    def _remove_outliers(self, stat, var_name, min_max, logfile=None):
-        """Remove outliers from StationData objects
-
-        NOTE
-        ----
-        This method is deprecated since 26.6.2019, since outlier removal is now
-        done already in UngriddedData object.
-        """
-
-        raw = stat[var_name]
-        len0 =  len(raw)
-        notnan = ~np.isnan(raw)
-
-        vals = raw[notnan]
-
-        notok = np.logical_or(vals<min_max[0], vals>min_max[1])
-        #notok = ~((vals > min_max[0]) & (vals < min_max[1]))
-        vals_invalid = vals[notok]
-
-        if len(vals_invalid) == 0:
-            return stat
-
-        if logfile is not None:
-            for dtime, val in vals_invalid.iteritems():
-                logfile.write('{},{},{},{},{:.3f}\n'.format(stat.dataset_name,
-                                                        stat.station_name,
-                                                        var_name,
-                                                        dtime,
-                                                        val))
-
-        try:
-            stat[var_name].ix[vals_invalid.index] = np.nan
-        except Exception:
-            pass
-
-        if not len(stat[var_name]) == len0:
-            raise Exception('Length mismatch of input and output arrays, developers, please check')
-        elif all(np.isnan(stat[var_name])):
-            raise DataCoverageError('No valid data remains after removing outliers')
-        return stat
-
-    def _station_to_timeseries(self, station, var_name, **alt_range):
+    def _station_to_timeseries(self, station, var_name,
+                               min_num_obs, resample_how, **alt_range):
         # load additional information about data source (if applicable)
         station.load_dataset_info()
         keymap = self.KEYMAP
@@ -1141,7 +1097,8 @@ class TrendsEvaluation(object):
                 f'resolution {freq} is too low (need at least monthly)')
 
         s = station.to_timeseries(var_name, freq=to_freq,
-                                  resample_how=self.avg_how,
+                                  min_num_obs=min_num_obs,
+                                  resample_how=resample_how,
                                   **alt_range)
 
         if len(s) == 0 or all(np.isnan(s)):
@@ -1163,46 +1120,26 @@ class TrendsEvaluation(object):
 
         return vardata
 
-    def _daily2monthly(self, daily, min_dim):
+    def _daily2monthly(self, daily, min_num_obs, resample_how):
         """Helper to convert daily to monthly
         """
-        # Group data first by year, then by month
-        g = daily.groupby(["year", "month"])
-        # For each group, calculate the average of value
-        _m = g.aggregate({"value":np.mean})
-        numdays = g.size()
+        rs = TimeResampler()
+        ts = pd.Series(daily.value.values, daily.date.values)
+        mon = rs.resample('monthly', input_data=ts, from_ts_type='daily',
+                 how=resample_how, apply_constraints=True,
+                 min_num_obs=min_num_obs)
 
-        # NOTE: BEFORE 16.5.19
-        #invalid_mask = numdays <= min_dim
-        # NOTE: AFTER 16.5.19
-        invalid_mask = numdays < min_dim
-        _m['value'].loc[invalid_mask] = np.nan
-
-        #js date
-        _m.reset_index(inplace=True)
-        if not len(_m['value']) > 0:
-            raise DataCoverageError('Derived monthly averages do not contain '
-                                    'data')
-        # Todo: check this, this seems cumbersome
-        dates = _m.apply(lambda row: datetime.datetime(int(row['year']),
-                                                       int(row['month']),
-                                                       15), axis=1)
-
-        monthly = pd.Series(_m.value.values, dates.values)#.resample('MS').mean()
-        monthly = monthly.resample('MS').mean()
-        monthly.index = monthly.index.shift(14, 'D')
-
-        dates = monthly.index
-        jsdate = self._to_jsdate(monthly.index.values)
+        dates = mon.index
+        jsdate = self._to_jsdate(dates.values)
 
         return pd.DataFrame(od(year=dates.year,
                                month=dates.month,
                                day=dates.day,
-                               value=monthly.values,
+                               value=mon.values,
                                date=dates,
                                jsdate=jsdate))
 
-    def _check_frequency_and_prep_mobs(self, data, min_dim):
+    def _check_frequency_and_prep_mobs(self, data, min_num_obs, resample_how):
         """Check frequency in data and if higher than monthly, create and append monthly
 
         Parameters
@@ -1229,7 +1166,7 @@ class TrendsEvaluation(object):
                 raise DataCoverageError('{}: Derived daily averages do not contain '
                                         'data'.format(data['station']))
 
-            mobs = self._daily2monthly(daily, min_dim)
+            mobs = self._daily2monthly(daily, min_num_obs, resample_how)
             data['mobs'] = mobs
 
         elif 'mobs' in data:
@@ -1346,8 +1283,10 @@ class TrendsEvaluation(object):
                 #needs 4 seasons to compute seasonal average to avoid biases
                 if seas=='all' and len(np.unique(catch['season'].values)) < 4:
                     data[seas]['val'].append(np.nan)
-                else:
+                elif len(catch['value']) > 0:
                     data[seas]['val'].append(np.nanmean(catch['value']))
+                else:
+                    data[seas]['val'].append(np.nan)
             # assign dates and jsdates vector to data dict
             data[seas]['date'] = np.asarray(dates)
             if len(dates) > 0:
@@ -1485,7 +1424,7 @@ class TrendsEvaluation(object):
                 data[seas]['trends'][period] = result
         return data
 
-    def _compute_trends_station(self, data, min_dim):
+    def _compute_trends_station(self, data, min_num_obs, resample_how):
         """Compute trends for station
 
         Slightly modified code from original trends interface developed by
@@ -1495,7 +1434,9 @@ class TrendsEvaluation(object):
 
             - Keep NaNs
         """
-        granulo, data = self._check_frequency_and_prep_mobs(data, min_dim)
+        granulo, data = self._check_frequency_and_prep_mobs(data,
+                                                            min_num_obs,
+                                                            resample_how)
 
         seasons = self.SEASONS
         # get monthly values for display in interface ('mobs' is modified in
@@ -1561,7 +1502,8 @@ class TrendsEvaluation(object):
         return (outlier_log, err_log, files_log)
 
     def _run_single_2d(self, ungridded_data, vars_to_retrieve,
-                       min_dim, models, name, vert_which, files_created,
+                       min_num_obs, resample_how, models, name, vert_which,
+                       files_created,
                        err_log):
 
         files_created = self._run_single_helper(ungridded_data=ungridded_data,
@@ -1569,20 +1511,23 @@ class TrendsEvaluation(object):
                                                 name=name,
                                                 vert_which=vert_which,
                                                 files_created=files_created,
-                                                min_dim=min_dim,
+                                                min_num_obs=min_num_obs,
+                                                resample_how=resample_how,
                                                 models=models,
                                                 err_log=err_log)
         return files_created
 
     def _run_single_3d(self, ungridded_data, vars_to_retrieve,
-                       min_dim, models, name, files_created, err_log):
+                       min_num_obs, resample_how,
+                       models, name, files_created, err_log):
         if models is not None:
             raise NotImplementedError('Cannot yet colocate 3D observations '
                                       'with model data ...')
         for add_name, alt_range in self.VERT_LAYERS.items():
             files_created = self._run_single_helper(ungridded_data=ungridded_data,
                                                     vars_to_retrieve=vars_to_retrieve,
-                                                    min_dim=min_dim,
+                                                    min_num_obs=min_num_obs,
+                                                    resample_how=resample_how,
                                                     models=models,
                                                     name=name,
                                                     vert_which=add_name,
@@ -1592,8 +1537,8 @@ class TrendsEvaluation(object):
         return files_created
 
     def _run_single_helper(self, ungridded_data, vars_to_retrieve,
-                           name, vert_which, files_created, min_dim,
-                           models, err_log=None, **alt_range):
+                           name, vert_which, files_created, min_num_obs,
+                           resample_how, models, err_log=None, **alt_range):
         from pyaerocom.exceptions import DataCoverageError
 
         if isinstance(vars_to_retrieve, str):
@@ -1609,6 +1554,14 @@ class TrendsEvaluation(object):
             all_stats = ungridded_data.to_station_data_all(vars_to_convert=var,
                                                            by_station_name=True)
             stations = all_stats['stats']
+
+            if isinstance(resample_how, dict):
+                if var in resample_how:
+                    resample_how = resample_how[var]
+                else:
+                    resample_how = self.resample_how
+                const.print_log.info(
+                        f'use resample_how {resample_how} for var {var}')
 
             var_out = var
             stats_processed = []
@@ -1627,10 +1580,14 @@ class TrendsEvaluation(object):
                 try:
                     data_dict = self._station_to_timeseries(stat,
                                                             var_name=var,
+                                                            min_num_obs=min_num_obs,
+                                                            resample_how=resample_how,
                                                             **alt_range)
                     (trends_stat,
-                     map_stat) = self._compute_trends_station(data_dict,
-                                                              min_dim=min_dim)
+                     map_stat) = self._compute_trends_station(
+                         data_dict,
+                         min_num_obs=min_num_obs,
+                         resample_how=resample_how)
 
                     fname = self._save_stat_json(trends_stat,
                                                  obs_var=var_out,
@@ -1666,7 +1623,8 @@ class TrendsEvaluation(object):
                                   stat_lats=lats_ok,
                                   stat_lons=lons_ok,
                                   stat_names=stats_ok,
-                                  min_dim=min_dim,
+                                  min_num_obs=min_num_obs,
+                                  resample_how=resample_how,
                                   vert_which=vert_which,
                                   files_created=files_created,
                                   err_log=err_log,
@@ -1674,7 +1632,8 @@ class TrendsEvaluation(object):
         return files_created
 
     def _run_gridded(self, obs_name, obs_var, mod_name, mod_var, stat_lats,
-                     stat_lons, stat_names, min_dim, vert_which, files_created,
+                     stat_lons, stat_names, min_num_obs, resample_how,
+                     vert_which, files_created,
                      err_log=None, **alt_range):
         mcfg = self.model_config[mod_name]
         data_id = mcfg['model_id']
@@ -1747,13 +1706,6 @@ class TrendsEvaluation(object):
             files_created['map'].append(map_outname)
 
         return files_created
-
-def check_ebas_default():
-    """Make sure the EBAS default configuration has not changed"""
-    from pyaerocom.io import ReadEbas
-    r = ReadEbas()
-    assert r.opts.eval_flags
-    assert r.opts.keep_aux_vars == False
 
 if __name__ == '__main__':
     t = TrendsEvaluation()

@@ -974,7 +974,7 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
         invalid = df['count'] < min_num_obs
         data = df[how]
         if np.any(invalid):
-            data[invalid] = np.nan
+            data.values[invalid] = np.nan
     if loffset is not None:
         data.index = data.index + pd.Timedelta(loffset)
     return data

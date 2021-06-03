@@ -266,7 +266,7 @@ def _get_regions_helper(reg_ids):
     """
     regs = {}
     for reg in reg_ids:
-        reg[reg] = Region(reg)
+        regs[reg] = Region(reg)
     return regs
 
 def get_old_aerocom_default_regions():
@@ -331,7 +331,7 @@ def get_regions_coord(lat, lon, regions=None):
 
     matches = []
     if regions is None:
-        regions = get_all_default_regions(use_all_in_ini=False)
+        regions = get_all_default_regions()
     for rname, reg in regions.items():
         if rname == 'WORLD': # always True
             continue
@@ -360,7 +360,7 @@ def find_closest_region_coord(lat, lon, regions=None):
         region ID of identified region
     """
     if regions is None:
-        regions = get_all_default_regions(use_all_in_ini=False)
+        regions = get_all_default_regions()
 
     matches = get_regions_coord(lat, lon, regions)
 
