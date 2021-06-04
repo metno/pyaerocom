@@ -194,6 +194,7 @@ class TrendsEvaluation(object):
         # options
         self.slope_alpha = 0.68
         self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
+        self.min_yrs = 7
         self.resample_how = 'mean'
 
         self.delete_outdated = True
@@ -442,7 +443,7 @@ class TrendsEvaluation(object):
         return data
 
     def run_evaluation(self, obs_name=None, update_menu=True,
-                       write_logfiles=None, clear_existing_json=None):
+                       write_logfiles=None, clear_existing_json=None, var_name=None):
         """Run trends evaluation (main function of this interface)
 
         Note
@@ -485,7 +486,7 @@ class TrendsEvaluation(object):
         result = {}
 
         for obs_name in obs_list:
-            result[obs_name] = self.run_single(obs_name, write_logfiles)
+            result[obs_name] = self.run_single(obs_name, write_logfiles, var_name)
         for name, files_written in result.items():
             print('Files written:')
             print('RUN: {}'.format(name))
@@ -535,7 +536,7 @@ class TrendsEvaluation(object):
             result.append(rest)
         return result
 
-    def run_single(self, obs_name, write_logfiles):
+    def run_single(self, obs_name, write_logfiles, var_name=None):
         """Run one of the config entries in :attr:`obs_config`
 
         Parameters
@@ -588,28 +589,32 @@ class TrendsEvaluation(object):
 
         var_lists = self.get_var_groups(obs_name)
         for vars_to_retrieve in var_lists:
-            ungridded_data = self.read_ungridded_obsdata(obs_name,
-                                                         vars_to_retrieve)
+            for var in vars_to_retrieve:
+                if var_name is not None and not var == var_name:
+                    continue
+                const.print_log.info(f'processing {obs_name} var {var}')
+                ungridded_data = self.read_ungridded_obsdata(obs_name,
+                                                             var)
 
-            if config['obs_vert_type']=='Profile':
-                files_created = self._run_single_3d(ungridded_data=ungridded_data,
-                                                    vars_to_retrieve=vars_to_retrieve,
-                                                    min_num_obs=min_num_obs,
-                                                    resample_how=resample_how,
-                                                    models=models,
-                                                    name=obs_name,
-                                                    files_created=files_created,
-                                                    err_log=err_log)
-            else:
-                files_created = self._run_single_2d(ungridded_data=ungridded_data,
-                                                    vars_to_retrieve=vars_to_retrieve,
-                                                    min_num_obs=min_num_obs,
-                                                    resample_how=resample_how,
-                                                    models=models,
-                                                    name=obs_name,
-                                                    vert_which=config['obs_vert_type'],
-                                                    files_created=files_created,
-                                                    err_log=err_log)
+                if config['obs_vert_type']=='Profile':
+                    files_created = self._run_single_3d(ungridded_data=ungridded_data,
+                                                        vars_to_retrieve=[var],
+                                                        min_num_obs=min_num_obs,
+                                                        resample_how=resample_how,
+                                                        models=models,
+                                                        name=obs_name,
+                                                        files_created=files_created,
+                                                        err_log=err_log)
+                else:
+                    files_created = self._run_single_2d(ungridded_data=ungridded_data,
+                                                        vars_to_retrieve=[var],
+                                                        min_num_obs=min_num_obs,
+                                                        resample_how=resample_how,
+                                                        models=models,
+                                                        name=obs_name,
+                                                        vert_which=config['obs_vert_type'],
+                                                        files_created=files_created,
+                                                        err_log=err_log)
 
         if write_logfiles:
             files_log.write('MAP files\n---------------------------\n')
@@ -831,6 +836,25 @@ class TrendsEvaluation(object):
 
         return pd.DataFrame(tab, columns=header)
 
+    def delete_all_json_files(self):
+        for f in self.all_map_files:
+            (obs_name, obs_var,
+             vert_code,
+             mod_name, mod_var) = self._get_meta_from_json(f)
+
+            ts_files = glob.glob('{}/OBS-{}:{}_{}_MOD-{}:{}*.json'
+                                 .format(self.out_dirs['ts'],
+                                         obs_name, obs_var, vert_code,
+                                         mod_name, mod_var))
+            self._log.info('REMOVING {} files in ts directory for {} ({})'
+                           .format(len(ts_files), obs_name, obs_var))
+            for file in ts_files:
+                os.remove(file)
+
+            self._log.info('REMOVING map file {}'.format(f))
+            os.remove(os.path.join(self.out_dirs['map'], f))
+        self.update_menu()
+
     def delete_outdated_json_files(self):
         """Delete all json files that are not part of this configuration"""
         for f in self.all_map_files:
@@ -838,7 +862,8 @@ class TrendsEvaluation(object):
              vert_code,
              mod_name, mod_var) = self._get_meta_from_json(f)
 
-            if not obs_name in self.obs_config:
+            if (not obs_name in self.obs_config or
+                not obs_var in self.obs_config[obs_name]['obs_vars']):
                 ts_files = glob.glob('{}/OBS-{}:{}_{}_MOD-{}:{}*.json'
                                      .format(self.out_dirs['ts'],
                                              obs_name, obs_var, vert_code,
@@ -850,6 +875,8 @@ class TrendsEvaluation(object):
 
                 self._log.info('REMOVING map file {}'.format(f))
                 os.remove(os.path.join(self.out_dirs['map'], f))
+        self.update_menu()
+
 
     def get_periods_from_map_files(self):
         """Get data periods covered for each of the map files
@@ -1296,132 +1323,135 @@ class TrendsEvaluation(object):
 
             #filter period
             for period in periods:
-                # init dictionary that will contain trends results for this period
-                data[seas]['trends'][period] = {}
+                data = self._calc_trend_seas_per(data, seas, period)
+        return data
 
-                # desired start / stop year (note, that this may change if first
-                # or last value in tseries (or both) is NaN)
-                start_yr, stop_yr = _years_from_periodstr(period)
+    def _calc_trend_seas_per(self, data, seas, period):
+        # init dictionary that will contain trends results for this period
+        data[seas]['trends'][period] = {}
 
-                start_date = _mid_season(seas, start_yr)
-                stop_date = _mid_season(seas, stop_yr)
+        # desired start / stop year (note, that this may change if first
+        # or last value in tseries (or both) is NaN)
+        start_yr, stop_yr = _years_from_periodstr(period)
 
-                period_index = pd.date_range(start=start_date,
-                                             end=stop_date,
-                                             freq=pd.DateOffset(years=1))
+        start_date = _mid_season(seas, start_yr)
+        stop_date = _mid_season(seas, stop_yr)
 
-                num_dates_period = period_index.values.astype('datetime64[Y]').astype(np.float64)
+        period_index = pd.date_range(start=start_date,
+                                     end=stop_date,
+                                     freq=pd.DateOffset(years=1))
 
-                #filtering to the period limit
-                jsp0 = self._to_jsdate(np.datetime64('{}-01-01'.format(start_yr)))
-                jsp1 = self._to_jsdate(np.datetime64('{}-12-31'.format(stop_yr)))
+        num_dates_period = period_index.values.astype('datetime64[Y]').astype(np.float64)
 
-                # vector containing numerical timestamps in javascript format
-                jsdate = data[seas]['jsdate']
-                dates = data[seas]['date']
+        #filtering to the period limit
+        jsp0 = self._to_jsdate(np.datetime64('{}-01-01'.format(start_yr)))
+        jsp1 = self._to_jsdate(np.datetime64('{}-12-31'.format(stop_yr)))
 
-                # get period filter mask
-                tmask = np.logical_and(jsdate>=jsp0, jsdate<=jsp1)
+        # vector containing numerical timestamps in javascript format
+        jsdate = data[seas]['jsdate']
+        dates = data[seas]['date']
 
-                # apply period mask to jsdate vector and value vector
-                jsdate_data = jsdate[tmask]
-                dates_data = dates[tmask]
+        # get period filter mask
+        tmask = np.logical_and(jsdate>=jsp0, jsdate<=jsp1)
 
-                # vector containing data values
-                vals = np.asarray(data[seas]['val'])[tmask]
+        # apply period mask to jsdate vector and value vector
+        jsdate_data = jsdate[tmask]
+        dates_data = dates[tmask]
 
-                valid = ~np.isnan(vals)
+        # vector containing data values
+        vals = np.asarray(data[seas]['val'])[tmask]
 
-                #works only on not nan values
-                jsdate_data = jsdate_data[valid].astype(np.float64)
-                dates_data = dates_data[valid]
+        valid = ~np.isnan(vals)
 
-                num_dates_data = dates_data.astype('datetime64[Y]').astype(np.float64)
+        #works only on not nan values
+        jsdate_data = jsdate_data[valid].astype(np.float64)
+        dates_data = dates_data[valid]
 
-                vals = vals[valid]
+        num_dates_data = dates_data.astype('datetime64[Y]').astype(np.float64)
 
-                result = self._init_trends_result_dict(start_yr)
+        vals = vals[valid]
 
-                #TODO: len(y) is number of years - 1 due to midseason averages
-                result['n'] = len(vals)
+        result = self._init_trends_result_dict(start_yr)
 
-                if len(vals) > 2:
-                    result['y_mean'] = np.nanmean(vals)
-                    result['y_min'] = np.nanmin(vals)
-                    result['y_max'] = np.nanmax(vals)
+        #TODO: len(y) is number of years - 1 due to midseason averages
+        result['n'] = len(vals)
 
-                    #Mann / Kendall test
-                    [tau, pval] = kendalltau(x=num_dates_data, y=vals)
+        if len(vals) > self.min_yrs:
+            result['y_mean'] = np.nanmean(vals)
+            result['y_min'] = np.nanmin(vals)
+            result['y_max'] = np.nanmax(vals)
 
-                    (slope,
-                     yoffs,
-                     slope_low,
-                     slope_up) = theilslopes(y=vals, x=num_dates_data,
-                                             alpha=self.slope_alpha)
+            #Mann / Kendall test
+            [tau, pval] = kendalltau(x=num_dates_data, y=vals)
 
-                    # estimate error of slope at input confidence level
-                    slope_err = np.mean([abs(slope - slope_low),
-                                         abs(slope - slope_up)])
+            (slope,
+             yoffs,
+             slope_low,
+             slope_up) = theilslopes(y=vals, x=num_dates_data,
+                                     alpha=self.slope_alpha)
 
-                    reg_data = slope * num_dates_data + yoffs
-                    reg_period = slope * num_dates_period  + yoffs
+            # estimate error of slope at input confidence level
+            slope_err = np.mean([abs(slope - slope_low),
+                                 abs(slope - slope_up)])
 
-                    # value used for normalisation of slope to compute trend T
-                    # T=m / v0
-                    v0_data = reg_data[0]
-                    v0_period = reg_period[0]
+            reg_data = slope * num_dates_data + yoffs
+            reg_period = slope * num_dates_period  + yoffs
 
-                    # Compute the mean residual value, which is used to estimate
-                    # the uncertainty in the normalisation value used to compute
-                    # trend
-                    mean_residual = np.mean(np.abs(vals - reg_data))
+            # value used for normalisation of slope to compute trend T
+            # T=m / v0
+            v0_data = reg_data[0]
+            v0_period = reg_period[0]
 
-                    # trend is slope normalised by first reference value.
-                    # 2 trends are computed, 1. the trend using the first value of
-                    # the regression line at the first available data year, 2. the
-                    # trend corresponding to the value corresponding to the first
-                    # year of the considered period.
+            # Compute the mean residual value, which is used to estimate
+            # the uncertainty in the normalisation value used to compute
+            # trend
+            mean_residual = np.mean(np.abs(vals - reg_data))
 
-                    trend_data = slope / v0_data * 100
-                    trend_period =  slope / v0_period * 100
+            # trend is slope normalised by first reference value.
+            # 2 trends are computed, 1. the trend using the first value of
+            # the regression line at the first available data year, 2. the
+            # trend corresponding to the value corresponding to the first
+            # year of the considered period.
 
-                    # Compute errors of normalisation values
-                    v0_err_data = mean_residual
-                    t0_data, tN_data = num_dates_data[0], num_dates_data[-1]
-                    t0_period = num_dates_period[0]
+            trend_data = slope / v0_data * 100
+            trend_period =  slope / v0_period * 100
 
-                    # sanity check
-                    assert t0_data < tN_data
-                    assert t0_period <= t0_data
+            # Compute errors of normalisation values
+            v0_err_data = mean_residual
+            t0_data, tN_data = num_dates_data[0], num_dates_data[-1]
+            t0_period = num_dates_period[0]
 
-                    dt_ratio = (t0_data - t0_period) / (tN_data - t0_data)
+            # sanity check
+            assert t0_data < tN_data
+            assert t0_period <= t0_data
 
-                    v0_err_period = v0_err_data * (1 + dt_ratio)
+            dt_ratio = (t0_data - t0_period) / (tN_data - t0_data)
 
-                    trend_data_err = self._compute_trend_error(m=slope,
-                                                               m_err=slope_err,
-                                                               v0=v0_data,
-                                                               v0_err=v0_err_data)
+            v0_err_period = v0_err_data * (1 + dt_ratio)
 
-                    trend_period_err = self._compute_trend_error(m=slope,
-                                                                 m_err=slope_err,
-                                                                 v0=v0_period,
-                                                                 v0_err=v0_err_period)
+            trend_data_err = self._compute_trend_error(m=slope,
+                                                       m_err=slope_err,
+                                                       v0=v0_data,
+                                                       v0_err=v0_err_data)
 
-                    result['pval'] = pval
-                    result['m'] = slope
-                    result['m_err'] =slope_err
+            trend_period_err = self._compute_trend_error(m=slope,
+                                                         m_err=slope_err,
+                                                         v0=v0_period,
+                                                         v0_err=v0_err_period)
 
-                    result['slp'] = trend_data
-                    result['slp_err'] = trend_data_err
-                    result['reg0'] = v0_data
-                    result['t0'] = jsdate_data[0]
-                    if v0_period > 0:
-                        result['slp_{}'.format(start_yr)] = trend_period
-                        result['slp_{}_err'.format(start_yr)] = trend_period_err
-                        result['reg0_{}'.format(start_yr)] = v0_period
+            result['pval'] = pval
+            result['m'] = slope
+            result['m_err'] =slope_err
 
-                data[seas]['trends'][period] = result
+            result['slp'] = trend_data
+            result['slp_err'] = trend_data_err
+            result['reg0'] = v0_data
+            result['t0'] = jsdate_data[0]
+            if v0_period > 0:
+                result['slp_{}'.format(start_yr)] = trend_period
+                result['slp_{}_err'.format(start_yr)] = trend_period_err
+                result['reg0_{}'.format(start_yr)] = v0_period
+        data[seas]['trends'][period] = result
         return data
 
     def _compute_trends_station(self, data, min_num_obs, resample_how):
@@ -1601,7 +1631,7 @@ class TrendsEvaluation(object):
                     if map_stat:
                         map_data.append(map_stat)
 
-                except DataCoverageError as e:
+                except (DataCoverageError, TemporalResolutionError) as e:
                     msg = 'Error: {} {}, {}'.format(var, stat.station_name,repr(e))
                     print(msg)
                     if err_log:
