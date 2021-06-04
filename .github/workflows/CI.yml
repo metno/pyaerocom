@@ -20,11 +20,12 @@ jobs:
         conda --version
         which python
         python --version
+    - name: New environment
+      run: |
+        conda create -n pya-ci -c conda-forge -f ./pyaerocom_env.yml
+        conda activate pya-ci
     - name: Display current environments
       run: conda info --envs
-    - name: Update environment
-      run: |
-        conda env update -n base -f ./pyaerocom_env.yml
     - name: Install pytest
       run: |
         conda install -c conda-forge --file ./test-requirements.txt
