@@ -1,6 +1,5 @@
 # This only installs the requirments of pyaerocom, not pyaerocom itself.
 # Activate the environment and run "python setup.py install".
-name: pya-ci
 channels:
   - conda-forge
 dependencies:
