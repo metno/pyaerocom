@@ -71,8 +71,8 @@ setup(
         'reverse-geocode',
         'tqdm',
         'openpyxl',
-        'nbsphinx', # for docs via rtd configuration file v2
     ],
+    extras_require={'docs':['nbsphinx']},
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),
     long_description = readme,
