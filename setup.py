@@ -72,7 +72,10 @@ setup(
         'tqdm',
         'openpyxl',
     ],
-    extras_require={'docs':['nbsphinx']},
+    extras_require = {
+        'docs':['nbsphinx'],
+        'test':['pytest>=3','pytest-dependency','pytest-cov'],
+    },
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),
     long_description = readme,
