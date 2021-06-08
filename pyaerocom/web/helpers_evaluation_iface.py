@@ -1358,6 +1358,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     data, jsdate = _init_data_default_frequencies(coldata,
                                                   colocation_settings)
 
+    if coldata.ts_type == 'hourly':
+        data['hourly'] = coldata
     # FIRST: process data for heatmap json file
     const.print_log.info('Processing heatmap data for all regions')
     hm_all = _process_heatmap_data(
@@ -1366,6 +1368,8 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         meta_glob=meta_glob,
         annual_stats_constrained=annual_stats_constrained
         )
+
+    data.pop('hourly',None) #remove houlry from data if it is there
 
     if not diurnal_only:
 
