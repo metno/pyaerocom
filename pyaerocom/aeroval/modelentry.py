@@ -51,6 +51,10 @@ class ModelEntry(EvalEntry, BrowseDict):
         self.update(**kwargs)
         self.check_cfg()
 
+    @property
+    def aux_funs_required(self):
+        return True if bool(self.model_read_aux) else False
+
     def get_all_vars(self):
         muv = list(self.model_use_vars.values())
         mav = list(self.model_add_vars.values())
@@ -68,8 +72,14 @@ class ModelEntry(EvalEntry, BrowseDict):
         for key, val in self.model_use_vars.items():
             assert isinstance(val, str)
 
-    def _check_update_aux_funcs(self, funcs):
+    def _get_aux_funcs_setup(self, funs):
         mra = {}
         for var, aux_info in self.model_read_aux.items():
-            mra[var] = check_aux_info(funcs=funcs, **aux_info)
-        self.model_read_aux = mra
+            mra[var] = check_aux_info(funcs=funs, **aux_info)
+        return mra
+
+    def prep_dict_analysis(self, funs={}) -> dict:
+        output = self.to_dict()
+        if self.aux_funs_required:
+            output['model_read_aux'].update(self._get_aux_funcs_setup(funs))
+        return output

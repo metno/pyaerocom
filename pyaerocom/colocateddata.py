@@ -264,10 +264,6 @@ class ColocatedData(object):
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
         if not 'station_name' in obj.coords:
             raise DataDimensionError('Need dimension station_name')
-        elif not obj.ndim == 3:
-            raise DataDimensionError(
-                'Number of coordinates can only be retrieved for 3D data'
-                )
         return len(obj.data.station_name)
 
     @property
@@ -282,14 +278,10 @@ class ColocatedData(object):
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
         if not 'station_name' in obj.coords:
             raise DataDimensionError('Need dimension station_name')
-        elif not obj.ndim == 3:
-            raise DataDimensionError(
-                'Number of coordinates can only be retrieved for 3D data'
-                )
         obs = obj.data[0]
         if obj.has_time_dim:
             return (obs.count(dim='time') > 0).data.sum()
-        return (obs.count() > 0).data.sum()
+        return (~np.isnan(obs.data)).sum()
 
     @property
     def has_time_dim(self):
@@ -351,6 +343,32 @@ class ColocatedData(object):
         Wrapper for :func:`calc_area_weights`
         """
         return self.calc_area_weights()
+
+    def get_meta_item(self, key:str):
+        """
+        Get metadata value
+
+        Parameters
+        ----------
+        key : str
+            meta item key.
+
+        Raises
+        ------
+        AttributeError
+            If key is not available.
+
+        Returns
+        -------
+        object
+            value of metadata.
+
+        """
+
+        try:
+            return self.metadata[key]
+        except KeyError:
+            raise AttributeError(f'no such meta-key available {key}')
 
     def get_country_codes(self):
         """
@@ -1657,23 +1675,26 @@ class ColocatedData(object):
         """
 
         data = self if inplace else self.copy()
-
+        arr = data.data
         mask = load_region_mask_xr(region_id)
 
         if data.ndim == 4:
-            data = data.flatten_latlondim_station_name()
-        arr = data.data
-        drop_idx = []
-        nstats = len(arr.station_name)
-        for (lat, lon, stat) in data._iter_stats():
-            if get_mask_value(lat, lon, mask) < 1:
-                drop_idx.append(stat)
+            mask = mask.interp_like(arr)
+            arr = arr.where(mask)
+        else:
+            #data = data.flatten_latlondim_station_name()
 
-        ndrop = len(drop_idx)
-        if ndrop == nstats:
-            raise DataCoverageError(f'No data available in region {region_id}')
-        elif ndrop > 0:
-            arr = arr.drop(dim='station_name', labels=drop_idx)
+            drop_idx = []
+            nstats = len(arr.station_name)
+            for (lat, lon, stat) in data._iter_stats():
+                if get_mask_value(lat, lon, mask) < 1:
+                    drop_idx.append(stat)
+
+            ndrop = len(drop_idx)
+            if ndrop == nstats:
+                raise DataCoverageError(f'No data available in region {region_id}')
+            elif ndrop > 0:
+                arr = arr.drop(dim='station_name', labels=drop_idx)
         data.data = arr
         return data
 

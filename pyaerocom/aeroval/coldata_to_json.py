@@ -6,10 +6,12 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import os
 import numpy as np
 import xarray as xr
+from datetime import datetime
 from pyaerocom import const
 from pyaerocom.helpers import make_datetime_index, start_stop
 from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
-                                       _get_min_max_year_periods, read_json, write_json)
+                                       _get_min_max_year_periods, read_json,
+                                       write_json)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.tstype import TsType
@@ -261,6 +263,7 @@ def _init_meta_glob(coldata, **kwargs):
         meta_glob['obs_revision'] = meta['revision_ref']
     except KeyError:
         meta_glob['obs_revision'] = NDSTR
+    meta_glob['processed_utc'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M')
     meta_glob.update(kwargs)
     return meta_glob
 
@@ -616,10 +619,7 @@ def _process_sites(data, regions, regions_how, meta_glob):
 def _get_statistics(obs_vals, mod_vals):
     stats = calc_statistics(mod_vals, obs_vals,
                             min_num_valid=STATISTICS_MIN_NUM)
-
-    for k, v in stats.items():
-        stats[k] = np.float64(v)
-    return stats
+    return _prep_stats_json(stats)
 
 def _process_map_and_scat(data, map_data, site_indices, statistics_periods,
                           main_freq):
@@ -771,6 +771,16 @@ def _apply_annual_constraint(data):
             output[tst] = _apply_annual_constraint_helper(cd, yearly)
     return output
 
+def _prep_stats_json(stats):
+    for k, v in stats.items():
+        try:
+            stats[k] = np.float64(v) # for json encoder...
+        except Exception:
+            # value is str (e.g. for weighted stats)
+            # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
+            stats[k] = v
+    return stats
+
 def _get_extended_stats(coldata, use_weights):
 
     stats = coldata.calc_statistics(use_area_weights=use_weights)
@@ -781,14 +791,7 @@ def _get_extended_stats(coldata, use_weights):
     (stats['R_temporal_mean'],
      stats['R_temporal_median']) = _calc_temporal_corr(coldata)
 
-    for k, v in stats.items():
-        try:
-            stats[k] = np.float64(v) # for json encoder...
-        except Exception:
-            # value is str (e.g. for weighted stats)
-            # 'NOTE': 'Weights were not applied to FGE and kendall and spearman corr (not implemented)'
-            stats[k] = v
-    return stats
+    return _prep_stats_json(stats)
 
 def _calc_spatial_corr(coldata, use_weights):
     """
@@ -839,6 +842,8 @@ def _calc_temporal_corr(coldata):
     """
     if len(coldata.time) < 3:
         return np.nan, np.nan
+    elif coldata.has_latlon_dims:
+        coldata = coldata.flatten_latlondim_station_name()
     arr = coldata.data
     # Use only sites that contain at least 3 valid data points (otherwise
     # correlation will be 1).
@@ -961,23 +966,19 @@ def _process_statistics_timeseries(data, statistics_periods, freq, region_ids,
         try:
             subset = coldata.filter_region(region_id=regid,
                                         check_country_meta=use_country)
-            nparr = subset.data.data
             use_dummy = False
         except DataCoverageError:
             use_dummy = True
-            nparr = None
         for js, idx in zip(jsdate, tidx):
             if idx == -1 or use_dummy:
                 stats = stats_dummy
             else:
                 try:
-                    arr = nparr[:, idx]
-                    stats = _get_statistics(arr[0].flatten(),
-                                            arr[1].flatten())
+                    arr = ColocatedData(subset.data[:, idx])
+                    stats = arr.calc_statistics(use_area_weights=use_weights)
                 except DataCoverageError:
                     stats = stats_dummy
-            # select that period and calc statistics
-            output[regname][str(js)] = stats
+            output[regname][str(js)] = _prep_stats_json(stats)
     return output
 
 def _get_jsdate(nparr):
@@ -1037,9 +1038,8 @@ def _start_stop_from_periods(statistics_periods):
 
 def compute_json_files_from_colocateddata(coldata,
                                           use_weights,
-                                          vert_code, out_dirs,
+                                          out_dirs,
                                           regions_json,
-                                          diurnal_only,
                                           statistics_freqs,
                                           statistics_periods,
                                           main_freq,
@@ -1053,6 +1053,9 @@ def compute_json_files_from_colocateddata(coldata,
     Complete docstring
     """
     t00 = time()
+    vert_code = coldata.get_meta_item('vert_code')
+    diurnal_only = coldata.get_meta_item('diurnal_only')
+
     if vert_code == 'ModelLevel':
         raise NotImplementedError('Coming (not so) soon...')
 
@@ -1113,7 +1116,7 @@ def compute_json_files_from_colocateddata(coldata,
                                                   use_weights,
                                                   use_country,
                                                   meta_glob)
-        ts_file = os.path.join(out_dirs['hm'], 'stats_ts.json')
+        ts_file = os.path.join(out_dirs['hm/ts'], 'stats_ts.json')
         _add_entry_json(ts_file, stats_ts, obs_name, obs_var,
                         vert_code, model_name, model_var)
 

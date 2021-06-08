@@ -6,6 +6,7 @@ Created on Tue Feb  4 12:48:45 2020
 @author: jonasg
 """
 import os
+import pytest
 import xarray as xr
 import iris
 
@@ -70,12 +71,5 @@ def test_check_all_htap_available():
     assert sorted([os.path.basename(x) for x in files]) == should_be
 
 if __name__ == '__main__':
-
-    test_availabe_region_masks()
-    test_get_mask_value()
-
-    test_download_htap_masks()
-    test_get_htap_mask_files()
-    test_load_region_mask_xr()
-    test_load_region_mask_iris()
-    test_check_all_htap_available()
+    import sys
+    pytest.main(sys.argv)

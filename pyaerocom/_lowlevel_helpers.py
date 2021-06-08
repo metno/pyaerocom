@@ -147,6 +147,15 @@ class Validator(abc.ABC):
     def validate(self, val):
         pass
 
+class TypeValidator(Validator):
+    def __init__(self, type):
+        self._type = type
+
+    def validate(self, val):
+        if not isinstance(val, self._type):
+            raise ValueError(f'need instance of {self._type}')
+        return val
+
 class StrType(Validator):
     def validate(self, val):
         if not isinstance(val, str):
@@ -168,6 +177,17 @@ class FlexList(Validator):
             val = list(val)
         elif not isinstance(val, list):
             raise ValueError(f'failed to convert {val} to list')
+        return val
+
+class EitherOf(Validator):
+    _allowed = FlexList()
+    def __init__(self, allowed:list):
+        self._allowed = allowed
+
+    def validate(self, val):
+        if not any([x==val for x in self._allowed]):
+            raise ValueError(f'inalid value {val}, needs to be either '
+                             f'of {self._allowed}.')
         return val
 
 class ListOfStrings(FlexList):
@@ -262,8 +282,10 @@ class BrowseDict(MutableMapping):
     """
     ADD_GLOB = []
     FORBIDDEN_CHARS_KEYS = []
+    #: Keys to be ignored when converting to json
+    IGNORE_JSON = []
     MAXLEN_KEYS = 1e3
-    ITEM_TYPE = None
+    SETTER_CONVERT = {}
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
@@ -288,8 +310,14 @@ class BrowseDict(MutableMapping):
         key, val, ok = self._setitem_checker(key, val)
         if not ok:
             return
-        if self.ITEM_TYPE is not None and not isinstance(val, self.ITEM_TYPE):
-            val = self.ITEM_TYPE(**val)
+        if bool(self.SETTER_CONVERT):
+            for fromtp, totp in self.SETTER_CONVERT.items():
+                if isinstance(val, fromtp):
+                    if fromtp == dict:
+                        val = totp(**val)
+                    else:
+                        val = totp(val)
+
         if isinstance(key, str):
             if len(key) > self.MAXLEN_KEYS:
                 raise KeyError(
@@ -329,6 +357,25 @@ class BrowseDict(MutableMapping):
         for key, val in self.items():
             out[key] = val
         return out
+
+    def json_repr(self) -> dict:
+        """
+        Convert object to serializable json dict
+
+        Returns
+        -------
+        dict
+            content of class
+
+        """
+        output = {}
+        for key, val in self.items():
+            if key in self.IGNORE_JSON:
+                continue
+            if hasattr(val, 'json_repr'):
+                val = val.json_repr()
+            output[key] = val
+        return output
 
     def import_from(self, other) -> None:
         """
@@ -387,33 +434,8 @@ class ConstrainedContainer(BrowseDict):
     >>> mc = MyContainer()
     >>> mc['option'] = 42
     """
-    #: key / value pairs of constrained settings: keys are keys of this dict
-    #: and values are lists of allowed values for that key
-    CONSTRAINT_VALS = {}
-
-    #: Keys to be ignored when converting to json
-    IGNORE_JSON = []
 
     CRASH_ON_INVALID = True
-
-    def json_repr(self) -> dict:
-        """
-        Convert object to serializable json dict
-
-        Returns
-        -------
-        dict
-            content of class
-
-        """
-        output = {}
-        for key, val in self.items():
-            if key in self.IGNORE_JSON:
-                continue
-            if isinstance(val, ConstrainedContainer):
-                val = val.json_repr()
-            output[key] = val
-        return output
 
     def __setitem__(self, key, val):
         super(ConstrainedContainer, self).__setitem__(key, val)
@@ -450,13 +472,7 @@ class ConstrainedContainer(BrowseDict):
             raise ValueError(
                 f'Invalid type {type(val)} for key: {key}. Need {current_tp} '
                 f'(Current value: {current})')
-        elif key in self.CONSTRAINT_VALS:
-            self._assert_constraint(key, val)
         return key, val, True
-
-    def _assert_constraint(self, key, val):
-        if not val in self.CONSTRAINT_VALS[key]:
-            raise ValueError(key, val)
 
 class NestedContainer(BrowseDict):
 

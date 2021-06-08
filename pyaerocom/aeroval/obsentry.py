@@ -98,6 +98,22 @@ class ObsEntry(EvalEntry, BrowseDict):
         """
         return self.obs_vars
 
+    def get_vert_code(self, var):
+        """Get vertical code name for obs / var combination"""
+        vc = self['obs_vert_type']
+        if isinstance(vc, str):
+            val = vc
+        elif isinstance(vc, dict) and var in vc:
+            val = vc[var]
+        else:
+            raise ValueError(f'invalid value for obs_vert_type: {vc}')
+        if not val in self.SUPPORTED_VERT_CODES:
+            raise ValueError(
+                f'invalid value for obs_vert_type: {val}. Choose from '
+                f'{self.SUPPORTED_VERT_CODES}.')
+        return val
+
+
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
 

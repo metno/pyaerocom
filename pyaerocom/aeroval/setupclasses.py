@@ -3,17 +3,65 @@ from getpass import getuser
 import os
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
-                                         NestedContainer, AsciiFileLoc)
+                                         NestedContainer, AsciiFileLoc,
+                                         EitherOf, StrType, ListOfStrings,
+                                         DirLoc)
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.aeroval.var_names_web import VAR_MAPPING
-from pyaerocom.aeroval.filemanagement import (OutputPathManager,
-                                              ExperimentOutput)
+
 from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
 from pyaerocom.aeroval.helpers import (read_json, write_json,
                                        _check_statistics_periods,
                                        _get_min_max_year_periods)
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.exceptions import AeroValConfigError
+
+class OutputPaths(ConstrainedContainer):
+    JSON_SUBDIRS = ['map', 'ts', 'ts/diurnal', 'scat', 'hm', 'hm/ts', 'contour']
+
+    json_basedir = DirLoc(
+        default=os.path.join(const.OUTPUTDIR, 'aeroval/data'),
+        assert_exists=True,
+        auto_create=True,
+        logger=const.print_log,
+        tooltip='Base directory for json output files')
+
+    coldata_basedir =DirLoc(
+        default=os.path.join(const.OUTPUTDIR, 'aeroval/coldata'),
+        assert_exists=True,
+        auto_create=True,
+        logger=const.print_log,
+        tooltip='Base directory for colocated data output files (NetCDF)')
+
+    ADD_GLOB = ['coldata_basedir', 'json_basedir']
+    proj_id = StrType()
+    exp_id = StrType()
+    def __init__(self, proj_id:str, exp_id:str,
+                 json_basedir:str=None, coldata_basedir:str=None):
+        self.proj_id = proj_id
+        self.exp_id = exp_id
+        if coldata_basedir:
+            self.coldata_basedir = coldata_basedir
+        if json_basedir:
+            self.json_basedir = json_basedir
+
+    def _check_init_dir(self, loc, assert_exists):
+        if assert_exists and not os.path.exists(loc):
+            os.makedirs(loc)
+        return loc
+
+    def get_coldata_dir(self, assert_exists=True):
+        loc = os.path.join(self.coldata_basedir, self.proj_id, self.exp_id)
+        return self._check_init_dir(loc, assert_exists)
+
+    def get_json_output_dirs(self, assert_exists=True):
+        out = {}
+        base = os.path.join(self.json_basedir, self.proj_id, self.exp_id)
+        for subdir in self.JSON_SUBDIRS:
+            loc = self._check_init_dir(os.path.join(base, subdir),
+                                       assert_exists)
+            out[subdir] = loc
+        return out
 
 class ModelMapsSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
@@ -23,6 +71,8 @@ class ModelMapsSetup(ConstrainedContainer):
 
 class StatisticsSetup(ConstrainedContainer):
     DEFAULT_FREQS = ['monthly', 'yearly']
+    main_freq = StrType()
+    freqs = ListOfStrings()
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
@@ -34,9 +84,9 @@ class StatisticsSetup(ConstrainedContainer):
         self.update(**kwargs)
 
 class WebDisplaySetup(ConstrainedContainer):
-    CONSTRAINT_VALS = {
-        'map_zoom' : ['World', 'Europe']
-        }
+
+    map_zoom = EitherOf(['World', 'Europe'])
+    regions_how = EitherOf(['default', 'aerocom', 'htap', 'country'])
     def __init__(self, **kwargs):
         self.regions_how = 'default'
         self.map_zoom = 'World'
@@ -44,6 +94,8 @@ class WebDisplaySetup(ConstrainedContainer):
         self.modelorder_from_config = True
         self.obsorder_from_config = True
         self.var_order_menu = []
+        self.obs_order_menu = []
+        self.model_order_menu = []
         self.update(**kwargs)
 
 class EvalRunOptions(ConstrainedContainer):
@@ -61,10 +113,8 @@ class ProjectInfo(ConstrainedContainer):
         self.proj_id = proj_id
 
 class ExperimentInfo(ConstrainedContainer):
-    #: status of experiment
-    CONSTRAINT_VALS = {
-        'exp_status' : ['public', 'experimental']
-        }
+
+    exp_status = EitherOf(['public', 'experimental'])
     def __init__(self, exp_id: str, **kwargs):
         self.exp_id = exp_id
         self.exp_name = ''
@@ -79,13 +129,15 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
     This represents the level at which json I/O happens for configuration
     setup files.
     """
-    gridded_io_aux_file = AsciiFileLoc(
-        default=None,
+    IGNORE_JSON = ['_aux_funs']
+    ADD_GLOB = ['io_aux_file']
+    io_aux_file = AsciiFileLoc(
+        default='',
         assert_exists=False,
         auto_create=False,
         logger=const.print_log,
         tooltip='.py file containing additional read methods for modeldata')
-    ADD_GLOB = ['gridded_io_aux_file']
+    _aux_funs = {}
     def __init__(self, proj_id:str, exp_id:str, **kwargs):
         self.proj_info = ProjectInfo(proj_id=proj_id)
         self.exp_info = ExperimentInfo(exp_id=exp_id)
@@ -110,16 +162,38 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.model_cfg = ModelCollection()
 
         self.var_mapping = VAR_MAPPING
-        self.path_manager = OutputPathManager(self.proj_id, self.exp_id)
-        self.gridded_aux_funs = {}
+        self.path_manager = OutputPaths(self.proj_id, self.exp_id)
         self.update(**kwargs)
-        if self.gridded_io_aux_file is not None:
-           self._import_gridded_aux_funs()
 
-    def _import_gridded_aux_funs(self):
+    @property
+    def proj_id(self) -> str:
+        """
+        str: proj ID (wrapper to :attr:`proj_info.proj_id`)
+        """
+        return self.proj_info.proj_id
 
-         h = ReadAuxHandler(self.gridded_io_aux_file)
-         self.gridded_aux_funs.update(**h.import_all())
+    @property
+    def exp_id(self) -> str:
+        """
+        str: experiment ID (wrapper to :attr:`exp_info.exp_id`)
+        """
+        return self.exp_info.exp_id
+
+    @property
+    def json_filename(self) -> str:
+        """
+        str: Savename of config file: cfg_<proj_id>_<exp_id>.json
+        """
+        return f'cfg_{self.proj_id}_{self.exp_id}.json'
+
+    @property
+    def gridded_aux_funs(self):
+        if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
+            self._import_aux_funs()
+        return self._aux_funs
+
+    def get_obs_entry(self, obs_name):
+        return self.obs_cfg.get_entry(obs_name).to_dict()
 
     def get_model_entry(self, model_name):
         """Get model entry configuration
@@ -148,51 +222,10 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
             Dictionary that specifies the model setup ready for the analysis
         """
         cfg = self.model_cfg.get_entry(model_name)
-        cfg._check_update_aux_funcs(self.gridded_aux_funs)
-        cfg = cfg.to_dict()
-        cfg['model_name'] = model_name
+        cfg = cfg.prep_dict_analysis(self.gridded_aux_funs)
         return cfg
 
-    def get_obs_entry(self, obs_name):
-        """Get obs
-
-        Parameters
-        ----------
-        model_name : str
-            name of model run
-
-        Returns
-        -------
-        dict
-            Dictionary that specifies the model setup ready for the analysis
-        """
-        cfg = self.obs_cfg.get_entry(obs_name).to_dict()
-        cfg['obs_name'] = obs_name
-        return cfg
-
-
-    @property
-    def proj_id(self) -> str:
-        """
-        str: proj ID (wrapper to :attr:`proj_info.proj_id`)
-        """
-        return self.proj_info.proj_id
-
-    @property
-    def exp_id(self) -> str:
-        """
-        str: experiment ID (wrapper to :attr:`exp_info.exp_id`)
-        """
-        return self.exp_info.exp_id
-
-    @property
-    def json_filename(self) -> str:
-        """
-        str: Savename of config file: cfg_<proj_id>_<exp_id>.json
-        """
-        return f'cfg_{self.proj_id}_{self.exp_id}.json'
-
-    def to_json(self, outdir, ignore_nan=True, indent=3):
+    def to_json(self, outdir:str, ignore_nan:bool=True, indent:int=3) -> None:
         """
         Save configuration as JSON file
 
@@ -207,15 +240,21 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
         """
         filepath = os.path.join(outdir, self.json_filename)
-        write_json(self.json_repr(), filepath,
+        data = self.json_repr()
+        write_json(data, filepath,
                    ignore_nan=ignore_nan,
                    indent=indent)
 
     @staticmethod
-    def from_json(filepath):
+    def from_json(filepath:str) -> 'EvalSetup':
         """Load configuration from json config file"""
         settings = read_json(filepath)
         return EvalSetup(**settings)
+
+    def _import_aux_funs(self):
+
+         h = ReadAuxHandler(self.io_aux_file)
+         self._aux_funs.update(**h.import_all())
 
     def _check_time_config(self):
         periods = self.statistics_opts.periods
@@ -239,14 +278,6 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
             self.colocation_opts['start'] = start
         if colstop is None:
             self.colocation_opts['stop'] = stop + 1 # add 1 year since we want to include stop year
-
-    @property
-    def exp_output(self):
-        """
-        ExperimentOutput: JSON output file manager
-        """
-        return ExperimentOutput(self.exp_id, self.proj_id,
-                                self.path_manager.json_basedir)
 
 
 

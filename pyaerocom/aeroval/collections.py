@@ -5,10 +5,13 @@ Created on Thu May 27 12:27:47 2021
 
 @author: jonasg
 """
-from pyaerocom._lowlevel_helpers import BrowseDict
+from fnmatch import fnmatch
+import os
+from pyaerocom import const
+from pyaerocom._lowlevel_helpers import BrowseDict, AsciiFileLoc
 from pyaerocom.aeroval.obsentry import ObsEntry
 from pyaerocom.aeroval.modelentry import ModelEntry
-from fnmatch import fnmatch
+
 
 class BaseCollection(BrowseDict):
     MAXLEN_KEYS = 25
@@ -44,7 +47,7 @@ class BaseCollection(BrowseDict):
                 f'No models could be found that match input {name_or_pattern}')
         return matches
 
-    def get_entry(self, name) -> object:
+    def get_entry(self, key) -> object:
         """
         Getter for eval entries
 
@@ -53,7 +56,57 @@ class BaseCollection(BrowseDict):
         KeyError
             if input name is not in this collection
         """
-        return self[name]
+        return self[key]
+
+
+    def get_web_iface_name(self, key):
+        """
+        Get webinterface name for obs entry
+
+        Note
+        ----
+        Normally this is the key of the obsentry in :attr:`obs_config`,
+        however, it might be specified explicitly via key `web_interface_name`
+        in the corresponding value.
+
+        Parameters
+        ----------
+        key : str
+            key of entry.
+
+        Returns
+        -------
+        str
+            corresponding name
+
+        """
+        if not 'web_interface_name' in self[key]:
+            return key
+        return self[key]['web_interface_name']
+
+    @property
+    def web_iface_names(self):
+        """
+        Get webinterface name for obs entry
+
+        Note
+        ----
+        Normally this is the key of the obsentry in :attr:`obs_config`,
+        however, it might be specified explicitly via key `web_interface_name`
+        in the corresponding value.
+
+        Parameters
+        ----------
+        key : str
+            key of entry.
+
+        Returns
+        -------
+        str
+            corresponding name
+
+        """
+        return [self.get_web_iface_name(key) for key in self.keylist()]
 
 class ObsCollection(BaseCollection):
     """
@@ -71,8 +124,7 @@ class ObsCollection(BaseCollection):
     heatmap display and must fulfill the protocol defined by :class:`ObsEntry`.
 
     """
-    ITEM_TYPE = ObsEntry
-
+    SETTER_CONVERT = {dict : ObsEntry}
     @property
     def all_obs_vars(self):
         """List of unique obs variables"""
@@ -80,6 +132,19 @@ class ObsCollection(BaseCollection):
         for key, cfg in self.items():
             obs_vars.extend(cfg['obs_vars'])
         return sorted(list(set(obs_vars)))
+
+    def get_entry(self, key) -> object:
+        """
+        Getter for obs entries
+
+        Raises
+        ------
+        KeyError
+            if input name is not in this collection
+        """
+        cfg = super(ObsCollection, self).get_entry(key)
+        cfg['obs_name'] = self.get_web_iface_name(key)
+        return cfg
 
 class ModelCollection(BaseCollection):
     """
@@ -98,7 +163,38 @@ class ModelCollection(BaseCollection):
     :class:`ModelEntry`.
 
     """
-    ITEM_TYPE = ModelEntry
+
+    SETTER_CONVERT = {dict : ModelEntry}
+    def get_entry(self, key) -> object:
+        """Get model entry configuration
+
+        Since the configuration files for experiments are in json format, they
+        do not allow the storage of executable custom methods for model data
+        reading. Instead, these can be specified in a python module that may
+        be specified via :attr:`add_methods_file` and that contains a
+        dictionary `FUNS` that maps the method names with the callable methods.
+
+        As a result, this means that, by default, custom read methods for
+        individual models in :attr:`model_config` do not contain the
+        callable methods but only the names. This method will take care of
+        handling this and will return a dictionary where potential custom
+        method strings have been converted to the corresponding callable
+        methods.
+
+        Parameters
+        ----------
+        model_name : str
+            name of model
+
+        Returns
+        -------
+        dict
+            Dictionary that specifies the model setup ready for the analysis
+        """
+        cfg = super(ModelCollection, self).get_entry(key)
+        cfg['model_name'] = self.get_web_iface_name(key)
+        return cfg
+
 
 if __name__ == '__main__':
     oc = ObsCollection(model1 = dict(obs_id='bla', obs_vars='od550aer',

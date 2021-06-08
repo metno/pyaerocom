@@ -271,6 +271,7 @@ class ColocationSetup(ConstrainedContainer):
         self.raise_exceptions = False
         self.keep_data = True
 
+        self.add_meta = {}
         self.update(**kwargs)
         self._check_outdated_outlier_defs()
 
@@ -341,6 +342,9 @@ class ColocationSetup(ConstrainedContainer):
         """Base directory for storing logfiles"""
         p = chk_make_subdir(self.basedir_coldata, 'logfiles')
         return p
+
+    def add_glob_meta(self, **kwargs):
+        self.add_meta.update(**kwargs)
 
     def __setitem__(self, key, val):
         if key == 'basedir_coldata':
@@ -1331,6 +1335,8 @@ class Colocator(ColocationSetup):
 
         coldata.data.attrs['model_name'] = self.get_model_name()
         coldata.data.attrs['obs_name'] = self.get_obs_name()
+        coldata.data.attrs['vert_code'] = self.obs_vert_type
+        coldata.data.attrs.update(**self.add_meta)
 
         if self.zeros_to_nan:
             coldata = coldata.set_zeros_nan()
