@@ -218,16 +218,8 @@ class ExperimentProcessor:
         coldata = ColocatedData(file)
         compute_json_files_from_colocateddata(
                 coldata=coldata,
-                use_weights=self.cfg.statistics_opts.weighted_stats,
-                statistics_freqs=self.cfg.statistics_opts.freqs,
-                statistics_periods=self.cfg.statistics_opts.periods,
-                annual_stats_constrained=self.cfg.statistics_opts.annual_stats_constrained,
-                main_freq = self.cfg.statistics_opts.main_freq,
-                out_dirs=self.cfg.path_manager.get_json_output_dirs(True),
-                regions_json=self.exp_output.regions_file,
-                regions_how=self.cfg.webdisp_opts.regions_how,
-
-                )
+                cfg=self.cfg,
+                exp_output=self.exp_output)
 
     def find_coldata_files(self, model_name, obs_name, var_name=None):
         """Find colocated data files for a certain model/obs/var combination
@@ -532,7 +524,7 @@ class ExperimentProcessor:
         else:
             col = self.init_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
-                files_to_convert = col.get_available_coldata_files()
+                files_to_convert = col.get_available_coldata_files(var_name)
             else:
                 col.run(var_name)
                 files_to_convert = col.files_written

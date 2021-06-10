@@ -7,7 +7,6 @@ from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
                                          EitherOf, StrType, ListOfStrings,
                                          DirLoc)
 from pyaerocom.colocation_auto import ColocationSetup
-from pyaerocom.aeroval.var_names_web import VAR_MAPPING
 
 from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
 from pyaerocom.aeroval.helpers import (read_json, write_json,
@@ -161,7 +160,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.obs_cfg = ObsCollection()
         self.model_cfg = ModelCollection()
 
-        self.var_mapping = VAR_MAPPING
+        self.var_web_info = {}
         self.path_manager = OutputPaths(self.proj_id, self.exp_id)
         self.update(**kwargs)
 
@@ -191,6 +190,19 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         if not bool(self._aux_funs) and os.path.exists(self.io_aux_file):
             self._import_aux_funs()
         return self._aux_funs
+
+    def get_all_vars(self) -> list:
+        """
+        Get list of all variables i this experiment
+
+        Returns
+        -------
+        list
+
+        """
+        ovars = self.obs_cfg.get_all_vars()
+        mvars = self.model_cfg.get_all_vars()
+        return sorted(list(set(ovars + mvars)))
 
     def get_obs_entry(self, obs_name):
         return self.obs_cfg.get_entry(obs_name).to_dict()

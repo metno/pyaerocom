@@ -6,6 +6,9 @@ from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
 from pyaerocom.variable import get_variable
 from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
+                                             var_ranges_defaults,
+                                             var_web_info)
 from pyaerocom.aeroval.helpers import read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 
@@ -58,6 +61,16 @@ class ExperimentOutput(ProjectOutput):
         return os.path.join(self.exp_dir, 'regions.json')
 
     @property
+    def statistics_file(self):
+        """json file containing region specifications"""
+        return os.path.join(self.exp_dir, 'statistics.json')
+
+    @property
+    def var_ranges_file(self):
+        """json file containing region specifications"""
+        return os.path.join(self.exp_dir, 'ranges.json')
+
+    @property
     def menu_file(self):
         """json file containing region specifications"""
         return os.path.join(self.exp_dir, 'menu.json')
@@ -77,6 +90,8 @@ class ExperimentOutput(ProjectOutput):
         self.update_menu()
         #self.make_info_table_web()
         self.update_heatmap_json()
+        self._create_var_ranges_json()
+        self._create_statistics_json()
         self.cfg.to_json(self.exp_dir)
 
     def update_heatmap_json(self):
@@ -91,24 +106,18 @@ class ExperimentOutput(ProjectOutput):
                 obs_dict = info['obs']
                 if not vardisp in hm:
                     hm[vardisp] = {}
-                for obs, odict in obs_dict.items():
+                for obs, vdict in obs_dict.items():
                     if not obs in hm[vardisp]:
                         hm[vardisp][obs] = {}
-                    for ovar, vdict in odict.items():
-                        if not ovar in hm[vardisp][obs]:
-                            hm[vardisp][obs][ovar] = {}
-                        for vc, mdict in vdict.items():
-                            if not vc in hm[vardisp][obs][ovar]:
-                                hm[vardisp][obs][ovar][vc] = {}
-                            for mod, minfo in mdict.items():
-                                if not mod in hm[vardisp][obs][ovar][vc]:
-                                    hm[vardisp][obs][ovar][vc][mod] = {}
-                                modvar = minfo['model_var']
-                                if not modvar in hm[vardisp][obs][ovar][vc][mod]:
-                                    hm[vardisp][obs][ovar][vc][mod][modvar] = {}
-
-                                hm_data = data[ovar][obs][vc][mod][modvar]
-                                hm[vardisp][obs][ovar][vc][mod][modvar] = hm_data
+                    for vc, mdict in vdict.items():
+                        if not vc in hm[vardisp][obs]:
+                            hm[vardisp][obs][vc] = {}
+                        for mod, minfo in mdict.items():
+                            if not mod in hm[vardisp][obs][vc]:
+                                hm[vardisp][obs][vc][mod] = {}
+                            modvar = minfo['model_var']
+                            hm_data = data[vardisp][obs][vc][mod][modvar]
+                            hm[vardisp][obs][vc][mod][modvar] = hm_data
             write_json(hm, fp, ignore_nan=True)
 
     @staticmethod
@@ -317,7 +326,7 @@ class ExperimentOutput(ProjectOutput):
                     'model_order_menu is specified explicitly')
             order.extend(self.cfg.webdisp_opts.model_order_menu)
         elif self.cfg.webdisp_opts.obsorder_from_config:
-            order.extend(self.cfg.model_cfg.keylist())
+            order.extend(self.cfg.model_cfg.web_iface_names)
         return order
 
     def get_obs_order_menu(self):
@@ -329,7 +338,7 @@ class ExperimentOutput(ProjectOutput):
                     'obs_order_menu is specified explicitly')
             order.extend(self.cfg.webdisp_opts.obs_order_menu)
         elif self.cfg.webdisp_opts.obsorder_from_config:
-            order.extend(self.cfg.obs_cfg.keylist())
+            order.extend(self.cfg.obs_cfg.web_iface_names)
         return order
 
     @property
@@ -377,6 +386,21 @@ class ExperimentOutput(ProjectOutput):
         """
         return self.cfg.obs_cfg.web_iface_names
 
+    def _create_var_ranges_json(self):
+        all_vars = self.cfg.get_all_vars()
+        dummy = dict(scale=[], colmap='coolwarm')
+        ranges = {}
+        for var in all_vars:
+            if var in var_ranges_defaults:
+                ranges[var] = var_ranges_defaults[var]
+            else:
+                ranges[var] = dummy
+        write_json(ranges, self.var_ranges_file, indent=4)
+
+    def _create_statistics_json(self):
+        stats_info = statistics_defaults
+        write_json(stats_info, self.statistics_file, indent=4)
+
     def _get_var_name_and_type(self, var_name):
         """Get menu name and type of observation variable
 
@@ -395,57 +419,50 @@ class ExperimentOutput(ProjectOutput):
             variable category
 
         """
-
-        try:
+        if var_name in self.cfg.var_web_info:
             name, tp, cat = self.cfg.var_mapping[var_name]
-        except KeyError:
+        elif var_name in var_web_info:
+            name, tp, cat = var_web_info[var_name]
+        else:
             name, tp, cat = var_name, 'UNDEFINED', 'UNDEFINED'
             const.print_log.warning(
                 f'Missing menu name definition for var {var_name}.')
         return (name, tp, cat)
 
+    def _init_menu_entry(self, var : str) -> dict:
+        name, tp, cat = self._get_var_name_and_type(var)
+        try:
+            lname = const.VARS[var].description
+        except VariableDefinitionError:
+            lname = 'UNDEFINED'
+        return {'type'      :   tp,
+                'cat'       :   cat,
+                'name'      :   name,
+                'longname'  :   lname,
+                'obs'       :   {}}
+
     def _get_available_results_dict(self):
-        def var_dummy():
-            """Helper that creates empty dict for variable info"""
-            return {'type'      :   '',
-                    'cat'       :   '',
-                    'name'      :   '',
-                    'longname'  :   '',
-                    'obs'       :   {}}
         new = {}
         tab = self._get_meta_from_map_files()
         for (obs_var, obs_name, vert_code, mod_name, mod_var) in tab:
-            modvarname = mod_var + '*' if mod_var != obs_var else mod_var
-            if not modvarname in new:
-                new[modvarname] = d = var_dummy()
-                name, tp, cat = self._get_var_name_and_type(mod_var)
-                d['name'] = name
-                d['type'] = tp
-                d['cat']  = cat
-                try:
-                    lname = const.VARS[mod_var].description
-                except VariableDefinitionError:
-                    lname = 'UNDEFINED'
-                d['longname'] = lname
-            else:
-                d = new[modvarname]
+            mcfg = self.cfg.model_cfg.get_entry(mod_name)
+            var = mcfg.get_varname_web(mod_var, obs_var)
+            if not var in new:
+                new[var] = self._init_menu_entry(var)
 
-            if not obs_name in d['obs']:
-                d['obs'][obs_name] = dobs = {}
-            else:
-                dobs = d['obs'][obs_name]
-            if not obs_var in dobs:
-                dobs[obs_var] = dobsvar = {}
-            else:
-                dobsvar = dobs[obs_var]
-            if not vert_code in dobsvar:
-                dobsvar[vert_code] = dobs_vert = {}
-            else:
-                dobs_vert = dobsvar[vert_code]
-            model_id = self.cfg.model_cfg.get_entry(mod_name)['model_id']
-            dobs_vert[mod_name] = {'model_id'  : model_id,
-                                   'model_var' : mod_var,
-                                   'obs_var'   : obs_var}
+            if not obs_name in new[var]['obs']:
+                new[var]['obs'][obs_name] = {}
+
+            if not vert_code in new[var]['obs'][obs_name]:
+                new[var]['obs'][obs_name][vert_code] = {}
+            if not mod_name in new[var]['obs'][obs_name][vert_code]:
+                new[var]['obs'][obs_name][vert_code][mod_name] = {}
+
+            model_id = mcfg['model_id']
+            new[var]['obs'][obs_name][vert_code][mod_name] = {
+                'model_id'  : model_id,
+                'model_var' : mod_var,
+                'obs_var'   : obs_var}
         return new
 
     def _sort_menu_entries(self, avail):

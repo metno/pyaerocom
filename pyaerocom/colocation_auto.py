@@ -370,6 +370,7 @@ class ColocationSetup(ConstrainedContainer):
         else:
             return f'{y0}-{y1}'
 
+
 class Colocator(ColocationSetup):
     """High level class for running colocation
 
@@ -725,7 +726,7 @@ class Colocator(ColocationSetup):
         mask = f'{self.output_dir}/*.nc'
         return glob.glob(mask)
 
-    def get_available_coldata_files(self):
+    def get_available_coldata_files(self, var_name : str = None) -> list:
         self._check_set_start_stop()
 
         def check_meta_match(meta, **kwargs):
@@ -750,7 +751,13 @@ class Colocator(ColocationSetup):
                                           start=start, stop=stop)
             if (candidate and meta['model_var'] in model_vars and
                 meta['obs_var'] in obs_vars):
-                valid.append(file)
+                if var_name is None:
+                    ok = True
+                else:
+                    ok = meta['model_var'] == var_name or meta['obs_var'] == var_name
+                if ok:
+                    valid.append(file)
+
         return valid
 
     def _read_ungridded(self, var_name):

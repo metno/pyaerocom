@@ -730,11 +730,16 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     rh = data[rh_colname]
 
     high_rh = rh > rh_max_percent
-
+    rhnan = np.isnan(rh)
     vals[high_rh] = np.nan
-    vals[np.isnan(rh)] = np.nan
+    vals[rhnan] = np.nan
 
-    rh_mean = np.nanmean(rh[~high_rh])
+    rh = rh[~rhnan]
+    lowrh = rh[~high_rh[~rhnan]]
+    if len(lowrh) > 0:
+        rh_mean = np.nanmean(lowrh)
+    else:
+        rh_mean = np.nan
 
     return vals, rh_mean
 

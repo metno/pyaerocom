@@ -84,6 +84,13 @@ class BaseCollection(BrowseDict):
             return key
         return self[key]['web_interface_name']
 
+    def get_all_vars(self):
+        vars = []
+        for key, cfg in self.items():
+            vars.extend(cfg.get_all_vars())
+        return sorted(list(set(vars)))
+
+
     @property
     def web_iface_names(self):
         """
@@ -125,13 +132,6 @@ class ObsCollection(BaseCollection):
 
     """
     SETTER_CONVERT = {dict : ObsEntry}
-    @property
-    def all_obs_vars(self):
-        """List of unique obs variables"""
-        obs_vars = []
-        for key, cfg in self.items():
-            obs_vars.extend(cfg['obs_vars'])
-        return sorted(list(set(obs_vars)))
 
     def get_entry(self, key) -> object:
         """

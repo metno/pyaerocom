@@ -1,5 +1,6 @@
-from pyaerocom._lowlevel_helpers import (BrowseDict, ListOfStrings, DictType,
-                                         StrType)
+from copy import deepcopy
+from pyaerocom._lowlevel_helpers import (BrowseDict, DictType,
+                                         StrType, DictStrKeysListVals)
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
 from pyaerocom.aeroval._lowlev import EvalEntry
 
@@ -38,7 +39,7 @@ class ModelEntry(EvalEntry, BrowseDict):
     """
     model_id = StrType()
     model_use_vars = DictType()
-    model_add_vars = DictType()
+    model_add_vars = DictStrKeysListVals()
     model_read_aux = DictType()
 
     def __init__(self, model_id, **kwargs):
@@ -49,7 +50,6 @@ class ModelEntry(EvalEntry, BrowseDict):
         self.model_read_aux = {}
 
         self.update(**kwargs)
-        self.check_cfg()
 
     @property
     def aux_funs_required(self):
@@ -57,20 +57,16 @@ class ModelEntry(EvalEntry, BrowseDict):
 
     def get_all_vars(self):
         muv = list(self.model_use_vars.values())
-        mav = list(self.model_add_vars.values())
+        mav = []
+        for val in self.model_add_vars.values():
+            mav.extend(val)
         mra = list(self.model_read_aux.keys())
         return list(set(muv + mav + mra))
 
-    def check_cfg(self):
-        """Check that minimum required attributes are set and okay"""
-        assert isinstance(self.model_id, str)
-        assert isinstance(self.model_add_vars, dict)
-        assert isinstance(self.model_use_vars, dict)
-        assert isinstance(self.model_read_aux, dict)
-        for key, val in self.model_add_vars.items():
-            assert isinstance(val, list)
-        for key, val in self.model_use_vars.items():
-            assert isinstance(val, str)
+    def get_varname_web(self, mod_var, obs_var):
+        if obs_var in self.model_add_vars and mod_var in self.model_add_vars[obs_var]:
+            return mod_var
+        return obs_var
 
     def _get_aux_funcs_setup(self, funs):
         mra = {}
@@ -79,7 +75,7 @@ class ModelEntry(EvalEntry, BrowseDict):
         return mra
 
     def prep_dict_analysis(self, funs={}) -> dict:
-        output = self.to_dict()
+        output = deepcopy(self.to_dict())
         if self.aux_funs_required:
             output['model_read_aux'].update(self._get_aux_funcs_setup(funs))
         return output

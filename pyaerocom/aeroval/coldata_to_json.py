@@ -23,6 +23,9 @@ from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
                               Region)
 
+from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval.experiment_output import ExperimentOutput
+
 from time import time
 
 SEASONS = ['all', 'DJF', 'MAM', 'JJA', 'SON']
@@ -104,7 +107,7 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
                                     ts_data['obs_var'],
                                     ts_data['vert_code'])
 
-    fp = os.path.join(out_dirs['ts'],'dw', filename)
+    fp = os.path.join(out_dirs['ts/diurnal'], filename)
     if os.path.exists(fp):
         current = read_json(fp)
     else:
@@ -114,9 +117,8 @@ def _write_diurnal_week_stationdata_json(ts_data, out_dirs):
 
 def _add_entry_json(heatmap_file, result, obs_name, obs_var, vert_code,
                             model_name, model_var):
-    fp = heatmap_file
-    if os.path.exists(fp):
-        current = read_json(fp)
+    if os.path.exists(heatmap_file):
+        current = read_json(heatmap_file)
     else:
         current = {}
     if not obs_var in current:
@@ -132,7 +134,7 @@ def _add_entry_json(heatmap_file, result, obs_name, obs_var, vert_code,
         ovc[model_name] = {}
     mn = ovc[model_name]
     mn[model_var] = result
-    write_json(current, fp, ignore_nan=True)
+    write_json(current, heatmap_file, ignore_nan=True)
 
 def _init_stats_dummy():
     # dummy for statistics dictionary for locations without data
@@ -1036,23 +1038,44 @@ def _start_stop_from_periods(statistics_periods):
     start, stop = _get_min_max_year_periods(statistics_periods)
     return start_stop(start, stop+1)
 
-def compute_json_files_from_colocateddata(coldata,
-                                          use_weights,
-                                          out_dirs,
-                                          regions_json,
-                                          statistics_freqs,
-                                          statistics_periods,
-                                          main_freq,
-                                          regions_how,
-                                          annual_stats_constrained):
+def compute_json_files_from_colocateddata(coldata : ColocatedData,
+                                          cfg : EvalSetup,
+                                          exp_output : ExperimentOutput):
+    """
+    Creates all json files for one ColocatedData object
 
-    """Creates all json files for one ColocatedData object
+    Parameters
+    ----------
+    coldata : ColocatedData
+        colocated data to be processed.
+    cfg : EvalSetup
+        setup of experiment.
+    exp_output : ExperimentOutput
+        DESCRIPTION.
 
-    ToDo
-    ----
-    Complete docstring
+    Raises
+    ------
+    NotImplementedError
+        DESCRIPTION.
+    ValueError
+        DESCRIPTION.
+    AeroValConfigError
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
     """
     t00 = time()
+    use_weights = cfg.statistics_opts.weighted_stats
+    statistics_freqs = cfg.statistics_opts.freqs
+    statistics_periods = cfg.statistics_opts.periods
+    annual_stats_constrained = cfg.statistics_opts.annual_stats_constrained
+    main_freq = cfg.statistics_opts.main_freq
+    out_dirs = cfg.path_manager.get_json_output_dirs(True)
+    regions_json = exp_output.regions_file
+    regions_how = cfg.webdisp_opts.regions_how
     vert_code = coldata.get_meta_item('vert_code')
     diurnal_only = coldata.get_meta_item('diurnal_only')
 
@@ -1084,6 +1107,9 @@ def compute_json_files_from_colocateddata(coldata,
 
     model_name = coldata.model_name
     obs_name = coldata.obs_name
+
+    obs_var = cfg.model_cfg.get_entry(model_name).get_varname_web(model_var,
+                                                                  obs_var)
 
     const.print_log.info(
         f'Computing json files for {model_name} ({model_var}) vs. '
@@ -1171,7 +1197,7 @@ def compute_json_files_from_colocateddata(coldata,
         (ts_objs_weekly,
          ts_objs_weekly_reg) = _process_sites_weekly_ts(coldata, regions_how,
                                                         regnames, meta_glob)
-        outdir = os.path.join(out_dirs['ts'],'dw')
+        outdir = os.path.join(out_dirs['ts/diurnal'])
         for ts_data_weekly in ts_objs_weekly:
             #writes json file
             _write_stationdata_json(ts_data_weekly, outdir)
@@ -1186,7 +1212,7 @@ def compute_json_files_from_colocateddata(coldata,
         )
 
     dt = time() - t00
-    print(f'Time expired (TOTAL): {dt:.2f} s')
+    const.print_log.info(f'Time expired (TOTAL): {dt:.2f} s')
 
 if __name__ == '__main__':
     import pyaerocom as pya

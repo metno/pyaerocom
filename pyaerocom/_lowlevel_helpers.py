@@ -199,6 +199,16 @@ class ListOfStrings(FlexList):
             raise ValueError(f'not all items are str type in input list {val}')
         return val
 
+class DictStrKeysListVals(Validator):
+    def validate(self, val):
+        if not isinstance(val, dict):
+            raise ValueError(f'need dict, got {val}')
+        elif not all([isinstance(x, str) for x in val.keys()]):
+            raise ValueError(f'all keys need to be str type in {val}')
+        elif not all([isinstance(x, list) for x in val.values()]):
+            raise ValueError(f'all values need to be list type in {val}')
+        return val
+
 class Loc(abc.ABC):
     """Abstract descriptor representing a path location
 
@@ -326,7 +336,8 @@ class BrowseDict(MutableMapping):
                 if char in key:
                     raise KeyError(
                     f'key {key} must not contain char {char}')
-        setattr(self, key, val)
+        #setattr(self, key, val)
+        self.__dict__[key] = val
 
 
     def _setitem_checker(self, key, val):
@@ -335,6 +346,9 @@ class BrowseDict(MutableMapping):
     def __getitem__(self, key):
         try:
             return getattr(self, key)
+        except TypeError:
+            #if key is not str
+            return self.__dict__[key]
         except AttributeError as e:
             raise KeyError(e)
 
@@ -634,23 +648,24 @@ def list_to_shortstr(lst, indent=0):
 
     return s
 
-def sort_dict_by_name(d, pref_list=None):
+def sort_dict_by_name(d, pref_list : list = None) -> dict:
     """Sort entries of input dictionary by their names and return ordered
 
     Parameters
     ----------
     d : dict
         input dictionary
+    pref_list : list, optional
+        preferred order of items (may be subset of keys in input dict)
 
     Returns
     -------
-    OrderedDict
+    dict
         sorted and ordered dictionary
     """
-    from collections import OrderedDict as od
     if pref_list is None:
         pref_list = []
-    s = od()
+    s = {}
     sorted_keys = sorted(d)
     for k in pref_list:
         if k in d:
