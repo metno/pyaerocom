@@ -600,7 +600,17 @@ class Colocator(ColocationSetup):
                                   is_model=True,
                                   **kwargs)
 
-    def prepare_run(self, var_name=None):
+    def _filter_var_matches_varlist(self, vars_to_process, var_list) -> dict:
+        _vars_to_process = {}
+        if isinstance(var_list, str):
+            var_list = [var_list]
+        for var_name in var_list:
+            _subset = self._filter_var_matches_var_name(
+                vars_to_process, var_name)
+            _vars_to_process.update(**_subset)
+        return _vars_to_process
+
+    def prepare_run(self, var_list : list = None) -> dict:
         """
         Prepare colocation run for current setup.
 
@@ -641,9 +651,9 @@ class Colocator(ColocationSetup):
         self._check_set_start_stop()
 
         vars_to_process = self._find_var_matches()
-        if var_name is not None:
-            vars_to_process = self._filter_var_matches_var_name(
-                vars_to_process, var_name)
+        if var_list is not None:
+           vars_to_process = self._filter_var_matches_varlist(vars_to_process,
+                                                              var_list)
 
         (vars_to_process,
          ts_types) = self._check_load_model_data(vars_to_process)
@@ -653,17 +663,16 @@ class Colocator(ColocationSetup):
                 vars_to_process, ts_types)
         return vars_to_process
 
-    def run(self, var_name=None, **opts):
+    def run(self, var_list : list = None, **opts):
         """Perform colocation for current setup
 
         See also :func:`prepare_run`.
 
         Parameters
         ----------
-        var_name : str, optional
-            Variable name that is supposed to be analysed. The default is None,
+        var_list : list, optional
+            list of variables supposed to be analysed. The default is None,
             in which case all defined variables are attempted to be colocated.
-
         **opts
             keyword args that may be specified to change the current setup
             before colocation
@@ -679,7 +688,7 @@ class Colocator(ColocationSetup):
         data_out = {}
         # ToDo: see if the following could be solved via custom context manager
         try:
-            vars_to_process = self.prepare_run(var_name)
+            vars_to_process = self.prepare_run(var_list)
         except Exception:
             if self.raise_exceptions:
                 self._print_processing_status()
@@ -726,7 +735,7 @@ class Colocator(ColocationSetup):
         mask = f'{self.output_dir}/*.nc'
         return glob.glob(mask)
 
-    def get_available_coldata_files(self, var_name : str = None) -> list:
+    def get_available_coldata_files(self, var_list : list = None) -> list:
         self._check_set_start_stop()
 
         def check_meta_match(meta, **kwargs):
@@ -751,10 +760,14 @@ class Colocator(ColocationSetup):
                                           start=start, stop=stop)
             if (candidate and meta['model_var'] in model_vars and
                 meta['obs_var'] in obs_vars):
-                if var_name is None:
+                if var_list is None:
                     ok = True
                 else:
-                    ok = meta['model_var'] == var_name or meta['obs_var'] == var_name
+                    ok = False
+                    for var in var_list:
+                        if meta['model_var'] == var or meta['obs_var'] == var:
+                            ok = True
+                            break
                 if ok:
                     valid.append(file)
 

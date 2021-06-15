@@ -1,196 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import glob
 import os
 import numpy as np
-import shutil
 from traceback import format_exc
 
-# internal pyaerocom imports
-from pyaerocom._lowlevel_helpers import (sort_dict_by_name)
 from pyaerocom import const
-from pyaerocom.exceptions import FileConventionError
-from pyaerocom.colocation_auto import Colocator
+from pyaerocom.aeroval._processing_base import ProcessingEngine, HasColocator
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.helpers import isnumeric
-
-from pyaerocom.aeroval.helpers import (
-    delete_experiment_data_evaluation_iface,
-    read_json, write_json)
-
-from pyaerocom.aeroval.coldata_to_json import (
-    compute_json_files_from_colocateddata,
-    get_heatmap_filename
-    )
-
-from pyaerocom.aeroval.setupclasses import EvalSetup
-from pyaerocom.aeroval.experiment_output import ExperimentOutput
-
-class MapProcessor:
-
-    @property
-    def all_modelmap_vars(self):
-        """List of variables to be processed for model map display
-
-        Note
-        ----
-        For now this is just a wrapper for :attr:`all_obs_vars`
-        """
-        return self.all_obs_vars
-
-    def run_map_eval(self, model_name, var_name):
-        """Run evaluation of map processing
-
-        Create json files for model-maps display. This analysis does not
-        require any observation data but processes model output at all model
-        grid points, which is then displayed on the website in the maps
-        section.
-
-        Parameters
-        ----------
-        model_name : str
-            name of model to be processed
-        var_name : str, optional
-            name of variable to be processed. If None, all available
-            observation variables are used.
-        reanalyse_existing : bool
-            if True, existing json files will be reprocessed
-        raise_exceptions : bool
-            if True, any exceptions that may occur will be raised
-        """
-        if var_name is None:
-            all_vars = self.all_modelmap_vars
-        else:
-            all_vars = [var_name]
-
-        model_cfg = self.get_model_config(model_name)
-        settings = {}
-        settings.update(self.cfg_colocation)
-        settings.update(model_cfg)
-
-        for var in all_vars:
-            const.print_log.info(f'Processing model maps for '
-                                 f'{model_name} ({var})')
-
-            try:
-                self._process_map_var(model_name, var,
-                                      self.reanalyse_existing)
-
-            except Exception:
-                if self.raise_exceptions:
-                    raise
-                const.print_log.warning(
-                    f'Failed to process maps for {model_name} {var} data. '
-                    f'Reason: {format_exc()}')
-
-    def _process_map_var(self, model_name, var, reanalyse_existing):
-        """
-        Process model data to create map json files
-
-        Parameters
-        ----------
-        model_name : str
-            name of model
-        var : str
-            name of variable
-        reanalyse_existing : bool
-            if True, already existing json files will be reprocessed
-
-        Raises
-        ------
-        ValueError
-            If vertical code of data is invalid or not set
-        AttributeError
-            If the data has the incorrect number of dimensions or misses either
-            of time, latitude or longitude dimension.
-        """
-        from pyaerocom.aeroval.modelmaps_helpers import (calc_contour_json,
-                                                         griddeddata_to_jsondict)
-
-        data = self.read_model_data(model_name, var)
-
-        vc = data.vert_code
-        if not isinstance(vc, str) or vc=='':
-            raise ValueError(f'Invalid vert_code {vc} in GriddedData')
-        elif vc == 'ModelLevel':
-            if not data.ndim == 4:
-                raise ValueError('Invalid ModelLevel file, needs to have '
-                                 '4 dimensions (time, lat, lon, lev)')
-            data = data.extract_surface_level()
-            vc = 'Surface'
-        elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
-            raise ValueError(f'Cannot process {vc} files. Supported vertical '
-                             f'codes are {self.JSON_SUPPORTED_VERT_SCHEMES}')
-        if not data.has_time_dim:
-            raise AttributeError('Data needs to have time dimension...')
-        elif not data.has_latlon_dims:
-            raise AttributeError('Data needs to have lat and lon dimensions')
-        elif not data.ndim == 3:
-            raise AttributeError('Data needs to be 3-dimensional')
-
-        outdir = self.out_dirs['contour']
-        outname = f'{var}_{vc}_{model_name}'
-
-        fp_json = os.path.join(outdir, f'{outname}.json')
-        fp_geojson = os.path.join(outdir, f'{outname}.geojson')
-
-        if not reanalyse_existing:
-            if os.path.exists(fp_json) and os.path.exists(fp_geojson):
-                const.print_log.info(
-                    f'Skipping processing of {outname}: data already exists.'
-                    )
-                return
+from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
+from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 
 
-        if not data.ts_type == 'monthly':
-            data = data.resample_time('monthly')
-
-        data.check_unit()
-
-        vminmax = self.maps_vmin_vmax
-        if var in self.cfg_model_maps['vmin_vmax']:
-            vmin, vmax = vminmax[var]
-        else:
-            vmin, vmax = None, None
-
-        # first calcualate and save geojson with contour levels
-        contourjson = calc_contour_json(data, vmin=vmin, vmax=vmax)
-
-        # now calculate pixel data json file (basically a json file
-        # containing monthly mean timeseries at each grid point at
-        # a lower resolution)
-        if isnumeric(self.maps_res_deg):
-            lat_res = self.maps_res_deg
-            lon_res = self.maps_res_deg
-        else:
-            lat_res = self.maps_res_deg['lat_res_deg']
-            lon_res = self.maps_res_deg['lon_res_deg']
-
-
-        datajson = griddeddata_to_jsondict(data,
-                                           lat_res_deg=lat_res,
-                                           lon_res_deg=lon_res)
-        write_json(contourjson, fp_geojson, ignore_nan=True)
-        write_json(datajson, fp_json, ignore_nan=True)
-
-class ExperimentProcessor:
+class ExperimentProcessor(ProcessingEngine, HasColocator):
     """Composite class representing a full setup for an AeroVal experiment
     """
 
-    JSON_SUPPORTED_VERT_SCHEMES = ['Column', 'Surface']
-
-    #: Attributes that are ignored when writing setup to json file
-    JSON_CFG_IGNORE = ['add_methods', '_log', 'out_dirs']
-
-    #: attributes that are not supported by this interface
-    FORBIDDEN_ATTRS = ['basedir_coldata']
     _log = const.print_log
-    def __init__(self, cfg):
-        if not isinstance(cfg, EvalSetup):
-            raise ValueError()
-        self.cfg = cfg
-        self.exp_output = ExperimentOutput(cfg)
-
     def _get_diurnal_only(self, obs_name):
         """
         Check if colocated data is flagged for only diurnal processing
@@ -216,10 +41,8 @@ class ExperimentProcessor:
     def coldata_to_json(self, file):
         """Creates all json files for one ColocatedData object"""
         coldata = ColocatedData(file)
-        compute_json_files_from_colocateddata(
-                coldata=coldata,
-                cfg=self.cfg,
-                exp_output=self.exp_output)
+        engine = ColdataToJsonEngine(self.cfg)
+        return engine.run(coldata)
 
     def find_coldata_files(self, model_name, obs_name, var_name=None):
         """Find colocated data files for a certain model/obs/var combination
@@ -290,35 +113,6 @@ class ExperimentProcessor:
             self.coldata_to_json(file)
             converted.append(file)
         return converted
-
-    def init_colocator(self, model_name:str=None,
-                       obs_name:str=None) -> Colocator:
-        """
-        Instantate colocation engine
-
-        Parameters
-        ----------
-        model_name : str, optional
-            name of model. The default is None.
-        obs_name : str, optional
-            name of obs. The default is None.
-
-        Returns
-        -------
-        Colocator
-
-        """
-        col = Colocator(**self.cfg.colocation_opts)
-        if obs_name:
-            obs_cfg = self.cfg.get_obs_entry(obs_name)
-            col.import_from(obs_cfg)
-            col.add_glob_meta(diurnal_only=self._get_diurnal_only(obs_name))
-        if model_name:
-            mod_cfg = self.cfg.get_model_entry(model_name)
-            col.import_from(mod_cfg)
-        outdir = self.cfg.path_manager.get_coldata_dir()
-        col.basedir_coldata = outdir
-        return col
 
     def _run_superobs_entry_var(self, model_name, superobs_name, var_name,
                                 try_colocate_if_missing):
@@ -458,48 +252,7 @@ class ExperimentProcessor:
                     f'Failed to process superobs entry for {superobs_name},  '
                     f'{model_name}, var {var_name}. Reason: {format_exc()}')
 
-
-
-
-
-    def delete_invalid_coldata_files(self, dry_run=False):
-        """
-        Find and delete invalid colocated NetCDF files
-
-        Invalid NetCDF files are identified via model and obs name specified
-        in this setup and by list of variable specified for model and obs,
-        respectively, see also :func:`check_available_coldata_files`.
-
-        Parameters
-        ----------
-        dry_run : bool, optional
-            If True, then no files are deleted but a print statement is
-            provided for each file that would be deleted. The default is False.
-
-
-        Returns
-        -------
-        list
-            List of invalid files that have been (would be) deleted.
-
-        """
-        raise NotImplementedError
-        for mod in self.all_model_names:
-            for obs in self.all_obs_names:
-                col = self.init_colocator(mod, obs)
-
-        invalid = self.check_available_coldata_files()[1]
-        if len(invalid) == 0:
-            const.print_log.info('No invalid colocated data files found.')
-        else:
-            for file in invalid:
-                if dry_run:
-                    const.print_log.info(f'Would delete {file}')
-                else:
-                    os.remove(file)
-        return invalid
-
-    def _run_single_entry(self, model_name, obs_name, var_name):
+    def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
             msg = ('Cannot run same dataset against each other'
                    '({} vs. {})'.format(model_name, model_name))
@@ -509,7 +262,7 @@ class ExperimentProcessor:
         ocfg = self.cfg.get_obs_entry(obs_name)
         if ocfg['is_superobs']:
             try:
-                self._run_superobs_entry(model_name, obs_name, var_name,
+                self._run_superobs_entry(model_name, obs_name, var_list,
                                          try_colocate_if_missing=True)
             except Exception:
                 if self.raise_exceptions:
@@ -522,11 +275,11 @@ class ExperimentProcessor:
                 f'marked to be used only as part of a superobs '
                 f'network')
         else:
-            col = self.init_colocator(model_name, obs_name)
+            col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
-                files_to_convert = col.get_available_coldata_files(var_name)
+                files_to_convert = col.get_available_coldata_files(var_list)
             else:
-                col.run(var_name)
+                col.run(var_list)
                 files_to_convert = col.files_written
 
             if self.cfg.processing_opts.only_colocation:
@@ -537,8 +290,8 @@ class ExperimentProcessor:
             else:
                 self.make_json_files(files_to_convert)
 
-    def run_evaluation(self, model_name=None, obs_name=None, var_name=None,
-                       update_interface=True):
+    def run(self, model_name=None, obs_name=None, var_list=None,
+            update_interface=True):
         """Create colocated data and json files for model / obs combination
 
         Parameters
@@ -552,10 +305,10 @@ class ExperimentProcessor:
             Like :attr:`model_name`, but for specification(s) of observations
             that are supposed to be used. If None (default) all observations
             are used.
-        var_name : str, optional
-            name of variable supposed to be analysed. If None, then all
-            variables available for observation network are used (defined in
-            :attr:`obs_config` for each entry). Defaults to None.
+        var_list : list, optional
+            list variables supposed to be analysed. If None, then all
+            variables available are used. Defaults to None. Can also be
+            `str` type.
         update_interface : bool
             if true, relevant json files that determine what is displayed
             online are updated after the run, including the the menu.json file
@@ -568,6 +321,8 @@ class ExperimentProcessor:
             list containing all colocated data objects that have been converted
             to json files.
         """
+        if isinstance(var_list, str):
+            var_list = [var_list]
         self.cfg._check_time_config()
         model_list = self.cfg.model_cfg.keylist(model_name)
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
@@ -576,44 +331,19 @@ class ExperimentProcessor:
 
         # compute model maps (completely independent of obs-eval
         # processing below)
-        if self.cfg.webdisp_opts.add_maps:
-            for model_name in model_list:
-                self.run_map_eval(model_name, var_name)
+        if self.cfg.webdisp_opts.add_model_maps:
+            engine = ModelMapsEngine(self.cfg)
+            map_files = engine.run(model_list=model_list,
+                                   var_list=var_list)
 
-        if not self.cfg.processing_opts.only_maps:
+        if not self.cfg.processing_opts.only_model_maps:
             for obs_name in obs_list:
                 for model_name in model_list:
-                    self._run_single_entry(model_name, obs_name, var_name)
+                    self._run_single_entry(model_name, obs_name, var_list)
 
         if update_interface:
             self.update_interface()
         const.print_log.info('Finished processing.')
-
-
-    def read_model_data(self, model_name, var_name,
-                        **kwargs):
-        """Read model variable data
-
-        """
-        if not model_name in self.model_config:
-            raise ValueError(f'No such model available {model_name}')
-
-        col = Colocator()
-        col.update(**self.cfg.colocation_opts)
-        col.update(**self.cfg.get_model_config(model_name))
-        data = col.read_model_data(var_name, **kwargs)
-
-        return data
-
-    def read_ungridded_obsdata(self, obs_name, vars_to_read=None):
-        """Read observation network"""
-
-        col = Colocator()
-        col.update(**self.cfg_colocation)
-        col.update(**self.obs_config[obs_name])
-
-        data = col.read_ungridded(vars_to_read)
-        return data
 
     def update_interface(self):
         """Update aeroval interface

@@ -5,7 +5,7 @@ Created on Mon Apr 15 14:00:44 2019
 
 TO BE DELETED
 """
-import os, glob, shutil
+import os, glob
 
 from pyaerocom import const
 from pyaerocom.helpers import start_stop_str
@@ -121,27 +121,6 @@ def make_info_str_eval_setup(stp, add_header=True):
     if add_header:
         st =  f'{stp.exp_id}: {stp.exp_name}\n{stp.exp_descr}\n' + st
     return st
-
-def delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id):
-    """Delete all data associated with a certain experiment
-
-    Parameters
-    ----------
-    base_dir : str, optional
-        basic output direcory (containg subdirs of all projects)
-    proj_name : str, optional
-        name of project, if None, then this project is used
-    exp_name : str, optional
-        name experiment, if None, then this project is used
-
-    """
-
-    basedir = os.path.join(base_dir, proj_id, exp_id)
-    if not os.path.exists(basedir):
-        const.print_log.info('Nothing there to delete...')
-        return
-    const.print_log.info(f'Deleting everything under {basedir}')
-    shutil.rmtree(basedir)
 
 def get_all_config_files_evaluation_iface(config_dir):
     """

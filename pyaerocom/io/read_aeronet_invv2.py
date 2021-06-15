@@ -38,7 +38,7 @@ import pandas as pd
 
 from pyaerocom import const
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom.mathutils import calc_abs550aer, calc_od550aer
+from pyaerocom.aux_var_helpers import calc_od550aer, calc_abs550aer
 from pyaerocom.stationdata import StationData
 
 class ReadAeronetInvV2(ReadAeronetBase):

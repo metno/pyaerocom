@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import glob
 import os
+import shutil
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
@@ -10,6 +11,8 @@ from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              var_ranges_defaults,
                                              var_web_info)
 from pyaerocom.aeroval.helpers import read_json, write_json
+from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+
 from pyaerocom.aeroval.setupclasses import EvalSetup
 
 class ProjectOutput:
@@ -35,6 +38,20 @@ class ProjectOutput:
     @property
     def available_experiments(self):
         return list(read_json(self.experiments_file).keys())
+
+    def _add_entry_experiments_json(self, exp_id, data):
+        current = read_json(self.experiments_file)
+        current[exp_id] = data
+        write_json(current, self.experiments_file, indent=4)
+
+    def _del_entry_experiments_json(self, exp_id):
+        current = read_json(self.experiments_file)
+        try:
+            del current[exp_id]
+        except KeyError:
+            const.print_log.warning(
+                f'no such experiment registered: {self.exp_id}')
+        write_json(current, self.experiments_file, indent=4)
 
 
 class ExperimentOutput(ProjectOutput):
@@ -80,21 +97,50 @@ class ExperimentOutput(ProjectOutput):
         """
         bool: True if results are available for this experiment, else False
         """
-        if not self.exp_id in os.listdir(self.proj_id):
+        if not self.exp_id in os.listdir(self.proj_dir):
             return False
-        elif not len(self.all_map_files) > 0:
+        elif not len(self._get_json_output_files('map')) > 0:
             return False
         return True
 
-    def update_interface(self):
+    def update_menu(self):
+        """Update menu
+
+        The menu.json file is created based on the available json map files in the
+        map directory of an experiment.
+
+        Parameters
+        ----------
+        menu_file : str
+            path to json menu file
+        delete_mode : bool
+            if True, then no attempts are being made to find json files for the
+            experiment specified in `config`.
+
+        """
+        avail = self._create_menu_dict()
+        avail = self._sort_menu_entries(avail)
+        write_json(avail, self.menu_file, indent=4)
+
+    def update_interface(self) -> None:
+        if not self.results_available:
+            const.print_log.warning(
+                f'no output available for experiment {self.exp_id} in '
+                f'{self.proj_id}')
+            return
+        exp_data = {
+            'public' : self.cfg.exp_info.public
+            }
+        self._add_entry_experiments_json(self.exp_id, exp_data)
+        self._create_var_ranges_json()
         self.update_menu()
         #self.make_info_table_web()
-        self.update_heatmap_json()
-        self._create_var_ranges_json()
+        self._update_heatmap_json()
+
         self._create_statistics_json()
         self.cfg.to_json(self.exp_dir)
 
-    def update_heatmap_json(self):
+    def _update_heatmap_json(self):
         """
         Synchronise content of heatmap json files with content of menu.json
         """
@@ -136,11 +182,23 @@ class ExperimentOutput(ProjectOutput):
         oname = '-'.join(ospl[:-1])
         return (oname, ovar, vert_code, mname, mvar)
 
+    def _results_summary(self):
+        res = [[],[],[],[],[]]
+        info = self._get_meta_from_map_files()
+        for item in info:
+            for i, entry in enumerate(item):
+                res[i].append(entry)
+        output = {}
+        for i, name in enumerate(['obs', 'ovar', 'vc', 'mod', 'mvar']):
+            output[name] = list(set(res[i]))
+        return output
+
     def clean_json_files(self):
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
         """
+        raise NotImplementedError('under revision')
         self._clean_modelmap_files()
 
         for file in self.all_map_files:
@@ -148,7 +206,7 @@ class ExperimentOutput(ProjectOutput):
              mod_name, mod_var) = self._info_from_map_file(file)
 
             remove=False
-            if not (obs_name in self.iface_names and
+            if not (obs_name in self.cfg.obs_cfg.web_iface_names and
                     mod_name in self.model_config):
                 remove = True
             elif not obs_var in self._get_valid_obs_vars(obs_name):
@@ -189,8 +247,7 @@ class ExperimentOutput(ProjectOutput):
                     )
                 os.remove(os.path.join(out_dir, file))
 
-    def delete_experiment_data(self, base_dir=None, proj_id=None, exp_id=None,
-                               also_coldata=True):
+    def delete_experiment_data(self, also_coldata=True):
         """Delete all data associated with a certain experiment
 
         Parameters
@@ -206,23 +263,16 @@ class ExperimentOutput(ProjectOutput):
             specific for input experiment ID, then also all associated colocated
             NetCDF files are deleted. Defaults to True.
         """
-        if proj_id is None:
-            proj_id = self.proj_id
-        if exp_id is None:
-            exp_id = self.exp_id
-        if base_dir is None:
-            base_dir = self.out_basedir
-        try:
-            delete_experiment_data_evaluation_iface(base_dir, proj_id, exp_id)
-        except NameError:
-            pass
+        if os.path.exists(self.exp_dir):
+            const.print_log.info(f'Deleting everything under {self.exp_dir}')
+            shutil.rmtree(self.exp_dir)
+
         if also_coldata:
-            coldir = self.cfg_colocation['basedir_coldata']
-            chk = os.path.normpath(f'{self.proj_id}/{self.exp_id}')
-            if os.path.normpath(coldir).endswith(chk) and os.path.exists(coldir):
+            coldir = self.cfg.path_manager.get_coldata_dir()
+            if os.path.exists(coldir):
                 const.print_log.info(f'Deleting everything under {coldir}')
                 shutil.rmtree(coldir)
-        self.update_menu(delete_mode=True)
+        self._del_entry_experiments_json(self.exp_id)
 
     def make_info_table_evaluation_iface(self):
         """
@@ -353,48 +403,26 @@ class ExperimentOutput(ProjectOutput):
         """List of all existing map files"""
         files = self._get_json_output_files('map')
         tab = []
-
         for file in files:
-            (obs_name, obs_var, vert_code,
-             mod_name, mod_var) = self._info_from_map_file(file)
-            tab.append([obs_var, obs_name, vert_code, mod_name, mod_var])
+            tab.append(self._info_from_map_file(file))
         return tab
 
-    def update_menu(self):
-        """Update menu
-
-        The menu.json file is created based on the available json map files in the
-        map directory of an experiment.
-
-        Parameters
-        ----------
-        menu_file : str
-            path to json menu file
-        delete_mode : bool
-            if True, then no attempts are being made to find json files for the
-            experiment specified in `config`.
-
-        """
-        avail = self._get_available_results_dict()
-        avail = self._sort_menu_entries(avail)
-        write_json(avail, self.menu_file, indent=4)
-
-    @property
-    def iface_names(self):
-        """
-        List of observation dataset names used in aeroval interface
-        """
-        return self.cfg.obs_cfg.web_iface_names
+    def _get_cmap_info(self, var):
+        if var in var_ranges_defaults:
+            return var_ranges_defaults[var]
+        try:
+            varinfo = VarinfoWeb(var)
+            return dict(scale=varinfo.cmap_bins,
+                        colmap=varinfo.cmap)
+        except VariableDefinitionError:
+            return dict(scale=[], colmap='coolwarm')
 
     def _create_var_ranges_json(self):
-        all_vars = self.cfg.get_all_vars()
-        dummy = dict(scale=[], colmap='coolwarm')
+        avail = self._results_summary()
+        all_vars = list(set(avail['ovar'] + avail['mvar']))
         ranges = {}
         for var in all_vars:
-            if var in var_ranges_defaults:
-                ranges[var] = var_ranges_defaults[var]
-            else:
-                ranges[var] = dummy
+            ranges[var] = self._get_cmap_info(var)
         write_json(ranges, self.var_ranges_file, indent=4)
 
     def _create_statistics_json(self):
@@ -441,10 +469,10 @@ class ExperimentOutput(ProjectOutput):
                 'longname'  :   lname,
                 'obs'       :   {}}
 
-    def _get_available_results_dict(self):
+    def _create_menu_dict(self):
         new = {}
         tab = self._get_meta_from_map_files()
-        for (obs_var, obs_name, vert_code, mod_name, mod_var) in tab:
+        for (obs_name, obs_var, vert_code, mod_name, mod_var) in tab:
             mcfg = self.cfg.model_cfg.get_entry(mod_name)
             var = mcfg.get_varname_web(mod_var, obs_var)
             if not var in new:

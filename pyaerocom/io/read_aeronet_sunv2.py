@@ -37,7 +37,7 @@ from collections import OrderedDict as od
 import re
 
 from pyaerocom import const
-from pyaerocom.mathutils import (calc_ang4487aer, calc_od550aer)
+from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
 

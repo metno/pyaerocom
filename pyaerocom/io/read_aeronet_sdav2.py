@@ -36,10 +36,7 @@ import pandas as pd
 import re, os
 from collections import OrderedDict as od
 from pyaerocom import const as const
-from pyaerocom.mathutils import (calc_ang4487aer,
-                                 calc_od550aer,
-                                 calc_od550gt1aer,
-                                 calc_od550lt1aer)
+from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer, calc_od550gt1aer, calc_od550lt1aer
 from pyaerocom.stationdata import StationData
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 

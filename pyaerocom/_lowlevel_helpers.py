@@ -336,8 +336,8 @@ class BrowseDict(MutableMapping):
                 if char in key:
                     raise KeyError(
                     f'key {key} must not contain char {char}')
-        #setattr(self, key, val)
-        self.__dict__[key] = val
+        setattr(self, key, val)
+        #self.__dict__[key] = val
 
 
     def _setitem_checker(self, key, val):
@@ -514,7 +514,10 @@ class NestedContainer(BrowseDict):
 
     def update(self, **settings):
         for key, val in settings.items():
-            for obj in self._occurs_in(key):
+            to_update = self._occurs_in(key)
+            if len(to_update) == 0:
+                raise AttributeError(f'invalid key {key}')
+            for obj in to_update:
                 obj[key] = val
 
     def __str__(self):

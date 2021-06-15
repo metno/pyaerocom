@@ -6,14 +6,15 @@ from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
                                          NestedContainer, AsciiFileLoc,
                                          EitherOf, StrType, ListOfStrings,
                                          DirLoc)
-from pyaerocom.colocation_auto import ColocationSetup
 
+from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
 from pyaerocom.aeroval.helpers import (read_json, write_json,
                                        _check_statistics_periods,
                                        _get_min_max_year_periods)
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.exceptions import AeroValConfigError
+
 
 class OutputPaths(ConstrainedContainer):
     JSON_SUBDIRS = ['map', 'ts', 'ts/diurnal', 'scat', 'hm', 'hm/ts', 'contour']
@@ -25,7 +26,7 @@ class OutputPaths(ConstrainedContainer):
         logger=const.print_log,
         tooltip='Base directory for json output files')
 
-    coldata_basedir =DirLoc(
+    coldata_basedir = DirLoc(
         default=os.path.join(const.OUTPUTDIR, 'aeroval/coldata'),
         assert_exists=True,
         auto_create=True,
@@ -63,24 +64,30 @@ class OutputPaths(ConstrainedContainer):
         return out
 
 class ModelMapsSetup(ConstrainedContainer):
+    maps_freq = EitherOf(['monthly', 'yearly'])
     def __init__(self, **kwargs):
-        self.res_deg = 5
-        self.vmin_vmax = {}
+        self.maps_res_deg = 5
         self.update(**kwargs)
 
 class StatisticsSetup(ConstrainedContainer):
-    DEFAULT_FREQS = ['monthly', 'yearly']
-    main_freq = StrType()
-    freqs = ListOfStrings()
+    MIN_NUM = 3
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
-        self.freqs = self.DEFAULT_FREQS
-        self.main_freq = self.DEFAULT_FREQS[0]
-        self.periods = []
         self.add_trends = False
         self.seasonal_stats = True
         self.update(**kwargs)
+
+class TimeSetup(ConstrainedContainer):
+    DEFAULT_FREQS = ['monthly', 'yearly']
+    SEASONS = ['all', 'DJF', 'MAM', 'JJA', 'SON']
+    main_freq = StrType()
+    freqs = ListOfStrings()
+    periods = ListOfStrings()
+    def __init__(self, **kwargs):
+        self.main_freq = self.DEFAULT_FREQS[0]
+        self.freqs = self.DEFAULT_FREQS
+        self.periods = []
 
 class WebDisplaySetup(ConstrainedContainer):
 
@@ -89,7 +96,7 @@ class WebDisplaySetup(ConstrainedContainer):
     def __init__(self, **kwargs):
         self.regions_how = 'default'
         self.map_zoom = 'World'
-        self.add_maps = False
+        self.add_model_maps = False
         self.modelorder_from_config = True
         self.obsorder_from_config = True
         self.var_order_menu = []
@@ -104,7 +111,7 @@ class EvalRunOptions(ConstrainedContainer):
         self.only_json = False
         self.only_colocation = False
         #: If True, process only maps (skip obs evaluation)
-        self.only_maps = False
+        self.only_model_maps = False
         self.update(**kwargs)
 
 class ProjectInfo(ConstrainedContainer):
@@ -112,15 +119,14 @@ class ProjectInfo(ConstrainedContainer):
         self.proj_id = proj_id
 
 class ExperimentInfo(ConstrainedContainer):
-
-    exp_status = EitherOf(['public', 'experimental'])
     def __init__(self, exp_id: str, **kwargs):
         self.exp_id = exp_id
         self.exp_name = ''
         self.exp_descr = ''
-        self.exp_status = 'experimental'
+        self.public = False
         self.exp_pi = getuser()
         self.update(**kwargs)
+
 
 class EvalSetup(NestedContainer, ConstrainedContainer):
     """Composite class representing a whole analysis setup
@@ -141,6 +147,8 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.proj_info = ProjectInfo(proj_id=proj_id)
         self.exp_info = ExperimentInfo(exp_id=exp_id)
 
+        self.time_cfg = TimeSetup()
+
         self.modelmaps_opts = ModelMapsSetup()
         self.colocation_opts = ColocationSetup(
                                     save_coldata=True,
@@ -153,7 +161,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
                                     weighted_stats=True,
                                     annual_stats_constrained=False
                                     )
-        self.webdisp_opts = WebDisplaySetup(add_maps=False)
+        self.webdisp_opts = WebDisplaySetup(add_model_maps=False)
 
         self.processing_opts = EvalRunOptions()
 
@@ -269,7 +277,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
          self._aux_funs.update(**h.import_all())
 
     def _check_time_config(self):
-        periods = self.statistics_opts.periods
+        periods = self.time_cfg.periods
         colstart = self.colocation_opts['start']
         colstop = self.colocation_opts['stop']
 
@@ -284,7 +292,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
                 f'periods is not set, inferred {per} from start '
                 f'/ stop colocation settings.')
 
-        self.statistics_opts.periods = _check_statistics_periods(periods)
+        self.time_cfg['periods'] = _check_statistics_periods(periods)
         start, stop = _get_min_max_year_periods(periods)
         if colstart is None:
             self.colocation_opts['start'] = start

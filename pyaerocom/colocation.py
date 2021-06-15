@@ -212,7 +212,7 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         data_ref = data_ref.regrid(data, scheme=regrid_scheme)
 
     ts_type_src = [data_ref.ts_type, data.ts_type]
-    # time resolution of dataset to be analyse
+    # time resolution of dataset to be analysed
     data, data_ref, data_ts_type = _ensure_gridded_gridded_same_freq(
         data, data_ref, apply_time_resampling_constraints, min_num_obs,
         resample_how)

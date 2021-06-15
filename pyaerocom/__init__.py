@@ -10,7 +10,6 @@ from .config import Config
 const = Config()
 
 # Sub-packages
-from . import aeroval
 from . import io
 from . import plot
 from . import tools
@@ -52,3 +51,5 @@ from .io.helpers import search_data_dir_aerocom
 from .variable import get_variable
 from .utils import create_varinfo_table
 from .testdata_access import initialise as initialise_testdata
+
+from . import aeroval

@@ -26,6 +26,7 @@ import pytest
 import os
 import numpy as np
 
+import pyaerocom.aux_var_helpers
 from pyaerocom import const
 import pyaerocom.exceptions as err
 from pyaerocom.conftest import (testdata_unavail, EBAS_FILES,
@@ -178,11 +179,11 @@ class TestReadEbas(object):
             assert var in reader.AUX_USE_META
             assert reader.AUX_USE_META[var] == ovar
 
-    AUX_FUNS = {'sc440dryaer'    :   mu.compute_sc440dryaer,
-                'sc550dryaer'    :   mu.compute_sc550dryaer,
-                'sc700dryaer'    :   mu.compute_sc700dryaer,
-                'ac550dryaer'    :   mu.compute_ac550dryaer,
-                'ang4470dryaer'  :   mu.compute_ang4470dryaer_from_dry_scat}
+    AUX_FUNS = {'sc440dryaer'    : pyaerocom.aux_var_helpers.compute_sc440dryaer,
+                'sc550dryaer'    : pyaerocom.aux_var_helpers.compute_sc550dryaer,
+                'sc700dryaer'    : pyaerocom.aux_var_helpers.compute_sc700dryaer,
+                'ac550dryaer'    : pyaerocom.aux_var_helpers.compute_ac550dryaer,
+                'ang4470dryaer'  : pyaerocom.aux_var_helpers.compute_ang4470dryaer_from_dry_scat}
 
     def test_AUX_FUNS(self, reader):
         for var, func in self.AUX_FUNS.items():
