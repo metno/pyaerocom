@@ -14,7 +14,8 @@ from pyaerocom.io.helpers import save_dict_json
 from pyaerocom.web.helpers import read_json, write_json
 from pyaerocom.web.const import (HEATMAP_FILENAME_EVAL_IFACE_MONTHLY,
                                  HEATMAP_FILENAME_EVAL_IFACE_DAILY,
-                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY)
+                                 HEATMAP_FILENAME_EVAL_IFACE_YEARLY,
+                                 HEATMAP_FILENAME_EVAL_IFACE_HOURLY)
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.mathutils import calc_statistics
 from pyaerocom.colocation_auto import Colocator
@@ -1225,7 +1226,7 @@ def _calc_temporal_corr(coldata):
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
                           meta_glob, annual_stats_constrained=False):
 
-    hm_all = dict(zip(('daily', 'monthly','yearly'), ({},{},{})))
+    hm_all = dict(zip(('hourly','daily', 'monthly','yearly'), ({},{},{},{})))
     stats_dummy = _init_stats_dummy()
     for freq, hm_data in hm_all.items():
         for regid, regname in region_ids.items():
@@ -1357,17 +1358,24 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
     data, jsdate = _init_data_default_frequencies(coldata,
                                                   colocation_settings)
 
+    if coldata.ts_type == 'hourly':
+        data['hourly'] = coldata
+    # FIRST: process data for heatmap json file
+    const.print_log.info('Processing heatmap data for all regions')
+    hm_all = _process_heatmap_data(
+        data, regnames, use_weights,
+        use_country=use_country,
+        meta_glob=meta_glob,
+        annual_stats_constrained=annual_stats_constrained
+        )
+
+    data.pop('hourly',None) #remove houlry from data if it is there
+
     if not diurnal_only:
-        # FIRST: process data for heatmap json file
-        const.print_log.info('Processing heatmap data for all regions')
-        hm_all = _process_heatmap_data(
-            data, regnames, use_weights,
-            use_country=use_country,
-            meta_glob=meta_glob,
-            annual_stats_constrained=annual_stats_constrained
-            )
 
         for freq, hm_data in hm_all.items():
+            if freq == 'hourly':
+                continue
             if freq == 'daily':
                 fname = HEATMAP_FILENAME_EVAL_IFACE_DAILY
             elif freq == 'yearly':
@@ -1417,6 +1425,13 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
             _write_stationdata_json(ts_data, out_dirs['ts'])
 
     if coldata.ts_type == 'hourly':
+        #writing hourly heatmap
+        hm_fname_hourly = HEATMAP_FILENAME_EVAL_IFACE_HOURLY
+        hm_file_hourly = os.path.join(out_dirs['hm'], hm_fname_hourly)
+        hm_data = hm_all['hourly']
+        _add_entry_heatmap_json(hm_file_hourly, hm_data, web_iface_name, obs_var,
+                                    vert_code, model_name, model_var)
+        
         const.print_log.info('Processing diurnal profiles')
         (ts_objs_weekly,
          ts_objs_weekly_reg) = _process_sites_weekly_ts(coldata, regions_how,
