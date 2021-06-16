@@ -120,12 +120,6 @@ class Config(object):
     RH_MAX_PERCENT_DRY = 40
 
     DEFAULT_REG_FILTER = 'WORLD-noMOUNTAINS'
-    #: If True, then whenever applicable the time resampling constraints
-    #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when
-    #: resampling in StationData and thus colocation routines. Requires that
-    #: original obs_data is available in a certain regular resolution (or at
-    #: least has ts_type assigned to it)
-    OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS = True
 
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations

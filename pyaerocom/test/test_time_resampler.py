@@ -63,12 +63,16 @@ def test_TimeResampler_fun(data, expectation):
     assert tr.fun == expectation
 
 @pytest.mark.parametrize('from_ts_type,to_ts_type,min_num_obs,how,expected', [
+    (TsType('3hourly'), TsType('monthly'), min_num_obs_default, dict(monthly={'daily' : 'max'}),
+     [('daily', 2, 'mean'), ('monthly', 7, 'max')]),
+    (TsType('84hourly'), TsType('6daily'),{'daily' : {'minutely' : 12}},'median',
+     [('6daily', 0, 'median')]),
+    (TsType('84hourly'), TsType('6daily'),{'daily' : {'hourly' : 12}},'median',
+     [('6daily', 1, 'median')]),
     (TsType('hourly'), TsType('daily'),3,'median', [('daily', 3, 'median')]),
     (TsType('3hourly'), TsType('monthly'), 3, 'mean', [('monthly', 3, 'mean')]),
     (TsType('3hourly'), TsType('monthly'), min_num_obs_default, 'mean',
      [('daily', 2, 'mean'), ('monthly', 7, 'mean')]),
-    (TsType('3hourly'), TsType('monthly'), min_num_obs_default, dict(monthly={'daily' : 'max'}),
-     [('daily', 2, 'mean'), ('monthly', 7, 'max')]),
     (TsType('2daily'), TsType('weekly'), min_num_obs_custom, 'max',
      [('weekly', 2, 'max')])
     ])
@@ -84,31 +88,21 @@ def test_TimeResampler__gen_index(from_ts_type, to_ts_type, min_num_obs,
                    ),
           min_num_obs=dict(monthly=dict(daily=15),
                            daily=dict(hourly=1)
-                           ),
-          apply_constraints=True), 1, 0, False),
-    (dict(to_ts_type='monthly',from_ts_type='hourly',
-          apply_constraints=False), 1, 1, True),
+                           )), 1, 0, False),
+    (dict(to_ts_type='monthly',from_ts_type='hourly'), 1, 1, True),
     (dict(to_ts_type='monthly',from_ts_type='hourly',
           how=dict(daily=dict(hourly='sum')),
-          apply_constraints=True,
           min_num_obs=min_num_obs_custom), 1, 0, False),
-    (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
-          apply_constraints=False), 1, 1, True),
+    (dict(to_ts_type='monthly',from_ts_type='hourly',how='median'), 1, 1, True),
+    (dict(to_ts_type='daily',from_ts_type='hourly',how='median'), 13, 13, True),
+    (dict(to_ts_type='daily',from_ts_type='hourly',how='median'), 13, 13, True),
     (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
-          apply_constraints=False), 13, 13, True),
-    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
-          apply_constraints=False), 13, 13, True),
-    (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
-          apply_constraints=True,
           min_num_obs=min_num_obs_default), 13, 13, True),
     (dict(to_ts_type='daily',from_ts_type='hourly',how='median',
-          apply_constraints=True,
           min_num_obs=min_num_obs_custom), 13, 12, True),
     (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
-          apply_constraints=True,
           min_num_obs=min_num_obs_default), 1, 1, True),
     (dict(to_ts_type='monthly',from_ts_type='hourly',how='median',
-          apply_constraints=True,
           min_num_obs=min_num_obs_custom), 1, 0, True),
 
     ])
@@ -124,33 +118,3 @@ def test_TimeResampler_resample(fakedata_hourly, args, output_len,
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
-# =============================================================================
-# # make 3hourly fake data
-# idx_3hr = pya.helpers.make_datetime_index('1-1-2018', '1-2-2018', '3h')
-#
-# data = np.ones_like(idx_3hr).astype(float)
-#
-# s_3hr = pd.Series(data, idx_3hr)
-#
-# # test conversion
-#
-# resampler = pya.TimeResampler(s_hr)
-#
-# daily_from_hourly_default = resampler.resample(to_ts_type='daily',
-#                                                from_ts_type='hourly')
-#
-# resampler.input_data = s_3hr
-# daily_from_3hourly_default = resampler.resample(to_ts_type='daily',
-#                                                 from_ts_type='3hourly')
-#
-# resampler = pya.TimeResampler(s_hr)
-#
-# daily_from_hourly_custom = resampler.resample(to_ts_type='daily',
-#                                               from_ts_type='hourly',
-#                                               min_num_obs=min_num_obs_custom)
-#
-# resampler.input_data = s_3hr
-# daily_from_3hourly_custom = resampler.resample(to_ts_type='daily',
-#                                                 from_ts_type='3hourly',
-#                                                 min_num_obs=min_num_obs_custom)
-# =============================================================================

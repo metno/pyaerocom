@@ -140,16 +140,8 @@ class ColocationSetup(ConstrainedContainer):
         boolean specifying whether reading frequency of gridded data is
         allowed to be flexible. This includes all gridded data, whether it is
         model or gridded observation (e.g. satellites). Defaults to True.
-    apply_time_resampling_constraints : bool, optional
-        if True, then time resampling constraints are applied as provided via
-        :attr:`min_num_obs` or if that one is unspecified, as defined in
-        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
-        (which defaults to True !!).
     min_num_obs : dict or int, optional
-        time resampling constraints applied if input arg
-        `apply_time_resampling_constraints` is True - or None, in which case
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used.
+        time resampling constraints applied.
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -249,7 +241,7 @@ class ColocationSetup(ConstrainedContainer):
 
         # Options related to time resampling
         self.apply_time_resampling_constraints = True
-        self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
+        self.min_num_obs = None
         self.resample_how = 'mean'
 
         # Options related to outlier removal
@@ -1265,7 +1257,6 @@ class Colocator(ColocationSetup):
                 regrid_res_deg=self.regrid_res_deg,
                 harmonise_units=self.harmonise_units,
                 update_baseyear_gridded=baseyr,
-                apply_time_resampling_constraints=self.apply_time_resampling_constraints,
                 min_num_obs=self.min_num_obs,
                 colocate_time=self.colocate_time,
                 use_climatology_ref=self.obs_use_climatology,
@@ -1326,8 +1317,6 @@ class Colocator(ColocationSetup):
             regrid_res_deg=self.regrid_res_deg,
             harmonise_units=self.harmonise_units,
             update_baseyear_gridded=baseyr,
-            apply_time_resampling_constraints=\
-                self.apply_time_resampling_constraints,
             min_num_obs=self.min_num_obs,
             colocate_time=self.colocate_time,
             resample_how=rshow

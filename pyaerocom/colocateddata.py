@@ -445,8 +445,7 @@ class ColocatedData(object):
         """
         return self.data.max()
 
-    def resample_time(self, to_ts_type, how=None,
-                      apply_constraints=None, min_num_obs=None,
+    def resample_time(self, to_ts_type, how=None, min_num_obs=None,
                       colocate_time=False, settings_from_meta=False,
                       inplace=False, **kwargs):
         """
@@ -462,24 +461,9 @@ class ColocatedData(object):
             aggregator used for resampling (e.g. max, min, mean, median). Can
             also be hierarchical scheme via `dict`, similar to `min_num_obs`.
             The default is None.
-        apply_constraints : bool, optional
-            Apply time resampling constraints. The default is None, in which
-            case pyaerocom default is used, that is,
-            :attr:`pyaerocom.Config.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` (
-            which is True by default in pyaerocom < v0.12.0, and probably also
-            after that).
         min_num_obs : int or dict, optional
             Minimum number of observations required to resample from current
-            frequency (:attr:`ts_type`) to desired output frequency. Only
-            relevant if `apply_constraints` evaluates to `True` (NOTE: can also
-            happen if `apply_constraints=None`, see prev. point). The default,
-            is None in which case the pyaerocom default is used, which
-            can be accessed via :attr:`pyaerocom.Config.`OBS_MIN_NUM_RESAMPLE`.
-            Note, that the default corresponds to a hierarchical scheme (`dict`,
-            pyaerocom < 0.12.0) and similar input is also accepted, e.g. if
-            you want ~75% sampling coverage and if the current ts_type is
-            `hourly` and output ts_type `monthly` you could input
-            `min_num_obs={'monthly': {'daily': 22}, 'daily': {'hourly': 18}}`.
+            frequency (:attr:`ts_type`) to desired output frequency.
         colocate_time : bool, optional
             If True, the modeldata is invalidated where obs is NaN, before
             resampling. The default is False (updated in v0.11.0, before was
@@ -510,7 +494,6 @@ class ColocatedData(object):
             how = self.metadata['resample_how']
             min_num_obs = self.metadata['min_num_obs']
             colocate_time = self.metadata['colocate_time']
-            apply_constraints = self.metadata['apply_constraints']
 
         # if colocate time is activated, remove datapoints from model, where
         # there is no observation
@@ -522,7 +505,6 @@ class ColocatedData(object):
         data_arr = res.resample(to_ts_type=to_ts_type,
                                 from_ts_type=col.ts_type,
                                 how=how,
-                                apply_constraints=apply_constraints,
                                 min_num_obs=min_num_obs, **kwargs)
 
         data_arr.attrs.update(col.metadata)
@@ -1094,7 +1076,6 @@ class ColocatedData(object):
         """
         settings = {}
         mapping = {
-            'apply_constraints'  : 'apply_time_resampling_constraints',
             'min_num_obs'        : 'min_num_obs',
             'resample_how'       : 'resample_how',
             'colocate_time'      : 'colocate_time'
