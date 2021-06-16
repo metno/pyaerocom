@@ -142,16 +142,8 @@ class ColocationSetup(BrowseDict):
         boolean specifying whether reading frequency of gridded data is
         allowed to be flexible. This includes all gridded data, whether it is
         model or gridded observation (e.g. satellites). Defaults to True.
-    apply_time_resampling_constraints : bool, optional
-        if True, then time resampling constraints are applied as provided via
-        :attr:`min_num_obs` or if that one is unspecified, as defined in
-        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
-        (which defaults to True !!).
     min_num_obs : dict or int, optional
-        time resampling constraints applied if input arg
-        `apply_time_resampling_constraints` is True - or None, in which case
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used.
+        time resampling constraints applied.
     resample_how : str or dict
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
@@ -199,7 +191,7 @@ class ColocationSetup(BrowseDict):
                  model_read_opts=None,
                  model_ts_type_read=None,
                  obs_ts_type_read=None, flex_ts_type_gridded=True,
-                 apply_time_resampling_constraints=None, min_num_obs=None,
+                 min_num_obs=None,
                  obs_use_climatology=False,
                  colocate_time=False, basedir_coldata=None,
                  obs_name=None, model_name=None,
@@ -256,7 +248,6 @@ class ColocationSetup(BrowseDict):
         self.filter_name = filter_name
 
         # OPtions related to time resampling
-        self.apply_time_resampling_constraints = apply_time_resampling_constraints
         self.min_num_obs = min_num_obs
         self.resample_how = None
 
@@ -448,14 +439,7 @@ class Colocator(ColocationSetup):
         if self.save_coldata:
             self._check_basedir_coldata()
         self._check_outdated_outlier_defs()
-        # ToDo: setting the defaults for time resampling here should be
-        # unnecessary since this is done in TimeResampler. Ensure that and
-        # remove here
-        if self.apply_time_resampling_constraints is None:
-            self.apply_time_resampling_constraints = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
 
-        if self.apply_time_resampling_constraints is True and self.min_num_obs is None:
-            self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
 
         try:
             self._init_log()
@@ -1045,7 +1029,6 @@ class Colocator(ColocationSetup):
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
                         update_baseyear_gridded=by,
-                        apply_time_resampling_constraints=self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
                         use_climatology_ref=self.obs_use_climatology,
@@ -1193,8 +1176,6 @@ class Colocator(ColocationSetup):
                         vert_scheme=self.vert_scheme,
                         harmonise_units=self.harmonise_units,
                         update_baseyear_gridded=by,
-                        apply_time_resampling_constraints=\
-                            self.apply_time_resampling_constraints,
                         min_num_obs=self.min_num_obs,
                         colocate_time=self.colocate_time,
                         resample_how=rshow

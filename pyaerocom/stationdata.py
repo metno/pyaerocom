@@ -773,12 +773,12 @@ class StationData(StationMetaData):
         ts_type = self._ensure_same_var_ts_type_other(other, var_name)
 
         s0 = self.resample_time(var_name, ts_type=ts_type,
-                                resample_how=resample_how,
+                                how=resample_how,
                                 min_num_obs=min_num_obs,
                                 inplace=True)[var_name].dropna()
         s1 = other.resample_time(var_name,
                                  ts_type=ts_type,
-                                 resample_how=resample_how,
+                                 how=resample_how,
                                  min_num_obs=min_num_obs,
                                  inplace=True)[var_name].dropna()
 

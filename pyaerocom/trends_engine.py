@@ -29,7 +29,6 @@ from pyaerocom.trends_helpers import (_init_trends_result_dict,
 class TrendsSettings(BrowseDict):
     def __init__(self, **settings):
         self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
-        self.apply_time_resampling_constraints = True
         self.resample_how = 'mean'
         self.min_num_years = 2
 

@@ -10,7 +10,7 @@ import iris
 import math as ma
 import numpy as np
 import pandas as pd
-import xarray as xray
+import xarray as xr
 
 from pyaerocom.exceptions import (LongitudeConstraintError,
                                   DataCoverageError, MetaDataError,
@@ -151,8 +151,8 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         lat, lon = new_lat, new_lon
     if new_index_name is None:
         new_index_name = 'latlon'
-    where = {lat_dimname : xray.DataArray(lat, dims=new_index_name),
-             lon_dimname : xray.DataArray(lon, dims=new_index_name)}
+    where = {lat_dimname : xr.DataArray(lat, dims=new_index_name),
+             lon_dimname : xr.DataArray(lon, dims=new_index_name)}
     subset = arr.sel(where, method=method)
     subset.attrs['lat_dimname'] = lat_dimname
     subset.attrs['lon_dimname'] = lon_dimname
@@ -854,7 +854,7 @@ def merge_station_data(stats, var_name, pref_attr=None,
     # ToDo: data_err is not handled at the moment for 2D data, needs r
     # revision and should be done in StationData.merge, also 3D vs 2D
     # should be handled by StationData directly...
-    if not is_3d:
+    if is_3d:
         merged = _merge_stats_3d(stats, var_name, add_meta_keys, has_errs)
     else:
         merged = _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr,
@@ -1040,7 +1040,7 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         if time dimension is not available in dataset
     """
 
-    if not isinstance(arr, xray.DataArray):
+    if not isinstance(arr, xr.DataArray):
         raise IOError('Invalid input for arr: need DataArray, got {}'.format(type(arr)))
     elif not 'time' in arr.dims:
         raise DataDimensionError('Cannot resample time: input DataArray has '
