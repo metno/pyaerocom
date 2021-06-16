@@ -18,7 +18,7 @@ from pyaerocom.colocation import (_regrid_gridded,
                                   colocate_gridded_ungridded,
                                   colocate_gridded_gridded)
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom import GriddedData
+from pyaerocom import GriddedData, const
 from pyaerocom import helpers
 from pyaerocom.io import ReadMscwCtm
 
@@ -34,7 +34,7 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
     stat1 = aeronetsunv3lev2_subset.to_station_data(3, var)
     stat2 = aeronetsunv3lev2_subset.to_station_data(4, var)
     df = _colocate_site_data_helper(stat1, stat2, var, var,
-                                    'daily',None,False,None,False)
+                                    'daily',None,None,False)
 
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 9483
@@ -54,17 +54,19 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
-    (dict(),
+    (dict(min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,8), 0.315930,0.275671),
-    (dict(apply_time_resampling_constraints=False),
+    (dict(),
      'monthly', (2,12,8), 0.316924,0.275671),
-    (dict(filter_name='WORLD-wMOUNTAINS'),
+    (dict(filter_name='WORLD-wMOUNTAINS',
+          min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,11), 0.269707, 0.243861),
-    (dict(use_climatology_ref=True),
+    (dict(use_climatology_ref=True,
+          min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,13), 0.302636, 0.234147),
-    (dict(regrid_res_deg=30),
+    (dict(regrid_res_deg=30, min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,8), 0.31593 , 0.169897),
-    (dict(ts_type='yearly', apply_time_resampling_constraints=False),
+    (dict(ts_type='yearly'),
      'yearly', (2,1,8), 0.417676, 0.275671)
 
     ])

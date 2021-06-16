@@ -1102,7 +1102,8 @@ class StationData(StationMetaData):
             else: # use monthly
                 clim_freq = 'monthly'
 
-        data = self.resample_time(ts_type=clim_freq, how=resample_how,
+        data = self.resample_time(var_name,
+                                  ts_type=clim_freq, how=resample_how,
                                   min_num_obs=min_num_obs,
                                   inplace=False)
         ts = data.to_timeseries(var_name)
