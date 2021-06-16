@@ -63,14 +63,16 @@ def test_TimeResampler_fun(data, expectation):
     assert tr.fun == expectation
 
 @pytest.mark.parametrize('from_ts_type,to_ts_type,min_num_obs,how,expected', [
+    (TsType('3hourly'), TsType('monthly'), min_num_obs_default, dict(monthly={'daily' : 'max'}),
+     [('daily', 2, 'mean'), ('monthly', 7, 'max')]),
+    (TsType('84hourly'), TsType('6daily'),{'daily' : {'minutely' : 12}},'median',
+     [('6daily', 0, 'median')]),
     (TsType('84hourly'), TsType('6daily'),{'daily' : {'hourly' : 12}},'median',
      [('6daily', 1, 'median')]),
     (TsType('hourly'), TsType('daily'),3,'median', [('daily', 3, 'median')]),
     (TsType('3hourly'), TsType('monthly'), 3, 'mean', [('monthly', 3, 'mean')]),
     (TsType('3hourly'), TsType('monthly'), min_num_obs_default, 'mean',
      [('daily', 2, 'mean'), ('monthly', 7, 'mean')]),
-    (TsType('3hourly'), TsType('monthly'), min_num_obs_default, dict(monthly={'daily' : 'max'}),
-     [('daily', 2, 'mean'), ('monthly', 7, 'max')]),
     (TsType('2daily'), TsType('weekly'), min_num_obs_custom, 'max',
      [('weekly', 2, 'max')])
     ])

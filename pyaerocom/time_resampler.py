@@ -24,7 +24,7 @@ class TimeResampler(object):
     days per month, to create the output data.
     """
     AGGRS_UNIT_PRESERVE = ('mean', 'median', 'std', 'max', 'min')
-
+    DEFAULT_HOW = 'mean'
     def __init__(self, input_data=None):
         self.last_setup = None
         # the following attribute is updated whenever a resampling operation is
@@ -62,14 +62,23 @@ class TimeResampler(object):
             return resample_timeseries
         return resample_time_dataarray
 
-    def _get_idx_entry(self, fr, to, min_num_obs, how, how_default):
+    def _get_resample_how(self, fr, to, how):
+        if not isinstance(how, (str, dict)):
+            val = self.DEFAULT_HOW
+        elif isinstance(how, dict):
+            if to.val in how and fr.val in how[to.val]:
+                val = how[to.val][fr.val]
+            else:
+                val = self.DEFAULT_HOW
+        else:
+            val = how
+        return val
+
+    def _get_idx_entry(self, fr, to, min_num_obs, how):
 
         min_num = fr.get_min_num_obs(to, min_num_obs)
 
-        if isinstance(how, dict) and to.val in how and fr.val in how[to.val]:
-            _how = how[to.val][fr.val]
-        else:
-            _how = how_default
+        _how = self._get_resample_how(fr, to, how)
 
         return (to.val, min_num, _how)
 
@@ -98,8 +107,6 @@ class TimeResampler(object):
             raise ValueError('Invalid input for min_num_obs, need dictionary '
                              'or integer, got {}'.format(min_num_obs))
 
-        how_default = how if isinstance(how, str) else 'mean'
-
         base_freqs = TsType.VALID
 
         start_base = base_freqs.index(from_ts_type.base)
@@ -114,15 +121,19 @@ class TimeResampler(object):
             to_base = TsType(base_freqs[i])
             try:
                 entry = self._get_idx_entry(last_from, to_base,
-                                            min_num_obs, how, how_default)
+                                            min_num_obs, how)
                 idx.append(entry)
                 last_from = to_base
             except (TemporalResolutionError, ValueError):
                 continue
         if len(idx) == 0 or not idx[-1][0] == to_ts_type.val:
-            entry = self._get_idx_entry(last_from, to_ts_type,
-                                        min_num_obs, how, how_default)
-            idx.append(entry)
+            try:
+                last_entry = self._get_idx_entry(last_from, to_ts_type,
+                                            min_num_obs, how)
+            except (TemporalResolutionError, ValueError):
+                _how = self._get_resample_how(last_from, to_ts_type, how)
+                last_entry = (to_ts_type.val, 0, _how)
+            idx.append(last_entry)
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
