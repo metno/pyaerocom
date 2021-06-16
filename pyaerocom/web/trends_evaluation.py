@@ -1153,8 +1153,7 @@ class TrendsEvaluation(object):
         rs = TimeResampler()
         ts = pd.Series(daily.value.values, daily.date.values)
         mon = rs.resample('monthly', input_data=ts, from_ts_type='daily',
-                 how=resample_how, apply_constraints=True,
-                 min_num_obs=min_num_obs)
+                 how=resample_how, min_num_obs=min_num_obs)
 
         dates = mon.index
         jsdate = self._to_jsdate(dates.values)

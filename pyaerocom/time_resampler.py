@@ -24,8 +24,6 @@ class TimeResampler(object):
     specified to first required minimum number of hours per day, and minimum
     days per month, to create the output data.
     """
-    DEFAULT_SAMPLING_CONSTRAINTS = const.OBS_MIN_NUM_RESAMPLE
-    APPLY_CONSTRAINTS = const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
     FREQS_SUPPORTED = TS_TYPE_TO_PANDAS_FREQ
     AGGRS_UNIT_PRESERVE = ('mean', 'median', 'std', 'max', 'min')
 
@@ -127,8 +125,7 @@ class TimeResampler(object):
         return idx
 
     def resample(self, to_ts_type, input_data=None, from_ts_type=None,
-                 how=None, apply_constraints=None,
-                 min_num_obs=None, **kwargs):
+                 how=None, min_num_obs=None, **kwargs):
         """Resample input data
 
         Parameters
@@ -141,10 +138,6 @@ class TimeResampler(object):
             current temporal resolution of data
         how : str
             string specifying how the data is to be aggregated, default is mean
-        apply_constraints : bool, optional
-            if True, hierarchical resampling is applied using input
-            `samping_constraints` (if provided) or else, using constraints
-            specified in :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`
         min_num_obs : dict or int, optinal
             integer or nested dictionary specifying minimum number of
             observations required to resample from higher to lower frequency.
@@ -165,34 +158,32 @@ class TimeResampler(object):
         pandas.Series or xarray.DataArray
             resampled data object
         """
-        if str(from_ts_type) == 'native':
-            from_ts_type = None
-
         if how is None:
             how = 'mean'
 
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
 
+        if str(from_ts_type) == 'native':
+            from_ts_type = None
+
+        if from_ts_type is None:
+            if min_num_obs is not None:
+                const.print_log.warning('setting min_num_obs to None since '
+                                        'from_ts_type is not specified')
+                min_num_obs = None
+        elif isinstance(from_ts_type, str):
+            from_ts_type = TsType(from_ts_type)
+
         if input_data is not None:
             self.input_data = input_data
         if self.input_data is None:
             raise ValueError('Please provide data (Series or DataArray)')
 
-        if apply_constraints is None:
-            apply_constraints = self.APPLY_CONSTRAINTS
 
-        if min_num_obs is None:
-            min_num_obs = self.DEFAULT_SAMPLING_CONSTRAINTS
-
-        self.last_setup = dict(apply_constraints=apply_constraints,
-                               min_num_obs=min_num_obs,
+        self.last_setup = dict(min_num_obs=min_num_obs,
                                how=how)
 
-        if from_ts_type is None:
-            apply_constraints = False
-        elif isinstance(from_ts_type, str):
-            from_ts_type = TsType(from_ts_type)
 
         if to_ts_type > from_ts_type:
             raise TemporalResolutionError('Cannot resample time-series from {} '
@@ -206,10 +197,10 @@ class TimeResampler(object):
 
             freq = to_ts_type.to_pandas_freq()
             self._last_units_preserved = True
-            return self.fun(self.input_data, freq=freq, how='mean',
-                            **kwargs)
+            data_out = self.fun(self.input_data, freq=freq, how='mean',
+                                **kwargs)
 
-        if not apply_constraints:
+        if min_num_obs is None:
             freq = to_ts_type.to_pandas_freq()
             if not isinstance(how, str):
                 raise ValueError('Temporal resampling without constraints can '
@@ -219,8 +210,8 @@ class TimeResampler(object):
                 self._last_units_preserved = True
             else:
                 self._last_units_preserved = False
-            return self.fun(self.input_data, freq=freq,
-                            how=how, **kwargs)
+            data_out = self.fun(self.input_data, freq=freq,
+                                how=how, **kwargs)
 
         if not isinstance(from_ts_type, TsType):
             raise ValueError('Invalid input for from_ts_type: {}. Need valid '

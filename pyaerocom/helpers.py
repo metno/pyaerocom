@@ -724,15 +724,79 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
         is_3d = False
     return (stats, is_3d, has_errs)
 
+def _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr, add_meta_keys,
+                    resample_how, min_num_obs):
+    if pref_attr is not None:
+        stats.sort(key=lambda s: s[pref_attr])
+    else:
+        stats.sort(key=lambda s: len(s[var_name].dropna()))
+
+    if sort_by_largest:
+        stats = stats[::-1]
+
+    # remove first station from the list
+    merged = stats.pop(0)
+    for i, stat in enumerate(stats):
+        merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys,
+                           resample_how=resample_how,
+                           min_num_obs=min_num_obs)
+    return merged
+
+def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
+    dtime = []
+    for stat in stats:
+        _t = stat[var_name].index.unique()
+        if not len(_t) == 1:
+            raise NotImplementedError('So far, merging of profile data '
+                                      'requires that profile values are '
+                                      'sampled at the same time')
+        dtime.append(_t[0])
+    tidx = pd.DatetimeIndex(dtime)
+
+    # AeroCom default vertical grid
+    vert_grid = const.make_default_vert_grid()
+    _data = np.ones((len(vert_grid), len(tidx))) * np.nan
+    if has_errs:
+        _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
+
+    for i, stat in enumerate(stats):
+        if i == 0:
+            merged = stat
+        else:
+            merged.merge_meta_same_station(stat,
+                                           add_meta_keys=add_meta_keys)
+
+        _data[:, i] = np.interp(vert_grid, stat['altitude'],
+                                stat[var_name].values)
+
+        if has_errs:
+            try:
+                _data_err[:, i] = np.interp(vert_grid,
+                                            stat['altitude'],
+                                            stat.data_err[var_name])
+            except Exception:
+                pass
+    _coords = {'time'     : tidx,
+               'altitude' : vert_grid}
+
+    d = xr.DataArray(data=_data, coords=_coords,
+                  dims=['altitude', 'time'], name=var_name)
+    d = d.sortby('time')
+    merged[var_name] = d
+    merged.dtime = d.time
+    merged.altitude = d.altitude
+    return merged
+
 def merge_station_data(stats, var_name, pref_attr=None,
                        sort_by_largest=True, fill_missing_nan=True,
-                       add_meta_keys=None):
+                       add_meta_keys=None, resample_how=None,
+                       min_num_obs=None):
     """Merge multiple StationData objects (from one station) into one instance
 
     Note
     ----
-    - all input :class:`StationData` objects need to have same attributes\
-       ``station_name``, ``latitude``, ``longitude`` and ``altitude``
+    all input :class:`StationData` objects need to have same attributes
+    ``station_name``, ``latitude``, ``longitude`` and ``altitude``
 
     Parameters
     ----------
@@ -766,6 +830,20 @@ def merge_station_data(stats, var_name, pref_attr=None,
     add_meta_keys : str or list, optional
         additional non-standard metadata keys that are supposed to be
         considered for merging.
+    resample_how : str or dict, optional
+        in case input stations come in different frequencies they are merged
+        to the lowest common freq. This parameter can be used to control, which
+        aggregator(s) are to be used (e.g. mean, median).
+    min_num_obs : str or dict, optional
+        in case input stations come in different frequencies they are merged
+        to the lowest common freq. This parameter can be used to control minimum
+        number of observation constraints for the downsampling.
+
+    Returns
+    -------
+    StationData
+        merged data
+
     """
     if isinstance(var_name, list):
         if len(var_name) > 1:
@@ -777,62 +855,10 @@ def merge_station_data(stats, var_name, pref_attr=None,
     # revision and should be done in StationData.merge, also 3D vs 2D
     # should be handled by StationData directly...
     if not is_3d:
-        if pref_attr is not None:
-            stats.sort(key=lambda s: s[pref_attr])
-        else:
-            stats.sort(key=lambda s: len(s[var_name].dropna()))
-
-        if sort_by_largest:
-            stats = stats[::-1]
-
-        # remove first station from the list
-        merged = stats.pop(0)
-        for i, stat in enumerate(stats):
-            merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
+        merged = _merge_stats_3d(stats, var_name, add_meta_keys, has_errs)
     else:
-        from xarray import DataArray
-        dtime = []
-        for stat in stats:
-            _t = stat[var_name].index.unique()
-            if not len(_t) == 1:
-                raise NotImplementedError('So far, merging of profile data '
-                                          'requires that profile values are '
-                                          'sampled at the same time')
-            dtime.append(_t[0])
-        tidx = pd.DatetimeIndex(dtime)
-
-        # AeroCom default vertical grid
-        vert_grid = const.make_default_vert_grid()
-        _data = np.ones((len(vert_grid), len(tidx))) * np.nan
-        if has_errs:
-            _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
-
-        for i, stat in enumerate(stats):
-            if i == 0:
-                merged = stat
-            else:
-                merged.merge_meta_same_station(stat,
-                                               add_meta_keys=add_meta_keys)
-
-            _data[:, i] = np.interp(vert_grid, stat['altitude'],
-                                    stat[var_name].values)
-
-            if has_errs:
-                try:
-                    _data_err[:, i] = np.interp(vert_grid,
-                                                stat['altitude'],
-                                                stat.data_err[var_name])
-                except Exception:
-                    pass
-        _coords = {'time'     : tidx,
-                   'altitude' : vert_grid}
-
-        d = DataArray(data=_data, coords=_coords,
-                      dims=['altitude', 'time'], name=var_name)
-        d = d.sortby('time')
-        merged[var_name] = d
-        merged.dtime = d.time
-        merged.altitude = d.altitude
+        merged = _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr,
+                                 add_meta_keys, resample_how, min_num_obs)
 
     if fill_missing_nan:
         try:

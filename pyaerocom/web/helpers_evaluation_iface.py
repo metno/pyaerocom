@@ -1249,7 +1249,6 @@ def _get_jsdate(coldata):
 
 def _resample_time_coldata(coldata, freq, colstp):
     return coldata.resample_time(freq,
-                apply_constraints=colstp['apply_time_resampling_constraints'],
                 min_num_obs=colstp['min_num_obs'],
                 how=colstp['resample_how'],
                 colocate_time=colstp['colocate_time'],
@@ -1431,7 +1430,7 @@ def compute_json_files_from_colocateddata(coldata, obs_name,
         hm_data = hm_all['hourly']
         _add_entry_heatmap_json(hm_file_hourly, hm_data, web_iface_name, obs_var,
                                     vert_code, model_name, model_var)
-        
+
         const.print_log.info('Processing diurnal profiles')
         (ts_objs_weekly,
          ts_objs_weekly_reg) = _process_sites_weekly_ts(coldata, regions_how,

@@ -12,6 +12,7 @@ from iris.exceptions import UnitConversionError
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import xarray as xr
 
 from pyaerocom import const, logger, print_log
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
@@ -1647,18 +1648,15 @@ class GriddedData(object):
         data.check_dimcoords_tseries()
         return data
 
-    def _resample_time_xarray(self, to_ts_type, how, apply_constraints,
-                              min_num_obs):
-        import xarray as xarr
+    def _resample_time_xarray(self, to_ts_type, how, min_num_obs):
 
-        arr = xarr.DataArray.from_iris(self.cube)
+        arr = xr.DataArray.from_iris(self.cube)
         from_ts_type = self.ts_type
         try:
             rs = TimeResampler(arr)
             arr_out = rs.resample(to_ts_type,
                                   from_ts_type=from_ts_type,
                                   how=how,
-                                  apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
         except ValueError: # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
             arr['time'] = self.time_stamps()
@@ -1666,7 +1664,6 @@ class GriddedData(object):
             arr_out = rs.resample(to_ts_type,
                                   from_ts_type=from_ts_type,
                                   how=how,
-                                  apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
         data = GriddedData(arr_out.to_iris(),
                            check_unit=False,
@@ -1695,8 +1692,7 @@ class GriddedData(object):
         return data
 
     def resample_time(self, to_ts_type='monthly', how=None,
-                      apply_constraints=None, min_num_obs=None,
-                      use_iris=False):
+                      min_num_obs=None, use_iris=False):
         """Resample time to input resolution
 
         Parameters
@@ -1706,11 +1702,7 @@ class GriddedData(object):
             :attr:`IRIS_AGGREGATORS` in :mod:`helpers`, e.g. "monthly")
         how : str
             string specifying how the data is to be aggregated, default is mean
-        apply_constraints : bool, optional
-            if True, hierarchical resampling is applied using input
-            `min_num_obs` (if provided) or else, using constraints
-            specified in :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`
-        min_num_obs : dict or int, optinal
+        min_num_obs : dict or int, optional
             integer or nested dictionary specifying minimum number of
             observations required to resample from higher to lower frequency.
             For instance, if `input_data` is hourly and `to_ts_type` is
@@ -1741,27 +1733,21 @@ class GriddedData(object):
         if not self.has_time_dim:
             raise DataDimensionError('Require time dimension in GriddedData: '
                                      '{}'.format(self.short_str()))
-        if use_iris and not apply_constraints and how=='mean':
-            return self._resample_time_iris(to_ts_type)
-
-        try:
-            return self._resample_time_xarray(to_ts_type, how,
-                                              apply_constraints,
-                                              min_num_obs)
-        except NotImplementedError as e:
-            raise ResamplingError('Resampling of time in GriddedData failed '
-                                  'using xarray. Reason: {}. Please try again '
-                                  'with input arg use_iris=True'
-                                  .format(repr(e)))
-
-    def downscale_time(self, to_ts_type='monthly'):
-        msg = DeprecationWarning('This method is deprecated. Please use new '
-                                 'name resample_time')
-        print_log.warning(msg)
-        return self.resample_time(to_ts_type)
-
-    def add_aggregator(self, aggr_name):
-        raise NotImplementedError
+        if not use_iris:
+            try:
+                data = self._resample_time_xarray(to_ts_type, how,
+                                                  min_num_obs)
+            except NotImplementedError as e:
+                raise ResamplingError('Resampling of time in GriddedData failed '
+                                      'using xarray. Reason: {}. Please try again '
+                                      'with input arg use_iris=True'
+                                      .format(repr(e)))
+        else:
+            if min_num_obs is not None or how != 'mean':
+                raise ValueError('min_num_obs needs to be None and how needs '
+                                 'to be mean for the iris resampling routine')
+            data = self._resample_time_iris(to_ts_type)
+        return data
 
     def calc_area_weights(self):
         """Calculate area weights for grid"""
