@@ -5,7 +5,7 @@ import pytest
 import simplejson
 
 from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom import ColocatedData, Region
+from pyaerocom import ColocatedData, Region, const
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import get_all_default_region_ids
 from pyaerocom.web import AerocomEvaluation
@@ -241,7 +241,8 @@ def test_init_regions_web(coldata_tm5_aeronet,regions_how,raises,regnum):
     ])
 def test__apply_annual_constraint(coldata,which,raises,ncd,omc,mmc):
     cd = coldata[which]
-    yearly = cd.resample_time('yearly', inplace=False, colocate_time=False)
+    yearly = cd.resample_time('yearly', inplace=False, colocate_time=False,
+                              min_num_obs=const.OBS_MIN_NUM_RESAMPLE)
     with raises:
         result = h._apply_annual_constraint(cd.copy(), yearly)
         assert isinstance(cd, ColocatedData)
