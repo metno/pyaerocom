@@ -162,6 +162,18 @@ class StrType(Validator):
             raise ValueError(f'need str, got {val}')
         return val
 
+class StrWithDefault(Validator):
+    def __init__(self, default : str):
+        self.default = default
+
+    def validate(self, val):
+        if not isinstance(val, str):
+            if val is None:
+                val = self.default
+            else:
+                raise ValueError(f'need str or None, got {val}')
+        return val
+
 class DictType(Validator):
     def validate(self, val):
         if not isinstance(val, dict):

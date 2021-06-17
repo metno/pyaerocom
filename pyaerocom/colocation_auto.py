@@ -10,7 +10,9 @@ from pathlib import Path
 import pandas as pd
 import traceback
 
-from pyaerocom._lowlevel_helpers import (ConstrainedContainer, chk_make_subdir)
+from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
+                                         StrWithDefault,
+                                         chk_make_subdir)
 from pyaerocom import const
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
                                get_lowest_resolution, start_stop)
@@ -21,7 +23,6 @@ from pyaerocom.colocateddata import ColocatedData
 
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
-from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (ColocationError, DataCoverageError,
                                   DeprecationError)
 
@@ -182,6 +183,8 @@ class ColocationSetup(ConstrainedContainer):
     #: do not raise Exception if invalid item is attempted to be assigned
     #: (Overwritten from base class)
     CRASH_ON_INVALID = False
+
+    ts_type = StrWithDefault('monthly')
     def __init__(self, model_id=None, obs_id=None, obs_vars=None,
                  ts_type=None, start=None, stop=None, basedir_coldata=None,
                  save_coldata=False, **kwargs):
@@ -575,33 +578,6 @@ class Colocator(ColocationSetup):
             raise AttributeError('stop time is not set')
         return to_datestring_YYYYMMDD(to_pandas_timestamp(self.stop))
 
-    def read_model_data(self, var_name, **kwargs):
-        """Read model variable data based on colocation setup
-
-        Parameters
-        ----------
-        var_name : str
-            variable to be read
-
-        Returns
-        -------
-        GriddedData
-            variable data
-        """
-        return self._read_gridded(var_name,
-                                  is_model=True,
-                                  **kwargs)
-
-    def _filter_var_matches_varlist(self, vars_to_process, var_list) -> dict:
-        _vars_to_process = {}
-        if isinstance(var_list, str):
-            var_list = [var_list]
-        for var_name in var_list:
-            _subset = self._filter_var_matches_var_name(
-                vars_to_process, var_name)
-            _vars_to_process.update(**_subset)
-        return _vars_to_process
-
     def prepare_run(self, var_list : list = None) -> dict:
         """
         Prepare colocation run for current setup.
@@ -764,6 +740,16 @@ class Colocator(ColocationSetup):
                     valid.append(file)
 
         return valid
+
+    def _filter_var_matches_varlist(self, vars_to_process, var_list) -> dict:
+        _vars_to_process = {}
+        if isinstance(var_list, str):
+            var_list = [var_list]
+        for var_name in var_list:
+            _subset = self._filter_var_matches_var_name(
+                vars_to_process, var_name)
+            _vars_to_process.update(**_subset)
+        return _vars_to_process
 
     def _read_ungridded(self, var_name):
         """Helper to read UngriddedData
@@ -1023,12 +1009,6 @@ class Colocator(ColocationSetup):
         """
         Get *desired* reading frequency for gridded reading
 
-        The return value of this function is input to gridded reader
-        reading method, as is the value of :attr:`flex_ts_type`.
-        If :attr:`flex_ts_type` is False, then this will be
-        the colocation frequency :attr:`ts_type`. Else, it will be set to
-        `None` or to a value set via :attr:`model_ts_type_read`.
-
         Parameters
         ----------
         var_name : str
@@ -1044,25 +1024,26 @@ class Colocator(ColocationSetup):
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        str or None
+            frequency to be read.
 
         """
-        if not self.flex_ts_type:
-            # gridded data needs to be available in specified colocation
-            # resolution
-            return self.ts_type
-        if is_model:
-            ts_type_read = self.model_ts_type_read
-        else:
-            ts_type_read = self.obs_ts_type_read
-        if ts_type_read is None or isinstance(ts_type_read, str):
-            return ts_type_read
-        elif isinstance(ts_type_read, dict):
-            if var_name in ts_type_read:
-                return ts_type_read[var_name]
-            return None
-        raise ValueError(ts_type_read)
+        tst = self.ts_type # default
+        if is_model and self.model_ts_type_read is not None:
+            tst = self.model_ts_type_read
+        elif not is_model and self.obs_ts_type_read is not None:
+            tst = self.obs_ts_type_read
+        if isinstance(tst, dict):
+            if var_name in tst:
+                tst = tst[var_name]
+            else:
+                tst = self.ts_type
+        if not self.flex_ts_type and tst != self.ts_type:
+            raise ColocationError(f'flex_ts_type is deactivated and specified '
+                                  f'read frequency for {var_name} ({tst}) is '
+                                  f'differentfrom colocation output freq '
+                                  f'({self.ts_type})')
+        return tst
 
     def _read_gridded(self, var_name, is_model):
 
@@ -1217,63 +1198,6 @@ class Colocator(ColocationSetup):
             )
         return f'{name}.nc'
 
-    def _run_gridded_ungridded(self, model_var, obs_var):
-        """Analysis method for gridded vs. ungridded data"""
-        ts_type = self.ts_type
-        const.print_log.info(
-            f'Running {self.model_id} ({model_var}) vs. '
-            f'{self.obs_id} ({obs_var})'
-            )
-        model_data = self.get_model_data(model_var)
-        ts_type_src = model_data.ts_type
-        rshow = self._eval_resample_how(model_var, obs_var)
-        if ts_type is None:
-            # if colocation frequency is not specified
-            ts_type = ts_type_src
-
-        if TsType(ts_type_src) < TsType(ts_type):# < all_ts_types.index(ts_type_src):
-            const.print_log.info(
-                f'Updating ts_type from {ts_type} to {ts_type_src} '
-                f'(highest available in model {self.model_id})'
-                )
-            ts_type = ts_type_src
-
-        obs_data = self.get_obs_data(obs_var)
-        try:
-            baseyr = self.update_baseyear_gridded
-        except AttributeError:
-            baseyr = None
-        if self.model_use_climatology:
-            baseyr = self.start.year
-
-        coldata = colocate_gridded_ungridded(
-                gridded_data=model_data,
-                ungridded_data=obs_data,
-                ts_type=ts_type,
-                start=self.start,
-                stop=self.stop,
-                var_ref=obs_var,
-                filter_name=self.filter_name,
-                regrid_res_deg=self.regrid_res_deg,
-                harmonise_units=self.harmonise_units,
-                update_baseyear_gridded=baseyr,
-                min_num_obs=self.min_num_obs,
-                colocate_time=self.colocate_time,
-                use_climatology_ref=self.obs_use_climatology,
-                resample_how=rshow
-                )
-
-        coldata.data.attrs['model_name'] = self.get_model_name()
-        coldata.data.attrs['obs_name'] = self.get_obs_name()
-
-        if self.zeros_to_nan:
-            coldata = coldata.set_zeros_nan()
-        if self.model_to_stp:
-            coldata = correct_model_stp_coldata(coldata)
-        if self.save_coldata:
-            self._save_coldata(coldata)
-        return coldata
-
     def _get_colocation_ts_type(self, model_ts_type, obs_ts_type=None):
         chk = [self.ts_type, model_ts_type]
         if obs_ts_type is not None:
@@ -1301,12 +1225,11 @@ class Colocator(ColocationSetup):
         model_data = self.get_model_data(model_var)
         obs_data = self.get_obs_data(obs_var)
         rshow = self._eval_resample_how(model_var, obs_var)
-        try:
-            baseyr = self.update_baseyear_gridded
-        except AttributeError:
-            baseyr = None
+
         if self.model_use_climatology:
             baseyr = self.start.year
+        else:
+            baseyr = None
         # input args shared between all colocation functions
         args = dict(
             data=model_data,

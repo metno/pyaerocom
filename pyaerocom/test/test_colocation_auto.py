@@ -11,29 +11,29 @@ from pyaerocom.io.aux_read_cubes import add_cubes
 HOME = os.path.expanduser('~')
 COL_OUT_DEFAULT = os.path.join(HOME, 'MyPyaerocom/colocated_data')
 
-default_setup = {'save_coldata': True, '_obs_cache_only': False,
-                 'obs_vars': None, 'obs_vert_type': None,
-                 'model_vert_type_alt': None, 'read_opts_ungridded': None,
-                 'obs_ts_type_read': None, 'model_use_vars': None,
-                 'model_add_vars': None, 'model_to_stp': False,
-                 'model_id': None, 'model_name': None, 'model_data_dir': None,
-                 'obs_id': None, 'obs_name': None, 'obs_data_dir': None,
-                 'obs_use_climatology': False,
+default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': None,
+                 'ts_type': 'monthly', 'start': None, 'stop': None,
+                 'filter_name': 'WORLD-wMOUNTAINS',
+                 'basedir_coldata': COL_OUT_DEFAULT, 'save_coldata': False,
+                 'obs_name': None, 'obs_data_dir': None,
+                 'obs_use_climatology': False, '_obs_cache_only': False,
+                 'obs_vert_type': None, 'obs_ts_type_read': None,
+                 'obs_filters': {}, 'model_name': None,
+                 'model_data_dir': None, 'model_vert_type_alt': None,
+                 'model_read_opts': {}, 'read_opts_ungridded': {},
+                 'model_use_vars': {}, 'model_rename_vars': {},
+                 'model_add_vars': {}, 'model_to_stp': False,
+                 'model_ts_type_read': None, 'model_read_aux': {},
+                 'model_use_climatology': False,
                  'gridded_reader_id': {'model': 'ReadGridded', 'obs': 'ReadGridded'},
-                 'start': None, 'stop': None, 'ts_type': None,
-                 'filter_name': None,
-                 'min_num_obs': None, 'resample_how': None,
-                 'remove_outliers': False, 'model_remove_outliers': False,
-                 'obs_outlier_ranges': None, 'model_outlier_ranges': None,
-                 'harmonise_units': False, 'vert_scheme': None,
-                 'regrid_res_deg': None, 'ignore_station_names': None,
-                 'basedir_coldata': COL_OUT_DEFAULT,
-                 'model_ts_type_read': None, 'model_read_aux': None,
-                 'model_use_climatology': False, 'colocate_time': False,
-                 'flex_ts_type': True, 'reanalyse_existing': False,
-                 'raise_exceptions': False,
-                 'model_read_opts':None, 'model_rename_vars':{}
-                 }
+                 'flex_ts_type': True, 'apply_time_resampling_constraints': True,
+                 'min_num_obs': None, 'resample_how': 'mean',
+                 'obs_remove_outliers': False, 'model_remove_outliers': False,
+                 'zeros_to_nan': False, 'obs_outlier_ranges': {},
+                 'model_outlier_ranges': {}, 'harmonise_units': False,
+                 'regrid_res_deg': 5, 'colocate_time': False,
+                 'reanalyse_existing': False, 'raise_exceptions': False,
+                 'keep_data': True, 'add_meta': {}}
 
 @testdata_unavail
 @pytest.fixture(scope='function')
@@ -68,9 +68,17 @@ def test_colocator(col):
     col.obs_vars = 'var'
     assert isinstance(col.obs_vars, str)
 
+def test_add_attr(col):
+    col.bla = 'blub'
+    col['blub'] = 42
+
+    assert col.bla == 'blub'
+    assert not 'blub' in col
+
 @pytest.mark.parametrize('ts_type_desired, ts_type, flex, raises', [
     ('minutely', 'daily', False, pytest.raises(ColocationError)),
-    ('daily', 'monthly', False, does_not_raise_exception()),
+    ('daily', 'monthly', False, pytest.raises(ColocationError)),
+    ('monthly', 'monthly', False, does_not_raise_exception()),
     ])
 def test_colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
                                       ts_type, flex, raises):
@@ -84,10 +92,10 @@ def test_colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
     # from obs_data.contains_dataset[0]...
     col.model_ts_type_read = {obs_var : ts_type_desired}
     with raises:
-        data = col._run_gridded_ungridded()
+        data = col.run()
         assert isinstance(data, dict)
         assert obs_var in data
-        coldata = data[obs_var]
+        coldata = data[obs_var][obs_var]
         assert coldata.ts_type == ts_type
         assert coldata.meta['ts_type_src'][0] == 'daily'
         if not flex:
@@ -100,11 +108,11 @@ def test_colocator_model_add_vars(tm5_aero_stp):
     col.save_coldata = False
     # Problem with saving since obs_id is different
 
-    col.model_add_vars = {obs_var : model_var}
-    data = col._run_gridded_ungridded(var_name=model_var)
+    col.model_add_vars = {obs_var : [model_var]}
+    data = col.run(var_name=model_var)
     assert isinstance(data, dict)
     assert model_var in data
-    coldata = data[model_var]
+    coldata = data[model_var][obs_var]
     assert coldata.var_name == ['od550aer', 'abs550aer']
 
 def test_colocator_init_basedir_coldata(tmpdir):
@@ -112,16 +120,17 @@ def test_colocator_init_basedir_coldata(tmpdir):
     Colocator(raise_exceptions=True, basedir_coldata=basedir)
     assert os.path.isdir(basedir)
 
-@testdata_unavail
-def test_colocator__coldata_savename(data_tm5):
+def test_colocator__coldata_savename():
     col = Colocator(raise_exceptions=True)
     col.obs_name = 'obs'
     col.model_name = 'model'
-    col.ts_type = 'monthly'
     col.filter_name = 'WORLD'
-    savename = col._coldata_savename(data_tm5)
+    col.start=2015
+    col._check_set_start_stop()
+    savename = col._coldata_savename('od550aer', 'od550ss', 'daily')
     assert isinstance(savename, str)
-    assert savename == 'od550aer_REF-obs_MOD-model_20100101_20101231_monthly_WORLD.nc'
+    n =  'od550ss_od550aer_MOD-model_REF-obs_20150101_20151231_daily_WORLD.nc'
+    assert savename == n
 
 
 def test_colocator_update_basedir_coldata(tmpdir):
@@ -133,22 +142,17 @@ def test_colocator_update_basedir_coldata(tmpdir):
     assert os.path.isdir(basedir)
 
 @pytest.mark.parametrize('what,raises', [
-    (dict(blaa=42), does_not_raise_exception()),
+    (dict(blaa=42), pytest.raises(KeyError)),
     (dict(obs_id='test', model_id='test'), does_not_raise_exception()),
     (dict(gridded_reader_id='test'), pytest.raises(ValueError)),
     (dict(gridded_reader_id={'test' : 42}), does_not_raise_exception()),
     ])
 def test_colocator_update(what,raises):
-    colref = Colocator(raise_exceptions=True)
     col = Colocator(raise_exceptions=True)
     with raises:
         col.update(**what)
         for key, val in what.items():
-            if key in colref and isinstance(colref[key], dict):
-                colref[key].update(val)
-                assert col[key] == colref[key]
-            else:
-                assert col[key] == val
+            assert col[key] == val
 
 
 @pytest.mark.parametrize('gridded_gridded', [False, True])
@@ -157,23 +161,17 @@ def test_colocator_run(tm5_aero_stp, gridded_gridded):
     if gridded_gridded:
         col.obs_id = col.model_id
     col.run()
-    coldata = col.data[col.model_id][col.obs_vars[0]]
+    var = col.obs_vars[0]
+    coldata = col.data[var][var]
     assert isinstance(coldata, ColocatedData)
-
-def test_colocator__run_gridded_ungridded(tm5_aero_stp):
-    col = Colocator(**tm5_aero_stp)
-    data = col._run_gridded_ungridded()
-    for ovar in col.obs_vars:
-        assert ovar in data
-        assert isinstance(data[ovar], ColocatedData)
 
 def test_colocator__run_gridded_gridded(tm5_aero_stp):
     col = Colocator(**tm5_aero_stp)
     col.obs_id = col.model_id
     ovar = col.obs_vars[0]
-    data = col._run_gridded_gridded(ovar)
+    data = col.run(ovar)
     assert ovar in data
-    assert isinstance(data[ovar], ColocatedData)
+    assert isinstance(data[ovar][ovar], ColocatedData)
     assert isinstance(col.data, dict)
     assert col.data == {}
 
@@ -208,11 +206,11 @@ def test_colocator_read_ungridded():
     with pytest.raises(DataCoverageError):
         data = col.read_ungridded()
 
-def test_colocator_read_model_data():
+def test_colocator_get_model_data():
     col = Colocator(raise_exceptions=True)
     model_id = 'TM5-met2010_CTRL-TEST'
     col.model_id = model_id
-    data = col.read_model_data('od550aer')
+    data = col.get_model_data('od550aer')
     assert isinstance(data, GriddedData)
 
 def test_colocator_call():
