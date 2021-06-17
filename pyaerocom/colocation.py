@@ -641,8 +641,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
     data = data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
-        data = _regrid_gridded(data, regrid_scheme,
-                                       regrid_res_deg)
+        data = _regrid_gridded(data, regrid_scheme, regrid_res_deg)
 
     ts_type_src_data = data.ts_type
     ts_type, ts_type_data = _check_ts_type(data, ts_type)
@@ -671,7 +670,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
     data_ref = data_ref.filter_by_meta(latitude=lat_range,
-                                                   longitude=lon_range)
+                                       longitude=lon_range)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
@@ -693,7 +692,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                                    .format(var_ref, start, stop))
 
     grid_stat_data = data.to_time_series(longitude=ungridded_lons,
-                                                 latitude=ungridded_lats)
+                                         latitude=ungridded_lats)
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)

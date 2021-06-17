@@ -167,6 +167,8 @@ class GriddedData(object):
             raise ValueError('Invalid input for var_name, need str, got {}'
                              .format(val))
         self.grid.var_name = val
+        if 'var_name' in self.metadata:
+            self.metadata['var_name'] = val
 
     @property
     def var_name_aerocom(self):

@@ -938,7 +938,7 @@ def calc_climatology(s, start, stop, min_count=None,
     Returns
     -------
     DataFrame
-        dataframe containing climatological mean and median timeseries as
+        dataframe containing climatological timeseries as
         well as columns std and count
     """
     if not isinstance(start, pd.Timestamp):
@@ -964,8 +964,7 @@ def calc_climatology(s, start, stop, min_count=None,
     clim.set_index(pd.DatetimeIndex(idx), inplace=True)
     if min_count is not None:
         mask = clim['numobs'] < min_count
-        clim['data'][mask] = np.nan
-        #mean[num < min_num_obs] = np.nan
+        clim.loc[mask, 'data'] = np.nan
     return clim
 
 def resample_timeseries(ts, freq, how='mean', min_num_obs=None):

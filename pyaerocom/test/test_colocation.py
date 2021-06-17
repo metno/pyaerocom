@@ -46,11 +46,11 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
 
 def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     data = data_tm5.copy()
-    data.var_name='Blaaa'
+    data.var_name='od550bc'
     coldata = colocate_gridded_ungridded(data, aeronetsunv3lev2_subset,
                                          var_ref='od550aer')
 
-    assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
+    assert coldata.metadata['var_name'] == ['od550aer', 'od550bc']
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
