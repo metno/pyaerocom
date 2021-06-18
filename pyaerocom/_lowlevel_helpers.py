@@ -181,12 +181,14 @@ class DictType(Validator):
         return val
 
 class FlexList(Validator):
-    """list that can be instantated via input str, tuple or list"""
+    """list that can be instantated via input str, tuple or list or None"""
     def validate(self, val):
         if isinstance(val, str):
             val = [val]
         elif isinstance(val, tuple):
             val = list(val)
+        elif val is None:
+            val = []
         elif not isinstance(val, list):
             raise ValueError(f'failed to convert {val} to list')
         return val

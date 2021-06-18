@@ -11,7 +11,7 @@ from pyaerocom.io.aux_read_cubes import add_cubes
 HOME = os.path.expanduser('~')
 COL_OUT_DEFAULT = os.path.join(HOME, 'MyPyaerocom/colocated_data')
 
-default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': None,
+default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': [],
                  'ts_type': 'monthly', 'start': None, 'stop': None,
                  'filter_name': 'WORLD-wMOUNTAINS',
                  'basedir_coldata': COL_OUT_DEFAULT, 'save_coldata': False,
@@ -52,6 +52,7 @@ def tm5_aero_stp():
 def col():
     return Colocator(raise_exceptions=True, reanalyze_existing=True)
 
+
 @pytest.mark.parametrize('stp,should_be', [
     (ColocationSetup(), default_setup)
     ])
@@ -63,10 +64,12 @@ def test_colocation_setup(stp, should_be):
         else:
             assert val == stp[key], key
 
+
 def test_colocator(col):
     assert isinstance(col, Colocator)
     col.obs_vars = 'var'
-    assert isinstance(col.obs_vars, str)
+    assert col.obs_vars == ['var']
+
 
 def test_add_attr(col):
     col.bla = 'blub'
@@ -74,6 +77,7 @@ def test_add_attr(col):
 
     assert col.bla == 'blub'
     assert not 'blub' in col
+
 
 @pytest.mark.parametrize('ts_type_desired, ts_type, flex, raises', [
     ('minutely', 'daily', False, pytest.raises(ColocationError)),
@@ -101,6 +105,7 @@ def test_colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
         if not flex:
             assert coldata.meta['ts_type_src'][1] == ts_type_desired
 
+
 def test_colocator_model_add_vars(tm5_aero_stp):
     col = Colocator(**tm5_aero_stp)
     model_var = 'abs550aer'
@@ -115,10 +120,20 @@ def test_colocator_model_add_vars(tm5_aero_stp):
     coldata = data[model_var][obs_var]
     assert coldata.var_name == ['od550aer', 'abs550aer']
 
+
 def test_colocator_init_basedir_coldata(tmpdir):
     basedir = os.path.join(tmpdir, 'basedir')
     Colocator(raise_exceptions=True, basedir_coldata=basedir)
     assert os.path.isdir(basedir)
+
+
+def test_colocator__infer_start_stop_yr_from_model_reader():
+    col = Colocator()
+    col.model_id = 'TM5-met2010_CTRL-TEST'
+    col._infer_start_stop_yr_from_model_reader()
+    assert col.start == 2010
+    assert col.stop == None
+
 
 def test_colocator__coldata_savename():
     col = Colocator(raise_exceptions=True)
@@ -133,6 +148,13 @@ def test_colocator__coldata_savename():
     assert savename == n
 
 
+def test_colocator_basedir_coldata(tmpdir):
+    basedir = os.path.join(tmpdir, 'test')
+    col = Colocator(raise_exceptions=True)
+    col.basedir_coldata = basedir
+    assert not os.path.isdir(basedir)
+
+
 def test_colocator_update_basedir_coldata(tmpdir):
     col = Colocator(raise_exceptions=True)
 
@@ -140,6 +162,7 @@ def test_colocator_update_basedir_coldata(tmpdir):
     assert not os.path.isdir(basedir)
     col.update(basedir_coldata=basedir)
     assert os.path.isdir(basedir)
+
 
 @pytest.mark.parametrize('what,raises', [
     (dict(blaa=42), pytest.raises(KeyError)),
@@ -158,34 +181,22 @@ def test_colocator_update(what,raises):
 @pytest.mark.parametrize('gridded_gridded', [False, True])
 def test_colocator_run(tm5_aero_stp, gridded_gridded):
     col = Colocator(**tm5_aero_stp)
+    ndim = 3
     if gridded_gridded:
         col.obs_id = col.model_id
+        ndim = 4
     col.run()
     var = col.obs_vars[0]
     coldata = col.data[var][var]
     assert isinstance(coldata, ColocatedData)
+    assert coldata.ndim == ndim
 
-def test_colocator__run_gridded_gridded(tm5_aero_stp):
-    col = Colocator(**tm5_aero_stp)
-    col.obs_id = col.model_id
-    ovar = col.obs_vars[0]
-    data = col.run(ovar)
-    assert ovar in data
-    assert isinstance(data[ovar][ovar], ColocatedData)
-    assert isinstance(col.data, dict)
-    assert col.data == {}
 
 def test_colocator_filter_name():
     with does_not_raise_exception():
-        Colocator(filter_name='WORLD')
-    with pytest.raises(Exception):
-        Colocator(filter_name='invalid')
+        col = Colocator(filter_name='WORLD')
+        assert col.filter_name == 'WORLD'
 
-def test_colocator_basedir_coldata(tmpdir):
-    basedir = os.path.join(tmpdir, 'test')
-    col = Colocator(raise_exceptions=True)
-    col.basedir_coldata = basedir
-    assert not os.path.isdir(basedir)
 
 def test_colocator_read_ungridded():
     col = Colocator(raise_exceptions=True)
@@ -193,18 +204,16 @@ def test_colocator_read_ungridded():
     obs_var = 'od550aer'
     col.obs_filters = {'longitude' : [-30, 30]}
     col.obs_id = obs_id
-    col.read_opts_ungridded = {'last_file' : 10}
+    col.read_opts_ungridded = {'last_file' : 1}
 
-    data = col.read_ungridded(obs_var)
+    data = col._read_ungridded(obs_var)
     assert isinstance(data, UngriddedData)
+    assert len(data.metadata) == 1
 
-    col.read_opts_ungridded = None
-    col.obs_vars = ['od550aer']
-    with does_not_raise_exception():
-        data = col.read_ungridded()
     col.obs_vars = ['invalid']
-    with pytest.raises(DataCoverageError):
-        data = col.read_ungridded()
+    with pytest.raises(ValueError):
+        data = col._read_ungridded('invalid')
+
 
 def test_colocator_get_model_data():
     col = Colocator(raise_exceptions=True)
@@ -213,108 +222,33 @@ def test_colocator_get_model_data():
     data = col.get_model_data('od550aer')
     assert isinstance(data, GriddedData)
 
-def test_colocator_call():
-    col = Colocator(raise_exceptions=True)
-    with pytest.raises(NotImplementedError):
-        col()
 
-def test_colocator__infer_start_stop():
+def test_colocator__find_var_matches():
     col = Colocator()
-    reader = ReadGridded('TM5-met2010_CTRL-TEST')
-    col._infer_start_stop(reader)
-    assert col.start == 2010
-    assert col.stop == None
-
-def test_colocator_with_obs_data_dir_ungridded():
-    col = Colocator(save_coldata=False)
     col.model_id='TM5-met2010_CTRL-TEST'
     col.obs_id='AeronetSunV3L2Subset.daily'
     col.obs_vars='od550aer'
-    col.ts_type='monthly'
-    col.apply_time_resampling_constraints = False
 
-    aeronet_loc = tda.ADD_PATHS['AeronetSunV3L2Subset.daily']
-    col.obs_data_dir = tda.testdatadir.joinpath(aeronet_loc)
-
-    data = col._run_gridded_ungridded()
-    assert len(data) == 1
-    cd = data['od550aer']
-    assert isinstance(cd, ColocatedData)
-    assert cd.ts_type=='monthly'
-    assert str(cd.start) == '2010-01-15T00:00:00.000000000'
-    assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
-
-def test_colocator_with_model_data_dir_ungridded():
-    col = Colocator(save_coldata=False)
-    col.model_id='TM5-met2010_CTRL-TEST'
-    col.obs_id='AeronetSunV3L2Subset.daily'
-    col.obs_vars='od550aer'
-    col.ts_type='monthly'
-    col.apply_time_resampling_constraints = False
-
-    model_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
-    col.model_data_dir = tda.testdatadir.joinpath(model_dir)
-
-    data = col._run_gridded_ungridded()
-    assert len(data) == 1
-    cd = data['od550aer']
-    assert isinstance(cd, ColocatedData)
-    assert cd.ts_type=='monthly'
-    assert str(cd.start) == '2010-01-15T00:00:00.000000000'
-    assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
-
-def test_colocator_with_obs_data_dir_gridded():
-    col = Colocator(save_coldata=False)
-    col.model_id='TM5-met2010_CTRL-TEST'
-    col.obs_id='TM5-met2010_CTRL-TEST'
-    col.obs_vars='od550aer'
-    col.ts_type='monthly'
-    col.apply_time_resampling_constraints = False
-
-    obs_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
-    col.obs_data_dir=str(tda.testdatadir.joinpath(obs_dir))
-
-    data = col._run_gridded_gridded()
-    assert len(data) == 1
-    cd = data['od550aer']
-    assert isinstance(cd, ColocatedData)
-    assert cd.ts_type=='monthly'
-    assert str(cd.start) == '2010-01-15T00:00:00.000000000'
-    assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
-
-def test_colocator__find_var_matches(col):
-    r = ReadGridded('TM5-met2010_CTRL-TEST')
-    with pytest.raises(DataCoverageError):
-        col._find_var_matches('invalid', r)
-    var_matches = col._find_var_matches('od550aer', r)
+    var_matches = col._find_var_matches()
     assert var_matches == {'od550aer': 'od550aer'}
 
-    obs_vars = 'conco3'
-    col.obs_vars = [obs_vars]
-    col.model_use_vars = {obs_vars : 'od550aer'}
-    var_matches = col._find_var_matches('conco3', r)
+    obs_var = 'conco3'
+    col.obs_vars = [obs_var]
+    col.model_use_vars = {obs_var : 'od550aer'}
+    var_matches = col._find_var_matches()
     assert var_matches == {'od550aer' : 'conco3'}
 
-def test_colocator__find_var_matches_model_add_vars(col):
-    r = ReadGridded('TM5-met2010_CTRL-TEST')
-    model_var = 'abs550aer'
-    obs_var = 'od550aer'
-    col.model_add_vars = {obs_var:model_var}
-    var_matches = col._find_var_matches(obs_var, r)
-    assert var_matches == {model_var:obs_var, obs_var:obs_var}
 
-def test_model_add_vars(tm5_aero_stp):
-    col = Colocator(**tm5_aero_stp)
-    model_var = 'abs550aer'
-    obs_var = 'od550aer'
-    col.model_add_vars = {obs_var:model_var}
-    model_reader = ReadGridded(col.model_id)
-    var_matches = col._check_model_add_var(obs_var, model_reader, {})
-    assert var_matches == {model_var: obs_var}
-    var_matches = col._find_var_matches([obs_var], model_reader)
-    assert len(var_matches) == 2
-    assert (model_var in var_matches)
-    assert (obs_var in var_matches)
+def test_colocator__find_var_matches_model_add_vars():
+    col = Colocator()
+    col.model_id='TM5-met2010_CTRL-TEST'
+    col.obs_id='AeronetSunV3L2Subset.daily'
+    ovar = 'od550aer'
+    col.obs_vars=[ovar]
+
+    col.model_add_vars = {ovar : ['abs550aer']}
+    var_matches = col._find_var_matches()
+    assert var_matches == {'abs550aer':ovar, ovar:ovar}
 
 
 @testdata_unavail
@@ -323,7 +257,7 @@ def test_colocator_instantiate_gridded_reader(path_emep):
     col.filepath = path_emep['daily']
     model_id = 'model'
     col.model_id = model_id
-    r = col.instantiate_gridded_reader(what='model')
+    r = col._instantiate_gridded_reader(what='model')
     assert isinstance(r, ReadMscwCtm)
     assert r.filepath == col.filepath
     assert r.data_id == model_id
@@ -336,7 +270,7 @@ def test_colocator_instantiate_gridded_reader_model_data_dir(path_emep):
     col.model_data_dir = path_emep['data_dir']
     model_id = 'model'
     col.model_id = model_id
-    r = col.instantiate_gridded_reader(what='model')
+    r = col._instantiate_gridded_reader(what='model')
     assert isinstance(r, ReadMscwCtm)
     assert r.data_dir == model_data_dir
     assert r.data_id == model_id
@@ -348,15 +282,74 @@ def test_colocator__get_gridded_reader_class():
     for what in ['model', 'obs']:
         assert col._get_gridded_reader_class(what=what) == ReadMscwCtm
 
+
 def test_colocator__check_add_model_read_aux():
-    coloc = Colocator(raise_exceptions=True)
-    r = ReadGridded('TM5-met2010_CTRL-TEST')
-    assert not coloc._check_add_model_read_aux('od550aer', r)
-    coloc.model_read_aux = {
+    col = Colocator(raise_exceptions=True)
+    col.model_id='TM5-met2010_CTRL-TEST'
+    assert not col._check_add_model_read_aux('od550aer')
+    col.model_read_aux = {
         'od550aer' : dict(
             vars_required=['od550aer', 'od550aer'],
             fun=add_cubes)}
-    assert coloc._check_add_model_read_aux('od550aer', r)
+    assert col._check_add_model_read_aux('od550aer')
+
+
+def test_colocator_with_obs_data_dir_ungridded():
+    col = Colocator(save_coldata=False)
+    col.model_id='TM5-met2010_CTRL-TEST'
+    col.obs_id='AeronetSunV3L2Subset.daily'
+    col.obs_vars='od550aer'
+    col.ts_type='monthly'
+
+    aeronet_loc = tda.ADD_PATHS['AeronetSunV3L2Subset.daily']
+    col.obs_data_dir = tda.testdatadir.joinpath(aeronet_loc)
+
+    data = col.run()
+    assert len(data) == 1
+    cd = data['od550aer']['od550aer']
+    assert isinstance(cd, ColocatedData)
+    assert cd.ts_type=='monthly'
+    assert str(cd.start) == '2010-01-15T00:00:00.000000000'
+    assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
+
+
+def test_colocator_with_model_data_dir_ungridded():
+    col = Colocator(save_coldata=False)
+    col.model_id='TM5-met2010_CTRL-TEST'
+    col.obs_id='AeronetSunV3L2Subset.daily'
+    col.obs_vars='od550aer'
+    col.ts_type='monthly'
+
+    model_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
+    col.model_data_dir = tda.testdatadir.joinpath(model_dir)
+
+    data = col.run()
+    assert len(data) == 1
+    cd = data['od550aer']['od550aer']
+    assert isinstance(cd, ColocatedData)
+    assert cd.ts_type=='monthly'
+    assert str(cd.start) == '2010-01-15T00:00:00.000000000'
+    assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
+
+
+def test_colocator_with_obs_data_dir_gridded():
+    col = Colocator(save_coldata=False)
+    col.model_id='TM5-met2010_CTRL-TEST'
+    col.obs_id='TM5-met2010_CTRL-TEST'
+    col.obs_vars='od550aer'
+    col.ts_type='monthly'
+
+    obs_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
+    col.obs_data_dir=str(tda.testdatadir.joinpath(obs_dir))
+
+    data = col.run()
+    assert len(data) == 1
+    cd = data['od550aer']['od550aer']
+    assert isinstance(cd, ColocatedData)
+    assert cd.ts_type=='monthly'
+    assert str(cd.start) == '2010-01-15T12:00:00.000000000'
+    assert str(cd.stop) == '2010-12-15T12:00:00.000000000'
+
 
 if __name__ == '__main__':
     import sys

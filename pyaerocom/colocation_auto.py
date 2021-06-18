@@ -12,6 +12,7 @@ import traceback
 
 from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
                                          StrWithDefault,
+                                         ListOfStrings,
                                          chk_make_subdir)
 from pyaerocom import const
 from pyaerocom.helpers import (to_pandas_timestamp, to_datestring_YYYYMMDD,
@@ -185,6 +186,7 @@ class ColocationSetup(ConstrainedContainer):
     CRASH_ON_INVALID = False
 
     ts_type = StrWithDefault('monthly')
+    obs_vars = ListOfStrings()
     def __init__(self, model_id=None, obs_id=None, obs_vars=None,
                  ts_type=None, start=None, stop=None, basedir_coldata=None,
                  save_coldata=False, **kwargs):
@@ -867,11 +869,6 @@ class Colocator(ColocationSetup):
                 raise ValueError(
                     'Values of model_add_vars need to be list of strings')
 
-    def _check_set_start_stop(self):
-        if self.start is None:
-            self._infer_start_stop()
-        self.start, self.stop = start_stop(self.start, self.stop)
-
     def _instantiate_gridded_reader(self, what):
         """
         Create reader for model or observational gridded data.
@@ -1173,17 +1170,27 @@ class Colocator(ColocationSetup):
         else:
             return None
 
-    def _infer_start_stop(self):
+
+    def _infer_start_stop_yr_from_model_reader(self):
         """
-        Infer start / stop for colocation from gridded model reader
+        Infer start / stop year for colocation from gridded model reader
+
+        Sets :attr:`start` and :attr:`stop`
+
         """
         yrs_avail = self.model_reader.years_avail
         first, last = yrs_avail[0], yrs_avail[-1]
+        if first == last:
+            last = None
         self.start = first
-        if last > first:
-            self.stop = last
-        elif self.stop is not None:
-            self.stop = None
+        self.stop = last
+
+
+    def _check_set_start_stop(self):
+        if self.start is None:
+            self._infer_start_stop_yr_from_model_reader()
+        self.start, self.stop = start_stop(self.start, self.stop)
+
 
     def _coldata_savename(self, obs_var, mod_var, ts_type):
         """Get filename of colocated data file for saving
@@ -1197,6 +1204,7 @@ class Colocator(ColocationSetup):
             filter_name=self.filter_name
             )
         return f'{name}.nc'
+
 
     def _get_colocation_ts_type(self, model_ts_type, obs_ts_type=None):
         chk = [self.ts_type, model_ts_type]
