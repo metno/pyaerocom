@@ -967,7 +967,7 @@ def calc_climatology(s, start, stop, min_count=None,
         clim.loc[mask, 'data'] = np.nan
     return clim
 
-def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
+def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     """Resample a timeseries (pandas.Series)
 
     Parameters
@@ -977,9 +977,12 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
     freq : str
         new temporal resolution (can be pandas freq. string, or pyaerocom
         ts_type)
-    how : str
-        choose from mean or median
-    min_num_obs : :obj:`int`, optional
+    how
+        aggregator to be used, accepts everything that is accepted by
+        :func:`pandas.core.resample.Resampler.agg` and in addition,
+        percentiles may be provided as str using e.g. 75percentile as input for
+        the 75% percentile.
+    min_num_obs : int, optional
         minimum number of observations required per period (when downsampling).
         E.g. if input is in daily resolution and freq is monthly and
         min_num_obs is 10, then all months that have less than 10 days of data
@@ -990,14 +993,20 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
     Series
         resampled time series object
     """
+    if how is None:
+        how = 'mean'
+    elif 'percentile' in how:
+        p = int(how.split('percentile')[0])
+        how = lambda x: np.percentile(x, p)
+
     freq, loffset = _get_pandas_freq_and_loffset(freq)
-    resampler = ts.resample(freq)#, loffset=loffset)
-    if min_num_obs is None:
-        data = resampler.agg(how)
-    else:
-        df = resampler.agg([how, 'count'])
-        invalid = df['count'] < min_num_obs
-        data = df[how]
+    resampler = ts.resample(freq)
+
+    data = resampler.agg(how)
+    if min_num_obs is not None:
+        numobs = resampler.count()
+        #df = resampler.agg([how, 'count'])
+        invalid = numobs < min_num_obs
         if np.any(invalid):
             data.values[invalid] = np.nan
     if loffset is not None:
