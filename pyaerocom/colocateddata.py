@@ -276,12 +276,24 @@ class ColocatedData(object):
         data_source dimension).
         """
         obj = self.flatten_latlondim_station_name() if self.has_latlon_dims else self
-        if not 'station_name' in obj.coords:
+        dims = obj.dims
+        if not 'station_name' in dims:
             raise DataDimensionError('Need dimension station_name')
         obs = obj.data[0]
-        if obj.has_time_dim:
-            return (obs.count(dim='time') > 0).data.sum()
-        return (~np.isnan(obs.data)).sum()
+        if len(dims) > 3: # additional dimensions
+            default_dims = ('data_source', 'time', 'station_name')
+            add_dims = tuple([x for x in dims if not x in default_dims])
+            raise DataDimensionError(
+                f'Can only unambiguously retrieve no of coords with obs data '
+                f'for colocated data with dims {default_dims}, please reduce '
+                f'dimensionality first by selecting or aggregating additional '
+                f'dimensions: {add_dims}')
+
+        if 'time' in dims:
+            val = (obs.count(dim='time') > 0).data.sum()
+        else:
+            val = (~np.isnan(obs.data)).sum()
+        return val
 
     @property
     def has_time_dim(self):
@@ -782,7 +794,11 @@ class ColocatedData(object):
         if use_area_weights and not 'weights' in kwargs and self.has_latlon_dims:
             kwargs['weights'] = self.area_weights[0].flatten()
 
-        nc, ncd = self.num_coords, self.num_coords_with_data
+        nc = self.num_coords
+        try:
+            ncd = self.num_coords_with_data
+        except DataDimensionError:
+            ncd = np.nan
         stats = calc_statistics(self.data.values[1].flatten(),
                                 self.data.values[0].flatten(),
                                 **kwargs)
@@ -791,7 +807,7 @@ class ColocatedData(object):
         stats['num_coords_with_data'] = ncd
         return stats
 
-    def calc_temporal_statistics(self,aggr=None,**kwargs):
+    def calc_temporal_statistics(self,aggr=None, **kwargs):
         """Calculate *temporal* statistics from model and obs data
 
         *Temporal* statistics is computed by averaging first the spatial
@@ -819,11 +835,15 @@ class ColocatedData(object):
         """
         if aggr is None:
             aggr = 'mean'
-        nc, ncd = self.num_coords, self.num_coords_with_data
-        if self.ndim == 3:
-            dim = 'station_name'
-        else:
+        nc = self.num_coords
+        try:
+            ncd = self.num_coords_with_data
+        except:
+            ncd = np.nan
+        if self.has_latlon_dims:
             dim = ('latitude', 'longitude')
+        else:
+            dim = 'station_name'
 
         if aggr == 'mean':
             arr = self.data.mean(dim=dim)
@@ -911,7 +931,10 @@ class ColocatedData(object):
             matplotlib axes instance
         """
         meta = self.metadata
-        num_points = self.num_coords_with_data
+        try:
+            num_points = self.num_coords_with_data
+        except DataDimensionError:
+            num_points = np.nan
         try:
             vars_ = meta['var_name']
         except KeyError:
@@ -937,6 +960,15 @@ class ColocatedData(object):
             unit = self.unitstr
         except KeyError:
             unit = 'N/D'
+        try:
+            start = self.start
+        except AttributeError:
+            start = 'N/D'
+
+        try:
+            stop = self.stop
+        except AttributeError:
+            stop = 'N/D'
 
         # ToDo: include option to use area weighted stats in plotting
         # routine...
@@ -946,8 +978,8 @@ class ColocatedData(object):
                             var_name_ref = var_ref,
                             x_name=xn,
                             y_name=yn,
-                            start=self.start,
-                            stop=self.stop,
+                            start=start,
+                            stop=stop,
                             unit=unit,
                             ts_type=tst,
                             stations_ok=num_points,
