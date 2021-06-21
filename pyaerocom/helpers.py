@@ -1013,7 +1013,7 @@ def resample_timeseries(ts, freq, how=None, min_num_obs=None):
         data.index = data.index + pd.Timedelta(loffset)
     return data
 
-def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
+def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
 
     Note
@@ -1028,8 +1028,8 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         new temporal resolution (can be pandas freq. string, or pyaerocom
         ts_type)
     how : str
-        choose from mean or median
-    min_num_obs : :obj:`int`, optional
+        how to aggregate (e.g. mean, median)
+    min_num_obs : int, optional
         minimum number of observations required per period (when downsampling).
         E.g. if input is in daily resolution and freq is monthly and
         min_num_obs is 10, then all months that have less than 10 days of data
@@ -1047,6 +1047,11 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     DataDimensionError
         if time dimension is not available in dataset
     """
+    if how is None:
+        how = 'mean'
+    elif 'percentile' in how:
+        raise NotImplementedError('percentile based resampling is not yet '
+                                  'available for xarray based data')
 
     if not isinstance(arr, xr.DataArray):
         raise IOError('Invalid input for arr: need DataArray, got {}'.format(type(arr)))

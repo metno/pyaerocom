@@ -173,6 +173,11 @@ class TimeResampler(object):
         if how is None:
             how = 'mean'
 
+        if how in self.AGGRS_UNIT_PRESERVE:
+            self._last_units_preserved = True
+        else:
+            self._last_units_preserved = False
+
         if not isinstance(to_ts_type, TsType):
             to_ts_type = TsType(to_ts_type)
 
@@ -196,8 +201,10 @@ class TimeResampler(object):
         self.last_setup = dict(min_num_obs=min_num_obs,
                                how=how)
 
-
-        if to_ts_type > from_ts_type:
+        if from_ts_type is None: # native == unknown
+            freq = to_ts_type.to_pandas_freq()
+            data_out = self.fun(self.input_data, freq=freq, how=how, **kwargs)
+        elif to_ts_type > from_ts_type:
             raise TemporalResolutionError('Cannot resample time-series from {} '
                                           'to {}'
                                           .format(from_ts_type, to_ts_type))
@@ -218,10 +225,7 @@ class TimeResampler(object):
                 raise ValueError('Temporal resampling without constraints can '
                                  'only use string type argument how (e.g. '
                                  'how=mean). Got {}'.format(how))
-            if how in self.AGGRS_UNIT_PRESERVE:
-                self._last_units_preserved = True
-            else:
-                self._last_units_preserved = False
+
             data_out = self.fun(self.input_data, freq=freq,
                                 how=how, **kwargs)
         else:

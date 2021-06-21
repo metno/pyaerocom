@@ -20,7 +20,6 @@ from pyaerocom.helpers import (isnumeric, isrange, calc_climatology,
                                to_datetime64)
 
 from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
-from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
 
 class StationData(StationMetaData):
     """Dict-like base class for single station data

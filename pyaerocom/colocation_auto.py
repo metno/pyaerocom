@@ -245,7 +245,6 @@ class ColocationSetup(ConstrainedContainer):
         self.flex_ts_type = True
 
         # Options related to time resampling
-        self.apply_time_resampling_constraints = True
         self.min_num_obs = None
         self.resample_how = 'mean'
 

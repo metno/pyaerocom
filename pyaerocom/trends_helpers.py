@@ -141,48 +141,18 @@ def _start_stop_period(period):
     y0, y1, = _years_from_periodstr(period)
     return (date(y0, 1, 1), date(y1, 12, 31))
 
-def _make_mobs_dataframe(monthly_series):
+def _seas_slice(yr, season):
+    pass
 
-    dates = monthly_series.index
 
-    #dates = pd.DatetimeIndex(index)
-    d = dict(date=dates,
-             value=monthly_series.values,
-             year=dates.year,
-             month=dates.month,
-             day=dates.day)
-
-    mobs = pd.DataFrame(d)
-
-    add_season = lambda row: _get_season(row['month'], row['year'])
-    # add season column to dataframe
-    mobs['season'] = mobs.apply(add_season, axis=1)
-
-    # remove all NaN values
-    mobs = mobs.dropna(subset=['value'])
-
-    return mobs
-
-def _init_period(mobs, start_year=None, stop_year=None):
-    yrs = sorted(np.unique(mobs['year']))
-    if start_year is None:
-        start_year = yrs[0]
-    if stop_year is None:
-        stop_year =  yrs[-1]
-    if stop_year < yrs[0] or start_year > yrs[-1]:
-        from pyaerocom.exceptions import TimeMatchError
-        raise TimeMatchError('Input period {}-{} is not covered by data ({}-{})'
-                             .format(start_year, stop_year, yrs[0],yrs[-1]))
-    pstr = '{}-{}'.format(int(start_year), int(stop_year))
-    return (start_year, stop_year, pstr, yrs)
-
-def _get_yearly(mobs, seas, yrs):
+def _get_yearly(data, seas):
     dates = []
     values = []
+    yrs = np.unique(data.index.year)
     for yr in yrs:
         dates.append(_mid_season(seas, yr))
         if seas == 'all': #yearly trends
-            subset = mobs[mobs['year'] == yr]
+            subset = data.loc[yr]
         else:
             subset = mobs[mobs['season'].str.contains('{}-{}'.format(seas, yr))]
         #needs 4 seasons to compute seasonal average to avoid biases
@@ -205,6 +175,7 @@ def _init_period_dates(start_year, stop_year, season):
 
     num_dates_period = period_index.values.astype('datetime64[Y]').astype(np.float64)
     return (start_date, stop_date, period_index, num_dates_period)
+
 
 if __name__ == '__main__':
     import pyaerocom as pya

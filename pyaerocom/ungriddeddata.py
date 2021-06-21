@@ -911,7 +911,7 @@ class UngriddedData(object):
                     continue
                 if freq is not None:
                     stat.resample_time(var, freq,
-                                       resample_how=resample_how,
+                                       how=resample_how,
                                        min_num_obs=min_num_obs,
                                        inplace=True)
                 elif insert_nans:
