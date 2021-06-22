@@ -64,12 +64,21 @@ def _compute_trend_error(m, m_err, v0, v0_err):
     delta_ref = m * v0_err / v0**2
     return np.sqrt(delta_sl**2 + delta_ref**2) * 100
 
-def _get_season(m, yr):
+def _get_season(mon):
+
     for seas, months in SEASONS.items():
-        if m in months:
-            return '{}-{}'.format(seas, int(yr))
-    raise ValueError('Failed to retrieve season for m={}, yr={}'
-                     .format(m, yr))
+        if mon in months:
+            return seas
+
+def _get_unique_seasons(idx):
+    seasons = []
+    mons = idx.month
+    for mon in mons:
+        seas = _get_season(mon)
+        if not seas in seasons:
+            seasons.append(seas)
+    return seasons
+
 
 def _mid_season(seas, yr):
     if seas=='spring':
@@ -83,6 +92,33 @@ def _mid_season(seas, yr):
     if seas=='all':
         return np.datetime64('{}-06-15'.format(yr))
     raise ValueError('Invalid input for season (seas):', seas)
+
+def _start_season(seas, yr):
+    if seas=='spring':
+        return '{}-03-01'.format(yr)
+    if seas=='summer':
+        return '{}-06-01'.format(yr)
+    if seas=='autumn':
+        return '{}-09-01'.format(yr)
+    if seas=='winter':
+        return '{}-12-01'.format(yr-1)
+    if seas=='all':
+        return '{}-01-01'.format(yr)
+    raise ValueError('Invalid input for season (seas):', seas)
+
+def _end_season(seas, yr):
+    if seas=='spring':
+        return '{}-06-01'.format(yr)
+    if seas=='summer':
+        return '{}-09-01'.format(yr)
+    if seas=='autumn':
+        return '{}-12-01'.format(yr)
+    if seas=='winter':
+        return '{}-03-01'.format(yr)
+    if seas=='all':
+        return '{}-01-01'.format(yr)
+    raise ValueError('Invalid input for season (seas):', seas)
+
 
 def _find_area(lat, lon, regions_dict=None):
     """Find area corresponding to input lat/lon coordinate
@@ -145,21 +181,38 @@ def _seas_slice(yr, season):
     pass
 
 
-def _get_yearly(data, seas):
+def _get_yearly(data, seas, start_yr):
     dates = []
     values = []
     yrs = np.unique(data.index.year)
     for yr in yrs:
-        dates.append(_mid_season(seas, yr))
+        if yr < start_yr: #winter
+            continue
+
         if seas == 'all': #yearly trends
-            subset = data.loc[yr]
+            subset = data.loc[str(yr)]
+
         else:
-            subset = mobs[mobs['season'].str.contains('{}-{}'.format(seas, yr))]
-        #needs 4 seasons to compute seasonal average to avoid biases
-        if seas=='all' and len(np.unique(subset['season'].values)) < 4:
-            values.append(np.nan)
+            start = _start_season(seas, yr)
+            stop = _end_season(seas, yr)
+            subset = data.loc[start:stop]
+
+        if len(subset) == 0:
+            val = np.nan
+        elif np.isnan(subset.values).all():
+            val = np.nan
+
+        elif seas=='all':
+            seasons = _get_unique_seasons(subset.index)
+            if len(seasons) == 4:
+                val = np.nanmean(subset.values)
+            else:
+                val = np.nan
         else:
-            values.append(np.nanmean(subset['value']))
+            val = np.nanmean(subset.values)
+
+        dates.append(_mid_season(seas, yr))
+        values.append(val)
 
     return pd.Series(values, index=dates)
 

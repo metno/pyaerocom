@@ -12,7 +12,8 @@ from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _compute_trend_error,
                                       _start_stop_period,
                                       _get_yearly,
-                                      _init_period_dates)
+                                      _init_period_dates,
+                                      _start_season)
 
 
 class TrendsEngine(object):
@@ -57,15 +58,14 @@ class TrendsEngine(object):
             raise ValueError(ts_type)
 
         result = _init_trends_result_dict(start_year)
+        start_str = _start_season(season, start_year)
+        stop_str = str(stop_year)
+        data = data.loc[start_str:stop_str]
 
-        data = data.loc[str(start_year):str(stop_year)]
+        result['period'] = f'{start_year}-{stop_year}'
+        result['season'] = season
         if len(data) == 0:
             return result
-
-        pstr = f'{start_year}-{stop_year}'
-
-        dates = data.index.values
-        values = data.values
 
         (start_date,
          stop_date,
@@ -73,7 +73,10 @@ class TrendsEngine(object):
          num_dates_period) = _init_period_dates(start_year, stop_year, season)
 
         if ts_type == 'monthly':
-            data = _get_yearly(data, season)
+            data = _get_yearly(data, season, start_year)
+
+        dates = data.index.values
+        values = data.values
 
 
         # get period filter mask
@@ -97,86 +100,88 @@ class TrendsEngine(object):
         #TODO: len(y) is number of years - 1 due to midseason averages
         result['n'] = len(vals)
 
-        if len(vals) > 2:
-            result['y_mean'] = np.nanmean(vals)
-            result['y_min'] = np.nanmin(vals)
-            result['y_max'] = np.nanmax(vals)
+        if not len(vals) >= min_num_yrs:
+            return result
 
-            #Mann / Kendall test
-            [tau, pval] = kendalltau(x=num_dates_data, y=vals)
+        result['y_mean'] = np.nanmean(vals)
+        result['y_min'] = np.nanmin(vals)
+        result['y_max'] = np.nanmax(vals)
 
-            (slope,
-             yoffs,
-             slope_low,
-             slope_up) = theilslopes(y=vals, x=num_dates_data,
-                                     alpha=slope_confidence)
+        #Mann / Kendall test
+        [tau, pval] = kendalltau(x=num_dates_data, y=vals)
 
-            # estimate error of slope at input confidence level
-            slope_err = np.mean([abs(slope - slope_low),
-                                 abs(slope - slope_up)])
+        (slope,
+         yoffs,
+         slope_low,
+         slope_up) = theilslopes(y=vals, x=num_dates_data,
+                                 alpha=slope_confidence)
 
-            reg_data = slope * num_dates_data + yoffs
-            reg_period = slope * num_dates_period  + yoffs
+        # estimate error of slope at input confidence level
+        slope_err = np.mean([abs(slope - slope_low),
+                             abs(slope - slope_up)])
 
-            # value used for normalisation of slope to compute trend T
-            # T=m / v0
-            v0_data = reg_data[0]
-            v0_period = reg_period[0]
+        reg_data = slope * num_dates_data + yoffs
+        reg_period = slope * num_dates_period  + yoffs
 
-            # Compute the mean residual value, which is used to estimate
-            # the uncertainty in the normalisation value used to compute
-            # trend
-            mean_residual = np.mean(np.abs(vals - reg_data))
+        # value used for normalisation of slope to compute trend T
+        # T=m / v0
+        v0_data = reg_data[0]
+        v0_period = reg_period[0]
 
-            # trend is slope normalised by first reference value.
-            # 2 trends are computed, 1. the trend using the first value of
-            # the regression line at the first available data year, 2. the
-            # trend corresponding to the value corresponding to the first
-            # year of the considered period.
+        # Compute the mean residual value, which is used to estimate
+        # the uncertainty in the normalisation value used to compute
+        # trend
+        mean_residual = np.mean(np.abs(vals - reg_data))
 
-            trend_data = slope / v0_data * 100
-            trend_period =  slope / v0_period * 100
+        # trend is slope normalised by first reference value.
+        # 2 trends are computed, 1. the trend using the first value of
+        # the regression line at the first available data year, 2. the
+        # trend corresponding to the value corresponding to the first
+        # year of the considered period.
 
-            # Compute errors of normalisation values
-            v0_err_data = mean_residual
-            t0_data, tN_data = num_dates_data[0], num_dates_data[-1]
-            t0_period = num_dates_period[0]
+        trend_data = slope / v0_data * 100
+        trend_period =  slope / v0_period * 100
 
-            # sanity check
-            assert t0_data < tN_data
-            assert t0_period <= t0_data
+        # Compute errors of normalisation values
+        v0_err_data = mean_residual
+        t0_data, tN_data = num_dates_data[0], num_dates_data[-1]
+        t0_period = num_dates_period[0]
 
-            dt_ratio = (t0_data - t0_period) / (tN_data - t0_data)
+        # sanity check
+        assert t0_data < tN_data
+        assert t0_period <= t0_data
 
-            v0_err_period = v0_err_data * (1 + dt_ratio)
+        dt_ratio = (t0_data - t0_period) / (tN_data - t0_data)
 
-            trend_data_err = _compute_trend_error(m=slope,
-                                                  m_err=slope_err,
-                                                  v0=v0_data,
-                                                  v0_err=v0_err_data)
+        v0_err_period = v0_err_data * (1 + dt_ratio)
 
-            trend_period_err = _compute_trend_error(m=slope,
-                                                    m_err=slope_err,
-                                                    v0=v0_period,
-                                                    v0_err=v0_err_period)
+        trend_data_err = _compute_trend_error(m=slope,
+                                              m_err=slope_err,
+                                              v0=v0_data,
+                                              v0_err=v0_err_data)
 
-            result['pval'] = pval
-            result['m'] = slope
-            result['m_err'] =slope_err
-            result['yoffs'] = yoffs
+        trend_period_err = _compute_trend_error(m=slope,
+                                                m_err=slope_err,
+                                                v0=v0_period,
+                                                v0_err=v0_err_period)
 
-            result['slp'] = trend_data
-            result['slp_err'] = trend_data_err
-            result['reg0'] = v0_data
-            tp, tperr, v0p = None, None, None
-            if v0_period > 0:
-                tp = trend_period
-                tperr = trend_period_err
-                v0p = v0_period
-            result[f'slp_{start_year}'] = tp
-            result[f'slp_{start_year}_err'] = tperr
-            result[f'reg0_{start_year}'] = v0p
-            result['period'] = pstr
+        result['pval'] = pval
+        result['m'] = slope
+        result['m_err'] =slope_err
+        result['yoffs'] = yoffs
+
+        result['slp'] = trend_data
+        result['slp_err'] = trend_data_err
+        result['reg0'] = v0_data
+        tp, tperr, v0p = None, None, None
+        if v0_period > 0:
+            tp = trend_period
+            tperr = trend_period_err
+            v0p = v0_period
+        result[f'slp_{start_year}'] = tp
+        result[f'slp_{start_year}_err'] = tperr
+        result[f'reg0_{start_year}'] = v0p
+
 
         return result
 
