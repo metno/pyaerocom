@@ -235,7 +235,7 @@ class TimeResampler(object):
             for to_ts_type, mno, rshow in _idx:
                 freq = TsType(to_ts_type).to_pandas_freq()
                 data_out = self.fun(data_out, freq=freq, how=rshow,
-                                    min_num_obs=mno)
+                                    min_num_obs=mno, **kwargs)
                 aggrs.append(rshow)
 
             if all([x in self.AGGRS_UNIT_PRESERVE for x in aggrs]):
