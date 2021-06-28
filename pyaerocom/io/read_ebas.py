@@ -1831,4 +1831,4 @@ if __name__=="__main__":
 
     plt.close('all')
     reader = pya.io.ReadEbas()
-    data = reader.read('sc550dryaer')
+    data = reader.read('concNtno3')

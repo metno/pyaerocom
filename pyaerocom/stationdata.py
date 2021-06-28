@@ -788,18 +788,24 @@ class StationData(StationMetaData):
 
         if len(s1) > 0: #there is data
             overlap = s0.index.intersection(s1.index)
-            if len(overlap) > 0:
-                removed = s1[overlap]
-                # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
-                #s1 = s1.drop(index=overlap, inplace=True)
-                s1.drop(index=overlap, inplace=True)
-            #compute merged time series
-            if len(s1) > 0:
-                s0 = pd.concat([s0, s1], verify_integrity=True)
+            try:
+                if len(overlap) > 0:
+                    removed = s1[overlap]
+                    # NOTE JGLISS: updated on 8.5.2020, cf. issue #106
+                    #s1 = s1.drop(index=overlap, inplace=True)
+                    s1.drop(index=overlap, inplace=True)
+                #compute merged time series
+                if len(s1) > 0:
+                    s0 = pd.concat([s0, s1], verify_integrity=True)
 
-            # sort the concatenated series based on timestamps
-            s0.sort_index(inplace=True)
-            self.merge_varinfo(other, var_name)
+                # sort the concatenated series based on timestamps
+                s0.sort_index(inplace=True)
+                self.merge_varinfo(other, var_name)
+            except KeyError:
+                const.print_log.warning(
+                    f'failed to merge {var_name} data from 2 StationData '
+                    f'objects for station {self.station_name}. Ignoring 2nd '
+                    f'data object.')
 
         # assign merged time series (overwrites previous one)
         self[var_name] = s0
