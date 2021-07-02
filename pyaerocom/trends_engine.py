@@ -74,7 +74,8 @@ class TrendsEngine(object):
 
         if ts_type == 'monthly':
             data = _get_yearly(data, season, start_year)
-
+        
+        result['data'] = data
         dates = data.index.values
         values = data.values
 

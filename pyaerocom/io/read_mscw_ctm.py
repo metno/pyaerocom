@@ -609,6 +609,8 @@ class ReadMscwCtm(object):
             return '1'
         elif units == '' and prefix == 'AbsCoef':
             return 'm-1'
+        else:
+            return units 
 
 class ReadEMEP(ReadMscwCtm):
     """Old name of :class:`ReadMscwCtm`."""

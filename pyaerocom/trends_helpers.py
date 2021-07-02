@@ -28,7 +28,8 @@ def _init_trends_result_dict(start_yr):
             'slp', 'slp_err', 'reg0', # data specific
             'slp_{}'.format(start_yr), # period specific
             'slp_{}_err'.format(start_yr), # period specific
-            'reg0_{}'.format(start_yr) # period specific
+            'reg0_{}'.format(start_yr), # period specific
+            'data'
             ]
     return dict.fromkeys(keys)
 
