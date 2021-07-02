@@ -658,7 +658,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
     else:
-        col_freq = str(ts_type_data)
+        col_freq = str(ts_type)
         obs_start = start
         obs_stop = stop
 
