@@ -451,8 +451,10 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
     grid_tst = stat_data.get_var_ts_type(var)
     obs_tst = stat_data_ref.get_var_ts_type(var_ref)
     coltst = TsType(get_lowest_resolution(grid_tst, obs_tst))
-    if coltst.mulfac != 1:
-        coltst = coltst.next_lower
+# =============================================================================
+#     if coltst.mulfac != 1:
+#         coltst = coltst.next_lower
+# =============================================================================
 
     stat_data.resample_time(
         var_name=var,
