@@ -793,10 +793,16 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                 arr[0, :, i] = _df['ref'].values
                 arr[1, :, i] = _df['data'].values
             except ValueError as e:
-                const.print_log.warning(
-                    f'Failed to colocate time for station {obs_stat.station_name}. '
-                    f'This station will be skipped (error: {e})'
-                    )
+                try:
+                    mask = _df.index.intersection(time_idx)
+                    _df = _df.loc[mask]
+                    arr[0, :, i] = _df['ref'].values
+                    arr[1, :, i] = _df['data'].values
+                except ValueError as e:
+                    const.print_log.warning(
+                        f'Failed to colocate time for station {obs_stat.station_name}. '
+                        f'This station will be skipped (error: {e})'
+                        )
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
             const.print_log.warning(
