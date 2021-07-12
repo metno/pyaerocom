@@ -207,6 +207,9 @@ def parse_emep_variables_ini(fpath=None):
         raise FileNotFoundError("FATAL: emep_variables.ini file could not be found "
                         "at {}".format(fpath))
     parser = ConfigParser()
+    # added 12.7.21 by jgliss for EMEP trends processing. See here:
+    # https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
+    parser.optionxform=str
     parser.read(fpath)
     return parser
 
