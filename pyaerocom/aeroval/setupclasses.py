@@ -199,7 +199,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
     def get_all_vars(self) -> list:
         """
-        Get list of all variables i this experiment
+        Get list of all variables in this experiment
 
         Returns
         -------
