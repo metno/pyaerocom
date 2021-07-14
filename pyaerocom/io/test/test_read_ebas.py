@@ -39,7 +39,6 @@ from pyaerocom.exceptions import (DataCoverageError,
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
-import pyaerocom.mathutils as mu
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -145,7 +144,10 @@ class TestReadEbas(object):
         assert reader.TS_TYPE == 'undefined'
 
     def test_MERGE_STATIONS(self, reader):
-        assert reader.MERGE_STATIONS == {'Birkenes' : 'Birkenes II'}
+        assert reader.MERGE_STATIONS == {'Birkenes': 'Birkenes II',
+                                         'Rörvik': 'Råö',
+                                         'Vavihill': 'Hallahus',
+                                         'Virolahti II': 'Virolahti III'}
 
     def test_DEFAULT_VARS(self, reader):
         assert reader.DEFAULT_VARS == reader.PROVIDES_VARIABLES
