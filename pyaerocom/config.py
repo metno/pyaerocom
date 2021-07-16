@@ -119,7 +119,7 @@ class Config(object):
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
 
-    DEFAULT_REG_FILTER = 'WORLD-noMOUNTAINS'
+    DEFAULT_REG_FILTER = 'WORLD-wMOUNTAINS'
 
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations
