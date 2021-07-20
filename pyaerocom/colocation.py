@@ -487,6 +487,10 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
     # Set to NaN at times when observations were NaN originally
     # (because the interpolation will interpolate the 'ref' column as well)
     merged.loc[obs_isnan] = np.nan
+    # Ensure the whole timespan of the model is kept in "merged"
+    stat_data[var].name = 'tmp'
+    merged = pd.concat([merged, stat_data[var]], axis=1)
+    merged = merged[['ref', 'data']]
 
     grid_ts = merged['data']
     obs_ts = merged['ref']
