@@ -48,9 +48,10 @@ S2 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
 def test__colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
                                             ts_type, resample_how,
                                             min_num_obs, use_climatology_ref):
-    result = _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
-                                        ts_type, resample_how, min_num_obs,
-                                        use_climatology_ref)
+    result = _colocate_site_data_helper_timecol(
+        stat_data, stat_data_ref, var, var_ref, ts_type, resample_how,
+        min_num_obs, use_climatology_ref)
+
     assert isinstance(result, pd.DataFrame)
 
 
