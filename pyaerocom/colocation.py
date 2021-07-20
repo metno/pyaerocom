@@ -470,15 +470,27 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
         min_num_obs=min_num_obs,
         inplace=True)
 
+    # Save time indices of the observations and a mask of where it is NaN
+    obs_idx = stat_data_ref[var_ref].index
+    obs_isnan = stat_data_ref[var_ref].isnull()
+
     # now both StationData objects are in the same resolution, but they still
     # might have gaps in their time axis, thus concatenate them in a DataFrame,
     # which will merge the time index
     merged = pd.concat([stat_data_ref[var_ref], stat_data[var]],
                        axis=1, keys=['ref', 'data'])
 
+    # Interpolate the model to the times of the observations
+    # (for non-standard coltst it could be that 'resample_time'
+    # has placed the model and observations at different time stamps)
+    merged = merged.interpolate('index').reindex(obs_idx).loc[obs_idx]
+    # Set to NaN at times when observations were NaN originally
+    # (because the interpolation will interpolate the 'ref' column as well)
+    merged.loc[obs_isnan] = np.nan
+
     grid_ts = merged['data']
     obs_ts = merged['ref']
-    # invalidate model where obs is NaN
+    # invalidate model where obs is NaN (NB: maybe not needed any more?)
     obsnan = np.isnan(obs_ts.values)
     grid_ts[obsnan] = np.nan
 
