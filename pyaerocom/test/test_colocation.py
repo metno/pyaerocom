@@ -13,8 +13,10 @@ import pandas as pd
 from cf_units import Unit
 
 from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
+from pyaerocom._conftest_helpers import create_fake_station_data
 from pyaerocom.colocation import (_regrid_gridded,
                                   _colocate_site_data_helper,
+                                  _colocate_site_data_helper_timecol,
                                   colocate_gridded_ungridded,
                                   colocate_gridded_gridded)
 from pyaerocom.colocateddata import ColocatedData
@@ -28,6 +30,29 @@ def test__regrid_gridded(data_tm5):
                                    dict(lon_res_deg=5, lat_res_deg=5))
 
      assert one_way.shape == another_way.shape
+
+S1 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-01', '2010-12-31', 'd',
+                              {'ts_type' : 'daily'})
+
+S1['concpm10'][10:20] = np.nan
+
+S2 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-01', '2010-12-31', 'd',
+                              {'ts_type' : 'daily'})
+
+@pytest.mark.parametrize(
+    'stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_ref', [
+    (S1, S2, 'concpm10', 'concpm10', 'monthly', 'mean', 25, False)
+        ])
+def test__colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
+                                            ts_type, resample_how,
+                                            min_num_obs, use_climatology_ref):
+    result = _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
+                                        ts_type, resample_how, min_num_obs,
+                                        use_climatology_ref)
+    assert isinstance(result, pd.DataFrame)
+
 
 def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
     var = 'od550aer'
@@ -54,19 +79,22 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
-    (dict(min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+    (dict(filter_name='WORLD-noMOUNTAINS',
+          min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,8), 0.315930,0.275671),
-    (dict(),
+    (dict(filter_name='WORLD-noMOUNTAINS'),
      'monthly', (2,12,8), 0.316924,0.275671),
     (dict(filter_name='WORLD-wMOUNTAINS',
           min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,11), 0.269707, 0.243861),
-    (dict(use_climatology_ref=True,
+    (dict(filter_name='WORLD-noMOUNTAINS',
+          use_climatology_ref=True,
           min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,13), 0.302636, 0.234147),
-    (dict(regrid_res_deg=30, min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
+    (dict(filter_name='WORLD-noMOUNTAINS',
+          regrid_res_deg=30, min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,8), 0.31593 , 0.169897),
-    (dict(ts_type='yearly'),
+    (dict(filter_name='WORLD-noMOUNTAINS', ts_type='yearly'),
      'yearly', (2,1,8), 0.417676, 0.275671)
 
     ])

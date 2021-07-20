@@ -131,7 +131,7 @@ def test_empty_class_header(empty_cfg):
         upper = 15000,
         step  = 250)
     assert cfg.RH_MAX_PERCENT_DRY == 40
-    assert cfg.DEFAULT_REG_FILTER == 'WORLD-noMOUNTAINS'
+    assert cfg.DEFAULT_REG_FILTER == 'WORLD-wMOUNTAINS'
     assert cfg.OBS_MIN_NUM_RESAMPLE == dict(
         yearly      =   dict(monthly    = 3),
         monthly     =   dict(daily      = 7),
