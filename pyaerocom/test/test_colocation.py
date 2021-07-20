@@ -41,18 +41,34 @@ S2 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
                               10, '2010-01-01', '2010-12-31', 'd',
                               {'ts_type' : 'daily'})
 
+S3 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-01', '2010-12-31', '13d',
+                              {'ts_type' : '13daily'})
+S3['concpm10'][1] = np.nan
+S3['concpm10'][3] = np.nan
+
+S4 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-03', '2011-12-31', 'd',
+                              {'ts_type' : 'daily'})
+
 @pytest.mark.parametrize(
-    'stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_ref', [
-    (S1, S2, 'concpm10', 'concpm10', 'monthly', 'mean', 25, False)
+    'stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_ref,num_valid', [
+    (S4, S3, 'concpm10', 'concpm10', 'monthly', 'mean', {'monthly':{'daily':25}}, False, 24),
+    (S3, S4, 'concpm10', 'concpm10', 'monthly', 'mean', {'monthly':{'daily':25}}, False, 24),
+    (S1, S2, 'concpm10', 'concpm10', 'monthly', 'mean', 25, False, 12),
+    (S2, S1, 'concpm10', 'concpm10', 'monthly', 'mean', 25, False, 11),
         ])
 def test__colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
                                             ts_type, resample_how,
-                                            min_num_obs, use_climatology_ref):
+                                            min_num_obs, use_climatology_ref,
+                                            num_valid):
     result = _colocate_site_data_helper_timecol(
         stat_data, stat_data_ref, var, var_ref, ts_type, resample_how,
         min_num_obs, use_climatology_ref)
 
     assert isinstance(result, pd.DataFrame)
+    assert result.data.isnull().sum() == result.ref.isnull().sum()
+    assert len(result) - result.data.isnull().sum() == num_valid
 
 
 def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
