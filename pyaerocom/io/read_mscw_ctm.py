@@ -66,7 +66,7 @@ def subtract_dataarrays(*arrs):
     return result
 
 def calc_concNhno3(*arrs):
-    if len(arrs>1):
+    if len(arrs)>1:
         raise ValueError('Shoul only be given 1 array')
         
     M_N = 14.006
@@ -119,6 +119,7 @@ class ReadMscwCtm(object):
                 'conctno3' : add_dataarrays,
                 'concoa' : add_dataarrays,
                 'concpmgt25': subtract_dataarrays,
+                'concNhno3':calc_concNhno3,
                 }
 
     #: supported filename masks, placeholder is for frequencies
