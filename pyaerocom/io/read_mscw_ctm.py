@@ -75,7 +75,7 @@ def calc_concNhno3(*arrs):
     
     conchno3 = arrs[0]
     concNhno3 = conchno3*(M_N / (M_H + M_N + M_O * 3))
-    concNhno3.units = 'ug N m-3'
+    concNhno3['units'] = 'ug N m-3'
     return concNhno3
 
 class ReadMscwCtm(object):
