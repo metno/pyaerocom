@@ -17,6 +17,8 @@ from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import implicit_to_explicit_rates, UALIASES
 
+from pyaerocom.molmasses import get_molmass
+
 def add_dataarrays(*arrs):
     """
     Add a bunch of :class:`xarray.DataArray` instances
@@ -63,6 +65,19 @@ def subtract_dataarrays(*arrs):
         result -= arr
     return result
 
+def calc_concNhno3(*arrs):
+    if len(arrs>1):
+        raise ValueError('Shoul only be given 1 array')
+        
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+    
+    conchno3 = arrs[0]
+    concNhno3 = conchno3*(M_N / (M_H + M_N + M_O * 3))
+    concNhno3.units = 'ug N m-3'
+    return concNhno3
+
 class ReadMscwCtm(object):
     """
     Class for reading model output from the EMEP MSC-W chemical transport model.
@@ -90,7 +105,9 @@ class ReadMscwCtm(object):
                     'concbc' : ['concbcf', 'concbcc'],
                     'concno3' : ['concno3c', 'concno3f'],
                     'concoa' : ['concoac', 'concoaf'],
-                    'concpmgt25': ['concpm10', 'concpm25']}
+                    'concpmgt25': ['concpm10', 'concpm25'],
+                    'concNhno3' : ['conchno3'],
+                    }
 
     # Functions that are used to compute additional variables (i.e. one
     # for each variable defined in AUX_REQUIRES)
