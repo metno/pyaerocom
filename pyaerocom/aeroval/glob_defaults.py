@@ -74,7 +74,11 @@ var_ranges_defaults = {
     "vmrno2": {
         "scale": [0, 5, 10, 15, 20, 25, 30, 35, 40],
         "colmap": "coolwarm"
-    }
+    },
+    "concNhno3": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
 }
 
 
