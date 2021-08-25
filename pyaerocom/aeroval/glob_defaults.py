@@ -7,6 +7,10 @@ Created on Thu Jun 13 09:31:56 2019
 @author: jonasg
 """
 var_ranges_defaults = {
+    # "default": {
+    #     "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+    #     "colmap": "coolwarm"
+    # },
     "ang4487aer": {
         "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
         "colmap": "coolwarm"
@@ -76,6 +80,10 @@ var_ranges_defaults = {
         "colmap": "coolwarm"
     },
     "concNhno3": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNtnh3": {
         "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
         "colmap": "coolwarm"
     },

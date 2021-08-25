@@ -78,6 +78,19 @@ def calc_concNhno3(*arrs):
     concNhno3.attrs['units'] = 'ug N m-3'
     return concNhno3
 
+def calc_concNnh3(*arrs):
+    if len(arrs)>1:
+        raise ValueError('Shoul only be given 1 array')
+        
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+        
+    concnh3 = arrs[0]
+    concNnh3 = concnh3*(M_N / (M_H * 3 + M_N))
+    concNnh3.attrs['units'] = 'ug N m-3'
+    return concNnh3
+
 class ReadMscwCtm(object):
     """
     Class for reading model output from the EMEP MSC-W chemical transport model.
@@ -107,6 +120,7 @@ class ReadMscwCtm(object):
                     'concoa' : ['concoac', 'concoaf'],
                     'concpmgt25': ['concpm10', 'concpm25'],
                     'concNhno3' : ['conchno3'],
+                    'concNnh3'  : ['concnh3'],
                     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -120,6 +134,7 @@ class ReadMscwCtm(object):
                 'concoa' : add_dataarrays,
                 'concpmgt25': subtract_dataarrays,
                 'concNhno3':calc_concNhno3,
+                'concNnh3' : calc_concNnh3,
                 }
 
     #: supported filename masks, placeholder is for frequencies
