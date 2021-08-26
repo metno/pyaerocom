@@ -41,6 +41,7 @@ def add_dataarrays(*arrs):
         result += arr
     return result
 
+
 def subtract_dataarrays(*arrs):
     """
     Subtract a bunch of :class:`xarray.DataArray` instances from an array
@@ -77,6 +78,30 @@ def calc_concNhno3(*arrs):
     concNhno3 = conchno3*(M_N / (M_H + M_N + M_O * 3))
     concNhno3.attrs['units'] = 'ug N m-3'
     return concNhno3
+
+def calc_concNno3pm10(concno3f,concno3c):
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+    
+    fac = M_N / (M_N + 3*M_O)
+    concno3pm10 = concno3f + concno3c
+    concNno3pm10 = concno3pm10*fac
+    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
+    concNno3pm10.attrs['units'] = 'ug N m-3'
+    return concNno3pm10
+
+def calc_concNno3pm25(concno3f,concno3c):
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+    
+    fac = M_N / (M_N + 3*M_O)
+    concno3pm10 = concno3f + 0.134*concno3c
+    concNno3pm10 = concno3pm10*fac
+    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
+    concNno3pm10.attrs['units'] = 'ug N m-3'
+    return concNno3pm10
 
 def calc_concNnh3(*arrs):
     if len(arrs)>1:
@@ -134,7 +159,9 @@ class ReadMscwCtm(object):
                     'concpmgt25': ['concpm10', 'concpm25'],
                     'concNhno3' : ['conchno3'],
                     'concNnh3'  : ['concnh3'],
-                    'concNnh4'  : ['concnh4']
+                    'concNnh4'  : ['concnh4'],
+                    'concNno3pm10' : ['concno3f','concno3c'],
+                    'concNno3pm25' : ['concno3f','concno3c'],
                     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -150,6 +177,8 @@ class ReadMscwCtm(object):
                 'concNhno3':calc_concNhno3,
                 'concNnh3' : calc_concNnh3,
                 'concNnh4' : calc_concNnh4,
+                'concNno3pm10' : calc_concNno3pm10,
+                'concNno3pm25' : calc_concNno3pm25
                 }
 
     #: supported filename masks, placeholder is for frequencies
