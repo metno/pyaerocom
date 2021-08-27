@@ -145,6 +145,7 @@ def calc_concNtnh(concnh3,concnh4):
     concNtnh.attrs['units'] = 'ug N m-3'
     return concNtnh
 
+
     
 
 class ReadMscwCtm(object):
@@ -182,6 +183,7 @@ class ReadMscwCtm(object):
                     'concNno3pm25' : ['concno3f','concno3c'],
                     'concNtno3'   : ['conchno3','concno3f','concno3c'],
                     'concNtnh'    : ['concnh3','concnh4'],
+                    'concsspm10'  : ['concsspm25','concssc'],
                     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -201,6 +203,7 @@ class ReadMscwCtm(object):
                 'concNno3pm25' : calc_concNno3pm25,
                 'concNtno3'    : calc_conNtno3,
                 'concNtnh'     : calc_concNtnh,
+                'concsspm10'   : add_dataarrays,
                 }
 
     #: supported filename masks, placeholder is for frequencies
