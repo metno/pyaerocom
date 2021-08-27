@@ -99,6 +99,14 @@ var_ranges_defaults = {
         "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
         "colmap": "coolwarm"
     },
+    "concNtno3": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNtnh": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
 }
 
 

@@ -103,6 +103,14 @@ def calc_concNno3pm25(concno3f,concno3c):
     concNno3pm10.attrs['units'] = 'ug N m-3'
     return concNno3pm10
 
+def calc_conNtno3(conchno3,concno3f,concno3c):
+    concNhno3 = calc_concNhno3(conchno3)
+    concNno3pm10 = calc_concNno3pm10(concno3f,concno3c)
+    
+    concNtno3 = concNhno3 + concNno3pm10
+    concNtno3.attrs['units'] = 'ug N m-3'
+    return concNtno3
+
 def calc_concNnh3(*arrs):
     if len(arrs)>1:
         raise ValueError('Shoul only be given 1 array')
@@ -128,6 +136,16 @@ def calc_concNnh4(*arrs):
     concNnh4 = concnh4*(M_N / (M_H * 4 + M_N))
     concNnh4.attrs['units'] = 'ug N m-3'
     return concNnh4
+
+def calc_concNtnh(concnh3,concnh4):
+    concNnh3 = calc_concNnh3(concnh3)
+    concNnh4 = calc_concNnh4(concnh4)
+    
+    concNtnh = concNnh3 + concNnh4
+    concNtnh.attrs['units'] = 'ug N m-3'
+    return concNtnh
+
+    
 
 class ReadMscwCtm(object):
     """
@@ -162,6 +180,8 @@ class ReadMscwCtm(object):
                     'concNnh4'  : ['concnh4'],
                     'concNno3pm10' : ['concno3f','concno3c'],
                     'concNno3pm25' : ['concno3f','concno3c'],
+                    'concNtno3'   : ['conchno3','concno3f','concno3c'],
+                    'concNtnh'    : ['concnh3','concnh4'],
                     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -178,7 +198,9 @@ class ReadMscwCtm(object):
                 'concNnh3' : calc_concNnh3,
                 'concNnh4' : calc_concNnh4,
                 'concNno3pm10' : calc_concNno3pm10,
-                'concNno3pm25' : calc_concNno3pm25
+                'concNno3pm25' : calc_concNno3pm25,
+                'concNtno3'    : calc_conNtno3,
+                'concNtnh'     : calc_concNtnh,
                 }
 
     #: supported filename masks, placeholder is for frequencies
