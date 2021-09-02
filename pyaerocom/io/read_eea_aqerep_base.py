@@ -299,10 +299,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         # data is not a time
                         # sometimes there's no value in the file. Set that to nan
                         try:
-                            data_dict[header[idx]][lineidx] = np.float_(rows[idx])
-                        except ValueError:
-                            data_dict[header[idx]][lineidx] = np.nan
-                        finally:
+                            try:
+                                data_dict[header[idx]][lineidx] = np.float_(rows[idx])
+                            except ValueError:
+                                data_dict[header[idx]][lineidx] = np.nan
+                        except IndexError:
                             print(f)
 
                 lineidx += 1
