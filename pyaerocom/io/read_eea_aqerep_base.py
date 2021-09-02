@@ -277,35 +277,33 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
             lineidx = 0
             for line in f:
-                try:
-                    rows = line.rstrip().split(file_delimiter)
-                    if lineidx == 0:
-    
-                        for idx in header_indexes_to_keep:
-                            if header[idx] != self.VAR_CODE_NAME:
-                                data_dict[header[idx]] = rows[idx]
-                            else:
-                                # extract the EEA var code from the URL noted in the data file
-                                data_dict[header[idx]] = rows[idx].split('/')[-1]
-    
-                    for idx in file_indexes_to_keep:
-                        # if the data is a time
-                        if idx in time_indexes:
-                            # make the time string ISO compliant so that numpy can directly read it
-                            # this is not very time string forgiving but fast
-                            data_dict[header[idx]][lineidx] = np.datetime64(
-                                rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
-                            )
+                rows = line.rstrip().split(file_delimiter)
+                if lineidx == 0:
+
+                    for idx in header_indexes_to_keep:
+                        if header[idx] != self.VAR_CODE_NAME:
+                            data_dict[header[idx]] = rows[idx]
                         else:
-                            # data is not a time
-                            # sometimes there's no value in the file. Set that to nan
-                            try:
-                                data_dict[header[idx]][lineidx] = np.float_(rows[idx])
-                            except ValueError:
-                                data_dict[header[idx]][lineidx] = np.nan
-                    lineidx += 1
-                except IndexError:
-                    continue
+                            # extract the EEA var code from the URL noted in the data file
+                            data_dict[header[idx]] = rows[idx].split('/')[-1]
+
+                for idx in file_indexes_to_keep:
+                    # if the data is a time
+                    if idx in time_indexes:
+                        # make the time string ISO compliant so that numpy can directly read it
+                        # this is not very time string forgiving but fast
+                        data_dict[header[idx]][lineidx] = np.datetime64(
+                            rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
+                        )
+                    else:
+                        # data is not a time
+                        # sometimes there's no value in the file. Set that to nan
+                        try:
+                            data_dict[header[idx]][lineidx] = np.float_(rows[idx])
+                        except ValueError:
+                            data_dict[header[idx]][lineidx] = np.nan
+
+                lineidx += 1
 
         unit_in_file = data_dict['unitofmeasurement']
         # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES
