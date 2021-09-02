@@ -300,7 +300,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         # sometimes there's no value in the file. Set that to nan
                         try:
                             data_dict[header[idx]][lineidx] = np.float_(rows[idx])
-                        except ValueError:
+                        except (ValueError, IndexError):
                             data_dict[header[idx]][lineidx] = np.nan
 
                 lineidx += 1
