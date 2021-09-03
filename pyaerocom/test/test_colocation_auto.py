@@ -4,8 +4,8 @@ import pytest
 from pyaerocom.conftest import tda, does_not_raise_exception, testdata_unavail
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
-from pyaerocom.io import ReadGridded, ReadMscwCtm
-from pyaerocom.exceptions import ColocationError, DataCoverageError
+from pyaerocom.io import ReadMscwCtm
+from pyaerocom.exceptions import ColocationError
 from pyaerocom.io.aux_read_cubes import add_cubes
 
 HOME = os.path.expanduser('~')
@@ -31,7 +31,7 @@ default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': [],
                  'obs_remove_outliers': False, 'model_remove_outliers': False,
                  'zeros_to_nan': False, 'obs_outlier_ranges': {},
                  'model_outlier_ranges': {}, 'harmonise_units': False,
-                 'regrid_res_deg': 5, 'colocate_time': False,
+                 'regrid_res_deg': None, 'colocate_time': False,
                  'reanalyse_existing': False, 'raise_exceptions': False,
                  'keep_data': True, 'add_meta': {}}
 
