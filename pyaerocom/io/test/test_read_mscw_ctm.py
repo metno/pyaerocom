@@ -6,7 +6,8 @@ from pyaerocom.conftest import (testdata_unavail, lustre_unavail,
                                 EMEP_DIR)
 from pyaerocom._conftest_helpers import _create_fake_MSCWCtm_data
 import pyaerocom.exceptions as exc
-from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm, calc_concNno3pm10
+from pyaerocom.io.read_mscw_ctm import( ReadEMEP, ReadMscwCtm, calc_concNno3pm10,
+                                       calc_concNno3pm25)
 from pyaerocom.griddeddata import GriddedData
 import pyaerocom
 
@@ -77,6 +78,24 @@ def test_calc_concNno3pm10():
     
     fac = M_N / (M_N + 3*M_O)
     concno3pm10 = concno3f + concno3c
+    concNno3pm10 = concno3pm10*fac
+    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
+    concNno3pm10.attrs['units'] = 'ug N m-3'
+    xr.testing.assert_allclose(concNno3pm10,concNno3pm10_from_func)
+    
+def test_calc_concNno3pm25():
+    
+    concno3c = _create_fake_MSCWCtm_data()
+    concno3f = _create_fake_MSCWCtm_data()
+    
+    concNno3pm10_from_func = calc_concNno3pm25(concno3f,concno3c)
+    
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+    
+    fac = M_N / (M_N + 3*M_O)
+    concno3pm10 = concno3f + 0.134*concno3c
     concNno3pm10 = concno3pm10*fac
     concNno3pm10.attrs['var_name'] = 'concNno3pm10'
     concNno3pm10.attrs['units'] = 'ug N m-3'
