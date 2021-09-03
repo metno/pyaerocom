@@ -259,7 +259,7 @@ class ColocationSetup(ConstrainedContainer):
         self.model_outlier_ranges = {}
 
         self.harmonise_units = False
-        self.regrid_res_deg = 5
+        self.regrid_res_deg = None
 
         self.colocate_time = False
 
