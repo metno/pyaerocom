@@ -10,7 +10,7 @@ import iris
 import math as ma
 import numpy as np
 import pandas as pd
-import xarray as xray
+import xarray as xr
 
 from pyaerocom.exceptions import (LongitudeConstraintError,
                                   DataCoverageError, MetaDataError,
@@ -151,8 +151,8 @@ def extract_latlon_dataarray(arr, lat, lon, lat_dimname=None,
         lat, lon = new_lat, new_lon
     if new_index_name is None:
         new_index_name = 'latlon'
-    where = {lat_dimname : xray.DataArray(lat, dims=new_index_name),
-             lon_dimname : xray.DataArray(lon, dims=new_index_name)}
+    where = {lat_dimname : xr.DataArray(lat, dims=new_index_name),
+             lon_dimname : xr.DataArray(lon, dims=new_index_name)}
     subset = arr.sel(where, method=method)
     subset.attrs['lat_dimname'] = lat_dimname
     subset.attrs['lon_dimname'] = lon_dimname
@@ -724,15 +724,79 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
         is_3d = False
     return (stats, is_3d, has_errs)
 
+def _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr, add_meta_keys,
+                    resample_how, min_num_obs):
+    if pref_attr is not None:
+        stats.sort(key=lambda s: s[pref_attr])
+    else:
+        stats.sort(key=lambda s: len(s[var_name].dropna()))
+
+    if sort_by_largest:
+        stats = stats[::-1]
+
+    # remove first station from the list
+    merged = stats.pop(0)
+    for i, stat in enumerate(stats):
+        merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys,
+                           resample_how=resample_how,
+                           min_num_obs=min_num_obs)
+    return merged
+
+def _merge_stats_3d(stats, var_name, add_meta_keys, has_errs):
+    dtime = []
+    for stat in stats:
+        _t = stat[var_name].index.unique()
+        if not len(_t) == 1:
+            raise NotImplementedError('So far, merging of profile data '
+                                      'requires that profile values are '
+                                      'sampled at the same time')
+        dtime.append(_t[0])
+    tidx = pd.DatetimeIndex(dtime)
+
+    # AeroCom default vertical grid
+    vert_grid = const.make_default_vert_grid()
+    _data = np.ones((len(vert_grid), len(tidx))) * np.nan
+    if has_errs:
+        _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
+
+    for i, stat in enumerate(stats):
+        if i == 0:
+            merged = stat
+        else:
+            merged.merge_meta_same_station(stat,
+                                           add_meta_keys=add_meta_keys)
+
+        _data[:, i] = np.interp(vert_grid, stat['altitude'],
+                                stat[var_name].values)
+
+        if has_errs:
+            try:
+                _data_err[:, i] = np.interp(vert_grid,
+                                            stat['altitude'],
+                                            stat.data_err[var_name])
+            except Exception:
+                pass
+    _coords = {'time'     : tidx,
+               'altitude' : vert_grid}
+
+    d = xr.DataArray(data=_data, coords=_coords,
+                  dims=['altitude', 'time'], name=var_name)
+    d = d.sortby('time')
+    merged[var_name] = d
+    merged.dtime = d.time
+    merged.altitude = d.altitude
+    return merged
+
 def merge_station_data(stats, var_name, pref_attr=None,
                        sort_by_largest=True, fill_missing_nan=True,
-                       add_meta_keys=None):
+                       add_meta_keys=None, resample_how=None,
+                       min_num_obs=None):
     """Merge multiple StationData objects (from one station) into one instance
 
     Note
     ----
-    - all input :class:`StationData` objects need to have same attributes\
-       ``station_name``, ``latitude``, ``longitude`` and ``altitude``
+    all input :class:`StationData` objects need to have same attributes
+    ``station_name``, ``latitude``, ``longitude`` and ``altitude``
 
     Parameters
     ----------
@@ -766,6 +830,20 @@ def merge_station_data(stats, var_name, pref_attr=None,
     add_meta_keys : str or list, optional
         additional non-standard metadata keys that are supposed to be
         considered for merging.
+    resample_how : str or dict, optional
+        in case input stations come in different frequencies they are merged
+        to the lowest common freq. This parameter can be used to control, which
+        aggregator(s) are to be used (e.g. mean, median).
+    min_num_obs : str or dict, optional
+        in case input stations come in different frequencies they are merged
+        to the lowest common freq. This parameter can be used to control minimum
+        number of observation constraints for the downsampling.
+
+    Returns
+    -------
+    StationData
+        merged data
+
     """
     if isinstance(var_name, list):
         if len(var_name) > 1:
@@ -776,63 +854,11 @@ def merge_station_data(stats, var_name, pref_attr=None,
     # ToDo: data_err is not handled at the moment for 2D data, needs r
     # revision and should be done in StationData.merge, also 3D vs 2D
     # should be handled by StationData directly...
-    if not is_3d:
-        if pref_attr is not None:
-            stats.sort(key=lambda s: s[pref_attr])
-        else:
-            stats.sort(key=lambda s: len(s[var_name].dropna()))
-
-        if sort_by_largest:
-            stats = stats[::-1]
-
-        # remove first station from the list
-        merged = stats.pop(0)
-        for i, stat in enumerate(stats):
-            merged.merge_other(stat, var_name, add_meta_keys=add_meta_keys)
+    if is_3d:
+        merged = _merge_stats_3d(stats, var_name, add_meta_keys, has_errs)
     else:
-        from xarray import DataArray
-        dtime = []
-        for stat in stats:
-            _t = stat[var_name].index.unique()
-            if not len(_t) == 1:
-                raise NotImplementedError('So far, merging of profile data '
-                                          'requires that profile values are '
-                                          'sampled at the same time')
-            dtime.append(_t[0])
-        tidx = pd.DatetimeIndex(dtime)
-
-        # AeroCom default vertical grid
-        vert_grid = const.make_default_vert_grid()
-        _data = np.ones((len(vert_grid), len(tidx))) * np.nan
-        if has_errs:
-            _data_err = np.ones((len(vert_grid), len(tidx))) * np.nan
-
-        for i, stat in enumerate(stats):
-            if i == 0:
-                merged = stat
-            else:
-                merged.merge_meta_same_station(stat,
-                                               add_meta_keys=add_meta_keys)
-
-            _data[:, i] = np.interp(vert_grid, stat['altitude'],
-                                    stat[var_name].values)
-
-            if has_errs:
-                try:
-                    _data_err[:, i] = np.interp(vert_grid,
-                                                stat['altitude'],
-                                                stat.data_err[var_name])
-                except Exception:
-                    pass
-        _coords = {'time'     : tidx,
-                   'altitude' : vert_grid}
-
-        d = DataArray(data=_data, coords=_coords,
-                      dims=['altitude', 'time'], name=var_name)
-        d = d.sortby('time')
-        merged[var_name] = d
-        merged.dtime = d.time
-        merged.altitude = d.altitude
+        merged = _merge_stats_2d(stats, var_name, sort_by_largest, pref_attr,
+                                 add_meta_keys, resample_how, min_num_obs)
 
     if fill_missing_nan:
         try:
@@ -912,7 +938,7 @@ def calc_climatology(s, start, stop, min_count=None,
     Returns
     -------
     DataFrame
-        dataframe containing climatological mean and median timeseries as
+        dataframe containing climatological timeseries as
         well as columns std and count
     """
     if not isinstance(start, pd.Timestamp):
@@ -938,11 +964,10 @@ def calc_climatology(s, start, stop, min_count=None,
     clim.set_index(pd.DatetimeIndex(idx), inplace=True)
     if min_count is not None:
         mask = clim['numobs'] < min_count
-        clim['data'][mask] = np.nan
-        #mean[num < min_num_obs] = np.nan
+        clim.loc[mask, 'data'] = np.nan
     return clim
 
-def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
+def resample_timeseries(ts, freq, how=None, min_num_obs=None):
     """Resample a timeseries (pandas.Series)
 
     Parameters
@@ -952,9 +977,12 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
     freq : str
         new temporal resolution (can be pandas freq. string, or pyaerocom
         ts_type)
-    how : str
-        choose from mean or median
-    min_num_obs : :obj:`int`, optional
+    how
+        aggregator to be used, accepts everything that is accepted by
+        :func:`pandas.core.resample.Resampler.agg` and in addition,
+        percentiles may be provided as str using e.g. 75percentile as input for
+        the 75% percentile.
+    min_num_obs : int, optional
         minimum number of observations required per period (when downsampling).
         E.g. if input is in daily resolution and freq is monthly and
         min_num_obs is 10, then all months that have less than 10 days of data
@@ -965,21 +993,27 @@ def resample_timeseries(ts, freq, how='mean', min_num_obs=None):
     Series
         resampled time series object
     """
+    if how is None:
+        how = 'mean'
+    elif 'percentile' in how:
+        p = int(how.split('percentile')[0])
+        how = lambda x: np.nanpercentile(x, p)
+
     freq, loffset = _get_pandas_freq_and_loffset(freq)
-    resampler = ts.resample(freq)#, loffset=loffset)
-    if min_num_obs is None:
-        data = resampler.agg(how)
-    else:
-        df = resampler.agg([how, 'count'])
-        invalid = df['count'] < min_num_obs
-        data = df[how]
+    resampler = ts.resample(freq)
+
+    data = resampler.agg(how)
+    if min_num_obs is not None:
+        numobs = resampler.count()
+        #df = resampler.agg([how, 'count'])
+        invalid = numobs < min_num_obs
         if np.any(invalid):
             data.values[invalid] = np.nan
     if loffset is not None:
         data.index = data.index + pd.Timedelta(loffset)
     return data
 
-def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
+def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     """Resample the time dimension of a :class:`xarray.DataArray`
 
     Note
@@ -994,8 +1028,8 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
         new temporal resolution (can be pandas freq. string, or pyaerocom
         ts_type)
     how : str
-        choose from mean or median
-    min_num_obs : :obj:`int`, optional
+        how to aggregate (e.g. mean, median)
+    min_num_obs : int, optional
         minimum number of observations required per period (when downsampling).
         E.g. if input is in daily resolution and freq is monthly and
         min_num_obs is 10, then all months that have less than 10 days of data
@@ -1013,8 +1047,13 @@ def resample_time_dataarray(arr, freq, how='mean', min_num_obs=None):
     DataDimensionError
         if time dimension is not available in dataset
     """
+    if how is None:
+        how = 'mean'
+    elif 'percentile' in how:
+        raise NotImplementedError('percentile based resampling is not yet '
+                                  'available for xarray based data')
 
-    if not isinstance(arr, xray.DataArray):
+    if not isinstance(arr, xr.DataArray):
         raise IOError('Invalid input for arr: need DataArray, got {}'.format(type(arr)))
     elif not 'time' in arr.dims:
         raise DataDimensionError('Cannot resample time: input DataArray has '

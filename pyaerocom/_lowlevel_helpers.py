@@ -162,6 +162,18 @@ class StrType(Validator):
             raise ValueError(f'need str, got {val}')
         return val
 
+class StrWithDefault(Validator):
+    def __init__(self, default : str):
+        self.default = default
+
+    def validate(self, val):
+        if not isinstance(val, str):
+            if val is None:
+                val = self.default
+            else:
+                raise ValueError(f'need str or None, got {val}')
+        return val
+
 class DictType(Validator):
     def validate(self, val):
         if not isinstance(val, dict):
@@ -169,12 +181,14 @@ class DictType(Validator):
         return val
 
 class FlexList(Validator):
-    """list that can be instantated via input str, tuple or list"""
+    """list that can be instantated via input str, tuple or list or None"""
     def validate(self, val):
         if isinstance(val, str):
             val = [val]
         elif isinstance(val, tuple):
             val = list(val)
+        elif val is None:
+            val = []
         elif not isinstance(val, list):
             raise ValueError(f'failed to convert {val} to list')
         return val

@@ -77,12 +77,12 @@ class HasColocator(HasConfig):
 
 
 class DataImporter(HasColocator):
-    def read_model_data(self, model_name, var_name, **kwargs):
+    def read_model_data(self, model_name, var_name):
         """Read model variable data
 
         """
         col = self.get_colocator(model_name)
-        data = col.read_model_data(var_name, **kwargs)
+        data = col.get_model_data(var_name)
 
         return data
 

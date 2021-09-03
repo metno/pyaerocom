@@ -33,6 +33,9 @@ from . import var_groups
 from . import combine_vardata_ungridded
 from . import helpers_landsea_masks
 from . import helpers
+from . import trends_helpers
+
+from . import trends_engine
 
 
 # custom toplevel classes

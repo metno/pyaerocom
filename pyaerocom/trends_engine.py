@@ -4,34 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
-from collections import OrderedDict as od
 
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
-import pandas as pd
 
-from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.metastandards import StationMetaData
-from pyaerocom import const
-from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.time_resampler import TimeResampler
-from pyaerocom import StationData, TsType
 from pyaerocom.trends_helpers import (_init_trends_result_dict,
                                       _compute_trend_error,
-                                      _years_from_periodstr,
                                       _start_stop_period,
-                                      _make_mobs_dataframe,
-                                      _init_period,
                                       _get_yearly,
                                       _init_period_dates,
-                                      SEASONS)
-
-class TrendsSettings(BrowseDict):
-    def __init__(self, **settings):
-        self.min_num_obs = const.OBS_MIN_NUM_RESAMPLE
-        self.apply_time_resampling_constraints = True
-        self.resample_how = 'mean'
-        self.min_num_years = 2
+                                      _start_season)
 
 
 class TrendsEngine(object):
@@ -39,11 +21,9 @@ class TrendsEngine(object):
 
     Parameters
     ----------
-    data : StationData
+    data : pandas.Series
         input data containing variable data either in monthly, daily, or
         higher resolution.
-    var_name : str
-        name of variable
 
     Attributes
     ----------
@@ -67,248 +47,38 @@ class TrendsEngine(object):
     CMAP = get_cmap('bwr')
     NORM = Normalize(-10, 10)
 
-    SUPPORTED_INPUT_FREQS = ['daily', 'monthly']
+    def compute_trend(data, ts_type, start_year, stop_year, min_num_yrs,
+                      season=None, slope_confidence=None):
 
-    def __init__(self, data=None, var_name=None):
-
-        self.var_name = var_name
-        self.settings = TrendsSettings()
-
-        self.meta = StationMetaData()
-
-        self._daily = None
-        self._monthly = None
-        self.yearly = od()
-
-        self.results = od()
-        self._mobs = None
-        if data is not None:
-            self._set_data(data)
-
-    def _set_data(self, data):
-        if not isinstance(data, StationData):
-            raise ValueError('Input data needs to be StationData')
-
-        if self.var_name is not None:
-            if not self.var_name in data:
-                raise ValueError(
-                    f'No {self.var_name} data in available in input StationData'
-                    )
-        elif len(data.vars_available) == 1:
-            self.var_name = data.vars_available[0]
-
-        ts_type = data.get_var_ts_type(self.var_name)
-        if not ts_type in self.SUPPORTED_INPUT_FREQS:
-            tst = TsType(ts_type)
-            if not tst > TsType('monthly'):
-                raise TemporalResolutionError(
-                    f'Input data has too low resolution {ts_type}, need at '
-                    f'least monthly resolution.'
-                    )
-            elif tst > TsType('daily'):
-                data.resample_time(self.var_name, )
-        ts = data.to_timeseries(self.var_name)
-
-        if ts_type == 'daily':
-            self.daily = data
-        else:
-            self.monthly = data
-
-    @property
-    def daily(self):
-        """Daily timeseries"""
-        return self._daily
-
-    @daily.setter
-    def daily(self, val):
-        if not isinstance(val, pd.Series):
-            raise ValueError('Invalid input for attr. daily. Need '
-                             'pandas.Series.')
-        self._daily = val
-        self.compute_monthly()
-
-    @property
-    def monthly(self):
-        """Monthly timeseries"""
-        return self._monthly
-
-    @monthly.setter
-    def monthly(self, val):
-        if not isinstance(val, pd.Series):
-            raise ValueError('Invalid input for attr. daily. Need '
-                             'pandas.Series.')
-        self._monthly = val
-        self._mobs = _make_mobs_dataframe(val)
-
-    @property
-    def has_daily(self):
-        """Boolean specifying whether daily data is available"""
-        return True if isinstance(self.daily, pd.Series) else False
-
-    @property
-    def has_monthly(self):
-        """Boolean specifying whether monthly data is available"""
-        return True if isinstance(self.monthly, pd.Series) else False
-
-    def compute_monthly(self, daily=None, **kwargs):
-        """Computes monthly timeseries from daily
-
-        Note
-        ----
-        Requires that daily timeseries data is available in :attr:`daily` or
-        provided via **kwargs using keyword `daily`. This method also computes
-        the monthly dataframe that contains the seasons and is available via
-        :attr:`_mobs`.
-
-        Parameters
-        ----------
-        daily : pandas.Series
-            daily timeseries (will overwrite :attr:`daily`)
-        **kwargs
-            input args passed to :func:`pyaerocom.helpers.resample_timeseries`
-            such as (`min_num_obs`)
-
-        Returns
-        -------
-        pandas.Series
-            monthly timeseries
-        """
-        from pyaerocom.helpers import resample_timeseries
-        if daily is not None:
-            self.daily = daily
-        monthly = resample_timeseries(self.daily, freq='monthly', **kwargs)
-        mobs = _make_mobs_dataframe(monthly)
-        self._mobs = mobs
-        self._monthly = monthly
-        return monthly
-
-    @property
-    def seasons_avail(self):
-        """List of all seasons for which trends are available"""
-        return self.results.keys()
-
-    @property
-    def periods_avail(self):
-        """List of all periods for which trends are available"""
-        periods = []
-        for seas, period_data in self.results.items():
-            for per in list(period_data):
-                if not per in periods:
-                    periods.append(per)
-        return periods
-
-    def get_yearly(self, season):
-        """Get yearly time series for a certain season
-
-        Parameters
-        ----------
-        season : str
-            name of season
-
-        Returns
-        -------
-        pandas.Series
-            yearly data for that season
-
-        Raises
-        ------
-        AttributeError
-            if yearly data is not available for that season
-        """
-        if not season in self.yearly:
-            raise AttributeError('Yearly data for season {} is not available'
-                                 .format(season))
-        return self.yearly[season]
-
-    def _get_trend_data(self, season, period):
-        if not self.has_monthly:
-            raise AttributeError('No monthly data available')
-        elif not season in self.seasons_avail:
-            raise AttributeError('No results available for season {}'.format(season))
-        elif not period in self.periods_avail:
-            raise AttributeError('No results available for period {}'.format(period))
-
-        result = self.results[season][period]
-        if result['m'] is None:
-            raise AttributeError('No slope information available')
-
-        start_data = self.monthly.index.year[0]
-        stop_data = self.monthly.index.year[-1]
-
-        start_period, stop_period = _years_from_periodstr(period)
-
-        (_,_, idx_data, num_dates_data) = _init_period_dates(start_data,
-                                                             stop_data,
-                                                             season)
-        (_,_, idx_period, num_dates_period) = _init_period_dates(start_period,
-                                                                 stop_period,
-                                                                 season)
-        if start_data < start_period:
-            start_data = start_period
-
-        regr_data = result['m'] * num_dates_data + result['yoffs']
-        regr_period = result['m'] * num_dates_period + result['yoffs']
-        s_data = pd.Series(regr_data, idx_data)
-        s_period = pd.Series(regr_period, idx_period)
-        try:
-            td = result['slp']
-            td_err = result['slp_err']
-        except Exception:
-            td = None
-            td_err = None
-        try:
-            tp = result['slp_{}'.format(start_period)]
-            tp_err = result['slp_{}_err'.format(start_period)]
-        except Exception:
-            tp = None
-            tp_err = None
-        pval = result['pval']
-        tdstr = ''
-        tpstr = ''
-        try:
-            tdstr = (r'$\mathcal{{T}}_{{{}}}: {:.2f}\,\pm\,{:.2f}\,\%/yr$'
-                     .format(start_data, td, td_err))
-        except Exception:
-            pass
-        try:
-            tpstr = (r'$\mathcal{{T}}_{{{}}}: \mathbf{{{:.2f}\,\pm\,{:.2f}\,\%/yr}}$'
-                     .format(start_period, tp, tp_err))
-        except Exception:
-            pass
-        try:
-            tpstr += '; pval: {:.1e}'.format(pval)
-        except Exception:
-            tdstr += '; pval: {:.1e}'.format(pval)
-        return (s_data, s_period, td, tp, tdstr, tpstr)
-
-    def compute_trend(self, start_year, stop_year, season=None,
-                      slope_confidence=None):
         if season is None:
             season = 'all'
         if slope_confidence is None:
             slope_confidence = .68
-        if self._mobs is None:
-            raise ValueError('Cannot compute trends: monthly data is not '
-                             'available')
-        mobs = self._mobs
-        start_year, stop_year, period_str, yrs = _init_period(mobs, start_year,
-                                                              stop_year)
+        if not ts_type in ['yearly', 'monthly']:
+            raise ValueError(ts_type)
 
-        if season != 'all' and not season in SEASONS:
-            raise ValueError(f'Invalid input for season, choose from {SEASONS}')
+        result = _init_trends_result_dict(start_year)
+        start_str = _start_season(season, start_year)
+        stop_str = str(stop_year)
+        data = data.loc[start_str:stop_str]
 
-        if not season in self.yearly:
-            yearly = _get_yearly(mobs, season, yrs)
-            self.yearly[season] = yearly
-        else:
-            yearly = self['yearly'][season]
+        result['period'] = f'{start_year}-{stop_year}'
+        result['season'] = season
+        if len(data) == 0:
+            return result
 
-        dates = yearly.index.values
-        values = yearly.values
         (start_date,
          stop_date,
          period_index,
          num_dates_period) = _init_period_dates(start_year, stop_year, season)
+
+        if ts_type == 'monthly':
+            data = _get_yearly(data, season, start_year)
+        
+        result['data'] = data
+        dates = data.index.values
+        values = data.values
+
 
         # get period filter mask
         tmask = np.logical_and(dates>=start_date,
@@ -328,108 +98,97 @@ class TrendsEngine(object):
 
         num_dates_data = dates_data.astype('datetime64[Y]').astype(np.float64)
 
-        # create empty dictionary that is used to store trends results
-        result = _init_trends_result_dict(start_year)
-
         #TODO: len(y) is number of years - 1 due to midseason averages
         result['n'] = len(vals)
 
-        if len(vals) > 2:
-            result['y_mean'] = np.nanmean(vals)
-            result['y_min'] = np.nanmin(vals)
-            result['y_max'] = np.nanmax(vals)
+        if not len(vals) >= min_num_yrs:
+            return result
 
-            #Mann / Kendall test
-            [tau, pval] = kendalltau(x=num_dates_data, y=vals)
+        result['y_mean'] = np.nanmean(vals)
+        result['y_min'] = np.nanmin(vals)
+        result['y_max'] = np.nanmax(vals)
 
-            (slope,
-             yoffs,
-             slope_low,
-             slope_up) = theilslopes(y=vals, x=num_dates_data,
-                                     alpha=slope_confidence)
+        #Mann / Kendall test
+        [tau, pval] = kendalltau(x=num_dates_data, y=vals)
 
-            # estimate error of slope at input confidence level
-            slope_err = np.mean([abs(slope - slope_low),
-                                 abs(slope - slope_up)])
+        (slope,
+         yoffs,
+         slope_low,
+         slope_up) = theilslopes(y=vals, x=num_dates_data,
+                                 alpha=slope_confidence)
 
-            reg_data = slope * num_dates_data + yoffs
-            reg_period = slope * num_dates_period  + yoffs
+        # estimate error of slope at input confidence level
+        slope_err = np.mean([abs(slope - slope_low),
+                             abs(slope - slope_up)])
 
-            # value used for normalisation of slope to compute trend T
-            # T=m / v0
-            v0_data = reg_data[0]
-            v0_period = reg_period[0]
+        reg_data = slope * num_dates_data + yoffs
+        reg_period = slope * num_dates_period  + yoffs
 
-            # Compute the mean residual value, which is used to estimate
-            # the uncertainty in the normalisation value used to compute
-            # trend
-            mean_residual = np.mean(np.abs(vals - reg_data))
+        # value used for normalisation of slope to compute trend T
+        # T=m / v0
+        v0_data = reg_data[0]
+        v0_period = reg_period[0]
 
-            # trend is slope normalised by first reference value.
-            # 2 trends are computed, 1. the trend using the first value of
-            # the regression line at the first available data year, 2. the
-            # trend corresponding to the value corresponding to the first
-            # year of the considered period.
+        # Compute the mean residual value, which is used to estimate
+        # the uncertainty in the normalisation value used to compute
+        # trend
+        mean_residual = np.mean(np.abs(vals - reg_data))
 
-            trend_data = slope / v0_data * 100
-            trend_period =  slope / v0_period * 100
+        # trend is slope normalised by first reference value.
+        # 2 trends are computed, 1. the trend using the first value of
+        # the regression line at the first available data year, 2. the
+        # trend corresponding to the value corresponding to the first
+        # year of the considered period.
 
-            # Compute errors of normalisation values
-            v0_err_data = mean_residual
-            t0_data, tN_data = num_dates_data[0], num_dates_data[-1]
-            t0_period = num_dates_period[0]
+        trend_data = slope / v0_data * 100
+        trend_period =  slope / v0_period * 100
 
-            # sanity check
-            assert t0_data < tN_data
-            assert t0_period <= t0_data
+        # Compute errors of normalisation values
+        v0_err_data = mean_residual
+        t0_data, tN_data = num_dates_data[0], num_dates_data[-1]
+        t0_period = num_dates_period[0]
 
-            dt_ratio = (t0_data - t0_period) / (tN_data - t0_data)
+        # sanity check
+        assert t0_data < tN_data
+        assert t0_period <= t0_data
 
-            v0_err_period = v0_err_data * (1 + dt_ratio)
+        dt_ratio = (t0_data - t0_period) / (tN_data - t0_data)
 
-            trend_data_err = _compute_trend_error(m=slope,
-                                                  m_err=slope_err,
-                                                  v0=v0_data,
-                                                  v0_err=v0_err_data)
+        v0_err_period = v0_err_data * (1 + dt_ratio)
 
-            trend_period_err = _compute_trend_error(m=slope,
-                                                    m_err=slope_err,
-                                                    v0=v0_period,
-                                                    v0_err=v0_err_period)
+        trend_data_err = _compute_trend_error(m=slope,
+                                              m_err=slope_err,
+                                              v0=v0_data,
+                                              v0_err=v0_err_data)
 
-            result['pval'] = pval
-            result['m'] = slope
-            result['m_err'] =slope_err
-            result['yoffs'] = yoffs
+        trend_period_err = _compute_trend_error(m=slope,
+                                                m_err=slope_err,
+                                                v0=v0_period,
+                                                v0_err=v0_err_period)
 
-            result['slp'] = trend_data
-            result['slp_err'] = trend_data_err
-            result['reg0'] = v0_data
-            tp, tperr, v0p = None, None, None
-            if v0_period > 0:
-                tp = trend_period
-                tperr = trend_period_err
-                v0p = v0_period
-            result['slp_{}'.format(start_year)] = tp
-            result['slp_{}_err'.format(start_year)] = tperr
-            result['reg0_{}'.format(start_year)] = v0p
-            result['period'] = period_str
+        result['pval'] = pval
+        result['m'] = slope
+        result['m_err'] =slope_err
+        result['yoffs'] = yoffs
 
-        if not season in self.results:
-            self.results[season] = od()
-        self.results[season][period_str] = result
+        result['slp'] = trend_data
+        result['slp_err'] = trend_data_err
+        result['reg0'] = v0_data
+        tp, tperr, v0p = None, None, None
+        if v0_period > 0:
+            tp = trend_period
+            tperr = trend_period_err
+            v0p = v0_period
+        result[f'slp_{start_year}'] = tp
+        result[f'slp_{start_year}_err'] = tperr
+        result[f'reg0_{start_year}'] = v0p
+
 
         return result
 
-    def to_json(self):
-        raise NotImplementedError
-
-    def from_json(self, filepath):
-        raise NotImplementedError
-
-    def _plot_trend_result(self, tr, ax):
-        pass
-
+class TrendPlotter:
+    def __init__(self):
+        raise NotImplementedError()
     def get_trend_color(self, trend_val):
         return self.CMAP(self.NORM(trend_val))
 
@@ -488,9 +247,3 @@ class TrendsEngine(object):
         ax.set_xlim(_start_stop_period(period))
 
         return ax
-
-    def __getitem__(self, key):
-        return self.__getattribute__(key)
-
-    def __setitem__(self, key, val):
-        self.__setattr__(key, val)

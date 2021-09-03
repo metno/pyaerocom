@@ -44,7 +44,7 @@ class BaseCollection(BrowseDict):
                 matches.append(key)
         if len(matches) == 0:
             raise KeyError(
-                f'No models could be found that match input {name_or_pattern}')
+                f'No matches could be found that match input {name_or_pattern}')
         return matches
 
     def get_entry(self, key) -> object:

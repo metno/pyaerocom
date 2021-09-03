@@ -17,4 +17,9 @@ dependencies:
   - reverse-geocode
   - tqdm
   - openpyxl
-  - nbsphinx # for docs via rtd configuration file v2
+## testing
+  - pytest >= 3
+  - pytest-dependency
+  - pytest-cov
+## docs
+# - nbsphinx

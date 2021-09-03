@@ -169,7 +169,7 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.49_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.50_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
@@ -190,7 +190,10 @@ class ReadEbas(ReadUngriddedBase):
 
     TS_TYPE = 'undefined'
 
-    MERGE_STATIONS = {'Birkenes' : 'Birkenes II'}
+    MERGE_STATIONS = {'Birkenes' : 'Birkenes II',
+                      'Rörvik': 'Råö',
+                      'Vavihill': 'Hallahus',
+                      'Virolahti II': 'Virolahti III'}
                       #'Trollhaugen'    : 'Troll'}
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1mn'  :   'minutely',
@@ -1831,4 +1834,4 @@ if __name__=="__main__":
 
     plt.close('all')
     reader = pya.io.ReadEbas()
-    data = reader.read('sc550dryaer')
+    data = reader.read('concNtno3')

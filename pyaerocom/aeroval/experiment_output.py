@@ -40,7 +40,12 @@ class ProjectOutput:
         return list(read_json(self.experiments_file).keys())
 
     def _add_entry_experiments_json(self, exp_id, data):
-        current = read_json(self.experiments_file)
+        fp = self.experiments_file
+        if os.path.exists(fp):
+            current = read_json(fp)
+        else:
+            current = {}
+
         current[exp_id] = data
         write_json(current, self.experiments_file, indent=4)
 

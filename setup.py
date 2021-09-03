@@ -38,16 +38,43 @@ setup(
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
         'Intended Audience :: Education',
+        'Topic :: Scientific/Engineering :: Atmospheric Science',
 
         # Pick your license as you wish (should match 'license' above)
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.,
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
 
-    install_requires    =   [],
+    python_requires = '>=3.7,<4',
+    install_requires = [
+        'scitools-iris>=2.1.0',
+        'scitools-pyke>=1.1.1',
+        'xarray>=0.16.0',
+        'cartopy>=0.16.0',
+        'matplotlib>=3.0.1',
+        'scipy>=1.1.0',
+        'pandas>=0.23.0',
+        'seaborn>=0.8.0',
+        'geonum',
+        'LatLon23', # required by geonum
+        'SRTM.py', # required by geonum
+        'numpy',
+        'simplejson',
+        'requests',
+        'reverse-geocode',
+        'tqdm',
+        'openpyxl',
+    ],
+    extras_require = {
+        'docs':['nbsphinx'],
+        'test':['pytest>=3','pytest-dependency','pytest-cov'],
+    },
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),
     long_description = readme,

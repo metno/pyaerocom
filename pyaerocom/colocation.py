@@ -81,7 +81,6 @@ def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
     return gridded.regrid(scheme=regrid_scheme, **regrid_res_deg)
 
 def _ensure_gridded_gridded_same_freq(data, data_ref,
-                                      apply_time_resampling_constraints,
                                       min_num_obs, resample_how):
     ts_type_data = data.ts_type
     ts_type_data_ref = data_ref.ts_type
@@ -90,14 +89,12 @@ def _ensure_gridded_gridded_same_freq(data, data_ref,
         if TsType(ts_type_data_ref) > TsType(ts_type_data):
             data_ref = data_ref.resample_time(
                     ts_type_data,
-                    apply_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     how=resample_how
                     )
         else:
             data = data.resample_time(
                     ts_type_data_ref,
-                    apply_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     how=resample_how)
     return data, data_ref, data.ts_type
@@ -108,7 +105,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
                              harmonise_units=True,
                              regrid_scheme='areaweighted',
                              update_baseyear_gridded=None,
-                             apply_time_resampling_constraints=None,
                              min_num_obs=None,
                              colocate_time=False,
                              resample_how=None,
@@ -158,12 +154,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         time dimension to a value other than the specified input start / stop
         time this may be used to update the time in order to make colocation
         possible.
-    apply_time_resampling_constraints : bool, optional
-        if True, then time resampling constraints are applied as provided via
-        :attr:`min_num_obs` or if that one is unspecified, as defined in
-        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
-        (which defaults to True !!).
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
     colocate_time : bool
@@ -214,8 +204,7 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
     ts_type_src = [data_ref.ts_type, data.ts_type]
     # time resolution of dataset to be analysed
     data, data_ref, data_ts_type = _ensure_gridded_gridded_same_freq(
-        data, data_ref, apply_time_resampling_constraints, min_num_obs,
-        resample_how)
+        data, data_ref, min_num_obs, resample_how)
     # now both are in same temporal resolution
 
     # input ts_type is not specified or model is in lower resolution
@@ -257,7 +246,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         'colocate_time'     :   colocate_time,
         'obs_is_clim'       :   False,
         'pyaerocom'         :   pya_ver,
-        'apply_constraints' :   apply_time_resampling_constraints,
         'min_num_obs'       :   min_num_obs,
         'resample_how'      :   resample_how
         }
@@ -295,7 +283,6 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         coldata = coldata.resample_time(
             to_ts_type=ts_type,
             colocate_time=colocate_time,
-            apply_constraints=apply_time_resampling_constraints,
             min_num_obs=min_num_obs,
             how=resample_how,
             **kwargs
@@ -343,7 +330,6 @@ def _check_ts_type(data, ts_type):
 
 def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
                                ts_type, resample_how,
-                               apply_time_resampling_constraints,
                                min_num_obs,
                                use_climatology_ref):
     """
@@ -368,12 +354,6 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
         Default is "mean". Can also be a nested dictionary, e.g.
         resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
         to aggregate from hourly to daily, rather than the mean.
-    apply_time_resampling_constraints : bool, optional
-        if True, then time resampling constraints are applied as provided via
-        :attr:`min_num_obs` or if that one is unspecified, as defined in
-        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
-        (which defaults to True !!).
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
     use_climatology_ref : bool
@@ -397,21 +377,18 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
                 var,
                 ts_type=ts_type,
                 how=resample_how,
-                apply_constraints=apply_time_resampling_constraints,
                 min_num_obs=min_num_obs,
                 inplace=True)[var]
 
     if use_climatology_ref:
         obs_ts = stat_data_ref.calc_climatology(
                 var_ref,
-                apply_constraints=apply_time_resampling_constraints,
                 min_num_obs=min_num_obs)[var_ref]
     else:
         obs_ts = stat_data_ref.resample_time(
                     var_ref,
                     ts_type=ts_type,
                     how=resample_how,
-                    apply_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     inplace=True)[var_ref]
 
@@ -420,7 +397,6 @@ def _colocate_site_data_helper(stat_data, stat_data_ref, var, var_ref,
 
 def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
                                ts_type, resample_how,
-                               apply_time_resampling_constraints,
                                min_num_obs,
                                use_climatology_ref):
     """
@@ -449,12 +425,6 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
         Default is "mean". Can also be a nested dictionary, e.g.
         resample_how={'daily': {'hourly' : 'max'}} would use the maximum value
         to aggregate from hourly to daily, rather than the mean.
-    apply_time_resampling_constraints : bool, optional
-        if True, then time resampling constraints are applied as provided via
-        :attr:`min_num_obs` or if that one is unspecified, as defined in
-        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
-        (which defaults to True !!).
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
     use_climatology_ref : bool
@@ -481,14 +451,15 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
     grid_tst = stat_data.get_var_ts_type(var)
     obs_tst = stat_data_ref.get_var_ts_type(var_ref)
     coltst = TsType(get_lowest_resolution(grid_tst, obs_tst))
-    if coltst.mulfac != 1:
-        coltst = coltst.next_lower
+# =============================================================================
+#     if coltst.mulfac != 1:
+#         coltst = coltst.next_lower
+# =============================================================================
 
     stat_data.resample_time(
         var_name=var,
         ts_type=str(coltst),
         how=resample_how,
-        apply_constraints=apply_time_resampling_constraints,
         min_num_obs=min_num_obs,
         inplace=True)
 
@@ -496,9 +467,12 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
         var_name=var_ref,
         ts_type=str(coltst),
         how=resample_how,
-        apply_constraints=apply_time_resampling_constraints,
         min_num_obs=min_num_obs,
         inplace=True)
+
+    # Save time indices of the observations and a mask of where it is NaN
+    obs_idx = stat_data_ref[var_ref].index
+    obs_isnan = stat_data_ref[var_ref].isnull()
 
     # now both StationData objects are in the same resolution, but they still
     # might have gaps in their time axis, thus concatenate them in a DataFrame,
@@ -506,9 +480,23 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
     merged = pd.concat([stat_data_ref[var_ref], stat_data[var]],
                        axis=1, keys=['ref', 'data'])
 
+    # Interpolate the model to the times of the observations
+    # (for non-standard coltst it could be that 'resample_time'
+    # has placed the model and observations at different time stamps)
+    merged = merged.interpolate('index').reindex(obs_idx).loc[obs_idx]
+    # Set to NaN at times when observations were NaN originally
+    # (because the interpolation will interpolate the 'ref' column as well)
+    merged.loc[obs_isnan] = np.nan
+    # due to interpolation some model values may be NaN, where there is obs
+    merged.loc[merged.data.isnull()] = np.nan
+    # Ensure the whole timespan of the model is kept in "merged"
+    stat_data[var].name = 'tmp'
+    merged = pd.concat([merged, stat_data[var]], axis=1)
+    merged = merged[['ref', 'data']]
+
     grid_ts = merged['data']
     obs_ts = merged['ref']
-    # invalidate model where obs is NaN
+    # invalidate model where obs is NaN (NB: maybe not needed any more?)
     obsnan = np.isnan(obs_ts.values)
     grid_ts[obsnan] = np.nan
 
@@ -519,7 +507,6 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
         input_data=obs_ts,
         from_ts_type=coltst,
         how=resample_how,
-        apply_constraints=apply_time_resampling_constraints,
         min_num_obs=min_num_obs
         )
 
@@ -528,7 +515,6 @@ def _colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
         input_data=grid_ts,
         from_ts_type=coltst,
         how=resample_how,
-        apply_constraints=apply_time_resampling_constraints,
         min_num_obs=min_num_obs
         )
     # fill up missing time stamps
@@ -541,7 +527,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                                regrid_scheme='areaweighted',
                                var_ref=None,
                                update_baseyear_gridded=None,
-                               apply_time_resampling_constraints=None,
                                min_num_obs=None,
                                colocate_time=False,
                                use_climatology_ref=False,
@@ -599,12 +584,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
         time dimension to a value other than the specified input start / stop
         time this may be used to update the time in order to make colocation
         possible.
-    apply_time_resampling_constraints : bool, optional
-        if True, then time resampling constraints are applied as provided via
-        :attr:`min_num_obs` or if that one is unspecified, as defined in
-        :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`. If None, than
-        :attr:`pyaerocom.const.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS` is used
-        (which defaults to True !!).
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
     colocate_time : bool
@@ -682,15 +661,13 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
     data = data.crop(time_range=(start, stop))
 
     if regrid_res_deg is not None:
-        data = _regrid_gridded(data, regrid_scheme,
-                                       regrid_res_deg)
+        data = _regrid_gridded(data, regrid_scheme, regrid_res_deg)
 
     ts_type_src_data = data.ts_type
     ts_type, ts_type_data = _check_ts_type(data, ts_type)
     if not colocate_time and ts_type < ts_type_data:
         data = data.resample_time(
             str(ts_type),
-            apply_constraints=apply_time_resampling_constraints,
             min_num_obs=min_num_obs,
             how=resample_how
             )
@@ -701,7 +678,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
         obs_start = const.CLIM_START
         obs_stop = const.CLIM_STOP
     else:
-        col_freq = str(ts_type_data)
+        col_freq = str(ts_type)
         obs_start = start
         obs_stop = stop
 
@@ -713,7 +690,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
     data_ref = data_ref.filter_by_meta(latitude=lat_range,
-                                                   longitude=lon_range)
+                                       longitude=lon_range)
 
     # get timeseries from all stations in provided time resolution
     # (time resampling is done below in main loop)
@@ -735,7 +712,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                                    .format(var_ref, start, stop))
 
     grid_stat_data = data.to_time_series(longitude=ungridded_lons,
-                                                 latitude=ungridded_lats)
+                                         latitude=ungridded_lats)
 
     pd_freq = col_tst.to_pandas_freq()
     time_idx = make_datetime_index(start, stop, pd_freq)
@@ -811,7 +788,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                     var=var, var_ref=var_ref,
                     ts_type=col_freq,
                     resample_how=resample_how,
-                    apply_time_resampling_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     use_climatology_ref=use_climatology_ref)
             else:
@@ -821,7 +797,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                     var=var, var_ref=var_ref,
                     ts_type=col_freq,
                     resample_how=resample_how,
-                    apply_time_resampling_constraints=apply_time_resampling_constraints,
                     min_num_obs=min_num_obs,
                     use_climatology_ref=use_climatology_ref)
 
@@ -836,10 +811,16 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                 arr[0, :, i] = _df['ref'].values
                 arr[1, :, i] = _df['data'].values
             except ValueError as e:
-                const.print_log.warning(
-                    f'Failed to colocate time for station {obs_stat.station_name}. '
-                    f'This station will be skipped (error: {e})'
-                    )
+                try:
+                    mask = _df.index.intersection(time_idx)
+                    _df = _df.loc[mask]
+                    arr[0, :, i] = _df['ref'].values
+                    arr[1, :, i] = _df['data'].values
+                except ValueError as e:
+                    const.print_log.warning(
+                        f'Failed to colocate time for station {obs_stat.station_name}. '
+                        f'This station will be skipped (error: {e})'
+                        )
         except TemporalResolutionError as e:
             # resolution of obsdata is too low
             const.print_log.warning(
@@ -873,7 +854,6 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
             'colocate_time'     :   colocate_time,
             'obs_is_clim'       :   use_climatology_ref,
             'pyaerocom'         :   pya_ver,
-            'apply_constraints' :   apply_time_resampling_constraints,
             'min_num_obs'       :   min_num_obs,
             'resample_how'      :   resample_how}
 

@@ -176,7 +176,6 @@ def _create_fake_coldata_3d():
             'colocate_time'     :   False,
             'obs_is_clim'       :   False,
             'pyaerocom'         :   '0.11.0',
-            'apply_constraints' :   True,
             'min_num_obs'       :   dict(monthly=dict(daily=15),
                                          daily=dict(hourly=12)
                                          ),
@@ -264,6 +263,11 @@ def _create_fake_coldata_3d_hourly():
 
     return cd
 
+def _create_fake_timeseries_hourly():
+    cd = _create_fake_coldata_3d_hourly()
+    obs = cd.data.data[0,:,0]
+    return pd.Series(obs, index=cd.data.time.data)
+
 def _create_fake_coldata_4d():
     _lats_fake = np.arange(30,60,10)
     _lons_fake = np.arange(10,30,10)
@@ -305,7 +309,6 @@ def _create_fake_coldata_5d():
     return cd
 
 if __name__ == '__main__':
-    import pyaerocom as pya
     import matplotlib.pyplot as plt
     plt.close('all')
     cd = _create_fake_coldata_3d_hourly()

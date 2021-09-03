@@ -74,8 +74,6 @@ class StatisticsSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
-        self.add_trends = False
-        self.seasonal_stats = True
         self.update(**kwargs)
 
 class TimeSetup(ConstrainedContainer):
@@ -201,7 +199,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
     def get_all_vars(self) -> list:
         """
-        Get list of all variables i this experiment
+        Get list of all variables in this experiment
 
         Returns
         -------
