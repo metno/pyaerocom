@@ -5,7 +5,7 @@ import shutil
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
-from pyaerocom.variable import get_variable
+
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              var_ranges_defaults,
@@ -279,91 +279,6 @@ class ExperimentOutput(ProjectOutput):
                 shutil.rmtree(coldir)
         self._del_entry_experiments_json(self.exp_id)
 
-    def make_info_table_evaluation_iface(self):
-        """
-        Make an information table for an aeroval experiment based on menu.json
-
-        Returns
-        -------
-        dict
-            dictionary containing meta information
-
-        """
-        if not os.path.exists(self.menu_file):
-            raise FileNotFoundError(f'No menu.json found for {self.exp_id}')
-
-        SKIP_META = ['data_source', 'var_name', 'lon_range',
-                     'lat_range', 'alt_range']
-        menu = read_json(self.menu_file)
-        with open(self.menu_file, 'r') as f:
-            menu = simplejson.load(f)
-        table = {}
-        for obs_var, info in exp.items():
-            for obs_name, vert_types in info['obs'].items():
-                for vert_type, models in vert_types.items():
-                    for mname, minfo in models.items():
-                        if not mname in table:
-                            table[mname] = mi = {}
-                            mi['id'] = model_id = minfo['id']
-                        else:
-                            mi = table[mname]
-                            model_id = mi['id']
-                            if minfo['id'] != mi['id']:
-                                raise KeyError('Unexpected error: conflict in model ID and name')
-
-                        try:
-                            mo = mi['obs']
-                        except Exception:
-                            mi['obs'] = mo = {}
-                        if 'var' in minfo:
-                            mvar = minfo['var']
-                        else:
-                            mvar = obs_var
-                        if not obs_var in mo:
-                            mo[obs_var] = oi = {}
-                        else:
-                            oi = mo[obs_var]
-                        if obs_name in oi:
-                            raise Exception
-                        oi[obs_name] = motab = {}
-                        motab['model_var'] = mvar
-                        motab['obs_id'] = config.get_obs_id(obs_name)
-                        files = glob.glob('{}/{}/{}*REF-{}*.nc'
-                                          .format(config.coldata_dir,
-                                                  model_id, mvar, obs_name))
-
-                        if not len(files) == 1:
-                            if len(files) > 1:
-                                motab['MULTIFILES'] = len(files)
-                            else:
-                                motab['NOFILES'] = True
-                            continue
-
-                        coldata = ColocatedData(files[0])
-                        for k, v in coldata.metadata.items():
-                            if not k in SKIP_META:
-                                if isinstance(v, (list, tuple)):
-                                    if len(v) == 2:
-                                        motab['{}_obs'.format(k)] = str(v[0])
-                                        motab['{}_mod'.format(k)] = str(v[1])
-                                    else:
-                                        motab[k] = ';'.join([str(x) for x in v])
-                                else:
-                                    motab[k] = str(v)
-        return table
-
-    def make_info_table_web(self):
-        """Make and safe table with detailed infos about processed data files
-
-        The table is stored in as file minfo.json in directory :attr:`exp_dir`.
-        """
-        table = make_info_table_evaluation_iface(self)
-        outname = os.path.join(self.exp_dir, 'minfo.json')
-        write_json()
-        with open(outname, 'w+') as f:
-            f.write(simplejson.dumps(table, indent=2))
-        return table
-
 
     def get_model_order_menu(self):
         """Order of models in menu
@@ -384,6 +299,7 @@ class ExperimentOutput(ProjectOutput):
             order.extend(self.cfg.model_cfg.web_iface_names)
         return order
 
+
     def get_obs_order_menu(self):
         order = []
         if len(self.cfg.webdisp_opts.obs_order_menu) > 0:
@@ -396,13 +312,16 @@ class ExperimentOutput(ProjectOutput):
             order.extend(self.cfg.obs_cfg.web_iface_names)
         return order
 
+
     @property
     def out_dirs_json(self):
         return self.cfg.path_manager.get_json_output_dirs()
 
+
     def _get_json_output_files(self, dirname):
         dirloc = self.out_dirs_json[dirname]
         return glob.glob(f'{dirloc}/*.json')
+
 
     def _get_meta_from_map_files(self):
         """List of all existing map files"""
@@ -411,6 +330,7 @@ class ExperimentOutput(ProjectOutput):
         for file in files:
             tab.append(self._info_from_map_file(file))
         return tab
+
 
     def _get_cmap_info(self, var):
         if var in var_ranges_defaults:
@@ -422,6 +342,7 @@ class ExperimentOutput(ProjectOutput):
         except VariableDefinitionError:
             return dict(scale=[], colmap='coolwarm')
 
+
     def _create_var_ranges_json(self):
         avail = self._results_summary()
         all_vars = list(set(avail['ovar'] + avail['mvar']))
@@ -430,9 +351,11 @@ class ExperimentOutput(ProjectOutput):
             ranges[var] = self._get_cmap_info(var)
         write_json(ranges, self.var_ranges_file, indent=4)
 
+
     def _create_statistics_json(self):
         stats_info = statistics_defaults
         write_json(stats_info, self.statistics_file, indent=4)
+
 
     def _get_var_name_and_type(self, var_name):
         """Get menu name and type of observation variable
@@ -462,6 +385,7 @@ class ExperimentOutput(ProjectOutput):
                 f'Missing menu name definition for var {var_name}.')
         return (name, tp, cat)
 
+
     def _init_menu_entry(self, var : str) -> dict:
         name, tp, cat = self._get_var_name_and_type(var)
         try:
@@ -473,6 +397,7 @@ class ExperimentOutput(ProjectOutput):
                 'name'      :   name,
                 'longname'  :   lname,
                 'obs'       :   {}}
+
 
     def _create_menu_dict(self):
         new = {}
@@ -497,6 +422,7 @@ class ExperimentOutput(ProjectOutput):
                 'model_var' : mod_var,
                 'obs_var'   : obs_var}
         return new
+
 
     def _sort_menu_entries(self, avail):
         """
@@ -541,6 +467,7 @@ class ExperimentOutput(ProjectOutput):
                     new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
         return new_sorted
 
+
     def _check_clean_ts_file(self, fp):
 
         spl = os.path.basename(fp).split('OBS-')[-1].split(':')
@@ -572,6 +499,7 @@ class ExperimentOutput(ProjectOutput):
             data_new[mod_name] = data[mod_name]
 
         write_json(data_new, fp)
+
 
     def _get_valid_obs_vars(self, obs_name):
         if obs_name in self._valid_obs_vars:

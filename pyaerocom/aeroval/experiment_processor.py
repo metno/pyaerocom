@@ -141,6 +141,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         -------
         None
         """
+        raise NotImplementedError('version of old AeroVal tools, needs revision')
         coldata_files = []
         coldata_resolutions = []
         vert_codes = []
