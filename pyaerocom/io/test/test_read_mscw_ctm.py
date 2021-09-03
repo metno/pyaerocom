@@ -1,12 +1,19 @@
 import pytest
 import os
 import xarray as xr
-from pyaerocom.conftest import (testdata_unavail,
+from pyaerocom.conftest import (testdata_unavail, lustre_unavail,
                                 does_not_raise_exception,
                                 EMEP_DIR)
 import pyaerocom.exceptions as exc
 from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
 from pyaerocom.griddeddata import GriddedData
+import pyaerocom
+
+if pyaerocom.const._check_access(f'/home/{pyaerocom.const.user}/lustre/'):
+    PREFACE = f'/home/{pyaerocom.const.user}/lustre/'
+else:
+    PREFACE = '/lustre'
+TESTPATH_LUSTRE = f'{PREFACE}/storeB/project/fou/kl/emep/ModelRuns/2021_REPORTING/TRENDS/2019/'
 
 VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm', 
            'absc550aer': 'AbsCoeff', 'absc550dryaer': 'AbsCoeff', 
@@ -154,6 +161,27 @@ def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
     with raises:
         data = r._compute_var(var_name, ts_type)
         assert isinstance(data, xr.DataArray)
+ 
+@lustre_unavail
+@pytest.mark.parametrize('path,var_name, ts_type, raises', [
+    (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concNtno3', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concNtnh', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concNnh3', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concNnh4', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concNno3pm10', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concNno3pm25', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concsspm10', 'monthly', does_not_raise_exception()),
+    (TESTPATH_LUSTRE,'concCecpm25', 'monthly', does_not_raise_exception()),
+    ])        
+def test_ReadMscwCtm__compute_var_v2(path,var_name,ts_type,raises):
+    r = ReadMscwCtm(filepath=f'{path}/Base_month.nc')
+    ts_type  = 'monthly'
+    with raises:
+        data = r._compute_var(var_name,ts_type)
+        assert isinstance(data, xr.DataArray)
+        
 
 @testdata_unavail
 def test_ReadMscwCtm_data(path_emep):
