@@ -651,10 +651,3 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
 
     return cubes_concat[0]
 
-if __name__== "__main__":
-    import pyaerocom as pya
-
-    r = pya.io.ReadGridded('BCC-CUACE_HIST')
-
-    d = r.read_var('zg')
-    print(d)

@@ -491,12 +491,12 @@ if __name__=='__main__':
     filter_post = {'altitude' : [1500, 1700]}
     # Tests based on whole datasets
     vmro3 = pya.io.ReadUngridded('GHOST.EEA.daily',
-                                 data_dir=GHOST_DIR).read(vars_to_retrieve='vmro3',
+                                 data_dirs=GHOST_DIR).read(vars_to_retrieve='vmro3',
                                                           filter_post=filter_post)
 
                                                           # Tests based on whole datasets
     vmrno2 = pya.io.ReadUngridded('GHOST.EEA.daily',
-                                  data_dir=GHOST_DIR).read(vars_to_retrieve='vmrno2',
+                                  data_dirs=GHOST_DIR).read(vars_to_retrieve='vmrno2',
                                                            filter_post=filter_post)
 
 

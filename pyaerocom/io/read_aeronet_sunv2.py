@@ -44,19 +44,10 @@ from pyaerocom.stationdata import StationData
 class ReadAeronetSunV2(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 2 Level 2.0 data
 
-    .. seealso::
-
-        Base classes :class:`ReadAeronetBase` and :class:`ReadUngriddedBase`
-
-    Todo
+    Note
     ----
-    Check level 1.5 data and include
-
-    Parameters
-    ----------
-    dataset_to_read
-        string specifying either of the supported datasets that are defined
-        in ``SUPPORTED_DATASETS``.
+    Maintenance for AERONET version 2 data is deprecated since pyaerocom
+    version 0.11.0. Please use version 3 data and associated pyaerocom readers.
     """
     #: Mask for identifying datafiles
     _FILEMASK = '*.lev20'

@@ -46,16 +46,10 @@ from pyaerocom.io.readaeronetbase import ReadAeronetBase
 class ReadAeronetSdaV2(ReadAeronetBase):
     """Interface for reading Aeronet Sun V2 Level 2 data
 
-    Todo
+    Note
     ----
-    Check if also level 1.5 works and include
-
-    Parameters
-    ----------
-    dataset_to_read
-        string specifying either of the supported datasets that are defined
-        in ``SUPPORTED_DATASETS``.
-
+    Maintenance for AERONET version 2 data is deprecated since pyaerocom
+    version 0.11.0. Please use version 3 data and associated pyaerocom readers.
     """
     #: Mask for identifying datafiles
     _FILEMASK = '*.ONEILL_20'

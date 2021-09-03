@@ -347,7 +347,8 @@ def _check_load_current_menu(config, ignore_experiments):
                                 .format(config.exp_id))
     return menu
 
-def update_menu_evaluation_iface(config, ignore_experiments=None):
+def update_menu_evaluation_iface(config, ignore_experiments=None,
+                                 delete_mode=False):
     """Update menu for Aerocom Evaluation interface
 
     The menu.json file is created based on the available json map files in the
@@ -360,12 +361,18 @@ def update_menu_evaluation_iface(config, ignore_experiments=None):
     ignore_experiments : list, optional
         list containing experiment IDs that may be in the current menu.json
         file and that are supposed to be removed from it.
-    """
+    delete_mode : bool
+        if True, then no attempts are being made to find json files for the
+        experiment specified in `config`.
 
-    try:
-        avail = _get_available_results_dict(config)
-    except FileNotFoundError:
-        avail = {}
+    """
+    avail = {}
+    if not delete_mode:
+        try:
+            avail.update(**_get_available_results_dict(config))
+        except FileNotFoundError:
+            pass
+
 
     avail = _sort_menu_entries(avail, config)
 
