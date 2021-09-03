@@ -47,12 +47,28 @@ def tm5_aero_stp():
         reanalyse_existing = True
         )
 
-def test_Colocator_run__use_climatology(tm5_aero_stp, update_col):
+@pytest.mark.parametrize('update_col,raises', [
+    (dict(model_use_vars={'od550aer':'abs550aer'},
+          model_use_climatology=True,
+          obs_use_climatology=True),
+     does_not_raise_exception()),
+    (dict(model_use_vars={'od550aer':'abs550aer'},
+          model_use_climatology=True),
+     does_not_raise_exception()),
+
+    ])
+def test_Colocator_run__use_climatology(tm5_aero_stp, update_col, raises):
     stp = ColocationSetup(**tm5_aero_stp)
     stp.update(**update_col)
+    with raises:
+        col = Colocator(**stp)
+        result = col.run()
 
-    col = Colocator(stp)
-    result = col.run()
+        assert isinstance(result, dict)
+        coldata = result['abs550aer']['od550aer']
+
+        assert coldata.shape == (2,12,11)
+        assert coldata.metadata['from_files'] == ['aerocom3_TM5-met2010_AP3-CTRL2019_abs550aer_Column_9999_daily.nc']
 
 
 @pytest.fixture(scope='function')
