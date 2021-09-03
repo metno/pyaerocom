@@ -313,33 +313,38 @@ def _check_correct_time_dim(cube, file, file_convention=None):
 
     if not const.MIN_YEAR <= year <= const.MAX_YEAR:
         raise FileConventionError('Invalid year in file: {}'.format(year))
-    try:
-        check_time_coord(cube, ts_type, year)
-    except UnresolvableTimeDefinitionError as e:
-        raise UnresolvableTimeDefinitionError(repr(e))
-    except Exception as e:
-        msg = (f'Invalid time dimension coordinate in file:\n{file}.\n'
-               f'Error: repr(e)\n')
-        logger.warning(msg)
-        if const.GRID_IO.CORRECT_TIME_FILENAME:
-            add_msg = ('Attempting to correct time coordinate using '
-                       'information in file name')
-            msg += add_msg
-            logger.info(add_msg)
-            try:
-                cube = correct_time_coord(cube,
-                                          ts_type=finfo["ts_type"],
-                                          year=finfo["year"])
-            except Exception as e:
-                add_msg = (
-                    f'Unable to correct time dimension using the '
-                    f'information provided in the file name. Error:\n'
-                    f'{format_exc()}.\n\nThe file will be imported regardless!'
-                    )
+    elif year == 9999:
+        const.print_log.info(
+            'Cannot compare NetCDF time dimension for climatological data '
+            '(9999 in filename). Skipping this check.')
+    else:
+        try:
+            check_time_coord(cube, ts_type, year)
+        except UnresolvableTimeDefinitionError as e:
+            raise UnresolvableTimeDefinitionError(repr(e))
+        except Exception as e:
+            msg = (f'Invalid time dimension coordinate in file:\n{file}.\n'
+                   f'Error: repr({e})\n')
+            logger.warning(msg)
+            if const.GRID_IO.CORRECT_TIME_FILENAME:
+                add_msg = ('Attempting to correct time coordinate using '
+                           'information in file name')
                 msg += add_msg
-                const.print_log.warning(msg)
-        if const.WRITE_FILEIO_ERR_LOG:
-            add_file_to_log(file, msg)
+                logger.info(add_msg)
+                try:
+                    cube = correct_time_coord(cube,
+                                              ts_type=finfo["ts_type"],
+                                              year=finfo["year"])
+                except Exception:
+                    add_msg = (
+                        f'Unable to correct time dimension using the '
+                        f'information provided in the file name. Error:\n'
+                        f'{format_exc()}.\n\nThe file will be imported regardless!'
+                        )
+                    msg += add_msg
+                    const.print_log.warning(msg)
+            if const.WRITE_FILEIO_ERR_LOG:
+                add_file_to_log(file, msg)
     return cube
 
 def _check_leap_year(num, num_per, ts_type):
