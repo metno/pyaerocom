@@ -24,6 +24,7 @@ from pathlib import Path
 from traceback import format_exc
 
 from pyaerocom import const, logger
+from pyaerocom._warnings_management import filter_warnings
 from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
                                   FileConventionError,
                                   UnresolvableTimeDefinitionError)
@@ -34,8 +35,10 @@ from pyaerocom.tstype import TsType
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
 
+@filter_warnings(apply=const.FILTER_IRIS_WARNINGS,
+                 categories=[UserWarning])
 def load_cubes_custom(files, var_name=None, file_convention=None,
-                      perform_fmt_checks=None):
+                      perform_fmt_checks=True):
     """Load multiple NetCDF files into CubeList
 
     Note
@@ -48,7 +51,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
     Parameters
     ----------
     files : list
-        list containing filepaths to all files that are supposed to be loaded.
+        list of netcdf file paths
     var_name : str
         name of variable to be imported from input files.
     file_convention : :obj:`FileConventionRead`, optional
@@ -56,8 +59,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
         dimension definitions) is tested against definition in file name
     perform_fmt_checks : bool
         if True, additional quality checks (and corrections) are (attempted to
-        be) performed. Defaults to None, in which case pyaerocom default is
-        used.
+        be) performed.
 
     Returns
     -------
@@ -69,7 +71,7 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
     """
     cubes = []
     loaded_files = []
-    for _file in files:
+    for i, _file in enumerate(files):
         try:
             cube = load_cube_custom(file=_file, var_name=var_name,
                                     file_convention=file_convention,
@@ -581,10 +583,3 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
 
     return cubes_concat[0]
 
-if __name__== "__main__":
-    import pyaerocom as pya
-
-    r = pya.io.ReadGridded('BCC-CUACE_HIST')
-
-    d = r.read_var('zg')
-    print(d)

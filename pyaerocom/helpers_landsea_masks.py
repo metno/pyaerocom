@@ -157,6 +157,7 @@ def load_region_mask_xr(*regions):
         mask = masks.where(masks < 1, 1)
     mask['name'] = name
     mask.attrs['long_name'] = name
+    mask = mask.rename({'lat':'latitude', 'long':'longitude'})
     return mask
 
 def load_region_mask_iris(*regions):
@@ -210,7 +211,7 @@ def get_mask_value(lat, lon, mask):
     if not isinstance(mask, xr.DataArray):
         raise ValueError('Invalid input for mask: need DataArray, got {}'
                          .format(type(mask)))
-    return float(mask.sel(lat=lat, long=lon, method='nearest'))
+    return float(mask.sel(latitude=lat, longitude=lon, method='nearest'))
 
 def check_all_htap_available():
     """
@@ -248,8 +249,8 @@ def get_lat_lon_range_mask_region(mask, latdim_name=None,
     assert mask.dims == (latdim_name, londim_name)
 
     data = mask.data
-    lats = mask.lat.data
-    lons = mask.long.data
+    lats = mask.latitude.data
+    lons = mask.longitude.data
 
     lonmask = np.where(data.any(axis=0))[0] # flatten latitude dimenstion
     firstidx, lastidx = lonmask.min(), lonmask.max()

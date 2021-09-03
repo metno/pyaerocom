@@ -20,8 +20,8 @@ setup(
     packages    =   ['pyaerocom',
                      'pyaerocom.io',
                      'pyaerocom.plot',
-                     'pyaerocom.web',
-                     'pyaerocom.web.cli',
+                     'pyaerocom.aeroval',
+                     'pyaerocom.aeroval.cli',
                      'pyaerocom.test',
                      'pyaerocom.io.test',
                      'pyaerocom.scripts'],
@@ -81,7 +81,7 @@ setup(
     long_description_content_type='text/x-rst',
     entry_points = {'console_scripts' : [
             'pya=pyaerocom.scripts.cli:main',
-            'pyaeroeval=pyaerocom.web.cli.main_aerocom_evaluation:main'
+            'aeroval=pyaerocom.aeroval.cli.main:main'
             ]},
     zip_safe = False
 )

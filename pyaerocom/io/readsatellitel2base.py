@@ -52,7 +52,9 @@ class ReadL2DataBase(ReadUngriddedBase):
     __version__ = "0.01"
     DATA_ID = ''
 
-    DATASET_PATH = ''
+    # jgliss commented out DATASET_PATH on 22.4.21 since it is not used
+    # Note that DATASET_PATH is deprecated as of v0.11.0, use data_dir
+    #DATASET_PATH = ''
     # Flag if the dataset contains all years or not
     DATASET_IS_YEARLY = False
 
@@ -63,8 +65,9 @@ class ReadL2DataBase(ReadUngriddedBase):
 
     __baseversion__ = '0.01_' + ReadUngriddedBase.__baseversion__
 
-    def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
-        super(ReadL2DataBase, self).__init__(dataset_to_read)
+    def __init__(self, data_id=None, index_pointer=0, loglevel=logging.INFO,
+                 verbose=False):
+        super(ReadL2DataBase, self).__init__(data_id)
         self.verbose = verbose
         self.metadata = {}
         self.data = None

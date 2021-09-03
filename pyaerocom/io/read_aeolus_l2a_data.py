@@ -96,10 +96,12 @@ class ReadL2Data(ReadL2DataBase):
     PROVIDES_VARIABLES = [_EC355NAME, _BS355NAME, _LODNAME, _SRNAME, _QANAME]
 
     GLOBAL_ATTRIBUTES = {}
-    DATASET_PATH = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/'
 
-    def __init__(self, dataset_to_read=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
-        super(ReadL2Data, self).__init__(dataset_to_read)
+    data_dir = '/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/'
+
+    def __init__(self, data_id=None, index_pointer=0, loglevel=logging.INFO,
+                 verbose=False):
+        super(ReadL2Data, self).__init__(data_id)
         self.verbose = verbose
         self.metadata = {}
         self.data = []
@@ -927,7 +929,7 @@ class ReadL2Data(ReadL2DataBase):
             pattern = self._FILEMASK
 
         if basedir is None:
-            basedir = self.DATASET_PATH
+            basedir = self.data_dir
 
         self.logger.info('searching for data files at {}. This might take a while...'.format(basedir))
         files = glob.glob(os.path.join(basedir, '**',

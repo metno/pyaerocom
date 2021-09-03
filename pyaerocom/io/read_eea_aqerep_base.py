@@ -200,8 +200,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         'vmrno2': NotImplementedError(),
         }
 
-    def __init__(self, data_dir=None):
-        super(ReadEEAAQEREPBase, self).__init__(None, dataset_path=data_dir)
+    def __init__(self, data_id=None, data_dir=None):
+        super(ReadEEAAQEREPBase, self).__init__(data_id=data_id,
+                                                data_dir=data_dir)
         self._metadata = None
 
     @property
@@ -377,7 +378,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         """
 
         if filename is None:
-            filename = os.path.join(self.DATASET_PATH, self.DEFAULT_METADATA_FILE)
+            filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
         self.logger.warning("Reading file {}".format(filename))
 
         struct_data = {}
@@ -448,15 +449,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             const.print_log.warning('using default pattern *.* for file search')
             pattern = '*.*'
         self.logger.info('Fetching data files. This might take a while...')
-        fp = os.path.join(self.DATASET_PATH, pattern)
+        fp = os.path.join(self.data_dir, pattern)
         files = sorted(glob.glob(fp, recursive=True))
         if not len(files) > 0:
-            all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
+            all_str = list_to_shortstr(os.listdir(self.data_dir))
             raise DataSourceError('No files could be detected matching file '
                                   'mask {} in dataset {}, files in folder {}:\n'
                                   'Files in folder:{}'.format(pattern,
-                                                              self.dataset_to_read,
-                                                              self.DATASET_PATH,
+                                                              self.data_id,
+                                                              self.data_dir,
                                                               all_str))
         self.files = files
         return files
@@ -529,7 +530,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             last_file = len(files)
 
         if metadatafile is None:
-            metadatafile = os.path.join(self.DATASET_PATH, self.DEFAULT_METADATA_FILE)
+            metadatafile = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
 
         files = files[first_file:last_file]
 

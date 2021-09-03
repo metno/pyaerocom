@@ -9,12 +9,12 @@ from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.io import ReadUngridded
 
 
-def test_invalid_init_data_dir():
+def test_invalid_init_data_dirs():
     with pytest.raises(ValueError):
-        ReadUngridded(['EBASMC', 'GHOST.EEA.daily'], data_dir='/bla/blub')
+        ReadUngridded(['EBASMC', 'GHOST.EEA.daily'], data_dirs='/bla/blub')
 
 def test_supported():
-    supported_datasets =ReadUngridded().supported_datasets
+    supported_datasets = ReadUngridded().supported_datasets
     print(supported_datasets)
     assert len(supported_datasets) >= 17
     assert all(x in supported_datasets for x in ['AeronetInvV3Lev2.daily',
@@ -44,6 +44,26 @@ def test_supported():
                                                  'GHOST.EBAS.monthly',
                                                  'GHOST.EBAS.hourly',
                                                  'GHOST.EBAS.daily'])
+
+@pytest.mark.parametrize(
+    'data_ids,vars_to_retrieve,ignore_cache,data_dirs,raises', [
+    (None, None, False, None,does_not_raise_exception()),
+    (None, None, True, None,does_not_raise_exception()),
+    ('Blaaaaaa', None, False, None,does_not_raise_exception()),
+
+    ])
+def test_ReadUngridded___init__(data_ids,vars_to_retrieve,ignore_cache,
+                                data_dirs,raises):
+    caching = const.CACHING
+    with raises:
+        reader =  ReadUngridded(data_ids=data_ids,
+                                vars_to_retrieve=vars_to_retrieve,
+                                ignore_cache=ignore_cache,
+                                data_dirs=data_dirs)
+        if ignore_cache:
+            assert not const.CACHING
+        if const.CACHING != caching:
+            const.CACHING = caching
 
 
 @pytest.mark.parametrize('dsr,vtr,oc,fp,kw,nst,nmeta,raises,caching', [
@@ -83,7 +103,7 @@ def test_ReadUngridded_read(dsr,vtr,oc,fp,kw,nst,nmeta,raises,caching):
 
     const.CACHING = False if not caching else True
     with raises:
-        data = reader.read(datasets_to_read=dsr,
+        data = reader.read(data_ids=dsr,
                            vars_to_retrieve=vtr,
                            only_cached=oc,
                            filter_post=fp,
@@ -97,10 +117,10 @@ def test_ReadUngridded_read(dsr,vtr,oc,fp,kw,nst,nmeta,raises,caching):
 def test_basic_attributes():
     reader = ReadUngridded()
     assert not reader.ignore_cache
-    assert reader.datasets_to_read == []
+    assert reader.data_ids == []
     with pytest.raises(ValueError):
-        reader.get_reader()
-    with pytest.raises(ValueError):
+        reader.get_lowlevel_reader()
+    with pytest.raises(AttributeError):
         reader.dataset_provides_variables()
 
 if __name__=="__main__":

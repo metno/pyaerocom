@@ -186,6 +186,31 @@ def test_TsType_to_si(ts_type, value, raises):
     with raises:
         assert TsType(ts_type).to_si() == value
 
+@pytest.mark.parametrize('ts_type, to_ts_type, min_num_obs, val, raises', [
+    ('12hourly', '6daily', {'daily' : {'hourly' : 12}}, 6, does_not_raise_exception()),
+    ('84hourly', '6daily', {'daily' : {'hourly' : 24}}, 2, does_not_raise_exception()),
+    ('84hourly', '6daily', {'daily' : {'hourly' : 1}}, 0, does_not_raise_exception()),
+    ('84hourly', '6daily', {'daily' : {'hourly' : 12}}, 1, does_not_raise_exception()),
+    ('84hourly', '3daily', {'daily' : {'84hourly' : 0.1}}, 0, pytest.raises(TemporalResolutionError)),
+    ('84hourly', '4daily', {'daily' : {'84hourly' : 0.1}}, 0, does_not_raise_exception()),
+    ('84hourly', '6daily', {'daily' : {'84hourly' : 0.1}}, 1, does_not_raise_exception()),
+    ('hourly', 'minutely', {}, 0, pytest.raises(TemporalResolutionError)),
+    ('hourly', 'hourly', {}, 0, does_not_raise_exception()),
+    ('hourly', 'hourly', {}, 0, does_not_raise_exception()),
+    ('2hourly', '3daily', {'3daily' : {'2hourly' : 4}}, 4, does_not_raise_exception()),
+    ('2hourly', '3daily', {'3daily' : {'hourly' : 4}}, 2, does_not_raise_exception()),
+    ('10hourly', 'monthly', {'monthly' : {'hourly' : 100}}, 10, does_not_raise_exception()),
+    ('hourly', 'daily', {'monthly' : {'yearly' : 4}}, 2, pytest.raises(ValueError)),
+
+
+
+    ])
+def test_TsType_get_min_num_obs(ts_type, to_ts_type, min_num_obs, val, raises):
+    fr = TsType(ts_type)
+    to = TsType(to_ts_type)
+    with raises:
+        assert fr.get_min_num_obs(to, min_num_obs) == val
+
 @pytest.mark.parametrize('ts_type, total_seconds, value, raises', [
     ('hourly', 3600, True, does_not_raise_exception()),
     ('hourly', 3605, True, does_not_raise_exception()),

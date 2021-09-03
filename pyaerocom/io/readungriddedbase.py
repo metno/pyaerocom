@@ -33,7 +33,7 @@ class ReadUngriddedBase(abc.ABC):
     #: code. This version is required for caching and needs to be considered
     #: in the definition of __version__ in all derived classes, so that
     #: caching can be done reliably
-    __baseversion__ = '0.08'
+    __baseversion__ = '0.09'
 
     #: dictionary containing information about additionally required variables
     #: for each auxiliary variable (i.e. each variable that is not provided
@@ -53,7 +53,7 @@ class ReadUngriddedBase(abc.ABC):
                 "Data directory: {}\n"
                 "Supported variables: {}\n"
                 "Last revision: {}"
-                .format(self.data_id, self.DATASET_PATH,
+                .format(self.data_id, self.data_dir,
                         self.PROVIDES_VARIABLES, self.data_revision))
     def __repr__(self):
         return str(type(self).__name__)
@@ -152,26 +152,6 @@ class ReadUngriddedBase(abc.ABC):
         """List containing default variables to read"""
         pass
 
-    @property
-    def DATASET_PATH(self):
-        """Path to datafiles of specified dataset
-
-        Is retrieved automatically (if not specified explicitly on class
-        instantiation), based on network ID (:attr:`DATA_ID`)
-        using :func:`get_obsnetwork_dir` (which uses the information in
-        ``pyaerocom.const``).
-        """
-        if self._dataset_path is not None and os.path.exists(self._dataset_path):
-            return self._dataset_path
-        return get_obsnetwork_dir(self.data_id)
-
-    @property
-    def data_dir(self):
-        """
-        Wrapper for :attr:`DATASET_PATH`
-        """
-        return self.DATASET_PATH
-
     @abc.abstractmethod
     def read_file(self, filename, vars_to_retrieve=None):
         """Read single file
@@ -223,7 +203,7 @@ class ReadUngriddedBase(abc.ABC):
 
     ### Concrete implementations of methods that are the same for all (or most)
     # of the derived reading classes
-    def __init__(self, dataset_to_read=None, dataset_path=None):
+    def __init__(self, data_id=None, data_dir=None):
         self.data = None #object that holds the loaded data
         self._data_id = None
         self.files = []
@@ -234,22 +214,56 @@ class ReadUngriddedBase(abc.ABC):
         # corresponding file path to this list.
         self.read_failed = []
 
-        self._dataset_path = dataset_path
+        self._data_dir = data_dir
 
         #: Class own instance of logger class
         self.logger = logging.getLogger(__name__)
         self._add_aux_variables()
 
-        if dataset_to_read is not None:
-            if not dataset_to_read in self.SUPPORTED_DATASETS:
+        if data_id is not None:
+            if not data_id in self.SUPPORTED_DATASETS:
                 raise AttributeError("Dataset {} not supported by this "
-                                     "interface".format(dataset_to_read))
-            self._data_id = dataset_to_read
+                                     "interface".format(data_id))
+            self._data_id = data_id
 
     @property
     def data_id(self):
-        """Wrapper for :attr:`DATA_ID` (pyaerocom standard name)"""
+        """ID of dataset"""
         return self.DATA_ID if self._data_id is None else self._data_id
+
+    @property
+    def DATASET_PATH(self):
+        """Wrapper for :attr:`data_dir`.
+        """
+        const.print_log.warning(DeprecationWarning(
+            'WARNING: Attr. DATASET_PATH is deprecated in ungridded readers '
+            'as of pyaerocom v0.11.0. Please use data_dir instead.'
+
+            ))
+        return self.data_dir
+
+    @property
+    def data_dir(self):
+        """
+        str: Location of the dataset
+
+        Note
+        ----
+        This can be set explicitly when instantiating the class (e.g. if data
+        is available on local machine). If unspecified, the data location is
+        attempted to be inferred via :func:`get_obsnetwork_dir`
+
+        Raises
+        ------
+        FileNotFoundError
+            if data directory does not exist or cannot be retrieved
+            automatically
+        """
+        if self._data_dir is None:
+            self._data_dir = get_obsnetwork_dir(self.data_id)
+        if not os.path.exists(self._data_dir):
+            raise (f'{self._data_dir} does not exist.')
+        return self._data_dir
 
     @property
     def REVISION_FILE(self):
@@ -265,9 +279,7 @@ class ReadUngriddedBase(abc.ABC):
         """
         return list(self.AUX_REQUIRES.keys())
 
-    @property
-    def dataset_to_read(self):
-        return self.data_id
+
 
     @property
     def data_revision(self):
@@ -277,7 +289,7 @@ class ReadUngriddedBase(abc.ABC):
             return self.__dict__['_data_revision']
         rev = 'n/d'
         try:
-            revision_file = os.path.join(self.DATASET_PATH, self.REVISION_FILE)
+            revision_file = os.path.join(self.data_dir, self.REVISION_FILE)
             if os.path.isfile(revision_file):
                 with open(revision_file, 'rt') as in_file:
                     rev = in_file.readline().strip()
@@ -548,8 +560,8 @@ class ReadUngriddedBase(abc.ABC):
             self.get_file_list()
         files = [f for f in self.files if fnmatch(f, pattern)]
         if not len(files) > 0:
-            raise IOError("No files could be detected that match the "
-                          "pattern".format(pattern))
+            raise IOError(f'No files could be detected that match the '
+                          f'pattern {pattern}')
         return files
 
     def get_file_list(self, pattern=None):
@@ -582,15 +594,15 @@ class ReadUngriddedBase(abc.ABC):
                                     'using default pattern *.* for file search')
             pattern = '*.*'
         self.logger.info('Fetching data files. This might take a while...')
-        files = sorted(glob.glob(os.path.join(self.DATASET_PATH,
+        files = sorted(glob.glob(os.path.join(self.data_dir,
                                               pattern)))
         if not len(files) > 0:
-            all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
+            all_str = list_to_shortstr(os.listdir(self.data_dir))
             raise DataSourceError('No files could be detected matching file '
                                   'mask {} in dataset {}, files in folder {}:\n'
                                   'Files in folder:{}'.format(pattern,
-                                  self.dataset_to_read,
-                                  self.DATASET_PATH,
+                                  self.data_id,
+                                  self.data_dir,
                                   all_str))
         self.files = files
         return files
@@ -654,9 +666,21 @@ if __name__=="__main__":
         PROVIDES_VARIABLES = ["od550aer"]
         REVISION_FILE = const.REVISION_FILE
 
-        def __init__(self, dataset_to_read=None):
-            if dataset_to_read is not None:
-                self.DATA_ID = dataset_to_read
+
+        def __init__(self, data_id=None, data_dir=None):
+            super(ReadUngriddedImplementationExample, self).__init__(
+                data_id, data_dir)
+
+        @property
+        def DEFAULT_VARS(self):
+            return self.PROVIDES_VARIABLES
+
+        @property
+        def SUPPORTED_DATASETS(self):
+            return [self.DATA_ID]
+
+        def TS_TYPE(self):
+            raise NotImplementedError
 
         def read(self):
             raise NotImplementedError
@@ -664,5 +688,5 @@ if __name__=="__main__":
         def read_file(self):
             raise NotImplementedError
 
-    c = ReadUngriddedImplementationExample(dataset_to_read='AeronetSunV2Lev1.5.daily')
-    print(c.DATASET_PATH)
+    c = ReadUngriddedImplementationExample()
+    print(c.data_id)

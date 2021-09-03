@@ -796,8 +796,8 @@ class UngriddedData(object):
                         merge_if_multi=True, merge_pref_attr=None,
                         merge_sort_by_largest=True, insert_nans=False,
                         allow_wildcards_station_name=True,
-                        add_meta_keys=None,
-                        **kwargs):
+                        add_meta_keys=None, resample_how=None,
+                        min_num_obs=None):
         """Convert data from one station to :class:`StationData`
 
         Todo
@@ -899,7 +899,9 @@ class UngriddedData(object):
             merged = merge_station_data(stats, vars_to_convert,
                                         pref_attr=merge_pref_attr,
                                         sort_by_largest=merge_sort_by_largest,
-                                        fill_missing_nan=False) #done below
+                                        fill_missing_nan=False,
+                                        resample_how=resample_how,
+                                        min_num_obs=min_num_obs)
             stats = [merged]
 
         stats_ok = []
@@ -908,7 +910,10 @@ class UngriddedData(object):
                 if not var in stat:
                     continue
                 if freq is not None:
-                    stat.resample_time(var, freq, inplace=True, **kwargs) # this does also insert NaNs, thus elif in next
+                    stat.resample_time(var, freq,
+                                       how=resample_how,
+                                       min_num_obs=min_num_obs,
+                                       inplace=True)
                 elif insert_nans:
                     stat.insert_nans_timeseries(var)
                 if np.all(np.isnan(stat[var].values)):
@@ -2617,43 +2622,6 @@ class UngriddedData(object):
                 v.append(meta_item[k])
         return meta
 
-    def get_timeseries(self, station_name, var_name, start=None, stop=None,
-                      ts_type=None, insert_nans=True, **kwargs):
-        """Get variable timeseries data for a certain station
-
-        Parameters
-        ----------
-        station_name : :obj:`str` or :obj:`int`
-            station name or index of station in metadata dict
-        var_name : str
-            name of variable to be retrieved
-        start
-            start time (optional)
-        stop
-            stop time (optional). If start time is provided and stop time not,
-            then only the corresponding year inferred from start time will be
-            considered
-        ts_type : :obj:`str`, optional
-            temporal resolution (can be pyaerocom ts_type or pandas freq.
-            string)
-        **kwargs
-            Additional keyword args passed to method :func:`to_station_data`
-
-        Returns
-        -------
-        pandas.Series
-            time series data
-        """
-        if 'merge_if_multi' in kwargs:
-            if not kwargs.pop['merge_if_multi']:
-                print_log.warning('Invalid input merge_if_multi=False'
-                                  'setting it to True')
-        stat = self.to_station_data(station_name, var_name, start, stop,
-                                    freq=ts_type, merge_if_multi=True,
-                                    insert_nans=insert_nans,
-                                    **kwargs)
-        return stat.to_timeseries(var_name)
-
     def plot_station_timeseries(self, station_name, var_name, start=None,
                                 stop=None, ts_type=None,
                                 insert_nans=True, ax=None, **kwargs):
@@ -2690,8 +2658,6 @@ class UngriddedData(object):
         stat = self.to_station_data(station_name, var_name, start, stop,
                                     freq=ts_type, merge_if_multi=True,
                                     insert_nans=insert_nans)
-        #s = self.get_timeseries(station_name, var_name, start, stop, ts_type)
-        #s.plot(ax=ax, **kwargs)
         ax = stat.plot_timeseries(var_name, ax=ax, **kwargs)
         return ax
 
@@ -2963,118 +2929,6 @@ class UngriddedData(object):
 
         return s
 
-    # DEPRECATED METHODS
-    @property
-    def vars_to_retrieve(self):
-        logger.warning(DeprecationWarning("Attribute vars_to_retrieve is "
-                                          "deprecated. Please use attr "
-                                          "contains_vars instead"))
-        return self.contains_vars
-
-    def get_time_series(self, station, var_name, start=None, stop=None,
-                        ts_type=None, **kwargs):
-        """Get time series of station variable
-
-        Parameters
-        ----------
-        station : :obj:`str` or :obj:`int`
-            station name or index of station in metadata dict
-        var_name : str
-            name of variable to be retrieved
-        start
-            start time (optional)
-        stop
-            stop time (optional). If start time is provided and stop time not,
-            then only the corresponding year inferred from start time will be
-            considered
-        ts_type : :obj:`str`, optional
-            temporal resolution
-        **kwargs
-            Additional keyword args passed to method :func:`to_station_data`
-
-        Returns
-        -------
-        pandas.Series
-            time series data
-        """
-        logger.warning(DeprecationWarning('Outdated method, please use to_timeseries'))
-
-        data = self.to_station_data(station, var_name,
-                                     start, stop, freq=ts_type,
-                                     **kwargs)
-        if not isinstance(data, StationData):
-            raise NotImplementedError('Multiple matches found for {}. Cannot '
-                                      'yet merge multiple instances '
-                                      'of StationData into one single '
-                                      'timeseries. Coming soon...'.format(station))
-        return data.to_timeseries(var_name)
-
-    # TODO: review docstring
-    def to_timeseries(self, station_name=None, start_date=None, end_date=None,
-                      freq=None):
-        """Convert this object into individual pandas.Series objects
-
-        Parameters
-        ----------
-        station_name : :obj:`tuple` or :obj:`str:`, optional
-            station_name or list of station_names to return
-        start_date, end_date : :obj:`str:`, optional
-            date strings with start and end date to return
-        freq : obj:`str:`, optional
-            frequency to resample to using the pandas resample method
-            us the offset aliases as noted in
-            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases
-
-        Returns
-        -------
-        list or dictionary
-            station_names is a string: dictionary with station data
-            station_names is list or None: list of dictionaries with station data
-
-        Example
-        -------
-        >>> import pyaerocom.io.readobsdata
-        >>> obj = pyaerocom.io.readobsdata.ReadUngridded()
-        >>> obj.read()
-        >>> pdseries = obj.to_timeseries()
-        >>> pdseriesmonthly = obj.to_timeseries(station_name='Avignon',start_date='2011-01-01', end_date='2012-12-31', freq='M')
-        """
-        from warnings import warn
-        msg = ('This method name is deprecated, please use to_timeseries')
-        warn(DeprecationWarning(msg))
-
-        if station_name is None:
-            stats = self.to_station_data_all(start=start_date, stop=end_date,
-                                             freq=freq)
-            stats['stats']
-        if isinstance(station_name, str):
-            station_name = [station_name]
-
-        if isinstance(station_name, list):
-            indices = []
-            for meta_idx, info in self.metadata.items():
-                if info['station_name'] in station_name:
-                    indices.append(meta_idx)
-            if len(indices) == 0:
-                raise MetaDataError('No such station(s): {}'.format(station_name))
-            elif len(indices) == 1:
-                # return single dictionary, like before
-                # TODO: maybe change this after clarification
-                return self.to_station_data(start=start_date, stop=end_date,
-                                            freq=freq)
-            else:
-                out_data = []
-                for meta_idx in indices:
-                    try:
-                        out_data.append(self.to_station_data(start=start_date,
-                                                             stop=end_date,
-                                                             freq=freq))
-                    except (VarNotAvailableError, TimeMatchError,
-                            DataCoverageError) as e:
-                        logger.warning('Failed to convert to StationData '
-                               'Error: {}'.format(repr(e)))
-                return out_data
-
 def reduce_array_closest(arr_nominal, arr_to_be_reduced):
     test = sorted(arr_to_be_reduced)
     closest_idx = []
@@ -3093,7 +2947,8 @@ if __name__ == "__main__":
     GHOST_EEA_LOCAL = os.path.join(OBS_LOCAL, 'GHOST/data/EEA_AQ_eReporting/daily')
 
     data = pya.io.ReadUngridded('GHOST.EEA.daily',
-                                data_dir=GHOST_EEA_LOCAL).read(vars_to_retrieve='vmro3')
+                                data_dirs=GHOST_EEA_LOCAL).read(
+                                    vars_to_retrieve='vmro3')
 
 
 

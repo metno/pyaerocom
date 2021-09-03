@@ -61,6 +61,7 @@ UCONV_MUL_FACS = pd.DataFrame([
     ['conctc'   , 'ug C/m3'     , 'ug m-3', 1.0],
     ['concno2'  , 'ug N/m3'     , 'ug m-3', M_NO2 / M_N],
     ['concno3'  , 'ug N/m3'     , 'ug m-3', M_NO3 / M_N],
+    ['concnh3'  , 'ug N/m3'     , 'ug m-3', M_NH3 / M_N],
     ['concnh4'  , 'ug N/m3'     , 'ug m-3', M_NH4 / M_N],
     ['wetso4'   , 'kg S/ha'     , 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
     ['concso4pr', 'mg S/L'      , 'g m-3' , M_SO4 / M_S] # 1mg/L = 1g/m3
@@ -75,6 +76,7 @@ UALIASES = {
     'ug S m-3'      : 'ug S/m3',
     'ug C m-3'      : 'ug C/m3',
     'ug N m-3'      : 'ug N/m3',
+    'ugC/m3'        : 'ug C/m3',
     # deposition rates (implicit)
     ## sulphur species
     'mgS/m2'        : 'mg S m-2',

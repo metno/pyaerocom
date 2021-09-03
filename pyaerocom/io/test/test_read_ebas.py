@@ -26,6 +26,7 @@ import pytest
 import os
 import numpy as np
 
+import pyaerocom.aux_var_helpers
 from pyaerocom import const
 import pyaerocom.exceptions as err
 from pyaerocom.conftest import (testdata_unavail, EBAS_FILES,
@@ -38,7 +39,6 @@ from pyaerocom.exceptions import (DataCoverageError,
 from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
-import pyaerocom.mathutils as mu
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -95,7 +95,9 @@ class TestReadEbas(object):
                          'concnh4',
                          'concsspm10',
                          'concsspm25',
+                         'concno',
                          'concno2',
+                         'concNno2',
                          'concglyoxal',
                          'conchcho',
                          'conco3',
@@ -142,7 +144,10 @@ class TestReadEbas(object):
         assert reader.TS_TYPE == 'undefined'
 
     def test_MERGE_STATIONS(self, reader):
-        assert reader.MERGE_STATIONS == {'Birkenes' : 'Birkenes II'}
+        assert reader.MERGE_STATIONS == {'Birkenes': 'Birkenes II',
+                                         'Rörvik': 'Råö',
+                                         'Vavihill': 'Hallahus',
+                                         'Virolahti II': 'Virolahti III'}
 
     def test_DEFAULT_VARS(self, reader):
         assert reader.DEFAULT_VARS == reader.PROVIDES_VARIABLES
@@ -185,11 +190,11 @@ class TestReadEbas(object):
             assert var in reader.AUX_USE_META
             assert reader.AUX_USE_META[var] == ovar
 
-    AUX_FUNS = {'sc440dryaer'    :   mu.compute_sc440dryaer,
-                'sc550dryaer'    :   mu.compute_sc550dryaer,
-                'sc700dryaer'    :   mu.compute_sc700dryaer,
-                'ac550dryaer'    :   mu.compute_ac550dryaer,
-                'ang4470dryaer'  :   mu.compute_ang4470dryaer_from_dry_scat}
+    AUX_FUNS = {'sc440dryaer'    : pyaerocom.aux_var_helpers.compute_sc440dryaer,
+                'sc550dryaer'    : pyaerocom.aux_var_helpers.compute_sc550dryaer,
+                'sc700dryaer'    : pyaerocom.aux_var_helpers.compute_sc700dryaer,
+                'ac550dryaer'    : pyaerocom.aux_var_helpers.compute_ac550dryaer,
+                'ang4470dryaer'  : pyaerocom.aux_var_helpers.compute_ang4470dryaer_from_dry_scat}
 
     def test_AUX_FUNS(self, reader):
         for var, func in self.AUX_FUNS.items():

@@ -13,12 +13,14 @@ import pandas as pd
 from cf_units import Unit
 
 from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
+from pyaerocom._conftest_helpers import create_fake_station_data
 from pyaerocom.colocation import (_regrid_gridded,
                                   _colocate_site_data_helper,
+                                  _colocate_site_data_helper_timecol,
                                   colocate_gridded_ungridded,
                                   colocate_gridded_gridded)
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom import GriddedData
+from pyaerocom import GriddedData, const
 from pyaerocom import helpers
 from pyaerocom.io import ReadMscwCtm
 
@@ -29,12 +31,54 @@ def test__regrid_gridded(data_tm5):
 
      assert one_way.shape == another_way.shape
 
+S1 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-01', '2010-12-31', 'd',
+                              {'ts_type' : 'daily'})
+
+S1['concpm10'][10:20] = np.nan
+
+S2 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-01', '2010-12-31', 'd',
+                              {'ts_type' : 'daily'})
+
+S3 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-01', '2010-12-31', '13d',
+                              {'ts_type' : '13daily'})
+S3['concpm10'][1] = np.nan
+S3['concpm10'][3] = np.nan
+
+S4 = create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
+                              10, '2010-01-03', '2011-12-31', 'd',
+                              {'ts_type' : 'daily'})
+
+S4['concpm10'][0:5] = range(5)
+
+@pytest.mark.parametrize(
+    'stat_data,stat_data_ref,var,var_ref,ts_type,resample_how,min_num_obs, use_climatology_ref,num_valid', [
+    (S4, S3, 'concpm10', 'concpm10', 'monthly', 'mean', {'monthly':{'daily':25}}, False, 10),
+    (S3, S4, 'concpm10', 'concpm10', 'monthly', 'mean', {'monthly':{'daily':25}}, False, 24),
+    (S1, S2, 'concpm10', 'concpm10', 'monthly', 'mean', 25, False, 12),
+    (S2, S1, 'concpm10', 'concpm10', 'monthly', 'mean', 25, False, 11),
+        ])
+def test__colocate_site_data_helper_timecol(stat_data, stat_data_ref, var, var_ref,
+                                            ts_type, resample_how,
+                                            min_num_obs, use_climatology_ref,
+                                            num_valid):
+    result = _colocate_site_data_helper_timecol(
+        stat_data, stat_data_ref, var, var_ref, ts_type, resample_how,
+        min_num_obs, use_climatology_ref)
+
+    assert isinstance(result, pd.DataFrame)
+    assert result.data.isnull().sum() == result.ref.isnull().sum()
+    assert len(result) - result.data.isnull().sum() == num_valid
+
+
 def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
     var = 'od550aer'
     stat1 = aeronetsunv3lev2_subset.to_station_data(3, var)
     stat2 = aeronetsunv3lev2_subset.to_station_data(4, var)
     df = _colocate_site_data_helper(stat1, stat2, var, var,
-                                    'daily',None,False,None,False)
+                                    'daily',None,None,False)
 
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 9483
@@ -46,25 +90,30 @@ def test__colocate_site_data_helper(aeronetsunv3lev2_subset):
 
 def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
     data = data_tm5.copy()
-    data.var_name='Blaaa'
+    data.var_name='od550bc'
     coldata = colocate_gridded_ungridded(data, aeronetsunv3lev2_subset,
                                          var_ref='od550aer')
 
-    assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
+    assert coldata.metadata['var_name'] == ['od550aer', 'od550bc']
 
 @testdata_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
-    (dict(),
+    (dict(filter_name='WORLD-noMOUNTAINS',
+          min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,8), 0.315930,0.275671),
-    (dict(apply_time_resampling_constraints=False),
+    (dict(filter_name='WORLD-noMOUNTAINS'),
      'monthly', (2,12,8), 0.316924,0.275671),
-    (dict(filter_name='WORLD-wMOUNTAINS'),
+    (dict(filter_name='WORLD-wMOUNTAINS',
+          min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,11), 0.269707, 0.243861),
-    (dict(use_climatology_ref=True),
+    (dict(filter_name='WORLD-noMOUNTAINS',
+          use_climatology_ref=True,
+          min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,13), 0.302636, 0.234147),
-    (dict(regrid_res_deg=30),
+    (dict(filter_name='WORLD-noMOUNTAINS',
+          regrid_res_deg=30, min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
      'monthly', (2,12,8), 0.31593 , 0.169897),
-    (dict(ts_type='yearly', apply_time_resampling_constraints=False),
+    (dict(filter_name='WORLD-noMOUNTAINS', ts_type='yearly'),
      'yearly', (2,1,8), 0.417676, 0.275671)
 
     ])

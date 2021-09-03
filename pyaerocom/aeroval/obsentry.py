@@ -8,14 +8,12 @@ ToDo
 - the configuration classes could inherit from a base class or could be more unified
 
 """
-import simplejson
-from traceback import format_exc
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings
 from pyaerocom.metastandards import DataSource
-from pyaerocom.exceptions import InitialisationError
+from pyaerocom.aeroval._lowlev import EvalEntry
 
-class ObsConfigEval(BrowseDict):
+class ObsEntry(EvalEntry, BrowseDict):
     """Observation configuration for evaluation (dictionary)
 
     Note
@@ -27,10 +25,6 @@ class ObsConfigEval(BrowseDict):
     obs_id : str
         ID of observation network in AeroCom database
         (e.g. 'AeronetSunV3Lev2.daily')
-    obs_type : str
-        specifies whether data is gridded or ungridded. Choose from 'gridded'
-        or 'ungridded'. This is optional, but some functionality will not work
-        if it is not set (such as registering auxiliary variables).
     obs_vars : list
         list of pyaerocom variable names that are supposed to be analysed
         (e.g. ['od550aer', 'ang4487aer'])
@@ -56,7 +50,7 @@ class ObsConfigEval(BrowseDict):
         variables.
     instr_vert_loc : str, optional
         vertical location code of observation instrument. This is used in
-        the web interface for separating different categories of measurements
+        the aeroval interface for separating different categories of measurements
         such as "ground", "space" or "airborne".
     is_superobs : bool
         if True, this observation is a combination of several others which all
@@ -69,48 +63,55 @@ class ObsConfigEval(BrowseDict):
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
     """
     SUPPORTED_VERT_CODES = ['Column', 'Profile', 'Surface']
-    ALT_NAMES_VERT_CODES = dict(ModelLevel = 'Profile')
+    ALT_NAMES_VERT_CODES = dict(ModelLevel='Profile')
 
     SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
+
+    obs_vars = ListOfStrings()
     def __init__(self, **kwargs):
 
-        self.obs_id = None
-        self.obs_type = None
+        self.obs_id = ''
 
-        self.obs_vars = None
+        self.obs_vars = []
         self.obs_ts_type_read = None
-        self.obs_vert_type = None
+        self.obs_vert_type = ''
         self.obs_aux_requires = {}
         self.instr_vert_loc = None
 
         self.is_superobs=False
         self.only_superobs=False
 
-        self.read_opts_ungridded = None
+        self.read_opts_ungridded = {}
 
         self.update(**kwargs)
         self.check_cfg()
-        self.check_add_obs()
 
-    def check_add_obs(self):
-        """Check if this dataset is an auxiliary post dataset"""
-        if not isinstance(self.obs_aux_requires, dict):
+    def get_all_vars(self) -> list:
+        """
+        Get list of all variables associated with this entry
+
+        Returns
+        -------
+        list
+            DESCRIPTION.
+
+        """
+        return self.obs_vars
+
+    def get_vert_code(self, var):
+        """Get vertical code name for obs / var combination"""
+        vc = self['obs_vert_type']
+        if isinstance(vc, str):
+            val = vc
+        elif isinstance(vc, dict) and var in vc:
+            val = vc[var]
+        else:
+            raise ValueError(f'invalid value for obs_vert_type: {vc}')
+        if not val in self.SUPPORTED_VERT_CODES:
             raise ValueError(
-                f'Invalid value obs_aux_requires={self.obs_aux_requires}'
-                f'Need dict...'
-                )
-        elif len(self.obs_aux_requires) > 0:
-            if not self.obs_type == 'ungridded':
-                raise NotImplementedError(
-                    'Cannot initialise auxiliary setup for {}. Aux obs reading '
-                    'is so far only possible for ungridded observations.'
-                    .format(self.obs_id))
-            try:
-                const.add_ungridded_post_dataset(**self)
-            except Exception:
-                raise InitialisationError(
-                    'Cannot initialise auxiliary reading setup for {}. '
-                    'Reason:\n{}'.format(self.obs_id, format_exc()))
+                f'invalid value for obs_vert_type: {val}. Choose from '
+                f'{self.SUPPORTED_VERT_CODES}.')
+        return val
 
 
     def check_cfg(self):
@@ -170,8 +171,8 @@ class ObsConfigEval(BrowseDict):
         """
         if ovt in self.ALT_NAMES_VERT_CODES:
             _ovt = self.ALT_NAMES_VERT_CODES[ovt]
-            const.print_log.warning('Please use {} for obs_vert_code '
-                                        'and not {}'.format(_ovt, ovt))
+            const.print_log.warning(
+                f'Please use {_ovt} for obs_vert_code and not {ovt}')
             return _ovt
         valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES.keys())
         raise ValueError('Invalid value for obs_vert_type: {}. '
@@ -179,74 +180,3 @@ class ObsConfigEval(BrowseDict):
                          .format(self.obs_vert_type,
                                  valid))
 
-class ModelConfigEval(BrowseDict):
-    """Modeln configuration for evaluation (dictionary)
-
-    Note
-    ----
-    Only :attr:`model_id` is mandatory, the rest is optional.
-
-    Attributes
-    ----------
-    model_id : str
-        ID of model run in AeroCom database (e.g. 'ECMWF_CAMS_REAN')
-    model_ts_type_read : :obj:`str` or :obj:`dict`, optional
-        may be specified to explicitly define the reading frequency of the
-        model data. Not to be confused with :attr:`ts_type`, which specifies
-        the frequency used for colocation. Can be specified variable specific
-        by providing a dictionary.
-    model_use_vars : :obj:`dict`, optional
-        dictionary that specifies mapping of model variables. Keys are
-        observation variables, values are the corresponding model variables
-        (e.g. model_use_vars=dict(od550aer='od550csaer'))
-    model_read_aux : :obj:`dict`, optional
-        may be used to specify additional computation methods of variables from
-        models. Keys are obs variables, values are dictionaries with keys
-        `vars_required` (list of required variables for computation of var
-        and `fun` (method that takes list of read data objects and computes
-        and returns var)
-    """
-    def __init__(self, model_id, **kwargs):
-        self.model_id = model_id
-        self.model_ts_type_read = None
-        self.model_use_vars = {}
-        self.model_read_aux = {}
-
-        self.update(**kwargs)
-        self.check_cfg()
-
-    def check_cfg(self):
-        """Check that minimum required attributes are set and okay"""
-        if not isinstance(self.model_id, str):
-            raise ValueError('Invalid input for model_id {}. Need str.'
-                             .format(self.model_id))
-
-def read_json(file_path):
-    """Read json file
-
-    Parameters
-    ----------
-    file_path : str
-        json file path
-
-    Returns
-    -------
-    dict
-        content as dictionary
-    """
-    with open(file_path, 'r') as f:
-        data = simplejson.load(f)
-    return data
-
-def write_json(data_dict, file_path, indent=4):
-    """Save json file
-
-    Parameters
-    ----------
-    data_dict : dict
-        dictionary that can be written to json file
-    file_path : str
-        output file path
-    """
-    with open(file_path, 'w+') as f:
-        f.write(simplejson.dumps(data_dict, indent=4))

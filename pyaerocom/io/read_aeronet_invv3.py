@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.mathutils import calc_abs550aer, calc_od550aer
+from pyaerocom.aux_var_helpers import calc_od550aer, calc_abs550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
 
@@ -46,7 +46,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
 
     Parameters
     ----------
-    dataset_to_read
+    data_id
         string specifying either of the supported datasets that are defined
         in ``SUPPORTED_DATASETS``
     """
@@ -67,11 +67,6 @@ class ReadAeronetInvV3(ReadAeronetBase):
     #: that are provided in a defined temporal resolution
     TS_TYPES = {const.AERONET_INV_V3L15_DAILY_NAME   :   'daily',
                 const.AERONET_INV_V3L2_DAILY_NAME    :   'daily'}
-
-    #: Mapping for dataset location for different data levels that can be
-    #: read with this interface (can be used when creating the object)
-    DATA_LEVELS = {2.0      :   SUPPORTED_DATASETS[0],
-                   1.5      :   SUPPORTED_DATASETS[1]}
 
     #: default variables for read method
     DEFAULT_VARS = ['abs550aer',
@@ -118,29 +113,6 @@ class ReadAeronetInvV3(ReadAeronetBase):
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
-
-    def __init__(self, dataset_to_read=None, level=None):
-        super(ReadAeronetInvV3, self).__init__(dataset_to_read)
-        if level is not None:
-            self.change_data_level(level)
-
-    def change_data_level(self, level):
-        """Change level of Inversion data
-
-        Parameters
-        ----------
-        level :obj:`float` or :obj:`int`,
-            data level (choose from 1.5 or 2)
-
-        Raises
-        ------
-        ValueError
-            if input level is not available
-        """
-        if not level in self.DATA_LEVELS:
-            raise ValueError('Invalid input for level, please choose '
-                             'from {}'.format(self.DATA_LEVELS.keys()))
-        super(ReadAeronetInvV3, self).__init__(self.DATA_LEVELS[level])
 
     def read_file(self, filename, vars_to_retrieve=None,
                   vars_as_series=False):

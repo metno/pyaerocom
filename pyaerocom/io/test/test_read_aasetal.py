@@ -57,7 +57,7 @@ def test__get_time_stamps():
 def test_reader():
     reader = ReadAasEtal(DATA_ID)
     assert reader.data_id == DATA_ID
-    assert reader.DATASET_PATH == DATA_DIR()
+    assert reader.data_dir == DATA_DIR()
     assert reader.PROVIDES_VARIABLES == ['concso2', 'concso4', 'pr',
                                          'wetso4', 'concso4pr']
     filenames = [os.path.basename(x) for x in reader.get_file_list()]

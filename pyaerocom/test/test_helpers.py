@@ -9,9 +9,10 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 import xarray as xr
-from pandas import Series, date_range, Timestamp
+import pandas as pd
 
 from pyaerocom import helpers, StationData
+from pyaerocom._conftest_helpers import _create_fake_timeseries_hourly
 from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.exceptions import (DataCoverageError, TemporalResolutionError,
                                   UnitConversionError)
@@ -66,28 +67,41 @@ def test_merge_station_data(statlist,use,var_name,pref_attr,sort_by_largest,fill
         avg = np.mean(vardata)
         npt.assert_allclose(avg, mean, rtol=1e-2)
 
+
 def test__get_pandas_freq_and_loffset():
     val = helpers._get_pandas_freq_and_loffset('monthly')
     assert val == ('MS', '14D')
 
-def _make_timeseries_synthetic():
-
-    idx = date_range(start="2000", periods=90, freq='D')
-
-    vals = np.arange(len(idx))
-    return  Series(vals, idx)
-
 @pytest.fixture(scope='module')
-def timeseries_synthetic():
-    return _make_timeseries_synthetic()
+def fake_hourly_ts():
+    time = pd.date_range('2018-01-10T00:00:00', '2018-01-17T23:59:00', freq='h')
+    xrange_modulation = np.linspace(0,np.pi*40, len(time))
+    signal = np.sin(xrange_modulation)
+    return pd.Series(signal, time)
 
-def test_resample_timeseries(timeseries_synthetic):
-    s1 = helpers.resample_timeseries(timeseries_synthetic,
-                                     'monthly')
-    assert len(s1) == 3
-    for time in s1.index:
-        assert time.year == 2000, time.year
-        assert time.day == 15, time.day
+@pytest.mark.parametrize('freq, how, min_num_obs, num, avg', [
+    ('daily', 'mean', 10000, 8, np.nan),
+    ('daily', '50percentile', 10000, 8, np.nan),
+    ('daily', 'mean', 23, 8, 0),
+    ('daily', '50percentile', 23, 8, 0),
+    ('yearly', '50percentile', 23, 1, 0),
+    ('yearly', '50percentile', 192, 1, 0),
+    ('daily', '50percentile', None, 8, 0),
+    ('yearly', '50percentile', 193, 1, np.nan),
+    ('daily', 'median', None, 8, 0.0),
+    ('monthly', 'mean', None, 1, 0),
+    ('daily', 'mean', None, 8, 0),
+    ('daily', '1percentile', None, 8, -1),
+    ('daily', '25percentile', None, 8, -0.64),
+    ('daily', '75percentile', None, 8, 0.64),
+    ])
+def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
+
+    s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how,
+                                     min_num_obs=min_num_obs)
+    _avg = np.nanmean(s1)
+    npt.assert_allclose(_avg, avg, atol=1e-2)
+    assert len(s1) == num
 
 def test_same_meta_dict():
     d1 = dict(station_name='bla',
@@ -124,8 +138,8 @@ def test_start_stop_str():
 
 def test_start_stop_from_year():
     start, stop = helpers.start_stop_from_year(2000)
-    assert start == Timestamp('2000')
-    assert stop == Timestamp('2000-12-31 23:59:59')
+    assert start == pd.Timestamp('2000')
+    assert stop == pd.Timestamp('2000-12-31 23:59:59')
 
 @pytest.mark.parametrize(
     'input,expected', [

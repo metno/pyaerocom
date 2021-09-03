@@ -4,9 +4,45 @@
 Small helper utility functions for pyaerocom
 """
 import numpy as np
-import os
+import os, abc, logging, simplejson
+from pathlib import Path
+from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
-import multiprocessing as mp
+from pyaerocom import print_log
+
+def read_json(file_path):
+    """Read json file
+
+    Parameters
+    ----------
+    file_path : str
+        json file path
+
+    Returns
+    -------
+    dict
+        content as dictionary
+    """
+    with open(file_path, 'r') as f:
+        data = simplejson.load(f)
+    return data
+
+
+def write_json(data_dict, file_path, **kwargs):
+    """Save json file
+
+    Parameters
+    ----------
+    data_dict : dict
+        dictionary that can be written to json file
+    file_path : str
+        output file path
+    **kwargs
+        additional keyword args passed to :func:`simplejson.dumps` (e.g.
+        indent, )
+    """
+    with open(file_path, 'w') as f:
+        simplejson.dump(data_dict, f, **kwargs)
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions
@@ -88,26 +124,415 @@ def check_write_access(path, timeout=0.1):
             return False
     return run_timeout(path, timeout)
 
-class BrowseDict(dict):
-    """Dictionary with get / set attribute methods
+def _class_name(obj):
+    """Returns class name of an object"""
+    return type(obj).__name__
+
+class Validator(abc.ABC):
+
+    def __set_name__(self, owner, name):
+        self._name = name
+
+    def __get__(self, obj, objtype=None):
+        try:
+            return obj.__dict__[self._name]
+        except (AttributeError, KeyError):
+            raise AttributeError('value not set...')
+
+    def __set__(self, obj, val):
+        val = self.validate(val)
+        obj.__dict__[self._name] = val
+
+    @abc.abstractmethod
+    def validate(self, val):
+        pass
+
+class TypeValidator(Validator):
+    def __init__(self, type):
+        self._type = type
+
+    def validate(self, val):
+        if not isinstance(val, self._type):
+            raise ValueError(f'need instance of {self._type}')
+        return val
+
+class StrType(Validator):
+    def validate(self, val):
+        if not isinstance(val, str):
+            raise ValueError(f'need str, got {val}')
+        return val
+
+class StrWithDefault(Validator):
+    def __init__(self, default : str):
+        self.default = default
+
+    def validate(self, val):
+        if not isinstance(val, str):
+            if val is None:
+                val = self.default
+            else:
+                raise ValueError(f'need str or None, got {val}')
+        return val
+
+class DictType(Validator):
+    def validate(self, val):
+        if not isinstance(val, dict):
+            raise ValueError(f'need dict, got {val}')
+        return val
+
+class FlexList(Validator):
+    """list that can be instantated via input str, tuple or list or None"""
+    def validate(self, val):
+        if isinstance(val, str):
+            val = [val]
+        elif isinstance(val, tuple):
+            val = list(val)
+        elif val is None:
+            val = []
+        elif not isinstance(val, list):
+            raise ValueError(f'failed to convert {val} to list')
+        return val
+
+class EitherOf(Validator):
+    _allowed = FlexList()
+    def __init__(self, allowed:list):
+        self._allowed = allowed
+
+    def validate(self, val):
+        if not any([x==val for x in self._allowed]):
+            raise ValueError(f'inalid value {val}, needs to be either '
+                             f'of {self._allowed}.')
+        return val
+
+class ListOfStrings(FlexList):
+    def validate(self, val):
+        # make sure to have a list
+        val = super(ListOfStrings, self).validate(val)
+        # make sure all entries are strings
+        if not all([isinstance(x, str) for x in val]):
+            raise ValueError(f'not all items are str type in input list {val}')
+        return val
+
+class DictStrKeysListVals(Validator):
+    def validate(self, val):
+        if not isinstance(val, dict):
+            raise ValueError(f'need dict, got {val}')
+        elif not all([isinstance(x, str) for x in val.keys()]):
+            raise ValueError(f'all keys need to be str type in {val}')
+        elif not all([isinstance(x, list) for x in val.values()]):
+            raise ValueError(f'all values need to be list type in {val}')
+        return val
+
+class Loc(abc.ABC):
+    """Abstract descriptor representing a path location
+
+    Descriptor???
+    See here: https://docs.python.org/3/howto/descriptor.html#complete-practical-example
+
+    Note
+    ----
+    - Child classes need to implement :func:`create`
+    - value is allowed to be `None` in which case no checks are performed
+    """
+    def __init__(self, default=None, assert_exists=False,
+                 auto_create=False, tooltip=None, logger=None):
+        self.assert_exists = assert_exists
+        self.auto_create = auto_create
+        self.tooltip = '' if tooltip is None else tooltip
+        self.logger = logging.getLogger() if logger is None else logger
+        self.__set__(self, default)
+
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def __get__(self, obj, objtype=None):
+        try:
+            val = obj.__dict__[self.name]
+        except (KeyError, AttributeError):
+            val = self.default
+        return val
+
+    def __set__(self, obj, value):
+        value = self.validate(value)
+        try:
+            obj.__dict__[self.name] = value
+        except AttributeError:
+            self.default = value
+
+    def validate(self, value):
+        if value is None:
+            return value
+        elif isinstance(value, Path):
+            value = str(value)
+        if not isinstance(value, str):
+            raise ValueError(value)
+        if self.assert_exists and not os.path.exists(value):
+            if self.auto_create:
+                self.create(value)
+            else:
+                raise FileNotFoundError(value)
+        return value
+
+    @abc.abstractmethod
+    def create(self, value):
+        pass
+
+class DirLoc(Loc):
+
+    def create(self, value):
+        os.makedirs(value, exist_ok=True)
+        self.logger.info(f'created directory {value}')
+
+class AsciiFileLoc(Loc):
+    def create(self, value):
+        self.logger.info(f'create ascii file {value}')
+        open(value, 'w').close()
+
+class JSONFile(Loc):
+    def create(self, value):
+        write_json({}, value)
+        self.logger.info(f'created json file {value}')
+
+    def validate(self, value):
+        value = super(JSONFile, self).validate(value)
+        if value is not None and not value.endswith('json'):
+            raise ValueError('need .json file ending')
+
+class BrowseDict(MutableMapping):
+    """Dictionary-like object with getattr and setattr options
+
+    Extended dictionary that supports dynamic value generation (i.e. if an
+    assigned value is callable, it will be executed on demand).
+    """
+    ADD_GLOB = []
+    FORBIDDEN_CHARS_KEYS = []
+    #: Keys to be ignored when converting to json
+    IGNORE_JSON = []
+    MAXLEN_KEYS = 1e3
+    SETTER_CONVERT = {}
+    def __init__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
+
+    @property
+    def _class_name(self):
+        return _class_name(self)
+
+    def keys(self):
+        return list(self.__dict__.keys()) + self.ADD_GLOB
+
+    def _get_glob_vals(self):
+        return [getattr(self, x) for x in self.ADD_GLOB]
+
+    def values(self):
+        return [getattr(self, x) for x in self.keys()]
+
+    def items(self):
+        for key in self.keys():
+            yield key, getattr(self, key)
+
+    def __setitem__(self, key, val) -> None:
+        key, val, ok = self._setitem_checker(key, val)
+        if not ok:
+            return
+        if bool(self.SETTER_CONVERT):
+            for fromtp, totp in self.SETTER_CONVERT.items():
+                if isinstance(val, fromtp):
+                    if fromtp == dict:
+                        val = totp(**val)
+                    else:
+                        val = totp(val)
+
+        if isinstance(key, str):
+            if len(key) > self.MAXLEN_KEYS:
+                raise KeyError(
+                    f'key {key} exceeds max length of {self.MAXLEN_KEYS}')
+            for char in self.FORBIDDEN_CHARS_KEYS:
+                if char in key:
+                    raise KeyError(
+                    f'key {key} must not contain char {char}')
+        setattr(self, key, val)
+        #self.__dict__[key] = val
+
+
+    def _setitem_checker(self, key, val):
+        return key, val, True
+
+    def __getitem__(self, key):
+        try:
+            return getattr(self, key)
+        except TypeError:
+            #if key is not str
+            return self.__dict__[key]
+        except AttributeError as e:
+            raise KeyError(e)
+
+    def __delitem__(self, key):
+        del self.__dict__[key]
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+    def __len__(self):
+        return len(self.__dict__)
+
+    def __repr__(self):
+        '''echoes class, id, & reproducible representation in the REPL'''
+        _repr = repr(self.__dict__)
+        return f'{_class_name(self)}: {_repr}'
+
+    def to_dict(self):
+        out = {}
+        for key, val in self.items():
+            out[key] = val
+        return out
+
+    def json_repr(self) -> dict:
+        """
+        Convert object to serializable json dict
+
+        Returns
+        -------
+        dict
+            content of class
+
+        """
+        output = {}
+        for key, val in self.items():
+            if key in self.IGNORE_JSON:
+                continue
+            if hasattr(val, 'json_repr'):
+                val = val.json_repr()
+            output[key] = val
+        return output
+
+    def import_from(self, other) -> None:
+        """
+        Import key value pairs from other object
+
+        Other than :func:`update` this method will silently ignore input
+        keys that are not contained in this object.
+
+        Parameters
+        ----------
+        other : dict or BrowseDict
+            other dict-like object containing content to be updated.
+
+        Raises
+        ------
+        ValueError
+            If input is inalid type.
+
+        Returns
+        -------
+        None
+
+        """
+        if not isinstance(other, (dict, BrowseDict)):
+            raise ValueError('need dict-like object')
+        for key, val in other.items():
+            if key in self:
+                self[key] = val
+
+    def pretty_str(self):
+        return dict_to_str(self.to_dict())
+
+    def __str__(self):
+        return str(self.to_dict())
+
+class ConstrainedContainer(BrowseDict):
+    """Restrictive dict-like class with fixed keys
+
+    This class enables to create dict-like objects that have a fixed set of
+    keys and value types (once assigned). Optional values may be instantiated
+    as None, in which case the first time instantiation definecs its type.
+
+    Note
+    ----
+    The limitations for assignments are only restricted to setitem operations
+    and attr assignment via "." works like in every other class.
 
     Example
     -------
-    >>> d = BrowseDict(bla = 3, blub = 4)
-    >>> print(d.bla)
-    3
+    class MyContainer(ConstrainedContainer):
+        def __init__(self):
+            self.val1 = 1
+            self.val2 = 2
+            self.option = None
+
+    >>> mc = MyContainer()
+    >>> mc['option'] = 42
     """
-    def __getattr__(self, key):
-        try:
-            return self.__getitem__(key)
-        except KeyError:
-            raise AttributeError(key)
 
-    def __setattr__(self, key, val):
-        self.__setitem__(key, val)
+    CRASH_ON_INVALID = True
 
-    def __dir__(self):
-        return self.keys()
+    def __setitem__(self, key, val):
+        super(ConstrainedContainer, self).__setitem__(key, val)
+
+    def _invoke_dtype(self, current_tp, val):
+        return current_tp(**val)
+
+    def _check_valtype(self, key, val):
+        current_tp = type(self[key])
+        if type(val) != current_tp and isinstance(self[key], BrowseDict):
+            val = current_tp(**val)
+        return val
+
+    def _setitem_checker(self, key, val):
+        """make sure no new attr is added
+
+        Note
+        ----
+        Only used in __setitem__ not in __setattr__.
+        """
+        if not key in dir(self):
+            if self.CRASH_ON_INVALID:
+                raise ValueError(f'Invalid key {key}')
+            print_log.warning(
+                f'Invalid key {key} in {self._class_name}. Will be ignored.'
+                )
+            return key, val, False
+
+        current = getattr(self, key)
+        val = self._check_valtype(key, val)
+        current_tp = type(current)
+
+        if not current is None and not isinstance(val, current_tp):
+            raise ValueError(
+                f'Invalid type {type(val)} for key: {key}. Need {current_tp} '
+                f'(Current value: {current})')
+        return key, val, True
+
+class NestedContainer(BrowseDict):
+
+    def _occurs_in(self, key) -> list:
+        objs = []
+        if key in self:
+            objs.append(self)
+        for k, v in self.items():
+            if isinstance(v, (dict, BrowseDict)) and key in v:
+                objs.append(v)
+            if len(objs) > 1:
+                print(key, 'is contained in multiple containers ', objs)
+        return objs
+
+    def keys_unnested(self) -> list:
+        keys = []
+        for key, val in self.items():
+            keys.append(key)
+            if isinstance(val, NestedContainer):
+                keys.extend(val.keys_unnested())
+            elif isinstance(val, (ConstrainedContainer, dict)):
+                for subkey, subval in val.items():
+                    keys.append(subkey)
+        return keys
+
+    def update(self, **settings):
+        for key, val in settings.items():
+            to_update = self._occurs_in(key)
+            if len(to_update) == 0:
+                raise AttributeError(f'invalid key {key}')
+            for obj in to_update:
+                obj[key] = val
 
     def __str__(self):
         return dict_to_str(self)
@@ -215,7 +640,7 @@ def check_dirs_exist(*dirs, **add_dirs):
             os.mkdir(d)
             print('Creating dir: {} ({})'.format(d, k))
 
-def list_to_shortstr(lst, indent=0, name=None):
+def list_to_shortstr(lst, indent=0):
     """Custom function to convert a list into a short string representation"""
     def _short_lst_fmt(lin):
         lout = []
@@ -226,40 +651,38 @@ def list_to_shortstr(lst, indent=0, name=None):
             except Exception:
                 lout.append(val)
         return lout
-    if name is None:
-        name_str = '{} ({} items): '.format(type(lst).__name__, len(lst))
-    else:
-        name_str = '{} ({}, {} items): '.format(name, type(lst).__name__, len(lst))
+    name_str = f'{type(lst).__name__} ({len(lst)} items): '
     indentstr = indent*" "
     if len(lst) == 0:
-        return "\n{}{}[]".format(indentstr, name_str)
+        return "{}{}[]".format(indentstr, name_str)
     elif len(lst) < 6:
         lfmt = _short_lst_fmt(lst)
-        return "\n{}{}{}".format(indentstr, name_str, lfmt)
+        return "{}{}{}".format(indentstr, name_str, lfmt)
     else: #first 2 and last 2 items
         lfmt= _short_lst_fmt([lst[0], lst[1], lst[-2], lst[-1]])
-        s = ("\n{}{}[{}, {}, ..., {}, {}]"
+        s = ("{}{}[{}, {}, ..., {}, {}]"
              .format(indentstr, name_str, lfmt[0], lfmt[1], lfmt[2], lfmt[3]))
 
     return s
 
-def sort_dict_by_name(d, pref_list=None):
+def sort_dict_by_name(d, pref_list : list = None) -> dict:
     """Sort entries of input dictionary by their names and return ordered
 
     Parameters
     ----------
     d : dict
         input dictionary
+    pref_list : list, optional
+        preferred order of items (may be subset of keys in input dict)
 
     Returns
     -------
-    OrderedDict
+    dict
         sorted and ordered dictionary
     """
-    from collections import OrderedDict as od
     if pref_list is None:
         pref_list = []
-    s = od()
+    s = {}
     sorted_keys = sorted(d)
     for k in pref_list:
         if k in d:
@@ -269,15 +692,13 @@ def sort_dict_by_name(d, pref_list=None):
             s[k] = d[k]
     return s
 
-def dict_to_str(dictionary, s=None, indent=0, ignore_null=False):
+def dict_to_str(dictionary, indent=0, ignore_null=False):
     """Custom function to convert dictionary into string (e.g. for print)
 
     Parameters
     ----------
     dictionary : dict
         the dictionary
-    s : str
-        the input string
     indent : int
         indent of dictionary content
     ignore_null : bool
@@ -288,32 +709,28 @@ def dict_to_str(dictionary, s=None, indent=0, ignore_null=False):
     str
         the modified input string
 
-    Example
-    -------
-
-    >>> string = "Printing dictionary d"
-    >>> d = dict(Bla=1, Blub=dict(BlaBlub=2))
-    >>> print(dict_to_str(d, string))
-    Printing dictionary d
-       Bla: 1
-       Blub (dict)
-        BlaBlub: 2
-
     """
-    if s is None:
-        s = ''
-    for k, v in dictionary.items():
-        if ignore_null and v is None:
+    if len(dictionary) == 0:
+        return '{}'
+    elif len(dictionary) == 1:
+        pre = ind = offs =''
+    else:
+        pre = '\n'
+        ind = indent*" "
+        offs = ' '
+    s = '{'
+
+    for key, val in dictionary.items():
+        if ignore_null and val is None:
             continue
-        elif isinstance(v, dict):
-            s += "\n{}{} ({}):".format(indent*' ', k, type(v).__name__)
-            s = dict_to_str(v, s, indent+2)
-        elif isinstance(v, list):
-            s += list_to_shortstr(v, indent=indent, name=k)
-        elif isinstance(v, np.ndarray) and v.ndim==1:
-            s += list_to_shortstr(v, indent=indent, name=k)
-        else:
-            s += "\n{}{}: {}".format(indent*" ", k, v)
+        elif isinstance(val, (dict, BrowseDict)):
+            val = dict_to_str(val, indent+2)
+        elif isinstance(val, list):
+            val = list_to_shortstr(val, indent=indent)
+        elif isinstance(val, np.ndarray) and val.ndim==1:
+            val = list_to_shortstr(val, indent=indent)
+        s += f'{pre}{ind}{offs}{key}: {val}'
+    s+= pre + ind + '}'
     return s
 
 def str_underline(s, indent=0):
@@ -324,4 +741,17 @@ def str_underline(s, indent=0):
 
 if __name__ == '__main__':
     d = BrowseDict(bla=1, blub=42, blablub=dict(bla=42, blub=43))
-    print(d)
+
+    d.update(**{'mypy': 55})
+    class CDict(ConstrainedContainer):
+        def __init__(self):
+            self.bla = 1
+            self.blub = 2
+            self.option = None
+
+    cd = CDict()
+    print(cd)
+    cd['option'] = 42
+    cd['option'] = {}
+
+    cd.update(**{'mypy': 55})

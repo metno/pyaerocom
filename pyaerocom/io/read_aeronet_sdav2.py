@@ -36,26 +36,17 @@ import pandas as pd
 import re, os
 from collections import OrderedDict as od
 from pyaerocom import const as const
-from pyaerocom.mathutils import (calc_ang4487aer,
-                                 calc_od550aer,
-                                 calc_od550gt1aer,
-                                 calc_od550lt1aer)
+from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer, calc_od550gt1aer, calc_od550lt1aer
 from pyaerocom.stationdata import StationData
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 
 class ReadAeronetSdaV2(ReadAeronetBase):
     """Interface for reading Aeronet Sun V2 Level 2 data
 
-    Todo
+    Note
     ----
-    Check if also level 1.5 works and include
-
-    Parameters
-    ----------
-    dataset_to_read
-        string specifying either of the supported datasets that are defined
-        in ``SUPPORTED_DATASETS``.
-
+    Maintenance for AERONET version 2 data is deprecated since pyaerocom
+    version 0.11.0. Please use version 3 data and associated pyaerocom readers.
     """
     #: Mask for identifying datafiles
     _FILEMASK = '*.ONEILL_20'
