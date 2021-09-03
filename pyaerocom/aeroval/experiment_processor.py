@@ -12,7 +12,21 @@ from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 
 
 class ExperimentProcessor(ProcessingEngine, HasColocator):
-    """Composite class representing a full setup for an AeroVal experiment
+    """Processing engine for AeroVal experiment
+
+    By default, this class processes one configuration file, represented by
+    :class:`EvalSetup`. As such, an instance of :class:`EvalSetup` represents
+    an AeroVal experiment, comprising a list of models, a list of observations
+    (and variables).
+
+    For each possible (or defined) model / obs / variable combination, the
+    processing engine will perform spatial and temporal co-location and will
+    store on co-located NetCDF file (e.g. if there are 2 models, 2 observation
+    networks and 2 variables there will be 4 co-located NetCDF files).
+    The co-location is done using :class:`pyaerocom.colocation_auto.Colocator`.
+
+
+
     """
 
     _log = const.print_log
