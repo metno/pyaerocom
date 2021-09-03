@@ -4,8 +4,8 @@ import pytest
 from pyaerocom.conftest import tda, does_not_raise_exception, testdata_unavail
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
-from pyaerocom.io import ReadGridded, ReadMscwCtm
-from pyaerocom.exceptions import ColocationError, DataCoverageError
+from pyaerocom.io import ReadMscwCtm
+from pyaerocom.exceptions import ColocationError
 from pyaerocom.io.aux_read_cubes import add_cubes
 
 HOME = os.path.expanduser('~')
@@ -57,14 +57,12 @@ def col():
     (ColocationSetup(), default_setup)
     ])
 def test_colocation_setup(stp, should_be):
-    #tempfix
-    with pytest.raises(AssertionError):
-        for key, val in should_be.items():
-            assert key in stp
-            if key == 'basedir_coldata':
-                assert os.path.samefile(val, stp['basedir_coldata'])
-            else:
-                assert val == stp[key], key
+    for key, val in should_be.items():
+        assert key in stp
+        if key == 'basedir_coldata':
+            assert os.path.samefile(val, stp['basedir_coldata'])
+        else:
+            assert val == stp[key], key
 
 
 def test_colocator(col):
