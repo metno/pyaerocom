@@ -1301,7 +1301,6 @@ class AerocomEvaluation(object):
                 data.resample_time(
                     to_ts_type=to_freq,
                     how=rshow,
-                    apply_constraints=meta['apply_constraints'],
                     min_num_obs=meta['min_num_obs'],
                     colocate_time=meta['colocate_time'],
                     inplace=True)

@@ -176,7 +176,6 @@ def _create_fake_coldata_3d():
             'colocate_time'     :   False,
             'obs_is_clim'       :   False,
             'pyaerocom'         :   '0.11.0',
-            'apply_constraints' :   True,
             'min_num_obs'       :   dict(monthly=dict(daily=15),
                                          daily=dict(hourly=12)
                                          ),

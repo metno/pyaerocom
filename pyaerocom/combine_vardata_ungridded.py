@@ -103,7 +103,6 @@ def _combine_2_sites(stat, var, stat_other, var_other,
                      match_stats_tol_km, var_name_out,
                      data_id_out, var_unit_out,
                      resample_how,
-                     apply_time_resampling_constraints,
                      min_num_obs, prefer, merge_info_vars,
                      add_meta_keys):
     """Combine two StationData objects for a given merge strategy
@@ -155,7 +154,6 @@ def _combine_2_sites(stat, var, stat_other, var_other,
         var, var_other,
         to_ts_type,
         resample_how=resample_how,
-        apply_time_resampling_constraints=apply_time_resampling_constraints,
         min_num_obs=min_num_obs,
         use_climatology_ref=False)
 
@@ -247,8 +245,7 @@ def combine_vardata_ungridded(data_ids_and_vars,
                               var_name_out=None,
                               data_id_out=None,
                               var_unit_out=None,
-                              resample_how='mean',
-                              apply_time_resampling_constraints=False,
+                              resample_how=None,
                               min_num_obs=None,
                               add_meta_keys=None):
     """
@@ -338,10 +335,6 @@ def combine_vardata_ungridded(data_ids_and_vars,
     resample_how : str, optional
         String specifying how temporal resampling should be done. The default
         is 'mean'.
-    apply_time_resampling_constraints : bool, optional
-        Boolean specifying whether constraints should be applied for temporal
-        resampling (e.g. at least X daily values to get a monthly mean).
-        The default is False.
     min_num_obs : int or dict, optional
         Minimum number of observations for temporal resampling.
         The default is None in which case pyaerocom default is used, which
@@ -473,7 +466,6 @@ def combine_vardata_ungridded(data_ids_and_vars,
                               merge_how, merge_eval_fun,
                               match_stats_tol_km, var_name_out,
                               data_id_out, var_unit_out, resample_how,
-                              apply_time_resampling_constraints,
                               min_num_obs, prefer, merge_info_vars,
                               add_meta_keys)
 
