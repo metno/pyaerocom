@@ -47,6 +47,13 @@ def tm5_aero_stp():
         reanalyse_existing = True
         )
 
+def test_Colocator_run__use_climatology(tm5_aero_stp, update_col):
+    stp = ColocationSetup(**tm5_aero_stp)
+    stp.update(**update_col)
+
+    col = Colocator(stp)
+    result = col.run()
+
 
 @pytest.fixture(scope='function')
 def col():
