@@ -308,6 +308,22 @@ def _create_fake_coldata_5d():
     cd.data = arr
     return cd
 
+def _create_fake_MSCWCtm_data():
+    _lats_fake = np.linspace(30,82,10)
+    _lons_fake = np.linspace(-25,90,15)
+    _time_fake = pd.date_range('2019-01','2019-06', freq='MS')
+    _data_fake = np.random.randn(_time_fake.shape[0],_lats_fake.shape[0],_lons_fake.shape[0])
+    
+    coords = {'time' : _time_fake,
+              'lat'  : _lats_fake,
+              'lon'  : _lons_fake}
+    
+    dims = ['time', 'lat', 'lon']
+    
+    arr = xr.DataArray(data=_data_fake, coords=coords, dims=dims)
+    
+    return arr
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
