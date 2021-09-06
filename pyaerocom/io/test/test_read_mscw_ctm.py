@@ -143,7 +143,7 @@ def test_calc_concNtnh():
     
     concNtnh = concNnh3 + concNnh4
     concNtnh.attrs['units'] = 'ug N m-3'
-    xr.testing.allclose(concNtnh, concNtnh_from_func)
+    xr.testing.assert_allclose(concNtnh, concNtnh_from_func)
 
 def test_calc_concNnh3():
     concnh3 = _create_fake_MSCWCtm_data()
