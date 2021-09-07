@@ -6,8 +6,26 @@ Tests for _lowlevel_helpers.py module of pyaerocom
 import pytest
 import numpy as np
 import numpy.testing as npt
+
+import pyaerocom.aux_var_helpers
 from pyaerocom.conftest import does_not_raise_exception
 import pyaerocom.mathutils as mu
+
+@pytest.mark.parametrize('vmin, vmax, num', [
+    (0,1,10), (0.345, 0.346, 100), (-2, -10, 5)
+    ])
+def test_make_binlist(vmin, vmax, num):
+    val = mu.make_binlist(vmin, vmax, num)
+    assert isinstance(val, list)
+    assert val[0] == vmin
+    assert val[-1] == vmax
+    assert len(val) == num+1
+
+@pytest.mark.parametrize('inputval,result', [
+    ([1,2], True), ([1], True), ([1,2, 2], False), ([3,2], False)
+    ])
+def test_is_strictly_monotonic(inputval, result):
+    assert mu.is_strictly_monotonic(inputval) == result
 
 @pytest.mark.parametrize('inputval, desired', [
     (0.01, -2), (4, 0), (234, 2)
@@ -25,8 +43,8 @@ def test_exponent(inputval, desired):
     ])
 def test_vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var,
                        mmol_air, to_unit, desired):
-    val = mu.vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air,
-                           to_unit)
+    val = pyaerocom.aux_var_helpers.vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air,
+                                                  to_unit)
     npt.assert_allclose(val, desired, rtol=1e-4)
 
 @pytest.mark.parametrize('data,expected', [

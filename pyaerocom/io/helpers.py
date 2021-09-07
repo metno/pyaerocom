@@ -103,10 +103,9 @@ def read_ebas_flags_file(ebas_flags_csv):
     dict
         dict with loaded flag info
     """
-    from pyaerocom._lowlevel_helpers import BrowseDict
-    valid = BrowseDict()
-    values = BrowseDict()
-    info = BrowseDict()
+    valid = {}
+    values = {}
+    info = {}
     with open(ebas_flags_csv) as fio:
         for line in fio:
             spl = line.strip().split(',')
@@ -128,10 +127,10 @@ def read_ebas_flags_file(ebas_flags_csv):
             valid[num] = isvalid
             values[num] = val_str
             info[num] = info_str
-    result = BrowseDict()
-    result.valid = valid
-    result.info = info
-    result.vals = values
+    result = {}
+    result['valid'] = valid
+    result['info'] = info
+    result['vals'] = values
     return result
 
 def add_file_to_log(filepath, err_msg):
@@ -241,21 +240,6 @@ def get_obsnetwork_dir(obs_id):
             f'Data directory {data_dir} for observation network {obs_id} does '
             f'not exist')
     return data_dir
-
-def save_dict_json(d, fp, ignore_nan=True, indent=None):
-    """Save a dictionary as json file using :func:`simplejson.dump`
-
-    Parameters
-    ----------
-    d : dict
-        input dictionary
-    fp : str
-        filepath of json file
-
-    """
-    import simplejson
-    with open(fp, 'w') as f:
-        simplejson.dump(d, f, ignore_nan=ignore_nan, indent=indent)
 
 def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database

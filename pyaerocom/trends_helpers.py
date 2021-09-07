@@ -24,11 +24,12 @@ SEASON_CODES = {'spring'     : 'MAM',
 
 def _init_trends_result_dict(start_yr):
     keys = ['pval', 'm', 'm_err',
-            'n', 'y_mean', 'y_min', 'y_max', 'coverage',
-            'slp', 'slp_err', 'reg0', 't0', # data specific
+            'n', 'y_mean', 'y_min', 'y_max',
+            'slp', 'slp_err', 'reg0', # data specific
             'slp_{}'.format(start_yr), # period specific
             'slp_{}_err'.format(start_yr), # period specific
-            'reg0_{}'.format(start_yr) # period specific
+            'reg0_{}'.format(start_yr), # period specific
+            'data'
             ]
     return dict.fromkeys(keys)
 
@@ -64,12 +65,21 @@ def _compute_trend_error(m, m_err, v0, v0_err):
     delta_ref = m * v0_err / v0**2
     return np.sqrt(delta_sl**2 + delta_ref**2) * 100
 
-def _get_season(m, yr):
+def _get_season(mon):
+
     for seas, months in SEASONS.items():
-        if m in months:
-            return '{}-{}'.format(seas, int(yr))
-    raise ValueError('Failed to retrieve season for m={}, yr={}'
-                     .format(m, yr))
+        if mon in months:
+            return seas
+
+def _get_unique_seasons(idx):
+    seasons = []
+    mons = idx.month
+    for mon in mons:
+        seas = _get_season(mon)
+        if not seas in seasons:
+            seasons.append(seas)
+    return seasons
+
 
 def _mid_season(seas, yr):
     if seas=='spring':
@@ -83,6 +93,33 @@ def _mid_season(seas, yr):
     if seas=='all':
         return np.datetime64('{}-06-15'.format(yr))
     raise ValueError('Invalid input for season (seas):', seas)
+
+def _start_season(seas, yr):
+    if seas=='spring':
+        return '{}-03-01'.format(yr)
+    if seas=='summer':
+        return '{}-06-01'.format(yr)
+    if seas=='autumn':
+        return '{}-09-01'.format(yr)
+    if seas=='winter':
+        return '{}-12-01'.format(yr-1)
+    if seas=='all':
+        return '{}-01-01'.format(yr)
+    raise ValueError('Invalid input for season (seas):', seas)
+
+def _end_season(seas, yr):
+    if seas=='spring':
+        return '{}-06-01'.format(yr)
+    if seas=='summer':
+        return '{}-09-01'.format(yr)
+    if seas=='autumn':
+        return '{}-12-01'.format(yr)
+    if seas=='winter':
+        return '{}-03-01'.format(yr)
+    if seas=='all':
+        return '{}-01-01'.format(yr)
+    raise ValueError('Invalid input for season (seas):', seas)
+
 
 def _find_area(lat, lon, regions_dict=None):
     """Find area corresponding to input lat/lon coordinate
@@ -141,55 +178,42 @@ def _start_stop_period(period):
     y0, y1, = _years_from_periodstr(period)
     return (date(y0, 1, 1), date(y1, 12, 31))
 
-def _make_mobs_dataframe(monthly_series):
+def _seas_slice(yr, season):
+    pass
 
-    dates = monthly_series.index
 
-    #dates = pd.DatetimeIndex(index)
-    d = dict(date=dates,
-             value=monthly_series.values,
-             year=dates.year,
-             month=dates.month,
-             day=dates.day)
-
-    mobs = pd.DataFrame(d)
-
-    add_season = lambda row: _get_season(row['month'], row['year'])
-    # add season column to dataframe
-    mobs['season'] = mobs.apply(add_season, axis=1)
-
-    # remove all NaN values
-    mobs = mobs.dropna(subset=['value'])
-
-    return mobs
-
-def _init_period(mobs, start_year=None, stop_year=None):
-    yrs = sorted(np.unique(mobs['year']))
-    if start_year is None:
-        start_year = yrs[0]
-    if stop_year is None:
-        stop_year =  yrs[-1]
-    if stop_year < yrs[0] or start_year > yrs[-1]:
-        from pyaerocom.exceptions import TimeMatchError
-        raise TimeMatchError('Input period {}-{} is not covered by data ({}-{})'
-                             .format(start_year, stop_year, yrs[0],yrs[-1]))
-    pstr = '{}-{}'.format(int(start_year), int(stop_year))
-    return (start_year, stop_year, pstr, yrs)
-
-def _get_yearly(mobs, seas, yrs):
+def _get_yearly(data, seas, start_yr):
     dates = []
     values = []
+    yrs = np.unique(data.index.year)
     for yr in yrs:
-        dates.append(_mid_season(seas, yr))
+        if yr < start_yr: #winter
+            continue
+
         if seas == 'all': #yearly trends
-            subset = mobs[mobs['year'] == yr]
+            subset = data.loc[str(yr)]
+
         else:
-            subset = mobs[mobs['season'].str.contains('{}-{}'.format(seas, yr))]
-        #needs 4 seasons to compute seasonal average to avoid biases
-        if seas=='all' and len(np.unique(subset['season'].values)) < 4:
-            values.append(np.nan)
+            start = _start_season(seas, yr)
+            stop = _end_season(seas, yr)
+            subset = data.loc[start:stop]
+
+        if len(subset) == 0:
+            val = np.nan
+        elif np.isnan(subset.values).all():
+            val = np.nan
+
+        elif seas=='all':
+            seasons = _get_unique_seasons(subset.index)
+            if len(seasons) == 4:
+                val = np.nanmean(subset.values)
+            else:
+                val = np.nan
         else:
-            values.append(np.nanmean(subset['value']))
+            val = np.nanmean(subset.values)
+
+        dates.append(_mid_season(seas, yr))
+        values.append(val)
 
     return pd.Series(values, index=dates)
 
@@ -205,6 +229,7 @@ def _init_period_dates(start_year, stop_year, season):
 
     num_dates_period = period_index.values.astype('datetime64[Y]').astype(np.float64)
     return (start_date, stop_date, period_index, num_dates_period)
+
 
 if __name__ == '__main__':
     import pyaerocom as pya

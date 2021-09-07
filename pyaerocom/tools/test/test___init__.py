@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Mar 18 18:53:41 2021
+Created on Wed Jun 16 19:31:51 2021
 
 @author: jonasg
 """
 import pytest
 import os
-from pyaerocom import const
 from pyaerocom.exceptions import DataSearchError
+from pyaerocom import tools
 from getpass import getuser
-import pyaerocom.scripts.highlevel_utils as hu
+
+from pyaerocom import const
 
 def test_clear_cache(tmpdir):
     _cd = const.CACHEDIR
@@ -23,7 +24,7 @@ def test_clear_cache(tmpdir):
         fname = 'cache_dummy.pkl'
         open(f'{cachedir}/{fname}', 'w').close()
         assert fname in os.listdir(cachedir)
-        hu.clear_cache()
+        tools.clear_cache()
         assert not fname in os.listdir(cachedir)
     except:
         pass
@@ -32,11 +33,8 @@ def test_clear_cache(tmpdir):
 
 def test_browse_database():
     with pytest.raises(DataSearchError):
-        hu.browse_database('blaaa')
+        tools.browse_database('blaaa')
 
-
-
-if __name__ == '__main__':
+if __name__=='__main__':
     import sys
     pytest.main(sys.argv)
-

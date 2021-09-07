@@ -5,8 +5,7 @@ pyaerocom main CLI (accessible via pya command)
 """
 
 from argparse import ArgumentParser
-from pyaerocom import const
-import pyaerocom.scripts.highlevel_utils as hlu
+from pyaerocom import const, tools
 
 def init_parser():
 
@@ -35,20 +34,19 @@ def confirm():
     return answer == 'y'
 
 def main():
-    import sys
     ap = init_parser()
 
     args = ap.parse_args()
 
     if args.browse:
         print('Searching database for matches of {}'.format(args.browse))
-        print(hlu.browse_database(args.browse))
+        print(tools.browse_database(args.browse))
 
     if args.clearcache:
         print('Are you sure you want to delete all cached data objects?')
         if confirm():
             print('OK then.... here we go!')
-            hlu.clear_cache()
+            tools.clear_cache()
         else:
             print('Wise decision, pyaerocom will handle it for you '
                   'automatically anyways ;P')

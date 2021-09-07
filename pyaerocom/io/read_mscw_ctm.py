@@ -15,7 +15,7 @@ from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units_helpers import implicit_to_explicit_rates
+from pyaerocom.units_helpers import implicit_to_explicit_rates, UALIASES
 
 def add_dataarrays(*arrs):
     """
@@ -525,6 +525,8 @@ class ReadMscwCtm(object):
         ts_type = self.ts_type
 
         arr = self._load_var(var_name_aerocom, ts_type)
+        if arr.units in UALIASES:
+            arr.attrs['units'] = UALIASES[arr.units]
         try:
             cube = arr.to_iris()
         except MemoryError as e:
@@ -536,8 +538,9 @@ class ReadMscwCtm(object):
                               ts_type=ts_type, check_unit=False,
                               convert_unit_on_init=False)
 
-        if var.is_deposition:
-            implicit_to_explicit_rates(gridded, ts_type)
+        #!obsolete
+        #if var.is_deposition:
+        #    implicit_to_explicit_rates(gridded, ts_type)
 
         # At this point a GriddedData object with name gridded should exist
 
@@ -609,6 +612,8 @@ class ReadMscwCtm(object):
             return '1'
         elif units == '' and prefix == 'AbsCoef':
             return 'm-1'
+        else:
+            return units 
 
 class ReadEMEP(ReadMscwCtm):
     """Old name of :class:`ReadMscwCtm`."""

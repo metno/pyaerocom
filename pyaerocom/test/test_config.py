@@ -9,6 +9,7 @@ import pytest
 import os, tempfile
 from pyaerocom.conftest import does_not_raise_exception, PYADIR
 from pyaerocom import const as DEFAULT_CFG
+from pyaerocom.config import Config
 import pyaerocom.config as testmod
 import getpass
 USER = getpass.getuser()
@@ -130,8 +131,7 @@ def test_empty_class_header(empty_cfg):
         upper = 15000,
         step  = 250)
     assert cfg.RH_MAX_PERCENT_DRY == 40
-    assert cfg.DEFAULT_REG_FILTER == 'WORLD-noMOUNTAINS'
-    assert cfg.OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS
+    assert cfg.DEFAULT_REG_FILTER == 'WORLD-wMOUNTAINS'
     assert cfg.OBS_MIN_NUM_RESAMPLE == dict(
         yearly      =   dict(monthly    = 3),
         monthly     =   dict(daily      = 7),
@@ -246,15 +246,15 @@ def test_default_config_HOMEDIR():
     assert DEFAULT_CFG.HOMEDIR == os.path.expanduser("~") + '/'
 
 def test_default_config():
-    cfg = DEFAULT_CFG
+    cfg = Config()
     home = os.path.abspath(cfg.HOMEDIR)
 
     mkpath = lambda basepath, relpath : os.path.abspath(os.path.join(basepath,
                                                                      relpath))
 
     mypydir = mkpath(home, 'MyPyaerocom')
-    assert cfg._outputdir == mypydir
     assert cfg.OUTPUTDIR == mypydir
+    assert cfg._outputdir == mypydir
 
     assert cfg.CACHEDIR == mkpath(mypydir, f'_cache/{USER}')
 
@@ -278,35 +278,17 @@ def test_default_config():
     # now this should be assigned
     assert cfg._downloaddatadir == check
 
-    from pyaerocom.testdata_access import TestDataAccess
-    testdatadirname = TestDataAccess.TESTDATADIRNAME
-    checkdir = testdatadirname + '/obsdata'
-    assert mkpath(mypydir, checkdir) in cfg._confirmed_access
-
     assert cfg._caching_active
     assert cfg.CACHING
 
     from pyaerocom.variable import VarCollection
-    assert isinstance(cfg._var_param, VarCollection)
+
     assert isinstance(cfg.VARS, VarCollection)
     assert cfg.VARS is cfg.VAR_PARAM
+    assert isinstance(cfg._var_param, VarCollection)
 
     assert isinstance(cfg.COORDINFO, VarCollection)
     assert cfg._coords is cfg.COORDINFO
-
-    # Attributes that are used to store search directories
-    for obs_id in TestDataAccess._UNGRIDDED_READERS:
-        assert obs_id in cfg.OBSLOCS_UNGRIDDED
-    assert cfg.OBS_UNGRIDDED_POST == {}
-    if not cfg.has_access_lustre:
-        assert cfg.SUPPLDIRS == {}
-
-    search_dirs = [f'{mypydir}/{testdatadirname}/modeldata',
-                   f'{mypydir}/{testdatadirname}/obsdata',
-                   f'{mypydir}/{testdatadirname}/config']
-
-    for sd in search_dirs:
-        assert os.path.abspath(sd) in cfg._search_dirs
 
     assert cfg.DATA_SEARCH_DIRS is cfg._search_dirs
 

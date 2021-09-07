@@ -11,7 +11,10 @@ import os
 from pyaerocom import const
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
-from pyaerocom.web import AerocomEvaluation
+from pyaerocom.aeroval import ExperimentProcessor, EvalSetup
+
+def make_config_template(proj_id, exp_id):
+    return EvalSetup(proj_id, exp_id)
 
 def compute_model_average_and_diversity(cfg, var_name,
                                         model_names=None,
@@ -68,16 +71,17 @@ def compute_model_average_and_diversity(cfg, var_name,
         corresponding diversity field, computed using definition from
         Textor et al., 2006 (ACP) DOI: 10.5194/acp-6-1777-2006
     """
-    if not isinstance(cfg, AerocomEvaluation):
+    raise NotImplementedError('old version, currently not working...')
+    if not isinstance(cfg, ExperimentProcessor):
         raise ValueError
     if model_use_vars is None:
         model_use_vars = {}
     if ignore_models is None:
         ignore_models = []
     if year is None:
-        year = cfg.colocation_settings.start
+        year = cfg.cfg_colocation.start
 
-    if cfg.colocation_settings.stop is not None:
+    if cfg.cfg_colocation.stop is not None:
         raise ValueError('Can only compute average model for single year '
                          'analyses')
     if avg_how =='mean':
@@ -93,8 +97,7 @@ def compute_model_average_and_diversity(cfg, var_name,
     if model_names is None:
         model_names = []
         for mname in cfg.model_config:
-            if not mname in cfg.model_ignore:
-                model_names.append(mname)
+            model_names.append(mname)
 
     # make sure the input model names exist and are names and not ID's
     # also takes care of case where input is dictionary
@@ -276,3 +279,6 @@ def compute_model_average_and_diversity(cfg, var_name,
                                            comment=commentq3))
 
     return (avg_out, div_out, q1_out, q3_out, std_out)
+
+if __name__ == '__main__':
+    print(make_config_template('bla', 'blub'))

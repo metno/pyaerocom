@@ -39,7 +39,7 @@ TS_TYPE_TO_PANDAS_FREQ = {'minutely':   'T',
                           'season'  :   'Q',
                           'yearly'  :   'AS'}
 
-PANDAS_RESAMPLE_OFFSETS = {'AS' : '6M',
+PANDAS_RESAMPLE_OFFSETS = {'AS' : '181D',
                            'MS' : '14D'}
 
 PANDAS_FREQ_TO_TS_TYPE = {v: k for k, v in TS_TYPE_TO_PANDAS_FREQ.items()}

@@ -24,16 +24,9 @@ import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
 from pyaerocom.units_helpers import get_unit_conversion_fac
-from pyaerocom.mathutils import (compute_sc550dryaer,
-                                 compute_sc440dryaer,
-                                 compute_sc700dryaer,
-                                 compute_ac550dryaer,
-                                 compute_ang4470dryaer_from_dry_scat,
-                                 compute_wetoxs_from_concprcpoxs,
-                                 compute_wetoxn_from_concprcpoxn,
-                                 compute_wetrdn_from_concprcprdn,
-                                 vmrx_to_concx,
-                                 concx_to_vmrx)
+from pyaerocom.aux_var_helpers import compute_ang4470dryaer_from_dry_scat, compute_sc550dryaer, compute_sc440dryaer, \
+    compute_sc700dryaer, compute_ac550dryaer, compute_wetoxs_from_concprcpoxs, compute_wetoxn_from_concprcpoxn, \
+    compute_wetrdn_from_concprcprdn, vmrx_to_concx, concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
@@ -197,7 +190,10 @@ class ReadEbas(ReadUngriddedBase):
 
     TS_TYPE = 'undefined'
 
-    MERGE_STATIONS = {'Birkenes' : 'Birkenes II'}
+    MERGE_STATIONS = {'Birkenes' : 'Birkenes II',
+                      'Rörvik': 'Råö',
+                      'Vavihill': 'Hallahus',
+                      'Virolahti II': 'Virolahti III'}
                       #'Trollhaugen'    : 'Troll'}
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1mn'  :   'minutely',
@@ -1838,4 +1834,4 @@ if __name__=="__main__":
 
     plt.close('all')
     reader = pya.io.ReadEbas()
-    data = reader.read('sc550dryaer')
+    data = reader.read('concNtno3')

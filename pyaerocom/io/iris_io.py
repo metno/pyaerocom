@@ -24,6 +24,7 @@ import os
 import pandas as pd
 
 from pyaerocom import const, logger
+from pyaerocom._warnings_management import filter_warnings
 from pyaerocom.exceptions import (NetcdfError, VariableDefinitionError,
                                   FileConventionError,
                                   UnresolvableTimeDefinitionError)
@@ -33,54 +34,16 @@ from pyaerocom.tstype import TsType
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
 
-def _load_cubes_custom_multiproc(files, var_name=None, file_convention=None,
-                                 perform_fmt_checks=True, num_proc=None):
-    """Like :func:`load_cubes_custom` but faster
-
-    Uses multiprocessing module to distribute loading of multiple NetCDF files
-    into iris cube.
-
-    Parameters
-    ----------
-    file : list
-        netcdf file
-    var_name : str
-        name of variable to read
-    quality_check : bool
-        if True, then a quality check of data is performed against the
-        information provided in the filename
-    file_convention : :obj:`FileConventionRead`, optional
-        Aerocom file convention. If provided, then the data content (e.g.
-        dimension definitions) is tested against definition in file name
-    perform_fmt_checks : bool
-        if True, additional quality checks (and corrections) are (attempted to
-        be) performed.
-    num_proc : int
-        number of jobs
-
-    Returns
-    -------
-    iris.cube.CubeList
-        loaded data as Cube
-    """
-    import multiprocessing
-    from functools import partial
-    if num_proc is None:
-        num_proc = multiprocessing.cpu_count() * 2
-    func = partial(load_cube_custom,
-                   var_name=var_name, file_convention=file_convention,
-                   perform_fmt_checks=perform_fmt_checks)
-    p = multiprocessing.Pool(processes=num_proc)
-    return p.map(func, files)
-
+@filter_warnings(apply=const.FILTER_IRIS_WARNINGS,
+                 categories=[UserWarning])
 def load_cubes_custom(files, var_name=None, file_convention=None,
-                      perform_fmt_checks=True, **kwargs):
+                      perform_fmt_checks=True):
     """Load multiple NetCDF files into CubeList
 
     Parameters
     ----------
     files : list
-        netcdf file
+        list of netcdf file paths
     var_name : str
         name of variable to read
     quality_check : bool
@@ -92,10 +55,6 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
     perform_fmt_checks : bool
         if True, additional quality checks (and corrections) are (attempted to
         be) performed.
-    **kwargs
-        additional keyword args that are parsed to
-        :func:`_load_cubes_custom_multiproc` in case number of input files
-        is larger than 4.
 
     Returns
     -------
@@ -105,16 +64,9 @@ def load_cubes_custom(files, var_name=None, file_convention=None,
             - CubeList, containing loaded cubes
             - list, list of filenames that were successfully loaded
     """
-    from pyaerocom import const
     cubes = []
     loaded_files = []
-    print_where = False
-    if len(files) > 10:
-        mod = len(files) / 10
-        print_where = True
     for i, _file in enumerate(files):
-        if print_where and i%mod==0:
-            const.print_log.info(os.path.basename(_file))
         try:
             cube = load_cube_custom(_file, var_name,
                                     file_convention=file_convention)

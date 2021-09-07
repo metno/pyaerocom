@@ -1,29 +1,22 @@
-
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import cartopy.crs as ccrs
 from matplotlib.axes import Axes
 from cartopy.mpl.geoaxes import GeoAxes
-from matplotlib.colors import ListedColormap
+from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
 
-# ToDo: this needs to be revisited and reorganised for later processing of
-# multiyear data which may be lower resolution than monthly.
-RES_TIME_INFO = {'monthly' : '%Y-%m-15'}
+from pyaerocom.helpers import make_datetime_index
+from pyaerocom.tstype import TsType
+from pyaerocom.aeroval.coldatatojson_engine import _get_jsdate
 
-def _get_timestamps_json(data):
-    tt = data.ts_type
-    if not data.ts_type in RES_TIME_INFO:
-        raise ValueError(f'GriddedData needs to be in either of the '
-                         f'supported resolutions: {RES_TIME_INFO.keys()}')
-    fmt = RES_TIME_INFO[tt]
-    return [pd.to_datetime(t).strftime(fmt) for t in data.time_stamps()]
+def _jsdate_list(data):
+    tst = TsType(data.ts_type)
+    idx = make_datetime_index(data.start, data.stop, tst.to_pandas_freq())
+    return _get_jsdate(idx.values).tolist()
 
 def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
-
-    if not data.ts_type == 'monthly':
-        data = data.resample_time('monthly')
 
     data = data.regrid(lat_res_deg=lat_res_deg, lon_res_deg=lon_res_deg)
 
@@ -40,11 +33,14 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
         latname, lonname = 'latitude', 'longitude'
         stacked = arr.stack(station_name=(latname, lonname))
 
-    dd = {}
+    output = {'data' : {},
+              'metadata' : {}}
+    dd = output['data']
+    dd['time'] = _jsdate_list(data)
+    output['metadata']['var_name'] = data.var_name
+    output['metadata']['units'] = str(data.units)
 
-    dd['time'] = _get_timestamps_json(data)
-
-    nparr = stacked.data.astype(np.float64)
+    nparr = stacked.data.astype(float)
     for i, (lat, lon) in enumerate(stacked.station_name.values):
 
         coord = lat, lon
@@ -53,48 +49,21 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
         sd['lat'] = lat
         sd['lon'] = lon
         sd['data'] = vals.tolist()
+    plt.close('all')
+    return output
 
-    return dd
+def calc_contour_json(data, vmin, vmax, cmap, cmap_bins):
 
-def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
-                      try_use_default_layers=True):
-
-    vardef = data.var_info
-
-    if cmap is None:
-        cmap = vardef.map_cmap
-        if not isinstance(cmap, str):
-            cmap = 'Blues'
-    if nlayers is None:
-        nlayers = 10
     try:
         import geojsoncontour
     except ModuleNotFoundError:
-        raise ModuleNotFoundError('Map processing for web interface requires '
+        raise ModuleNotFoundError('Map processing for aeroval interface requires '
                                   'library geojsoncontour which is not part of the '
                                   'standard installation of pyaerocom.')
 
     GeoAxes._pcolormesh_patched = Axes.pcolormesh
-    # ToDo: check if matplotib backend 'agg' can be used
-    #plt.style.use('ggplot')
-    levels = None
-    if try_use_default_layers:
-        levels = vardef.map_cbar_levels
-        if isinstance(levels, list) and len(levels) > 0:
-            vmin, vmax = levels[0], levels[-1]
 
-    if vmin is None:
-        vmin = vardef.map_vmin
-    if vmax is None:
-        vmax = vardef.map_vmax
-
-    if any([x is None for x in [vmin, vmax]]):
-        raise ValueError('Please specify vmin, vmax')
-
-    if levels is None:
-        levels = np.linspace(vmin, vmax, nlayers)
-
-    cm = ListedColormap(color_palette(cmap, len(levels)-1))
+    cm = ListedColormap(color_palette(cmap, len(cmap_bins)-1))
 
     proj = ccrs.PlateCarree()
     ax = plt.axes(projection=proj)
@@ -109,30 +78,31 @@ def calc_contour_json(data, vmin=None, vmax=None, cmap=None, nlayers=None,
     lons = data.longitude.points
 
     geojson = {}
-    tst = _get_timestamps_json(data)
+    tst = _jsdate_list(data)
     for i, date in enumerate(tst):
         datamon = nparr[i]
         contour = ax.contourf(lons, lats, datamon,
                               transform=proj,
                               colors=cm.colors,
-                              levels=levels)
+                              levels=cmap_bins)
 
         result = geojsoncontour.contourf_to_geojson(
                     contourf=contour
                     )
 
-        geojson[date] = eval(result)
+        geojson[str(date)] = eval(result)
 
-    cb = ax.figure.colorbar(contour, ax=ax)
-    #set the legend in one key
-
-    from matplotlib.colors import to_hex
+    ax.figure.colorbar(contour, ax=ax)
     colors_hex = [to_hex(val) for val in cm.colors]
 
     geojson['legend'] = {
         'colors': colors_hex,
-        'levels':  list(levels)
+        'levels':  list(cmap_bins),
+        'var_name' : data.var_name,
+        'units' : str(data.units)
     }
+
+    plt.close('all')
     return geojson
 
 if __name__ == '__main__':

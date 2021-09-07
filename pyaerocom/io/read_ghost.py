@@ -31,7 +31,7 @@ import xarray as xr
 import pyaerocom as pya
 from pyaerocom import const
 from pyaerocom.exceptions import DataSourceError
-from pyaerocom.mathutils import vmrx_to_concx
+from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase

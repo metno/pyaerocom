@@ -5,7 +5,7 @@ import numpy as np
 from pyaerocom import const
 from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.mathutils import concx_to_vmrx
+from pyaerocom.aux_var_helpers import concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.ungriddeddata import UngriddedData
 from geonum import atmosphere as atm

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
 from ast import literal_eval
-import re, fnmatch
 from cf_units import Unit
 from configparser import ConfigParser
+import fnmatch
+import numpy as np
+import os
+import re
+
 from pyaerocom import logger, print_log, var_groups
+from pyaerocom.mathutils import make_binlist
 from pyaerocom.obs_io import OBS_WAVELENGTH_TOL_NM
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom._lowlevel_helpers import list_to_shortstr, dict_to_str
@@ -203,6 +207,9 @@ def parse_emep_variables_ini(fpath=None):
         raise FileNotFoundError("FATAL: emep_variables.ini file could not be found "
                         "at {}".format(fpath))
     parser = ConfigParser()
+    # added 12.7.21 by jgliss for EMEP trends processing. See here:
+    # https://stackoverflow.com/questions/1611799/preserve-case-in-configparser
+    parser.optionxform=str
     parser.read(fpath)
     return parser
 
@@ -371,6 +378,8 @@ class Variable(object):
                       'map_c_over',
                       'map_cbar_levels',
                       'map_cbar_ticks']
+    VMIN_DEFAULT = -np.inf
+    VMAX_DEFAULT = np.inf
 
     @staticmethod
     def _check_input_var_name(var_name):
@@ -382,7 +391,7 @@ class Variable(object):
         # save orig. input for whatever reasons
         self._var_name_input = var_name
 
-        self.var_name = var_name = self._check_input_var_name(var_name)
+        self.var_name = self._check_input_var_name(var_name)
         self._var_name_aerocom = None
 
         self.standard_name = None
@@ -394,8 +403,8 @@ class Variable(object):
         self.wavelength_nm = None
         self.dry_rh_max = 40
         self.dimensions = None
-        self.minimum = -9e30
-        self.maximum = 9e30
+        self.minimum = self.VMIN_DEFAULT
+        self.maximum = self.VMAX_DEFAULT
 
         self.description = None
         self.comments_and_purpose = None
@@ -409,6 +418,7 @@ class Variable(object):
         self.scat_scale_factor = 1.0
 
         # settings for map plotting
+        self.map_cmap = 'coolwarm'
         self.map_vmin = None
         self.map_vmax = None
         self.map_c_under = None
@@ -419,7 +429,7 @@ class Variable(object):
         # imports default information and, on top, variable information (if
         # applicable)
         if init:
-            self.parse_from_ini(var_name, cfg=cfg)
+            self.parse_from_ini(self.var_name, cfg=cfg)
 
         self.update(**kwargs)
         if self.obs_wavelength_tol_nm is None:
@@ -630,6 +640,62 @@ class Variable(object):
                            'could also not be inferred'
                            .format(self.var_name_aerocom))
             return None
+
+    def get_cmap(self):
+        """
+        Get cmap str for var
+
+        Returns
+        -------
+        str
+
+        """
+        return self.map_cmap
+
+    def _cmap_bins_from_vmin_vmax(self):
+        """
+        Calculate cmap discretisation bins from :attr:`vmin` and :attr:`vmax`
+
+        Sets value of :attr:`map_cbar_levels`
+
+        Raises
+        ------
+        AttributeError
+             if :attr:`vmin` and :attr:`vmax` are not defined
+
+        """
+        if self.vmin == self.VMIN_DEFAULT or self.vmax == self.VMAX_DEFAULT:
+            raise AttributeError('need vmin and vmax to be specified in '
+                                 'order to retrieve cmap_bins')
+        self.map_cbar_levels = make_binlist(self.vmin, self.vmax)
+
+    def get_cmap_bins(self, infer_if_missing=True):
+        """
+        Get cmap discretisation bins
+
+        Parameters
+        ----------
+        infer_if_missing : bool
+            if True and :attr:`map_cbar_levels` is not defined, try to infer
+            using :func:`_cmap_bins_from_vmin_vmax`.
+
+        Raises
+        ------
+        AttributeError
+             if unavailable
+
+        Returns
+        -------
+        list
+            levels
+
+        """
+        if self.map_cbar_levels is None:
+            if infer_if_missing:
+                self._cmap_bins_from_vmin_vmax()
+            else:
+                raise AttributeError('not defined')
+        return self.map_cbar_levels
 
     def parse_from_ini(self, var_name=None, cfg=None):
         """Import information about default region

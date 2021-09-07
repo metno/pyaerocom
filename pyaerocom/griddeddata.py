@@ -12,8 +12,10 @@ from iris.exceptions import UnitConversionError
 import numpy as np
 import pandas as pd
 from pathlib import Path
+import xarray as xr
 
 from pyaerocom import const, logger, print_log
+from pyaerocom._warnings_management import filter_warnings
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (CoordinateError,
@@ -165,13 +167,15 @@ class GriddedData(object):
             raise ValueError('Invalid input for var_name, need str, got {}'
                              .format(val))
         self.grid.var_name = val
+        if 'var_name' in self.metadata:
+            self.metadata['var_name'] = val
 
     @property
     def var_name_aerocom(self):
         """AeroCom variable name"""
         try:
             return const.VARS[self.var_name].var_name_aerocom
-        except Exception:
+        except VariableDefinitionError:
             return None
 
     @property
@@ -728,13 +732,17 @@ class GriddedData(object):
                 f'Unit {self.units} in GriddedData {self.short_str()} is not '
                 f'AeroCom conform ({to_unit}). Trying to convert ... '
                 )
-            try:
-                self.convert_unit(to_unit)
+            if self.var_info.units == '1' and self.units.is_unknown():
+                self.units = '1'
                 unit_ok = True
-            except Exception as e:
-                const.print_log.warning(
-                    f'Failed to convert unit from {self.units} to {to_unit}. '
-                    f'Reason: {e}')
+            else:
+                try:
+                    self.convert_unit(to_unit)
+                    unit_ok = True
+                except Exception as e:
+                    const.print_log.warning(
+                        f'Failed to convert unit from {self.units} to {to_unit}. '
+                        f'Reason: {e}')
 
         return unit_ok
 
@@ -867,13 +875,7 @@ class GriddedData(object):
             start, stop = start_stop_from_year(year)
             yield self.crop(time_range=(start, stop))
 
-    def check_coord_order(self):
-        """Wrapper for :func:`check_dimcoords_tseries`"""
-        logger.warning(DeprecationWarning('Method was renamed, please use '
-                                          'check_dimcoords_tseries'))
-        return self.check_dimcoords_tseries()
-
-    def check_dimcoords_tseries(self):
+    def check_dimcoords_tseries(self) -> None:
         """Check order of dimension coordinates for time series retrieval
 
         For computation of time series at certain lon / lat coordinates, the
@@ -888,63 +890,58 @@ class GriddedData(object):
         DataDimensionError
             if dimension of data is not supported (currently, 3D or 4D data
             is supported)
+        NotImplementedError
+            if one of the required coordinates is associated with more than
+            one dimension.
         DimensionOrderError
             if dimensions are not in the right order (in which case
             :func:`reorder_dimensions_tseries` may be used to catch the
             Exception)
         """
         if not self.ndim in (3,4):
-            raise DataDimensionError('Time series extraction requires at least 3 '
-                            'coordinates in cube')
-
-        order = self.COORDS_ORDER_TSERIES
-        for i, coord in enumerate(order):
+            raise DataDimensionError(
+                'Time series extraction requires at least 3 dimensions')
+        # list of coordinates needed for timeseries extraction.
+        needed = self.COORDS_ORDER_TSERIES
+        for i, coord in enumerate(needed):
             dims = self.cube.coord_dims(coord)
             if len(dims) == 0:
-                raise DataDimensionError('Coord {} is not associated with a '
-                                         'data dimension in cube'
-                                         .format(coord))
+                raise DataDimensionError(f'Coord {coord} is not associated '
+                                         f'with a data dimension in cube')
             elif len(dims) > 1:
-                raise NotImplementedError('Coord {} is associated with '
-                                          'multiple dimensions. This cannot '
-                                          'yet be handled...'.format(coord))
-
+                raise NotImplementedError(f'Coord {coord} is associated with '
+                                          f'multiple dimensions. This cannot '
+                                          f'yet be handled...')
             if not dims[0] == i:
                 raise DimensionOrderError('Invalid order of grid dimensions')
 
-    def reorder_dimensions_tseries(self):
-        """Reorders dimensions of data such that :func:`to_time_series` works
+    def reorder_dimensions_tseries(self) -> None:
+        """Transpose dimensions of data such that :func:`to_time_series` works
+
+        Raises
+        ------
+        DataDimensionError
+            if not all needed coordinates are available
+        NotImplementedError
+            if one of the required coordinates is associated with more than
+            one dimension.
+
         """
-        order = self.COORDS_ORDER_TSERIES
+        # list of coordinates needed for timeseries extraction.
+        needed = self.COORDS_ORDER_TSERIES
         new_order = []
         #coord_names = [c.name() for c in self.grid.dim_coords]
-        for coord in order:
+        for coord in needed:
             dims = self.cube.coord_dims(coord)
             if len(dims) == 0:
-                raise DataDimensionError('Coord {} is not associated with a '
-                                         'data dimension in cube'
-                                         .format(coord))
+                raise DataDimensionError(f'Coord {coord} is not associated '
+                                         f'with a data dimension in cube')
             elif len(dims) > 1:
-                raise NotImplementedError('Coord {} is associated with '
+                raise NotImplementedError(f'Coord {coord} is associated with '
                                           'multiple dimensions. This cannot '
-                                          'yet be handled...'.format(coord))
+                                          'yet be handled...')
             new_order.append(dims[0])
 
-        if not len(new_order) == self.ndim:
-            for i in range(self.ndim):
-                if not i in new_order:
-                    new_order.append(i)
-        self.transpose(new_order)
-        self.check_dimcoords_tseries()
-
-    def reorder_dimensions_tseries_old(self):
-        """Reorders dimensions of data such that :func:`to_time_series` works
-        """
-        order = self.COORDS_ORDER_TSERIES
-        new_order = []
-        coord_names = [c.name() for c in self.grid.dim_coords]
-        for coord_name in order:
-            new_order.append(coord_names.index(coord_name))
         if not len(new_order) == self.ndim:
             for i in range(self.ndim):
                 if not i in new_order:
@@ -1107,12 +1104,6 @@ class GriddedData(object):
                                  .format(self.shape))
         # if the method makes it to this point, it is 3 or 4 dimensional
         # and the first 3 dimensions are time, latitude, longitude.
-# =============================================================================
-#         lens = [len(x[1]) for x in sample_points]
-#         if not all([lens[0]==x for x in lens]):
-#             raise ValueError("Arrays for sample coordinates must have the "
-#                              "same lengths")
-# =============================================================================
         if self.ndim == 3: #data does not contain vertical dimension
             if use_iris:
                 if sample_points is None:
@@ -1647,18 +1638,15 @@ class GriddedData(object):
         data.check_dimcoords_tseries()
         return data
 
-    def _resample_time_xarray(self, to_ts_type, how, apply_constraints,
-                              min_num_obs):
-        import xarray as xarr
+    def _resample_time_xarray(self, to_ts_type, how, min_num_obs):
 
-        arr = xarr.DataArray.from_iris(self.cube)
+        arr = xr.DataArray.from_iris(self.cube)
         from_ts_type = self.ts_type
         try:
             rs = TimeResampler(arr)
             arr_out = rs.resample(to_ts_type,
                                   from_ts_type=from_ts_type,
                                   how=how,
-                                  apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
         except ValueError: # likely non-standard datetime objects in array (cf https://github.com/pydata/xarray/issues/3426)
             arr['time'] = self.time_stamps()
@@ -1666,7 +1654,6 @@ class GriddedData(object):
             arr_out = rs.resample(to_ts_type,
                                   from_ts_type=from_ts_type,
                                   how=how,
-                                  apply_constraints=apply_constraints,
                                   min_num_obs=min_num_obs)
         data = GriddedData(arr_out.to_iris(),
                            check_unit=False,
@@ -1695,8 +1682,7 @@ class GriddedData(object):
         return data
 
     def resample_time(self, to_ts_type='monthly', how=None,
-                      apply_constraints=None, min_num_obs=None,
-                      use_iris=False):
+                      min_num_obs=None, use_iris=False):
         """Resample time to input resolution
 
         Parameters
@@ -1706,11 +1692,7 @@ class GriddedData(object):
             :attr:`IRIS_AGGREGATORS` in :mod:`helpers`, e.g. "monthly")
         how : str
             string specifying how the data is to be aggregated, default is mean
-        apply_constraints : bool, optional
-            if True, hierarchical resampling is applied using input
-            `min_num_obs` (if provided) or else, using constraints
-            specified in :attr:`pyaerocom.const.OBS_MIN_NUM_RESAMPLE`
-        min_num_obs : dict or int, optinal
+        min_num_obs : dict or int, optional
             integer or nested dictionary specifying minimum number of
             observations required to resample from higher to lower frequency.
             For instance, if `input_data` is hourly and `to_ts_type` is
@@ -1741,28 +1723,24 @@ class GriddedData(object):
         if not self.has_time_dim:
             raise DataDimensionError('Require time dimension in GriddedData: '
                                      '{}'.format(self.short_str()))
-        if use_iris and not apply_constraints and how=='mean':
-            return self._resample_time_iris(to_ts_type)
+        if not use_iris:
+            try:
+                data = self._resample_time_xarray(to_ts_type, how,
+                                                  min_num_obs)
+            except NotImplementedError as e:
+                raise ResamplingError('Resampling of time in GriddedData failed '
+                                      'using xarray. Reason: {}. Please try again '
+                                      'with input arg use_iris=True'
+                                      .format(repr(e)))
+        else:
+            if min_num_obs is not None or how != 'mean':
+                raise ValueError('min_num_obs needs to be None and how needs '
+                                 'to be mean for the iris resampling routine')
+            data = self._resample_time_iris(to_ts_type)
+        return data
 
-        try:
-            return self._resample_time_xarray(to_ts_type, how,
-                                              apply_constraints,
-                                              min_num_obs)
-        except NotImplementedError as e:
-            raise ResamplingError('Resampling of time in GriddedData failed '
-                                  'using xarray. Reason: {}. Please try again '
-                                  'with input arg use_iris=True'
-                                  .format(repr(e)))
-
-    def downscale_time(self, to_ts_type='monthly'):
-        msg = DeprecationWarning('This method is deprecated. Please use new '
-                                 'name resample_time')
-        print_log.warning(msg)
-        return self.resample_time(to_ts_type)
-
-    def add_aggregator(self, aggr_name):
-        raise NotImplementedError
-
+    @filter_warnings(const.FILTER_IRIS_WARNINGS,
+                     messages=["Using DEFAULT_SPHERICAL_EARTH_RADIUS."])
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         if not self.has_latlon_dims:
@@ -2510,12 +2488,6 @@ class GriddedData(object):
             self.longitude.guess_bounds()
         if self.latitude.bounds is None:
             self.latitude.guess_bounds()
-
-    def _init_testdata_default(self):
-        """Helper method that loads ECMWF_OSUITE test data"""
-        from pyaerocom.io.testfiles import get
-        self.load_input(get()["models"]["ecmwf_osuite"], var_name="od550aer")
-        return self
 
     @property
     def _size_GB(self):
