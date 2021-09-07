@@ -151,8 +151,6 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.colocation_opts = ColocationSetup(
                                     save_coldata=True,
                                     keep_data=False,
-                                    regrid_res_deg=5,
-                                    min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
                                     resample_how='mean'
                                     )
         self.statistics_opts = StatisticsSetup(
