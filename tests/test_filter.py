@@ -10,7 +10,7 @@ import pytest
 
 from pyaerocom.filter import Filter
 
-from .conftest import testdata_unavail
+from .conftest import data_unavail
 
 
 #TODO: use mark.parametrize for first 2 test functions and call test_Filter
@@ -25,7 +25,7 @@ def test_filter_attributes():
     assert f.name == 'WORLD-noMOUNTAINS-LAND'
     assert not f.region.is_htap()
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('filter_name, mean',[
     ('EUROPE-noMOUNTAINS-LAND', 0.16616775),
     ('EUROPE-noMOUNTAINS-OCN', 0.1314668),
@@ -42,7 +42,7 @@ def test_filter_griddeddata(data_tm5, filter_name, mean):
     subset = f.apply(model)
     np.testing.assert_allclose(np.nanmean(subset.cube.data), mean)
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('filter_name,num_sites',[
     ('WORLD-wMOUNTAINS', 22),
     ('OCN',8),

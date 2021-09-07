@@ -11,7 +11,7 @@ import pytest
 from pyaerocom import GriddedData
 from pyaerocom import units_helpers as uh
 
-from .conftest import testdata_unavail
+from .conftest import data_unavail
 
 
 @pytest.mark.parametrize('from_unit,to_unit,val', [
@@ -50,7 +50,7 @@ def test_convert_unit(from_unit, to_unit, var_name, val):
                         val, rtol=1e-2)
 
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('units', [
     's-1', '1/s'
 ])
@@ -64,7 +64,7 @@ def test_implicit_to_explicit_rates_already_rate(data_tm5, units):
     assert (new_data_values == data_values).all()
 
 
-@testdata_unavail
+@data_unavail
 def test_implicit_to_explicit_rates_convert_data(data_tm5):
     data = data_tm5
     data.units = 'kg m-2'

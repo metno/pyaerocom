@@ -29,7 +29,7 @@ TEST_RTOL = 1e-4
 DATA_ACCESS = DataAccess()
 
 # class that provides / ensures access to testdataset
-tda = td.TestDataAccess()
+tda = td.AccessTestData()
 
 TESTDATADIR = tda.testdatadir
 
@@ -108,10 +108,10 @@ rg_unavail = pytest.mark.skipif(not rg_avail,
 etopo1_unavail = pytest.mark.skipif(not const.ETOPO1_AVAILABLE,
                    reason='Skipping tests that require access to ETOPO1 data')
 
-testdata_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
+data_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
                     reason='Skipping tests that require testdata-minimal.')
 
-test_not_working = pytest.mark.skip(reason='Method raises Exception')
+broken_test = pytest.mark.skip(reason='Method raises Exception')
 
 from pyaerocom import change_verbosity
 

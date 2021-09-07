@@ -20,8 +20,7 @@ from pyaerocom.io.read_mscw_ctm import (
 )
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import EMEP_DIR, does_not_raise_exception, lustre_unavail, testdata_unavail
-
+from ..conftest import EMEP_DIR, data_unavail, does_not_raise_exception, lustre_unavail
 
 if pyaerocom.const._check_access(f'/home/{pyaerocom.const.user}/lustre/'):
     PREFACE = f'/home/{pyaerocom.const.user}/lustre/'
@@ -265,7 +264,7 @@ def test_ReadMscwCtm_var_map():
     assert isinstance(var_map, dict)
     assert var_map == VAR_MAP
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
     ('blaaa', 'daily', pytest.raises(exc.VariableDefinitionError)),
     ('od550gt1aer', 'daily', pytest.raises(exc.VarNotAvailableError)),
@@ -283,7 +282,7 @@ def test_ReadMscwCtm_read_var(path_emep,var_name,ts_type,raises):
         assert data.ts_type is not None
         assert data.ts_type == r.ts_type
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
     ('blaaa', 'daily', pytest.raises(KeyError)),
     ('concpmgt25', 'daily', does_not_raise_exception()),
@@ -316,7 +315,7 @@ def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
 #         assert isinstance(data, xr.DataArray)
         
 
-@testdata_unavail
+@data_unavail
 def test_ReadMscwCtm_data(path_emep):
     path = path_emep['daily']
     r = ReadMscwCtm(filepath=path)
@@ -338,7 +337,7 @@ def test_ReadMscwCtm_data(path_emep):
     assert data.ts_type=='daily'
 
 
-@testdata_unavail
+@data_unavail
 def test_ReadMscwCtm_directory(path_emep):
     data_dir = path_emep['data_dir']
     r = ReadMscwCtm(data_dir=data_dir)
