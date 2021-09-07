@@ -398,12 +398,52 @@ class ExperimentOutput(ProjectOutput):
                 'longname'  :   lname,
                 'obs'       :   {}}
 
+    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var):
+        """
+        Check if input combination of model and obs var is valid
+
+        Parameters
+        ----------
+        obs_name : str
+            Name of obs dataset.
+        obs_var : str
+            Name of obs variable.
+        mod_name : str
+            Name of model
+        mod_var : str
+            Name of model variable
+
+        Returns
+        -------
+        bool
+            True if this combination is valid, else False.
+
+        """
+        try:
+            ocfg = self.cfg.obs_cfg.get_entry(obs_name)
+            if not ocfg.has_var(obs_var):
+                return False
+        except EntryNotAvailable:
+            return False
+        try:
+            mcfg = self.cfg.model_cfg.get_entry(mod_name)
+            # since observation variables are not explicitly defined in mcfg
+            # (but only renamings or additional variables), mcfg.has_var(mod_var)
+            # returns False in most cases (since the model variable equals the
+            # obs variable)
+            if not mcfg.has_var(mod_var) and not ocfg.has_var(mod_var):
+                return False
+        except EntryNotAvailable:
+            return False
+        return True
 
     def _create_menu_dict(self):
         new = {}
         tab = self._get_meta_from_map_files()
         for (obs_name, obs_var, vert_code, mod_name, mod_var) in tab:
-            try:
+            if self._is_part_of_experiment(obs_name, obs_var,
+                                           mod_name, mod_var):
+
                 mcfg = self.cfg.model_cfg.get_entry(mod_name)
                 var = mcfg.get_varname_web(mod_var, obs_var)
                 if not var in new:
@@ -422,11 +462,10 @@ class ExperimentOutput(ProjectOutput):
                     'model_id'  : model_id,
                     'model_var' : mod_var,
                     'obs_var'   : obs_var}
-            except EntryNotAvailable:
+            else:
                 const.print_log.warning(
-                    'No such model available in config: {mod_name}. Likely '
-                    'due to an outdated map file that has been part of this '
-                    'experiment before...')
+                    f'Invalid entry: model {mod_name} ({mod_var}), '
+                    f'model {obs_name} ({obs_var})')
         return new
 
 
