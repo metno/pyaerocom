@@ -6,7 +6,7 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
 
-from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.exceptions import VariableDefinitionError, EntryNotAvailable
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              var_ranges_defaults,
                                              var_web_info)
@@ -403,24 +403,30 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         tab = self._get_meta_from_map_files()
         for (obs_name, obs_var, vert_code, mod_name, mod_var) in tab:
-            mcfg = self.cfg.model_cfg.get_entry(mod_name)
-            var = mcfg.get_varname_web(mod_var, obs_var)
-            if not var in new:
-                new[var] = self._init_menu_entry(var)
+            try:
+                mcfg = self.cfg.model_cfg.get_entry(mod_name)
+                var = mcfg.get_varname_web(mod_var, obs_var)
+                if not var in new:
+                    new[var] = self._init_menu_entry(var)
 
-            if not obs_name in new[var]['obs']:
-                new[var]['obs'][obs_name] = {}
+                if not obs_name in new[var]['obs']:
+                    new[var]['obs'][obs_name] = {}
 
-            if not vert_code in new[var]['obs'][obs_name]:
-                new[var]['obs'][obs_name][vert_code] = {}
-            if not mod_name in new[var]['obs'][obs_name][vert_code]:
-                new[var]['obs'][obs_name][vert_code][mod_name] = {}
+                if not vert_code in new[var]['obs'][obs_name]:
+                    new[var]['obs'][obs_name][vert_code] = {}
+                if not mod_name in new[var]['obs'][obs_name][vert_code]:
+                    new[var]['obs'][obs_name][vert_code][mod_name] = {}
 
-            model_id = mcfg['model_id']
-            new[var]['obs'][obs_name][vert_code][mod_name] = {
-                'model_id'  : model_id,
-                'model_var' : mod_var,
-                'obs_var'   : obs_var}
+                model_id = mcfg['model_id']
+                new[var]['obs'][obs_name][vert_code][mod_name] = {
+                    'model_id'  : model_id,
+                    'model_var' : mod_var,
+                    'obs_var'   : obs_var}
+            except EntryNotAvailable:
+                const.print_log.warning(
+                    'No such model available in config: {mod_name}. Likely '
+                    'due to an outdated map file that has been part of this '
+                    'experiment before...')
         return new
 
 
