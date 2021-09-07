@@ -67,6 +67,16 @@ if __name__ == "__main__":
     username = getpass.getuser()
     if username == 'jang':
         from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+
+        filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep.v2/download/AT/AT_5_48881_2019_timeseries.csv.gz'
+        r = ReadEEAAQEREP_V2()
+        data = r.read_file(filename, 'concpm10')
+
+        filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep.v2/download/AT/AT_5_48900_2019_timeseries.csv'
+        r = ReadEEAAQEREP_V2()
+        data2 = r.read_file(filename, 'concpm10')
+
+
         import logging
         # limit the data read for testing
         ReadEEAAQEREP_V2.FILE_MASKS['concso2'] = '**/AT*_1_*_timeseries.csv'

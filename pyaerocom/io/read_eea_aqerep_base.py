@@ -32,6 +32,10 @@ Example
 -------
 look at the end of the file
 """
+import pathlib
+import shutil
+import tempfile
+
 import cf_units
 from collections import OrderedDict as od
 import numpy as np
@@ -46,6 +50,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+
+import gzip
 
 
 class ReadEEAAQEREPBase(ReadUngriddedBase):
@@ -110,15 +116,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
     #: file masks for the data files
     FILE_MASKS = {}
-    FILE_MASKS['concso2']   = '**/*_1_*_timeseries.csv'
-    FILE_MASKS['concpm10']  = '**/*_5_*_timeseries.csv'
-    FILE_MASKS['conco3']    = '**/*_7_*_timeseries.csv'
-    FILE_MASKS['vmro3']     = '**/*_7_*_timeseries.csv'
-    FILE_MASKS['concno2']   = '**/*_8_*_timeseries.csv'
-    FILE_MASKS['vmrno2']    = '**/*_8_*_timeseries.csv'
-    FILE_MASKS['concco']    = '**/*_10_*_timeseries.csv'
-    FILE_MASKS['concno']    = '**/*_38_*_timeseries.csv'
-    FILE_MASKS['concpm25']  = '**/*_6001_*_timeseries.csv'
+    FILE_MASKS['concso2']   = '**/*_1_*_timeseries.csv*'
+    FILE_MASKS['concpm10']  = '**/*_5_*_timeseries.csv*'
+    FILE_MASKS['conco3']    = '**/*_7_*_timeseries.csv*'
+    FILE_MASKS['vmro3']     = '**/*_7_*_timeseries.csv*'
+    FILE_MASKS['concno2']   = '**/*_8_*_timeseries.csv*'
+    FILE_MASKS['vmrno2']    = '**/*_8_*_timeseries.csv*'
+    FILE_MASKS['concco']    = '**/*_10_*_timeseries.csv*'
+    FILE_MASKS['concno']    = '**/*_38_*_timeseries.csv*'
+    FILE_MASKS['concpm25']  = '**/*_6001_*_timeseries.csv*'
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
@@ -249,6 +255,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # this lists the data to keep from the original read string
         # this becomes a time series
         file_indexes_to_keep = [11, 13, 14, 15, 16]
+        # used for line length control...
+        max_file_index_to_keep = max(file_indexes_to_keep)
         # this is some header information
         header_indexes_to_keep = [0, 3, 8, 9, 10, 12, ]
         # These are the indexes with a time and are stored as np.datetime64
@@ -256,6 +264,14 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         # read the file
         # file_data = []
+        # enable alternative reading of .gz files here to save space on the file system
+        suffix = pathlib.Path(filename).suffix
+        if suffix == '.gz':
+            f_out = tempfile.NamedTemporaryFile(delete=False)
+            with gzip.open(filename, 'r') as f_in:
+                shutil.copyfileobj(f_in, f_out)
+            filename = f_out.name
+            f_in.close()
         with open(filename, 'r') as f:
             # read header...
             # Countrycode,Namespace,AirQualityNetwork,AirQualityStation,AirQualityStationEoICode,SamplingPoint,SamplingProcess,Sample,AirPollutant,AirPollutantCode,AveragingTime,Concentration,UnitOfMeasurement,DatetimeBegin,DatetimeEnd,Validity,Verification
@@ -278,8 +294,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             lineidx = 0
             for line in f:
                 rows = line.rstrip().split(file_delimiter)
+                # skip line if the # rows is not sufficient
+                if len(rows) < max_file_index_to_keep:
+                    continue
                 if lineidx == 0:
-
                     for idx in header_indexes_to_keep:
                         if header[idx] != self.VAR_CODE_NAME:
                             data_dict[header[idx]] = rows[idx]
@@ -304,6 +322,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                             data_dict[header[idx]][lineidx] = np.nan
 
                 lineidx += 1
+
+        # remove the temp file in case the input file weas a gz file
+        if suffix == '.gz':
+            f_out.close()
+            os.remove(f_out.name)
 
         unit_in_file = data_dict['unitofmeasurement']
         # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES
@@ -453,12 +476,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         files = sorted(glob.glob(fp, recursive=True))
         if not len(files) > 0:
             all_str = list_to_shortstr(os.listdir(self.data_dir))
-            raise DataSourceError('No files could be detected matching file '
-                                  'mask {} in dataset {}, files in folder {}:\n'
-                                  'Files in folder:{}'.format(pattern,
-                                                              self.data_id,
-                                                              self.data_dir,
-                                                              all_str))
+            # raise DataSourceError('No files could be detected matching file '
+            #                       'mask {} in dataset {}, files in folder {}:\n'
+            #                       'Files in folder:{}'.format(pattern,
+            #                                                   self.data_id,
+            #                                                   self.data_dir,
+            #                                                   all_str))
         self.files = files
         return files
 
@@ -649,4 +672,4 @@ if __name__ == "__main__":
     ddir = '/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download'
     reader = ReadEEAAQEREP(data_dir=ddir)
 
-    data = reader.read(['conco3'], last_file=1)
+    data = reader.read(['concpm10'], last_file=1)
