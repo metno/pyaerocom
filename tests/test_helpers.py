@@ -29,7 +29,7 @@ def test_get_lowest_resolution():
                                          'hourly',
                                          'monthly',
                                          'yearly') == 'yearly'
-@pytest.mark.parametrize('val', [3, 3.3455, np.complex(1,2)])
+@pytest.mark.parametrize('val', [3, 3.3455, complex(1,2)])
 def test_isnumeric(val):
     assert helpers.isnumeric(val)
 
