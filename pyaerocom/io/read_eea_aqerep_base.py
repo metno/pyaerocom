@@ -69,7 +69,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = '*.csv'
 
     #: Version log of this class (for caching)
-    __version__ = '0.05'
+    __version__ = '0.06'
 
     #: Column delimiter
     FILE_COL_DELIM = ','
