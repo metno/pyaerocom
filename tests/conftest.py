@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 11 15:57:09 2020
-
-@author: jonasg
-"""
 import matplotlib
 
 matplotlib.use('Agg')
@@ -234,8 +227,3 @@ def coldata():
 @contextmanager
 def does_not_raise_exception():
     yield
-
-if __name__=="__main__":
-    import sys
-
-    import pyaerocom as pya

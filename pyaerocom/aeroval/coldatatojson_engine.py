@@ -1,4 +1,6 @@
-
+"""
+Helpers for conversion of ColocatedData to JSON files for web interface.
+"""
 import os
 import numpy as np
 import xarray as xr
