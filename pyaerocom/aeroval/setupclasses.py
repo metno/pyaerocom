@@ -1,18 +1,26 @@
 # -*- coding: utf-8 -*-
-from getpass import getuser
 import os
-from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
-                                         NestedContainer, AsciiFileLoc,
-                                         EitherOf, StrType, ListOfStrings,
-                                         DirLoc)
+from getpass import getuser
 
-from pyaerocom.colocation_auto import ColocationSetup
-from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
-from pyaerocom.aeroval.helpers import (read_json, write_json,
-                                       _check_statistics_periods,
-                                       _get_min_max_year_periods)
+from pyaerocom import const
+from pyaerocom._lowlevel_helpers import (
+    AsciiFileLoc,
+    ConstrainedContainer,
+    DirLoc,
+    EitherOf,
+    ListOfStrings,
+    NestedContainer,
+    StrType,
+)
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
+from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
+from pyaerocom.aeroval.helpers import (
+    _check_statistics_periods,
+    _get_min_max_year_periods,
+    read_json,
+    write_json,
+)
+from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
 
@@ -372,8 +380,3 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
 
 
-if __name__ == '__main__':
-    stp = EvalSetup('bla', 'blub', addmethods_cfg={'add_methods_file': 'bla'})
-    stp['bla'] = 42
-    stp.update(res_deg=10)
-    d = stp.json_repr()
