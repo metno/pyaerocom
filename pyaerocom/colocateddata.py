@@ -1201,7 +1201,7 @@ class ColocatedData(object):
         """
         meta = {}
         for key, val in imported_meta.items():
-            if val == 'None':
+            if type(val) == str and val == 'None':
                 meta[key] = None
             elif key.startswith('CONV!'):
                 key = key[5:]
