@@ -1,21 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Helpers for conversion of ColocatedData to JSON files for web interface.
 
-ToDo
-----
-Started to move this functionality into class ColdataToJsonEngine, needs
-more refactoring and investigation which of the functions should be methods
-of that class. Parts of :class:`ColdataToJsonEngine.run` could be optimised
-if intermediate results would be stored as class attributes (e.g. repeated
-filtering operations in different sub-tasks, etc.) and subtasks could likely
-run in parallel, to speed things up. Would need investigation of bottlenecks,
-which may change for different setups (e.g. statistics timeseries is probably
-bottleneck for very long timeseries, or regional filtering takes more time
-when using HTAP binary masks compared to using rectangular regions, etc),
-so paralellisation strategy should be dependent also on the experiment setup.
-"""
 import os
 import numpy as np
 import xarray as xr
