@@ -17,6 +17,8 @@ from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import implicit_to_explicit_rates, UALIASES
 
+from pyaerocom.molmasses import get_molmass
+
 def add_dataarrays(*arrs):
     """
     Add a bunch of :class:`xarray.DataArray` instances
@@ -38,6 +40,7 @@ def add_dataarrays(*arrs):
     for arr in arrs[1:]:
         result += arr
     return result
+
 
 def subtract_dataarrays(*arrs):
     """
@@ -62,6 +65,93 @@ def subtract_dataarrays(*arrs):
     for arr in arrs[1:]:
         result -= arr
     return result
+
+def calc_concNhno3(*arrs):
+    if len(arrs)>1:
+        raise ValueError('Shoul only be given 1 array')
+        
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+    
+    conchno3 = arrs[0]
+    concNhno3 = conchno3*(M_N / (M_H + M_N + M_O * 3))
+    concNhno3.attrs['units'] = 'ug N m-3'
+    return concNhno3
+
+def calc_concNno3pm10(concno3f,concno3c):
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+    
+    fac = M_N / (M_N + 3*M_O)
+    concno3pm10 = concno3f + concno3c
+    concNno3pm10 = concno3pm10*fac
+    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
+    concNno3pm10.attrs['units'] = 'ug N m-3'
+    return concNno3pm10
+
+def calc_concNno3pm25(concno3f,concno3c):
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+    
+    fac = M_N / (M_N + 3*M_O)
+    concno3pm10 = concno3f + 0.134*concno3c
+    concNno3pm10 = concno3pm10*fac
+    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
+    concNno3pm10.attrs['units'] = 'ug N m-3'
+    return concNno3pm10
+
+def calc_conNtno3(conchno3,concno3f,concno3c):
+    concNhno3 = calc_concNhno3(conchno3)
+    concNno3pm10 = calc_concNno3pm10(concno3f,concno3c)
+    
+    concNtno3 = concNhno3 + concNno3pm10
+    concNtno3.attrs['units'] = 'ug N m-3'
+    return concNtno3
+
+def calc_concNnh3(*arrs):
+    if len(arrs)>1:
+        raise ValueError('Shoul only be given 1 array')
+        
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+        
+    concnh3 = arrs[0]
+    concNnh3 = concnh3*(M_N / (M_H * 3 + M_N))
+    concNnh3.attrs['units'] = 'ug N m-3'
+    return concNnh3
+
+def calc_concNnh4(*arrs):
+    if len(arrs)>1:
+        raise ValueError('Shoul only be given 1 array')
+        
+    M_N = 14.006
+    M_O = 15.999
+    M_H = 1.007
+        
+    concnh4 = arrs[0]
+    concNnh4 = concnh4*(M_N / (M_H * 4 + M_N))
+    concNnh4.attrs['units'] = 'ug N m-3'
+    return concNnh4
+
+def calc_concNtnh(concnh3,concnh4):
+    concNnh3 = calc_concNnh3(concnh3)
+    concNnh4 = calc_concNnh4(concnh4)
+    
+    concNtnh = concNnh3 + concNnh4
+    concNtnh.attrs['units'] = 'ug N m-3'
+    return concNtnh
+
+def update_EC_units(concecpm25):
+    concCecpm25 = concecpm25
+    concCecpm25.attrs['units'] = 'ug C m-3'
+    
+    return concCecpm25
+    
+    
 
 class ReadMscwCtm(object):
     """
@@ -90,7 +180,17 @@ class ReadMscwCtm(object):
                     'concbc' : ['concbcf', 'concbcc'],
                     'concno3' : ['concno3c', 'concno3f'],
                     'concoa' : ['concoac', 'concoaf'],
-                    'concpmgt25': ['concpm10', 'concpm25']}
+                    'concpmgt25': ['concpm10', 'concpm25'],
+                    'concNhno3' : ['conchno3'],
+                    'concNnh3'  : ['concnh3'],
+                    'concNnh4'  : ['concnh4'],
+                    'concNno3pm10' : ['concno3f','concno3c'],
+                    'concNno3pm25' : ['concno3f','concno3c'],
+                    'concNtno3'   : ['conchno3','concno3f','concno3c'],
+                    'concNtnh'    : ['concnh3','concnh4'],
+                    'concsspm10'  : ['concsspm25','concssc'],
+                    'concCecpm25' : ['concecpm25'],
+                    }
 
     # Functions that are used to compute additional variables (i.e. one
     # for each variable defined in AUX_REQUIRES)
@@ -102,6 +202,15 @@ class ReadMscwCtm(object):
                 'conctno3' : add_dataarrays,
                 'concoa' : add_dataarrays,
                 'concpmgt25': subtract_dataarrays,
+                'concNhno3':calc_concNhno3,
+                'concNnh3' : calc_concNnh3,
+                'concNnh4' : calc_concNnh4,
+                'concNno3pm10' : calc_concNno3pm10,
+                'concNno3pm25' : calc_concNno3pm25,
+                'concNtno3'    : calc_conNtno3,
+                'concNtnh'     : calc_concNtnh,
+                'concsspm10'   : add_dataarrays,
+                'concCecpm25'  : update_EC_units,
                 }
 
     #: supported filename masks, placeholder is for frequencies
