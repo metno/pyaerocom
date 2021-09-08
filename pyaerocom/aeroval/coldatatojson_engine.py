@@ -950,38 +950,11 @@ def _map_indices(outer_idx, inner_idx):
             count +=1
     return mapping.astype(int)
 
-def _process_statistics_timeseries_v0(data, periods, freq, region_ids,
-                                   use_weights, use_country, meta_glob):
-    coldata = data[freq]
-    output = {}
-    start, stop = _start_stop_from_periods(periods)
-    timeidx = make_datetime_index(start, stop, freq).values
-    jsdate = _get_jsdate(timeidx)
-    tidx = _map_indices(jsdate, coldata.data.jsdate.values)
-    stats_dummy = _init_stats_dummy()
-    for regid, regname in region_ids.items():
-        output[regname] = {}
-        try:
-            subset = coldata.filter_region(region_id=regid,
-                                        check_country_meta=use_country)
-            use_dummy = False
-        except DataCoverageError:
-            use_dummy = True
-        for js, idx in zip(jsdate, tidx):
-            if idx == -1 or use_dummy:
-                stats = stats_dummy
-            else:
-                try:
-                    arr = ColocatedData(subset.data[:, idx])
-                    stats = arr.calc_statistics(use_area_weights=use_weights)
-                except DataCoverageError:
-                    stats = stats_dummy
-            output[regname][str(js)] = _prep_stats_json(stats)
-    return output
 
-def _process_statistics_timeseries(data, periods, freq, region_ids,
+def _process_statistics_timeseries_v1(data, periods, freq, region_ids,
                                    use_weights, use_country, meta_glob):
     coldata = data[freq]
+
     output = {}
     start, stop = _start_stop_from_periods(periods)
     timeidx = make_datetime_index(start, stop, freq).values
@@ -1002,6 +975,40 @@ def _process_statistics_timeseries(data, periods, freq, region_ids,
                     output[regname][str(js)] = _prep_stats_json(stats)
                 except DataCoverageError:
                     pass
+
+    return output
+
+def _process_statistics_timeseries(data, periods, freq, region_ids,
+                                   use_weights, use_country, meta_glob,
+                                   data_freq):
+    if data_freq is None:
+        data_freq = freq
+
+    coldata = data[data_freq]
+
+    # get time index of output frequency
+    to_idx = data[freq].data.time.values
+    tstr = TsType(freq).to_numpy_freq()
+    # list of strings of output timestamps (used below to select the
+    # individual periods)
+    to_idx_str = [str(x) for x in to_idx.astype(f'datetime64[{tstr}]')]
+    jsdate = _get_jsdate(to_idx)
+    output = {}
+    for regid, regname in region_ids.items():
+        output[regname] = {}
+        try:
+            subset = coldata.filter_region(region_id=regid,
+                                        check_country_meta=use_country)
+        except DataCoverageError:
+            continue
+        for i, js in enumerate(jsdate):
+            per = to_idx_str[i]
+            try:
+                arr = ColocatedData(subset.data.sel(time=per))
+                stats = arr.calc_statistics(use_area_weights=use_weights)
+                output[regname][str(js)] = _prep_stats_json(stats)
+            except DataCoverageError:
+                pass
 
     return output
 
@@ -1164,13 +1171,16 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         if not diurnal_only:
             const.print_log.info('Processing statistics timeseries for all regions')
+            input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
             stats_ts = _process_statistics_timeseries(data,
                                                       periods,
                                                       main_freq,
                                                       regnames,
                                                       use_weights,
                                                       use_country,
-                                                      meta_glob)
+                                                      meta_glob,
+                                                      data_freq=input_freq)
+
             ts_file = os.path.join(out_dirs['hm/ts'], 'stats_ts.json')
             _add_entry_json(ts_file, stats_ts, obs_name, var_name_web,
                             vert_code, model_name, model_var)
