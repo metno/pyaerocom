@@ -259,7 +259,7 @@ class ColocationSetup(ConstrainedContainer):
         self.model_outlier_ranges = {}
 
         self.harmonise_units = False
-        self.regrid_res_deg = 5
+        self.regrid_res_deg = None
 
         self.colocate_time = False
 
@@ -1171,7 +1171,6 @@ class Colocator(ColocationSetup):
         else:
             return None
 
-
     def _infer_start_stop_yr_from_model_reader(self):
         """
         Infer start / stop year for colocation from gridded model reader
@@ -1179,13 +1178,21 @@ class Colocator(ColocationSetup):
         Sets :attr:`start` and :attr:`stop`
 
         """
+        # get sorted list of years available in model data (files with year
+        # 9999 denote climatological data)
         yrs_avail = self.model_reader.years_avail
-        first, last = yrs_avail[0], yrs_avail[-1]
-        if first == last:
-            last = None
+        if self.model_use_climatology:
+            if not 9999 in yrs_avail:
+                raise DataCoverageError('No climatology files available')
+            first, last = 9999, None
+        else:
+            if 9999 in yrs_avail:
+                yrs_avail = [x for x in yrs_avail if not x==9999]
+            first, last = yrs_avail[0], yrs_avail[-1]
+            if first == last:
+                last = None
         self.start = first
         self.stop = last
-
 
     def _check_set_start_stop(self):
         if self.start is None:

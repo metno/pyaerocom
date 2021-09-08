@@ -7,6 +7,17 @@ from pyaerocom.aeroval.experiment_output import ExperimentOutput
 
 
 class HasConfig:
+    """
+    Base class that ensures that evaluation configuration is available
+
+    Attributes
+    ----------
+    cfg : EvalSetup
+        AeroVal experiment setup
+    exp_output : ExperimentOutput
+        Manages output for an AeroVal experiment (e.g. path locations).
+
+    """
     cfg = TypeValidator(EvalSetup)
     exp_output = TypeValidator(ExperimentOutput)
     def __init__(self, cfg : EvalSetup):
@@ -23,6 +34,17 @@ class HasConfig:
 
 
 class ProcessingEngine(HasConfig, abc.ABC):
+    """
+    Abstract base for classes supposed to do one or more processing tasks
+
+    Requirement for a processing class is to inherit attrs from
+    :class:`HasConfig` and, in addition to that, to have implemented a method
+    :fun:`run` which is running the corresponding processing task and storing
+    all the associated output files, that are read by the frontend.
+
+    One example of an implementation is the
+    :class:`pyaerocom.aeroval.modelmaps_engine.ModelMapsEngine`.
+    """
 
     @abc.abstractmethod
     def run(self, *args, **kwargs) -> list:
@@ -46,6 +68,9 @@ class ProcessingEngine(HasConfig, abc.ABC):
 
 
 class HasColocator(HasConfig):
+    """
+    Config class that also has the ability to co-locate
+    """
     def get_colocator(self, model_name:str=None,
                       obs_name:str=None) -> Colocator:
         """
@@ -77,8 +102,34 @@ class HasColocator(HasConfig):
 
 
 class DataImporter(HasColocator):
+    """
+    Class that supports reading of model and obs data based on an eval config.
+
+    Depending on a :class:`EvalSetup`, reading of model and obs data may have
+    certain constraints (e.g. freq, years, alias variable names, etc.), which
+    are / can be specified flexibly for each model and obs entry in an
+    analysis setup (:class:`EvalSetup`). Proper handling of these reading
+    constraints and data import settings are handled in the
+    :class:`pyaerocom.colocation_auto.Colocator` engine, therefore the reading
+    in this class is done via the :class:`Colocator` engine.
+
+
+    """
     def read_model_data(self, model_name, var_name):
-        """Read model variable data
+        """
+        Import model data
+
+        Parameters
+        ----------
+        model_name : str
+            Name of model in :attr:`cfg`,
+        var_name : str
+            Name of variable to be read.
+
+        Returns
+        -------
+        data : GriddedData
+            loaded model data.
 
         """
         col = self.get_colocator(model_name)
@@ -87,7 +138,22 @@ class DataImporter(HasColocator):
         return data
 
     def read_ungridded_obsdata(self, obs_name, var_name):
-        """Read observation network"""
+        """
+        Import ungridded observation data
+
+        Parameters
+        ----------
+        obs_name : str
+            Name of observation network in :attr:`cfg`
+        var_name >: str
+            Name of variable to be read.
+
+        Returns
+        -------
+        data : UngriddedData
+            loaded obs data.
+
+        """
 
         col = self.get_colocator(obs_name)
 

@@ -6,9 +6,7 @@ Created on Thu May 27 12:27:47 2021
 @author: jonasg
 """
 from fnmatch import fnmatch
-import os
-from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, AsciiFileLoc
+from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.aeroval.obsentry import ObsEntry
 from pyaerocom.aeroval.modelentry import ModelEntry
 
