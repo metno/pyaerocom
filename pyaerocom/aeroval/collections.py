@@ -7,6 +7,7 @@ Created on Thu May 27 12:27:47 2021
 """
 from fnmatch import fnmatch
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.exceptions import EntryNotAvailable
 from pyaerocom.aeroval.obsentry import ObsEntry
 from pyaerocom.aeroval.modelentry import ModelEntry
 
@@ -54,7 +55,10 @@ class BaseCollection(BrowseDict):
         KeyError
             if input name is not in this collection
         """
-        return self[key]
+        try:
+            return self[key]
+        except (AttributeError, KeyError):
+            raise EntryNotAvailable(f'no such entry {key}')
 
 
     def get_web_iface_name(self, key):

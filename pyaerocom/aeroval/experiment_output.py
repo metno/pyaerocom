@@ -6,7 +6,7 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
 
-from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.exceptions import VariableDefinitionError, EntryNotAvailable
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              var_ranges_defaults,
                                              var_web_info)
@@ -398,29 +398,74 @@ class ExperimentOutput(ProjectOutput):
                 'longname'  :   lname,
                 'obs'       :   {}}
 
+    def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var):
+        """
+        Check if input combination of model and obs var is valid
+
+        Parameters
+        ----------
+        obs_name : str
+            Name of obs dataset.
+        obs_var : str
+            Name of obs variable.
+        mod_name : str
+            Name of model
+        mod_var : str
+            Name of model variable
+
+        Returns
+        -------
+        bool
+            True if this combination is valid, else False.
+
+        """
+        try:
+            ocfg = self.cfg.obs_cfg.get_entry(obs_name)
+            if not ocfg.has_var(obs_var):
+                return False
+        except EntryNotAvailable:
+            return False
+        try:
+            mcfg = self.cfg.model_cfg.get_entry(mod_name)
+            # since observation variables are not explicitly defined in mcfg
+            # (but only renamings or additional variables), mcfg.has_var(mod_var)
+            # returns False in most cases (since the model variable equals the
+            # obs variable)
+            if not mcfg.has_var(mod_var) and not ocfg.has_var(mod_var):
+                return False
+        except EntryNotAvailable:
+            return False
+        return True
 
     def _create_menu_dict(self):
         new = {}
         tab = self._get_meta_from_map_files()
         for (obs_name, obs_var, vert_code, mod_name, mod_var) in tab:
-            mcfg = self.cfg.model_cfg.get_entry(mod_name)
-            var = mcfg.get_varname_web(mod_var, obs_var)
-            if not var in new:
-                new[var] = self._init_menu_entry(var)
+            if self._is_part_of_experiment(obs_name, obs_var,
+                                           mod_name, mod_var):
 
-            if not obs_name in new[var]['obs']:
-                new[var]['obs'][obs_name] = {}
+                mcfg = self.cfg.model_cfg.get_entry(mod_name)
+                var = mcfg.get_varname_web(mod_var, obs_var)
+                if not var in new:
+                    new[var] = self._init_menu_entry(var)
 
-            if not vert_code in new[var]['obs'][obs_name]:
-                new[var]['obs'][obs_name][vert_code] = {}
-            if not mod_name in new[var]['obs'][obs_name][vert_code]:
-                new[var]['obs'][obs_name][vert_code][mod_name] = {}
+                if not obs_name in new[var]['obs']:
+                    new[var]['obs'][obs_name] = {}
 
-            model_id = mcfg['model_id']
-            new[var]['obs'][obs_name][vert_code][mod_name] = {
-                'model_id'  : model_id,
-                'model_var' : mod_var,
-                'obs_var'   : obs_var}
+                if not vert_code in new[var]['obs'][obs_name]:
+                    new[var]['obs'][obs_name][vert_code] = {}
+                if not mod_name in new[var]['obs'][obs_name][vert_code]:
+                    new[var]['obs'][obs_name][vert_code][mod_name] = {}
+
+                model_id = mcfg['model_id']
+                new[var]['obs'][obs_name][vert_code][mod_name] = {
+                    'model_id'  : model_id,
+                    'model_var' : mod_var,
+                    'obs_var'   : obs_var}
+            else:
+                const.print_log.warning(
+                    f'Invalid entry: model {mod_name} ({mod_var}), '
+                    f'model {obs_name} ({obs_var})')
         return new
 
 

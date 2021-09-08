@@ -80,6 +80,9 @@ class NasaAmesReadError(IOError):
 class EbasFileError(ValueError):
     pass
 
+class EntryNotAvailable(KeyError):
+    pass
+
 class InitialisationError(ValueError):
     pass
 
