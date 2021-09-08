@@ -784,7 +784,7 @@ class ReadUngridded(object):
     def __str__(self):
         s=''
         for ds in self.data_ids:
-            s += '\n{}'.format(self.self.get_lowlevel_reader(ds))
+            s += '\n{}'.format(self.get_lowlevel_reader(ds))
         return s
 
 if __name__=="__main__":

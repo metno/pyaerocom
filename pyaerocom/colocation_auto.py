@@ -1027,6 +1027,8 @@ class Colocator(ColocationSetup):
         tst = self.ts_type # default
         if is_model and self.model_ts_type_read is not None:
             tst = self.model_ts_type_read
+            if tst == '':
+                tst = self.ts_type
         elif not is_model and self.obs_ts_type_read is not None:
             tst = self.obs_ts_type_read
         if isinstance(tst, dict):
