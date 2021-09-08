@@ -111,7 +111,8 @@ class StatisticsSetup(ConstrainedContainer):
     Parameters
     ----------
     kwargs
-        any of the supported attributes.
+        any of the supported attributes, e.g.
+        `StatisticsSetup(annual_stats_constrained=True)`
 
     """
     MIN_NUM = 3
