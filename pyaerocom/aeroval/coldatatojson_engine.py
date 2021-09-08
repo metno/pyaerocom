@@ -994,10 +994,9 @@ def _process_statistics_timeseries(data, freq, region_ids,
 
     output = {}
     if not data_freq in data or data[data_freq] is None:
-        const.print_log.warning(
+        raise TemporalResolutionError(
             f'failed to compute statistics timeseries, no co-located data '
             f'available in specified base resolution {data_freq}')
-        return output
 
     coldata = data[data_freq]
 
@@ -1194,12 +1193,16 @@ class ColdataToJsonEngine(ProcessingEngine):
         if not diurnal_only:
             const.print_log.info('Processing statistics timeseries for all regions')
             input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
-            stats_ts = _process_statistics_timeseries(data,
-                                                      main_freq,
-                                                      regnames,
-                                                      use_weights,
-                                                      use_country,
-                                                      data_freq=input_freq)
+            try:
+                stats_ts = _process_statistics_timeseries(
+                    data=data,
+                    freq=main_freq,
+                    region_ids=regnames,
+                    use_weights=use_weights,
+                    use_country=use_country,
+                    data_freq=input_freq)
+            except TemporalResolutionError:
+                stats_ts = {}
 
             ts_file = os.path.join(out_dirs['hm/ts'], 'stats_ts.json')
             _add_entry_json(ts_file, stats_ts, obs_name, var_name_web,
