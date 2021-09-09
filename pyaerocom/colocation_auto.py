@@ -87,8 +87,10 @@ class ColocationSetup(ConstrainedContainer):
         will be automatically set to the end of that year. Else, it will be
         set to the last available timestamp in the model data.
     filter_name : str
-        name of filter to be applied. If None, AeroCom default is used
-        (i.e. `pyaerocom.const.DEFAULT_REG_FILTER`)
+        name of filter to be applied. If None, no filter is used
+        (to be precise, if None, then
+         :attr:`pyaerocom.const.DEFAULT_REG_FILTER` is used which should
+         default to `WORLD-wMOUNTAINS`, that is, no filtering).
     basedir_coldata : str
         Base directory for storing of colocated data files.
     save_coldata : bool
