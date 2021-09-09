@@ -80,6 +80,9 @@ class NasaAmesReadError(IOError):
 class EbasFileError(ValueError):
     pass
 
+class EntryNotAvailable(KeyError):
+    pass
+
 class InitialisationError(ValueError):
     pass
 
@@ -120,6 +123,9 @@ class TemporalResolutionError(ValueError):
     pass
 
 class UnitConversionError(ValueError):
+    pass
+
+class UnknownRegion(ValueError):
     pass
 
 class UnresolvableTimeDefinitionError(DataDimensionError, NetcdfError):

@@ -12,8 +12,11 @@ from pyaerocom import logger, const
 from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
                                   DataCoverageError,
                                   DataSourceError,
-                                  NetcdfError, VarNotAvailableError,
-                                  MetaDataError)
+                                  MetaDataError,
+                                  NetcdfError,
+                                  UnknownRegion,
+                                  VarNotAvailableError
+                                  )
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import (to_datestring_YYYYMMDD)
 from pyaerocom.helpers_landsea_masks import (load_region_mask_xr,
@@ -1755,7 +1758,7 @@ class ColocatedData(object):
                 filtered = self.apply_latlon_filter(region_id=region_id,
                                                     inplace=inplace)
             else:
-                raise AttributeError(f'no such region defined {region_id}')
+                raise UnknownRegion(f'no such region defined {region_id}')
         # if all model and obsdata is NaN, use dummy stats (this can
         # e.g., be the case if colocate_time=True and all obs is NaN,
         # or if model domain is not covered by the region)

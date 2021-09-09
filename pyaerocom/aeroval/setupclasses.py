@@ -70,10 +70,56 @@ class ModelMapsSetup(ConstrainedContainer):
         self.update(**kwargs)
 
 class StatisticsSetup(ConstrainedContainer):
+    """
+    Setup options for statistical calculations
+
+    Attributes
+    ----------
+    weighted_stats : bool
+        if True, statistical parameters are calculated using area weights,
+        this is only relevant for gridded / gridded evaluations.
+    annual_stats_constrained : bool
+        if True, then only sites are considered that satisfy a potentially
+        specified annual resampling constraint (see
+        :attr:`pyaerocom.colocation_auto.ColocationSetup.min_num_obs`). E.g.
+        lets say you want to calculate statistical parameters (bias,
+        correlation, etc.) for monthly model / obs data for a given site and
+        year. Lets further say, that there are only 8 valid months of data, and
+        4 months are missing, so statistics will be calculated for that year
+        based on 8 vs. 8 values. Now if
+        :attr:`pyaerocom.colocation_auto.ColocationSetup.min_num_obs` is
+        specified in way that requires e.g. at least 9 valid months to
+        represent the whole year, then this station will not be considered in
+        case `annual_stats_constrained` is True, else it will. Defaults to
+        False.
+    stats_tseries_base_freq : str, optional
+        The statistics Time Series display in AeroVal (under Overall Evaluation)
+        is computed in intervals of a certain frequency, which is specified
+        via :attr:`TimeSetup.main_freq` (defaults to monthly). That is,
+        monthly colocated data is used as a basis to compute the statistics
+        for each month (e.g. if you have 10 sites, then statistics will be
+        computed based on 10 monthly values for each month of the timeseries,
+        1 value for each site). `stats_tseries_base_freq` may be specified in
+        case a higher resolution is supposed to be used as a basis to compute
+        the timeseries in the resolution specified by
+        :attr:`TimeSetup.main_freq` (e.g. if daily is specified here, then for
+        the above example 310 values would be used - 31 for each site - to
+        compute the statistics for a given month (in this case, a month with 31
+        days, obviously).
+
+
+    Parameters
+    ----------
+    kwargs
+        any of the supported attributes, e.g.
+        `StatisticsSetup(annual_stats_constrained=True)`
+
+    """
     MIN_NUM = 3
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
+        self.stats_tseries_base_freq = None
         self.update(**kwargs)
 
 class TimeSetup(ConstrainedContainer):
@@ -151,8 +197,6 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         self.colocation_opts = ColocationSetup(
                                     save_coldata=True,
                                     keep_data=False,
-                                    regrid_res_deg=5,
-                                    min_num_obs=const.OBS_MIN_NUM_RESAMPLE,
                                     resample_how='mean'
                                     )
         self.statistics_opts = StatisticsSetup(

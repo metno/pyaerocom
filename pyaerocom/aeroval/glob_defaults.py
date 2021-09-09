@@ -7,6 +7,10 @@ Created on Thu Jun 13 09:31:56 2019
 @author: jonasg
 """
 var_ranges_defaults = {
+    # "default": {
+    #     "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+    #     "colmap": "coolwarm"
+    # },
     "ang4487aer": {
         "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
         "colmap": "coolwarm"
@@ -74,7 +78,75 @@ var_ranges_defaults = {
     "vmrno2": {
         "scale": [0, 5, 10, 15, 20, 25, 30, 35, 40],
         "colmap": "coolwarm"
-    }
+    },
+    "concNhno3": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNno3pm10": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNno3pm25": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNnh3": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNnh4": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNtno3": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concNtnh": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concsspm25": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concsspm10": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concCecpm25": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "concCocpm25": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "wetoxs": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "wetoxn": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "wetrdn": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "dryoxs": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "dryoxn": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
+    "dryrdn": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
 }
 
 

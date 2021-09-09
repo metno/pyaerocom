@@ -1033,6 +1033,8 @@ class Colocator(ColocationSetup):
         tst = self.ts_type # default
         if is_model and self.model_ts_type_read is not None:
             tst = self.model_ts_type_read
+            if tst == '':
+                tst = self.ts_type
         elif not is_model and self.obs_ts_type_read is not None:
             tst = self.obs_ts_type_read
         if isinstance(tst, dict):
@@ -1175,7 +1177,6 @@ class Colocator(ColocationSetup):
         else:
             return None
 
-
     def _infer_start_stop_yr_from_model_reader(self):
         """
         Infer start / stop year for colocation from gridded model reader
@@ -1198,7 +1199,6 @@ class Colocator(ColocationSetup):
                 last = None
         self.start = first
         self.stop = last
-
 
     def _check_set_start_stop(self):
         if self.start is None:
