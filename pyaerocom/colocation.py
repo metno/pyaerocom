@@ -44,10 +44,10 @@ def _resolve_var_name(data):
     -------
     str
         variable name as set in data (may be alias, but may also be AeroCom
-        variable name)
+        variable name, in which case first and second return parameter are the
+        same).
     str
-        corresponding AeroCom variable name (same as first return value if
-        that one)
+        corresponding AeroCom variable name 
 
     """
 
@@ -104,6 +104,30 @@ def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
 
 def _ensure_gridded_gridded_same_freq(data, data_ref,
                                       min_num_obs, resample_how):
+    """
+    Make sure
+
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    data_ref : TYPE
+        DESCRIPTION.
+    min_num_obs : TYPE
+        DESCRIPTION.
+    resample_how : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    data : TYPE
+        DESCRIPTION.
+    data_ref : TYPE
+        DESCRIPTION.
+    TYPE
+        DESCRIPTION.
+
+    """
     ts_type_data = data.ts_type
     ts_type_data_ref = data_ref.ts_type
     if ts_type_data != ts_type_data_ref:
