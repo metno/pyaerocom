@@ -1,9 +1,13 @@
 import numpy as np
+
 import pytest
-from pyaerocom.conftest import coldata, does_not_raise_exception
-from pyaerocom import TsType, ColocatedData
-import pyaerocom.exceptions as exceptions
+
 import pyaerocom.aeroval.coldatatojson_engine as mod
+import pyaerocom.exceptions as exceptions
+from pyaerocom import ColocatedData, TsType
+
+from ..conftest import does_not_raise_exception
+
 
 def test_get_heatmap_filename():
     assert mod.get_heatmap_filename('daily') ==  'glob_stats_daily.json'
