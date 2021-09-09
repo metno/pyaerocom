@@ -1060,17 +1060,11 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
                                  'no time dimension')
 
     from pyaerocom.tstype import TsType
-    from pyaerocom.time_config import XARR_TIME_GROUPERS
+
     to = TsType(freq)
     pd_freq=to.to_pandas_freq()
     invalid = None
     if min_num_obs is not None:
-        if not pd_freq in XARR_TIME_GROUPERS:
-            raise ValueError('Cannot infer xarray grouper for ts_type {}'
-                             .format(to.val))
-        #gr = XARR_TIME_GROUPERS[pd_freq]
-        # 2D mask with shape of resampled data array
-        #invalid = arr.groupby('time.{}'.format(gr)).count(dim='time') < min_num_obs
         invalid = arr.resample(time=pd_freq).count(dim='time') < min_num_obs
 
     freq, loffset = _get_pandas_freq_and_loffset(freq)
