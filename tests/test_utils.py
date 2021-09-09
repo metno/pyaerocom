@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
+
 import pytest
-from pyaerocom.conftest import does_not_raise_exception, testdata_unavail
 from pyaerocom import utils
+
+from .conftest import does_not_raise_exception, testdata_unavail
+
 
 def test_print_file(tmpdir):
     fp = os.path.join(tmpdir, 'file.txt')

@@ -5,13 +5,18 @@ Created on Mon Nov 25 15:27:28 2019
 
 @author: jonasg
 """
+import getpass
+import os
+import tempfile
+
 import pytest
-import os, tempfile
-from pyaerocom.conftest import does_not_raise_exception, PYADIR
+
+import pyaerocom.config as testmod
 from pyaerocom import const as DEFAULT_CFG
 from pyaerocom.config import Config
-import pyaerocom.config as testmod
-import getpass
+
+from .conftest import PYADIR, does_not_raise_exception
+
 USER = getpass.getuser()
 
 _TEMPDIR = tempfile.mkdtemp()
@@ -239,6 +244,7 @@ def test_empty_init(empty_cfg):
     assert cfg.last_config_file is None
     assert cfg._ebas_flag_info is None
     from pyaerocom.grid_io import GridIO
+
     #: Settings for reading and writing of gridded data
     assert isinstance(cfg.GRID_IO, GridIO)
 

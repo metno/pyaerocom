@@ -7,15 +7,15 @@ Created on Thu Apr 12 14:45:43 2018
 """
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 import pytest
 import xarray as xr
-import pandas as pd
 
-from pyaerocom import helpers, StationData
-from pyaerocom._conftest_helpers import _create_fake_timeseries_hourly
-from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom.exceptions import (DataCoverageError, TemporalResolutionError,
-                                  UnitConversionError)
+from pyaerocom import StationData, helpers
+from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError, UnitConversionError
+
+from .conftest import does_not_raise_exception
+
 
 def test_get_standarad_name():
     assert (helpers.get_standard_name('od550aer') ==

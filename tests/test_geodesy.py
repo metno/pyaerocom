@@ -5,10 +5,12 @@ Created on Mon Feb  4 10:36:15 2019
 
 @author: jonasg
 """
-from pyaerocom import geodesy
-from pyaerocom.conftest import geonum_unavail, etopo1_unavail, rg_unavail
 import numpy.testing as npt
 import pytest
+
+from pyaerocom import geodesy
+
+from .conftest import etopo1_unavail, geonum_unavail, rg_unavail
 
 TEST_LAT = 50.8
 TEST_LON = 9

@@ -6,14 +6,13 @@ Created on Thu Oct 22 10:14:59 2020
 @author: jonasg
 """
 
-import pytest
 import numpy as np
 import numpy.testing as npt
-from pyaerocom.conftest import (aeronetsdav3lev2_subset,
-                                aeronetsunv3lev2_subset,
-                                does_not_raise_exception)
+import pytest
 
 import pyaerocom.combine_vardata_ungridded as testmod
+
+from .conftest import aeronetsdav3lev2_subset, aeronetsunv3lev2_subset, does_not_raise_exception
 
 SUN_DATA = aeronetsunv3lev2_subset
 SDA_DATA = aeronetsdav3lev2_subset

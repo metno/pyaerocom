@@ -6,13 +6,16 @@ Created on Thu Apr 12 14:45:43 2018
 @author: jonasg
 """
 
-import pytest
 import os
-import numpy.testing as npt
 from datetime import datetime
-from pyaerocom.conftest import TEST_RTOL, testdata_unavail, does_not_raise_exception
-from pyaerocom.exceptions import VariableDefinitionError
+
+import numpy.testing as npt
+import pytest
+
 from pyaerocom import GriddedData, Variable
+from pyaerocom.exceptions import VariableDefinitionError
+
+from .conftest import TEST_RTOL, does_not_raise_exception, testdata_unavail
 
 TESTLATS =  [-10, 20]
 TESTLONS =  [-120, 69]

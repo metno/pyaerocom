@@ -5,12 +5,11 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
-import pytest
 import numpy as np
-from pyaerocom.conftest import DATA_ACCESS, TEST_RTOL
+import pytest
 from cf_units import Unit
 
-RTOL = TEST_RTOL
+from .conftest import DATA_ACCESS
 
 @pytest.fixture
 def stat1():

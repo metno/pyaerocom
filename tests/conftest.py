@@ -6,22 +6,22 @@ Created on Tue Feb 11 15:57:09 2020
 @author: jonasg
 """
 import matplotlib
-matplotlib.use('Agg')
-import pytest
-import numpy as np
 
+matplotlib.use('Agg')
 from contextlib import contextmanager
 
-from pyaerocom import const
-import pyaerocom._conftest_helpers as cth
-import pyaerocom.testdata_access as td
-from pyaerocom.griddeddata import GriddedData
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.io import (ReadAasEtal, ReadEbas, ReadAeronetSunV3,
-                          ReadAeronetSdaV3)
+import numpy as np
+import pytest
 
-from pyaerocom.test.synthetic_data import DataAccess
+import pyaerocom.testdata_access as td
 from pyaerocom import __dir__ as PYADIR
+from pyaerocom import const
+from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
+
+from . import _conftest_helpers as cth
+from .synthetic_data import DataAccess
 
 INIT_TESTDATA = True
 TEST_RTOL = 1e-4
@@ -110,6 +110,7 @@ testdata_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
 test_not_working = pytest.mark.skip(reason='Method raises Exception')
 
 from pyaerocom import change_verbosity
+
 change_verbosity('critical', const.print_log)
 ### Fixtures representing data
 
@@ -231,4 +232,5 @@ def does_not_raise_exception():
 
 if __name__=="__main__":
     import sys
+
     import pyaerocom as pya

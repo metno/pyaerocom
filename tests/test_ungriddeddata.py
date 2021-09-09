@@ -5,13 +5,17 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
+import os
+
 import numpy as np
 import numpy.testing as npt
-import os
 import pytest
+
 from pyaerocom import UngriddedData
-from pyaerocom.conftest import testdata_unavail, rg_unavail
 from pyaerocom.exceptions import DataCoverageError
+
+from .conftest import rg_unavail, testdata_unavail
+
 
 @pytest.fixture(scope='module')
 def ungridded_empty():

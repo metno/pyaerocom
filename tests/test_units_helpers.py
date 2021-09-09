@@ -5,13 +5,13 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
-import pytest
 import numpy.testing as npt
+import pytest
 
-from pytest import approx
-from pyaerocom import units_helpers as uh
-from pyaerocom.conftest import testdata_unavail
 from pyaerocom import GriddedData
+from pyaerocom import units_helpers as uh
+
+from .conftest import testdata_unavail
 
 
 @pytest.mark.parametrize('from_unit,to_unit,val', [

@@ -5,10 +5,12 @@ Created on Tue Mar  3 17:10:03 2020
 
 @author: jonasg
 """
-import pytest
 import numpy as np
 import numpy.testing as npt
-from pyaerocom.conftest import testdata_unavail
+import pytest
+
+from .conftest import testdata_unavail
+
 
 @testdata_unavail
 def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):

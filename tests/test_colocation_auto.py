@@ -1,12 +1,14 @@
 import os
+
 import pytest
 
-from pyaerocom.conftest import tda, does_not_raise_exception, testdata_unavail
-from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
-from pyaerocom.io import ReadMscwCtm
+from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom.exceptions import ColocationError
+from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
+
+from .conftest import does_not_raise_exception, tda, testdata_unavail
 
 HOME = os.path.expanduser('~')
 COL_OUT_DEFAULT = os.path.join(HOME, 'MyPyaerocom/colocated_data')

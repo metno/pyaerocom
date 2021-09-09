@@ -5,12 +5,13 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
+import numpy as np
 import pytest
 
-import numpy as np
 from pyaerocom.exceptions import TemporalResolutionError
-from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.tstype import TsType
+
+from .conftest import does_not_raise_exception
 
 
 def test_TsType_VALID():

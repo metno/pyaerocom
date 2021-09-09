@@ -5,24 +5,27 @@ Created on Mon Nov 25 15:27:28 2019
 
 @author: jonasg
 """
-import pytest
+import iris
 import numpy as np
 import numpy.testing as npt
-import iris
 import pandas as pd
+import pytest
 from cf_units import Unit
 
-from pyaerocom.conftest import (TEST_RTOL, testdata_unavail)
-from pyaerocom._conftest_helpers import create_fake_station_data
-from pyaerocom.colocation import (_regrid_gridded,
-                                  _colocate_site_data_helper,
-                                  _colocate_site_data_helper_timecol,
-                                  colocate_gridded_ungridded,
-                                  colocate_gridded_gridded)
+from pyaerocom import GriddedData, const, helpers
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom import GriddedData, const
-from pyaerocom import helpers
+from pyaerocom.colocation import (
+    _colocate_site_data_helper,
+    _colocate_site_data_helper_timecol,
+    _regrid_gridded,
+    colocate_gridded_gridded,
+    colocate_gridded_ungridded,
+)
 from pyaerocom.io import ReadMscwCtm
+
+from ._conftest_helpers import create_fake_station_data
+from .conftest import TEST_RTOL, testdata_unavail
+
 
 def test__regrid_gridded(data_tm5):
      one_way = _regrid_gridded(data_tm5, 'areaweighted', 5)

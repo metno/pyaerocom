@@ -7,8 +7,10 @@ Created on Fri Oct 23 10:13:58 2020
 """
 
 import pytest
-from pyaerocom.conftest import does_not_raise_exception
+
 from pyaerocom import obs_io as testmod
+
+from .conftest import does_not_raise_exception
 
 AuxInfoUngriddedTypes = dict(
     data_id = str,
@@ -56,6 +58,7 @@ def test_AuxInfoUngridded_to_dict():
     assert info.to_dict() == AUX_EXAMPLE
 
 from copy import deepcopy
+
 EX_WRONG1 = deepcopy(AUX_EXAMPLE)
 EX_WRONG1['aux_funs'] = None
 

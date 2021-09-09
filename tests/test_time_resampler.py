@@ -5,17 +5,17 @@ Created on Tue Nov 24 17:11:58 2020
 
 @author: jonasg
 """
-import pytest
-from pyaerocom import TsType
-from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom.time_resampler import TimeResampler
 import numpy as np
 import pandas as pd
+import pytest
 import xarray as xr
 from iris.cube import Cube
-from pyaerocom import GriddedData
-from pyaerocom.helpers import (resample_time_dataarray,
-                               resample_timeseries)
+
+from pyaerocom import GriddedData, TsType
+from pyaerocom.helpers import resample_time_dataarray, resample_timeseries
+from pyaerocom.time_resampler import TimeResampler
+
+from .conftest import does_not_raise_exception
 
 # get default resampling "min_num_obs"
 min_num_obs_default = {'yearly': {'monthly': 3},

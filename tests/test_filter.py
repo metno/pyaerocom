@@ -5,11 +5,13 @@ Created on Tue Dec  3 14:03:55 2019
 
 @author: hannas
 """
-import pytest
 import numpy as np
+import pytest
 
 from pyaerocom.filter import Filter
-from pyaerocom.conftest import lustre_unavail, testdata_unavail
+
+from .conftest import testdata_unavail
+
 
 #TODO: use mark.parametrize for first 2 test functions and call test_Filter
 def test_Filter_init():

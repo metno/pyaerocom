@@ -5,15 +5,19 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
-import pytest
-from matplotlib.axes import Axes
+import os
+
 import numpy as np
 import numpy.testing as npt
-import os
+import pytest
 import xarray as xr
+from matplotlib.axes import Axes
+
 from pyaerocom import ColocatedData
 from pyaerocom.exceptions import DataCoverageError, DataDimensionError
-from pyaerocom.conftest import TESTDATADIR, CHECK_PATHS, does_not_raise_exception
+
+from .conftest import CHECK_PATHS, TESTDATADIR, does_not_raise_exception
+
 
 EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS['coldata_tm5_aeronet'])
 
