@@ -28,15 +28,37 @@ from pyaerocom.exceptions import (ColocationError, ColocationSetupError,
                                   DataCoverageError, DeprecationError)
 
 class ColocationSetup(ConstrainedContainer):
-    """Setup class for model / obs intercomparison
+    """
+    Setup class for high-level model / obs co-location.
 
     An instance of this setup class can be used to run a colocation analysis
     between a model and an observation network and will create a number of
-    :class:`pya.ColocatedData` instances and save them as netCDF file.
+    :class:`pya.ColocatedData` instances, which can be saved automatically
+    as NetCDF files.
 
-    Note
-    ----
-    This is a very first draft and will likely undergo significant changes
+    Apart from co-location, this class also handles reading of the input data
+    for co-location. Supported co-location options are:
+
+    1. gridded vs. ungridded data
+    For instance 3D model data (instance of :class:`GriddedData`) with lat,
+    lon and time dimension that is co-located with station based observations
+    which are represented in pyaerocom through :class:`UngriddedData` objects.
+    The co-location function used is
+    :func:`pyaerocom.colocation.colocated_gridded_ungridded`. For this type of
+    co-location, the output co-located data object will be 3-dimensional,
+    with dimensions `data_source` (index 0: obs, index 1: model), `time` and
+    `station_name`.
+
+    2. gridded vs. gridded data
+    For instance 3D model data that is co-located with 3D satellite data
+    (both instances of :class:`GriddedData`), both objects with lat,
+    lon and time dimensions. The co-location function used
+    is :func:`pyaerocom.colocation.colocated_gridded_gridded`.
+    For this type of co-location, the output co-located data object will be
+    4-dimensional,  with dimensions `data_source` (index 0: obs, index 1:
+    model), `time` and `latitude` and `longitude`.
+
+
 
     Attributes
     ----------
@@ -44,22 +66,21 @@ class ColocationSetup(ConstrainedContainer):
         ID of model to be used
     obs_id : str
         ID of observation network to be used
-    obs_vars : str or list, optional
-        variables to be analysed. If any of the provided variables to be
-        analysed in the model data is not available in obsdata, the obsdata
-        will be checked against potential alternative variables which are
-        specified in :attr:`model_use_vars` and which can be specified in form of a
-        dictionary for each . If None, all
-        variables are analysed that are available both in model and obsdata.
+    obs_vars : list
+        Variables to be analysed (need to be available in input obs dataset).
+        Variables that are not available in the model data output will be
+        skipped. Alternatively, model variables to be used for a given obs
+        variable can also be specified via attributes :attr:`model_use_vars`
+        and :attr:`model_add_vars`.
     ts_type : str
-        string specifying colocation frequency
+        String specifying colocation output frequency.
     start
-        start time of colocation. Input can be anything that can be converted into
-        :class:`pandas.Timestamp` using
+        Start time of colocation. Input can be integer denoting the year or
+        anything that can be converted  into :class:`pandas.Timestamp` using
         :func:`pyaerocom.helpers.to_pandas_timestamp`. If None, than the first
         available date in the model data is used.
     stop
-        stop time of colocation. Anything that can be converted into
+        stop time of colocation. int or anything that can be converted into
         :class:`pandas.Timestamp` using
         :func:`pyaerocom.helpers.to_pandas_timestamp` or None. If None and if
         ``start`` is on resolution of year (e.g. ``start=2010``) then ``stop``
@@ -105,12 +126,6 @@ class ColocationSetup(ConstrainedContainer):
         `vars_required` (list of required variables for computation of var
         and `fun` (method that takes list of read data objects and computes
         and returns var)
-    model_read_year : int, optional
-        can be set if modeldata does not cover intended start / stop period of
-        colocation (:attr:`start`, :attr:`stop`). Note: This feature is only
-        supported for single year analyses, that is, :attr:`stop` must be None
-        and :attr:`start` must be an integer indicating year of obsdata to be
-        used.
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
