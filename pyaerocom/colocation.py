@@ -28,6 +28,28 @@ from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
 def _resolve_var_name(data):
+    """
+    Check variable name of `GriddedData` against AeroCom default
+
+    Checks whether the variable name set in the data corresponds to the
+    AeroCom variable name, or whether it is an alias. Returns both the
+    variable name set and the AeroCom variable name.
+
+    Parameters
+    ----------
+    data : GriddedData
+        Data to be checked.
+
+    Returns
+    -------
+    str
+        variable name as set in data (may be alias, but may also be AeroCom
+        variable name)
+    str
+        corresponding AeroCom variable name (same as first return value if
+        that one)
+
+    """
 
     var = data.var_name
     try:
