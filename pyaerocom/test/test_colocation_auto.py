@@ -5,7 +5,7 @@ from pyaerocom.conftest import tda, does_not_raise_exception, testdata_unavail
 from pyaerocom.colocation_auto import ColocationSetup, Colocator
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
 from pyaerocom.io import ReadMscwCtm
-from pyaerocom.exceptions import ColocationError
+from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io.aux_read_cubes import add_cubes
 
 HOME = os.path.expanduser('~')
@@ -49,14 +49,18 @@ def tm5_aero_stp():
 
 @pytest.mark.parametrize('update_col,sh,raises', [
     (dict(model_use_vars={'od550aer':'abs550aer'},
-          obs_use_climatology=True), (2,12,16),
-     does_not_raise_exception()),
+          model_use_climatology=True,
+          obs_use_climatology=True, start=2008, stop=2012), (2,12,1),
+     pytest.raises(ColocationSetupError)),
     (dict(model_use_vars={'od550aer':'abs550aer'},
           model_use_climatology=True,
           obs_use_climatology=True), (2,12,1),
      does_not_raise_exception()),
     (dict(model_use_vars={'od550aer':'abs550aer'},
           model_use_climatology=True), (2,12,1),
+     does_not_raise_exception()),
+    (dict(model_use_vars={'od550aer':'abs550aer'},
+          obs_use_climatology=True), (2,12,16),
      does_not_raise_exception()),
 
 

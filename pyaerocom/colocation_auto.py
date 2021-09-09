@@ -24,8 +24,8 @@ from pyaerocom.colocateddata import ColocatedData
 
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
-from pyaerocom.exceptions import (ColocationError, DataCoverageError,
-                                  DeprecationError)
+from pyaerocom.exceptions import (ColocationError, ColocationSetupError,
+                                  DataCoverageError, DeprecationError)
 
 class ColocationSetup(ConstrainedContainer):
     """Setup class for model / obs intercomparison
@@ -1203,6 +1203,12 @@ class Colocator(ColocationSetup):
     def _check_set_start_stop(self):
         if self.start is None:
             self._infer_start_stop_yr_from_model_reader()
+        if self.model_use_climatology:
+            if self.stop is not None or not isinstance(self.start, int):
+                raise ColocationSetupError(
+                'Conflict: only single year analyses are support for model '
+                'climatology fields, please specify "start" as integer '
+                'denoting the year, and set "stop"=None')
         self.start, self.stop = start_stop(self.start, self.stop)
 
 
