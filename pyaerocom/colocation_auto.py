@@ -158,7 +158,7 @@ class ColocationSetup(ConstrainedContainer):
         (e.g. model_use_vars=dict(od550aer='od550csaer')). Example: your
         observation has var *od550aer* but your model model uses a different
         variable name for that variable, say *od550*. Then, you can specify
-        this via `model_use_vars = {'od550aer' : 'od550'}. NOTE: in this case,
+        this via `model_use_vars = {'od550aer' : 'od550'}`. NOTE: in this case,
         a model variable *od550aer* will be ignored, even if it exists
         (cf :attr:`model_add_vars`).
     model_rename_vars : dict, optional
