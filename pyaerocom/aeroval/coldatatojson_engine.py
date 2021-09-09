@@ -1,21 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Helpers for conversion of ColocatedData to JSON files for web interface.
 
-ToDo
-----
-Started to move this functionality into class ColdataToJsonEngine, needs
-more refactoring and investigation which of the functions should be methods
-of that class. Parts of :class:`ColdataToJsonEngine.run` could be optimised
-if intermediate results would be stored as class attributes (e.g. repeated
-filtering operations in different sub-tasks, etc.) and subtasks could likely
-run in parallel, to speed things up. Would need investigation of bottlenecks,
-which may change for different setups (e.g. statistics timeseries is probably
-bottleneck for very long timeseries, or regional filtering takes more time
-when using HTAP binary masks compared to using rectangular regions, etc),
-so paralellisation strategy should be dependent also on the experiment setup.
-"""
 import os
 import numpy as np
 import xarray as xr
@@ -1011,10 +994,9 @@ def _process_statistics_timeseries(data, freq, region_ids,
 
     output = {}
     if not data_freq in data or data[data_freq] is None:
-        const.print_log.warning(
+        raise TemporalResolutionError(
             f'failed to compute statistics timeseries, no co-located data '
             f'available in specified base resolution {data_freq}')
-        return output
 
     coldata = data[data_freq]
 
@@ -1211,12 +1193,16 @@ class ColdataToJsonEngine(ProcessingEngine):
         if not diurnal_only:
             const.print_log.info('Processing statistics timeseries for all regions')
             input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
-            stats_ts = _process_statistics_timeseries(data,
-                                                      main_freq,
-                                                      regnames,
-                                                      use_weights,
-                                                      use_country,
-                                                      data_freq=input_freq)
+            try:
+                stats_ts = _process_statistics_timeseries(
+                    data=data,
+                    freq=main_freq,
+                    region_ids=regnames,
+                    use_weights=use_weights,
+                    use_country=use_country,
+                    data_freq=input_freq)
+            except TemporalResolutionError:
+                stats_ts = {}
 
             ts_file = os.path.join(out_dirs['hm/ts'], 'stats_ts.json')
             _add_entry_json(ts_file, stats_ts, obs_name, var_name_web,
