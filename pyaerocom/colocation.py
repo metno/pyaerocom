@@ -689,6 +689,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
     longitude = data.longitude.points
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
+    # use only sites that are within model domain
     data_ref = data_ref.filter_by_meta(latitude=lat_range,
                                        longitude=lon_range)
 

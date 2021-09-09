@@ -31,7 +31,7 @@ default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': [],
                  'obs_remove_outliers': False, 'model_remove_outliers': False,
                  'zeros_to_nan': False, 'obs_outlier_ranges': {},
                  'model_outlier_ranges': {}, 'harmonise_units': False,
-                 'regrid_res_deg': 5, 'colocate_time': False,
+                 'regrid_res_deg': None, 'colocate_time': False,
                  'reanalyse_existing': False, 'raise_exceptions': False,
                  'keep_data': True, 'add_meta': {}}
 
@@ -47,17 +47,21 @@ def tm5_aero_stp():
         reanalyse_existing = True
         )
 
-@pytest.mark.parametrize('update_col,raises', [
+@pytest.mark.parametrize('update_col,sh,raises', [
+    (dict(model_use_vars={'od550aer':'abs550aer'},
+          obs_use_climatology=True), (2,12,16),
+     does_not_raise_exception()),
     (dict(model_use_vars={'od550aer':'abs550aer'},
           model_use_climatology=True,
-          obs_use_climatology=True),
+          obs_use_climatology=True), (2,12,1),
      does_not_raise_exception()),
     (dict(model_use_vars={'od550aer':'abs550aer'},
-          model_use_climatology=True),
+          model_use_climatology=True), (2,12,1),
      does_not_raise_exception()),
 
+
     ])
-def test_Colocator_run__use_climatology(tm5_aero_stp, update_col, raises):
+def test_Colocator_run__use_climatology(tm5_aero_stp, update_col, sh, raises):
     stp = ColocationSetup(**tm5_aero_stp)
     stp.update(**update_col)
     with raises:
@@ -67,8 +71,13 @@ def test_Colocator_run__use_climatology(tm5_aero_stp, update_col, raises):
         assert isinstance(result, dict)
         coldata = result['abs550aer']['od550aer']
 
-        assert coldata.shape == (2,12,11)
-        assert coldata.metadata['from_files'] == ['aerocom3_TM5-met2010_AP3-CTRL2019_abs550aer_Column_9999_daily.nc']
+        assert coldata.shape == sh
+        mod_clim_used = any(['9999' in x for x in coldata.metadata['from_files']])
+        if stp.model_use_climatology:
+            assert mod_clim_used
+        else:
+            assert not mod_clim_used
+
 
 
 @pytest.fixture(scope='function')
