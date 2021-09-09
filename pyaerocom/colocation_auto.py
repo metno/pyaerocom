@@ -446,6 +446,19 @@ class ColocationSetup(ConstrainedContainer):
         return p
 
     def add_glob_meta(self, **kwargs):
+        """
+        Add global metadata to :attr:`add_meta`
+
+        Parameters
+        ----------
+        kwargs
+            metadata to be added
+
+        Returns
+        -------
+        None
+
+        """
         self.add_meta.update(**kwargs)
 
     def __setitem__(self, key, val):
