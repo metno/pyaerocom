@@ -22,8 +22,6 @@ setup(
                      'pyaerocom.plot',
                      'pyaerocom.aeroval',
                      'pyaerocom.aeroval.cli',
-                     'pyaerocom.test',
-                     'pyaerocom.io.test',
                      'pyaerocom.scripts'],
     #include_package_data = True,
     package_data=   {'pyaerocom'    :   ['data/*']},
