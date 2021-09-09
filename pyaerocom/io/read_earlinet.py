@@ -26,20 +26,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-import os, fnmatch, re
+import fnmatch
+import os
+import re
 from collections import OrderedDict as od
 
 import numpy as np
 import xarray
 
 from pyaerocom import const
-from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.exceptions import DataUnitError
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.vertical_profile import VerticalProfile
-from pyaerocom.variable import Variable
 from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.units_helpers import get_unit_conversion_fac
+from pyaerocom.variable import Variable
+from pyaerocom.vertical_profile import VerticalProfile
+
 
 # TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
 # use station_id instead... would require more flexible iterator in
