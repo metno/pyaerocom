@@ -73,7 +73,7 @@ setup(
     ],
     extras_require = {
         'docs':['nbsphinx'],
-        'test':['pytest>=3','pytest-dependency','pytest-cov'],
+        'test':['pytest>=6.0','pytest-dependency','pytest-cov'],
     },
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),
