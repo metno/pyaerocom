@@ -292,6 +292,8 @@ class ColocationSetup(ConstrainedContainer):
     #: (Overwritten from base class)
     CRASH_ON_INVALID = False
 
+    #: Descriptor ensuring that :attr:`obs_vars` has the right type
+    #: (
     ts_type = StrWithDefault('monthly')
     obs_vars = ListOfStrings()
     def __init__(self, model_id=None, obs_id=None, obs_vars=None,

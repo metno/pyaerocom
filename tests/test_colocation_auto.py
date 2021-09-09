@@ -36,7 +36,7 @@ default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': [],
                  'zeros_to_nan': False, 'obs_outlier_ranges': {},
                  'model_outlier_ranges': {}, 'harmonise_units': False,
                  'regrid_res_deg': None, 'colocate_time': False,
-                 'reanalyse_existing': False, 'raise_exceptions': False,
+                 'reanalyse_existing': True, 'raise_exceptions': False,
                  'keep_data': True, 'add_meta': {}}
 
 @testdata_unavail
