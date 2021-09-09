@@ -5,14 +5,16 @@ Created on Wed Feb 19 15:28:03 2020
 
 @author: jonasg
 """
-import pytest
-import numpy as np
 from collections import OrderedDict
-from pyaerocom.conftest import (does_not_raise_exception, EBAS_FILEDIR,
-                                EBAS_FILES, loaded_nasa_ames_example)
-from pyaerocom.conftest import loaded_nasa_ames_example as filedata
+
+import numpy as np
+import pytest
 
 from pyaerocom.io import ebas_nasa_ames as ena
+
+from ..conftest import does_not_raise_exception
+from ..conftest import loaded_nasa_ames_example as filedata
+
 
 @pytest.fixture(scope='module')
 def head():

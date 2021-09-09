@@ -3,13 +3,16 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
-import pytest
-import numpy.testing as npt
-import numpy as np
 import os
-from pyaerocom.conftest import TEST_RTOL, lustre_unavail
-from pyaerocom.io.read_earlinet import ReadEarlinet
+
+import numpy as np
+import numpy.testing as npt
+import pytest
+
 from pyaerocom import VerticalProfile
+from pyaerocom.io.read_earlinet import ReadEarlinet
+
+from ..conftest import TEST_RTOL, lustre_unavail
 
 FILES = ['ev1008192050.e532',
          'ev1009162031.e532',

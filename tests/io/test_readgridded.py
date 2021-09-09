@@ -4,17 +4,20 @@
 Created on Mon Jul  9 14:14:29 2018
 """
 
-import pytest
 import os
 from collections import OrderedDict
-import numpy.testing as npt
+
 import numpy as np
+import numpy.testing as npt
+import pytest
+
 from pandas import DataFrame
-from pyaerocom.conftest import (TEST_RTOL, lustre_unavail, testdata_unavail,
-                                CHECK_PATHS, TESTDATADIR)
-from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import VarNotAvailableError
+from pyaerocom.io.readgridded import ReadGridded
+
+from ..conftest import CHECK_PATHS, TEST_RTOL, TESTDATADIR, lustre_unavail, testdata_unavail
+
 
 def init_reader():
     return ReadGridded(data_id="ECMWF_CAMS_REAN")

@@ -6,10 +6,12 @@ Created on Wed Feb 19 15:28:03 2020
 @author: jonasg
 """
 import pytest
+
 from pyaerocom import const
-from pyaerocom.conftest import does_not_raise_exception
-from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.ebas_file_index import EbasSQLRequest
+from pyaerocom.io.ebas_varinfo import EbasVarInfo
+
+from ..conftest import does_not_raise_exception
 
 TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('sc550aer', ['aerosol_light_scattering_coefficient'],
@@ -168,8 +170,8 @@ if __name__=='__main__':
         var = EbasVarInfo(var_name)
         return (var_name, var.component, var.matrix, var.instrument,
                 var.statistics, var.requires, var.scale_factor)
-    from time import time
     import sys
+    from time import time
     t0 =time()
     pytest.main(sys.argv)
     print(time()-t0)

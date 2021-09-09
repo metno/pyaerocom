@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+
 from pyaerocom.io import ebas_file_index as mod
-from pyaerocom.conftest import does_not_raise_exception, EBAS_SQLite_DB
+
+from ..conftest import EBAS_SQLite_DB, does_not_raise_exception
+
 
 @pytest.mark.parametrize('args,kwargs,raises', [
     ([],{}, does_not_raise_exception())

@@ -3,12 +3,16 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
-import pytest
-import numpy.testing as npt
-import numpy as np
 import os
-from pyaerocom.conftest import TEST_RTOL, testdata_unavail, lustre_unavail
+
+import numpy as np
+import numpy.testing as npt
+import pytest
+
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
+
+from ..conftest import testdata_unavail
+
 
 @testdata_unavail
 @pytest.fixture(scope='module')

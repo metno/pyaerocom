@@ -5,16 +5,20 @@ Created on Mon Feb  1 09:31:15 2021
 
 @author: jonasg
 """
+import os
+
 import numpy as np
 import numpy.testing as npt
-import os
 import pandas as pd
 import pytest
-from pyaerocom.conftest import does_not_raise_exception
+
 from pyaerocom.exceptions import DataRetrievalError
+from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.io.read_airnow import ReadAirNow
+
+from ..conftest import does_not_raise_exception
+
 
 @pytest.fixture(scope='module')
 def reader():

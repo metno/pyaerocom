@@ -22,11 +22,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-import pytest
 import os
-from pyaerocom.conftest import lustre_unavail
-from pyaerocom.io.read_ghost import ReadGhost
+
 import numpy as np
+import pytest
+
+from pyaerocom.io.read_ghost import ReadGhost
+
 
 @pytest.fixture(scope='module')
 def ghost_eea_daily():

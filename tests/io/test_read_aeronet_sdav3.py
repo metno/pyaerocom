@@ -3,12 +3,14 @@
 """
 Created on Mon Jul  9 14:14:29 2018
 """
-import pytest
-import numpy.testing as npt
-import numpy as np
 import os
-from pyaerocom.conftest import TEST_RTOL, testdata_unavail
-from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
+
+import numpy as np
+import numpy.testing as npt
+import pytest
+
+from ..conftest import TEST_RTOL, testdata_unavail
+
 
 @testdata_unavail
 def test_load_thessaloniki(aeronet_sda_subset_reader):

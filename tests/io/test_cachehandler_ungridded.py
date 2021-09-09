@@ -6,10 +6,13 @@ Created on Tue Mar  3 12:58:34 2020
 @author: jonasg
 """
 
-import pytest
 import os
-from pyaerocom.conftest import testdata_unavail
+
+import pytest
+
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+
+from ..conftest import testdata_unavail
 
 @pytest.fixture(scope='module')
 def cache_handler():

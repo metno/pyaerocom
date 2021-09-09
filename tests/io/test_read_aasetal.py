@@ -8,16 +8,19 @@ Created on June 12 2019.
 
 Largely modified and optimised by J. Gliss (Feb 2020)
 """
-import pytest
+import os
+
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
-import os
+import pytest
 
 from pyaerocom import const
-from pyaerocom.conftest import lustre_unavail
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.units_helpers import convert_unit
+
+from ..conftest import lustre_unavail
+
 
 VARUNITS = {
     'concso2'   :   'ug m-3',
@@ -141,5 +144,6 @@ def test_reading_routines(aasetal_data, filenum, station_name, colname,
 
 if __name__ == "__main__":
     import sys
+
     #from pyaerocom.test.conftest import aasetal_data
     pytest.main(sys.argv)

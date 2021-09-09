@@ -7,8 +7,10 @@ Created on Tue Mar  3 12:58:34 2020
 """
 
 import pytest
-from pyaerocom.conftest import testdata_unavail
+
 from pyaerocom.io.aerocom_browser import AerocomBrowser
+
+from ..conftest import testdata_unavail
 
 @testdata_unavail
 @pytest.mark.parametrize('searchstr,endswith', [

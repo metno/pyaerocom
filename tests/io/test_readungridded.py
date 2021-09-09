@@ -4,9 +4,11 @@
 Created on Mon Jul  9 14:14:29 2018
 """
 import pytest
+
 from pyaerocom import const
-from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.io import ReadUngridded
+
+from ..conftest import does_not_raise_exception
 
 
 def test_invalid_init_data_dirs():

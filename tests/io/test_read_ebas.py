@@ -22,25 +22,29 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-import pytest
 import os
+
 import numpy as np
-
 import pyaerocom.aux_var_helpers
-from pyaerocom import const
 import pyaerocom.exceptions as err
-from pyaerocom.conftest import (testdata_unavail, EBAS_FILES,
-                                EBAS_ISSUE_FILES,
-                                EBAS_FILEDIR, does_not_raise_exception)
+import pytest
 
-from pyaerocom.exceptions import (DataCoverageError,
-                                  MetaDataError,
-                                  TemporalResolutionError)
-from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
+from pyaerocom import const
+from pyaerocom.exceptions import DataCoverageError, MetaDataError, TemporalResolutionError
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
+from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
+
+from ..conftest import (
+    EBAS_FILEDIR,
+    EBAS_FILES,
+    EBAS_ISSUE_FILES,
+    does_not_raise_exception,
+    testdata_unavail,
+)
+
 
 @pytest.fixture(scope='module')
 @testdata_unavail

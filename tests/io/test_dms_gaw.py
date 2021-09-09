@@ -6,11 +6,13 @@ Created on Wed May 15 11:05:50 2019
 @author: paulinast
 """
 
-import pytest
-import numpy.testing as npt
 import numpy as np
-from pyaerocom.conftest import lustre_unavail, TEST_RTOL, test_not_working
+import numpy.testing as npt
+import pytest
+
 from pyaerocom.io import ReadGAW
+
+from ..conftest import TEST_RTOL, lustre_unavail, test_not_working
 
 def _make_data():
     r = ReadGAW()

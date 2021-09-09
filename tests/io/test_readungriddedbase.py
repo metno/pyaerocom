@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import pytest
+
 from pyaerocom import const
-from pyaerocom.conftest import does_not_raise_exception
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+
+from ..conftest import does_not_raise_exception
+
 
 class DummyReader(ReadUngriddedBase):
     _FILEMASK = ".txt"
