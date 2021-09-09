@@ -943,6 +943,8 @@ class Colocator(ColocationSetup):
         return True
 
     def _check_obs_vars_available(self):
+        if self.obs_vars == []:
+            raise ColocationSetupError('no observation variables specified...')
         oreader = self.obs_reader
         if self.obs_is_ungridded:
             avail = oreader.get_vars_supported(self.obs_id, self.obs_vars)

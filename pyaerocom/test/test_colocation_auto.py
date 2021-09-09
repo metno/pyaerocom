@@ -188,6 +188,21 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
     assert coldata.ndim == 4
 
 @pytest.mark.parametrize('update_col,chk_mvar,chk_ovar,sh,mean_obs,mean_mod,raises', [
+    (dict(),
+         'od550aer', 'od550aer',
+         (2,12,11),0.272,0.244,
+         does_not_raise_exception()),
+    (dict(regrid_res_deg=10),
+         'od550aer', 'od550aer',
+         (2,12,11),0.272,0.229,
+         does_not_raise_exception()),
+    (dict(),
+         'od550aer', 'od550aer',
+         (2,12,11),0.272,0.244,
+         does_not_raise_exception()),
+    (dict(obs_vars=[]),
+         None,None,None,None,None,
+         pytest.raises(ColocationSetupError)),
     (dict(model_use_vars={'od550aer':'abs550aer'},
           model_use_climatology=True,
           obs_use_climatology=True),
