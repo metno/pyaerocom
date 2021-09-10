@@ -487,7 +487,7 @@ class ColocationSetup(ConstrainedContainer):
 
 
 class Colocator(ColocationSetup):
-    """High level class for running colocation
+    """High level class for running co-location
 
     Note
     ----
