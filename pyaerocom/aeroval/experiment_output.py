@@ -441,31 +441,24 @@ class ExperimentOutput(ProjectOutput):
         new = {}
         tab = self._get_meta_from_map_files()
         for (obs_name, obs_var, vert_code, mod_name, mod_var) in tab:
-            if self._is_part_of_experiment(obs_name, obs_var,
-                                           mod_name, mod_var):
+            mcfg = self.cfg.model_cfg.get_entry(mod_name)
+            var = mcfg.get_varname_web(mod_var, obs_var)
+            if not var in new:
+                new[var] = self._init_menu_entry(var)
 
-                mcfg = self.cfg.model_cfg.get_entry(mod_name)
-                var = mcfg.get_varname_web(mod_var, obs_var)
-                if not var in new:
-                    new[var] = self._init_menu_entry(var)
+            if not obs_name in new[var]['obs']:
+                new[var]['obs'][obs_name] = {}
 
-                if not obs_name in new[var]['obs']:
-                    new[var]['obs'][obs_name] = {}
+            if not vert_code in new[var]['obs'][obs_name]:
+                new[var]['obs'][obs_name][vert_code] = {}
+            if not mod_name in new[var]['obs'][obs_name][vert_code]:
+                new[var]['obs'][obs_name][vert_code][mod_name] = {}
 
-                if not vert_code in new[var]['obs'][obs_name]:
-                    new[var]['obs'][obs_name][vert_code] = {}
-                if not mod_name in new[var]['obs'][obs_name][vert_code]:
-                    new[var]['obs'][obs_name][vert_code][mod_name] = {}
-
-                model_id = mcfg['model_id']
-                new[var]['obs'][obs_name][vert_code][mod_name] = {
-                    'model_id'  : model_id,
-                    'model_var' : mod_var,
-                    'obs_var'   : obs_var}
-            else:
-                const.print_log.warning(
-                    f'Invalid entry: model {mod_name} ({mod_var}), '
-                    f'model {obs_name} ({obs_var})')
+            model_id = mcfg['model_id']
+            new[var]['obs'][obs_name][vert_code][mod_name] = {
+                'model_id'  : model_id,
+                'model_var' : mod_var,
+                'obs_var'   : obs_var}
         return new
 
 
