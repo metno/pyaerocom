@@ -1,4 +1,7 @@
+import numpy as np
+import os
 import pytest
+import simplejson
 from pyaerocom import _lowlevel_helpers as mod
 from .conftest import does_not_raise_exception
 
@@ -13,6 +16,41 @@ class NestedData(mod.NestedContainer):
         self.bla=dict(a=1, b=2)
         self.blub=dict(c=3, d=4)
         self.d=42
+
+def test_read_json(tmpdir):
+    data = {'bla' : 42}
+    path = os.path.join(tmpdir, 'file.json')
+    with open(path, 'w') as f:
+        simplejson.dump(data, f)
+    assert os.path.exists(path)
+    reload = mod.read_json(path)
+    assert reload == data
+    os.remove(path)
+
+@pytest.mark.parametrize('data,kwargs,raises', [
+    ({'bla': 42}, dict(), does_not_raise_exception()),
+    ({'bla': 42, 'blub' : np.nan}, dict(), does_not_raise_exception()),
+    ({'bla': 42, 'blub' : np.nan}, dict(ignore_nan=True, indent=5), does_not_raise_exception()),
+    ({'bla': 42}, dict(bla=42), pytest.raises(TypeError)),
+])
+def test_write_json(tmpdir,data,kwargs,raises):
+    path = os.path.join(tmpdir, 'file.json')
+    with raises:
+        mod.write_json(data,path,**kwargs)
+        assert os.path.exists(path)
+        os.remove(path)
+
+def test_invalid_input_err_str():
+    st = mod.invalid_input_err_str('bla', '42', (42,43))
+    assert st == 'Invalid input for bla (42), choose from (42, 43)'
+
+@pytest.mark.parametrize('dir,val', [
+    ('.', True), ('/bla/blub', False), (42, False)
+])
+def test_check_dir_access(dir,val):
+    assert mod.check_dir_access(dir) == val
+
+
 
 def test_Constrainer():
     cont = Constrainer()
