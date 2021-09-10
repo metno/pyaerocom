@@ -276,7 +276,7 @@ var_web_info = {
     'wetoxs'        : ['WetOXS', '3D', 'Deposition'],
     'wetoxn'        : ['WetOXN', '3D', 'Deposition'],
     'wetrdn'        : ['WetRDN', '3D', 'Deposition'],
-    'drysox'        : ['DryOXS', '3D', 'Deposition'],
+    'dryoxs'        : ['DryOXS', '3D', 'Deposition'],
     'dryoxn'        : ['DRYOXN', '3D', 'Deposition'],
     'dryrdn'        : ['DRYRDN', '3D', 'Deposition'],
     'concnh4'       : ['NH4', '3D', 'Gas concentrations'],
