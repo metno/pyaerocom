@@ -10,7 +10,7 @@ from pathlib import Path
 import pandas as pd
 import traceback
 
-from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
+from pyaerocom._lowlevel_helpers import (BrowseDict,
                                          StrWithDefault,
                                          ListOfStrings,
                                          chk_make_subdir)
@@ -27,7 +27,7 @@ from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.exceptions import (ColocationError, DataCoverageError,
                                   DeprecationError)
 
-class ColocationSetup(ConstrainedContainer):
+class ColocationSetup(BrowseDict):
     """Setup class for model / obs intercomparison
 
     An instance of this setup class can be used to run a colocation analysis
