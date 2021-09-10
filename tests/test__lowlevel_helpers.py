@@ -50,8 +50,6 @@ def test_invalid_input_err_str():
 def test_check_dir_access(dir,val):
     assert mod.check_dir_access(dir) == val
 
-
-
 def test_Constrainer():
     cont = Constrainer()
     assert cont.bla == 42
@@ -108,6 +106,19 @@ def test_NestedData_update(kwargs,raises):
             for val in cont.values():
                 if isinstance(val, dict) and key in val:
                     assert val[key] == value
+
+@pytest.mark.parametrize('input,pref_list,output_keys,raises', [
+    ({'b':1, 'a':2, 'kl':42}, [], ['a', 'b', 'kl'],does_not_raise_exception()),
+    ({'b':1, 'a':2, 'kl':42}, ['blaaa'], ['a', 'b', 'kl'],does_not_raise_exception()),
+    ({'b':1, 'a':2, 'kl':42}, ['kl'], ['kl', 'a', 'b'],does_not_raise_exception()),
+    ({'b':1, 'a':2, 'kl':42}, ['kl', 'b'], ['kl', 'b', 'a'],does_not_raise_exception()),
+])
+def test_sort_dict_by_name(input,pref_list,output_keys,raises):
+    with raises:
+        sorted = mod.sort_dict_by_name(input,pref_list)
+        assert list(sorted.keys()) == output_keys
+
+
 
 
 
