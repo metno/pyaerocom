@@ -67,17 +67,27 @@ if __name__ == "__main__":
     username = getpass.getuser()
     if username == 'jang':
         from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+
+        filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep.v2/download/AT/AT_5_48881_2019_timeseries.csv.gz'
+        r = ReadEEAAQEREP_V2()
+        data = r.read_file(filename, 'concpm10')
+
+        filename = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/EEA_AQeRep.v2/download/AT/AT_5_48900_2019_timeseries.csv.gz'
+        r = ReadEEAAQEREP_V2()
+        data2 = r.read_file(filename, 'concpm10')
+
+
         import logging
         # limit the data read for testing
-        ReadEEAAQEREP_V2.FILE_MASKS['concso2'] = '**/AT*_1_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['concpm10'] = '**/XK*_5_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['conco3'] = '**/XK*_7_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['vmro3'] = '**/XK*_7_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['concno2'] = '**/XK*_8_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['concno2'] = '**/AT*_8_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['concco'] = '**/AT*_10_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['concno'] = '**/AT*_38_*_timeseries.csv'
-        ReadEEAAQEREP_V2.FILE_MASKS['concpm25'] = '**/XK*_6001_*_timeseries.csv'
+        ReadEEAAQEREP_V2.FILE_MASKS['concso2'] = '**/AT*_1_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['concpm10'] = '**/XK*_5_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['conco3'] = '**/XK*_7_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['vmro3'] = '**/XK*_7_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['concno2'] = '**/XK*_8_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['concno2'] = '**/AT*_8_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['concco'] = '**/AT*_10_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['concno'] = '**/AT*_38_*_timeseries.csv*'
+        ReadEEAAQEREP_V2.FILE_MASKS['concpm25'] = '**/XK*_6001_*_timeseries.csv*'
         station_id = {}
         station_id['concso2'] = 'AT31703'
         station_id['concpm10'] = 'XK0001A'
