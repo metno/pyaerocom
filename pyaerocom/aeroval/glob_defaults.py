@@ -71,6 +71,10 @@ var_ranges_defaults = {
         "scale": [0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60],
         "colmap": "coolwarm"
     },
+    "vmro3max": {
+        "scale": [0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60],
+        "colmap": "coolwarm"
+    },
     "concno2": {
         "scale": [0, 10, 20, 30, 40, 50, 60, 70, 80],
         "colmap": "coolwarm"
