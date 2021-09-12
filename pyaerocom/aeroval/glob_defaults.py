@@ -249,7 +249,7 @@ var_web_info = {
     'concbc'        : ['BC', '3D', 'Particle concentrations'],
     'concoa'        : ['OA', '3D', 'Particle concentrations'],
     'concss'        : ['SS', '3D', 'Particle concentrations'],
-    'conco3'        : ['O3max', '3D', 'Gas concentrations'],
+    'conco3'        : ['O3', '3D', 'Gas concentrations'],
     'concso2'       : ['SO2', '3D', 'Gas concentrations'],
     'vmrox'         : ['OX', '3D', 'Gas volume mixing ratio'],
     'vmrso2'        : ['SO2', '3D', 'Gas volume mixing ratio'],
@@ -283,7 +283,7 @@ var_web_info = {
     'concno2'       : ['NO2', '3D', 'Gas concentrations'],
     'concNnh4'       : ['NH4', '3D', 'Gas concentrations'],
     'concno3'       : ['NO3', '3D', 'Gas concentrations'],
-    'vmro3'         : ['O3', '3D', 'Volume mixing ratios'],
+    'vmro3'         : ['O3max', '3D', 'Volume mixing ratios'],
     'vmrno2'        : ['NO2', '3D', 'Volume mixing ratios'],
 }
 
