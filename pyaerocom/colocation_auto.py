@@ -24,90 +24,86 @@ from pyaerocom.colocateddata import ColocatedData
 
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
-from pyaerocom.exceptions import (ColocationError, DataCoverageError,
-                                  DeprecationError)
+from pyaerocom.exceptions import (ColocationError, ColocationSetupError,
+                                  DataCoverageError, DeprecationError)
 
 class ColocationSetup(ConstrainedContainer):
-    """Setup class for model / obs intercomparison
+    """
+    Setup class for high-level model / obs co-location.
 
     An instance of this setup class can be used to run a colocation analysis
     between a model and an observation network and will create a number of
-    :class:`pya.ColocatedData` instances and save them as netCDF file.
+    :class:`pya.ColocatedData` instances, which can be saved automatically
+    as NetCDF files.
 
-    Note
-    ----
-    This is a very first draft and will likely undergo significant changes
+    Apart from co-location, this class also handles reading of the input data
+    for co-location. Supported co-location options are:
+
+    1. gridded vs. ungridded data
+    For instance 3D model data (instance of :class:`GriddedData`) with lat,
+    lon and time dimension that is co-located with station based observations
+    which are represented in pyaerocom through :class:`UngriddedData` objects.
+    The co-location function used is
+    :func:`pyaerocom.colocation.colocated_gridded_ungridded`. For this type of
+    co-location, the output co-located data object will be 3-dimensional,
+    with dimensions `data_source` (index 0: obs, index 1: model), `time` and
+    `station_name`.
+
+    2. gridded vs. gridded data
+    For instance 3D model data that is co-located with 3D satellite data
+    (both instances of :class:`GriddedData`), both objects with lat,
+    lon and time dimensions. The co-location function used
+    is :func:`pyaerocom.colocation.colocated_gridded_gridded`.
+    For this type of co-location, the output co-located data object will be
+    4-dimensional,  with dimensions `data_source` (index 0: obs, index 1:
+    model), `time` and `latitude` and `longitude`.
+
+
 
     Attributes
     ----------
     model_id : str
-        ID of model to be used
+        ID of model to be used.
     obs_id : str
-        ID of observation network to be used
-    obs_vars : :obj:`str` or :obj:`list`, optional
-        variables to be analysed. If any of the provided variables to be
-        analysed in the model data is not available in obsdata, the obsdata
-        will be checked against potential alternative variables which are
-        specified in :attr:`model_use_vars` and which can be specified in form of a
-        dictionary for each . If None, all
-        variables are analysed that are available both in model and obsdata.
-    ts_type
-        string specifying colocation frequency
+        ID of observation network to be used.
+    obs_vars : list
+        Variables to be analysed (need to be available in input obs dataset).
+        Variables that are not available in the model data output will be
+        skipped. Alternatively, model variables to be used for a given obs
+        variable can also be specified via attributes :attr:`model_use_vars`
+        and :attr:`model_add_vars`.
+    ts_type : str
+        String specifying colocation output frequency.
     start
-        start time. Input can be anything that can be converted into
-        :class:`pandas.Timestamp` using
+        Start time of colocation. Input can be integer denoting the year or
+        anything that can be converted  into :class:`pandas.Timestamp` using
         :func:`pyaerocom.helpers.to_pandas_timestamp`. If None, than the first
         available date in the model data is used.
     stop
-        stop time. Anything that can be converted into
+        stop time of colocation. int or anything that can be converted into
         :class:`pandas.Timestamp` using
         :func:`pyaerocom.helpers.to_pandas_timestamp` or None. If None and if
         ``start`` is on resolution of year (e.g. ``start=2010``) then ``stop``
         will be automatically set to the end of that year. Else, it will be
         set to the last available timestamp in the model data.
     filter_name : str
-        name of filter to be applied. If None, AeroCom default is used
-        (i.e. `pyaerocom.const.DEFAULT_REG_FILTER`)
-    regrid_res_deg : int, optional
-        resolution in degrees for regridding of model grid (done before
-        colocation)
-    obs_remove_outliers : bool
-        if True, outliers are removed from obs data before colocation,
-        else not.
-    model_remove_outliers : bool
-        if True, outliers are removed from model data (normally this should be
-        set to False, as the models are supposed to be assessed, including
-        outlier cases). Default is False.
-    harmonise_units : bool
-        if True, units are attempted to be harmonised (note: raises Exception
-        if True and units cannot be harmonised).
-    model_use_vars : :obj:`dict`, optional
-        dictionary that specifies mapping of model variables. Keys are
-        observation variables, values are the corresponding model variables
-        (e.g. model_use_vars=dict(od550aer='od550csaer')). Example: your
-        observation has var *od550aer* but your model model uses a different
-        variable name for that variable, say *od550*. Then, you can specify
-        this via `model_use_vars = {'od550aer' : 'od550'}. NOTE: in this case,
-        a model variable *od550aer* will be ignored, even if it exists
-        (cf :attr:`model_add_vars`).
-    model_rename_vars : dict, optional
-        dictionary specifying if some model variables are supposed to be
-        renamed. Note: this is different from `model_use_vars` which basically
-        specifies which variables are to be read for a given obs variable.
-        This attribute enables renaming model variables and is, for instance,
-        useful if a model variable is wrong and pyaerocom would infer the wrong
-        unit, e.g. some models use abs550aer (column AAOD, unitless) for
-        absorption coefficients (ac550aer, unit=inverse length) which can
-        cause problems during the analysis.
-    model_read_aux : :obj:`dict`, optional
-        may be used to specify additional computation methods of variables from
-        models. Keys are obs variables, values are dictionaries with keys
-        `vars_required` (list of required variables for computation of var
-        and `fun` (method that takes list of read data objects and computes
-        and returns var)
-    read_opts_ungridded : :obj:`dict`, optional
-        dictionary that specifies reading constraints for ungridded reading
-        (c.g. :class:`pyaerocom.io.ReadUngridded`).
+        name of filter to be applied. If None, no filter is used
+        (to be precise, if None, then
+         :attr:`pyaerocom.const.DEFAULT_REG_FILTER` is used which should
+         default to `WORLD-wMOUNTAINS`, that is, no filtering).
+    basedir_coldata : str
+        Base directory for storing of colocated data files.
+    save_coldata : bool
+        if True, colocated data objects are saved as NetCDF file.
+    obs_name : str, optional
+        if provided, this string will be used in colocated data filename to
+        specify obsnetwork, else obs_id will be used.
+    obs_data_dir : str, optional
+        location of obs data. If None, attempt to infer obs location based on
+        obs ID.
+    obs_use_climatology : bool
+        BETA if True, pyaerocom default climatology is computed from observation
+        stations (so far only possible for unrgidded / gridded colocation).
     obs_vert_type : str or dict, optional
         Aerocom vertical code encoded in the model filenames (only AeroCom 3
         and later). Specifies which model file should be read in case there are
@@ -119,58 +115,169 @@ class ColocationSetup(ConstrainedContainer):
         `obs_vert_type=dict(od550aer='Column', ec550aer='ModelLevel')`),
         information is extracted variable specific, for those who are defined
         in the dictionary, for all others, `None` is used.
-    model_vert_type_alt : str or dict, optional
-        like :attr:`obs_vert_type` but is used in case of exception cases, i.e.
-        where the `obs_vert_type` is not available in the models.
-    obs_outlier_ranges : :obj:`dict`, optional
-        dictionary specifying outlier ranges for individual obs variables.
-        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4]))
-    model_ts_type_read : :obj:`str` or :obj:`dict`, optional
-        may be specified to explicitly define the reading frequency of the
-        model data. Not to be confused with :attr:`ts_type`, which specifies
-        the frequency used for colocation. Can be specified variable specific
-        by providing a dictionary.
-    obs_ts_type_read : :obj:`str` or :obj:`dict`, optional
+    obs_ts_type_read : str or dict, optional
         may be specified to explicitly define the reading frequency of the
         observation data (so far, this does only apply to gridded obsdata such
-        as satellites). For ungridded reading, the frequency may be specified
+        as satellites), either as str (same for all obs variables) or variable
+        specific as dict. For ungridded reading, the frequency may be specified
         via :attr:`obs_id`, where applicable (e.g. AeronetSunV3Lev2.daily).
         Not to be confused with :attr:`ts_type`, which specifies the
         frequency used for colocation. Can be specified variable specific in
         form of dictionary.
+    obs_filters : dict
+        filters applied to the observational dataset before co-location.
+        In case of gridded / gridded, these are filters that can be passed to
+        :func:`pyaerocom.io.ReadGridded.read_var`, for instance, `flex_ts_type`,
+        or `constraints`. In case the obsdata is ungridded (gridded / ungridded
+        co-locations) these are filters that are handled through keyword
+        `filter_post` in :func:`pyaerocom.io.ReadUngridded.read`. These filters
+        are applied to the :class:`UngriddedData` objects after reading and
+        caching the data, so changing them, will not invalidate the latest
+        cache of the :class:`UngriddedData`.
+    read_opts_ungridded : dict, optional
+        dictionary that specifies reading constraints for ungridded reading,
+        and are passed as `**kwargs` to :func:`pyaerocom.io.ReadUngridded.read`.
+        Note that - other than for `obs_filters` these filters are applied
+        during the reading of the :class:`UngriddedData` objects and specifying
+        them will deactivate caching.
+    model_name : str, optional
+        if provided, this string will be used in colocated data filename to
+        specify model, else obs_id will be used.
+    model_data_dir : str, optional
+        Location of model data. If None, attempt to infer model location based
+        on model ID.
+    model_vert_type_alt : str or dict, optional
+        like :attr:`obs_vert_type` but is used in case of exception cases, i.e.
+        where the `obs_vert_type` is not available in the models.
+    model_read_opts : dict, optional
+        options for model reading (passed as keyword args to
+        :func:`pyaerocom.io.ReadUngridded.read`).
+    model_use_vars : dict, optional
+        dictionary that specifies mapping of model variables. Keys are
+        observation variables, values are the corresponding model variables
+        (e.g. model_use_vars=dict(od550aer='od550csaer')). Example: your
+        observation has var *od550aer* but your model model uses a different
+        variable name for that variable, say *od550*. Then, you can specify
+        this via `model_use_vars = {'od550aer' : 'od550'}`. NOTE: in this case,
+        a model variable *od550aer* will be ignored, even if it exists
+        (cf :attr:`model_add_vars`).
+    model_rename_vars : dict, optional
+        rename certain model variables **after** co-location, before storing
+        the associated :class:`ColocatedData` object on disk. Keys are model
+        variables, values are new names
+        (e.g. `model_rename_vars={'od550aer':'MyAOD'}`).
+        Note: this does not impact which variables are read from the model.
+    model_add_vars : dict, optional
+        additional model variables to be processed for one obs variable. E.g.
+        `model_add_vars={'od550aer': ['od550so4', 'od550gt1aer']}` would
+        co-locate both model SO4 AOD (od550so4) and model coarse mode AOD
+        (od550gt1aer) with total AOD (od550aer) from obs (in addition to
+        od550aer vs od550aer if applicable).
+    model_to_stp : bool
+        ALPHA (please do not use): convert model data values to STP conditions
+        after co-location. Note: this only works for very particular settings
+        at the moment and needs revision, as it relies on access to
+        meteorological data.
+    model_ts_type_read : str or dict, optional
+        may be specified to explicitly define the reading frequency of the
+        model data, either as str (same for all obs variables) or variable
+        specific as dict. Not to be confused with :attr:`ts_type`, which
+        specifies the output frequency of the co-located data.
+    model_read_aux : dict, optional
+        may be used to specify additional computation methods of variables from
+        models. Keys are variables to be computed, values are dictionaries with
+        keys `vars_required` (list of required variables for computation of var
+        and `fun` (method that takes list of read data objects and computes
+        and returns var).
+    model_use_climatology : bool
+        if True, attempt to use climatological model data field. Note: this
+        only works if model data is in AeroCom conventions (climatological
+        fields are indicated with 9999 as year in the filename) and if this is
+        active, only single year analysis are supported (i.e. provide int to
+        :attr:`start` to specify the year and leave :attr:`stop` empty).
+    gridded_reader_id : dict
+        BETA: dictionary specifying which gridded reader is supposed to be used
+        for model (and gridded obs) reading. Note: this is a workaround
+        solution and will likely be removed in the future when the gridded
+        reading API is more harmonised
+        (see https://github.com/metno/pyaerocom/issues/174).
     flex_ts_type : bool
-        boolean specifying whether reading frequency of gridded data is
+        Bboolean specifying whether reading frequency of gridded data is
         allowed to be flexible. This includes all gridded data, whether it is
         model or gridded observation (e.g. satellites). Defaults to True.
     min_num_obs : dict or int, optional
-        time resampling constraints applied.
-    resample_how : str or dict
+        time resampling constraints applied, defaults to None, in which case
+        no constraints are applied. For instance, say your input is in daily
+        resolution and you want output in monthly and you want to make sure to
+        have roughly 50% daily coverage for the monthly averages. Then you may
+        specify `min_num_obs=15` which will ensure that at least 15 daily
+        averages are available to compute a monthly average. However, you may
+        also define a hierarchical scheme that first goes from daily to
+        weekly and then from weekly to monthly, via a dict. E.g.
+        `min_num_obs=dict(monthly=dict(weekly=4), weekly=dict(daily=3))` would
+        ensure that each week has at least 3 daily values, as well as that each
+        month has at least 4 weekly values.
+    resample_how : str or dict, optional
         string specifying how data should be aggregated when resampling in time.
         Default is "mean". Can also be a nested dictionary, e.g.
-        resample_how={'conco3': 'daily': {'hourly' : 'max'}}} would use the
+        `resample_how={'conco3': 'daily': {'hourly' : 'max'}}` would use the
         maximum value to aggregate from hourly to daily for variable conco3,
         rather than the mean.
-    obs_use_climatology : bool
-        BETA if True, pyaerocom default climatology is computed from observation
-        stations (so far only possible for unrgidded / gridded colocation)
+    obs_remove_outliers : bool
+        if True, outliers are removed from obs data before colocation,
+        else not. Default is False.
+        Custom outlier ranges for each variable can be specified via
+        :attr:`obs_outlier_ranges`, and for all other variables, the pyaerocom
+        default outlier ranges are used. The latter are specified in
+        `variables.ini` file via `minimum` and `maximum` attributes and can
+        also be accessed through :attr:`pyaerocom.variable.Variable.minimum`
+        and :attr:`pyaerocom.variable.Variable.maximum`, respectively.
+    model_remove_outliers : bool
+        if True, outliers are removed from model data (normally this should be
+        set to False, as the models are supposed to be assessed, including
+        outlier cases). Default is False.
+        Custom outlier ranges for each variable can be specified via
+        :attr:`model_outlier_ranges`, and for all other variables, the pyaerocom
+        default outlier ranges are used. The latter are specified in
+        `variables.ini` file via `minimum` and `maximum` attributes and can
+        also be accessed through :attr:`pyaerocom.variable.Variable.minimum`
+        and :attr:`pyaerocom.variable.Variable.maximum`, respectively.
+    obs_outlier_ranges : dict, optional
+        dictionary specifying outlier ranges for individual obs variables.
+        (e.g. dict(od550aer = [-0.05, 10], ang4487aer=[0,4])). Only relevant
+        if :attr:`obs_remove_outliers` is True.
+    model_outlier_ranges : dict, optional
+        like :attr:`obs_outlier_ranges` but for model variables. Only relevant
+        if :attr:`model_remove_outliers` is True.
+    zeros_to_nan : bool
+        If True, zero's in output co-located data object will be converted to
+        NaN. Default is False.
+    harmonise_units : bool
+        if True, units are attempted to be harmonised during co-location
+        (note: raises Exception if True and in case units cannot be harmonised).
+    regrid_res_deg : int, optional
+        resolution in degrees for regridding of model grid (done before
+        co-location). Default is None.
     colocate_time : bool
         if True and if obs and model sampling frequency (e.g. daily) are higher
-        than input colocation frequency (e.g. monthly), then the datasets are
+        than output colocation frequency (e.g. monthly), then the datasets are
         first colocated in time (e.g. on a daily basis), before the monthly
         averages are calculated. Default is False.
-    basedir_coldata : str
-        base directory for storing of colocated data files
-    obs_name : str, optional
-        if provided, this string will be used in colocated data filename to
-        specify obsnetwork, else obs_id will be used
-    model_name : str, optional
-        if provided, this string will be used in colocated data filename to
-        specify model, else obs_id will be used
-    save_coldata : bool
-        if True, colocated data objects are saved as NetCDF file.
+    reanalyse_existing : bool
+        if True, always redo co-location, even if there is already an existing
+        co-located NetCDF file (under the output location specified by
+        :attr:`basedir_coldata` ) for the given variable combination to be
+        co-located. If False and output already exists, then co-location is
+        skipped for the associated variable. Default is True.
+    raise_exceptions : bool
+        if True, Exceptions that may occur for individual variables to be
+        processed, are raised, else the analysis is skipped for such cases.
     keep_data : bool
         if True, then all colocated data objects computed when running
         :func:`run` will be stored in :attr:`data`. Defaults to True.
+    add_meta : dict
+        additional metadata that is supposed to be added to each output
+        :class:`ColocatedData` object.
     """
     #: Dictionary specifying alternative vertical types that may be used to
     #: read model data. E.g. consider the variable is  ec550aer,
@@ -222,6 +329,8 @@ class ColocationSetup(ConstrainedContainer):
         self.obs_ts_type_read = None
         self.obs_filters = {}
 
+        self.read_opts_ungridded = {}
+
         # Attributes related to model data
         self.model_name = None
         self.model_data_dir = None
@@ -229,7 +338,6 @@ class ColocationSetup(ConstrainedContainer):
         self.model_vert_type_alt = None
         self.model_read_opts = {}
 
-        self.read_opts_ungridded = {}
         self.model_use_vars = {}
         self.model_rename_vars = {}
         self.model_add_vars = {}
@@ -252,18 +360,16 @@ class ColocationSetup(ConstrainedContainer):
         self.obs_remove_outliers = False
         self.model_remove_outliers = False
 
-        self.zeros_to_nan = False
-
         # Custom outlier ranges for model and obs
         self.obs_outlier_ranges = {}
         self.model_outlier_ranges = {}
 
+        self.zeros_to_nan = False
         self.harmonise_units = False
         self.regrid_res_deg = None
-
         self.colocate_time = False
 
-        self.reanalyse_existing = False
+        self.reanalyse_existing = True
         self.raise_exceptions = False
         self.keep_data = True
 
@@ -340,6 +446,19 @@ class ColocationSetup(ConstrainedContainer):
         return p
 
     def add_glob_meta(self, **kwargs):
+        """
+        Add global metadata to :attr:`add_meta`
+
+        Parameters
+        ----------
+        kwargs
+            metadata to be added
+
+        Returns
+        -------
+        None
+
+        """
         self.add_meta.update(**kwargs)
 
     def __setitem__(self, key, val):
@@ -368,7 +487,7 @@ class ColocationSetup(ConstrainedContainer):
 
 
 class Colocator(ColocationSetup):
-    """High level class for running colocation
+    """High level class for running co-location
 
     Note
     ----
@@ -922,6 +1041,8 @@ class Colocator(ColocationSetup):
         return True
 
     def _check_obs_vars_available(self):
+        if self.obs_vars == []:
+            raise ColocationSetupError('no observation variables specified...')
         oreader = self.obs_reader
         if self.obs_is_ungridded:
             avail = oreader.get_vars_supported(self.obs_id, self.obs_vars)
@@ -1197,6 +1318,12 @@ class Colocator(ColocationSetup):
     def _check_set_start_stop(self):
         if self.start is None:
             self._infer_start_stop_yr_from_model_reader()
+        if self.model_use_climatology:
+            if self.stop is not None or not isinstance(self.start, int):
+                raise ColocationSetupError(
+                'Conflict: only single year analyses are support for model '
+                'climatology fields, please specify "start" as integer '
+                'denoting the year, and set "stop"=None')
         self.start, self.stop = start_stop(self.start, self.stop)
 
 

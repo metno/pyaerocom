@@ -740,6 +740,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
     longitude = data.longitude.points
     lat_range = [np.min(latitude), np.max(latitude)]
     lon_range = [np.min(longitude), np.max(longitude)]
+    # use only sites that are within model domain
     data_ref = data_ref.filter_by_meta(latitude=lat_range,
                                        longitude=lon_range)
 
@@ -861,7 +862,7 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                 # assign the unified timeseries data to the colocated data array
                 arr[0, :, i] = _df['ref'].values
                 arr[1, :, i] = _df['data'].values
-            except ValueError as e:
+            except ValueError:
                 try:
                     mask = _df.index.intersection(time_idx)
                     _df = _df.loc[mask]

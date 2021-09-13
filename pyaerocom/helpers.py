@@ -891,11 +891,13 @@ def make_datetime_index(start, stop, freq):
     Parameters
     ----------
     start
-        start time
+        start time. Preferably as :class:`pandas.Timestamp`, else it will be
+        attempted to be converted.
     stop
-        stop time
+        stop time. Preferably as :class:`pandas.Timestamp`, else it will be
+        attempted to be converted.
     freq
-        frequency
+        frequency of datetime index.
 
     Returns
     -------
@@ -911,6 +913,24 @@ def make_datetime_index(start, stop, freq):
     if loffset is not None:
         idx = idx + pd.Timedelta(loffset)
     return idx
+
+def make_datetimeindex_from_year(freq, year):
+    """Create pandas datetime index
+
+    Parameters
+    ----------
+    freq : str
+        pandas frequency str
+    year : int
+        year
+
+    Returns
+    -------
+    pandas.DatetimeIndex
+        index object
+    """
+    start, stop = start_stop_from_year(year)
+    return make_datetime_index(start, stop, freq)
 
 def calc_climatology(s, start, stop, min_count=None,
                      set_year=None, resample_how='mean'):
@@ -1319,14 +1339,13 @@ def start_stop_from_year(year):
 
     Returns
     -------
-    tuple
-        2-element tuple containing
-
-        - :obj:`pandas.Timestamp`: start timestamp
-        - :obj:`pandas.Timestamp`: end timestamp
+    numpy.datetime64
+        start datetime
+    numpy.datetime64
+        stop datetime
     """
-    start = to_pandas_timestamp(year)
-    stop = to_pandas_timestamp('{}-12-31 23:59:59'.format(year))
+    start = np.datetime64(f'{year}-01-01T00:00:00')
+    stop = np.datetime64(f'{year}-12-31T23:59:59')
     return (start, stop)
 
 def to_datestring_YYYYMMDD(value):
