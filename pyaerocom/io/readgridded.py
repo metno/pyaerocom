@@ -52,10 +52,7 @@ from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          divide_cubes,
                                          subtract_cubes,
                                          add_cubes,
-                                         mmr_from_vmr,
-                                         rho_from_ts_ps,
-                                         conc_from_vmr,
-                                         conc_from_vmr_STP)
+                                         mmr_from_vmr)
 
 from pyaerocom.helpers import (to_pandas_timestamp,
                                sort_ts_types,
@@ -178,7 +175,7 @@ class ReadGridded(object):
                 'dryoa'         :   add_cubes,
                 'sc550dryaer'   :   subtract_cubes,
                 'conc*'         :   multiply_cubes,
-                'mmr*'              :   mmr_from_vmr,
+                'mmr*'          :   mmr_from_vmr,
                 'concox'        :   add_cubes,
                 'vmrox'         :   add_cubes,
                 'fmf550aer'     :   divide_cubes,
@@ -411,6 +408,7 @@ class ReadGridded(object):
         self._vars_3d =[]
 
     def _get_vars_provided(self):
+        """(Private method) get all variables provided"""
         _vars = []
         _vars.extend(self.vars_filename)
 
@@ -754,63 +752,15 @@ class ReadGridded(object):
                                 'registered pyaerocom file convention'
                                 .format(self.data_dir))
 
-    def search_all_files(self, update_file_convention=True):
-        """Search all valid model files for this model
-
-        This method browses the data directory and finds all valid files, that
-        is, file that are named according to one of the aerocom file naming
-        conventions. The file list is stored in :attr:`files`.
-
-        Note
-        ----
-        It is presumed, that naming conventions of files in
-        the data directory are not mixed but all correspond to either of the
-        conventions defined in
-
-        Parameters
-        ----------
-        update_file_convention : bool
-            if True, the first file in `data_dir` is used to identify the
-            file naming convention (cf. :class:`FileConventionRead`)
-
-        Raises
-        ------
-        DataCoverageError
-            if no valid files could be found
-        """
-        if self.data_dir is None:
-            raise AttributeError('Cannot search files since :attr:`data_dir` '
-                                 'is not assigned')
-
+    def _evaluate_fileinfo(self, files):
         result = []
-        files_ignored = []
-        # get all netcdf files in folder
-        nc_files = glob(self.data_dir + '/*{}'.format(self.file_type))
-        if len(nc_files) == 0:
-            print_log.warning('No files of type {} could be found in current '
-                              'data_dir={}'.format(self.file_type,
-                                        os.path.abspath(self.data_dir)))
-            return
-
-        if update_file_convention:
-            # Check if the found file has a naming according the aerocom conventions
-            # and set the convention for all files (maybe this need to be
-            # updated in case there can be more than one file naming convention
-            # within one model directory)
-            try:
-                self._update_file_convention(nc_files)
-            except FileNotFoundError as e:
-                print_log.warning(repr(e))
-                return
-
         _vars_temp = []
         _vars_temp_3d = []
 
-        for _file in nc_files:
+        for _file in files:
             # TODO: resolve this in a more general way...
             if 'ModelLevelAtStations' in _file:
                 const.logger.info('Ignoring file {}'.format(_file))
-                files_ignored.append(os.path.basename(_file))
                 continue
             try:
                 info = self.file_convention.get_info_from_file(_file)
@@ -838,20 +788,20 @@ class ReadGridded(object):
 
             except (FileConventionError, DataSourceError,
                     TemporalResolutionError) as e:
-                msg = ("Failed to import file {}\nModel: {}\n"
-                       "Error: {}".format(os.path.basename(_file),
-                                         self.data_id, repr(e)))
+                msg = (f'Failed to import file\n{_file}\nModel: '
+                       f'{self.data_id}\nError: {e}')
                 logger.warning(msg)
                 if const.WRITE_FILEIO_ERR_LOG:
                     add_file_to_log(_file, msg)
 
         if len(_vars_temp + _vars_temp_3d) == 0:
             raise AttributeError("Failed to extract information from filenames")
-        # make sorted list of unique vars
 
         self._vars_2d = sorted(od.fromkeys(_vars_temp))
         self._vars_3d = sorted(od.fromkeys(_vars_temp_3d))
+        return result
 
+    def _fileinfo_to_dataframe(self, result):
         header = ['var_name', 'year', 'ts_type', 'vert_code', 'data_id', 'name',
                   'meteo', 'experiment', 'perturbation', 'is_at_stations',
                   '3D', 'filename']
@@ -865,10 +815,63 @@ class ReadGridded(object):
         uv = df.vert_code.unique()
         if len(uv) == 1 and uv[0] == '':
             self.ignore_vert_code = True
+        return df
+
+    def search_all_files(self, update_file_convention=True):
+        """Search all valid model files for this model
+
+        This method browses the data directory and finds all valid files, that
+        is, file that are named according to one of the aerocom file naming
+        conventions. The file list is stored in :attr:`files`.
+
+        Note
+        ----
+        It is presumed, that naming conventions of files in
+        the data directory are not mixed but all correspond to either of the
+        conventions defined in
+
+        Parameters
+        ----------
+        update_file_convention : bool
+            if True, the first file in `data_dir` is used to identify the
+            file naming convention (cf. :class:`FileConventionRead`)
+
+        Raises
+        ------
+        DataCoverageError
+            if no valid files could be found
+        """
+        if self.data_dir is None:
+            raise AttributeError('please set data_dir first')
+
+
+        # get all files with correct ending
+        files = glob(f'{self.data_dir}/*{self.file_type}')
+        if len(files) == 0:
+            print_log.warning(
+                f'No files of type {self.file_type} could be found in current '
+                f'data directory (data_dir={os.path.abspath(self.data_dir)}')
+            return
+
+        if update_file_convention:
+            # Check if the found file has a naming according the aerocom conventions
+            # and set the convention for all files (maybe this need to be
+            # updated in case there can be more than one file naming convention
+            # within one model directory)
+            try:
+                self._update_file_convention(files)
+            except FileNotFoundError as e:
+                print_log.warning(repr(e))
+                return
+
+        result = self._evaluate_fileinfo(files)
+        df = self._fileinfo_to_dataframe(result)
         self.file_info = df
 
         if len(df) == 0:
-            raise DataCoverageError(f'No files could be found for {self.data_id}')
+            raise DataCoverageError(
+                f'No valid files could be found for {self.data_id}'
+                )
 
     def filter_files(self, var_name=None, ts_type=None, start=None, stop=None,
                      experiment=None, vert_which=None, is_at_stations=False,
@@ -1859,8 +1862,7 @@ class ReadGridded(object):
         return tuple(data)
 
 
-    def _load_files(self, files, var_name, perform_fmt_checks=None,
-                    **kwargs):
+    def _load_files(self, files, var_name, perform_fmt_checks=None):
         """Load list of files containing variable to read into Cube instances
 
         Parameters
@@ -1872,8 +1874,6 @@ class ReadGridded(object):
         perform_fmt_checks : bool
             if True, the loaded data is checked for consistency with
             AeroCom default requirements.
-        **kwargs
-            additional keyword args parsed to :func:`load_cubes_custom`.
 
         Returns
         -------
@@ -1882,9 +1882,12 @@ class ReadGridded(object):
         list
             list containing corresponding filenames of loaded cubes
         """
-        cubes, loaded_files = load_cubes_custom(files, var_name,
-                                                perform_fmt_checks=perform_fmt_checks,
-                                                **kwargs)
+        cubes, loaded_files = load_cubes_custom(
+            files=files,
+            var_name=var_name,
+            file_convention=self.file_convention,
+            perform_fmt_checks=perform_fmt_checks,
+            )
 
         if len(loaded_files) == 0:
             raise IOError("None of the input files could be loaded in {}"
@@ -2078,7 +2081,7 @@ class ReadGridded(object):
 if __name__=="__main__":
     import pyaerocom as pya
 
-    reader = ReadGridded('EMEP.cams50.u3all')
+    reader = ReadGridded('NorESM2-NHIST_f19_tn14_20190710')
     print(reader)
 
-    data = reader.read_var('wetoxs', try_convert_units=True)
+    data = reader.read_var('od550aer', start=9999)

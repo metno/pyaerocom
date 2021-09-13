@@ -226,6 +226,10 @@ def test_read_vars(reader_reanalysis):
     nominal = [3, 2307, 2307, 2307]
     npt.assert_array_equal(vals, nominal)
 
+def test_read_climatology_file(reader_tm5):
+    data = reader_tm5.read_var('abs550aer', start=9999)
+    assert isinstance(data, GriddedData)
+
 
 if __name__ == "__main__":
     import sys
