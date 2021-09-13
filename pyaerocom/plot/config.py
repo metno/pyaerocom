@@ -66,15 +66,17 @@ class ColorTheme(object):
     """
     def __init__(self, name="dark", cmap_map=None, color_coastline=None,
                  cmap_map_div=None, cmap_map_div_shifted=True):
+        if not name in _COLOR_THEMES:
+            warn("Invalid name for color theme, using default theme")
+            name = DEFAULT_THEME
+
         self.name = name
         self.cmap_map = cmap_map
         self.cmap_map_div = cmap_map_div
         self.cmap_map_div_shifted = cmap_map_div_shifted
         self.color_coastline = color_coastline
         self.color_map_text = 'r'
-        if not name in _COLOR_THEMES:
-            warn("Invalid name for color theme, using default theme")
-            name = DEFAULT_THEME
+
         self.load_default(name)
 
     def load_default(self, theme_name="dark"):
