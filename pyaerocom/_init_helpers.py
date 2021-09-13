@@ -1,3 +1,9 @@
+LOGLEVELS = {'debug': 10,
+             'info': 20,
+             'warning': 30,
+             'error': 40,
+             'critical': 50}
+
 def _init_logger():
     import logging
     ### LOGGING
@@ -27,6 +33,21 @@ def _init_logger():
     return (logger, print_log)
 
 def change_verbosity(new_level='debug', log=None):
+    """
+    Change verbosity of one of the pyaerocom loggers
+
+    Parameters
+    ----------
+    new_level : str or int
+        choose from either keys, or values of :attr:`LOGLEVELS`.
+    log
+        either `pyaerocom.logger` or `pyaerocom.print_log`.
+
+    Returns
+    -------
+    None
+
+    """
     if log is None:
         from pyaerocom import logger
         log = logger
@@ -43,8 +64,4 @@ def _init_supplemental():
     from os.path import abspath, dirname
     return (get_distribution('pyaerocom').version, abspath(dirname(__file__)))
 
-LOGLEVELS = {'debug': 10,
-             'info': 20,
-             'warning': 30,
-             'error': 40,
-             'critical': 50}
+
