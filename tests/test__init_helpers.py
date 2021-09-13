@@ -58,7 +58,7 @@ def test__init_supplemental():
     from os.path import abspath, dirname
     version, fpath = mod._init_supplemental()
     assert version == get_distribution('pyaerocom').version
-    assert os.path.normpath(fpath).endswith('/pyaerocom/pyaerocom')
+    assert os.path.normpath(fpath).endswith('/pyaerocom')
 
 
 
