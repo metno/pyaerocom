@@ -82,9 +82,3 @@ TS_TYPE_SECS = {'minutely': 60,
                 'weekly'  : 604800,
                 'monthly' : 2592000, #counting 3 days per month (APPROX)
                 'yearly'  : 31536000} #counting 365 days (APPROX)
-
-XARR_TIME_GROUPERS = {'H'       : 'hour',
-                      'D'       : 'day',
-                      'W-Mon'   : 'week',
-                      'MS'      : 'month',
-                      'AS'      : 'year'}

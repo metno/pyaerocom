@@ -50,7 +50,6 @@ Automatic colocation engine
 
 .. automodule:: pyaerocom.colocation_auto
    :members:
-   :undoc-members:
 
 Low-level colocation methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

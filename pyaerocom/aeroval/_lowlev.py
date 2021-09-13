@@ -8,6 +8,12 @@ Created on Wed Jun  2 11:43:38 2021
 import abc
 
 class EvalEntry(abc.ABC):
+    """
+    Base class for model or obs evaluation entries for AeroVal experiment
+
+    See also :class:`pyaerocom.aeroval.obsentry.ObsEntry` and
+    :class:`pyaerocom.aeroval.modelentry.ModelEntry` for implementations.
+    """
     @abc.abstractmethod
     def get_all_vars(self) -> list:
         """
@@ -20,3 +26,15 @@ class EvalEntry(abc.ABC):
 
         """
         pass
+
+    def has_var(self, var_name):
+        """
+        Check if input variable is defined in entry
+
+        Returns
+        -------
+        bool
+            True if entry has variable available, else False
+
+        """
+        return True if var_name in self.get_all_vars() else False

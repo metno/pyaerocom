@@ -22,8 +22,6 @@ setup(
                      'pyaerocom.plot',
                      'pyaerocom.aeroval',
                      'pyaerocom.aeroval.cli',
-                     'pyaerocom.test',
-                     'pyaerocom.io.test',
                      'pyaerocom.scripts'],
     #include_package_data = True,
     package_data=   {'pyaerocom'    :   ['data/*']},
@@ -73,7 +71,7 @@ setup(
     ],
     extras_require = {
         'docs':['nbsphinx'],
-        'test':['pytest>=3','pytest-dependency','pytest-cov'],
+        'test':['pytest>=6.0','pytest-dependency','pytest-cov'],
     },
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),

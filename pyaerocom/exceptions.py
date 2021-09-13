@@ -35,6 +35,9 @@ class CacheReadError(CachingError):
 class ColocationError(ValueError):
     pass
 
+class ColocationSetupError(ValueError):
+    pass
+
 class CoordinateError(ValueError):
     pass
 
@@ -80,6 +83,9 @@ class NasaAmesReadError(IOError):
 class EbasFileError(ValueError):
     pass
 
+class EntryNotAvailable(KeyError):
+    pass
+
 class InitialisationError(ValueError):
     pass
 
@@ -120,6 +126,9 @@ class TemporalResolutionError(ValueError):
     pass
 
 class UnitConversionError(ValueError):
+    pass
+
+class UnknownRegion(ValueError):
     pass
 
 class UnresolvableTimeDefinitionError(DataDimensionError, NetcdfError):

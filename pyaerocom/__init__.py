@@ -56,3 +56,6 @@ from .utils import create_varinfo_table
 from .testdata_access import initialise as initialise_testdata
 
 from . import aeroval
+
+# toplevel functions
+from pyaerocom.tools import browse_database

@@ -1,5 +1,4 @@
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from matplotlib.axes import Axes
@@ -49,11 +48,10 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
         sd['lat'] = lat
         sd['lon'] = lon
         sd['data'] = vals.tolist()
-    plt.close('all')
     return output
 
 def calc_contour_json(data, vmin, vmax, cmap, cmap_bins):
-
+    matplotlib.use('Agg')
     try:
         import geojsoncontour
     except ModuleNotFoundError:

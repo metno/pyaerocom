@@ -13,7 +13,6 @@ import tarfile
 
 from traceback import format_exc
 from pyaerocom import const
-from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io import (ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3,
                           ReadEbas, ReadAirNow, ReadGhost)
 

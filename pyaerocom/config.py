@@ -219,6 +219,7 @@ class Config(object):
         self._outputdir = None
         self._cache_basedir = None
         self._colocateddatadir = None
+        self._logdir = None
         self._filtermaskdir = None
         self._local_tmp_dir = None
         self._downloaddatadir = None
@@ -518,13 +519,10 @@ class Config(object):
     @property
     def LOGFILESDIR(self):
         """Directory where logfiles are stored"""
-        try:
-            logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
-            return logdir
-        except Exception as e:
-            self.print_log.info('Failed to access LOGFILESDIR: {}'
-                           'Deactivating file logging'.format(repr(e)))
-            self.WRITE_FILEIO_ERR_LOG = False
+        if self._logdir is None:
+            self._logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
+        return self._logdir
+
 
     @property
     def DIR_INI_FILES(self):

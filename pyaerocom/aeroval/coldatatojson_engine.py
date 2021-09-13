@@ -1,15 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Helpers for conversion of ColocatedData to JSON files for web interface.
-"""
+
 import os
 import numpy as np
 import xarray as xr
 import pandas as pd
 from datetime import datetime
 from pyaerocom import const
-from pyaerocom.helpers import make_datetime_index, start_stop
+from pyaerocom.helpers import start_stop
 from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
                                        _get_min_max_year_periods, read_json,
                                        write_json)
@@ -1071,43 +1067,68 @@ def _map_indices(outer_idx, inner_idx):
             count +=1
     return mapping.astype(int)
 
-def _process_statistics_timeseries_v0(data, periods, freq, region_ids,
-                                   use_weights, use_country, meta_glob):
-    coldata = data[freq]
-    output = {}
-    start, stop = _start_stop_from_periods(periods)
-    timeidx = make_datetime_index(start, stop, freq).values
-    jsdate = _get_jsdate(timeidx)
-    tidx = _map_indices(jsdate, coldata.data.jsdate.values)
-    stats_dummy = _init_stats_dummy()
-    for regid, regname in region_ids.items():
-        output[regname] = {}
-        try:
-            subset = coldata.filter_region(region_id=regid,
-                                        check_country_meta=use_country)
-            use_dummy = False
-        except DataCoverageError:
-            use_dummy = True
-        for js, idx in zip(jsdate, tidx):
-            if idx == -1 or use_dummy:
-                stats = stats_dummy
-            else:
-                try:
-                    arr = ColocatedData(subset.data[:, idx])
-                    stats = arr.calc_statistics(use_area_weights=use_weights)
-                except DataCoverageError:
-                    stats = stats_dummy
-            output[regname][str(js)] = _prep_stats_json(stats)
-    return output
+def _process_statistics_timeseries(data, freq, region_ids,
+                                   use_weights, use_country,
+                                   data_freq):
+    """
+    Compute statistics timeseries for input data
 
-def _process_statistics_timeseries(data, periods, freq, region_ids,
-                                   use_weights, use_country, meta_glob):
-    coldata = data[freq]
+    Parameters
+    ----------
+    data : dict
+        dictionary containing colocated data object (values) in different
+        temporal resolutions (keys).
+    freq : str
+        Output frequency (temporal resolution in which statistics timeseries
+        if computed, AeroVal default is monthly)
+    region_ids : dict
+        Region IDs (keys) and corresponding names (values)
+    use_weights : bool
+        calculate statistics using area weights or not (only relevant for 4D
+        colocated data with lat and lon dimension, e.g. from gridded / gridded
+        co-location)
+    use_country : bool
+        Use countries for regional filtering.
+    data_freq : str, optional
+        Base frequency for computation of statistics (if None, `freq` is used).
+        For details see https://github.com/metno/pyaerocom/pull/416.
+
+    Raises
+    ------
+    TemporalResolutionError
+        If `data_freq` is lower resolution than `freq`.
+
+    Returns
+    -------
+    output : dict
+        Dictionary with results.
+
+    """
+    if data_freq is None:
+        data_freq = freq
+
+    # input frequency is lower resolution than output frequency
+    if TsType(data_freq) < TsType(freq):
+        raise TemporalResolutionError(
+            f'Desired input frequency {data_freq} is lower than desired '
+            f'output frequency {freq}')
+
     output = {}
-    start, stop = _start_stop_from_periods(periods)
-    timeidx = make_datetime_index(start, stop, freq).values
-    jsdate = _get_jsdate(timeidx)
-    tidx = _map_indices(jsdate, coldata.data.jsdate.values)
+    if not data_freq in data or data[data_freq] is None:
+        raise TemporalResolutionError(
+            f'failed to compute statistics timeseries, no co-located data '
+            f'available in specified base resolution {data_freq}')
+
+    coldata = data[data_freq]
+
+    # get time index of output frequency
+    to_idx = data[freq].data.time.values
+    tstr = TsType(freq).to_numpy_freq()
+    # list of strings of output timestamps (used below to select the
+    # individual periods)
+    to_idx_str = [str(x) for x in to_idx.astype(f'datetime64[{tstr}]')]
+    jsdate = _get_jsdate(to_idx)
+
     for regid, regname in region_ids.items():
         output[regname] = {}
         try:
@@ -1115,14 +1136,14 @@ def _process_statistics_timeseries(data, periods, freq, region_ids,
                                         check_country_meta=use_country)
         except DataCoverageError:
             continue
-        for js, idx in zip(jsdate, tidx):
-            if idx != -1:
-                try:
-                    arr = ColocatedData(subset.data[:, idx])
-                    stats = arr.calc_statistics(use_area_weights=use_weights)
-                    output[regname][str(js)] = _prep_stats_json(stats)
-                except DataCoverageError:
-                    pass
+        for i, js in enumerate(jsdate):
+            per = to_idx_str[i]
+            try:
+                arr = ColocatedData(subset.data.sel(time=per))
+                stats = arr.calc_statistics(use_area_weights=use_weights)
+                output[regname][str(js)] = _prep_stats_json(stats)
+            except DataCoverageError:
+                pass
 
     return output
 
@@ -1231,6 +1252,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         add_trends = self.cfg.statistics_opts.add_trends
         trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
 
+        # ToDo: some of the checks below could be done automatically in
+        # EvalSetup, and at an earlier stage
         if vert_code == 'ModelLevel':
             raise NotImplementedError('Coming (not so) soon...')
 
@@ -1248,8 +1271,13 @@ class ColdataToJsonEngine(ProcessingEngine):
         elif not main_freq in freqs:
             raise AeroValConfigError(
                 f'Scatter plot frequency {main_freq} is not in '
-                f'{freqs}'
+                f'experiment frequencies: {freqs}'
                 )
+        if self.cfg.statistics_opts.stats_tseries_base_freq is not None:
+            if not self.cfg.statistics_opts.stats_tseries_base_freq in freqs:
+                raise AeroValConfigError(
+                    f'Base frequency for statistics timeseries needs to be '
+                    f'specified in experiment frequencies: {freqs}')
         # init some stuff
         if 'var_name' in coldata.metadata:
             obs_var = coldata.metadata['var_name'][0]
@@ -1288,13 +1316,18 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         if not diurnal_only:
             const.print_log.info('Processing statistics timeseries for all regions')
-            stats_ts = _process_statistics_timeseries(data,
-                                                      periods,
-                                                      main_freq,
-                                                      regnames,
-                                                      use_weights,
-                                                      use_country,
-                                                      meta_glob)
+            input_freq = self.cfg.statistics_opts.stats_tseries_base_freq
+            try:
+                stats_ts = _process_statistics_timeseries(
+                    data=data,
+                    freq=main_freq,
+                    region_ids=regnames,
+                    use_weights=use_weights,
+                    use_country=use_country,
+                    data_freq=input_freq)
+            except TemporalResolutionError:
+                stats_ts = {}
+
             ts_file = os.path.join(out_dirs['hm/ts'], 'stats_ts.json')
             _add_entry_json(ts_file, stats_ts, obs_name, var_name_web,
                             vert_code, model_name, model_var)
