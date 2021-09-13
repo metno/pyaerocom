@@ -36,27 +36,6 @@ SCAT_ANNOT_XYPOS = [(.01, 0.95),
                     (0.8, 0.1),
                     (0.8, 0.06)]
 
-class MapPlotSettings(BrowseDict):
-    """Class specifying predefined plot settings for a species and region
-
-    Parameters
-    ----------
-    variable : :obj:`str` or :obj
-    """
-    def __init__(self, variable, region, **kwargs):
-        self.vmin = None
-        self.vmax = None
-        self.lon_range = None
-        self.lat_range = None
-        self.cbar_bounds = None
-        self.lon_ticks = None
-        self.lat_ticks = None
-
-        self.load_input(variable, region, kwargs)
-
-    def load_input(self, variable, region, **kwargs):
-        raise NotImplementedError
-
 class ColorTheme(object):
     """Pyaerocom class specifiying plotting color theme
 
