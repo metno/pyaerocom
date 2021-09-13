@@ -6,6 +6,7 @@ Helpers for conversion of ColocatedData to JSON files for web interface.
 import os
 import numpy as np
 import xarray as xr
+import pandas as pd
 from datetime import datetime
 from pyaerocom import const
 from pyaerocom.helpers import make_datetime_index, start_stop
@@ -24,6 +25,7 @@ from pyaerocom.region import (get_all_default_region_ids,
                               Region)
 
 from pyaerocom.aeroval._processing_base import ProcessingEngine
+from pyaerocom.trends_engine import TrendsEngine
 
 from time import time
 
@@ -619,12 +621,56 @@ def _get_statistics(obs_vals, mod_vals, min_num):
                             min_num_valid=min_num)
     return _prep_stats_json(stats)
 
-def _process_map_and_scat(data, map_data, site_indices, periods,
-                          main_freq, min_num, seasons):
 
+
+def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs = 7):
+        """
+        Function for generating trends and fomatting it in a way
+        that can be serialized to json. A key, map_var, is added
+        for use in the web interface.
+        """
+                        
+        te = TrendsEngine
+    
+
+        # The model and observation data are made to pandas times series
+        obs_trend_series = pd.Series(obs_vals, time)
+        mod_trend_series = pd.Series(mod_vals, time)
+
+        # Translate season to names used in trends_helpers.py. Should be handled there instead!
+        SEASON_CODES = {
+                        'MAM': 'spring',
+                        'JJA': 'summer',
+                        'SON': 'autumn',
+                        'DJF': 'winter',
+                        'all': 'all',
+                        }
+
+        # Trends are calculated
+        obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
+        mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
+
+        # Makes pd.Series serializable
+        obs_trend["data"] = obs_trend["data"].to_json()
+        mod_trend["data"] = mod_trend["data"].to_json()
+
+        obs_trend["map_var"] = "slp_2000"
+        mod_trend["map_var"] = "slp_2000"
+
+        return obs_trend, mod_trend
+        
+
+
+
+def _process_map_and_scat(data, map_data, site_indices, periods,
+                          main_freq, min_num, seasons, add_trends, trends_min_yrs):
+
+
+   
     stats_dummy = _init_stats_dummy()
     scat_data = {}
     scat_dummy = [np.nan]
+    te = TrendsEngine
     for freq, cd in data.items():
         use_dummy = True if cd is None else False
         for per in periods:
@@ -648,6 +694,35 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                         mod_vals = subset.data.data[1, :, i]
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
 
+
+                        """ Code for the calculation of trends """                    
+                        if add_trends:
+    
+                            # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                            start_stop = per.split("-")
+                            if len(start_stop) == 2:
+                                (start, stop) = [int(i) for i in start_stop]
+                            else:
+                                start = stop = int(start_stop[0])
+
+                            if stop - start >= trends_min_yrs:
+                                print(f"Calculating strends for {start} to {stop}, for periode {per} and season {season}")
+
+                                time = subset.data.time.values
+                                (obs_trend, mod_trend) = _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, trends_min_yrs)
+
+
+                                # # The whole trends dicts are placed in the stats dict
+                                stats["obs_trend"] = obs_trend
+                                stats["mod_trend"] = mod_trend
+
+
+                            
+
+                          
+
+                    
+
                     perstr = f'{per}-{season}'
                     map_stat[freq][perstr] = stats
                     if freq == main_freq:
@@ -670,7 +745,7 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
 
     return (map_data, scat_data)
 
-def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
+def _process_regional_timeseries(data, region_ids, regions_how, meta_glob, periods):
     ts_objs = []
     freqs = list(data.keys())
     check_countries = True if regions_how=='country' else False
@@ -707,6 +782,29 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
             ts_data[f'{freq}_date'] = jsfreq
             ts_data[f'{freq}_obs'] = obs_vals
             ts_data[f'{freq}_mod'] = mod_vals
+            print(ts_data)
+            exit()
+
+            
+            # #time = subset.data.values 
+            # for per in periods:
+            #     min_yrs = 7
+            #     time = subset.data.time.values       
+
+            #     start_stop = per.split("-")
+            #     if len(start_stop) == 2:
+            #         (start, stop) = [int(i) for i in start_stop]
+            #     else:
+            #         start = stop = int(start_stop[0])
+
+            #     if stop - start >= min_yrs:
+                    
+            #         (obs_trend, mod_trend) = _make_trends(obs_vals, mod_vals, time, freq, "all", start, stop)
+
+            #         ts_data[f'{freq}_{per}_obs_trends'] = obs_trend
+            #         ts_data[f'{freq}_{per}_mod_trends'] = mod_trend
+
+
 
         ts_objs.append(ts_data)
     return ts_objs
@@ -1107,6 +1205,9 @@ class ColdataToJsonEngine(ProcessingEngine):
         vert_code = coldata.get_meta_item('vert_code')
         diurnal_only = coldata.get_meta_item('diurnal_only')
 
+        add_trends = self.cfg.statistics_opts.add_trends
+        trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
+
         if vert_code == 'ModelLevel':
             raise NotImplementedError('Coming (not so) soon...')
 
@@ -1193,7 +1294,8 @@ class ColdataToJsonEngine(ProcessingEngine):
             ts_objs_regional = _process_regional_timeseries(data,
                                                             regnames,
                                                             regions_how,
-                                                            meta_glob)
+                                                            meta_glob,
+                                                            periods)
 
             _write_site_data(ts_objs_regional, out_dirs['ts'])
             if coldata.has_latlon_dims:
@@ -1213,7 +1315,10 @@ class ColdataToJsonEngine(ProcessingEngine):
                                                         periods,
                                                         main_freq,
                                                         stats_min_num,
-                                                        seasons)
+                                                        seasons,
+                                                        add_trends,
+                                                        trends_min_yrs,
+                                                        )
 
             map_name = get_json_mapname(obs_name, var_name_web, model_name,
                                         model_var, vert_code)
