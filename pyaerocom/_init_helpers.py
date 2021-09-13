@@ -64,8 +64,22 @@ def change_verbosity(new_level='debug', log=None):
 
 ### Functions for package initialisation
 def _init_supplemental():
+    """
+    Get version and pyaerocom installation path
+
+    Returns
+    -------
+    str
+        version string
+    str
+        path to source code base directory (
+        <installed_basedir>/pyaerocom/pyaerocom)
+
+
+    """
     from pkg_resources import get_distribution
-    from os.path import abspath, dirname
-    return (get_distribution('pyaerocom').version, abspath(dirname(__file__)))
+    import os
+    dist = get_distribution('pyaerocom')
+    return (dist.version, os.path.join(dist.location, 'pyaerocom'))
 
 

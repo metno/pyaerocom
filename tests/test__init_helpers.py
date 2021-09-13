@@ -53,6 +53,12 @@ def test_change_verbosity(new_level, log, raises):
 
 ### Functions for package initialisation
 def test__init_supplemental():
-    pass
+    import os
+    from pkg_resources import get_distribution
+    from os.path import abspath, dirname
+    version, fpath = mod._init_supplemental()
+    assert version == get_distribution('pyaerocom').version
+    assert os.path.normpath(fpath).endswith('/pyaerocom/pyaerocom')
+
 
 
