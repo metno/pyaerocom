@@ -89,6 +89,36 @@ def test__process_statistics_timeseries(example_coldata,
             np.testing.assert_allclose(mean_bias, nmb_avg, atol=0.001)
 
 
+
+@pytest.mark.parametrize('freq, season, start, stop, min_yrs, station, raises', [
+    ('yearly', 'all', 2000, 2015, 7, 1,  does_not_raise_exception()),
+    ('yearly', 'JJA', 2010, 2015, 4, 2,  does_not_raise_exception()),
+
+    ('yearly', 'SON', 2000, 2015, 7, 3,  does_not_raise_exception()),
+    ('yearly', 'JJA', 2010, 2015, 4, 3,  does_not_raise_exception()),
+    ('yearly', 'SON', 2010, 2015, 4, 3,  pytest.raises(exceptions.AeroValTrendsError)),
+
+    ('monthly', 'all', 2000, 2015, 7, 5,  does_not_raise_exception()),
+    ('monthly', 'all', 2010, 2015, 4, 6,  does_not_raise_exception()),
+
+    ('yearly', 'all', 2010, 2015, 7, 7, pytest.raises(exceptions.AeroValTrendsError)),
+    ])
+def test__make_trends(example_coldata,
+                     freq, season, start, stop,
+                     min_yrs, station, raises):
+    with raises:
+        obs_val = example_coldata[freq].data.data[0, :, station]
+        mod_val = example_coldata[freq].data.data[1, :, station]
+        time = example_coldata[freq].data.time
+        (obs_trend, mod_trend) = mod._make_trends(obs_val, mod_val, time, freq, season, start, stop, min_yrs)
+
+        assert obs_trend["period"] == f"{start}-{stop}"
+        assert mod_trend["period"] == f"{start}-{stop}"
+
+        assert obs_trend["season"] == mod_trend["season"]
+        
+
+
 if __name__ == '__main__':
     import sys
     pytest.main(sys.argv)
