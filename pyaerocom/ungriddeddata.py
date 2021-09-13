@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import numpy as np
-from datetime import datetime
 from collections import OrderedDict as od
+from datetime import datetime
 import fnmatch
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 import pandas as pd
+
 from pyaerocom import const
 logger = const.logger
 print_log = const.print_log
@@ -2940,7 +2942,7 @@ def reduce_array_closest(arr_nominal, arr_to_be_reduced):
 
 if __name__ == "__main__":
     import pyaerocom as pya
-    import matplotlib.pyplot as plt
+
 
     OBS_LOCAL = '/home/jonasg/MyPyaerocom/data/obsdata/'
 
