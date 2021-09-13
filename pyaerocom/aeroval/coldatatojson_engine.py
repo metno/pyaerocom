@@ -621,43 +621,56 @@ def _get_statistics(obs_vals, mod_vals, min_num):
                             min_num_valid=min_num)
     return _prep_stats_json(stats)
 
+def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs = 7):
+    """
+    Function for generating trends from timeseries and fomatting it in a way
+    that can be serialized to json. A key, map_var, is added
+    for use in the web interface.
+    """
+                    
+    te = TrendsEngine
 
+
+    # The model and observation data are made to pandas times series
+    obs_trend_series = obs
+    mod_trend_series = mod
+
+    # Translate season to names used in trends_helpers.py. Should be handled there instead!
+    SEASON_CODES = {
+                    'MAM': 'spring',
+                    'JJA': 'summer',
+                    'SON': 'autumn',
+                    'DJF': 'winter',
+                    'all': 'all',
+                    }
+
+    # Trends are calculated
+    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
+    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
+
+    # Makes pd.Series serializable
+    obs_trend["data"] = obs_trend["data"].to_json()
+    mod_trend["data"] = mod_trend["data"].to_json()
+
+    obs_trend["map_var"] = "slp_2000"
+    mod_trend["map_var"] = "slp_2000"
+
+    return obs_trend, mod_trend
 
 def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs = 7):
-        """
-        Function for generating trends and fomatting it in a way
-        that can be serialized to json. A key, map_var, is added
-        for use in the web interface.
-        """
-                        
-        te = TrendsEngine
-    
+    """
+    Function for generating trends and fomatting it in a way
+    that can be serialized to json. A key, map_var, is added
+    for use in the web interface.
+    """
 
-        # The model and observation data are made to pandas times series
-        obs_trend_series = pd.Series(obs_vals, time)
-        mod_trend_series = pd.Series(mod_vals, time)
+    # The model and observation data are made to pandas times series
+    obs_trend_series = pd.Series(obs_vals, time)
+    mod_trend_series = pd.Series(mod_vals, time)
 
-        # Translate season to names used in trends_helpers.py. Should be handled there instead!
-        SEASON_CODES = {
-                        'MAM': 'spring',
-                        'JJA': 'summer',
-                        'SON': 'autumn',
-                        'DJF': 'winter',
-                        'all': 'all',
-                        }
+    (obs_trend, mod_trend) = _make_trends_from_timeseries(obs_trend_series, mod_trend_series, freq, season, start, stop, min_yrs)
 
-        # Trends are calculated
-        obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
-        mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
-
-        # Makes pd.Series serializable
-        obs_trend["data"] = obs_trend["data"].to_json()
-        mod_trend["data"] = mod_trend["data"].to_json()
-
-        obs_trend["map_var"] = "slp_2000"
-        mod_trend["map_var"] = "slp_2000"
-
-        return obs_trend, mod_trend
+    return obs_trend, mod_trend
         
 
 
@@ -745,7 +758,7 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
 
     return (map_data, scat_data)
 
-def _process_regional_timeseries(data, region_ids, regions_how, meta_glob, periods):
+def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
     ts_objs = []
     freqs = list(data.keys())
     check_countries = True if regions_how=='country' else False
@@ -785,23 +798,6 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob, perio
             
 
             
-            # #time = subset.data.values 
-            # for per in periods:
-            #     min_yrs = 7
-            #     time = subset.data.time.values       
-
-            #     start_stop = per.split("-")
-            #     if len(start_stop) == 2:
-            #         (start, stop) = [int(i) for i in start_stop]
-            #     else:
-            #         start = stop = int(start_stop[0])
-
-            #     if stop - start >= min_yrs:
-                    
-            #         (obs_trend, mod_trend) = _make_trends(obs_vals, mod_vals, time, freq, "all", start, stop)
-
-            #         ts_data[f'{freq}_{per}_obs_trends'] = obs_trend
-            #         ts_data[f'{freq}_{per}_mod_trends'] = mod_trend
 
 
 
@@ -970,7 +966,7 @@ def _select_period_season_coldata(coldata, period, season):
     return ColocatedData(arr)
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, periods, seasons):
+                          meta_glob, periods, seasons, add_trends=False, trends_min_yrs=7):
 
     output = {}
     stats_dummy = _init_stats_dummy()
@@ -990,14 +986,42 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                                                                    per,
                                                                    season)
 
+                            if add_trends:
+                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                                start_stop = per.split("-")
+                                if len(start_stop) == 2:
+                                    (start, stop) = [int(i) for i in start_stop]
+                                else:
+                                    start = stop = int(start_stop[0])
+
+                                if stop - start >= trends_min_yrs:
+                                    subset_time_series = subset.get_regional_timeseries(regid)
+                                    (obs_trend, mod_trend) = _make_trends_from_timeseries(  subset_time_series["obs"],
+                                                                                            subset_time_series["mod"],
+                                                                                            freq,
+                                                                                            season,
+                                                                                            start,
+                                                                                            stop,
+                                                                                            trends_min_yrs
+                                                                                            )
+                            
+
                             subset = subset.filter_region(region_id=regid,
                                                           check_country_meta=use_country)
 
                             stats = _get_extended_stats(subset, use_weights)
+
+                            if add_trends:
+                                # The whole trends dicts are placed in the stats dict
+                                stats["obs_trend"] = obs_trend
+                                stats["mod_trend"] = mod_trend
+
+
                         except (DataCoverageError, TemporalResolutionError):
                             stats = stats_dummy
 
                     hm_freq[regname][perstr] = stats
+
     return output
 
 def _map_indices(outer_idx, inner_idx):
@@ -1279,7 +1303,10 @@ class ColdataToJsonEngine(ProcessingEngine):
             hm_all = _process_heatmap_data(data, regnames, use_weights,
                                            use_country, meta_glob,
                                            periods,
-                                           seasons)
+                                           seasons,
+                                           add_trends,
+                                           trends_min_yrs,
+                                           )
 
             for freq, hm_data in hm_all.items():
                 fname = get_heatmap_filename(freq)
@@ -1293,8 +1320,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             ts_objs_regional = _process_regional_timeseries(data,
                                                             regnames,
                                                             regions_how,
-                                                            meta_glob,
-                                                            periods)
+                                                            meta_glob)
 
             _write_site_data(ts_objs_regional, out_dirs['ts'])
             if coldata.has_latlon_dims:
