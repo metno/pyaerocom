@@ -47,7 +47,7 @@ def _resolve_var_name(data):
         variable name, in which case first and second return parameter are the
         same).
     str
-        corresponding AeroCom variable name 
+        corresponding AeroCom variable name
 
     """
 
@@ -105,27 +105,30 @@ def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
 def _ensure_gridded_gridded_same_freq(data, data_ref,
                                       min_num_obs, resample_how):
     """
-    Make sure
+    Make sure 2 input gridded data objects are in the same frequency
+
+    Checks if both input data objects are in the same frequency, and if not,
+    downsample the one with higher freqency accordingly.
 
     Parameters
     ----------
-    data : TYPE
-        DESCRIPTION.
-    data_ref : TYPE
-        DESCRIPTION.
-    min_num_obs : TYPE
-        DESCRIPTION.
-    resample_how : TYPE
-        DESCRIPTION.
+    data : GriddedData
+        first data object.
+    data_ref : GriddedData
+        second data object.
+    min_num_obs : int or dict, optional
+        Minimum number of observations for resampling.
+    resample_how : str or dict, optional
+        Resampling aggregators used.
 
     Returns
     -------
-    data : TYPE
-        DESCRIPTION.
-    data_ref : TYPE
-        DESCRIPTION.
-    TYPE
-        DESCRIPTION.
+    GriddedData
+        first data object.
+    GriddedData
+        second data object.
+    str
+        sampling frequency of both data objects.
 
     """
     ts_type_data = data.ts_type
