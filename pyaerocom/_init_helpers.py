@@ -53,9 +53,13 @@ def change_verbosity(new_level='debug', log=None):
         log = logger
     if isinstance(new_level, str):
         if not new_level in LOGLEVELS:
-            raise ValueError("Invalid input for loglevel, choose "
-                             "from {}".format(LOGLEVELS.keys()))
+            raise ValueError(f'invalid log level {new_level}, choose from '
+                             f'keys or values of {LOGLEVELS}')
         new_level = LOGLEVELS[new_level]
+    else:
+        if not new_level in LOGLEVELS.values():
+            raise ValueError(f'invalid log level {new_level}, choose from '
+                             f'keys or values of {LOGLEVELS}')
     log.setLevel(new_level)
 
 ### Functions for package initialisation
