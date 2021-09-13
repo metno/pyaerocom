@@ -53,7 +53,7 @@ def tm5_aero_stp():
 
 @pytest.fixture(scope='function')
 def col():
-    return Colocator(raise_exceptions=True, reanalyze_existing=True)
+    return Colocator(raise_exceptions=True, reanalyse_existing=True)
 
 
 @pytest.mark.parametrize('stp,should_be', [
@@ -78,7 +78,7 @@ def test_Colocator__add_attr(col):
     col['blub'] = 42
 
     assert col.bla == 'blub'
-    assert not 'blub' in col
+    assert 'blub' in col
 
 
 @pytest.mark.parametrize('ts_type_desired, ts_type, flex, raises', [
@@ -167,10 +167,11 @@ def test_Colocator_update_basedir_coldata(tmpdir):
 
 
 @pytest.mark.parametrize('what,raises', [
-    (dict(blaa=42), pytest.raises(KeyError)),
+    (dict(blaa=42), does_not_raise_exception()),
     (dict(obs_id='test', model_id='test'), does_not_raise_exception()),
-    (dict(gridded_reader_id='test'), pytest.raises(ValueError)),
+    (dict(gridded_reader_id='test'), does_not_raise_exception()),
     (dict(gridded_reader_id={'test' : 42}), does_not_raise_exception()),
+    (dict(resample_how={'daily' : {'hourly' : 'max'}}), does_not_raise_exception()),
     ])
 def test_Colocator_update(what,raises):
     col = Colocator(raise_exceptions=True)
