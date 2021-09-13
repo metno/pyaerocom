@@ -35,6 +35,9 @@ class CacheReadError(CachingError):
 class ColocationError(ValueError):
     pass
 
+class ColocationSetupError(ValueError):
+    pass
+
 class CoordinateError(ValueError):
     pass
 
