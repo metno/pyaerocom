@@ -782,8 +782,7 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob, perio
             ts_data[f'{freq}_date'] = jsfreq
             ts_data[f'{freq}_obs'] = obs_vals
             ts_data[f'{freq}_mod'] = mod_vals
-            print(ts_data)
-            exit()
+            
 
             
             # #time = subset.data.values 
