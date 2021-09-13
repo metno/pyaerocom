@@ -28,6 +28,28 @@ from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
 def _resolve_var_name(data):
+    """
+    Check variable name of `GriddedData` against AeroCom default
+
+    Checks whether the variable name set in the data corresponds to the
+    AeroCom variable name, or whether it is an alias. Returns both the
+    variable name set and the AeroCom variable name.
+
+    Parameters
+    ----------
+    data : GriddedData
+        Data to be checked.
+
+    Returns
+    -------
+    str
+        variable name as set in data (may be alias, but may also be AeroCom
+        variable name, in which case first and second return parameter are the
+        same).
+    str
+        corresponding AeroCom variable name
+
+    """
 
     var = data.var_name
     try:
@@ -82,6 +104,33 @@ def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
 
 def _ensure_gridded_gridded_same_freq(data, data_ref,
                                       min_num_obs, resample_how):
+    """
+    Make sure 2 input gridded data objects are in the same frequency
+
+    Checks if both input data objects are in the same frequency, and if not,
+    downsample the one with higher freqency accordingly.
+
+    Parameters
+    ----------
+    data : GriddedData
+        first data object.
+    data_ref : GriddedData
+        second data object.
+    min_num_obs : int or dict, optional
+        Minimum number of observations for resampling.
+    resample_how : str or dict, optional
+        Resampling aggregators used.
+
+    Returns
+    -------
+    GriddedData
+        first data object.
+    GriddedData
+        second data object.
+    str
+        sampling frequency of both data objects.
+
+    """
     ts_type_data = data.ts_type
     ts_type_data_ref = data_ref.ts_type
     if ts_type_data != ts_type_data_ref:
@@ -120,18 +169,20 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
     data : GriddedData
         gridded data (e.g. model results)
     data_ref : GriddedData
-        reference dataset that is used to evaluate arg `data` (e.g. gridded
+        reference data (e.g. gridded satellite object) that is co-located with
+        `data`.
         observation data or other model)
-    ts_type : str
-        desired temporal resolution of colocated data (must be valid AeroCom
-        ts_type str such as daily, monthly, yearly..)
-    start : :obj:`str` or :obj:`datetime64` or similar, optional
+    ts_type : str, optional
+        desired temporal resolution of output colocated data (e.g. "monthly").
+        Defaults to None, in which case the highest possible resolution is
+        used.
+    start : str or datetime64 or similar, optional
         start time for colocation, if None, the start time of the input
         :class:`GriddedData` object is used
-    stop : :obj:`str` or :obj:`datetime64` or similar, optional
+    stop : str or datetime64 or similar, optional
         stop time for colocation, if None, the stop time of the input
         :class:`GriddedData` object is used
-    filter_name : str
+    filter_name : str, optional
         string specifying filter used (cf. :class:`pyaerocom.filter.Filter` for
         details). If None, then it is set to 'WORLD-wMOUNTAINS', which
         corresponds to no filtering (world with mountains).
@@ -144,16 +195,16 @@ def colocate_gridded_gridded(data, data_ref, ts_type=None,
         to specify regrid resolutions, respectively).
     harmonise_units : bool
         if True, units are attempted to be harmonised (note: raises Exception
-        if True and units cannot be harmonised).
+        if True and units cannot be harmonised). Defaults to True.
     regrid_scheme : str
         iris scheme used for regridding (defaults to area weighted regridding)
     update_baseyear_gridded : int, optional
         optional input that can be set in order to redefine the time dimension
-        in the gridded data object to be analysed. E.g., if the data object
-        is a climatology (one year of data) that has set the base year of the
-        time dimension to a value other than the specified input start / stop
-        time this may be used to update the time in order to make colocation
-        possible.
+        in the first gridded data object `data`to be analysed. E.g., if the
+        data object is a climatology (one year of data) that has set the base
+        year of the time dimension to a value other than the specified input
+        start / stop time this may be used to update the time in order to make
+        co-location possible.
     min_num_obs : int or dict, optional
         minimum number of observations for resampling of time
     colocate_time : bool
