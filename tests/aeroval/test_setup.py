@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from typing import Iterable
 
 from pytest import mark, param, raises
 
 from pyaerocom.aeroval import EvalSetup
+from pyaerocom.aeroval._processing_base import HasColocator, HasConfig
 
 from .cams84 import CAMS84_CONFIG
 
@@ -97,3 +100,18 @@ def test_evalsetup_cams84(keys: Iterable[str]):
 
     setup = EvalSetup(proj_id=CAMS84_CONFIG["proj_id"], exp_id=CAMS84_CONFIG["exp_id"], **config)  # type: ignore
     assert setup
+
+
+def test_HasConfig():
+    setup = EvalSetup(**CAMS84_CONFIG)
+    config = HasConfig(setup)
+    assert config.raise_exceptions == CAMS84_CONFIG["raise_exceptions"]
+    assert config.reanalyse_existing == CAMS84_CONFIG["reanalyse_existing"]
+
+
+@mark.parametrize("model", [None, "IFS-CTRL"])
+@mark.parametrize("obs", [None, "EEA-NRT-rural"])
+def test_HasColocator(model: str | None, obs: str | None):
+    setup = EvalSetup(**CAMS84_CONFIG)
+    config = HasColocator(setup)
+    assert config.get_colocator(model_name=model, obs_name=obs)
