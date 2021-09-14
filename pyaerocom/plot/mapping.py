@@ -425,15 +425,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
             cbar_extend = "max"
     fig.norm = norm
     disp = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm)
-# =============================================================================
-#     fmt = None
-#     if bounds is not None:
-#         print(bounds)
-#         min_mag = -exponent(bounds[1])
-#         min_mag = 0 if min_mag < 0 else min_mag
-#         print(min_mag)
-#         #fmt = "%." + str(min_mag) + "f"
-# =============================================================================
+
     if add_cbar:
         cbar = fig.colorbar(disp, extend=cbar_extend, cax=ax_cbar, shrink=0.8)
         fig.cbar = cbar
@@ -467,11 +459,7 @@ def _add_cbar_axes(ax):#, where='right'):
     ax_cbar = fig.add_axes([_loc.x1 + .02,
                             _loc.y0, .02, _loc.y1 - _loc.y0])
     return ax_cbar
-# =============================================================================
-#     except Exception as e:
-#         ax_cbar = fig.add_axes([0.91, 0.12, .02, .8])
-#         print(repr(e))
-# =============================================================================
+
 def plot_map_aerocom(data, region=None, fig=None, **kwargs):
     """High level map plotting function for Aerocom default plotting
 
@@ -490,7 +478,6 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
         finish docstring
 
     """
-    #kwargs["fix_aspect"] = 1.6
     from pyaerocom import GriddedData
     if not isinstance(data, GriddedData):
         raise TypeError("This plotting method needs an instance of pyaerocom "
@@ -643,7 +630,7 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         mew = kwargs.pop('mew')
     except KeyError:
         mew = 1
-    #_arr = coldata.data
+
     mean_bias = coldata.calc_nmb_array()
 
     if mean_bias.ndim == 1:
@@ -698,8 +685,7 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
     if add_cbar:
         if ax_cbar is None:
             ax_cbar = _add_cbar_axes(ax)
-        cbar = fig.colorbar(_sc, cmap=cmap, norm=norm, #boundaries=bounds,
-                            extend=cbar_extend, cax=ax_cbar,
+        cbar = fig.colorbar(_sc, extend=cbar_extend, cax=ax_cbar,
                             orientation=cbar_orientation)
 
         cbar.outline.set_visible(cbar_outline_visible)
