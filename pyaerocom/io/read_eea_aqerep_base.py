@@ -44,7 +44,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from pyaerocom import const
-from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.exceptions import TemporalResolutionError, EEAv2FileError
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
@@ -272,11 +272,22 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 shutil.copyfileobj(f_in, f_out)
             filename = f_out.name
             f_in.close()
+
         with open(filename, 'r') as f:
             # read header...
             # Countrycode,Namespace,AirQualityNetwork,AirQualityStation,AirQualityStationEoICode,SamplingPoint,SamplingProcess,Sample,AirPollutant,AirPollutantCode,AveragingTime,Concentration,UnitOfMeasurement,DatetimeBegin,DatetimeEnd,Validity,Verification
-            header = f.readline().lower().rstrip().split(file_delimiter)
+            try:
+                header = f.readline().lower().rstrip().split(file_delimiter)
+            except UnicodeDecodeError:
+                if suffix == '.gz':
+                    f_out.close()
+                    os.remove(f_out.name)
+                    raise EEAv2FileError(
+                        f'Found corrupt file {filename}. consider deleteing it')
+
             # create output dict
+            if len(header) < max_file_index_to_keep:
+                return None
             data_dict = {}
             for idx in header_indexes_to_keep:
                 data_dict[header[idx]] = ''
@@ -292,38 +303,51 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             # read the data...
             # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
             lineidx = 0
-            for line in f:
-                rows = line.rstrip().split(file_delimiter)
-                # skip line if the # rows is not sufficient
-                if len(rows) < max_file_index_to_keep:
-                    continue
-                if lineidx == 0:
-                    for idx in header_indexes_to_keep:
-                        if header[idx] != self.VAR_CODE_NAME:
-                            data_dict[header[idx]] = rows[idx]
+            # Unfortunatelt there's a lot of corrupt files
+            # we might see errors like
+            # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xc2 in position 0: unexpected end of data
+            # therefore put the entire loop into a try statement
+            try:
+                for line in f:
+                    rows = line.rstrip().split(file_delimiter)
+                    # skip line if the # rows is not sufficient
+                    if len(rows) < max_file_index_to_keep:
+                        continue
+                    if lineidx == 0:
+                        for idx in header_indexes_to_keep:
+                            if header[idx] != self.VAR_CODE_NAME:
+                                data_dict[header[idx]] = rows[idx]
+                            else:
+                                # extract the EEA var code from the URL noted in the data file
+                                data_dict[header[idx]] = rows[idx].split('/')[-1]
+
+                    for idx in file_indexes_to_keep:
+                        # if the data is a time
+                        if idx in time_indexes:
+                            # make the time string ISO compliant so that numpy can directly read it
+                            # this is not very time string forgiving but fast
+                            data_dict[header[idx]][lineidx] = np.datetime64(
+                                rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
+                            )
                         else:
-                            # extract the EEA var code from the URL noted in the data file
-                            data_dict[header[idx]] = rows[idx].split('/')[-1]
+                            # data is not a time
+                            # sometimes there's no value in the file. Set that to nan
+                            try:
+                                data_dict[header[idx]][lineidx] = np.float_(rows[idx])
+                            except (ValueError, IndexError):
+                                data_dict[header[idx]][lineidx] = np.nan
 
-                for idx in file_indexes_to_keep:
-                    # if the data is a time
-                    if idx in time_indexes:
-                        # make the time string ISO compliant so that numpy can directly read it
-                        # this is not very time string forgiving but fast
-                        data_dict[header[idx]][lineidx] = np.datetime64(
-                            rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
-                        )
-                    else:
-                        # data is not a time
-                        # sometimes there's no value in the file. Set that to nan
-                        try:
-                            data_dict[header[idx]][lineidx] = np.float_(rows[idx])
-                        except ValueError:
-                            data_dict[header[idx]][lineidx] = np.nan
+                    lineidx += 1
+            except UnicodeDecodeError:
+                # self.logger.warning('{} is corrupt! consider deleteing it'.format(filename))
+                if suffix == '.gz':
+                    f_out.close()
+                    os.remove(f_out.name)
+                    raise EEAv2FileError(
+                        f'Found corrupt file {filename}. consider deleteing it')
+                # return None
 
-                lineidx += 1
-
-        # remove the temp file in case the input file weas a gz file
+        # remove the temp file in case the input file was a gz file
         if suffix == '.gz':
             f_out.close()
             os.remove(f_out.name)
@@ -402,9 +426,20 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         if filename is None:
             filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
+            # test also for a gzipped file...
+            if not os.path.isfile(filename):
+                filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE, '.gz')
         self.logger.warning("Reading file {}".format(filename))
 
         struct_data = {}
+        suffix = pathlib.Path(filename).suffix
+        if suffix == '.gz':
+            f_out = tempfile.NamedTemporaryFile(delete=False)
+            with gzip.open(filename, 'r') as f_in:
+                shutil.copyfileobj(f_in, f_out)
+            filename = f_out.name
+            f_in.close()
+
         with open(filename, 'r') as f:
             # read header...
             # Countrycode Timezone Namespace   AirQualityNetwork AirQualityStation AirQualityStationEoICode   AirQualityStationNatCode   SamplingPoint  SamplingProces Sample   AirPollutantCode  ObservationDateBegin ObservationDateEnd   Projection  Longitude   Latitude Altitude MeasurementType   AirQualityStationType   AirQualityStationArea   EquivalenceDemonstrated MeasurementEquipment InletHeight BuildingDistance  KerbDistance
@@ -442,6 +477,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 lineidx += 1
 
         self.logger.info("Reading file {} done".format(filename))
+        # remove the temp file in case the input file was a gz file
+        if suffix == '.gz':
+            f_out.close()
+            os.remove(f_out.name)
+
+
         return struct_data
 
     def get_file_list(self, pattern=None):
@@ -577,8 +618,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             _file = files[i]
             try:
                 station_data = self.read_file(_file, var_name=var_name)
+            except EEAv2FileError:
+                self.logger.warning('file {} is corrupt! consider deleting it'.format(_file))
+                continue
             except TemporalResolutionError as e:
+                self.logger.warning('{} has TemporalResolutionError'.format(_file))
                 const.print_log.warning(f'{repr(e)}. Skipping file...')
+                continue
+
+            # readfile might fail outside of the error captured by the try statement above
+            if station_data is None:
+                self.logger.warning('file {} did not provide data. skipping...!'.format(_file))
                 continue
 
             # to find the metadata quickly, we use a string internally
