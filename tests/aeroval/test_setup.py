@@ -5,7 +5,7 @@ from typing import Iterable
 from pytest import mark, param, raises
 
 from pyaerocom.aeroval import EvalSetup
-from pyaerocom.aeroval._processing_base import HasColocator, HasConfig
+from pyaerocom.aeroval._processing_base import DataImporter, HasColocator, HasConfig
 
 from .cams84 import CAMS84_CONFIG
 
@@ -111,7 +111,23 @@ def test_HasConfig():
 
 @mark.parametrize("model", [None, "IFS-CTRL"])
 @mark.parametrize("obs", [None, "EEA-NRT-rural"])
+@mark.dependency
 def test_HasColocator(model: str | None, obs: str | None):
     setup = EvalSetup(**CAMS84_CONFIG)
     config = HasColocator(setup)
     assert config.get_colocator(model_name=model, obs_name=obs)
+
+
+@mark.parametrize("model", [None, "IFS-CTRL"])
+@mark.parametrize("var", [None, "vmro3", "vmrno2"])
+@mark.dependency(depends=["test_HasColocator"])
+def test_DataImporter_read_model_data(model: str, var: str):
+    setup = EvalSetup(**CAMS84_CONFIG)
+    assert DataImporter(setup).read_model_data(model, var)
+
+@mark.parametrize("obs", [None, "EEA-NRT-rural"])
+@mark.parametrize("var", [None, "vmro3", "vmrno2"])
+@mark.dependency(depends=["test_HasColocator"])
+def test_DataImporter_read_ungridded_obsdata(obs:str, var: str):
+    setup = EvalSetup(**CAMS84_CONFIG)
+    assert DataImporter(setup).read_ungridded_obsdata(obs, var)
