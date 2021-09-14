@@ -272,6 +272,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 shutil.copyfileobj(f_in, f_out)
             filename = f_out.name
             f_in.close()
+            f_out.close()
 
         with open(filename, 'r') as f:
             # read header...
@@ -279,15 +280,19 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             try:
                 header = f.readline().lower().rstrip().split(file_delimiter)
             except UnicodeDecodeError:
+                # UTF-8 decoding error
                 if suffix == '.gz':
-                    f_out.close()
                     os.remove(f_out.name)
                     raise EEAv2FileError(
                         f'Found corrupt file {filename}. consider deleteing it')
 
             # create output dict
             if len(header) < max_file_index_to_keep:
-                return None
+                if suffix == '.gz':
+                    os.remove(f_out.name)
+                raise EEAv2FileError(
+                    f'Found corrupt file {filename}. consider deleteing it')
+
             data_dict = {}
             for idx in header_indexes_to_keep:
                 data_dict[header[idx]] = ''
@@ -310,7 +315,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             try:
                 for line in f:
                     rows = line.rstrip().split(file_delimiter)
-                    # skip line if the # rows is not sufficient
+                    # skip data line if the # rows is not sufficient
                     if len(rows) < max_file_index_to_keep:
                         continue
                     if lineidx == 0:
@@ -341,7 +346,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             except UnicodeDecodeError:
                 # self.logger.warning('{} is corrupt! consider deleteing it'.format(filename))
                 if suffix == '.gz':
-                    f_out.close()
                     os.remove(f_out.name)
                     raise EEAv2FileError(
                         f'Found corrupt file {filename}. consider deleteing it')
@@ -349,7 +353,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         # remove the temp file in case the input file was a gz file
         if suffix == '.gz':
-            f_out.close()
             os.remove(f_out.name)
 
         unit_in_file = data_dict['unitofmeasurement']
