@@ -172,24 +172,29 @@ def test__check_correct_time_dim(cube, file, raises):
 
 from .._conftest_helpers import make_dummy_cube_3D
 
-cubelist_float = iris.cube.CubeList([make_dummy_cube_3D('days since '
+def make_cubelist(dtype):
+    return iris.cube.CubeList([make_dummy_cube_3D('days since '
                                                        '2010-01-01 00:00',
-                                                       dtype=float),
+                                                       dtype=dtype),
                                      make_dummy_cube_3D('days since '
                                                         '2011-01-01 00:00',
-                                                        dtype=float)
+                                                        dtype=dtype)
                                      ])
+@pytest.mark.parametrize('cubes,val', [
+    (iris.cube.CubeList([iris.cube.Cube([1]),iris.cube.Cube([1])]), False),
+    (iris.cube.CubeList([make_cubelist(int)[0], make_cubelist(float)[0]]),
+     True),
+    (make_cubelist(float), False),
+    (make_cubelist(int), False)
+])
+def test__check_correct_dtypes_timedim_cube_list(cubes,val):
+    result = mod._check_correct_dtypes_timedim_cube_list(cubes)
+    assert result == val
 
-cubelist_int = iris.cube.CubeList([make_dummy_cube_3D('days since '
-                                                       '2010-01-01 00:00',
-                                                       dtype=int),
-                                     make_dummy_cube_3D('days since '
-                                                        '2011-01-01 00:00',
-                                                        dtype=int)
-                                     ])
 @pytest.mark.parametrize('cubes,sh,raises', [
-    (cubelist_int, (730,12,4),does_not_raise_exception()), #see https://github.com/metno/pyaerocom/issues/432
-    (cubelist_float,(730,12,4),does_not_raise_exception())
+    (make_cubelist(int), (730,12,4),does_not_raise_exception()), #see
+    # https://github.com/metno/pyaerocom/issues/432
+    (make_cubelist(float),(730,12,4),does_not_raise_exception())
 ])
 def test_concatenate_iris_cubes(cubes, sh, raises):
     result = mod.concatenate_iris_cubes(cubes)
