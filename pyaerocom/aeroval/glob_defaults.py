@@ -222,7 +222,61 @@ statistics_defaults = {
     "colmap": "coolwarm",
     "unit": "1",
     "decimals": 2
-  }
+  },
+  "obs/mod_trend": {
+        "name": "Obs/Mod-Trends",
+        "longname": "Trends",
+        "scale": [
+            -10.0,
+            -7.5,
+            -5.0,
+            -2.5,
+            0,
+            2.5,
+            5.0,
+            7.5,
+            10.0
+        ],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1
+    },
+    "obs_trend": {
+        "name": "Obs-Trends",
+        "longname": "Observed Trends",
+        "scale": [
+            -10.0,
+            -7.5,
+            -5.0,
+            -2.5,
+            0,
+            2.5,
+            5.0,
+            7.5,
+            10.0
+        ],
+        "colmap": "bwr",
+        "unit": "%/yr",
+        "decimals": 1
+    },
+    "mod_trend": {
+        "name": "Mod-Trends",
+        "longname": "Modelled Trends",
+        "scale": [
+            -10,
+            -7.5,
+            -5.0,
+            -2.5,
+            0,
+            2.5,
+            5.0,
+            7.5,
+            10.0
+        ],
+        "colmap": "bwr",
+        "unit": "%/yr"
+    },
+
 }
 
 

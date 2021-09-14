@@ -14,7 +14,8 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (AeroValConfigError,
                                   DataCoverageError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError,
+                                  AeroValTrendsError)
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
@@ -623,7 +624,11 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs = 
     that can be serialized to json. A key, map_var, is added
     for use in the web interface.
     """
-                    
+
+
+    if stop-start < min_yrs:
+        raise AeroValTrendsError("min_yrs larger than time between start and stop", min_yrs)
+
     te = TrendsEngine
 
 
@@ -645,6 +650,9 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs = 
     mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
 
     # Makes pd.Series serializable
+    if obs_trend["data"] is None or mod_trend["data"] is None:
+        raise AeroValTrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
+
     obs_trend["data"] = obs_trend["data"].to_json()
     mod_trend["data"] = mod_trend["data"].to_json()
 
