@@ -6,7 +6,7 @@ import pyaerocom.aeroval.coldatatojson_engine as mod
 import pyaerocom.exceptions as exceptions
 from pyaerocom import ColocatedData, TsType
 
-from ..conftest import does_not_raise_exception
+from ..conftest import coldata, does_not_raise_exception
 
 
 def test_get_heatmap_filename():
@@ -95,28 +95,36 @@ def test__process_statistics_timeseries(example_coldata,
     ('yearly', 'JJA', 2010, 2015, 4, 2,  does_not_raise_exception()),
 
     ('yearly', 'SON', 2000, 2015, 7, 3,  does_not_raise_exception()),
-    ('yearly', 'JJA', 2010, 2015, 4, 3,  does_not_raise_exception()),
-    ('yearly', 'SON', 2010, 2015, 4, 3,  pytest.raises(exceptions.AeroValTrendsError)),
+    ('yearly', 'JJA', 2010, 2015, 4, 0,  does_not_raise_exception()),
 
-    ('monthly', 'all', 2000, 2015, 7, 5,  does_not_raise_exception()),
-    ('monthly', 'all', 2010, 2015, 4, 6,  does_not_raise_exception()),
+    ('monthly', 'all', 2000, 2015, 7, 2,  does_not_raise_exception()),
+    ('monthly', 'all', 2010, 2015, 4, 1,  does_not_raise_exception()),
 
-    ('yearly', 'all', 2010, 2015, 7, 7, pytest.raises(exceptions.AeroValTrendsError)),
+    ('yearly', 'all', 2010, 2015, 7, 0, pytest.raises(exceptions.AeroValTrendsError)),
     ])
-def test__make_trends(example_coldata,
+def test__make_trends(coldata,
                      freq, season, start, stop,
                      min_yrs, station, raises):
     with raises:
-        obs_val = example_coldata[freq].data.data[0, :, station]
-        mod_val = example_coldata[freq].data.data[1, :, station]
-        time = example_coldata[freq].data.time
+        example_coldata = coldata["fake_3d_trends"]
+        obs_val = example_coldata.data.data[0, :, station]
+        mod_val = example_coldata.data.data[1, :, station]
+        time = example_coldata.data.time
         (obs_trend, mod_trend) = mod._make_trends(obs_val, mod_val, time, freq, season, start, stop, min_yrs)
 
         assert obs_trend["period"] == f"{start}-{stop}"
         assert mod_trend["period"] == f"{start}-{stop}"
 
         assert obs_trend["season"] == mod_trend["season"]
-        
+
+
+        trend_slops = [1, 2, 50, -3]
+
+        eps = 0.1
+        assert(abs((obs_trend["m"] - trend_slops[station])/obs_trend["m"]) < eps)
+        assert(abs((mod_trend["m"] - trend_slops[station])/mod_trend["m"]) < eps)
+
+
 
 
 if __name__ == '__main__':
