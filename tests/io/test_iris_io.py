@@ -5,7 +5,7 @@ Created on Mon Mar 22 14:53:00 2021
 
 @author: jonasg
 """
-
+import iris.cube
 import pytest
 from iris import load
 from iris.cube import Cube
@@ -170,6 +170,32 @@ def test__check_correct_time_dim(cube, file, raises):
         cube = mod._check_correct_time_dim(cube, file)
         assert isinstance(cube, Cube)
 
+from .._conftest_helpers import make_dummy_cube_3D
+
+cubelist_float = iris.cube.CubeList([make_dummy_cube_3D('days since '
+                                                       '2010-01-01 00:00',
+                                                       dtype=float),
+                                     make_dummy_cube_3D('days since '
+                                                        '2011-01-01 00:00',
+                                                        dtype=float)
+                                     ])
+
+cubelist_int = iris.cube.CubeList([make_dummy_cube_3D('days since '
+                                                       '2010-01-01 00:00',
+                                                       dtype=int),
+                                     make_dummy_cube_3D('days since '
+                                                        '2011-01-01 00:00',
+                                                        dtype=int)
+                                     ])
+@pytest.mark.parametrize('cubes,sh,raises', [
+    (cubelist_int, (730,12,4),does_not_raise_exception()), #see https://github.com/metno/pyaerocom/issues/432
+    (cubelist_float,(730,12,4),does_not_raise_exception())
+])
+def test_concatenate_iris_cubes(cubes, sh, raises):
+    result = mod.concatenate_iris_cubes(cubes)
+
+    assert isinstance(result, iris.cube.Cube)
+    assert result.shape == sh
 
 
 if __name__ == '__main__':
