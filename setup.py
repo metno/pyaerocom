@@ -52,8 +52,8 @@ setup(
 
     python_requires = '>=3.7,<4',
     install_requires = [
-        'scitools-iris>=2.1.0',
-        'scitools-pyke>=1.1.1',
+        'scitools-iris>=3.0.2',
+        #'scitools-pyke>=1.1.1', see https://github.com/metno/pyaerocom/issues/430
         'xarray>=0.16.0',
         'cartopy>=0.16.0',
         'matplotlib>=3.0.1',
