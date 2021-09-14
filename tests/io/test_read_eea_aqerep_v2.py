@@ -25,7 +25,7 @@ def reader():
     ReadEEAAQEREP_V2.FILE_MASKS['concno'] = '**/AT*_38_*_2019_timeseries.csv*'
     ReadEEAAQEREP_V2.FILE_MASKS['concpm25'] = '**/AT*_6001_*_2019_timeseries.csv*'
 
-    return ReadEEAAQEREP_V2()
+    return ReadEEAAQEREP_V2('EEA_AQeRep.v2.Subset')
 
 @testdata_unavail
 def test_get_file_list(reader):
