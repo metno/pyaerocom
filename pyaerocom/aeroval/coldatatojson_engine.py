@@ -621,7 +621,9 @@ def _get_statistics(obs_vals, mod_vals, min_num):
 
 def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
-    Function for generating trends from timeseries and fomatting it in a way
+    Function for generating trends from timeseries
+    
+    Includes fomatting in a way
     that can be serialized to json. A key, map_var, is added
     for use in the web interface.
 
@@ -691,8 +693,9 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
 def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
     """
-    Function for generating trends from timeseries and fomatting it in a way
-    that can be serialized to json. This will calculate pandas time series
+    Function for generating trends from lists of observations 
+    
+    This will calculate pandas time series
     from the lists and use that to calculate trends
 
     Parameters
