@@ -618,7 +618,7 @@ def _get_statistics(obs_vals, mod_vals, min_num):
                             min_num_valid=min_num)
     return _prep_stats_json(stats)
 
-def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs = 7):
+def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     """
     Function for generating trends from timeseries and fomatting it in a way
     that can be serialized to json. A key, map_var, is added
@@ -661,7 +661,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs = 
 
     return obs_trend, mod_trend
 
-def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs = 7):
+def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
     """
     Function for generating trends and fomatting it in a way
     that can be serialized to json. A key, map_var, is added
@@ -687,7 +687,6 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
     stats_dummy = _init_stats_dummy()
     scat_data = {}
     scat_dummy = [np.nan]
-    te = TrendsEngine
     for freq, cd in data.items():
         use_dummy = True if cd is None else False
         for per in periods:
@@ -713,7 +712,7 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
 
 
                         """ Code for the calculation of trends """                    
-                        if add_trends:
+                        if add_trends and freq != "daily":
     
                             # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
                             start_stop = per.split("-")
@@ -974,7 +973,7 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
 
     output = {}
     stats_dummy = _init_stats_dummy()
-    for freq, coldata in data.items():
+    for freq, coldata in data.items():  
         output[freq] = hm_freq = {}
         use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
@@ -989,8 +988,8 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                             subset = _select_period_season_coldata(coldata,
                                                                    per,
                                                                    season)
-
-                            if add_trends:
+                            
+                            if add_trends and freq != "daily":
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
                                 start_stop = per.split("-")
                                 if len(start_stop) == 2:
@@ -1015,13 +1014,13 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
 
                             stats = _get_extended_stats(subset, use_weights)
 
-                            if add_trends:
+                            if add_trends and freq != "daily":
                                 # The whole trends dicts are placed in the stats dict
                                 stats["obs_trend"] = obs_trend
                                 stats["mod_trend"] = mod_trend
 
 
-                        except (DataCoverageError, TemporalResolutionError):
+                        except (DataCoverageError, TemporalResolutionError) as e:
                             stats = stats_dummy
 
                     hm_freq[regname][perstr] = stats
