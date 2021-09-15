@@ -271,7 +271,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             with gzip.open(filename, 'r') as f_in:
                 shutil.copyfileobj(f_in, f_out)
             filename = f_out.name
-            f_in.close()
             f_out.close()
 
         with open(filename, 'r') as f:
