@@ -710,11 +710,7 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                         if add_trends and freq != "daily":
     
                             # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                            start_stop = per.split("-")
-                            if len(start_stop) == 2:
-                                (start, stop) = [int(i) for i in start_stop]
-                            else:
-                                start = stop = int(start_stop[0])
+                            (start, stop) = _get_min_max_year_periods(per)
 
                             if stop - start >= trends_min_yrs:
                         
@@ -985,11 +981,7 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                             
                             if add_trends and freq != "daily":
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                start_stop = per.split("-")
-                                if len(start_stop) == 2:
-                                    (start, stop) = [int(i) for i in start_stop]
-                                else:
-                                    start = stop = int(start_stop[0])
+                                (start, stop) = _get_min_max_year_periods(per)
 
                                 if stop - start >= trends_min_yrs:
                                     subset_time_series = subset.get_regional_timeseries(regid)
