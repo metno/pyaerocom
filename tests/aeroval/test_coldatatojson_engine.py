@@ -110,7 +110,8 @@ def test__make_trends(coldata,
         obs_val = example_coldata.data.data[0, :, station]
         mod_val = example_coldata.data.data[1, :, station]
         time = example_coldata.data.time
-        (obs_trend, mod_trend) = mod._make_trends(obs_val, mod_val, time, freq, season, start, stop, min_yrs)
+        (obs_trend, mod_trend) = mod._make_trends(obs_val, mod_val, time, 
+                                            freq, season, start, stop, min_yrs)
 
         assert obs_trend["period"] == f"{start}-{stop}"
         assert mod_trend["period"] == f"{start}-{stop}"
