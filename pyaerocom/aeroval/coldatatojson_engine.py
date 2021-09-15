@@ -2,9 +2,11 @@
 import os
 import numpy as np
 import xarray as xr
+import pandas as pd
 from datetime import datetime
 from pyaerocom import const
 from pyaerocom.helpers import start_stop
+from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
                                        _get_min_max_year_periods, read_json,
                                        write_json)
@@ -13,13 +15,15 @@ from pyaerocom.mathutils import calc_statistics
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (AeroValConfigError,
                                   DataCoverageError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError,
+                                  AeroValTrendsError)
 from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
 from pyaerocom.region import (get_all_default_region_ids,
                               find_closest_region_coord,
                               Region)
 
 from pyaerocom.aeroval._processing_base import ProcessingEngine
+from pyaerocom.trends_engine import TrendsEngine
 
 from time import time
 
@@ -615,9 +619,135 @@ def _get_statistics(obs_vals, mod_vals, min_num):
                             min_num_valid=min_num)
     return _prep_stats_json(stats)
 
-def _process_map_and_scat(data, map_data, site_indices, periods,
-                          main_freq, min_num, seasons):
+def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
+    """
+    Function for generating trends from timeseries
+    
+    Includes fomatting in a way
+    that can be serialized to json. A key, map_var, is added
+    for use in the web interface.
 
+    Parameters
+    ----------
+    obs     : pd.Series
+        Time series of the obs
+    mod     : pd.Series
+        Time series of the mod
+    freq    : str
+        Frequency for the trends, either monthly or yearly
+    season  : str
+        Seasons used for the trends
+    start   : int
+        Start year
+    stop    : int
+        Stop year
+    min_yrs : int
+        Minimal number of years for the calculation of the trends
+
+    Raises
+    ------
+    AeroValTrendsError
+        If stop - start is smaller than min_yrs
+    
+    AeroValError
+        If the trend engine returns None
+
+    Returns
+    ------
+    (dict, dict)
+        Dicts consiting of the trends data for the obs and mod
+    """
+
+
+    if stop-start < min_yrs:
+        raise AeroValTrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
+
+    te = TrendsEngine
+
+
+    # The model and observation data are made to pandas times series
+    obs_trend_series = obs
+    mod_trend_series = mod
+
+    # Translate season to names used in trends_helpers.py. Should be handled there instead!
+    season = _get_season_from_months(season)
+
+    # Trends are calculated
+    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, 
+                                                                min_yrs, season)
+    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, 
+                                                                min_yrs, season)
+
+    # Makes pd.Series serializable
+    if obs_trend["data"] is None or mod_trend["data"] is None:
+        raise AeroValTrendsError("Trends came back as None",
+                                     obs_trend["data"], mod_trend["data"])
+
+    obs_trend["data"] = obs_trend["data"].to_json()
+    mod_trend["data"] = mod_trend["data"].to_json()
+
+    obs_trend["map_var"] = "slp_2000"
+    mod_trend["map_var"] = "slp_2000"
+
+    return obs_trend, mod_trend
+
+def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
+    """
+    Function for generating trends from lists of observations 
+    
+    This will calculate pandas time series
+    from the lists and use that to calculate trends
+
+    Parameters
+    ----------
+    obs     : list
+        Time series of the obs
+    mod     : list
+        Time series of the mod
+    freq    : str
+        Frequency for the trends, either monthly or yearly
+    season  : str
+        Seasons used for the trends
+    start   : int
+        Start year
+    stop    : int
+        Stop year
+    min_yrs : int
+        Minimal number of years for the calculation of the trends
+
+    Raises
+    ------
+    AeroValTrendsError
+        If stop - start is smaller than min_yrs
+    
+    AeroValError
+        If the trend engine returns None
+
+    Returns
+    ------
+    (dict, dict)
+        Dicts consiting of the trends data for the obs and mod
+    """
+
+    # The model and observation data are made to pandas times series
+    obs_trend_series = pd.Series(obs_vals, time)
+    mod_trend_series = pd.Series(mod_vals, time)
+
+    (obs_trend, mod_trend) = _make_trends_from_timeseries(obs_trend_series, 
+                                                    mod_trend_series, freq,
+                                                    season, start, stop, min_yrs)
+
+    return obs_trend, mod_trend
+        
+
+
+
+def _process_map_and_scat(data, map_data, site_indices, periods,
+                          main_freq, min_num, seasons, 
+                          add_trends, trends_min_yrs):
+
+
+   
     stats_dummy = _init_stats_dummy()
     scat_data = {}
     scat_dummy = [np.nan]
@@ -643,6 +773,38 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                         obs_vals = subset.data.data[0, :, i]
                         mod_vals = subset.data.data[1, :, i]
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
+
+
+                        #  Code for the calculation of trends
+                        if add_trends and freq != "daily":
+    
+                            (start, stop) = _get_min_max_year_periods([per])
+
+                            if stop - start >= trends_min_yrs:
+                                
+                                try:
+                                    time = subset.data.time.values
+                                    (obs_trend, mod_trend) = _make_trends(obs_vals,
+                                                            mod_vals, time, freq, 
+                                                            season, start, stop, 
+                                                            trends_min_yrs)
+
+
+                                    # The whole trends dicts are placed in the stats dict
+                                    stats["obs_trend"] = obs_trend
+                                    stats["mod_trend"] = mod_trend
+
+                                except AeroValTrendsError as e:
+                                    msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                                    const.logger.warning(msg)
+                                    
+
+
+                            
+
+                          
+
+                    
 
                     perstr = f'{per}-{season}'
                     map_stat[freq][perstr] = stats
@@ -703,6 +865,8 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
             ts_data[f'{freq}_date'] = jsfreq
             ts_data[f'{freq}_obs'] = obs_vals
             ts_data[f'{freq}_mod'] = mod_vals
+         
+
 
         ts_objs.append(ts_data)
     return ts_objs
@@ -869,11 +1033,12 @@ def _select_period_season_coldata(coldata, period, season):
     return ColocatedData(arr)
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, periods, seasons):
+                          meta_glob, periods, seasons, 
+                          add_trends, trends_min_yrs):
 
     output = {}
     stats_dummy = _init_stats_dummy()
-    for freq, coldata in data.items():
+    for freq, coldata in data.items():  
         output[freq] = hm_freq = {}
         use_dummy = True if coldata is None else False
         for regid, regname in region_ids.items():
@@ -888,15 +1053,48 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                             subset = _select_period_season_coldata(coldata,
                                                                    per,
                                                                    season)
+                            
+                            trends_successful = False
+                            if add_trends and freq != "daily":
+                                # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
+                                (start, stop) = _get_min_max_year_periods([per])
+
+                                if stop - start >= trends_min_yrs:
+                                    try:
+                                        subset_time_series = subset.get_regional_timeseries(regid)
+
+                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(  
+                                                    subset_time_series["obs"],
+                                                    subset_time_series["mod"],
+                                                    freq,
+                                                    season,
+                                                    start,
+                                                    stop,
+                                                    trends_min_yrs
+                                                    )
+
+                                        trends_successful = True
+                                    except AeroValTrendsError as e:
+                                        msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                                        const.logger.warning(msg)
+                                
 
                             subset = subset.filter_region(region_id=regid,
                                                           check_country_meta=use_country)
 
                             stats = _get_extended_stats(subset, use_weights)
-                        except (DataCoverageError, TemporalResolutionError):
+
+                            if add_trends and freq != "daily" and trends_successful:
+                                # The whole trends dicts are placed in the stats dict
+                                stats["obs_trend"] = obs_trend
+                                stats["mod_trend"] = mod_trend
+
+
+                        except (DataCoverageError, TemporalResolutionError) as e:
                             stats = stats_dummy
 
                     hm_freq[regname][perstr] = stats
+
     return output
 
 def _map_indices(outer_idx, inner_idx):
@@ -1128,6 +1326,9 @@ class ColdataToJsonEngine(ProcessingEngine):
         vert_code = coldata.get_meta_item('vert_code')
         diurnal_only = coldata.get_meta_item('diurnal_only')
 
+        add_trends = self.cfg.statistics_opts.add_trends
+        trends_min_yrs = self.cfg.statistics_opts.trends_min_yrs
+
         # ToDo: some of the checks below could be done automatically in
         # EvalSetup, and at an earlier stage
         if vert_code == 'ModelLevel':
@@ -1212,7 +1413,10 @@ class ColdataToJsonEngine(ProcessingEngine):
             hm_all = _process_heatmap_data(data, regnames, use_weights,
                                            use_country, meta_glob,
                                            periods,
-                                           seasons)
+                                           seasons,
+                                           add_trends,
+                                           trends_min_yrs,
+                                           )
 
             for freq, hm_data in hm_all.items():
                 fname = get_heatmap_filename(freq)
@@ -1246,7 +1450,10 @@ class ColdataToJsonEngine(ProcessingEngine):
                                                         periods,
                                                         main_freq,
                                                         stats_min_num,
-                                                        seasons)
+                                                        seasons,
+                                                        add_trends,
+                                                        trends_min_yrs,
+                                                        )
 
             map_name = get_json_mapname(obs_name, var_name_web, model_name,
                                         model_var, vert_code)

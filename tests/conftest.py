@@ -223,7 +223,8 @@ def coldata():
         'fake_3d'       : cth._create_fake_coldata_3d(),
         'fake_4d'       : cth._create_fake_coldata_4d(),
         'fake_5d'       : cth._create_fake_coldata_5d(),
-        'fake_3d_hr'    : cth._create_fake_coldata_3d_hourly()
+        'fake_3d_hr'    : cth._create_fake_coldata_3d_hourly(),
+        'fake_3d_trends': cth._create_fake_trends_coldata_3d(),
         }
 
 @contextmanager

@@ -22,6 +22,14 @@ SEASON_CODES = {'spring'     : 'MAM',
                 'autumn'     : 'SON',
                 'winter'     : 'DJF'}
 
+MONTHS_CODES = {
+                'MAM': 'spring',
+                'JJA': 'summer',
+                'SON': 'autumn',
+                'DJF': 'winter',
+                'all': 'all',
+                }
+
 def _init_trends_result_dict(start_yr):
     keys = ['pval', 'm', 'm_err',
             'n', 'y_mean', 'y_min', 'y_max',
@@ -79,6 +87,12 @@ def _get_unique_seasons(idx):
         if not seas in seasons:
             seasons.append(seas)
     return seasons
+
+def _get_season_from_months(months: str) -> str:
+    if months in MONTHS_CODES.keys():
+        return MONTHS_CODES[months]
+    else:
+        raise ValueError(f"{months} is not a valid season")
 
 
 def _mid_season(seas, yr):
