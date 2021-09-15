@@ -658,8 +658,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
 
     if stop-start < min_yrs:
-        raise AeroValTrendsError("min_yrs larger than time between start and stop",
-                                                                     min_yrs)
+        raise AeroValTrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
 
     te = TrendsEngine
 
@@ -863,10 +862,7 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
             ts_data[f'{freq}_date'] = jsfreq
             ts_data[f'{freq}_obs'] = obs_vals
             ts_data[f'{freq}_mod'] = mod_vals
-            
-
-            
-
+         
 
 
         ts_objs.append(ts_data)
@@ -1064,14 +1060,15 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                                     try:
                                         subset_time_series = subset.get_regional_timeseries(regid)
 
-                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(  subset_time_series["obs"],
-                                                                                                subset_time_series["mod"],
-                                                                                                freq,
-                                                                                                season,
-                                                                                                start,
-                                                                                                stop,
-                                                                                                trends_min_yrs
-                                                                                                )
+                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(  
+                                                    subset_time_series["obs"],
+                                                    subset_time_series["mod"],
+                                                    freq,
+                                                    season,
+                                                    start,
+                                                    stop,
+                                                    trends_min_yrs
+                                                    )
 
                                         trends_successful = True
                                     except AeroValTrendsError as e:
