@@ -291,7 +291,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 if suffix == '.gz':
                     os.remove(f_out.name)
                 raise EEAv2FileError(
-                    f'Found corrupt file {filename}. consider deleteing it')
+                    f'Found corrupt file {filename}. consider deleting it')
 
             data_dict = {}
             for idx in header_indexes_to_keep:
