@@ -274,7 +274,8 @@ statistics_defaults = {
             10.0
         ],
         "colmap": "bwr",
-        "unit": "%/yr"
+        "unit": "%/yr",
+        "decimals": 1
     },
 
 }

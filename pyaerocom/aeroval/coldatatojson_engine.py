@@ -773,10 +773,10 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                         stats = _get_statistics(obs_vals, mod_vals, min_num)
 
 
-                        """ Code for the calculation of trends """                    
+                        #  Code for the calculation of trends
                         if add_trends and freq != "daily":
     
-                            (start, stop) = _get_min_max_year_periods(per)
+                            (start, stop) = _get_min_max_year_periods([per])
 
                             if stop - start >= trends_min_yrs:
                                 
@@ -788,12 +788,14 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                                                             trends_min_yrs)
 
 
-                                    # # The whole trends dicts are placed in the stats dict
+                                    # The whole trends dicts are placed in the stats dict
                                     stats["obs_trend"] = obs_trend
                                     stats["mod_trend"] = mod_trend
 
-                                except:
-                                    pass
+                                except AeroValTrendsError as e:
+                                    msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                                    const.logger.warning(msg)
+                                    
 
 
                             
@@ -1056,7 +1058,7 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                             trends_successful = False
                             if add_trends and freq != "daily":
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
-                                (start, stop) = _get_min_max_year_periods(per)
+                                (start, stop) = _get_min_max_year_periods([per])
 
                                 if stop - start >= trends_min_yrs:
                                     try:
@@ -1072,8 +1074,9 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                                                                                                 )
 
                                         trends_successful = True
-                                    except:
-                                        pass
+                                    except AeroValTrendsError as e:
+                                        msg = f"Failed to calculate trends, and will skip. This was due to {e}"
+                                        const.logger.warning(msg)
                                 
 
                             subset = subset.filter_region(region_id=regid,
