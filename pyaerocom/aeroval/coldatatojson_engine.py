@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime
 from pyaerocom import const
 from pyaerocom.helpers import start_stop
+from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
                                        _get_min_max_year_periods, read_json,
                                        write_json)
@@ -637,17 +638,11 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     mod_trend_series = mod
 
     # Translate season to names used in trends_helpers.py. Should be handled there instead!
-    SEASON_CODES = {
-                    'MAM': 'spring',
-                    'JJA': 'summer',
-                    'SON': 'autumn',
-                    'DJF': 'winter',
-                    'all': 'all',
-                    }
+    season = _get_season_from_months(season)
 
     # Trends are calculated
-    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
-    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, SEASON_CODES[season])
+    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, min_yrs, season)
+    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, season)
 
     # Makes pd.Series serializable
     if obs_trend["data"] is None or mod_trend["data"] is None:
@@ -722,8 +717,7 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                                 start = stop = int(start_stop[0])
 
                             if stop - start >= trends_min_yrs:
-                                print(f"Calculating strends for {start} to {stop}, for periode {per} and season {season}")
-
+                        
                                 time = subset.data.time.values
                                 (obs_trend, mod_trend) = _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, trends_min_yrs)
 
