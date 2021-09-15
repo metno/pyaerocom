@@ -624,11 +624,42 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     Function for generating trends from timeseries and fomatting it in a way
     that can be serialized to json. A key, map_var, is added
     for use in the web interface.
+
+    Parameters
+    ----------
+    obs     : pd.Series
+        Time series of the obs
+    mod     : pd.Series
+        Time series of the mod
+    freq    : str
+        Frequency for the trends, either monthly or yearly
+    season  : str
+        Seasons used for the trends
+    start   : int
+        Start year
+    stop    : int
+        Stop year
+    min_yrs : int
+        Minimal number of years for the calculation of the trends
+
+    Raises
+    ------
+    AeroValTrendsError
+        If stop - start is smaller than min_yrs
+    
+    AeroValError
+        If the trend engine returns None
+
+    Returns
+    ------
+    (dict, dict)
+        Dicts consiting of the trends data for the obs and mod
     """
 
 
     if stop-start < min_yrs:
-        raise AeroValTrendsError("min_yrs larger than time between start and stop", min_yrs)
+        raise AeroValTrendsError("min_yrs larger than time between start and stop",
+                                                                     min_yrs)
 
     te = TrendsEngine
 
@@ -641,12 +672,15 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     season = _get_season_from_months(season)
 
     # Trends are calculated
-    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, min_yrs, season)
-    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, min_yrs, season)
+    obs_trend = te.compute_trend(obs_trend_series, freq, start, stop, 
+                                                                min_yrs, season)
+    mod_trend = te.compute_trend(mod_trend_series, freq, start, stop, 
+                                                                min_yrs, season)
 
     # Makes pd.Series serializable
     if obs_trend["data"] is None or mod_trend["data"] is None:
-        raise AeroValTrendsError("Trends came back as None", obs_trend["data"], mod_trend["data"])
+        raise AeroValTrendsError("Trends came back as None",
+                                     obs_trend["data"], mod_trend["data"])
 
     obs_trend["data"] = obs_trend["data"].to_json()
     mod_trend["data"] = mod_trend["data"].to_json()
@@ -658,16 +692,48 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
 
 def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
     """
-    Function for generating trends and fomatting it in a way
-    that can be serialized to json. A key, map_var, is added
-    for use in the web interface.
+    Function for generating trends from timeseries and fomatting it in a way
+    that can be serialized to json. This will calculate pandas time series
+    from the lists and use that to calculate trends
+
+    Parameters
+    ----------
+    obs     : list
+        Time series of the obs
+    mod     : list
+        Time series of the mod
+    freq    : str
+        Frequency for the trends, either monthly or yearly
+    season  : str
+        Seasons used for the trends
+    start   : int
+        Start year
+    stop    : int
+        Stop year
+    min_yrs : int
+        Minimal number of years for the calculation of the trends
+
+    Raises
+    ------
+    AeroValTrendsError
+        If stop - start is smaller than min_yrs
+    
+    AeroValError
+        If the trend engine returns None
+
+    Returns
+    ------
+    (dict, dict)
+        Dicts consiting of the trends data for the obs and mod
     """
 
     # The model and observation data are made to pandas times series
     obs_trend_series = pd.Series(obs_vals, time)
     mod_trend_series = pd.Series(mod_vals, time)
 
-    (obs_trend, mod_trend) = _make_trends_from_timeseries(obs_trend_series, mod_trend_series, freq, season, start, stop, min_yrs)
+    (obs_trend, mod_trend) = _make_trends_from_timeseries(obs_trend_series, 
+                                                    mod_trend_series, freq,
+                                                    season, start, stop, min_yrs)
 
     return obs_trend, mod_trend
         
@@ -675,7 +741,8 @@ def _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, min_yrs):
 
 
 def _process_map_and_scat(data, map_data, site_indices, periods,
-                          main_freq, min_num, seasons, add_trends, trends_min_yrs):
+                          main_freq, min_num, seasons, 
+                          add_trends, trends_min_yrs):
 
 
    
@@ -709,18 +776,24 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
                         """ Code for the calculation of trends """                    
                         if add_trends and freq != "daily":
     
-                            # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
                             (start, stop) = _get_min_max_year_periods(per)
 
                             if stop - start >= trends_min_yrs:
-                        
-                                time = subset.data.time.values
-                                (obs_trend, mod_trend) = _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, trends_min_yrs)
+                                
+                                try:
+                                    time = subset.data.time.values
+                                    (obs_trend, mod_trend) = _make_trends(obs_vals,
+                                                            mod_vals, time, freq, 
+                                                            season, start, stop, 
+                                                            trends_min_yrs)
 
 
-                                # # The whole trends dicts are placed in the stats dict
-                                stats["obs_trend"] = obs_trend
-                                stats["mod_trend"] = mod_trend
+                                    # # The whole trends dicts are placed in the stats dict
+                                    stats["obs_trend"] = obs_trend
+                                    stats["mod_trend"] = mod_trend
+
+                                except:
+                                    pass
 
 
                             
@@ -959,7 +1032,8 @@ def _select_period_season_coldata(coldata, period, season):
     return ColocatedData(arr)
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, periods, seasons, add_trends=False, trends_min_yrs=7):
+                          meta_glob, periods, seasons, 
+                          add_trends, trends_min_yrs):
 
     output = {}
     stats_dummy = _init_stats_dummy()
@@ -979,28 +1053,35 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
                                                                    per,
                                                                    season)
                             
+                            trends_successful = False
                             if add_trends and freq != "daily":
                                 # Calculates the start and stop years. min_yrs have a test value of 7 years. Should be set in cfg
                                 (start, stop) = _get_min_max_year_periods(per)
 
                                 if stop - start >= trends_min_yrs:
-                                    subset_time_series = subset.get_regional_timeseries(regid)
-                                    (obs_trend, mod_trend) = _make_trends_from_timeseries(  subset_time_series["obs"],
-                                                                                            subset_time_series["mod"],
-                                                                                            freq,
-                                                                                            season,
-                                                                                            start,
-                                                                                            stop,
-                                                                                            trends_min_yrs
-                                                                                            )
-                            
+                                    try:
+                                        subset_time_series = subset.get_regional_timeseries(regid)
+
+                                        (obs_trend, mod_trend) = _make_trends_from_timeseries(  subset_time_series["obs"],
+                                                                                                subset_time_series["mod"],
+                                                                                                freq,
+                                                                                                season,
+                                                                                                start,
+                                                                                                stop,
+                                                                                                trends_min_yrs
+                                                                                                )
+
+                                        trends_successful = True
+                                    except:
+                                        pass
+                                
 
                             subset = subset.filter_region(region_id=regid,
                                                           check_country_meta=use_country)
 
                             stats = _get_extended_stats(subset, use_weights)
 
-                            if add_trends and freq != "daily":
+                            if add_trends and freq != "daily" and trends_successful:
                                 # The whole trends dicts are placed in the stats dict
                                 stats["obs_trend"] = obs_trend
                                 stats["mod_trend"] = mod_trend
