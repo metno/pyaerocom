@@ -232,8 +232,8 @@ def _create_fake_trends_coldata_3d():
     
     xs = np.linspace(0,20,timenum)
     for i, s in enumerate(trend_slops):
-        data[0,:,i] = s*xs + np.random.rand(timenum)*0.01
-        data[1,:,i] = s*xs + np.random.rand(timenum)*0.01 # phase shifted to obs  
+        data[0,:,i] = s*xs 
+        data[1,:,i] = s*xs 
 
 
     meta = {

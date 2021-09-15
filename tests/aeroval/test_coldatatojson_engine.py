@@ -92,10 +92,10 @@ def test__process_statistics_timeseries(example_coldata,
     ('yearly', 'JJA', 2010, 2015, 4, 2,  does_not_raise_exception()),
 
     ('yearly', 'SON', 2000, 2015, 7, 3,  does_not_raise_exception()),
-    ('yearly', 'JJA', 2010, 2015, 4, 0,  does_not_raise_exception()),
+    ('daily', 'JJA', 2010, 2015, 4, 0,   pytest.raises(ValueError)),
 
     ('monthly', 'all', 2000, 2015, 7, 2,  does_not_raise_exception()),
-    ('monthly', 'all', 2010, 2015, 4, 1,  does_not_raise_exception()),
+    ('monthly', 'all', 2010, 2015, 4, 0,  does_not_raise_exception()),
 
     ('yearly', 'all', 2010, 2015, 7, 0, pytest.raises(exceptions.AeroValTrendsError)),
     ])
@@ -107,7 +107,8 @@ def test__make_trends(coldata,
         obs_val = example_coldata.data.data[0, :, station]
         mod_val = example_coldata.data.data[1, :, station]
         time = example_coldata.data.time
-        (obs_trend, mod_trend) = mod._make_trends(obs_val, mod_val, time, freq, season, start, stop, min_yrs)
+        (obs_trend, mod_trend) = mod._make_trends(obs_val, mod_val, time, 
+                                            freq, season, start, stop, min_yrs)
 
         assert obs_trend["period"] == f"{start}-{stop}"
         assert mod_trend["period"] == f"{start}-{stop}"
