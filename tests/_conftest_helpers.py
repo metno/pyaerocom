@@ -324,12 +324,57 @@ def _create_fake_MSCWCtm_data():
     
     return arr
 
+import iris
+from cf_units import Unit
+
+def make_dummy_cube_3D(startstr='days since 2010-01-01 00:00',
+                       timenum=365, dtype=float):
+    lat_range = (-30, 30)
+    lon_range = (-10, 10)
+    lat_res_deg=lon_res_deg=5
+    times = np.arange(timenum)
+    time_unit = Unit(startstr, calendar='gregorian')
+
+
+    lons = np.arange(lon_range[0]+lon_res_deg/2, lon_range[1]+lon_res_deg/2,
+                     lon_res_deg)
+    lats = np.arange(lat_range[0]+lat_res_deg/2, lat_range[1]+lat_res_deg/2,
+                     lat_res_deg)
+
+    latdim = iris.coords.DimCoord(lats, var_name='lat',
+                                  standard_name='latitude',
+                                  circular=False,
+                                  units=Unit('degrees'))
+
+    londim = iris.coords.DimCoord(lons, var_name='lon',
+                                  standard_name='longitude',
+                                  circular=False,
+                                  units=Unit('degrees'))
+
+    timedim = iris.coords.DimCoord(times, var_name='time',
+                                   standard_name='time',
+                                   units=time_unit)
+
+    latdim.guess_bounds()
+    londim.guess_bounds()
+    dummy = iris.cube.Cube(np.ones((len(times), len(lats), len(lons))),
+                           units='1')
+
+    dummy.add_dim_coord(latdim, 1)
+    dummy.add_dim_coord(londim, 2)
+    dummy.add_dim_coord(timedim, 0)
+    dummy.var_name = 'dummy_grid'
+
+    dummy.data = dummy.data.astype(dtype)
+    for coord in dummy.coords():
+        coord.points = coord.points.astype(dtype)
+    return dummy
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
-    cd = _create_fake_coldata_3d_hourly()
-
-    cd.plot_scatter()
+    cube = make_dummy_cube_3D(dtype=float)
+    print(cube.coord('time').points.dtype)
 
 
 
