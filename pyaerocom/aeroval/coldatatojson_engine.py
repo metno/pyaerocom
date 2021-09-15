@@ -627,7 +627,7 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs = 
 
 
     if stop-start < min_yrs:
-        raise AeroValTrendsError("min_yrs larger than time between start and stop", min_yrs)
+        raise AeroValTrendsError(f"min_yrs ({min_yrs}) larger than time between start and stop")
 
     te = TrendsEngine
 
@@ -727,19 +727,9 @@ def _process_map_and_scat(data, map_data, site_indices, periods,
 
                                 time = subset.data.time.values
                                 (obs_trend, mod_trend) = _make_trends(obs_vals, mod_vals, time, freq, season, start, stop, trends_min_yrs)
-
-
                                 # # The whole trends dicts are placed in the stats dict
                                 stats["obs_trend"] = obs_trend
                                 stats["mod_trend"] = mod_trend
-
-
-                            
-
-                          
-
-                    
-
                     perstr = f'{per}-{season}'
                     map_stat[freq][perstr] = stats
                     if freq == main_freq:
@@ -799,10 +789,7 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
             ts_data[f'{freq}_date'] = jsfreq
             ts_data[f'{freq}_obs'] = obs_vals
             ts_data[f'{freq}_mod'] = mod_vals
-            
-
-            
-
+         
 
 
         ts_objs.append(ts_data)
@@ -970,8 +957,8 @@ def _select_period_season_coldata(coldata, period, season):
     return ColocatedData(arr)
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, periods, seasons, add_trends=False,
-                          trends_min_yrs=7):
+                          meta_glob, periods, seasons, add_trends,
+                          trends_min_yrs):
 
     output = {}
     stats_dummy = _init_stats_dummy()
