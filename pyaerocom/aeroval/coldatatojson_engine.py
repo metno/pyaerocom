@@ -970,7 +970,8 @@ def _select_period_season_coldata(coldata, period, season):
     return ColocatedData(arr)
 
 def _process_heatmap_data(data, region_ids, use_weights, use_country,
-                          meta_glob, periods, seasons, add_trends=False, trends_min_yrs=7):
+                          meta_glob, periods, seasons, add_trends=False,
+                          trends_min_yrs=7):
 
     output = {}
     stats_dummy = _init_stats_dummy()
@@ -1000,14 +1001,16 @@ def _process_heatmap_data(data, region_ids, use_weights, use_country,
 
                                 if stop - start >= trends_min_yrs:
                                     subset_time_series = subset.get_regional_timeseries(regid)
-                                    (obs_trend, mod_trend) = _make_trends_from_timeseries(  subset_time_series["obs"],
-                                                                                            subset_time_series["mod"],
-                                                                                            freq,
-                                                                                            season,
-                                                                                            start,
-                                                                                            stop,
-                                                                                            trends_min_yrs
-                                                                                            )
+                                    (obs_trend,
+                                     mod_trend) = _make_trends_from_timeseries(
+                                        subset_time_series["obs"],
+                                        subset_time_series["mod"],
+                                        freq,
+                                        season,
+                                        start,
+                                        stop,
+                                        trends_min_yrs
+                                        )
                             
 
                             subset = subset.filter_region(region_id=regid,
