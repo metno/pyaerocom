@@ -5,19 +5,20 @@ Created on Mon Mar 22 14:53:00 2021
 
 @author: jonasg
 """
-
+import iris.cube
 import pytest
 from iris import load
 from iris.cube import Cube
 from iris.exceptions import TranslationError
 import numpy as np
 from pyaerocom.io import FileConventionRead
-from pyaerocom.conftest import TESTDATADIR, does_not_raise_exception
 from pyaerocom.exceptions import (TemporalResolutionError,
                                   UnresolvableTimeDefinitionError,
                                   NetcdfError,
                                   FileConventionError)
-from pyaerocom.io import iris_io as iio
+from pyaerocom.io import iris_io as mod
+
+from ..conftest import TESTDATADIR, does_not_raise_exception
 
 tm5fname1 = 'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc'
 TM5_DIR = TESTDATADIR.joinpath('modeldata/TM5-met2010_CTRL-TEST/renamed')
@@ -85,13 +86,13 @@ open(FAKE_FILE, 'w').close()
     ])
 def test_check_time_coord(cube,ts_type,year,raises):
     with raises:
-        iio.check_time_coord(cube, ts_type, year)
+        mod.check_time_coord(cube, ts_type, year)
 
 def test_get_dim_names_cube():
-    assert iio.get_dim_names_cube(aod_cube) == ['time', 'latitude', 'longitude']
+    assert mod.get_dim_names_cube(aod_cube) == ['time', 'latitude', 'longitude']
 
 def test_get_dimnames_cube():
-    assert iio.get_coord_names_cube(aod_cube) == ['time', 'latitude', 'longitude']
+    assert mod.get_coord_names_cube(aod_cube) == ['time', 'latitude', 'longitude']
 
 @pytest.mark.parametrize('cube,file,file_convention,raises,dimnames', [
     (aod_cube_notime,'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc',
@@ -113,7 +114,7 @@ def test_get_dimnames_cube():
     ])
 def test__cube_quality_check(cube,file,file_convention,raises,dimnames):
     with raises:
-        cube = iio._cube_quality_check(cube, file, file_convention)
+        cube = mod._cube_quality_check(cube, file, file_convention)
         _dimnames = [c.name() for c in cube.dim_coords]
         assert _dimnames == dimnames
 
@@ -127,8 +128,8 @@ def test__cube_quality_check(cube,file,file_convention,raises,dimnames):
 def test_load_cube_custom(file,var_name,file_convention,perform_fmt_checks,
                            raises):
     with raises:
-        result = iio.load_cube_custom(file,var_name,file_convention,
-                                       perform_fmt_checks)
+        result = mod.load_cube_custom(file, var_name, file_convention,
+                                      perform_fmt_checks)
         assert isinstance(result, Cube)
 
 @pytest.mark.parametrize('files,var_name,file_convention,perform_fmt_checks,raises,num_loaded', [
@@ -139,7 +140,7 @@ def test_load_cube_custom(file,var_name,file_convention,perform_fmt_checks,
 def test_load_cubes_custom(files,var_name,file_convention,perform_fmt_checks,
                            raises,num_loaded):
     with raises:
-        result = iio.load_cubes_custom(files,var_name,file_convention,
+        result = mod.load_cubes_custom(files, var_name, file_convention,
                                        perform_fmt_checks)
         assert isinstance(result, tuple) and len(result) == 2
         assert isinstance(result[0], list)
@@ -151,7 +152,7 @@ def test_load_cubes_custom(files,var_name,file_convention,perform_fmt_checks,
     ])
 def test_check_dim_coord_names_cube(cube, raises):
     with raises:
-        iio.check_dim_coord_names_cube(cube)
+        mod.check_dim_coord_names_cube(cube)
 
 @pytest.mark.parametrize('cube,file,raises', [
     (aod_cube_wrongtime3, 'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_daily.nc',
@@ -166,9 +167,40 @@ def test_check_dim_coord_names_cube(cube, raises):
     ])
 def test__check_correct_time_dim(cube, file, raises):
     with raises:
-        cube = iio._check_correct_time_dim(cube, file)
+        cube = mod._check_correct_time_dim(cube, file)
         assert isinstance(cube, Cube)
 
+from .._conftest_helpers import make_dummy_cube_3D
+
+def make_cubelist(dtype):
+    return iris.cube.CubeList([make_dummy_cube_3D('days since '
+                                                       '2010-01-01 00:00',
+                                                       dtype=dtype),
+                                     make_dummy_cube_3D('days since '
+                                                        '2011-01-01 00:00',
+                                                        dtype=dtype)
+                                     ])
+@pytest.mark.parametrize('cubes,val', [
+    (iris.cube.CubeList([iris.cube.Cube([1]),iris.cube.Cube([1])]), False),
+    (iris.cube.CubeList([make_cubelist(int)[0], make_cubelist(float)[0]]),
+     True),
+    (make_cubelist(float), False),
+    (make_cubelist(int), False)
+])
+def test__check_correct_dtypes_timedim_cube_list(cubes,val):
+    result = mod._check_correct_dtypes_timedim_cube_list(cubes)
+    assert result == val
+
+@pytest.mark.parametrize('cubes,sh,raises', [
+    (make_cubelist(int), (730,12,4),does_not_raise_exception()), #see
+    # https://github.com/metno/pyaerocom/issues/432
+    (make_cubelist(float),(730,12,4),does_not_raise_exception())
+])
+def test_concatenate_iris_cubes(cubes, sh, raises):
+    result = mod.concatenate_iris_cubes(cubes)
+
+    assert isinstance(result, iris.cube.Cube)
+    assert result.shape == sh
 
 
 if __name__ == '__main__':

@@ -20,6 +20,7 @@ setup(
     packages    =   ['pyaerocom',
                      'pyaerocom.io',
                      'pyaerocom.plot',
+                     'pyaerocom.tools',
                      'pyaerocom.aeroval',
                      'pyaerocom.aeroval.cli',
                      'pyaerocom.scripts'],
