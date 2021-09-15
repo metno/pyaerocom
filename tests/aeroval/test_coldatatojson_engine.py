@@ -95,10 +95,10 @@ def test__process_statistics_timeseries(example_coldata,
     ('yearly', 'JJA', 2010, 2015, 4, 2,  does_not_raise_exception()),
 
     ('yearly', 'SON', 2000, 2015, 7, 3,  does_not_raise_exception()),
-    ('yearly', 'JJA', 2010, 2015, 4, 0,  does_not_raise_exception()),
+    ('daily', 'JJA', 2010, 2015, 4, 0,   pytest.raises(ValueError)),
 
     ('monthly', 'all', 2000, 2015, 7, 2,  does_not_raise_exception()),
-    ('monthly', 'all', 2010, 2015, 4, 1,  does_not_raise_exception()),
+    ('monthly', 'all', 2010, 2015, 4, 0,  does_not_raise_exception()),
 
     ('yearly', 'all', 2010, 2015, 7, 0, pytest.raises(exceptions.AeroValTrendsError)),
     ])
