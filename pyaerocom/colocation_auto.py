@@ -1223,7 +1223,7 @@ class Colocator(ColocationSetup):
             rm_outliers = self.obs_remove_outliers
             outlier_ranges = self.obs_outlier_ranges
 
-        if outlier_ranges is not None and not rm_outliers:
+        if len(outlier_ranges) > 0 and not rm_outliers:
             const.print_log.warning(
                 f'WARNING: Found definition of outlier ranges for {var_name} '
                 f'({data.data_id}) but outlier removal is deactivated. Consider '
