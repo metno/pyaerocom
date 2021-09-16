@@ -185,7 +185,8 @@ def compute_model_average_and_diversity(cfg, var_name,
                 if extract_surface:
                     data = data.extract_surface_level()
                 else:
-                    raise NotImplementedError('Cannot process ModelLevel fields yet')
+                    raise NotImplementedError(
+                        'Cannot process ModelLevel fields yet')
             data = data.regrid(dummy)
             const.print_log.info('Success!')
         except Exception as e:

@@ -17,7 +17,7 @@ class EvalEntry(abc.ABC):
     @abc.abstractmethod
     def get_all_vars(self) -> list:
         """
-
+        Get list of all variables defined in the evaluation entry
 
         Returns
         -------
