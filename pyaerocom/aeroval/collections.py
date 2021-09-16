@@ -141,13 +141,13 @@ class ObsCollection(BaseCollection):
         cfg['obs_name'] = self.get_web_iface_name(key)
         return cfg
 
-    def get_all_vars(self) -> list[str]:
+    def get_all_vars(self) -> list:
         """
         Get unique list of all obs variables from all entries
 
         Returns
         -------
-        list[str]
+        list
             list of variables specified in obs collection
 
         """

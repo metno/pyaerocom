@@ -57,21 +57,21 @@ class ModelEntry(BrowseDict):
         """
         return True if bool(self.model_read_aux) else False
 
-    def get_vars_to_process(self, obs_vars: list[str]) -> tuple:
+    def get_vars_to_process(self, obs_vars: list) -> tuple:
         """
         Get lists of obs / mod variables to be processed
 
         Parameters
         ----------
-        obs_vars : list[str]
+        obs_vars : list
             list of observation variables
 
         Returns
         -------
-        list[str]
+        list
             list of observation variables (potentially extended from input
             list)
-        list[str]
+        list
             corresponding model variables which are mapped based on content
             of :attr:`model_add_vars` and :attr:`model_use_vars`.
 
@@ -95,7 +95,7 @@ class ModelEntry(BrowseDict):
                 modout.append(mvar)
         return (obsout, modout)
 
-    def has_var(self, var_name: str, obs_vars: list[str]) -> bool:
+    def has_var(self, var_name: str, obs_vars: list) -> bool:
         """
         Check if input variable is supposed to be processed
 
@@ -103,7 +103,7 @@ class ModelEntry(BrowseDict):
         ----------
         var_name : str
             variable to be checked
-        obs_vars : list[str]
+        obs_vars : list
             list of observation variables (since var / var mappings of the
             same variables are not explictly specified here).
 
