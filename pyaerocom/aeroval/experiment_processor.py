@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import glob
+from tests.conftest import tempdir
 import numpy as np
 from traceback import format_exc
 
-from pyaerocom import const
+from pyaerocom import const, GriddedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine, HasColocator
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
+from pyaerocom.helpers import _make_dummy_cube, get_highest_resolution, get_max_period_range
+from pyaerocom.io import ReadGridded
+from pyaerocom.aeroval.modelentry import ModelEntry
 
 
 class ExperimentProcessor(ProcessingEngine, HasColocator):
@@ -282,6 +287,64 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
                     f'{model_name} combination.')
             else:
                 self.make_json_files(files_to_convert)
+    def _make_dummy_model(self, obs_list):
+
+        # Sets up variable for the model register
+        tmpdir = const.LOCAL_TMP_DIR
+        const.add_data_search_dir(tmpdir)
+        
+        model_id = "dummy_model"
+        outdir = os.path.join(tmpdir, f"{model_id}/renamed")
+        os.makedirs(outdir, exist_ok=True)
+
+        #Finds dates and freq to use, so that all observations are covered        
+        (start, stop) = get_max_period_range(self.cfg.time_cfg.periods)
+        freq = get_highest_resolution(*self.cfg.time_cfg.freqs)
+
+
+        # Loops over variables in obs
+        for obs in obs_list:
+            for var in self.cfg.obs_cfg[obs]["obs_vars"]:
+                # Create dummy cube
+
+                dummy_cube = _make_dummy_cube(var, start_yr=start,
+                                                   stop_yr=stop, freq=freq)
+
+                # Converts cube to GriddedData
+                dummy_grid = GriddedData(dummy_cube)
+
+                # Loop over each year
+                yr_gen = dummy_grid.split_years()
+                
+                for dummy_grid_yr in yr_gen:
+                    # Add to netcdf
+                    yr = dummy_grid_yr.years_avail()[0]
+                    vert_code = self.cfg.obs_cfg[obs]["obs_vert_type"]
+                    
+                    save_name = dummy_grid_yr.aerocom_savename(model_id, var, vert_code, yr, freq)
+                    dummy_grid_yr.to_netcdf(outdir, savename=save_name)
+
+            
+        # Check if correct
+        print(ReadGridded(data_id="dummy_model"))
+
+        # Add dummy model to cfg
+        self.cfg.model_cfg['dummy'] = ModelEntry(model_id='dummy_model')
+        
+        return model_id
+
+
+
+    def _delete_dummy_model(self, model_id):
+        tmpdir = const.LOCAL_TMP_DIR
+        const.add_data_search_dir(tmpdir)
+        
+        outdir = os.path.join(tmpdir, f"{model_id}/renamed")
+        dirs = glob.glob(outdir+"/*.nc")
+        for d in dirs:
+            print(f"Deleting dummy model {d}")
+            os.remove(d)
+        
 
     def run(self, model_name=None, obs_name=None, var_list=None,
             update_interface=True):
@@ -317,8 +380,16 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         if isinstance(var_list, str):
             var_list = [var_list]
         self.cfg._check_time_config()
-        model_list = self.cfg.model_cfg.keylist(model_name)
+
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
+        if self.cfg.model_cfg == {}:
+            model_id = self._make_dummy_model(obs_list)
+            use_dummy_model = True
+        else:
+            use_dummy_model = False
+
+
+        model_list = self.cfg.model_cfg.keylist(model_name)
 
         const.print_log.info('Start processing')
 
@@ -336,6 +407,8 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         if update_interface:
             self.update_interface()
+        if use_dummy_model:
+            self._delete_dummy_model(model_id)
         const.print_log.info('Finished processing.')
 
     def update_interface(self):

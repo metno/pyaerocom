@@ -19,6 +19,7 @@ from pyaerocom.exceptions import (LongitudeConstraintError,
                                   ResamplingError,
                                   TemporalResolutionError)
 from pyaerocom import logger, const
+from pyaerocom.variable import get_variable
 from pyaerocom.time_config import (GREGORIAN_BASE, TS_TYPE_SECS,
                                    TS_TYPE_TO_PANDAS_FREQ,
                                    PANDAS_RESAMPLE_OFFSETS,
@@ -1601,6 +1602,77 @@ def get_time_rng_constraint(start, stop):
                                         day=stop.day)
 
     return iris.Constraint(time=lambda cell: t_lower <= cell <= t_upper)
+
+def get_max_period_range(periods):
+    start = min([int(per.split("-")[0]) for per in periods])
+    stop = max([int(per.split("-")[1]) if len(per.split("-")) > 1 else int(per)  for per in periods])
+
+    return start, stop
+
+
+
+import iris
+from cf_units import Unit
+import numpy as np
+
+def _make_dummy_cube(var_name, start_yr=2000, stop_yr=2020, freq="daily", dtype=float):
+    startstr = f'days since {start_yr}-01-01 00:00'
+
+    if freq == "daily":
+        timenum = (stop_yr+1 - start_yr)*356 
+    elif freq == "monthly":
+        timenum = (stop_yr+1 - start_yr)*12 
+    elif freq == "yearly":
+        timenum = (stop_yr+1 - start_yr)*1 
+    else:
+        raise ValueError(f"{freq} not a recognized frequency")
+
+
+    unit = get_variable(var_name).units
+
+    lat_range = (-180, 180)
+    lon_range = (-90, 90)
+    lat_res_deg = 90
+    lon_res_deg = 45
+    times = np.arange(timenum)
+    time_unit = Unit(startstr, calendar='gregorian')
+
+
+    lons = np.arange(lon_range[0]+lon_res_deg/2, lon_range[1]+lon_res_deg/2,
+                     lon_res_deg)
+    lats = np.arange(lat_range[0]+lat_res_deg/2, lat_range[1]+lat_res_deg/2,
+                     lat_res_deg)
+
+    latdim = iris.coords.DimCoord(lats, var_name='lat',
+                                  standard_name='latitude',
+                                  circular=False,
+                                  units=Unit('degrees'))
+
+    londim = iris.coords.DimCoord(lons, var_name='lon',
+                                  standard_name='longitude',
+                                  circular=False,
+                                  units=Unit('degrees'))
+
+    timedim = iris.coords.DimCoord(times, var_name='time',
+                                   standard_name='time',
+                                   units=time_unit)
+
+    latdim.guess_bounds()
+    londim.guess_bounds()
+    dummy = iris.cube.Cube(np.ones((len(times), len(lats), len(lons))),
+                           units=unit)
+
+    dummy.add_dim_coord(latdim, 1)
+    dummy.add_dim_coord(londim, 2)
+    dummy.add_dim_coord(timedim, 0)
+    dummy.var_name = var_name
+    dummy.ts_type = freq
+
+    dummy.data = dummy.data.astype(dtype)
+    for coord in dummy.coords():
+        coord.points = coord.points.astype(dtype)
+
+    return dummy
 
 if __name__=="__main__":
 

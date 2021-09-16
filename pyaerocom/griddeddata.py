@@ -1903,7 +1903,10 @@ class GriddedData(object):
         if time_range is None:
             return GriddedData(data, **suppl)
         else:
-            if all(isinstance(x, str) for x in time_range):
+            # Bug where the numpy timestamps given by the split_years
+            # isn't recognized by the if statments and the whole orginal object
+            # is return
+            if all(isinstance(x, str) for x in time_range) or all(isinstance(x, np.datetime64) for x in time_range):
                 time_range = (pd.Timestamp(time_range[0]),
                               pd.Timestamp(time_range[1]))
             if all(isinstance(x, pd.Timestamp) for x in time_range):
@@ -1917,6 +1920,7 @@ class GriddedData(object):
             elif all(isinstance(x, int) for x in time_range):
                 logger.info("Cropping along time axis based on indices")
                 data = data[time_range[0]:time_range[1]]
+            
             if not data:
                 raise DataExtractionError("Failed to apply temporal cropping")
         return GriddedData(data, check_unit=False,
