@@ -802,9 +802,9 @@ class ColocatedData(object):
             ncd = self.num_coords_with_data
         except DataDimensionError:
             ncd = np.nan
-        stats = calc_statistics(self.data.values[1].flatten(),
-                                self.data.values[0].flatten(),
-                                **kwargs)
+        obsvals = self.data.values[0].flatten()
+        modvals = self.data.values[1].flatten()
+        stats = calc_statistics(modvals, obsvals, **kwargs)
 
         stats['num_coords_tot'] = nc
         stats['num_coords_with_data'] = ncd
@@ -1759,7 +1759,7 @@ class ColocatedData(object):
                                                     inplace=inplace)
             else:
                 raise UnknownRegion(f'no such region defined {region_id}')
-        # if all model and obsdata is NaN, use dummy stats (this can
+        # if all model and obsdata is NaN raise Exception (this can
         # e.g., be the case if colocate_time=True and all obs is NaN,
         # or if model domain is not covered by the region)
         if np.isnan(filtered.data.data).all():
