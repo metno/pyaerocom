@@ -235,13 +235,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
 
     data, ref_data = data[mask], ref_data[mask]
 
-    ws = False
-    if weights is not None:
-        weights = weights[mask]
-        weights = weights / weights.max()
-        ws = True
-        result['NOTE'] = ('Weights were not applied to FGE and kendall and '
-                          'spearman corr (not implemented)')
+    weighted = False if weights is None else True
 
     result['totnum'] = float(len(mask))
     result['num_valid'] = float(num_points)
@@ -251,7 +245,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result['refdata_std'] = ref_std
     result['data_mean'] = data_mean
     result['data_std'] = data_std
-    result['weighted'] = ws
+    result['weighted'] = weighted
 
     if not num_points >= min_num_valid:
         if lowlim is not None:
@@ -284,6 +278,13 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     difference = data - ref_data
 
     diffsquare = difference**2
+
+    if weights is not None:
+        weights = weights[mask]
+        weights = weights / weights.max()
+        result['NOTE'] = ('Weights were not applied to FGE and kendall and '
+                          'spearman corr (not implemented)')
+
     result['rms'] = np.sqrt(np.average(diffsquare, weights=weights))
 
     # NO implementation to apply weights yet ...
