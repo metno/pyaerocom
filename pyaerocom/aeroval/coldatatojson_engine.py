@@ -686,8 +686,8 @@ def _make_trends_from_timeseries(obs, mod, freq, season, start, stop, min_yrs):
     obs_trend["data"] = obs_trend["data"].to_json()
     mod_trend["data"] = mod_trend["data"].to_json()
 
-    obs_trend["map_var"] = "slp_2000"
-    mod_trend["map_var"] = "slp_2000"
+    obs_trend["map_var"] = f"slp_{start}"
+    mod_trend["map_var"] = f"slp_{start}"
 
     return obs_trend, mod_trend
 
