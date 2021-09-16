@@ -1,8 +1,7 @@
-API
-===
+Core API
+========
 
-Documentation of the pyaerocom programming interface.
-
+Documentation of the core API of pyaerocom.
 
 Data classes
 ------------
