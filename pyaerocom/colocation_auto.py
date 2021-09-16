@@ -1088,7 +1088,9 @@ class Colocator(ColocationSetup):
 
     def _find_var_matches(self):
         """Find variable matches in model data for input obs variables"""
-        # dictionary that will map model variables (keys) with observation variables (values)
+
+        # dictionary that will map model variables (keys) with observation
+        # variables (values)
         var_matches = {}
 
         all_ok = True
