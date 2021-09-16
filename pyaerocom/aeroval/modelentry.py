@@ -2,9 +2,8 @@ from copy import deepcopy
 from pyaerocom._lowlevel_helpers import (BrowseDict, DictType,
                                          StrType, DictStrKeysListVals)
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
-from pyaerocom.aeroval._lowlev import EvalEntry
 
-class ModelEntry(EvalEntry, BrowseDict):
+class ModelEntry(BrowseDict):
     """Modeln configuration for evaluation (dictionary)
 
     Note
