@@ -123,6 +123,10 @@ def test__make_trends(coldata,
         assert(abs((mod_trend["m"] - trend_slops[station])/mod_trend["m"]) < eps)
 
 
+        assert(int(obs_trend["map_var"].split("_")[1]) == start)
+        assert(int(mod_trend["map_var"].split("_")[1]) == start)
+
+
 
 
 if __name__ == '__main__':
