@@ -53,9 +53,30 @@ class ModelEntry(EvalEntry, BrowseDict):
 
     @property
     def aux_funs_required(self):
+        """
+        Boolean specifying whether this entry requires auxiliary variables
+        """
         return True if bool(self.model_read_aux) else False
 
     def get_all_vars(self):
+        """
+        Get all variables specified in this entry
+
+        Note
+        ----
+        By default, in Aeroval, model entries are processed against an
+        observation entry (see :class:`ObsEntry`), in which the variables to
+        be processed are specified. That means, that in a  default setup,
+        this method returns an empty list. Only if additional variables are
+        specified in this object (via :attr:`model_use_vars` or
+        :attr:`model_add_vars`), then this method will return these variables
+        in the output list.
+
+        Returns
+        -------
+        list
+            list of variables
+        """
         muv = list(self.model_use_vars.values())
         mav = []
         for val in self.model_add_vars.values():
@@ -74,7 +95,9 @@ class ModelEntry(EvalEntry, BrowseDict):
             mra[var] = check_aux_info(funcs=funs, **aux_info)
         return mra
 
-    def prep_dict_analysis(self, funs={}) -> dict:
+    def prep_dict_analysis(self, funs=None) -> dict:
+        if funs is None:
+            funs = {}
         output = deepcopy(self.to_dict())
         if self.aux_funs_required:
             output['model_read_aux'].update(self._get_aux_funcs_setup(funs))

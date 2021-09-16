@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+# ToDo: rewrite or delete before v0.12.0
 import matplotlib
 matplotlib.use('agg')
 from warnings import filterwarnings

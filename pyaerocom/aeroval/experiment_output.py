@@ -198,6 +198,7 @@ class ExperimentOutput(ProjectOutput):
             output[name] = list(set(res[i]))
         return output
 
+    # ToDo: rewrite or delete before v0.12.0
     def clean_json_files(self):
         """Checks all existing json files and removes outdated data
 
