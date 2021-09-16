@@ -1,8 +1,7 @@
-API
-===
+Core API
+========
 
-Documentation of the pyaerocom programming interface.
-
+Documentation of the core API of pyaerocom.
 
 Data classes
 ------------
@@ -439,13 +438,6 @@ Scatter plots
   :members:
   :undoc-members:
 
-Time-series plots
-^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.plot.plotseries
-  :members:
-  :undoc-members:
-
 Heatmap plots
 ^^^^^^^^^^^^^
 
@@ -459,56 +451,6 @@ Colors etc.
 .. automodule:: pyaerocom.plot.config
   :members:
   :undoc-members:
-
-Web processing (sub-package: web)
----------------------------------
-
-This sub-package contains high level processing routines that can be used to
-process AeroCom data for individual web-interfaces, such as the
-`AeroCom Evaluation <https://aerocom-evaluation.met.no>`__ interface or
-the `Aerosol trends <https://aerocom-trends.met.no/>`__ interface.
-
-AeroCom Evaluation interface
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.web.aerocom_evaluation
-   :members:
-   :undoc-members:
-
-Helper methods for evaluation interface
-""""""""""""""""""""""""""""""""""""""""
-
-.. automodule:: pyaerocom.web.helpers_evaluation_iface
-   :members:
-   :undoc-members:
-
-Aerosol Trends interface
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.web.trends_evaluation
-   :members:
-   :undoc-members:
-
-Helper methods for trends interface
-""""""""""""""""""""""""""""""""""""""""
-
-.. automodule:: pyaerocom.web.helpers_trends_iface
-  :members:
-  :undoc-members:
-
-Helpers of web-subpackage
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.web.helpers
-   :members:
-   :undoc-members:
-
-High level utility methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.web.utils
-   :members:
-   :undoc-members:
 
 Configuration and global constants
 ----------------------------------

@@ -106,6 +106,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             converted.append(file)
         return converted
 
+    # ToDo: rewrite before v0.12.0
     def _run_superobs_entry_var(self, model_name, superobs_name, var_name,
                                 try_colocate_if_missing):
         """
@@ -348,9 +349,6 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             - update and order heatmap file
         """
         self.exp_output.update_interface()
-
-    def __str__(self):
-        raise NotImplementedError('Under revision')
 
 if __name__ == '__main__':
     stp = ExperimentProcessor('bla', 'blub')
