@@ -58,7 +58,6 @@ class ModelEntry(EvalEntry, BrowseDict):
         """
         return True if bool(self.model_read_aux) else False
 
-    @property
     def get_all_vars(self):
         """
         Get all variables specified in this entry
