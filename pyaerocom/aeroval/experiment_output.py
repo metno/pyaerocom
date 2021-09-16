@@ -50,6 +50,8 @@ class ProjectOutput:
         write_json(current, self.experiments_file, indent=4)
 
     def _del_entry_experiments_json(self, exp_id):
+        if not os.path.exists(self.experiments_file):
+            return
         current = read_json(self.experiments_file)
         try:
             del current[exp_id]
@@ -428,11 +430,7 @@ class ExperimentOutput(ProjectOutput):
             return False
         try:
             mcfg = self.cfg.model_cfg.get_entry(mod_name)
-            # since observation variables are not explicitly defined in mcfg
-            # (but only renamings or additional variables), mcfg.has_var(mod_var)
-            # returns False in most cases (since the model variable equals the
-            # obs variable)
-            if not mcfg.has_var(mod_var) and not ocfg.has_var(mod_var):
+            if not mcfg.has_var(mod_var, ocfg.get_all_vars()):
                 return False
         except EntryNotAvailable:
             return False

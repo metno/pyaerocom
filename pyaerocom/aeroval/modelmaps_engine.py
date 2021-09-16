@@ -37,14 +37,14 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
     def _get_vars_to_process(self, model_name, var_list):
 
-        ovars = self.cfg.obs_cfg.get_all_vars()
-        mvars = self.cfg.model_cfg.get_entry(model_name).get_all_vars()
-        all_vars = sorted(list(set(ovars + mvars)))
+        mvars = self.cfg.model_cfg.get_entry(
+            model_name).get_vars_to_process(self.cfg.obs_cfg.get_all_vars())[1]
+        all_vars = sorted(list(set(mvars)))
         if var_list is not None:
             all_vars = [var for var in var_list if var in all_vars]
         return all_vars
 
-    def _run_model(self, model_name, var_list):
+    def _run_model(self, model_name: str, var_list):
         """Run evaluation of map processing
 
         Create json files for model-maps display. This analysis does not
@@ -59,10 +59,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var_list : list, optional
             name of variable to be processed. If None, all available
             observation variables are used.
-        reanalyse_existing : bool
-            if True, existing json files will be reprocessed
-        raise_exceptions : bool
-            if True, any exceptions that may occur will be raised
+
         """
 
 

@@ -57,31 +57,64 @@ class ModelEntry(BrowseDict):
         """
         return True if bool(self.model_read_aux) else False
 
-    def get_all_vars(self):
+    def get_vars_to_process(self, obs_vars: list[str]) -> tuple:
         """
-        Get all variables specified in this entry
+        Get lists of obs / mod variables to be processed
 
-        Note
-        ----
-        By default, in Aeroval, model entries are processed against an
-        observation entry (see :class:`ObsEntry`), in which the variables to
-        be processed are specified. That means, that in a  default setup,
-        this method returns an empty list. Only if additional variables are
-        specified in this object (via :attr:`model_use_vars` or
-        :attr:`model_add_vars`), then this method will return these variables
-        in the output list.
+        Parameters
+        ----------
+        obs_vars : list[str]
+            list of observation variables
 
         Returns
         -------
-        list
-            list of variables
+        list[str]
+            list of observation variables (potentially extended from input
+            list)
+        list[str]
+            corresponding model variables which are mapped based on content
+            of :attr:`model_add_vars` and :attr:`model_use_vars`.
+
         """
-        muv = list(self.model_use_vars.values())
-        mav = []
-        for val in self.model_add_vars.values():
-            mav.extend(val)
-        mra = list(self.model_read_aux.keys())
-        return list(set(muv + mav + mra))
+        obsout, modout = [], []
+        for obsvar in obs_vars:
+            obsout.append(obsvar)
+            if obsvar in self.model_use_vars:
+                modout.append(self.model_use_vars[obsvar])
+            else:
+                modout.append(obsvar)
+
+        for ovar, mvars in self.model_add_vars.items():
+            if not isinstance(mvars, list):
+                raise AttributeError(
+                    f'values of model_add_vars need to be lists, even if '
+                    f'only single variables are to be added: '
+                    f'{self.model_add_vars}')
+            for mvar in mvars:
+                obsout.append(ovar)
+                modout.append(mvar)
+        return (obsout, modout)
+
+    def has_var(self, var_name: str, obs_vars: list[str]) -> bool:
+        """
+        Check if input variable is supposed to be processed
+
+        Parameters
+        ----------
+        var_name : str
+            variable to be checked
+        obs_vars : list[str]
+            list of observation variables (since var / var mappings of the
+            same variables are not explictly specified here).
+
+        Returns
+        -------
+        bool
+            True, if input variable is supposed to be processed, else False
+        """
+        if var_name in self.get_vars_to_process(obs_vars)[1]:
+            return True
+        return False
 
     def get_varname_web(self, mod_var, obs_var):
         if obs_var in self.model_add_vars and mod_var in self.model_add_vars[obs_var]:

@@ -86,13 +86,6 @@ class BaseCollection(BrowseDict):
             return key
         return self[key]['web_interface_name']
 
-    def get_all_vars(self):
-        vars = []
-        for key, cfg in self.items():
-            vars.extend(cfg.get_all_vars())
-        return sorted(list(set(vars)))
-
-
     @property
     def web_iface_names(self):
         """
@@ -147,6 +140,21 @@ class ObsCollection(BaseCollection):
         cfg = super(ObsCollection, self).get_entry(key)
         cfg['obs_name'] = self.get_web_iface_name(key)
         return cfg
+
+    def get_all_vars(self) -> list[str]:
+        """
+        Get unique list of all obs variables from all entries
+
+        Returns
+        -------
+        list[str]
+            list of variables specified in obs collection
+
+        """
+        vars = []
+        for ocfg in self.values():
+            vars.extend(ocfg.get_all_vars())
+        return sorted(list(set(vars)))
 
 class ModelCollection(BaseCollection):
     """

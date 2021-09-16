@@ -243,19 +243,6 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
             self._import_aux_funs()
         return self._aux_funs
 
-    def get_all_vars(self) -> list:
-        """
-        Get list of all variables in this experiment
-
-        Returns
-        -------
-        list
-
-        """
-        ovars = self.obs_cfg.get_all_vars()
-        mvars = self.model_cfg.get_all_vars()
-        return sorted(list(set(ovars + mvars)))
-
     def get_obs_entry(self, obs_name):
         return self.obs_cfg.get_entry(obs_name).to_dict()
 
