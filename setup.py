@@ -69,6 +69,7 @@ setup(
         'reverse-geocode',
         'tqdm',
         'openpyxl',
+        'geojsoncontour'
     ],
     extras_require = {
         'docs':['nbsphinx'],
