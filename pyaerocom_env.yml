@@ -23,4 +23,5 @@ dependencies:
   - pytest-dependency
   - pytest-cov
   - pip
-    -geojsoncontour
+  - pip:
+    - geojsoncontour
