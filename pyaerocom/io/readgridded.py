@@ -42,6 +42,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import iris
+import xarray as xr
 
 from pyaerocom import const, print_log, logger
 from pyaerocom.metastandards import AerocomDataID
@@ -1631,6 +1632,7 @@ class ReadGridded(object):
         elif not isnumeric(constraint['filter_val']):
             raise ValueError('Need numerical filter value')
 
+
     def apply_read_constraint(self, data, constraint,
                               **kwargs):
         """
@@ -1692,23 +1694,39 @@ class ReadGridded(object):
         if not other_data.shape == data.shape:
             raise ValueError('Failed to apply filter. Shape mismatch')
 
-        # needs both data objects to be loaded into memory
-        #other_data._ensure_is_masked_array()
-        #data._ensure_is_masked_array()
+        other_arr = other_data.to_xarray()
+        arr = data.to_xarray()
+        if not all([x in other_arr.dims for x in arr.dims]):
+            from pyaerocom.exceptions import DataDimensionError
+            raise DataDimensionError('Mismatch in dimensions')
+        for dim in arr.dims:
+            same_vals = (arr[dim].values == other_arr[dim].values).all()
+            if not same_vals:
+                if dim == 'time':
+                    other_arr[dim] = arr[dim]
+                else:
+                    raise ValueError()
 
-        other_arr = other_data.cube.core_data()
-        arr = data.cube.core_data()
 
         # select all grid points where conition is fulfilled
         mask = operator_fun(other_arr,
                             constraint['filter_val'])
 
-        # set values to NaN where condition is fulfilled
-
-        arr = np.where(mask, new_val, arr)
+        # set values to new_val where condition is fulfilled
+        filtered = xr.where(mask, new_val, arr)
 
         # overwrite data in cube with the filtered data
-        data.cube.data = arr
+        outcube = filtered.to_iris()
+        outcube.var_name = data.var_name
+        outcube.units = data.units
+        outcube.attributes = data.cube.attributes
+        for i, name in enumerate(data.dimcoord_names):
+            outcube.remove_coord(name)
+            outcube.add_dim_coord(data.cube.coord(name), i)
+        outcube._dim_coords_and_dims = data.cube._dim_coords_and_dims
+        data.cube = outcube
+        #data = GriddedData(outcube)
+        #data.cube.data = filtered.data
         return data
 
     def _try_read_var(self, var_name, start, stop,
