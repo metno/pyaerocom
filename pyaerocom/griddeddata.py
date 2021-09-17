@@ -1681,7 +1681,7 @@ class GriddedData(object):
             data.reorder_dimensions_tseries()
         return data
 
-    def resample_time(self, to_ts_type='monthly', how=None,
+    def resample_time(self, to_ts_type, how=None,
                       min_num_obs=None, use_iris=False):
         """Resample time to input resolution
 
