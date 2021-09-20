@@ -87,6 +87,10 @@ lustre_unavail = pytest.mark.skipif(not const.has_access_lustre,
                                     reason='Skipping tests that require access '
                                     'to AEROCOM database on METNo servers')
 
+lustre_avail = pytest.mark.skipif(const.has_access_lustre,
+                                    reason='Skipping tests that will crash '
+                                           'if lustre can be accessed.')
+
 # custom skipif marker that is used below for test functions that
 # require geonum to be installed
 geonum_unavail = pytest.mark.skipif(not const.GEONUM_AVAILABLE,
@@ -223,7 +227,8 @@ def coldata():
         'fake_3d'       : cth._create_fake_coldata_3d(),
         'fake_4d'       : cth._create_fake_coldata_4d(),
         'fake_5d'       : cth._create_fake_coldata_5d(),
-        'fake_3d_hr'    : cth._create_fake_coldata_3d_hourly()
+        'fake_3d_hr'    : cth._create_fake_coldata_3d_hourly(),
+        'fake_3d_trends': cth._create_fake_trends_coldata_3d(),
         }
 
 @contextmanager

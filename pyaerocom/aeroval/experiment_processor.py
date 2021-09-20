@@ -30,28 +30,6 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
     """
 
     _log = const.print_log
-    def _get_diurnal_only(self, obs_name):
-        """
-        Check if colocated data is flagged for only diurnal processing
-
-        Parameters
-        ----------
-        obs_name : string
-            Name of observational subset
-        colocated_data : ColocatedData
-            A ColocatedData object that will be checked for suitability of
-            diurnal processing.
-
-        Returns
-        -------
-        diurnal_only : bool
-        """
-        try:
-            diurnal_only = self.cfg.get_obs_entry(obs_name).diurnal_only
-        except AttributeError:
-            diurnal_only = False
-        return diurnal_only
-
     def coldata_to_json(self, file):
         """Creates all json files for one ColocatedData object"""
         coldata = ColocatedData(file)
@@ -128,6 +106,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             converted.append(file)
         return converted
 
+    # ToDo: rewrite before v0.12.0
     def _run_superobs_entry_var(self, model_name, superobs_name, var_name,
                                 try_colocate_if_missing):
         """
@@ -370,9 +349,6 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             - update and order heatmap file
         """
         self.exp_output.update_interface()
-
-    def __str__(self):
-        raise NotImplementedError('Under revision')
 
 if __name__ == '__main__':
     stp = ExperimentProcessor('bla', 'blub')

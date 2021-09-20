@@ -13,9 +13,26 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
 from pyaerocom.aeroval import ExperimentProcessor, EvalSetup
 
-def make_config_template(proj_id, exp_id):
+def make_config_template(proj_id: str, exp_id: str) -> EvalSetup:
+    """
+    Make a template for an AeroVal evaluation setup
+
+    Parameters
+    ----------
+    proj_id : str
+        ID of project.
+    exp_id : str
+        ID of experiment
+
+    Returns
+    -------
+    EvalSetup
+        template evaluation setup (all defaults are set) that can be used to
+        add model and obs entries, and modified to meet the purposes.
+    """
     return EvalSetup(proj_id, exp_id)
 
+# ToDo: rewrite or delete before v0.12.0
 def compute_model_average_and_diversity(cfg, var_name,
                                         model_names=None,
                                         ts_type='monthly',
@@ -168,7 +185,8 @@ def compute_model_average_and_diversity(cfg, var_name,
                 if extract_surface:
                     data = data.extract_surface_level()
                 else:
-                    raise NotImplementedError('Cannot process ModelLevel fields yet')
+                    raise NotImplementedError(
+                        'Cannot process ModelLevel fields yet')
             data = data.regrid(dummy)
             const.print_log.info('Success!')
         except Exception as e:

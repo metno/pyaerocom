@@ -14,6 +14,7 @@ from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import TemporalResolutionError
 
+# ToDo: rewrite or delete before v0.12.0
 def make_info_str_eval_setup(stp, add_header=True):
     """
     Convert instance of :class:`AerocomEvaluation` into a descriptive string
@@ -122,6 +123,7 @@ def make_info_str_eval_setup(stp, add_header=True):
         st =  f'{stp.exp_id}: {stp.exp_name}\n{stp.exp_descr}\n' + st
     return st
 
+# ToDo: rewrite or delete before v0.12.0
 def get_all_config_files_evaluation_iface(config_dir):
     """
 
@@ -156,6 +158,7 @@ def get_all_config_files_evaluation_iface(config_dir):
         results[proj][exp] = file
     return results
 
+# ToDo: rewrite or delete before v0.12.0
 def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     """Reorder experiment order in evaluation interface
 
@@ -181,10 +184,30 @@ def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
     new = sort_dict_by_name(current, pref_list=exp_order)
     write_json(new, menu_file, indent=4)
 
-def _check_statistics_periods(periods):
+def _check_statistics_periods(periods: list) -> list:
+    """
+    Check input list of period strings is valid
+
+    Parameters
+    ----------
+    periods : list
+        list containing period strings to be checked.
+
+    Raises
+    ------
+    ValueError
+        if input is not a list or any of the provided periods in that list is
+        not a string or invalid.
+
+    Returns
+    -------
+    list
+        list of periods
+
+    """
     checked = []
     if not isinstance(periods, list):
-        raise AttributeError('statistics_periods needs to be a list')
+        raise ValueError('statistics_periods needs to be a list')
     for per in periods:
         if not isinstance(per, str):
             raise ValueError('All periods need to be strings')
@@ -198,7 +221,25 @@ def _check_statistics_periods(periods):
         checked.append(_per)
     return checked
 
-def _period_str_to_timeslice(period):
+def _period_str_to_timeslice(period: str) -> slice:
+    """
+    Convert input period to a time slice
+
+    Parameters
+    ----------
+    period : str
+        period, e.g. "2000-2010"
+
+    Raises
+    ------
+    ValueError
+        if input period is invalid
+
+    Returns
+    -------
+    slice
+        slice containing start and end strings.
+    """
     spl = period.split('-')
     if len(spl) == 1:
         return slice(spl[0],spl[0])
@@ -220,7 +261,7 @@ def _get_min_max_year_periods(statistics_periods):
         start year
     int
         stop year (may be the same as start year, e.g. if periods suggest
-                   single year analysis)
+        single year analysis).
     """
     startyr, stopyr = 1e6, -1e6
     for per in statistics_periods:

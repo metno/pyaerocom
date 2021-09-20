@@ -531,6 +531,20 @@ def correct_time_coord(cube, ts_type, year):
     cube.attributes['timedim-corrected'] = True
     return cube
 
+def _check_correct_dtypes_timedim_cube_list(cubes):
+
+    try:
+        dtypes = np.unique([cube.coord('time').points.dtype for cube in cubes])
+    except iris.exceptions.CoordinateNotFoundError:
+        return False
+    corrected = False
+    if len(dtypes) > 1:
+        corrected = True
+        for cube in cubes:
+            new = cube.coord('time').points.astype(float)
+            cube.coord('time').points = new
+    return corrected
+
 def concatenate_iris_cubes(cubes, error_on_mismatch=True):
     """Concatenate list of :class:`iris.Cube` instances cubes into single Cube
 
@@ -582,9 +596,15 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
     equalise_attributes(cubes)
     #unify time units
     iris.util.unify_time_units(cubes)
-
     #now concatenate the cube list to one cube
-    cubes_concat = iris._concatenate.concatenate(cubes, error_on_mismatch)
+    try:
+        cubes_concat = iris._concatenate.concatenate(cubes, error_on_mismatch)
+    except Exception as e: #
+        if _check_correct_dtypes_timedim_cube_list(cubes):
+            cubes_concat = iris._concatenate.concatenate(cubes,
+                                                         error_on_mismatch)
+        else:
+            raise
 
     return cubes_concat[0]
 

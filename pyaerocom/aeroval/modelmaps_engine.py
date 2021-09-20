@@ -147,8 +147,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var = VarinfoWeb(var)
 
         # first calcualate and save geojson with contour levels
-        contourjson = calc_contour_json(data, vmin=var.vmin, vmax=var.vmax,
-                                        cmap=var.cmap,
+        contourjson = calc_contour_json(data, cmap=var.cmap,
                                         cmap_bins=var.cmap_bins)
 
         # now calculate pixel data json file (basically a json file

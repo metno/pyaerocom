@@ -5,7 +5,9 @@ Created on Thu May 27 11:34:57 2021
 
 @author: jonasg
 """
-from pyaerocom.io.utils import browse_database
+def browse_database(*args, **kwargs):
+    from pyaerocom.io.utils import browse_database
+    return browse_database(*args, **kwargs)
 
 def clear_cache():
     """
