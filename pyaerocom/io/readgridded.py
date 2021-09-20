@@ -1681,7 +1681,7 @@ class ReadGridded(object):
         if 'new_val' in constraint:
             new_val = constraint['new_val']
         else:
-            new_val = np.nan #np.ma.masked
+            new_val = np.nan
 
         operator_fun = self.CONSTRAINT_OPERATORS[constraint['operator']]
 
@@ -1696,11 +1696,11 @@ class ReadGridded(object):
 
         other_arr = other_data.to_xarray()
         arr = data.to_xarray()
-        if not all([x in other_arr.dims for x in arr.dims]):
+        if not other_arr.dims==arr.dims:
             from pyaerocom.exceptions import DataDimensionError
             raise DataDimensionError('Mismatch in dimensions')
         for dim in arr.dims:
-            same_vals = (arr[dim].values == other_arr[dim].values).all()
+            same_vals = (arr[dim].values==other_arr[dim].values).all()
             if not same_vals:
                 if dim == 'time':
                     other_arr[dim] = arr[dim]
@@ -1720,13 +1720,12 @@ class ReadGridded(object):
         outcube.var_name = data.var_name
         outcube.units = data.units
         outcube.attributes = data.cube.attributes
+        outcube_dims = outcube.dim_coords
         for i, name in enumerate(data.dimcoord_names):
-            outcube.remove_coord(name)
+            _name = outcube_dims[i].name()
+            outcube.remove_coord(_name)
             outcube.add_dim_coord(data.cube.coord(name), i)
-        outcube._dim_coords_and_dims = data.cube._dim_coords_and_dims
         data.cube = outcube
-        #data = GriddedData(outcube)
-        #data.cube.data = filtered.data
         return data
 
     def _try_read_var(self, var_name, start, stop,
