@@ -10,9 +10,12 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Generator
 
 import pandas as pd
 from numpy import sign
+
+from pyaerocom.ungriddeddata import UngriddedData
 
 ETEX1 = SimpleNamespace(
     long_name="PMCH concentration above ambient level",
@@ -40,8 +43,24 @@ ETEX1 = SimpleNamespace(
 )
 
 
-def read_etex1() -> pd.DataFrame:
-    return read_data().join(read_stations().set_index("cc"), on="cc").astype({"cc": "string"})
+def read_etex1() -> UngriddedData:
+    def reader() -> Generator[dict]:
+        station = read_stations().set_index("cc")
+        for cc, df in read_data().groupby("cc"):
+            site = station.loc[cc]
+            conc = df.rename(columns={"end": "time"}).set_index("time").concentration
+            conc.name = "concch"
+            yield dict(
+                station_id=site.name,
+                station_name=site["Station name"],
+                latitude=site.Long,
+                longitude=site.Lat,
+                altitude=site.Alt,
+                concch=conc,
+                var_info=dict(concch=dict(units=ETEX1.units, ts_type="3hourly")),
+            )
+
+    return UngriddedData.from_station_data(list(reader()))
 
 
 def degrees_with_minutes(x: str) -> float:
@@ -103,8 +122,5 @@ def read_data() -> pd.DataFrame:
 if __name__ == "__main__":
     print(f"{ETEX1.long_name} [{ETEX1.units}]")
 
-    df = read_etex1()
-    print(df)
-
-    nbytes = df.memory_usage(index=True, deep=True).sum()
-    print(f"{nbytes/2**20:.1f} Mb memory")
+    data = read_etex1()
+    print(data)
