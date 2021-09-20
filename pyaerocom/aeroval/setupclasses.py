@@ -161,11 +161,11 @@ class EvalRunOptions(ConstrainedContainer):
         self.update(**kwargs)
 
 class ProjectInfo(ConstrainedContainer):
-    def __init__(self, proj_id: str):
+    def __init__(self, proj_id:str):
         self.proj_id = proj_id
 
 class ExperimentInfo(ConstrainedContainer):
-    def __init__(self, exp_id: str, **kwargs):
+    def __init__(self, exp_id:str, **kwargs):
         self.exp_id = exp_id
         self.exp_name = ''
         self.exp_descr = ''
@@ -189,7 +189,12 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         logger=const.print_log,
         tooltip='.py file containing additional read methods for modeldata')
     _aux_funs = {}
-    def __init__(self, proj_id:str, exp_id:str, **kwargs):
+    def __init__(self, proj_id:str=None, exp_id:str=None, **kwargs):
+        if proj_id is None:
+            proj_id = kwargs['proj_info']['proj_id']
+        if exp_id is None:
+            exp_id = kwargs['exp_info']['exp_id']
+
         self.proj_info = ProjectInfo(proj_id=proj_id)
         self.exp_info = ExperimentInfo(exp_id=exp_id)
 
@@ -295,6 +300,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
         write_json(data, filepath,
                    ignore_nan=ignore_nan,
                    indent=indent)
+        return filepath
 
     @staticmethod
     def from_json(filepath:str) -> 'EvalSetup':

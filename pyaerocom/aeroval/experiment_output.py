@@ -464,7 +464,7 @@ class ExperimentOutput(ProjectOutput):
             else:
                 const.print_log.warning(
                     f'Invalid entry: model {mod_name} ({mod_var}), '
-                    f'model {obs_name} ({obs_var})')
+                    f'obs {obs_name} ({obs_var})')
         return new
 
 
