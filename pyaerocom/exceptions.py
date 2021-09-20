@@ -23,6 +23,9 @@ Module containing pyaerocom custom exceptions
 class AeroValConfigError(ValueError):
     pass
 
+class AeroValTrendsError(ValueError):
+    pass
+
 class CachingError(IOError):
     pass
 
@@ -81,6 +84,9 @@ class NasaAmesReadError(IOError):
     pass
 
 class EbasFileError(ValueError):
+    pass
+
+class EEAv2FileError(ValueError):
     pass
 
 class EntryNotAvailable(KeyError):

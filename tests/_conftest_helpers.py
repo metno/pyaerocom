@@ -5,6 +5,7 @@ Created on Tue Feb 11 15:57:09 2020
 
 @author: jonasg
 """
+import enum
 from pyaerocom import StationData, ColocatedData, Filter
 import numpy as np
 import pandas as pd
@@ -203,6 +204,84 @@ def _create_fake_coldata_3d():
 
     return cd
 
+
+def _create_fake_trends_coldata_3d():
+    var = 'concpm10'
+    filter_name = 'WORLD-wMOUNTAINS'
+    regfilter = Filter(name=filter_name)
+
+    dtime = pd.date_range('2000-01-01', '2019-12-31', freq='MS') + np.timedelta64(14, 'D')
+
+    lats = [-80, 0, 70, 0.1]
+    lons = [-150, 0, 100, 0.1]
+    alts = [0, 100, 2000, 10]
+
+    timenum = len(dtime)
+    statnum = len(lats)
+    
+    statnames = [f'FakeStation{c}' for c in range(statnum)]
+    
+    data = np.ones((2, timenum, statnum))
+    xrange_modulation = np.linspace(0,np.pi*40, timenum)
+    #data[1] += 0.1 #+10% model bias
+
+    # Sets seed to always get same trends
+    #np.random.seed(13)
+
+    trend_slops = [1, 2, 50, -3]
+    
+    xs = np.linspace(0,20,timenum)
+    for i, s in enumerate(trend_slops):
+        data[0,:,i] = s*xs 
+        data[1,:,i] = s*xs 
+
+
+    meta = {
+            'data_source'       :   ['fakeobs',
+                                     'fakemod'],
+            'var_name'          :   [var,var],
+            'ts_type'           :   'monthly', # will be updated below if resampling
+            'filter_name'       :   filter_name,
+            'ts_type_src'       :   ['monthly', 'daily'],
+            'start_str'         :   dtime[0].strftime('%Y%m%d'),
+            'stop_str'          :   dtime[-1].strftime('%Y%m%d'),
+            'var_units'         :   ['ug m-3','ug m-3'],
+            'vert_scheme'       :   'surface',
+            'data_level'        :   3,
+            'revision_ref'      :   '20210409',
+            'from_files'        :   [],
+            'from_files_ref'    :   None,
+            'stations_ignored'  :   None,
+            'colocate_time'     :   False,
+            'obs_is_clim'       :   False,
+            'pyaerocom'         :   '0.11.0',
+            'min_num_obs'       :   dict(monthly=dict(daily=15),
+                                         daily=dict(hourly=12)
+                                         ),
+            'resample_how'      :   dict(monthly=dict(daily='sum'),
+                                         daily=dict(hourly='max')
+                                         )
+            }
+
+
+    meta.update(regfilter.to_dict())
+
+
+    # create coordinates of DataArray
+    coords = {'data_source' : meta['data_source'],
+              'time'        : dtime,
+              'station_name': statnames,
+              'latitude'    : ('station_name', lats),
+              'longitude'   : ('station_name', lons),
+              'altitude'    : ('station_name', alts)
+              }
+
+    dims = ['data_source', 'time', 'station_name']
+    cd = ColocatedData(data=data, coords=coords, dims=dims, name=var,
+                         attrs=meta)
+
+    return cd
+
 def _create_fake_coldata_3d_hourly():
     var = 'vmro3'
     filter_name = 'WORLD-wMOUNTAINS'
@@ -324,12 +403,57 @@ def _create_fake_MSCWCtm_data():
     
     return arr
 
+import iris
+from cf_units import Unit
+
+def make_dummy_cube_3D(startstr='days since 2010-01-01 00:00',
+                       timenum=365, dtype=float):
+    lat_range = (-30, 30)
+    lon_range = (-10, 10)
+    lat_res_deg=lon_res_deg=5
+    times = np.arange(timenum)
+    time_unit = Unit(startstr, calendar='gregorian')
+
+
+    lons = np.arange(lon_range[0]+lon_res_deg/2, lon_range[1]+lon_res_deg/2,
+                     lon_res_deg)
+    lats = np.arange(lat_range[0]+lat_res_deg/2, lat_range[1]+lat_res_deg/2,
+                     lat_res_deg)
+
+    latdim = iris.coords.DimCoord(lats, var_name='lat',
+                                  standard_name='latitude',
+                                  circular=False,
+                                  units=Unit('degrees'))
+
+    londim = iris.coords.DimCoord(lons, var_name='lon',
+                                  standard_name='longitude',
+                                  circular=False,
+                                  units=Unit('degrees'))
+
+    timedim = iris.coords.DimCoord(times, var_name='time',
+                                   standard_name='time',
+                                   units=time_unit)
+
+    latdim.guess_bounds()
+    londim.guess_bounds()
+    dummy = iris.cube.Cube(np.ones((len(times), len(lats), len(lons))),
+                           units='1')
+
+    dummy.add_dim_coord(latdim, 1)
+    dummy.add_dim_coord(londim, 2)
+    dummy.add_dim_coord(timedim, 0)
+    dummy.var_name = 'dummy_grid'
+
+    dummy.data = dummy.data.astype(dtype)
+    for coord in dummy.coords():
+        coord.points = coord.points.astype(dtype)
+    return dummy
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
     plt.close('all')
-    cd = _create_fake_coldata_3d_hourly()
-
-    cd.plot_scatter()
+    cube = make_dummy_cube_3D(dtype=float)
+    print(cube.coord('time').points.dtype)
 
 
 
