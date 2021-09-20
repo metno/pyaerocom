@@ -16,7 +16,24 @@ def _jsdate_list(data):
     return _get_jsdate(idx.values).tolist()
 
 def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
+    """
+    Convert gridded data to json dictionary
 
+    Parameters
+    ----------
+    data : GriddedData
+        input data to be converted
+    lat_res_deg : int
+        output latitude resolution in decimal degrees
+    lon_res_deg : int
+        output longitude resolution in decimal degrees
+
+    Returns
+    -------
+    dict
+        data dictionary for json output (keys are metadata and data).
+
+    """
     data = data.regrid(lat_res_deg=lat_res_deg, lon_res_deg=lon_res_deg)
 
     try:
@@ -50,7 +67,25 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
         sd['data'] = vals.tolist()
     return output
 
-def calc_contour_json(data, vmin, vmax, cmap, cmap_bins):
+def calc_contour_json(data, cmap, cmap_bins):
+    """
+    Convert gridded data into contours for json output
+
+    Parameters
+    ----------
+    data : GriddedData
+        input data
+    cmap : str
+        colormap of output
+    cmap_bins : list
+        list containing the bins to which the values are mapped.
+
+    Returns
+    -------
+    dict
+        dictionary containing contour data
+
+    """
     matplotlib.use('Agg')
     try:
         import geojsoncontour
