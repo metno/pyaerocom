@@ -10,7 +10,7 @@ import pytest
 
 from pyaerocom import geodesy
 
-from .conftest import etopo1_unavail, geonum_unavail, rg_unavail
+from .conftest import etopo1_unavail, geonum_unavail, rg_unavail, lustre_avail
 
 TEST_LAT = 50.8
 TEST_LON = 9
@@ -40,8 +40,8 @@ def test_srtm_altitude():
 @geonum_unavail
 @etopo1_unavail
 def test_etopo_altitude():
-    npt.assert_almost_equal(geodesy.get_topo_altitude(TEST_LAT, TEST_LON,
-                                                      topo_dataset='etopo1'), 217)
+    alt = geodesy.get_topo_altitude(TEST_LAT, TEST_LON, topo_dataset='etopo1')
+    npt.assert_almost_equal(alt, 217)
 
 if __name__ == '__main__':
     import sys
