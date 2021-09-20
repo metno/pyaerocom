@@ -292,6 +292,12 @@ class ColocationSetup(BrowseDict):
     #: (Overwritten from base class)
     CRASH_ON_INVALID = False
 
+    FORBIDDEN_CHARS_KEYS = [
+        'var_outlier_ranges', # deprecated since v0.12.0
+        'var_ref_outlier_ranges', # deprecated since v0.12.0
+        'remove_outliers' # deprecated since v0.12.0
+    ]
+
     ts_type = StrWithDefault('monthly')
     obs_vars = ListOfStrings()
     def __init__(self, model_id=None, obs_id=None, obs_vars=None,
@@ -375,7 +381,6 @@ class ColocationSetup(BrowseDict):
 
         self.add_meta = {}
         self.update(**kwargs)
-        self._check_outdated_outlier_defs()
 
     def _check_input_basedir_coldata(self, basedir_coldata):
         """
@@ -465,15 +470,6 @@ class ColocationSetup(BrowseDict):
         if key == 'basedir_coldata':
             val = self._check_input_basedir_coldata(val)
         super(ColocationSetup, self).__setitem__(key, val)
-
-    def _check_outdated_outlier_defs(self):
-        check = ['var_outlier_ranges', 'var_ref_outlier_ranges',
-                 'remove_outliers']
-        for attr in check:
-            if attr in self:
-                raise DeprecationError(
-                    f'Attribute {attr} is deprecated since v0.12.0'
-                )
 
     def _period_from_start_stop(self) -> str:
         start, stop = start_stop(self.start, self.stop,
@@ -735,7 +731,6 @@ class Colocator(ColocationSetup):
         self._check_obs_vars_available()
         self._check_obs_filters()
         self._check_model_add_vars()
-        self._check_outdated_outlier_defs()
         self._check_set_start_stop()
 
         vars_to_process = self._find_var_matches()
