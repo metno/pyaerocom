@@ -87,6 +87,10 @@ lustre_unavail = pytest.mark.skipif(not const.has_access_lustre,
                                     reason='Skipping tests that require access '
                                     'to AEROCOM database on METNo servers')
 
+lustre_avail = pytest.mark.skipif(const.has_access_lustre,
+                                    reason='Skipping tests that will crash '
+                                           'if lustre can be accessed.')
+
 # custom skipif marker that is used below for test functions that
 # require geonum to be installed
 geonum_unavail = pytest.mark.skipif(not const.GEONUM_AVAILABLE,

@@ -15,7 +15,7 @@ import pyaerocom.config as testmod
 from pyaerocom import const as DEFAULT_CFG
 from pyaerocom.config import Config
 
-from .conftest import PYADIR, does_not_raise_exception
+from .conftest import PYADIR, does_not_raise_exception, lustre_avail
 
 USER = getpass.getuser()
 
@@ -75,6 +75,7 @@ def test_Config_has_access_users_database():
     cfg = testmod.Config(try_infer_environment=False)
     assert not cfg.has_access_users_database
 
+@lustre_avail
 @pytest.mark.parametrize('cfg_id, basedir, init_obslocs_ungridded,init_data_search_dirs, raises, num_obs, num_dirs', [
     ('metno', None,False,False,does_not_raise_exception(),0,0),
     ('metno', None,True,False,does_not_raise_exception(),0,0),
