@@ -43,7 +43,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
                                check_coord_circular,
                                extract_latlon_dataarray)
 
-from pyaerocom.mathutils import closest_index, exponent
+from pyaerocom.mathutils import closest_index, exponent, estimate_value_range
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.units_helpers import UALIASES
@@ -2429,7 +2429,12 @@ class GriddedData(object):
         return fig
 
     def min(self):
-        """Minimum value"""
+        """Minimum value
+
+        Returns
+        -------
+        float
+        """
         #make sure data is in memory
         data = self.grid.data
         if self.is_masked:
@@ -2437,12 +2442,50 @@ class GriddedData(object):
         return data.min()
 
     def max(self):
-        """Maximum value"""
+        """Maximum value
+
+        Returns
+        -------
+        float
+        """
         #make sure data is in memory
         data = self.grid.data
         if self.is_masked:
             return data.data[~data.mask].max()
         return data.max()
+
+    def nanmin(self):
+        """Minimum value excluding NaNs
+
+        Returns
+        -------
+        float
+        """
+        return np.nanmin(self.cube.data)
+
+    def nanmax(self):
+        """Maximum value excluding NaNs
+
+        Returns
+        -------
+        float
+        """
+        return np.nanmax(self.cube.data)
+
+    def estimate_value_range_from_data(self):
+        """
+        Estimate lower and upper end of value range for these data
+
+        Returns
+        -------
+        float
+            lower end of estimated value range
+        float
+            upper end of estimated value range
+
+        """
+        min, max = self.nanmin(), self.nanmax()
+        return estimate_value_range(min, max, extend_percent=5)
 
     def area_weighted_mean(self):
         """Get area weighted mean"""
