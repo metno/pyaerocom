@@ -11,8 +11,10 @@ from pyaerocom.exceptions import EntryNotAvailable
 from pyaerocom.aeroval.obsentry import ObsEntry
 from pyaerocom.aeroval.modelentry import ModelEntry
 
+import abc
 
-class BaseCollection(BrowseDict):
+
+class BaseCollection(BrowseDict, abc.ABC):
     MAXLEN_KEYS = 25
     FORBIDDEN_CHARS_KEYS =['_']
     def keylist(self, name_or_pattern:str=None) -> list:
@@ -46,6 +48,7 @@ class BaseCollection(BrowseDict):
                 f'No matches could be found that match input {name_or_pattern}')
         return matches
 
+    @abc.abstractmethod
     def get_entry(self, key) -> object:
         """
         Getter for eval entries
@@ -55,60 +58,15 @@ class BaseCollection(BrowseDict):
         KeyError
             if input name is not in this collection
         """
-        try:
-            return self[key]
-        except (AttributeError, KeyError):
-            raise EntryNotAvailable(f'no such entry {key}')
-
-
-    def get_web_iface_name(self, key):
-        """
-        Get webinterface name for obs entry
-
-        Note
-        ----
-        Normally this is the key of the obsentry in :attr:`obs_config`,
-        however, it might be specified explicitly via key `web_interface_name`
-        in the corresponding value.
-
-        Parameters
-        ----------
-        key : str
-            key of entry.
-
-        Returns
-        -------
-        str
-            corresponding name
-
-        """
-        if not 'web_interface_name' in self[key]:
-            return key
-        return self[key]['web_interface_name']
+        pass
 
     @property
-    def web_iface_names(self):
+    @abc.abstractmethod
+    def web_iface_names(self) -> list:
         """
-        Get webinterface name for obs entry
-
-        Note
-        ----
-        Normally this is the key of the obsentry in :attr:`obs_config`,
-        however, it might be specified explicitly via key `web_interface_name`
-        in the corresponding value.
-
-        Parameters
-        ----------
-        key : str
-            key of entry.
-
-        Returns
-        -------
-        str
-            corresponding name
-
+        List of webinterface names for
         """
-        return [self.get_web_iface_name(key) for key in self.keylist()]
+        pass
 
 class ObsCollection(BaseCollection):
     """
@@ -137,9 +95,12 @@ class ObsCollection(BaseCollection):
         KeyError
             if input name is not in this collection
         """
-        cfg = super(ObsCollection, self).get_entry(key)
-        cfg['obs_name'] = self.get_web_iface_name(key)
-        return cfg
+        try:
+            entry = self[key]
+            entry['obs_name'] = self.get_web_iface_name(key)
+            return entry
+        except (KeyError, AttributeError):
+            raise EntryNotAvailable(f'no such entry {key}')
 
     def get_all_vars(self) -> list:
         """
@@ -155,6 +116,43 @@ class ObsCollection(BaseCollection):
         for ocfg in self.values():
             vars.extend(ocfg.get_all_vars())
         return sorted(list(set(vars)))
+
+    def get_web_iface_name(self, key):
+        """
+        Get webinterface name for entry
+
+        Note
+        ----
+        Normally this is the key of the obsentry in :attr:`obs_config`,
+        however, it might be specified explicitly via key `web_interface_name`
+        in the corresponding value.
+
+        Parameters
+        ----------
+        key : str
+            key of entry.
+
+        Returns
+        -------
+        str
+            corresponding name
+
+        """
+        entry = self[key]
+        if not 'web_interface_name' in entry:
+            return key
+        return entry['web_interface_name']
+
+    @property
+    def web_iface_names(self) -> list:
+        """
+        List of web interface names for each obs entry
+
+        Returns
+        -------
+        list
+        """
+        return [self.get_web_iface_name(key) for key in self.keylist()]
 
 class ModelCollection(BaseCollection):
     """
@@ -201,9 +199,23 @@ class ModelCollection(BaseCollection):
         dict
             Dictionary that specifies the model setup ready for the analysis
         """
-        cfg = super(ModelCollection, self).get_entry(key)
-        cfg['model_name'] = self.get_web_iface_name(key)
-        return cfg
+        try:
+            entry = self[key]
+            entry['model_name'] = key
+            return entry
+        except (KeyError,AttributeError):
+            raise EntryNotAvailable(f'no such entry {key}')
+
+    @property
+    def web_iface_names(self) -> list:
+        """
+        List of web interface names for each obs entry
+
+        Returns
+        -------
+        list
+        """
+        return self.keylist()
 
 
 if __name__ == '__main__':
