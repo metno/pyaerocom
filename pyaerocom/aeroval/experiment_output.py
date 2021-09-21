@@ -357,7 +357,7 @@ class ExperimentOutput(ProjectOutput):
     def _create_statistics_json(self):
         stats_info = statistics_defaults
         if self.cfg.statistics_opts.add_trends:
-            stats_info = dict(statistics_defaults.items() + statistics_trend.items())
+            stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)
 
 
