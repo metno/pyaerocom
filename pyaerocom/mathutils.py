@@ -28,7 +28,8 @@ def is_strictly_monotonic(iter1d) -> bool:
     """
     return True if np.all(np.diff(iter1d) > 0) else False
 
-def make_binlist(vmin : float, vmax : float, num : int = None) -> list:
+def make_binlist(vmin:float, vmax:float, num:int=None) -> list:
+    """"""
     if num is None:
         num = 8
     return list(np.linspace(vmin, vmax, num+1))
@@ -462,3 +463,42 @@ if __name__ == "__main__":
 
     wcov = weighted_cov(obs, mod, weights)
     print(wcov)
+
+
+def estimate_value_range(vmin, vmax, extend_percent=0):
+    """
+    Round and extend input range to estimate lower and upper bounds of range
+
+    Parameters
+    ----------
+    vmin : float
+        lower value of range
+    vmax : float
+        upper value of range
+    extend_percent : int
+        percentage specifying to which extent the input range is supposed to be
+        extended.
+
+    Returns
+    -------
+    float
+        estimated lower end of range
+    float
+        estimated upper end of range
+
+
+    """
+    if not vmax > vmin:
+        raise ValueError('vmax needs to exceed vmin')
+    # extent value range by +/- 5%
+    offs = (vmax - vmin) * extend_percent * 0.01
+    vmin, vmax = vmin - offs, vmax + offs
+
+    if vmin != 0:
+        exp = float(exponent(vmin))
+    else:
+        exp = float(exponent(vmax))
+    # round values
+    vmin = np.floor(vmin * 10 ** (-exp)) * 10.0 ** (exp)
+    vmax = np.ceil(vmax * 10 ** (-exp)) * 10.0 ** (exp)
+    return vmin, vmax
