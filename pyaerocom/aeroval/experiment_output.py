@@ -422,11 +422,14 @@ class ExperimentOutput(ProjectOutput):
             True if this combination is valid, else False.
 
         """
-        try:
-            ocfg = self.cfg.obs_cfg.get_entry(obs_name)
-            if not ocfg.has_var(obs_var):
-                return False
-        except EntryNotAvailable:
+        allobs = self.cfg.obs_cfg
+        obs_found = False
+        for key, ocfg in allobs.items():
+            if obs_name == allobs.get_web_iface_name(key) and ocfg.has_var(
+                    obs_var):
+                obs_found = True
+                break
+        if not obs_found:
             return False
         try:
             mcfg = self.cfg.model_cfg.get_entry(mod_name)
