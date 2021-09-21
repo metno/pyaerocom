@@ -644,8 +644,8 @@ class ReadMscwCtm(object):
         if ts_type == 'hourly':
             cube.coord('time').convert_units('hours since 1900-01-01')
         gridded = GriddedData(cube, var_name=var_name_aerocom,
-                              ts_type=ts_type, check_unit=False,
-                              convert_unit_on_init=False)
+                              ts_type=ts_type, check_unit=True,
+                              convert_unit_on_init=True)
 
         #!obsolete
         #if var.is_deposition:
