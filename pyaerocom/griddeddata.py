@@ -2472,9 +2472,15 @@ class GriddedData(object):
         """
         return np.nanmax(self.cube.data)
 
-    def estimate_value_range_from_data(self):
+    def estimate_value_range_from_data(self, extend_percent=5):
         """
         Estimate lower and upper end of value range for these data
+
+        Parameters
+        ----------
+        extend_percent : int
+            percentage specifying to which extend min and max values are to
+            be extended to estimate the value range. Defaults to 5.
 
         Returns
         -------
@@ -2485,7 +2491,8 @@ class GriddedData(object):
 
         """
         min, max = self.nanmin(), self.nanmax()
-        return estimate_value_range(min, max, extend_percent=5)
+        return estimate_value_range(vmin=min, vmax=max,
+                                    extend_percent=extend_percent)
 
     def area_weighted_mean(self):
         """Get area weighted mean"""
@@ -2521,26 +2528,12 @@ class GriddedData(object):
             return data.data[~data.mask].std()
         return data.std()
 
-    def short_str(self):
-        """Short string representation"""
-        return "ID: {}, Var: {}".format(self.data_id, self.var_name)
-
     def _check_lonlat_bounds(self):
         """Check if longitude and latitude bounds are set and if not, guess"""
         if self.longitude.bounds is None:
             self.longitude.guess_bounds()
         if self.latitude.bounds is None:
             self.latitude.guess_bounds()
-
-    @property
-    def _size_GB(self):
-        """Size of original data files from which this object is created
-
-        These method is intended to be used for operations that actually
-        require the *realisation* of the (lazy loaded) data.
-        """
-        raise NotImplementedError
-        return sum([os.path.getsize(f) for f in self.from_files]) / 10**9
 
     def __getattr__(self, attr):
         return self[attr]

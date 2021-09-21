@@ -8,12 +8,12 @@ Created on Thu Apr 12 14:45:43 2018
 
 import os
 from datetime import datetime
-
+import numpy as np
 import numpy.testing as npt
 import pytest
 
 from pyaerocom import GriddedData, Variable
-from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.exceptions import VariableDefinitionError, CoordinateError
 
 from .conftest import TEST_RTOL, does_not_raise_exception, testdata_unavail
 
@@ -65,10 +65,6 @@ def test_GriddedData_long_name():
 def test_GriddedData_suppl_info():
     assert isinstance(GriddedData().suppl_info, dict)
 
-### ----------------------------------------------
-# Initial set of tests (not very systematic)
-### ----------------------------------------------
-
 @testdata_unavail
 def test_basic_properties(data_tm5):
 
@@ -89,7 +85,7 @@ def test_basic_properties(data_tm5):
     assert data.lon_res == 3.0
 
 @testdata_unavail
-def test_longitude(data_tm5):
+def test_GriddedData_longitude(data_tm5):
     """Test if longitudes are defined right"""
     assert str(data_tm5.longitude.units) == 'degrees'
 
@@ -99,7 +95,7 @@ def test_longitude(data_tm5):
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
 
 @testdata_unavail
-def test_latitude(data_tm5):
+def test_GriddedData_latitude(data_tm5):
     """test latitude array"""
     assert str(data_tm5.latitude.units) == 'degrees'
     lats = data_tm5.latitude.points
@@ -108,7 +104,7 @@ def test_latitude(data_tm5):
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
 
 @testdata_unavail
-def test_time(data_tm5):
+def test_GriddedData_time(data_tm5):
     """Test time dimension access and values"""
     time = data_tm5.time
 
@@ -119,7 +115,7 @@ def test_time(data_tm5):
     assert nominal_eq == vals_eq
 
 @testdata_unavail
-def test_resample_time(data_tm5):
+def test_GriddedData_resample_time(data_tm5):
     data = data_tm5
 
     yearly = data.resample_time('yearly')
@@ -131,7 +127,7 @@ def test_resample_time(data_tm5):
     npt.assert_allclose(actual=mean_vals,
                         desired=[0.11865, 0.11865], rtol=TEST_RTOL)
 @testdata_unavail
-def test_interpolate(data_tm5):
+def test_GriddedData_interpolate(data_tm5):
     data = data_tm5
 
     itp = data.interpolate(latitude=TESTLATS, longitude=TESTLONS)
@@ -146,7 +142,7 @@ def test_interpolate(data_tm5):
                         rtol=TEST_RTOL)
 
 @testdata_unavail
-def test_to_time_series(data_tm5):
+def test_GriddedData_to_time_series(data_tm5):
 
     latsm = [-9, 21]
     lonsm = [-118.5, 70.5]
@@ -165,20 +161,105 @@ def test_to_time_series(data_tm5):
     npt.assert_allclose(means_actual, [0.101353, 0.270886], rtol=TEST_RTOL)
 
 @testdata_unavail
-def test_change_baseyear(data_tm5):
+def test_GriddedData_change_baseyear(data_tm5):
     cp = data_tm5.copy()
     cp.change_base_year(1901)
 
     assert str(cp.time.units) == 'days since 1901-01-01 00:00:00'
+
+def test_GriddedData_min(data_tm5):
+    npt.assert_allclose(data_tm5.min(), 0.004629, atol=0.0001)
+
+def test_GriddedData_nanmin(data_tm5):
+    npt.assert_allclose(data_tm5.nanmin(), 0.004629, atol=0.0001)
+
+def test_GriddedData_max(data_tm5):
+    npt.assert_allclose(data_tm5.max(), 2.495539, atol=0.0001)
+
+def test_GriddedData_nanmax(data_tm5):
+    npt.assert_allclose(data_tm5.nanmax(), 2.495539, atol=0.0001)
+
+@pytest.mark.parametrize('extend_percent,expected', [
+    (0, (0.004, 2.496)),
+    (15, (-0.4, 2.9)),
+
+])
+def test_GriddedData_estimate_value_range_from_data(data_tm5,extend_percent,
+                                                    expected):
+    result = data_tm5.estimate_value_range_from_data(extend_percent)
+    npt.assert_allclose(result,expected,rtol=1e-2)
+
+def test_GriddedData_area_weighted_mean(data_tm5):
+    val = data_tm5.area_weighted_mean()
+    assert len(val) == 12
+    npt.assert_allclose(val.mean(), 0.118648, atol=0.001)
 
 @testdata_unavail
 @pytest.mark.parametrize('kwargs,result', [
     (dict(), 0.11864813532841474),
     (dict(areaweighted=False), 0.09825691),
     ])
-def test_mean(data_tm5,kwargs,result):
+def test_GriddedData_mean(data_tm5,kwargs,result):
     npt.assert_allclose(data_tm5.mean(**kwargs), result)
 
-if __name__=="__main__":
-    import sys
-    pytest.main(sys.argv)
+def test_GriddedData_std(data_tm5):
+    npt.assert_allclose(data_tm5.std(), 0.106527, atol=0.0001)
+
+def test_GriddedData_short_str(data_tm5):
+    assert data_tm5.short_str() == 'od550aer (TM5_AP3-CTRL2016, ' \
+                                   'freq=monthly, unit=1)'
+
+def test_GriddedData_copy(data_tm5):
+    data = data_tm5.copy()
+    assert isinstance(data, GriddedData)
+    assert data.cube is not data_tm5.cube
+
+def test_GriddedData__check_lonlat_bounds(data_tm5):
+    data = data_tm5.copy()
+    data.latitude.bounds = None
+    data.longitude.bounds = None
+    data._check_lonlat_bounds()
+    lonb = data.longitude.bounds
+    latb = data.latitude.bounds
+    assert latb is not None
+    assert lonb is not None
+    assert isinstance(latb, np.ndarray)
+    assert isinstance(lonb, np.ndarray)
+    assert lonb.shape == (120, 2)
+    assert latb.shape == (90, 2)
+
+@pytest.mark.parametrize('val,expected,raises', [
+    ('blaa', None, pytest.raises(CoordinateError)),
+    ('lon', {'var_name': 'lon'}, does_not_raise_exception()),
+    ('longitude', {'standard_name': 'longitude'}, does_not_raise_exception()),
+    ('Center coordinates for longitudes', {'long_name': 'Center coordinates for longitudes'},
+     does_not_raise_exception()),
+    ('lat', {'var_name': 'lat'}, does_not_raise_exception()),
+    ('latitude', {'standard_name': 'latitude'}, does_not_raise_exception()),
+    ('Center coordinates for latitudes', {'long_name': 'Center coordinates for latitudes'},
+     does_not_raise_exception()),
+    ('time', {'standard_name': 'time'}, does_not_raise_exception()),
+    ('Time', {'long_name': 'Time'}, does_not_raise_exception()),
+])
+def test_GriddedData__check_coordinate_access(data_tm5,val,expected,raises):
+    with raises:
+        output = data_tm5._check_coordinate_access(val)
+        assert output==expected
+
+@pytest.mark.parametrize('add_aux', [True, False])
+def test_GriddedData_delete_aux_vars(data_tm5, add_aux):
+
+    data = data_tm5.copy()
+    if add_aux:
+        import iris
+        auxc = iris.coords.AuxCoord(data.time.points, var_name='time2')
+        data.cube.add_aux_coord(auxc, [0])
+        assert len(data.cube.aux_coords) == 1
+    data.delete_aux_vars()
+    assert len(data.cube.aux_coords) == 0
+
+def test_GriddedData_search_other():
+    from pyaerocom.io import ReadGridded
+    reader = ReadGridded('TM5-met2010_CTRL-TEST')
+    data = reader.read_var('od550aer', start=2010, ts_type='monthly')
+    data.search_other(var_name)
