@@ -1995,7 +1995,6 @@ class ReadGridded(object):
                            concatenated=is_concat,
                            convert_unit_on_init=try_convert_units,
                            **meta)
-        data.reader = self
         # crop cube in time (if applicable)
         if not start == 9999:
             try:
@@ -2006,6 +2005,7 @@ class ReadGridded(object):
                                           .format(data, start, stop))
         if rename_var is not None:
             data.var_name = rename_var
+        data.reader = self
         return data
 
     def _check_crop_time(self, data, start, stop):
