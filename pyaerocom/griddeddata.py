@@ -47,6 +47,7 @@ from pyaerocom.mathutils import closest_index, exponent, estimate_value_range
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
 from pyaerocom.units_helpers import UALIASES
+from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
 class GriddedData(object):
@@ -346,33 +347,6 @@ class GriddedData(object):
             raise AttributeError('Mismatch between sampling freq and '
                                  'actual frequency of values in time dimension ')
 
-    def infer_ts_type(self):
-        """Try to infer sampling frequency from time dimension data
-
-        Returns
-        -------
-        str
-            ts_type that was inferred (is assigned to metadata too)
-
-        Raises
-        ------
-        DataDimensionError
-            if data object does not contain a time dimension
-        """
-        if not self.has_time_dim:
-            raise DataDimensionError('Cannot infer frequency. Data has no time '
-                                     'dimension')
-        dt = np.unique(self.delta_t)
-        if len(dt) > 1:
-            raise ValueError('Could not identify unique frequency')
-        dt = dt[0]
-        for ts_type, freq in TS_TYPE_TO_NUMPY_FREQ.items():
-            val = dt.astype('timedelta64[{}]'.format(freq)).astype(int)
-            if val == 1:
-                self.metadata['ts_type'] = ts_type
-                return ts_type
-        raise AttributeError('Failed to infer ts_type from data')
-
     @property
     def TS_TYPES(self):
         """List with valid filename encryptions specifying temporal resolution
@@ -418,45 +392,6 @@ class GriddedData(object):
     def base_year(self, val):
         self.change_base_year(val)
 
-    def change_base_year(self, new_year, inplace=True):
-        """
-        Changes base year of time dimension
-
-        Relevant, e.g. for climatological analyses.
-
-        ToDo
-        ----
-        Account for leap years.
-
-        Note
-        ----
-        This method does not account for offsets arising from leap years (
-        affecting daily or higher resolution data).
-        It is thus recommended to use this method with care. E.g. if you use
-        this method on a 2016 daily data object, containing a calendar that
-        supports leap years, you'll end up with 366 time stamps also in the new
-        data object.
-
-        Parameters
-        -----------
-        new_year : int
-            new base year (can also be other than integer if it is convertible)
-        inplace : bool
-            if True, modify this object, else, use a copy
-
-        Returns
-        -------
-        GriddedData
-            modified data object
-        """
-        if inplace:
-            data = self
-        else:
-            data = self.copy()
-        from pyaerocom.io.iris_io import correct_time_coord
-        data.cube = correct_time_coord(data.cube, data.ts_type, new_year)
-        return data
-
     @property
     def start(self):
         """Start time of dataset as datetime64 object"""
@@ -469,11 +404,6 @@ class GriddedData(object):
         np_freq = TsType(self.ts_type).to_numpy_freq() #TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
         dtype_appr = 'datetime64[{}]'.format(np_freq)
         t=t.astype(dtype_appr)
-# =============================================================================
-#         except Exception:
-#             logger.exception('Failed to round start time {} to beginning of '
-#                              'frequency {}'.format(t, self.ts_type))
-# =============================================================================
         return t.astype('datetime64[us]')
 
     @property
@@ -636,6 +566,73 @@ class GriddedData(object):
         """Boolean specifying whether data has latitude and longitude dimensions"""
         return 'time' in self.dimcoord_names
 
+    def infer_ts_type(self):
+        """Try to infer sampling frequency from time dimension data
+
+        Returns
+        -------
+        str
+            ts_type that was inferred (is assigned to metadata too)
+
+        Raises
+        ------
+        DataDimensionError
+            if data object does not contain a time dimension
+        """
+        if not self.has_time_dim:
+            raise DataDimensionError(
+                'Cannot infer frequency. Data has no time '
+                'dimension')
+        dt = np.unique(self.delta_t)
+        if len(dt) > 1:
+            raise ValueError('Could not identify unique frequency')
+        dt = dt[0]
+        for ts_type, freq in TS_TYPE_TO_NUMPY_FREQ.items():
+            val = dt.astype('timedelta64[{}]'.format(freq)).astype(int)
+            if val == 1:
+                self.metadata['ts_type'] = ts_type
+                return ts_type
+        raise AttributeError('Failed to infer ts_type from data')
+
+    def change_base_year(self, new_year, inplace=True):
+        """
+        Changes base year of time dimension
+
+        Relevant, e.g. for climatological analyses.
+
+        ToDo
+        ----
+        Account for leap years.
+
+        Note
+        ----
+        This method does not account for offsets arising from leap years (
+        affecting daily or higher resolution data).
+        It is thus recommended to use this method with care. E.g. if you use
+        this method on a 2016 daily data object, containing a calendar that
+        supports leap years, you'll end up with 366 time stamps also in the new
+        data object.
+
+        Parameters
+        -----------
+        new_year : int
+            new base year (can also be other than integer if it is convertible)
+        inplace : bool
+            if True, modify this object, else, use a copy
+
+        Returns
+        -------
+        GriddedData
+            modified data object
+        """
+        if inplace:
+            data = self
+        else:
+            data = self.copy()
+        from pyaerocom.io.iris_io import correct_time_coord
+        data.cube = correct_time_coord(data.cube, data.ts_type, new_year)
+        return data
+
     def _read_netcdf(self, input, var_name, perform_fmt_checks):
         from pyaerocom.io.iris_io import load_cube_custom
         self.grid = load_cube_custom(input, var_name,
@@ -650,6 +647,28 @@ class GriddedData(object):
             self.update_meta(**get_metadata_from_filename(input))
         except Exception:
             logger.warning('Failed to access metadata from filename')
+
+    def register_var_glob(self):
+        vmin, vmax = self.estimate_value_range_from_data()
+        vardef = Variable(var_name=self.var_name,
+                          standard_name=self.standard_name,
+                          long_name=self.long_name,
+                          units=self.units,
+                          minimum=vmin, maximum=vmax)
+
+        const.VARS.add_var(vardef)
+        const.print_log.warning(
+            f'Adding variable {self.var_name} in pyaerocom.const.VARS, '
+            f'since such a  '
+            f'variable is not defined in pyaerocom. Minimum and maximum '
+            f'values are added automatically based on value range in '
+            f'associated GriddedData object to: minimum={vmin}, maximum='
+            f'{vmax}. Since this will add the variable only temporarily '
+            f'during this run, this might interrupt the processing '
+            f'workflow unexpectedly when rerunning parts of the code without '
+            f'explictly calling GriddedData.register_var_glob. It may be best '
+            f'to add this variable to pyaerocom/data/variables.ini.')
+        return vardef
 
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
