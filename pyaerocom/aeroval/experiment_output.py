@@ -8,6 +8,7 @@ from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
 
 from pyaerocom.exceptions import VariableDefinitionError, EntryNotAvailable
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
+                                             statistics_trend,
                                              var_ranges_defaults,
                                              var_web_info)
 from pyaerocom.aeroval.helpers import read_json, write_json
@@ -355,6 +356,8 @@ class ExperimentOutput(ProjectOutput):
 
     def _create_statistics_json(self):
         stats_info = statistics_defaults
+        if self.cfg.statistics_opts.add_trends:
+            stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)
 
 
