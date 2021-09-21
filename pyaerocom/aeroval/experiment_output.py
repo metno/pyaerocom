@@ -348,11 +348,15 @@ class ExperimentOutput(ProjectOutput):
 
 
     def _create_var_ranges_json(self):
+        try:
+            ranges = read_json(self.var_ranges_file)
+        except FileNotFoundError:
+            ranges = {}
         avail = self._results_summary()
         all_vars = list(set(avail['ovar'] + avail['mvar']))
-        ranges = {}
         for var in all_vars:
-            ranges[var] = self._get_cmap_info(var)
+            if not var in ranges or ranges[var]['scale'] == []:
+                ranges[var] = self._get_cmap_info(var)
         write_json(ranges, self.var_ranges_file, indent=4)
 
 
