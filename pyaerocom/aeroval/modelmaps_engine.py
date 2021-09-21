@@ -75,11 +75,12 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 files.extend(_files)
 
             except (TemporalResolutionError, DataCoverageError,
-                    VariableDefinitionError):
+                    VariableDefinitionError) as e:
                 if self.raise_exceptions:
                     raise
                 const.print_log.warning(
-                    f'Failed to process maps for {model_name} {var} data.')
+                    f'Failed to process maps for {model_name} {var} data. '
+                    f'Reason: {e}.')
         return files
 
     def _check_dimensions(self, data : GriddedData) -> 'GriddedData':
@@ -140,7 +141,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.resample_time(freq)
 
         data.check_unit()
-
         var = VarinfoWeb(var)
 
         # first calcualate and save geojson with contour levels
