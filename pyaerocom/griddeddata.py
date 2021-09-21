@@ -263,15 +263,23 @@ class GriddedData(object):
 
     @property
     def reader(self):
-        """Instance of reader class from which this object was created"""
-        r = self._reader
+        """Instance of reader class from which this object was created
+
+        Note
+        ----
+        Currently only supports instances of :class:`ReadGridded`.
+        """
         from pyaerocom.io import ReadGridded
-        if not isinstance(r, ReadGridded):
-            self._reader = r = ReadGridded(self.data_id)
-        return r
+        if not isinstance(self._reader, ReadGridded):
+            self._reader = ReadGridded(self.data_id)
+        return self._reader
 
     @reader.setter
     def reader(self, val):
+        from pyaerocom.io import ReadGridded
+        if not isinstance(val, ReadGridded):
+            raise ValueError('cannot set reader in GriddedData: need '
+                             'instance of class ReadGridded')
         self._reader = val
 
     @property
@@ -2565,28 +2573,48 @@ class GriddedData(object):
             if isinstance(coord, iris.coords.AuxCoord):
                 c.remove_coord(coord.name())
 
-    def search_other(self, var_name, require_same_shape=True):
-        """Searches data for another variable"""
-        if require_same_shape and self.concatenated or self.computed:
-            raise NotImplementedError('Coming soon...')
-        for file in self.from_files:
-            try:
-                from pyaerocom.io.iris_io import load_cube_custom
-                cube = load_cube_custom(file, var_name=var_name,
-                                        perform__fmt_checks=False)
-                return GriddedData(cube, from_files=file)
-            except Exception:
-                pass
+    def search_other(self, var_name):
+        """Searches data for another variable
+
+        The search is constrained to the time period spanned by this object
+        and it is attempted to load the same frequency. Uses :attr:`reader`
+        (instance of :class:`ReadGridded` to search for the other variable
+        data).
+
+        Parameters
+        ----------
+        var_name : str
+            variable to be searched
+
+        Raises
+        ------
+        VariableNotFoundError
+            if data for input variable cannot be found.
+
+        Returns
+        -------
+        GriddedData
+            input variable data
+
+        """
+
         if var_name in self.reader.vars_provided:
-            return self.reader.read_var(var_name,
+            data = self.reader.read_var(var_name,
                                         start=self.start,
                                         stop=self.stop,
                                         ts_type=self.ts_type,
                                         flex_ts_type=True)
-        raise VariableNotFoundError('Could not find variable {}'.format(var_name))
+            return data
+        raise VariableNotFoundError(f'Could not find variable {var_name}')
 
     def update_meta(self, **kwargs):
-        """Update metadata dictionary"""
+        """Update metadata dictionary
+
+        Parameters
+        ----------
+        **kwargs
+            metadata to be added to :attr:`metadata`.
+        """
         for key, val in kwargs.items():
             if key == 'var_name' and not isinstance(val, str):
                 const.print_log.warning('Skipping assignment of var_name from '
@@ -2619,6 +2647,12 @@ class GriddedData(object):
         ----------
         other : GriddedData or Cube
             other data object (needs to be same shape as this object)
+        inplace : bool
+            if True, then this object will be modified and returned, else a
+            copy.
+
+        Raises
+        ------
 
         Returns
         -------

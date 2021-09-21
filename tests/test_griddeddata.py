@@ -13,9 +13,14 @@ import numpy.testing as npt
 import pytest
 
 from pyaerocom import GriddedData, Variable
-from pyaerocom.exceptions import VariableDefinitionError, CoordinateError
+from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
+                                  DataSearchError, VariableDefinitionError,
+                                  VariableNotFoundError)
 
-from .conftest import TEST_RTOL, does_not_raise_exception, testdata_unavail
+from pyaerocom.io import ReadGridded
+
+from .conftest import (TEST_RTOL, does_not_raise_exception,
+                       testdata_unavail, lustre_avail)
 
 TESTLATS =  [-10, 20]
 TESTLONS =  [-120, 69]
@@ -258,8 +263,74 @@ def test_GriddedData_delete_aux_vars(data_tm5, add_aux):
     data.delete_aux_vars()
     assert len(data.cube.aux_coords) == 0
 
-def test_GriddedData_search_other():
+@pytest.mark.parametrize('val,raises', [
+    (42, pytest.raises(ValueError)),
+    (ReadGridded('TM5-met2010_CTRL-TEST'), does_not_raise_exception())
+])
+def test_GriddedData_reader_setter(data_tm5,val,raises):
+    data = data_tm5.copy()
+    with raises:
+        data.reader = val
+        assert data._reader is val
+        assert data.reader is val
+
+@pytest.mark.parametrize('set_data_id,raises', [
+    ('blaaaa', pytest.raises(DataSearchError)),
+    ('TM5-met2010_CTRL-TEST', does_not_raise_exception())
+])
+def test_GriddedData_reader_getter(data_tm5,set_data_id,raises):
+    data = data_tm5.copy()
+    data.metadata['data_id'] = set_data_id
+    assert data._reader is None
+    with raises:
+        reader = data.reader
+        assert isinstance(reader, ReadGridded)
+
+@pytest.mark.parametrize('var,raises', [
+    ('abs550aer',does_not_raise_exception()),
+    ('concso4',pytest.raises(VariableNotFoundError))
+])
+def test_GriddedData_search_other(var,raises):
     from pyaerocom.io import ReadGridded
     reader = ReadGridded('TM5-met2010_CTRL-TEST')
     data = reader.read_var('od550aer', start=2010, ts_type='monthly')
-    data.search_other(var_name)
+    with raises:
+        result = data.search_other(var)
+        assert isinstance(result, GriddedData)
+
+def test_GriddedData_update_meta(data_tm5):
+    data = data_tm5.copy()
+    data.update_meta(bla=42, blub=43)
+    assert data.metadata['bla'] == 42
+    assert data.metadata['blub'] == 43
+
+@pytest.mark.parametrize('inplace', [True, False])
+def test_GriddedData_delete_all_coords(data_tm5, inplace):
+    data = data_tm5.copy()
+    new = data.delete_all_coords(inplace)
+    assert new.cube.coords() == []
+    if inplace:
+        assert data is new
+    else:
+        assert len(data.cube.coords()) == 3
+
+@pytest.mark.parametrize('inplace,other_tst,raises', [
+    (True, 'monthly', does_not_raise_exception()),
+    (False, 'monthly', does_not_raise_exception()),
+    (False, 'daily', pytest.raises(DataDimensionError)),
+
+    ])
+def test_GriddedData_copy_coords(inplace,other_tst,raises):
+    from pyaerocom.io import ReadGridded
+    reader = ReadGridded('TM5-met2010_CTRL-TEST')
+    aod = reader.read_var('od550aer', start=2010, ts_type='monthly')
+    abs = reader.read_var('abs550aer', start=2010, ts_type=other_tst)
+    with raises:
+        result = aod.copy_coords(abs,inplace)
+        if inplace:
+            assert result.cube is aod.cube
+        else:
+            assert result.cube is not aod.cube
+        for coord in abs.cube.coords():
+            _coord = result.cube.coord(coord.name())
+            assert coord == _coord
