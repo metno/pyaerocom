@@ -118,6 +118,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
 
         data = self.read_model_data(model_name, var)
+        try:
+            const.VARS[data.var_name]
+        except VariableDefinitionError:
+            data.register_var_glob()
         data = self._check_dimensions(data)
 
         outdir = self.cfg.path_manager.get_json_output_dirs()['contour']

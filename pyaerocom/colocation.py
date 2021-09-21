@@ -55,26 +55,8 @@ def _resolve_var_name(data):
     try:
         vardef = const.VARS[var]
     except VariableDefinitionError:
-        vmin, vmax = data.estimate_value_range_from_data()
-        vardef = Variable(var_name=var,
-                          standard_name=data.standard_name,
-                          long_name=data.long_name,
-                          units=data.units,
-                          minimum=vmin,maximum=vmax)
+        vardef = data.register_var_glob()
 
-        const.VARS.add_var(vardef)
-        const.print_log.warning(
-            f'Adding variable {var} in pyaerocom.const.VARS, since such a  '
-            f'variable is not defined in pyaerocom and is needed for '
-            f'low-level co-location routines (see func _resolve_var_name in '
-            f'colocation.py). Minimum and maximum values are added '
-            f'automatically based on value range in associated '
-            f'GriddedData object to: minimum={vmin}, maximum={vmax}. Since '
-            f'this will add the variable only '
-            f'temporarily during this run, this might interrupt the processing '
-            f'workflow unexpectedly when rerunning parts of the code without '
-            f'co-location. It may be best to add this variable to '
-            f'pyaerocom/data/variables.ini.')
     return (var, vardef.var_name_aerocom)
 
 def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
