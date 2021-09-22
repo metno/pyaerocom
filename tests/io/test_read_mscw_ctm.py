@@ -295,25 +295,25 @@ def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
         data = r._compute_var(var_name, ts_type)
         assert isinstance(data, xr.DataArray)
  
-@lustre_unavail
-@pytest.mark.parametrize('path,var_name, ts_type, raises', [
-    (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNtno3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNtnh', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNnh3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNnh4', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNno3pm10', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNno3pm25', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concsspm10', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concCecpm25', 'monthly', does_not_raise_exception()),
-    ])        
-def test_ReadMscwCtm__compute_var_v2(path,var_name,ts_type,raises):
-    r = ReadMscwCtm(filepath=f'{path}/Base_month.nc')
-    ts_type  = 'monthly'
-    with raises:
-        data = r._compute_var(var_name,ts_type)
-        assert isinstance(data, xr.DataArray)
+# @lustre_unavail
+# @pytest.mark.parametrize('path,var_name, ts_type, raises', [
+#     (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concNtno3', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concNtnh', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concNnh3', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concNnh4', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concNno3pm10', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concNno3pm25', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concsspm10', 'monthly', does_not_raise_exception()),
+#     (TESTPATH_LUSTRE,'concCecpm25', 'monthly', does_not_raise_exception()),
+#     ])
+# def test_ReadMscwCtm__compute_var_v2(path,var_name,ts_type,raises):
+#     r = ReadMscwCtm(filepath=f'{path}/Base_month.nc')
+#     ts_type  = 'monthly'
+#     with raises:
+#         data = r._compute_var(var_name,ts_type)
+#         assert isinstance(data, xr.DataArray)
         
 
 @testdata_unavail
@@ -407,11 +407,11 @@ def test_ReadMscwCtm_open_file(path_emep):
     assert reader._filedata is data
 
 @pytest.mark.parametrize('var_name, value, raises',[
+    ('blaa', True, pytest.raises(exc.VariableDefinitionError)),
     ('od550gt1aer', False, does_not_raise_exception()),
     ('absc550aer', True, does_not_raise_exception()),
     ('concpm10', True, does_not_raise_exception()),
     ('sconcpm10', True, does_not_raise_exception()),
-    ('blaaa', True, pytest.raises(exc.VariableDefinitionError)),
     ])
 def test_ReadMscwCtm_has_var(reader, var_name, value, raises):
     with raises:

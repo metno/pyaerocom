@@ -337,11 +337,18 @@ def test_GriddedData_copy_coords(inplace,other_tst,raises):
             assert coord == _coord
 
 def test_GriddedData_register_var_glob(tmpdir):
+    from pyaerocom import const
     arr = np.ones((10,10,10))
     arr[2:5] = 4
-    cube = iris.cube.Cube(arr,var_name='blaaa')
+    var_name = 'blablub'
+    cube = iris.cube.Cube(arr,var_name=var_name)
     data = GriddedData(input=cube)
     data.register_var_glob()
+    vars = const.VARS
+    assert vars._all_vars[-1] == var_name
+    vars._all_vars.pop(-1)
+    del vars._vars_added[var_name]
+
 
 def _make_fake_dataset(var_name, units):
     arr = xr.DataArray(np.ones(10))

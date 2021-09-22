@@ -337,7 +337,7 @@ class TestReadEbas(object):
 
     @pytest.mark.parametrize('var,raises', [
         ('sc550aer', does_not_raise_exception()),
-        ('blaaa', pytest.raises(err.VariableDefinitionError)),
+        ('blaaablub', pytest.raises(err.VariableDefinitionError)),
         ('abs550aer', pytest.raises(err.VarNotAvailableError)),
 
         ])
