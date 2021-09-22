@@ -25,7 +25,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.exceptions import (ColocationError, ColocationSetupError,
-                                  DataCoverageError, DeprecationError)
+                                  DataCoverageError)
 
 class ColocationSetup(BrowseDict):
     """
@@ -104,17 +104,14 @@ class ColocationSetup(BrowseDict):
     obs_use_climatology : bool
         BETA if True, pyaerocom default climatology is computed from observation
         stations (so far only possible for unrgidded / gridded colocation).
-    obs_vert_type : str or dict, optional
-        Aerocom vertical code encoded in the model filenames (only AeroCom 3
+    obs_vert_type : str
+        AeroCom vertical code encoded in the model filenames (only AeroCom 3
         and later). Specifies which model file should be read in case there are
         multiple options (e.g. surface level data can be read from a
         *Surface*.nc file as well as from a *ModelLevel*.nc file). If input is
         string (e.g. 'Surface'), then the corresponding vertical type code is
         used for reading of all variables that are colocated (i.e. that are
-        specified in :attr:`obs_vars`). Else (if input is dictionary, e.g.
-        `obs_vert_type=dict(od550aer='Column', ec550aer='ModelLevel')`),
-        information is extracted variable specific, for those who are defined
-        in the dictionary, for all others, `None` is used.
+        specified in :attr:`obs_vars`).
     obs_ts_type_read : str or dict, optional
         may be specified to explicitly define the reading frequency of the
         observation data (so far, this does only apply to gridded obsdata such
@@ -146,9 +143,6 @@ class ColocationSetup(BrowseDict):
     model_data_dir : str, optional
         Location of model data. If None, attempt to infer model location based
         on model ID.
-    model_vert_type_alt : str or dict, optional
-        like :attr:`obs_vert_type` but is used in case of exception cases, i.e.
-        where the `obs_vert_type` is not available in the models.
     model_read_opts : dict, optional
         options for model reading (passed as keyword args to
         :func:`pyaerocom.io.ReadUngridded.read`).
@@ -341,7 +335,6 @@ class ColocationSetup(BrowseDict):
         self.model_name = None
         self.model_data_dir = None
 
-        self.model_vert_type_alt = None
         self.model_read_opts = {}
 
         self.model_use_vars = {}
@@ -1204,12 +1197,6 @@ class Colocator(ColocationSetup):
         if is_model:
             if self.obs_vert_type in self.OBS_VERT_TYPES_ALT:
                 return self.OBS_VERT_TYPES_ALT[self.obs_vert_type]
-            elif self.model_vert_type_alt is not None:
-                mva = self.model_vert_type_alt
-                if isinstance(mva, str):
-                    return mva
-                elif isinstance(mva, dict) and var_name in mva:
-                    return mva[var_name]
         raise DataCoverageError(f'No alternative vert type found for {var_name}')
 
     def _check_remove_outliers_gridded(self, data, var_name, is_model):
