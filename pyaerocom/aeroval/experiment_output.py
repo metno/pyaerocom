@@ -448,40 +448,40 @@ class ExperimentOutput(ProjectOutput):
         # check keys of ObsCollection but also the individual entries for
         # occurence of web_interface_name).
         allobs = self.cfg.obs_cfg
-        obs_found = False
+        obs_matches = []
         for key, ocfg in allobs.items():
             if obs_name == allobs.get_web_iface_name(key):
-                obs_found = True
-                break
-        if not obs_found:
+                obs_matches.append(ocfg)
+        if len(obs_matches) == 0:
             # obs dataset is not part of experiment
             return False
         # first, check model_add_vars
-        for ovar, mvars in mcfg.model_add_vars.items():
-            if obs_var in mvars:
-                if obs_var in mrv:
-                    if mod_var == mcfg.model_add_vars[obs_var]:
+        for ocfg in obs_matches:
+            for ovar, mvars in mcfg.model_add_vars.items():
+                if obs_var in mvars:
+                    if obs_var in mrv:
+                        if mod_var == mcfg.model_add_vars[obs_var]:
+                            return True
+                    elif obs_var == mod_var:
                         return True
-                elif obs_var == mod_var:
-                    return True
 
-        obs_vars = ocfg.get_all_vars()
-        if obs_var in obs_vars:
-            if obs_var in muv:
-                if muv[obs_var] == mod_var:
-                    # obs var is different from mod_var but this mapping is
-                    # specified in mcfg.model_use_vars
+            obs_vars = ocfg.get_all_vars()
+            if obs_var in obs_vars:
+                if obs_var in muv:
+                    if muv[obs_var] == mod_var:
+                        # obs var is different from mod_var but this mapping is
+                        # specified in mcfg.model_use_vars
+                        return True
+                    elif muv[obs_var] in mrv and mrv[muv[obs_var]] == mod_var:
+                        return True
+                if obs_var in mrv and mrv[obs_var] == mod_var:
+                    # obs variable is in model_rename_vars
                     return True
-                elif muv[obs_var] in mrv and mrv[muv[obs_var]] == mod_var:
+                elif mod_var==obs_var:
+                    # default setting, includes cases where mcfg.model_use_vars
+                    # is set and the value of the model variable in
+                    # mcfg.model_use_vars is an alias for obs_var
                     return True
-            if obs_var in mrv and mrv[obs_var] == mod_var:
-                # obs variable is in model_rename_vars
-                return True
-            elif mod_var==obs_var:
-                # default setting, includes cases where mcfg.model_use_vars
-                # is set and the value of the model variable in
-                # mcfg.model_use_vars is an alias for obs_var
-                return True
         return False
 
     def _create_menu_dict(self):
