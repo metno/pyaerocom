@@ -91,15 +91,15 @@ def calc_concNno3pm10(concno3f,concno3c):
     concNno3pm10.attrs['units'] = 'ug N m-3'
     return concNno3pm10
 
-def calc_concNno3pm25(concno3f,concno3c):
+def calc_concNno3pm25(concno3f,concno3c,fine_from_coarse_fraction=0.134):
     M_N = 14.006
     M_O = 15.999
     M_H = 1.007
     
     fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + 0.134*concno3c
+    concno3pm10 = concno3f + fine_from_coarse_fraction*concno3c
     concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
+    concNno3pm10.attrs['var_name'] = 'concNno3pm25'
     concNno3pm10.attrs['units'] = 'ug N m-3'
     return concNno3pm10
 
