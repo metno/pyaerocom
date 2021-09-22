@@ -412,6 +412,16 @@ class ExperimentOutput(ProjectOutput):
         """
         Check if input combination of model and obs var is valid
 
+        Note
+        ----
+        The input parameters are supposed to be retrieved from json files
+        stored in the map subdirectory of an existing AeroVal experiment. In
+        complex setup cases the variable mapping (model / obs variables)
+        used in these json filenames may not be the trivial one expected from
+        the configuaration. These are cases where one specifies
+        model_add_vars, or model_use_vars or model_rename_vars in a model
+        entry.
+
         Parameters
         ----------
         obs_name : str
