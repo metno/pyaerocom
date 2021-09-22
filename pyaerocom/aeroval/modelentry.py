@@ -95,27 +95,6 @@ class ModelEntry(BrowseDict):
                 modout.append(mvar)
         return (obsout, modout)
 
-    def has_var(self, var_name: str, obs_vars: list) -> bool:
-        """
-        Check if input variable is supposed to be processed
-
-        Parameters
-        ----------
-        var_name : str
-            variable to be checked
-        obs_vars : list
-            list of observation variables (since var / var mappings of the
-            same variables are not explictly specified here).
-
-        Returns
-        -------
-        bool
-            True, if input variable is supposed to be processed, else False
-        """
-        if var_name in self.get_vars_to_process(obs_vars)[1]:
-            return True
-        return False
-
     def get_varname_web(self, mod_var, obs_var):
         if obs_var in self.model_add_vars and mod_var in self.model_add_vars[obs_var]:
             return mod_var
