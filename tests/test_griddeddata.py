@@ -5,12 +5,13 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
-
+import iris.cube
 import os
 from datetime import datetime
 import numpy as np
 import numpy.testing as npt
 import pytest
+import xarray as xr
 
 from pyaerocom import GriddedData, Variable
 from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
@@ -334,3 +335,36 @@ def test_GriddedData_copy_coords(inplace,other_tst,raises):
         for coord in abs.cube.coords():
             _coord = result.cube.coord(coord.name())
             assert coord == _coord
+
+def test_GriddedData_register_var_glob(tmpdir):
+    arr = np.ones((10,10,10))
+    arr[2:5] = 4
+    cube = iris.cube.Cube(arr,var_name='blaaa')
+    data = GriddedData(input=cube)
+    data.register_var_glob()
+
+def _make_fake_dataset(var_name, units):
+    arr = xr.DataArray(np.ones(10))
+    arr.attrs['var_name'] = var_name
+    arr.attrs['units'] = units
+    ds = arr.to_dataset(name=var_name)
+    return ds
+
+@pytest.mark.parametrize('var_name,units,data_unit', [
+    ('od550aer', '1', '1'),
+    ('od550aer', 'invalid', '1'),
+    ('concso4', 'ug S m-3', 'ug S m-3'),
+    ('concco', 'ugC/m3', 'ug C m-3'),
+
+])
+def test_GriddedData__check_invalid_unit_alias(tmpdir,var_name,units,
+                                               data_unit):
+
+    ds = _make_fake_dataset(var_name,units)
+    path = os.path.join(tmpdir, 'output.nc')
+    ds.to_netcdf(path)
+    assert os.path.exists(path)
+    data = GriddedData(path, var_name=var_name, check_unit=False)
+    data._check_invalid_unit_alias()
+    assert data.units == data_unit
+
