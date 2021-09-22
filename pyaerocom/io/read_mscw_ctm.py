@@ -91,15 +91,15 @@ def calc_concNno3pm10(concno3f,concno3c):
     concNno3pm10.attrs['units'] = 'ug N m-3'
     return concNno3pm10
 
-def calc_concNno3pm25(concno3f,concno3c):
+def calc_concNno3pm25(concno3f,concno3c,fine_from_coarse_fraction=0.134):
     M_N = 14.006
     M_O = 15.999
     M_H = 1.007
     
     fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + 0.134*concno3c
+    concno3pm10 = concno3f + fine_from_coarse_fraction*concno3c
     concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
+    concNno3pm10.attrs['var_name'] = 'concNno3pm25'
     concNno3pm10.attrs['units'] = 'ug N m-3'
     return concNno3pm10
 
@@ -644,8 +644,8 @@ class ReadMscwCtm(object):
         if ts_type == 'hourly':
             cube.coord('time').convert_units('hours since 1900-01-01')
         gridded = GriddedData(cube, var_name=var_name_aerocom,
-                              ts_type=ts_type, check_unit=False,
-                              convert_unit_on_init=False)
+                              ts_type=ts_type, check_unit=True,
+                              convert_unit_on_init=True)
 
         #!obsolete
         #if var.is_deposition:
