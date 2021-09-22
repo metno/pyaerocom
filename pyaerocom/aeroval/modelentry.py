@@ -29,6 +29,9 @@ class ModelEntry(BrowseDict):
         observation variables, values are lists of strings specifying the
         corresponding model variables to be used
         (e.g. model_use_vars=dict(od550aer=['od550csaer', 'od550so4']))
+    model_rename_vars : dict
+        key / value pairs specifying new variable names for model variables
+        in the output json files (is applied after co-location).
     model_read_aux : dict
         may be used to specify additional computation methods of variables from
         models. Keys are obs variables, values are dictionaries with keys
@@ -40,12 +43,14 @@ class ModelEntry(BrowseDict):
     model_use_vars = DictType()
     model_add_vars = DictStrKeysListVals()
     model_read_aux = DictType()
+    model_rename_vars = DictType()
 
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
         self.model_ts_type_read = ''
         self.model_use_vars = {}
         self.model_add_vars = {}
+        self.model_rename_vars = {}
         self.model_read_aux = {}
 
         self.update(**kwargs)
