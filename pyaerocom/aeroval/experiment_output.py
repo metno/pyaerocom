@@ -441,9 +441,9 @@ class ExperimentOutput(ProjectOutput):
         """
         # get model entry for model name
         mcfg = self.cfg.model_cfg.get_entry(mod_name)
-
         # mapping of obs / model variables to be used
         muv = mcfg.model_use_vars
+        mrv = mcfg.model_rename_vars
         # search obs entry (may have web_interface_name set, so have to
         # check keys of ObsCollection but also the individual entries for
         # occurence of web_interface_name).
@@ -459,7 +459,7 @@ class ExperimentOutput(ProjectOutput):
         # first, check model_add_vars
         for ovar, mvars in mcfg.model_add_vars.items():
             if obs_var in mvars:
-                if obs_var in mcfg.model_rename_vars:
+                if obs_var in mrv:
                     if mod_var == mcfg.model_add_vars[obs_var]:
                         return True
                 elif obs_var == mod_var:
@@ -467,16 +467,21 @@ class ExperimentOutput(ProjectOutput):
 
         obs_vars = ocfg.get_all_vars()
         if obs_var in obs_vars:
-            if mod_var==obs_var:
+            if obs_var in muv:
+                if muv[obs_var] == mod_var:
+                    # obs var is different from mod_var but this mapping is
+                    # specified in mcfg.model_use_vars
+                    return True
+                elif muv[obs_var] in mrv and mrv[muv[obs_var]] == mod_var:
+                    return True
+            if obs_var in mrv and mrv[obs_var] == mod_var:
+                # obs variable is in model_rename_vars
+                return True
+            elif mod_var==obs_var:
                 # default setting, includes cases where mcfg.model_use_vars
                 # is set and the value of the model variable in
                 # mcfg.model_use_vars is an alias for obs_var
                 return True
-            elif obs_var in muv and muv[obs_var] == mod_var:
-                # obs var is different from mod_var but this mapping is
-                # specified in mcfg.model_use_vars
-                return True
-
         return False
 
     def _create_menu_dict(self):
