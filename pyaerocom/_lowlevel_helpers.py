@@ -200,7 +200,7 @@ class EitherOf(Validator):
 
     def validate(self, val):
         if not any([x==val for x in self._allowed]):
-            raise ValueError(f'inalid value {val}, needs to be either '
+            raise ValueError(f'invalid value {val}, needs to be either '
                              f'of {self._allowed}.')
         return val
 
