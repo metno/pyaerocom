@@ -429,22 +429,45 @@ class ExperimentOutput(ProjectOutput):
             True if this combination is valid, else False.
 
         """
+        # get model entry for model name
+        mcfg = self.cfg.model_cfg.get_entry(mod_name)
+
+        # mapping of obs / model variables to be used
+        muv = mcfg.model_use_vars
+        # search obs entry (may have web_interface_name set, so have to
+        # check keys of ObsCollection but also the individual entries for
+        # occurence of web_interface_name).
         allobs = self.cfg.obs_cfg
         obs_found = False
         for key, ocfg in allobs.items():
-            if obs_name == allobs.get_web_iface_name(key) and ocfg.has_var(
-                    obs_var):
+            if obs_name == allobs.get_web_iface_name(key):
                 obs_found = True
                 break
         if not obs_found:
+            # obs dataset is not part of experiment
             return False
-        try:
-            mcfg = self.cfg.model_cfg.get_entry(mod_name)
-            if not mcfg.has_var(mod_var, ocfg.get_all_vars()):
-                return False
-        except EntryNotAvailable:
-            return False
-        return True
+        # first, check model_add_vars
+        for ovar, mvars in mcfg.model_add_vars.items():
+            if obs_var in mvars:
+                if obs_var in mcfg.model_rename_vars:
+                    if mod_var == mcfg.model_add_vars[obs_var]:
+                        return True
+                elif obs_var == mod_var:
+                    return True
+
+        obs_vars = ocfg.get_all_vars()
+        if obs_var in obs_vars:
+            if mod_var==obs_var:
+                # default setting, includes cases where mcfg.model_use_vars
+                # is set and the value of the model variable in
+                # mcfg.model_use_vars is an alias for obs_var
+                return True
+            elif obs_var in muv and muv[obs_var] == mod_var:
+                # obs var is different from mod_var but this mapping is
+                # specified in mcfg.model_use_vars
+                return True
+
+        return False
 
     def _create_menu_dict(self):
         new = {}
