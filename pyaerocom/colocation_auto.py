@@ -1150,7 +1150,7 @@ class Colocator(ColocationSetup):
         if not self.flex_ts_type and tst != self.ts_type:
             raise ColocationError(f'flex_ts_type is deactivated and specified '
                                   f'read frequency for {var_name} ({tst}) is '
-                                  f'differentfrom colocation output freq '
+                                  f'different from colocation output freq '
                                   f'({self.ts_type})')
         return tst
 
@@ -1381,15 +1381,35 @@ class Colocator(ColocationSetup):
             args.update(ts_type=ts_type)
         return args
 
+    def _check_dimensionality(self, args):
+        mdata = args['data']
+        odata = args['data_ref']
+        from pyaerocom.griddeddata import GriddedData
+        from pyaerocom.exceptions import DataDimensionError
+        if mdata.ndim==4 and self.obs_vert_type == 'Surface':
+            mdata = mdata.extract_surface_level()
+            args['data'] = mdata
+        elif mdata.ndim > 3:
+            raise DataDimensionError(f'cannot co-locate model data with more '
+                                     f'than 3 dimensions: {mdata}')
+
+        if isinstance(odata, GriddedData):
+            if odata.ndim == 4 and self.obs_vert_type == 'Surface':
+                odata = odata.extract_surface_level()
+                args['data_ref'] = odata
+            elif odata.ndim > 3:
+                raise DataDimensionError(
+                    f'cannot co-locate model data with more '
+                    f'than 3 dimensions: {odata}')
+        return args
+
     def _run_helper(self, model_var, obs_var):
-
-
         const.print_log.info(
             f'Running {self.model_id} ({model_var}) vs. '
             f'{self.obs_id} ({obs_var})'
             )
         args = self._prepare_colocation_args(model_var, obs_var)
-
+        args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
 
         coldata.data.attrs['model_name'] = self.get_model_name()

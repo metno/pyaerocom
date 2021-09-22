@@ -1,5 +1,5 @@
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings
+from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrType
 from pyaerocom.metastandards import DataSource
 
 class ObsEntry(BrowseDict):
@@ -57,6 +57,7 @@ class ObsEntry(BrowseDict):
     SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
 
     obs_vars = ListOfStrings()
+    obs_vert_type = StrType()
     def __init__(self, **kwargs):
 
         self.obs_id = ''

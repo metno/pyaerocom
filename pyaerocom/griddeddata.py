@@ -1300,7 +1300,7 @@ class GriddedData(object):
         return result
 
     def _to_timeseries_3D(self, sample_points, scheme, collapse_scalar,
-                          vert_scheme='surface', add_meta=None):
+                          vert_scheme, add_meta=None):
 
         # Data contains vertical dimension
         data = self._apply_vert_scheme(sample_points, vert_scheme)
@@ -1309,13 +1309,10 @@ class GriddedData(object):
         return data.to_time_series(sample_points, scheme,
                                    collapse_scalar, add_meta=add_meta)
 
-    def _apply_vert_scheme(self, sample_points, vert_scheme=None):
+    def _apply_vert_scheme(self, sample_points, vert_scheme):
         """Helper method that checks and infers vertical scheme for time
         series computation from 3D data (used in :func:`_to_timeseries_3D`)"""
 
-        if vert_scheme is None:
-            const.print_log.info('Setting vert_scheme in GriddedData to mean')
-            vert_scheme ='mean'
         try:
             self.check_dimcoords_tseries()
         except DimensionOrderError:
@@ -1324,9 +1321,9 @@ class GriddedData(object):
         cname = self.dimcoord_names[-1]
 
         if not vert_scheme in self.SUPPORTED_VERT_SCHEMES:
-            raise ValueError('Invalid input for vert_scheme: {}. Supported '
-                             'schemes are: {}'
-                             .format(vert_scheme, self.SUPPORTED_VERT_SCHEMES))
+            raise ValueError(
+                f'Invalid input for vert_scheme: {vert_scheme}. Supported '
+                f'schemes are: {self.SUPPORTED_VERT_SCHEMES}')
         if vert_scheme == 'surface':
             vert_index = self._infer_index_surface_level()
             return self[:,:,:,vert_index]
