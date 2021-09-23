@@ -6,7 +6,9 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
 
-from pyaerocom.exceptions import VariableDefinitionError, EntryNotAvailable
+from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.variable import get_aliases
+
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              statistics_trend,
                                              var_ranges_defaults,
@@ -408,6 +410,63 @@ class ExperimentOutput(ProjectOutput):
                 'longname'  :   lname,
                 'obs'       :   {}}
 
+    def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
+
+        muv = mcfg.model_use_vars
+        mrv = mcfg.model_rename_vars
+
+        mvar_aliases = get_aliases(mod_var)
+        for ovar, mvars in mcfg.model_add_vars.items():
+            if obs_var in mvars:
+                # for evaluation of entries in model_add_vars, the output json
+                # files use the model variable both for obs and for model as a
+                # workaround for the AeroVal heatmap display (which is based on
+                # observation variables on the y-axis). E.g. if
+                # model_add_vars=dict(od550aer=['od550so4']) then there will
+                # 2 co-located data objects one where model od550aer is
+                # co-located with obs od550aer and one where model od550so4
+                # is co-located with obs od550aer, thus for the latter,
+                # the obs variable is set to od550so4, so it shows up as a
+                # separate entry in AeroVal.
+                if obs_var in mrv:
+                    # model_rename_vars is specified for that obs variable,
+                    # e.g. using the above example, the output obs variable
+                    # would be od550so4, however, the user want to rename
+                    # the corresponding model variable via e.g.
+                    # model_rename_vars=dict(od550so4='MyVar'). Thus,
+                    # check if model variable is MyVar
+                    if mod_var == mrv[obs_var]:
+                        return True
+                elif obs_var == mod_var:
+                    # if match, then they should be the same here
+                    return True
+
+        obs_vars = ocfg.get_all_vars()
+        if obs_var in obs_vars:
+            if obs_var in muv:
+                mvar_to_use = muv[obs_var]
+                if mvar_to_use == mod_var:
+                    # obs var is different from mod_var but this mapping is
+                    # specified in mcfg.model_use_vars
+                    return True
+                elif mvar_to_use in mvar_aliases:
+                    # user specified an alias name in config for the
+                    # observation variable e.g. model_use_vars=dict(
+                    # ac550aer=absc550dryaer).
+                    return True
+                elif mvar_to_use in mrv and mrv[mvar_to_use] == mod_var:
+                    # user wants to rename the model variable
+                    return True
+            if obs_var in mrv and mrv[obs_var] == mod_var:
+                # obs variable is in model_rename_vars
+                return True
+            elif mod_var == obs_var:
+                # default setting, includes cases where mcfg.model_use_vars
+                # is set and the value of the model variable in
+                # mcfg.model_use_vars is an alias for obs_var
+                return True
+        return False
+
     def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var):
         """
         Check if input combination of model and obs var is valid
@@ -442,8 +501,7 @@ class ExperimentOutput(ProjectOutput):
         # get model entry for model name
         mcfg = self.cfg.model_cfg.get_entry(mod_name)
         # mapping of obs / model variables to be used
-        muv = mcfg.model_use_vars
-        mrv = mcfg.model_rename_vars
+
         # search obs entry (may have web_interface_name set, so have to
         # check keys of ObsCollection but also the individual entries for
         # occurence of web_interface_name).
@@ -457,31 +515,8 @@ class ExperimentOutput(ProjectOutput):
             return False
         # first, check model_add_vars
         for ocfg in obs_matches:
-            for ovar, mvars in mcfg.model_add_vars.items():
-                if obs_var in mvars:
-                    if obs_var in mrv:
-                        if mod_var == mcfg.model_add_vars[obs_var]:
-                            return True
-                    elif obs_var == mod_var:
-                        return True
-
-            obs_vars = ocfg.get_all_vars()
-            if obs_var in obs_vars:
-                if obs_var in muv:
-                    if muv[obs_var] == mod_var:
-                        # obs var is different from mod_var but this mapping is
-                        # specified in mcfg.model_use_vars
-                        return True
-                    elif muv[obs_var] in mrv and mrv[muv[obs_var]] == mod_var:
-                        return True
-                if obs_var in mrv and mrv[obs_var] == mod_var:
-                    # obs variable is in model_rename_vars
-                    return True
-                elif mod_var==obs_var:
-                    # default setting, includes cases where mcfg.model_use_vars
-                    # is set and the value of the model variable in
-                    # mcfg.model_use_vars is an alias for obs_var
-                    return True
+            if self._check_ovar_mvar_entry(mcfg, mod_var, ocfg, obs_var):
+                return True
         return False
 
     def _create_menu_dict(self):
