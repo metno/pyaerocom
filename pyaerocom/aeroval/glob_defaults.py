@@ -223,7 +223,12 @@ statistics_defaults = {
     "unit": "1",
     "decimals": 2
   },
-  "obs/mod_trend": {
+  
+
+}
+
+statistics_trend = {
+    "obs/mod_trend": {
         "name": "Obs/Mod-Trends",
         "longname": "Trends",
         "scale": [
@@ -277,7 +282,6 @@ statistics_defaults = {
         "unit": "%/yr",
         "decimals": 1
     },
-
 }
 
 
