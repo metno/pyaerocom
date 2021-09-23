@@ -1003,8 +1003,8 @@ class Colocator(ColocationSetup):
             data_dir = self.obs_data_dir
         reader_class = self._get_gridded_reader_class(what=what)
         reader = reader_class(data_id=data_id, data_dir=data_dir)
-        if isinstance(reader, ReadMscwCtm) and hasattr(self, 'filepath'):
-            reader.filepath = self.filepath
+        # if isinstance(reader, ReadMscwCtm) and hasattr(self, 'filepath'):
+        #     reader.filepath = self.filepath
         return reader
 
     def _get_gridded_reader_class(self, what):
