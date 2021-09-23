@@ -22,8 +22,6 @@ class ProjectOutput:
     """JSON output for project"""
     proj_id = StrType()
     json_basedir = DirLoc(assert_exists=True)
-    experiments_file = JSONFile(assert_exists=True)
-
     def __init__(self, proj_id:str, json_basedir:str):
         self.proj_id = proj_id
         self.json_basedir = json_basedir
@@ -31,30 +29,38 @@ class ProjectOutput:
     @property
     def proj_dir(self):
         """Project directory"""
-        return os.path.join(self.json_basedir, self.proj_id)
+        fp = os.path.join(self.json_basedir, self.proj_id)
+        if not os.path.exists(fp):
+            os.mkdir(fp)
+            const.print_log.info(
+                f'Creating AeroVal project directory at {fp}')
+        return fp
 
     @property
     def experiments_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.proj_dir, 'experiments.json')
+        fp = os.path.join(self.proj_dir, 'experiments.json')
+        if not os.path.exists(fp):
+            const.print_log.info(
+                f'Creating AeroVal experiments.json for project '
+                f'{self.proj_id} at {fp}')
+            write_json({}, fp, indent=4)
+        return fp
 
     @property
     def available_experiments(self):
+        """
+        List of available experiments
+        """
         return list(read_json(self.experiments_file).keys())
 
     def _add_entry_experiments_json(self, exp_id, data):
         fp = self.experiments_file
-        if os.path.exists(fp):
-            current = read_json(fp)
-        else:
-            current = {}
-
+        current = read_json(fp)
         current[exp_id] = data
         write_json(current, self.experiments_file, indent=4)
 
     def _del_entry_experiments_json(self, exp_id):
-        if not os.path.exists(self.experiments_file):
-            return
         current = read_json(self.experiments_file)
         try:
             del current[exp_id]
@@ -72,9 +78,9 @@ class ExperimentOutput(ProjectOutput):
         super(ExperimentOutput, self).__init__(cfg.proj_id,
                                                cfg.path_manager.json_basedir)
 
-
     @property
     def exp_id(self):
+        """Experiment ID"""
         return self.cfg.exp_id
 
     @property
@@ -178,7 +184,38 @@ class ExperimentOutput(ProjectOutput):
 
     @staticmethod
     def _info_from_map_file(filename):
+        """
+        Separate map filename into meta info on obs and model content
+
+        Parameters
+        ----------
+        filename : str
+            name of file in "map" subdirectory of json output directory for
+            this experiment
+
+        Raises
+        ------
+        ValueError
+            if input filename is invalid
+
+        Returns
+        -------
+        str
+            name of observation network
+        str
+            name of observation variable
+        str
+            name of vertical code (e.g. Surface)
+        str
+            name of model
+        str
+            name of model variable
+        """
         spl = os.path.basename(filename).split('.json')[0].split('_')
+        if len(spl) != 3:
+            raise ValueError(f'invalid map filename: {filename}. Must '
+                             f'contain exactly 2 underscores _ to separate '
+                             f'obsinfo, vertical and model info')
         obsinfo = spl[0]
         vert_code = spl[1]
         modinfo = spl[2]
@@ -239,7 +276,9 @@ class ExperimentOutput(ProjectOutput):
 
         self.update_interface()
 
+    # ToDo: rewrite or delete before v0.12.0
     def _clean_modelmap_files(self):
+        raise NotImplementedError('under revision')
         all_vars = self.all_modelmap_vars
         all_mods = self.all_model_names
         out_dir = self.out_dirs['contour']
@@ -642,13 +681,6 @@ class ExperimentOutput(ProjectOutput):
         obs_vars.extend(add)
         self._valid_obs_vars[obs_name]  = obs_vars
         return obs_vars
-
-if __name__ == '__main__':
-    m = OutputPathManager('bla', 'blub')
-    print(m)
-    bd = os.path.join(const.OUTPUTDIR, 'tmp')
-    pr = ExperimentOutput('bla', 'blub', json_basedir=bd)
-    pr.experiments_file
 
 
 
