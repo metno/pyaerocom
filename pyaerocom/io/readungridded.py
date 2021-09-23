@@ -530,7 +530,7 @@ class ReadUngridded(object):
                                           vars_available)
 
         for key, val in filter_post.items():
-            if key == 'ignore_station_names':
+            if key == 'ignore_station_names': # for backwards compatibility
                 if isinstance(val, (str, list)):
                     filters['station_name'] = val
                     if not 'negate' in filters:

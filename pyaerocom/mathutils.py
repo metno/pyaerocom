@@ -28,7 +28,8 @@ def is_strictly_monotonic(iter1d) -> bool:
     """
     return True if np.all(np.diff(iter1d) > 0) else False
 
-def make_binlist(vmin : float, vmax : float, num : int = None) -> list:
+def make_binlist(vmin:float, vmax:float, num:int=None) -> list:
+    """"""
     if num is None:
         num = 8
     return list(np.linspace(vmin, vmax, num+1))
@@ -235,13 +236,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
 
     data, ref_data = data[mask], ref_data[mask]
 
-    ws = False
-    if weights is not None:
-        weights = weights[mask]
-        weights = weights / weights.max()
-        ws = True
-        result['NOTE'] = ('Weights were not applied to FGE and kendall and '
-                          'spearman corr (not implemented)')
+    weighted = False if weights is None else True
 
     result['totnum'] = float(len(mask))
     result['num_valid'] = float(num_points)
@@ -251,7 +246,7 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     result['refdata_std'] = ref_std
     result['data_mean'] = data_mean
     result['data_std'] = data_std
-    result['weighted'] = ws
+    result['weighted'] = weighted
 
     if not num_points >= min_num_valid:
         if lowlim is not None:
@@ -284,6 +279,13 @@ def calc_statistics(data, ref_data, lowlim=None, highlim=None,
     difference = data - ref_data
 
     diffsquare = difference**2
+
+    if weights is not None:
+        weights = weights[mask]
+        weights = weights / weights.max()
+        result['NOTE'] = ('Weights were not applied to FGE and kendall and '
+                          'spearman corr (not implemented)')
+
     result['rms'] = np.sqrt(np.average(diffsquare, weights=weights))
 
     # NO implementation to apply weights yet ...
@@ -461,3 +463,42 @@ if __name__ == "__main__":
 
     wcov = weighted_cov(obs, mod, weights)
     print(wcov)
+
+
+def estimate_value_range(vmin, vmax, extend_percent=0):
+    """
+    Round and extend input range to estimate lower and upper bounds of range
+
+    Parameters
+    ----------
+    vmin : float
+        lower value of range
+    vmax : float
+        upper value of range
+    extend_percent : int
+        percentage specifying to which extent the input range is supposed to be
+        extended.
+
+    Returns
+    -------
+    float
+        estimated lower end of range
+    float
+        estimated upper end of range
+
+
+    """
+    if not vmax > vmin:
+        raise ValueError('vmax needs to exceed vmin')
+    # extent value range by +/- 5%
+    offs = (vmax - vmin) * extend_percent * 0.01
+    vmin, vmax = vmin - offs, vmax + offs
+
+    if vmin != 0:
+        exp = float(exponent(vmin))
+    else:
+        exp = float(exponent(vmax))
+    # round values
+    vmin = np.floor(vmin * 10 ** (-exp)) * 10.0 ** (exp)
+    vmax = np.ceil(vmax * 10 ** (-exp)) * 10.0 ** (exp)
+    return vmin, vmax

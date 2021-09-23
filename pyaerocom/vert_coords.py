@@ -453,8 +453,7 @@ class AltitudeAccess(object):
                 self[coord] = d[coord]
             else:
                 try:
-                    self[coord] = d.search_other(coord,
-                                                 require_same_shape=False)
+                    self[coord] = d.search_other(coord)
                     print('Adding coord {}'.format(coord))
                 except Exception:
                     all_ok = False

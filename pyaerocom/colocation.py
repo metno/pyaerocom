@@ -55,12 +55,8 @@ def _resolve_var_name(data):
     try:
         vardef = const.VARS[var]
     except VariableDefinitionError:
-        vardef = Variable(var_name=var,
-                          standard_name=data.standard_name,
-                          long_name=data.long_name,
-                          units=data.units)
+        vardef = data.register_var_glob()
 
-        const.VARS.add_var(vardef)
     return (var, vardef.var_name_aerocom)
 
 def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):

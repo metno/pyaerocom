@@ -664,10 +664,12 @@ class Variable(object):
              if :attr:`vmin` and :attr:`vmax` are not defined
 
         """
-        if self.vmin == self.VMIN_DEFAULT or self.vmax == self.VMAX_DEFAULT:
-            raise AttributeError('need vmin and vmax to be specified in '
-                                 'order to retrieve cmap_bins')
-        self.map_cbar_levels = make_binlist(self.vmin, self.vmax)
+        if self.minimum == self.VMIN_DEFAULT or self.maximum == \
+                self.VMAX_DEFAULT:
+            raise AttributeError(f'need minimum and maximum to be specified '
+                                 f'for variable {self.var_name} in '
+                                 f'order to retrieve cmap_bins')
+        self.map_cbar_levels = make_binlist(self.minimum, self.maximum)
 
     def get_cmap_bins(self, infer_if_missing=True):
         """
@@ -694,7 +696,8 @@ class Variable(object):
             if infer_if_missing:
                 self._cmap_bins_from_vmin_vmax()
             else:
-                raise AttributeError('not defined')
+                raise AttributeError(f'map_cbar_levels is not defined for '
+                                     f'variable {self.var_name}')
         return self.map_cbar_levels
 
     def parse_from_ini(self, var_name=None, cfg=None):

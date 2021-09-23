@@ -1,3 +1,4 @@
+import dask
 import matplotlib
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -57,6 +58,8 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
     output['metadata']['units'] = str(data.units)
 
     nparr = stacked.data.astype(float)
+    if isinstance(nparr, dask.array.core.Array):
+        nparr = nparr.compute()
     for i, (lat, lon) in enumerate(stacked.station_name.values):
 
         coord = lat, lon

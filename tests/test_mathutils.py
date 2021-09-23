@@ -154,20 +154,13 @@ def test_calc_statistics(data, ref_data, lowlim, highlim, min_num_valid,
             else:
                 npt.assert_allclose(stats[key], val, atol=0.02, rtol=0.01)
 
-
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)
-# =============================================================================
-#
-#     import matplotlib.pyplot as plt
-#
-#     plt.close('all')
-#     fig, ax = plt.subplots(1,1,figsize=(18,10))
-#     ax.plot(sin_signal, '--', label='sin')
-#     ax.plot(sin_signal+noise, '--', label='sin+noise')
-#
-#     ax.legend()
-#
-#
-# =============================================================================
+@pytest.mark.parametrize('vmin,vmax,extend_percent,result,raises', [
+    (0,0,0,(0,0),pytest.raises(ValueError)),
+    (0,1,0,(0,1),does_not_raise_exception()),
+    (-0.012,3.12345666,0,(-0.02,3.13),does_not_raise_exception()),
+    (-0.012,3.12345666,5,(-0.2,3.3),does_not_raise_exception()),
+])
+def test_estimate_value_range(vmin,vmax,extend_percent,result,raises):
+    with raises:
+        vals = mu.estimate_value_range(vmin,vmax,extend_percent)
+        npt.assert_allclose(vals,result,rtol=1e-3)

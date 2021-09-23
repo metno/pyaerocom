@@ -6,7 +6,9 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
 
-from pyaerocom.exceptions import VariableDefinitionError, EntryNotAvailable
+from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.variable import get_aliases
+
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              statistics_trend,
                                              var_ranges_defaults,
@@ -20,8 +22,6 @@ class ProjectOutput:
     """JSON output for project"""
     proj_id = StrType()
     json_basedir = DirLoc(assert_exists=True)
-    experiments_file = JSONFile(assert_exists=True)
-
     def __init__(self, proj_id:str, json_basedir:str):
         self.proj_id = proj_id
         self.json_basedir = json_basedir
@@ -29,24 +29,34 @@ class ProjectOutput:
     @property
     def proj_dir(self):
         """Project directory"""
-        return os.path.join(self.json_basedir, self.proj_id)
+        fp = os.path.join(self.json_basedir, self.proj_id)
+        if not os.path.exists(fp):
+            os.mkdir(fp)
+            const.print_log.info(
+                f'Creating AeroVal project directory at {fp}')
+        return fp
 
     @property
     def experiments_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.proj_dir, 'experiments.json')
+        fp = os.path.join(self.proj_dir, 'experiments.json')
+        if not os.path.exists(fp):
+            const.print_log.info(
+                f'Creating AeroVal experiments.json for project '
+                f'{self.proj_id} at {fp}')
+            write_json({}, fp, indent=4)
+        return fp
 
     @property
     def available_experiments(self):
+        """
+        List of available experiments
+        """
         return list(read_json(self.experiments_file).keys())
 
     def _add_entry_experiments_json(self, exp_id, data):
         fp = self.experiments_file
-        if os.path.exists(fp):
-            current = read_json(fp)
-        else:
-            current = {}
-
+        current = read_json(fp)
         current[exp_id] = data
         write_json(current, self.experiments_file, indent=4)
 
@@ -68,9 +78,9 @@ class ExperimentOutput(ProjectOutput):
         super(ExperimentOutput, self).__init__(cfg.proj_id,
                                                cfg.path_manager.json_basedir)
 
-
     @property
     def exp_id(self):
+        """Experiment ID"""
         return self.cfg.exp_id
 
     @property
@@ -174,7 +184,38 @@ class ExperimentOutput(ProjectOutput):
 
     @staticmethod
     def _info_from_map_file(filename):
+        """
+        Separate map filename into meta info on obs and model content
+
+        Parameters
+        ----------
+        filename : str
+            name of file in "map" subdirectory of json output directory for
+            this experiment
+
+        Raises
+        ------
+        ValueError
+            if input filename is invalid
+
+        Returns
+        -------
+        str
+            name of observation network
+        str
+            name of observation variable
+        str
+            name of vertical code (e.g. Surface)
+        str
+            name of model
+        str
+            name of model variable
+        """
         spl = os.path.basename(filename).split('.json')[0].split('_')
+        if len(spl) != 3:
+            raise ValueError(f'invalid map filename: {filename}. Must '
+                             f'contain exactly 2 underscores _ to separate '
+                             f'obsinfo, vertical and model info')
         obsinfo = spl[0]
         vert_code = spl[1]
         modinfo = spl[2]
@@ -235,7 +276,9 @@ class ExperimentOutput(ProjectOutput):
 
         self.update_interface()
 
+    # ToDo: rewrite or delete before v0.12.0
     def _clean_modelmap_files(self):
+        raise NotImplementedError('under revision')
         all_vars = self.all_modelmap_vars
         all_mods = self.all_model_names
         out_dir = self.out_dirs['contour']
@@ -346,11 +389,15 @@ class ExperimentOutput(ProjectOutput):
 
 
     def _create_var_ranges_json(self):
+        try:
+            ranges = read_json(self.var_ranges_file)
+        except FileNotFoundError:
+            ranges = {}
         avail = self._results_summary()
         all_vars = list(set(avail['ovar'] + avail['mvar']))
-        ranges = {}
         for var in all_vars:
-            ranges[var] = self._get_cmap_info(var)
+            if not var in ranges or ranges[var]['scale'] == []:
+                ranges[var] = self._get_cmap_info(var)
         write_json(ranges, self.var_ranges_file, indent=4)
 
 
@@ -402,9 +449,76 @@ class ExperimentOutput(ProjectOutput):
                 'longname'  :   lname,
                 'obs'       :   {}}
 
+    def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
+
+        muv = mcfg.model_use_vars
+        mrv = mcfg.model_rename_vars
+
+        mvar_aliases = get_aliases(mod_var)
+        for ovar, mvars in mcfg.model_add_vars.items():
+            if obs_var in mvars:
+                # for evaluation of entries in model_add_vars, the output json
+                # files use the model variable both for obs and for model as a
+                # workaround for the AeroVal heatmap display (which is based on
+                # observation variables on the y-axis). E.g. if
+                # model_add_vars=dict(od550aer=['od550so4']) then there will
+                # 2 co-located data objects one where model od550aer is
+                # co-located with obs od550aer and one where model od550so4
+                # is co-located with obs od550aer, thus for the latter,
+                # the obs variable is set to od550so4, so it shows up as a
+                # separate entry in AeroVal.
+                if obs_var in mrv:
+                    # model_rename_vars is specified for that obs variable,
+                    # e.g. using the above example, the output obs variable
+                    # would be od550so4, however, the user want to rename
+                    # the corresponding model variable via e.g.
+                    # model_rename_vars=dict(od550so4='MyVar'). Thus,
+                    # check if model variable is MyVar
+                    if mod_var == mrv[obs_var]:
+                        return True
+                elif obs_var == mod_var:
+                    # if match, then they should be the same here
+                    return True
+
+        obs_vars = ocfg.get_all_vars()
+        if obs_var in obs_vars:
+            if obs_var in muv:
+                mvar_to_use = muv[obs_var]
+                if mvar_to_use == mod_var:
+                    # obs var is different from mod_var but this mapping is
+                    # specified in mcfg.model_use_vars
+                    return True
+                elif mvar_to_use in mvar_aliases:
+                    # user specified an alias name in config for the
+                    # observation variable e.g. model_use_vars=dict(
+                    # ac550aer=absc550dryaer).
+                    return True
+                elif mvar_to_use in mrv and mrv[mvar_to_use] == mod_var:
+                    # user wants to rename the model variable
+                    return True
+            if obs_var in mrv and mrv[obs_var] == mod_var:
+                # obs variable is in model_rename_vars
+                return True
+            elif mod_var == obs_var:
+                # default setting, includes cases where mcfg.model_use_vars
+                # is set and the value of the model variable in
+                # mcfg.model_use_vars is an alias for obs_var
+                return True
+        return False
+
     def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var):
         """
         Check if input combination of model and obs var is valid
+
+        Note
+        ----
+        The input parameters are supposed to be retrieved from json files
+        stored in the map subdirectory of an existing AeroVal experiment. In
+        complex setup cases the variable mapping (model / obs variables)
+        used in these json filenames may not be the trivial one expected from
+        the configuaration. These are cases where one specifies
+        model_add_vars, or model_use_vars or model_rename_vars in a model
+        entry.
 
         Parameters
         ----------
@@ -423,23 +537,26 @@ class ExperimentOutput(ProjectOutput):
             True if this combination is valid, else False.
 
         """
-        try:
-            ocfg = self.cfg.obs_cfg.get_entry(obs_name)
-            if not ocfg.has_var(obs_var):
-                return False
-        except EntryNotAvailable:
+        # get model entry for model name
+        mcfg = self.cfg.model_cfg.get_entry(mod_name)
+        # mapping of obs / model variables to be used
+
+        # search obs entry (may have web_interface_name set, so have to
+        # check keys of ObsCollection but also the individual entries for
+        # occurence of web_interface_name).
+        allobs = self.cfg.obs_cfg
+        obs_matches = []
+        for key, ocfg in allobs.items():
+            if obs_name == allobs.get_web_iface_name(key):
+                obs_matches.append(ocfg)
+        if len(obs_matches) == 0:
+            # obs dataset is not part of experiment
             return False
-        try:
-            mcfg = self.cfg.model_cfg.get_entry(mod_name)
-            # since observation variables are not explicitly defined in mcfg
-            # (but only renamings or additional variables), mcfg.has_var(mod_var)
-            # returns False in most cases (since the model variable equals the
-            # obs variable)
-            if not mcfg.has_var(mod_var) and not ocfg.has_var(mod_var):
-                return False
-        except EntryNotAvailable:
-            return False
-        return True
+        # first, check model_add_vars
+        for ocfg in obs_matches:
+            if self._check_ovar_mvar_entry(mcfg, mod_var, ocfg, obs_var):
+                return True
+        return False
 
     def _create_menu_dict(self):
         new = {}
@@ -469,7 +586,7 @@ class ExperimentOutput(ProjectOutput):
             else:
                 const.print_log.warning(
                     f'Invalid entry: model {mod_name} ({mod_var}), '
-                    f'model {obs_name} ({obs_var})')
+                    f'obs {obs_name} ({obs_var})')
         return new
 
 
@@ -564,13 +681,6 @@ class ExperimentOutput(ProjectOutput):
         obs_vars.extend(add)
         self._valid_obs_vars[obs_name]  = obs_vars
         return obs_vars
-
-if __name__ == '__main__':
-    m = OutputPathManager('bla', 'blub')
-    print(m)
-    bd = os.path.join(const.OUTPUTDIR, 'tmp')
-    pr = ExperimentOutput('bla', 'blub', json_basedir=bd)
-    pr.experiments_file
 
 
 

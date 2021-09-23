@@ -2,9 +2,8 @@ from copy import deepcopy
 from pyaerocom._lowlevel_helpers import (BrowseDict, DictType,
                                          StrType, DictStrKeysListVals)
 from pyaerocom.aeroval.aux_io_helpers import check_aux_info
-from pyaerocom.aeroval._lowlev import EvalEntry
 
-class ModelEntry(EvalEntry, BrowseDict):
+class ModelEntry(BrowseDict):
     """Modeln configuration for evaluation (dictionary)
 
     Note
@@ -30,6 +29,9 @@ class ModelEntry(EvalEntry, BrowseDict):
         observation variables, values are lists of strings specifying the
         corresponding model variables to be used
         (e.g. model_use_vars=dict(od550aer=['od550csaer', 'od550so4']))
+    model_rename_vars : dict
+        key / value pairs specifying new variable names for model variables
+        in the output json files (is applied after co-location).
     model_read_aux : dict
         may be used to specify additional computation methods of variables from
         models. Keys are obs variables, values are dictionaries with keys
@@ -41,12 +43,14 @@ class ModelEntry(EvalEntry, BrowseDict):
     model_use_vars = DictType()
     model_add_vars = DictStrKeysListVals()
     model_read_aux = DictType()
+    model_rename_vars = DictType()
 
     def __init__(self, model_id, **kwargs):
         self.model_id = model_id
         self.model_ts_type_read = ''
         self.model_use_vars = {}
         self.model_add_vars = {}
+        self.model_rename_vars = {}
         self.model_read_aux = {}
 
         self.update(**kwargs)
@@ -58,31 +62,43 @@ class ModelEntry(EvalEntry, BrowseDict):
         """
         return True if bool(self.model_read_aux) else False
 
-    def get_all_vars(self):
+    def get_vars_to_process(self, obs_vars: list) -> tuple:
         """
-        Get all variables specified in this entry
+        Get lists of obs / mod variables to be processed
 
-        Note
-        ----
-        By default, in Aeroval, model entries are processed against an
-        observation entry (see :class:`ObsEntry`), in which the variables to
-        be processed are specified. That means, that in a  default setup,
-        this method returns an empty list. Only if additional variables are
-        specified in this object (via :attr:`model_use_vars` or
-        :attr:`model_add_vars`), then this method will return these variables
-        in the output list.
+        Parameters
+        ----------
+        obs_vars : list
+            list of observation variables
 
         Returns
         -------
         list
-            list of variables
+            list of observation variables (potentially extended from input
+            list)
+        list
+            corresponding model variables which are mapped based on content
+            of :attr:`model_add_vars` and :attr:`model_use_vars`.
+
         """
-        muv = list(self.model_use_vars.values())
-        mav = []
-        for val in self.model_add_vars.values():
-            mav.extend(val)
-        mra = list(self.model_read_aux.keys())
-        return list(set(muv + mav + mra))
+        obsout, modout = [], []
+        for obsvar in obs_vars:
+            obsout.append(obsvar)
+            if obsvar in self.model_use_vars:
+                modout.append(self.model_use_vars[obsvar])
+            else:
+                modout.append(obsvar)
+
+        for ovar, mvars in self.model_add_vars.items():
+            if not isinstance(mvars, list):
+                raise AttributeError(
+                    f'values of model_add_vars need to be lists, even if '
+                    f'only single variables are to be added: '
+                    f'{self.model_add_vars}')
+            for mvar in mvars:
+                obsout.append(ovar)
+                modout.append(mvar)
+        return (obsout, modout)
 
     def get_varname_web(self, mod_var, obs_var):
         if obs_var in self.model_add_vars and mod_var in self.model_add_vars[obs_var]:

@@ -200,7 +200,7 @@ class EitherOf(Validator):
 
     def validate(self, val):
         if not any([x==val for x in self._allowed]):
-            raise ValueError(f'inalid value {val}, needs to be either '
+            raise ValueError(f'invalid value {val}, needs to be either '
                              f'of {self._allowed}.')
         return val
 
@@ -346,13 +346,9 @@ class BrowseDict(MutableMapping):
             if len(key) > self.MAXLEN_KEYS:
                 raise KeyError(
                     f'key {key} exceeds max length of {self.MAXLEN_KEYS}')
-            for char in self.FORBIDDEN_CHARS_KEYS:
-                if char in key:
-                    raise KeyError(
-                    f'key {key} must not contain char {char}')
+            if key in self.FORBIDDEN_CHARS_KEYS:
+                raise KeyError(f'invalid key {key}')
         setattr(self, key, val)
-        #self.__dict__[key] = val
-
 
     def _setitem_checker(self, key, val):
         return key, val, True
@@ -432,6 +428,8 @@ class BrowseDict(MutableMapping):
         for key, val in other.items():
             if key in self:
                 self[key] = val
+            elif key in self.FORBIDDEN_CHARS_KEYS:
+                raise KeyError(f'invalid key {key}')
 
     def pretty_str(self):
         return dict_to_str(self.to_dict())

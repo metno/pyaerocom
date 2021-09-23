@@ -1,19 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 15 14:00:44 2019
-
-ToDo
-----
-- the configuration classes could inherit from a base class or could be more unified
-
-"""
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings
+from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrType
 from pyaerocom.metastandards import DataSource
-from pyaerocom.aeroval._lowlev import EvalEntry
 
-class ObsEntry(EvalEntry, BrowseDict):
+class ObsEntry(BrowseDict):
     """Observation configuration for evaluation (dictionary)
 
     Note
@@ -68,6 +57,7 @@ class ObsEntry(EvalEntry, BrowseDict):
     SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
 
     obs_vars = ListOfStrings()
+    obs_vert_type = StrType()
     def __init__(self, **kwargs):
 
         self.obs_id = ''
@@ -97,6 +87,17 @@ class ObsEntry(EvalEntry, BrowseDict):
 
         """
         return self.obs_vars
+
+    def has_var(self, var_name):
+        """
+        Check if input variable is defined in entry
+
+        Returns
+        -------
+        bool
+            True if entry has variable available, else False
+        """
+        return True if var_name in self.get_all_vars() else False
 
     def get_vert_code(self, var):
         """Get vertical code name for obs / var combination"""

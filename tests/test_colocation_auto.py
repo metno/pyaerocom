@@ -23,7 +23,7 @@ default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': [],
                  'obs_use_climatology': False, '_obs_cache_only': False,
                  'obs_vert_type': None, 'obs_ts_type_read': None,
                  'obs_filters': {}, 'model_name': None,
-                 'model_data_dir': None, 'model_vert_type_alt': None,
+                 'model_data_dir': None,
                  'model_read_opts': {}, 'read_opts_ungridded': {},
                  'model_use_vars': {}, 'model_rename_vars': {},
                  'model_add_vars': {}, 'model_to_stp': False,
@@ -67,6 +67,17 @@ def test_colocation_setup(stp, should_be):
         else:
             assert val == stp[key], key
 
+@pytest.mark.parametrize('key,val,raises', [
+    ('obs_vars', 42, pytest.raises(ValueError)),
+    ('var_ref_outlier_ranges', [41, 42], pytest.raises(KeyError)),
+    ('var_outlier_ranges', [41, 42], pytest.raises(KeyError)),
+    ('remove_outliers', True, pytest.raises(KeyError)),
+
+])
+def test_ColocationSetup_invalid_input(key,val,raises):
+    with raises:
+        stp = ColocationSetup(**{key:val})
+        assert stp[key] == val
 
 def test_Colocator__obs_vars__setter(col):
     col.obs_vars = 'var'
