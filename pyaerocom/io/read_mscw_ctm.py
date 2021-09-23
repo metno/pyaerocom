@@ -1,7 +1,11 @@
+from posixpath import join
 import xarray as xr
 import numpy as np
 import os
 import glob
+import re
+
+import pandas as pd
 
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
@@ -97,28 +101,97 @@ class ReadMscwCtm(object):
 
     DEFAULT_FILE_NAME = 'Base_day.nc'
 
-    def __init__(self, filepath=None, data_id=None, data_dir=None):
+    def __init__(self, data_id=None, data_dir=None):
         self._data_dir = None
         # opened dataset (for performance boost), will be reset if data_dir is
         # changed
         self._filename = None
         self._filedata = None
+        self._filepaths = None
 
         self._file_mask = None
         self._files = None
 
         self.var_map = get_emep_variables()
 
-        data_dir, filename, data_id = self._eval_input(filepath, data_id,
-                                                       data_dir)
+        # data_dir, filename, data_id = self._eval_input(filepath, data_id,
+        #                                                data_dir)
         self.data_id = data_id
         if data_dir is not None:
             self.data_dir = data_dir
 
-        if filename is None:
-            filename = self.DEFAULT_FILE_NAME
+        # if filename is None:
+        #     filename = self.DEFAULT_FILE_NAME
 
-        self.filename = filename
+        self.filename = self.DEFAULT_FILE_NAME
+        self.search_all_files()
+
+
+
+    def search_all_files(self):
+        namelist = self._get_namelist_from_folder()
+        self.filepaths = self._get_files_from_namelist(namelist)
+
+    def _get_files_from_namelist(self, namelist):
+        files = []
+        for d in namelist:
+            mask, f = self._check_files_in_data_dir(d)
+            files += f
+        
+        return files
+
+
+
+    def _get_namelist_from_folder(self):
+        """
+        Finds all the subfolders where a emep file for one year might be.
+
+        Note
+        -------
+        Checks only current level for folders. Should be able
+        to search deeper.
+
+        The only qualification of being a valid subfolder is whether or not
+        the subfolder has contains a number >= 2000. There are no check if there 
+        are any emep files in the folder
+
+        Returns
+        -------
+        List
+         List of the names of the subfolder
+
+        """
+        dd = self.data_dir
+
+        dirs = glob.glob(dd+"/*/")
+        namelist = []
+
+        for d in dirs:
+            if re.match(".*20\d\d.*", d) is None:
+                continue
+            
+            namelist.append(d)
+
+        if len(namelist) == 0:
+            namelist = [dd]
+        
+        return namelist
+
+    def _get_yrs_from_filepaths(self):
+        fps = self.filepaths
+        yrs = []
+        for fp in fps:
+            # if not fp.split("/")[-1] == self.filename:   
+            #     continue
+            try:
+                yr = re.search(".*(20\d\d).*", fp).group(1)
+            except:
+                raise ValueError(f"Could not find any year in {fp}")
+            
+            yrs.append(yr)
+        
+        return yrs
+            
 
     def _eval_input(self, filepath, data_id, data_dir):
         """
@@ -182,11 +255,13 @@ class ReadMscwCtm(object):
     def data_dir(self, val):
         if not os.path.isdir(val):
             raise FileNotFoundError(val)
-        mask, filelist = self._check_files_in_data_dir(val)
-        self._file_mask = mask
-        self._files = filelist
+        # mask, filelist = self._check_files_in_data_dir(val)
+        self._file_mask = self.FILE_MASKS[0]
+        # self._files = filelist
         self._data_dir = val
         self._filedata = None
+        self.search_all_files()
+
 
     @property
     def filename(self):
@@ -201,26 +276,30 @@ class ReadMscwCtm(object):
         Name of netcdf file
         """
         if not isinstance(val, str):
-            raise ValueError('need str')
+            raise ValueError('needs str')
         elif val == self._filename:
             return
         self._filename = val
         self._filedata = None
 
     @property
-    def filepath(self):
+    def filepaths(self):
         """
         Path to data file
         """
         if self.data_dir is None:
             raise AttributeError('need data_dir to be set in data')
-        return os.path.join(self.data_dir, self.filename)
+        return self._filepaths
+        #return os.path.join(self.data_dir, self.filename)
 
-    @filepath.setter
-    def filepath(self, value):
-        ddir, fname = os.path.split(value)
-        self.data_dir = ddir
-        self.filename = fname
+    @filepaths.setter
+    def filepaths(self, value):
+        if not isinstance(value, list):
+            raise ValueError('needs to be list of strings')
+        self._filepaths = value
+        # ddir, fname = os.path.split(value)
+        # self.data_dir = ddir
+        # self.filename = fname
 
     @property
     def filedata(self):
@@ -319,20 +398,35 @@ class ReadMscwCtm(object):
         """Variables provided by this dataset"""
         return list(self.var_map) + list(self.AUX_REQUIRES)
 
+
     def open_file(self):
         """
         Open current netcdf file
 
         Returns
         -------
-        xarray.Dataset
+        dict(xarray.Dataset)
+            Dict with years as keys and Datasets as items
 
         """
-        fp = self.filepath
-        const.print_log.info(f'Opening {fp}')
+        fps = self.filepaths
+        ds = {}
 
-        ds = xr.open_dataset(fp)
+        yrs = self._get_yrs_from_filepaths()
+
+        for i,fp in enumerate(fps):
+            if not fp.split("/")[-1] == self.filename:   
+                continue
+
+            
+            const.print_log.info(f'Opening {fp}')
+            tmp_ds = xr.open_dataset(fp)
+            
+            ds[yrs[i]] = tmp_ds
+
+        
         self._filedata = ds
+        
         return ds
 
     def __repr__(self):
@@ -524,7 +618,7 @@ class ReadMscwCtm(object):
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = [self.filepath]
+        gridded.metadata['from_files'] = self.filepaths # [self.filepaths]
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
@@ -557,8 +651,17 @@ class ReadMscwCtm(object):
 
         """
         emep_var = self.var_map[var_name_aerocom]
+
         try:
-            data = self.filedata[emep_var]
+            filedata = self.filedata
+
+            # data = filedata["2018"][emep_var] 
+            data = xr.concat([filedata[yr][emep_var] for yr in filedata.keys()]
+                                                            , dim="time")
+     
+
+            
+
         except KeyError:
             raise VarNotAvailableError(
                 f'{var_name_aerocom} ({emep_var}) not available in {self.filename}')
