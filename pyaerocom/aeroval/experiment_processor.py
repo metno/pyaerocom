@@ -317,6 +317,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         """
         if isinstance(var_list, str):
             var_list = [var_list]
+
         self.cfg._check_time_config()
         model_list = self.cfg.model_cfg.keylist(model_name)
         obs_list = self.cfg.obs_cfg.keylist(obs_name)

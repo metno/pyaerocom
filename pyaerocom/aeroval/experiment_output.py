@@ -154,6 +154,9 @@ class ExperimentOutput(ProjectOutput):
         self._update_heatmap_json()
 
         self._create_statistics_json()
+        # AeroVal frontend needs periods to be set in config json file...
+        # make sure they are
+        self.cfg._check_time_config()
         self.cfg.to_json(self.exp_dir)
 
     def _update_heatmap_json(self):
