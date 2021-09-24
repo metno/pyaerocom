@@ -1304,6 +1304,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         """
         t00 = time()
         use_weights = self.cfg.statistics_opts.weighted_stats
+        # redundant, but cheap and important to be correct
+        self.cfg._check_time_config()
         freqs = self.cfg.time_cfg.freqs
         periods = self.cfg.time_cfg.periods
         seasons = self.cfg.time_cfg.get_seasons()

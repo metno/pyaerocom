@@ -3,8 +3,9 @@ import glob
 import os
 import shutil
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
-                                         TypeValidator, sort_dict_by_name)
+from pyaerocom._lowlevel_helpers import (DirLoc, StrType, TypeValidator,
+                                         sort_dict_by_name, check_make_json,
+                                         read_json, write_json)
 
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
@@ -14,7 +15,6 @@ from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              statistics_trend,
                                              var_ranges_defaults,
                                              var_web_info)
-from pyaerocom.aeroval.helpers import read_json, write_json
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 
 from pyaerocom.aeroval.setupclasses import EvalSetup
@@ -41,11 +41,7 @@ class ProjectOutput:
     def experiments_file(self):
         """json file containing region specifications"""
         fp = os.path.join(self.proj_dir, 'experiments.json')
-        if not os.path.exists(fp):
-            const.print_log.info(
-                f'Creating AeroVal experiments.json for project '
-                f'{self.proj_id} at {fp}')
-            write_json({}, fp, indent=4)
+        fp = check_make_json(fp)
         return fp
 
     @property
@@ -87,27 +83,41 @@ class ExperimentOutput(ProjectOutput):
     @property
     def exp_dir(self):
         """Experiment directory"""
-        return os.path.join(self.proj_dir, self.exp_id)
+        fp = os.path.join(self.proj_dir, self.exp_id)
+        if not os.path.exists(fp):
+            os.mkdir(fp)
+            const.print_log.info(
+                f'Creating AeroVal experiment directory at {fp}')
+        return fp
 
     @property
     def regions_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'regions.json')
+        fp = os.path.join(self.exp_dir, 'regions.json')
+        fp = check_make_json(fp)
+        return fp
 
     @property
     def statistics_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'statistics.json')
+        fp = os.path.join(self.exp_dir, 'statistics.json')
+        fp = check_make_json(fp)
+        return fp
 
     @property
     def var_ranges_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'ranges.json')
+        fp = os.path.join(self.exp_dir, 'ranges.json')
+        check_make_json(fp)
+        return fp
 
     @property
     def menu_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'menu.json')
+        fp = os.path.join(self.exp_dir, 'menu.json')
+        check_make_json(fp)
+        return fp
+
 
     @property
     def results_available(self):
