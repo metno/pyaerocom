@@ -36,7 +36,7 @@ def add_dataarrays(*arrs):
     """
     if not len(arrs) > 1:
         raise ValueError('Need at least 2 input arrays to add')
-    result = arrs[0]
+    result = arrs[0].copy(deep=True)
     for arr in arrs[1:]:
         result += arr
     return result
@@ -61,7 +61,7 @@ def subtract_dataarrays(*arrs):
     """
     if not len(arrs) > 1:
         raise ValueError('Need at least 2 input arrays to add')
-    result = arrs[0]
+    result = arrs[0].copy(deep=True)
     for arr in arrs[1:]:
         result -= arr
     return result
@@ -97,11 +97,11 @@ def calc_concNno3pm25(concno3f,concno3c,fine_from_coarse_fraction=0.134):
     M_H = 1.007
     
     fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + fine_from_coarse_fraction*concno3c
-    concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm25'
-    concNno3pm10.attrs['units'] = 'ug N m-3'
-    return concNno3pm10
+    concno3pm25 = concno3f + fine_from_coarse_fraction*concno3c
+    concNno3pm25 = concno3pm25*fac
+    concNno3pm25.attrs['var_name'] = 'concNno3pm25'
+    concNno3pm25.attrs['units'] = 'ug N m-3'
+    return concNno3pm25
 
 def calc_conNtno3(conchno3,concno3f,concno3c):
     concNhno3 = calc_concNhno3(conchno3)
@@ -150,7 +150,6 @@ def update_EC_units(concecpm25):
     concCecpm25.attrs['units'] = 'ug C m-3'
     
     return concCecpm25
-    
     
 
 class ReadMscwCtm(object):
