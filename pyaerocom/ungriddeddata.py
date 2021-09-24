@@ -1380,7 +1380,7 @@ class UngriddedData(object):
             elif isinstance(val, (list, np.ndarray, tuple)):
                 if all([isinstance(x, str) for x in val]):
                     list_f[key] = val
-                elif len(val) == 2:
+                elif len(val) == 2 and all([isnumeric(x) for x in val]):
                     try:
                         low, high = float(val[0]), float(val[1])
                         if not low < high:
@@ -1388,10 +1388,9 @@ class UngriddedData(object):
                                              'than 2nd')
                         range_f[key] = [low, high]
                     except Exception as e:
-                        raise ValueError('Failed to convert input ({}) specifying '
-                                         'value range of {} into floating point '
-                                         'numbers. Reason: {}'
-                                         .format(list(val), key, repr(e)))
+                        list_f[key] = val
+                else:
+                    list_f[key] = val
         return (str_f, list_f, range_f, val_f)
 
     def check_convert_var_units(self, var_name, to_unit=None,
