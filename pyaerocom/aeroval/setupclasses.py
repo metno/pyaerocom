@@ -133,7 +133,41 @@ class TimeSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
         self.main_freq = self.DEFAULT_FREQS[0]
         self.freqs = self.DEFAULT_FREQS
+        self.add_seasons = True
         self.periods = []
+
+    def get_seasons(self):
+        """
+        Get list of seasons to be analysed
+
+        Returns :attr:`SEASONS` if :attr:`add_seasons` it True, else `[
+        'all']` (only whole year).
+
+        Returns
+        -------
+        list
+            list of season strings for analysis
+
+        """
+        if self.add_seasons:
+            return self.SEASONS
+        return ['all']
+
+    def _get_all_period_strings(self):
+        """
+        Get list of all period strings for evaluation
+
+        Returns
+        -------
+        list
+            list of period / season strings
+        """
+        output = []
+        for per in self.periods:
+            for season in self.get_seasons():
+                perstr = f'{per}-{season}'
+                output.append(perstr)
+        return output
 
 class WebDisplaySetup(ConstrainedContainer):
 

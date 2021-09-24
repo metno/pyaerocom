@@ -118,7 +118,7 @@ def test_ExperimentOutput_update_interface_EMPTY(dummy_expout):
     dummy_expout.update_interface()
 
 def test_ExperimentOutput_update_heatmap_json_EMPTY(dummy_expout):
-    dummy_expout._update_heatmap_json()
+    dummy_expout._sync_heatmaps_with_menu_and_regions()
 
 @pytest.mark.parametrize('filename,result,raises', [
     ('blaaaa', None, pytest.raises(ValueError)),

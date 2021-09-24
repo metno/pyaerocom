@@ -7,6 +7,7 @@ from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
                                          TypeValidator, sort_dict_by_name)
 
 from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable import get_aliases
 
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
@@ -151,7 +152,7 @@ class ExperimentOutput(ProjectOutput):
         self._create_var_ranges_json()
         self.update_menu()
         #self.make_info_table_web()
-        self._update_heatmap_json()
+        self._sync_heatmaps_with_menu_and_regions()
 
         self._create_statistics_json()
         # AeroVal frontend needs periods to be set in config json file...
@@ -159,11 +160,12 @@ class ExperimentOutput(ProjectOutput):
         self.cfg._check_time_config()
         self.cfg.to_json(self.exp_dir)
 
-    def _update_heatmap_json(self):
+    def _sync_heatmaps_with_menu_and_regions(self):
         """
         Synchronise content of heatmap json files with content of menu.json
         """
         menu = read_json(self.menu_file)
+        all_regions = read_json(self.regions_file)
         for fp in self._get_json_output_files('hm'):
             data = read_json(fp)
             hm = {}
@@ -182,8 +184,24 @@ class ExperimentOutput(ProjectOutput):
                                 hm[vardisp][obs][vc][mod] = {}
                             modvar = minfo['model_var']
                             hm_data = data[vardisp][obs][vc][mod][modvar]
+                            hm_data = self._check_hm_all_regions_avail(
+                                all_regions, hm_data)
                             hm[vardisp][obs][vc][mod][modvar] = hm_data
+
             write_json(hm, fp, ignore_nan=True)
+
+    def _check_hm_all_regions_avail(self, all_regions, hm_data):
+        if all([x in hm_data for x in all_regions]):
+            return hm_data
+        # some regions are not available in this subset
+        periods = self.cfg.time_cfg._get_all_period_strings()
+        dummy_stats = _init_stats_dummy()
+        for region in all_regions:
+            if not region in hm_data:
+                hm_data[region] = {}
+                for per in periods:
+                    hm_data[region][per] = dummy_stats
+        return hm_data
 
     @staticmethod
     def _info_from_map_file(filename):
