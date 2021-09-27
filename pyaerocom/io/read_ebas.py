@@ -17,32 +17,52 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
-from geonum.atmosphere import p0, T0_STD
-import os, re
 import fnmatch
-import numpy as np
+import os
+import re
 from collections import OrderedDict as od
+from warnings import catch_warnings, filterwarnings
+
+import numpy as np
+from tqdm import tqdm
+
+with catch_warnings():
+    filterwarnings("ignore")
+    from geonum.atmosphere import T0_STD, p0
+
 from pyaerocom import const
-from pyaerocom.units_helpers import get_unit_conversion_fac
-from pyaerocom.aux_var_helpers import compute_ang4470dryaer_from_dry_scat, compute_sc550dryaer, compute_sc440dryaer, \
-    compute_sc700dryaer, compute_ac550dryaer, compute_wetoxs_from_concprcpoxs, compute_wetoxn_from_concprcpoxn, \
-    compute_wetrdn_from_concprcprdn, vmrx_to_concx, concx_to_vmrx
-from pyaerocom.molmasses import get_molmass
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.aux_var_helpers import (
+    compute_ac550dryaer,
+    compute_ang4470dryaer_from_dry_scat,
+    compute_sc440dryaer,
+    compute_sc550dryaer,
+    compute_sc700dryaer,
+    compute_wetoxn_from_concprcpoxn,
+    compute_wetoxs_from_concprcpoxs,
+    compute_wetrdn_from_concprcprdn,
+    concx_to_vmrx,
+    vmrx_to_concx,
+)
+from pyaerocom.exceptions import (
+    EbasFileError,
+    MetaDataError,
+    NotInFileError,
+    TemporalResolutionError,
+    TemporalSamplingError,
+    UnitConversionError,
+)
+from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
+from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
+from pyaerocom.io.ebas_varinfo import EbasVarInfo
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.molmasses import get_molmass
 from pyaerocom.stationdata import StationData
 from pyaerocom.tstype import TsType
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.io.ebas_varinfo import EbasVarInfo
-from pyaerocom.io.ebas_file_index import EbasFileIndex, EbasSQLRequest
-from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
-from pyaerocom.exceptions import (NotInFileError, EbasFileError,
-                                  MetaDataError,
-                                  UnitConversionError,
-                                  TemporalResolutionError,
-                                  TemporalSamplingError)
-from pyaerocom._lowlevel_helpers import BrowseDict
-from tqdm import tqdm
+from pyaerocom.units_helpers import get_unit_conversion_fac
+
 
 class ReadEbasOptions(BrowseDict):
     """Options for EBAS reading routine
