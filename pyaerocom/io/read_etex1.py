@@ -1,9 +1,3 @@
-"""
-Read ETEX1 observations into a Pandas DataFrame
-
-TODO:
-proper integration as an new observation ID
-"""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -18,8 +12,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 
 
-
 ETEX1 = SimpleNamespace(
+    variable_name="concch",
     long_name="PMCH concentration above ambient level",
     units="ng/m3",
     version="etex1_v1.1.960505",
@@ -50,36 +44,43 @@ class ReadETEX1(ReadUngriddedBase):
     __version__ = "0.0.0"
     _FILEMASK = None
     DATA_ID = "etex1"
-    DEFAULT_VARS = ["concch"]
-    PROVIDES_VARIABLES = ["concch"]
-    SUPPORTED_DATASETS = ["etex1"]
+    DEFAULT_VARS = [ETEX1.variable_name]
+    PROVIDES_VARIABLES = DEFAULT_VARS
+    SUPPORTED_DATASETS = [DATA_ID]
     TS_TYPE = "3hourly"
 
     read_file = None
- 
-    def read(self, vars_to_retrieve=None, files=..., first_file=None, last_file=None) -> UngriddedData:
-        if isinstance(vars_to_retrieve, list):
-            assert vars_to_retrieve == ["concch"], f"this dataset only has 'concch'"
-        elif isinstance(vars_to_retrieve, str):
-            assert vars_to_retrieve == "concch", f"this dataset only has 'concch'"
-    
-        def reader() -> Generator[dict, None, None]:
-            station = read_stations().set_index("cc")
-            for cc, df in read_data().groupby("cc"):
-                site = station.loc[cc]
-                conc = df.rename(columns={"end": "time"}).set_index("time").concentration
-                conc.name = "concch"
-                yield dict(
-                    station_id=site.name,
-                    station_name=site["Station name"],
-                    latitude=site.Long,
-                    longitude=site.Lat,
-                    altitude=site.Alt,
-                    concch=conc,
-                    var_info=dict(concch=dict(units=ETEX1.units, ts_type="3hourly")),
-                )
 
-        return UngriddedData.from_station_data(list(reader()))
+    def read(
+        self, vars_to_retrieve=None, files=..., first_file=None, last_file=None
+    ) -> UngriddedData:
+        if isinstance(vars_to_retrieve, str):
+            assert (
+                vars_to_retrieve in self.PROVIDES_VARIABLES
+            ), f"this dataset only has {self.PROVIDES_VARIABLES}"
+        elif isinstance(vars_to_retrieve, list):
+            assert all(
+                var in self.PROVIDES_VARIABLES for var in vars_to_retrieve
+            ), f"this dataset only has {self.PROVIDES_VARIABLES}"
+
+        return UngriddedData.from_station_data(list(self.__reader()))
+
+    @classmethod
+    def __reader(cls) -> Generator[dict, None, None]:
+        station = read_stations().set_index("cc")
+        for cc, df in read_data().groupby("cc"):
+            site = station.loc[cc]
+            conc = df.rename(columns={"end": "time"}).set_index("time").concentration
+            conc.name = cls.DEFAULT_VARS[0]
+            yield dict(
+                station_id=site.name,
+                station_name=site["Station name"],
+                latitude=site.Long,
+                longitude=site.Lat,
+                altitude=site.Alt,
+                concch=conc,
+                var_info=dict(concch=dict(units=ETEX1.units, ts_type=cls.TS_TYPE)),
+            )
 
 
 def degrees_with_minutes(x: str) -> float:
@@ -90,9 +91,9 @@ def degrees_with_minutes(x: str) -> float:
     return int(degrees) + int(minutes) / 60 * sign(float(x))
 
 
-def read_stations(path: Path = ETEX1.stations) -> pd.DataFrame:
+def read_stations() -> pd.DataFrame:
     return pd.read_csv(
-        path,
+        ETEX1.stations,
         delimiter=", ",
         header=3,
         skipfooter=26,
