@@ -9,7 +9,7 @@ Created on Thu Oct 29 18:28:45 2020
 import pytest
 import os
 from pyaerocom import const
-from pyaerocom.testdata_access import AccessTestData
+from pyaerocom.access_testdata import AccessTestData
 
 @pytest.fixture(scope='module')
 def td():

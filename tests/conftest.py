@@ -6,7 +6,7 @@ from contextlib import contextmanager
 import numpy as np
 import pytest
 
-import pyaerocom.testdata_access as td
+import pyaerocom.access_testdata as td
 from pyaerocom import __dir__ as PYADIR
 from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
