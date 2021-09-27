@@ -1710,7 +1710,7 @@ class ColocatedData(object):
             if ndrop == nstats:
                 raise DataCoverageError(f'No data available in region {region_id}')
             elif ndrop > 0:
-                arr = arr.drop(dim='station_name', labels=drop_idx)
+                arr = arr.drop_sel({"station_name": drop_idx})
         data.data = arr
         return data
 
