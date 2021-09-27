@@ -18,7 +18,6 @@ from pyaerocom.exceptions import DataCoverageError, DataDimensionError
 
 from .conftest import CHECK_PATHS, TESTDATADIR, does_not_raise_exception
 
-
 EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS['coldata_tm5_aeronet'])
 
 
@@ -207,6 +206,8 @@ def test_ColocatedData_get_coords_valid_obs(coldata,which,num_coords,raises):
     ('fake_4d', {'use_area_weights' : True}, does_not_raise_exception(),{'nmb':0}),
 
     ])
+@pytest.mark.filterwarnings("ignore:invalid value encountered in double_scalars:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
 def test_ColocatedData_calc_statistics(coldata,which,args,raises,chk):
     cd = coldata[which]
     with raises:
@@ -233,6 +234,7 @@ def test_ColocatedData_calc_statistics(coldata,which,args,raises,chk):
     ('tm5_aeronet', {'aggr' : 'max'},
      pytest.raises(ValueError),None),
     ])
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
 def test_ColocatedData_calc_temporal_statistics(coldata,which,args,raises,chk):
     cd = coldata[which]
     with raises:
@@ -259,6 +261,8 @@ def test_ColocatedData_calc_temporal_statistics(coldata,which,args,raises,chk):
     ('tm5_aeronet', {'aggr' : 'max'},
      pytest.raises(ValueError),None),
     ])
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:invalid value encountered in double_scalars:RuntimeWarning")
 def test_ColocatedData_calc_spatial_statistics(coldata,which,args,raises,chk):
     cd = coldata[which]
     with raises:
@@ -280,6 +284,7 @@ def test_ColocatedData_calc_spatial_statistics(coldata,which,args,raises,chk):
     ('fake_4d', {}, does_not_raise_exception()),
 
     ])
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
 def test_ColocatedData_plot_scatter(coldata,which,args,raises):
     cd = coldata[which]
     with raises:

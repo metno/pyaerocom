@@ -31,6 +31,10 @@ def test_filter_attributes():
     ('EUROPE-noMOUNTAINS-OCN', 0.1314668),
     ('EUROPE', 0.13605888)
     ])
+# numpy DeprecationWarning triggered by iris
+@pytest.mark.filterwarnings(
+    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
+)
 def test_filter_griddeddata(data_tm5, filter_name, mean):
 
     # use copy so that this fixture can be used elsewhere without being c

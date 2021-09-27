@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Tests for _lowlevel_helpers.py module of pyaerocom
 """
 import numpy as np
 import numpy.testing as npt
 import pytest
+from scipy.stats.stats import PearsonRConstantInputWarning
 
 import pyaerocom.aux_var_helpers
 import pyaerocom.mathutils as mu
@@ -140,11 +139,13 @@ nanmask[100:300] = np.nan
      does_not_raise_exception()),
 
     ])
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
 def test_calc_statistics(data, ref_data, lowlim, highlim, min_num_valid,
                          weights, expected, raises):
     with raises:
         stats = mu.calc_statistics(data, ref_data, lowlim, highlim, min_num_valid,
-                                   weights)
+                                    weights)
         assert isinstance(stats, dict)
         assert len(stats) == len(expected)
         for key, val in expected.items():

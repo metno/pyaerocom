@@ -1,7 +1,6 @@
 # ToDo: merge with test_coldatatojson_helpers.py
 
 import numpy as np
-
 import pytest
 
 import pyaerocom.aeroval.coldatatojson_helpers as mod
@@ -68,6 +67,7 @@ def test_get_jsdate(example_coldata):
      pytest.raises(exceptions.TemporalResolutionError)),
 
     ])
+@pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test__process_statistics_timeseries(example_coldata,
                                         freq,region_ids,use_weights,
                                         use_country,data_freq,

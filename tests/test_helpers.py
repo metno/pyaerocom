@@ -87,6 +87,7 @@ def fake_hourly_ts():
     ('daily', '25percentile', None, 8, -0.64),
     ('daily', '75percentile', None, 8, 0.64),
     ])
+@pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
 
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how,

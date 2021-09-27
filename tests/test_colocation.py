@@ -120,12 +120,16 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
      'yearly', (2,1,8), 0.417676, 0.275671)
 
     ])
+# numpy DeprecationWarning triggered by iris
+@pytest.mark.filterwarnings(
+    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
+)
 def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
                                     addargs, ts_type, shape,
                                     obsmean, modmean):
 
     coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
-                                         **addargs)
+                                        **addargs)
 
     assert isinstance(coldata, ColocatedData)
     assert coldata.ts_type == ts_type
@@ -165,6 +169,10 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
 
 
 @data_unavail
+# numpy DeprecationWarning triggered by iris
+@pytest.mark.filterwarnings(
+    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
+)
 def test_colocate_gridded_gridded_same_new_var(data_tm5):
     data = data_tm5.copy()
     data.var_name = 'Blaaa'
@@ -173,6 +181,10 @@ def test_colocate_gridded_gridded_same_new_var(data_tm5):
     assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
 
 @data_unavail
+# numpy DeprecationWarning triggered by iris
+@pytest.mark.filterwarnings(
+    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
+)
 def test_colocate_gridded_gridded_same(data_tm5):
     coldata = colocate_gridded_gridded(data_tm5, data_tm5)
 
