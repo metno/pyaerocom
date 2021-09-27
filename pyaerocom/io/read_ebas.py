@@ -248,8 +248,7 @@ class ReadEbas(ReadUngriddedBase):
     #: a given variable) will be overwritten from the defaults specified in
     #: the options class.
     VAR_READ_OPTS = {
-        # keep pr in mm
-        'pr'        : dict(convert_units = False)
+        #'pr_mm'        : dict(convert_units=False)
         }
 
     ASSUME_AAE_SHIFT_WVL = 1.0
@@ -1834,4 +1833,4 @@ if __name__=="__main__":
 
     plt.close('all')
     reader = pya.io.ReadEbas()
-    data = reader.read('concNtno3')
+    data = reader.read('pr_mm')
