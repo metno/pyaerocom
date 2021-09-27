@@ -144,7 +144,7 @@ def _prepare_regions_json_helper(region_ids):
 
         latr = reg.lat_range
         lonr = reg.lon_range
-        if any(x is None for x in (latr, lonr)): # pragma: no cover
+        if any(x is None for x in (latr, lonr)): 
             raise ValueError(f'Lat / lon range missing for region {regid}')
         rinfo['minLat'] = latr[0]
         rinfo['maxLat'] = latr[1]
