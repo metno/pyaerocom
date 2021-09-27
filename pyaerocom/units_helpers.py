@@ -408,9 +408,6 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
                                      wdep_tstype)
     pr = check_pr_units(pr)
 
-
-
-
     # repeat the unit check steps done for wet deposition
     pr_unit = str(pr.units)
     pr_tstype = TsType(pr.ts_type)

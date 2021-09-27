@@ -776,20 +776,20 @@ class GriddedData(object):
     def _try_convert_non_cf_unit(self, new_unit):
         import pyaerocom.units_helpers as uh
         from pyaerocom.time_config import SI_TO_TS_TYPE
-        current = str(self.units)
         # check if it is deposition and if units are implicit
         try:
-            mulfac = uh.get_unit_conversion_fac(from_unit=current,
+            mulfac = uh.get_unit_conversion_fac(from_unit=str(self.units),
                                                 to_unit=new_unit,
                                                 var_name=self.var_name)
             self._apply_unit_mulfac(new_unit, mulfac)
 
         except Exception as e:
             if self.var_info.is_rate:
-                unit = current
+                unit = str(self.units)
                 if not unit.endswith('-1'):
-                    self.units = unit = str(
-                        uh.check_rate_units_implicit(unit, self.ts_type))
+                    unit = str(uh.check_rate_units_implicit(unit,
+                                                            self.ts_type))
+                    self.units = unit
 
                 cf_freq = unit.split()[-1].split('-1')[0]
 
