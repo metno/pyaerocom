@@ -295,7 +295,6 @@ class FileConventionRead(object):
         Example
         -------
 
-        import re
         conf_aero2 = FileConventionRead(name="aerocom2")
         conf_aero3 = FileConventionRead(name="aerocom2")
 

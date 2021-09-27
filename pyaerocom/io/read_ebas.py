@@ -923,7 +923,7 @@ class ReadEbas(ReadUngriddedBase):
         try:
             ts_type = self.TS_TYPE_CODES[tres_code]
         except KeyError:
-            ival = re.findall('\d+', tres_code)[0]
+            ival = re.findall(r"\d+", tres_code)[0]
             code = tres_code.split(ival)[-1]
             if not code in self.TS_TYPE_CODES:
                 raise NotImplementedError('Cannot handle EBAS resolution code '

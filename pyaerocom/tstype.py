@@ -76,7 +76,7 @@ class TsType(object):
                 'Invalid input, please provide valid frequency string...')
         mulfac = 1
         if val[0].isdigit():
-            ivalstr = re.findall('\d+', val)[0]
+            ivalstr = re.findall(r"\d+", val)[0]
             val = val.split(ivalstr)[-1]
             mulfac = int(ivalstr)
         if not val in self.VALID:
