@@ -11,6 +11,7 @@ from pyaerocom.variable import get_aliases
 
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              statistics_trend,
+                                             extended_statistics,
                                              var_ranges_defaults,
                                              var_web_info)
 from pyaerocom.aeroval.helpers import read_json, write_json
@@ -403,6 +404,7 @@ class ExperimentOutput(ProjectOutput):
 
     def _create_statistics_json(self):
         stats_info = statistics_defaults
+        stats_info.update(extended_statistics)
         if self.cfg.statistics_opts.add_trends:
             stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)

@@ -943,10 +943,18 @@ def _get_extended_stats(coldata, use_weights):
 
     stats = coldata.calc_statistics(use_area_weights=use_weights)
 
-    (stats['R_spatial_mean'],
-     stats['R_spatial_median']) = _calc_spatial_corr(coldata, use_weights)
 
-    (stats['R_temporal_mean'],
+    # Removes the spatial median and temporal mean (see mails between Hilde, Jonas, Augustin and Daniel from 27.09.21)
+    # (stats['R_spatial_mean'],
+    #  stats['R_spatial_median']) = _calc_spatial_corr(coldata, use_weights)
+
+    # (stats['R_temporal_mean'],
+    #  stats['R_temporal_median']) = _calc_temporal_corr(coldata)
+
+    (stats['R_spatial_mean'],
+     _) = _calc_spatial_corr(coldata, use_weights)
+
+    (_,
      stats['R_temporal_median']) = _calc_temporal_corr(coldata)
 
     return _prep_stats_json(stats)
