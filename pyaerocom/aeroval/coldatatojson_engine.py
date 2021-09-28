@@ -5,13 +5,13 @@ import xarray as xr
 import pandas as pd
 from datetime import datetime
 from pyaerocom import const
+from pyaerocom._lowlevel_helpers import read_json, write_json
 from pyaerocom.helpers import start_stop
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
-                                       _get_min_max_year_periods, read_json,
-                                       write_json)
+                                       _get_min_max_year_periods)
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.mathutils import calc_statistics
+from pyaerocom.mathutils import calc_statistics, _init_stats_dummy
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (AeroValConfigError,
                                   DataCoverageError,
@@ -131,13 +131,6 @@ def _add_entry_json(heatmap_file, result, obs_name, var_name_web, vert_code,
     mn = ovc[model_name]
     mn[model_var] = result
     write_json(current, heatmap_file, ignore_nan=True)
-
-def _init_stats_dummy():
-    # dummy for statistics dictionary for locations without data
-    stats_dummy = {}
-    for k in calc_statistics([1], [1]):
-        stats_dummy[k] = np.nan
-    return stats_dummy
 
 def _prepare_regions_json_helper(region_ids):
     regborders, regs = {}, {}
@@ -1311,8 +1304,11 @@ class ColdataToJsonEngine(ProcessingEngine):
         """
         t00 = time()
         use_weights = self.cfg.statistics_opts.weighted_stats
+        # redundant, but cheap and important to be correct
+        self.cfg._check_time_config()
         freqs = self.cfg.time_cfg.freqs
         periods = self.cfg.time_cfg.periods
+        seasons = self.cfg.time_cfg.get_seasons()
         main_freq = self.cfg.time_cfg.main_freq
         annual_stats_constrained = self.cfg.statistics_opts.annual_stats_constrained
 
@@ -1321,7 +1317,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         regions_how = self.cfg.webdisp_opts.regions_how
 
         stats_min_num = self.cfg.statistics_opts.MIN_NUM
-        seasons = self.cfg.time_cfg.SEASONS
+
 
         vert_code = coldata.get_meta_item('vert_code')
         diurnal_only = coldata.get_meta_item('diurnal_only')

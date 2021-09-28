@@ -428,7 +428,10 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
         data.convert_unit('pr', 'm')
     pr_data = data['pr']
     pr_flags = data.data_flagged['pr']
-
+    # check where precip data is zero (it did not rain!) and for each of
+    # these timestamps, set concprcp to 0 (it should be 0 if there is no
+    # rain...) and set flags in concprcp to False (these data are to be used
+    # later)
     pr_zero = pr_data == 0
     if pr_zero.sum() > 0:
         conc_data[pr_zero] = 0

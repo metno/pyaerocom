@@ -502,3 +502,11 @@ def estimate_value_range(vmin, vmax, extend_percent=0):
     vmin = np.floor(vmin * 10 ** (-exp)) * 10.0 ** (exp)
     vmax = np.ceil(vmax * 10 ** (-exp)) * 10.0 ** (exp)
     return vmin, vmax
+
+
+def _init_stats_dummy():
+    # dummy for statistics dictionary for locations without data
+    stats_dummy = {}
+    for k in calc_statistics([1], [1]):
+        stats_dummy[k] = np.nan
+    return stats_dummy

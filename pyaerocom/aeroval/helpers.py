@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 15 14:00:44 2019
-
-TO BE DELETED
-"""
 import os, glob
 
 from pyaerocom import const
