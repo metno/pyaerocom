@@ -306,6 +306,7 @@ def test_ReadMscwCtm_aux_var_defs():
     req = ReadMscwCtm.AUX_REQUIRES
     funs = ReadMscwCtm.AUX_FUNS
     assert len(req) == len(funs)
+    assert all([x in funs.keys() for x in req])
 
 M_N = 14.006
 M_O = 15.999

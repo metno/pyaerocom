@@ -69,7 +69,6 @@ class ReadMscwCtm(object):
     AUX_FUNS = {'depso4' : add_dataarrays,
                 'concbc' : add_dataarrays,
                 'concno3' : add_dataarrays,
-                'conctno3' : add_dataarrays,
                 'concoa' : add_dataarrays,
                 'concpmgt25': subtract_dataarrays,
                 'concNhno3': calc_concNhno3,

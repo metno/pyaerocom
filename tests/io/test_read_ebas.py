@@ -122,7 +122,7 @@ class TestReadEbas(object):
                          'wetoxs',
                          'wetoxn',
                          'wetrdn',
-                         'pr',
+                         'pr_mm',
                          'concpm1',
                          'concca',
                          'concmg',
