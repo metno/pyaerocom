@@ -115,15 +115,49 @@ DEP_TEST_UNIT = 'kg m-2 s-1'
 DEP_TEST_NONSI_ATOMS = ['N', 'S']
 
 def _unit_conversion_fac_custom(var_name, from_unit):
-    """Get custom conversion factor for a certain unit"""
+    """Get custom conversion factor for a certain unit
+
+    Tries to determine custom conversion factor for a variable, relative to
+    that variables pyaerocom default unit. These are typically conversions
+    that cannot be handled by :mod:`cf_units` (e.g. if variable is `concno3`
+    which should be in units of "ug m-3" but is given in units of "ug N
+    m-3", that is, nitrogen mass and not molecular NO3 mass. Since such atomar
+    units are not supported by `cf_units` which is based on SI (it would think
+    the "N" is Newton), pyaerocom provides a simple interface to circumvent
+    these issues for such variables by providing explicit conversion factors to
+    convert from e.g. "ug N m-3" to "ug m-3", for affected variables, such as
+    concno3.
+
+    Parameters
+    ----------
+    var_name : str
+        name of variable for which factor is to be determined (needs to be
+        registered in global attr. :attr:`UCONV_MUL_FACS`
+    from_unit : str
+        input unit (e.g. "ug N m-3")
+
+    Raises
+    ------
+    UnitConversionError
+        if no or no unique unit conversion factor could be retrieved for
+        input from global attr. :attr:`UCONV_MUL_FACS`
+
+    Returns
+    -------
+    str
+        output unit
+    float
+        corresponding converison factor
+    """
     if from_unit in UALIASES:
         from_unit = UALIASES[from_unit]
     try:
         info = UCONV_MUL_FACS.loc[(var_name, str(from_unit)), :]
         if not isinstance(info, pd.Series):
-            raise Exception('Could not find unique conversion factor in table '
-                            'UCONV_MUL_FACS in units_helpers.py. Please check '
-                            'for dulplicate entries')
+            raise UnitConversionError(
+                'FATAL: Could not find unique conversion factor in table  '
+                'UCONV_MUL_FACS in units_helpers.py. Please check for '
+                'dulplicate entries')
     except KeyError:
         raise UnitConversionError('Failed to convert unit {} (variable {}). '
                                   'Reason: no custom conversion factor could '
@@ -286,7 +320,7 @@ def check_rate_units_implicit(unit, ts_type):
     freq_si_str_alt = f'/{freq_si}'
     if freq_si_str_alt in str(unit):
 
-        # make sure frequencey is denoted as e.g. m s-1 instead of m/s
+        # make sure frequency is denoted as e.g. m s-1 instead of m/s
         unit = Unit(str(unit).replace(freq_si_str_alt,
                                       freq_si_str))
 
