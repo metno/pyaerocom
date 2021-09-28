@@ -140,6 +140,12 @@ def calc_concNtnh(concnh3,concnh4):
     concNtnh.attrs['units'] = 'ug N m-3'
     return concNtnh
 
+def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
+    concsspm25 = concssf + coarse_fraction*concssc
+
+    concsspm25.attrs['units'] = 'ug m-3'
+    return concsspm25
+
 def update_EC_units(concecpm25):
     concCecpm25 = concecpm25
     concCecpm25.attrs['units'] = 'ug C m-3'
@@ -182,6 +188,7 @@ class ReadMscwCtm(object):
                     'concNno3pm25' : ['concno3f','concno3c'],
                     'concNtno3'   : ['conchno3','concno3f','concno3c'],
                     'concNtnh'    : ['concnh3','concnh4'],
+                    'concsspm25'  : ['concssf', 'concssc'],
                     'concsspm10'  : ['concsspm25','concssc'],
                     'concCecpm25' : ['concecpm25'],
                     }
@@ -203,6 +210,7 @@ class ReadMscwCtm(object):
                 'concNno3pm25' : calc_concNno3pm25,
                 'concNtno3'    : calc_conNtno3,
                 'concNtnh'     : calc_concNtnh,
+                'concsspm25'   : calc_concsspm25,
                 'concsspm10'   : add_dataarrays,
                 'concCecpm25'  : update_EC_units,
                 }
