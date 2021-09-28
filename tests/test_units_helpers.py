@@ -65,38 +65,3 @@ def test_convert_unit(from_unit, to_unit, var_name, val):
     result = mod.convert_unit(1, from_unit, to_unit, var_name)
     npt.assert_allclose(result,
                         val, rtol=1e-2)
-
-
-@testdata_unavail
-@pytest.mark.parametrize('units', [
-    's-1', '1/s'
-])
-def test_implicit_to_explicit_rates_already_rate(data_tm5, units):
-    # Function should not convert data that is already a rate
-    data = data_tm5
-    data.units = units
-    new_data = mod.implicit_to_explicit_rates(data, 'monthly')
-    new_data_values = new_data.to_xarray().values
-    data_values = data.to_xarray().values
-    assert (new_data_values == data_values).all()
-
-
-@testdata_unavail
-def test_implicit_to_explicit_rates_convert_data(data_tm5):
-    data = data_tm5
-    data.units = 'kg m-2'
-    new_data = mod.implicit_to_explicit_rates(data, 'monthly')
-    assert isinstance(new_data, GriddedData)
-    assert new_data.units == 'kg m-2 s-1'
-    new_data_values = new_data.to_xarray().values
-    data_values = data.to_xarray().values
-    assert (new_data_values != data_values).all()
-    factors = mod.seconds_in_periods(data.time_stamps(), 'monthly')
-    ratio = data_values / new_data_values
-    for i, factor in enumerate(factors):
-        assert (ratio)[i].mean() == factor
-
-
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)
