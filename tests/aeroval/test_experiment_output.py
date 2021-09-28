@@ -68,6 +68,9 @@ def test_ProjectOutput__del_entry_experiments_json(tmpdir):
     assert exp_id in val.available_experiments
     val._del_entry_experiments_json(exp_id)
     assert exp_id not in val.available_experiments
+    # to catch KeyError and make sure it passes
+    val._del_entry_experiments_json(exp_id)
+
 
 @pytest.mark.parametrize('cfg,raises', [
     (None, pytest.raises(ValueError)),
