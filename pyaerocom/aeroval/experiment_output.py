@@ -63,7 +63,7 @@ class ProjectOutput:
             del current[exp_id]
         except KeyError:
             const.print_log.warning(
-                f'no such experiment registered: {self.exp_id}')
+                f'no such experiment registered: {exp_id}')
         write_json(current, self.experiments_file, indent=4)
 
 

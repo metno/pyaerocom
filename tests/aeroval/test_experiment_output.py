@@ -68,6 +68,9 @@ def test_ProjectOutput__del_entry_experiments_json(tmpdir):
     assert exp_id in val.available_experiments
     val._del_entry_experiments_json(exp_id)
     assert exp_id not in val.available_experiments
+    # to catch KeyError and make sure it passes
+    val._del_entry_experiments_json(exp_id)
+
 
 @pytest.mark.parametrize('cfg,raises', [
     (None, pytest.raises(ValueError)),
@@ -144,5 +147,28 @@ def test_ExperimentOutput_clean_json_files(dummy_expout):
 @pytest.mark.skip(reason='needs revision')
 def test_ExperimentOutput__clean_modelmap_files(dummy_expout):
     dummy_expout._clean_modelmap_files()
+
+@pytest.mark.parametrize('also_coldata',[True,False])
+def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
+    json_dir = os.path.join(tmpdir, 'json')
+    coldata_dir = os.path.join(tmpdir, 'coldata')
+    stp = EvalSetup(proj_id='proj', exp_id='exp',
+                    coldata_basedir=coldata_dir,
+                    json_basedir=json_dir)
+
+    eo = mod.ExperimentOutput(stp)
+    expdir = os.path.join(json_dir, 'proj', 'exp')
+    coldir = os.path.join(coldata_dir, 'proj', 'exp')
+    col_out = eo.cfg.path_manager.get_coldata_dir()
+    assert os.path.samefile(coldir, col_out)
+    assert os.path.samefile(expdir, eo.exp_dir)
+    assert os.path.exists(coldata_dir)
+    assert os.path.exists(coldir)
+    eo.delete_experiment_data(also_coldata=also_coldata)
+    assert not os.path.exists(expdir)
+    if also_coldata:
+        assert not os.path.exists(coldir)
+    else:
+        assert os.path.exists(coldata_dir)
 
 
