@@ -115,7 +115,7 @@ class StatisticsSetup(ConstrainedContainer):
         `StatisticsSetup(annual_stats_constrained=True)`
 
     """
-    MIN_NUM = 3
+    MIN_NUM = 1
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
