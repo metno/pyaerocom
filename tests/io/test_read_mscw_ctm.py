@@ -1,11 +1,12 @@
-import os
-
-import pyaerocom
-import pyaerocom.exceptions as exc
+import os, cf_units
+import numpy as np
 import pytest
 import xarray as xr
 
+import pyaerocom.exceptions as exc
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.tstype import TsType
+from pyaerocom.variable import get_variable
 from pyaerocom.io.read_mscw_ctm import (
     ReadEMEP,
     ReadMscwCtm,
@@ -20,14 +21,8 @@ from pyaerocom.io.read_mscw_ctm import (
 )
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import EMEP_DIR, does_not_raise_exception, lustre_unavail, testdata_unavail
-
-
-if pyaerocom.const._check_access(f'/home/{pyaerocom.const.user}/lustre/'):
-    PREFACE = f'/home/{pyaerocom.const.user}/lustre/'
-else:
-    PREFACE = '/lustre'
-TESTPATH_LUSTRE = f'{PREFACE}/storeB/project/fou/kl/emep/ModelRuns/2021_REPORTING/TRENDS/2019/'
+from ..conftest import (EMEP_DIR, does_not_raise_exception,
+                        testdata_unavail)
 
 VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm', 
            'absc550aer': 'AbsCoeff', 'absc550dryaer': 'AbsCoeff', 
@@ -265,7 +260,6 @@ def test_ReadMscwCtm_var_map():
     assert isinstance(var_map, dict)
     assert var_map == VAR_MAP
 
-@testdata_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
     ('blaaa', 'daily', pytest.raises(exc.VariableDefinitionError)),
     ('od550gt1aer', 'daily', pytest.raises(exc.VarNotAvailableError)),
@@ -283,7 +277,6 @@ def test_ReadMscwCtm_read_var(path_emep,var_name,ts_type,raises):
         assert data.ts_type is not None
         assert data.ts_type == r.ts_type
 
-@testdata_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
     ('blaaa', 'daily', pytest.raises(KeyError)),
     ('concpmgt25', 'daily', does_not_raise_exception()),
@@ -294,27 +287,6 @@ def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
     with raises:
         data = r._compute_var(var_name, ts_type)
         assert isinstance(data, xr.DataArray)
- 
-# @lustre_unavail
-# @pytest.mark.parametrize('path,var_name, ts_type, raises', [
-#     (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concNtno3', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concNtnh', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concNnh3', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concNnh4', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concNno3pm10', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concNno3pm25', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concsspm10', 'monthly', does_not_raise_exception()),
-#     (TESTPATH_LUSTRE,'concCecpm25', 'monthly', does_not_raise_exception()),
-#     ])
-# def test_ReadMscwCtm__compute_var_v2(path,var_name,ts_type,raises):
-#     r = ReadMscwCtm(filepath=f'{path}/Base_month.nc')
-#     ts_type  = 'monthly'
-#     with raises:
-#         data = r._compute_var(var_name,ts_type)
-#         assert isinstance(data, xr.DataArray)
-        
 
 @testdata_unavail
 def test_ReadMscwCtm_data(path_emep):
@@ -439,6 +411,60 @@ def test_ReadMscwCtm__repr__():
 def test_ReadEMEP__init__():
     assert isinstance(ReadEMEP(), ReadMscwCtm)
 
-if __name__ == '__main__': # pragma: no cover
-    import sys
-    pytest.main(sys.argv)
+def create_emep_dummy_data(tempdir, freq, vars_and_units):
+    assert isinstance(vars_and_units, dict)
+    reader = ReadMscwCtm()
+    outdir = os.path.join(tempdir, 'emep')
+    os.makedirs(outdir, exist_ok=True)
+    outfile = os.path.join(outdir, f'Base_{freq}.nc')
+    tst = reader.FREQ_CODES[freq]
+    varmap = reader.var_map
+    ds = xr.Dataset()
+    for var, unit in vars_and_units.items():
+        emep_var = varmap[var]
+        arr = _create_fake_MSCWCtm_data(tst=tst)
+        arr.attrs['units'] = unit
+        arr.attrs['var_name'] = emep_var
+        ds[emep_var] = arr
+    ds.to_netcdf(outfile)
+    assert os.path.exists(outfile)
+    return outdir
+
+
+@pytest.mark.parametrize('file_vars_and_units,freq,add_read,chk_mean,raises', [
+    ({'concpm10' : 'ug m-3'}, 'day', None, {'concpm10' : 1},
+     does_not_raise_exception()),
+    ({'concpm10' : 'ug m-3'}, 'hour', None, None, does_not_raise_exception()),
+    ({'concno3c'  : 'ug m-3'}, 'day', ['concno3'], None, pytest.raises(
+        exc.VarNotAvailableError)),
+    ({'concno3c'  : 'ug m-3', 'concno3f'  : 'ug m-3'}, 'day', ['concno3'],
+    {'concno3c' : 1, 'concno3f' : 1, 'concno3' : 2},
+     does_not_raise_exception()),
+])
+def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
+                              chk_mean,raises):
+
+
+    data_dir = create_emep_dummy_data(tmpdir,freq,
+                                    vars_and_units=file_vars_and_units)
+    with raises:
+        reader = ReadMscwCtm(data_dir=data_dir)
+        tst = reader.FREQ_CODES[freq]
+        objs = {}
+        for var, unit in file_vars_and_units.items():
+            data = reader.read_var(var, ts_type=tst)
+            objs[var] = data
+            assert isinstance(data, GriddedData)
+            aerocom_unit = cf_units.Unit(get_variable(var).units)
+            assert cf_units.Unit(data.units) == aerocom_unit
+            assert data.ts_type == tst
+        if isinstance(add_read, list):
+            for var in add_read:
+                data = reader.read_var(var, ts_type=tst)
+                objs[var] = data
+        if isinstance(chk_mean, dict):
+            for var, mean in chk_mean.items():
+                np.testing.assert_allclose(objs[var].cube.data.mean(), mean,
+                                           atol=0.1)
+
+

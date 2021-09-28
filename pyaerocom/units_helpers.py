@@ -26,10 +26,10 @@ RATES_FREQ_DEFAULT = 'd'
 # 1. DEFINITION OF ATOM and MOLECULAR MASSES
 
 # Atoms
-M_O = 15.999 # u
-M_S = 32.065 # u
-M_N = 14.0067 # u
-M_H = 1.00784 # u
+M_O = 15.999  # u
+M_S = 32.065  # u
+M_N = 14.0067  # u
+M_H = 1.00784  # u
 
 # Molecules
 M_SO2 = M_S + 2 * M_O
@@ -41,11 +41,10 @@ M_NO3 = M_N + 3 * M_O
 M_NH3 = M_N + 3 * M_H
 M_NH4 = M_N + 4 * M_H
 
-
 # Unit conversion and custom units definitions
 
 # 2.1 Other conversion factors
-HA_TO_SQM = 10000   # hectar to square metre.
+HA_TO_SQM = 10000  # hectar to square metre.
 
 # 3. LOOKUP TABLE FOR CONVERSION FACTORS
 
@@ -53,57 +52,56 @@ HA_TO_SQM = 10000   # hectar to square metre.
 # logic of hierarchy is: variable -> from unit -> to_unit -> conversion factor
 UCONV_MUL_FACS = pd.DataFrame([
 
-    ['concso4'  , 'ug S/m3'     , 'ug m-3', M_SO4 / M_S],
-    ['concso4pm25'  , 'ug S/m3'     , 'ug m-3', M_SO4 / M_S],
-    ['concso4pm10'  , 'ug S/m3'     , 'ug m-3', M_SO4 / M_S],
-    ['concso2'  , 'ug S/m3'     , 'ug m-3', M_SO2 / M_S],
-    ['concbc'   , 'ug C/m3'     , 'ug m-3', 1.0],
-    ['concoa'   , 'ug C/m3'     , 'ug m-3', 1.0],
-    ['concoc'   , 'ug C/m3'     , 'ug m-3', 1.0],
-    ['conctc'   , 'ug C/m3'     , 'ug m-3', 1.0],
-    ['concno2'  , 'ug N/m3'     , 'ug m-3', M_NO2 / M_N],
-    ['concno3'  , 'ug N/m3'     , 'ug m-3', M_NO3 / M_N],
-    ['concnh3'  , 'ug N/m3'     , 'ug m-3', M_NH3 / M_N],
-    ['concnh4'  , 'ug N/m3'     , 'ug m-3', M_NH4 / M_N],
-    ['wetso4'   , 'kg S/ha'     , 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
-    ['concso4pr', 'mg S/L'      , 'g m-3' , M_SO4 / M_S] # 1mg/L = 1g/m3
+    ['concso4', 'ug S/m3', 'ug m-3', M_SO4 / M_S],
+    ['concso4pm25', 'ug S/m3', 'ug m-3', M_SO4 / M_S],
+    ['concso4pm10', 'ug S/m3', 'ug m-3', M_SO4 / M_S],
+    ['concso2', 'ug S/m3', 'ug m-3', M_SO2 / M_S],
+    ['concbc', 'ug C/m3', 'ug m-3', 1.0],
+    ['concoa', 'ug C/m3', 'ug m-3', 1.0],
+    ['concoc', 'ug C/m3', 'ug m-3', 1.0],
+    ['conctc', 'ug C/m3', 'ug m-3', 1.0],
+    ['concno2', 'ug N/m3', 'ug m-3', M_NO2 / M_N],
+    ['concno3', 'ug N/m3', 'ug m-3', M_NO3 / M_N],
+    ['concnh3', 'ug N/m3', 'ug m-3', M_NH3 / M_N],
+    ['concnh4', 'ug N/m3', 'ug m-3', M_NH4 / M_N],
+    ['wetso4', 'kg S/ha', 'kg m-2', M_SO4 / M_S / HA_TO_SQM],
+    ['concso4pr', 'mg S/L', 'g m-3', M_SO4 / M_S]  # 1mg/L = 1g/m3
 
 ], columns=['var_name', 'from', 'to', 'fac']).set_index(['var_name', 'from'])
-
 
 # may be used to specify alternative names for custom units  defined
 # in UCONV_MUL_FACS
 UALIASES = {
     # mass concentrations
-    'ug S m-3'      : 'ug S/m3',
-    'ug C m-3'      : 'ug C/m3',
-    'ug N m-3'      : 'ug N/m3',
-    'ugC/m3'        : 'ug C/m3',
+    'ug S m-3': 'ug S/m3',
+    'ug C m-3': 'ug C/m3',
+    'ug N m-3': 'ug N/m3',
+    'ugC/m3': 'ug C/m3',
     # deposition rates (implicit)
     ## sulphur species
-    'mgS/m2'        : 'mg S m-2',
-    'mgSm-2'        : 'mg S m-2',
+    'mgS/m2': 'mg S m-2',
+    'mgSm-2': 'mg S m-2',
     ## nitrogen species
-    'mgN/m2'        : 'mg N m-2',
-    'mgNm-2'        : 'mg N m-2',
+    'mgN/m2': 'mg N m-2',
+    'mgNm-2': 'mg N m-2',
     # deposition rates (explicit)
     ## sulphur species
-    'mgS/m2/h'      : 'mg S m-2 h-1',
-    'mgS/m**2/h'    : 'mg S m-2 h-1',
-    'mgSm-2h-1'     : 'mg S m-2 h-1',
-    'mgSm**-2h-1'   : 'mg S m-2 h-1',
-    'mgS/m2/d'      : 'mg S m-2 d-1',
+    'mgS/m2/h': 'mg S m-2 h-1',
+    'mgS/m**2/h': 'mg S m-2 h-1',
+    'mgSm-2h-1': 'mg S m-2 h-1',
+    'mgSm**-2h-1': 'mg S m-2 h-1',
+    'mgS/m2/d': 'mg S m-2 d-1',
     ## nitrogen species
-    'mgN/m2/h'      : 'mg N m-2 h-1',
-    'mgN/m**2/h'    : 'mg N m-2 h-1',
-    'mgNm-2h-1'     : 'mg N m-2 h-1',
-    'mgNm**-2h-1'   : 'mg N m-2 h-1',
-    'mgN/m2/d'      : 'mg N m-2 d-1',
+    'mgN/m2/h': 'mg N m-2 h-1',
+    'mgN/m**2/h': 'mg N m-2 h-1',
+    'mgNm-2h-1': 'mg N m-2 h-1',
+    'mgNm**-2h-1': 'mg N m-2 h-1',
+    'mgN/m2/d': 'mg N m-2 d-1',
     ## others
-    'MM/H'          : 'mm h-1',
+    'MM/H': 'mm h-1',
     # others
-    '/m'            : 'm-1'
-    }
+    '/m': 'm-1'
+}
 
 DEP_IMPLICIT_UNITS = [Unit('mg N m-2'),
                       Unit('mg S m-2'),
@@ -113,6 +111,7 @@ PR_IMPLICIT_UNITS = [Unit('mm')]
 
 DEP_TEST_UNIT = 'kg m-2 s-1'
 DEP_TEST_NONSI_ATOMS = ['N', 'S']
+
 
 def _unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit
@@ -166,6 +165,7 @@ def _unit_conversion_fac_custom(var_name, from_unit):
                                   .format(from_unit, var_name))
     return (info.to, info.fac)
 
+
 def _unit_conversion_fac_si(from_unit, to_unit):
     """Returns multiplicative unit conversion factor for input units
 
@@ -198,8 +198,8 @@ def _unit_conversion_fac_si(from_unit, to_unit):
         raise UnitConversionError('Failed to convert unit from {} to {}'
                                   .format(from_unit, to_unit))
 
-def get_unit_conversion_fac(from_unit, to_unit, var_name=None):
 
+def get_unit_conversion_fac(from_unit, to_unit, var_name=None):
     pre_conv_fac = 1
     if from_unit == to_unit:
         # nothing to do
@@ -214,6 +214,7 @@ def get_unit_conversion_fac(from_unit, to_unit, var_name=None):
             pass
 
     return _unit_conversion_fac_si(from_unit, to_unit) * pre_conv_fac
+
 
 def convert_unit(data, from_unit, to_unit, var_name=None):
     """Convert unit of data
@@ -242,6 +243,7 @@ def convert_unit(data, from_unit, to_unit, var_name=None):
         data *= conv_fac
     return data
 
+
 def _check_unit_conversion_fac(unit, test_unit, non_si_info=None):
     if non_si_info is None:
         non_si_info = []
@@ -255,8 +257,8 @@ def _check_unit_conversion_fac(unit, test_unit, non_si_info=None):
                 return _check_unit_conversion_fac(check, test_unit)
     return False
 
-def check_rate_units_implicit(unit, ts_type):
 
+def check_rate_units_implicit(unit, ts_type):
     unit = Unit(unit)
 
     freq = TsType(ts_type)
@@ -267,24 +269,22 @@ def check_rate_units_implicit(unit, ts_type):
     for imp_unit in DEP_IMPLICIT_UNITS:
         if unit == imp_unit:
             unit = f'{imp_unit} {freq_si}-1'
-            found=True
+            found = True
             break
 
     if not found and not _check_unit_conversion_fac(unit=str(unit),
-                                          test_unit=DEP_TEST_UNIT,
-                                          non_si_info=DEP_TEST_NONSI_ATOMS):
-            raise ValueError(f'Cannot handle wet deposition unit {unit}')
+                                                    test_unit=DEP_TEST_UNIT,
+                                                    non_si_info=DEP_TEST_NONSI_ATOMS):
+        raise ValueError(f'Cannot handle wet deposition unit {unit}')
 
     # Check if frequency in unit corresponds to sampling frequency (e.g.
     # ug m-2 h-1 for hourly data).
     freq_si_str = f'{freq_si}-1'
     freq_si_str_alt = f'/{freq_si}'
     if freq_si_str_alt in str(unit):
-
         # make sure frequency is denoted as e.g. m s-1 instead of m/s
         unit = Unit(str(unit).replace(freq_si_str_alt,
                                       freq_si_str))
-
 
     # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
     # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
@@ -293,8 +293,9 @@ def check_rate_units_implicit(unit, ts_type):
                                   f'{freq} sampling frequency')
     return unit
 
+
 def check_pr_units(gridded):
-    #ToDo: harmonise input and output with check_rate_units_implicit
+    # ToDo: harmonise input and output with check_rate_units_implicit
     unit = Unit(gridded.units)
     freq = TsType(gridded.ts_type)
     freq_si = freq.to_si()
@@ -322,6 +323,7 @@ def check_pr_units(gridded):
                                   f'{freq} sampling frequency')
     return gridded
 
+
 def _check_prlim_units(prlim, prlim_units):
     # ToDo: cumbersome for now, make it work first, then make it simpler...
     if not prlim_units.endswith('-1'):
@@ -337,7 +339,7 @@ def _check_prlim_units(prlim, prlim_units):
     prlim *= mulfac
 
     prlim_units = f'm {spl[1]}'
-    prlim_freq = spl[1][:-2] # it endswith -1
+    prlim_freq = spl[1][:-2]  # it endswith -1
     # convert the freque
     if not prlim_freq in SI_TO_TS_TYPE:
         raise ValueError(
@@ -346,6 +348,7 @@ def _check_prlim_units(prlim, prlim_units):
 
     prlim_tstype = TsType(SI_TO_TS_TYPE[prlim_freq])
     return (prlim, prlim_units, prlim_tstype)
+
 
 def _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit, prlim_set_under):
     if prlim_unit is None:
@@ -360,6 +363,7 @@ def _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_unit, prlim_set_under):
     wdeparr.data[prmask] = prlim_set_under
 
     return wdeparr, prmask
+
 
 def _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit, from_tstype,
                        to_tstype):
@@ -381,10 +385,10 @@ def _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit, from_tstype,
 
     return (wdeparr, prarr, wdep_unit, pr_unit)
 
+
 def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
                                         prlim=None, prlim_units=None,
                                         prlim_set_under=None):
-
     if ts_type is None:
         ts_type = wdep.ts_type
 
@@ -411,7 +415,7 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
         # ToDo: this can probably fixed via time resampling with how='sum'
         # for the higher resolution dataset, but for this first draft, this
         # is not allowed.
-        raise ValueError('Input precipitation and wetdeposition fields '
+        raise ValueError('Input precipitation and wet deposition fields '
                          'need to be in the same frequency...')
 
     # assign input frequency (just for making the code better readable)
@@ -455,11 +459,12 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
     if prlim is not None:
         apply_prlim = True
 
-        prlim, prlim_units, prlim_tstype=_check_prlim_units(prlim, prlim_units)
+        prlim, prlim_units, prlim_tstype = _check_prlim_units(prlim,
+                                                              prlim_units)
 
         if prlim_tstype == from_tstype:
-            wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
-                                          prlim_set_under)
+            wdeparr, _ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
+                                           prlim_set_under)
             prlim_applied = True
 
     if apply_prlim and not prlim_applied and prlim_tstype > to_tstype:
@@ -470,8 +475,8 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
          pr_unit) = _aggregate_wdep_pr(wdeparr, prarr, wdep_unit, pr_unit,
                                        from_tstype, prlim_tstype)
 
-        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
-                                      prlim_set_under)
+        wdeparr, _ = _apply_prlim_wdep(wdeparr, prarr, prlim, prlim_units,
+                                       prlim_set_under)
         prlim_applied = True
         from_tstype = prlim_tstype
 
@@ -485,24 +490,25 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
     if apply_prlim and not prlim_applied:
         if not to_tstype == prlim_tstype:
             raise ValueError('... ... .. ')
-        wdeparr,_ = _apply_prlim_wdep(wdeparr, prarr,
-                                      prlim, prlim_units,
-                                      prlim_set_under)
+        wdeparr, _ = _apply_prlim_wdep(wdeparr, prarr,
+                                       prlim, prlim_units,
+                                       prlim_set_under)
 
     # set PR=0 to NaN (as we divide py PR)
-    prarr.data[prarr.data==0] = np.nan
+    prarr.data[prarr.data == 0] = np.nan
 
     concprcparr = wdeparr / prarr
 
     cube = concprcparr.to_iris()
     # infer output unit of concentration variable (should be ug m-3 or ug N m-3 or ug S m-3)
-    conc_unit_out = wdep_unit.replace('m-2', 'm-3').replace(f'{to_tstype_si}-1', '').strip()
+    conc_unit_out = wdep_unit.replace('m-2', 'm-3').replace(
+        f'{to_tstype_si}-1', '').strip()
     cube.units = conc_unit_out
     cube.attributes['ts_type'] = str(to_tstype)
     return cube
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     import cf_units as cfu
 
     unit = cfu.Unit('ug m-3')

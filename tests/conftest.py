@@ -234,8 +234,3 @@ def coldata():
 @contextmanager
 def does_not_raise_exception():
     yield
-
-if __name__=="__main__":
-    import sys
-
-    import pyaerocom as pya
