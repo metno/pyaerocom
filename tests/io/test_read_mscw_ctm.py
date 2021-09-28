@@ -332,6 +332,12 @@ M_NO3 = M_N + M_O*3
     {'concno3c' : 1, 'concno3f' : 1, 'conchno3' : 1,
      'concNtno3' : 2*M_N/M_NO3 + M_N/M_HNO3},
      does_not_raise_exception()),
+    ({'wetoxs' : 'mg S m-2 d-1'}, 'day', None, {'wetoxs' : 1},
+     does_not_raise_exception()),
+    ({'wetoxs' : 'Tg S m-2 d-1'}, 'day', None, {'wetoxs' : 1e15},
+     does_not_raise_exception()),
+    ({'wetoxs' : 'mg S m-2'}, 'day', None, {'wetoxs' : 1},
+     does_not_raise_exception()),
 ])
 def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
                               chk_mean,raises):

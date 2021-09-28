@@ -785,7 +785,7 @@ class GriddedData(object):
 
         except Exception as e:
             if self.var_info.is_rate:
-                unit = str(self.units)
+                unit = current = str(self.units)
                 if not unit.endswith('-1'):
                     unit = str(uh.check_rate_units_implicit(unit,
                                                             self.ts_type))
