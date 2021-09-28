@@ -5,19 +5,10 @@ import xarray as xr
 
 import pyaerocom.exceptions as exc
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.tstype import TsType
 from pyaerocom.variable import get_variable
 from pyaerocom.io.read_mscw_ctm import (
     ReadEMEP,
     ReadMscwCtm,
-    calc_concNhno3,
-    calc_concNnh3,
-    calc_concNnh4,
-    calc_concNno3pm10,
-    calc_concNno3pm25,
-    calc_concNtnh,
-    calc_conNtno3,
-    update_EC_units,
 )
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
@@ -70,125 +61,6 @@ VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm',
            'pr': 'WDEP_PREC', 'concecpm25':'SURF_ug_ECFINE',
            'concssc': 'SURF_ug_SEASALT_C','dryoxn': 'DDEP_OXN_m2Grid',
            'dryoxs': 'DDEP_SOX_m2Grid','dryrdn': 'DDEP_RDN_m2Grid'}
-
-
-def test_calc_concNhno3():
-    
-    conchno3 = _create_fake_MSCWCtm_data()
-    
-    concNhno3_from_func = calc_concNhno3(conchno3)
-        
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-    
-    concNhno3 = conchno3*(M_N / (M_H + M_N + M_O * 3))
-    concNhno3.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNhno3, concNhno3_from_func)
-
-def test_calc_concNno3pm10():
-    
-    concno3c = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
-    
-    concNno3pm10_from_func = calc_concNno3pm10(concno3f,concno3c)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-    
-    fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + concno3c
-    concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
-    concNno3pm10.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNno3pm10,concNno3pm10_from_func)
-    
-def test_calc_concNno3pm25():
-    
-    concno3c = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
-    
-    concNno3pm10_from_func = calc_concNno3pm25(concno3f,concno3c)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-    
-    fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + 0.134*concno3c
-    concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
-    concNno3pm10.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNno3pm10,concNno3pm10_from_func)
-    
-def test_calc_conNtno3():
-    
-    conchno3 = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
-    concno3c = _create_fake_MSCWCtm_data()
-    
-    concNtno3_from_func = calc_conNtno3(conchno3,concno3f,concno3c)
-    
-    concNhno3 = calc_concNhno3(conchno3)
-    concNno3pm10 = calc_concNno3pm10(concno3f,concno3c)
-    
-    concNtno3 = concNhno3 + concNno3pm10
-    concNtno3.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNtno3,concNtno3_from_func)
-    
-def test_calc_concNtnh():
-    concnh3 = _create_fake_MSCWCtm_data()
-    concnh4 = _create_fake_MSCWCtm_data()
-    
-    concNtnh_from_func = calc_concNtnh(concnh3,concnh4)
-    
-    concNnh3 = calc_concNnh3(concnh3)
-    concNnh4 = calc_concNnh4(concnh4)
-    
-    concNtnh = concNnh3 + concNnh4
-    concNtnh.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNtnh, concNtnh_from_func)
-
-def test_calc_concNnh3():
-    concnh3 = _create_fake_MSCWCtm_data()
-    
-    concNnh3_from_func = calc_concNnh3(concnh3)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-        
-    concNnh3 = concnh3*(M_N / (M_H * 3 + M_N))
-    concNnh3.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNnh3, concNnh3_from_func)
-     
-
-def test_calc_concNnh4():
-    concnh4 = _create_fake_MSCWCtm_data()
-    
-    concNnh4_from_func = calc_concNnh4(concnh4)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-        
-    concNnh4 = concnh4*(M_N / (M_H * 4 + M_N))
-    concNnh4.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNnh4, concNnh4_from_func)
-
-    
-def test_update_EC_units():
-    
-    concecpm25 = _create_fake_MSCWCtm_data()
-    
-    concCecpm25_from_func = update_EC_units(concecpm25)
-    
-    concCecpm25 = concecpm25
-    concCecpm25.attrs['units'] = 'ug C m-3'
-    
-    xr.testing.assert_allclose(concCecpm25, concCecpm25_from_func)
-    assert concCecpm25.units == concCecpm25_from_func.units
 
 @pytest.fixture(scope='module')
 def reader():
@@ -430,15 +302,34 @@ def create_emep_dummy_data(tempdir, freq, vars_and_units):
     assert os.path.exists(outfile)
     return outdir
 
+def test_ReadMscwCtm_aux_var_defs():
+    req = ReadMscwCtm.AUX_REQUIRES
+    funs = ReadMscwCtm.AUX_FUNS
+    assert len(req) == len(funs)
+
+M_N = 14.006
+M_O = 15.999
+M_H = 1.007
+M_HNO3 = M_H + M_N + M_O*3
+M_NO3 = M_N + M_O*3
 
 @pytest.mark.parametrize('file_vars_and_units,freq,add_read,chk_mean,raises', [
     ({'concpm10' : 'ug m-3'}, 'day', None, {'concpm10' : 1},
      does_not_raise_exception()),
+
     ({'concpm10' : 'ug m-3'}, 'hour', None, None, does_not_raise_exception()),
+
     ({'concno3c'  : 'ug m-3'}, 'day', ['concno3'], None, pytest.raises(
         exc.VarNotAvailableError)),
+
     ({'concno3c'  : 'ug m-3', 'concno3f'  : 'ug m-3'}, 'day', ['concno3'],
     {'concno3c' : 1, 'concno3f' : 1, 'concno3' : 2},
+     does_not_raise_exception()),
+
+    ({'concno3c'  : 'ug m-3', 'concno3f'  : 'ug m-3', 'conchno3' : 'ug m-3'},
+    'day', ['concNtno3'],
+    {'concno3c' : 1, 'concno3f' : 1, 'conchno3' : 1,
+     'concNtno3' : 2*M_N/M_NO3 + M_N/M_HNO3},
      does_not_raise_exception()),
 ])
 def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
