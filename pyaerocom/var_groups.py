@@ -12,12 +12,10 @@ Note: the below definitions are far from complete
 emi_startswith = 'emi'
 wetdep_startswith = 'wet'
 drydep_startswith = 'dry'
+totdep_startswith = 'dep'
 
 # additional emission rate variables (that do not start with emi*)
 emi_add_vars = []
 
 # additional deposition rate variables (that do not start with wet* or dry*)
-dep_add_vars = ['pr']
-
-# additional rate variables (that are not emission or deposition rates)
-rate_add_vars = []
+dep_add_vars = []

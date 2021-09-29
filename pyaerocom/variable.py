@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from ast import literal_eval
 from cf_units import Unit
 from configparser import ConfigParser
@@ -361,7 +359,8 @@ class Variable(object):
         'map_vmin': float,
         'map_vmax': float,
         'map_cbar_levels': literal_eval_list,
-        'map_cbar_ticks': literal_eval_list
+        'map_cbar_ticks': literal_eval_list,
+        '_is_rate'      : bool
         }
 
     #maybe used in config
@@ -425,6 +424,8 @@ class Variable(object):
         self.map_c_over = 'r'
         self.map_cbar_levels = None
         self.map_cbar_ticks = None
+
+        self._is_rate = False
 
         # imports default information and, on top, variable information (if
         # applicable)
@@ -491,6 +492,8 @@ class Variable(object):
             return True
         elif var_name.startswith(var_groups.wetdep_startswith):
             return True
+        elif var_name.startswith(var_groups.totdep_startswith):
+            return True
         elif var_name in var_groups.dep_add_vars:
             return True
         return False
@@ -528,17 +531,19 @@ class Variable(object):
     def is_rate(self):
         """Indicates whether variable name is a rate
 
-        Rates include e.g. deposition or emission rate variables
+        Rates include e.g. deposition or emission rate variables but also
+        precipitation
 
         Returns
         -------
         bool
+            True if variable is rate, else False
         """
         if self.is_emission:
             return True
         elif self.is_deposition:
             return True
-        elif self.var_name_aerocom in var_groups.rate_add_vars:
+        elif self._is_rate:
             return True
         return False
 
