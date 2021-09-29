@@ -46,7 +46,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
 from pyaerocom.mathutils import closest_index, exponent, estimate_value_range
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
-from pyaerocom.units_helpers import UALIASES
+from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -773,49 +773,39 @@ class GriddedData(object):
 
         return unit_ok
 
-    def _try_convert_non_cf_unit(self, new_unit):
-        import pyaerocom.units_helpers as uh
-        from pyaerocom.time_config import SI_TO_TS_TYPE
-        # check if it is deposition and if units are implicit
-        try:
-            mulfac = uh.get_unit_conversion_fac(from_unit=str(self.units),
-                                                to_unit=new_unit,
-                                                var_name=self.var_name)
-            self._apply_unit_mulfac(new_unit, mulfac)
+    def _try_convert_custom_unit(self, new_unit):
+        """
+        Try convert data to input unit using custom conversion
 
-        except Exception as e:
-            if self.var_info.is_rate:
-                unit = current = str(self.units)
-                if not unit.endswith('-1'):
-                    unit = str(uh.check_rate_units_implicit(unit,
-                                                            self.ts_type))
-                    self.units = unit
+        Helpers for custom conversion are defined in
+        :mod:`pyaerocom.units_helpers`.
 
-                cf_freq = unit.split()[-1].split('-1')[0]
+        Parameters
+        ----------
+        new_unit : str
+            output unit
 
-                if not cf_freq in SI_TO_TS_TYPE:
-                    raise ValueError(f'Invalid rate unit {unit}, must end with '
-                                     f' h-1, d-1, etc...')
+        Raises
+        ------
+        UnitConversionError
+            if conversion failed
 
-                check_to = unit.replace(f'{cf_freq}-1', f'{uh.RATES_FREQ_DEFAULT}-1')
-                fac1 =  uh.get_unit_conversion_fac(unit,
-                                                   check_to) # e.g. h-1 -> d-1
+        Returns
+        -------
+        None
 
-                fac2 = uh.get_unit_conversion_fac(
-                            check_to,
-                            new_unit,
-                            self.var_name) # kg N m-2 d-1 -> kg m-2 d-1
-                mulfac = fac1*fac2
-                self._apply_unit_mulfac(new_unit,
-                                        mulfac)
+        """
+        current = self.units
 
-            else:
-                raise UnitConversionError(
-                    f'Failed to convert unit to {new_unit} in '
-                    f'{self.short_str()}. Reason: {repr(e)}')
-            const.print_log.info(
-                f'Succesfully converted unit from {current} to {new_unit} in '
-                f'{self.short_str()}')
+        mulfac = get_unit_conversion_fac(from_unit=current,
+                                        to_unit=new_unit,
+                                        var_name=self.var_name,
+                                        ts_type=self.ts_type)
+        const.print_log.info(
+            f'Succesfully converted unit from {current} to {new_unit} in '
+            f'{self.short_str()}')
+
+        self._apply_unit_mulfac(new_unit, mulfac)
 
     def _apply_unit_mulfac(self, new_unit, mulfac):
 
@@ -838,10 +828,10 @@ class GriddedData(object):
             convert in this instance or create a new one
         """
         data_out = self if inplace else self.copy()
-        try:
+        try: # uses cf_units functionality (standard stuff, e.g. ug to mg)
             data_out.grid.convert_units(new_unit)
-        except ValueError as e:
-            data_out._try_convert_non_cf_unit(new_unit)
+        except ValueError: # try pyaerocom custom code
+            data_out._try_convert_custom_unit(new_unit)
         return data_out
 
     def time_stamps(self):
