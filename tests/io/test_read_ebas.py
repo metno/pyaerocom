@@ -423,13 +423,15 @@ class TestReadEbas(object):
         'volume_std._temperature': '293.15 K',
         'volume_std._pressure': '1013.25 hPa',
         'detection_limit': '1.995 ug/m3',
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K", 'matrix': 'air', 'statistics': 'arithmetic mean'}
+        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        'matrix': 'air', 'statistics': 'arithmetic mean', 'ts_type': 'hourly'}
         }
     vmro3_tower_var_info = {'vmro3': {
         'name': 'ozone', 'units': 'nmol mol-1', 'tower_inlet_height': '50.0 m',
         'measurement_height': '50.0 m', 'instrument_name': 'uv_abs_kre_0050',
         'detection_limit': '1.0 nmol/mol',
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K", 'matrix': 'air', 'statistics': 'arithmetic mean'}}
+        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        'matrix': 'air', 'statistics': 'arithmetic mean', 'ts_type': 'hourly'}}
 
 
     @pytest.mark.parametrize('filename,vars_to_retrieve,raises,check_attrs', [
