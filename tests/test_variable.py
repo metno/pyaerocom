@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import pytest
 from pyaerocom import const
-from pyaerocom.variable import Variable
-from pyaerocom.variable import get_emep_variables
+from pyaerocom.variable import Variable, get_emep_variables
 
 @pytest.mark.parametrize('var_name,var_name_aerocom', [
     ('od550aer', 'od550aer'),
@@ -14,20 +11,41 @@ from pyaerocom.variable import get_emep_variables
     ('sconcss', 'concss'),
 
     ])
-def test_var_name_aerocom(var_name, var_name_aerocom):
+def test_Variable_var_name_aerocom(var_name, var_name_aerocom):
     assert Variable(var_name).var_name_aerocom == var_name_aerocom
 
-def test_alias_var():
+def test_Variable_alias_var():
     assert 'od550csaer' == Variable('od550aer')
 
-
-def test_alias_families():
+def test_Variable_alias_families():
     var = Variable('sconcso4')
 
     assert var.var_name_input == 'sconcso4'
     assert var.var_name == 'sconcso4'
     assert var.var_name_aerocom == 'concso4'
     assert var.units == 'ug m-3'
+
+@pytest.mark.parametrize('var,result', [
+    ('od550aer', False), ('emiso4', True), ('depso4', False), ('pr', False),
+    ('pr_mm', False), ('dryso4', False), ('wetso4', False)
+])
+def test_Variable_is_emission(var,result):
+    assert Variable(var).is_emission == result
+
+@pytest.mark.parametrize('var,result', [
+    ('od550aer', False), ('emiso4', False), ('depso4', True), ('pr', False),
+    ('pr_mm', False), ('dryso4', True), ('wetso4', True)
+])
+def test_Variable_is_deposition(var,result):
+    assert Variable(var).is_deposition == result
+
+@pytest.mark.parametrize('var,result', [
+    ('od550aer', False), ('emiso4', True), ('depso4', True), ('pr', True),
+    ('pr_mm', True), ('dryso4', True), ('wetso4', True)
+])
+def test_Variable_is_rate(var,result):
+    var = Variable(var)
+    assert var.is_rate == result
 
 def test_get_emep_variables():
     variables = get_emep_variables()
