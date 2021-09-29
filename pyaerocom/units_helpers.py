@@ -10,13 +10,10 @@ import pandas as pd
 import numpy as np
 
 from cf_units import Unit
-from pyaerocom import const
-
 from pyaerocom.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import UnitConversionError
-
-VARS = const.VARS
+from pyaerocom.variable import get_variable
 
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = 'd'
@@ -102,17 +99,6 @@ UALIASES = {
     '/m': 'm-1'
 }
 
-DEP_IMPLICIT_UNITS = [Unit('mg N m-2'),
-                      Unit('mg S m-2'),
-                      Unit('mg m-2')]
-
-PR_IMPLICIT_UNITS = [Unit('mm')]
-
-DEP_TEST_UNIT = 'kg m-2 s-1'
-DEP_TEST_NONSI_ATOMS = ['N', 'S']
-
-from pyaerocom.variable import get_variable
-
 def _check_unit_endswith_freq(unit):
     """
     Check if input unit ends with an SI frequency string
@@ -156,7 +142,7 @@ def rate_unit_implicit(unit):
     Parameters
     ----------
     unit : str
-        unit to be
+        unit to be tested
 
     Returns
     -------
@@ -165,29 +151,6 @@ def rate_unit_implicit(unit):
 
     """
     return not _check_unit_endswith_freq(unit)
-
-def _unit_conversion_fac_rate_implicit(from_unit, to_unit, ts_type, var_name):
-    from_unit = str(from_unit)
-    if not rate_unit_implicit(from_unit):
-        raise UnitConversionError(f'Input unit {from_unit} contains frequency')
-
-    unit = str(translate_rate_units_implicit(from_unit, ts_type))
-
-    cf_freq = unit.split()[-1].split('-1')[0]
-
-    if not cf_freq in SI_TO_TS_TYPE:
-        raise ValueError(f'Invalid rate unit {unit}, must end with '
-                         f' h-1, d-1, etc...')
-
-    check_to = unit.replace(f'{cf_freq}-1', f'{RATES_FREQ_DEFAULT}-1')
-    fac1 = get_unit_conversion_fac(unit, check_to)  # e.g. h-1 -> d-1
-
-    fac2 = get_unit_conversion_fac(
-        check_to,
-        to_unit,
-        var_name)  # kg N m-2 d-1 -> kg m-2 d-1
-    mulfac = fac1 * fac2
-    return mulfac
 
 def _unit_conversion_fac_custom(var_name, from_unit):
     """Get custom conversion factor for a certain unit
@@ -243,39 +206,60 @@ def _unit_conversion_fac_custom(var_name, from_unit):
 
 
 def _unit_conversion_fac_si(from_unit, to_unit):
-    """Returns multiplicative unit conversion factor for input units
+    """Retrieve multiplication factor for unit conversion
 
-    Note
-    ----
-    Input must be either instances of :class:`cf_units.Unit` class or string.
+    Works only for standard units that are supported by :mod:`cf_units`
+    library. See also :func:`get_unit_conversion_factor` for more general
+    cases.
 
     Parameters
     ----------
-    from_unit : :obj:`cf_units.Unit`, or :obj:`str`
-        unit to be converted
-    to_unit : :obj:`cf_units.Unit`, or :obj:`str`
-        final unit
+    from_unit : Unit or str
+        input unit
+    to_unit : Unit or str
+        output unit
+
+    Raises
+    ------
+    UnitConversionError
+        if units cannot be converted into each other using cf_units package
 
     Returns
     --------
     float
         multiplicative conversion factor
 
-    Raises
-    ------
-    ValueError
-        if units cannot be converted into each other using cf_units package
+
     """
     if isinstance(from_unit, str):
         from_unit = Unit(from_unit)
     try:
         return from_unit.convert(1, to_unit)
     except ValueError:
-        raise UnitConversionError('Failed to convert unit from {} to {}'
-                                  .format(from_unit, to_unit))
+        raise UnitConversionError(
+            f'Failed to convert unit from {from_unit} to {to_unit}')
 
 
 def _get_unit_conversion_fac_helper(from_unit, to_unit, var_name=None):
+    """
+    Helper for unit conversion
+
+    Parameters
+    ----------
+    from_unit : str
+        input unit
+    to_unit : str
+        output unit
+    var_name : str, optional
+        associated variable
+
+    Returns
+    -------
+    float
+        multiplication factor to convert data with input unit to output unit
+        (e.g. 1000 if input unit is kg and output unit g).
+
+    """
     pre_conv_fac = 1.0
     if from_unit == to_unit:
         # nothing to do
@@ -334,35 +318,3 @@ def convert_unit(data, from_unit, to_unit, var_name=None, ts_type=None):
     if conv_fac != 1:
         data *= conv_fac
     return data
-
-
-def translate_rate_units_implicit(unit_implicit, ts_type):
-    unit = Unit(unit_implicit)
-
-    freq = TsType(ts_type)
-    freq_si = freq.to_si()
-
-    # check if unit is explicitly defined as implicit and if yes add frequency
-    # string
-    found = False
-    for imp_unit in DEP_IMPLICIT_UNITS:
-        if unit == imp_unit:
-            unit = f'{imp_unit} {freq_si}-1'
-            found = True
-            break
-
-    # Check if frequency in unit corresponds to sampling frequency (e.g.
-    # ug m-2 h-1 for hourly data).
-    freq_si_str = f'{freq_si}-1'
-    freq_si_str_alt = f'/{freq_si}'
-    if str(unit).endswith(freq_si_str_alt):
-        # make sure frequency is denoted as e.g. m s-1 instead of m/s
-        _new =str(unit).replace(freq_si_str_alt, freq_si_str)
-        unit = Unit(_new)
-
-    # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
-    # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
-    if not freq_si_str in str(unit):
-        raise NotImplementedError(f'Cannot yet handle wdep in {unit} but '
-                                  f'{freq} sampling frequency')
-    return unit

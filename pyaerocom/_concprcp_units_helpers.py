@@ -5,11 +5,47 @@ from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray
 from pyaerocom.time_config import SI_TO_TS_TYPE
-from pyaerocom.units_helpers import get_unit_conversion_fac, DEP_TEST_UNIT, \
-    PR_IMPLICIT_UNITS, translate_rate_units_implicit
-
+from pyaerocom.units_helpers import get_unit_conversion_fac
 
 # ToDo: check if still needed
+DEP_IMPLICIT_UNITS = [Unit('mg N m-2'),
+                      Unit('mg S m-2'),
+                      Unit('mg m-2')]
+PR_IMPLICIT_UNITS = [Unit('mm')]
+DEP_TEST_UNIT = 'kg m-2 s-1'
+
+# ToDo: check if still needed
+def translate_rate_units_implicit(unit_implicit, ts_type):
+    unit = Unit(unit_implicit)
+
+    freq = TsType(ts_type)
+    freq_si = freq.to_si()
+
+    # check if unit is explicitly defined as implicit and if yes add frequency
+    # string
+    found = False
+    for imp_unit in DEP_IMPLICIT_UNITS:
+        if unit == imp_unit:
+            unit = f'{imp_unit} {freq_si}-1'
+            found = True
+            break
+
+    # Check if frequency in unit corresponds to sampling frequency (e.g.
+    # ug m-2 h-1 for hourly data).
+    freq_si_str = f'{freq_si}-1'
+    freq_si_str_alt = f'/{freq_si}'
+    if str(unit).endswith(freq_si_str_alt):
+        # make sure frequency is denoted as e.g. m s-1 instead of m/s
+        _new =str(unit).replace(freq_si_str_alt, freq_si_str)
+        unit = Unit(_new)
+
+    # for now, raise NotImplementedError if wdep unit is, e.g. ug m-2 s-1 but
+    # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
+    if not freq_si_str in str(unit):
+        raise NotImplementedError(f'Cannot yet handle wdep in {unit} but '
+                                  f'{freq} sampling frequency')
+    return unit
+
 def _check_unit_conversion_fac(unit, test_unit, non_si_info=None): # pragma: no cover
     raise NotImplementedError('under revision')
     if non_si_info is None:
@@ -242,6 +278,3 @@ def compute_concprcp_from_pr_and_wetdep(wdep, pr, ts_type=None,
     cube.units = conc_unit_out
     cube.attributes['ts_type'] = str(to_tstype)
     return cube
-
-if __name__ == '__main__':
-    pass
