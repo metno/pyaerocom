@@ -73,7 +73,9 @@ from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units_helpers import compute_concprcp_from_pr_and_wetdep
+from pyaerocom._concprcp_units_helpers import \
+    compute_concprcp_from_pr_and_wetdep
+
 
 class ReadGridded(object):
     """Class for reading gridded files based on network or model ID
