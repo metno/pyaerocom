@@ -451,8 +451,6 @@ class TestReadEbas(object):
          pytest.raises(TemporalResolutionError), {}),
         (EBAS_FILEDIR.joinpath(EBAS_FILES['sc550dryaer']['Jungfraujoch'][0]),
          ['sc550aer'],does_not_raise_exception(), {'station_name' : 'Jungfraujoch'}),
-
-
         ])
     def test_read_file(self, reader, filename, vars_to_retrieve, raises,
                        check_attrs):
