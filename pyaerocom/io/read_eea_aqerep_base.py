@@ -282,8 +282,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 # UTF-8 decoding error
                 if suffix == '.gz':
                     os.remove(f_out.name)
-                    raise EEAv2FileError(
-                        f'Found corrupt file {filename}. consider deleteing it')
+                raise EEAv2FileError(
+                    f'Found corrupt file {filename}. consider deleteing it')
 
             # create output dict
             if len(header) < max_file_index_to_keep:
@@ -626,6 +626,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             except TemporalResolutionError as e:
                 self.logger.warning('{} has TemporalResolutionError'.format(_file))
                 const.print_log.warning(f'{repr(e)}. Skipping file...')
+                continue
+            except Exception as e:
+                from traceback import format_exc
+                self.logger.warning(f'Fatal, unexpected error for file {_file}. Error: {format_exc()}')
+                const.print_log.warning(f'Fatal, unexpected error for file {_file}. Error: {repr(e)}. Skipping file...')
                 continue
 
             # readfile might fail outside of the error captured by the try statement above
