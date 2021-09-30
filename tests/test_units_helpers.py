@@ -83,8 +83,8 @@ def test_convert_unit(from_unit, to_unit, var_name, val):
         UnitConversionError)),
     ('kg m-2', 'mm', 'od550aer', None,None, pytest.raises(
         UnitConversionError)),
-    ('mm', 'mm d-1', 'pr_mm','daily',1, does_not_raise_exception()),
-    ('mm', 'mm d-1', 'pr_mm','hourly',24, does_not_raise_exception()),
+    ('mm', 'mm d-1', 'prmm','daily',1, does_not_raise_exception()),
+    ('mm', 'mm d-1', 'prmm','hourly',24, does_not_raise_exception()),
     ('mg m-2', 'ug m-2 d-1', 'wetoxs','hourly',24e3,
      does_not_raise_exception()),
     ('mg m-2', 'mg m-2 d-1', 'wetoxs','hourly',24,does_not_raise_exception()),
