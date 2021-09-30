@@ -9,7 +9,7 @@ from pyaerocom._lowlevel_helpers import (DirLoc, StrType, TypeValidator,
 
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
-from pyaerocom.variable import get_aliases
+from pyaerocom.variable_helpers import get_aliases
 
 from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
                                              statistics_trend,
