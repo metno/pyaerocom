@@ -274,6 +274,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         else:
             read_filename = filename
 
+        # input files can be either UTF-8 or UTF-16 encoded
+        # try both
+        # files are max 3MB in size, so no big deal terms of RAM usage
         try:
             with open(read_filename, 'r') as f:
                 lines = f.readlines()
@@ -445,7 +448,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             bad_line_arr = []
             for line in f:
                 rows = line.rstrip().split('\t')
-                # if len(rows) < 24:
                 # skip too short lines
                 if len(rows) < min_row_no:
                     # print(line)
@@ -474,7 +476,6 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if suffix == '.gz':
             f_out.close()
             os.remove(f_out.name)
-
 
         return struct_data
 
