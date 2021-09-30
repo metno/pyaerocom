@@ -2,6 +2,7 @@ from pyaerocom.mathutils import is_strictly_monotonic, make_binlist
 from pyaerocom.variable_helpers import get_variable
 
 
+
 class VarinfoWeb:
     """
     Additional variable information relevant for AeroVal web output

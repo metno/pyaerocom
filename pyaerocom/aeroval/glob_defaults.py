@@ -1,11 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 NOTE: parts of this should be migrated into variables.ini if possible
-Created on Thu Jun 13 09:31:56 2019
-
-@author: jonasg
 """
+
 var_ranges_defaults = {
     # "default": {
     #     "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
@@ -329,5 +325,3 @@ var_web_info = {
     'vmro3'         : ['O3', '3D', 'Volume mixing ratios'],
     'vmrno2'        : ['NO2', '3D', 'Volume mixing ratios'],
 }
-
-

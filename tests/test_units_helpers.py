@@ -14,7 +14,7 @@ from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom import units_helpers as mod
 
-from .conftest import testdata_unavail, does_not_raise_exception
+from .conftest import data_unavail, does_not_raise_exception
 
 @pytest.mark.parametrize('unit,val', [
     ('ug min-1', True),('ug/min', True),('ug', False),

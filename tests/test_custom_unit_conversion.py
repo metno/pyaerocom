@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan 14 17:07:45 2021
-
-@author: jonasg
-"""
 import numpy.testing as npt
 import pyaerocom as pya
 from cf_units import Unit

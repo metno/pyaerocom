@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Module containing helper functions related to iris I/O methods. These contain
 reading of Cubes, and some methods to perform quality checks of the data, e.g.
@@ -7,8 +5,8 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 1. checking and correction of time definition
 2. number and length of dimension coordinates must match data array
 3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
-
 """
+
 import cf_units
 from datetime import datetime
 import iris

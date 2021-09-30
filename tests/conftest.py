@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 11 15:57:09 2020
-
-@author: jonasg
-"""
 import matplotlib
 
 matplotlib.use('Agg')
@@ -13,7 +6,7 @@ from contextlib import contextmanager
 import numpy as np
 import pytest
 
-import pyaerocom.testdata_access as td
+import pyaerocom.access_testdata as td
 from pyaerocom import __dir__ as PYADIR
 from pyaerocom import const
 from pyaerocom.colocateddata import ColocatedData
@@ -29,7 +22,7 @@ TEST_RTOL = 1e-4
 DATA_ACCESS = DataAccess()
 
 # class that provides / ensures access to testdataset
-tda = td.TestDataAccess()
+tda = td.AccessTestData()
 
 TESTDATADIR = tda.testdatadir
 
@@ -108,10 +101,10 @@ rg_unavail = pytest.mark.skipif(not rg_avail,
 etopo1_unavail = pytest.mark.skipif(not const.ETOPO1_AVAILABLE,
                    reason='Skipping tests that require access to ETOPO1 data')
 
-testdata_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
+data_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
                     reason='Skipping tests that require testdata-minimal.')
 
-test_not_working = pytest.mark.skip(reason='Method raises Exception')
+broken_test = pytest.mark.skip(reason='Method raises Exception')
 
 from pyaerocom import change_verbosity
 

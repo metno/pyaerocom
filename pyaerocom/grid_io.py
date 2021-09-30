@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 20 09:07:42 2019
-
-@author: jonasg
-"""
 from pyaerocom._lowlevel_helpers import dict_to_str
 from pyaerocom.time_config import TS_TYPES
 

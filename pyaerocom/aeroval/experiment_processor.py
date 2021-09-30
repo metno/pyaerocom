@@ -1,14 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os
-import numpy as np
 from traceback import format_exc
 
+import numpy as np
+
 from pyaerocom import const
-from pyaerocom.aeroval._processing_base import ProcessingEngine, HasColocator
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
+from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
+from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
+from pyaerocom.colocateddata import ColocatedData
 
 
 class ExperimentProcessor(ProcessingEngine, HasColocator):
@@ -351,8 +350,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         """
         self.exp_output.update_interface()
 
+
 if __name__ == '__main__':
     stp = ExperimentProcessor('bla', 'blub')
     stp.to_json('/home/jonasg/MyPyaerocom/tmp/')
-
-

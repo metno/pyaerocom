@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import iris
 import numpy as np
 from traceback import format_exc

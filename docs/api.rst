@@ -488,6 +488,6 @@ Molar masses and related helpers
 Access to minimal test dataset
 ------------------------------
 
-.. automodule:: pyaerocom.testdata_access
+.. automodule:: pyaerocom.access_testdata
    :members:
    :undoc-members:

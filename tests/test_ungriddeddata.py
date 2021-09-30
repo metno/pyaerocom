@@ -14,7 +14,7 @@ import pytest
 from pyaerocom import UngriddedData
 from pyaerocom.exceptions import DataCoverageError
 
-from .conftest import rg_unavail, testdata_unavail
+from .conftest import data_unavail, rg_unavail
 
 
 @pytest.fixture(scope='module')
@@ -71,11 +71,11 @@ def test_coordinate_access():
     npt.assert_array_equal(c['longitude'], lons)
     npt.assert_array_equal(c['altitude'], alts)
 
-@testdata_unavail
+@data_unavail
 def test_check_index_aeronet_subset(aeronetsunv3lev2_subset):
     aeronetsunv3lev2_subset._check_index()
 
-@testdata_unavail
+@data_unavail
 @rg_unavail
 @pytest.mark.dependency
 def test_check_set_country(aeronetsunv3lev2_subset):
