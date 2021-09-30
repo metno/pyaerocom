@@ -3,15 +3,20 @@ import os
 from pyaerocom import const, GriddedData, TsType
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine, DataImporter
-from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
+from pyaerocom.aeroval.helpers import check_var_ranges_avail
+from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json,  \
+    griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.exceptions import VarNotAvailableError, TemporalResolutionError, DataCoverageError, \
+from pyaerocom.exceptions import VarNotAvailableError, \
+    TemporalResolutionError, DataCoverageError, \
     VariableDefinitionError, DataDimensionError
 from pyaerocom.helpers import isnumeric
 
 
 class ModelMapsEngine(ProcessingEngine, DataImporter):
-
+    """
+    Engine for processing of model maps
+    """
     def _get_run_kwargs(self, **kwargs):
         try:
             model_list = kwargs['model_list']
@@ -115,13 +120,10 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             If the data has the incorrect number of dimensions or misses either
             of time, latitude or longitude dimension.
         """
-
-
         data = self.read_model_data(model_name, var)
-        try:
-            const.VARS[data.var_name]
-        except VariableDefinitionError:
-            data.register_var_glob()
+        check_var_ranges_avail(data, var)
+        var = VarinfoWeb(var)
+
         data = self._check_dimensions(data)
 
         outdir = self.cfg.path_manager.get_json_output_dirs()['contour']
@@ -145,8 +147,6 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
             data = data.resample_time(freq)
 
         data.check_unit()
-        var = VarinfoWeb(var)
-
         # first calcualate and save geojson with contour levels
         contourjson = calc_contour_json(data, cmap=var.cmap,
                                         cmap_bins=var.cmap_bins)
