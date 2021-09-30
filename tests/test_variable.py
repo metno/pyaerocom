@@ -48,21 +48,21 @@ def test_Variable_alias_families():
 
 @pytest.mark.parametrize('var,result', [
     ('od550aer', False), ('emiso4', True), ('depso4', False), ('pr', False),
-    ('pr_mm', False), ('dryso4', False), ('wetso4', False)
+    ('prmm', False), ('dryso4', False), ('wetso4', False)
 ])
 def test_Variable_is_emission(var,result):
     assert Variable(var).is_emission == result
 
 @pytest.mark.parametrize('var,result', [
     ('od550aer', False), ('emiso4', False), ('depso4', True), ('pr', False),
-    ('pr_mm', False), ('dryso4', True), ('wetso4', True)
+    ('prmm', False), ('dryso4', True), ('wetso4', True)
 ])
 def test_Variable_is_deposition(var,result):
     assert Variable(var).is_deposition == result
 
 @pytest.mark.parametrize('var,result', [
     ('od550aer', False), ('emiso4', True), ('depso4', True), ('pr', True),
-    ('pr_mm', True), ('dryso4', True), ('wetso4', True)
+    ('prmm', True), ('dryso4', True), ('wetso4', True)
 ])
 def test_Variable_is_rate(var,result):
     var = Variable(var)

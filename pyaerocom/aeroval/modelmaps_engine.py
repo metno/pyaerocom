@@ -122,7 +122,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         """
         data = self.read_model_data(model_name, var)
         check_var_ranges_avail(data, var)
-        var = VarinfoWeb(var)
+        varinfo = VarinfoWeb(var)
 
         data = self._check_dimensions(data)
 
@@ -148,8 +148,8 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
 
         data.check_unit()
         # first calcualate and save geojson with contour levels
-        contourjson = calc_contour_json(data, cmap=var.cmap,
-                                        cmap_bins=var.cmap_bins)
+        contourjson = calc_contour_json(data, cmap=varinfo.cmap,
+                                        cmap_bins=varinfo.cmap_bins)
 
         # now calculate pixel data json file (basically a json file
         # containing monthly mean timeseries at each grid point at

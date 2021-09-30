@@ -182,13 +182,16 @@ class GriddedData(object):
     @property
     def var_info(self):
         """Print information about variable"""
-        if not self.var_name in const.VARS:
-            try:
-                return const.VARS[self.var_name_aerocom]
-            except Exception:
-                raise VariableDefinitionError('No default access available for '
-                                              'variable {}'.format(self.var_name))
-        return const.VARS[self.var_name]
+        if self.var_name in const.VARS:
+            return const.VARS[self.var_name]
+        var_name = self.var_name_aerocom
+        if var_name in const.VARS:
+            return const.VARS[var_name]
+        else:
+            raise VariableDefinitionError(
+                f'No default access available for variable {self.var_name}'
+            )
+
 
     @property
     def ts_type(self):
