@@ -12,6 +12,7 @@ def test_read_etex1():
     assert isinstance(data, UngriddedData)
 
 
+@lustre_unavail
 def test_read_ungridded():
     data = ReadUngridded().read("etex1", "concch")
     
