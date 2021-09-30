@@ -123,7 +123,7 @@ class TestReadEbas(object):
                          'wetoxn',
                          'wetrdn',
                          'pr',
-                         'pr_mm',
+                         'prmm',
                          'concpm1',
                          'concca',
                          'concmg',
@@ -235,6 +235,7 @@ class TestReadEbas(object):
              'try_convert_vmr_conc' : True,
              'ensure_correct_freq': True,
              'freq_from_start_stop_meas': True,
+             'freq_min_cov' : 0.
              }
 
     def test_opts(self, reader):

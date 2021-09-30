@@ -58,7 +58,7 @@ VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm',
            'wetno3': 'WDEP_TNO3', 'wetoa': 'WDEP_OM25', 'wetoxn': 'WDEP_OXN', 
            'wetrdn': 'WDEP_RDN', 'wetso2': 'WDEP_SO2', 'wetso4': 'WDEP_SO4', 
            'wetoxs': 'WDEP_SOX', 'wetss': 'WDEP_SS', 'z3d': 'Z_MID', 
-           'pr_mm': 'WDEP_PREC', 'concecpm25':'SURF_ug_ECFINE',
+           'prmm': 'WDEP_PREC', 'concecpm25':'SURF_ug_ECFINE',
            'concssc': 'SURF_ug_SEASALT_C','dryoxn': 'DDEP_OXN_m2Grid',
            'dryoxs': 'DDEP_SOX_m2Grid','dryrdn': 'DDEP_RDN_m2Grid'}
 
@@ -318,9 +318,9 @@ M_NO3 = M_N + M_O*3
     ({'wetoxs' : 'mg S m-2'}, 'day', None, {'wetoxs' : 1},
      does_not_raise_exception()),
 
-    ({'pr_mm' : 'mm'}, 'hour', None, {'pr_mm' : 24},
+    ({'prmm' : 'mm'}, 'hour', None, {'prmm' : 24},
      does_not_raise_exception()),
-    ({'pr_mm' : 'mm d-1'}, 'hour', None, {'pr_mm' : 1},
+    ({'prmm' : 'mm d-1'}, 'hour', None, {'prmm' : 1},
      does_not_raise_exception()),
     ({'concpm10' : 'ug m-3'}, 'day', None, {'concpm10' : 1},
      does_not_raise_exception()),
