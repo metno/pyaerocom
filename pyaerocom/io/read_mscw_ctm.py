@@ -18,7 +18,7 @@ from pyaerocom.io._read_mscw_ctm_helpers import (add_dataarrays,
                                                  calc_conNtno3, calc_concNnh3, calc_concNnh4, calc_concNtnh,
                                                  update_EC_units
                                                  )
-from pyaerocom.variable import get_emep_variables
+from pyaerocom.variable_helpers import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
 
@@ -523,7 +523,7 @@ class ReadMscwCtm(object):
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = self.filepath
+        gridded.metadata['from_files'] = [self.filepath]
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
