@@ -648,17 +648,20 @@ class GriddedData(object):
         except Exception:
             logger.warning('Failed to access metadata from filename')
 
-    def register_var_glob(self):
+    def register_var_glob(self, delete_existing=True):
         vmin, vmax = self.estimate_value_range_from_data()
         vardef = Variable(var_name=self.var_name,
                           standard_name=self.standard_name,
                           long_name=self.long_name,
                           units=self.units,
                           minimum=vmin, maximum=vmax)
-
+        if delete_existing:
+            varcol = const.VARS
+            if self.var_name in varcol:
+                varcol.delete_variable(self.var_name)
         const.VARS.add_var(vardef)
         const.print_log.warning(
-            f'Adding variable {self.var_name} in pyaerocom.const.VARS, '
+            f'Adding variable {self.var_name} in pyaerocom.const.VARS. '
             f'since such a  '
             f'variable is not defined in pyaerocom. Minimum and maximum '
             f'values are added automatically based on value range in '
