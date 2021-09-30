@@ -46,7 +46,7 @@ import xarray as xr
 
 from pyaerocom import const, print_log, logger
 from pyaerocom.metastandards import AerocomDataID
-from pyaerocom.variable import Variable, is_3d
+from pyaerocom.variable import Variable
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
@@ -2104,3 +2104,4 @@ if __name__=="__main__":
     print(reader)
 
     data = reader.read_var('od550aer', start=9999)
+is_3d = lambda var_name: True if '3d' in var_name.lower() else False

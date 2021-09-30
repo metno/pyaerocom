@@ -1,7 +1,7 @@
 import cf_units
 import numpy as np
 from pyaerocom import const
-from pyaerocom.variable import get_variable
+from pyaerocom.variable_helpers import get_variable
 
 
 def calc_ang4487aer(data):
