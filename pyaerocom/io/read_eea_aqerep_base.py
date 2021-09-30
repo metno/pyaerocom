@@ -282,8 +282,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 # UTF-8 decoding error
                 if suffix == '.gz':
                     os.remove(f_out.name)
-                    raise EEAv2FileError(
-                        f'Found corrupt file {filename}. consider deleteing it')
+                raise EEAv2FileError(
+                    f'Found corrupt file {filename}. consider deleteing it')
 
             # create output dict
             if len(header) < max_file_index_to_keep:
