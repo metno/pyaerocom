@@ -1,19 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Molecular masses and units (for conversion of species)
-Created on Mon Sep 2 08:47:56 2019
-
-@author: jonasg
-"""
 import pandas as pd
-import numpy as np
 
 from cf_units import Unit
 from pyaerocom.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.variable import get_variable
+from pyaerocom.variable_helpers import get_variable
 
 #: default frequency for rates variables (e.g. deposition, precip)
 RATES_FREQ_DEFAULT = 'd'
