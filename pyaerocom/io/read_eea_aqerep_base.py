@@ -69,7 +69,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = '*.csv'
 
     #: Version log of this class (for caching)
-    __version__ = '0.06'
+    __version__ = '0.07'
 
     #: Column delimiter
     FILE_COL_DELIM = ','
@@ -263,96 +263,85 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         time_indexes = [13, 14]
 
         # read the file
-        # file_data = []
         # enable alternative reading of .gz files here to save space on the file system
         suffix = pathlib.Path(filename).suffix
         if suffix == '.gz':
             f_out = tempfile.NamedTemporaryFile(delete=False)
             with gzip.open(filename, 'r') as f_in:
                 shutil.copyfileobj(f_in, f_out)
-            filename = f_out.name
+            read_filename = f_out.name
             f_out.close()
+        else:
+            read_filename = filename
 
-        with open(filename, 'r') as f:
-            # read header...
-            # Countrycode,Namespace,AirQualityNetwork,AirQualityStation,AirQualityStationEoICode,SamplingPoint,SamplingProcess,Sample,AirPollutant,AirPollutantCode,AveragingTime,Concentration,UnitOfMeasurement,DatetimeBegin,DatetimeEnd,Validity,Verification
-            try:
-                header = f.readline().lower().rstrip().split(file_delimiter)
-            except UnicodeDecodeError:
-                # UTF-8 decoding error
-                if suffix == '.gz':
-                    os.remove(f_out.name)
-                    raise EEAv2FileError(
-                        f'Found corrupt file {filename}. consider deleteing it')
-
-            # create output dict
-            if len(header) < max_file_index_to_keep:
-                if suffix == '.gz':
-                    os.remove(f_out.name)
-                raise EEAv2FileError(
-                    f'Found corrupt file {filename}. consider deleting it')
-
-            data_dict = {}
-            for idx in header_indexes_to_keep:
-                data_dict[header[idx]] = ''
-
-            for idx in file_indexes_to_keep:
-                if idx in time_indexes:
-                    data_dict[header[idx]] = np.zeros(self.MAX_LINES_TO_READ,
-                                                      dtype='datetime64[s]')
-                else:
-                    data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ,
-                                                      dtype=np.float_)
-
-            # read the data...
-            # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
-            lineidx = 0
-            # Unfortunatelt there's a lot of corrupt files
-            # we might see errors like
-            # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xc2 in position 0: unexpected end of data
-            # therefore put the entire loop into a try statement
-            try:
-                for line in f:
-                    rows = line.rstrip().split(file_delimiter)
-                    # skip data line if the # rows is not sufficient
-                    if len(rows) < max_file_index_to_keep:
-                        continue
-                    if lineidx == 0:
-                        for idx in header_indexes_to_keep:
-                            if header[idx] != self.VAR_CODE_NAME:
-                                data_dict[header[idx]] = rows[idx]
-                            else:
-                                # extract the EEA var code from the URL noted in the data file
-                                data_dict[header[idx]] = rows[idx].split('/')[-1]
-
-                    for idx in file_indexes_to_keep:
-                        # if the data is a time
-                        if idx in time_indexes:
-                            # make the time string ISO compliant so that numpy can directly read it
-                            # this is not very time string forgiving but fast
-                            data_dict[header[idx]][lineidx] = np.datetime64(
-                                rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
-                            )
-                        else:
-                            # data is not a time
-                            # sometimes there's no value in the file. Set that to nan
-                            try:
-                                data_dict[header[idx]][lineidx] = np.float_(rows[idx])
-                            except (ValueError, IndexError):
-                                data_dict[header[idx]][lineidx] = np.nan
-
-                    lineidx += 1
-            except UnicodeDecodeError:
-                # self.logger.warning('{} is corrupt! consider deleteing it'.format(filename))
-                if suffix == '.gz':
-                    os.remove(f_out.name)
-                    raise EEAv2FileError(
-                        f'Found corrupt file {filename}. consider deleteing it')
-                # return None
+        try:
+            with open(read_filename, 'r') as f:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            with open(read_filename, 'r', encoding='UTF-16') as f:
+                lines = f.readlines()
+        except:
+            if suffix == '.gz':
+                os.remove(f_out.name)
+            raise EEAv2FileError(
+                f'Found corrupt file {filename}. consider deleteing it')
 
         # remove the temp file in case the input file was a gz file
         if suffix == '.gz':
             os.remove(f_out.name)
+
+        header = lines[0].lower().rstrip().split(file_delimiter)
+        # create output dict
+        if len(header) < max_file_index_to_keep:
+            raise EEAv2FileError(
+                f'Found corrupt file {filename}. consider deleting it')
+
+        data_dict = {}
+        for idx in header_indexes_to_keep:
+            data_dict[header[idx]] = ''
+
+        for idx in file_indexes_to_keep:
+            if idx in time_indexes:
+                data_dict[header[idx]] = np.zeros(self.MAX_LINES_TO_READ,
+                                                  dtype='datetime64[s]')
+            else:
+                data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ,
+                                                  dtype=np.float_)
+
+        # read the data...
+        # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
+        lineidx = 0
+        for line in lines[1:]:
+            rows = line.rstrip().split(file_delimiter)
+            # Unfortunately there's a lot of corrupt files
+            # skip data line if the # rows is not sufficient
+            if len(rows) < max_file_index_to_keep:
+                continue
+            if lineidx == 0:
+                for idx in header_indexes_to_keep:
+                    if header[idx] != self.VAR_CODE_NAME:
+                        data_dict[header[idx]] = rows[idx]
+                    else:
+                        # extract the EEA var code from the URL noted in the data file
+                        data_dict[header[idx]] = rows[idx].split('/')[-1]
+
+            for idx in file_indexes_to_keep:
+                # if the data is a time
+                if idx in time_indexes:
+                    # make the time string ISO compliant so that numpy can directly read it
+                    # this is not very time string forgiving but fast
+                    data_dict[header[idx]][lineidx] = np.datetime64(
+                        rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
+                    )
+                else:
+                    # data is not a time
+                    # sometimes there's no value in the file. Set that to nan
+                    try:
+                        data_dict[header[idx]][lineidx] = np.float_(rows[idx])
+                    except (ValueError, IndexError):
+                        data_dict[header[idx]][lineidx] = np.nan
+
+            lineidx += 1
 
         unit_in_file = data_dict['unitofmeasurement']
         # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES
@@ -446,6 +435,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             # read header...
             # Countrycode Timezone Namespace   AirQualityNetwork AirQualityStation AirQualityStationEoICode   AirQualityStationNatCode   SamplingPoint  SamplingProces Sample   AirPollutantCode  ObservationDateBegin ObservationDateEnd   Projection  Longitude   Latitude Altitude MeasurementType   AirQualityStationType   AirQualityStationArea   EquivalenceDemonstrated MeasurementEquipment InletHeight BuildingDistance  KerbDistance
             header = f.readline().lower().rstrip().split()
+            min_row_no = len(header)
             # create output dict
             data_dict = {}
             for key in header:
@@ -455,9 +445,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             bad_line_arr = []
             for line in f:
                 rows = line.rstrip().split('\t')
-
-                if len(rows) < 24:
-                    print(line)
+                # if len(rows) < 24:
+                # skip too short lines
+                if len(rows) < min_row_no:
+                    # print(line)
                     bad_line_no += 1
                     bad_line_arr.append(line)
                     continue
