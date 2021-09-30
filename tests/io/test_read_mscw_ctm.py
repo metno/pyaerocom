@@ -5,7 +5,7 @@ import xarray as xr
 
 import pyaerocom.exceptions as exc
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.variable import get_variable
+from pyaerocom import get_variable
 from pyaerocom.io.read_mscw_ctm import (
     ReadEMEP,
     ReadMscwCtm,
