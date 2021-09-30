@@ -7,12 +7,13 @@ import os
 
 import numpy as np
 import numpy.testing as npt
+
 import pytest
 
-from ..conftest import TEST_RTOL, testdata_unavail
+from ..conftest import TEST_RTOL, data_unavail
 
 
-@testdata_unavail
+@data_unavail
 def test_load_thessaloniki(aeronet_sda_subset_reader):
     reader = aeronet_sda_subset_reader
     files = reader.find_in_file_list('*Thessaloniki*')

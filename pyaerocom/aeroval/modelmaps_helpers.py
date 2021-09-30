@@ -140,21 +140,3 @@ def calc_contour_json(data, cmap, cmap_bins):
 
     plt.close('all')
     return geojson
-
-if __name__ == '__main__':
-    import pyaerocom as pya
-    dd = '/home/jonasg/MyPyaerocom/AEROCOM-MEDIAN-2x3-GLISSETAL2020-1_AP3-CTRL/renamed'
-    reader = pya.io.ReadGridded('AEROCOM-MEDIAN-2x3-GLISSETAL2020-1_AP3-CTRL',
-                              data_dir=dd)
-
-    data = reader.read_var('od550aer', start=2010)
-
-    griddeddata_to_jsondict(data)
-
-
-
-
-
-
-
-

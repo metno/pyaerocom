@@ -1,9 +1,16 @@
 [run]
 source =
   pyaerocom
+omit =
+  # not used
+  pyaerocom/aeroval/utils.py
 
 [report]
+skip_covered = true
 exclude_lines =
+  pragma: no cover
+  NotImplementedError
+  abc.ABC
   if __name__=='__main__':
   if __name__=="__main__":
   if __name__ == "__main__":

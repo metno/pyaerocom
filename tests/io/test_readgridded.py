@@ -10,13 +10,13 @@ from collections import OrderedDict
 import numpy as np
 import numpy.testing as npt
 import pytest
-
 from pandas import DataFrame
+
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io.readgridded import ReadGridded
 
-from ..conftest import CHECK_PATHS, TEST_RTOL, TESTDATADIR, lustre_unavail, testdata_unavail
+from ..conftest import CHECK_PATHS, TEST_RTOL, TESTDATADIR, data_unavail, lustre_unavail
 
 
 def init_reader():
@@ -76,7 +76,7 @@ def test_ReadGridded_class_empty():
     assert r.vars_filename == []
 
 
-@testdata_unavail
+@data_unavail
 def test_ReadGridded_data_dir(reader_tm5):
     assert reader_tm5.data_dir == path_tm5
     assert reader_tm5._vars_2d == ['abs550aer', 'od550aer']
@@ -87,7 +87,7 @@ def test_ReadGridded_ts_types():
     r = ReadGridded(data_dir=path_tm5)
     assert sorted(r.ts_types) == ['daily', 'monthly']
 
-@testdata_unavail
+@data_unavail
 def test_ReadGridded_read_var(reader_tm5):
     r = reader_tm5
     data = r.read_var('od550aer')

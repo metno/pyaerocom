@@ -1,12 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 11 08:00:01 2021
-
-@author: jonasg
-"""
 from pyaerocom.mathutils import is_strictly_monotonic, make_binlist
 from pyaerocom.variable import get_variable
+
 
 class VarinfoWeb:
     _num_bins = 8
@@ -56,12 +50,3 @@ class VarinfoWeb:
         dd['vmin'] = self.vmin
         dd['vmax'] = self.vmax
         return dd
-
-
-if __name__ == '__main__':
-
-    dd = {'var_name':'od550aer'}
-    info = VarinfoWeb.from_dict(dd)
-
-    print(info.to_dict())
-

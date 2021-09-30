@@ -1,23 +1,30 @@
-# -*- coding: utf-8 -*-
 import glob
 import os
 import shutil
-from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (DirLoc, StrType, TypeValidator,
-                                         sort_dict_by_name, check_make_json,
-                                         read_json, write_json)
 
+from pyaerocom import const
+from pyaerocom._lowlevel_helpers import (
+    DirLoc,
+    StrType,
+    TypeValidator,
+    check_make_json,
+    read_json,
+    sort_dict_by_name,
+    write_json,
+)
+from pyaerocom.aeroval.glob_defaults import (
+    statistics_defaults,
+    statistics_trend,
+    var_ranges_defaults,
+    var_web_info,
+)
+from pyaerocom.aeroval.helpers import read_json, write_json
+from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable import get_aliases
 
-from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
-                                             statistics_trend,
-                                             var_ranges_defaults,
-                                             var_web_info)
-from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-
-from pyaerocom.aeroval.setupclasses import EvalSetup
 
 class ProjectOutput:
     """JSON output for project"""
@@ -712,6 +719,3 @@ class ExperimentOutput(ProjectOutput):
         obs_vars.extend(add)
         self._valid_obs_vars[obs_name]  = obs_vars
         return obs_vars
-
-
-

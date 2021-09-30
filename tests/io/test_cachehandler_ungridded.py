@@ -12,7 +12,7 @@ import pytest
 
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 
-from ..conftest import testdata_unavail
+from ..conftest import data_unavail
 
 @pytest.fixture(scope='module')
 def cache_handler():
@@ -24,7 +24,7 @@ def test_cache_dir(cache_handler):
     assert comps[-2] == '_cache'
     assert comps[-3] == 'MyPyaerocom'
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.dependency
 def test_write_custom(cache_handler, aeronetsunv3lev2_subset, tempdir):
     ch = cache_handler
@@ -36,7 +36,7 @@ def test_write_custom(cache_handler, aeronetsunv3lev2_subset, tempdir):
     fp = os.path.join(tempdir, outfile)
     assert os.path.exists(fp)
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.dependency(depends=['test_write_custom'])
 def test_check_and_load_custom(cache_handler, aeronetsunv3lev2_subset,
                                tempdir):
@@ -47,7 +47,7 @@ def test_check_and_load_custom(cache_handler, aeronetsunv3lev2_subset,
                       cache_dir=tempdir)
     assert ch.loaded_data[filename].shape == aeronetsunv3lev2_subset.shape
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.dependency
 def test_write(cache_handler, aeronetsunv3lev2_subset,
                        aeronet_sun_subset_reader):
@@ -60,7 +60,7 @@ def test_write(cache_handler, aeronetsunv3lev2_subset,
     assert os.path.exists(ch.file_path('od550aer'))
 
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.dependency(depends=['test_write'])
 def test_check_and_load(cache_handler, aeronetsunv3lev2_subset,
                        aeronet_sun_subset_reader):

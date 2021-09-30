@@ -12,7 +12,8 @@ import pytest
 
 from pyaerocom.io import ReadGAW
 
-from ..conftest import TEST_RTOL, lustre_unavail, test_not_working
+from ..conftest import TEST_RTOL, broken_test, lustre_unavail
+
 
 def _make_data():
     r = ReadGAW()
@@ -24,7 +25,7 @@ def data_vmrdms_ams_cvo():
     return _make_data()
 
 @lustre_unavail
-@test_not_working
+@broken_test
 def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
     data = data_vmrdms_ams_cvo
     # assert data.data_revision['DMS_AMS_CVO'] == 'n/a'
@@ -50,7 +51,7 @@ def test_ungriddeddata_ams_cvo(data_vmrdms_ams_cvo):
       #                   rtol=TEST_RTOL)
 
 @lustre_unavail
-@test_not_working
+@broken_test
 def test_vmrdms_ams(data_vmrdms_ams_cvo):
     stat = data_vmrdms_ams_cvo.to_station_data(meta_idx= 0)
 

@@ -2,9 +2,10 @@
 import os
 
 import pytest
+
 from pyaerocom import utils
 
-from .conftest import does_not_raise_exception, testdata_unavail
+from .conftest import data_unavail, does_not_raise_exception
 
 
 def test_print_file(tmpdir):
@@ -15,7 +16,7 @@ def test_print_file(tmpdir):
         f.write('Blaaaa\nBlub\n')
     utils.print_file(fp)
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('kwargs,raises,tabshape', [
     ({}, pytest.raises(TypeError), None),
     ({'model_ids' : 'TM5-met2010_CTRL-TEST',

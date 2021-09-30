@@ -1,17 +1,13 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Nov 19 16:44:18 2019
+import os
 
-@author: jonasg
-"""
 import cf_units
 import numpy as np
-import os
+
 from pyaerocom import const
+from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
-from pyaerocom.aeroval import ExperimentProcessor, EvalSetup
+
 
 def make_config_template(proj_id: str, exp_id: str) -> EvalSetup:
     """
@@ -297,6 +293,3 @@ def compute_model_average_and_diversity(cfg, var_name,
                                            comment=commentq3))
 
     return (avg_out, div_out, q1_out, q3_out, std_out)
-
-if __name__ == '__main__':
-    print(make_config_template('bla', 'blub'))
