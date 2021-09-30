@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 11 15:57:09 2020
 
-@author: jonasg
-"""
-import enum
 from pyaerocom import StationData, ColocatedData, Filter
 import numpy as np
 import pandas as pd
@@ -454,8 +448,3 @@ if __name__ == '__main__':
     plt.close('all')
     cube = make_dummy_cube_3D(dtype=float)
     print(cube.coord('time').points.dtype)
-
-
-
-
-

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 VAR_PREFIXES = ['vmr', 'mmr', 'conc', 'sconc', 'wet', 'dry']
 
 # in g/mol

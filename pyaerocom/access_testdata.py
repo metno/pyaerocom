@@ -16,7 +16,8 @@ from pyaerocom import const
 from pyaerocom.io import (ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3,
                           ReadEbas, ReadAirNow, ReadGhost, ReadEEAAQEREP_V2)
 
-class TestDataAccess(object):
+class AccessTestData:
+
     #: That's were the testdata can be downloaded from
     URL_TESTDATA = 'https://pyaerocom.met.no/pyaerocom-suppl/testdata-minimal.tar.gz'
 
@@ -213,7 +214,7 @@ class TestDataAccess(object):
         return True
 
 def initialise():
-    td = TestDataAccess()
+    td = AccessTestData()
     if td.init():
         const.print_log.info(f'pyaerocom-testdata is ready to be used. The data '
                              f'is available at {td.testdatadir}')

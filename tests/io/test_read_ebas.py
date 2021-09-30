@@ -41,18 +41,18 @@ from ..conftest import (
     EBAS_FILEDIR,
     EBAS_FILES,
     EBAS_ISSUE_FILES,
+    data_unavail,
     does_not_raise_exception,
-    testdata_unavail,
 )
 
 
 @pytest.fixture(scope='module')
-@testdata_unavail
+@data_unavail
 def reader():
     r = ReadEbas('EBASSubset')
     return r
 
-@testdata_unavail
+@data_unavail
 class TestReadEbas(object):
 
     PROVIDES_VARIABLES = sorted([

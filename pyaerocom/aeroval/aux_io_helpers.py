@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jun  1 13:31:35 2021
-
-@author: jonasg
-"""
 import importlib, sys, os
 from pyaerocom._lowlevel_helpers import (ListOfStrings, AsciiFileLoc)
 
