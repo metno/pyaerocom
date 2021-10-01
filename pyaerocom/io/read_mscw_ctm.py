@@ -16,6 +16,7 @@ from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
+from pyaerocom.aux_var_helpers import concx_to_vmrx
 
 def add_dataarrays(*arrs):
     """
@@ -152,6 +153,14 @@ def update_EC_units(concecpm25):
 
     return concCecpm25
 
+def calc_vmrox(concno2, vmro3):
+    print(concno2.attrs)
+    exit()
+    # vmrno2 = concx_to_vmrx(
+    #     concno2,
+
+    # )
+
 
 class ReadMscwCtm(object):
     """
@@ -191,6 +200,7 @@ class ReadMscwCtm(object):
                     'concsspm25'  : ['concssf', 'concssc'],
                     'concsspm10'  : ['concsspm25','concssc'],
                     'concCecpm25' : ['concecpm25'],
+                    'vmrox'       : ['concno2', 'vmro3'],
                     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -213,6 +223,7 @@ class ReadMscwCtm(object):
                 'concsspm25'   : calc_concsspm25,
                 'concsspm10'   : add_dataarrays,
                 'concCecpm25'  : update_EC_units,
+                'vmrox'        : calc_vmrox,
                 }
 
     #: supported filename masks, placeholder is for frequencies

@@ -344,4 +344,6 @@ var_web_info = {
     'vmrco'         : ['CO', '3D', 'Volume mixing ratios'],
     'vmrno2'        : ['NO2', '3D', 'Volume mixing ratios'],
     'concco'        : ['CO', '3D', 'Particle concentration'],
+    'concco'        : ['CO', '3D', 'Particle concentration'],
+
 }
