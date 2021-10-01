@@ -154,12 +154,20 @@ def update_EC_units(concecpm25):
     return concCecpm25
 
 def calc_vmrox(concno2, vmro3):
-    print(concno2.attrs)
-    exit()
-    # vmrno2 = concx_to_vmrx(
-    #     concno2,
+    #Here standard atmospheric temperature and pressure is used, instead of simulated
 
-    # )
+    vmrno2 = concx_to_vmrx(
+        concno2,
+        1000*10,
+        288.15, #15 deg celcius
+        "ug m-3",
+        46.0055, # g/mol NO2
+        to_unit="nmol mol-1"
+    )
+
+    vmrox = vmrno2 + vmro3
+    vmrox.attrs["units"] = "nmol mol-1"
+    return vmrox
 
 
 class ReadMscwCtm(object):
