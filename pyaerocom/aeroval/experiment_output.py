@@ -157,6 +157,24 @@ class ExperimentOutput(ProjectOutput):
         write_json(avail, self.menu_file, indent=4)
 
     def update_interface(self) -> None:
+        """
+        Update web interface
+
+        Steps:
+
+        1. Check if results are available, and if so:
+        2. Add entry for this experiment in experiments.json
+        3. Create/update ranges.json file in experiment directory
+        4. Update menu.json against available output and evaluation setup
+        5. Synchronise content of heatmap json files with menu
+        6. Create/update file statistics.json in experiment directory
+        7. Copy json version of EvalSetup into experiment directory
+
+        Returns
+        -------
+        None
+
+        """
         if not self.results_available:
             const.print_log.warning(
                 f'no output available for experiment {self.exp_id} in '

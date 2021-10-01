@@ -1,8 +1,8 @@
 import pytest
-import os
+import os, glob
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json,write_json
-from pyaerocom.aeroval import experiment_output as mod
+from pyaerocom.aeroval import experiment_output as mod, ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from ..conftest import does_not_raise_exception
 
@@ -170,5 +170,49 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
         assert not os.path.exists(coldir)
     else:
         assert os.path.exists(coldata_dir)
+
+### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
+from .cfg_test_exp1 import CFG as cfgexp1
+
+def test_ExperimentOutput__FILES():
+    cfg = EvalSetup(**cfgexp1)
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+
+    output = proc.exp_output
+    assert os.path.exists(output.exp_dir)
+    assert os.path.exists(output.experiments_file)
+    assert os.path.exists(output.var_ranges_file)
+    assert os.path.exists(output.statistics_file)
+    assert os.path.exists(output.menu_file)
+    assert os.path.exists(os.path.join(output.exp_dir,
+                                       'cfg_test_exp1.json'))
+
+    for key, val in cfg.path_manager.get_json_output_dirs().items():
+        assert os.path.exists(val)
+        files = os.listdir(val)
+        if key == 'map':
+            fname = 'AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'
+            assert fname in files
+        elif key == 'contour':
+            assert 'od550aer_TM5-AP3-CTRL.geojson' in files
+            assert 'od550aer_TM5-AP3-CTRL.json' in files
+        elif key == 'hm':
+            assert all([x in files for x in ['glob_stats_daily.json',
+                                             'glob_stats_monthly.json',
+                                             'glob_stats_yearly.json',]])
+        elif key == 'hm/ts':
+            assert 'stats_ts.json' in files
+        elif key == 'scat':
+            fname = 'AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'
+            assert fname in files
+        elif key == 'ts':
+
+            numfiles = glob.glob(f'{val}/*.json')
+            assert len(numfiles) == 11
+        elif key == 'ts/diurnal':
+            assert len(files) == 0
+
+
 
 
