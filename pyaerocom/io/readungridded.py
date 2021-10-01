@@ -1,37 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-################################################################
-# readoddata.py
+########################################################################
 #
-# observational data reading class
+# This python module is part of the pyaerocom software
 #
-# this file is part of the aerocom_pt package
-#
-#################################################################
-# Created 20171024 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
+# License: GNU General Public License v3.0
+# More information: https://github.com/metno/pyaerocom
+# Documentation: https://pyaerocom.readthedocs.io/en/latest/
 # Copyright (C) 2017 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# E-mail: jan.griesfeller@met.no, jonas.gliss@met.no
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
+# Contact information: Norwegian Meteorological Institute (MET Norway)
+#
+########################################################################
+
 import os, logging
 from pathlib import Path
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
@@ -49,6 +29,10 @@ from pyaerocom.io.read_ebas import ReadEbas
 from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.io.read_gaw import ReadGAW
 from pyaerocom.io.read_ghost import ReadGhost
+from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
+from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+from pyaerocom.io.read_airnow import ReadAirNow
+from pyaerocom.io.read_marcopolo import ReadMarcoPolo
 
 from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
@@ -74,7 +58,12 @@ class ReadUngridded(object):
                          ReadEbas,
                          ReadGAW,
                          ReadAasEtal,
-                         ReadGhost]
+                         ReadGhost,
+                         ReadAirNow,
+                         ReadMarcoPolo,
+                         ReadEEAAQEREP,
+                         ReadEEAAQEREP_V2]
+
     DONOTCACHE_NAME = 'DONOTCACHE'
     def __init__(self, datasets_to_read=None, vars_to_retrieve=None,
                  ignore_cache=False, data_dir=None):
@@ -125,7 +114,7 @@ class ReadUngridded(object):
                              'be read ({})'.format(val, dsr))
 
         for ds, data_dir in val.items():
-            assert os.path.exists(data_dir)
+            assert os.path.exists(data_dir), f'{data_dir} does not exist'
         self._data_dir = val
 
     @property
@@ -362,7 +351,7 @@ class ReadUngridded(object):
         return vtr[dataset_to_read]
 
     def read_dataset(self, dataset_to_read, vars_to_retrieve=None,
-                     only_cached=False, **kwargs):
+                     only_cached=False, filter_post=None, **kwargs):
         """Read dataset into an instance of :class:`ReadUngridded`
 
         Parameters
@@ -375,9 +364,29 @@ class ReadUngridded(object):
             if True, then nothing is reloaded but only data is loaded that is
             available as cached objects (not recommended to use but may be
             used if working offline without connection to database)
+        filter_post : dict, optional
+            filters applied to `UngriddedData` object AFTER it is read into
+            memory, via :func:`UngriddedData.apply_filters`. This option was
+            introduced in pyaerocom version 0.10.0 and should be used
+            preferably over **kwargs. There is a certain flexibility with
+            respect to how these filters can be defined, for instance, sub
+            dicts for each `dataset_to_read`. The most common way would be
+            to provide directly the input needed for
+            `UngriddedData.apply_filters`. If you want to read multiple variables
+            from one or more datasets, and if you want to apply variable
+            specific filters, it is recommended to read the data individually
+            for each variable and corresponding set of filters and then
+            merge the individual filtered `UngriddedData` objects afterwards,
+            e.g. using `data_var1 & data_var2`.
         **kwargs
-            additional reading constraints. If any are provided, caching is
-            deactivated and the data will be read from disk.
+            Additional input options for reading of data, which are applied
+            WHILE the data is read. If any such additional options are
+            provided that are applied during the reading, then automatic
+            caching of the output `UngriddedData` object will be deactivated.
+            Thus, it is recommended to handle data filtering via `filter_post`
+            argument whenever possible, which will result in better performance
+            as the unconstrained original data is read in and cached, and then
+            the filtering is applied.
 
         Returns
         --------
@@ -475,10 +484,64 @@ class ReadUngridded(object):
 
         if _caching is not None:
             const.CACHING = _caching
+
+        if filter_post is not None:
+            filters = self._eval_filter_post(filter_post,
+                                             dataset_to_read,
+                                             vars_available)
+            if not isinstance(filter_post, dict):
+                raise ValueError(
+                    f'Invalid input for filter_post in ReadUngridded: '
+                    f'{filter_post}. Need dictionary.')
+            data_out = data_out.apply_filters(**filters)
         return data_out
 
+    def _eval_filter_post(self, filter_post, dataset_to_read, vars_available):
+        if not isinstance(filter_post, dict):
+            raise ValueError(f'input filter_post must be dict, got '
+                             f'{type(filter_post)}')
+
+        if dataset_to_read in filter_post:
+            # filters are specified specifically for that dataset
+            subset = filter_post[dataset_to_read]
+            return self._eval_filter_post(subset,
+                                          dataset_to_read,
+                                          vars_available)
+        filters = {}
+        for key, val in filter_post.items():
+            if key == 'ignore_station_names':
+                if isinstance(val, (str, list)):
+                    filters['station_name'] = val
+                    if not 'negate' in filters:
+                        filters['negate'] = []
+                    filters['negate'].append('station_name')
+
+                elif isinstance(val, dict): #variable specific station filtering
+                    if len(vars_available) > 1:
+                        raise NotImplementedError(
+                            f'Cannot filter different sites for multivariable '
+                            f'UngriddedData objects (i.e. apply filter '
+                            f'ignore_station_names={val} for UngriddedData '
+                            f'object containing {vars_available}')
+                    else:
+                        # the variable that is available in the UngriddedData
+                        # object
+                        var = vars_available[0]
+                        try:
+                            filters['station_name'] = val[var]
+                            if not 'negate' in filters:
+                                filters['negate'] = []
+                            filters['negate'].append('station_name')
+                        except KeyError:
+                            continue
+                else:
+                    raise ValueError(f'Invalid input for ignore_station_names: {val}')
+            else:
+                filters[key] = val
+        return filters
+
     def read_dataset_post(self, dataset_to_read, vars_to_retrieve,
-                          only_cached=False, **kwargs):
+                          only_cached=False, filter_post=None, **kwargs):
         """Read dataset into an instance of :class:`ReadUngridded`
 
         Parameters
@@ -491,9 +554,29 @@ class ReadUngridded(object):
             if True, then nothing is reloaded but only data is loaded that is
             available as cached objects (not recommended to use but may be
             used if working offline without connection to database)
+        filter_post : dict, optional
+            filters applied to `UngriddedData` object AFTER it is read into
+            memory, via :func:`UngriddedData.apply_filters`. This option was
+            introduced in pyaerocom version 0.10.0 and should be used
+            preferably over **kwargs. There is a certain flexibility with
+            respect to how these filters can be defined, for instance, sub
+            dicts for each `dataset_to_read`. The most common way would be
+            to provide directly the input needed for
+            `UngriddedData.apply_filters`. If you want to read multiple variables
+            from one or more datasets, and if you want to apply variable
+            specific filters, it is recommended to read the data individually
+            for each variable and corresponding set of filters and then
+            merge the individual filtered `UngriddedData` objects afterwards,
+            e.g. using `data_var1 & data_var2`.
         **kwargs
-            additional reading constraints. If any are provided, caching is
-            deactivated and the data will be read from disk.
+            Additional input options for reading of data, which are applied
+            WHILE the data is read. If any such additional options are
+            provided that are applied during the reading, then automatic
+            caching of the output `UngriddedData` object will be deactivated.
+            Thus, it is recommended to handle data filtering via `filter_post`
+            argument whenever possible, which will result in better performance
+            as the unconstrained original data is read in and cached, and then
+            the filtering is applied.
 
         Returns
         --------
@@ -512,14 +595,22 @@ class ReadUngridded(object):
                                     vars_to_retrieve=aux_vars,
                                     only_cached=only_cached,
                                     **kwargs)
-
+                    for aux_var in aux_vars:
+                        input_data_ids_vars.append((aux_data, aux_id, aux_var))
                 else:
-                    aux_data = self.read_dataset(aux_id,
-                                                 aux_vars,
-                                                 only_cached=only_cached,
-                                                 **kwargs)
-                for aux_var in aux_vars:
-                    input_data_ids_vars.append((aux_data, aux_id, aux_var))
+
+                    # read variables individually, so filter_post is more
+                    # flexible if some post filters are specified for
+                    # individual variables...
+                    for aux_var in aux_vars:
+                        _data = self.read_dataset(
+                            aux_id,
+                            aux_var,
+                            only_cached=only_cached,
+                            filter_post=filter_post,
+                            **kwargs)
+                        input_data_ids_vars.append((_data, aux_id, aux_var))
+
 
             aux_merge_how = aux_info['aux_merge_how'][var]
 
@@ -550,7 +641,7 @@ class ReadUngridded(object):
         return first
 
     def read(self, datasets_to_read=None, vars_to_retrieve=None,
-             only_cached=False, **kwargs):
+             only_cached=False, filter_post=None, **kwargs):
         """Read observations
 
         Iter over all datasets in :attr:`datasets_to_read`, call
@@ -566,6 +657,29 @@ class ReadUngridded(object):
             if True, then nothing is reloaded but only data is loaded that is
             available as cached objects (not recommended to use but may be
             used if working offline without connection to database)
+        filter_post : dict, optional
+            filters applied to `UngriddedData` object AFTER it is read into
+            memory, via :func:`UngriddedData.apply_filters`. This option was
+            introduced in pyaerocom version 0.10.0 and should be used
+            preferably over **kwargs. There is a certain flexibility with
+            respect to how these filters can be defined, for instance, sub
+            dicts for each `dataset_to_read`. The most common way would be
+            to provide directly the input needed for
+            `UngriddedData.apply_filters`. If you want to read multiple variables
+            from one or more datasets, and if you want to apply variable
+            specific filters, it is recommended to read the data individually
+            for each variable and corresponding set of filters and then
+            merge the individual filtered `UngriddedData` objects afterwards,
+            e.g. using `data_var1 & data_var2`.
+        **kwargs
+            Additional input options for reading of data, which are applied
+            WHILE the data is read. If any such additional options are
+            provided that are applied during the reading, then automatic
+            caching of the output `UngriddedData` object will be deactivated.
+            Thus, it is recommended to handle data filtering via `filter_post`
+            argument whenever possible, which will result in better performance
+            as the unconstrained original data is read in and cached, and then
+            the filtering is applied.
 
         Example
         -------
@@ -590,10 +704,12 @@ class ReadUngridded(object):
             if ds in self.post_compute:
                 data.append(self.read_dataset_post(ds, read_vars,
                                                    only_cached=only_cached,
+                                                   filter_post=filter_post,
                                                    **kwargs))
             else:
                 data.append(self.read_dataset(ds, read_vars,
                                               only_cached=only_cached,
+                                              filter_post=filter_post,
                                               **kwargs))
 
             self.logger.info('Successfully imported {} data'.format(ds))
@@ -676,5 +792,6 @@ class ReadUngridded(object):
 
 if __name__=="__main__":
 
-
     reader = ReadUngridded()
+
+    data = reader.read('AirNow', 'concpm10')

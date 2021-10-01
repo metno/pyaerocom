@@ -32,12 +32,12 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #MA 02110-1301, USA
+from collections import OrderedDict as od
 
 import fnmatch
 from glob import glob
 import os
 from pathlib import Path
-from collections import OrderedDict as od
 
 import numpy as np
 import pandas as pd
@@ -51,7 +51,11 @@ from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
                                          divide_cubes,
                                          subtract_cubes,
-                                         add_cubes)
+                                         add_cubes,
+                                         mmr_from_vmr,
+                                         rho_from_ts_ps,
+                                         conc_from_vmr,
+                                         conc_from_vmr_STP)
 
 from pyaerocom.helpers import (to_pandas_timestamp,
                                sort_ts_types,
@@ -62,7 +66,6 @@ from pyaerocom.exceptions import (DataCoverageError,
                                   DataQueryError,
                                   DataSourceError,
                                   FileConventionError,
-                                  IllegalArgumentError,
                                   TemporalResolutionError,
                                   VarNotAvailableError,
                                   VariableDefinitionError)
@@ -72,6 +75,7 @@ from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom.units_helpers import compute_concprcp_from_pr_and_wetdep
 
 class ReadGridded(object):
     """Class for reading gridded files based on network or model ID
@@ -134,11 +138,14 @@ class ReadGridded(object):
         searched using :func:`search_all_files`.
 
     """
-    CONSTRAINT_OPERATORS = {'==' : np.equal,
-                            '<'  : np.less,
-                            '<=' : np.less_equal,
-                            '>'  : np.greater,
-                            '>=' : np.greater_equal}
+    CONSTRAINT_OPERATORS = {
+                    '==' : np.equal,
+                    '!=' : np.not_equal,
+                    '<'  : np.less,
+                    '<=' : np.less_equal,
+                    '>'  : np.greater,
+                    '>=' : np.greater_equal
+                    }
 
 
     AUX_REQUIRES = {'ang4487aer'    : ('od440aer', 'od870aer'),
@@ -148,16 +155,21 @@ class ReadGridded(object):
                     'dryoa'         : ('drypoa', 'drysoa'),
                     'conc*'         : ('mmr*', 'rho'),
                     'sc550dryaer'   : ('ec550dryaer', 'ac550dryaer'),
+                    'mmr*'          : ('vmr*',),
+                    'rho'           : ('ts','ps'),
                     'concox'        : ('concno2', 'conco3'),
                     'vmrox'         : ('vmrno2', 'vmro3'),
-                    'fmf550aer'     : ('od550lt1aer', 'od550aer')
-                    #'mec550*'       : ['od550*', 'load*'],
-                    #'tau*'          : ['load*', 'wet*', 'dry*'] #DOES NOT WORK POINT BY POINT
+                    'fmf550aer'     : ('od550lt1aer', 'od550aer'),
+                    'concno3'       : ('concno3c', 'concno3f'),
+                    'concprcpoxn'   : ('wetoxn', 'pr'),
+                    'concprcpoxs'   : ('wetoxs', 'pr'),
+                    'concprcprdn'   : ('wetrdn', 'pr'),
                     }
 
     AUX_ALT_VARS = {'od440aer'      :   ['od443aer'],
                     'od870aer'      :   ['od865aer'],
                     'ac550dryaer'   :   ['ac550aer']}
+
 
     AUX_FUNS = {'ang4487aer'    :   compute_angstrom_coeff_cubes,
                 'angabs4487aer' :   compute_angstrom_coeff_cubes,
@@ -166,12 +178,34 @@ class ReadGridded(object):
                 'dryoa'         :   add_cubes,
                 'sc550dryaer'   :   subtract_cubes,
                 'conc*'         :   multiply_cubes,
+                'mmr*'              :   mmr_from_vmr,
                 'concox'        :   add_cubes,
                 'vmrox'         :   add_cubes,
-                'fmf550aer'     :   divide_cubes
+                'fmf550aer'     :   divide_cubes,
+                'concno3'       :   add_cubes,
+                'concprcpoxn'   :   compute_concprcp_from_pr_and_wetdep,
+                'concprcpoxs'   :   compute_concprcp_from_pr_and_wetdep,
+                'concprcprdn'   :   compute_concprcp_from_pr_and_wetdep
                 #'mec550*'      :    divide_cubes,
                 #'tau*'         :    lifetime_from_load_and_dep
                 }
+
+    #: Additional arguments passed to computation methods for auxiliary data
+    #: This is optional and defined per-variable like in AUX_FUNS
+    AUX_ADD_ARGS = {
+        'concprcpoxn'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_units='m d-1',
+                                 prlim_set_under=np.nan),
+        'concprcpoxs'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_units='m d-1',
+                                 prlim_set_under=np.nan),
+        'concprcprdn'   :   dict(ts_type='daily',
+                                 prlim=0.1e-3,
+                                 prlim_units='m d-1',
+                                 prlim_set_under=np.nan)
+        }
 
     _data_dir = ""
 
@@ -432,7 +466,7 @@ class ReadGridded(object):
             try:
                 # the variable might be updated in _check_var_avail
                 vars_to_read.append(self._check_var_avail(var))
-            except VarNotAvailableError:
+            except (VarNotAvailableError, VariableDefinitionError):
                 return False
         if not len(vars_to_read) == len(vars_req):
             return False
@@ -483,7 +517,7 @@ class ReadGridded(object):
                     for var in vars_found:
                         try:
                             vars_to_read.append(self._check_var_avail(var))
-                        except VarNotAvailableError:
+                        except (VarNotAvailableError, VariableDefinitionError):
                             all_ok = False
                             break
 
@@ -834,8 +868,7 @@ class ReadGridded(object):
         self.file_info = df
 
         if len(df) == 0:
-            raise DataCoverageError('No files could be found for data {} and '
-                                    'years range {}-{}'.format(self.data_id))
+            raise DataCoverageError(f'No files could be found for {self.data_id}')
 
     def filter_files(self, var_name=None, ts_type=None, start=None, stop=None,
                      experiment=None, vert_which=None, is_at_stations=False,
@@ -1117,7 +1150,8 @@ class ReadGridded(object):
     def compute_var(self, var_name, start=None, stop=None, ts_type=None,
                     experiment=None, vert_which=None, flex_ts_type=True,
                     prefer_longer=False, vars_to_read=None, aux_fun=None,
-                    **kwargs):
+                    try_convert_units=True, aux_add_args=None,
+                    rename_var=None, **kwargs):
         """Compute auxiliary variable
 
         Like :func:`read_var` but for auxiliary variables
@@ -1149,6 +1183,16 @@ class ReadGridded(object):
             if True and applicable, the ts_type resulting in the longer time
             coverage will be preferred over other possible frequencies that
             match the query.
+        try_convert_units : bool
+            if True, units of GriddedData objects are attempted to be converted
+            to AeroCom default. This applies both to the GriddedData objects
+            being read for computation as well as the variable computed from
+            the forme objects. This is, for instance, useful when computing
+            concentration in precipitation from wet deposition and precipitation
+            amount.
+        rename_var : str
+            if this is set, the `var_name` attribute of the output
+            `GriddedData` object will be updated accordingly.
         **kwargs
             additional keyword args passed to :func:`_load_var`
 
@@ -1160,7 +1204,8 @@ class ReadGridded(object):
         if vars_to_read is not None:
             self.add_aux_compute(var_name, vars_to_read, aux_fun)
         vars_to_read, aux_fun = self._get_aux_vars_and_fun(var_name)
-
+        if aux_add_args is None:
+            aux_add_args={}
         data = []
         # all variables that are required need to be in the same temporal
         # resolution
@@ -1186,16 +1231,31 @@ class ReadGridded(object):
                                       vert_which=vert_which,
                                       flex_ts_type=flex_ts_type,
                                       prefer_longer=prefer_longer,
+                                      try_convert_units=try_convert_units,
+                                      rename_var=None,
                                       **kwargs)
             data.append(aux_data)
 
-        cube = aux_fun(*data)
+        if var_name in self.AUX_ADD_ARGS:
+            for key, val in self.AUX_ADD_ARGS[var_name].items():
+                if not key in aux_add_args:
+                    aux_add_args[key] = val
+
+        if len(aux_add_args) > 0:
+            cube = aux_fun(*data, **aux_add_args)
+        else:
+            cube = aux_fun(*data)
+
         cube.var_name = var_name
 
         data = GriddedData(cube, data_id=self.data_id,
-                           #ts_type=data[0].ts_type,
-                           computed=True)
+                           computed=True,
+                           convert_unit_on_init=try_convert_units,
+                           **kwargs)
+        #data.ts_type = ts_type
         data.reader = self
+        if rename_var is not None:
+            data.var_name = rename_var
         return data
 
     def find_common_ts_type(self, vars_to_read, start=None, stop=None,
@@ -1418,8 +1478,8 @@ class ReadGridded(object):
                  ts_type=None, experiment=None, vert_which=None,
                  flex_ts_type=True, prefer_longer=False,
                  aux_vars=None, aux_fun=None,
-                 constraints=None,
-                 **kwargs):
+                 constraints=None, try_convert_units=True,
+                 rename_var=None, **kwargs):
         """Read model data for a specific variable
 
         This method searches all valid files for a given variable and for a
@@ -1478,6 +1538,14 @@ class ReadGridded(object):
             list of reading constraints (dict type). See
             :func:`check_constraint_valid` and :func:`apply_read_constraint`
             for details related to format of the individual constraints.
+        try_convert_units : bool
+            if True, then the unit of the variable data is checked against
+            AeroCom default unit for that variable and if it deviates, it is
+            attempted to be converted to the AeroCom default unit. Default is
+            True.
+        rename_var : str
+            if this is set, the `var_name` attribute of the output
+            `GriddedData` object will be updated accordingly.
         **kwargs
             additional keyword args parsed to :func:`_load_var`
 
@@ -1505,7 +1573,9 @@ class ReadGridded(object):
                                                                  ts_type)
         data = self._try_read_var(var_name, start, stop,
                                   ts_type, experiment, vert_which,
-                                  flex_ts_type, prefer_longer, **kwargs)
+                                  flex_ts_type, prefer_longer,
+                                  try_convert_units=try_convert_units,
+                                  rename_var=rename_var, **kwargs)
 
         if constraints is not None:
 
@@ -1606,7 +1676,7 @@ class ReadGridded(object):
         if 'new_val' in constraint:
             new_val = constraint['new_val']
         else:
-            new_val = np.ma.masked
+            new_val = np.nan #np.ma.masked
 
         operator_fun = self.CONSTRAINT_OPERATORS[constraint['operator']]
 
@@ -1620,17 +1690,29 @@ class ReadGridded(object):
             raise ValueError('Failed to apply filter. Shape mismatch')
 
         # needs both data objects to be loaded into memory
-        other_data._ensure_is_masked_array()
-        data._ensure_is_masked_array()
-        mask = operator_fun(other_data.cube.data,
+        #other_data._ensure_is_masked_array()
+        #data._ensure_is_masked_array()
+
+        other_arr = other_data.cube.core_data()
+        arr = data.cube.core_data()
+
+        # select all grid points where conition is fulfilled
+        mask = operator_fun(other_arr,
                             constraint['filter_val'])
 
-        data.cube.data[mask] = new_val
+        # set values to NaN where condition is fulfilled
+
+        arr = np.where(mask, new_val, arr)
+
+        # overwrite data in cube with the filtered data
+        data.cube.data = arr
         return data
 
     def _try_read_var(self, var_name, start, stop,
                   ts_type, experiment, vert_which,
-                  flex_ts_type, prefer_longer, **kwargs):
+                  flex_ts_type, prefer_longer,
+                  try_convert_units, rename_var,
+                  **kwargs):
         """Helper method used in :func:`read_var`
 
         See :func:`read_var` for description of input arguments.
@@ -1642,7 +1724,10 @@ class ReadGridded(object):
                                     experiment=experiment,
                                     vert_which=vert_which,
                                     flex_ts_type=flex_ts_type,
-                                    prefer_longer=prefer_longer)
+                                    prefer_longer=prefer_longer,
+                                    try_convert_units=try_convert_units,
+                                    rename_var=rename_var,
+                                    **kwargs)
 
         try:
             var_to_read = self._get_var_to_read(var_name)
@@ -1653,6 +1738,8 @@ class ReadGridded(object):
                                   vert_which=vert_which,
                                   flex_ts_type=flex_ts_type,
                                   prefer_longer=prefer_longer,
+                                  try_convert_units=try_convert_units,
+                                  rename_var=rename_var,
                                   **kwargs)
 
         except VarNotAvailableError:
@@ -1663,7 +1750,10 @@ class ReadGridded(object):
                                         experiment=experiment,
                                         vert_which=vert_which,
                                         flex_ts_type=flex_ts_type,
-                                        prefer_longer=prefer_longer)
+                                        prefer_longer=prefer_longer,
+                                        try_convert_units=try_convert_units,
+                                        rename_var=rename_var,
+                                        **kwargs)
         # this input variable was explicitely set to be computed, in which
         # case reading of that variable is ignored even if a file exists for
         # that
@@ -1768,17 +1858,6 @@ class ReadGridded(object):
                 self.logger.warning(repr(e))
         return tuple(data)
 
-    def _check_correct_units_cube(self, cube):
-        if ('invalid_units' in cube.attributes and
-            cube.attributes['invalid_units'] in const.GRID_IO.UNITS_ALIASES):
-
-            from_unit = cube.attributes['invalid_units']
-            to_unit = const.GRID_IO.UNITS_ALIASES[from_unit]
-            const.logger.info('Updating invalid unit in {} from {} to {}'
-                              .format(repr(cube), from_unit, to_unit))
-
-            cube.units = to_unit
-        return cube
 
     def _load_files(self, files, var_name, perform_fmt_checks=None,
                     **kwargs):
@@ -1806,8 +1885,6 @@ class ReadGridded(object):
         cubes, loaded_files = load_cubes_custom(files, var_name,
                                                 perform_fmt_checks=perform_fmt_checks,
                                                 **kwargs)
-        for cube in cubes:
-            cube = self._check_correct_units_cube(cube)
 
         if len(loaded_files) == 0:
             raise IOError("None of the input files could be loaded in {}"
@@ -1850,11 +1927,17 @@ class ReadGridded(object):
 
         perts = subset.perturbation.unique()
         meta['perturbation'] = perts[0] if len(perts) == 1 else list(perts)
+
+        vertcodes = subset.vert_code.unique()
+        meta['vert_code'] = vertcodes[0] if len(vertcodes) == 1 else list(vertcodes)
+
         return meta
 
     def _load_var(self, var_name, ts_type, start, stop,
                   experiment, vert_which, flex_ts_type,
-                  prefer_longer, **kwargs):
+                  prefer_longer, try_convert_units,
+                  rename_var,
+                  **kwargs):
         """Find files corresponding to input specs and load into GriddedData
 
         Note
@@ -1890,6 +1973,7 @@ class ReadGridded(object):
                            from_files=from_files,
                            data_id=self.data_id,
                            concatenated=is_concat,
+                           convert_unit_on_init=try_convert_units,
                            **meta)
         data.reader = self
         # crop cube in time (if applicable)
@@ -1900,6 +1984,8 @@ class ReadGridded(object):
                 const.print_log.exception('Failed to crop time dimension in {}. '
                                           '(start: {}, stop: {})'
                                           .format(data, start, stop))
+        if rename_var is not None:
+            data.var_name = rename_var
         return data
 
     def _check_crop_time(self, data, start, stop):
@@ -1980,20 +2066,6 @@ class ReadGridded(object):
                                                 self.years_avail,
                                                 self.ts_types,
                                                 self.vars_provided))
-# =============================================================================
-#         if self.data:
-#             s += "\nLoaded GriddedData objects:\n"
-#             for var_name, data in self.data.items():
-#                 s += "{}\n".format(data.short_str())
-# =============================================================================
-# =============================================================================
-#         if self.data_yearly:
-#             s += "\nLoaded GriddedData objects (individual years):\n"
-#             for var_name, yearly_data in self.data_yearly.items():
-#                 if yearly_data:
-#                     for year, data in yearly_data.items():
-#                         s += "{}\n".format(data.short_str())
-# =============================================================================
         return s.rstrip()
 
     ### DEPRECATED STUFF
@@ -2003,152 +2075,10 @@ class ReadGridded(object):
         const.print_log.warning(DeprecationWarning("Please use data_id"))
         return self.data_id
 
-class ReadGriddedMulti(object):
-    """Class for import of AEROCOM model data from multiple models
-
-    This class provides an interface to import model results from an arbitrary
-    number of models and specific for a certain time interval (that can be
-    defined, but must not be defined). Largely based on
-    :class:`ReadGridded`.
-
-    ToDo
-    ----
-
-    Sub-class from ReadGridded
-
-    Note
-    ----
-    The reading only works if files are stored using a valid file naming
-    convention. See package data file `file_conventions.ini <http://
-    aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__ for valid
-    keys. You may define your own fileconvention in this file, if you wish.
-
-    Attributes
-    ----------
-    data_ids : list
-        list containing string IDs of all models that should be imported
-    results : dict
-        dictionary containing :class:`ReadGridded` instances for each
-        name
-
-    Examples
-    --------
-    >>> import pyaerocom, pandas
-    >>> start, stop = pandas.Timestamp("2012-1-1"), pandas.Timestamp("2012-5-1")
-    >>> models = ["AATSR_SU_v4.3", "CAM5.3-Oslo_CTRL2016"]
-    >>> read = pyaerocom.io.ReadGriddedMulti(models, start, stop)
-    >>> print(read.data_ids)
-    ['AATSR_SU_v4.3', 'CAM5.3-Oslo_CTRL2016']
-    >>> read_cam = read['CAM5.3-Oslo_CTRL2016']
-    >>> assert type(read_cam) == pyaerocom.io.ReadGridded
-    >>> for var in read_cam.vars: print(var)
-    abs550aer
-    deltaz3d
-    humidity3d
-    od440aer
-    od550aer
-    od550aer3d
-    od550aerh2o
-    od550dryaer
-    od550dust
-    od550lt1aer
-    od870aer
-    """
-
-    def __init__(self, data_ids):
-        const.print_log.warning(DeprecationWarning('ReadGriddedMulti class is '
-                                                   'deprecated and will not '
-                                                   'be further developed. '
-                                                   'Please use ReadGridded.'))
-        if isinstance(data_ids, str):
-            data_ids = [data_ids]
-        if not isinstance(data_ids, list) or not all([isinstance(x, str) for x in data_ids]):
-            raise IllegalArgumentError("Please provide string or list of strings")
-
-        self.data_ids = data_ids
-        #: dictionary containing instances of :class:`ReadGridded` for each
-        #: datset
-
-        self.readers = {}
-        #self.data = {}
-
-        self._init_readers()
-
-    def _init_readers(self):
-        for data_id in self.data_ids:
-            self.readers[data_id] = ReadGridded(data_id)
-
-    def read(self, vars_to_retrieve, start=None, stop=None,
-             ts_type=None, **kwargs):
-        """High level method to import data for multiple variables and models
-
-        Parameters
-        ----------
-        var_names : :obj:`str` or :obj:`list`
-            string IDs of all variables that are supposed to be imported
-        start : :obj:`Timestamp` or :obj:`str`, optional
-            start time of data import (if valid input, then the current
-            :attr:`start` will be overwritten)
-        stop : :obj:`Timestamp` or :obj:`str`, optional
-            stop time of data import (if valid input, then the current
-            :attr:`start` will be overwritten)
-        ts_type : str
-            string specifying temporal resolution (choose from
-            "hourly", "3hourly", "daily", "monthly").If None, prioritised
-            of the available resolutions is used
-        flex_ts_type : bool
-            if True and if applicable, then another ts_type is used in case
-            the input ts_type is not available for this variable
-
-        Returns
-        -------
-        dict
-            loaded objects, keys are variable names, values are
-            instances of :class:`GridddedData`.
-
-        Examples
-        --------
-
-            >>> read = ReadGriddedMulti(names=["ECMWF_CAMS_REAN",
-            ...                                "ECMWF_OSUITE"])
-            >>> read.read(["od550aer", "od550so4", "od550bc"])
-
-        """
-        if isinstance(vars_to_retrieve, str):
-            vars_to_retrieve = [vars_to_retrieve]
-        out = {}
-        for data_id in self.data_ids:
-            if not data_id in self.readers:
-                self.readers[data_id] = ReadGridded(data_id)
-            reader = self.readers[data_id]
-            out[data_id] = {}
-            for var in vars_to_retrieve:
-                try:
-                    data = reader.read_var(var, start, stop, ts_type, **kwargs)
-                    out[data_id][var] = data
-                    #self.data[data_id][var] = data
-                except Exception as e:
-                    const.print_log.exception('Failed to read data of {}\n'
-                                            'Error message: {}'.format(data_id,
-                                                                       repr(e)))
-        return out
-
-    def __str__(self):
-        head = "Pyaerocom %s" %type(self).__name__
-        s = ("\n%s\n%s\n"
-             "Data-IDs: %s\n" %(head, len(head)*"-", self.data_ids))
-# =============================================================================
-#         if bool(self.data):
-#             s += "\nLoaded data:"
-#             for name, vardata in self.data.items():
-#                 for var, data in vardata.items():
-#                     s += "\n%s" %var
-# =============================================================================
-        return s
-
 if __name__=="__main__":
     import pyaerocom as pya
 
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    reader = ReadGridded()
+    reader = ReadGridded('EMEP.cams50.u3all')
+    print(reader)
+
+    data = reader.read_var('wetoxs', try_convert_units=True)

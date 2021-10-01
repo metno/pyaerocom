@@ -8,8 +8,11 @@ MOLMASSES = {'air_dry'  : 28.9647,
              'o3'       : 48,
              'so2'      : 64.066,
              'so4'      : 96.06,
+             'no'       : 30.01,
              'no2'      : 46.0055,
-             'co'       : 28.010,}
+             'hno3'     : 63.01,
+             'nh3'      : 17.031,
+             'co'       : 28.010}
 
 class UnkownSpeciesError(ValueError):
     pass
@@ -60,3 +63,24 @@ def get_molmass(var_name):
 
     """
     return MOLMASSES[get_species(var_name)]
+
+def get_mmr_to_vmr_fac(var_name):
+    """
+    Get conversion factor for MMR -> VMR conversion for input variable
+
+    Note
+    ----
+    Assumes dry air molar mass
+
+    Parameters
+    ----------
+    var_name : str
+        Name of variable to be converted
+
+    Returns
+    -------
+    float
+        multiplication factor to convert MMR -> VMR
+
+    """
+    return get_molmass('air_dry') / get_molmass(var_name)

@@ -1,32 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 14 16:31:13 2020
-
-@author: jonasg
-"""
-
 import pytest
 from pyaerocom import const
 from pyaerocom.variable import Variable
 from pyaerocom.variable import get_emep_variables
 
-def test_od550aer():
-    v0 = Variable('od550aer')
-    v1 = Variable('OD5503Ddryaer')
+@pytest.mark.parametrize('var_name,var_name_aerocom', [
+    ('od550aer', 'od550aer'),
+    ('od550du', 'od550dust'),
+    ('od550csaer', 'od550aer'),
+    ('latitude', 'lat'),
+    ('abs550oc', 'abs550oa'),
+    ('sconcss', 'concss'),
 
-    assert v0.var_name_aerocom == 'od550aer'
-    assert v1.var_name_aerocom != v0.var_name_aerocom
-    assert v1.is_3d
-    assert v1.is_dry
-    assert not v0.is_dry
-    assert v0.wavelength_nm == 550
+    ])
+def test_var_name_aerocom(var_name, var_name_aerocom):
+    assert Variable(var_name).var_name_aerocom == var_name_aerocom
 
 def test_alias_var():
     assert 'od550csaer' == Variable('od550aer')
 
+
 def test_alias_families():
-    var = Variable('SCONCSO4')
+    var = Variable('sconcso4')
 
     assert var.var_name_input == 'sconcso4'
     assert var.var_name == 'sconcso4'
@@ -39,13 +35,13 @@ def test_get_emep_variables():
     assert variables['conco3'] == 'SURF_ug_O3'
 
 def test_VarCollection_add_var():
-    var = Variable(var_name='concpmgt25',
+    var = Variable(var_name='concpmgt10',
                    units='ug m-3',
-                   long_name='PM mass greater than 2.5 um')
+                   long_name='PM mass greater than 10 um')
 
     const.VARS.add_var(var)
-    assert 'concpmgt25' in const.VARS
-    var1 = const.VARS['concpmgt25']
+    assert 'concpmgt10' in const.VARS
+    var1 = const.VARS['concpmgt10']
     assert var1.var_name == var.var_name
     assert var1.var_name_aerocom == var.var_name_aerocom
     assert var1.units == var.units

@@ -4,4 +4,4 @@
 High level scripts and command line interface
 """
 
-from .highlevel_utils import clear_cache
+from .highlevel_utils import clear_cache, browse_database

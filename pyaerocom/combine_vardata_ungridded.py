@@ -1,8 +1,6 @@
 
 import numpy as np
 
-from pyaerocom import const
-from pyaerocom.exceptions import DataUnitError
 from pyaerocom.obs_io import ObsVarCombi
 from pyaerocom._lowlevel_helpers import invalid_input_err_str
 from pyaerocom.geodesy import find_coord_indices_within_distance
@@ -103,9 +101,11 @@ def _map_same_stations(stats_short, stats_long, match_stats_how,
 def _combine_2_sites(stat, var, stat_other, var_other,
                      merge_how, merge_eval_fun,
                      match_stats_tol_km, var_name_out,
-                     data_id_out, var_unit_out, resample_how,
+                     data_id_out, var_unit_out,
+                     resample_how,
                      apply_time_resampling_constraints,
-                     min_num_obs, prefer, merge_info_vars):
+                     min_num_obs, prefer, merge_info_vars,
+                     add_meta_keys):
     """Combine two StationData objects for a given merge strategy
 
     Private for now...  details should follow. Until then see
@@ -116,19 +116,34 @@ def _combine_2_sites(stat, var, stat_other, var_other,
     StationData
         merged StationData instance
     """
+    # unit of first variable
+    var_unit_in = stat.get_unit(var)
+
+    # check if output unit is defined explicitly and if not, use unit of
+    # variable 1
+    if var_unit_out is None:
+        var_unit_out = var_unit_in
+    # make sure both input data objects are in the correct unit (which is
+    # var_unit_out)
+    elif not var_unit_in == var_unit_out:
+        stat.convert_unit(var, var_unit_out)
+
+    if not stat_other.get_unit(var_other) == var_unit_out:
+        stat_other.convert_unit(var_other, var_unit_out)
 
     new = StationData()
-    new.update(stat.get_meta(force_single_value=False,
-                             quality_check=False))
+    # add default metadata to new data object
+    meta_first = stat.get_meta(force_single_value=False,
+                               quality_check=False,
+                               add_meta_keys=add_meta_keys)
+    new.update(meta_first)
 
     new.merge_meta_same_station(
         other=stat_other,
         check_coords=False, #has already been done
         inplace=True,
-        raise_on_error=True)
-
-    unit = stat.get_unit(var)
-    unit_other = stat_other.get_unit(var_other)
+        raise_on_error=True,
+        add_meta_keys=add_meta_keys)
 
     tstype = stat.get_var_ts_type(var)
     tstype_other = stat_other.get_var_ts_type(var_other)
@@ -175,33 +190,22 @@ def _combine_2_sites(stat, var, stat_other, var_other,
     # Merge timeseries if variables are the same and are supposed to be
     # combined
     if merge_how=='combine' and var==var_other:
-        if unit != unit_other:
-            raise DataUnitError('Cannot combine {} data from 2 sites, since '
-                                'variable units are different'.format(var))
-
         prefer_col = col_names[col_order.index(prefer)]
         dont_prefer = col_names[int(not (col_names.index(prefer_col)))]
         add_ts = df[prefer_col].combine_first(df[dont_prefer])
 
         if var_name_out is None:
             var_name_out = var
-        if var_unit_out is None:
-            var_unit_out = unit
 
     elif merge_how == 'mean':
         if var != var_other:
             raise NotImplementedError('Averaging of site data is only '
                                       'supported if input variables are the '
                                       'same...')
-        elif unit != unit_other:
-            raise DataUnitError('Cannot average {} data from 2 sites, since '
-                                'variable units are different'.format(var))
         # if it made it until here, then both sites have same variables and
         # units
         if var_name_out is None:
             var_name_out = var
-        if var_unit_out is None:
-            var_unit_out = unit
 
         add_ts = df.mean(axis=1)
 
@@ -221,9 +225,6 @@ def _combine_2_sites(stat, var, stat_other, var_other,
             var_name_out = var_name_out.replace('{};'.format(stat_other.data_id), '')
 
     if add_ts is not None:
-        if var_unit_out is None:
-            raise ValueError('Missing specification of output unit for var {}'
-                             .format(var_unit_out))
 
         var_info = {'ts_type'   : to_ts_type,
                     'units'     : var_unit_out}
@@ -248,7 +249,8 @@ def combine_vardata_ungridded(data_ids_and_vars,
                               var_unit_out=None,
                               resample_how='mean',
                               apply_time_resampling_constraints=False,
-                              min_num_obs=None):
+                              min_num_obs=None,
+                              add_meta_keys=None):
     """
     Combine and colocate different variables from UngriddedData
 
@@ -332,9 +334,7 @@ def combine_vardata_ungridded(data_ids_and_vars,
         of merge_eval_fun, the output data_id would be 'AeronetSDA' since both
         input IDs are the same.
     var_unit_out : str
-        unit of output variable. Is only strictly needed if merge_how='eval',
-        otherwise, it will be attempted to be inferred or an Exception will
-        be raised.
+        unit of output variable.
     resample_how : str, optional
         String specifying how temporal resampling should be done. The default
         is 'mean'.
@@ -346,6 +346,10 @@ def combine_vardata_ungridded(data_ids_and_vars,
         Minimum number of observations for temporal resampling.
         The default is None in which case pyaerocom default is used, which
         is available via pyaerocom.const.OBS_MIN_NUM_RESAMPLE.
+    add_meta_keys : list, optional
+        additional metadata keys to be added to output `StationData` objects
+        from input data. If None, then only the pyaerocom default keys are
+        added (see `StationData.STANDARD_META_KEYS`).
 
     Raises
     ------
@@ -362,6 +366,8 @@ def combine_vardata_ungridded(data_ids_and_vars,
         variable data.
 
     """
+    if add_meta_keys is None:
+        add_meta_keys=[]
     _check_input_data_ids_and_vars(data_ids_and_vars)
     data1, data_id1, var1 = data_ids_and_vars[0]
     data2, data_id2, var2 = data_ids_and_vars[1]
@@ -382,11 +388,13 @@ def combine_vardata_ungridded(data_ids_and_vars,
     id1 = str(ObsVarCombi(data_id1, var1))
     id2 = str(ObsVarCombi(data_id2, var2))
 
-    data1_stats = data1.to_station_data_all(var1)
+    data1_stats = data1.to_station_data_all(var1,
+                                            add_meta_keys=add_meta_keys)
     data1_stats['var_name'] = var1
     data1_stats['id'] = id1
 
-    data2_stats = data2.to_station_data_all(var2)
+    data2_stats = data2.to_station_data_all(var2,
+                                            add_meta_keys=add_meta_keys)
     data2_stats['var_name'] = var2
     data2_stats['id'] = id2
 
@@ -466,7 +474,8 @@ def combine_vardata_ungridded(data_ids_and_vars,
                               match_stats_tol_km, var_name_out,
                               data_id_out, var_unit_out, resample_how,
                               apply_time_resampling_constraints,
-                              min_num_obs, prefer, merge_info_vars)
+                              min_num_obs, prefer, merge_info_vars,
+                              add_meta_keys)
 
         merged_stats.append(new)
 
@@ -474,125 +483,34 @@ def combine_vardata_ungridded(data_ids_and_vars,
 
 if __name__=='__main__':
     import pyaerocom as pya
-    from numpy import testing as npt
-    from pyaerocom.conftest import TEST_PATHS
 
+    OBS_LOCAL = '/home/jonasg/MyPyaerocom/data/obsdata/'
 
+    GHOST_DIR = os.path.join(OBS_LOCAL, 'GHOST/data/EEA_AQ_eReporting/daily')
+
+    filter_post = {'altitude' : [1500, 1700]}
     # Tests based on whole datasets
-    fineaod = pya.io.ReadUngridded().read('AeronetSDAV3Lev2.daily', 'od550lt1aer')
-    aod = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
+    vmro3 = pya.io.ReadUngridded('GHOST.EEA.daily',
+                                 data_dir=GHOST_DIR).read(vars_to_retrieve='vmro3',
+                                                          filter_post=filter_post)
 
-    fmffun = 'fmf550aer=(AeronetSDAV3Lev2.daily;od550lt1aer/AeronetSunV3Lev2.daily;od550aer)*100'
+                                                          # Tests based on whole datasets
+    vmrno2 = pya.io.ReadUngridded('GHOST.EEA.daily',
+                                  data_dir=GHOST_DIR).read(vars_to_retrieve='vmrno2',
+                                                           filter_post=filter_post)
+
+
 
     input_data = [
-        (fineaod, 'AeronetSDAV3Lev2.daily', 'od550lt1aer'),
-        (aod, 'AeronetSunV3Lev2.daily', 'od550aer')
+        (vmro3, 'GHOST.EEA.daily', 'vmro3'),
+        (vmrno2, 'GHOST.EEA.daily', 'vmrno2')
     ]
+
+    meta_keys = list(vmro3.metadata[0].keys())
+    fun = 'GHOST.EEA.daily;vmro3+GHOST.EEA.daily;vmrno2'
     stats_merged = combine_vardata_ungridded(input_data,
-                                             merge_eval_fun=fmffun,
-                                             var_unit_out='1',
-                                             merge_how='eval')
-    # Tests based on testdata
-    testdatadir = (const._TESTDATADIR)
-    obs_path = os.path.join(testdatadir, TEST_PATHS['AeronetSunV3L2Subset.daily'])
-    obs_ref_path = os.path.join(testdatadir, TEST_PATHS['AeronetSDAV3L2Subset.daily'])
-
-    pya.const.add_ungridded_obs('AeronetSunV3', obs_path, reader=pya.io.ReadAeronetSunV3)
-    pya.const.add_ungridded_obs('AeronetSdaV3', obs_ref_path, reader=pya.io.ReadAeronetSdaV3)
-
-    r = pya.io.ReadUngridded('AeronetSunV3')
-    r_ref = pya.io.ReadUngridded('AeronetSdaV3')
-
-    sun_aod = r.read(vars_to_retrieve=['od550aer'],
-                     common_meta={'ts_type':'daily'})
-    sun_ang = r.read(vars_to_retrieve=['ang4487aer'],
-                     common_meta={'ts_type':'daily'})
-
-
-
-    # TEST 1 (use "combine with 2 different variables") using "closest" sites
-    # for matching site locations
-    input_data = [(sun_aod, 'AeronetSunV3', 'od550aer'),
-                  (sun_ang, 'AeronetSunV3', 'ang4487aer')]
-
-    stats = combine_vardata_ungridded(input_data,
-                                      match_stats_how='closest',
-                                      merge_how='combine')
-    data = pya.UngriddedData.from_station_data(stats)
-
-    assert len(data.unique_station_names) == 18
-    for meta in data.metadata.values():
-        assert 'od550aer' in meta['var_info']
-        assert 'ang4487aer' in meta['var_info']
-        assert meta['data_id'] == 'AeronetSunV3'
-
-    # TEST 2 (use "combine with 2 different variables") using station names
-    # for matching site locations
-    input_data = [(sun_aod, 'AeronetSunV3', 'od550aer'),
-                  (sun_ang, 'AeronetSunV3', 'ang4487aer')]
-    data = pya.UngriddedData.from_station_data(combine_vardata_ungridded(
-        input_data,
-        match_stats_how='station_name',
-        data_id_out = 'BLAAAAAA',
-        merge_how='combine'))
-
-    assert len(data.unique_station_names) == 18
-    for meta in data.metadata.values():
-        assert 'od550aer' in meta['var_info']
-        assert 'ang4487aer' in meta['var_info']
-        assert meta['data_id'] == 'BLAAAAAA'
-
-    sda_aods = r_ref.read(vars_to_retrieve=['od550aer', 'od550lt1aer'],
-                         common_meta={'ts_type':'daily'})
-
-    # TEST 3 (use "combine with the same variables") using station names
-    # for matching site locations
-    input_data = [(sun_aod, 'AeronetSunV3', 'od550aer'),
-                  (sda_aods, 'AeronetSdaV3', 'od550aer')]
-
-    data = pya.UngriddedData.from_station_data(combine_vardata_ungridded(
-        input_data,
-        match_stats_how='station_name',
-        merge_how='combine'))
-
-    assert len(data.unique_station_names) == 13
-    for meta in data.metadata.values():
-        assert 'od550aer' in meta['var_info']
-        vi =  meta['var_info']['od550aer']
-        assert 'merge_how' in vi
-        assert vi['merge_how'] == 'combine'
-        assert 'prefer' in vi
-        assert vi['prefer'] == 'AeronetSunV3;od550aer'
-
-
-    # TEST 4 (use "eval to compute od500aer from od550aer and ang4487aer")
-    # using "closest" sites for matching site locations
-    input_data = [(sun_aod, 'AeronetSunV3', 'od550aer'),
-                  (sun_ang, 'AeronetSunV3', 'ang4487aer')]
-
-    func = 'od500aer=AeronetSunV3;od550aer*(500/550)**(-AeronetSunV3;ang4487aer)'
-
-    data = pya.UngriddedData.from_station_data(combine_vardata_ungridded(
-        input_data,
-        match_stats_how='closest',
-        merge_how='eval',
-        merge_eval_fun=func,
-        var_unit_out='1'))
-
-    assert len(data.unique_station_names) == 18
-
-    test_vals = []
-    test_vals_computed = []
-    for key, meta in data.metadata.items():
-        assert 'od550aer' in meta['var_info']
-        assert 'ang4487aer' in meta['var_info']
-        assert 'od500aer' in meta['var_info']
-
-        od550aer = data._data[data.meta_idx[key]['od550aer'][0], data._DATAINDEX]
-        od500aer = data._data[data.meta_idx[key]['od500aer'][0], data._DATAINDEX]
-        ang4487aer = data._data[data.meta_idx[key]['ang4487aer'][0], data._DATAINDEX]
-
-        test_vals.append(od500aer)
-        test_vals_computed.append(od550aer * (500/550)**(-ang4487aer))
-
-    npt.assert_allclose(test_vals, test_vals_computed, atol=1e-12)
+                                             merge_eval_fun=fun,
+                                             var_unit_out='ppt',
+                                             var_name_out='vmrox',
+                                             merge_how='eval',
+                                             add_meta_keys=meta_keys)

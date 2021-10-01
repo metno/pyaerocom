@@ -36,8 +36,6 @@ class EbasVarInfo(BrowseDict):
         multiplicative scale factor that is applied in order to convert
         EBAS variable into AeroCom variable (e.g. 1.4 for conversion of
         EBAS OC measurement to AeroCom concoa variable)
-    old_name : str
-        old variable name (refers to outdated conventions, currently not used)
 
     Parameters
     ----------
@@ -71,9 +69,6 @@ class EbasVarInfo(BrowseDict):
         #: scale factor for conversion to Aerocom units
         self.scale_factor = 1
 
-        #: old variable name
-        self.old_name = None
-
         #imports default information and, on top, variable information (if
         # applicable)
         if init:
@@ -87,10 +82,14 @@ class EbasVarInfo(BrowseDict):
 
     @staticmethod
     def open_config():
+        """Open ebas_config.ini file with `ConfigParser`
+
+        Returns
+        -------
+        ConfigParser
+        """
         from pyaerocom import __dir__
         fpath = os.path.join(__dir__, "data", "ebas_config.ini")
-        if not os.path.exists(fpath):
-            raise IOError("Ebas config file could not be found: {}".format(fpath))
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
         return conf_reader
@@ -127,11 +126,6 @@ class EbasVarInfo(BrowseDict):
         if not var_name in conf_reader:
             # this will raise Variable
             var_name = const.VARS[var_name].var_name_aerocom
-# =============================================================================
-#             const.print_log.warning('Updating variable name {} to {}'
-#                                     .format(self.var_name, var_name))
-#             self.var_name = var_name
-# =============================================================================
             if not var_name in conf_reader:
                 raise VarNotAvailableError('Variable {} is not available in '
                                            'EBAS interface'.format(var_name))
@@ -140,9 +134,7 @@ class EbasVarInfo(BrowseDict):
         for key in self.keys():
             if key in var_info:
                 val = var_info[key]
-                if key in ('var_name', 'old_name') :
-                    self[key] = val
-                elif key == 'scale_factor':
+                if key == 'scale_factor':
                     self[key] = float(val.split('#')[0].strip())
                 else:
                     self[key] = list(dict.fromkeys([x for x in val.split(',')]))
@@ -157,10 +149,6 @@ class EbasVarInfo(BrowseDict):
             if v is not None:
                 d[k] = v
         return d
-
-    def get_all_components(self):
-        """Get list of all components"""
-        return get_all_components(self.var_name)
 
     def make_sql_request(self, **constraints):
         """Create an SQL request for the specifications in this object
@@ -177,12 +165,19 @@ class EbasVarInfo(BrowseDict):
             the SQL request object that can be used to retrieve corresponding
             file names using instance of :func:`EbasFileIndex.get_file_names`.
         """
-        variables = self.get_all_components()
+        if self.requires is not None:
+            raise ValueError(
+                f'This variable {self.var_name} requires other variables '
+                f'for reading, thus more than one SQL request is needed. '
+                f'Please use :func:`make_sql_requests` instead')
 
-        if len(variables) == 0:
-            raise AttributeError('At least one component (Ebas variable name) '
-                             'must be specified for retrieval of variable '
-                             '{}'.format(self.var_name))
+        variables = self.component
+
+        if variables is None:
+            raise AttributeError(
+                f'At least one component (Ebas variable name) '
+                f'must be specified for retrieval of variable {self.var_name}'
+                )
 
         # default request
         req = EbasSQLRequest(variables=variables, matrices=self.matrix,
@@ -192,90 +187,55 @@ class EbasVarInfo(BrowseDict):
         req.update(**constraints)
         return req
 
+    def make_sql_requests(self, **constraints):
+        """Create a list of SQL requests for the specifications in this object
+
+        Parameters
+        ----------
+        requests : dict, optional
+            other SQL requests linked to this one (e.g. if this variable
+            requires)
+        constraints
+            request constraints deviating from default. For details on
+            parameters see :class:`EbasSQLRequest`
+
+        Returns
+        -------
+        list
+            list of :class:`EbasSQLRequest` instances for this component and
+            potential required components.
+        """
+        requests = {}
+        if self.component is not None:
+            req = EbasSQLRequest(variables=self.component,
+                                 matrices=self.matrix,
+                                 instrument_types=self.instrument,
+                                 statistics=self.statistics)
+            req.update(**constraints)
+            requests[self.var_name] = req
+
+        if self.requires is not None:
+            for var in self.requires:
+                if var in requests:
+                    # ToDo: check if this can be generalised better
+                    raise ValueError(
+                        f'Variable conflict in EBAS SQL request: '
+                        f'{var} cannot depent on itself...')
+                info = EbasVarInfo(var)
+                _reqs = info.make_sql_requests(**constraints)
+                for _var, _req in _reqs.items():
+                    if _var in requests:
+                        # ToDo: check if this can be generalised better
+                        raise ValueError(
+                            f'Variable conflict in EBAS SQL request: '
+                            f'{_var} cannot depent on itself...')
+                    requests[_var] = _req
+
+        return requests
+
     def __str__(self):
         head = "Pyaerocom {}".format(type(self).__name__)
         s = "\n{}\n{}".format(head, len(head)*"-")
         for k, v in self.items():
                 s += "\n%s: %s" %(k,v)
         return s
-
-def get_all_components(var_name, varlist=None):
-    """Get all EBAS components required to read a certain variable
-
-    Parameters
-    ----------
-    var_name : str
-        AeroCom variable name
-    varlist : list, optional
-        list of components already inferred (this function runs recursively).
-
-    Returns
-    -------
-    list
-        list of components required to read / compute input AeroCom variable
-    """
-    if varlist is None:
-        varlist = []
-    aux_info = EbasVarInfo(var_name)
-    if aux_info.component is not None:
-        varlist.extend(aux_info.component)
-    if aux_info.requires is not None:
-        for aux_var in aux_info.requires:
-            varlist = get_all_components(aux_var, varlist)
-    return list(set(varlist))
-
-def check_all_variables():
-    """Helper function that checks all EBAS variables against SQL database
-
-    For all variables, see file ``ebas_config.ini`` in data directory
-
-    Raises
-    ------
-    AttributeError
-        if one of the variable definitions in the ini file is not according to
-        requirements
-    """
-    # TODO: check this method...
-    raise NotImplementedError('This method needs review and should be moved '
-                              'into another module...')
-    from pyaerocom.io import EbasFileIndex
-    all_vars = EbasVarInfo.PROVIDES_VARIABLES()
-    db = EbasFileIndex()
-    db_info = {'component'     :   db.ALL_VARIABLES,
-               'matrix'        :   db.ALL_MATRICES,
-               'instrument'    :   db.ALL_INSTRUMENTS,
-               'statistics'    :   db.ALL_STATISTICS_PARAMS}
-
-    errors = []
-    checked_vars = []
-    for varname in all_vars:
-        info = EbasVarInfo(varname)
-        print('Checking variable {}'.format(varname))
-        if varname in checked_vars:
-            errors.append('Variable {} is defined more than once'.format(varname))
-        checked_vars.append(varname)
-        for attr, items_db in db_info.items():
-            vals_to_check = info[attr]
-            if vals_to_check is not None:
-                if not isinstance(vals_to_check, list):
-                    raise AttributeError('Please check attribute {} of '
-                                         'variable {}'.format(attr, varname))
-                for item in vals_to_check:
-                    if not item in items_db:
-                        s=''
-                        for compname, db_vals in db_info.items():
-                            if item in db_vals:
-                                s += ('\nAdditional info: ID {} was found in '
-                                      'databes attr {}'.format(item, compname))
-                        errors.append(("No such {} ({}) in database. Please "
-                                       "check variable {}.{}".format(attr,
-                                                                     item,
-                                                                     varname,
-                                                                     s)))
-
-    return errors
-
-if __name__=="__main__":
-    print(EbasVarInfo('concso2'))
-
-    print(get_all_components('ang4470dryaer'))

@@ -91,8 +91,12 @@ from .read_ebas import ReadEbas
 from .read_gaw import ReadGAW
 from .read_aasetal import ReadAasEtal
 from .read_ghost import ReadGhost
+from .read_airnow import ReadAirNow
+from .read_marcopolo import ReadMarcoPolo
+from .read_eea_aqerep import ReadEEAAQEREP
+from .read_eea_aqerep_v2 import ReadEEAAQEREP_V2
 
-from .readgridded import ReadGridded, ReadGriddedMulti
+from .readgridded import ReadGridded
 from .read_mscw_ctm import ReadMscwCtm
 from .readungridded import ReadUngridded
 from .fileconventions import FileConventionRead

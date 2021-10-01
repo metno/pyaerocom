@@ -12,6 +12,7 @@ import simplejson
 from traceback import format_exc
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.metastandards import DataSource
 from pyaerocom.exceptions import InitialisationError
 
 class ObsConfigEval(BrowseDict):
@@ -50,22 +51,40 @@ class ObsConfigEval(BrowseDict):
         `obs_vert_type=dict(od550aer='Column', ec550aer='ModelLevel')`),
         information is extracted variable specific, for those who are defined
         in the dictionary, for all others, `None` is used.
+    obs_aux_requires : dict, optional
+        information about required datasets / variables for auxiliary
+        variables.
+    instr_vert_loc : str, optional
+        vertical location code of observation instrument. This is used in
+        the web interface for separating different categories of measurements
+        such as "ground", "space" or "airborne".
+    is_superobs : bool
+        if True, this observation is a combination of several others which all
+        have to have their own obs config entry.
+    only_superobs : bool
+        this indicates whether this configuration is only to be used as part
+        of a superobs network, and not individually.
     read_opts_ungridded : :obj:`dict`, optional
         dictionary that specifies reading constraints for ungridded reading
         (c.g. :class:`pyaerocom.io.ReadUngridded`).
     """
     SUPPORTED_VERT_CODES = ['Column', 'Profile', 'Surface']
     ALT_NAMES_VERT_CODES = dict(ModelLevel = 'Profile')
+
+    SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
     def __init__(self, **kwargs):
 
         self.obs_id = None
         self.obs_type = None
+
         self.obs_vars = None
         self.obs_ts_type_read = None
         self.obs_vert_type = None
         self.obs_aux_requires = {}
-        self.obs_aux_funs = {}
-        self.obs_aux_units = {}
+        self.instr_vert_loc = None
+
+        self.is_superobs=False
+        self.only_superobs=False
 
         self.read_opts_ungridded = None
 
@@ -75,7 +94,12 @@ class ObsConfigEval(BrowseDict):
 
     def check_add_obs(self):
         """Check if this dataset is an auxiliary post dataset"""
-        if len(self.obs_aux_requires) > 0:
+        if not isinstance(self.obs_aux_requires, dict):
+            raise ValueError(
+                f'Invalid value obs_aux_requires={self.obs_aux_requires}'
+                f'Need dict...'
+                )
+        elif len(self.obs_aux_requires) > 0:
             if not self.obs_type == 'ungridded':
                 raise NotImplementedError(
                     'Cannot initialise auxiliary setup for {}. Aux obs reading '
@@ -92,7 +116,7 @@ class ObsConfigEval(BrowseDict):
     def check_cfg(self):
         """Check that minimum required attributes are set and okay"""
 
-        if not isinstance(self.obs_id, (str, dict)):
+        if not self.is_superobs and not isinstance(self.obs_id, (str, dict)):
             raise ValueError('Invalid value for obs_id: {}. Need str or dict '
                          'or specification of ids and variables via '
                          'obs_compute_post'
@@ -102,8 +126,6 @@ class ObsConfigEval(BrowseDict):
         elif not isinstance(self.obs_vars, list):
             raise ValueError('Invalid input for obs_vars. Need list or str, '
                              'got: {}'.format(self.obs_vars))
-        if self.obs_aux_units is None:
-            self.obs_aux_units = {}
         ovt = self.obs_vert_type
         if ovt is None:
             raise ValueError('obs_vert_type is not defined. Please specify '
@@ -121,6 +143,13 @@ class ObsConfigEval(BrowseDict):
                                      .format(self.obs_vert_type,
                                              var_name,
                                              self.SUPPORTED_VERT_CODES))
+        ovl = self.instr_vert_loc
+        if isinstance(ovl, str) and not ovl in self.SUPPORTED_VERT_LOCS:
+            raise AttributeError(
+                f'Invalid value for instr_vert_loc: {ovl} for {self.obs_id}. '
+                f'Please choose from: {self.SUPPORTED_VERT_LOCS}'
+                )
+
     def _check_ovt(self, ovt):
         """Check if obs_vert_type string is valid alias
 

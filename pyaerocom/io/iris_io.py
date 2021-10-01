@@ -12,7 +12,13 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 import cf_units
 from datetime import datetime
 import iris
-from iris.experimental.equalise_cubes import equalise_attributes
+try:
+    # as of iris version 3
+    from iris.util  import equalise_attributes
+except ImportError:
+    # old iris version installed
+    from iris.experimental.equalise_cubes import equalise_attributes
+
 from numpy import datetime64, asarray, arange
 import os
 import pandas as pd
@@ -585,6 +591,7 @@ def correct_time_coord(cube, ts_type, year):
     except Exception:
         pass
     cube.add_dim_coord(tcoord, tindex_cube)
+    cube.attributes['timedim-corrected'] = True
     return cube
 
 def concatenate_iris_cubes(cubes, error_on_mismatch=True):

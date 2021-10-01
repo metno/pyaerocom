@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from pyaerocom import const
+const.print_log.warning(DeprecationWarning(
+    'Module pyaerocom/web/trends_evaluation.py will be removed as of '
+    'release 0.12.0 which will incorporate trends computation in AeroVal '
+    'interface (via AerocomEvaluation class)'))
 
 def main():
     from argparse import ArgumentParser

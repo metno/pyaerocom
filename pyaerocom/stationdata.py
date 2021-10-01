@@ -16,7 +16,7 @@ from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   TemporalResolutionError)
 from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
                                          BrowseDict, merge_dicts)
-from pyaerocom.metastandards import StationMetaData
+from pyaerocom.metastandards import StationMetaData, STANDARD_META_KEYS
 from pyaerocom.vertical_profile import VerticalProfile
 from pyaerocom.tstype import TsType
 from pyaerocom.time_resampler import TimeResampler
@@ -25,7 +25,7 @@ from pyaerocom.trends_helpers import _make_mobs_dataframe
 from pyaerocom.helpers import (isnumeric, isrange, calc_climatology,
                                to_datetime64)
 
-from pyaerocom.units_helpers import convert_unit, unit_conversion_fac
+from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
 from pyaerocom.time_config import PANDAS_FREQ_TO_TS_TYPE
 
 class StationData(StationMetaData):
@@ -63,10 +63,13 @@ class StationData(StationMetaData):
     #: maximum numerical distance between coordinates associated with this
     #: station
     _COORD_MAX_VAR = 0.1 #km
-    STANDARD_META_KEYS = list(StationMetaData().keys())
+    STANDARD_META_KEYS = STANDARD_META_KEYS
 
     VALID_TS_TYPES = const.GRID_IO.TS_TYPES
 
+    #: Keys that are ignored when accessing metadata
+    PROTECTED_KEYS = ['dtime','var_info', 'station_coords', 'data_err',
+                      'overlap', 'numobs','data_flagged']
     def __init__(self, **meta_info):
 
         self.dtime = []
@@ -224,9 +227,8 @@ class StationData(StationMetaData):
         if unit is None:
             unit = const.VARS[var_name].units
         u = self.get_unit(var_name)
-        if not unit_conversion_fac(u, unit) == 1:
-            raise DataUnitError('Invalid unit {} (expected {})'
-                                .format(u, unit))
+        if not get_unit_conversion_fac(u, unit, var_name) == 1:
+            raise DataUnitError(f'Invalid unit {u} (expected {unit})')
 
     def convert_unit(self, var_name, to_unit):
         """Try to convert unit of data
@@ -256,9 +258,7 @@ class StationData(StationMetaData):
         data = self[var_name]
         data = convert_unit(data, from_unit=unit, to_unit=to_unit,
                             var_name=var_name)
-        #conv_fac = unit_conversion_fac(unit, to_unit)
 
-        #data *= conv_fac
         self[var_name] = data
         self.var_info[var_name]['units'] = to_unit
         const.logger.info('Successfully converted unit of variable {} in {} '
@@ -427,6 +427,9 @@ class StationData(StationMetaData):
                 const.print_log.warning('No such key in StationData: {}'
                                      .format(key))
                 continue
+            elif key in self.PROTECTED_KEYS:
+                # this is not metadata...
+                continue
             elif key in self.STANDARD_COORD_KEYS:
                 # this has been handled above
                 continue
@@ -518,7 +521,9 @@ class StationData(StationMetaData):
                 self[key] = current_val
 
             elif isnumeric(current_val) and isnumeric(val):
-                if val != current_val:
+                if np.isnan(current_val) and np.isnan(val):
+                    self[key] = val
+                elif val != current_val:
                     self[key] = [current_val, val]
 
             elif isinstance(val, list):
@@ -608,7 +613,8 @@ class StationData(StationMetaData):
             if key in self.STANDARD_COORD_KEYS:
                 if self[key] is None and other[key] is not None:
                     self[key] = other[key]
-
+            elif key in self.PROTECTED_KEYS:
+                continue
             elif key in other and other[key] is not None:
                 try:
                     self._check_meta_item(key)
@@ -749,10 +755,6 @@ class StationData(StationMetaData):
 
             from pyaerocom.helpers import get_lowest_resolution
             ts_type = get_lowest_resolution(ts_type, ts_type1)
-        from pyaerocom.tstype import TsType
-        _tt = TsType(ts_type)
-        if _tt.mulfac != 1:
-            ts_type = _tt.next_lower.val
         return ts_type
 
     def _update_var_timeinfo(self):
@@ -893,7 +895,6 @@ class StationData(StationMetaData):
         StationData
             this object that has merged the other station
         """
-        #self.merge_meta_same_station(other, **add_meta_keys)
         self.merge_vardata(other, var_name)
         self.merge_meta_same_station(other, add_meta_keys=add_meta_keys)
 
@@ -1656,7 +1657,7 @@ class StationData(StationMetaData):
             elif isinstance(v, pd.Series):
                 series += "\n{} (Series, {} items)".format(k, len(v))
             else:
-                if v == '':
+                if isinstance(v,str) and v == '':
                     v = '<empty_str>'
                 s += "\n{}: {}".format(k,v)
         if arrays:

@@ -6,6 +6,7 @@ Created on Fri Mar 13 09:56:54 2020
 @author: jonasg
 """
 import pytest
+import numpy.testing as npt
 from pyaerocom import molmasses as mm
 
 @pytest.mark.parametrize('var_name,species', [
@@ -29,6 +30,14 @@ def test_get_species(var_name, species):
     ])
 def test_get_molmass(var_name, molmass):
     assert mm.get_molmass(var_name) == molmass
+
+@pytest.mark.parametrize('var_name,result', [
+    ('mmro3', 0.60343125),
+    ('conco3', 0.60343125),
+    ])
+def test_get_mmr_to_vmr_fac(var_name, result):
+    val = mm.get_mmr_to_vmr_fac(var_name)
+    npt.assert_allclose(val, result,rtol=1e-3)
 
 if __name__ == '__main__':
     import sys
