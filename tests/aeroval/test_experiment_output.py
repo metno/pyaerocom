@@ -174,8 +174,22 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
 ### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
 from .cfg_test_exp1 import CFG as cfgexp1
 
+def test_ExperimentOutput_delete_experiment_data():
+    cfg = EvalSetup(**cfgexp1)
+    cfg.webdisp_opts.regions_how='htap'
+    cfg.webdisp_opts.add_model_maps=False
+    cfg.statistics_opts.add_trends=False
+    cfg.time_cfg.add_seasons=False
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    chk = proc.exp_output.exp_dir
+    assert os.path.exists(chk)
+    proc.exp_output.delete_experiment_data()
+    assert not os.path.exists(chk)
+
 def test_ExperimentOutput__FILES():
     cfg = EvalSetup(**cfgexp1)
+    cfg.webdisp_opts.regions_how='country'
     proc = ExperimentProcessor(cfg)
     proc.run()
 
@@ -209,7 +223,7 @@ def test_ExperimentOutput__FILES():
         elif key == 'ts':
 
             numfiles = glob.glob(f'{val}/*.json')
-            assert len(numfiles) == 11
+            assert len(numfiles) == 3
         elif key == 'ts/diurnal':
             assert len(files) == 0
 
