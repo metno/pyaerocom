@@ -2246,8 +2246,14 @@ class GriddedData(object):
                 raise ValueError('Missing input for regridding. Need either '
                                  'other data object or both lat_res_deg and '
                                  'lon_res_deg specified')
+            lats = self.latitude.points
+            lons = self.longitude.points
+            lat_range = [np.min(lats), np.max(lats)]
+            lon_range = [np.min(lons), np.max(lons)]
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
-                                           lon_res_deg=lon_res_deg)
+                                           lon_res_deg=lon_res_deg,
+                                           lat_range=lat_range,
+                                           lon_range=lon_range)
             other = GriddedData(dummy,
                                 check_unit=False,
                                 convert_unit_on_init=False)
