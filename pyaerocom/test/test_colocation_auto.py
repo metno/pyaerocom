@@ -225,7 +225,7 @@ def test_colocator__infer_start_stop():
     reader = ReadGridded('TM5-met2010_CTRL-TEST')
     col._infer_start_stop(reader)
     assert col.start == 2010
-    assert col.stop == None
+    assert col.stop == 9999
 
 def test_colocator_with_obs_data_dir_ungridded():
     col = Colocator(save_coldata=False)
@@ -233,6 +233,7 @@ def test_colocator_with_obs_data_dir_ungridded():
     col.obs_id='AeronetSunV3L2Subset.daily'
     col.obs_vars='od550aer'
     col.ts_type='monthly'
+    col.start = 2010
     col.apply_time_resampling_constraints = False
 
     aeronet_loc = tda.ADD_PATHS['AeronetSunV3L2Subset.daily']
@@ -252,6 +253,7 @@ def test_colocator_with_model_data_dir_ungridded():
     col.obs_id='AeronetSunV3L2Subset.daily'
     col.obs_vars='od550aer'
     col.ts_type='monthly'
+    col.start=2010
     col.apply_time_resampling_constraints = False
 
     model_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
@@ -271,6 +273,7 @@ def test_colocator_with_obs_data_dir_gridded():
     col.obs_id='TM5-met2010_CTRL-TEST'
     col.obs_vars='od550aer'
     col.ts_type='monthly'
+    col.start=2010
     col.apply_time_resampling_constraints = False
 
     obs_dir = 'modeldata/TM5-met2010_CTRL-TEST/renamed'
