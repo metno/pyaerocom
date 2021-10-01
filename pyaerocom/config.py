@@ -687,8 +687,8 @@ class Config(object):
 
         """
         if obs_id in self.OBS_IDS_UNGRIDDED:
-            raise ValueError('Network with ID {} is already registered...'
-                                 .format(obs_id))
+            raise ValueError(
+                f'Network with ID {obs_id} is already registered...')
         elif obs_aux_units is None:
             obs_aux_units = {}
         # this class will do the required sanity checking and will only
