@@ -575,11 +575,11 @@ class Colocator(ColocationSetup):
         """
         reader = self._obs_reader
         if reader is not None:
-            if reader.data_id == self.obs_id:
+            if self.obs_id in reader.data_ids:
                 return reader
             const.print_log.info(
-                f'Reloading outdated obs reader. ID of current reader: '
-                f'{reader.data_id}. New ID: {self.obs_id}'
+                f'Reloading outdated obs reader. ID(s) of current reader: '
+                f'{reader.data_ids}. New ID: {self.obs_id}'
                 )
         if self.obs_is_ungridded:
             self._obs_reader = ReadUngridded(self.obs_id,
