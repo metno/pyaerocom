@@ -1,13 +1,16 @@
 ### Very simple setup to make sure the basic stuff works in AeroVal
+from pyaerocom import const
 import os
-import pytest
-from .conftest import tempdir
+TMPDIR = const.LOCAL_TMP_DIR
+BASEOUT = os.path.join(TMPDIR, 'aeroval')
+os.makedirs(BASEOUT, exist_ok=True)
+
 MODELS = {
     'TM5-AP3-CTRL' : dict(model_id='TM5-met2010_CTRL-TEST')
 }
 
 OBS_GROUNDBASED = {
-    'AERONET-Sun' : dict(obs_id='AeronetSunV3Lev2.daily',
+    'AERONET-Sun' : dict(obs_id='AeronetSunV3L2Subset.daily',
                          obs_vars = ['od550aer'],
                          obs_vert_type='Column')
 }
@@ -17,8 +20,8 @@ CFG = dict(
     model_cfg = MODELS,
     obs_cfg = OBS_GROUNDBASED,
 
-    json_basedir = os.path.abspath(f'{tempdir}/data'),
-    coldata_basedir = os.path.abspath(f'{tempdir}/coldata'),
+    json_basedir = os.path.join(BASEOUT, 'data'),
+    coldata_basedir = os.path.join(BASEOUT, 'coldata'),
 
     # if True, existing colocated data files will be deleted
     reanalyse_existing = True,
@@ -63,8 +66,10 @@ CFG = dict(
     weighted_stats = True,
 )
 
-def test_ExperimentProcessor_run():
+if __name__=='__main__':
     from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
+    from pyaerocom.access_testdata import initialise
+    tda = initialise()
     stp = EvalSetup(**CFG)
     ana = ExperimentProcessor(stp)
     ana.run()
