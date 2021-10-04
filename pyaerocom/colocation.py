@@ -687,10 +687,11 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                                    .format(var_ref,
                                            data_ref.contains_vars))
     elif len(data_ref.contains_datasets) > 1:
-        raise AttributeError('Colocation can only be performed with '
-                             'ungridded data objects that only contain a '
-                             'single dataset. Use method `extract_dataset` of '
-                             'UngriddedData object to extract single datasets')
+        raise AttributeError(
+            f'Colocation can only be performed with ungridded data objects '
+            f'that only contain a single dataset (input data contains: '
+            f'{data_ref.contains_datasets}. Use method `extract_dataset` of '
+            f'UngriddedData object to extract single datasets.')
 
     dataset_ref = data_ref.contains_datasets[0]
 

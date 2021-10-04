@@ -592,7 +592,7 @@ class Colocator(ColocationSetup):
         """
         if not self._check_data_id_obs_reader():
             if self.obs_is_ungridded:
-                self._obs_reader = ReadUngridded(self.obs_id,
+                self._obs_reader = ReadUngridded(data_ids=[self.obs_id],
                                                  data_dirs=self.obs_data_dir)
             else:
                 self._obs_reader = self._instantiate_gridded_reader(what='obs')
@@ -894,6 +894,7 @@ class Colocator(ColocationSetup):
         obs_filters_post = self._eval_obs_filters(var_name)
 
         obs_data = obs_reader.read(
+            data_ids=[self.obs_id],
             vars_to_retrieve=var_name,
             only_cached=self._obs_cache_only,
             filter_post=obs_filters_post,
