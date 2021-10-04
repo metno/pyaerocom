@@ -409,11 +409,7 @@ class Config(object):
         if self._local_tmp_dir is None:
             self._local_tmp_dir = '{}/tmp'.format(self.OUTPUTDIR)
         if not self._check_access(self._local_tmp_dir):
-            try:
-                os.mkdir(self._local_tmp_dir)
-            except Exception:
-                raise FileNotFoundError('const.LOCAL_TMP_DIR {} is not set or '
-                                        'does not exist and cannot be created')
+            os.makedirs(self._local_tmp_dir, exist_ok=True)
         return self._local_tmp_dir
 
     @LOCAL_TMP_DIR.setter
