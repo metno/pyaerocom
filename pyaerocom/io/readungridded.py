@@ -658,6 +658,8 @@ class ReadUngridded(object):
         """
         if data_ids is None:
             data_ids = self.data_ids
+        elif isinstance(data_ids, str):
+            data_ids = [data_ids]
 
         if isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
