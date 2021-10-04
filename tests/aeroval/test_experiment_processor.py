@@ -30,6 +30,7 @@ def test_ExperimentProcessor_run(cfgdict,runkwargs,raises):
     cfg = EvalSetup(**cfgdict)
     with raises:
         proc = mod.ExperimentProcessor(cfg)
+        proc.exp_output.delete_experiment_data(also_coldata=True)
         proc.run(**runkwargs)
 
 

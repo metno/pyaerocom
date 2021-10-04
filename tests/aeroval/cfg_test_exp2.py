@@ -7,17 +7,23 @@ os.makedirs(BASEOUT, exist_ok=True)
 
 MODELS = {
     'TM5-AP3-CTRL' : dict(model_id='TM5-met2010_CTRL-TEST',
-                          model_use_vars={'od550csaer':'od550aer'})
+                          #model_use_vars={'od550csaer':'od550aer'},
+                          model_add_vars = dict(od550csaer = ['od550aer']),
+                          model_ts_type_read='monthly',
+                          flex_ts_type=False)
 }
 
 ODCSFUN = \
     'AeronetSDAV3L2Subset.daily;od550lt1aer+AeronetSDAV3L2Subset.daily;od550gt1aer'
 OBS_GROUNDBASED = {
+    'AERONET-Sun' : dict(obs_id='AeronetSunV3L2Subset.daily',
+                         obs_vars = ['od550aer'],
+                         obs_vert_type='Column'),
+
     'AERONET-SDA'       :   dict(obs_id='AERONET-SDA',
                               obs_vars=['od550csaer'],
                               obs_type='ungridded',
                               obs_vert_type='Column',
-                              ts_type='daily',
                               obs_merge_how={
                                   'od550csaer' : 'eval',},
                               obs_aux_requires = {
@@ -71,14 +77,13 @@ CFG = dict(
     add_seasons=False,
     model_remove_outliers=False,
     harmonise_units=True,
-    regions_how = 'default',#'default',#'country',
+    regions_how = 'country',#'default',#'country',
     annual_stats_constrained=False,
 
     proj_id = 'test',
     exp_id = 'exp2',
     exp_name = 'AeroVal test experiment 2',
-    exp_descr = ('Test setup for satellite eval and gridded / gridded '
-                 'datasets'),
+    exp_descr = ('Test setup for more complex evaluation configurations'),
     exp_pi = 'Jonas Gliss',
 
     public = True,
