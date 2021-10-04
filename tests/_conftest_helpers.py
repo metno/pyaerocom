@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
-
-from pyaerocom import StationData, ColocatedData, Filter
+import os
 import numpy as np
 import pandas as pd
 import xarray as xr
 
+from pyaerocom import const
+from pyaerocom import StationData, ColocatedData, Filter
 
 def _load_coldata_tm5_aeronet_from_scratch(file_path):
     from xarray import open_dataarray
@@ -400,12 +400,16 @@ def _create_fake_MSCWCtm_data():
 import iris
 from cf_units import Unit
 
-def make_dummy_cube_3D(startstr='days since 2010-01-01 00:00',
-                       timenum=365, dtype=float):
-    lat_range = (-30, 30)
-    lon_range = (-10, 10)
+def make_dummy_cube_3D_daily(year=2010,
+                             daynum=365, lat_range=None, lon_range=None,
+                             dtype=float):
+    if lat_range is None:
+        lat_range = (-30, 30)
+    if lon_range is None:
+        lon_range = (-10, 10)
     lat_res_deg=lon_res_deg=5
-    times = np.arange(timenum)
+    times = np.arange(daynum)
+    startstr = f'days since {year}-01-01 00:00'
     time_unit = Unit(startstr, calendar='gregorian')
 
 
@@ -430,7 +434,8 @@ def make_dummy_cube_3D(startstr='days since 2010-01-01 00:00',
 
     latdim.guess_bounds()
     londim.guess_bounds()
-    dummy = iris.cube.Cube(np.ones((len(times), len(lats), len(lons))),
+    vals = np.ones((len(times), len(lats), len(lons)))
+    dummy = iris.cube.Cube(vals,
                            units='1')
 
     dummy.add_dim_coord(latdim, 1)
@@ -439,12 +444,46 @@ def make_dummy_cube_3D(startstr='days since 2010-01-01 00:00',
     dummy.var_name = 'dummy_grid'
 
     dummy.data = dummy.data.astype(dtype)
+    dummy.attributes['ts_type'] ='daily'
     for coord in dummy.coords():
         coord.points = coord.points.astype(dtype)
     return dummy
 
+def make_griddeddata(var_name, units, ts_type, vert_code, **kwargs):
+    cube = make_dummy_cube_3D_daily(**kwargs)
+    cube.var_name=var_name
+    cube.units=units
+    from pyaerocom import GriddedData
+    data = GriddedData(cube)
+    data.metadata['data_id'] = 'DUMMY-MODEL'
+    data.metadata['vert_code'] = vert_code
+    if ts_type != 'daily':
+        data=data.resample_time(ts_type)
+    return data
+
+def add_dummy_model_data(var_name, units, ts_type, vert_code, **kwargs):
+    tmpdir = const.LOCAL_TMP_DIR
+    outdir = os.path.join(tmpdir, 'DUMMY-MODEL', 'renamed')
+    os.makedirs(outdir, exist_ok=True)
+    if not tmpdir in const.DATA_SEARCH_DIRS:
+        const.add_data_search_dir(tmpdir)
+    data =  make_griddeddata(var_name, units, ts_type, vert_code, **kwargs)
+    data.to_netcdf(out_dir=outdir)
+
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    cube = make_dummy_cube_3D(dtype=float)
-    print(cube.coord('time').points.dtype)
+    import pyaerocom as pya
+
+    tmpdir = pya.const.LOCAL_TMP_DIR
+    outdir = os.path.join(tmpdir, 'TEMP')
+    os.makedirs(outdir, exist_ok=True)
+
+    add_dummy_model_data('vmrno2', 'nmole mole-1', 'monthly', 'Surface',
+                         year=2017, lat_range=(-90,90), lon_range=(-180,180))
+
+
+    reader = pya.io.ReadGridded('DUMMY-MODEL')
+    print(reader)
+
+    data = reader.read_var('vmrno2')
+    print(data)
+

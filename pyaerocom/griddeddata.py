@@ -195,7 +195,7 @@ class GriddedData(object):
         """
         Temporal resolution of data
         """
-        if self.metadata['ts_type'] == 'n/d':
+        if self.metadata['ts_type'] == 'undefined':
             const.print_log.warning('ts_type is not set in GriddedData, trying '
                                     'to infer.')
             self.infer_ts_type()
