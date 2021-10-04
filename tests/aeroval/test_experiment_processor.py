@@ -3,6 +3,7 @@ import pytest
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 import pyaerocom.aeroval.experiment_processor as mod
+from pyaerocom.exceptions import InitialisationError
 
 from .cfg_test_exp1 import CFG as cfgexp1
 from .cfg_test_exp2 import CFG as cfgexp2
@@ -23,6 +24,8 @@ def test_ExperimentProcessor___init__(cfgdict,raises):
 @pytest.mark.parametrize('cfgdict,runkwargs,raises', [
     (cfgexp1,{},does_not_raise_exception()),
     (cfgexp2,{},does_not_raise_exception()),
+    (cfgexp2,dict(model_name='BLA'),pytest.raises(InitialisationError)),
+
 ])
 def test_ExperimentProcessor_run(cfgdict,runkwargs,raises):
     cfg = EvalSetup(**cfgdict)
