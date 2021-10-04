@@ -16,6 +16,7 @@ from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.variable import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
+from pyaerocom.aux_var_helpers import concx_to_vmrx
 
 def add_dataarrays(*arrs):
     """
@@ -140,11 +141,33 @@ def calc_concNtnh(concnh3,concnh4):
     concNtnh.attrs['units'] = 'ug N m-3'
     return concNtnh
 
+def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
+    concsspm25 = concssf + coarse_fraction*concssc
+
+    concsspm25.attrs['units'] = 'ug m-3'
+    return concsspm25
+
 def update_EC_units(concecpm25):
     concCecpm25 = concecpm25
     concCecpm25.attrs['units'] = 'ug C m-3'
 
     return concCecpm25
+
+def calc_vmrox(concno2, vmro3):
+    #Here standard atmospheric temperature and pressure is used, instead of simulated
+
+    vmrno2 = concx_to_vmrx(
+        concno2,
+        1000*10,
+        288.15, #15 deg celcius
+        "ug m-3",
+        46.0055, # g/mol NO2
+        to_unit="nmol mol-1"
+    )
+
+    vmrox = vmrno2 + vmro3
+    vmrox.attrs["units"] = "nmol mol-1"
+    return vmrox
 
 
 class ReadMscwCtm(object):
@@ -182,8 +205,10 @@ class ReadMscwCtm(object):
                     'concNno3pm25' : ['concno3f','concno3c'],
                     'concNtno3'   : ['conchno3','concno3f','concno3c'],
                     'concNtnh'    : ['concnh3','concnh4'],
+                    'concsspm25'  : ['concssf', 'concssc'],
                     'concsspm10'  : ['concsspm25','concssc'],
                     'concCecpm25' : ['concecpm25'],
+                    'vmrox'       : ['concno2', 'vmro3'],
                     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -203,8 +228,10 @@ class ReadMscwCtm(object):
                 'concNno3pm25' : calc_concNno3pm25,
                 'concNtno3'    : calc_conNtno3,
                 'concNtnh'     : calc_concNtnh,
+                'concsspm25'   : calc_concsspm25,
                 'concsspm10'   : add_dataarrays,
                 'concCecpm25'  : update_EC_units,
+                'vmrox'        : calc_vmrox,
                 }
 
     #: supported filename masks, placeholder is for frequencies
