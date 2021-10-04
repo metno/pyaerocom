@@ -40,6 +40,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.helpers import varlist_aerocom
 
 from pyaerocom import const, print_log, logger
+from pyaerocom.variable import get_aliases
+
 
 class ReadUngridded(object):
     """Factory class for reading of ungridded data based on obsnetwork ID
@@ -735,6 +737,14 @@ class ReadUngridded(object):
             logger.info('Successfully imported {} data'.format(ds))
         return data
 
+    def _check_var_alias(self, var, supported):
+        # could be an alias
+        aliases = get_aliases(var)
+        for svar in supported:
+            if svar in aliases:
+                return svar
+        raise ValueError()
+
     def get_vars_supported(self, obs_id, vars_desired):
         """
         Filter input list of variables by supported ones for a certain data ID
@@ -758,9 +768,14 @@ class ReadUngridded(object):
         if obs_id in self.post_compute:
             # check if all required are accessible
             postinfo = self.post_compute[obs_id]
+            supported = postinfo['vars_supported']
             for var in varlist_aerocom(vars_desired):
-                if not var in postinfo['vars_supported']:
-                    continue
+                if not var in supported:
+                    try:
+                        var = self._check_var_alias(var, supported)
+                    except ValueError:
+                        # no alias match, skip...
+                        continue
                 requires = postinfo['aux_requires'][var]
                 all_good = True
                 for ds, vars_required in requires.items():
