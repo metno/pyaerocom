@@ -9,7 +9,6 @@ from .cfg_test_exp1 import CFG as cfgexp1
 from .cfg_test_exp2 import CFG as cfgexp2
 from ..conftest import does_not_raise_exception
 
-@pytest.mark.dependency(name='init-processor')
 @pytest.mark.parametrize('cfgdict,raises', [
     (cfgexp1,does_not_raise_exception())
 ])
@@ -20,11 +19,11 @@ def test_ExperimentProcessor___init__(cfgdict,raises):
         assert isinstance(proc.cfg, EvalSetup)
         assert isinstance(proc.exp_output, ExperimentOutput)
 
-@pytest.mark.dependency(name='run-processor', depends=['init-processor'])
 @pytest.mark.parametrize('cfgdict,runkwargs,raises', [
     (cfgexp1,{},does_not_raise_exception()),
     (cfgexp2,{},does_not_raise_exception()),
-    (cfgexp2,dict(model_name='BLA'),pytest.raises(InitialisationError)),
+    (cfgexp2,dict(model_name='BLA'),pytest.raises(KeyError)),
+    (cfgexp2,dict(obs_name='BLUB'),pytest.raises(KeyError)),
 
 ])
 def test_ExperimentProcessor_run(cfgdict,runkwargs,raises):

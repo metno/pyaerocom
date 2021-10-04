@@ -670,6 +670,10 @@ class Config(object):
         obs_aux_units : dict, optional
             output units of auxiliary variables (only needed for varibales
             that are derived via `merge_how='eval'`)
+        **kwargs
+            additional keyword arguments (unused, but serves the purpose to
+            allow for parsing info from dictionaries and classes that
+            contain additional attributes than the ones needed here).
 
         Raises
         ------

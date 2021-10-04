@@ -88,12 +88,13 @@ class ObsEntry(BrowseDict):
                     'Cannot initialise auxiliary setup for {}. Aux obs reading '
                     'is so far only possible for ungridded observations.'
                         .format(self.obs_id))
-            try:
-                const.add_ungridded_post_dataset(**self)
-            except Exception:
-                raise InitialisationError(
-                    'Cannot initialise auxiliary reading setup for {}. '
-                    'Reason:\n{}'.format(self.obs_id, format_exc()))
+            if not self.obs_id in const.OBS_IDS_UNGRIDDED:
+                try:
+                    const.add_ungridded_post_dataset(**self)
+                except Exception:
+                    raise InitialisationError(
+                        'Cannot initialise auxiliary reading setup for {}. '
+                        'Reason:\n{}'.format(self.obs_id, format_exc()))
 
     def get_all_vars(self) -> list:
         """
