@@ -6,6 +6,9 @@ import xarray as xr
 from pyaerocom import const
 from pyaerocom import StationData, ColocatedData, Filter
 
+TMPDIR = os.path.join(os.path.expanduser('~'), 'tmp')
+os.makedirs(TMPDIR, exist_ok=True)
+
 def _load_coldata_tm5_aeronet_from_scratch(file_path):
     from xarray import open_dataarray
     from pyaerocom import ColocatedData
@@ -462,14 +465,12 @@ def make_griddeddata(var_name, units, ts_type, vert_code, **kwargs):
     return data
 
 def add_dummy_model_data(var_name, units, ts_type, vert_code, **kwargs):
-    tmpdir = const.LOCAL_TMP_DIR
+    tmpdir = TMPDIR
     outdir = os.path.join(tmpdir, 'DUMMY-MODEL', 'renamed')
     os.makedirs(outdir, exist_ok=True)
-    if not tmpdir in const.DATA_SEARCH_DIRS:
-        assert os.path.exists(tmpdir)
-        const.add_data_search_dir(tmpdir)
     data =  make_griddeddata(var_name, units, ts_type, vert_code, **kwargs)
     data.to_netcdf(out_dir=outdir)
+    return outdir
 
 if __name__ == '__main__':
     import pyaerocom as pya

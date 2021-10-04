@@ -227,12 +227,3 @@ def coldata():
 @contextmanager
 def does_not_raise_exception():
     yield
-
-def pytest_sessionfinish(session, exitstatus):
-    import os, shutil
-    tmpdir = const.LOCAL_TMP_DIR
-    print()
-    dummymod = os.path.join(tmpdir, 'DUMMY-MODEL')
-    if os.path.exists(dummymod):
-        print(f'Deleting fake model data in {dummymod}')
-        shutil.rmtree(dummymod)
