@@ -466,6 +466,7 @@ def add_dummy_model_data(var_name, units, ts_type, vert_code, **kwargs):
     outdir = os.path.join(tmpdir, 'DUMMY-MODEL', 'renamed')
     os.makedirs(outdir, exist_ok=True)
     if not tmpdir in const.DATA_SEARCH_DIRS:
+        assert os.path.exists(tmpdir)
         const.add_data_search_dir(tmpdir)
     data =  make_griddeddata(var_name, units, ts_type, vert_code, **kwargs)
     data.to_netcdf(out_dir=outdir)

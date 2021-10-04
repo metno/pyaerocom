@@ -1,15 +1,10 @@
-### Very simple setup to make sure the basic stuff works in AeroVal
 from pyaerocom import const
-from pyaerocom.access_testdata import AccessTestData
 import os
 TMPDIR = const.LOCAL_TMP_DIR
 BASEOUT = os.path.join(TMPDIR, 'aeroval')
 os.makedirs(BASEOUT, exist_ok=True)
 
 YEAR = '2007'
-TESTDATADIR = AccessTestData().testdatadir
-EMEP_DIR = os.path.join(TESTDATADIR, 'modeldata', 'EMEP_2017')
-assert os.path.exists(EMEP_DIR)
 from .._conftest_helpers import add_dummy_model_data
 
 add_dummy_model_data('vmrno2', 'nmole mole-1', 'monthly', 'Surface',
