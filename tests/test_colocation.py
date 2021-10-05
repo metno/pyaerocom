@@ -115,7 +115,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
      'monthly', (2,12,13), 0.302636, 0.234147),
     (dict(filter_name='WORLD-noMOUNTAINS',
           regrid_res_deg=30, min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
-     'monthly', (2,12,8), 0.31593 , 0.169897),
+     'monthly', (2,12,8), 0.31593 , 0.1797),
     (dict(filter_name='WORLD-noMOUNTAINS', ts_type='yearly'),
      'yearly', (2,1,8), 0.417676, 0.275671)
 
