@@ -568,24 +568,34 @@ class Colocator(ColocationSetup):
         self._loaded_model_data = {}
         return self._model_reader
 
+    def _check_data_id_obs_reader(self):
+        """
+        Check if obs_reader is instantiated with correct obs ID.
+
+        Returns
+        -------
+        bool
+            True if current obs reader can be used for obs reading, else False.
+        """
+        reader = self._obs_reader
+        if reader is None:
+            return False
+        elif self.obs_is_ungridded and self.obs_id in reader.data_ids:
+            return True
+        elif self.obs_id==reader.data_id:
+            return True
+
     @property
     def obs_reader(self):
         """
         Observation data reader
         """
-        reader = self._obs_reader
-        if reader is not None:
-            if reader.data_id == self.obs_id:
-                return reader
-            const.print_log.info(
-                f'Reloading outdated obs reader. ID of current reader: '
-                f'{reader.data_id}. New ID: {self.obs_id}'
-                )
-        if self.obs_is_ungridded:
-            self._obs_reader = ReadUngridded(self.obs_id,
-                                             data_dirs=self.obs_data_dir)
-        else:
-            self._obs_reader = self._instantiate_gridded_reader(what='obs')
+        if not self._check_data_id_obs_reader():
+            if self.obs_is_ungridded:
+                self._obs_reader = ReadUngridded(data_ids=[self.obs_id],
+                                                 data_dirs=self.obs_data_dir)
+            else:
+                self._obs_reader = self._instantiate_gridded_reader(what='obs')
         return self._obs_reader
 
     @property
@@ -884,6 +894,7 @@ class Colocator(ColocationSetup):
         obs_filters_post = self._eval_obs_filters(var_name)
 
         obs_data = obs_reader.read(
+            data_ids=[self.obs_id],
             vars_to_retrieve=var_name,
             only_cached=self._obs_cache_only,
             filter_post=obs_filters_post,

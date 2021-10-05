@@ -48,18 +48,17 @@ def test_supported():
                                                  'GHOST.EBAS.daily'])
 
 @pytest.mark.parametrize(
-    'data_ids,vars_to_retrieve,ignore_cache,data_dirs,raises', [
-    (None, None, False, None,does_not_raise_exception()),
-    (None, None, True, None,does_not_raise_exception()),
-    ('Blaaaaaa', None, False, None,does_not_raise_exception()),
+    'data_ids,ignore_cache,data_dirs,raises', [
+    (None, False, None,does_not_raise_exception()),
+    (None, True, None,does_not_raise_exception()),
+    ('Blaaaaaa', False, None,does_not_raise_exception()),
 
     ])
-def test_ReadUngridded___init__(data_ids,vars_to_retrieve,ignore_cache,
+def test_ReadUngridded___init__(data_ids,ignore_cache,
                                 data_dirs,raises):
     caching = const.CACHING
     with raises:
         reader =  ReadUngridded(data_ids=data_ids,
-                                vars_to_retrieve=vars_to_retrieve,
                                 ignore_cache=ignore_cache,
                                 data_dirs=data_dirs)
         if ignore_cache:

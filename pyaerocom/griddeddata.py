@@ -116,9 +116,9 @@ class GriddedData(object):
                               'profile']
 
     _META_ADD = od(from_files           = [],
-                   data_id              = 'n/d',
-                   var_name_read        = 'n/d',
-                   ts_type              = 'n/d',
+                   data_id              = 'undefined',
+                   var_name_read        = 'undefined',
+                   ts_type              = 'undefined',
                    vert_code            = None,
                    regridded            = False,
                    outliers_removed     = False,
@@ -195,7 +195,7 @@ class GriddedData(object):
         """
         Temporal resolution of data
         """
-        if self.metadata['ts_type'] == 'n/d':
+        if self.metadata['ts_type'] == 'undefined':
             const.print_log.warning('ts_type is not set in GriddedData, trying '
                                     'to infer.')
             self.infer_ts_type()
@@ -2021,16 +2021,19 @@ class GriddedData(object):
         """Get filename for saving following AeroCom conventions"""
         from pyaerocom.io.helpers import aerocom_savename
         if vert_code is None:
-            try:
-                from pyaerocom.io.fileconventions import FileConventionRead
-                f = self.from_files[0]
-                fconv = FileConventionRead().from_file(f)
-                vert_code = fconv.get_info_from_file(f)['vert_code']
-            except Exception:
-                pass
+            if self.metadata['vert_code'] is not None:
+                vert_code=self.metadata['vert_code']
+            else:
+                try:
+                    from pyaerocom.io.fileconventions import FileConventionRead
+                    f = self.from_files[0]
+                    fconv = FileConventionRead().from_file(f)
+                    vert_code = fconv.get_info_from_file(f)['vert_code']
+                except Exception:
+                    pass
 
         if vert_code in (None, ''):
-            raise ValueError('Please provide input vert_code')
+            raise ValueError('Please provide vert_code')
 
         if data_id is None:
             data_id = self.data_id

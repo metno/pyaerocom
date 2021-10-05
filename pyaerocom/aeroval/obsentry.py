@@ -1,5 +1,8 @@
+from traceback import format_exc
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrType
+from pyaerocom.exceptions import InitialisationError
 from pyaerocom.metastandards import DataSource
 
 class ObsEntry(BrowseDict):
@@ -75,6 +78,23 @@ class ObsEntry(BrowseDict):
 
         self.update(**kwargs)
         self.check_cfg()
+        self.check_add_obs()
+
+    def check_add_obs(self):
+        """Check if this dataset is an auxiliary post dataset"""
+        if len(self.obs_aux_requires) > 0:
+            if not self.obs_type == 'ungridded':
+                raise NotImplementedError(
+                    'Cannot initialise auxiliary setup for {}. Aux obs reading '
+                    'is so far only possible for ungridded observations.'
+                        .format(self.obs_id))
+            if not self.obs_id in const.OBS_IDS_UNGRIDDED:
+                try:
+                    const.add_ungridded_post_dataset(**self)
+                except Exception:
+                    raise InitialisationError(
+                        'Cannot initialise auxiliary reading setup for {}. '
+                        'Reason:\n{}'.format(self.obs_id, format_exc()))
 
     def get_all_vars(self) -> list:
         """

@@ -1,12 +1,14 @@
 import pytest
-import os
+import os, glob
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json,write_json
-from pyaerocom.aeroval import experiment_output as mod
+from pyaerocom.aeroval import experiment_output as mod, ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from ..conftest import does_not_raise_exception
-
+from .cfg_test_exp1 import CFG as cfgexp1
+from .cfg_test_exp2 import CFG as cfgexp2
 BASEDIR_DEFAULT = os.path.join(const.OUTPUTDIR, 'aeroval/data')
+
 
 @pytest.fixture(scope='module')
 def dummy_setup():
@@ -170,5 +172,77 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
         assert not os.path.exists(coldir)
     else:
         assert os.path.exists(coldata_dir)
+
+### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
+
+def test_ExperimentOutput_delete_experiment_data():
+    cfg = EvalSetup(**cfgexp1)
+    cfg.webdisp_opts.regions_how='htap'
+    cfg.webdisp_opts.add_model_maps=False
+    cfg.statistics_opts.add_trends=False
+    cfg.time_cfg.add_seasons=False
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    chk = proc.exp_output.exp_dir
+    assert os.path.exists(chk)
+    proc.exp_output.delete_experiment_data()
+    assert not os.path.exists(chk)
+
+CHK_CFG1 = {
+    'map': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
+    'contour': ['od550aer_TM5-AP3-CTRL.geojson',
+                'od550aer_TM5-AP3-CTRL.json'],
+    'hm': ['glob_stats_daily.json','glob_stats_monthly.json',
+           'glob_stats_yearly.json'],
+    'hm/ts': ['stats_ts.json'],
+    'scat': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
+    'ts': 11, # number of .json files in subdir
+    'ts/diurnal': 0 # number of .json files in subdir
+}
+
+CHK_CFG2 = {
+    'map': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json',
+            'AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
+    'contour': 0,
+    'hm': ['glob_stats_monthly.json'],
+    'hm/ts': ['stats_ts.json'],
+    'scat': ['AERONET-Sun-od550aer_Column_TM5-AP3-CTRL-od550aer.json',
+             'AERONET-SDA-od550aer_Column_TM5-AP3-CTRL-od550aer.json'],
+    'ts': 40, # number of .json files in subdir
+    'ts/diurnal': 0 # number of .json files in subdir
+}
+
+@pytest.mark.parametrize('cfgdict,chk_files',[
+    (cfgexp1,CHK_CFG1),
+    (cfgexp2,CHK_CFG2),
+])
+def test_ExperimentOutput__FILES(cfgdict,chk_files):
+    cfg = EvalSetup(**cfgdict)
+    fname = f'cfg_{cfg.proj_id}_{cfg.exp_id}.json'
+    #cfg.webdisp_opts.regions_how='country'
+    proc = ExperimentProcessor(cfg)
+    proc.exp_output.delete_experiment_data(also_coldata=True)
+    proc.run()
+
+    output = proc.exp_output
+    assert os.path.exists(output.exp_dir)
+    assert os.path.exists(output.experiments_file)
+    assert os.path.exists(output.var_ranges_file)
+    assert os.path.exists(output.statistics_file)
+    assert os.path.exists(output.menu_file)
+    assert os.path.exists(os.path.join(output.exp_dir, fname))
+    for key, val in cfg.path_manager.get_json_output_dirs().items():
+        assert os.path.exists(val)
+        files = os.listdir(val)
+        if key in chk_files:
+            check = chk_files[key]
+            if isinstance(check, list):
+                for fname in check:
+                    assert fname in files
+            elif isinstance(check, int):
+                numfiles = glob.glob(f'{val}/*.json')
+                assert len(numfiles) == check
+
+
 
 

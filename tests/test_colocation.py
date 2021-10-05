@@ -145,8 +145,11 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     cubes = iris.cube.CubeList()
 
     for time in times:
-        time_coord = iris.coords.DimCoord(time, units=time_unit, standard_name='time')
-        cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1, lat_range=[30.05,81.95], lon_range=[-29.5,89.95])
+        time_coord = iris.coords.DimCoord(time, units=time_unit,
+                                          standard_name='time')
+        cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1,
+                                              lat_range=[30.05,81.95],
+                                              lon_range=[-29.5,89.95])
         cube.add_aux_coord(time_coord)
         cubes.append(cube)
     time_cube = cubes.merge_cube()
