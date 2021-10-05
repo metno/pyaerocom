@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 10 13:20:04 2020
-
-@author: eirikg
-"""
-
 import xarray as xr
 import numpy as np
 import os
@@ -14,37 +6,18 @@ import glob
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
 from pyaerocom.io._read_mscw_ctm_helpers import (add_dataarrays,
-                                                 subtract_dataarrays, calc_concNhno3, calc_concNno3pm10, calc_concNno3pm25,
-                                                 calc_conNtno3, calc_concNnh3, calc_concNnh4, calc_concNtnh,
-                                                 update_EC_units
+                                                 subtract_dataarrays,
+                                                 calc_concNhno3,
+                                                 calc_concNno3pm10,
+                                                 calc_concNno3pm25,
+                                                 calc_conNtno3, calc_concNnh3,
+                                                 calc_concNnh4, calc_concNtnh,
+                                                 update_EC_units,
+                                                 calc_concsspm25, calc_vmrox
                                                  )
 from pyaerocom.variable_helpers import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
-from pyaerocom.aux_var_helpers import concx_to_vmrx
-
-
-def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
-    concsspm25 = concssf + coarse_fraction*concssc
-
-    concsspm25.attrs['units'] = 'ug m-3'
-    return concsspm25
-
-def calc_vmrox(concno2, vmro3):
-    #Here standard atmospheric temperature and pressure is used, instead of simulated
-    from geonum.atmosphere import T0_STD, p0
-    vmrno2 = concx_to_vmrx(
-        data=concno2,
-        p_pascal=p0, # 1013 hPa (US standard atm)
-        T_kelvin=T0_STD, #15 deg celcius (US standard atm)
-        conc_unit="ug m-3",
-        mmol_var=46.0055, # g/mol NO2
-        to_unit="nmol mol-1"
-    )
-
-    vmrox = vmrno2 + vmro3
-    vmrox.attrs["units"] = "nmol mol-1"
-    return vmrox
 
 
 class ReadMscwCtm(object):
