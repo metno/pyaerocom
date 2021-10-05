@@ -610,7 +610,6 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
 def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None,
                   to_unit=None):
     """
-    WORK IN PROGRESS. DO NOT USE!
     Convert mass concentration to volume mixing ratio (vmr)
 
     Parameters
