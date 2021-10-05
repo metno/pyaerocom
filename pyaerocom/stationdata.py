@@ -248,8 +248,12 @@ class StationData(StationMetaData):
         unit = self.get_unit(var_name)
 
         data = self[var_name]
+        try:
+            tst = self.get_var_ts_type(var_name)
+        except MetaDataError:
+            tst = None
         data = convert_unit(data, from_unit=unit, to_unit=to_unit,
-                            var_name=var_name)
+                            var_name=var_name, ts_type=tst)
 
         self[var_name] = data
         self.var_info[var_name]['units'] = to_unit

@@ -23,7 +23,7 @@ from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
-from pyaerocom.variable import get_aliases
+from pyaerocom.variable_helpers import get_aliases
 
 
 class ProjectOutput:

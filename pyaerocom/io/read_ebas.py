@@ -39,7 +39,8 @@ from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.exceptions import (NotInFileError, EbasFileError,
                                   MetaDataError,
                                   UnitConversionError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError,
+                                  TemporalSamplingError)
 from pyaerocom._lowlevel_helpers import BrowseDict
 from tqdm import tqdm
 
@@ -106,6 +107,15 @@ class ReadEbasOptions(BrowseDict):
     freq_from_start_stop_meas : bool
         infer frequency from start / stop intervals of individual
         measurements.
+    freq_min_cov : float
+        defines minimum number of measurements that need to correspond to the
+        detected sampling frequency in the file within the specified tolerance
+        range. Only applies if :attr:`ensure_correct_freq` is True. E.g. if a
+        file contains 100 measurements and the most common frequency (as
+        inferred from stop-start of each measurement) is daily. Then, if
+        `freq_min_cov` is 0.75, it will be ensured that at least 75 of the
+        measurements are daily (within +/- 5% tolerance), otherwise this file
+        is discarded. Defaults to 0.
 
     Parameters
     ----------
@@ -138,6 +148,7 @@ class ReadEbasOptions(BrowseDict):
 
         self.ensure_correct_freq = True
         self.freq_from_start_stop_meas = True
+        self.freq_min_cov = 0.0
 
         self.update(**args)
 
@@ -248,8 +259,8 @@ class ReadEbas(ReadUngriddedBase):
     #: a given variable) will be overwritten from the defaults specified in
     #: the options class.
     VAR_READ_OPTS = {
-        # keep pr in mm
-        'pr'        : dict(convert_units = False)
+        'pr'        : dict(convert_units=False, freq_min_cov=0.75),
+        'prmm'        : dict(freq_min_cov=0.75)
         }
 
     ASSUME_AAE_SHIFT_WVL = 1.0
@@ -1437,8 +1448,16 @@ class ReadEbas(ReadUngriddedBase):
         invalid = np.logical_or(diffarr<-tolsecs,
                                 diffarr>tolsecs)
 
+        frac_valid = np.sum(~invalid) / len(invalid)
+
         num = len(filedata['start_meas'])
         for var in filedata.var_info:
+            opts = self.get_read_opts(var)
+            if opts.freq_min_cov > frac_valid:
+                raise TemporalSamplingError(
+                    f'Only {frac_valid*100:.2f}% of measuerements are in '
+                    f'{tst} resolution. Minimum requirement for {var} is '
+                    f'{opts.freq_min_cov*100:.2f}%')
             if not var in filedata.data_flagged:
                 filedata.data_flagged[var] = np.zeros(num).astype(bool)
             filedata.data_flagged[var][invalid] = True
@@ -1722,7 +1741,8 @@ class ReadEbas(ReadUngriddedBase):
                 station_data = self.read_file(_file,
                                               vars_to_retrieve=contains)
 
-            except (NotInFileError, EbasFileError, TemporalResolutionError) as e:
+            except (NotInFileError, EbasFileError, TemporalResolutionError,
+                    TemporalSamplingError) as e:
                 self.files_failed.append(_file)
                 self.logger.warning('Skipping reading of EBAS NASA Ames '
                                     'file: {}. Reason: {}'
@@ -1834,4 +1854,4 @@ if __name__=="__main__":
 
     plt.close('all')
     reader = pya.io.ReadEbas()
-    data = reader.read('concNtno3')
+    data = reader.read('prmm')

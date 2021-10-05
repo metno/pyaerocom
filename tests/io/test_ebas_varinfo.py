@@ -84,7 +84,7 @@ TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('wetoxs', None, None, None, None, ['concprcpoxs'], 1),
             ('wetoxn', None, None, None, None, ['concprcpoxn'], 1),
             ('wetrdn', None, None, None, None, ['concprcprdn'], 1),
-            ('pr', ['precipitation_amount_off', 'precipitation_amount'],
+            ('prmm', ['precipitation_amount_off', 'precipitation_amount'],
              ['precip'], None, None, None, 1.0)
             ]
 

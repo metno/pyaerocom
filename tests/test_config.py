@@ -288,7 +288,7 @@ def test_default_config():
     assert cfg._caching_active
     assert cfg.CACHING
 
-    from pyaerocom.variable import VarCollection
+    from pyaerocom.varcollection import VarCollection
 
     assert isinstance(cfg.VARS, VarCollection)
     assert cfg.VARS is cfg.VAR_PARAM

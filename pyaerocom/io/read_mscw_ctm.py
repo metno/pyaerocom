@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 10 13:20:04 2020
-
-@author: eirikg
-"""
-
 import xarray as xr
 import numpy as np
 import os
@@ -13,161 +5,19 @@ import glob
 
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
-from pyaerocom.variable import get_emep_variables
+from pyaerocom.io._read_mscw_ctm_helpers import (add_dataarrays,
+                                                 subtract_dataarrays,
+                                                 calc_concNhno3,
+                                                 calc_concNno3pm10,
+                                                 calc_concNno3pm25,
+                                                 calc_conNtno3, calc_concNnh3,
+                                                 calc_concNnh4, calc_concNtnh,
+                                                 update_EC_units,
+                                                 calc_concsspm25, calc_vmrox
+                                                 )
+from pyaerocom.variable_helpers import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
-from pyaerocom.aux_var_helpers import concx_to_vmrx
-
-def add_dataarrays(*arrs):
-    """
-    Add a bunch of :class:`xarray.DataArray` instances
-
-    Parameters
-    ----------
-    *arrs
-        input arrays (instances of :class:`xarray.DataArray` with same shape)
-
-    Returns
-    -------
-    xarray.DataArray
-        Added array
-
-    """
-    if not len(arrs) > 1:
-        raise ValueError('Need at least 2 input arrays to add')
-    result = arrs[0].copy(deep=True)
-    for arr in arrs[1:]:
-        result += arr
-    return result
-
-
-def subtract_dataarrays(*arrs):
-    """
-    Subtract a bunch of :class:`xarray.DataArray` instances from an array
-
-    Parameters
-    ----------
-    *arrs
-        input arrays (instances of :class:`xarray.DataArray` with same shape).
-        Subtraction is performed with respect to the first input array.
-
-
-    Returns
-    -------
-    xarray.DataArray
-        Diff array (all additional ones are subtracted from first array)
-
-    """
-    if not len(arrs) > 1:
-        raise ValueError('Need at least 2 input arrays to add')
-    result = arrs[0].copy(deep=True)
-    for arr in arrs[1:]:
-        result -= arr
-    return result
-
-def calc_concNhno3(*arrs):
-    if len(arrs)>1:
-        raise ValueError('Shoul only be given 1 array')
-
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-
-    conchno3 = arrs[0].copy(deep=True)
-    fac = (M_N / (M_H + M_N + M_O * 3))
-    concNhno3 = conchno3*fac
-    concNhno3.attrs['units'] = 'ug N m-3'
-    return concNhno3
-
-def calc_concNno3pm10(concno3f,concno3c):
-    M_N = 14.006
-    M_O = 15.999
-
-    fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + concno3c
-    concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
-    concNno3pm10.attrs['units'] = 'ug N m-3'
-    return concNno3pm10
-
-def calc_concNno3pm25(concno3f,concno3c,fine_from_coarse_fraction=0.134):
-    M_N = 14.006
-    M_O = 15.999
-
-    fac = M_N / (M_N + 3*M_O)
-    concno3pm25 = concno3f + fine_from_coarse_fraction*concno3c
-    concNno3pm25 = concno3pm25*fac
-    concNno3pm25.attrs['var_name'] = 'concNno3pm25'
-    concNno3pm25.attrs['units'] = 'ug N m-3'
-    return concNno3pm25
-
-def calc_conNtno3(conchno3,concno3f,concno3c):
-    concNhno3 = calc_concNhno3(conchno3)
-    concNno3pm10 = calc_concNno3pm10(concno3f,concno3c)
-
-    concNtno3 = concNhno3 + concNno3pm10
-    concNtno3.attrs['units'] = 'ug N m-3'
-    return concNtno3
-
-def calc_concNnh3(*arrs):
-    if len(arrs)>1:
-        raise ValueError('Shoul only be given 1 array')
-
-    M_N = 14.006
-    M_H = 1.007
-
-    concnh3 = arrs[0].copy(deep=True)
-    concNnh3 = concnh3*(M_N / (M_H * 3 + M_N))
-    concNnh3.attrs['units'] = 'ug N m-3'
-    return concNnh3
-
-def calc_concNnh4(*arrs):
-    if len(arrs)>1:
-        raise ValueError('Shoul only be given 1 array')
-
-    M_N = 14.006
-    M_H = 1.007
-
-    concnh4 = arrs[0].copy(deep=True)
-    concNnh4 = concnh4*(M_N / (M_H * 4 + M_N))
-    concNnh4.attrs['units'] = 'ug N m-3'
-    return concNnh4
-
-def calc_concNtnh(concnh3,concnh4):
-    concNnh3 = calc_concNnh3(concnh3)
-    concNnh4 = calc_concNnh4(concnh4)
-
-    concNtnh = concNnh3 + concNnh4
-    concNtnh.attrs['units'] = 'ug N m-3'
-    return concNtnh
-
-def calc_concsspm25(concssf, concssc, coarse_fraction=0.13):
-    concsspm25 = concssf + coarse_fraction*concssc
-
-    concsspm25.attrs['units'] = 'ug m-3'
-    return concsspm25
-
-def update_EC_units(concecpm25):
-    concCecpm25 = concecpm25
-    concCecpm25.attrs['units'] = 'ug C m-3'
-
-    return concCecpm25
-
-def calc_vmrox(concno2, vmro3):
-    #Here standard atmospheric temperature and pressure is used, instead of simulated
-
-    vmrno2 = concx_to_vmrx(
-        concno2,
-        1000*10,
-        288.15, #15 deg celcius
-        "ug m-3",
-        46.0055, # g/mol NO2
-        to_unit="nmol mol-1"
-    )
-
-    vmrox = vmrno2 + vmro3
-    vmrox.attrs["units"] = "nmol mol-1"
-    return vmrox
 
 
 class ReadMscwCtm(object):
@@ -218,10 +68,9 @@ class ReadMscwCtm(object):
     AUX_FUNS = {'depso4' : add_dataarrays,
                 'concbc' : add_dataarrays,
                 'concno3' : add_dataarrays,
-                'conctno3' : add_dataarrays,
                 'concoa' : add_dataarrays,
                 'concpmgt25': subtract_dataarrays,
-                'concNhno3':calc_concNhno3,
+                'concNhno3': calc_concNhno3,
                 'concNnh3' : calc_concNnh3,
                 'concNnh4' : calc_concNnh4,
                 'concNno3pm10' : calc_concNno3pm10,
@@ -675,7 +524,7 @@ class ReadMscwCtm(object):
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = self.filepath
+        gridded.metadata['from_files'] = [self.filepath]
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:

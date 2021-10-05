@@ -1,7 +1,7 @@
 import cf_units
 import numpy as np
 from pyaerocom import const
-from pyaerocom.variable import get_variable
+from pyaerocom.variable_helpers import get_variable
 
 
 def calc_ang4487aer(data):
@@ -191,11 +191,11 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
         are replaced with NaNs)
     to_lambda : float
         wavelength of computed AOD
-    od_ref : :obj:`float` or :obj:`ndarray`
-        reference AOD
+    od_ref : str
+        name of reference AOD in data
     lambda_ref : :obj:`float` or :obj:`ndarray`
         wavelength corresponding to reference AOD
-    od_ref_alt : :obj:`float` or :obj:`ndarray`, optional
+    od_ref_alt : str
         alternative reference AOD (is used for datapoints where former is
         invalid)
     lambda_ref_alt : :obj:`float` or :obj:`ndarray`, optional
@@ -404,9 +404,37 @@ def _compute_dry_helper(data, data_colname, rh_colname,
     return vals, rh_mean
 
 
-def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
+def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
+    """
+    Helper to compute wed deposition from concentration in precipitation
 
-    vars_needed = (concprcp_var, 'pr')
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable.
+
+    Parameters
+    ----------
+    data : StationData
+        input data containing concentration in precipitation variable and
+        precipitation variable. Both are needed to be sampled at the same
+        time and both arrays must have the same lengths.
+    wdep_var : str
+        name of output wet deposition variable
+    concprcp_var : str
+        name of concenration in precipitation variable
+    pr_var : str
+        precipitation variable (needs to be implicit, i.e. in units of mm or
+        similar and not in units of mm d-1.
+
+    Returns
+    -------
+    numpy.ndarray
+        array with wet deposition values
+    """
+
+    vars_needed = (concprcp_var, pr_var)
 
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f'Need flags for {vars_needed} to compute wet deposition')
@@ -423,11 +451,11 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
         raise NotImplementedError('Can only handle concprcp unit ending with m-3')
     concprcp_flags = data.data_flagged[concprcp_var]
 
-    pr_unit = data.get_unit('pr')
+    pr_unit = data.get_unit(pr_var)
     if not pr_unit == 'm':
-        data.convert_unit('pr', 'm')
-    pr_data = data['pr']
-    pr_flags = data.data_flagged['pr']
+        data.convert_unit(pr_var, 'm')
+    pr_data = data[pr_var]
+    pr_flags = data.data_flagged[pr_var]
     # check where precip data is zero (it did not rain!) and for each of
     # these timestamps, set concprcp to 0 (it should be 0 if there is no
     # rain...) and set flags in concprcp to False (these data are to be used
@@ -462,6 +490,12 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var):
 def compute_wetoxs_from_concprcpoxs(data):
     """Compute wdep from conc in precip and precip data
 
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
     Parameters
     ----------
     StationData
@@ -469,16 +503,23 @@ def compute_wetoxs_from_concprcpoxs(data):
 
     Returns
     -------
-    StationData
-        modified data object containing wdep data
+    numpy.ndarray
+        array with wet deposition values
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetoxs', 'concprcpoxs')
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxs', 'concprcpoxs',
+                                              'pr')
 
 
 def compute_wetoxn_from_concprcpoxn(data):
     """Compute wdep from conc in precip and precip data
 
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
     Parameters
     ----------
     StationData
@@ -486,16 +527,23 @@ def compute_wetoxn_from_concprcpoxn(data):
 
     Returns
     -------
-    StationData
-        modified data object containing wdep data
+    numpy.ndarray
+        array with wet deposition values
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetoxn', 'concprcpoxn')
+    return _compute_wdep_from_concprcp_helper(data, 'wetoxn', 'concprcpoxn',
+                                              'pr')
 
 
 def compute_wetrdn_from_concprcprdn(data):
     """Compute wdep from conc in precip and precip data
 
+    Note
+    ----
+    In addition to the returned numpy array, the input instance of
+    :class:`StationData` is modified by additional metadata and flags for
+    the new variable. See also :func:`_compute_wdep_from_concprcp_helper`.
+
     Parameters
     ----------
     StationData
@@ -503,11 +551,12 @@ def compute_wetrdn_from_concprcprdn(data):
 
     Returns
     -------
-    StationData
-        modified data object containing wdep data
+    numpy.ndarray
+        array with wet deposition values
 
     """
-    return _compute_wdep_from_concprcp_helper(data, 'wetrdn', 'concprcprdn')
+    return _compute_wdep_from_concprcp_helper(data, 'wetrdn', 'concprcprdn',
+                                              'pr')
 
 
 def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
@@ -561,7 +610,6 @@ def vmrx_to_concx(data, p_pascal, T_kelvin, vmr_unit, mmol_var, mmol_air=None,
 def concx_to_vmrx(data, p_pascal, T_kelvin, conc_unit, mmol_var, mmol_air=None,
                   to_unit=None):
     """
-    WORK IN PROGRESS. DO NOT USE!
     Convert mass concentration to volume mixing ratio (vmr)
 
     Parameters

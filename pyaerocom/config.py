@@ -29,7 +29,7 @@ from pyaerocom.exceptions import (DataSourceError, DataIdError)
 from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 
-from pyaerocom.variable import VarCollection
+from pyaerocom.varcollection import VarCollection
 from configparser import ConfigParser
 
 class Config(object):

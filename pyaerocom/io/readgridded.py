@@ -46,7 +46,7 @@ import xarray as xr
 
 from pyaerocom import const, print_log, logger
 from pyaerocom.metastandards import AerocomDataID
-from pyaerocom.variable import Variable, is_3d
+from pyaerocom.variable import Variable
 from pyaerocom.tstype import TsType
 from pyaerocom.io.aux_read_cubes import (compute_angstrom_coeff_cubes,
                                          multiply_cubes,
@@ -73,7 +73,9 @@ from pyaerocom.io import AerocomBrowser
 from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
 from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units_helpers import compute_concprcp_from_pr_and_wetdep
+from pyaerocom._concprcp_units_helpers import \
+    compute_concprcp_from_pr_and_wetdep
+
 
 class ReadGridded(object):
     """Class for reading gridded files based on network or model ID
@@ -2102,3 +2104,4 @@ if __name__=="__main__":
     print(reader)
 
     data = reader.read_var('od550aer', start=9999)
+is_3d = lambda var_name: True if '3d' in var_name.lower() else False

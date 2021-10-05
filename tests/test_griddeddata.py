@@ -51,8 +51,8 @@ def test_GriddedData_var_name_aerocom(var_name, var_name_aerocom, raises):
         assert data.var_name_aerocom == var_name_aerocom
 
 @pytest.mark.parametrize('var_name, raises', [
-    ('od550aer',does_not_raise_exception()),
     ('manamana',pytest.raises(VariableDefinitionError)),
+    ('od550aer',does_not_raise_exception()),
     ])
 def test_GriddedData_var_info(var_name, raises):
     data = GriddedData()

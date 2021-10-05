@@ -204,9 +204,9 @@ def check_and_regrid_lons_cube(cube):
 def check_dim_coord_names_cube(cube):
 
     from pyaerocom import const
-    coords = dict(lon = const.COORDINFO.lon,
-                  lat = const.COORDINFO.lat,
-                  time = const.COORDINFO.time)
+    coords = dict(lon = const.COORDINFO['lon'],
+                  lat = const.COORDINFO['lat'],
+                  time = const.COORDINFO['time'])
 
     for coord in cube.dim_coords:
         cv, cs, cn = coord.var_name, coord.standard_name, coord.long_name
