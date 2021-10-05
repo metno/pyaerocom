@@ -1,25 +1,51 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-
-"""
 from pyaerocom.plot.mapping import init_map
 import cartopy
 
-def plot_coordinates(lons, lats, xlim=(-180, 180), ylim=(-90, 90),
-                     label=None, legend=True, color='r', marker='o',
-                     markersize=8, fontsize_base=10,
-                     ax=None, **kwargs):
+def plot_coordinates(lons, lats, xlim=None, ylim=None,
+                     label=None, legend=True, color=None, marker=None,
+                     markersize=8, ax=None, **kwargs):
     """Plot input coordinates on a map
 
-    lons : :obj:`ndarray`
+    lons : ndarray
         array of longitude coordinates (can also be list or tuple)
-    lats : :obj:`ndarray`
+    lats : ndarray
         array of latitude coordinates (can also be list or tuple)
+    xlim : tuple
+        longitude range
+    ylim : tuple
+        latitude range
+    label : str, optional
+        label of data
+    legend : bool
+        whether or not to display a legend, defaults to True.
+    color : str, optional
+        color of markers, defaults to red
+    marker : str, optional
+        marker shape, defaults to 'o'
+    markersize : int
+        size of markers
+    ax : GeoAxes
+        axes instance to be plotted into
+    **kwargs
+        additional keyword args passed on to :func:`init_map`
+
+    Returns
+    -------
+    GeoAxes
 
     """
+    if xlim is None:
+        xlim = (-180, 180)
+    if ylim is None:
+        ylim = (-90, 90)
+    if color is None:
+        color = 'r'
+    if marker is None:
+        marker = 'o'
+
     if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
         ax = init_map(xlim, ylim, ax=ax, **kwargs)
+
 
     if label is None:
         label = '{} stations'.format(len(lons))
@@ -31,21 +57,3 @@ def plot_coordinates(lons, lats, xlim=(-180, 180), ylim=(-90, 90),
         ax.legend()
 
     return ax
-
-if __name__ == '__main__':
-    import pyaerocom as pya
-    import matplotlib.pyplot as plt
-    plt.close('all')
-    r = pya.io.ReadUngridded()
-
-    d = r.read(pya.const.AERONET_SUN_V3L2_AOD_DAILY_NAME,
-               vars_to_retrieve=['od550aer'])
-
-    d1 = r.read('EBASMC', vars_to_retrieve=['scatc550aer'])
-
-    ax = plot_coordinates(d.longitude, d.latitude, label='AERONET L2V3',
-                          legend=False)
-
-    ax = plot_coordinates(d1.longitude, d1.latitude, label='EBAS',
-                          legend=True, ax=ax,
-                          color='lime', markersize=22, marker='^')
