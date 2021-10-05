@@ -396,7 +396,7 @@ def _add_cbar_axes(ax):#, where='right'):
                             _loc.y0, .02, _loc.y1 - _loc.y0])
     return ax_cbar
 
-def plot_map_aerocom(data, region=None, fig=None, **kwargs):
+def plot_map_aerocom(data, region, **kwargs):
     """High level map plotting function for Aerocom default plotting
 
     Note
@@ -406,34 +406,36 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
 
     Parameters
     ----------
-    data : :obj:`GriddedData`
+    data : GriddedData
         input data from one timestamp (if data contains more than one time
         stamp, the first index is used)
-
-    TODO
-        finish docstring
+    region : str or Region
+        valid region ID or region
 
     """
     from pyaerocom import GriddedData
     if not isinstance(data, GriddedData):
-        raise TypeError("This plotting method needs an instance of pyaerocom "
+        raise ValueError("This plotting method needs an instance of pyaerocom "
                          "GriddedData on input, got: %s" %type(data))
-    if region:
-        if isinstance(region, str):
-            region = Region(region)
-        if not isinstance(region, Region):
-            raise TypeError("Invalid input for region, need None, str or Region")
-        data = data.crop(region=region)
-    if not data.suppl_info["region"]:
-        data = data.crop(region="WORLD")
-    region = data.suppl_info["region"]
+
+    if isinstance(region, str):
+        region = Region(region)
+    elif not isinstance(region, Region):
+        raise ValueError("Invalid input for region, need None, str or Region")
+
+    data = data.filter_region(region.region_id)
     s = data.plot_settings
+
+    vmin, vmax, levs = s.vmin, s.vmax, None
+    if isinstance(s.map_cbar_levels, list) and len(s.map_cbar_levels) > 0:
+        vmin,vmax=None,None
+        levs = s.map_cbar_levels
     fig = plot_griddeddata_on_map(data,
                                   xlim=region.lon_range_plot,
                                   ylim=region.lat_range_plot,
-                                  vmin=s.map_vmin, vmax=s.map_vmax,
+                                  vmin=vmin, vmax=vmax,
                                   c_over=s.map_c_over, c_under=s.map_c_under,
-                                  cbar_levels=s.map_cbar_levels,
+                                  cbar_levels=levs,
                                   xticks = region.lon_ticks,
                                   yticks = region.lat_ticks,
                                   cbar_ticks=s.map_cbar_ticks, **kwargs)
@@ -460,66 +462,28 @@ def plot_map_aerocom(data, region=None, fig=None, **kwargs):
                 bbox=dict(boxstyle='square',
                           facecolor='none',
                           edgecolor='black'))
-    ax.set_title("{} {} mean {:.3f}".format(data.var_name.upper(),
-                 to_datetime(data.start).strftime("%Y%m%d"),
-                 data.area_weighted_mean()))
+
+    var = data.var_name.upper()
+    avg = data.mean()
+    start = to_datetime(data.start).strftime("%Y%m%d")
+    tit = f'{var} {start} mean {avg:.3f}'
+    ax.set_title(tit)
     return fig
 
-def plot_map(data, *args, **kwargs):
-    """Map plot of grid data
-
-    Note
-    ----
-    Deprecated name of method. Please use :func:`plot_griddeddata_on_map` in
-    the future.
-
-    Parameters
-    ----------
-    data
-        data (2D numpy array or instance of GriddedData class. The latter is
-        deprecated, but will continue to work)
-    *args, **kwargs
-        See :func:`plot_griddeddata_on_map`
-
-    Returns
-    -------
-    See :func:`plot_griddeddata_on_map`
-    """
-    from pyaerocom import print_log, GriddedData
-    print_log.warning(DeprecationWarning('Method name plot_map is deprecated. '
-                                         'Please use plot_griddeddata_on_map'))
-    if isinstance(data, GriddedData):
-        if 'time' in data and len(data['time'].points) > 1:
-            logger.warning("Input data contains more than one time stamp, using "
-                           "first time stamp")
-            data = data[0]
-        if not all([x in data for x in ('longitude', 'latitude')]):
-            raise AttributeError('GriddedData does not contain either longitude '
-                                 'or latitude coordinates')
-        return plot_griddeddata_on_map(data.grid.data,
-                                       data.longitude.points,
-                                       data.latitude.points,
-                                       *args, **kwargs)
-    return plot_griddeddata_on_map(data, *args, **kwargs)
 
 def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
-                                vmax=100, cmap='bwr', s=80, marker='o',
+                                vmax=100, cmap=None, s=80, marker=None,
                                 step_bounds=None, add_cbar=True,
                                 norm=None,
-                                cbar_extend='both',
+                                cbar_extend=None,
                                 add_mean_edgecolor=True,
                                 ax=None, ax_cbar=None,
                                 cbar_outline_visible=False,
-                                cbar_orientation='vertical',
-                                ref_label=None, data_label=None,
+                                cbar_orientation=None,
+                                ref_label=None,
                                 stats_area_weighted=False,
                                 **kwargs):
     """Plot map of normalised mean bias from instance of ColocatedData
-
-    Note
-    ----
-    THIS IS A BETA FEATURE AND WILL BE GENERALISED IN THE FUTURE FOR OTHER
-    STATISTICAL PARAMETERS
 
     Parameters
     ----------
@@ -547,6 +511,8 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         axes for colorbar
     cbar_outline_visible : bool
         if False, borders of colorbar are removed
+    cbar_orientation : str
+        e.g. 'vertical', defaults to 'vertical'
     **kwargs
         keyword args passed to :func:`init_map`
 
@@ -554,6 +520,14 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
     -------
     GeoAxes
     """
+    if cbar_extend is None:
+        cbar_extend='both'
+    if cbar_orientation is None:
+        cbar_orientation = 'vertical'
+    if cmap is None:
+        cmap = 'bwr'
+    if marker is None:
+        marker = 'o'
     try:
         mec = kwargs.pop('mec')
     except KeyError:
@@ -566,6 +540,10 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         mew = kwargs.pop('mew')
     except KeyError:
         mew = 1
+    if not coldata.ndim in (3,4):
+        raise DataDimensionError('only 3D or 4D colocated data objects are '
+                                 'supported')
+    assert 'time' in coldata.dims
 
     mean_bias = coldata.calc_nmb_array()
 
@@ -575,17 +553,13 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
          data) = mean_bias.latitude, mean_bias.longitude, mean_bias.data
     elif 'latitude' in mean_bias.dims and 'longitude' in mean_bias.dims:
         stacked = mean_bias.stack(latlon=['latitude', 'longitude'])
-        valid = ~stacked.isnull()#.all(dim='time')
+        valid = ~stacked.isnull()
         coords = stacked.latlon[valid].values
         lats, lons = list(zip(*list(coords)))
         data = stacked.data[valid]
-    else:
-        raise NotImplementedError('Dimension error...')
 
     if ref_label is None:
         ref_label = coldata.metadata['data_source'][0]
-    if data_label is None:
-        data_label = coldata.metadata['data_source'][1]
 
     if in_percent:
         data *= 100
@@ -628,52 +602,3 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         cbar.set_label('NMB [%]')
 
     return ax
-
-if __name__ == "__main__":
-
-    plt.close('all')
-
-    import pyaerocom as pya
-    import pandas as pd
-
-    temp = pya.io.ReadGridded('ERA5').read_var('ta').resample_time('yearly')
-
-    ax = plot_griddeddata_on_map(temp)
-
-    raise Exception
-
-    #fig, axm, axc = init_multimap_grid_v0(5, 3, add_cbar_axes=True)
-
-    reader = pya.io.ReadGridded('OsloCTM3v1.01-met2010_AP3-CTRL')
-
-    data = reader.read_var('ec550dryaer', ts_type='monthly')
-
-    #plot_griddeddata_on_map(data, ax=axm[0][0], ax_cbar=axc[0][0])
-
-    fig, axgr = init_multimap_grid(3,4, figsize=(18, 7), axes_pad_hor=0.6,
-                                   axes_pad_vert=0.5, cbar_mode='each')
-    for ax in axgr:
-        ax.coastlines()
-
-    vmin, vmax = 0, np.ceil(data.max()/100)*100
-    ts = data.time_stamps()
-    for i in range(12):
-        cax = axgr.cbar_axes[i]
-        ax = axgr[i]
-        plot_griddeddata_on_map(data[i], ax=ax, ax_cbar=cax,
-                                vmin=vmin, vmax=vmax, discrete_norm=True)
-
-        ax.set_title(pd.Timestamp(ts[i]).strftime('%B %Y'),
-                     fontsize=10)
-
-    fig = plt.figure(figsize=(18, 7))
-    axes_class = (GeoAxes, dict(map_projection=ccrs.PlateCarree()))
-
-    axgr = AxesGrid(fig, 111, axes_class=axes_class,
-                    nrows_ncols=(3, 4),
-                    axes_pad=(0.6, 0.5),
-                    cbar_location='right',
-                    cbar_mode="each",
-                    cbar_pad="5%",
-                    cbar_size='3%',
-                    label_mode='')  # note the empty label_mode

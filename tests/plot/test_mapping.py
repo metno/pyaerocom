@@ -108,3 +108,36 @@ def test_plot_griddeddata_on_map(data_tm5,data,args,raises):
     with raises:
         val = mod.plot_griddeddata_on_map(data, **args)
         assert isinstance(val, Figure)
+
+@pytest.mark.parametrize('region,kwargs,raises', [
+    ('WORLD',{},does_not_raise_exception()),
+    ('EUROPE',{},does_not_raise_exception()),
+    ('PAN',{},does_not_raise_exception()),
+
+
+
+])
+def test_plot_map_aerocom(data_tm5,region,kwargs,raises):
+    with pytest.raises(ValueError):
+        mod.plot_map_aerocom(42, 'WORLD')
+    with raises:
+        val = mod.plot_map_aerocom(data_tm5,region,**kwargs)
+        assert isinstance(val, Figure)
+
+def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet):
+    val = mod.plot_nmb_map_colocateddata(coldata_tm5_aeronet)
+    assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
+
+def test_plot_nmb_map_colocateddata4D(coldata_tm5_tm5):
+    val = mod.plot_nmb_map_colocateddata(coldata_tm5_tm5)
+    assert isinstance(val, cartopy.mpl.geoaxes.GeoAxes)
+
+def test_plot_nmb_map_colocateddataFAIL(coldata):
+    cd = coldata['fake_5d']
+    with pytest.raises(DataDimensionError):
+        mod.plot_nmb_map_colocateddata(cd)
+    cd = coldata['fake_nodims']
+    with pytest.raises(AssertionError):
+        mod.plot_nmb_map_colocateddata(cd)
+
+
