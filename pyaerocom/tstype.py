@@ -220,7 +220,7 @@ class TsType(object):
         if not base in self.TO_SI:
             raise ValueError(f'Cannot convert ts_type={self} to SI unit string...')
         si = self.TO_SI[base]
-        return si if self.mulfac == 1 else f'{self.mulfac}{si}'
+        return si if self.mulfac == 1 else f'({self.mulfac}{si})'
 
     def get_min_num_obs(self, to_ts_type : 'TsType', min_num_obs : dict) -> int:
         selfstr = self.val

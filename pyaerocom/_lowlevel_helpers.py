@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Small helper utility functions for pyaerocom
 """
@@ -43,6 +41,36 @@ def write_json(data_dict, file_path, **kwargs):
     """
     with open(file_path, 'w') as f:
         simplejson.dump(data_dict, f, **kwargs)
+
+def check_make_json(fp, indent=4):
+    """
+    Make sure input json file exists
+
+    Parameters
+    ----------
+    fp : str
+        filepath to be checked (must end with .json)
+    indent : int
+        indentation of json file
+
+    Raises
+    ------
+    ValueError
+        if filepath does not exist.
+
+    Returns
+    -------
+    str
+        input filepath.
+
+    """
+    fp = str(fp)
+    if not fp.endswith('.json'):
+        raise ValueError('Input filepath must end with .json')
+    if not os.path.exists(fp):
+        print_log.info(f'Creating empty json file: {fp}')
+        write_json({}, fp, indent=indent)
+    return fp
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions
@@ -200,7 +228,7 @@ class EitherOf(Validator):
 
     def validate(self, val):
         if not any([x==val for x in self._allowed]):
-            raise ValueError(f'inalid value {val}, needs to be either '
+            raise ValueError(f'invalid value {val}, needs to be either '
                              f'of {self._allowed}.')
         return val
 
@@ -346,13 +374,9 @@ class BrowseDict(MutableMapping):
             if len(key) > self.MAXLEN_KEYS:
                 raise KeyError(
                     f'key {key} exceeds max length of {self.MAXLEN_KEYS}')
-            for char in self.FORBIDDEN_CHARS_KEYS:
-                if char in key:
-                    raise KeyError(
-                    f'key {key} must not contain char {char}')
+            if key in self.FORBIDDEN_CHARS_KEYS:
+                raise KeyError(f'invalid key {key}')
         setattr(self, key, val)
-        #self.__dict__[key] = val
-
 
     def _setitem_checker(self, key, val):
         return key, val, True
@@ -432,6 +456,8 @@ class BrowseDict(MutableMapping):
         for key, val in other.items():
             if key in self:
                 self[key] = val
+            elif key in self.FORBIDDEN_CHARS_KEYS:
+                raise KeyError(f'invalid key {key}')
 
     def pretty_str(self):
         return dict_to_str(self.to_dict())

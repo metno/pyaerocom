@@ -29,7 +29,7 @@ from pyaerocom.exceptions import (DataSourceError, DataIdError)
 from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 
-from pyaerocom.variable import VarCollection
+from pyaerocom.varcollection import VarCollection
 from configparser import ConfigParser
 
 class Config(object):
@@ -409,11 +409,7 @@ class Config(object):
         if self._local_tmp_dir is None:
             self._local_tmp_dir = '{}/tmp'.format(self.OUTPUTDIR)
         if not self._check_access(self._local_tmp_dir):
-            try:
-                os.mkdir(self._local_tmp_dir)
-            except Exception:
-                raise FileNotFoundError('const.LOCAL_TMP_DIR {} is not set or '
-                                        'does not exist and cannot be created')
+            os.makedirs(self._local_tmp_dir, exist_ok=True)
         return self._local_tmp_dir
 
     @LOCAL_TMP_DIR.setter
@@ -674,6 +670,10 @@ class Config(object):
         obs_aux_units : dict, optional
             output units of auxiliary variables (only needed for varibales
             that are derived via `merge_how='eval'`)
+        **kwargs
+            additional keyword arguments (unused, but serves the purpose to
+            allow for parsing info from dictionaries and classes that
+            contain additional attributes than the ones needed here).
 
         Raises
         ------
@@ -687,8 +687,8 @@ class Config(object):
 
         """
         if obs_id in self.OBS_IDS_UNGRIDDED:
-            raise ValueError('Network with ID {} is already registered...'
-                                 .format(obs_id))
+            raise ValueError(
+                f'Network with ID {obs_id} is already registered...')
         elif obs_aux_units is None:
             obs_aux_units = {}
         # this class will do the required sanity checking and will only

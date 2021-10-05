@@ -1,19 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 15 14:00:44 2019
+from traceback import format_exc
 
-ToDo
-----
-- the configuration classes could inherit from a base class or could be more unified
-
-"""
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings
+from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrType
+from pyaerocom.exceptions import InitialisationError
 from pyaerocom.metastandards import DataSource
-from pyaerocom.aeroval._lowlev import EvalEntry
 
-class ObsEntry(EvalEntry, BrowseDict):
+class ObsEntry(BrowseDict):
     """Observation configuration for evaluation (dictionary)
 
     Note
@@ -68,6 +60,7 @@ class ObsEntry(EvalEntry, BrowseDict):
     SUPPORTED_VERT_LOCS = DataSource.SUPPORTED_VERT_LOCS
 
     obs_vars = ListOfStrings()
+    obs_vert_type = StrType()
     def __init__(self, **kwargs):
 
         self.obs_id = ''
@@ -85,6 +78,23 @@ class ObsEntry(EvalEntry, BrowseDict):
 
         self.update(**kwargs)
         self.check_cfg()
+        self.check_add_obs()
+
+    def check_add_obs(self):
+        """Check if this dataset is an auxiliary post dataset"""
+        if len(self.obs_aux_requires) > 0:
+            if not self.obs_type == 'ungridded':
+                raise NotImplementedError(
+                    'Cannot initialise auxiliary setup for {}. Aux obs reading '
+                    'is so far only possible for ungridded observations.'
+                        .format(self.obs_id))
+            if not self.obs_id in const.OBS_IDS_UNGRIDDED:
+                try:
+                    const.add_ungridded_post_dataset(**self)
+                except Exception:
+                    raise InitialisationError(
+                        'Cannot initialise auxiliary reading setup for {}. '
+                        'Reason:\n{}'.format(self.obs_id, format_exc()))
 
     def get_all_vars(self) -> list:
         """
@@ -97,6 +107,17 @@ class ObsEntry(EvalEntry, BrowseDict):
 
         """
         return self.obs_vars
+
+    def has_var(self, var_name):
+        """
+        Check if input variable is defined in entry
+
+        Returns
+        -------
+        bool
+            True if entry has variable available, else False
+        """
+        return True if var_name in self.get_all_vars() else False
 
     def get_vert_code(self, var):
         """Get vertical code name for obs / var combination"""

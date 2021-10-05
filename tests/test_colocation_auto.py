@@ -1,7 +1,7 @@
-import numpy as np
-import numpy.testing as npt
 import os
 
+import numpy as np
+import numpy.testing as npt
 import pytest
 
 from pyaerocom import ColocatedData, GriddedData, UngriddedData
@@ -10,7 +10,7 @@ from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
 
-from .conftest import does_not_raise_exception, tda, testdata_unavail
+from .conftest import data_unavail, does_not_raise_exception, tda
 
 HOME = os.path.expanduser('~')
 COL_OUT_DEFAULT = os.path.join(HOME, 'MyPyaerocom/colocated_data')
@@ -23,7 +23,7 @@ default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': [],
                  'obs_use_climatology': False, '_obs_cache_only': False,
                  'obs_vert_type': None, 'obs_ts_type_read': None,
                  'obs_filters': {}, 'model_name': None,
-                 'model_data_dir': None, 'model_vert_type_alt': None,
+                 'model_data_dir': None,
                  'model_read_opts': {}, 'read_opts_ungridded': {},
                  'model_use_vars': {}, 'model_rename_vars': {},
                  'model_add_vars': {}, 'model_to_stp': False,
@@ -39,7 +39,7 @@ default_setup = {'model_id': None, 'obs_id': None, 'obs_vars': [],
                  'reanalyse_existing': True, 'raise_exceptions': False,
                  'keep_data': True, 'add_meta': {}}
 
-@testdata_unavail
+@data_unavail
 @pytest.fixture(scope='function')
 def tm5_aero_stp():
     return dict(
@@ -67,6 +67,17 @@ def test_colocation_setup(stp, should_be):
         else:
             assert val == stp[key], key
 
+@pytest.mark.parametrize('key,val,raises', [
+    ('obs_vars', 42, pytest.raises(ValueError)),
+    ('var_ref_outlier_ranges', [41, 42], pytest.raises(KeyError)),
+    ('var_outlier_ranges', [41, 42], pytest.raises(KeyError)),
+    ('remove_outliers', True, pytest.raises(KeyError)),
+
+])
+def test_ColocationSetup_invalid_input(key,val,raises):
+    with raises:
+        stp = ColocationSetup(**{key:val})
+        assert stp[key] == val
 
 def test_Colocator__obs_vars__setter(col):
     col.obs_vars = 'var'
@@ -312,7 +323,7 @@ def test_colocator__find_var_matches_model_add_vars():
     assert var_matches == {'abs550aer':ovar, ovar:ovar}
 
 
-@testdata_unavail
+@data_unavail
 def test_colocator_instantiate_gridded_reader(path_emep):
     col = Colocator(gridded_reader_id={'model':'ReadMscwCtm', 'obs':'ReadGridded'})
     col.filepath = path_emep['daily']
@@ -324,7 +335,7 @@ def test_colocator_instantiate_gridded_reader(path_emep):
     assert r.data_id == model_id
 
 
-@testdata_unavail
+@data_unavail
 def test_colocator_instantiate_gridded_reader_model_data_dir(path_emep):
     col = Colocator(gridded_reader_id={'model':'ReadMscwCtm', 'obs':'ReadGridded'})
     model_data_dir = path_emep['data_dir']

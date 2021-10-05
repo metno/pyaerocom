@@ -175,12 +175,12 @@ def test_TsType_to_pandas_freq(tst, val, raises):
 
 @pytest.mark.parametrize('ts_type, value, raises', [
     ('hourly', 'h', does_not_raise_exception()),
-    ('3hourly', '3h', does_not_raise_exception()),
+    ('3hourly', '(3h)', does_not_raise_exception()),
     ('daily', 'd', does_not_raise_exception()),
     ('minutely', 'min', does_not_raise_exception()),
     ('weekly', 'week', does_not_raise_exception()),
     ('monthly', 'month',does_not_raise_exception()),
-    ('4weekly', '4week', does_not_raise_exception()),
+    ('4weekly', '(4week)', does_not_raise_exception()),
     ('native', None, pytest.raises(ValueError))
     ])
 def test_TsType_to_si(ts_type, value, raises):

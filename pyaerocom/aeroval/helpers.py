@@ -1,18 +1,20 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 15 14:00:44 2019
-
-TO BE DELETED
-"""
 import os, glob
 
 from pyaerocom import const
+from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.helpers import start_stop_str
 from pyaerocom._lowlevel_helpers import sort_dict_by_name, read_json, write_json
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import TemporalResolutionError
+
+
+def check_var_ranges_avail(model_data, var_name):
+    try:
+        VarinfoWeb(var_name)
+        return True
+    except AttributeError:
+        model_data.register_var_glob(delete_existing=True)
 
 # ToDo: rewrite or delete before v0.12.0
 def make_info_str_eval_setup(stp, add_header=True):

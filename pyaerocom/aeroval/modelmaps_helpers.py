@@ -1,3 +1,4 @@
+import dask
 import matplotlib
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -57,6 +58,8 @@ def griddeddata_to_jsondict(data, lat_res_deg=5, lon_res_deg=5):
     output['metadata']['units'] = str(data.units)
 
     nparr = stacked.data.astype(float)
+    if isinstance(nparr, dask.array.core.Array):
+        nparr = nparr.compute()
     for i, (lat, lon) in enumerate(stacked.station_name.values):
 
         coord = lat, lon
@@ -137,21 +140,3 @@ def calc_contour_json(data, cmap, cmap_bins):
 
     plt.close('all')
     return geojson
-
-if __name__ == '__main__':
-    import pyaerocom as pya
-    dd = '/home/jonasg/MyPyaerocom/AEROCOM-MEDIAN-2x3-GLISSETAL2020-1_AP3-CTRL/renamed'
-    reader = pya.io.ReadGridded('AEROCOM-MEDIAN-2x3-GLISSETAL2020-1_AP3-CTRL',
-                              data_dir=dd)
-
-    data = reader.read_var('od550aer', start=2010)
-
-    griddeddata_to_jsondict(data)
-
-
-
-
-
-
-
-

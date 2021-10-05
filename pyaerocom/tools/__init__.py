@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu May 27 11:34:57 2021
-
-@author: jonasg
-"""
 def browse_database(*args, **kwargs):
     from pyaerocom.io.utils import browse_database
     return browse_database(*args, **kwargs)

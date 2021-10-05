@@ -1,33 +1,19 @@
-import os
-
-import pyaerocom
-import pyaerocom.exceptions as exc
+import os, cf_units
+import numpy as np
 import pytest
 import xarray as xr
 
+import pyaerocom.exceptions as exc
 from pyaerocom.griddeddata import GriddedData
+from pyaerocom import get_variable
 from pyaerocom.io.read_mscw_ctm import (
     ReadEMEP,
     ReadMscwCtm,
-    calc_concNhno3,
-    calc_concNnh3,
-    calc_concNnh4,
-    calc_concNno3pm10,
-    calc_concNno3pm25,
-    calc_concNtnh,
-    calc_conNtno3,
-    update_EC_units,
 )
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import EMEP_DIR, does_not_raise_exception, lustre_unavail, testdata_unavail
-
-
-if pyaerocom.const._check_access(f'/home/{pyaerocom.const.user}/lustre/'):
-    PREFACE = f'/home/{pyaerocom.const.user}/lustre/'
-else:
-    PREFACE = '/lustre'
-TESTPATH_LUSTRE = f'{PREFACE}/storeB/project/fou/kl/emep/ModelRuns/2021_REPORTING/TRENDS/2019/'
+from ..conftest import (EMEP_DIR, does_not_raise_exception,
+                        data_unavail)
 
 VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm', 
            'absc550aer': 'AbsCoeff', 'absc550dryaer': 'AbsCoeff', 
@@ -62,7 +48,7 @@ VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm',
            'concpm10': 'SURF_ug_PM10_rh50', 'concpm25': 'SURF_ug_PM25_rh50', 
            'concrdn': 'SURF_ugN_RDN', 'concso2': 'SURF_ug_SO2', 
            'concso4': 'SURF_ug_SO4', 'concss': 'SURF_ug_SS', 
-           'concsspm25': 'SURF_ug_SEASALT_F', 
+           'concssf': 'SURF_ug_SEASALT_F', 
            'concCocpm25': 'SURF_ugC_PM_OM25', 'vmro32m': 'SURF_2MO3', 
            'vmro3max': 'SURF_MAXO3', 'vmro3': 'SURF_ppb_O3', 
            'vmrco': 'SURF_ppb_CO', 'vmrc2h6': 'SURF_ppb_C2H6', 
@@ -72,128 +58,9 @@ VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm',
            'wetno3': 'WDEP_TNO3', 'wetoa': 'WDEP_OM25', 'wetoxn': 'WDEP_OXN', 
            'wetrdn': 'WDEP_RDN', 'wetso2': 'WDEP_SO2', 'wetso4': 'WDEP_SO4', 
            'wetoxs': 'WDEP_SOX', 'wetss': 'WDEP_SS', 'z3d': 'Z_MID', 
-           'pr': 'WDEP_PREC', 'concecpm25':'SURF_ug_ECFINE',
+           'prmm': 'WDEP_PREC', 'concecpm25':'SURF_ug_ECFINE',
            'concssc': 'SURF_ug_SEASALT_C','dryoxn': 'DDEP_OXN_m2Grid',
            'dryoxs': 'DDEP_SOX_m2Grid','dryrdn': 'DDEP_RDN_m2Grid'}
-
-
-def test_calc_concNhno3():
-    
-    conchno3 = _create_fake_MSCWCtm_data()
-    
-    concNhno3_from_func = calc_concNhno3(conchno3)
-        
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-    
-    concNhno3 = conchno3*(M_N / (M_H + M_N + M_O * 3))
-    concNhno3.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNhno3, concNhno3_from_func)
-
-def test_calc_concNno3pm10():
-    
-    concno3c = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
-    
-    concNno3pm10_from_func = calc_concNno3pm10(concno3f,concno3c)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-    
-    fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + concno3c
-    concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
-    concNno3pm10.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNno3pm10,concNno3pm10_from_func)
-    
-def test_calc_concNno3pm25():
-    
-    concno3c = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
-    
-    concNno3pm10_from_func = calc_concNno3pm25(concno3f,concno3c)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-    
-    fac = M_N / (M_N + 3*M_O)
-    concno3pm10 = concno3f + 0.134*concno3c
-    concNno3pm10 = concno3pm10*fac
-    concNno3pm10.attrs['var_name'] = 'concNno3pm10'
-    concNno3pm10.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNno3pm10,concNno3pm10_from_func)
-    
-def test_calc_conNtno3():
-    
-    conchno3 = _create_fake_MSCWCtm_data()
-    concno3f = _create_fake_MSCWCtm_data()
-    concno3c = _create_fake_MSCWCtm_data()
-    
-    concNtno3_from_func = calc_conNtno3(conchno3,concno3f,concno3c)
-    
-    concNhno3 = calc_concNhno3(conchno3)
-    concNno3pm10 = calc_concNno3pm10(concno3f,concno3c)
-    
-    concNtno3 = concNhno3 + concNno3pm10
-    concNtno3.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNtno3,concNtno3_from_func)
-    
-def test_calc_concNtnh():
-    concnh3 = _create_fake_MSCWCtm_data()
-    concnh4 = _create_fake_MSCWCtm_data()
-    
-    concNtnh_from_func = calc_concNtnh(concnh3,concnh4)
-    
-    concNnh3 = calc_concNnh3(concnh3)
-    concNnh4 = calc_concNnh4(concnh4)
-    
-    concNtnh = concNnh3 + concNnh4
-    concNtnh.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNtnh, concNtnh_from_func)
-
-def test_calc_concNnh3():
-    concnh3 = _create_fake_MSCWCtm_data()
-    
-    concNnh3_from_func = calc_concNnh3(concnh3)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-        
-    concNnh3 = concnh3*(M_N / (M_H * 3 + M_N))
-    concNnh3.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNnh3, concNnh3_from_func)
-     
-
-def test_calc_concNnh4():
-    concnh4 = _create_fake_MSCWCtm_data()
-    
-    concNnh4_from_func = calc_concNnh4(concnh4)
-    
-    M_N = 14.006
-    M_O = 15.999
-    M_H = 1.007
-        
-    concNnh4 = concnh4*(M_N / (M_H * 4 + M_N))
-    concNnh4.attrs['units'] = 'ug N m-3'
-    xr.testing.assert_allclose(concNnh4, concNnh4_from_func)
-
-    
-def test_update_EC_units():
-    
-    concecpm25 = _create_fake_MSCWCtm_data()
-    
-    concCecpm25_from_func = update_EC_units(concecpm25)
-    
-    concCecpm25 = concecpm25
-    concCecpm25.attrs['units'] = 'ug C m-3'
-    
-    xr.testing.assert_allclose(concCecpm25, concCecpm25_from_func)
-    assert concCecpm25.units == concCecpm25_from_func.units
 
 @pytest.fixture(scope='module')
 def reader():
@@ -265,7 +132,7 @@ def test_ReadMscwCtm_var_map():
     assert isinstance(var_map, dict)
     assert var_map == VAR_MAP
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
     ('blaaa', 'daily', pytest.raises(exc.VariableDefinitionError)),
     ('od550gt1aer', 'daily', pytest.raises(exc.VarNotAvailableError)),
@@ -283,7 +150,7 @@ def test_ReadMscwCtm_read_var(path_emep,var_name,ts_type,raises):
         assert data.ts_type is not None
         assert data.ts_type == r.ts_type
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('var_name, ts_type, raises', [
     ('blaaa', 'daily', pytest.raises(KeyError)),
     ('concpmgt25', 'daily', does_not_raise_exception()),
@@ -294,29 +161,8 @@ def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
     with raises:
         data = r._compute_var(var_name, ts_type)
         assert isinstance(data, xr.DataArray)
- 
-@lustre_unavail
-@pytest.mark.parametrize('path,var_name, ts_type, raises', [
-    (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNtno3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNtnh', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNnh3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNnh4', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNhno3', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNno3pm10', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concNno3pm25', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concsspm10', 'monthly', does_not_raise_exception()),
-    (TESTPATH_LUSTRE,'concCecpm25', 'monthly', does_not_raise_exception()),
-    ])        
-def test_ReadMscwCtm__compute_var_v2(path,var_name,ts_type,raises):
-    r = ReadMscwCtm(filepath=f'{path}/Base_month.nc')
-    ts_type  = 'monthly'
-    with raises:
-        data = r._compute_var(var_name,ts_type)
-        assert isinstance(data, xr.DataArray)
-        
 
-@testdata_unavail
+@data_unavail
 def test_ReadMscwCtm_data(path_emep):
     path = path_emep['daily']
     r = ReadMscwCtm(filepath=path)
@@ -338,7 +184,7 @@ def test_ReadMscwCtm_data(path_emep):
     assert data.ts_type=='daily'
 
 
-@testdata_unavail
+@data_unavail
 def test_ReadMscwCtm_directory(path_emep):
     data_dir = path_emep['data_dir']
     r = ReadMscwCtm(data_dir=data_dir)
@@ -407,11 +253,11 @@ def test_ReadMscwCtm_open_file(path_emep):
     assert reader._filedata is data
 
 @pytest.mark.parametrize('var_name, value, raises',[
+    ('blaa', True, pytest.raises(exc.VariableDefinitionError)),
     ('od550gt1aer', False, does_not_raise_exception()),
     ('absc550aer', True, does_not_raise_exception()),
     ('concpm10', True, does_not_raise_exception()),
     ('sconcpm10', True, does_not_raise_exception()),
-    ('blaaa', True, pytest.raises(exc.VariableDefinitionError)),
     ])
 def test_ReadMscwCtm_has_var(reader, var_name, value, raises):
     with raises:
@@ -439,6 +285,92 @@ def test_ReadMscwCtm__repr__():
 def test_ReadEMEP__init__():
     assert isinstance(ReadEMEP(), ReadMscwCtm)
 
-if __name__ == '__main__': # pragma: no cover
-    import sys
-    pytest.main(sys.argv)
+def create_emep_dummy_data(tempdir, freq, vars_and_units):
+    assert isinstance(vars_and_units, dict)
+    reader = ReadMscwCtm()
+    outdir = os.path.join(tempdir, 'emep')
+    os.makedirs(outdir, exist_ok=True)
+    outfile = os.path.join(outdir, f'Base_{freq}.nc')
+    tst = reader.FREQ_CODES[freq]
+    varmap = reader.var_map
+    ds = xr.Dataset()
+    for var, unit in vars_and_units.items():
+        emep_var = varmap[var]
+        arr = _create_fake_MSCWCtm_data(tst=tst)
+        arr.attrs['units'] = unit
+        arr.attrs['var_name'] = emep_var
+        ds[emep_var] = arr
+    ds.to_netcdf(outfile)
+    assert os.path.exists(outfile)
+    return outdir
+
+def test_ReadMscwCtm_aux_var_defs():
+    req = ReadMscwCtm.AUX_REQUIRES
+    funs = ReadMscwCtm.AUX_FUNS
+    assert len(req) == len(funs)
+    assert all([x in funs.keys() for x in req])
+
+M_N = 14.006
+M_O = 15.999
+M_H = 1.007
+M_HNO3 = M_H + M_N + M_O*3
+M_NO3 = M_N + M_O*3
+
+@pytest.mark.parametrize('file_vars_and_units,freq,add_read,chk_mean,raises', [
+    ({'wetoxs' : 'mg S m-2'}, 'day', None, {'wetoxs' : 1},
+     does_not_raise_exception()),
+
+    ({'prmm' : 'mm'}, 'hour', None, {'prmm' : 24},
+     does_not_raise_exception()),
+    ({'prmm' : 'mm d-1'}, 'hour', None, {'prmm' : 1},
+     does_not_raise_exception()),
+    ({'concpm10' : 'ug m-3'}, 'day', None, {'concpm10' : 1},
+     does_not_raise_exception()),
+
+    ({'concpm10' : 'ug m-3'}, 'hour', None, None, does_not_raise_exception()),
+
+    ({'concno3c'  : 'ug m-3'}, 'day', ['concno3'], None, pytest.raises(
+        exc.VarNotAvailableError)),
+
+    ({'concno3c'  : 'ug m-3', 'concno3f'  : 'ug m-3'}, 'day', ['concno3'],
+    {'concno3c' : 1, 'concno3f' : 1, 'concno3' : 2},
+     does_not_raise_exception()),
+
+    ({'concno3c'  : 'ug m-3', 'concno3f'  : 'ug m-3', 'conchno3' : 'ug m-3'},
+    'day', ['concNtno3'],
+    {'concno3c' : 1, 'concno3f' : 1, 'conchno3' : 1,
+     'concNtno3' : 2*M_N/M_NO3 + M_N/M_HNO3},
+     does_not_raise_exception()),
+    ({'wetoxs' : 'mg S m-2 d-1'}, 'day', None, {'wetoxs' : 1},
+     does_not_raise_exception()),
+    ({'wetoxs' : 'Tg S m-2 d-1'}, 'day', None, {'wetoxs' : 1e15},
+     does_not_raise_exception()),
+
+])
+def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
+                              chk_mean,raises):
+
+
+    data_dir = create_emep_dummy_data(tmpdir,freq,
+                                    vars_and_units=file_vars_and_units)
+    with raises:
+        reader = ReadMscwCtm(data_dir=data_dir)
+        tst = reader.FREQ_CODES[freq]
+        objs = {}
+        for var, unit in file_vars_and_units.items():
+            data = reader.read_var(var, ts_type=tst)
+            objs[var] = data
+            assert isinstance(data, GriddedData)
+            aerocom_unit = cf_units.Unit(get_variable(var).units)
+            assert cf_units.Unit(data.units) == aerocom_unit
+            assert data.ts_type == tst
+        if isinstance(add_read, list):
+            for var in add_read:
+                data = reader.read_var(var, ts_type=tst)
+                objs[var] = data
+        if isinstance(chk_mean, dict):
+            for var, mean in chk_mean.items():
+                np.testing.assert_allclose(objs[var].cube.data.mean(), mean,
+                                           atol=0.1)
+
+

@@ -25,7 +25,7 @@ from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
 from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.exceptions import (ColocationError, ColocationSetupError,
-                                  DataCoverageError, DeprecationError)
+                                  DataCoverageError)
 
 class ColocationSetup(BrowseDict):
     """
@@ -104,17 +104,14 @@ class ColocationSetup(BrowseDict):
     obs_use_climatology : bool
         BETA if True, pyaerocom default climatology is computed from observation
         stations (so far only possible for unrgidded / gridded colocation).
-    obs_vert_type : str or dict, optional
-        Aerocom vertical code encoded in the model filenames (only AeroCom 3
+    obs_vert_type : str
+        AeroCom vertical code encoded in the model filenames (only AeroCom 3
         and later). Specifies which model file should be read in case there are
         multiple options (e.g. surface level data can be read from a
         *Surface*.nc file as well as from a *ModelLevel*.nc file). If input is
         string (e.g. 'Surface'), then the corresponding vertical type code is
         used for reading of all variables that are colocated (i.e. that are
-        specified in :attr:`obs_vars`). Else (if input is dictionary, e.g.
-        `obs_vert_type=dict(od550aer='Column', ec550aer='ModelLevel')`),
-        information is extracted variable specific, for those who are defined
-        in the dictionary, for all others, `None` is used.
+        specified in :attr:`obs_vars`).
     obs_ts_type_read : str or dict, optional
         may be specified to explicitly define the reading frequency of the
         observation data (so far, this does only apply to gridded obsdata such
@@ -146,9 +143,6 @@ class ColocationSetup(BrowseDict):
     model_data_dir : str, optional
         Location of model data. If None, attempt to infer model location based
         on model ID.
-    model_vert_type_alt : str or dict, optional
-        like :attr:`obs_vert_type` but is used in case of exception cases, i.e.
-        where the `obs_vert_type` is not available in the models.
     model_read_opts : dict, optional
         options for model reading (passed as keyword args to
         :func:`pyaerocom.io.ReadUngridded.read`).
@@ -292,6 +286,12 @@ class ColocationSetup(BrowseDict):
     #: (Overwritten from base class)
     CRASH_ON_INVALID = False
 
+    FORBIDDEN_CHARS_KEYS = [
+        'var_outlier_ranges', # deprecated since v0.12.0
+        'var_ref_outlier_ranges', # deprecated since v0.12.0
+        'remove_outliers' # deprecated since v0.12.0
+    ]
+
     ts_type = StrWithDefault('monthly')
     obs_vars = ListOfStrings()
     def __init__(self, model_id=None, obs_id=None, obs_vars=None,
@@ -335,7 +335,6 @@ class ColocationSetup(BrowseDict):
         self.model_name = None
         self.model_data_dir = None
 
-        self.model_vert_type_alt = None
         self.model_read_opts = {}
 
         self.model_use_vars = {}
@@ -375,7 +374,6 @@ class ColocationSetup(BrowseDict):
 
         self.add_meta = {}
         self.update(**kwargs)
-        self._check_outdated_outlier_defs()
 
     def _check_input_basedir_coldata(self, basedir_coldata):
         """
@@ -465,15 +463,6 @@ class ColocationSetup(BrowseDict):
         if key == 'basedir_coldata':
             val = self._check_input_basedir_coldata(val)
         super(ColocationSetup, self).__setitem__(key, val)
-
-    def _check_outdated_outlier_defs(self):
-        check = ['var_outlier_ranges', 'var_ref_outlier_ranges',
-                 'remove_outliers']
-        for attr in check:
-            if attr in self:
-                raise DeprecationError(
-                    f'Attribute {attr} is deprecated since v0.12.0'
-                )
 
     def _period_from_start_stop(self) -> str:
         start, stop = start_stop(self.start, self.stop,
@@ -579,24 +568,34 @@ class Colocator(ColocationSetup):
         self._loaded_model_data = {}
         return self._model_reader
 
+    def _check_data_id_obs_reader(self):
+        """
+        Check if obs_reader is instantiated with correct obs ID.
+
+        Returns
+        -------
+        bool
+            True if current obs reader can be used for obs reading, else False.
+        """
+        reader = self._obs_reader
+        if reader is None:
+            return False
+        elif self.obs_is_ungridded and self.obs_id in reader.data_ids:
+            return True
+        elif self.obs_id==reader.data_id:
+            return True
+
     @property
     def obs_reader(self):
         """
         Observation data reader
         """
-        reader = self._obs_reader
-        if reader is not None:
-            if reader.data_id == self.obs_id:
-                return reader
-            const.print_log.info(
-                f'Reloading outdated obs reader. ID of current reader: '
-                f'{reader.data_id}. New ID: {self.obs_id}'
-                )
-        if self.obs_is_ungridded:
-            self._obs_reader = ReadUngridded(self.obs_id,
-                                             data_dirs=self.obs_data_dir)
-        else:
-            self._obs_reader = self._instantiate_gridded_reader(what='obs')
+        if not self._check_data_id_obs_reader():
+            if self.obs_is_ungridded:
+                self._obs_reader = ReadUngridded(data_ids=[self.obs_id],
+                                                 data_dirs=self.obs_data_dir)
+            else:
+                self._obs_reader = self._instantiate_gridded_reader(what='obs')
         return self._obs_reader
 
     @property
@@ -735,7 +734,6 @@ class Colocator(ColocationSetup):
         self._check_obs_vars_available()
         self._check_obs_filters()
         self._check_model_add_vars()
-        self._check_outdated_outlier_defs()
         self._check_set_start_stop()
 
         vars_to_process = self._find_var_matches()
@@ -896,6 +894,7 @@ class Colocator(ColocationSetup):
         obs_filters_post = self._eval_obs_filters(var_name)
 
         obs_data = obs_reader.read(
+            data_ids=[self.obs_id],
             vars_to_retrieve=var_name,
             only_cached=self._obs_cache_only,
             filter_post=obs_filters_post,
@@ -1162,7 +1161,7 @@ class Colocator(ColocationSetup):
         if not self.flex_ts_type and tst != self.ts_type:
             raise ColocationError(f'flex_ts_type is deactivated and specified '
                                   f'read frequency for {var_name} ({tst}) is '
-                                  f'differentfrom colocation output freq '
+                                  f'different from colocation output freq '
                                   f'({self.ts_type})')
         return tst
 
@@ -1209,12 +1208,6 @@ class Colocator(ColocationSetup):
         if is_model:
             if self.obs_vert_type in self.OBS_VERT_TYPES_ALT:
                 return self.OBS_VERT_TYPES_ALT[self.obs_vert_type]
-            elif self.model_vert_type_alt is not None:
-                mva = self.model_vert_type_alt
-                if isinstance(mva, str):
-                    return mva
-                elif isinstance(mva, dict) and var_name in mva:
-                    return mva[var_name]
         raise DataCoverageError(f'No alternative vert type found for {var_name}')
 
     def _check_remove_outliers_gridded(self, data, var_name, is_model):
@@ -1399,15 +1392,35 @@ class Colocator(ColocationSetup):
             args.update(ts_type=ts_type)
         return args
 
+    def _check_dimensionality(self, args):
+        mdata = args['data']
+        odata = args['data_ref']
+        from pyaerocom.griddeddata import GriddedData
+        from pyaerocom.exceptions import DataDimensionError
+        if mdata.ndim==4 and self.obs_vert_type == 'Surface':
+            mdata = mdata.extract_surface_level()
+            args['data'] = mdata
+        elif mdata.ndim > 3:
+            raise DataDimensionError(f'cannot co-locate model data with more '
+                                     f'than 3 dimensions: {mdata}')
+
+        if isinstance(odata, GriddedData):
+            if odata.ndim == 4 and self.obs_vert_type == 'Surface':
+                odata = odata.extract_surface_level()
+                args['data_ref'] = odata
+            elif odata.ndim > 3:
+                raise DataDimensionError(
+                    f'cannot co-locate model data with more '
+                    f'than 3 dimensions: {odata}')
+        return args
+
     def _run_helper(self, model_var, obs_var):
-
-
         const.print_log.info(
             f'Running {self.model_id} ({model_var}) vs. '
             f'{self.obs_id} ({obs_var})'
             )
         args = self._prepare_colocation_args(model_var, obs_var)
-
+        args = self._check_dimensionality(args)
         coldata = self._colocation_func(**args)
 
         coldata.data.attrs['model_name'] = self.get_model_name()

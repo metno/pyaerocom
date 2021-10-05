@@ -55,12 +55,8 @@ def _resolve_var_name(data):
     try:
         vardef = const.VARS[var]
     except VariableDefinitionError:
-        vardef = Variable(var_name=var,
-                          standard_name=data.standard_name,
-                          long_name=data.long_name,
-                          units=data.units)
+        vardef = data.register_var_glob()
 
-        const.VARS.add_var(vardef)
     return (var, vardef.var_name_aerocom)
 
 def _regrid_gridded(gridded, regrid_scheme, regrid_res_deg):
@@ -691,10 +687,11 @@ def colocate_gridded_ungridded(data, data_ref, ts_type=None,
                                    .format(var_ref,
                                            data_ref.contains_vars))
     elif len(data_ref.contains_datasets) > 1:
-        raise AttributeError('Colocation can only be performed with '
-                             'ungridded data objects that only contain a '
-                             'single dataset. Use method `extract_dataset` of '
-                             'UngriddedData object to extract single datasets')
+        raise AttributeError(
+            f'Colocation can only be performed with ungridded data objects '
+            f'that only contain a single dataset (input data contains: '
+            f'{data_ref.contains_datasets}. Use method `extract_dataset` of '
+            f'UngriddedData object to extract single datasets.')
 
     dataset_ref = data_ref.contains_datasets[0]
 

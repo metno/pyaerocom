@@ -11,19 +11,19 @@ import pytest
 
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
 
-from ..conftest import testdata_unavail
+from ..conftest import data_unavail
 
 
-@testdata_unavail
+@data_unavail
 @pytest.fixture(scope='module')
 def reader():
     return ReadAeronetSunV3('AeronetSunV3L2Subset.daily')
 
-@testdata_unavail
+@data_unavail
 def test_get_file_list(reader):
     assert len(reader.get_file_list()) == 22
 
-@testdata_unavail
+@data_unavail
 def test_read_file(reader):
     from pyaerocom.stationdata import StationData
     file = reader.files[-3]
@@ -39,7 +39,7 @@ def test_read_file(reader):
     desired = [0.287, 1.787]
     npt.assert_allclose(actual, desired, rtol=1e-3)
 
-@testdata_unavail
+@data_unavail
 def test_read(reader):
     from pyaerocom.ungriddeddata import UngriddedData
     files = reader.files[2:4]
@@ -55,7 +55,7 @@ def test_read(reader):
     npt.assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 0.676,
                         rtol=1e-3)
 
-@testdata_unavail
+@data_unavail
 def test_read_add_common_meta(reader):
     files = reader.files[2:4]
     data = reader.read('od550aer', files=files,

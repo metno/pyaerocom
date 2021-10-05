@@ -40,6 +40,8 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.helpers import varlist_aerocom
 
 from pyaerocom import const, print_log, logger
+from pyaerocom.variable import get_aliases
+
 
 class ReadUngridded(object):
     """Factory class for reading of ungridded data based on obsnetwork ID
@@ -71,12 +73,10 @@ class ReadUngridded(object):
                          ReadEEAAQEREP_V2]
 
     DONOTCACHE_NAME = 'DONOTCACHE'
-    def __init__(self, data_ids=None, vars_to_retrieve=None,
-                 ignore_cache=False, data_dirs=None):
+    def __init__(self, data_ids=None, ignore_cache=False, data_dirs=None):
 
         #will be assigned in setter method of data_ids
         self._data_ids = []
-        self._vars_to_retrieve = None
         self._data_dirs = {}
 
         #: dictionary containing reading classes for each dataset to read (will
@@ -86,14 +86,8 @@ class ReadUngridded(object):
         if data_ids is not None:
             self.data_ids = data_ids
 
-        if vars_to_retrieve is not None:
-            self.vars_to_retrieve = vars_to_retrieve
-
         if data_dirs is not None:
             self.data_dirs = data_dirs
-
-        if vars_to_retrieve is not None:
-            self.vars_to_retrieve = vars_to_retrieve
 
         if ignore_cache:
             logger.info('Deactivating caching')
@@ -147,24 +141,6 @@ class ReadUngridded(object):
         for data_dir in val.values():
             assert os.path.exists(data_dir), f'{data_dir} does not exist'
         self._data_dirs = val
-
-    @property
-    def vars_to_retrieve(self):
-        """Variables to retrieve (list or dict)
-
-        Dictionary can be used in case different variables from multiple
-        datasets are supposed to be read.
-        """
-        return self._vars_to_retrieve
-
-    @vars_to_retrieve.setter
-    def vars_to_retrieve(self, val):
-        if isinstance(val, str):
-            val = [val]
-        elif not isinstance(val, (list, dict)):
-            raise ValueError('Invalid input for vars_to_retrieve ({}). '
-                             'Need either str, list or dict')
-        self._vars_to_retrieve = val
 
     @property
     def post_compute(self):
@@ -357,35 +333,6 @@ class ReadUngridded(object):
             ddir = None
         return reader(data_id=data_id, data_dir=ddir)
 
-    def _get_vars_to_retrieve(self, data_id):
-        """Helper to retrieve variables to be read for a given dataset
-
-        Parameters
-        ----------
-        data_id : str
-            ID of dataset to be imported
-
-        Raises
-        ------
-        DataRetrievalError
-            if :attr:`vars_to_retrieve` is a dictionary (i.e., dataset
-            specific) and the input data ID is not specified therein.
-
-        Returns
-        -------
-        list
-            list of variable to be retrieved
-        """
-        vtr = self.vars_to_retrieve
-        if isinstance(vtr, list):
-            return vtr
-        #vars_to_retrieve is a dict (dataset specific)
-        if not data_id in vtr:
-            raise DataRetrievalError(
-                f'Missing specification of vars_to_retrieve for {data_id}'
-                )
-        return vtr[data_id]
-
     def read_dataset(self, data_id, vars_to_retrieve=None,
                      only_cached=False, filter_post=None, **kwargs):
         """Read dataset into an instance of :class:`ReadUngridded`
@@ -394,7 +341,7 @@ class ReadUngridded(object):
         ----------
         data_id : str
             name of dataset
-        vars_to_retrieve : str or list
+        vars_to_retrieve : list
             variable or list of variables to be imported
         only_cached : bool
             if True, then nothing is reloaded but only data is loaded that is
@@ -439,25 +386,21 @@ class ReadUngridded(object):
 
         reader = self.get_lowlevel_reader(data_id)
 
-        if vars_to_retrieve is not None:
-            # Note: self.vars_to_retrieve may be None as well, then
-            # default variables of each network are read
-            self.vars_to_retrieve = vars_to_retrieve
+        if vars_to_retrieve is None:
+            vars_to_retrieve = reader.DEFAULT_VARS
 
-        if self.vars_to_retrieve is None:
-            self.vars_to_retrieve = reader.PROVIDES_VARIABLES
-
-        vars_to_retrieve = varlist_aerocom(self.vars_to_retrieve)
+        vars_to_retrieve = varlist_aerocom(vars_to_retrieve)
 
         # Since this interface enables to load multiple datasets, each of
         # which support a number of variables, here, only the variables are
         # considered that are supported by the dataset
         vars_available = [var for var in vars_to_retrieve if
                           reader.var_supported(var)]
+
         if len(vars_available) == 0:
-            raise DataRetrievalError('None of the input variables ({}) is '
-                                     'supported by {} interface'
-                                     .format(vars_to_retrieve, data_id))
+            raise DataRetrievalError(
+                f'None of the input variables ({vars_to_retrieve}) is '
+                f'supported by {data_id} interface')
         cache = CacheHandlerUngridded(reader)
         if not self.ignore_cache:
             # initate cache handler
@@ -466,9 +409,9 @@ class ReadUngridded(object):
                     cache.check_and_load(var,
                                          force_use_outdated=only_cached)
                 except Exception:
-                    logger.exception('Fatal: compatibility error between '
-                                          'old cache file {} and current version '
-                                          'of code ')
+                    logger.exception(
+                        'Fatal: compatibility error between old cache file '
+                        'and current version of code.')
 
         if not only_cached:
             vars_to_read = [v for v in vars_available if not v in cache.loaded_data]
@@ -490,9 +433,10 @@ class ReadUngridded(object):
                         cache.write(data_read, var)
                     except Exception as e:
                         _caching = False
-                        print_log.warning('Failed to write to cache directory. '
-                                          'Error: {}. Deactivating caching in '
-                                          'pyaerocom'.format(repr(e)))
+                        print_log.warning(
+                            f'Failed to write to cache directory. '
+                            f'Error: {repr(e)}. Deactivating caching '
+                            f'in pyaerocom')
 
         if len(vars_to_read) == len(vars_available):
             data_out = data_read
@@ -530,7 +474,7 @@ class ReadUngridded(object):
                                           vars_available)
 
         for key, val in filter_post.items():
-            if key == 'ignore_station_names':
+            if key == 'ignore_station_names': # for backwards compatibility
                 if isinstance(val, (str, list)):
                     filters['station_name'] = val
                     if not 'negate' in filters:
@@ -712,28 +656,37 @@ class ReadUngridded(object):
         >>> print(obj.metadata[0.]['latitude'])
 
         """
-        if data_ids is not None:
-            self.data_ids = data_ids
-        if vars_to_retrieve is not None:
-            self.vars_to_retrieve = vars_to_retrieve
+        if data_ids is None:
+            data_ids = self.data_ids
+        elif isinstance(data_ids, str):
+            data_ids = [data_ids]
+
+        if isinstance(vars_to_retrieve, str):
+            vars_to_retrieve = [vars_to_retrieve]
 
         data = UngriddedData()
-        for ds in self.data_ids:
-            read_vars = self._get_vars_to_retrieve(ds)
-            logger.info(f'Reading {ds} data, variables: {read_vars}')
+        for ds in data_ids:
             if ds in self.post_compute:
-                data.append(self.read_dataset_post(ds, read_vars,
+                data.append(self.read_dataset_post(ds, vars_to_retrieve,
                                                    only_cached=only_cached,
                                                    filter_post=filter_post,
                                                    **kwargs))
             else:
-                data.append(self.read_dataset(ds, read_vars,
+                data.append(self.read_dataset(ds, vars_to_retrieve,
                                               only_cached=only_cached,
                                               filter_post=filter_post,
                                               **kwargs))
 
             logger.info('Successfully imported {} data'.format(ds))
         return data
+
+    def _check_var_alias(self, var, supported):
+        # could be an alias
+        aliases = get_aliases(var)
+        for svar in supported:
+            if svar in aliases:
+                return svar
+        raise ValueError()
 
     def get_vars_supported(self, obs_id, vars_desired):
         """
@@ -758,9 +711,14 @@ class ReadUngridded(object):
         if obs_id in self.post_compute:
             # check if all required are accessible
             postinfo = self.post_compute[obs_id]
+            supported = postinfo['vars_supported']
             for var in varlist_aerocom(vars_desired):
-                if not var in postinfo['vars_supported']:
-                    continue
+                if not var in supported:
+                    try:
+                        var = self._check_var_alias(var, supported)
+                    except ValueError:
+                        # no alias match, skip...
+                        continue
                 requires = postinfo['aux_requires'][var]
                 all_good = True
                 for ds, vars_required in requires.items():
