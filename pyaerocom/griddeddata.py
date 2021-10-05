@@ -2014,19 +2014,44 @@ class GriddedData(object):
 
     def aerocom_savename(self, data_id=None, var_name=None,
                          vert_code=None, year=None, ts_type=None):
-        """Get filename for saving following AeroCom conventions"""
+        """Get filename for saving following AeroCom conventions
+
+        Parameters
+        ----------
+        data_id : str, optional
+            data ID used in output filename. Defaults to None, in which case
+            :attr:`data_id` is used.
+        var_name : str, optional
+            variable name used in output filename. Defaults to None, in which
+            case :attr:`var_name` is used.
+        vert_code : str, optional
+            vertical code used in output filename (e.g. Surface,
+            Column, ModelLevel). Defaults to None, in which
+            case assigned value in :attr:`metadata` is used.
+        year : str, optional
+            year to be used in filename. If None, then it is attempted to be
+            inferred from values in time dimension.
+        ts_type : str, optional
+            frequency string to be used in filename. If None,
+            then :attr:`ts_type` is used.
+
+        Raises
+        ------
+        ValueError
+            if vertical code is not provided and cannot be inferred or if
+            year is not provided and data is not single year. Note that if
+            year is provided, then no sanity checking is done against time
+            dimension.
+
+        Returns
+        -------
+        str
+            output filename following AeroCom Phase 3 conventions.
+
+        """
         from pyaerocom.io.helpers import aerocom_savename
-        if vert_code is None:
-            if self.metadata['vert_code'] is not None:
-                vert_code=self.metadata['vert_code']
-            else:
-                try:
-                    from pyaerocom.io.fileconventions import FileConventionRead
-                    f = self.from_files[0]
-                    fconv = FileConventionRead().from_file(f)
-                    vert_code = fconv.get_info_from_file(f)['vert_code']
-                except Exception:
-                    pass
+        if vert_code is None and self.metadata['vert_code'] is not None:
+            vert_code=self.metadata['vert_code']
 
         if vert_code in (None, ''):
             raise ValueError('Please provide vert_code')
@@ -2048,57 +2073,16 @@ class GriddedData(object):
             ts_type = self.ts_type
         return aerocom_savename(data_id, var_name, vert_code, year, ts_type)
 
-    def compute_at_stations_file(self, latitudes=None, longitudes=None,
-                                 out_dir=None, savename=None,
-                                 obs_data=None):
-        """Creates and saves new netcdf file at input lat / lon coordinates
+    def to_xarray(self):
+        """
+        Convert this object to an xarray.DataArray
 
-        This method can be used to reduce the size of too large grid files.
-        It reduces the lon / lat dimensionality corresponding to the locations
-        of the input lat / lon coordinates.
+        Returns
+        -------
+        DataArray
 
         """
-        from pyaerocom import UngriddedData, print_log
-        print_log.info('Computing AtStations file. This may take a while')
-        if isinstance(obs_data, UngriddedData):
-            longitudes = obs_data.longitude
-            latitudes = obs_data.latitude
-
-        if not len(longitudes) == len(latitudes):
-            raise ValueError('Longitude and latitude arrays need to have the '
-                             'same length (since they are supposed to belong) '
-                             'to station_coordinates')
-        if out_dir is None:
-            out_dir = const.CACHEDIR
-        if savename is None:
-            savename = self.aerocom_filename(at_stations=True)
-        lons = self.longitude.points
-        lats = self.latitude.points
-
-        lon_idx = []
-        lat_idx = []
-
-        for lat, lon in zip(latitudes, longitudes):
-            lon_idx.append(closest_index(lons, lon))
-            lat_idx.append(closest_index(lats, lat))
-
-        lon_idx = sorted(dict.fromkeys(lon_idx))
-        lat_idx = sorted(dict.fromkeys(lat_idx))
-        try:
-            self.check_dimcoords_tseries()
-        except DimensionOrderError:
-            self.reorder_dimensions_tseries()
-
-        subset = self[:, lat_idx][:,:,lon_idx]
-        # make sure everything went well with the dimensions
-        subset.check_dimcoords_tseries()
-        path = subset.to_netcdf(out_dir, savename)
-        print_log.info('Finished computing AtStations file.')
-        return path
-
-    def to_xarray(self):
-        from xarray import DataArray
-        arr = DataArray.from_iris(self.cube)
+        arr = xr.DataArray.from_iris(self.cube)
         return arr
 
     def _check_meta_netcdf(self):
@@ -2244,19 +2228,24 @@ class GriddedData(object):
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
 
+        self._check_lonlat_bounds()
+        self.check_lon_circular()
+
         if other is None:
             if any(x is None for x in (lat_res_deg, lon_res_deg)):
                 raise ValueError('Missing input for regridding. Need either '
                                  'other data object or both lat_res_deg and '
                                  'lon_res_deg specified')
-            lats = self.latitude.points
-            lons = self.longitude.points
+            lons = self.longitude.contiguous_bounds()
+            lats = self.latitude.contiguous_bounds()
+
             lat_range = [np.min(lats), np.max(lats)]
             lon_range = [np.min(lons), np.max(lons)]
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
                                            lon_res_deg=lon_res_deg,
                                            lat_range=lat_range,
-                                           lon_range=lon_range)
+                                           lon_range=lon_range
+                                           )
             other = GriddedData(dummy,
                                 check_unit=False,
                                 convert_unit_on_init=False)
@@ -2265,13 +2254,11 @@ class GriddedData(object):
             raise DataDimensionError('Can only regrid data objects with '
                                      'latitude and longitude dimensions')
 
-        self._check_lonlat_bounds()
         other._check_lonlat_bounds()
-
-        self.check_lon_circular()
         other.check_lon_circular()
 
         data_rg = self.grid.regrid(other.grid, scheme)
+
         suppl = od(**self.metadata)
         suppl['regridded'] = True
         data_out = GriddedData(data_rg, **suppl)
