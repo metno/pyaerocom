@@ -112,10 +112,7 @@ def test_plot_griddeddata_on_map(data_tm5,data,args,raises):
 @pytest.mark.parametrize('region,kwargs,raises', [
     ('WORLD',{},does_not_raise_exception()),
     ('EUROPE',{},does_not_raise_exception()),
-    ('PAN',{},does_not_raise_exception()),
-
-
-
+    ('EEUROPE',{},does_not_raise_exception()),
 ])
 def test_plot_map_aerocom(data_tm5,region,kwargs,raises):
     with pytest.raises(ValueError):
