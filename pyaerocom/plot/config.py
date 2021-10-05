@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-"""
-Global configurations for plotting
-"""
-from matplotlib.pyplot import get_cmap
-
-from pyaerocom._lowlevel_helpers import BrowseDict
 from warnings import warn
 
 _cmap_lighttheme = "Blues"

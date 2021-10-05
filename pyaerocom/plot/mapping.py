@@ -1,21 +1,15 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-This module contains plot routines for Aerocom data. So far, this includes a
-low level, very flexible plot method
-"""
 import matplotlib.pyplot as plt
 from pandas import to_datetime
 import numpy as np
 from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
-from mpl_toolkits.axes_grid1 import AxesGrid
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from numpy import meshgrid, linspace, ceil
 
-from pyaerocom import logger
+from pyaerocom import logger, const
+from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.config import COLOR_THEME, ColorTheme, MAP_AXES_ASPECT
 from pyaerocom.plot.helpers import (custom_mpl,
                                     calc_pseudolog_cmaplevels,
@@ -31,12 +25,14 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
 
     Parameters
     ----------
-    color_theme : :obj:`ColorTheme`, optional
+    color_theme : :ColorTheme, optional
         instance of pyaerocom color theme. If None, the default schemes is used
-    vmin : :obj:`float`, optional
-        lower end of value range
-    vmax : :obj:`float`, optional
-        upper end of value range
+    vmin : float, optional
+        lower end of value range (only considered for diverging color maps
+        with non-symmetric mapping)
+    vmax : float, optional
+        upper end of value range only considered for diverging color maps
+        with non-symmetric mapping)
 
     Returns
     -------
@@ -47,16 +43,15 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
     if vmin is not None and vmax is not None and vmin < 0 and vmax > 0:
         cmap = plt.get_cmap(color_theme.cmap_map_div)
         if color_theme.cmap_map_div_shifted:
-            try:
-                from geonum.helpers import shifted_color_map
-                cmap = shifted_color_map(vmin, vmax, cmap)
-            except Exception:
-                logger.warning('cannot shift colormap, need geonum installation')
+            if not const.GEONUM_AVAILABLE: # pragma: no cover
+                raise ModuleNotFoundError('need geonum to compute shifted '
+                                          'colormap')
+            from geonum.helpers import shifted_color_map
+            cmap = shifted_color_map(vmin, vmax, cmap)
         return cmap
     return plt.get_cmap(color_theme.cmap_map)
 
-def set_map_ticks(ax, xticks=None, yticks=None, add_x=True,
-                  add_y=True):
+def set_map_ticks(ax, xticks=None, yticks=None):
     """Set or update ticks in instance of GeoAxes object (cartopy)
 
     Parameters
@@ -67,10 +62,6 @@ def set_map_ticks(ax, xticks=None, yticks=None, add_x=True,
         ticks of x-axis (longitudes)
     yticks : iterable, optional
         ticks of y-axis (latitudes)
-    add_x : bool
-        if True, x-axis labels are added
-    add_y : bool
-        if True, y-axis labels are added
 
     Returns
     -------
@@ -80,11 +71,11 @@ def set_map_ticks(ax, xticks=None, yticks=None, add_x=True,
     lonleft, lonright = ax.get_xlim()
     digits = 2 - exponent(lonleft)
     digits = 0 if digits < 0 else digits
-    tick_format = '.%df' %digits
-    if not xticks:
+    tick_format = f'.{digits:d}f'
+    if xticks is None:
         num_lonticks = 7 if lonleft == -lonright else 6
         xticks = linspace(lonleft, lonright, num_lonticks)
-    if not yticks:
+    if yticks is None:
         latleft, latright = ax.get_ylim()
         num_latticks = 7 if latleft == - latright else 6
         yticks = linspace(latleft, latright, num_latticks)
@@ -116,7 +107,7 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
         2-element tuple specifying plotted latitude range
     figh : int
         height of figure in inches
-    fix_aspect : :obj:`float`, optional
+    fix_aspect : bool, optional
         if True, the aspect of the GeoAxes instance is kept fix using the
         default aspect ``MAP_AXES_ASPECT`` defined in
         :mod:`pyaerocom.plot.config`
@@ -124,16 +115,27 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
         ticks of x-axis (longitudes)
     yticks : iterable, optional
         ticks of y-axis (latitudes)
+    color_theme : ColorTheme
+        pyaerocom color theme.
     projection
         projection instance from cartopy.crs module (e.g. PlateCaree). May also
         be string.
-    title : :obj:`str`, optional
+    title : str, optional
         title that is supposed to be inserted
-    fig : :obj:`Figure`, optional
+    gridlines : bool
+        whether or not to add gridlines to the map
+    fig : matplotlib.figure.Figure, optional
         instance of matplotlib Figure class. If specified, the former to
         input args (``figh`` and ``fix_aspect``) are ignored. Note that the
         Figure is wiped clean before plotting, so any plotted content will be
         lost
+    ax : GeoAxes, optional
+        axes in which the map is plotted
+    draw_coastlines : bool
+        whether or not to draw coastlines
+    contains_cbar : bool
+        whether or not a colorbar is intended to be added to the figure (
+        impacts the aspect ratio of the figure).
 
     Returns
     -------
@@ -153,7 +155,6 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
         if fig is None:
             if not fix_aspect:
                 figsize = calc_figsize(xlim, ylim)
-                #figw = figh*2
             else:
                 figw = figh*fix_aspect
                 figsize = (figw, figh)
@@ -176,7 +177,7 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
             color_theme = COLOR_THEME
 
     if draw_coastlines:
-        ax.coastlines(color=COLOR_THEME.color_coastline)
+        ax.coastlines(color=color_theme.color_coastline)
 
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
@@ -192,69 +193,13 @@ def init_map(xlim=(-180, 180), ylim=(-90, 90), figh=8, fix_aspect=False,
 
     return ax
 
-def init_multimap_grid(nrows, ncols, add_coastlines=True, remove_outline_map=True,
-                       projection=None, figsize=None, color_theme=None,
-                       axes_pad_hor=0.02, axes_pad_vert=0.02,
-                       cbar_mode=None, cbar_location='right',
-                       cbar_pad='5%', cbar_size='3%', label_mode='',
-                       **kwargs):
-    if color_theme is None:
-        color_theme = COLOR_THEME
-    if projection is None:
-        projection = ccrs.PlateCarree()
-
-    axes_class = (GeoAxes, dict(map_projection=projection))
-
-    if figsize is None:
-        w = 20
-        wmap = w / ncols
-        hmap = wmap/2
-        h = hmap * nrows
-        figsize=(w,h)
-    fig = plt.figure(figsize=figsize)
-
-    axgr = AxesGrid(fig, 111, axes_class=axes_class,
-                    nrows_ncols=(nrows, ncols),
-                    axes_pad = (axes_pad_hor, axes_pad_vert),
-                    cbar_location=cbar_location,
-                    cbar_mode=cbar_mode,
-                    cbar_pad=cbar_pad,
-                    cbar_size=cbar_size,
-                    label_mode=label_mode,
-                    **kwargs)
-
-    if add_coastlines or remove_outline_map:
-        for ax in axgr:
-            if add_coastlines:
-                ax.coastlines(color=color_theme.color_coastline)
-            if remove_outline_map:
-                ax.outline_patch.set_edgecolor('white')
-    return fig, axgr
-
-def _init_width_ratios(width_ratios, ncols, add_cbar_axes):
-    if width_ratios is None:
-        sub = [30, 1] if add_cbar_axes else [30]
-        width_ratios = sub*ncols
-    elif isinstance(width_ratios, list):
-        if len(width_ratios) == ncols and add_cbar_axes:
-            wr = np.asarray(width_ratios)
-            wrmax = wr.max()
-            cbarw = wrmax / 30
-            width_ratios = []
-            for w in wr:
-                width_ratios.extend([w, cbarw])
-
-    if not isinstance(width_ratios, list):
-        raise ValueError('Invalid input for width ratio')
-    return width_ratios
-
 def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                             unit=None, xlim=(-180, 180), ylim=(-90, 90),
                             vmin=None, vmax=None, add_zero=False, c_under=None,
                             c_over=None, log_scale=True, discrete_norm=True,
                             cbar_levels=None, cbar_ticks=None, add_cbar=True,
                             cmap=None, cbar_ticks_sci=False,
-                            color_theme=COLOR_THEME, ax=None,
+                            color_theme=None, ax=None,
                             ax_cbar=None, **kwargs):
     """Make a plot of gridded data onto a map
 
@@ -302,43 +247,37 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         ``fig.axes[0]`` to access the map axes instance (e.g. to modify the
         title or lon / lat range, etc.)
     """
+    if color_theme is None:
+        color_theme = COLOR_THEME
     if add_cbar:
         kwargs['contains_cbar'] = True
     if ax is None:
         ax = init_map(xlim, ylim, color_theme=color_theme, **kwargs)
     if not isinstance(ax, GeoAxes):
-        raise AttributeError('Invalid input for ax, need GeoAxes')
+        raise ValueError('Invalid input for ax, need GeoAxes')
     fig = ax.figure
+
     from pyaerocom.griddeddata import GriddedData
-    if isinstance(data, GriddedData):
-        if not data.has_latlon_dims:
-            from pyaerocom.exceptions import DataDimensionError
-            raise DataDimensionError('Input data needs to have latitude and '
-                                     'longitude dimension')
-        if not data.ndim == 2:
-            if not data.ndim == 3 or not 'time' in data.dimcoord_names:
-                raise DataDimensionError('Input data needs to be 2 dimensional '
-                                         'or 3D with time being the 3rd '
-                                         'dimension')
-            data.reorder_dimensions_tseries()
+    if not isinstance(data, GriddedData):
+        raise ValueError('need GriddedData')
 
-            data = data[0]
+    if not data.has_latlon_dims:
+        raise DataDimensionError('Input data needs to have latitude and '
+                                 'longitude dimension')
+    if not data.ndim == 2:
+        if not data.ndim == 3 or not 'time' in data.dimcoord_names:
+            raise DataDimensionError('Input data needs to be 2 dimensional '
+                                     'or 3D with time being the 3rd '
+                                     'dimension')
+        data.reorder_dimensions_tseries()
+        data = data[0]
 
-        lons = data.longitude.points
-        lats = data.latitude.points
-        data = data.grid.data
-    elif not isinstance(data, np.ndarray) or not data.ndim == 2:
-        raise IOError("Need 2D numpy array")
-    elif not isinstance(lats, np.ndarray) or not isinstance(lons, np.ndarray):
-        raise ValueError('Missing lats or lons input')
-    if isinstance(data, np.ma.MaskedArray):
-        sh = data.shape
-        if data.mask.sum() == sh[0] * sh[1]:
-            raise ValueError('All datapoints in input data (masked array) are '
-                             'invalid')
+    lons = data.longitude.points
+    lats = data.latitude.points
+    data = data.grid.data
 
     if add_cbar and ax_cbar is None:
-        ax_cbar = _add_cbar_axes(ax)#, where='right')
+        ax_cbar = _add_cbar_axes(ax)
 
     X, Y = meshgrid(lons, lats)
 
@@ -363,8 +302,8 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         if any([np.isnan(x) for x in [dmin, dmax]]):
             raise ValueError('Cannot plot map of data: all values are NaN')
         elif dmin == dmax:
-            raise ValueError('Minimum value in data equals maximum value: '
-                             '{}'.format(dmin))
+            raise ValueError(
+                f'Minimum value in data equals maximum value: {dmin}')
         if vmin is None:
             vmin = dmin
         else:
@@ -393,8 +332,6 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                                     clip=False)
 
             else:
-                if not vmin > 0:
-                    raise ValueError('Logscale can only be applied for vmin>0')
                 norm = LogNorm(vmin=vmin, vmax=vmax, clip=True)
         else:
             if add_zero and vmin > 0:
