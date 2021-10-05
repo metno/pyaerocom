@@ -426,7 +426,7 @@ def plot_map_aerocom(data, region, **kwargs):
     data = data.filter_region(region.region_id)
     s = data.plot_settings
 
-    vmin, vmax, levs = s.vmin, s.vmax, None
+    vmin, vmax, levs = s.map_vmin, s.map_vmax, None
     if isinstance(s.map_cbar_levels, list) and len(s.map_cbar_levels) > 0:
         vmin,vmax=None,None
         levs = s.map_cbar_levels
