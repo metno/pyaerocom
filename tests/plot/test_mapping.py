@@ -80,7 +80,18 @@ fake_gridded = type('FakeData', (GriddedData,), {
     (None, dict(), does_not_raise_exception()),
     (None, dict(log_scale=False,add_zero=True,), does_not_raise_exception()),
     (None, dict(log_scale=False,cmap='viridis'), does_not_raise_exception()),
-    (None, dict(log_scale=False,cmap='viridis'), does_not_raise_exception()),
+    (None, dict(c_over='r', c_under='b'), does_not_raise_exception()),
+    (None, dict(cbar_levels=[0.2,0.6], c_over='r', c_under='b'),
+     does_not_raise_exception()),
+    (None, dict(cbar_levels=[0.2,0.6], c_over='r'),
+     does_not_raise_exception()),
+    (None, dict(add_cbar=True, var_name='od550aer', unit='ug'),
+     does_not_raise_exception()),
+    (None, dict(add_cbar=True, cbar_ticks=[0.1,0.2,0.3]),
+     does_not_raise_exception()),
+    (None, dict(add_cbar=True, cbar_ticks=[0.1,0.2,0.3],
+                cbar_ticks_sci=True),
+     does_not_raise_exception()),
 ])
 def test_plot_griddeddata_on_map(data_tm5,data,args,raises):
     if data is None:

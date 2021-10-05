@@ -282,7 +282,6 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
     X, Y = meshgrid(lons, lats)
 
     bounds = None
-    norm = None
     if cbar_levels is not None: #user provided levels of colorbar explicitely
         if vmin is not None or vmax is not None:
             raise ValueError('Please provide either vmin/vmax OR cbar_levels')
