@@ -21,10 +21,10 @@ def test_ExperimentProcessor___init__(cfgdict,raises):
 
 @pytest.mark.parametrize('cfgdict,runkwargs,raises', [
     (cfgexp3,{},does_not_raise_exception()),
-    # (cfgexp1,{},does_not_raise_exception()),
-    # (cfgexp2,{},does_not_raise_exception()),
-    # (cfgexp2,dict(model_name='BLA'),pytest.raises(KeyError)),
-    # (cfgexp2,dict(obs_name='BLUB'),pytest.raises(KeyError)),
+    (cfgexp1,{},does_not_raise_exception()),
+    (cfgexp2,{},does_not_raise_exception()),
+    (cfgexp2,dict(model_name='BLA'),pytest.raises(KeyError)),
+    (cfgexp2,dict(obs_name='BLUB'),pytest.raises(KeyError)),
 
 ])
 def test_ExperimentProcessor_run(cfgdict,runkwargs,raises):
