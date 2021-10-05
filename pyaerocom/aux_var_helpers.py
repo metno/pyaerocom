@@ -191,11 +191,11 @@ def _calc_od_helper(data, var_name, to_lambda, od_ref, lambda_ref,
         are replaced with NaNs)
     to_lambda : float
         wavelength of computed AOD
-    od_ref : :obj:`float` or :obj:`ndarray`
-        reference AOD
+    od_ref : str
+        name of reference AOD in data
     lambda_ref : :obj:`float` or :obj:`ndarray`
         wavelength corresponding to reference AOD
-    od_ref_alt : :obj:`float` or :obj:`ndarray`, optional
+    od_ref_alt : str
         alternative reference AOD (is used for datapoints where former is
         invalid)
     lambda_ref_alt : :obj:`float` or :obj:`ndarray`, optional
