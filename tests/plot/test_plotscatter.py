@@ -6,13 +6,15 @@ from ..conftest import does_not_raise_exception
 
 
 def test_plot_scatter():
-    val = mod.plot_scatter(np.ones(10), np.ones(10))
+    val = mod.plot_scatter([1,2], [1,2])
     assert isinstance(val,Axes)
+
+X, Y = np.arange(100), np.arange(100)*2
 
 @pytest.mark.parametrize('args,raises', [
     (dict(x_vals=np.ones(10), y_vals=np.ones(10)), does_not_raise_exception()),
-    (dict(x_vals=np.arange(100),
-          y_vals=np.arange(100)*2,
+    (dict(x_vals=X,
+          y_vals=Y,
           var_name='od550aer',
           var_name_ref='bla',
           x_name='OBS',
@@ -35,6 +37,9 @@ def test_plot_scatter():
 
 
           ), does_not_raise_exception()),
+    (dict(x_vals=np.arange(-10,10),
+          y_vals=np.arange(-5,15),
+          loglog=True), does_not_raise_exception())
 
 ])
 def test_plot_scatter_aerocom(args,raises):
