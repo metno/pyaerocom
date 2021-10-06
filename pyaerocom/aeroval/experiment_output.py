@@ -2,6 +2,7 @@ import glob
 import os
 import shutil
 
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
     DirLoc,
@@ -15,9 +16,11 @@ from pyaerocom._lowlevel_helpers import (
 from pyaerocom.aeroval.glob_defaults import (
     statistics_defaults,
     statistics_trend,
+    extended_statistics,
     var_ranges_defaults,
     var_web_info,
 )
+
 from pyaerocom.aeroval.helpers import read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
@@ -459,6 +462,7 @@ class ExperimentOutput(ProjectOutput):
 
     def _create_statistics_json(self):
         stats_info = statistics_defaults
+        stats_info.update(extended_statistics)
         if self.cfg.statistics_opts.add_trends:
             stats_info.update(statistics_trend)
         write_json(stats_info, self.statistics_file, indent=4)
