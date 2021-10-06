@@ -8,7 +8,7 @@ import pyaerocom.aeroval.coldatatojson_helpers as mod
 import pyaerocom.exceptions as exceptions
 from pyaerocom import ColocatedData, TsType
 
-from ..conftest import coldata, does_not_raise_exception
+from ..conftest import does_not_raise_exception
 
 
 def test_get_heatmap_filename():
