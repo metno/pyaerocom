@@ -7,7 +7,7 @@ from pyaerocom.region import get_all_default_region_ids
 import numpy as np
 from pytest import mark, param
 
-from pyaerocom.aeroval.coldatatojson_engine import (
+from pyaerocom.aeroval.coldatatojson_helpers import (
     _add_entry_json,
     _init_stats_dummy,
     _prepare_aerocom_regions_json,

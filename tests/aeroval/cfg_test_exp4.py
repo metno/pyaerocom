@@ -14,15 +14,17 @@ MODELS = {
 OBS_GROUNDBASED = {
     'AERONET-Sun' : dict(obs_id='AeronetSunV3L2Subset.daily',
                          obs_vars = ['od550aer'],
-                         obs_vert_type='Column')
-    'AN-EEA-MP'         : dict(is_superobs = True,
-                               obs_id = ('AeronetSunV3L2Subset.daily',
-                                         'AeronetSDAV3L2Subset.daily'),
-                               obs_vars = ['od550aer'],
-                               obs_vert_type = 'Column',
-
-                               ),
-
+                         only_superobs=True,
+                         obs_vert_type='Column'),
+    'AERONET-SDA' : dict(obs_id='AeronetSDAV3L2Subset.daily',
+                         obs_vars = ['od550aer'],
+                         only_superobs=True,
+                         obs_vert_type='Column'),
+    'SDA-and-Sun' : dict(
+                        is_superobs = True,
+                        obs_id = ('AERONET-Sun', 'AERONET-SDA'),
+                        obs_vars = ['od550aer'],
+                        obs_vert_type = 'Column'),
 }
 
 CFG = dict(
@@ -37,7 +39,7 @@ CFG = dict(
     reanalyse_existing = True,
     raise_exceptions = True,
     only_json = False,
-    add_model_maps = True,
+    add_model_maps = False,
     only_model_maps = False,
 
     clear_existing_json = False,
@@ -60,11 +62,10 @@ CFG = dict(
     colocate_time=False,
 
     obs_remove_outliers=False,
-    add_seasons=False,
     model_remove_outliers=False,
     harmonise_units=True,
-    regions_how = 'default'
-    annual_stats_constrained=True,
+    regions_how = 'default',
+    annual_stats_constrained=False,
 
     proj_id = 'test',
     exp_id = 'exp4',
@@ -81,5 +82,6 @@ if __name__=='__main__':
     tda = initialise()
     stp = EvalSetup(**CFG)
     ana = ExperimentProcessor(stp)
+    ana.exp_output.delete_experiment_data()
     ana.run()
     print(ana.exp_output)

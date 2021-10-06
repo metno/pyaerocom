@@ -2,7 +2,7 @@ import numpy as np
 
 import pytest
 
-import pyaerocom.aeroval.coldatatojson_engine as mod
+import pyaerocom.aeroval.coldatatojson_helpers as mod
 import pyaerocom.exceptions as exceptions
 from pyaerocom import ColocatedData, TsType
 
