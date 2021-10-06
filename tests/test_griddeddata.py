@@ -20,8 +20,7 @@ from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
 
 from pyaerocom.io import ReadGridded
 
-from .conftest import (TEST_RTOL, does_not_raise_exception,
-                       testdata_unavail, lustre_avail)
+from .conftest import TEST_RTOL, data_unavail, does_not_raise_exception
 
 TESTLATS =  [-10, 20]
 TESTLONS =  [-120, 69]
@@ -52,8 +51,8 @@ def test_GriddedData_var_name_aerocom(var_name, var_name_aerocom, raises):
         assert data.var_name_aerocom == var_name_aerocom
 
 @pytest.mark.parametrize('var_name, raises', [
-    ('od550aer',does_not_raise_exception()),
     ('manamana',pytest.raises(VariableDefinitionError)),
+    ('od550aer',does_not_raise_exception()),
     ])
 def test_GriddedData_var_info(var_name, raises):
     data = GriddedData()
@@ -71,7 +70,7 @@ def test_GriddedData_long_name():
 def test_GriddedData_suppl_info():
     assert isinstance(GriddedData().suppl_info, dict)
 
-@testdata_unavail
+@data_unavail
 def test_basic_properties(data_tm5):
 
     data =  data_tm5
@@ -90,7 +89,7 @@ def test_basic_properties(data_tm5):
     assert data.lat_res == 2.0
     assert data.lon_res == 3.0
 
-@testdata_unavail
+@data_unavail
 def test_GriddedData_longitude(data_tm5):
     """Test if longitudes are defined right"""
     assert str(data_tm5.longitude.units) == 'degrees'
@@ -100,7 +99,7 @@ def test_GriddedData_longitude(data_tm5):
     vals = [lons.min(), lons.max()]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
 
-@testdata_unavail
+@data_unavail
 def test_GriddedData_latitude(data_tm5):
     """test latitude array"""
     assert str(data_tm5.latitude.units) == 'degrees'
@@ -109,7 +108,7 @@ def test_GriddedData_latitude(data_tm5):
     vals = [lats.min(), lats.max()]
     npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
 
-@testdata_unavail
+@data_unavail
 def test_GriddedData_time(data_tm5):
     """Test time dimension access and values"""
     time = data_tm5.time
@@ -120,7 +119,7 @@ def test_GriddedData_time(data_tm5):
                isinstance(time.cell(0).point, datetime)]
     assert nominal_eq == vals_eq
 
-@testdata_unavail
+@data_unavail
 def test_GriddedData_resample_time(data_tm5):
     data = data_tm5
 
@@ -132,7 +131,7 @@ def test_GriddedData_resample_time(data_tm5):
     mean_vals = [data.mean(), yearly.mean()]
     npt.assert_allclose(actual=mean_vals,
                         desired=[0.11865, 0.11865], rtol=TEST_RTOL)
-@testdata_unavail
+@data_unavail
 def test_GriddedData_interpolate(data_tm5):
     data = data_tm5
 
@@ -147,7 +146,7 @@ def test_GriddedData_interpolate(data_tm5):
                         desired=desired,
                         rtol=TEST_RTOL)
 
-@testdata_unavail
+@data_unavail
 def test_GriddedData_to_time_series(data_tm5):
 
     latsm = [-9, 21]
@@ -166,7 +165,7 @@ def test_GriddedData_to_time_series(data_tm5):
     npt.assert_array_equal(lons_actual, lonsm)
     npt.assert_allclose(means_actual, [0.101353, 0.270886], rtol=TEST_RTOL)
 
-@testdata_unavail
+@data_unavail
 def test_GriddedData_change_baseyear(data_tm5):
     cp = data_tm5.copy()
     cp.change_base_year(1901)
@@ -200,7 +199,7 @@ def test_GriddedData_area_weighted_mean(data_tm5):
     assert len(val) == 12
     npt.assert_allclose(val.mean(), 0.118648, atol=0.001)
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('kwargs,result', [
     (dict(), 0.11864813532841474),
     (dict(areaweighted=False), 0.09825691),

@@ -40,6 +40,17 @@ def test_write_json(tmpdir,data,kwargs,raises):
         assert os.path.exists(path)
         os.remove(path)
 
+@pytest.mark.parametrize('fname,raises', [
+    ('bla.txt', pytest.raises(ValueError)),
+    ('bla.json', does_not_raise_exception()),
+])
+def test_check_make_json(tmpdir,fname,raises):
+    fp = os.path.join(tmpdir,fname)
+    with raises:
+        val = mod.check_make_json(fp)
+        assert os.path.exists(val)
+
+
 def test_invalid_input_err_str():
     st = mod.invalid_input_err_str('bla', '42', (42,43))
     assert st == 'Invalid input for bla (42), choose from (42, 43)'

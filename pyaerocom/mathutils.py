@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Mathematical low level utility methods of pyaerocom
 """
@@ -502,3 +500,18 @@ def estimate_value_range(vmin, vmax, extend_percent=0):
     vmin = np.floor(vmin * 10 ** (-exp)) * 10.0 ** (exp)
     vmax = np.ceil(vmax * 10 ** (-exp)) * 10.0 ** (exp)
     return vmin, vmax
+
+
+def _init_stats_dummy():
+    # dummy for statistics dictionary for locations without data
+    stats_dummy = {}
+    for k in calc_statistics([1], [1]):
+        stats_dummy[k] = np.nan
+
+    #Test to make sure these variables are defined even when yearly and season != all
+    stats_dummy["R_spatial_mean"] = np.nan
+    stats_dummy["R_spatial_median"] = np.nan
+    stats_dummy["R_temporal_mean"] = np.nan
+    stats_dummy["R_temporal_median"] = np.nan
+
+    return stats_dummy

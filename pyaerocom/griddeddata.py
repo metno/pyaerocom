@@ -46,7 +46,7 @@ from pyaerocom.helpers import (get_time_rng_constraint,
 from pyaerocom.mathutils import closest_index, exponent, estimate_value_range
 from pyaerocom.stationdata import StationData
 from pyaerocom.region import Region
-from pyaerocom.units_helpers import UALIASES
+from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
@@ -116,9 +116,9 @@ class GriddedData(object):
                               'profile']
 
     _META_ADD = od(from_files           = [],
-                   data_id              = 'n/d',
-                   var_name_read        = 'n/d',
-                   ts_type              = 'n/d',
+                   data_id              = 'undefined',
+                   var_name_read        = 'undefined',
+                   ts_type              = 'undefined',
                    vert_code            = None,
                    regridded            = False,
                    outliers_removed     = False,
@@ -182,20 +182,23 @@ class GriddedData(object):
     @property
     def var_info(self):
         """Print information about variable"""
-        if not self.var_name in const.VARS:
-            try:
-                return const.VARS[self.var_name_aerocom]
-            except Exception:
-                raise VariableDefinitionError('No default access available for '
-                                              'variable {}'.format(self.var_name))
-        return const.VARS[self.var_name]
+        if self.var_name in const.VARS:
+            return const.VARS[self.var_name]
+        var_name = self.var_name_aerocom
+        if var_name in const.VARS:
+            return const.VARS[var_name]
+        else:
+            raise VariableDefinitionError(
+                f'No default access available for variable {self.var_name}'
+            )
+
 
     @property
     def ts_type(self):
         """
         Temporal resolution of data
         """
-        if self.metadata['ts_type'] == 'n/d':
+        if self.metadata['ts_type'] == 'undefined':
             const.print_log.warning('ts_type is not set in GriddedData, trying '
                                     'to infer.')
             self.infer_ts_type()
@@ -648,17 +651,20 @@ class GriddedData(object):
         except Exception:
             logger.warning('Failed to access metadata from filename')
 
-    def register_var_glob(self):
+    def register_var_glob(self, delete_existing=True):
         vmin, vmax = self.estimate_value_range_from_data()
         vardef = Variable(var_name=self.var_name,
                           standard_name=self.standard_name,
                           long_name=self.long_name,
                           units=self.units,
                           minimum=vmin, maximum=vmax)
-
+        if delete_existing:
+            varcol = const.VARS
+            if self.var_name in varcol:
+                varcol.delete_variable(self.var_name)
         const.VARS.add_var(vardef)
         const.print_log.warning(
-            f'Adding variable {self.var_name} in pyaerocom.const.VARS, '
+            f'Adding variable {self.var_name} in pyaerocom.const.VARS. '
             f'since such a  '
             f'variable is not defined in pyaerocom. Minimum and maximum '
             f'values are added automatically based on value range in '
@@ -773,49 +779,39 @@ class GriddedData(object):
 
         return unit_ok
 
-    def _try_convert_non_cf_unit(self, new_unit):
-        import pyaerocom.units_helpers as uh
-        from pyaerocom.time_config import SI_TO_TS_TYPE
-        current = str(self.units)
-        # check if it is deposition and if units are implicit
-        try:
-            mulfac = uh.get_unit_conversion_fac(from_unit=current,
-                                                to_unit=new_unit,
-                                                var_name=self.var_name)
-            self._apply_unit_mulfac(new_unit, mulfac)
+    def _try_convert_custom_unit(self, new_unit):
+        """
+        Try convert data to input unit using custom conversion
 
-        except Exception as e:
-            if self.var_info.is_rate:
-                unit = current
-                if not unit.endswith('-1'):
-                    self.units = unit = str(
-                        uh.check_rate_units_implicit(unit, self.ts_type))
+        Helpers for custom conversion are defined in
+        :mod:`pyaerocom.units_helpers`.
 
-                cf_freq = unit.split()[-1].split('-1')[0]
+        Parameters
+        ----------
+        new_unit : str
+            output unit
 
-                if not cf_freq in SI_TO_TS_TYPE:
-                    raise ValueError(f'Invalid rate unit {unit}, must end with '
-                                     f' h-1, d-1, etc...')
+        Raises
+        ------
+        UnitConversionError
+            if conversion failed
 
-                check_to = unit.replace(f'{cf_freq}-1', f'{uh.RATES_FREQ_DEFAULT}-1')
-                fac1 =  uh.get_unit_conversion_fac(unit,
-                                                   check_to) # e.g. h-1 -> d-1
+        Returns
+        -------
+        None
 
-                fac2 = uh.get_unit_conversion_fac(
-                            check_to,
-                            new_unit,
-                            self.var_name) # kg N m-2 d-1 -> kg m-2 d-1
-                mulfac = fac1*fac2
-                self._apply_unit_mulfac(new_unit,
-                                        mulfac)
+        """
+        current = self.units
 
-            else:
-                raise UnitConversionError(
-                    f'Failed to convert unit to {new_unit} in '
-                    f'{self.short_str()}. Reason: {repr(e)}')
-            const.print_log.info(
-                f'Succesfully converted unit from {current} to {new_unit} in '
-                f'{self.short_str()}')
+        mulfac = get_unit_conversion_fac(from_unit=current,
+                                        to_unit=new_unit,
+                                        var_name=self.var_name,
+                                        ts_type=self.ts_type)
+        const.print_log.info(
+            f'Succesfully converted unit from {current} to {new_unit} in '
+            f'{self.short_str()}')
+
+        self._apply_unit_mulfac(new_unit, mulfac)
 
     def _apply_unit_mulfac(self, new_unit, mulfac):
 
@@ -838,10 +834,10 @@ class GriddedData(object):
             convert in this instance or create a new one
         """
         data_out = self if inplace else self.copy()
-        try:
+        try: # uses cf_units functionality (standard stuff, e.g. ug to mg)
             data_out.grid.convert_units(new_unit)
-        except ValueError as e:
-            data_out._try_convert_non_cf_unit(new_unit)
+        except ValueError: # try pyaerocom custom code
+            data_out._try_convert_custom_unit(new_unit)
         return data_out
 
     def time_stamps(self):
@@ -2018,19 +2014,47 @@ class GriddedData(object):
 
     def aerocom_savename(self, data_id=None, var_name=None,
                          vert_code=None, year=None, ts_type=None):
-        """Get filename for saving following AeroCom conventions"""
+        """Get filename for saving following AeroCom conventions
+
+        Parameters
+        ----------
+        data_id : str, optional
+            data ID used in output filename. Defaults to None, in which case
+            :attr:`data_id` is used.
+        var_name : str, optional
+            variable name used in output filename. Defaults to None, in which
+            case :attr:`var_name` is used.
+        vert_code : str, optional
+            vertical code used in output filename (e.g. Surface,
+            Column, ModelLevel). Defaults to None, in which
+            case assigned value in :attr:`metadata` is used.
+        year : str, optional
+            year to be used in filename. If None, then it is attempted to be
+            inferred from values in time dimension.
+        ts_type : str, optional
+            frequency string to be used in filename. If None,
+            then :attr:`ts_type` is used.
+
+        Raises
+        ------
+        ValueError
+            if vertical code is not provided and cannot be inferred or if
+            year is not provided and data is not single year. Note that if
+            year is provided, then no sanity checking is done against time
+            dimension.
+
+        Returns
+        -------
+        str
+            output filename following AeroCom Phase 3 conventions.
+
+        """
         from pyaerocom.io.helpers import aerocom_savename
-        if vert_code is None:
-            try:
-                from pyaerocom.io.fileconventions import FileConventionRead
-                f = self.from_files[0]
-                fconv = FileConventionRead().from_file(f)
-                vert_code = fconv.get_info_from_file(f)['vert_code']
-            except Exception:
-                pass
+        if vert_code is None and self.metadata['vert_code'] is not None:
+            vert_code=self.metadata['vert_code']
 
         if vert_code in (None, ''):
-            raise ValueError('Please provide input vert_code')
+            raise ValueError('Please provide vert_code')
 
         if data_id is None:
             data_id = self.data_id
@@ -2049,57 +2073,16 @@ class GriddedData(object):
             ts_type = self.ts_type
         return aerocom_savename(data_id, var_name, vert_code, year, ts_type)
 
-    def compute_at_stations_file(self, latitudes=None, longitudes=None,
-                                 out_dir=None, savename=None,
-                                 obs_data=None):
-        """Creates and saves new netcdf file at input lat / lon coordinates
+    def to_xarray(self):
+        """
+        Convert this object to an xarray.DataArray
 
-        This method can be used to reduce the size of too large grid files.
-        It reduces the lon / lat dimensionality corresponding to the locations
-        of the input lat / lon coordinates.
+        Returns
+        -------
+        DataArray
 
         """
-        from pyaerocom import UngriddedData, print_log
-        print_log.info('Computing AtStations file. This may take a while')
-        if isinstance(obs_data, UngriddedData):
-            longitudes = obs_data.longitude
-            latitudes = obs_data.latitude
-
-        if not len(longitudes) == len(latitudes):
-            raise ValueError('Longitude and latitude arrays need to have the '
-                             'same length (since they are supposed to belong) '
-                             'to station_coordinates')
-        if out_dir is None:
-            out_dir = const.CACHEDIR
-        if savename is None:
-            savename = self.aerocom_filename(at_stations=True)
-        lons = self.longitude.points
-        lats = self.latitude.points
-
-        lon_idx = []
-        lat_idx = []
-
-        for lat, lon in zip(latitudes, longitudes):
-            lon_idx.append(closest_index(lons, lon))
-            lat_idx.append(closest_index(lats, lat))
-
-        lon_idx = sorted(dict.fromkeys(lon_idx))
-        lat_idx = sorted(dict.fromkeys(lat_idx))
-        try:
-            self.check_dimcoords_tseries()
-        except DimensionOrderError:
-            self.reorder_dimensions_tseries()
-
-        subset = self[:, lat_idx][:,:,lon_idx]
-        # make sure everything went well with the dimensions
-        subset.check_dimcoords_tseries()
-        path = subset.to_netcdf(out_dir, savename)
-        print_log.info('Finished computing AtStations file.')
-        return path
-
-    def to_xarray(self):
-        from xarray import DataArray
-        arr = DataArray.from_iris(self.cube)
+        arr = xr.DataArray.from_iris(self.cube)
         return arr
 
     def _check_meta_netcdf(self):
@@ -2245,13 +2228,24 @@ class GriddedData(object):
         if isinstance(scheme, str):
             scheme = str_to_iris(scheme, **kwargs)
 
+        self._check_lonlat_bounds()
+        self.check_lon_circular()
+
         if other is None:
             if any(x is None for x in (lat_res_deg, lon_res_deg)):
                 raise ValueError('Missing input for regridding. Need either '
                                  'other data object or both lat_res_deg and '
                                  'lon_res_deg specified')
+            lons = self.longitude.contiguous_bounds()
+            lats = self.latitude.contiguous_bounds()
+
+            lat_range = [np.min(lats), np.max(lats)]
+            lon_range = [np.min(lons), np.max(lons)]
             dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
-                                           lon_res_deg=lon_res_deg)
+                                           lon_res_deg=lon_res_deg,
+                                           lat_range=lat_range,
+                                           lon_range=lon_range
+                                           )
             other = GriddedData(dummy,
                                 check_unit=False,
                                 convert_unit_on_init=False)
@@ -2260,13 +2254,11 @@ class GriddedData(object):
             raise DataDimensionError('Can only regrid data objects with '
                                      'latitude and longitude dimensions')
 
-        self._check_lonlat_bounds()
         other._check_lonlat_bounds()
-
-        self.check_lon_circular()
         other.check_lon_circular()
 
         data_rg = self.grid.regrid(other.grid, scheme)
+
         suppl = od(**self.metadata)
         suppl['regridded'] = True
         data_out = GriddedData(data_rg, **suppl)

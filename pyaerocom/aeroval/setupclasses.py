@@ -1,18 +1,25 @@
-# -*- coding: utf-8 -*-
-from getpass import getuser
 import os
-from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (ConstrainedContainer,
-                                         NestedContainer, AsciiFileLoc,
-                                         EitherOf, StrType, ListOfStrings,
-                                         DirLoc)
+from getpass import getuser
 
-from pyaerocom.colocation_auto import ColocationSetup
-from pyaerocom.aeroval.collections import ObsCollection, ModelCollection
-from pyaerocom.aeroval.helpers import (read_json, write_json,
-                                       _check_statistics_periods,
-                                       _get_min_max_year_periods)
+from pyaerocom import const
+from pyaerocom._lowlevel_helpers import (
+    AsciiFileLoc,
+    ConstrainedContainer,
+    DirLoc,
+    EitherOf,
+    ListOfStrings,
+    NestedContainer,
+    StrType,
+)
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
+from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
+from pyaerocom.aeroval.helpers import (
+    _check_statistics_periods,
+    _get_min_max_year_periods,
+    read_json,
+    write_json,
+)
+from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
 
 
@@ -115,7 +122,7 @@ class StatisticsSetup(ConstrainedContainer):
         `StatisticsSetup(annual_stats_constrained=True)`
 
     """
-    MIN_NUM = 3
+    MIN_NUM = 1
     def __init__(self, **kwargs):
         self.weighted_stats = True
         self.annual_stats_constrained = False
@@ -133,7 +140,41 @@ class TimeSetup(ConstrainedContainer):
     def __init__(self, **kwargs):
         self.main_freq = self.DEFAULT_FREQS[0]
         self.freqs = self.DEFAULT_FREQS
+        self.add_seasons = True
         self.periods = []
+
+    def get_seasons(self):
+        """
+        Get list of seasons to be analysed
+
+        Returns :attr:`SEASONS` if :attr:`add_seasons` it True, else `[
+        'all']` (only whole year).
+
+        Returns
+        -------
+        list
+            list of season strings for analysis
+
+        """
+        if self.add_seasons:
+            return self.SEASONS
+        return ['all']
+
+    def _get_all_period_strings(self):
+        """
+        Get list of all period strings for evaluation
+
+        Returns
+        -------
+        list
+            list of period / season strings
+        """
+        output = []
+        for per in self.periods:
+            for season in self.get_seasons():
+                perstr = f'{per}-{season}'
+                output.append(perstr)
+        return output
 
 class WebDisplaySetup(ConstrainedContainer):
 
@@ -338,8 +379,3 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
 
 
 
-if __name__ == '__main__':
-    stp = EvalSetup('bla', 'blub', addmethods_cfg={'add_methods_file': 'bla'})
-    stp['bla'] = 42
-    stp.update(res_deg=10)
-    d = stp.json_repr()

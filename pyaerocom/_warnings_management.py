@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 18 11:27:52 2021
-
-@author: jonasg
-"""
 import warnings
 def filter_warnings(apply, categories=None, messages=None):
     """

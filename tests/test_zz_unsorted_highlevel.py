@@ -7,12 +7,13 @@ Created on Tue Mar  3 17:10:03 2020
 """
 import numpy as np
 import numpy.testing as npt
+
 import pytest
 
-from .conftest import testdata_unavail
+from .conftest import data_unavail
 
 
-@testdata_unavail
+@data_unavail
 def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
     assert len(aeronetsunv3lev2_subset.metadata) == 22
     assert len(aeronetsunv3lev2_subset.unique_station_names) == 22
@@ -24,7 +25,7 @@ def test_meta_blocks_ungridded(aeronetsunv3lev2_subset):
              'The_Hague', 'Thessaloniki', 'Thornton_C-power', 'Trelew']
     assert aeronetsunv3lev2_subset.unique_station_names == names
 
-@testdata_unavail
+@data_unavail
 def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
     no_odcount = 0
     mean_vals = []
@@ -46,7 +47,7 @@ def test_od550aer_meanval_stats(aeronetsunv3lev2_subset):
                                 np.mean(std_vals)],
                         desired=should_be, atol=1e-2)
 
-@testdata_unavail
+@data_unavail
 def test_ang4487aer_meanval_stats(aeronetsunv3lev2_subset):
     no_odcount = 0
     mean_vals = []

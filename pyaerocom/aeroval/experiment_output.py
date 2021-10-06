@@ -1,23 +1,33 @@
-# -*- coding: utf-8 -*-
 import glob
 import os
 import shutil
+
+
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import (DirLoc, StrType, JSONFile,
-                                         TypeValidator, sort_dict_by_name)
+from pyaerocom._lowlevel_helpers import (
+    DirLoc,
+    StrType,
+    TypeValidator,
+    check_make_json,
+    read_json,
+    sort_dict_by_name,
+    write_json,
+)
+from pyaerocom.aeroval.glob_defaults import (
+    statistics_defaults,
+    statistics_trend,
+    extended_statistics,
+    var_ranges_defaults,
+    var_web_info,
+)
 
-from pyaerocom.exceptions import VariableDefinitionError
-from pyaerocom.variable import get_aliases
-
-from pyaerocom.aeroval.glob_defaults import (statistics_defaults,
-                                             statistics_trend,
-                                             extended_statistics,
-                                             var_ranges_defaults,
-                                             var_web_info)
 from pyaerocom.aeroval.helpers import read_json, write_json
-from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-
 from pyaerocom.aeroval.setupclasses import EvalSetup
+from pyaerocom.aeroval.varinfo_web import VarinfoWeb
+from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.mathutils import _init_stats_dummy
+from pyaerocom.variable_helpers import get_aliases
+
 
 class ProjectOutput:
     """JSON output for project"""
@@ -41,11 +51,7 @@ class ProjectOutput:
     def experiments_file(self):
         """json file containing region specifications"""
         fp = os.path.join(self.proj_dir, 'experiments.json')
-        if not os.path.exists(fp):
-            const.print_log.info(
-                f'Creating AeroVal experiments.json for project '
-                f'{self.proj_id} at {fp}')
-            write_json({}, fp, indent=4)
+        fp = check_make_json(fp)
         return fp
 
     @property
@@ -67,7 +73,7 @@ class ProjectOutput:
             del current[exp_id]
         except KeyError:
             const.print_log.warning(
-                f'no such experiment registered: {self.exp_id}')
+                f'no such experiment registered: {exp_id}')
         write_json(current, self.experiments_file, indent=4)
 
 
@@ -87,27 +93,41 @@ class ExperimentOutput(ProjectOutput):
     @property
     def exp_dir(self):
         """Experiment directory"""
-        return os.path.join(self.proj_dir, self.exp_id)
+        fp = os.path.join(self.proj_dir, self.exp_id)
+        if not os.path.exists(fp):
+            os.mkdir(fp)
+            const.print_log.info(
+                f'Creating AeroVal experiment directory at {fp}')
+        return fp
 
     @property
     def regions_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'regions.json')
+        fp = os.path.join(self.exp_dir, 'regions.json')
+        fp = check_make_json(fp)
+        return fp
 
     @property
     def statistics_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'statistics.json')
+        fp = os.path.join(self.exp_dir, 'statistics.json')
+        fp = check_make_json(fp)
+        return fp
 
     @property
     def var_ranges_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'ranges.json')
+        fp = os.path.join(self.exp_dir, 'ranges.json')
+        check_make_json(fp)
+        return fp
 
     @property
     def menu_file(self):
         """json file containing region specifications"""
-        return os.path.join(self.exp_dir, 'menu.json')
+        fp = os.path.join(self.exp_dir, 'menu.json')
+        check_make_json(fp)
+        return fp
+
 
     @property
     def results_available(self):
@@ -140,6 +160,24 @@ class ExperimentOutput(ProjectOutput):
         write_json(avail, self.menu_file, indent=4)
 
     def update_interface(self) -> None:
+        """
+        Update web interface
+
+        Steps:
+
+        1. Check if results are available, and if so:
+        2. Add entry for this experiment in experiments.json
+        3. Create/update ranges.json file in experiment directory
+        4. Update menu.json against available output and evaluation setup
+        5. Synchronise content of heatmap json files with menu
+        6. Create/update file statistics.json in experiment directory
+        7. Copy json version of EvalSetup into experiment directory
+
+        Returns
+        -------
+        None
+
+        """
         if not self.results_available:
             const.print_log.warning(
                 f'no output available for experiment {self.exp_id} in '
@@ -152,16 +190,20 @@ class ExperimentOutput(ProjectOutput):
         self._create_var_ranges_json()
         self.update_menu()
         #self.make_info_table_web()
-        self._update_heatmap_json()
+        self._sync_heatmaps_with_menu_and_regions()
 
         self._create_statistics_json()
+        # AeroVal frontend needs periods to be set in config json file...
+        # make sure they are
+        self.cfg._check_time_config()
         self.cfg.to_json(self.exp_dir)
 
-    def _update_heatmap_json(self):
+    def _sync_heatmaps_with_menu_and_regions(self):
         """
         Synchronise content of heatmap json files with content of menu.json
         """
         menu = read_json(self.menu_file)
+        all_regions = read_json(self.regions_file)
         for fp in self._get_json_output_files('hm'):
             data = read_json(fp)
             hm = {}
@@ -180,8 +222,24 @@ class ExperimentOutput(ProjectOutput):
                                 hm[vardisp][obs][vc][mod] = {}
                             modvar = minfo['model_var']
                             hm_data = data[vardisp][obs][vc][mod][modvar]
+                            hm_data = self._check_hm_all_regions_avail(
+                                all_regions, hm_data)
                             hm[vardisp][obs][vc][mod][modvar] = hm_data
+
             write_json(hm, fp, ignore_nan=True)
+
+    def _check_hm_all_regions_avail(self, all_regions, hm_data):
+        if all([x in hm_data for x in all_regions]):
+            return hm_data
+        # some regions are not available in this subset
+        periods = self.cfg.time_cfg._get_all_period_strings()
+        dummy_stats = _init_stats_dummy()
+        for region in all_regions:
+            if not region in hm_data:
+                hm_data[region] = {}
+                for per in periods:
+                    hm_data[region][per] = dummy_stats
+        return hm_data
 
     @staticmethod
     def _info_from_map_file(filename):
@@ -683,6 +741,3 @@ class ExperimentOutput(ProjectOutput):
         obs_vars.extend(add)
         self._valid_obs_vars[obs_name]  = obs_vars
         return obs_vars
-
-
-

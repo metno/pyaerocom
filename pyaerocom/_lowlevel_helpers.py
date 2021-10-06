@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Small helper utility functions for pyaerocom
 """
@@ -43,6 +41,36 @@ def write_json(data_dict, file_path, **kwargs):
     """
     with open(file_path, 'w') as f:
         simplejson.dump(data_dict, f, **kwargs)
+
+def check_make_json(fp, indent=4):
+    """
+    Make sure input json file exists
+
+    Parameters
+    ----------
+    fp : str
+        filepath to be checked (must end with .json)
+    indent : int
+        indentation of json file
+
+    Raises
+    ------
+    ValueError
+        if filepath does not exist.
+
+    Returns
+    -------
+    str
+        input filepath.
+
+    """
+    fp = str(fp)
+    if not fp.endswith('.json'):
+        raise ValueError('Input filepath must end with .json')
+    if not os.path.exists(fp):
+        print_log.info(f'Creating empty json file: {fp}')
+        write_json({}, fp, indent=indent)
+    return fp
 
 def invalid_input_err_str(argname, argval, argopts):
     """Just a small helper to format an input error string for functions

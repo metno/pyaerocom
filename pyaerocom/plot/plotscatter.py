@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 This module contains scatter plot routines for Aerocom data.
 """
@@ -61,12 +59,12 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
     try:
         var = const.VARS[var_name]
     except Exception:
-        var = const.VARS.DEFAULT
+        var = const.VARS['DEFAULT']
 
     try:
         var_ref = const.VARS[var_name_ref]
     except Exception:
-        var_ref = const.VARS.DEFAULT
+        var_ref = const.VARS['DEFAULT']
 
     if loglog is None:
         loglog = var_ref.scat_loglog

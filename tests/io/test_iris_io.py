@@ -170,16 +170,14 @@ def test__check_correct_time_dim(cube, file, raises):
         cube = mod._check_correct_time_dim(cube, file)
         assert isinstance(cube, Cube)
 
-from .._conftest_helpers import make_dummy_cube_3D
+from .._conftest_helpers import make_dummy_cube_3D_daily
 
 def make_cubelist(dtype):
-    return iris.cube.CubeList([make_dummy_cube_3D('days since '
-                                                       '2010-01-01 00:00',
-                                                       dtype=dtype),
-                                     make_dummy_cube_3D('days since '
-                                                        '2011-01-01 00:00',
+    return iris.cube.CubeList([make_dummy_cube_3D_daily(2010,
+                                                        dtype=dtype),
+                               make_dummy_cube_3D_daily(2011,
                                                         dtype=dtype)
-                                     ])
+                               ])
 @pytest.mark.parametrize('cubes,val', [
     (iris.cube.CubeList([iris.cube.Cube([1]),iris.cube.Cube([1])]), False),
     (iris.cube.CubeList([make_cubelist(int)[0], make_cubelist(float)[0]]),

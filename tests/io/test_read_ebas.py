@@ -41,18 +41,18 @@ from ..conftest import (
     EBAS_FILEDIR,
     EBAS_FILES,
     EBAS_ISSUE_FILES,
+    data_unavail,
     does_not_raise_exception,
-    testdata_unavail,
 )
 
 
 @pytest.fixture(scope='module')
-@testdata_unavail
+@data_unavail
 def reader():
     r = ReadEbas('EBASSubset')
     return r
 
-@testdata_unavail
+@data_unavail
 class TestReadEbas(object):
 
     PROVIDES_VARIABLES = sorted([
@@ -123,6 +123,7 @@ class TestReadEbas(object):
                          'wetoxn',
                          'wetrdn',
                          'pr',
+                         'prmm',
                          'concpm1',
                          'concca',
                          'concmg',
@@ -234,6 +235,7 @@ class TestReadEbas(object):
              'try_convert_vmr_conc' : True,
              'ensure_correct_freq': True,
              'freq_from_start_stop_meas': True,
+             'freq_min_cov' : 0.
              }
 
     def test_opts(self, reader):
@@ -423,13 +425,15 @@ class TestReadEbas(object):
         'volume_std._temperature': '293.15 K',
         'volume_std._pressure': '1013.25 hPa',
         'detection_limit': '1.995 ug/m3',
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K", 'matrix': 'air', 'statistics': 'arithmetic mean'}
+        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        'matrix': 'air', 'statistics': 'arithmetic mean', 'ts_type': 'hourly'}
         }
     vmro3_tower_var_info = {'vmro3': {
         'name': 'ozone', 'units': 'nmol mol-1', 'tower_inlet_height': '50.0 m',
         'measurement_height': '50.0 m', 'instrument_name': 'uv_abs_kre_0050',
         'detection_limit': '1.0 nmol/mol',
-        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K", 'matrix': 'air', 'statistics': 'arithmetic mean'}}
+        '"comment': "Data converted on import into EBAS from 'nmol/mol' to 'ug/m3' at standard conditions (293.15 K",
+        'matrix': 'air', 'statistics': 'arithmetic mean', 'ts_type': 'hourly'}}
 
 
     @pytest.mark.parametrize('filename,vars_to_retrieve,raises,check_attrs', [
@@ -449,8 +453,6 @@ class TestReadEbas(object):
          pytest.raises(TemporalResolutionError), {}),
         (EBAS_FILEDIR.joinpath(EBAS_FILES['sc550dryaer']['Jungfraujoch'][0]),
          ['sc550aer'],does_not_raise_exception(), {'station_name' : 'Jungfraujoch'}),
-
-
         ])
     def test_read_file(self, reader, filename, vars_to_retrieve, raises,
                        check_attrs):

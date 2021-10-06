@@ -24,7 +24,7 @@ from pyaerocom.colocation import (
 from pyaerocom.io import ReadMscwCtm
 
 from ._conftest_helpers import create_fake_station_data
-from .conftest import TEST_RTOL, testdata_unavail
+from .conftest import TEST_RTOL, data_unavail
 
 
 def test__regrid_gridded(data_tm5):
@@ -99,7 +99,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
 
     assert coldata.metadata['var_name'] == ['od550aer', 'od550bc']
 
-@testdata_unavail
+@data_unavail
 @pytest.mark.parametrize('addargs,ts_type,shape,obsmean,modmean',[
     (dict(filter_name='WORLD-noMOUNTAINS',
           min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
@@ -115,7 +115,7 @@ def test_colocate_gridded_ungridded_new_var(data_tm5, aeronetsunv3lev2_subset):
      'monthly', (2,12,13), 0.302636, 0.234147),
     (dict(filter_name='WORLD-noMOUNTAINS',
           regrid_res_deg=30, min_num_obs=const.OBS_MIN_NUM_RESAMPLE),
-     'monthly', (2,12,8), 0.31593 , 0.169897),
+     'monthly', (2,12,8), 0.31593 , 0.1797),
     (dict(filter_name='WORLD-noMOUNTAINS', ts_type='yearly'),
      'yearly', (2,1,8), 0.417676, 0.275671)
 
@@ -138,15 +138,18 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
 
 
 
-@testdata_unavail
+@data_unavail
 def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     times = [1,2]
     time_unit = Unit("days since 2010-1-1 0:0:0")
     cubes = iris.cube.CubeList()
 
     for time in times:
-        time_coord = iris.coords.DimCoord(time, units=time_unit, standard_name='time')
-        cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1, lat_range=[30.05,81.95], lon_range=[-29.5,89.95])
+        time_coord = iris.coords.DimCoord(time, units=time_unit,
+                                          standard_name='time')
+        cube = helpers.make_dummy_cube_latlon(lat_res_deg=1, lon_res_deg=1,
+                                              lat_range=[30.05,81.95],
+                                              lon_range=[-29.5,89.95])
         cube.add_aux_coord(time_coord)
         cubes.append(cube)
     time_cube = cubes.merge_cube()
@@ -161,7 +164,7 @@ def test_colocate_gridded_ungridded_nonglobal(aeronetsunv3lev2_subset):
     assert coldata.shape == (2,2,2)
 
 
-@testdata_unavail
+@data_unavail
 def test_colocate_gridded_gridded_same_new_var(data_tm5):
     data = data_tm5.copy()
     data.var_name = 'Blaaa'
@@ -169,7 +172,7 @@ def test_colocate_gridded_gridded_same_new_var(data_tm5):
 
     assert coldata.metadata['var_name'] == ['od550aer', 'Blaaa']
 
-@testdata_unavail
+@data_unavail
 def test_colocate_gridded_gridded_same(data_tm5):
     coldata = colocate_gridded_gridded(data_tm5, data_tm5)
 
@@ -185,7 +188,7 @@ def test_colocate_gridded_gridded_same(data_tm5):
     assert stats['R'] == 1
     assert stats['R_spearman'] == 1
 
-@testdata_unavail
+@data_unavail
 def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
     # tempfix
     with pytest.raises(ValueError):

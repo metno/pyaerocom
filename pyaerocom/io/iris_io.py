@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Module containing helper functions related to iris I/O methods. These contain
 reading of Cubes, and some methods to perform quality checks of the data, e.g.
@@ -7,8 +5,8 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 1. checking and correction of time definition
 2. number and length of dimension coordinates must match data array
 3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
-
 """
+
 import cf_units
 from datetime import datetime
 import iris
@@ -206,9 +204,9 @@ def check_and_regrid_lons_cube(cube):
 def check_dim_coord_names_cube(cube):
 
     from pyaerocom import const
-    coords = dict(lon = const.COORDINFO.lon,
-                  lat = const.COORDINFO.lat,
-                  time = const.COORDINFO.time)
+    coords = dict(lon = const.COORDINFO['lon'],
+                  lat = const.COORDINFO['lat'],
+                  time = const.COORDINFO['time'])
 
     for coord in cube.dim_coords:
         cv, cs, cn = coord.var_name, coord.standard_name, coord.long_name

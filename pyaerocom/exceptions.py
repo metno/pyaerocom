@@ -131,6 +131,9 @@ class TimeMatchError(AttributeError):
 class TemporalResolutionError(ValueError):
     pass
 
+class TemporalSamplingError(ValueError):
+    pass
+
 class UnitConversionError(ValueError):
     pass
 
