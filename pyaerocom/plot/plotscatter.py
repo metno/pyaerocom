@@ -23,7 +23,7 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
                          filter_name=None, lowlim_stats=None,
                          highlim_stats=None, loglog=None, ax=None, figsize=None,
                          fontsize_base=11, fontsize_annot=None,
-                         marker='+', color='k', alpha=0.5,
+                         marker=None, color=None, alpha=0.5,
                          **kwargs):
     """Method that performs a scatter plot of data in AEROCOM format
 
@@ -45,13 +45,48 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         start time of data
     stop : :obj:`str` or :obj`datetime` or similar
         stop time of data
+    ts_type : str
+        frequency of data
+    unit : str, optional
+        unit of data
+    stations_ok : int, optional
+        number of stations from which data were generated
+    filter_name : str, optional
+        name of filter
+    lowlim_stats : float, optional
+        lower value considered for statistical parameters
+    highlim_stats : float, optional
+        upper value considered for statistical parameters
+    loglog : bool, optional
+        plot log log scale, if None, pyaerocom default is used
+    ax : Axes
+        axes into which the data are to be plotted
+    figsize : tuple
+        size of figure (if new figure is created, ie ax is None)
+    fontsize_base : int
+        basic fontsize, defaults to 11
+    fontsize_annot : int, optional
+        fontsize used for annotations
+    marker : str, optional
+        marker used for data, if None, '+' is used
+    color : str, optional
+        color of markers, default to 'k'
+    alpha : float, optional
+        transparency of markers (does not apply to all marker types),
+        defaults to 0.5.
+    **kwargs
+        additional keyword args passed to :func:`ax.plot`
+
 
     Returns
     -------
     matplotlib.axes.Axes
         plot axes
     """
-
+    if marker is None:
+        marker='+'
+    if color is None:
+        color = 'k'
     if isinstance(y_vals, list):
         y_vals = np.asarray(y_vals)
     if isinstance(x_vals, list):
@@ -87,7 +122,8 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
         var_name = 'n/d'
 
     statistics = calc_statistics(y_vals, x_vals,
-                                 lowlim_stats, highlim_stats)
+                                 lowlim=lowlim_stats,
+                                 highlim=highlim_stats)
 
     if loglog:
         ax.loglog(x_vals, y_vals, ls='none', color=color, marker=marker,
