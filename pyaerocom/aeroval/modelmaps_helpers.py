@@ -9,7 +9,7 @@ from seaborn import color_palette
 
 from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
-from pyaerocom.aeroval.coldatatojson_engine import _get_jsdate
+from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 
 def _jsdate_list(data):
     tst = TsType(data.ts_type)

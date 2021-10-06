@@ -15,7 +15,31 @@ from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 
 class ColdataToJsonEngine(ProcessingEngine):
 
-    def run(self, coldata : ColocatedData):
+    def run(self, files):
+        """
+        Convert colocated data files to json
+
+        Parameters
+        ----------
+        files : list
+            list of file paths pointing to colocated data objects to be
+            processed.
+
+        Returns
+        -------
+        list
+            list of files that have been converted.
+
+        """
+        converted = []
+        for file in files:
+            const.print_log.info(f'Processing: {file}')
+            coldata = ColocatedData(file)
+            self.process_coldata(coldata)
+            converted.append(file)
+        return converted
+
+    def process_coldata(self, coldata: ColocatedData):
         """
         Creates all json files for one ColocatedData object
 
@@ -23,10 +47,6 @@ class ColdataToJsonEngine(ProcessingEngine):
         ----------
         coldata : ColocatedData
             colocated data to be processed.
-        cfg : EvalSetup
-            setup of experiment.
-        exp_output : ExperimentOutput
-            DESCRIPTION.
 
         Raises
         ------
