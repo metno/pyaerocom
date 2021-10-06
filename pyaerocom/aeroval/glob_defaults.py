@@ -223,6 +223,27 @@ statistics_defaults = {
 
 }
 
+extended_statistics = {
+     "R_spatial_mean": {
+        "name": "R-Space",
+        "longname": "Spatial R computed from yearly averages",
+        "overall_only": True,
+        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
+        "colmap": "RdYlGn",
+        "unit": "1",
+        "decimals": 2
+  }, 
+  "R_temporal_median": {
+        "name": "R-Temporal",
+        "longname": "R temporal median",
+        "overall_only": True,
+        "scale": [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
+        "colmap": "RdYlGn",
+        "unit": "1",
+        "decimals": 2
+  }, 
+}
+
 statistics_trend = {
     "obs/mod_trend": {
         "name": "Obs/Mod-Trends",
