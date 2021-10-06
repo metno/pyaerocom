@@ -5,7 +5,7 @@ BASEOUT = os.path.join(TMPDIR, 'aeroval')
 os.makedirs(BASEOUT, exist_ok=True)
 
 YEAR = '2007'
-from .._conftest_helpers import add_dummy_model_data, TMPDIR
+from .._conftest_helpers import add_dummy_model_data
 
 add_dummy_model_data('vmrno2', 'nmole mole-1', 'monthly', 'Surface',
                      year=YEAR, lat_range=(-90,90), lon_range=(-180,180))
