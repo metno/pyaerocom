@@ -1,3 +1,5 @@
+# ToDo: merge with test_coldatatojson_helpers.py
+
 import numpy as np
 
 import pytest
@@ -125,10 +127,3 @@ def test__make_trends(coldata,
 
         assert(int(obs_trend["map_var"].split("_")[1]) == start)
         assert(int(mod_trend["map_var"].split("_")[1]) == start)
-
-
-
-
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)

@@ -27,8 +27,6 @@ def test_ExperimentProcessor___init__(cfgdict,raises):
     (cfgexp2,dict(obs_name='BLUB'),pytest.raises(KeyError)),
     (cfgexp3,{},does_not_raise_exception()),
     (cfgexp4,{},does_not_raise_exception()),
-
-
 ])
 def test_ExperimentProcessor_run(cfgdict,runkwargs,raises):
     cfg = EvalSetup(**cfgdict)
