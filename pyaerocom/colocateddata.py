@@ -1806,6 +1806,11 @@ class ColocatedData(object):
         DataArray
             NMBs at each coordinate
         """
+        if not len(self.data_source) == 2:
+            raise DataDimensionError('data_source dimension needs exactly 2 '
+                                     'entries')
+        elif not 'time' in self.dims:
+            raise DataDimensionError('data needs to have time dimension')
         _arr = self.data
         mod, obs = _arr[1], _arr[0]
         return (mod - obs).sum('time') / obs.sum('time')
