@@ -1,12 +1,14 @@
+# ToDo: merge with test_coldatatojson_helpers.py
+
 import numpy as np
 
 import pytest
 
-import pyaerocom.aeroval.coldatatojson_engine as mod
+import pyaerocom.aeroval.coldatatojson_helpers as mod
 import pyaerocom.exceptions as exceptions
 from pyaerocom import ColocatedData, TsType
 
-from ..conftest import coldata, does_not_raise_exception
+from ..conftest import does_not_raise_exception
 
 
 def test_get_heatmap_filename():
@@ -125,10 +127,3 @@ def test__make_trends(coldata,
 
         assert(int(obs_trend["map_var"].split("_")[1]) == start)
         assert(int(mod_trend["map_var"].split("_")[1]) == start)
-
-
-
-
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)

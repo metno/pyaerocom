@@ -1,16 +1,17 @@
-from pyaerocom import const
 import os
-TMPDIR = const.LOCAL_TMP_DIR
-BASEOUT = os.path.join(TMPDIR, 'aeroval')
-os.makedirs(BASEOUT, exist_ok=True)
+from ._outbase import AEROVAL_OUT as BASEOUT
+from ._outbase import ADD_MODELS_DIR
 
 YEAR = '2007'
 from .._conftest_helpers import add_dummy_model_data
 
+# create some fake model data
 add_dummy_model_data('vmrno2', 'nmole mole-1', 'monthly', 'Surface',
-                     year=YEAR, lat_range=(-90,90), lon_range=(-180,180))
+                     year=YEAR, lat_range=(-90,90), lon_range=(-180,180),
+                     tmpdir=ADD_MODELS_DIR)
 MODEL_DIR = add_dummy_model_data('vmro3', 'nmole mole-1', 'monthly', 'Surface',
-                        year=YEAR, lat_range=(-90,90), lon_range=(-180,180))
+                        year=YEAR, lat_range=(-90,90), lon_range=(-180,180),
+                        tmpdir=ADD_MODELS_DIR)
 
 MODELS = {
     'DUMMY' : dict(model_id='DUMMY-MODEL',

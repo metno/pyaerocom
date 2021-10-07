@@ -167,7 +167,7 @@ class DataImporter(HasColocator):
         ----------
         obs_name : str
             Name of observation network in :attr:`cfg`
-        var_name >: str
+        var_name : str
             Name of variable to be read.
 
         Returns

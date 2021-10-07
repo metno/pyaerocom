@@ -7,6 +7,7 @@ import pyaerocom.aeroval.experiment_processor as mod
 from .cfg_test_exp1 import CFG as cfgexp1
 from .cfg_test_exp2 import CFG as cfgexp2
 from .cfg_test_exp3 import CFG as cfgexp3
+from .cfg_test_exp4 import CFG as cfgexp4
 from ..conftest import does_not_raise_exception
 
 @pytest.mark.parametrize('cfgdict,raises', [
@@ -20,12 +21,12 @@ def test_ExperimentProcessor___init__(cfgdict,raises):
         assert isinstance(proc.exp_output, ExperimentOutput)
 
 @pytest.mark.parametrize('cfgdict,runkwargs,raises', [
-    (cfgexp3,{},does_not_raise_exception()),
     (cfgexp1,{},does_not_raise_exception()),
     (cfgexp2,{},does_not_raise_exception()),
     (cfgexp2,dict(model_name='BLA'),pytest.raises(KeyError)),
     (cfgexp2,dict(obs_name='BLUB'),pytest.raises(KeyError)),
-
+    (cfgexp3,{},does_not_raise_exception()),
+    (cfgexp4,{},does_not_raise_exception()),
 ])
 def test_ExperimentProcessor_run(cfgdict,runkwargs,raises):
     cfg = EvalSetup(**cfgdict)

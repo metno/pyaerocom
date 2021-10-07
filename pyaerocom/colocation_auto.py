@@ -697,7 +697,7 @@ class Colocator(ColocationSetup):
             raise AttributeError('stop time is not set')
         return to_datestring_YYYYMMDD(to_pandas_timestamp(self.stop))
 
-    def prepare_run(self, var_list : list = None) -> dict:
+    def prepare_run(self, var_list: list = None) -> dict:
         """
         Prepare colocation run for current setup.
 
@@ -749,7 +749,7 @@ class Colocator(ColocationSetup):
                 vars_to_process, ts_types)
         return vars_to_process
 
-    def run(self, var_list : list = None, **opts):
+    def run(self, var_list: list = None, **opts):
         """Perform colocation for current setup
 
         See also :func:`prepare_run`.

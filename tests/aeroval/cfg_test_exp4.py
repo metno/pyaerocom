@@ -1,9 +1,6 @@
 ### Very simple setup to make sure the basic stuff works in AeroVal
-from pyaerocom import const
 import os
-TMPDIR = const.LOCAL_TMP_DIR
-BASEOUT = os.path.join(TMPDIR, 'aeroval')
-os.makedirs(BASEOUT, exist_ok=True)
+from ._outbase import AEROVAL_OUT as BASEOUT
 
 MODELS = {
     'TM5-AP3-CTRL' : dict(model_id='TM5-met2010_CTRL-TEST',
@@ -14,15 +11,17 @@ MODELS = {
 OBS_GROUNDBASED = {
     'AERONET-Sun' : dict(obs_id='AeronetSunV3L2Subset.daily',
                          obs_vars = ['od550aer'],
-                         obs_vert_type='Column')
-    'AN-EEA-MP'         : dict(is_superobs = True,
-                               obs_id = ('AeronetSunV3L2Subset.daily',
-                                         'AeronetSDAV3L2Subset.daily'),
-                               obs_vars = ['od550aer'],
-                               obs_vert_type = 'Column',
-
-                               ),
-
+                         only_superobs=True,
+                         obs_vert_type='Column'),
+    'AERONET-SDA' : dict(obs_id='AeronetSDAV3L2Subset.daily',
+                         obs_vars = ['od550aer'],
+                         only_superobs=True,
+                         obs_vert_type='Column'),
+    'SDA-and-Sun' : dict(
+                        is_superobs = True,
+                        obs_id = ('AERONET-Sun', 'AERONET-SDA'),
+                        obs_vars = ['od550aer'],
+                        obs_vert_type = 'Column'),
 }
 
 CFG = dict(
@@ -37,7 +36,7 @@ CFG = dict(
     reanalyse_existing = True,
     raise_exceptions = True,
     only_json = False,
-    add_model_maps = True,
+    add_model_maps = False,
     only_model_maps = False,
 
     clear_existing_json = False,
@@ -60,11 +59,10 @@ CFG = dict(
     colocate_time=False,
 
     obs_remove_outliers=False,
-    add_seasons=False,
     model_remove_outliers=False,
     harmonise_units=True,
-    regions_how = 'default'
-    annual_stats_constrained=True,
+    regions_how = 'default',
+    annual_stats_constrained=False,
 
     proj_id = 'test',
     exp_id = 'exp4',
@@ -74,12 +72,3 @@ CFG = dict(
 
     public = True,
 )
-
-if __name__=='__main__':
-    from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-    from pyaerocom.access_testdata import initialise
-    tda = initialise()
-    stp = EvalSetup(**CFG)
-    ana = ExperimentProcessor(stp)
-    ana.run()
-    print(ana.exp_output)
