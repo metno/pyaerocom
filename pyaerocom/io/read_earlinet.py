@@ -673,39 +673,3 @@ class ReadEarlinet(ReadUngriddedBase):
                         matches.append(path)
         self.files = files = list(dict.fromkeys(matches))
         return files
-
-    def copy(self):
-        """Make and return a deepcopy of this object"""
-        from copy import deepcopy
-        return deepcopy(self)
-
-if __name__=="__main__":
-    import matplotlib.pyplot as plt
-
-    plt.close('all')
-    r = ReadEarlinet()
-
-    print(r.data_dir)
-    files = r.get_file_list(['ec532aer', 'bsc532aer'])
-    data = r.read(['ec532aer', 'bsc532aer'], files=files[:20])
-
-    data._check_index()
-
-# =============================================================================
-#     data = read.read('ec532aer')
-#     print(data)
-#
-#     stat = data.to_station_data(0)
-#
-#
-#     merged0 = data.to_station_data('Evora')
-#     merged = data.to_station_data('Evora', freq='monthly')
-#
-#     print(merged)
-#
-#     merged.ec532aer.plot()
-#
-#     arr0 = merged0.ec532aer
-#     arr = merged.ec532aer
-#
-# =============================================================================
