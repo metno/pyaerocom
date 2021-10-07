@@ -95,7 +95,17 @@ def test_reanalyse_existing():
     proc.exp_output.delete_experiment_data(also_coldata=True)
     proc.run()
 
+def test_superobs_different_resolutions():
+    cfg = EvalSetup(**cfgexp4)
+    cfg.model_cfg['TM5-AP3-CTRL'].model_ts_type_read=None
+    cfg.model_cfg['TM5-AP3-CTRL'].flex_ts_type=True
 
+    cfg.obs_cfg['AERONET-Sun'].ts_type ='daily'
+    cfg.obs_cfg['AERONET-SDA'].ts_type = 'monthly'
+
+    proc = ExperimentProcessor(cfg)
+    proc.exp_output.delete_experiment_data(also_coldata=True)
+    proc.run()
 
 
 

@@ -1,8 +1,10 @@
 from traceback import format_exc
 
 import numpy as np
+import xarray as xr
 
 from pyaerocom import const
+from pyaerocom.helpers import get_lowest_resolution
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.aeroval._processing_base import ProcessingEngine, HasColocator
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
@@ -80,7 +82,7 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
         obs_needed = self.cfg.obs_cfg[obs_name]['obs_id']
         vert_code = self.cfg.obs_cfg.get_entry(obs_name)['obs_vert_type']
         for oname in obs_needed:
-            fp, ts_type, vert_code = self._get_coldata(
+            fp, ts_type, vert_code = self._get_coldata_fileinfo(
                 model_name, oname, var_name, try_colocate_if_missing)
             coldata_files.append(fp)
             coldata_resolutions.append(ts_type)
@@ -96,43 +98,35 @@ class SuperObsEngine(ProcessingEngine, HasColocator):
                              f'all required observations for super obs '
                              f'{obs_name}')
 
-
-        from pyaerocom.helpers import get_lowest_resolution
         to_freq = get_lowest_resolution(*coldata_resolutions)
-        import xarray as xr
         darrs = []
         for fp in coldata_files:
-            data = ColocatedData(fp)
-            if data.ts_type != to_freq:
-                meta = data.metadata
-                try:
-                    rshow = meta['resample_how']
-                except KeyError:
-                    rshow = None
-
-                data.resample_time(
-                    to_ts_type=to_freq,
-                    how=rshow,
-                    apply_constraints=meta['apply_constraints'],
-                    min_num_obs=meta['min_num_obs'],
-                    colocate_time=meta['colocate_time'],
-                    inplace=True)
-            arr = data.data
-            ds = arr['data_source'].values
-            source_new = [obs_name, ds[1]]
-            arr['data_source'] = source_new  # obs, model_id
-            arr.attrs['data_source'] = source_new
-            arr.attrs['obs_name'] = obs_name
-            darrs.append(arr)
+            darrs.append(self._get_dataarray(fp,to_freq,obs_name))
 
         merged = xr.concat(darrs, dim='station_name')
         coldata = ColocatedData(merged)
         engine = ColdataToJsonEngine(self.cfg)
         engine.process_coldata(coldata)
 
+    def _get_dataarray(self, fp, to_freq, obs_name):
+        """Get dataarray needed for combination to superobs"""
+        data = ColocatedData(fp)
+        if data.ts_type != to_freq:
+            data.resample_time(
+                to_ts_type=to_freq,
+                settings_from_meta=True,
+                inplace=True)
+        arr = data.data
+        ds = arr['data_source'].values
+        source_new = [obs_name, ds[1]]
+        arr['data_source'] = source_new  # obs, model_id
+        arr.attrs['data_source'] = source_new
+        arr.attrs['obs_name'] = obs_name
+        return arr
 
-    def _get_coldata(self, model_name, obs_name, var_name,
-                     try_colocate_if_missing):
+    def _get_coldata_fileinfo(self, model_name, obs_name, var_name,
+                              try_colocate_if_missing):
+        """Get fileinfo about existing colocated data object"""
         col = self.get_colocator(model_name, obs_name)
         if self.reanalyse_existing:
             col.run(var_list=[var_name])

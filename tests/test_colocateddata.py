@@ -396,6 +396,26 @@ def test_ColocatedData_read_netcdf(tempdir,filename,raises):
         cd = ColocatedData().read_netcdf(fp)
         assert isinstance(cd, ColocatedData)
 
-if __name__=="__main__":
-    import sys
-    pytest.main(sys.argv)
+@pytest.mark.parametrize('which,args,mean,raises', [
+('tm5_aeronet',dict(to_ts_type='yearly'), 0.336, does_not_raise_exception()),
+('tm5_aeronet',dict(to_ts_type='yearly', min_num_obs=14),np.nan,
+ does_not_raise_exception()),
+('tm5_aeronet',dict(to_ts_type='yearly', settings_from_meta=True), 0.336,
+ does_not_raise_exception()),
+('tm5_aeronet',dict(to_ts_type='yearly', colocate_time=True), 0.363,
+ does_not_raise_exception()),
+])
+def test_ColocatedData_resample_time(coldata,which,args,mean,raises):
+    cd = coldata[which]
+    with raises:
+        cd1 = cd.resample_time(**args)
+        avg = cd1.data.mean().data
+        if np.isnan(mean):
+            assert np.isnan(avg)
+        else:
+            npt.assert_allclose(avg, mean, atol=1e-3)
+
+        if 'inplace' in args:
+            assert cd1 is cd
+        else:
+            assert cd1 is not cd
