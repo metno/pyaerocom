@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import numpy as np
 from collections import OrderedDict as od
 from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict

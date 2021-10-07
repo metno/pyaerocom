@@ -1,13 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
+import pytest
 import os
 
 import numpy as np
 import numpy.testing as npt
-import pytest
 
 from pyaerocom import VerticalProfile
 from pyaerocom.io.read_earlinet import ReadEarlinet
@@ -20,19 +15,16 @@ FILES = ['ev1008192050.e532',
          'ev1011221924.e532',
          'ev1105122027.e532']
 
-@lustre_unavail
 def get_test_paths():
     from pyaerocom import const
-    testdir = os.path.join(const.OBSLOCS_UNGRIDDED['EARLINET'], 'ev')
+    testdir = os.path.join(const.OBSLOCS_UNGRIDDED['Earlinet-test'], 'ev')
     return [os.path.join(testdir, f) for f in FILES]
 
-@lustre_unavail
 def test_all_files_exist():
     for file in get_test_paths():
         if not os.path.exists(file):
             raise AssertionError('File {} does not exist'.format(file))
 
-@lustre_unavail
 def test_first_file():
     read = ReadEarlinet()
     paths = get_test_paths()
@@ -68,7 +60,7 @@ def test_first_file():
     npt.assert_allclose(vals_altitude, [331.29290771484375, 7862.52490234375],
                         rtol=TEST_RTOL)
 
-@lustre_unavail
+
 def test_read_ungridded():
     read = ReadEarlinet()
     read.files = get_test_paths()
@@ -90,8 +82,3 @@ def test_read_ungridded():
                          float(np.nanmax(merged.ec532aer))],
                         [0.220322,  23.093238, 111.478665],
                         rtol=TEST_RTOL)
-
-if __name__=="__main__":
-
-    import sys
-    pytest.main(sys.argv)
