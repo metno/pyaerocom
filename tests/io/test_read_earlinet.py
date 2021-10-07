@@ -25,7 +25,7 @@ def test_all_files_exist():
         if not os.path.exists(file):
             raise AssertionError('File {} does not exist'.format(file))
 
-def test_first_file():
+def test_ReadEarlinet_read_file():
     read = ReadEarlinet()
     paths = get_test_paths()
     read.files = paths
@@ -61,7 +61,7 @@ def test_first_file():
                         rtol=TEST_RTOL)
 
 
-def test_read_ungridded():
+def test_ReadEarlinet_read():
     read = ReadEarlinet()
     read.files = get_test_paths()
 
