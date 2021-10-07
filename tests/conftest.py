@@ -1,3 +1,5 @@
+import os
+
 import matplotlib
 
 matplotlib.use('Agg')
@@ -227,3 +229,11 @@ def coldata():
 @contextmanager
 def does_not_raise_exception():
     yield
+
+TMPDIR = os.path.join(os.path.expanduser('~'), 'tmp', 'pyatest')
+os.makedirs(TMPDIR, exist_ok=True)
+
+def pytest_sessionfinish(session, exitstatus):
+    print('\n\nBLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+
+
