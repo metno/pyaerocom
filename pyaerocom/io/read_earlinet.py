@@ -113,12 +113,6 @@ class ReadEarlinet(ReadUngriddedBase):
 
     PROVIDES_VARIABLES = list(VAR_PATTERNS_FILE)
 
-# =============================================================================
-#     EXCLUDE_FILES = ['cirrus.txt',
-#                      'etna.txt',
-#                      'forest_fires.txt',
-#                      'saharan_dust.txt']
-# =============================================================================
     EXCLUDE_CASES = ['cirrus.txt']
 
     def __init__(self, data_id=None, data_dir=None):
