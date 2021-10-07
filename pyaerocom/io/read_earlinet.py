@@ -583,7 +583,8 @@ class ReadEarlinet(ReadUngriddedBase):
         self.data = data_obj
         return data_obj
 
-    def _get_exclude_filelist(self):
+
+    def _get_exclude_filelist(self): # pragma: no cover
         """Get list of filenames that are supposed to be ignored"""
         exclude = []
         import glob

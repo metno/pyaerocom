@@ -121,12 +121,10 @@ def test_ReadEarlinet_get_file_list(vars_to_retrieve,pattern,fnum,raises):
         files = reader.get_file_list(vars_to_retrieve, pattern)
         assert len(files) == fnum
 
-def __test_XXX():
-    reader = ReadEarlinet()
-    files = reader.get_file_list('zdust')
-    for file in files:
-        data = reader.read_file(file, 'zdust')
-        if 'zdust' in data:
-            print()
+def test_ReadEarlinet__get_exclude_filelist():
+    reader = ReadEarlinet('Earlinet-test')
+    reader.EXCLUDE_CASES.append('onefile.txt')
+    files = reader.get_file_list(reader.PROVIDES_VARIABLES)
+    assert len(files) == 5
 
 
