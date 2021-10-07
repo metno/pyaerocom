@@ -1,4 +1,4 @@
-# pyaerocom version 0.12.0
+# DRAFT pyaerocom version 0.12.0
 
 This release comes with many new features, major improvements and a more 
 stable API. Please see the individual points below for major changes.
@@ -34,7 +34,6 @@ the new tools are a lot more flexible and support, for instance:
   visualisation is included in the new **aeroval** interface and can be 
   done via the new tools in the **aeroval** subpackage.
 
-### 
 ### UNSORTED
 
 - EBAS evaluation of individual timestamps to resolve ts_type of NASA Ames 
