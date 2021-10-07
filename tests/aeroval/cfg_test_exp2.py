@@ -1,9 +1,6 @@
 ### Very simple setup to make sure the basic stuff works in AeroVal
-from pyaerocom import const
 import os
-TMPDIR = const.LOCAL_TMP_DIR
-BASEOUT = os.path.join(TMPDIR, 'aeroval')
-os.makedirs(BASEOUT, exist_ok=True)
+from ._outbase import AEROVAL_OUT as BASEOUT
 
 MODELS = {
     'TM5-AP3-CTRL' : dict(model_id='TM5-met2010_CTRL-TEST',
@@ -89,12 +86,3 @@ CFG = dict(
     # directory where colocated data files are supposed to be stored
     weighted_stats = True,
 )
-
-if __name__=='__main__':
-    from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
-    from pyaerocom.access_testdata import initialise
-    tda = initialise()
-    stp = EvalSetup(**CFG)
-    ana = ExperimentProcessor(stp)
-    ana.run()
-    print(ana.exp_output)

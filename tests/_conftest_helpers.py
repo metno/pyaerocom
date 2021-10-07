@@ -5,9 +5,6 @@ import xarray as xr
 
 from pyaerocom import StationData, ColocatedData, Filter
 
-TMPDIR = os.path.join(os.path.expanduser('~'), 'tmp')
-os.makedirs(TMPDIR, exist_ok=True)
-
 def _load_coldata_tm5_aeronet_from_scratch(file_path):
     from xarray import open_dataarray
     from pyaerocom import ColocatedData
@@ -472,28 +469,10 @@ def make_griddeddata(var_name, units, ts_type, vert_code, **kwargs):
         data=data.resample_time(ts_type)
     return data
 
-def add_dummy_model_data(var_name, units, ts_type, vert_code, **kwargs):
-    tmpdir = TMPDIR
+def add_dummy_model_data(var_name, units, ts_type, vert_code, tmpdir,
+                         **kwargs):
     outdir = os.path.join(tmpdir, 'DUMMY-MODEL', 'renamed')
     os.makedirs(outdir, exist_ok=True)
     data =  make_griddeddata(var_name, units, ts_type, vert_code, **kwargs)
     data.to_netcdf(out_dir=outdir)
     return outdir
-
-if __name__ == '__main__':
-    import pyaerocom as pya
-
-    tmpdir = pya.const.LOCAL_TMP_DIR
-    outdir = os.path.join(tmpdir, 'TEMP')
-    os.makedirs(outdir, exist_ok=True)
-
-    add_dummy_model_data('vmrno2', 'nmole mole-1', 'monthly', 'Surface',
-                         year=2017, lat_range=(-90,90), lon_range=(-180,180))
-
-
-    reader = pya.io.ReadGridded('DUMMY-MODEL')
-    print(reader)
-
-    data = reader.read_var('vmrno2')
-    print(data)
-
