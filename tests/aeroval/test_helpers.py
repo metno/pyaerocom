@@ -1,4 +1,5 @@
 import pytest
+from pyaerocom import const
 import pyaerocom.aeroval.helpers as mod
 from pyaerocom.exceptions import VariableDefinitionError
 from ..conftest import does_not_raise_exception
@@ -16,6 +17,11 @@ def test_check_var_ranges_avail(data_tm5,dvar,var,raises):
     data.var_name = dvar
     with raises:
         mod.check_var_ranges_avail(data, var)
+    # cleanup
+    if dvar in const.VARS._vars_added:
+        const.VARS.delete_variable(dvar)
+    elif var in const.VARS._vars_added:
+        const.VARS.delete_variable(var)
 
 @pytest.mark.parametrize('periods,result,raises', [
     (42, None, pytest.raises(ValueError)),
