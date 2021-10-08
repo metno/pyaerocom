@@ -1,9 +1,5 @@
-import os, glob
-
-from pyaerocom import const
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.helpers import start_stop_str
-from pyaerocom._lowlevel_helpers import sort_dict_by_name, read_json, write_json
 from pyaerocom.colocation_auto import Colocator
 from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import TemporalResolutionError
@@ -16,18 +12,17 @@ def check_var_ranges_avail(model_data, var_name):
     except AttributeError:
         model_data.register_var_glob(delete_existing=True)
 
-# ToDo: rewrite or delete before v0.12.0
 def make_info_str_eval_setup(stp, add_header=True):
     """
-    Convert instance of :class:`AerocomEvaluation` into a descriptive string
+    Convert instance of :class:`EvalSetup` into an informative string
 
     Note
     ----
-    UNDER DEVELOPMENT -> this might crash!!
+    ALPHA CODE FOR TESTING this might crash!!
 
     Parameters
     ----------
-    stp : AerocomEvaluation
+    stp : EvalSetup
         Instance of configuration class
 
     Returns
@@ -36,7 +31,6 @@ def make_info_str_eval_setup(stp, add_header=True):
         Long string representation of the input configuration.
 
     """
-    raise NotImplementedError('Under revision')
     modelnum = len(stp.model_config)
     obsnum = len(stp.obs_config)
     varnum = len(stp.all_obs_vars)

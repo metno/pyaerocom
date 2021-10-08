@@ -2,7 +2,6 @@ import glob
 import os
 import shutil
 
-
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
     DirLoc,
@@ -21,7 +20,6 @@ from pyaerocom.aeroval.glob_defaults import (
     var_web_info,
 )
 
-from pyaerocom.aeroval.helpers import read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import VariableDefinitionError

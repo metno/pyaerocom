@@ -10,14 +10,14 @@ from pyaerocom._lowlevel_helpers import (
     ListOfStrings,
     NestedContainer,
     StrType,
+    read_json,
+    write_json
 )
 from pyaerocom.aeroval.aux_io_helpers import ReadAuxHandler
 from pyaerocom.aeroval.collections import ModelCollection, ObsCollection
 from pyaerocom.aeroval.helpers import (
     _check_statistics_periods,
-    _get_min_max_year_periods,
-    read_json,
-    write_json,
+    _get_min_max_year_periods
 )
 from pyaerocom.colocation_auto import ColocationSetup
 from pyaerocom.exceptions import AeroValConfigError
