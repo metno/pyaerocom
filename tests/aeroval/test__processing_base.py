@@ -1,11 +1,12 @@
 import pytest
 
-from pyaerocom import Colocator
+from pyaerocom import Colocator, GriddedData, UngriddedData
 from pyaerocom.aeroval import _processing_base as mod, EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.exceptions import EntryNotAvailable
 
 from ..conftest import does_not_raise_exception
+from .cfg_test_exp1 import CFG
 
 obs_cfg=dict(
     obs1=dict(obs_id='obs1',obs_vars=['od550aer'], obs_vert_type='Column'),
@@ -46,4 +47,15 @@ class TestHasColocator:
         with raises:
             col = val.get_colocator(**args)
             assert isinstance(col, Colocator)
+
+class TestDataImporter:
+    def test_read_model_data(self):
+        val = mod.DataImporter(EvalSetup(**CFG))
+        data = val.read_model_data('TM5-AP3-CTRL', 'od550aer')
+        assert isinstance(data, GriddedData)
+
+    def test_read_ungridded_obsdata(self):
+        val = mod.DataImporter(EvalSetup(**CFG))
+        data = val.read_ungridded_obsdata('AERONET-Sun', 'od550aer')
+        assert isinstance(data, UngriddedData)
 

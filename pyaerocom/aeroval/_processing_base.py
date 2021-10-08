@@ -155,7 +155,7 @@ class DataImporter(HasColocator):
             loaded model data.
 
         """
-        col = self.get_colocator(model_name)
+        col = self.get_colocator(model_name=model_name)
         data = col.get_model_data(var_name)
 
         return data
@@ -178,7 +178,7 @@ class DataImporter(HasColocator):
 
         """
 
-        col = self.get_colocator(obs_name)
+        col = self.get_colocator(obs_name=obs_name)
 
-        data = col.read_ungridded(var_name)
+        data = col._read_ungridded(var_name)
         return data
