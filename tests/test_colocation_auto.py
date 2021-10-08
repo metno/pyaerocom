@@ -94,7 +94,7 @@ def test_Colocator__add_attr(col):
 
 @pytest.mark.parametrize('ts_type_desired, ts_type, flex, raises', [
     ('minutely', 'daily', False, pytest.raises(ColocationError)),
-    ('daily', 'monthly', False, pytest.raises(ColocationError)),
+    ('daily', 'monthly', False, does_not_raise_exception()),
     ('monthly', 'monthly', False, does_not_raise_exception()),
     ])
 def test_Colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,

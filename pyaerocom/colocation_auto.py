@@ -286,7 +286,7 @@ class ColocationSetup(BrowseDict):
     #: (Overwritten from base class)
     CRASH_ON_INVALID = False
 
-    FORBIDDEN_CHARS_KEYS = [
+    FORBIDDEN_KEYS = [
         'var_outlier_ranges', # deprecated since v0.12.0
         'var_ref_outlier_ranges', # deprecated since v0.12.0
         'remove_outliers' # deprecated since v0.12.0
@@ -1158,11 +1158,6 @@ class Colocator(ColocationSetup):
                 tst = tst[var_name]
             else:
                 tst = self.ts_type
-        if not self.flex_ts_type and tst != self.ts_type:
-            raise ColocationError(f'flex_ts_type is deactivated and specified '
-                                  f'read frequency for {var_name} ({tst}) is '
-                                  f'different from colocation output freq '
-                                  f'({self.ts_type})')
         return tst
 
     def _read_gridded(self, var_name, is_model):

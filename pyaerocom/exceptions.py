@@ -80,6 +80,9 @@ class DataExtractionError(ValueError):
 class DataSearchError(IOError):
     pass
 
+class EvalEntryNameError(KeyError):
+    pass
+
 class NasaAmesReadError(IOError):
     pass
 
