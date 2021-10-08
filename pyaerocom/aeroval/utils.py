@@ -1,13 +1,12 @@
 import os
 
-import cf_units
 import numpy as np
 
 from pyaerocom import const
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 from pyaerocom.griddeddata import GriddedData
 from pyaerocom.helpers import make_dummy_cube_latlon, numpy_to_cube
-
+from pyaerocom.variable_helpers import get_variable
 
 def make_config_template(proj_id: str, exp_id: str) -> EvalSetup:
     """
@@ -28,15 +27,15 @@ def make_config_template(proj_id: str, exp_id: str) -> EvalSetup:
     """
     return EvalSetup(proj_id, exp_id)
 
-# ToDo: rewrite or delete before v0.12.0
+
 def compute_model_average_and_diversity(cfg, var_name,
                                         model_names=None,
-                                        ts_type='monthly',
+                                        ts_type=None,
                                         lat_res_deg=2,
                                         lon_res_deg=3,
                                         year=None,
                                         data_id=None,
-                                        avg_how='median',
+                                        avg_how=None,
                                         extract_surface=True,
                                         ignore_models=None,
                                         logfile=None,
@@ -84,19 +83,26 @@ def compute_model_average_and_diversity(cfg, var_name,
         corresponding diversity field, computed using definition from
         Textor et al., 2006 (ACP) DOI: 10.5194/acp-6-1777-2006
     """
-    raise NotImplementedError('old version, currently not working...')
     if not isinstance(cfg, ExperimentProcessor):
-        raise ValueError
+        raise ValueError('invalid input, need ExperimentProcessor')
+    if ts_type is None:
+        ts_type = 'monthly'
+    if avg_how is None:
+        avg_how = 'median'
     if model_use_vars is None:
         model_use_vars = {}
     if ignore_models is None:
         ignore_models = []
     if year is None:
-        year = cfg.cfg_colocation.start
+        cfg.cfg._check_time_config()
+        year = cfg.cfg.colocation_opts.start
 
-    if cfg.cfg_colocation.stop is not None:
-        raise ValueError('Can only compute average model for single year '
-                         'analyses')
+    end = cfg.cfg.colocation_opts.stop
+    if end is not None and not end-year==1:
+        raise NotImplementedError(
+            f'Can only compute average model for single year analyses so far')
+
+
     if avg_how =='mean':
         avg_fun = np.mean
     elif avg_how == 'median':
@@ -108,31 +114,15 @@ def compute_model_average_and_diversity(cfg, var_name,
         data_id = 'AEROCOM-{}'.format(avg_how.upper())
 
     if model_names is None:
-        model_names = []
-        for mname in cfg.model_config:
-            model_names.append(mname)
+        model_names = list(cfg.cfg.model_cfg)
 
-    # make sure the input model names exist and are names and not ID's
-    # also takes care of case where input is dictionary
-    _model_names = []
-    for mname in model_names:
-        try:
-            _model_names.append(cfg.get_model_name(mname))
-        except Exception:
-            print('No such model in AerocomEvaluation class: {}'.format(mname))
-
-    model_names = _model_names
-
-    # same for ignore models (consider only relevant ones)
-    _ignore_models = []
-    for mname in ignore_models:
-        try:
-            mn = cfg.get_model_name(mname)
-            if mn in model_names:
-                _ignore_models.append(mn)
-        except AttributeError:
-            pass
-    ignore_models = _ignore_models
+    if len(ignore_models) > 0:
+        models = []
+        for model in model_names:
+            if not model in ignore_models:
+                models.append(model)
+    else:
+        models = model_names
 
     dummy = make_dummy_cube_latlon(lat_res_deg=lat_res_deg,
                                    lon_res_deg=lon_res_deg)
@@ -142,18 +132,13 @@ def compute_model_average_and_diversity(cfg, var_name,
     from_models=[]
     from_vars = []
     models_failed = []
-    vunit = cf_units.Unit(const.VARS[var_name].units)
 
-    for mname in model_names:
-        if not mname in cfg.model_config:
-            raise Exception('Please debug')
+    unit_out = get_variable(var_name).units
 
-        if mname in ignore_models:
-            const.print_log.info('Ignoring model {}'.format(mname))
-            continue
+    for mname in models:
         const.print_log.info(f'Adding {mname} ({var_name})')
 
-        mid = cfg.get_model_id(mname)
+        mid = cfg.cfg.model_cfg.get_entry(mname)['model_id']
         if mid == data_id or mname==data_id:
             continue
 
@@ -168,8 +153,8 @@ def compute_model_average_and_diversity(cfg, var_name,
                                        ts_type=ts_type,
                                        start=year,
                                        **kwargs)
-            if not data.units == vunit:
-                data.convert_unit(vunit)
+            if not data.units == unit_out:
+                data.convert_unit(unit_out)
 
             elif not data.longitude.circular:
                 if not data.check_lon_circular():

@@ -33,11 +33,11 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         if ocfg['is_superobs']:
             try:
                 engine = SuperObsEngine(self.cfg)
-                map_files = engine.run(model_name=model_name,
-                                       obs_name=obs_name,
-                                       var_list=var_list,
-                                       try_colocate_if_missing=True
-                                       )
+                engine.run(model_name=model_name,
+                           obs_name=obs_name,
+                           var_list=var_list,
+                           try_colocate_if_missing=True
+                            )
             except Exception:
                 if self.raise_exceptions:
                     raise
@@ -64,7 +64,6 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
             else:
                 engine = ColdataToJsonEngine(self.cfg)
                 engine.run(files_to_convert)
-                #self.make_json_files(files_to_convert)
 
     def run(self, model_name=None, obs_name=None, var_list=None,
             update_interface=True):
@@ -110,8 +109,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         # processing below)
         if self.cfg.webdisp_opts.add_model_maps:
             engine = ModelMapsEngine(self.cfg)
-            map_files = engine.run(model_list=model_list,
-                                   var_list=var_list)
+            engine.run(model_list=model_list, var_list=var_list)
 
         if not self.cfg.processing_opts.only_model_maps:
             for obs_name in obs_list:
