@@ -7,7 +7,7 @@ Created on Thu May 27 12:27:47 2021
 """
 from fnmatch import fnmatch
 from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.exceptions import EntryNotAvailable
+from pyaerocom.exceptions import EntryNotAvailable, EvalEntryNameError
 from pyaerocom.aeroval.obsentry import ObsEntry
 from pyaerocom.aeroval.modelentry import ModelEntry
 
@@ -15,8 +15,23 @@ import abc
 
 
 class BaseCollection(BrowseDict, abc.ABC):
+    #: maximum length of entry names
     MAXLEN_KEYS = 25
+    #: Invalid chars in entry names
     FORBIDDEN_CHARS_KEYS =['_']
+
+    def _check_entry_name(self, key):
+        if any([x in key for x in self.FORBIDDEN_CHARS_KEYS]):
+            raise EvalEntryNameError(
+                f'Invalid name: {key}. Must not contain any of the following '
+                f'characters: {self.FORBIDDEN_CHARS_KEYS}')
+
+    def __setitem__(self, key, value):
+        self._check_entry_name(key)
+        if 'web_interface_name' in value:
+            self._check_entry_name(value['web_interface_name'])
+        super().__setitem__(key, value)
+
     def keylist(self, name_or_pattern:str=None) -> list:
         """Find model names that match input search pattern(s)
 

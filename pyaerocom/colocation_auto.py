@@ -286,7 +286,7 @@ class ColocationSetup(BrowseDict):
     #: (Overwritten from base class)
     CRASH_ON_INVALID = False
 
-    FORBIDDEN_CHARS_KEYS = [
+    FORBIDDEN_KEYS = [
         'var_outlier_ranges', # deprecated since v0.12.0
         'var_ref_outlier_ranges', # deprecated since v0.12.0
         'remove_outliers' # deprecated since v0.12.0

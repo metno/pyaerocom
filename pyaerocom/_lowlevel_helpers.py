@@ -333,10 +333,10 @@ class BrowseDict(MutableMapping):
     assigned value is callable, it will be executed on demand).
     """
     ADD_GLOB = []
-    FORBIDDEN_CHARS_KEYS = []
+    FORBIDDEN_KEYS = []
     #: Keys to be ignored when converting to json
     IGNORE_JSON = []
-    MAXLEN_KEYS = 1e3
+    MAXLEN_KEYS = 1e2
     SETTER_CONVERT = {}
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
@@ -374,7 +374,7 @@ class BrowseDict(MutableMapping):
             if len(key) > self.MAXLEN_KEYS:
                 raise KeyError(
                     f'key {key} exceeds max length of {self.MAXLEN_KEYS}')
-            if key in self.FORBIDDEN_CHARS_KEYS:
+            if key in self.FORBIDDEN_KEYS:
                 raise KeyError(f'invalid key {key}')
         setattr(self, key, val)
 
@@ -456,7 +456,7 @@ class BrowseDict(MutableMapping):
         for key, val in other.items():
             if key in self:
                 self[key] = val
-            elif key in self.FORBIDDEN_CHARS_KEYS:
+            elif key in self.FORBIDDEN_KEYS:
                 raise KeyError(f'invalid key {key}')
 
     def pretty_str(self):
