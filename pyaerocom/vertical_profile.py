@@ -9,8 +9,6 @@ class VerticalProfile(object):
                  altitude_unit):
 
         self.var_name = var_name
-
-        self.var_name = var_name
         self.dtime = dtime
         self.data = data
         self.data_err = data_err
