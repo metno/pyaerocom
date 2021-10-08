@@ -18,9 +18,12 @@ def test_EvalSetup___init__(kwargs,raises):
      pytest.raises(EvalEntryNameError)),
     (dict(obs_cfg=dict(WRONG_OBS=cfgexp1['obs_cfg']['AERONET-Sun'])),
      pytest.raises(EvalEntryNameError)),
+    (dict(obs_cfg=dict(OBS=cfgexp1['obs_cfg']['AERONET-Sun'])),
+     does_not_raise_exception()),
+    (dict(obs_cfg=dict(OBS=dict(web_interface_name='WRONG_OBS'))),
+     pytest.raises(EvalEntryNameError)),
 ])
 def test_EvalSetup___init__INVALID_ENTRY_NAMES(update,raises):
-    cfgexp1.update(**update)
     CFG = {**cfgexp1}
     CFG.update(**update)
     with raises:
