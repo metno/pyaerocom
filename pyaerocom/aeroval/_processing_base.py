@@ -87,9 +87,10 @@ class HasColocator(HasConfig):
         -------
         diurnal_only : bool
         """
+        entry = self.cfg.get_obs_entry(obs_name)
         try:
-            diurnal_only = self.cfg.get_obs_entry(obs_name).diurnal_only
-        except AttributeError:
+            diurnal_only = entry['diurnal_only']
+        except KeyError:
             diurnal_only = False
         return diurnal_only
 
