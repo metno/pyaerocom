@@ -14,7 +14,8 @@ import tarfile
 from traceback import format_exc
 from pyaerocom import const
 from pyaerocom.io import (ReadAeronetSunV3, ReadAeronetSdaV3, ReadAeronetInvV3,
-                          ReadEbas, ReadAirNow, ReadGhost, ReadEEAAQEREP_V2)
+                          ReadEbas, ReadAirNow, ReadGhost, ReadEEAAQEREP_V2,
+                          ReadEarlinet)
 
 class AccessTestData:
 
@@ -40,9 +41,10 @@ class AccessTestData:
         'AirNowSubset'                  : 'obsdata/AirNowSubset',
         'G.EEA.daily.Subset'            : 'obsdata/GHOST/data/EEA_AQ_eReporting/daily',
         'G.EEA.hourly.Subset'           : 'obsdata/GHOST/data/EEA_AQ_eReporting/hourly',
-        'G.EBAS.daily.Subset'            : 'obsdata/GHOST/data/EBAS/daily',
-        'G.EBAS.hourly.Subset'           : 'obsdata/GHOST/data/EBAS/hourly',
-        'EEA_AQeRep.v2.Subset'           : 'obsdata/EEA_AQeRep.v2/renamed'
+        'G.EBAS.daily.Subset'           : 'obsdata/GHOST/data/EBAS/daily',
+        'G.EBAS.hourly.Subset'          : 'obsdata/GHOST/data/EBAS/hourly',
+        'EEA_AQeRep.v2.Subset'          : 'obsdata/EEA_AQeRep.v2/renamed',
+        'Earlinet-test'                 : 'obsdata/Earlinet'
 
 
     }
@@ -55,9 +57,10 @@ class AccessTestData:
         'AirNowSubset'                : ReadAirNow,
         'G.EEA.daily.Subset'          : ReadGhost,
         'G.EEA.hourly.Subset'         : ReadGhost,
-        'G.EBAS.daily.Subset'          : ReadGhost,
-        'G.EBAS.hourly.Subset'         : ReadGhost,
-        'EEA_AQeRep.v2.Subset'         : ReadEEAAQEREP_V2,
+        'G.EBAS.daily.Subset'         : ReadGhost,
+        'G.EBAS.hourly.Subset'        : ReadGhost,
+        'EEA_AQeRep.v2.Subset'        : ReadEEAAQEREP_V2,
+        'Earlinet-test'               : ReadEarlinet
 
     }
 

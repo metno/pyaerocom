@@ -1,31 +1,3 @@
-################################################################
-# read_earlinet.py
-#
-# read Earlinet lidar profile data
-#
-# this file is part of the pyaerocom package
-#
-# Copyright (C) 2017 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# E-mail: jonasg@met.no
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
-
 import fnmatch
 import os
 import re
@@ -43,12 +15,9 @@ from pyaerocom.units_helpers import get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vertical_profile import VerticalProfile
 
-
-# TODO: Check station names -> they are NOT UNIQUE (e.g. Potenza...) -> maybe
-# use station_id instead... would require more flexible iterator in
-# UngriddedData
 class ReadEarlinet(ReadUngriddedBase):
     """Interface for reading of EARLINET data"""
+
     #: Mask for identifying datafiles
     _FILEMASK = '*.*'
 
@@ -78,9 +47,9 @@ class ReadEarlinet(ReadUngriddedBase):
     #: dictionary specifying the file search patterns for each variable
     VAR_PATTERNS_FILE = {'ec532aer'     : '*.e532',
                          'ec355aer'     : '*.e355',
-                         'bsc532aer' : '*.b532',
-                         'bsc355aer' : '*.b355',
-                         'bsc1064aer': '*.b1064',
+                         'bsc532aer'    : '*.b532',
+                         'bsc355aer'    : '*.b355',
+                         'bsc1064aer'   : '*.b1064',
                          'zdust'        : '*.e*'}
 
     #: dictionary specifying the file column names (values) for each Aerocom
@@ -88,9 +57,9 @@ class ReadEarlinet(ReadUngriddedBase):
     VAR_NAMES_FILE = {'ec532aer'        : 'Extinction',
                       'ec355aer'        : 'Extinction',
                       'ec1064aer'       : 'Extinction',
-                      'bsc532aer'    : 'Backscatter',
-                      'bsc355aer'    : 'Backscatter',
-                      'bsc1064aer'   : 'Backscatter',
+                      'bsc532aer'       : 'Backscatter',
+                      'bsc355aer'       : 'Backscatter',
+                      'bsc1064aer'      : 'Backscatter',
                       'zdust'           : 'DustLayerHeight'}
 
     #: metadata names that are supposed to be imported
@@ -128,24 +97,22 @@ class ReadEarlinet(ReadUngriddedBase):
                      'eval_method']
 
     #: Attribute access names for unit reading of variable data
-    VAR_UNIT_NAMES = od(Extinction    = ['ExtinctionUnits', 'units'],
-                        Backscatter   = ['BackscatterUnits', 'units'],
-                        Altitude      = 'units')
+    VAR_UNIT_NAMES = dict(
+        Extinction      = ['ExtinctionUnits', 'units'],
+        Backscatter     = ['BackscatterUnits', 'units'],
+        DustLayerHeight = ['units'],
+        Altitude        = 'units')
     #: Variable names of uncertainty data
-    ERR_VARNAMES = od(  ec532aer = 'ErrorExtinction',
-                        ec355aer = 'ErrorExtinction')
+    ERR_VARNAMES = dict(
+        ec532aer = 'ErrorExtinction',
+        ec355aer = 'ErrorExtinction'
+    )
 
     #: If true, the uncertainties are also read (where available, cf. ERR_VARNAMES)
     READ_ERR = True
 
     PROVIDES_VARIABLES = list(VAR_PATTERNS_FILE)
 
-# =============================================================================
-#     EXCLUDE_FILES = ['cirrus.txt',
-#                      'etna.txt',
-#                      'forest_fires.txt',
-#                      'saharan_dust.txt']
-# =============================================================================
     EXCLUDE_CASES = ['cirrus.txt']
 
     def __init__(self, data_id=None, data_dir=None):
@@ -153,11 +120,13 @@ class ReadEarlinet(ReadUngriddedBase):
         super(ReadEarlinet, self).__init__(data_id=data_id,
                                            data_dir=data_dir)
         # make sure everything is properly set up
-        if not all([x in self.VAR_PATTERNS_FILE for x in self.PROVIDES_VARIABLES]):
+        if not all([x in self.VAR_PATTERNS_FILE for x in
+                    self.PROVIDES_VARIABLES]): # pragma: no cover
             raise AttributeError("Please specify file search masks in "
                                  "header dict VAR_PATTERNS_FILE for each "
                                  "variable defined in PROVIDES_VARIABLES")
-        elif not all([x in self.VAR_NAMES_FILE for x in self.PROVIDES_VARIABLES]):
+        elif not all([x in self.VAR_NAMES_FILE for x in
+                      self.PROVIDES_VARIABLES]): # pragma: no cover
             raise AttributeError("Please specify file search masks in "
                                  "header dict VAR_NAMES_FILE for each "
                                  "variable defined in PROVIDES_VARIABLES")
@@ -202,17 +171,14 @@ class ReadEarlinet(ReadUngriddedBase):
             if var in self.VAR_PATTERNS_FILE: #make sure to only read what is supported by this file
                 if fnmatch.fnmatch(filename, self.VAR_PATTERNS_FILE[var]):
                     _vars.append(var)
-            else: # will be computed
+            elif var in self.AUX_REQUIRES:
                 _vars.append(var)
+            else:
+                raise ValueError(f'{var} is not supported')
 
         # implemented in base class
         vars_to_read, vars_to_compute = self.check_vars_to_retrieve(_vars)
 
-        if len(vars_to_compute) > 0:
-            raise NotImplementedError("This feature has not yet implemented, as "
-                                      "it was not required so far. The "
-                                      "implementation requires handling of "
-                                      "profile data as well")
         #create empty data object (is dictionary with extended functionality)
         data_out = StationData()
         data_out['station_id'] = filename.split('/')[-2]
@@ -237,7 +203,7 @@ class ReadEarlinet(ReadUngriddedBase):
             else:
                 try:
                     _meta = data_in.attrs[v]
-                except Exception:
+                except Exception: # pragma: no cover
                     _meta = None
             data_out[k] = _meta
 
@@ -268,7 +234,6 @@ class ReadEarlinet(ReadUngriddedBase):
         data_out['dtime'] = [dtime]
         data_out['stopdtime'] = [stop]
         data_out['has_zdust'] = False
-        #contains_vars = []
 
         for var in vars_to_read:
             data_out['var_info'][var] = od()
@@ -330,9 +295,6 @@ class ReadEarlinet(ReadUngriddedBase):
                     const.print_log.warning('zdust value {} out of range, '
                                             'setting to NaN'.format(val))
                     val = np.nan
-                    err = np.nan
-                if err > self._MAX_VAL_NAN:
-                    err = np.nan
 
                 if np.isnan(val):
                     self.logger.warning("Invalid value of variable zdust "
@@ -342,7 +304,6 @@ class ReadEarlinet(ReadUngriddedBase):
                 data_out['has_zdust'] = True
                 data_out[var] = val
 
-            #elif var.startswith('ec'):
             else:
                 if not val.ndim == 1:
                     raise ValueError('Extinction data must be one dimensional')
@@ -398,12 +359,10 @@ class ReadEarlinet(ReadUngriddedBase):
                 # Write everything into profile
                 data_out[var] = profile
 
-            #contains_vars.append(var)
             data_out['var_info'][var].update(unit_ok=unit_ok,
                                              err_read=err_read,
                                              outliers_removed=outliers_removed)
 
-        #data_out['contains_vars'] = contains_vars
         return (data_out)
 
     def read(self, vars_to_retrieve=None, files=None, first_file=None,
@@ -587,7 +546,8 @@ class ReadEarlinet(ReadUngriddedBase):
         self.data = data_obj
         return data_obj
 
-    def _get_exclude_filelist(self):
+
+    def _get_exclude_filelist(self): # pragma: no cover
         """Get list of filenames that are supposed to be ignored"""
         exclude = []
         import glob
@@ -612,7 +572,7 @@ class ReadEarlinet(ReadUngriddedBase):
         self.exclude_files = list(dict.fromkeys(exclude))
         return self.exclude_files
 
-    #TODO: check performance (it is usually slow...)
+
     def get_file_list(self, vars_to_retrieve=None, pattern=None):
         """Perform recusive file search for all input variables
 
@@ -650,10 +610,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
             _pattern = self.VAR_PATTERNS_FILE[var]
             if pattern is not None:
-                if '/' in _pattern:
-                    raise NotImplementedError('Cannot apply file pattern to '
-                                              'wildcard path mask including / ')
-                elif '.' in pattern:
+                if '.' in pattern:
                     raise NotImplementedError('filetype delimiter . not '
                                               'supported')
                 spl = _pattern.split('.')
@@ -679,39 +636,3 @@ class ReadEarlinet(ReadUngriddedBase):
                         matches.append(path)
         self.files = files = list(dict.fromkeys(matches))
         return files
-
-    def copy(self):
-        """Make and return a deepcopy of this object"""
-        from copy import deepcopy
-        return deepcopy(self)
-
-if __name__=="__main__":
-    import matplotlib.pyplot as plt
-
-    plt.close('all')
-    r = ReadEarlinet()
-
-    print(r.data_dir)
-    files = r.get_file_list(['ec532aer', 'bsc532aer'])
-    data = r.read(['ec532aer', 'bsc532aer'], files=files[:20])
-
-    data._check_index()
-
-# =============================================================================
-#     data = read.read('ec532aer')
-#     print(data)
-#
-#     stat = data.to_station_data(0)
-#
-#
-#     merged0 = data.to_station_data('Evora')
-#     merged = data.to_station_data('Evora', freq='monthly')
-#
-#     print(merged)
-#
-#     merged.ec532aer.plot()
-#
-#     arr0 = merged0.ec532aer
-#     arr = merged.ec532aer
-#
-# =============================================================================
