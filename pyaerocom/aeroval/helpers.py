@@ -6,11 +6,38 @@ from pyaerocom.exceptions import TemporalResolutionError
 
 
 def check_var_ranges_avail(model_data, var_name):
+    """
+    Check if lower and upper variable ranges are available for input variable
+
+    Parameters
+    ----------
+    model_data : GriddedData
+        modeldata containing variable data
+    var_name : str
+        variable name to be checked (must be the same as model data
+        AeroCom variable name).
+
+    Raises
+    ------
+    ValueError
+        if ranges for input variable are not defined and if input model data
+        corresponds to a different variable than the input variable name.
+
+    Returns
+    -------
+    None
+
+    """
     try:
         VarinfoWeb(var_name)
-        return True
     except AttributeError:
-        model_data.register_var_glob(delete_existing=True)
+        if model_data.var_name_aerocom == var_name:
+            model_data.register_var_glob(delete_existing=True)
+        else:
+            raise ValueError(
+                f'Mismatch between variable name of input model_data '
+                f'({model_data.var_name_aerocom}) and var_name {var_name}')
+
 
 def _check_statistics_periods(periods: list) -> list:
     """
