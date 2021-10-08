@@ -1,7 +1,11 @@
 import pytest
 
+from pyaerocom import Colocator
 from pyaerocom.aeroval import _processing_base as mod, EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
+from pyaerocom.exceptions import EntryNotAvailable
+
+from ..conftest import does_not_raise_exception
 
 obs_cfg=dict(
     obs1=dict(obs_id='obs1',obs_vars=['od550aer'], obs_vert_type='Column'),
@@ -29,4 +33,17 @@ class TestHasColocator:
         val = mod.HasColocator(dummy_setup)
         assert val._get_diurnal_only('obs1') == False
         assert val._get_diurnal_only('obs2') == True
+
+    @pytest.mark.parametrize('args,raises', [
+        (dict(), does_not_raise_exception()),
+        (dict(obs_name='obs1'), does_not_raise_exception()),
+        (dict(obs_name='obs2'), does_not_raise_exception()),
+        (dict(model_name='mod2'), pytest.raises(EntryNotAvailable)),
+
+    ])
+    def test_get_colocator(self,args,raises):
+        val = mod.HasColocator(dummy_setup)
+        with raises:
+            col = val.get_colocator(**args)
+            assert isinstance(col, Colocator)
 
