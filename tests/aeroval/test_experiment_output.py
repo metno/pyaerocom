@@ -7,11 +7,13 @@ from pyaerocom.aeroval.setupclasses import EvalSetup
 from ..conftest import does_not_raise_exception
 from .cfg_test_exp1 import CFG as cfgexp1
 BASEDIR_DEFAULT = os.path.join(const.OUTPUTDIR, 'aeroval/data')
-
+from ._outbase import AEROVAL_OUT as BASEOUT
+DUMMY_OUT = os.path.join(BASEOUT, 'dummy')
 
 @pytest.fixture(scope='module')
 def dummy_setup():
-    return EvalSetup(proj_id='proj',exp_id='exp')
+    return EvalSetup(proj_id='proj',exp_id='exp',
+                     json_basedir=DUMMY_OUT)
 
 @pytest.fixture(scope='module')
 def dummy_expout(dummy_setup):
@@ -90,7 +92,7 @@ def test_ExperimentOutput_exp_id(dummy_expout):
 
 def test_ExperimentOutput_exp_dir(dummy_expout):
 
-    exp_dir = os.path.join(BASEDIR_DEFAULT, 'proj','exp')
+    exp_dir = os.path.join(DUMMY_OUT, 'proj','exp')
     assert dummy_expout.exp_dir == exp_dir
 
 def test_ExperimentOutput_regions_file(dummy_expout):
@@ -186,6 +188,36 @@ def test_ExperimentOutput_delete_experiment_data():
     assert os.path.exists(chk)
     proc.exp_output.delete_experiment_data()
     assert not os.path.exists(chk)
+
+@pytest.mark.parametrize('add_names,order,result,raises', [
+    (['c', 'b', 'a'], None, ['a', 'b', 'c'], does_not_raise_exception()),
+    (['c', 'b', 'a'], ['c', 'b', 'a'], ['c', 'b', 'a'], does_not_raise_exception()),
+    (['c', 'b', 'a'], [42], ['a', 'b', 'c'], does_not_raise_exception()),
+    (['c', 'b', 'a'], 'b', ['b', 'a', 'c'], pytest.raises(ValueError)),
+    (['c', 'b', 'a'], ['b'], ['b', 'a', 'c'], does_not_raise_exception()),
+    (['c', 'b', 'a'], ['b','c'], ['b', 'c', 'a'], does_not_raise_exception()),
+
+])
+def test_ExperimentOutput_reorder_experiments(dummy_expout,add_names,order,
+                                              result,raises):
+
+    out = dummy_expout
+    fp = out.experiments_file
+
+    data = {}
+    for name in add_names:
+        data[name] = dict(public=True)
+    assert list(data) == add_names
+    write_json(data,fp,indent=4)
+    with raises:
+        out.reorder_experiments(order)
+        new = read_json(fp)
+        assert list(new) == result
+    os.remove(fp)
+
+
+
+
 
 
 

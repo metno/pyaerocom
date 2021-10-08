@@ -68,12 +68,44 @@ class ProjectOutput:
         write_json(current, self.experiments_file, indent=4)
 
     def _del_entry_experiments_json(self, exp_id):
+        """
+        Remove an entry from experiments.json
+
+        Parameters
+        ----------
+        exp_id : str
+            name of experiment
+
+        Returns
+        -------
+        None
+
+        """
         current = read_json(self.experiments_file)
         try:
             del current[exp_id]
         except KeyError:
             const.print_log.warning(
                 f'no such experiment registered: {exp_id}')
+        write_json(current, self.experiments_file, indent=4)
+
+    def reorder_experiments(self, exp_order=None):
+        """Reorder experiment order in evaluation interface
+
+        Puts experiment list into order as specified by `exp_order`, all
+        remaining experiments are sorted alphabetically.
+
+        Parameters
+        ----------
+        exp_order : list, optional
+            desired experiment order, if None, then alphabetical order is used.
+        """
+        if exp_order is None:
+            exp_order = []
+        elif not isinstance(exp_order, list):
+            raise ValueError('need list as input')
+        current = read_json(self.experiments_file)
+        current = sort_dict_by_name(current, pref_list=exp_order)
         write_json(current, self.experiments_file, indent=4)
 
 
@@ -189,7 +221,6 @@ class ExperimentOutput(ProjectOutput):
         self._add_entry_experiments_json(self.exp_id, exp_data)
         self._create_var_ranges_json()
         self.update_menu()
-        #self.make_info_table_web()
         self._sync_heatmaps_with_menu_and_regions()
 
         self._create_statistics_json()

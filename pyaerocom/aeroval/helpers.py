@@ -125,67 +125,6 @@ def make_info_str_eval_setup(stp, add_header=True):
         st =  f'{stp.exp_id}: {stp.exp_name}\n{stp.exp_descr}\n' + st
     return st
 
-# ToDo: rewrite or delete before v0.12.0
-def get_all_config_files_evaluation_iface(config_dir):
-    """
-
-    Note
-    ----
-    This code only checks json configuration files, not .py module files
-    containing configuration.
-
-    Parameters
-    ----------
-    config_dir : str
-        directory containing config json files for AerocomEvaluation interface
-
-    Returns
-    -------
-    dict
-        nested dictionary containing file paths of all config files that were
-        detected, where first level of dict id `proj_id` and second level
-        is `exp_id`.
-    """
-
-    results = {}
-
-    for file in glob.glob('{}/*.json'.format(config_dir)):
-        spl = os.path.basename(file).split('_')
-        if not len(spl) == 3 or not spl[0] =='cfg':
-            const.logger.warning('Invalid config file name ', file)
-            continue
-        proj, exp = spl[1], spl[2].split('.')[0]
-        if not proj in results:
-            results[proj] = {}
-        results[proj][exp] = file
-    return results
-
-# ToDo: rewrite or delete before v0.12.0
-def reorder_experiments_menu_evaluation_iface(menu_file, exp_order=None):
-    """Reorder experiment order in evaluation interface
-
-    Puts experiment list into order as specified by `exp_order`, all
-    remaining experiments are sorted alphabetically.
-
-    Parameters
-    ----------
-    menu_file : str
-        file path of menu.json file
-    exp_order : str or list, optional
-        desired experiment order (must not contain all available experiments
-        in menu)
-    """
-    current = read_json(menu_file)
-    if exp_order is None:
-        exp_order = []
-    elif isinstance(exp_order, str):
-        exp_order = [exp_order]
-    if not isinstance(exp_order, list):
-        raise ValueError('Invalid input for exp_order, need None, str or list')
-
-    new = sort_dict_by_name(current, pref_list=exp_order)
-    write_json(new, menu_file, indent=4)
-
 def _check_statistics_periods(periods: list) -> list:
     """
     Check input list of period strings is valid
