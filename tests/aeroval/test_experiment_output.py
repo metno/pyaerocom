@@ -148,7 +148,8 @@ def test_ExperimentOutput__results_summary_EMPTY(dummy_expout):
                                                'vc': [], 'mod': [], 'mvar': []}
 
 def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout):
-    dummy_expout.clean_json_files()
+    modified = dummy_expout.clean_json_files()
+    assert len(modified) == 0
 
 @pytest.mark.skip(reason='needs revision')
 def test_ExperimentOutput__clean_modelmap_files(dummy_expout):
