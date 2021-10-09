@@ -725,7 +725,7 @@ class ExperimentOutput(ProjectOutput):
             if obs_name == allobs.get_web_iface_name(key):
                 obs_matches.append(ocfg)
         if len(obs_matches) == 0:
-            self._invalid['obs'].append(obs_matches)
+            self._invalid['obs'].append(obs_name)
             # obs dataset is not part of experiment
             return False
         # first, check model_add_vars
