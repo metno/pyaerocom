@@ -251,7 +251,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
                                     weighted_stats=True,
                                     annual_stats_constrained=False
                                     )
-        self.webdisp_opts = WebDisplaySetup(add_model_maps=False)
+        self.webdisp_opts = WebDisplaySetup()
 
         self.processing_opts = EvalRunOptions()
 

@@ -1,5 +1,6 @@
 import pytest
 import os
+import shutil
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json,write_json
 from pyaerocom.aeroval import experiment_output as mod, ExperimentProcessor
@@ -112,8 +113,11 @@ def test_ExperimentOutput_menu_file(dummy_expout):
                                                   'menu.json')
 
 
-def test_ExperimentOutput_results_available_False(dummy_expout):
-    assert not dummy_expout.results_available
+def test_ExperimentOutput_results_available_False(dummy_setup):
+    eo = mod.ExperimentOutput(dummy_setup)
+    assert not eo.results_available
+    fp = eo.exp_dir
+    assert not eo.results_available
 
 def test_ExperimentOutput_update_menu_EMPTY(dummy_expout):
     dummy_expout.update_menu()
@@ -143,9 +147,8 @@ def test_ExperimentOutput__results_summary_EMPTY(dummy_expout):
     assert dummy_expout._results_summary() == {'obs': [], 'ovar': [],
                                                'vc': [], 'mod': [], 'mvar': []}
 
-@pytest.mark.skip(reason='needs revision')
-def test_ExperimentOutput_clean_json_files(dummy_expout):
-    pass
+def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout):
+    dummy_expout.clean_json_files()
 
 @pytest.mark.skip(reason='needs revision')
 def test_ExperimentOutput__clean_modelmap_files(dummy_expout):
@@ -176,7 +179,7 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
 
 ### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
 
-def test_ExperimentOutput_delete_experiment_data():
+def test_ExperimentOutput_delete_experiment_data_CFG1():
     cfg = EvalSetup(**cfgexp1)
     cfg.webdisp_opts.regions_how='htap'
     cfg.webdisp_opts.add_model_maps=False
@@ -188,6 +191,15 @@ def test_ExperimentOutput_delete_experiment_data():
     assert os.path.exists(chk)
     proc.exp_output.delete_experiment_data()
     assert not os.path.exists(chk)
+
+def test_Experiment_Output_clean_json_files_CFG1():
+    cfg = EvalSetup(**cfgexp1)
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    modified = proc.exp_output.clean_json_files()
+    assert len(modified) == 0
+
+
 
 @pytest.mark.parametrize('add_names,order,result,raises', [
     (['c', 'b', 'a'], None, ['a', 'b', 'c'], does_not_raise_exception()),
