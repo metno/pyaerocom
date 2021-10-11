@@ -66,9 +66,17 @@ setup(
         'openpyxl',
         'geojsoncontour'
     ],
-    extras_require = {
-        'docs':['nbsphinx'],
-        'test':['pytest>=6.0','pytest-dependency','pytest-cov'],
+    extras_require={
+        "docs": ["nbsphinx"],
+        "test": ["pytest>=6.0", "pytest-dependency", "pytest-cov"],
+        "lint": [
+            "black>=21.9b0",
+            "isort>=5.9.3",
+            "mypy>=0.910",
+            "types-requests",
+            "types-setuptools",
+            "types-simplejson",
+        ],
     },
     dependency_links    =   [],
     description = ('pyaerocom model evaluation software'),
