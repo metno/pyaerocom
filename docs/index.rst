@@ -21,6 +21,7 @@ Official website of pyaerocom, a Python package containing reading, post analysi
    install
    pyaerocom-tutorials/index
    api
+   api-aeroval
 
 Indices and tables
 ==================

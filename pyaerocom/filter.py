@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import numpy as np
 from pyaerocom import region
 
@@ -197,38 +194,3 @@ class Filter(object):
 
     def __call__(self, data_obj):
         return self.apply(data_obj)
-
-if __name__=="__main__":
-    import pyaerocom as pya
-    import matplotlib.pyplot as plt
-
-    plt.close('all')
-
-    f = Filter("EEUROPE")
-
-    obsdata = pya.io.ReadUngridded().read('AeronetSunV3Lev2.daily', 'od550aer')
-    modeldata = pya.io.ReadGridded('ECMWF_CAMS_REAN').read_var('od550aer', start=2010)
-
-    coldata = pya.colocation.colocate_gridded_ungridded(modeldata,
-                                                        obsdata,
-                                                        apply_time_resampling_constraints=False,
-                                                        ts_type='daily',
-                                                        filter_name='WORLD-wMOUNTAINS')
-
-    coldataf = f(coldata)
-
-    pya.plot.mapping.plot_nmb_map_colocateddata(coldataf)
-    coldataf.plot_scatter()
-
-    obsf = f(obsdata)
-
-    modf = f(modeldata)
-
-    coldataf1 = pya.colocation.colocate_gridded_ungridded(modf,
-                                                          obsf,
-                                                          apply_time_resampling_constraints=False,
-                                                          ts_type='daily',
-                                                          filter_name='WORLD-wMOUNTAINS')
-
-    pya.plot.mapping.plot_nmb_map_colocateddata(coldataf1)
-    coldataf1.plot_scatter()

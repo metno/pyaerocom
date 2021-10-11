@@ -62,8 +62,9 @@ class ReadAeronetBase(ReadUngriddedBase):
     UNITS = {}
 
     IGNORE_META_KEYS = ['date', 'time', 'day_of_year']
-    def __init__(self, dataset_to_read=None):
-        super(ReadAeronetBase, self).__init__(dataset_to_read)
+    def __init__(self, data_id=None, data_dir=None):
+        super(ReadAeronetBase, self).__init__(data_id=data_id,
+                                              data_dir=data_dir)
 
         # dictionary that contains information about the file columns
         # is written in method _update_col_index
@@ -485,16 +486,25 @@ if __name__=="__main__":
     class ReadUngriddedImplementationExample(ReadUngriddedBase):
         _FILEMASK = ".txt"
         DATA_ID = "Blaaa"
-        SUPPORTED_DATASETS = ['Blaaa', 'Blub']
         __version__ = "0.01"
         PROVIDES_VARIABLES = ["od550aer"]
+        REVISION_FILE = const.REVISION_FILE
 
-        def __init__(self, dataset_to_read=None):
-            if dataset_to_read is not None:
-                self.DATA_ID = dataset_to_read
+
+        def __init__(self, data_id=None, data_dir=None):
+            super(ReadUngriddedImplementationExample, self).__init__(
+                    data_id, data_dir)
 
         @property
-        def col_index(self):
+        def DEFAULT_VARS(self):
+            return self.PROVIDES_VARIABLES
+
+        @property
+        def SUPPORTED_DATASETS(self):
+            return [self.DATA_ID]
+
+        @property
+        def TS_TYPE(self):
             raise NotImplementedError
 
         def read(self):
@@ -503,5 +513,5 @@ if __name__=="__main__":
         def read_file(self):
             raise NotImplementedError
 
-    c = ReadUngriddedImplementationExample(dataset_to_read='AeronetSunV2Lev1.5.daily')
-    print(c.DATASET_PATH)
+    c = ReadUngriddedImplementationExample()
+

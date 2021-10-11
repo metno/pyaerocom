@@ -1,4 +1,4 @@
-|CI| |Docs|
+|CI| |Docs| |Coverage|
 
 =========
 pyaerocom
@@ -20,3 +20,7 @@ pyaerocom
 .. |Docs| image:: https://readthedocs.org/projects/pyaerocom/badge/?version=latest
 	 :target: https://pyaerocom.readthedocs.io/en/latest/?badge=latest
 	 :alt: Documentation Status
+
+.. |Coverage| image:: https://codecov.io/gh/metno/pyaerocom/branch/main-dev/graph/badge.svg?token=A0AdX8YciZ
+    :target: https://codecov.io/gh/metno/pyaerocom
+

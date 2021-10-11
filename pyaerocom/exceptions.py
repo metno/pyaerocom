@@ -20,6 +20,12 @@
 """
 Module containing pyaerocom custom exceptions
 """
+class AeroValConfigError(ValueError):
+    pass
+
+class AeroValTrendsError(ValueError):
+    pass
+
 class CachingError(IOError):
     pass
 
@@ -30,6 +36,9 @@ class CacheReadError(CachingError):
     pass
 
 class ColocationError(ValueError):
+    pass
+
+class ColocationSetupError(ValueError):
     pass
 
 class CoordinateError(ValueError):
@@ -71,10 +80,19 @@ class DataExtractionError(ValueError):
 class DataSearchError(IOError):
     pass
 
+class EvalEntryNameError(KeyError):
+    pass
+
 class NasaAmesReadError(IOError):
     pass
 
 class EbasFileError(ValueError):
+    pass
+
+class EEAv2FileError(ValueError):
+    pass
+
+class EntryNotAvailable(KeyError):
     pass
 
 class InitialisationError(ValueError):
@@ -116,7 +134,13 @@ class TimeMatchError(AttributeError):
 class TemporalResolutionError(ValueError):
     pass
 
+class TemporalSamplingError(ValueError):
+    pass
+
 class UnitConversionError(ValueError):
+    pass
+
+class UnknownRegion(ValueError):
     pass
 
 class UnresolvableTimeDefinitionError(DataDimensionError, NetcdfError):

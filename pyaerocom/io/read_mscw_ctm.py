@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 10 13:20:04 2020
-
-@author: eirikg
-"""
-
 import xarray as xr
 import numpy as np
 import os
@@ -13,55 +5,20 @@ import glob
 
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
-from pyaerocom.variable import get_emep_variables
+from pyaerocom.io._read_mscw_ctm_helpers import (add_dataarrays,
+                                                 subtract_dataarrays,
+                                                 calc_concNhno3,
+                                                 calc_concNno3pm10,
+                                                 calc_concNno3pm25,
+                                                 calc_conNtno3, calc_concNnh3,
+                                                 calc_concNnh4, calc_concNtnh,
+                                                 update_EC_units,
+                                                 calc_concsspm25, calc_vmrox
+                                                 )
+from pyaerocom.variable_helpers import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom.units_helpers import implicit_to_explicit_rates
+from pyaerocom.units_helpers import UALIASES
 
-def add_dataarrays(*arrs):
-    """
-    Add a bunch of :class:`xarray.DataArray` instances
-
-    Parameters
-    ----------
-    *arrs
-        input arrays (instances of :class:`xarray.DataArray` with same shape)
-
-    Returns
-    -------
-    xarray.DataArray
-        Added array
-
-    """
-    if not len(arrs) > 1:
-        raise ValueError('Need at least 2 input arrays to add')
-    result = arrs[0]
-    for arr in arrs[1:]:
-        result += arr
-    return result
-
-def subtract_dataarrays(*arrs):
-    """
-    Subtract a bunch of :class:`xarray.DataArray` instances from an array
-
-    Parameters
-    ----------
-    *arrs
-        input arrays (instances of :class:`xarray.DataArray` with same shape).
-        Subtraction is performed with respect to the first input array.
-
-
-    Returns
-    -------
-    xarray.DataArray
-        Diff array (all additional ones are subtracted from first array)
-
-    """
-    if not len(arrs) > 1:
-        raise ValueError('Need at least 2 input arrays to add')
-    result = arrs[0]
-    for arr in arrs[1:]:
-        result -= arr
-    return result
 
 class ReadMscwCtm(object):
     """
@@ -90,7 +47,19 @@ class ReadMscwCtm(object):
                     'concbc' : ['concbcf', 'concbcc'],
                     'concno3' : ['concno3c', 'concno3f'],
                     'concoa' : ['concoac', 'concoaf'],
-                    'concpmgt25': ['concpm10', 'concpm25']}
+                    'concpmgt25': ['concpm10', 'concpm25'],
+                    'concNhno3' : ['conchno3'],
+                    'concNnh3'  : ['concnh3'],
+                    'concNnh4'  : ['concnh4'],
+                    'concNno3pm10' : ['concno3f','concno3c'],
+                    'concNno3pm25' : ['concno3f','concno3c'],
+                    'concNtno3'   : ['conchno3','concno3f','concno3c'],
+                    'concNtnh'    : ['concnh3','concnh4'],
+                    'concsspm25'  : ['concssf', 'concssc'],
+                    'concsspm10'  : ['concsspm25','concssc'],
+                    'concCecpm25' : ['concecpm25'],
+                    'vmrox'       : ['concno2', 'vmro3'],
+                    }
 
     # Functions that are used to compute additional variables (i.e. one
     # for each variable defined in AUX_REQUIRES)
@@ -99,9 +68,19 @@ class ReadMscwCtm(object):
     AUX_FUNS = {'depso4' : add_dataarrays,
                 'concbc' : add_dataarrays,
                 'concno3' : add_dataarrays,
-                'conctno3' : add_dataarrays,
                 'concoa' : add_dataarrays,
                 'concpmgt25': subtract_dataarrays,
+                'concNhno3': calc_concNhno3,
+                'concNnh3' : calc_concNnh3,
+                'concNnh4' : calc_concNnh4,
+                'concNno3pm10' : calc_concNno3pm10,
+                'concNno3pm25' : calc_concNno3pm25,
+                'concNtno3'    : calc_conNtno3,
+                'concNtnh'     : calc_concNtnh,
+                'concsspm25'   : calc_concsspm25,
+                'concsspm10'   : add_dataarrays,
+                'concCecpm25'  : update_EC_units,
+                'vmrox'        : calc_vmrox,
                 }
 
     #: supported filename masks, placeholder is for frequencies
@@ -525,6 +504,8 @@ class ReadMscwCtm(object):
         ts_type = self.ts_type
 
         arr = self._load_var(var_name_aerocom, ts_type)
+        if arr.units in UALIASES:
+            arr.attrs['units'] = UALIASES[arr.units]
         try:
             cube = arr.to_iris()
         except MemoryError as e:
@@ -533,16 +514,17 @@ class ReadMscwCtm(object):
         if ts_type == 'hourly':
             cube.coord('time').convert_units('hours since 1900-01-01')
         gridded = GriddedData(cube, var_name=var_name_aerocom,
-                              ts_type=ts_type, check_unit=False,
-                              convert_unit_on_init=False)
+                              ts_type=ts_type, check_unit=True,
+                              convert_unit_on_init=True)
 
-        if var.is_deposition:
-            implicit_to_explicit_rates(gridded, ts_type)
+        #!obsolete
+        #if var.is_deposition:
+        #    implicit_to_explicit_rates(gridded, ts_type)
 
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = self.filepath
+        gridded.metadata['from_files'] = [self.filepath]
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
@@ -609,6 +591,7 @@ class ReadMscwCtm(object):
             return '1'
         elif units == '' and prefix == 'AbsCoef':
             return 'm-1'
+        return units
 
 class ReadEMEP(ReadMscwCtm):
     """Old name of :class:`ReadMscwCtm`."""

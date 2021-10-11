@@ -1,3 +1,0 @@
-pytest>=3
-pytest-dependency
-pytest-cov

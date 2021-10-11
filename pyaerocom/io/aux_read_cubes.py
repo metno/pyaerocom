@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import iris
 import numpy as np
 from traceback import format_exc
@@ -188,7 +186,7 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     Cube
         Cube containing Angstrom exponent(s)
     """
-    from pyaerocom.variable import VarNameInfo
+    from pyaerocom.varnameinfo import VarNameInfo
     from cf_units import Unit
     cube1, cube2 = _check_input_iscube(cube1, cube2)
     if lambda1 is None:

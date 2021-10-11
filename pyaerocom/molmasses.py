@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 VAR_PREFIXES = ['vmr', 'mmr', 'conc', 'sconc', 'wet', 'dry']
 
 # in g/mol
@@ -12,7 +9,11 @@ MOLMASSES = {'air_dry'  : 28.9647,
              'no2'      : 46.0055,
              'hno3'     : 63.01,
              'nh3'      : 17.031,
-             'co'       : 28.010}
+             'co'       : 28.010,
+             'isop'     : 68.12,
+             'glyoxal'  : 58.036,
+             'glyox'    : 58.036,
+             'hcho'     : 30.026,}
 
 class UnkownSpeciesError(ValueError):
     pass

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Pyearocom module for reading and processing of EBAS NASA Ames files
 
@@ -288,7 +286,7 @@ class EbasFlagCol(object):
                     if val == 100:
                         _invalid = False
                         break # since all other flags are irrelevant if 100 is flagged
-                    elif val in self.FLAG_INFO.valid and not self.FLAG_INFO.valid[val]: #is invalid
+                    elif val in self.FLAG_INFO['valid'] and not self.FLAG_INFO['valid'][val]: #is invalid
                         _invalid = True
 
                 _decoded.append(vals)

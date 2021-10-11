@@ -31,7 +31,7 @@ import xarray as xr
 import pyaerocom as pya
 from pyaerocom import const
 from pyaerocom.exceptions import DataSourceError
-from pyaerocom.mathutils import vmrx_to_concx
+from pyaerocom.aux_var_helpers import vmrx_to_concx
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
@@ -236,7 +236,7 @@ class ReadGhost(ReadUngriddedBase):
         try:
             return self.TS_TYPES[self.data_id]
         except KeyError:
-            return self._ts_type_from_DATASET_PATH()
+            return self._ts_type_from_data_dir()
 
     def get_file_list(self, vars_to_read=None, pattern=None):
         """
@@ -275,7 +275,7 @@ class ReadGhost(ReadUngriddedBase):
                 # AeroCom variable name or GHOST variable name
                 var = self.VARNAMES_DATA[var]
 
-            _dir = os.path.join(self.DATASET_PATH, var)
+            _dir = os.path.join(self.data_dir, var)
             _files = glob.glob('{}/{}'.format(_dir, pattern))
             if len(_files) == 0:
                 raise DataSourceError(f'Could not find any data files for {var}')
@@ -318,9 +318,9 @@ class ReadGhost(ReadUngriddedBase):
             return True
         return False
 
-    def _ts_type_from_DATASET_PATH(self):
+    def _ts_type_from_data_dir(self):
         try:
-            freq = str(TsType(os.path.basename(self.DATASET_PATH)))
+            freq = str(TsType(os.path.basename(self.data_dir)))
         except Exception as e:
             freq = 'undefined'
         self.TS_TYPES[self.data_id] = freq

@@ -29,7 +29,7 @@ from pyaerocom.exceptions import (DataSourceError, DataIdError)
 from pyaerocom.region_defs import (OLD_AEROCOM_REGIONS,
                                    HTAP_REGIONS)
 
-from pyaerocom.variable import VarCollection
+from pyaerocom.varcollection import VarCollection
 from configparser import ConfigParser
 
 class Config(object):
@@ -119,13 +119,7 @@ class Config(object):
     #: maximum allowed RH to be considered dry
     RH_MAX_PERCENT_DRY = 40
 
-    DEFAULT_REG_FILTER = 'WORLD-noMOUNTAINS'
-    #: If True, then whenever applicable the time resampling constraints
-    #: definted below (OBS_MIN_NUM_RESMAMPLE) are applied to observations when
-    #: resampling in StationData and thus colocation routines. Requires that
-    #: original obs_data is available in a certain regular resolution (or at
-    #: least has ts_type assigned to it)
-    OBS_APPLY_TIME_RESAMPLE_CONSTRAINTS = True
+    DEFAULT_REG_FILTER = 'WORLD-wMOUNTAINS'
 
     #: Time resample strategies for certain cominations, first level refers
     #: to TO, second to FROM and values are minimum number of observations
@@ -209,6 +203,11 @@ class Config(object):
 
     _LUSTRE_CHECK_PATH = '/project/aerocom/aerocom1/'
 
+    #: bool: can be used to filter specific iris warnings, e.g. using decorator
+    #: :func:`pyaerocom._warnings_management.filter_warnings`. Used e.g. in
+    #: :func:`pyaerocom.io.iris_io.load_cubes_custom`.
+    FILTER_IRIS_WARNINGS = True
+
     def __init__(self, config_file=None,
                  try_infer_environment=True):
 
@@ -220,6 +219,7 @@ class Config(object):
         self._outputdir = None
         self._cache_basedir = None
         self._colocateddatadir = None
+        self._logdir = None
         self._filtermaskdir = None
         self._local_tmp_dir = None
         self._downloaddatadir = None
@@ -409,11 +409,7 @@ class Config(object):
         if self._local_tmp_dir is None:
             self._local_tmp_dir = '{}/tmp'.format(self.OUTPUTDIR)
         if not self._check_access(self._local_tmp_dir):
-            try:
-                os.mkdir(self._local_tmp_dir)
-            except Exception:
-                raise FileNotFoundError('const.LOCAL_TMP_DIR {} is not set or '
-                                        'does not exist and cannot be created')
+            os.makedirs(self._local_tmp_dir, exist_ok=True)
         return self._local_tmp_dir
 
     @LOCAL_TMP_DIR.setter
@@ -519,13 +515,10 @@ class Config(object):
     @property
     def LOGFILESDIR(self):
         """Directory where logfiles are stored"""
-        try:
-            logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
-            return logdir
-        except Exception as e:
-            self.print_log.info('Failed to access LOGFILESDIR: {}'
-                           'Deactivating file logging'.format(repr(e)))
-            self.WRITE_FILEIO_ERR_LOG = False
+        if self._logdir is None:
+            self._logdir = chk_make_subdir(self.OUTPUTDIR, '_log')
+        return self._logdir
+
 
     @property
     def DIR_INI_FILES(self):
@@ -677,6 +670,10 @@ class Config(object):
         obs_aux_units : dict, optional
             output units of auxiliary variables (only needed for varibales
             that are derived via `merge_how='eval'`)
+        **kwargs
+            additional keyword arguments (unused, but serves the purpose to
+            allow for parsing info from dictionaries and classes that
+            contain additional attributes than the ones needed here).
 
         Raises
         ------
@@ -690,8 +687,8 @@ class Config(object):
 
         """
         if obs_id in self.OBS_IDS_UNGRIDDED:
-            raise ValueError('Network with ID {} is already registered...'
-                                 .format(obs_id))
+            raise ValueError(
+                f'Network with ID {obs_id} is already registered...')
         elif obs_aux_units is None:
             obs_aux_units = {}
         # this class will do the required sanity checking and will only
@@ -721,7 +718,7 @@ class Config(object):
             reading interface
         """
         check = reader(obs_id)
-        path = check.DATASET_PATH
+        path = check.data_dir
         assert path == data_dir
         try:
             check.get_file_list()

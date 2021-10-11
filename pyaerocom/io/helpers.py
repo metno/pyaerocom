@@ -6,12 +6,15 @@ I/O helper methods of the pyaerocom package
 from collections import OrderedDict as od
 from datetime import datetime
 import os
+from pathlib import Path
 import shutil
 from time import time
 
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
-from pyaerocom.exceptions import (VarNotAvailableError, VariableDefinitionError)
+from pyaerocom.exceptions import (VarNotAvailableError,
+                                  VariableDefinitionError,
+                                  )
 
 #: country code file name
 #: will be prepended with the path later on
@@ -101,10 +104,9 @@ def read_ebas_flags_file(ebas_flags_csv):
     dict
         dict with loaded flag info
     """
-    from pyaerocom._lowlevel_helpers import BrowseDict
-    valid = BrowseDict()
-    values = BrowseDict()
-    info = BrowseDict()
+    valid = {}
+    values = {}
+    info = {}
     with open(ebas_flags_csv) as fio:
         for line in fio:
             spl = line.strip().split(',')
@@ -126,14 +128,28 @@ def read_ebas_flags_file(ebas_flags_csv):
             valid[num] = isvalid
             values[num] = val_str
             info[num] = info_str
-    result = BrowseDict()
-    result.valid = valid
-    result.info = info
-    result.vals = values
+    result = {}
+    result['valid'] = valid
+    result['info'] = info
+    result['vals'] = values
     return result
 
 def add_file_to_log(filepath, err_msg):
+    """
+    Add input file path to error logdir
 
+    The logdir location can be accessed via :attr:`pyaerocom.const.LOGFILESDIR`
+
+    Parameters
+    ----------
+    filepath : str or Path
+        path of file that has an error
+    err_msg : str
+        Problem associated with input file
+
+    """
+    if isinstance(filepath, Path):
+        filepath = str(filepath)
     try:
         dirname = os.path.dirname(filepath)
         spl = dirname.split(os.sep)
@@ -143,28 +159,22 @@ def add_file_to_log(filepath, err_msg):
             model_or_obs_id = spl[-1]
     except Exception:
         model_or_obs_id = 'others'
-    try:
-        logdir = const.LOGFILESDIR
-        found = False
-        logfile = os.path.join(logdir, model_or_obs_id + '.log')
-        if os.path.exists(logfile):
-            with open(logfile, 'r') as f:
-                for line in f:
-                    if filepath == line.strip():
-                        found = True
-                        break
 
-        if not found:
-            with open(logfile, 'a+') as f:
-                f.write(filepath + '\n')
-            with open(os.path.join(logdir, model_or_obs_id + '_ERR.log'), 'a+') as ferr:
-                ferr.write('{}\n{}\n\n'.format(filepath,
-                                               err_msg))
-    except Exception as e:
-        from pyaerocom import print_log
-        const.WRITE_FILEIO_ERR_LOG = False
-        print_log.info('Failed to write to file-read error logging ({}). '
-                       'Deactiving lgging'.format(repr(e)))
+    logdir = const.LOGFILESDIR
+
+    logfile = os.path.join(logdir, f'{model_or_obs_id}.log')
+
+    if os.path.exists(logfile): #check if this file is already flagged
+        with open(logfile, 'r') as f:
+            for line in f:
+                if filepath == line.strip():
+                    return #file is already flagged -> ignore
+
+    logfile_err = os.path.join(logdir, f'{model_or_obs_id}_ERR.log')
+    with open(logfile, 'a+') as f:
+        f.write(f'{filepath}\n')
+    with open(logfile_err, 'a+') as ferr:
+        ferr.write(f'{filepath}\n{err_msg}\n\n')
 
 def get_standard_name(var_name):
     """Get standard name of aerocom variable
@@ -231,29 +241,14 @@ def get_obsnetwork_dir(obs_id):
         if directory does not exist
     """
     if not obs_id in const.OBSLOCS_UNGRIDDED:
-        raise ValueError("Observation network ID {} does not exist"
-                         .format(obs_id))
+        raise ValueError(f"Observation network ID {obs_id} does not exist")
 
     data_dir = const.OBSLOCS_UNGRIDDED[obs_id]
     if not os.path.exists(data_dir):
-        raise IOError("Data directory {} of observation network {} does not "
-                      "exists".format(data_dir, obs_id))
+        raise FileNotFoundError(
+            f'Data directory {data_dir} for observation network {obs_id} does '
+            f'not exist')
     return data_dir
-
-def save_dict_json(d, fp, ignore_nan=True, indent=None):
-    """Save a dictionary as json file using :func:`simplejson.dump`
-
-    Parameters
-    ----------
-    d : dict
-        input dictionary
-    fp : str
-        filepath of json file
-
-    """
-    import simplejson
-    with open(fp, 'w') as f:
-        simplejson.dump(d, f, ignore_nan=ignore_nan, indent=indent)
 
 def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database

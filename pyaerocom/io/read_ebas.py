@@ -24,16 +24,9 @@ import numpy as np
 from collections import OrderedDict as od
 from pyaerocom import const
 from pyaerocom.units_helpers import get_unit_conversion_fac
-from pyaerocom.mathutils import (compute_sc550dryaer,
-                                 compute_sc440dryaer,
-                                 compute_sc700dryaer,
-                                 compute_ac550dryaer,
-                                 compute_ang4470dryaer_from_dry_scat,
-                                 compute_wetoxs_from_concprcpoxs,
-                                 compute_wetoxn_from_concprcpoxn,
-                                 compute_wetrdn_from_concprcprdn,
-                                 vmrx_to_concx,
-                                 concx_to_vmrx)
+from pyaerocom.aux_var_helpers import compute_ang4470dryaer_from_dry_scat, compute_sc550dryaer, compute_sc440dryaer, \
+    compute_sc700dryaer, compute_ac550dryaer, compute_wetoxs_from_concprcpoxs, compute_wetoxn_from_concprcpoxn, \
+    compute_wetrdn_from_concprcprdn, vmrx_to_concx, concx_to_vmrx
 from pyaerocom.molmasses import get_molmass
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.io.helpers import _check_ebas_db_local_vs_remote
@@ -46,7 +39,8 @@ from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile
 from pyaerocom.exceptions import (NotInFileError, EbasFileError,
                                   MetaDataError,
                                   UnitConversionError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError,
+                                  TemporalSamplingError)
 from pyaerocom._lowlevel_helpers import BrowseDict
 from tqdm import tqdm
 
@@ -113,6 +107,15 @@ class ReadEbasOptions(BrowseDict):
     freq_from_start_stop_meas : bool
         infer frequency from start / stop intervals of individual
         measurements.
+    freq_min_cov : float
+        defines minimum number of measurements that need to correspond to the
+        detected sampling frequency in the file within the specified tolerance
+        range. Only applies if :attr:`ensure_correct_freq` is True. E.g. if a
+        file contains 100 measurements and the most common frequency (as
+        inferred from stop-start of each measurement) is daily. Then, if
+        `freq_min_cov` is 0.75, it will be ensured that at least 75 of the
+        measurements are daily (within +/- 5% tolerance), otherwise this file
+        is discarded. Defaults to 0.
 
     Parameters
     ----------
@@ -145,6 +148,7 @@ class ReadEbasOptions(BrowseDict):
 
         self.ensure_correct_freq = True
         self.freq_from_start_stop_meas = True
+        self.freq_min_cov = 0.0
 
         self.update(**args)
 
@@ -160,7 +164,7 @@ class ReadEbas(ReadUngriddedBase):
 
     Parameters
     ----------
-    dataset_to_read
+    data_id
         string specifying either of the supported datasets that are defined
         in ``SUPPORTED_DATASETS``
     data_dir : str
@@ -176,13 +180,13 @@ class ReadEbas(ReadUngriddedBase):
     """
 
     #: version log of this class (for caching)
-    __version__ = "0.49_" + ReadUngriddedBase.__baseversion__
+    __version__ = "0.50_" + ReadUngriddedBase.__baseversion__
 
     #: Name of dataset (OBS_ID)
     DATA_ID = const.EBAS_MULTICOLUMN_NAME
 
     #: Name of subdirectory containing data files (relative to
-    #: DATASET_PATH)
+    #: :attr:`data_dir`)
     FILE_SUBDIR_NAME = 'data'
 
     #: Name of sqlite database file
@@ -197,7 +201,10 @@ class ReadEbas(ReadUngriddedBase):
 
     TS_TYPE = 'undefined'
 
-    MERGE_STATIONS = {'Birkenes' : 'Birkenes II'}
+    MERGE_STATIONS = {'Birkenes' : 'Birkenes II',
+                      'Rörvik': 'Råö',
+                      'Vavihill': 'Hallahus',
+                      'Virolahti II': 'Virolahti III'}
                       #'Trollhaugen'    : 'Troll'}
     #: Temporal resolution codes that (so far) can be understood by pyaerocom
     TS_TYPE_CODES = {'1mn'  :   'minutely',
@@ -252,8 +259,8 @@ class ReadEbas(ReadUngriddedBase):
     #: a given variable) will be overwritten from the defaults specified in
     #: the options class.
     VAR_READ_OPTS = {
-        # keep pr in mm
-        'pr'        : dict(convert_units = False)
+        'pr'        : dict(convert_units=False, freq_min_cov=0.75),
+        'prmm'        : dict(freq_min_cov=0.75)
         }
 
     ASSUME_AAE_SHIFT_WVL = 1.0
@@ -278,9 +285,9 @@ class ReadEbas(ReadUngriddedBase):
     #: List of variables that are provided by this dataset (will be extended
     #: by auxiliary variables on class init, for details see __init__ method of
     #: base class ReadUngriddedBase)
-    def __init__(self, dataset_to_read=None, data_dir=None):
+    def __init__(self, data_id=None, data_dir=None):
 
-        super(ReadEbas, self).__init__(dataset_to_read, dataset_path=data_dir)
+        super(ReadEbas, self).__init__(data_id=data_id, data_dir=data_dir)
 
         self._opts = {'default' : ReadEbasOptions()}
 
@@ -334,7 +341,7 @@ class ReadEbas(ReadUngriddedBase):
         """Directory containing EBAS NASA Ames files"""
         if self._file_dir is not None:
             return self._file_dir
-        return os.path.join(self.DATASET_PATH, self.FILE_SUBDIR_NAME)
+        return os.path.join(self.data_dir, self.FILE_SUBDIR_NAME)
 
     @file_dir.setter
     def file_dir(self, val):
@@ -373,7 +380,7 @@ class ReadEbas(ReadUngriddedBase):
     def sqlite_database_file(self):
         """Path to EBAS SQL database"""
         dbname = self.SQL_DB_NAME
-        loc_remote = os.path.join(self.DATASET_PATH, dbname)
+        loc_remote = os.path.join(self.data_dir, dbname)
         if self.data_id in self.CACHE_SQLITE_FILE and const.EBAS_DB_LOCAL_CACHE:
             loc_local = os.path.join(const.CACHEDIR, dbname)
             return _check_ebas_db_local_vs_remote(loc_remote, loc_local)
@@ -1441,8 +1448,16 @@ class ReadEbas(ReadUngriddedBase):
         invalid = np.logical_or(diffarr<-tolsecs,
                                 diffarr>tolsecs)
 
+        frac_valid = np.sum(~invalid) / len(invalid)
+
         num = len(filedata['start_meas'])
         for var in filedata.var_info:
+            opts = self.get_read_opts(var)
+            if opts.freq_min_cov > frac_valid:
+                raise TemporalSamplingError(
+                    f'Only {frac_valid*100:.2f}% of measuerements are in '
+                    f'{tst} resolution. Minimum requirement for {var} is '
+                    f'{opts.freq_min_cov*100:.2f}%')
             if not var in filedata.data_flagged:
                 filedata.data_flagged[var] = np.zeros(num).astype(bool)
             filedata.data_flagged[var][invalid] = True
@@ -1726,7 +1741,8 @@ class ReadEbas(ReadUngriddedBase):
                 station_data = self.read_file(_file,
                                               vars_to_retrieve=contains)
 
-            except (NotInFileError, EbasFileError, TemporalResolutionError) as e:
+            except (NotInFileError, EbasFileError, TemporalResolutionError,
+                    TemporalSamplingError) as e:
                 self.files_failed.append(_file)
                 self.logger.warning('Skipping reading of EBAS NASA Ames '
                                     'file: {}. Reason: {}'
@@ -1838,4 +1854,4 @@ if __name__=="__main__":
 
     plt.close('all')
     reader = pya.io.ReadEbas()
-    data = reader.read('sc550dryaer')
+    data = reader.read('prmm')

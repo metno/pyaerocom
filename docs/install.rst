@@ -14,18 +14,30 @@ Or into a new conda environment (recommended) named *pya* via::
 
 	conda create -c conda-forge --name pya pyaerocom
 
-This will install the latest release of pyaerocom including all requirements. Alternatively, you may install via  pip or from source as described in the following.
+This will install the latest release of pyaerocom including all requirements. Alternatively, you may install via pip or from source as described in the following.
 
-Via PyPi
-^^^^^^^^
 
-**NOTE:** this will install the latest released version of pyaerocom, which is the same as distributed via *conda-forge* (see prev. point). However, installation via PyPi does **not** take care of any requirements (see below) but only installs pyaerocom::
+Via pip
+^^^^^^^
 
+This will install the latest released version of pyaerocom and its depencencies.
+**NOTE** this same pacakge as distributed via *conda-forge* (see prev. point).::
+
+	python3 -m pip install pyaerocom
+
+Or into a new virtual environment (recommended) named *.venv* via::
+
+	# create and activate new virtual environment
+	python3 -m venv --prompt pya .venv
+	source .venv/bin/activate
+
+	# update pip and install pyaerocom
+	pip -m install -U pip
 	pip install pyaerocom
 
 
-Installing from source
-^^^^^^^^^^^^^^^^^^^^^^
+Install from source into a conda environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you use the *conda* package manager, please make sure to `activate the environment <https://conda.io/docs/user-guide/tasks/manage-environments.html#activating-an-environment>`__ you want to install pyaerocom into. For more information about conda environments, `see here <https://conda.io/docs/user-guide/tasks/manage-environments.html>`__.
 
@@ -33,17 +45,20 @@ Please make sure to install all requirements (see below) before installing pyaer
 
 To install pyaerocom from source, please download and extract the `latest release <https://github.com/metno/pyaerocom/releases>`__ (or clone the `repo <https://github.com/metno/pyaerocom/>`__) and install from the top-level directory (that contains a file *setup.py*) using::
 
-	python setup.py install
+	pip install --no-deps .
 
-Alternatively, if you plan to apply local changes to the pyaerocom source code, you may install in development mode::
+The `--no-deps` option will ensure that only the pyearocom package is installed, preserving the conda environment.
 
-	python setup.py develop
+Alternatively, if you plan to apply local changes to the pyaerocom source code, you may install in editable mode (i.e. setuptools "develop mode")
+including the test rependencies::
+
+	pip install --no-deps -e .
 
 You may also download and extract (or clone) the `GitHub repo <https://github.com/metno/pyaerocom>`__ to install the very latest (not yet released) version of pyaerocom. Note, if you install in develop mode, make sure you do not have pyaerocom installed already in the site packages directory, check e.g. `conda list pyaerocom`.
 
 
-Requirements
-^^^^^^^^^^^^
+Requirements for a conda environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A list of requirements is provided in file `pyaerocom_env.yml <https://github.com/metno/pyaerocom/blob/master/pyaerocom_env.yml>`__.
 

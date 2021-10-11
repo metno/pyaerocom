@@ -1,18 +1,24 @@
 [run]
+source =
+  pyaerocom
 omit =
-  pyaerocom/conftest.py
-  pyaerocom/_conftest_helpers.py
-  pyaerocom/test/*
-  pyaerocom/io/test/*
-  pyaerocom/web/test/*
-  pyaerocom/plot/test/*
-  pyaerocom/scripts/test/*
-  pyaerocom/web/helpers_trends_iface.py
-  pyaerocom/web/trends_evaluation.py
-  pyaerocom/web/cli/main_trends_evaluation.py
+  # not used
+  pyaerocom/aeroval/utils.py
+  pyaerocom/io/read_aeronet_invv2.py
+  pyaerocom/io/read_aeronet_sdav2.py
+  pyaerocom/io/read_aeronet_sunv2.py
+  pyaerocom/io/read_gaw.py
+  pyaerocom/io/read_aeolus_l2a_data.py
+  pyaerocom/io/read_sentinel5p_data.py
+  pyaerocom/io/readsatellitel2base.py
+  pyaerocom/vert_coords.py
 
 [report]
+skip_covered = true
 exclude_lines =
+  pragma: no cover
+  NotImplementedError
+  abc.ABC
   if __name__=='__main__':
   if __name__=="__main__":
   if __name__ == "__main__":

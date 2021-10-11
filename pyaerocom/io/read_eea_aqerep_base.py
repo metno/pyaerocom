@@ -32,6 +32,10 @@ Example
 -------
 look at the end of the file
 """
+import pathlib
+import shutil
+import tempfile
+
 import cf_units
 from collections import OrderedDict as od
 import numpy as np
@@ -40,12 +44,14 @@ import pandas as pd
 from tqdm import tqdm
 
 from pyaerocom import const
-from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.exceptions import TemporalResolutionError, EEAv2FileError
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+
+import gzip
 
 
 class ReadEEAAQEREPBase(ReadUngriddedBase):
@@ -63,7 +69,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     _FILEMASK = '*.csv'
 
     #: Version log of this class (for caching)
-    __version__ = '0.05'
+    __version__ = '0.07'
 
     #: Column delimiter
     FILE_COL_DELIM = ','
@@ -110,15 +116,15 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
     #: file masks for the data files
     FILE_MASKS = {}
-    FILE_MASKS['concso2']   = '**/*_1_*_timeseries.csv'
-    FILE_MASKS['concpm10']  = '**/*_5_*_timeseries.csv'
-    FILE_MASKS['conco3']    = '**/*_7_*_timeseries.csv'
-    FILE_MASKS['vmro3']     = '**/*_7_*_timeseries.csv'
-    FILE_MASKS['concno2']   = '**/*_8_*_timeseries.csv'
-    FILE_MASKS['vmrno2']    = '**/*_8_*_timeseries.csv'
-    FILE_MASKS['concco']    = '**/*_10_*_timeseries.csv'
-    FILE_MASKS['concno']    = '**/*_38_*_timeseries.csv'
-    FILE_MASKS['concpm25']  = '**/*_6001_*_timeseries.csv'
+    FILE_MASKS['concso2']   = '**/*_1_*_timeseries.csv*'
+    FILE_MASKS['concpm10']  = '**/*_5_*_timeseries.csv*'
+    FILE_MASKS['conco3']    = '**/*_7_*_timeseries.csv*'
+    FILE_MASKS['vmro3']     = '**/*_7_*_timeseries.csv*'
+    FILE_MASKS['concno2']   = '**/*_8_*_timeseries.csv*'
+    FILE_MASKS['vmrno2']    = '**/*_8_*_timeseries.csv*'
+    FILE_MASKS['concco']    = '**/*_10_*_timeseries.csv*'
+    FILE_MASKS['concno']    = '**/*_38_*_timeseries.csv*'
+    FILE_MASKS['concpm25']  = '**/*_6001_*_timeseries.csv*'
 
     # conversion factor between concX and vmrX
     CONV_FACTOR = {}
@@ -200,8 +206,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         'vmrno2': NotImplementedError(),
         }
 
-    def __init__(self, data_dir=None):
-        super(ReadEEAAQEREPBase, self).__init__(None, dataset_path=data_dir)
+    def __init__(self, data_id=None, data_dir=None):
+        super(ReadEEAAQEREPBase, self).__init__(data_id=data_id,
+                                                data_dir=data_dir)
         self._metadata = None
 
     @property
@@ -248,61 +255,96 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # this lists the data to keep from the original read string
         # this becomes a time series
         file_indexes_to_keep = [11, 13, 14, 15, 16]
+        # used for line length control...
+        max_file_index_to_keep = max(file_indexes_to_keep)
         # this is some header information
         header_indexes_to_keep = [0, 3, 8, 9, 10, 12, ]
         # These are the indexes with a time and are stored as np.datetime64
         time_indexes = [13, 14]
 
         # read the file
-        # file_data = []
-        with open(filename, 'r') as f:
-            # read header...
-            # Countrycode,Namespace,AirQualityNetwork,AirQualityStation,AirQualityStationEoICode,SamplingPoint,SamplingProcess,Sample,AirPollutant,AirPollutantCode,AveragingTime,Concentration,UnitOfMeasurement,DatetimeBegin,DatetimeEnd,Validity,Verification
-            header = f.readline().lower().rstrip().split(file_delimiter)
-            # create output dict
-            data_dict = {}
-            for idx in header_indexes_to_keep:
-                data_dict[header[idx]] = ''
+        # enable alternative reading of .gz files here to save space on the file system
+        suffix = pathlib.Path(filename).suffix
+        if suffix == '.gz':
+            f_out = tempfile.NamedTemporaryFile(delete=False)
+            with gzip.open(filename, 'r') as f_in:
+                shutil.copyfileobj(f_in, f_out)
+            read_filename = f_out.name
+            f_out.close()
+        else:
+            read_filename = filename
+
+        # input files can be either UTF-8 or UTF-16 encoded
+        # try both
+        # files are max 3MB in size, so no big deal terms of RAM usage
+        try:
+            with open(read_filename, 'r') as f:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            with open(read_filename, 'r', encoding='UTF-16') as f:
+                lines = f.readlines()
+        except:
+            if suffix == '.gz':
+                os.remove(f_out.name)
+            raise EEAv2FileError(
+                f'Found corrupt file {filename}. consider deleteing it')
+
+        # remove the temp file in case the input file was a gz file
+        if suffix == '.gz':
+            os.remove(f_out.name)
+
+        header = lines[0].lower().rstrip().split(file_delimiter)
+        # create output dict
+        if len(header) < max_file_index_to_keep:
+            raise EEAv2FileError(
+                f'Found corrupt file {filename}. consider deleting it')
+
+        data_dict = {}
+        for idx in header_indexes_to_keep:
+            data_dict[header[idx]] = ''
+
+        for idx in file_indexes_to_keep:
+            if idx in time_indexes:
+                data_dict[header[idx]] = np.zeros(self.MAX_LINES_TO_READ,
+                                                  dtype='datetime64[s]')
+            else:
+                data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ,
+                                                  dtype=np.float_)
+
+        # read the data...
+        # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
+        lineidx = 0
+        for line in lines[1:]:
+            rows = line.rstrip().split(file_delimiter)
+            # Unfortunately there's a lot of corrupt files
+            # skip data line if the # rows is not sufficient
+            if len(rows) < max_file_index_to_keep:
+                continue
+            if lineidx == 0:
+                for idx in header_indexes_to_keep:
+                    if header[idx] != self.VAR_CODE_NAME:
+                        data_dict[header[idx]] = rows[idx]
+                    else:
+                        # extract the EEA var code from the URL noted in the data file
+                        data_dict[header[idx]] = rows[idx].split('/')[-1]
 
             for idx in file_indexes_to_keep:
+                # if the data is a time
                 if idx in time_indexes:
-                    data_dict[header[idx]] = np.zeros(self.MAX_LINES_TO_READ,
-                                                      dtype='datetime64[s]')
+                    # make the time string ISO compliant so that numpy can directly read it
+                    # this is not very time string forgiving but fast
+                    data_dict[header[idx]][lineidx] = np.datetime64(
+                        rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
+                    )
                 else:
-                    data_dict[header[idx]] = np.empty(self.MAX_LINES_TO_READ,
-                                                      dtype=np.float_)
+                    # data is not a time
+                    # sometimes there's no value in the file. Set that to nan
+                    try:
+                        data_dict[header[idx]][lineidx] = np.float_(rows[idx])
+                    except (ValueError, IndexError):
+                        data_dict[header[idx]][lineidx] = np.nan
 
-            # read the data...
-            # DE,http://gdi.uba.de/arcgis/rest/services/inspire/DE.UBA.AQD,NET.DE_BB,STA.DE_DEBB054,DEBB054,SPO.DE_DEBB054_PM2_dataGroup1,SPP.DE_DEBB054_PM2_automatic_light-scat_Duration-30minute,SAM.DE_DEBB054_2,PM2.5,http://dd.eionet.europa.eu/vocabulary/aq/pollutant/6001,hour,3.2000000000,µg/m3,2020-01-04 00:00:00 +01:00,2020-01-04 01:00:00 +01:00,1,2
-            lineidx = 0
-            for line in f:
-                rows = line.rstrip().split(file_delimiter)
-                if lineidx == 0:
-
-                    for idx in header_indexes_to_keep:
-                        if header[idx] != self.VAR_CODE_NAME:
-                            data_dict[header[idx]] = rows[idx]
-                        else:
-                            # extract the EEA var code from the URL noted in the data file
-                            data_dict[header[idx]] = rows[idx].split('/')[-1]
-
-                for idx in file_indexes_to_keep:
-                    # if the data is a time
-                    if idx in time_indexes:
-                        # make the time string ISO compliant so that numpy can directly read it
-                        # this is not very time string forgiving but fast
-                        data_dict[header[idx]][lineidx] = np.datetime64(
-                            rows[idx][0:10] + 'T' + rows[idx][11:19] + rows[idx][20:]
-                        )
-                    else:
-                        # data is not a time
-                        # sometimes there's no value in the file. Set that to nan
-                        try:
-                            data_dict[header[idx]][lineidx] = np.float_(rows[idx])
-                        except ValueError:
-                            data_dict[header[idx]][lineidx] = np.nan
-
-                lineidx += 1
+            lineidx += 1
 
         unit_in_file = data_dict['unitofmeasurement']
         # adjust the unit and apply conversion factor in case we read a variable noted in self.AUX_REQUIRES
@@ -377,14 +419,26 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         """
 
         if filename is None:
-            filename = os.path.join(self.DATASET_PATH, self.DEFAULT_METADATA_FILE)
+            filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
+            # test also for a gzipped file...
+            if not os.path.isfile(filename):
+                filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE, '.gz')
         self.logger.warning("Reading file {}".format(filename))
 
         struct_data = {}
+        suffix = pathlib.Path(filename).suffix
+        if suffix == '.gz':
+            f_out = tempfile.NamedTemporaryFile(delete=False)
+            with gzip.open(filename, 'r') as f_in:
+                shutil.copyfileobj(f_in, f_out)
+            filename = f_out.name
+            f_in.close()
+
         with open(filename, 'r') as f:
             # read header...
             # Countrycode Timezone Namespace   AirQualityNetwork AirQualityStation AirQualityStationEoICode   AirQualityStationNatCode   SamplingPoint  SamplingProces Sample   AirPollutantCode  ObservationDateBegin ObservationDateEnd   Projection  Longitude   Latitude Altitude MeasurementType   AirQualityStationType   AirQualityStationArea   EquivalenceDemonstrated MeasurementEquipment InletHeight BuildingDistance  KerbDistance
             header = f.readline().lower().rstrip().split()
+            min_row_no = len(header)
             # create output dict
             data_dict = {}
             for key in header:
@@ -394,9 +448,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             bad_line_arr = []
             for line in f:
                 rows = line.rstrip().split('\t')
-
-                if len(rows) < 24:
-                    print(line)
+                # skip too short lines
+                if len(rows) < min_row_no:
+                    # print(line)
                     bad_line_no += 1
                     bad_line_arr.append(line)
                     continue
@@ -418,6 +472,11 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 lineidx += 1
 
         self.logger.info("Reading file {} done".format(filename))
+        # remove the temp file in case the input file was a gz file
+        if suffix == '.gz':
+            f_out.close()
+            os.remove(f_out.name)
+
         return struct_data
 
     def get_file_list(self, pattern=None):
@@ -448,16 +507,16 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             const.print_log.warning('using default pattern *.* for file search')
             pattern = '*.*'
         self.logger.info('Fetching data files. This might take a while...')
-        fp = os.path.join(self.DATASET_PATH, pattern)
+        fp = os.path.join(self.data_dir, pattern)
         files = sorted(glob.glob(fp, recursive=True))
         if not len(files) > 0:
-            all_str = list_to_shortstr(os.listdir(self.DATASET_PATH))
-            raise DataSourceError('No files could be detected matching file '
-                                  'mask {} in dataset {}, files in folder {}:\n'
-                                  'Files in folder:{}'.format(pattern,
-                                                              self.dataset_to_read,
-                                                              self.DATASET_PATH,
-                                                              all_str))
+            all_str = list_to_shortstr(os.listdir(self.data_dir))
+            # raise DataSourceError('No files could be detected matching file '
+            #                       'mask {} in dataset {}, files in folder {}:\n'
+            #                       'Files in folder:{}'.format(pattern,
+            #                                                   self.data_id,
+            #                                                   self.data_dir,
+            #                                                   all_str))
         self.files = files
         return files
 
@@ -529,7 +588,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             last_file = len(files)
 
         if metadatafile is None:
-            metadatafile = os.path.join(self.DATASET_PATH, self.DEFAULT_METADATA_FILE)
+            metadatafile = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
 
         files = files[first_file:last_file]
 
@@ -553,8 +612,17 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             _file = files[i]
             try:
                 station_data = self.read_file(_file, var_name=var_name)
+            except EEAv2FileError:
+                self.logger.warning('file {} is corrupt! consider deleting it'.format(_file))
+                continue
             except TemporalResolutionError as e:
+                self.logger.warning('{} has TemporalResolutionError'.format(_file))
                 const.print_log.warning(f'{repr(e)}. Skipping file...')
+                continue
+
+            # readfile might fail outside of the error captured by the try statement above
+            if station_data is None:
+                self.logger.warning('file {} did not provide data. skipping...!'.format(_file))
                 continue
 
             # to find the metadata quickly, we use a string internally
@@ -600,23 +668,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 start = idx + var_idx * num_times
                 stop = start + num_times
 
-                # Write common meta info for this station (data lon, lat and
-                # altitude are set to station locations)
+                invalid = not station_data['validity']
 
-                # Assigning lat, lon, alt is not needed since they are not
-                # assigned in the StationData
-                # =============================================================================
-                #                 data_obj._data[start:stop, data_obj._LATINDEX
-                #                 ] = station_data['latitude']
-                #                 data_obj._data[start:stop, data_obj._LONINDEX
-                #                 ] = station_data['longitude']
-                #                 data_obj._data[start:stop, data_obj._ALTITUDEINDEX
-                #                 ] = station_data['altitude']
-                # =============================================================================
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
-                ] = station_data['validity']
+                ] = invalid
                 data_obj._data[start:stop, data_obj._TIMEINDEX
                 ] = station_data['dtime']
                 data_obj._data[start:stop, data_obj._DATAINDEX
@@ -648,4 +705,4 @@ if __name__ == "__main__":
     ddir = '/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download'
     reader = ReadEEAAQEREP(data_dir=ddir)
 
-    data = reader.read(['conco3'], last_file=1)
+    data = reader.read(['concpm10'], last_file=1)

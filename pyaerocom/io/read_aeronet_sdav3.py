@@ -40,9 +40,7 @@ import numpy as np
 import pandas as pd
 
 from pyaerocom import const
-from pyaerocom.mathutils import (calc_od550aer,
-                                 calc_od550gt1aer,
-                                 calc_od550lt1aer)
+from pyaerocom.aux_var_helpers import calc_od550aer, calc_od550gt1aer, calc_od550lt1aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
 

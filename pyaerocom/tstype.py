@@ -220,7 +220,42 @@ class TsType(object):
         if not base in self.TO_SI:
             raise ValueError(f'Cannot convert ts_type={self} to SI unit string...')
         si = self.TO_SI[base]
-        return si if self.mulfac == 1 else f'{self.mulfac}{si}'
+        return si if self.mulfac == 1 else f'({self.mulfac}{si})'
+
+    def get_min_num_obs(self, to_ts_type : 'TsType', min_num_obs : dict) -> int:
+        selfstr = self.val
+        if to_ts_type >= self: # should occur rarely
+            if to_ts_type == self:
+                return 0
+            raise TemporalResolutionError(
+                f'input ts_type {to_ts_type} is lower resolution than current '
+                f'{self}')
+
+        elif str(to_ts_type) in min_num_obs:
+            # output frequency is specified in min_num_obs (note: this may
+            # also be 3daily, etc, i.e., not restricted to base frequencies)
+            mno = min_num_obs[str(to_ts_type)]
+            if selfstr in mno:
+                return int(mno[selfstr])
+            elif self.mulfac != 1 and self.base in mno:
+                min_num_base = mno[self.base]
+                return int(np.round(min_num_base/self.mulfac))
+
+        elif to_ts_type.base in min_num_obs:
+            mno = min_num_obs[to_ts_type.base]
+            if selfstr in mno:
+                val = mno[selfstr]
+                return int(np.round(to_ts_type.mulfac * val))
+
+            elif self.mulfac != 1 and self.base in mno:
+                min_num_base = mno[self.base]
+                val =min_num_base/self.mulfac*to_ts_type.mulfac
+                val = int(np.round(val))
+                return val
+        raise ValueError(
+            f'could not infer min_num_obs value from input dict {min_num_obs} '
+            f'for conversion from {self} to {to_ts_type}')
+
 
     def check_match_total_seconds(self, total_seconds):
         """
