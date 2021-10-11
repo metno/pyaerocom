@@ -13,7 +13,8 @@ from pyaerocom.io._read_mscw_ctm_helpers import (add_dataarrays,
                                                  calc_conNtno3, calc_concNnh3,
                                                  calc_concNnh4, calc_concNtnh,
                                                  update_EC_units,
-                                                 calc_concsspm25, calc_vmrox
+                                                 calc_concsspm25, calc_vmrox,
+                                                 calc_vmrno2,
                                                  )
 from pyaerocom.variable_helpers import get_emep_variables
 from pyaerocom.griddeddata import GriddedData
@@ -59,6 +60,7 @@ class ReadMscwCtm(object):
                     'concsspm10'  : ['concsspm25','concssc'],
                     'concCecpm25' : ['concecpm25'],
                     'vmrox'       : ['concno2', 'vmro3'],
+                    'vmrno2'       : ['concno2'],
                     }
 
     # Functions that are used to compute additional variables (i.e. one
@@ -81,6 +83,7 @@ class ReadMscwCtm(object):
                 'concsspm10'   : add_dataarrays,
                 'concCecpm25'  : update_EC_units,
                 'vmrox'        : calc_vmrox,
+                'vmrno2'        : calc_vmrno2,
                 }
 
     #: supported filename masks, placeholder is for frequencies

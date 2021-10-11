@@ -188,11 +188,11 @@ def calc_vmrox(concno2, vmro3):
         volume mixing ratio of OX (O3 + NO2) in units of nmole mole-1
 
     """
-    o3mulfac = get_unit_conversion_fac(1, vmro3.attrs['units'], 'nmole mole-1')
-    if o3mulfac != 1:
-        vmro3 = vmro3.copy(deep=True)
-        vmro3 *= o3mulfac
-        vmro3.attrs['units'] = 'nmole mole-1'
+    # o3mulfac = get_unit_conversion_fac(1, vmro3.attrs['units'], 'nmole mole-1')
+    # if o3mulfac != 1:
+    #     vmro3 = vmro3.copy(deep=True)
+    #     vmro3 *= o3mulfac
+    #     vmro3.attrs['units'] = 'nmole mole-1'
 
     vmrno2 = concx_to_vmrx(
         data=concno2,
@@ -206,3 +206,42 @@ def calc_vmrox(concno2, vmro3):
     vmrox = vmrno2 + vmro3
     vmrox.attrs["units"] = "nmol mol-1"
     return vmrox
+
+
+def calc_vmrno2(concno2):
+    """
+    Calculate OX VMR from NO2 concentration and O3 VMR
+
+    Converts NO2 conc to NO2 VMR assuming US standard atmosphere and adds
+    that with VMR O3.
+
+    Parameters
+    ----------
+    concno2 : xr.DataArray
+        mass concentration of NO2
+    vmro3 : xr.DataArray
+        volume mixing ratio of O3
+
+    Returns
+    -------
+    xr.DataArray
+        volume mixing ratio of OX (O3 + NO2) in units of nmole mole-1
+
+    """
+    # o3mulfac = get_unit_conversion_fac(1, vmro3.attrs['units'], 'nmole mole-1')
+    # if o3mulfac != 1:
+    #     vmro3 = vmro3.copy(deep=True)
+    #     vmro3 *= o3mulfac
+    #     vmro3.attrs['units'] = 'nmole mole-1'
+
+    vmrno2 = concx_to_vmrx(
+        data=concno2,
+        p_pascal=p0, # 1013 hPa (US standard atm)
+        T_kelvin=T0_STD, #15 deg celcius (US standard atm)
+        conc_unit=str(concno2.attrs['units']),
+        mmol_var=get_molmass('no2'), # g/mol NO2
+        to_unit="nmol mol-1"
+    )
+
+    vmrno2.attrs["units"] = "nmol mol-1"
+    return vmrno2
