@@ -26,17 +26,9 @@ class ObsEntry(BrowseDict):
         as satellites). For ungridded reading, the frequency may be specified
         via :attr:`obs_id`, where applicable (e.g. AeronetSunV3Lev2.daily).
         Can be specified variable specific in form of dictionary.
-    obs_vert_type : :obj:`str` or :obj:`dict`, optional
+    obs_vert_type : str, optional
         Aerocom vertical code encoded in the model filenames (only AeroCom 3
-        and later). Specifies which model file should be read in case there are
-        multiple options (e.g. surface level data can be read from a
-        *Surface*.nc file as well as from a *ModelLevel*.nc file). If input is
-        string (e.g. 'Surface'), then the corresponding vertical type code is
-        used for reading of all variables that are colocated (i.e. that are
-        specified in :attr:`obs_vars`). Else (if input is dictionary, e.g.
-        `obs_vert_type=dict(od550aer='Column', ec550aer='ModelLevel')`),
-        information is extracted variable specific, for those who are defined
-        in the dictionary, for all others, `None` is used.
+        and later).
     obs_aux_requires : dict, optional
         information about required datasets / variables for auxiliary
         variables.

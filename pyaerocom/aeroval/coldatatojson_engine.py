@@ -121,8 +121,8 @@ class ColdataToJsonEngine(ProcessingEngine):
         model_name = coldata.model_name
         obs_name = coldata.obs_name
 
-        var_name_web = self.cfg.model_cfg.get_entry(model_name).get_varname_web(model_var,
-                                                                           obs_var)
+        mcfg = self.cfg.model_cfg.get_entry(model_name)
+        var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
         const.print_log.info(
             f'Computing json files for {model_name} ({model_var}) vs. '

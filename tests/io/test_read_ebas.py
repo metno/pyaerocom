@@ -328,7 +328,7 @@ class TestReadEbas(object):
             assert reader._find_station_matches(val) == output
 
     @pytest.mark.parametrize('val,raises,output', [
-        (['sconco3'], does_not_raise_exception(), ['conco3']),
+        #(['sconco3'], does_not_raise_exception(), ['conco3']),
         (None, does_not_raise_exception(), None)
         ])
     def test__precheck_vars_to_retrieve(self, reader,val,raises,output):

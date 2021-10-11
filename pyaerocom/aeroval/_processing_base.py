@@ -87,9 +87,10 @@ class HasColocator(HasConfig):
         -------
         diurnal_only : bool
         """
+        entry = self.cfg.get_obs_entry(obs_name)
         try:
-            diurnal_only = self.cfg.get_obs_entry(obs_name).diurnal_only
-        except AttributeError:
+            diurnal_only = entry['diurnal_only']
+        except KeyError:
             diurnal_only = False
         return diurnal_only
 
@@ -154,7 +155,7 @@ class DataImporter(HasColocator):
             loaded model data.
 
         """
-        col = self.get_colocator(model_name)
+        col = self.get_colocator(model_name=model_name)
         data = col.get_model_data(var_name)
 
         return data
@@ -177,7 +178,7 @@ class DataImporter(HasColocator):
 
         """
 
-        col = self.get_colocator(obs_name)
+        col = self.get_colocator(obs_name=obs_name)
 
-        data = col.read_ungridded(var_name)
+        data = col._read_ungridded(var_name)
         return data

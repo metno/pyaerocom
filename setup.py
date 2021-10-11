@@ -20,9 +20,7 @@ setup(
                      'pyaerocom.plot',
                      'pyaerocom.tools',
                      'pyaerocom.aeroval',
-                     'pyaerocom.aeroval.cli',
                      'pyaerocom.scripts'],
-    #include_package_data = True,
     package_data=   {'pyaerocom'    :   ['data/*']},
 
     classifiers=[
@@ -78,8 +76,7 @@ setup(
     long_description = readme,
     long_description_content_type='text/x-rst',
     entry_points = {'console_scripts' : [
-            'pya=pyaerocom.scripts.cli:main',
-            'aeroval=pyaerocom.aeroval.cli.main:main'
+            'pya=pyaerocom.scripts.cli:main'
             ]},
     zip_safe = False
 )

@@ -1,5 +1,6 @@
 import pytest
 import os
+import shutil
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json,write_json
 from pyaerocom.aeroval import experiment_output as mod, ExperimentProcessor
@@ -7,11 +8,13 @@ from pyaerocom.aeroval.setupclasses import EvalSetup
 from ..conftest import does_not_raise_exception
 from .cfg_test_exp1 import CFG as cfgexp1
 BASEDIR_DEFAULT = os.path.join(const.OUTPUTDIR, 'aeroval/data')
-
+from ._outbase import AEROVAL_OUT as BASEOUT
+DUMMY_OUT = os.path.join(BASEOUT, 'dummy')
 
 @pytest.fixture(scope='module')
 def dummy_setup():
-    return EvalSetup(proj_id='proj',exp_id='exp')
+    return EvalSetup(proj_id='proj',exp_id='exp',
+                     json_basedir=DUMMY_OUT)
 
 @pytest.fixture(scope='module')
 def dummy_expout(dummy_setup):
@@ -90,7 +93,7 @@ def test_ExperimentOutput_exp_id(dummy_expout):
 
 def test_ExperimentOutput_exp_dir(dummy_expout):
 
-    exp_dir = os.path.join(BASEDIR_DEFAULT, 'proj','exp')
+    exp_dir = os.path.join(DUMMY_OUT, 'proj','exp')
     assert dummy_expout.exp_dir == exp_dir
 
 def test_ExperimentOutput_regions_file(dummy_expout):
@@ -110,8 +113,11 @@ def test_ExperimentOutput_menu_file(dummy_expout):
                                                   'menu.json')
 
 
-def test_ExperimentOutput_results_available_False(dummy_expout):
-    assert not dummy_expout.results_available
+def test_ExperimentOutput_results_available_False(dummy_setup):
+    eo = mod.ExperimentOutput(dummy_setup)
+    assert not eo.results_available
+    fp = eo.exp_dir
+    assert not eo.results_available
 
 def test_ExperimentOutput_update_menu_EMPTY(dummy_expout):
     dummy_expout.update_menu()
@@ -141,9 +147,9 @@ def test_ExperimentOutput__results_summary_EMPTY(dummy_expout):
     assert dummy_expout._results_summary() == {'obs': [], 'ovar': [],
                                                'vc': [], 'mod': [], 'mvar': []}
 
-@pytest.mark.skip(reason='needs revision')
-def test_ExperimentOutput_clean_json_files(dummy_expout):
-    pass
+def test_ExperimentOutput_clean_json_files_EMPTY(dummy_expout):
+    modified = dummy_expout.clean_json_files()
+    assert len(modified) == 0
 
 @pytest.mark.skip(reason='needs revision')
 def test_ExperimentOutput__clean_modelmap_files(dummy_expout):
@@ -174,7 +180,7 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
 
 ### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
 
-def test_ExperimentOutput_delete_experiment_data():
+def test_ExperimentOutput_delete_experiment_data_CFG1():
     cfg = EvalSetup(**cfgexp1)
     cfg.webdisp_opts.regions_how='htap'
     cfg.webdisp_opts.add_model_maps=False
@@ -186,6 +192,62 @@ def test_ExperimentOutput_delete_experiment_data():
     assert os.path.exists(chk)
     proc.exp_output.delete_experiment_data()
     assert not os.path.exists(chk)
+
+def test_Experiment_Output_clean_json_files_CFG1():
+    cfg = EvalSetup(**cfgexp1)
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    modified = proc.exp_output.clean_json_files()
+    assert len(modified) == 0
+
+def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD():
+    cfg = EvalSetup(**cfgexp1)
+    cfg.model_cfg['mod1'] = cfg.model_cfg['TM5-AP3-CTRL']
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    del cfg.model_cfg['mod1']
+    modified = proc.exp_output.clean_json_files()
+    assert len(modified) == 15
+
+def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS():
+    cfg = EvalSetup(**cfgexp1)
+    cfg.obs_cfg['obs1'] = cfg.obs_cfg['AERONET-Sun']
+    proc = ExperimentProcessor(cfg)
+    proc.run()
+    del cfg.obs_cfg['obs1']
+    modified = proc.exp_output.clean_json_files()
+    assert len(modified) == 13
+
+
+@pytest.mark.parametrize('add_names,order,result,raises', [
+    (['c', 'b', 'a'], None, ['a', 'b', 'c'], does_not_raise_exception()),
+    (['c', 'b', 'a'], ['c', 'b', 'a'], ['c', 'b', 'a'], does_not_raise_exception()),
+    (['c', 'b', 'a'], [42], ['a', 'b', 'c'], does_not_raise_exception()),
+    (['c', 'b', 'a'], 'b', ['b', 'a', 'c'], pytest.raises(ValueError)),
+    (['c', 'b', 'a'], ['b'], ['b', 'a', 'c'], does_not_raise_exception()),
+    (['c', 'b', 'a'], ['b','c'], ['b', 'c', 'a'], does_not_raise_exception()),
+
+])
+def test_ExperimentOutput_reorder_experiments(dummy_expout,add_names,order,
+                                              result,raises):
+
+    out = dummy_expout
+    fp = out.experiments_file
+
+    data = {}
+    for name in add_names:
+        data[name] = dict(public=True)
+    assert list(data) == add_names
+    write_json(data,fp,indent=4)
+    with raises:
+        out.reorder_experiments(order)
+        new = read_json(fp)
+        assert list(new) == result
+    os.remove(fp)
+
+
+
+
 
 
 

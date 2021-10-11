@@ -169,6 +169,11 @@ class ObsCollection(BaseCollection):
         """
         return [self.get_web_iface_name(key) for key in self.keylist()]
 
+    @property
+    def all_vert_types(self):
+        """List of unique vertical types specified in this collection"""
+        return list(set([x['obs_vert_type'] for x in self.values()]))
+
 class ModelCollection(BaseCollection):
     """
     Dict-like object that represents a collection of model entries
@@ -231,14 +236,3 @@ class ModelCollection(BaseCollection):
         list
         """
         return self.keylist()
-
-
-if __name__ == '__main__':
-    oc = ObsCollection(model1 = dict(obs_id='bla', obs_vars='od550aer',
-                                     obs_vert_type='Column'))
-
-    oc['AN-EEA-MP'] = dict(is_superobs = True,
-                           obs_id = ('AirNow', 'EEA-NRT-rural', 'MarcoPolo'),
-                           obs_vars = ['concpm10', 'concpm25',
-                                           'vmro3', 'vmrno2'],
-                           obs_vert_type = 'Surface')

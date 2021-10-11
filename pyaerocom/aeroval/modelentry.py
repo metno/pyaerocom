@@ -101,7 +101,8 @@ class ModelEntry(BrowseDict):
         return (obsout, modout)
 
     def get_varname_web(self, mod_var, obs_var):
-        if obs_var in self.model_add_vars and mod_var in self.model_add_vars[obs_var]:
+        if obs_var in self.model_add_vars and  mod_var in \
+                self.model_add_vars[obs_var]:
             return mod_var
         return obs_var
 

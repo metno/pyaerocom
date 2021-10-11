@@ -2,7 +2,6 @@ import glob
 import os
 import shutil
 
-
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import (
     DirLoc,
@@ -21,10 +20,9 @@ from pyaerocom.aeroval.glob_defaults import (
     var_web_info,
 )
 
-from pyaerocom.aeroval.helpers import read_json, write_json
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.exceptions import VariableDefinitionError
+from pyaerocom.exceptions import VariableDefinitionError, EntryNotAvailable
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 
@@ -68,12 +66,44 @@ class ProjectOutput:
         write_json(current, self.experiments_file, indent=4)
 
     def _del_entry_experiments_json(self, exp_id):
+        """
+        Remove an entry from experiments.json
+
+        Parameters
+        ----------
+        exp_id : str
+            name of experiment
+
+        Returns
+        -------
+        None
+
+        """
         current = read_json(self.experiments_file)
         try:
             del current[exp_id]
         except KeyError:
             const.print_log.warning(
                 f'no such experiment registered: {exp_id}')
+        write_json(current, self.experiments_file, indent=4)
+
+    def reorder_experiments(self, exp_order=None):
+        """Reorder experiment order in evaluation interface
+
+        Puts experiment list into order as specified by `exp_order`, all
+        remaining experiments are sorted alphabetically.
+
+        Parameters
+        ----------
+        exp_order : list, optional
+            desired experiment order, if None, then alphabetical order is used.
+        """
+        if exp_order is None:
+            exp_order = []
+        elif not isinstance(exp_order, list):
+            raise ValueError('need list as input')
+        current = read_json(self.experiments_file)
+        current = sort_dict_by_name(current, pref_list=exp_order)
         write_json(current, self.experiments_file, indent=4)
 
 
@@ -84,6 +114,10 @@ class ExperimentOutput(ProjectOutput):
         self.cfg = cfg
         super(ExperimentOutput, self).__init__(cfg.proj_id,
                                                cfg.path_manager.json_basedir)
+
+        # dictionary that will be filled by json cleanup methods to check for
+        # invalid or outdated json files across different output directories
+        self._invalid = dict(models=[],obs=[])
 
     @property
     def exp_id(self):
@@ -140,6 +174,13 @@ class ExperimentOutput(ProjectOutput):
             return False
         return True
 
+    @property
+    def out_dirs_json(self) -> dict:
+        """
+        json output directories (`dict`)
+        """
+        return self.cfg.path_manager.get_json_output_dirs()
+
     def update_menu(self):
         """Update menu
 
@@ -189,7 +230,6 @@ class ExperimentOutput(ProjectOutput):
         self._add_entry_experiments_json(self.exp_id, exp_data)
         self._create_var_ranges_json()
         self.update_menu()
-        #self.make_info_table_web()
         self._sync_heatmaps_with_menu_and_regions()
 
         self._create_statistics_json()
@@ -290,8 +330,10 @@ class ExperimentOutput(ProjectOutput):
 
     def _results_summary(self):
         res = [[],[],[],[],[]]
-        info = self._get_meta_from_map_files()
-        for item in info:
+        files = self._get_json_output_files('map')
+        tab = []
+        for file in files:
+            item = self._info_from_map_file(file)
             for i, entry in enumerate(item):
                 res[i].append(entry)
         output = {}
@@ -299,65 +341,146 @@ class ExperimentOutput(ProjectOutput):
             output[name] = list(set(res[i]))
         return output
 
-    # ToDo: rewrite or delete before v0.12.0
     def clean_json_files(self):
         """Checks all existing json files and removes outdated data
 
         This may be relevant when updating a model name or similar.
         """
-        raise NotImplementedError('under revision')
-        self._clean_modelmap_files()
+        modified = []
+        const.print_log.info(
+            'Running clean_json_files: Checking json output directories for '
+            'outdated or invalid data and cleaning up.')
+        outdirs = self.out_dirs_json
+        mapfiles = self._get_json_output_files('map')
+        rmmap = []
+        vert_codes = self.cfg.obs_cfg.all_vert_types
+        for file in mapfiles:
+            try:
+                (obs_name,
+                 obs_var,
+                 vert_code,
+                 mod_name,
+                 mod_var) = self._info_from_map_file(file)
+            except Exception as e:
+                const.print_log.warning(
+                    f'FATAL: invalid file convention for map json file:'
+                    f' {file}. This file will be deleted. Error message: '
+                    f'{repr(e)}')
+                rmmap.append(file)
+                continue
+            if not self._is_part_of_experiment(obs_name, obs_var,
+                                               mod_name, mod_var):
+                rmmap.append(file)
+            elif not vert_code in vert_codes:
+                rmmap.append(file)
 
-        for file in self.all_map_files:
-            (obs_name, obs_var, vc,
-             mod_name, mod_var) = self._info_from_map_file(file)
-
-            remove=False
-            if not (obs_name in self.cfg.obs_cfg.web_iface_names and
-                    mod_name in self.model_config):
-                remove = True
-            elif not obs_var in self._get_valid_obs_vars(obs_name):
-                remove = True
-            elif not vc in self.JSON_SUPPORTED_VERT_SCHEMES:
-                remove = True
-            else:
-                mcfg = self.model_config[mod_name]
-                if 'model_use_vars' in mcfg and obs_var in mcfg['model_use_vars']:
-                    if not mod_var == mcfg['model_use_vars'][obs_var]:
-                        remove=True
-
-            if remove:
-                const.print_log.info(f'Removing outdated map file: {file}')
-                os.remove(os.path.join(self.out_dirs['map'], file))
-
-        for fp in glob.glob('{}/*.json'.format(self.out_dirs['ts'])):
-            self._check_clean_ts_file(fp)
-
-        self.update_interface()
-
-    # ToDo: rewrite or delete before v0.12.0
-    def _clean_modelmap_files(self):
-        raise NotImplementedError('under revision')
-        all_vars = self.all_modelmap_vars
-        all_mods = self.all_model_names
-        out_dir = self.out_dirs['contour']
-
-        for file in os.listdir(out_dir):
-            spl = file.replace('.', '_').split('_')
-            if not len(spl) == 4:
-                raise ValueError(f'Invalid json map filename {file}')
-            var, vc, mod_name = spl[:3]
-            rm = (not var in all_vars or
-                  not mod_name in all_mods or
-                  not vc in self.JSON_SUPPORTED_VERT_SCHEMES)
-            if rm:
+        scatfiles = os.listdir(outdirs['scat'])
+        for file in rmmap: # delete map files
+            const.print_log.info(
+                f'Deleting outdated map json file: {file}.')
+            os.remove(file)
+            modified.append(file)
+            fname = os.path.basename(file)
+            if fname in scatfiles:
+                scfp = os.path.join(outdirs['scat'],fname)
                 const.print_log.info(
-                    f'Removing invalid model maps file {file}'
-                    )
-                os.remove(os.path.join(out_dir, file))
+                    f'Deleting outdated scatter json file: {file}.')
+                os.remove(scfp)
+                modified.append(file)
+
+        tsfiles = self._get_json_output_files('ts')
+
+        for file in tsfiles:
+            if self._check_clean_ts_file(file):
+                modified.append(file)
+        modified.extend(self._clean_modelmap_files())
+        self.update_interface() # will take care of heatmap data
+        return modified
+
+    def _check_clean_ts_file(self, fp):
+        fname = os.path.basename(fp)
+        spl = fname.split('.json')[0].split('_')
+        vc, obsinfo = spl[-1], spl[-2]
+        if not vc in self.cfg.obs_cfg.all_vert_types:
+            const.print_log.warning(
+                f'Invalid or outdated vert code {vc} in ts file {fp}. File '
+                f'will be deleted.')
+            os.remove(fp)
+            return True
+        obs_name = str.join('-', obsinfo.split('-')[:-1])
+        if obs_name in self._invalid['obs']:
+            const.print_log.info(
+                f'Invalid or outdated obs name {obs_name} in ts file {fp}. '
+                f'File will be deleted.')
+            os.remove(fp)
+            return True
+
+        try:
+            data = read_json(fp)
+        except Exception:
+            const.print_log.exception('FATAL: detected corrupt json file: {}. '
+                                      'Removing file...'.format(fp))
+            os.remove(fp)
+            return True
+
+        models_avail = list(data)
+        models_in_exp = self.cfg.model_cfg.web_iface_names
+        if all([mod in models_in_exp for mod in models_avail]):
+            # nothing to clean up
+            return False
+        modified = False
+        data_new = {}
+        for mod_name in models_avail:
+            if mod_name in models_in_exp:
+                data_new[mod_name] = data[mod_name]
+            else:
+                modified = True
+                const.print_log.info(
+                    f'Removing data for model {mod_name} from ts file: {fp}')
+
+        write_json(data_new, fp)
+        return modified
+
+    def _clean_modelmap_files(self):
+
+        # Note: to be called after cleanup of files in map subdir
+        json_files = self._get_json_output_files('contour')
+        rm = []
+        for file in json_files:
+            if not self.cfg.webdisp_opts.add_model_maps:
+                rm.append(file)
+            else:
+                fname = os.path.basename(file)
+                spl = fname.split('.')[0].split('_')
+                if not len(spl) == 2:
+                    msg = (f'FATAL: invalid file convention for map json '
+                           f'file: {file}. ')
+                    if len(spl) > 2:
+                        msg += ('Likely due to underscore being present in '
+                                'model or variable name.')
+                    rm.append(file)
+                    const.print_log.warning(msg)
+                elif spl[-1] in self._invalid['models']:
+                    rm.append(file)
+
+        removed = []
+        for file in rm:
+            os.remove(file)
+            removed.append(file)
+            file1 = file.replace('.json', '.geojson')
+            if os.path.exists(file1):
+                os.remove(file1)
+                removed.append(file)
+        return removed
 
     def delete_experiment_data(self, also_coldata=True):
         """Delete all data associated with a certain experiment
+
+        Note
+        ----
+        This simply deletes the experiment directory with all the json files
+        and, if `also_coldata` is True, also the associated co-located data
+        objects.
 
         Parameters
         ----------
@@ -384,7 +507,7 @@ class ExperimentOutput(ProjectOutput):
         self._del_entry_experiments_json(self.exp_id)
 
 
-    def get_model_order_menu(self):
+    def get_model_order_menu(self) -> list:
         """Order of models in menu
 
         Note
@@ -404,7 +527,8 @@ class ExperimentOutput(ProjectOutput):
         return order
 
 
-    def get_obs_order_menu(self):
+    def get_obs_order_menu(self) -> list:
+        """Order of observation entries in menu"""
         order = []
         if len(self.cfg.webdisp_opts.obs_order_menu) > 0:
             if self.cfg.webdisp_opts.obsorder_from_config:
@@ -416,24 +540,9 @@ class ExperimentOutput(ProjectOutput):
             order.extend(self.cfg.obs_cfg.web_iface_names)
         return order
 
-
-    @property
-    def out_dirs_json(self):
-        return self.cfg.path_manager.get_json_output_dirs()
-
-
     def _get_json_output_files(self, dirname):
         dirloc = self.out_dirs_json[dirname]
         return glob.glob(f'{dirloc}/*.json')
-
-
-    def _get_meta_from_map_files(self):
-        """List of all existing map files"""
-        files = self._get_json_output_files('map')
-        tab = []
-        for file in files:
-            tab.append(self._info_from_map_file(file))
-        return tab
 
 
     def _get_cmap_info(self, var):
@@ -509,6 +618,7 @@ class ExperimentOutput(ProjectOutput):
                 'longname'  :   lname,
                 'obs'       :   {}}
 
+
     def _check_ovar_mvar_entry(self, mcfg, mod_var, ocfg, obs_var):
 
         muv = mcfg.model_use_vars
@@ -566,6 +676,7 @@ class ExperimentOutput(ProjectOutput):
                 return True
         return False
 
+
     def _is_part_of_experiment(self, obs_name, obs_var, mod_name, mod_var):
         """
         Check if input combination of model and obs var is valid
@@ -598,7 +709,11 @@ class ExperimentOutput(ProjectOutput):
 
         """
         # get model entry for model name
-        mcfg = self.cfg.model_cfg.get_entry(mod_name)
+        try:
+            mcfg = self.cfg.model_cfg.get_entry(mod_name)
+        except EntryNotAvailable:
+            self._invalid['models'].append(mod_name)
+            return False
         # mapping of obs / model variables to be used
 
         # search obs entry (may have web_interface_name set, so have to
@@ -610,6 +725,7 @@ class ExperimentOutput(ProjectOutput):
             if obs_name == allobs.get_web_iface_name(key):
                 obs_matches.append(ocfg)
         if len(obs_matches) == 0:
+            self._invalid['obs'].append(obs_name)
             # obs dataset is not part of experiment
             return False
         # first, check model_add_vars
@@ -620,8 +736,14 @@ class ExperimentOutput(ProjectOutput):
 
     def _create_menu_dict(self):
         new = {}
-        tab = self._get_meta_from_map_files()
-        for (obs_name, obs_var, vert_code, mod_name, mod_var) in tab:
+        files = self._get_json_output_files('map')
+        for file in files:
+            (obs_name,
+             obs_var,
+             vert_code,
+             mod_name,
+             mod_var) = self._info_from_map_file(file)
+
             if self._is_part_of_experiment(obs_name, obs_var,
                                            mod_name, mod_var):
 
@@ -692,40 +814,6 @@ class ExperimentOutput(ProjectOutput):
                                                       pref_list=model_order)
                     new_sorted[var]['obs'][obs_name][vert_code] = models_sorted
         return new_sorted
-
-
-    def _check_clean_ts_file(self, fp):
-
-        spl = os.path.basename(fp).split('OBS-')[-1].split(':')
-        obs_name = spl[0]
-        obs_var, vc, _ = spl[1].replace('.', '_').split('_')
-        rm = (not vc in self.JSON_SUPPORTED_VERT_SCHEMES or
-              not obs_name in self.obs_config or
-              not obs_var in self._get_valid_obs_vars(obs_name))
-        if rm:
-            const.print_log.info('Removing outdated ts file: {}'.format(fp))
-            os.remove(fp)
-            return
-        try:
-            data = read_json(fp)
-        except Exception:
-            const.print_log.exception('FATAL: detected corrupt json file: {}. '
-                                      'Removing file...'.format(fp))
-            os.remove(fp)
-            return
-        if all([x in self.model_config for x in list(data.keys())]):
-            return
-        data_new = {}
-        for mod_name in data.keys():
-            if not mod_name in self.model_config:
-                const.print_log.info('Removing model {} from {}'
-                                .format(mod_name, os.path.basename(fp)))
-                continue
-
-            data_new[mod_name] = data[mod_name]
-
-        write_json(data_new, fp)
-
 
     def _get_valid_obs_vars(self, obs_name):
         if obs_name in self._valid_obs_vars:
