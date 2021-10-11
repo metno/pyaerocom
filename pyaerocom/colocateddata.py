@@ -1793,8 +1793,8 @@ class ColocatedData(object):
             rgts = subset.data.mean(dim=('latitude', 'longitude'))
         else:
             rgts = subset.data.mean(dim='station_name')
-        result['obs'] = pd.Series(rgts.data[0], rgts.time)
-        result['mod'] = pd.Series(rgts.data[1], rgts.time)
+        result['obs'] = pd.Series(rgts.data[0], rgts.time.data)
+        result['mod'] = pd.Series(rgts.data[1], rgts.time.data)
         result['region'] = region_id
         return result
 
