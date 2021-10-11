@@ -40,6 +40,5 @@ def test_check_var_unit_aerocom(stat1):
     stat1.check_var_unit_aerocom('ec550aer')
     assert stat1.get_unit('ec550aer') == Unit('1/Mm')
 
-if __name__=="__main__":
-    import sys
-    pytest.main(sys.argv)
+def test_StationData___str__(stat1):
+    assert isinstance(str(stat1), str)
