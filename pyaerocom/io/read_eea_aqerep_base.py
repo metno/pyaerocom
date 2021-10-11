@@ -668,23 +668,12 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 start = idx + var_idx * num_times
                 stop = start + num_times
 
-                # Write common meta info for this station (data lon, lat and
-                # altitude are set to station locations)
+                invalid = not station_data['validity']
 
-                # Assigning lat, lon, alt is not needed since they are not
-                # assigned in the StationData
-                # =============================================================================
-                #                 data_obj._data[start:stop, data_obj._LATINDEX
-                #                 ] = station_data['latitude']
-                #                 data_obj._data[start:stop, data_obj._LONINDEX
-                #                 ] = station_data['longitude']
-                #                 data_obj._data[start:stop, data_obj._ALTITUDEINDEX
-                #                 ] = station_data['altitude']
-                # =============================================================================
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
-                ] = station_data['validity']
+                ] = invalid
                 data_obj._data[start:stop, data_obj._TIMEINDEX
                 ] = station_data['dtime']
                 data_obj._data[start:stop, data_obj._DATAINDEX
