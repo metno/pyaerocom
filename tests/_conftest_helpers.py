@@ -410,6 +410,7 @@ from cf_units import Unit
 
 def make_dummy_cube_3D_daily(year=2010,
                              daynum=365, lat_range=None, lon_range=None,
+                             value=1,
                              dtype=float):
     if lat_range is None:
         lat_range = (-30, 30)
@@ -442,7 +443,7 @@ def make_dummy_cube_3D_daily(year=2010,
 
     latdim.guess_bounds()
     londim.guess_bounds()
-    vals = np.ones((len(times), len(lats), len(lons)))
+    vals = np.ones((len(times), len(lats), len(lons))) * value
     dummy = iris.cube.Cube(vals,
                            units='1')
 
@@ -457,22 +458,26 @@ def make_dummy_cube_3D_daily(year=2010,
         coord.points = coord.points.astype(dtype)
     return dummy
 
-def make_griddeddata(var_name, units, ts_type, vert_code, **kwargs):
+def make_griddeddata(var_name, units, ts_type, vert_code, name, **kwargs):
     cube = make_dummy_cube_3D_daily(**kwargs)
     cube.var_name=var_name
     cube.units=units
     from pyaerocom import GriddedData
     data = GriddedData(cube)
-    data.metadata['data_id'] = 'DUMMY-MODEL'
+    data.metadata['data_id'] = name
     data.metadata['vert_code'] = vert_code
     if ts_type != 'daily':
         data=data.resample_time(ts_type)
     return data
 
 def add_dummy_model_data(var_name, units, ts_type, vert_code, tmpdir,
-                         **kwargs):
-    outdir = os.path.join(tmpdir, 'DUMMY-MODEL', 'renamed')
+                         name=None, **kwargs):
+    if name is None:
+        name = 'DUMMY-MODEL'
+    outdir = os.path.join(tmpdir, name, 'renamed')
     os.makedirs(outdir, exist_ok=True)
-    data =  make_griddeddata(var_name, units, ts_type, vert_code, **kwargs)
+    data =  make_griddeddata(var_name, units, ts_type, vert_code,
+                             name=name,
+                             **kwargs)
     data.to_netcdf(out_dir=outdir)
     return outdir

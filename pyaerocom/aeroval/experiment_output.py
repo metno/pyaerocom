@@ -552,7 +552,7 @@ class ExperimentOutput(ProjectOutput):
             varinfo = VarinfoWeb(var)
             return dict(scale=varinfo.cmap_bins,
                         colmap=varinfo.cmap)
-        except VariableDefinitionError:
+        except (VariableDefinitionError, AttributeError):
             return dict(scale=[], colmap='coolwarm')
 
 
