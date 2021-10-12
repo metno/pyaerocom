@@ -16,12 +16,12 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io import ReadAasEtal, ReadAeronetSdaV3, ReadAeronetSunV3, ReadEbas
 
 from . import _conftest_helpers as cth
-from .synthetic_data import DataAccess
+from .synthetic_data import FakeStationDataAccess
 
 INIT_TESTDATA = True
 TEST_RTOL = 1e-4
 
-DATA_ACCESS = DataAccess()
+FAKE_STATION_DATA = FakeStationDataAccess()
 
 # class that provides / ensures access to testdataset
 tda = td.AccessTestData()
@@ -167,7 +167,6 @@ def aeronet_sda_subset_reader():
 @pytest.fixture(scope='session')
 def aeronetsunv3lev2_subset(aeronet_sun_subset_reader):
     r = aeronet_sun_subset_reader
-    #return r.read(vars_to_retrieve=TEST_VARS)
     return r.read(vars_to_retrieve=TEST_VARS_AERONET)
 
 @pytest.fixture(scope='session')

@@ -157,13 +157,6 @@ class StationData(StationMetaData):
             ud[var] = self.get_unit(var)
         return ud
 
-    def compute_trend(self, var_name, start_year=None, stop_year=None,
-                      season=None, slope_confidence=None, **alt_range):
-        if not self.has_var(var_name):
-            raise VarNotAvailableError('No such variables {} in StationData'
-                                       .format(var_name))
-        # Add code that uses updated TrendsEngine directly
-        raise NotImplementedError('Coming soon')
 
     def check_var_unit_aerocom(self, var_name):
         """Check if unit of input variable is AeroCom default, if not, convert
@@ -188,12 +181,8 @@ class StationData(StationMetaData):
         try:
             self.check_unit(var_name, to_unit)
         except Exception:
-            try:
-                self.convert_unit(var_name, to_unit)
-            except UnitConversionError as e:
-                raise UnitConversionError('Failed to convert unit of variable '
-                                          '{}. Reason: {}'
-                                          .format(var_name, repr(e)))
+            self.convert_unit(var_name, to_unit)
+
 
     def check_unit(self, var_name, unit=None):
         """Check if variable unit corresponds to a certain unit
@@ -226,10 +215,6 @@ class StationData(StationMetaData):
         """Try to convert unit of data
 
         Requires that unit of input variable is available in :attr:`var_info`
-
-        Note
-        ----
-        BETA version
 
         Parameters
         ----------
@@ -303,7 +288,7 @@ class StationData(StationMetaData):
             tol_km = self._COORD_MAX_VAR
         return True if self.dist_other(other) < tol_km else False
 
-    def get_station_coords(self, force_single_value=True, quality_check=True):
+    def get_station_coords(self, force_single_value=True):
         """Return coordinates as dictionary
 
         This method uses the standard coordinate names defined in
@@ -336,8 +321,7 @@ class StationData(StationMetaData):
             if local variation in either of the three spatial coordinates is
             found too large
         """
-        _check_var = False
-        vals , stds = {}, {}
+        output = {}
         for key in self.STANDARD_COORD_KEYS:
             # prefer explicit if defined in station_coord dictionary (e.g. altitude
             # attribute in lidar data will be an array corresponding to profile
@@ -347,33 +331,30 @@ class StationData(StationMetaData):
                 if not isnumeric(val):
                     raise MetaDataError('Station coordinate {} must be numeric. '
                                         'Got: {}'.format(key, val))
-                vals[key] = val
-                stds[key] = 0
+                output[key] = val
             else:
-                if not key in self or self[key] is None:
-                    raise MetaDataError('{} information is not available in data'
-                                        .format(key))
                 val = self[key]
-                std = 0
-                # TODO: review the quality check and make shorter
-                if force_single_value and not isinstance(val, (float, np.floating)):
+                if force_single_value and not isinstance(val,(float,
+                                                              np.floating)):
                     if isinstance(val, (int, np.integer)):
                         val = np.float64(val)
                     elif isinstance(val, (list, np.ndarray)):
+                        maxdiff = np.max(val) - np.min(val)
+                        if key in ('latitude', 'longitude'):
+                            tol = 5e-4 # ca 50m at equator
+                        else:
+                            tol = 20 #m altitude tolerance
+                        if maxdiff > tol:
+                            raise ValueError('meas point coordinate arrays '
+                                             'vary too much to reduce them '
+                                             'to a single coordinate')
                         val = np.mean(val)
-                        std = np.std(val)
-                        if std > 0:
-                            _check_var = True
                     else:
                         raise AttributeError("Invalid value encountered for coord "
                                              "{}, need float, int, list or ndarray, "
                                              "got {}".format(key, type(val)))
-                vals[key] = val
-                stds[key] = std
-        if _check_var:
-            raise NotImplementedError('This feature does currently not work '
-                                      'due to recent API changes')
-        return vals
+                output[key] = val
+        return output
 
     def get_meta(self, force_single_value=True, quality_check=True,
                  add_none_vals=False, add_meta_keys=None):
@@ -414,9 +395,8 @@ class StationData(StationMetaData):
         elif not isinstance(add_meta_keys, list):
             add_meta_keys = []
         meta = {}
-        meta.update(self.get_station_coords(force_single_value,
-                                            quality_check))
-        keys = self.STANDARD_META_KEYS
+        meta.update(self.get_station_coords(force_single_value))
+        keys = [k for k in self.STANDARD_META_KEYS]
         keys.extend(add_meta_keys)
         for key in keys:
             if not key in self:
@@ -436,10 +416,8 @@ class StationData(StationMetaData):
             val = self[key]
             if force_single_value and isinstance(val, (list, tuple, np.ndarray)):
                 if quality_check and not all([x == val[0] for x in val]):
-                    logger.debug("Performing quality check for meta data")
-                    raise MetaDataError("Inconsistencies in meta parameter {} "
-                                        "between different time-stamps".format(
-                                        key))
+                    raise MetaDataError(
+                        f'Inconsistencies in meta parameter {key}')
                 val = val[0]
             meta[key] = val
 
@@ -677,16 +655,6 @@ class StationData(StationMetaData):
                         if not info_this[key] == val:
                             info_this[key] = [info_this[key], val]
         return self
-# =============================================================================
-#         for k, v in info_other.items():
-#             if not k in info_this:
-#                 info_this[k] = v
-#             else:
-#                 if not isinstance(info_this[k], list):
-#                     info_this[k] = [info_this[k]]
-#
-#                 info_this[k].append(v)
-# =============================================================================
 
     def check_if_3d(self, var_name):
         """Checks if altitude data is available in this object"""
