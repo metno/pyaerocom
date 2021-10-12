@@ -1538,7 +1538,7 @@ class StationData(StationMetaData):
             if isinstance(v, dict):
                 s += "\n{} ({}):".format(k, type(v).__name__)
                 if v:
-                    s = dict_to_str(v, s, indent=2)
+                    s += dict_to_str(v, indent=2)
                 else:
                     s += ' <empty_dict>'
             elif isinstance(v, list):
