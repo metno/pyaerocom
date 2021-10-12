@@ -668,12 +668,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 start = idx + var_idx * num_times
                 stop = start + num_times
 
-                invalid = not station_data['validity']
-
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
-                ] = invalid
+                ] = station_data['validity']
                 data_obj._data[start:stop, data_obj._TIMEINDEX
                 ] = station_data['dtime']
                 data_obj._data[start:stop, data_obj._DATAINDEX
