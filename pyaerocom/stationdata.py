@@ -574,6 +574,8 @@ class StationData(StationMetaData):
             obj = self
 
         if check_coords:
+            if coord_tol_km is None:
+                coord_tol_km = self._COORD_MAX_VAR
             try:
                 if not self.same_coords(other, coord_tol_km):
                     raise CoordinateError(f'Station coordinates differ by '
