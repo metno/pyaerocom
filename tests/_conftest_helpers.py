@@ -47,8 +47,8 @@ def create_fake_stationdata_list():
                                   10, '2010-01-01', '2010-12-31', 'd',
                                   {'awesomeness' : 10,
                                    'data_revision' : 20120101,
-                                   'ts_type' : 'daily', 'latitude' : 10,
-                                   'longitude' : 20, 'altitude' : 0,
+                                   'ts_type' : 'daily', 'latitude' : 42.001,
+                                   'longitude' : 20, 'altitude' : 0.1,
                                    'station_name' : 'FakeSite'}),
         # overlaps with first one
         create_fake_station_data('concpm10', {'concpm10': {'units' : 'ug m-3'}},
@@ -82,8 +82,8 @@ def create_fake_stationdata_list():
                                   1, '2005', '2012', 'MS',
                                   {'awesomeness' : 42,
                                    'data_revision' : 20200101,
-                                   'ts_type' : 'monthly', 'latitude' : 42.001,
-                                   'longitude' : 20, 'altitude' : 0.1,
+                                   'ts_type' : 'monthly', 'latitude' : 22.001,
+                                   'longitude' : 10, 'altitude' : 99,
                                    'station_name' : 'FakeSite'}),
 
         create_fake_station_data('od550aer', {'od550aer': {'units' : '1'}},
