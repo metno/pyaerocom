@@ -20,7 +20,7 @@ Ungridded data
    :members:
    :undoc-members:
 
-Colocated data
+Co-located data
 ^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocateddata
@@ -41,24 +41,25 @@ Other data classes
    :members:
    :undoc-members:
 
-Colocation routines
--------------------
+Co-location routines
+---------------------
 
-Automatic colocation engine
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+High-level co-location engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocation_auto
    :members:
 
-Low-level colocation methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Low-level co-location functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocation
    :members:
    :undoc-members:
 
-Combining ungridded observations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Co-locating ungridded observations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.combine_vardata_ungridded
    :members:
    :undoc-members:
@@ -319,8 +320,8 @@ Metadata and vocabulary standards
   :members:
   :undoc-members:
 
-Variable conventions
----------------------
+Variables
+---------
 
 Variable collection
 ^^^^^^^^^^^^^^^^^^^
@@ -349,6 +350,20 @@ Variable name info
 .. automodule:: pyaerocom.varnameinfo
   :members:
   :undoc-members:
+
+Helpers for auxiliary variables
+-------------------------------
+
+.. automodule:: pyaerocom.aux_var_helpers
+   :members:
+   :undoc-members:
+
+Variable categorisations
+------------------------
+
+.. automodule:: pyaerocom.var_groups
+   :members:
+   :undoc-members:
 
 Regions and  data filtering
 ----------------------------
@@ -434,13 +449,12 @@ Helper methods
    :undoc-members:
    :private-members:
 
-Utils
------
+Utility functions
+-----------------
 
 .. automodule:: pyaerocom.utils
    :members:
    :undoc-members:
-
 
 Helpers
 -------
@@ -563,6 +577,7 @@ Molar masses and related helpers
    :members:
    :undoc-members:
 
+
 Access to minimal test dataset
 ------------------------------
 
@@ -577,3 +592,9 @@ Low-level helper classes and functions
    :members:
    :undoc-members:
 
+Custom exceptions
+------------------
+
+.. automodule:: pyaerocom.exceptions
+   :members:
+   :undoc-members:
