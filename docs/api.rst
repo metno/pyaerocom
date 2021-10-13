@@ -353,14 +353,19 @@ Variable name info
 Regions and  data filtering
 ----------------------------
 
+Region class and helper functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.region
+   :members:
+   :undoc-members:
+
 Region definitions
 ^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.region_defs
    :members:
    :undoc-members:
-
-
 
 Filter class
 ^^^^^^^^^^^^
@@ -559,3 +564,11 @@ Access to minimal test dataset
 .. automodule:: pyaerocom.access_testdata
    :members:
    :undoc-members:
+
+Low-level helper classes and functions
+--------------------------------------
+
+.. automodule:: pyaerocom._lowlevel_helpers
+   :members:
+   :undoc-members:
+
