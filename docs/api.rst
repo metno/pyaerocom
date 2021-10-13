@@ -420,7 +420,6 @@ Trends engine
 
 .. automodule:: pyaerocom.trends_engine
    :members:
-   :undoc-members:
 
 Helper methods
 ^^^^^^^^^^^^^^
