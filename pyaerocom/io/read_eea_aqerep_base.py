@@ -421,8 +421,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if filename is None:
             filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
             # test also for a gzipped file...
-            if not os.path.isfile(filename):
-                filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE, '.gz')
+        if not os.path.isfile(filename):
+            filename = filename + '.gz'
         self.logger.warning("Reading file {}".format(filename))
 
         struct_data = {}
@@ -660,6 +660,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             for var_idx, var in enumerate(list(station_data.var_info)):
                 # set invalid data to np.nan
                 # https://dd.eionet.europa.eu/vocabulary/aq/observationvalidity/view
+                # these are still the original flags!
                 station_data[var][station_data['validity'] < 1] = np.nan
                 # there's also a verification flag that we don't use for now
                 # which probably only makes sense to be used with the non NRT data
@@ -670,6 +671,16 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
+                # adjust station_data['validity'] to comply to the fact that pyaerocom
+                # flags nans with the value 1
+                # in in the EEA data negative values indicate invalid data
+                # make these positive
+                station_data['validity'] = station_data['validity'] * -1
+                # set all positive values to 1 since that is the only value pyaerocom can handle
+                station_data['validity'][station_data['validity'] > 1] = 1
+                # set all now negative values to 0 to make them valid
+                station_data['validity'][station_data['validity'] < 1] = 0
+
                 data_obj._data[start:stop, data_obj._DATAFLAGINDEX
                 ] = station_data['validity']
                 data_obj._data[start:stop, data_obj._TIMEINDEX
