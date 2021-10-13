@@ -76,12 +76,14 @@ pyaerocom supports reading of such data for different file naming conventions.
 
 Gridded data using AeroCom conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.io.readgridded
    :members:
    :undoc-members:
 
 Gridded data using EMEP conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.io.read_mscw_ctm
   :members:
   :undoc-members:
@@ -92,8 +94,8 @@ Reading of ungridded data
 Other than gridded data, ungridded data represents data that is irregularly
 sampled in space and time, for instance, observations at different locations
 around the globe. Such data is represented in pyaerocom by
-:class:`UngriddedData` which is essentially a point-cloud dataset. Reading of
-:class:`UngriddedData` is typically specific for different observational
+`UngriddedData` which is essentially a point-cloud dataset. Reading of
+`UngriddedData` is typically specific for different observational
 data records, as they typically come in various data formats using various
 metadata conventions, which need to be harmonised, which is done during the
 data import.
@@ -101,7 +103,7 @@ data import.
 The following flowchart illustrates the architecture of ungridded reading in
 pyaerocom. Below are information about the individual reading classes for each
 dataset (blue in flowchart), the abstract template base classes the reading
-classes are based on (dark green) and the factory class :class:`ReadUngridded`
+classes are based on (dark green) and the factory class `ReadUngridded`
 (orange) which has registered all individual reading classes. The data classes
 that are returned by the reading class are indicated in light green.
 
