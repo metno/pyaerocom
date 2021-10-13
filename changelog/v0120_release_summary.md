@@ -39,6 +39,8 @@ the new tools are a lot more flexible and support, for instance:
 - Processing tools for old trends interface are deprecated. Instead trends 
   visualisation is included in the new **AeroVal** interface and can be 
   processed via the new tools in the **aeroval** subpackage.
+- Former CLIs for web tools (pyaeroeval, pyaerotrends) are deprecated.
+  However, the simple pyaerocom (pya) CLI is still available.
 
 ## New observation networks
 
