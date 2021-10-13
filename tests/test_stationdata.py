@@ -100,7 +100,7 @@ def test_StationData_convert_unit(stat,var_name,to_unit,raises):
         stat.convert_unit(var_name,to_unit)
 
 def test_StationData_dist_other():
-    dist = stat1.dist_other(stat2)
+    dist = stat1.copy().dist_other(stat2.copy())
     np.testing.assert_allclose(dist, 1.11, atol=0.1)
 
 @pytest.mark.parametrize('stat,other,tol_km,result', [
@@ -110,7 +110,7 @@ def test_StationData_dist_other():
 
 ])
 def test_StationData_same_coords(stat,other,tol_km,result):
-    assert stat.same_coords(other, tol_km) == result
+    assert stat.copy().same_coords(other.copy(), tol_km) == result
 
 @pytest.mark.parametrize('stat,force_single_value,dtype,raises', [
     (mod.StationData(), False, None, does_not_raise_exception()),
@@ -263,18 +263,14 @@ def test_StationData_select_altitude_DataArray():
     assert list(val.altitude.values) == [1125, 1375, 1625, 1875]
 
 
-@pytest.mark.parametrize('stat,tth,var_name,altitudes,raises', [
-    (stat2, False, 'od550aer', (100,1000),pytest.raises(DataExtractionError)),
-    (stat2, True,'od550aer', (100,1000),pytest.raises(AttributeError)),
-    (stat1, True, 'od550aer', (100,101), pytest.raises(ValueError)),
-    (stat1, True, 'od550aer', (100,301), does_not_raise_exception())
+@pytest.mark.parametrize('stat,var_name,altitudes,raises', [
+    (stat2, 'od550aer', (100,1000),pytest.raises(AttributeError)),
+    (stat1, 'od550aer', (100,101), pytest.raises(ValueError)),
+    (stat1, 'od550aer', (100,301), does_not_raise_exception())
 ])
-def test_StationData_select_altitude_Series(stat,tth,var_name,altitudes,
+def test_StationData_select_altitude_Series(stat,var_name,altitudes,
                                             raises):
     stat = stat.copy()
-    if tth:
-        stat._to_ts_helper(var_name)
-
     with raises:
         val = stat.select_altitude(var_name, altitudes)
         assert isinstance(val, pd.Series)

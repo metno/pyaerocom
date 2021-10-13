@@ -1241,7 +1241,6 @@ class StationData(StationMetaData):
         pandas. Series or xarray.DataArray
             data object within input altitude range
         """
-
         data = self[var_name]
 
         if not isrange(altitudes):
@@ -1261,11 +1260,13 @@ class StationData(StationMetaData):
                     raise ValueError(f'no data in specified altitude range')
                 return result
 
-            raise DataExtractionError('Cannot intepret input for '
-                                          'altitude...')
-        elif isinstance(data, pd.Series) and isinstance(data.index, pd.DatetimeIndex):
+            raise DataExtractionError('Cannot intepret input for altitude...')
+
+        elif isinstance(data, pd.Series) or len(self.dtime) == len(data):
             if not 'altitude' in self:
                 raise ValueError('Missing altitude information')
+            if not isinstance(data, pd.Series):
+                data = pd.Series(data,self.dtime)
             alt = self.altitude
             if not isinstance(alt, (list, np.ndarray)):
                 raise AttributeError('need 1D altitude array')
