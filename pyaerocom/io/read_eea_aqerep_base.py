@@ -658,31 +658,18 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 data_obj.add_chunk(num_times)
 
             for var_idx, var in enumerate(list(station_data.var_info)):
-                # set invalid data to np.nan
+                # set invalid data to np.nan according to
                 # https://dd.eionet.europa.eu/vocabulary/aq/observationvalidity/view
-                # these are still the original flags!
+                # data flagged as below the detection limit (values 2 and 3)
+                # will remain in the data
                 station_data[var][station_data['validity'] < 1] = np.nan
-                # there's also a verification flag that we don't use for now
-                # which probably only makes sense to be used with the non NRT data
-                # http://dd.eionet.europa.eu/vocabulary/aq/observationverification/view
+
                 values = station_data[var]
                 start = idx + var_idx * num_times
                 stop = start + num_times
 
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
-                # adjust station_data['validity'] to comply to the fact that pyaerocom
-                # flags nans with the value 1
-                # in in the EEA data negative values indicate invalid data
-                # make these positive
-                station_data['validity'] = station_data['validity'] * -1
-                # set all positive values to 1 since that is the only value pyaerocom can handle
-                station_data['validity'][station_data['validity'] > 1] = 1
-                # set all now negative values to 0 to make them valid
-                station_data['validity'][station_data['validity'] < 1] = 0
-
-                data_obj._data[start:stop, data_obj._DATAFLAGINDEX
-                ] = station_data['validity']
                 data_obj._data[start:stop, data_obj._TIMEINDEX
                 ] = station_data['dtime']
                 data_obj._data[start:stop, data_obj._DATAINDEX
