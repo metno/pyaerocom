@@ -322,10 +322,31 @@ Metadata and vocabulary standards
 Variable conventions
 ---------------------
 
-Helper classes and methods related to variable definitions and variable
-naming and metadata conventions.
+Variable collection
+^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.variable
+  :members:
+  :undoc-members:
+
+Variable class
+^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.variable
+  :members:
+  :undoc-members:
+
+Variable helpers
+^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.variable_helpers
+  :members:
+  :undoc-members:
+
+Variable name info
+^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.varnameinfo
   :members:
   :undoc-members:
 
@@ -333,11 +354,13 @@ Regions and  data filtering
 ----------------------------
 
 Region definitions
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
-.. automodule:: pyaerocom.region
+.. automodule:: pyaerocom.region_defs
    :members:
    :undoc-members:
+
+
 
 Filter class
 ^^^^^^^^^^^^
