@@ -1,14 +1,15 @@
 import numpy as np
 import pytest
+import pandas as pd
+from xarray import DataArray
+from matplotlib.axes import Axes
+
 from pyaerocom.exceptions import MetaDataError, UnitConversionError, \
-    DataUnitError, CoordinateError
+    DataUnitError, CoordinateError, VarNotAvailableError, \
+    DataExtractionError
 from pyaerocom import stationdata as mod
 from pyaerocom.io import ReadEarlinet
 from .conftest import FAKE_STATION_DATA, does_not_raise_exception
-
-def get_aeronet_site(aeronetsunv3lev2_subset, index, var_name):
-    return aeronetsunv3lev2_subset.to_station_data(index,
-                                                   vars_to_convert=var_name)
 
 def get_earlinet_data(var_name):
     data = ReadEarlinet('Earlinet-test').read(vars_to_retrieve=var_name)
@@ -198,10 +199,104 @@ def test_StationData_merge_varinfo(stat,other,var_name,raises):
 
 @pytest.mark.parametrize('stat,var_name,val', [
     (stat1, 'od550aer', False),
+    (stat2, 'od550aer', False),
     (ec_earlinet, 'ec532aer', True),
 ])
 def test_StationData_check_if_3d(stat,var_name,val):
     assert stat.check_if_3d(var_name) == val
+
+@pytest.mark.parametrize('s1,s2,var_name,val', [
+    (stat1,stat2,'ec550aer','monthly')
+])
+def test_StationData__check_ts_types_for_merge(s1,s2,var_name,val):
+    assert s1._check_ts_types_for_merge(s2,var_name) == val
+
+@pytest.mark.parametrize('stat,var_name,low,high,check_unit,mean,raises', [
+    (stat1,'od550aer', None, None, True, 1, does_not_raise_exception()),
+    (stat1,'od550aer', 10, 20, True, np.nan, does_not_raise_exception())
+
+])
+def test_StationData_remove_outliers(stat,var_name,low,high,check_unit,mean,
+                                     raises):
+    with raises:
+        stat = stat.copy()
+        stat.remove_outliers(var_name,low,high,check_unit)
+        avg = np.nanmean(stat[var_name])
+        if np.isnan(mean):
+            assert np.isnan(avg)
+        else:
+            np.testing.assert_allclose(avg, mean)
+
+@pytest.mark.parametrize('clim_freq,avg,raises', [
+    (None,0.44,does_not_raise_exception()),
+    ('hourly',0.44,does_not_raise_exception()),
+])
+def test_StationData_calc_climatology(aeronetsunv3lev2_subset,clim_freq,
+                                      avg,raises):
+    data = aeronetsunv3lev2_subset
+    site=data.to_station_data(6, vars_to_convert='od550aer')
+    with raises:
+        clim = site.calc_climatology('od550aer')
+        assert clim is not site
+        assert isinstance(clim, mod.StationData)
+        mean = np.nanmean(clim.od550aer)
+        np.testing.assert_allclose(mean, avg, atol=0.01)
+
+def test_StationData_remove_variable():
+    stat = stat1.copy()
+    with pytest.raises(VarNotAvailableError):
+        stat.remove_variable('concco')
+    var = 'ec550aer'
+    assert var in stat
+    assert var in stat.var_info
+    stat.remove_variable(var)
+    assert not var in stat
+    assert not var in stat.var_info
+
+def test_StationData_select_altitude_DataArray():
+    with pytest.raises(NotImplementedError):
+        val = ec_earlinet.select_altitude('ec532aer', 1000)
+    val = ec_earlinet.select_altitude('ec532aer', (1000,2000))
+    assert isinstance(val, DataArray)
+    assert val.shape == (4,5)
+    assert list(val.altitude.values) == [1125, 1375, 1625, 1875]
+
+
+@pytest.mark.parametrize('stat,tth,var_name,altitudes,raises', [
+    (stat2, False, 'od550aer', (100,1000),pytest.raises(DataExtractionError)),
+    (stat2, True,'od550aer', (100,1000),pytest.raises(AttributeError)),
+    (stat1, True, 'od550aer', (100,101), pytest.raises(ValueError)),
+    (stat1, True, 'od550aer', (100,301), does_not_raise_exception())
+])
+def test_StationData_select_altitude_Series(stat,tth,var_name,altitudes,
+                                            raises):
+    stat = stat.copy()
+    if tth:
+        stat._to_ts_helper(var_name)
+
+    with raises:
+        val = stat.select_altitude(var_name, altitudes)
+        assert isinstance(val, pd.Series)
+
+@pytest.mark.parametrize('stat,var_name,kwargs,dtype,raises', [
+    (stat1,'od550aer', dict(), pd.Series, does_not_raise_exception()),
+    (ec_earlinet,'ec532aer', dict(), None, pytest.raises(ValueError)),
+    (ec_earlinet,'ec532aer', dict(altitude=(0,1000)), pd.Series,
+     does_not_raise_exception()),
+    (ec_earlinet,'ec532aer', dict(altitude=(0,10)), None, pytest.raises(ValueError)),
+])
+def test_StationData_to_timeseries(stat,var_name,kwargs,dtype,raises):
+    with raises:
+        val = stat.copy().to_timeseries(var_name, **kwargs)
+        assert isinstance(val, dtype)
+
+@pytest.mark.parametrize('stat,args,raises', [
+    (stat1, dict(var_name='od550aer'),does_not_raise_exception())
+])
+def test_StationData_plot_timeseries(stat,args,raises):
+    with raises:
+        ax = stat.plot_timeseries(**args)
+        assert isinstance(ax, Axes)
 
 def test_StationData___str__():
     assert isinstance(str(stat1), str)

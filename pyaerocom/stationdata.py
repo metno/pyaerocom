@@ -673,7 +673,7 @@ class StationData(StationMetaData):
             return True
         return False
 
-    def _ensure_same_var_ts_type_other(self, other, var_name):
+    def _check_ts_types_for_merge(self, other, var_name):
         ts_type = self.get_var_ts_type(var_name)
         ts_type1 = other.get_var_ts_type(var_name)
         if ts_type != ts_type1:
@@ -707,7 +707,7 @@ class StationData(StationMetaData):
     def _merge_vardata_2d(self, other, var_name, resample_how=None,
                         min_num_obs=None):
         """Merge 2D variable data (for details see :func:`merge_vardata`)"""
-        ts_type = self._ensure_same_var_ts_type_other(other, var_name)
+        ts_type = self._check_ts_types_for_merge(other, var_name)
 
         s0 = self.resample_time(var_name, ts_type=ts_type,
                                 how=resample_how,
@@ -847,53 +847,14 @@ class StationData(StationMetaData):
 
         return self
 
-    def get_data_columns(self):
-        """List containing all data columns
-
-        Iterates over all key / value pairs and finds all values that are
-        lists or numpy arrays that match the length of the time-stamp array
-        (attr. ``time``)
-
-        Returns
-        -------
-        list
-            list containing N arrays, where N is the total number of
-            datacolumns found.
-        """
-        #self.check_dtime()
-        #num = len(self.dtime)
-        cols = {}
-        for var_name in self.var_info:
-            vals = self[var_name]
-            if isinstance(vals, list):
-                vals = np.asarray(vals)
-            elif isinstance(vals, pd.Series):
-                vals = vals.values
-            elif isinstance(vals, VerticalProfile):
-                raise NotImplementedError("This feature is not yet supported "
-                                          "for data objects that contain also "
-                                          "profile data")
-            cols[var_name] = vals
-        if not cols:
-            raise AttributeError("No datacolumns could be found")
-        return cols
 
     def check_dtime(self):
         """Checks if dtime attribute is array or list"""
         if not any([isinstance(self.dtime, x) for x in [list, np.ndarray]]):
-            raise TypeError("dtime attribute is not iterable: {}".format(self.dtime))
+            raise TypeError(f"dtime attribute is not iterable: {self.dtime}")
         elif not len(self.dtime) > 0:
             raise AttributeError("No timestamps available")
 
-    def to_dataframe(self):
-        """Convert this object to pandas dataframe
-
-        Find all key/value pairs that contain observation data (i.e. values
-        must be list or array and must have the same length as attribute
-        ``time``)
-
-        """
-        return pd.DataFrame(data=self.get_data_columns(), index=self.dtime)
 
     def get_var_ts_type(self, var_name, try_infer=True):
         """Get ts_type for a certain variable
@@ -1295,22 +1256,26 @@ class StationData(StationMetaData):
             if isrange(altitudes):
                 if not isinstance(altitudes, slice):
                     altitudes = slice(altitudes[0], altitudes[1])
-                return data.sel(altitude=altitudes)
+                result = data.sel(altitude=altitudes)
+                if len(result.altitude) == 0:
+                    raise ValueError(f'no data in specified altitude range')
+                return result
 
             raise DataExtractionError('Cannot intepret input for '
                                           'altitude...')
         elif isinstance(data, pd.Series) and isinstance(data.index, pd.DatetimeIndex):
-            if not len(data.index.unique()) == 1:
-                raise DataDimensionError('Failed to interpret data dimensions')
-            elif not 'altitude' in self:
+            if not 'altitude' in self:
                 raise ValueError('Missing altitude information')
-            elif not len(self.altitude) == len(data):
+            alt = self.altitude
+            if not isinstance(alt, (list, np.ndarray)):
+                raise AttributeError('need 1D altitude array')
+            elif not len(alt) == len(data):
                 raise DataDimensionError('Altitude data and {} data have '
                                          'different lengths'.format(var_name))
-
-            alts = self['altitude']
-            mask = np.logical_and(alts>=altitudes[0],
-                                  alts<=altitudes[1])
+            mask = np.logical_and(alt>=altitudes[0],
+                                  alt<=altitudes[1])
+            if mask.sum() == 0:
+                raise ValueError(f'no data in specified altitude range')
             return data[mask]
 
         raise DataExtractionError('Cannot extract altitudes: type of '
@@ -1339,23 +1304,20 @@ class StationData(StationMetaData):
         """
         if not var_name in self:
             raise KeyError("Variable {} does not exist".format(var_name))
+
         data = self[var_name]
-        alt_info = None
-        # check if altitude subset is requested and process if applicable
-        if 'altitude' in kwargs:
-            alt_info =  kwargs.pop('altitude')
-            data = self.select_altitude(var_name, alt_info)
-        else:
-            data = self[var_name]
 
         if isinstance(data, xr.DataArray):
-            if not 'time' in data.dims:
+            if not all([x in data.dims for x in ('time', 'altitude')]):
                 raise NotImplementedError('Can only handle dataarrays that '
-                                          'contain time dimension')
-            if 'altitude' in data.dims: # collapsing of altitude dimension has not been done
-                data = data.mean('altitude')
-            if not data.ndim == 1:
-                raise Exception('please debug')
+                                          'contain 2 dimensions of time '
+                                          'and altitude')
+            if not 'altitude' in kwargs:
+                raise ValueError('please specify altitude range via input '
+                                 'arg: altitude, e.g. altitude=(100,110)')
+            alt_info = kwargs.pop('altitude')
+            data = self.select_altitude(var_name, alt_info)
+            data = data.mean('altitude')
             data = data.to_series()
 
         if not isinstance(data, pd.Series):
@@ -1497,7 +1459,3 @@ class StationData(StationMetaData):
             s += series
 
         return s
-
-
-if __name__=="__main__":
-    empty = StationData()
