@@ -9,7 +9,7 @@ from pyaerocom import logger, const
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   DataExtractionError, DataDimensionError,
                                   UnitConversionError, DataUnitError,
-                                  TemporalResolutionError)
+                                  TemporalResolutionError, CoordinateError)
 from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
                                          BrowseDict, merge_dicts)
 from pyaerocom.metastandards import StationMetaData, STANDARD_META_KEYS
@@ -574,14 +574,14 @@ class StationData(StationMetaData):
             obj = self
 
         if check_coords:
-            if coord_tol_km is None:
-                coord_tol_km = self._COORD_MAX_VAR
             try:
-                self.same_coords(other, coord_tol_km)
+                if not self.same_coords(other, coord_tol_km):
+                    raise CoordinateError(f'Station coordinates differ by '
+                                          f'more than {coord_tol_km} km.')
             except MetaDataError: #
                 pass
 
-        keys = self.STANDARD_META_KEYS
+        keys = [k for k in self.STANDARD_META_KEYS]
         keys.extend(add_meta_keys)
         for key in keys:
             if key in self.STANDARD_COORD_KEYS:
@@ -617,9 +617,9 @@ class StationData(StationMetaData):
             variable name for which info is to be merged (needs to be both
             available in this object and the provided other object)
         """
-        if not var_name in self.var_info:
-            raise KeyError('No variable meta information available for {}'
-                           .format(var_name))
+        if not var_name in self.var_info or not var_name in other.var_info:
+            raise MetaDataError(
+                f'No variable meta information available for {var_name}')
 
         info_this = self.var_info[var_name]
         info_other = other.var_info[var_name]
@@ -670,42 +670,6 @@ class StationData(StationMetaData):
                 return False
             return True
         return False
-
-    def _merge_vardata_3d(self, other, var_name):
-        """Merge 3D variable data (for details see :func:`merge_vardata`)"""
-        raise NotImplementedError
-        s0 = self[var_name]
-        s1 = other[var_name]
-        info = other.var_info[var_name]
-        removed = None
-        if info['overlap']:
-            raise NotImplementedError('Coming soon...')
-
-        if len(s1) > 0: #there is data
-            overlap = s0.index.intersection(s1.index)
-            if len(overlap) > 0:
-                removed = s1[overlap]
-                s1 = s1.drop(index=overlap, inplace=True)
-
-            #compute merged time series
-            s0 = pd.concat([s0, s1], verify_integrity=True)
-
-            # sort the concatenated series based on timestamps
-            s0.sort_index(inplace=True)
-            self.merge_varinfo(other, var_name)
-
-        # assign merged time series (overwrites previous one)
-        self[var_name] = s0
-
-        if removed is not None:
-            if var_name in self.overlap:
-                self.overlap[var_name] = pd.concat([self.overlap[var_name],
-                                                   removed])
-                self.overlap[var_name].sort_index(inplace=True)
-            else:
-                self.overlap[var_name] = removed
-
-        return self
 
     def _ensure_same_var_ts_type_other(self, other, var_name):
         ts_type = self.get_var_ts_type(var_name)

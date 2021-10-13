@@ -26,6 +26,7 @@ def _make_station_data1():
              random_key2='blub',
              random_key3=['blub', 'blablub'],
              random_key4=['blub', 'blub'],
+             filename='bla.csv',
              data_version=2)
 
     stat.update(d)

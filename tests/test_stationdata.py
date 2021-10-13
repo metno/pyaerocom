@@ -1,13 +1,20 @@
 import numpy as np
 import pytest
 from pyaerocom.exceptions import MetaDataError, UnitConversionError, \
-    DataUnitError
+    DataUnitError, CoordinateError
 from pyaerocom import stationdata as mod
+from pyaerocom.io import ReadEarlinet
 from .conftest import FAKE_STATION_DATA, does_not_raise_exception
 
 def get_aeronet_site(aeronetsunv3lev2_subset, index, var_name):
     return aeronetsunv3lev2_subset.to_station_data(index,
                                                    vars_to_convert=var_name)
+
+def get_earlinet_data(var_name):
+    data = ReadEarlinet('Earlinet-test').read(vars_to_retrieve=var_name)
+    stats = data.to_station_data_all()['stats']
+    assert len(stats) == 1
+    return stats[0]
 
 stat1 = FAKE_STATION_DATA['station_data1']
 stat2 = FAKE_STATION_DATA['station_data2']
@@ -30,6 +37,8 @@ stat3['ts_type'] = None
 stat3['station_coords']['latitude'] = 'blaaa'
 stat4 = stat2.copy()
 stat4['longitude'] = '42'
+
+ec_earlinet = get_earlinet_data('ec532aer')
 
 def test_StationData_default_vert_grid():
     grid = stat1.default_vert_grid
@@ -126,12 +135,13 @@ def test_StationData_get_station_coords(stat,force_single_value,dtype,raises):
 
 @pytest.mark.parametrize('stat,force_single_value,quality_check,'
                          'add_none_vals,add_meta_keys,numitems,raises', [
-    (stat1,True,True,False,None, 13,does_not_raise_exception()),
-    (stat1,True,True,False,'blaaa', 13,does_not_raise_exception()),
-    (stat1,True,True,False,['random_key1','random_key2'], 15,
+    (stat1,True,True,False,None, 14,does_not_raise_exception()),
+    (stat1,True,True,False,'blaaa', 14,does_not_raise_exception()),
+    (stat1,True,True,False,['random_key1','random_key2'], 16,
      does_not_raise_exception()),
     (stat1,True,True,False,['random_key3'], None,pytest.raises(MetaDataError)),
-    (stat1,True,True,False,['random_key4'], 14, does_not_raise_exception()),
+    (stat1,True,True,False,['random_key4'], 15, does_not_raise_exception()),
+    (stat1,True,True,True,['random_key4'], 23, does_not_raise_exception()),
 ])
 def test_StationData_get_meta(stat,force_single_value,quality_check,
                               add_none_vals,
@@ -141,6 +151,57 @@ def test_StationData_get_meta(stat,force_single_value,quality_check,
                              add_meta_keys)
         assert isinstance(meta, dict)
         assert len(meta) == numitems
+
+@pytest.mark.parametrize('stat,key,raises', [
+    (stat1, 'station_name', does_not_raise_exception()),
+    (stat1, 'framework', does_not_raise_exception()),
+    (stat1, 'longitude', does_not_raise_exception()),
+])
+def test_StationData__check_meta_item(stat,key,raises):
+    with raises:
+        stat.copy()._check_meta_item(key)
+
+@pytest.mark.parametrize('stat,other,coord_tol_km,check_coords,inplace,'
+                         'add_meta_keys,raise_on_error,raises', [
+    (stat1, stat1,0.1,True,True,None,True,does_not_raise_exception()),
+    (stat1, stat2,0.001,True,True,None,True,pytest.raises(CoordinateError)),
+    (stat1, stat2,50,True,True,None,True,does_not_raise_exception()),
+    (stat1, stat2,50,True,True,['random_key1'],True,does_not_raise_exception()),
+    (stat1, stat2,50,True,False,['random_key1'],True,
+     does_not_raise_exception()),
+])
+def test_StationData_merge_meta_same_station(stat,other,coord_tol_km,
+                                             check_coords,inplace,
+                                             add_meta_keys,raise_on_error,
+                                             raises):
+    with raises:
+        stat=stat.copy()
+        val = stat.merge_meta_same_station(other.copy(),coord_tol_km,
+                                            check_coords,inplace,add_meta_keys,
+                                            raise_on_error)
+        assert isinstance(val, mod.StationData)
+        if inplace:
+            assert val is stat
+        else:
+            assert val is not stat
+
+@pytest.mark.parametrize('stat,other,var_name,raises',[
+    (stat1, stat1, 'ec550aer', does_not_raise_exception()),
+    (stat1, stat2, 'ec550aer', does_not_raise_exception()),
+    (stat1, stat2, 'conco3', pytest.raises(MetaDataError)),
+    (stat2, stat1, 'conco3', pytest.raises(MetaDataError)),
+])
+def test_StationData_merge_varinfo(stat,other,var_name,raises):
+    with raises:
+        val = stat.merge_varinfo(other,var_name)
+        assert isinstance(val, mod.StationData)
+
+@pytest.mark.parametrize('stat,var_name,val', [
+    (stat1, 'od550aer', False),
+    (ec_earlinet, 'ec532aer', True),
+])
+def test_StationData_check_if_3d(stat,var_name,val):
+    assert stat.check_if_3d(var_name) == val
 
 def test_StationData___str__():
     assert isinstance(str(stat1), str)
