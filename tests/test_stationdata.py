@@ -148,7 +148,8 @@ def test_StationData_get_meta(stat,force_single_value,quality_check,
                               add_none_vals,
                               add_meta_keys,numitems,raises):
     with raises:
-        meta = stat.get_meta(force_single_value,quality_check,add_none_vals,
+        meta = stat.copy().get_meta(force_single_value,quality_check,
+                                 add_none_vals,
                              add_meta_keys)
         assert isinstance(meta, dict)
         assert len(meta) == numitems
@@ -194,7 +195,7 @@ def test_StationData_merge_meta_same_station(stat,other,coord_tol_km,
 ])
 def test_StationData_merge_varinfo(stat,other,var_name,raises):
     with raises:
-        val = stat.merge_varinfo(other,var_name)
+        val = stat.copy().merge_varinfo(other.copy(),var_name)
         assert isinstance(val, mod.StationData)
 
 @pytest.mark.parametrize('stat,var_name,val', [
