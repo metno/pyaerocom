@@ -178,6 +178,16 @@ def test_ExperimentOutput_delete_experiment_data(tmpdir, also_coldata):
     else:
         assert os.path.exists(coldata_dir)
 
+
+@pytest.mark.parametrize('var,val', [
+    ('ang4487aer', {
+        "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
+        "colmap": "coolwarm"}),
+    ('concprcpso4', {'colmap': 'coolwarm', 'scale': [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10]})
+])
+def test_ExperimentOutput__get_cmap_info(dummy_expout,var,val):
+    assert dummy_expout._get_cmap_info(var) == val
+
 ### BELOW ARE TESTS ON ACTUAL OUTPUT THAT DEPEND ON EVALUATION RUNS
 
 def test_ExperimentOutput_delete_experiment_data_CFG1():
