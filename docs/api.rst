@@ -577,7 +577,6 @@ Molar masses and related helpers
    :members:
    :undoc-members:
 
-
 Access to minimal test dataset
 ------------------------------
 
