@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug  1 09:06:06 2018
-
-@author: jonasg
-"""
 import re
 import os
 import fnmatch

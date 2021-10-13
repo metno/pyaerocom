@@ -208,12 +208,16 @@ EEA data
 EEA base reader
 """""""""""""""
 
+Reader for European air pollution data.
+
 .. automodule:: pyaerocom.io.read_eea_aqerep_base
    :members:
    :undoc-members:
 
 EEA E2a product (NRT)
 """""""""""""""""""""
+
+Near realtime EEA data.
 
 .. automodule:: pyaerocom.io.read_eea_aqerep
    :members:
@@ -222,10 +226,29 @@ EEA E2a product (NRT)
 EEA E1a product (QC)
 """""""""""""""""""""
 
+Quality controlled EEA data.
+
 .. automodule:: pyaerocom.io.read_eea_aqerep_v2
    :members:
    :undoc-members:
 
+AirNow data
+^^^^^^^^^^^
+
+Reader for air quality measurements from North America
+
+.. automodule:: pyaerocom.io.read_airnow
+   :members:
+   :undoc-members:
+
+MarcoPolo data
+^^^^^^^^^^^^^^
+
+Reader for air quality measurements from China.
+
+.. automodule:: pyaerocom.io.read_marcopolo
+   :members:
+   :undoc-members:
 GHOST
 ^^^^^
 
@@ -240,12 +263,11 @@ Further I/O features
 
 .. note::
 
-	The	:mod:`pyaerocom.io` package also includes all relevant data import and
-  reading routines. These are introduced above, in Section
-  :ref:`reading`.
+    The	`pyaerocom.io` package also includes all relevant data import and
+    reading routines. These are introduced above, in Section `reading`.
 
 AeroCom database browser
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.aerocom_browser
    :members:
