@@ -74,13 +74,13 @@ output or level 3 satellite data, stored, for instance, as NetCDF files.
 In pyaerocom, the underlying data object is :class:`GriddedData` and
 pyaerocom supports reading of such data for different file naming conventions.
 
-Data stored using AeroCom conventions
+Gridded data using AeroCom conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: pyaerocom.io.readgridded
    :members:
    :undoc-members:
 
-Data stored using EMEP conventions
+Gridded data using EMEP conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: pyaerocom.io.read_mscw_ctm
   :members:
@@ -159,27 +159,6 @@ AERONET SDA (V3)
 AERONET Inversion (V3)
 """"""""""""""""""""""
 .. automodule:: pyaerocom.io.read_aeronet_invv3
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-AERONET (older versions)
-""""""""""""""""""""""""
-
-.. automodule:: pyaerocom.io.read_aeronet_sunv2
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-.. automodule:: pyaerocom.io.read_aeronet_sdav2
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-.. automodule:: pyaerocom.io.read_aeronet_invv2
    :members:
    :undoc-members:
    :inherited-members:
