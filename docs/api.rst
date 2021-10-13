@@ -130,7 +130,10 @@ All ungridded reading routines are based on this template class.
    :undoc-members:
 
 AERONET
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^
+
+AERONET base class
+""""""""""""""""""
 
 All AERONET reading classes are based on the template :class:`ReadAeronetBase`
 class which, in turn inherits from :class:`ReadUngriddedBase`.
@@ -196,6 +199,30 @@ EBAS (low level)
    :undoc-members:
 
 .. automodule:: pyaerocom.io.ebas_varinfo
+   :members:
+   :undoc-members:
+
+EEA data
+^^^^^^^^
+
+EEA base reader
+"""""""""""""""
+
+.. automodule:: pyaerocom.io.read_eea_aqerep_base
+   :members:
+   :undoc-members:
+
+EEA E2a product (NRT)
+"""""""""""""""""""""
+
+.. automodule:: pyaerocom.io.read_eea_aqerep
+   :members:
+   :undoc-members:
+
+EEA E1a product (QC)
+"""""""""""""""""""""
+
+.. automodule:: pyaerocom.io.read_eea_aqerep_v2
    :members:
    :undoc-members:
 
