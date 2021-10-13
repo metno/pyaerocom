@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 12 14:45:43 2018
-
-@author: jonasg
-"""
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
@@ -66,7 +59,6 @@ def test_merge_station_data(statlist,use,var_name,pref_attr,sort_by_largest,fill
         assert stat.get_var_ts_type(var_name) == tst
         avg = np.mean(vardata)
         npt.assert_allclose(avg, mean, rtol=1e-2)
-
 
 def test__get_pandas_freq_and_loffset():
     val = helpers._get_pandas_freq_and_loffset('monthly')
