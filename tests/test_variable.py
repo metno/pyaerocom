@@ -67,3 +67,8 @@ def test_Variable_is_deposition(var,result):
 def test_Variable_is_rate(var,result):
     var = Variable(var)
     assert var.is_rate == result
+
+def test_Variable___str__():
+    var = Variable('od550aer')
+    s = str(var)
+    assert isinstance(s, str)

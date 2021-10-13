@@ -554,7 +554,7 @@ class Variable(object):
                     continue
                 if isinstance(v, dict):
                     plot_s += "\n{} (dict)".format(k)
-                    plot_s = dict_to_str(v, plot_s, indent=3,
+                    plot_s += dict_to_str(v, indent=3,
                                          ignore_null=True)
                 elif isinstance(v, list):
                     plot_s += "\n{} (list, {} items)".format(k, len(v))
@@ -564,7 +564,7 @@ class Variable(object):
             else:
                 if isinstance(v, dict):
                     s += "\n{} (dict)".format(k)
-                    s = dict_to_str(v, s, indent=3, ignore_null=True)
+                    s += dict_to_str(v, indent=3, ignore_null=True)
                 elif isinstance(v, list):
                     s += "\n{} (list, {} items)".format(k, len(v))
                     s += list_to_shortstr(v)
