@@ -367,8 +367,8 @@ Region definitions
    :members:
    :undoc-members:
 
-Filter class
-^^^^^^^^^^^^
+Region filter
+^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.filter
    :members:
@@ -405,8 +405,13 @@ Global constants
    :members:
    :undoc-members:
 
-Conversion of vertical coordinates
-----------------------------------
+Vertical coordinate support
+----------------------------
+
+.. note::
+
+    BETA: most functionality of this module is currently not implemented in
+    any of the pyaerocom standard API.
 
 .. automodule:: pyaerocom.vert_coords
    :members:
@@ -427,6 +432,7 @@ Helper methods
 .. automodule:: pyaerocom.trends_helpers
    :members:
    :undoc-members:
+   :private-members:
 
 Utils
 -----
