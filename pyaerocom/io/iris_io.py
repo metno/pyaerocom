@@ -9,7 +9,7 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 
 import cf_units
 from datetime import datetime
-import iris
+import iris, iris.coords, iris.util
 try:
     # as of iris version 3
     from iris.util  import equalise_attributes
@@ -596,11 +596,14 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
     iris.util.unify_time_units(cubes)
     #now concatenate the cube list to one cube
     try:
-        cubes_concat = iris._concatenate.concatenate(cubes, error_on_mismatch)
+        # cubes_concat = iris._concatenate.concatenate(cubes, error_on_mismatch)
+        cubes_concat = iris.cube.CubeList.concatenate_cube(cubes, error_on_mismatch)
     except Exception as e: #
         if _check_correct_dtypes_timedim_cube_list(cubes):
-            cubes_concat = iris._concatenate.concatenate(cubes,
+            cubes_concat = iris.cube.CubeList.concatenate_cube(cubes,
                                                          error_on_mismatch)
+            # cubes_concat = iris._concatenate.concatenate(cubes,
+            #                                              error_on_mismatch)
         else:
             raise
 
