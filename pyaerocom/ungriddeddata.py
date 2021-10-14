@@ -1468,7 +1468,7 @@ class UngriddedData(object):
                 raise MetaDataError(
                     f'Invalid unit {u} detected (expected {unit})')
 
-    def set_flags_nan(self, inplace=False, verbose=False):
+    def set_flags_nan(self, inplace=False):
         """Set all flagged datapoints to NaN
 
         Parameters

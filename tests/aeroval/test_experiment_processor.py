@@ -9,7 +9,8 @@ from .cfg_test_exp2 import CFG as cfgexp2
 from .cfg_test_exp3 import CFG as cfgexp3
 from .cfg_test_exp4 import CFG as cfgexp4
 from .cfg_test_exp5 import CFG as cfgexp5
-from ..conftest import does_not_raise_exception
+from ..conftest import does_not_raise_exception, geojson_unavail
+
 
 @pytest.mark.parametrize('cfgdict,raises', [
     (cfgexp1,does_not_raise_exception())
@@ -21,6 +22,7 @@ def test_ExperimentProcessor___init__(cfgdict,raises):
         assert isinstance(proc.cfg, EvalSetup)
         assert isinstance(proc.exp_output, ExperimentOutput)
 
+@geojson_unavail
 @pytest.mark.parametrize('cfgdict,runkwargs,raises', [
     (cfgexp5,{},does_not_raise_exception()),
     (cfgexp1,{},does_not_raise_exception()),

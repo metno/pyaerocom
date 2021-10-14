@@ -106,6 +106,15 @@ etopo1_unavail = pytest.mark.skipif(not const.ETOPO1_AVAILABLE,
 data_unavail = pytest.mark.skipif(not TESTDATA_AVAIL,
                     reason='Skipping tests that require testdata-minimal.')
 
+try:
+    import geojsoncontour
+    geojson_avail = True
+except ModuleNotFoundError:
+    geojson_avail = False
+
+geojson_unavail = pytest.mark.skipif(not geojson_avail,
+                   reason='Skipping tests that require access geojsoncontour')
+
 broken_test = pytest.mark.skip(reason='Method raises Exception')
 
 from pyaerocom import change_verbosity
