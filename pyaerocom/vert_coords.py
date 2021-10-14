@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Methods to convert different standards of vertical coordinates
 
 For details see here:
 
-    http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html
+http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/apd.html
 
 Note
 ----

@@ -59,7 +59,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'nbsphinx'
+    'nbsphinx',
+    'sphinxarg.ext'
 ]
 
 intersphinx_mapping = {

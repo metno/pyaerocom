@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-pyaerocom main CLI (accessible via pya command)
-"""
-
 from argparse import ArgumentParser
 from pyaerocom import const, tools
 
@@ -53,7 +47,3 @@ def main():
 
     if args.ppiaccess:
         print('True') if const.has_access_lustre else print('False')
-
-
-if __name__ == '__main__':
-    main()

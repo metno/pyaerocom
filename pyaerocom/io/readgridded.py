@@ -1,37 +1,3 @@
-#!/usr/bin/env python3
-
-################################################################
-# readgridded.py
-#
-# model data reading class
-#
-# this file is part of the aerocom_pt package
-#
-#################################################################
-# Created 20171030 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
-#Copyright (C) 2017 met.no
-#Contact information:
-#Norwegian Meteorological Institute
-#Box 43 Blindern
-#0313 OSLO
-#NORWAY
-#E-mail: jan.griesfeller@met.no
-#This program is free software; you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation; either version 3 of the License, or
-#(at your option) any later version.
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#GNU General Public License for more details.
-#You should have received a copy of the GNU General Public License
-#along with this program; if not, write to the Free Software
-#Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-#MA 02110-1301, USA
 from collections import OrderedDict as od
 
 import fnmatch
@@ -78,14 +44,7 @@ from pyaerocom._concprcp_units_helpers import \
 
 
 class ReadGridded(object):
-    """Class for reading gridded files based on network or model ID
-
-    Note
-    ----
-    The reading only works if files are stored using a valid file naming
-    convention. See package data file `file_conventions.ini <http://
-    aerocom.met.no/pyaerocom/config_files.html#file-conventions>`__ for valid
-    keys. You may define your own fileconvention in this file, if you wish.
+    """Class for reading gridded files using AeroCom file conventions
 
     Attributes
     ----------
@@ -211,9 +170,7 @@ class ReadGridded(object):
 
     VERT_ALT = {'Surface' : 'ModelLevel'}
 
-    def __init__(self, data_id=None, data_dir=None,
-                 file_convention="aerocom3",
-                 init=True):
+    def __init__(self,data_id=None,data_dir=None,file_convention="aerocom3"):
 
         self._data_dir = None
 
@@ -258,7 +215,7 @@ class ReadGridded(object):
                 print_log.warning(repr(e))
 
     @property
-    def data_id(self):
+    def data_id(self) -> str:
         """
         Data ID of dataset
         """
@@ -273,7 +230,7 @@ class ReadGridded(object):
         self._data_id = val
 
     @property
-    def data_dir(self):
+    def data_dir(self) -> str:
         """
         Directory where data files are located
         """
@@ -290,7 +247,7 @@ class ReadGridded(object):
         self.reinit()
 
     @property
-    def years_avail(self):
+    def years_avail(self) -> list:
         """
         Years available in dataset
         """
@@ -299,17 +256,7 @@ class ReadGridded(object):
         return sorted(self.file_info.year.unique())
 
     @property
-    def years(self):
-        """
-        Wrapper for :attr:`years_available`
-        """
-        print_log.warning(DeprecationWarning('Attr. "years" is deprecated '
-                                             '(but still works). Please use '
-                                             '"years_avail" instead.'))
-        return self.years_avail
-
-    @property
-    def experiments(self):
+    def experiments(self) -> list:
         """
         List of all experiments that are available in this dataset
         """
@@ -318,7 +265,7 @@ class ReadGridded(object):
         return sorted(self.file_info.experiment.unique())
 
     @property
-    def files(self):
+    def files(self) -> list:
         """
         List of data files
         """

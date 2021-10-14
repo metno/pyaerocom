@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from pyaerocom.io import ReadGridded
 import fnmatch
 import os
