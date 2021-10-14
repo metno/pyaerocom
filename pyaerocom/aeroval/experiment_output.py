@@ -550,10 +550,15 @@ class ExperimentOutput(ProjectOutput):
             return var_ranges_defaults[var]
         try:
             varinfo = VarinfoWeb(var)
-            return dict(scale=varinfo.cmap_bins,
+            info = dict(scale=varinfo.cmap_bins,
                         colmap=varinfo.cmap)
         except (VariableDefinitionError, AttributeError):
-            return dict(scale=[], colmap='coolwarm')
+            info = var_ranges_defaults['default']
+            const.print_log.warning(f'Failed to infer cmap and variable '
+                                    f'ranges for {var}, using default '
+                                    f'settings which are {info}')
+
+        return info
 
 
     def _create_var_ranges_json(self):

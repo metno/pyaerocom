@@ -1,12 +1,9 @@
-"""
-NOTE: parts of this should be migrated into variables.ini if possible
-"""
-
+#: Default variable ranges for web display
 var_ranges_defaults = {
-    # "default": {
-    #     "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
-    #     "colmap": "coolwarm"
-    # },
+    "default": {
+        "scale": [0, 1.25, 2.5, 3.75, 5, 6.25, 7.5, 8.75, 10],
+        "colmap": "coolwarm"
+    },
     "ang4487aer": {
         "scale": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2],
         "colmap": "coolwarm"
@@ -145,7 +142,7 @@ var_ranges_defaults = {
     },
 }
 
-
+#: Default information for statistical parameters
 statistics_defaults = {
   "nmb": {
     "name": "NMB",
@@ -223,6 +220,7 @@ statistics_defaults = {
 
 }
 
+# Default information for additional statistical parameters
 extended_statistics = {
      "R_spatial_mean": {
         "name": "R-Space",
@@ -244,6 +242,7 @@ extended_statistics = {
   }, 
 }
 
+#: Default information about trend display
 statistics_trend = {
     "obs/mod_trend": {
         "name": "Obs/Mod-Trends",
@@ -301,7 +300,7 @@ statistics_trend = {
     },
 }
 
-
+#: Mapping of pyaerocom variable names to web naming conventions
 var_web_info = dict(
 
     od550aer      = ['AOD', '2D', 'Optical properties'],
@@ -362,10 +361,7 @@ var_web_info = dict(
     dryrdn        = ['FakeDryRDN', '3D', 'Deposition'],
     concno2       = ['NO2', '3D', 'Gas concentrations'],
     concNnh4       = ['NH4', '3D', 'Gas concentrations'],
-#    'vmro3         = ['O3max', '3D', 'Volume mixing ratios'],
     vmrco         = ['CO', '3D', 'Volume mixing ratios'],
     vmrno2        = ['NO2', '3D', 'Volume mixing ratios'],
     concco        = ['CO', '3D', 'Particle concentration'],
- 
-
 )

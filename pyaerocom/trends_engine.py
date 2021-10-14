@@ -15,38 +15,40 @@ from pyaerocom.trends_helpers import (_init_trends_result_dict,
 
 
 class TrendsEngine(object):
-    """Result object for trends analysis
-
-    Parameters
-    ----------
-    data : pandas.Series
-        input data containing variable data either in monthly, daily, or
-        higher resolution.
-
-    Attributes
-    ----------
-    var_name : str
-        name of variable
-    meta : dict
-        dictionary containing relevant meta information about data
-    daily : pandas.Series
-        daily data
-    monthly : pandas.Series
-        monthly data
-    yearly : dict
-        dictionary containing yearly data for each season. Keys are season names,
-        values are instances of :class:`pandas.Series`
-    results : dict
-        Nested dictionary containing results from trends analysis. First layer
-        is season, second layer is period, and values are dictionaries with
-        results (cf. keys of dictionary returned by
-        :func:`_init_trends_result_dict`)
+    """Trend computation engine (does not need to be instantiated)
     """
     CMAP = get_cmap('bwr')
     NORM = Normalize(-10, 10)
 
+    @staticmethod
     def compute_trend(data, ts_type, start_year, stop_year, min_num_yrs,
                       season=None, slope_confidence=None):
+        """
+        Compute trend
+
+        Parameters
+        ----------
+        data : pd.Series
+            input timeseries data
+        ts_type : str
+            frequency of input data (must be monthly or yearly)
+        start_year : int or str
+            start of period for trend
+        stop_year : int or str
+            end of period for trend
+        min_num_yrs : int
+            minimum number of years for trend computation
+        season : str, optional
+            which season to use, defaults to whole year (no season)
+        slope_confidence : float, optional
+            confidence of slope, between 0 and 1, defaults to 0.68.
+
+        Returns
+        -------
+        dict
+            trends results for input data
+
+        """
 
         if season is None:
             season = 'all'
@@ -184,9 +186,10 @@ class TrendsEngine(object):
 
         return result
 
-class TrendPlotter:
+class TrendPlotter: # pragma: no cover
     def __init__(self):
-        raise NotImplementedError()
+        raise NotImplementedError('consider removing or re-implementing ('
+                                  'based on code from v0.10.0')
     def get_trend_color(self, trend_val):
         return self.CMAP(self.NORM(trend_val))
 

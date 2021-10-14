@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Low level classes and methods for io
-"""
 from collections import OrderedDict as od
 from os.path import join, exists, basename, splitext
 from pyaerocom import const

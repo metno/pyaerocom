@@ -49,12 +49,6 @@ Model maps processing
 .. automodule:: pyaerocom.aeroval.modelmaps_engine
    :members:
 
-Model maps helper functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. automodule:: pyaerocom.aeroval.modelmaps_helpers
-   :members:
-
 Processing of super-observation entries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -88,14 +82,44 @@ Output management
 .. automodule:: pyaerocom.aeroval.experiment_output
    :members:
 
-Global constants
+Global settings
 ----------------
 
+Global defaults
+^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.aeroval.glob_defaults
+   :members:
+
+Frontend variable naming conventions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.aeroval.varinfo_web
    :members:
 
 High-level utility functions
 ----------------------------
 
 .. automodule:: pyaerocom.aeroval.utils
+   :members:
+
+Helper modules
+--------------
+
+General helper functions
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.aeroval.helpers
+   :members:
+
+Helpers for coldat2json conversion
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.aeroval.coldatatojson_helpers
+   :members:
+
+Model maps helper functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.aeroval.modelmaps_helpers
    :members:

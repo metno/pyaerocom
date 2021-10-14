@@ -20,15 +20,17 @@ def calc_ang4487aer(data):
         1. od440aer
         2. od870aer
 
+    Raises
+    ------
+    AttributError
+        if either 'od440aer' or 'od870aer' are not available in data object
+
     Returns
     -------
     ndarray
         array containing computed angstrom coefficients
 
-    Raises
-    ------
-    AttributError
-        if either 'od440aer' or 'od870aer' are not available in data object
+
     """
     if not all([x in data for x in ['od440aer','od870aer']]):
         raise AttributeError("Either of the two (or both) required variables "
@@ -93,7 +95,7 @@ def calc_od550gt1aer(data):
 
     Returns
     -------
-    :obj:`float` or :obj:`ndarray`
+    float or ndarray
         AOD(s) at shifted wavelength
     """
     return _calc_od_helper(data=data,

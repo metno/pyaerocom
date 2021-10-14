@@ -42,6 +42,10 @@ The PR for the release will automatically build the docs on ReadTheDocs (see Che
 ### 2. Publish on PyPi
 
 - Make sure VERSION.md is correct
+- Make sure there are no uncommited or unstaged changes in your local clone before running the next step, e.g. via:
+  ```bash
+  git status .
+  ```
 - Package code:  
   ```bash
   python setup.py sdist bdist_wheel

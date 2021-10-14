@@ -421,8 +421,8 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         if filename is None:
             filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE)
             # test also for a gzipped file...
-            if not os.path.isfile(filename):
-                filename = os.path.join(self.data_dir, self.DEFAULT_METADATA_FILE, '.gz')
+        if not os.path.isfile(filename):
+            filename = filename + '.gz'
         self.logger.warning("Reading file {}".format(filename))
 
         struct_data = {}
@@ -658,22 +658,18 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 data_obj.add_chunk(num_times)
 
             for var_idx, var in enumerate(list(station_data.var_info)):
-                # set invalid data to np.nan
+                # set invalid data to np.nan according to
                 # https://dd.eionet.europa.eu/vocabulary/aq/observationvalidity/view
+                # data flagged as below the detection limit (values 2 and 3)
+                # will remain in the data
                 station_data[var][station_data['validity'] < 1] = np.nan
-                # there's also a verification flag that we don't use for now
-                # which probably only makes sense to be used with the non NRT data
-                # http://dd.eionet.europa.eu/vocabulary/aq/observationverification/view
+
                 values = station_data[var]
                 start = idx + var_idx * num_times
                 stop = start + num_times
 
-                invalid = not station_data['validity']
-
                 data_obj._data[start:stop, data_obj._METADATAKEYINDEX
                 ] = meta_key
-                data_obj._data[start:stop, data_obj._DATAFLAGINDEX
-                ] = invalid
                 data_obj._data[start:stop, data_obj._TIMEINDEX
                 ] = station_data['dtime']
                 data_obj._data[start:stop, data_obj._DATAINDEX

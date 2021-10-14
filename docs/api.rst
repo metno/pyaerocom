@@ -20,7 +20,7 @@ Ungridded data
    :members:
    :undoc-members:
 
-Colocated data
+Co-located data
 ^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocateddata
@@ -41,24 +41,25 @@ Other data classes
    :members:
    :undoc-members:
 
-Colocation routines
--------------------
+Co-location routines
+---------------------
 
-Automatic colocation engine
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+High-level co-location engine
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocation_auto
    :members:
 
-Low-level colocation methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Low-level co-location functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.colocation
    :members:
    :undoc-members:
 
-Combining ungridded observations
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Co-locating ungridded observations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.combine_vardata_ungridded
    :members:
    :undoc-members:
@@ -74,14 +75,16 @@ output or level 3 satellite data, stored, for instance, as NetCDF files.
 In pyaerocom, the underlying data object is :class:`GriddedData` and
 pyaerocom supports reading of such data for different file naming conventions.
 
-Data stored using AeroCom conventions
+Gridded data using AeroCom conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.io.readgridded
    :members:
    :undoc-members:
 
-Data stored using EMEP conventions
+Gridded data using EMEP conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. automodule:: pyaerocom.io.read_mscw_ctm
   :members:
   :undoc-members:
@@ -92,8 +95,8 @@ Reading of ungridded data
 Other than gridded data, ungridded data represents data that is irregularly
 sampled in space and time, for instance, observations at different locations
 around the globe. Such data is represented in pyaerocom by
-:class:`UngriddedData` which is essentially a point-cloud dataset. Reading of
-:class:`UngriddedData` is typically specific for different observational
+`UngriddedData` which is essentially a point-cloud dataset. Reading of
+`UngriddedData` is typically specific for different observational
 data records, as they typically come in various data formats using various
 metadata conventions, which need to be harmonised, which is done during the
 data import.
@@ -101,7 +104,7 @@ data import.
 The following flowchart illustrates the architecture of ungridded reading in
 pyaerocom. Below are information about the individual reading classes for each
 dataset (blue in flowchart), the abstract template base classes the reading
-classes are based on (dark green) and the factory class :class:`ReadUngridded`
+classes are based on (dark green) and the factory class `ReadUngridded`
 (orange) which has registered all individual reading classes. The data classes
 that are returned by the reading class are indicated in light green.
 
@@ -128,7 +131,10 @@ All ungridded reading routines are based on this template class.
    :undoc-members:
 
 AERONET
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^
+
+AERONET base class
+""""""""""""""""""
 
 All AERONET reading classes are based on the template :class:`ReadAeronetBase`
 class which, in turn inherits from :class:`ReadUngriddedBase`.
@@ -159,27 +165,6 @@ AERONET SDA (V3)
 AERONET Inversion (V3)
 """"""""""""""""""""""
 .. automodule:: pyaerocom.io.read_aeronet_invv3
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-AERONET (older versions)
-""""""""""""""""""""""""
-
-.. automodule:: pyaerocom.io.read_aeronet_sunv2
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-.. automodule:: pyaerocom.io.read_aeronet_sdav2
-   :members:
-   :undoc-members:
-   :inherited-members:
-   :show-inheritance:
-
-.. automodule:: pyaerocom.io.read_aeronet_invv2
    :members:
    :undoc-members:
    :inherited-members:
@@ -218,6 +203,53 @@ EBAS (low level)
    :members:
    :undoc-members:
 
+EEA data
+^^^^^^^^
+
+EEA base reader
+"""""""""""""""
+
+Reader for European air pollution data.
+
+.. automodule:: pyaerocom.io.read_eea_aqerep_base
+   :members:
+   :undoc-members:
+
+EEA E2a product (NRT)
+"""""""""""""""""""""
+
+Near realtime EEA data.
+
+.. automodule:: pyaerocom.io.read_eea_aqerep
+   :members:
+   :undoc-members:
+
+EEA E1a product (QC)
+"""""""""""""""""""""
+
+Quality controlled EEA data.
+
+.. automodule:: pyaerocom.io.read_eea_aqerep_v2
+   :members:
+   :undoc-members:
+
+AirNow data
+^^^^^^^^^^^
+
+Reader for air quality measurements from North America
+
+.. automodule:: pyaerocom.io.read_airnow
+   :members:
+   :undoc-members:
+
+MarcoPolo data
+^^^^^^^^^^^^^^
+
+Reader for air quality measurements from China.
+
+.. automodule:: pyaerocom.io.read_marcopolo
+   :members:
+   :undoc-members:
 GHOST
 ^^^^^
 
@@ -232,12 +264,11 @@ Further I/O features
 
 .. note::
 
-	The	:mod:`pyaerocom.io` package also includes all relevant data import and
-  reading routines. These are introduced above, in Section
-  :ref:`reading`.
+    The	`pyaerocom.io` package also includes all relevant data import and
+    reading routines. These are introduced above, in Section `reading`.
 
 AeroCom database browser
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.io.aerocom_browser
    :members:
@@ -289,28 +320,70 @@ Metadata and vocabulary standards
   :members:
   :undoc-members:
 
-Variable conventions
----------------------
+Variables
+---------
 
-Helper classes and methods related to variable definitions and variable
-naming and metadata conventions.
+Variable collection
+^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.variable
   :members:
   :undoc-members:
 
+Variable class
+^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.variable
+  :members:
+  :undoc-members:
+
+Variable helpers
+^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.variable_helpers
+  :members:
+  :undoc-members:
+
+Variable name info
+^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.varnameinfo
+  :members:
+  :undoc-members:
+
+Helpers for auxiliary variables
+-------------------------------
+
+.. automodule:: pyaerocom.aux_var_helpers
+   :members:
+   :undoc-members:
+
+Variable categorisations
+------------------------
+
+.. automodule:: pyaerocom.var_groups
+   :members:
+   :undoc-members:
+
 Regions and  data filtering
 ----------------------------
 
-Region definitions
-^^^^^^^^^^^^^^^^^
+Region class and helper functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.region
    :members:
    :undoc-members:
 
-Filter class
-^^^^^^^^^^^^
+Region definitions
+^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.region_defs
+   :members:
+   :undoc-members:
+
+Region filter
+^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.filter
    :members:
@@ -347,8 +420,13 @@ Global constants
    :members:
    :undoc-members:
 
-Conversion of vertical coordinates
-----------------------------------
+Vertical coordinate support
+----------------------------
+
+.. note::
+
+    BETA: most functionality of this module is currently not implemented in
+    any of the pyaerocom standard API.
 
 .. automodule:: pyaerocom.vert_coords
    :members:
@@ -362,7 +440,6 @@ Trends engine
 
 .. automodule:: pyaerocom.trends_engine
    :members:
-   :undoc-members:
 
 Helper methods
 ^^^^^^^^^^^^^^
@@ -370,14 +447,14 @@ Helper methods
 .. automodule:: pyaerocom.trends_helpers
    :members:
    :undoc-members:
+   :private-members:
 
-Utils
------
+Utility functions
+-----------------
 
 .. automodule:: pyaerocom.utils
    :members:
    :undoc-members:
-
 
 Helpers
 -------
@@ -424,15 +501,22 @@ Plotting / visualisation (sub package `plot`)
 The :mod:`pyaerocom.plot` package contains algorithms related to data
 visualisation and plotting.
 
-Plotting maps
-^^^^^^^^^^^^^
+Plotting of maps
+^^^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.plot.mapping
   :members:
   :undoc-members:
 
+Plotting coordinates on maps
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.plotcoordinates
+  :members:
+  :undoc-members:
+
 Scatter plots
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.plot.plotscatter
   :members:
@@ -445,10 +529,18 @@ Heatmap plots
   :members:
   :undoc-members:
 
-Colors etc.
-^^^^^^^^^^^
+
+Colors schemes
+^^^^^^^^^^^^^^
 
 .. automodule:: pyaerocom.plot.config
+  :members:
+  :undoc-members:
+
+Plot helper functions
+^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: pyaerocom.plot.helpers
   :members:
   :undoc-members:
 
@@ -489,5 +581,19 @@ Access to minimal test dataset
 ------------------------------
 
 .. automodule:: pyaerocom.access_testdata
+   :members:
+   :undoc-members:
+
+Low-level helper classes and functions
+--------------------------------------
+
+.. automodule:: pyaerocom._lowlevel_helpers
+   :members:
+   :undoc-members:
+
+Custom exceptions
+------------------
+
+.. automodule:: pyaerocom.exceptions
    :members:
    :undoc-members:
