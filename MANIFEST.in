@@ -3,3 +3,4 @@ include README.rst
 include VERSION.md
 include pyaerocom_env.yml
 include pytest.ini
+recursive-include tests/ *
