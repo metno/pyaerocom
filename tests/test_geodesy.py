@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb  4 10:36:15 2019
-
-@author: jonasg
-"""
 import numpy.testing as npt
 import pytest
 

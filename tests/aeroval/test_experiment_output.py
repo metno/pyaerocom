@@ -5,7 +5,7 @@ from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json,write_json
 from pyaerocom.aeroval import experiment_output as mod, ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
-from ..conftest import does_not_raise_exception
+from ..conftest import does_not_raise_exception, geojson_unavail
 from .cfg_test_exp1 import CFG as cfgexp1
 BASEDIR_DEFAULT = os.path.join(const.OUTPUTDIR, 'aeroval/data')
 from ._outbase import AEROVAL_OUT as BASEOUT
@@ -203,6 +203,7 @@ def test_ExperimentOutput_delete_experiment_data_CFG1():
     proc.exp_output.delete_experiment_data()
     assert not os.path.exists(chk)
 
+@geojson_unavail
 def test_Experiment_Output_clean_json_files_CFG1():
     cfg = EvalSetup(**cfgexp1)
     proc = ExperimentProcessor(cfg)
@@ -210,6 +211,7 @@ def test_Experiment_Output_clean_json_files_CFG1():
     modified = proc.exp_output.clean_json_files()
     assert len(modified) == 0
 
+@geojson_unavail
 def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD():
     cfg = EvalSetup(**cfgexp1)
     cfg.model_cfg['mod1'] = cfg.model_cfg['TM5-AP3-CTRL']
@@ -219,6 +221,7 @@ def test_Experiment_Output_clean_json_files_CFG1_INVALIDMOD():
     modified = proc.exp_output.clean_json_files()
     assert len(modified) == 15
 
+@geojson_unavail
 def test_Experiment_Output_clean_json_files_CFG1_INVALIDOBS():
     cfg = EvalSetup(**cfgexp1)
     cfg.obs_cfg['obs1'] = cfg.obs_cfg['AERONET-Sun']

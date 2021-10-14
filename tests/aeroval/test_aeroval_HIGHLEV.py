@@ -1,5 +1,6 @@
 import pytest
 import os, glob
+from ..conftest import geojson_unavail
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from .cfg_test_exp1 import CFG as cfgexp1
@@ -40,6 +41,7 @@ CHK_CFG4 = {
     'ts/diurnal': 0 # number of .json files in subdir
 }
 
+@geojson_unavail
 @pytest.mark.parametrize('cfgdict,chk_files',[
     (cfgexp1,CHK_CFG1),
     (cfgexp2,CHK_CFG2),
