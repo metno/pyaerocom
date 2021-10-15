@@ -6,7 +6,7 @@ General helper methods for the pyaerocom library.
 from cf_units import Unit
 from collections import Counter
 from datetime import MINYEAR, datetime, date
-import iris
+import iris, iris.analysis, iris.cube, iris.coords
 import math as ma
 import numpy as np
 import pandas as pd
