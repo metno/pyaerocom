@@ -122,6 +122,9 @@ class NotInFileError(IOError):
 class ResamplingError(ValueError):
     pass
 
+class StationCoordinateError(CoordinateError):
+    pass
+
 class StationNotFoundError(AttributeError):
     pass
 
