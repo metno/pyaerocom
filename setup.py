@@ -48,8 +48,7 @@ setup(
 
     python_requires = '>=3.7,<4',
     install_requires = [
-        'scitools-iris>=3.0.1,<3.1.0',
-        'scitools-pyke>=1.1.1',
+        'scitools-iris>=3.1.0',
         'xarray>=0.16.0',
         'cartopy>=0.16.0',
         'matplotlib>=3.0.1',
