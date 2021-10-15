@@ -24,6 +24,20 @@ from pyaerocom.exceptions import AeroValConfigError
 
 
 class OutputPaths(ConstrainedContainer):
+    """
+    Setup class for output paths of json files and co-located data
+
+    This interface generates all paths required for an experiment.
+
+    Attributes
+    ----------
+    proj_id : str
+        project ID
+    exp_id : str
+        experiment ID
+    json_basedir : str
+
+    """
     JSON_SUBDIRS = ['map', 'ts', 'ts/diurnal', 'scat', 'hm', 'hm/ts', 'contour']
 
     json_basedir = DirLoc(
