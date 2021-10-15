@@ -595,11 +595,14 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
     #unify time units
     iris.util.unify_time_units(cubes)
     #now concatenate the cube list to one cube
+
     try:
         # cubes_concat = iris._concatenate.concatenate(cubes, error_on_mismatch)
+        cubes = iris.cube.CubeList(cubes)
         cubes_concat = iris.cube.CubeList.concatenate_cube(cubes, error_on_mismatch)
     except Exception as e: #
         if _check_correct_dtypes_timedim_cube_list(cubes):
+            cubes = iris.cube.CubeList(cubes)
             cubes_concat = iris.cube.CubeList.concatenate_cube(cubes,
                                                          error_on_mismatch)
             # cubes_concat = iris._concatenate.concatenate(cubes,
@@ -607,5 +610,5 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
         else:
             raise
 
-    return cubes_concat[0]
+    return cubes_concat
 
