@@ -546,11 +546,7 @@ def _check_correct_dtypes_timedim_cube_list(cubes):
 def concatenate_iris_cubes(cubes, error_on_mismatch=True):
     """Concatenate list of :class:`iris.Cube` instances cubes into single Cube
 
-    Helper method for concatenating list of cubes and that helps
-    with handling the fact that the corresponding iris method is not well
-    defined in the sense of what it returns (i.e. instance of
-    :class:`Cube` or :class:`CubeList`, depending on whether all cubes
-    could be concatenated or not...)
+    Helper method for concatenating list of cubes
 
     This method is not supposed to be called directly but rather
     :func:`concatenate_cubes` (which ALWAYS returns instance of
@@ -559,7 +555,7 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
 
     Parameters
     ----------
-    cubes : CubeList
+    cubes : CubeList or list(Cubes)
         list of individual cubes
     error_on_mismatch
         boolean specifying whether an Exception is supposed to be raised
@@ -567,7 +563,7 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
 
     Returns
     -------
-    :obj:`Cube` or :obj:`CubeList`
+    :obj:`Cube`
         result of concatenation
 
     Raises
@@ -577,6 +573,7 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
         into a single instance of :class:`iris.Cube` class.
 
     """
+    cubes = iris.cube.CubeList(cubes)
     var_name = cubes[0].var_name
     if const.GRID_IO.EQUALISE_METADATA:
         meta_init = cubes[0].metadata
@@ -597,16 +594,11 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
     #now concatenate the cube list to one cube
 
     try:
-        # cubes_concat = iris._concatenate.concatenate(cubes, error_on_mismatch)
-        cubes = iris.cube.CubeList(cubes)
         cubes_concat = iris.cube.CubeList.concatenate_cube(cubes, error_on_mismatch)
-    except Exception as e: #
+    except Exception as e:
         if _check_correct_dtypes_timedim_cube_list(cubes):
-            cubes = iris.cube.CubeList(cubes)
             cubes_concat = iris.cube.CubeList.concatenate_cube(cubes,
-                                                         error_on_mismatch)
-            # cubes_concat = iris._concatenate.concatenate(cubes,
-            #                                              error_on_mismatch)
+                                                               error_on_mismatch)
         else:
             raise
 
