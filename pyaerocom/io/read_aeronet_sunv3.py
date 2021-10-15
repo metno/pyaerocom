@@ -2,16 +2,11 @@ import os
 
 import numpy as np
 import pandas as pd
-import pathlib
-import shutil
-import tempfile
-import gzip
 
 from pyaerocom import const
 from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
-from pyaerocom.exceptions import AeronetReadError
 
 class ReadAeronetSunV3(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
@@ -129,115 +124,91 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
-        # enable alternative reading of .gz files here to save space on the file system
-        suffix = pathlib.Path(filename).suffix
-        tmp_name = filename
-        if suffix == '.gz':
-            f_out = tempfile.NamedTemporaryFile(delete=False)
-            with gzip.open(filename, 'r') as f_in:
-                shutil.copyfileobj(f_in, f_out)
-            filename = f_out.name
-            f_out.close()
+        with open(filename, 'rt') as in_file:
+            _lines_ignored = []
+            _lines_ignored.append(in_file.readline())
+            _lines_ignored.append(in_file.readline())
+            _lines_ignored.append(in_file.readline())
+            _lines_ignored.append(in_file.readline())
+            # PI line
+            dummy_arr = in_file.readline().strip().split(';')
+            data_out['PI'] = dummy_arr[0].split('=')[1]
+            data_out['PI_email'] = dummy_arr[1].split('=')[1]
+            data_out['ts_type'] = self.TS_TYPE
 
-        try:
-            with open(filename, 'rt') as in_file:
-                lines = in_file.readlines()
-        except UnicodeDecodeError:
-            with open(filename, 'rt', encoding='ISO-8859-1') as in_file:
-                lines = in_file.readlines()
-        except OSError:
-            # faulty gzip file
-            if suffix == '.gz':
-                os.remove(f_out.name)
-            raise AeronetReadError(f'gzip error in file {tmp_name}')
+            data_type_comment = in_file.readline()
+            _lines_ignored.append(data_type_comment)
+            # TODO: delete later
+            self.logger.debug("Data type comment: {}".format(data_type_comment))
 
-        _lines_ignored = []
+            # put together a dict with the header string as key and the index number as value so that we can access
+            # the index number via the header string
+            col_index_str = in_file.readline()
+            if col_index_str != self._last_col_index_str:
+                self.logger.info("Header has changed, reloading col_index map")
+                self._update_col_index(col_index_str)
+            col_index = self.col_index
 
-        line_idx = 4
-        _lines_ignored.append(lines[0:line_idx-1])
+            # create empty arrays for all variables that are supposed to be read
+            # from file
+            for var in vars_to_read:
+                data_out[var] = []
+            # dependent on the station, some of the required input variables
+            # may not be provided in the data file. These will be ignored
+            # in the following list that iterates over all data rows and will
+            # be filled below, with vectors containing NaNs after the file
+            # reading loop
+            vars_available = {}
+            for var in vars_to_read:
+                if var in col_index:
+                    vars_available[var] = col_index[var]
+                else:
+                    self.logger.warning("Variable {} not available in file {}"
+                                        .format(var, os.path.basename(filename)))
+            pl = None
+            for i, line in enumerate(in_file):
+                # process line
+                dummy_arr = line.split(self.COL_DELIM)
 
-        # PI line
-        dummy_arr = lines[line_idx].strip().split(';')
-        line_idx += 1
-        data_out['PI'] = dummy_arr[0].split('=')[1]
-        data_out['PI_email'] = dummy_arr[1].split('=')[1]
-        data_out['ts_type'] = self.TS_TYPE
+                if pl is not None and len(dummy_arr) != len(pl):
+                    const.print_log.exception('Data line {} in {} is corrupt, '
+                                              'skipping...'.format(i, filename))
+                    continue
+                # copy the meta data (array of type string)
+                for var in self.META_NAMES_FILE:
+                    try:
+                        val = dummy_arr[col_index[var]]
+                    except IndexError as e:
+                        const.print_log.exception(repr(e))
 
-        data_type_comment = lines[line_idx]
-        line_idx += 1
-        _lines_ignored.append(data_type_comment)
-        self.logger.debug("Data type comment: {}".format(data_type_comment))
+                    try:
+                        # e.g. lon, lat, altitude
+                        val = float(val)
+                    except Exception:
+                        pass
+                    data_out[var].append(val)
 
-        # put together a dict with the header string as key and the index number as value so that we can access
-        # the index number via the header string
-        col_index_str = lines[line_idx]
-        line_idx += 1
-        if col_index_str != self._last_col_index_str:
-            self.logger.info("Header has changed, reloading col_index map")
-            self._update_col_index(col_index_str)
-        col_index = self.col_index
+                # This uses the numpy datestring64 functions that e.g. also
+                # support Months as a time step for timedelta
+                # Build a proper ISO 8601 UTC date string
+                day, month, year = dummy_arr[col_index['date']].split(':')
+                datestring = '-'.join([year, month, day])
+                datestring = 'T'.join([datestring, dummy_arr[col_index['time']]])
+                # NOTE JGLISS: parsing timezone offset was removed on 22/2/19
+                # since it is deprecated in recent numpy versions, for details
+                # see https://www.numpy.org/devdocs/reference/arrays.datetime.html#changes-with-numpy-1-11
+                # datestring = '+'.join([datestring, '00:00'])
 
-        # dependent on the station, some of the required input variables
-        # may not be provided in the data file. These will be ignored
-        # in the following list that iterates over all data rows and will
-        # be filled below, with vectors containing NaNs after the file
-        # reading loop
-        vars_available = {}
-        for var in vars_to_read:
-            data_out[var] = []
-            if var in col_index:
-                vars_available[var] = col_index[var]
-            else:
-                self.logger.warning("Variable {} not available in file {}"
-                                    .format(var, os.path.basename(filename)))
-        pl = None
-        for i, line in enumerate(lines[line_idx:]):
-            # process line
-            dummy_arr = line.split(self.COL_DELIM)
+                data_out['dtime'].append(np.datetime64(datestring))
 
-            if pl is not None and len(dummy_arr) != len(pl):
-                const.print_log.exception('Data line {} in {} is corrupt, '
-                                          'skipping...'.format(i, filename))
-                continue
-            # copy the meta data (array of type string)
-            for var in self.META_NAMES_FILE:
-                try:
-                    val = dummy_arr[col_index[var]]
-                except IndexError as e:
-                    const.print_log.exception(repr(e))
+                # TODO: remove elif if ensured that it works
+                for var, idx in vars_available.items():
+                    val = np.float_(dummy_arr[idx])
+                    if val == self.NAN_VAL:
+                        val = np.nan
+                    data_out[var].append(val)
 
-                try:
-                    # e.g. lon, lat, altitude
-                    val = float(val)
-                except Exception:
-                    pass
-                data_out[var].append(val)
-
-            # This uses the numpy datestring64 functions that e.g. also
-            # support Months as a time step for timedelta
-            # Build a proper ISO 8601 UTC date string
-            day, month, year = dummy_arr[col_index['date']].split(':')
-            datestring = '-'.join([year, month, day])
-            datestring = 'T'.join([datestring, dummy_arr[col_index['time']]])
-            # NOTE JGLISS: parsing timezone offset was removed on 22/2/19
-            # since it is deprecated in recent numpy versions, for details
-            # see https://www.numpy.org/devdocs/reference/arrays.datetime.html#changes-with-numpy-1-11
-            # datestring = '+'.join([datestring, '00:00'])
-
-            data_out['dtime'].append(np.datetime64(datestring))
-
-            for var, idx in vars_available.items():
-                val = np.float_(dummy_arr[idx])
-                if val == self.NAN_VAL:
-                    val = np.nan
-                data_out[var].append(val)
-
-            pl = dummy_arr
-
-        # remove the temp file in case the input file was a gz file
-        if suffix == '.gz':
-            os.remove(f_out.name)
-
+                pl = dummy_arr
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
 
@@ -270,8 +241,7 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
 
-    from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
-    from pyaerocom import const
+    #file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
 
     reader = ReadAeronetSunV3(const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME)
     od = reader.read('od550aer')
