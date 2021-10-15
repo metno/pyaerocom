@@ -1254,7 +1254,7 @@ class Colocator(ColocationSetup):
 
     def _save_coldata(self, coldata):
         """Helper for saving colocateddata"""
-        obs_var, mod_var = coldata.metadata['var_name']
+        obs_var, mod_var = coldata.metadata['var_name_input']
         if mod_var in self.model_rename_vars:
             mvar = self.model_rename_vars[mod_var]
             const.print_log.info(
