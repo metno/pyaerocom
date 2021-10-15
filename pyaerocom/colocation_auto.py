@@ -677,6 +677,7 @@ class Colocator(ColocationSetup):
             mdata = self._loaded_model_data[model_var]
             if mdata.data_id == self.model_id:
                 return mdata
+        self._check_add_model_read_aux(model_var)
         mdata = self._read_gridded(var_name=model_var, is_model=True)
         self._loaded_model_data[model_var] = mdata
         return mdata
