@@ -12,7 +12,7 @@ pyaerocom
 
 **AeroCom:** https://aerocom.met.no
 
-**AeroVal** evaluation portal: https://aerocom-evaluation.met.no/
+**AeroVal** evaluation portal: https://aeroval.met.no/
 
 .. |CI| image:: https://github.com/metno/pyaerocom/workflows/CI/badge.svg
    :target: https://github.com/metno/pyaerocom/actions
