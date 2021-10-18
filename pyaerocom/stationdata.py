@@ -9,7 +9,8 @@ from pyaerocom import logger, const
 from pyaerocom.exceptions import (MetaDataError, VarNotAvailableError,
                                   DataExtractionError, DataDimensionError,
                                   UnitConversionError, DataUnitError,
-                                  TemporalResolutionError, CoordinateError)
+                                  TemporalResolutionError, CoordinateError,
+                                  StationCoordinateError)
 from pyaerocom._lowlevel_helpers import (dict_to_str, list_to_shortstr,
                                          BrowseDict, merge_dicts)
 from pyaerocom.metastandards import StationMetaData, STANDARD_META_KEYS
@@ -303,10 +304,6 @@ class StationData(StationMetaData):
         force_single_value : bool
             if True and coordinate values are lists or arrays, then they are
             collapsed to single value using mean
-        quality_check : bool
-            if True, and coordinate values are lists or arrays, then the
-            standarad deviation in the values is compared to the upper limits
-            allowed in the local variation.
 
         Returns
         -------
@@ -339,15 +336,19 @@ class StationData(StationMetaData):
                     if isinstance(val, (int, np.integer)):
                         val = np.float64(val)
                     elif isinstance(val, (list, np.ndarray)):
+                        # ToDo: consider tolerance to be specified in input
+                        # args.
                         maxdiff = np.max(val) - np.min(val)
                         if key in ('latitude', 'longitude'):
-                            tol = 5e-4 # ca 50m at equator
+                            tol = 0.05 # ca 5km at equator
                         else:
-                            tol = 20 #m altitude tolerance
+                            tol = 100 #m altitude tolerance
                         if maxdiff > tol:
-                            raise ValueError('meas point coordinate arrays '
-                                             'vary too much to reduce them '
-                                             'to a single coordinate')
+                            raise StationCoordinateError(
+                                f'meas point coordinate arrays of {key} vary '
+                                f'too much to reduce them to a single '
+                                f'coordinate. Order of difference in {key} is '
+                                f'{maxdiff} and maximum allowed is {tol}.')
                         val = np.mean(val)
                     else:
                         raise AttributeError("Invalid value encountered for coord "

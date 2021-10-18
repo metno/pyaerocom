@@ -1205,7 +1205,7 @@ class ReadGridded(object):
                            computed=True,
                            convert_unit_on_init=try_convert_units,
                            **kwargs)
-        #data.ts_type = ts_type
+
         data.reader = self
         if rename_var is not None:
             data.var_name = rename_var

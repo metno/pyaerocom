@@ -112,9 +112,9 @@ class ColdataToJsonEngine(ProcessingEngine):
                     f'Base frequency for statistics timeseries needs to be '
                     f'specified in experiment frequencies: {freqs}')
         # init some stuff
-        if 'var_name' in coldata.metadata:
-            obs_var = coldata.metadata['var_name'][0]
-            model_var = coldata.metadata['var_name'][1]
+        if 'var_name_input' in coldata.metadata:
+            obs_var = coldata.metadata['var_name_input'][0]
+            model_var = coldata.metadata['var_name_input'][1]
         else:
             obs_var = model_var = 'UNDEFINED'
 
