@@ -47,6 +47,7 @@ CHK_CFG4 = {
     (cfgexp2,CHK_CFG2),
     (cfgexp4,CHK_CFG4),
 ])
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
 def test_ExperimentOutput__FILES(cfgdict,chk_files):
     cfg = EvalSetup(**cfgdict)
     fname = f'cfg_{cfg.proj_id}_{cfg.exp_id}.json'
@@ -73,6 +74,7 @@ def test_ExperimentOutput__FILES(cfgdict,chk_files):
                 numfiles = glob.glob(f'{val}/*.json')
                 assert len(numfiles) == check
 
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
 def test_reanalyse_existing():
     cfg = EvalSetup(**cfgexp4)
     assert cfg.colocation_opts.reanalyse_existing == True

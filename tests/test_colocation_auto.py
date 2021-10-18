@@ -97,6 +97,7 @@ def test_Colocator__add_attr(col):
     ('daily', 'monthly', False, does_not_raise_exception()),
     ('monthly', 'monthly', False, does_not_raise_exception()),
     ])
+@pytest.mark.filterwarnings("ignore:invalid value encountered in reduce:RuntimeWarning")
 def test_Colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
                                       ts_type, flex, raises):
     col = Colocator(**tm5_aero_stp)
@@ -198,6 +199,7 @@ def test_Colocator_update(what,raises):
 )
 # dask RuntimeWarning triggered by iris
 @pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:invalid value encountered in reduce:RuntimeWarning")
 def test_Colocator_run_gridded_gridded(tm5_aero_stp):
     col = Colocator(**tm5_aero_stp)
     col.obs_id = col.model_id

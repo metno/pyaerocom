@@ -32,6 +32,10 @@ def test_ExperimentProcessor___init__(cfgdict,raises):
     (cfgexp3,{},does_not_raise_exception()),
     (cfgexp4,{},does_not_raise_exception()),
 ])
+@pytest.mark.filterwarnings("ignore:invalid value encountered in double_scalars:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore: Mean of empty slice:RuntimeWarning")
+@pytest.mark.filterwarnings("ignore: All-NaN slice encountered:RuntimeWarning")
 def test_ExperimentProcessor_run(cfgdict,runkwargs,raises):
     cfg = EvalSetup(**cfgdict)
     with raises:

@@ -217,6 +217,7 @@ def test_StationData__check_ts_types_for_merge(s1,s2,var_name,val):
     (stat1,'od550aer', 10, 20, True, np.nan, does_not_raise_exception())
 
 ])
+@pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test_StationData_remove_outliers(stat,var_name,low,high,check_unit,mean,
                                      raises):
     with raises:

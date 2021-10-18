@@ -77,6 +77,7 @@ one_nan[0,0] = np.nan
      does_not_raise_exception()),
 
 ])
+@pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
 def test_df_to_heatmap(args,raises):
     with raises:
         val = mod.df_to_heatmap(**args)
