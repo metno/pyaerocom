@@ -8,26 +8,46 @@ from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
 from pyaerocom import print_log
 
-def round_floats(dict, precision=5):
-    """simple helper routine to turn all floats of a dictionary a given precision
+def round_floats(in_data, precision=5):
+    """
+    simple helper method to change all floats of a data structure to a given precision.
+    For nested structures, this method is called recursively to go through
+    all levels
+
+    Parameters
+    ----------
+    in_data : float, dict, tuple, list
+        data structure whose numbers should be limited in precision
+
+
+    Returns
+    -------
+    in_data
+        all the floats in in_data with limited precision
+        tuples in the structure have been converted to lists to make them mutable
 
     """
-    ret_dict = dict.copy()
 
-    if isinstance(dict, float):
-        return round(ret_dict, 5)
-    if isinstance(dict, dict):
-        for key in dict:
-            ret_dict[key] = round_floats(dict[key])
-        # return {k: round_floats(v) for k, v in dict.items()}
-    elif isinstance(dict, (list, tuple)):
-        return [round_floats(x) for x in dict]
+    if isinstance(in_data, float):
+        return round(in_data, precision)
+    elif isinstance(in_data, dict):
+        # no list comprehension here since there might be mixed data structures
+        for key in in_data:
+            in_data[key] = round_floats(in_data[key], precision=precision)
+
+    elif isinstance(in_data, (list, tuple)):
+        # if in_data is a tuple, convert that to a list so that it becomes mutable
+        if isinstance(in_data,tuple):
+            in_data = list(in_data)
+        # no list comprehension here since there might be mixed data structures
+        for idx, x in enumerate(in_data):
+            in_data[idx] = round_floats(x, precision=precision)
+
     else:
-        raise NotImplementedError
+        # leave all types we have not recognised before alone
+        pass
 
-    if isinstance(dict, (list, tuple)):
-        return [round_floats(x) for x in dict]
-    return ret_dict
+    return in_data
 
 def read_json(file_path):
     """Read json file
