@@ -59,7 +59,6 @@ def round_floats(in_data, precision=5):
     in_data : float, dict, tuple, list
         data structure whose numbers should be limited in precision
 
-
     Returns
     -------
     in_data
@@ -68,7 +67,7 @@ def round_floats(in_data, precision=5):
 
     """
 
-    if isinstance(in_data, float):
+    if isinstance(in_data, float): # this also covers np.float types
         return round(in_data, precision)
     elif isinstance(in_data, dict):
         # no list comprehension here since there might be mixed data structures
