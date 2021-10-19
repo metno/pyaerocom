@@ -48,6 +48,27 @@ def round_floats(in_data, precision=5):
     return in_data
 
 
+def round_floats(dict, precision=5):
+    """simple helper routine to turn all floats of a dictionary a given precision
+
+    """
+    ret_dict = dict.copy()
+
+    if isinstance(dict, float):
+        return round(ret_dict, 5)
+    if isinstance(dict, dict):
+        for key in dict:
+            ret_dict[key] = round_floats(dict[key])
+        # return {k: round_floats(v) for k, v in dict.items()}
+    elif isinstance(dict, (list, tuple)):
+        return [round_floats(x) for x in dict]
+    else:
+        raise NotImplementedError
+
+    if isinstance(dict, (list, tuple)):
+        return [round_floats(x) for x in dict]
+    return ret_dict
+
 def read_json(file_path):
     """Read json file
 
