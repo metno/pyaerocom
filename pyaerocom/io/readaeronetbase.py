@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from collections import OrderedDict as od
 from datetime import datetime
 import numpy as np
@@ -10,7 +8,8 @@ from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.mathutils import numbers_in_str
 from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.exceptions import MetaDataError, VariableNotFoundError
+from pyaerocom.exceptions import MetaDataError, VariableNotFoundError, \
+    StationCoordinateError
 from pyaerocom import const, print_log
 
 class ReadAeronetBase(ReadUngriddedBase):
@@ -19,7 +18,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     Extended abstract base class, derived from low-level base class
     :class:`ReadUngriddedBase` that contains some more functionality.
     """
-    __baseversion__ = '0.12_' + ReadUngriddedBase.__baseversion__
+    __baseversion__ = '0.13_' + ReadUngriddedBase.__baseversion__
 
     #: column delimiter in data block of files
     COL_DELIM = ','
@@ -155,7 +154,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         raise ValueError('Failed to extract wavelength from colname {}'
                          .format(colname))
 
-    def _update_col_index(self, col_index_str, use_all_possible=False):
+    def _update_col_index(self, col_index_str):
         """Update file column information for fast access during read_file
 
         Note
@@ -167,10 +166,6 @@ class ReadAeronetBase(ReadUngriddedBase):
         ----------
         col_index_str : str
             header string of data table in files
-        use_all_possible : bool
-            if True, than all available variables belonging to either of the
-            variable families that are specified in :attr:`VAR_PATTERNS_FILE`
-            are identified from the file header.
 
         Returns
         -------
@@ -191,10 +186,7 @@ class ReadAeronetBase(ReadUngriddedBase):
             else:
                 mapping[info_str] = idx
 
-        if use_all_possible:
-            col_index = self._find_vars_pattern_based(mapping)
-        else:
-            col_index = self._find_vars_name_based(mapping, cols)
+        col_index = self._find_vars_name_based(mapping, cols)
         self._col_index = col_index
         self._last_col_index_str = col_index_str
         self._last_col_order = cols
@@ -211,36 +203,6 @@ class ReadAeronetBase(ReadUngriddedBase):
                         return alt_name
         raise MetaDataError("Required meta-information string {} could "
                             "not be found in file header".format(val))
-
-    def _find_vars_pattern_based(self, mapping):
-        raise NotImplementedError('Coming soon... maybe... if needed')
-        col_index = od()
-        # find meta indices
-        for key, val in self.META_NAMES_FILE.items():
-            if not val in mapping:
-                val = self._check_alternative_colnames(val, mapping)
-            col_index[key] = mapping[val]
-        p = self.VAR_PATTERNS_FILE
-
-        for pattern, aerocom_name in self.VAR_PATTERNS_FILE.items():
-            if not '*' in aerocom_name:
-                raise ValueError('Invalid entry in search pattern for Aerocom '
-                                 'var pattern {} (search key {}): Aerocom var '
-                                 'pattern must require * (which is used to '
-                                 'replace identified value from search group '
-                                 'in file header'
-                                 .format(aerocom_name, pattern))
-            if '*' in pattern:
-                import fnmatch
-
-# =============================================================================
-#             for col_name, idx in mapping.items():
-#                 result = re.match(pattern, col_name)
-#                 if result is not None:
-#                     if len(result.groups()) != 1:
-#                         raise Exception('Found more than one match')
-# =============================================================================
-        return col_index
 
     def _find_vars_name_based(self, mapping, cols):
         col_index = od()
@@ -389,19 +351,31 @@ class ReadAeronetBase(ReadUngriddedBase):
         num_vars = len(vars_to_retrieve)
         num_files = len(files)
         print_log.info('Reading AERONET data')
+        skipped = 0
         for i in tqdm(range(num_files)):
 
             _file = files[i]
             station_data = self.read_file(_file,
                                           vars_to_retrieve=vars_to_retrieve)
+
+            try:
+                statmeta = station_data.get_meta()
+            except StationCoordinateError as e:
+                stat = station_data.station_name
+                if isinstance(stat, (list, np.ndarray)):
+                    stat = stat[0]
+                const.print_log.warning(
+                    f'\nSkipping station {stat}. Reason: {repr(e)}.\n')
+                skipped += 1
+                continue
             # Fill the metatdata dict
             # the location in the data set is time step dependant!
             # use the lat location here since we have to choose one location
             # in the time series plot
             meta = od()
             meta['var_info'] = od()
-            meta.update(station_data.get_meta())
-            #metadata[meta_key].update(station_data.get_station_coords())
+            meta.update(statmeta)
+
             meta['data_id'] = self.data_id
             meta['ts_type'] = self.TS_TYPE
             #meta['variables'] = vars_to_retrieve
@@ -476,6 +450,10 @@ class ReadAeronetBase(ReadUngriddedBase):
             metadata[meta_key] = meta
             meta_key = meta_key + 1.
 
+        if skipped:
+            const.print_log.warning(
+                f'{skipped} out of {len(files)} files have been skipped (for '
+                f'details see output).')
         # shorten data_obj._data to the right number of points
         data_obj._data = data_obj._data[:idx]
         #data_obj.data_revision[self.data_id] = self.data_revision

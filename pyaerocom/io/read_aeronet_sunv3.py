@@ -1,35 +1,3 @@
-################################################################
-# read_aeronet_sunv3.py
-#
-# read Aeronet direct sun V3 data
-#
-# this file is part of the pyaerocom package
-#
-#################################################################
-# Created 20180626 by Jan Griesfeller for Met Norway
-#
-# Last changed: See git log
-#################################################################
-
-# Copyright (C) 2018 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# E-mail: jan.griesfeller@met.no
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
 import os
 
 import numpy as np
@@ -123,7 +91,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
     PROVIDES_VARIABLES = list(VAR_NAMES_FILE.keys())
 
     def read_file(self, filename, vars_to_retrieve=None,
-                  vars_as_series=False, read_all_possible=False):
+                  vars_as_series=False):
         """Read Aeronet Sun V3 level 1.5 or 2 file
 
         Parameters
@@ -136,11 +104,6 @@ class ReadAeronetSunV3(ReadAeronetBase):
         vars_as_series : bool
             if True, the data columns of all variables in the result dictionary
             are converted into pandas Series objects
-        read_all_possible : bool
-            if True, than all available variables belonging to either of the
-            variable families that are specified in :attr:`VAR_PATTERNS_FILE`
-            are read from the file (in addition to the ones that are specified
-            via vars_to_retrieve).
 
         Returns
         -------
@@ -183,8 +146,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             col_index_str = in_file.readline()
             if col_index_str != self._last_col_index_str:
                 self.logger.info("Header has changed, reloading col_index map")
-                self._update_col_index(col_index_str,
-                                       use_all_possible=read_all_possible)
+                self._update_col_index(col_index_str)
             col_index = self.col_index
 
             # create empty arrays for all variables that are supposed to be read

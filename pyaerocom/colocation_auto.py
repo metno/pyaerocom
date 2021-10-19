@@ -677,6 +677,7 @@ class Colocator(ColocationSetup):
             mdata = self._loaded_model_data[model_var]
             if mdata.data_id == self.model_id:
                 return mdata
+        self._check_add_model_read_aux(model_var)
         mdata = self._read_gridded(var_name=model_var, is_model=True)
         self._loaded_model_data[model_var] = mdata
         return mdata
@@ -1253,7 +1254,7 @@ class Colocator(ColocationSetup):
 
     def _save_coldata(self, coldata):
         """Helper for saving colocateddata"""
-        obs_var, mod_var = coldata.metadata['var_name']
+        obs_var, mod_var = coldata.metadata['var_name_input']
         if mod_var in self.model_rename_vars:
             mvar = self.model_rename_vars[mod_var]
             const.print_log.info(
