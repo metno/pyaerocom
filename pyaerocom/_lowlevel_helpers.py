@@ -81,7 +81,7 @@ def write_json(data_dict, file_path, **kwargs):
         indent, )
     """
     with open(file_path, 'w') as f:
-        simplejson.dump(data_dict, f, **kwargs)
+        simplejson.dump(round_floats(data_dict), f, **kwargs)
 
 def check_make_json(fp, indent=4):
     """
