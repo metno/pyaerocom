@@ -64,7 +64,7 @@ A list of requirements is provided in file `pyaerocom_env.yml <https://github.co
 
 Normally, conda will install these requirements along with pyaerocom, however, if you install from source or using pip, you need to install the requirements yourself.
 
-In order to do so, we recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.7 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
+In order to do so, we recommend using the `Anaconda <https://www.anaconda.com/distribution/>`_ Python 3.8 distribution (or `Miniconda <https://conda.io/en/latest/miniconda.html>`__, if you want to save disk space) and to use the *conda* package manager to install the requirements.
 
 With *conda* you can install all requirements (specified in previous section) into a new environment using the *pyaerocom_env.yml* file::
 
