@@ -17,7 +17,7 @@
 
 - Create a changelog file in *changelog* directory. You may use git log, see [here](https://github.com/metno/pyaerocom/blob/master/changelog/CHANGELOG_v080_v0100.rst) for an example.
 - Create a release summary, see [here](https://github.com/metno/pyaerocom/blob/master/changelog/v0100_release_summary.md) for an example (does not need to be a new file but can also be just specified in the provided text box when releasing on GitHub, see, e.g. [here]()). **NOTE**: You can use pycharm to compare diffs between 2 branches to see what are the main changes. Creating the release summary can be quite some work, but it is good to do it for documentation and also for a recap of what has actually happened since the last release.
-- Check that version is correct (file *VERSION.md*). For instance, for release of version 1.0.0 it should be set to either 1.0.0 or 1.0.0.rcX where X denotes iterations of release candidates.
+- Check that version is correct (file *setup.cfg*). For instance, for release of version 1.0.0 it should be set to either 1.0.0 or 1.0.0.rcX where X denotes iterations of release candidates.
 
 ### Check code documentation
 
