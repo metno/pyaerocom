@@ -33,3 +33,25 @@ exclude_lines = [
   'if __name__ == "__main__":',
   "if __name__ == '__main__':",
 ]
+
+[tool.black]
+target-version = ['py38']
+line-length = 99
+
+[tool.isort]
+py_version = "38"
+profile = "black"
+src_paths = ["pyaerocom", "tests"]
+line_length = 99
+
+[tool.mypy]
+python_version = "3.8"
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_return_any = false
+warn_unreachable = true
+show_error_codes = true
+pretty = true
+sqlite_cache = true
+ignore_missing_imports = true
