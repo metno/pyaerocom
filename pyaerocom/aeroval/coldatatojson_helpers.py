@@ -297,7 +297,10 @@ def _create_diurnal_weekly_data_object(coldata,resolution):
 
     """
     import xarray as xr
-    data = coldata.data
+    data_allyears = coldata.data
+    
+    yearkeys = list(data_allyears.groupby('time.year').groups.keys())
+    
     if resolution == 'seasonal':
         seasons = ['DJF','MAM','JJA','SON']
     elif resolution == 'yearly':
@@ -305,36 +308,54 @@ def _create_diurnal_weekly_data_object(coldata,resolution):
     else:
         raise ValueError(f'Invalid resolution. Got {resolution}.')
 
-
-    for seas in seasons:
-        rep_week_ds = xr.Dataset()
-        if resolution == 'seasonal':
-            mon_slice = data.where(data['time.season']==seas,drop=True)
-        elif resolution == 'yearly':
-            mon_slice = data
-
-        month_stamp = f'{seas}'
-
-        for day in range(7):
-            day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
-            rep_day = day_slice.groupby('time.hour').mean(dim='time')
-            rep_day['hour'] = rep_day.hour/24+day+1
-            if day == 0:
-                rep_week = rep_day
+    first = True
+    for yr in yearkeys:
+        data = data_allyears.where(data_allyears['time.year']==yr,drop=True)
+        for seas in seasons:
+            rep_week_ds = xr.Dataset()
+            if resolution == 'seasonal':
+                mon_slice = data.where(data['time.season']==seas,drop=True)
+            elif resolution == 'yearly':
+                mon_slice = data
+    
+            month_stamp = f'{seas}'
+    
+            for day in range(7):
+                day_slice = mon_slice.where(mon_slice['time.dayofweek']==day,drop=True)
+                rep_day = day_slice.groupby('time.hour').mean(dim='time')
+                rep_day['hour'] = rep_day.hour/24+day+1
+                if day == 0:
+                    rep_week = rep_day
+                else:
+                    rep_week = xr.concat([rep_week,rep_day],dim='hour')
+    
+            rep_week=rep_week.rename({'hour':'dummy_time'})
+            month_stamps = np.zeros(rep_week.dummy_time.shape,dtype='<U5')
+            month_stamps[:] = month_stamp
+            rep_week_ds['rep_week']=rep_week
+            rep_week_ds['month_stamp'] = (('dummy_time'),month_stamps)
+    
+            if seas in ['DJF','year']:
+                rep_week_full_period = rep_week_ds
             else:
-                rep_week = xr.concat([rep_week,rep_day],dim='hour')
-
-        rep_week=rep_week.rename({'hour':'dummy_time'})
-        month_stamps = np.zeros(rep_week.dummy_time.shape,dtype='<U5')
-        month_stamps[:] = month_stamp
-        rep_week_ds['rep_week']=rep_week
-        rep_week_ds['month_stamp'] = (('dummy_time'),month_stamps)
-
-        if seas in ['DJF','year']:
-            rep_week_full_period = rep_week_ds
+                rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
+            
+        if first:
+            output_array = rep_week_full_period
+            # output_array = output_array.expand_dims({'year':[0]},0)
+            first = False
         else:
-            rep_week_full_period = xr.concat([rep_week_full_period,rep_week_ds],dim='period')
-    return rep_week_full_period
+            output_array = xr.concat([output_array,rep_week_full_period],dim='year')
+            
+    try:
+        output_array.year
+    except AttributeError:
+        output_array = output_array.expand_dims({'year':[0]},0)
+        
+    output_array = output_array.assign(dict(year=np.array(yearkeys)))
+    # output_array.year[:] = np.array(yearkeys)  
+    
+    return output_array
 
 def _get_period_keys(resolution):
     if resolution == 'seasonal':
@@ -372,22 +393,30 @@ def _process_one_station_weekly(stat_name, i,repw_res, meta_glob, time):
 
     """
     has_data = False
-    ts_data = {'time' : time,'seasonal' : {'obs' : {},'mod' : {}},'yearly' : {'obs' : {},'mod' : {}} }
+    
+    years = list(repw_res['seasonal'].year.values)
+    yeardict = {}
+    for year in years:
+        yeardict[f'{year}'] = {}
+    
+    ts_data = {'time' : time,'seasonal' : {'obs' : yeardict,'mod' : yeardict},'yearly' : {'obs' : yeardict,'mod' : yeardict} }
     ts_data['station_name'] = stat_name
     ts_data.update(meta_glob)
 
 
-    for res,repw in repw_res.items():
-        obs_vals = repw[:,0, :, i]
-        if (np.isnan(obs_vals)).all().values:
-            continue
-        has_data = True
-        mod_vals = repw[:,1, :, i]
-
-        period_keys = _get_period_keys(res)
-        for period_num,pk in enumerate(period_keys):
-            ts_data[res]['obs'][pk] = obs_vals.sel(period=period_num).values.tolist()
-            ts_data[res]['mod'][pk] = mod_vals.sel(period=period_num).values.tolist()
+    for y,year in enumerate(years):
+        for res,repw in repw_res.items():
+            repw = repw.transpose('year','period','data_source','dummy_time','station_name')
+            obs_vals = repw[y,:,0, :, i]
+            if (np.isnan(obs_vals)).all().values:
+                continue
+            has_data = True
+            mod_vals = repw[y,:,1, :, i]
+    
+            period_keys = _get_period_keys(res)
+            for period_num,pk in enumerate(period_keys):
+                ts_data[res]['obs'][f'{year}'][pk] = obs_vals.sel(period=period_num).values.tolist()
+                ts_data[res]['mod'][f'{year}'][pk] = mod_vals.sel(period=period_num).values.tolist()
     return ts_data, has_data
 
 def _process_weekly_object_to_station_time_series(repw_res,meta_glob):
@@ -452,6 +481,11 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,
     """
     ts_objs_reg = []
     time = (np.arange(168)/24+1).round(4).tolist()
+    
+    years = list(repw_res['seasonal'].year.values)
+    yeardict = {}
+    for year in years:
+        yeardict[f'{year}'] = {}
 
     if regions_how != 'country':
         print('Regional diurnal cycles are only implemented for country regions, skipping...')
@@ -460,26 +494,27 @@ def _process_weekly_object_to_country_time_series(repw_res,meta_glob,
         for regid, regname in region_ids.items():
             ts_data = {
                 'time' : time,
-                'seasonal' : {'obs' : {},'mod' : {}},
-                'yearly' : {'obs' : {},'mod' : {}}
-                }
+                'seasonal' : {'obs' : yeardict,'mod' : yeardict},
+                'yearly' : {'obs' : yeardict,'mod' : yeardict} }
             ts_data['station_name'] = regname
             ts_data.update(meta_glob)
 
-            for res, repw in repw_res.items():
-                if regid == 'WORLD':
-                    subset = repw
-                else:
-                    subset = repw.where(repw.country == regid)
-
-                avg = subset.mean(dim='station_name')
-                obs_vals = avg[:,0,:]
-                mod_vals = avg[:,1,:]
-
-                period_keys = _get_period_keys(res)
-                for period_num,pk in enumerate(period_keys):
-                    ts_data[res]['obs'][pk] = obs_vals.sel(period=period_num).values.tolist()
-                    ts_data[res]['mod'][pk] = mod_vals.sel(period=period_num).values.tolist()
+            for y,year in enumerate(years):
+                for res, repw in repw_res.items():
+                    repw = repw.transpose('year','period','data_source','dummy_time','station_name')
+                    if regid == 'WORLD':
+                        subset = repw
+                    else:
+                        subset = repw.where(repw.country == regid)
+    
+                    avg = subset.mean(dim='station_name')
+                    obs_vals = avg[y,:,0,:]
+                    mod_vals = avg[y,:,1,:]
+    
+                    period_keys = _get_period_keys(res)
+                    for period_num,pk in enumerate(period_keys):
+                        ts_data[res]['obs'][f'{year}'][pk] = obs_vals.sel(period=period_num).values.tolist()
+                        ts_data[res]['mod'][f'{year}'][pk] = mod_vals.sel(period=period_num).values.tolist()
 
             ts_objs_reg.append(ts_data)
     return ts_objs_reg
