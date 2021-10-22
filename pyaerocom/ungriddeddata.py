@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import fnmatch
 import os
 from collections import OrderedDict as od
@@ -39,7 +38,7 @@ from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 
-class UngriddedData(object):
+class UngriddedData:
     """Class representing point-cloud data (ungridded)
 
     The data is organised in a 2-dimensional numpy array where the first index
@@ -649,7 +648,7 @@ class UngriddedData(object):
             size = self._chunksize
         chunk = np.empty([size, self._COLNO]) * np.nan
         self._data = np.append(self._data, chunk, axis=0)
-        logger.info("adding chunk, new array size ({})".format(self._data.shape))
+        logger.info(f"adding chunk, new array size ({self._data.shape})")
 
     def _find_station_indices_wildcards(self, station_str):
         """Find indices of all metadata blocks matching input station name
@@ -915,7 +914,7 @@ class UngriddedData(object):
                 )
                 stats.append(stat)
             except (VarNotAvailableError, DataCoverageError) as e:
-                logger.info("Skipping meta index {}. Reason: {}".format(idx, repr(e)))
+                logger.info(f"Skipping meta index {idx}. Reason: {repr(e)}")
         if merge_if_multi and len(stats) > 1:
             if len(vars_to_convert) > 1:
                 raise NotImplementedError(
@@ -1403,7 +1402,7 @@ class UngriddedData(object):
         val_f = {}
         for key, val in filter_attributes.items():
             if not key in valid_keys:
-                raise IOError(
+                raise OSError(
                     "Invalid input parameter for filtering: {}. "
                     "Please choose from {}".format(key, valid_keys)
                 )
@@ -1590,10 +1589,10 @@ class UngriddedData(object):
 
         if low is None:
             low = const.VARS[var_name].minimum
-            logger.info("Setting {} outlier lower lim: {:.2f}".format(var_name, low))
+            logger.info(f"Setting {var_name} outlier lower lim: {low:.2f}")
         if high is None:
             high = const.VARS[var_name].maximum
-            logger.info("Setting {} outlier upper lim: {:.2f}".format(var_name, high))
+            logger.info(f"Setting {var_name} outlier upper lim: {high:.2f}")
         var_idx = new.var_idx[var_name]
         var_mask = new._data[:, new._VARINDEX] == var_idx
 
@@ -1806,7 +1805,7 @@ class UngriddedData(object):
 
         new = self._new_from_meta_blocks(meta_matches, totnum)
         time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        new.filter_hist[int(time_str)] = "Applied mask {}".format(region_id)
+        new.filter_hist[int(time_str)] = f"Applied mask {region_id}"
         new._check_index()
         return new
 
@@ -2056,7 +2055,7 @@ class UngriddedData(object):
             new instance of ungridded data containing only data from specified
             input network
         """
-        logger.info("Extracting dataset {} from data object".format(data_id))
+        logger.info(f"Extracting dataset {data_id} from data object")
         return self.filter_by_meta(data_id=data_id)
 
     def extract_var(self, var_name, check_index=True):
@@ -2080,7 +2079,7 @@ class UngriddedData(object):
             if _var in self.contains_vars:
                 var_name = _var
             else:
-                raise VarNotAvailableError("No such variable {} in data".format(var_name))
+                raise VarNotAvailableError(f"No such variable {var_name} in data")
         elif len(self.contains_vars) == 1:
             const.print_log.info("Data object is already single variable. " "Returning copy")
             return self.copy()
@@ -2339,7 +2338,7 @@ class UngriddedData(object):
             obj.var_idx = other.var_idx
         else:
             # get offset in metadata index
-            meta_offset = max([x for x in obj.metadata.keys()]) + 1
+            meta_offset = max(x for x in obj.metadata.keys()) + 1
             data_offset = obj.shape[0]
 
             # add this offset to indices of meta dictionary in input data object
@@ -2488,7 +2487,7 @@ class UngriddedData(object):
             if variable name is not available
         """
         if not var_name in self.var_idx:
-            raise AttributeError("Variable {} not available in data".format(var_name))
+            raise AttributeError(f"Variable {var_name} not available in data")
         idx = self.var_idx[var_name]
         mask = np.where(self._data[:, self._VARINDEX] == idx)[0]
         return self._data[mask, self._DATAINDEX]
@@ -2628,7 +2627,7 @@ class UngriddedData(object):
                                 ok = False
                         if ok:  # match found
                             station_map[meta_idx] = meta_idx_other
-                            logger.debug("Found station match {}".format(name))
+                            logger.debug(f"Found station match {name}")
                             # no need to further iterate over the rest
                             continue
 
@@ -2815,15 +2814,15 @@ class UngriddedData(object):
                     "Can only handle single variable (or all" "-> input var_name=None)"
                 )
             elif not var_name in subset.contains_vars:
-                raise ValueError("Input variable {} is not available in dataset ".format(var_name))
+                raise ValueError(f"Input variable {var_name} is not available in dataset ")
             info_str = var_name
 
         try:
-            info_str += "_{}".format(start_stop_str(start, stop, ts_type))
+            info_str += f"_{start_stop_str(start, stop, ts_type)}"
         except Exception:
             info_str += "_AllTimes"
         if ts_type is not None:
-            info_str += "_{}".format(ts_type)
+            info_str += f"_{ts_type}"
 
         if all([x is None for x in (var_name, start, stop)]):  # use all stations
             all_meta = subset._meta_to_lists()
@@ -2886,7 +2885,7 @@ class UngriddedData(object):
         from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 
         if not os.path.exists(save_dir):
-            raise FileNotFoundError("Directory does not exist: {}".format(save_dir))
+            raise FileNotFoundError(f"Directory does not exist: {save_dir}")
         elif not file_name.endswith(".pkl"):
             raise ValueError(
                 "Can only store files as pickle, file_name needs " "to have format .pkl"
@@ -3005,7 +3004,7 @@ class UngriddedData(object):
         return self.merge(other, new_obj=True)
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = f"Pyaerocom {type(self).__name__}"
         s = "\n{}\n{}".format(head, len(head) * "-")
         s += (
             "\nContains networks: {}"
@@ -3022,12 +3021,12 @@ class UngriddedData(object):
             s += "\nFilters that were applied:"
             for tstamp, f in self.filter_hist.items():
                 if f:
-                    s += "\n Filter time log: {}".format(tstamp)
+                    s += f"\n Filter time log: {tstamp}"
                     if isinstance(f, dict):
                         for key, val in f.items():
-                            s += "\n\t{}: {}".format(key, val)
+                            s += f"\n\t{key}: {val}"
                     else:
-                        s += "\n\t{}".format(f)
+                        s += f"\n\t{f}"
 
         return s
 

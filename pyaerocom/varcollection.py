@@ -10,7 +10,7 @@ from pyaerocom.variable import Variable
 from pyaerocom.variable_helpers import parse_aliases_ini, parse_variables_ini
 
 
-class VarCollection(object):
+class VarCollection:
     """Variable access class based on variables.ini file"""
 
     def __init__(self, var_ini):

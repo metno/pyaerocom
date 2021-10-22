@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Caching class for reading and writing of ungridded data Cache objects
 """
@@ -14,7 +13,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 
 # TODO: Write data attribute list contains_vars in header of pickled file and
 # check if variables match the request
-class CacheHandlerUngridded(object):
+class CacheHandlerUngridded:
     """Interface for reading and writing of cache files
 
     Cache filename mask is
@@ -79,7 +78,7 @@ class CacheHandlerUngridded(object):
     @cache_dir.setter
     def cache_dir(self, val):
         if not isinstance(val, str) or not os.path.exists(val):
-            raise FileNotFoundError("Input directory does not exist: {}".format(val))
+            raise FileNotFoundError(f"Input directory does not exist: {val}")
         self._cache_dir = val
 
     @property
@@ -150,7 +149,7 @@ class CacheHandlerUngridded(object):
             raise CacheReadError("Invalid cache file")
         for k, v in head.items():
             if not k in current:
-                raise CacheReadError("Invalid cache header key: {}".format(k))
+                raise CacheReadError(f"Invalid cache header key: {k}")
             elif not v == current[k]:
                 const.print_log.info(
                     "{} is outdated (value: {}). Current " "value: {}".format(k, v, current[k])
@@ -231,7 +230,7 @@ class CacheHandlerUngridded(object):
             return False
 
         if not os.path.isfile(fp):
-            const.logger.info("Cache file does not exist: {}".format(fp))
+            const.logger.info(f"Cache file does not exist: {fp}")
             return False
 
         delete_existing = const.RM_CACHE_OUTDATED if not force_use_outdated else False
@@ -261,7 +260,7 @@ class CacheHandlerUngridded(object):
             )
             in_handle.close()
             if delete_existing:  # something was wrong
-                const.print_log.info("Deleting outdated cache file: {}".format(fp))
+                const.print_log.info(f"Deleting outdated cache file: {fp}")
                 os.remove(fp)
             return False
 
@@ -274,7 +273,7 @@ class CacheHandlerUngridded(object):
             )
 
         self.loaded_data[var_or_file_name] = data
-        const.logger.info("Successfully loaded cache file {}".format(fp))
+        const.logger.info(f"Successfully loaded cache file {fp}")
         return True
 
     def delete_all_cache_files(self):
@@ -285,9 +284,9 @@ class CacheHandlerUngridded(object):
         accessible via :attr:`pyaerocom.const.CACHEDIR`.
 
         """
-        for fp in glob.glob("{}/*.pkl".format(self.cache_dir)):
+        for fp in glob.glob(f"{self.cache_dir}/*.pkl"):
             os.remove(fp)
-            const.print_log.info("Deleted {}".format(fp))
+            const.print_log.info(f"Deleted {fp}")
 
     def write(self, data, var_or_file_name=None, cache_dir=None):
         """Write single-variable instance of UngriddedData to cache
@@ -345,7 +344,7 @@ class CacheHandlerUngridded(object):
                 data = data.extract_var(var_name)
 
         fp = self.file_path(var_or_file_name, cache_dir=cache_dir)
-        const.logger.info("Writing cache file: {}".format(fp))
+        const.logger.info(f"Writing cache file: {fp}")
         success = True
         # OutHandle = gzip.open(c__cache_file, 'wb') # takes too much time
         out_handle = open(fp, "wb")
@@ -359,17 +358,17 @@ class CacheHandlerUngridded(object):
         except Exception as e:
             from pyaerocom import print_log
 
-            print_log.exception("Failed to write cache: {}".format(repr(e)))
+            print_log.exception(f"Failed to write cache: {repr(e)}")
             success = False
         finally:
             out_handle.close()
             if not success:
                 os.remove(fp)
-        const.logger.info("Wrote: {}".format(fp))
+        const.logger.info(f"Wrote: {fp}")
         return fp
 
     def __str__(self):
-        return "pyaerocom.CacheHandlerUngridded\nDefault cache dir: {}".format(self.cache_dir)
+        return f"pyaerocom.CacheHandlerUngridded\nDefault cache dir: {self.cache_dir}"
 
 
 if __name__ == "__main__":

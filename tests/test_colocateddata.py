@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Thu Apr 12 14:45:43 2018
 
@@ -30,7 +29,7 @@ EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS["coldata_tm5_aeronet"])
         ("Blaaaaa", {}, pytest.raises(IOError)),
         (None, dict(bla=42), pytest.raises(AttributeError)),
         (np.ones((3, 2, 3)), {}, pytest.raises(DataDimensionError)),
-        (np.ones((3)), {}, pytest.raises(DataDimensionError)),
+        (np.ones(3), {}, pytest.raises(DataDimensionError)),
         (np.ones((2, 3, 4)), {}, does_not_raise_exception()),
         ({}, {}, pytest.raises(ValueError)),
     ],

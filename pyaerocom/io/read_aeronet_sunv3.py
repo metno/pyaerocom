@@ -126,8 +126,8 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_out[item] = []
 
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
-        with open(filename, "rt") as in_file:
+        self.logger.info(f"Reading file {filename}")
+        with open(filename) as in_file:
             _lines_ignored = []
             _lines_ignored.append(in_file.readline())
             _lines_ignored.append(in_file.readline())
@@ -142,7 +142,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
             data_type_comment = in_file.readline()
             _lines_ignored.append(data_type_comment)
             # TODO: delete later
-            self.logger.debug("Data type comment: {}".format(data_type_comment))
+            self.logger.debug(f"Data type comment: {data_type_comment}")
 
             # put together a dict with the header string as key and the index number as value so that we can access
             # the index number via the header string
@@ -239,7 +239,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
                     data_out[var] = pd.Series(data_out[var], index=data_out["dtime"])
                 else:
                     del data_out[var]
-        self.logger.debug("The following lines were ignored: {}".format(_lines_ignored))
+        self.logger.debug(f"The following lines were ignored: {_lines_ignored}")
         return data_out
 
 

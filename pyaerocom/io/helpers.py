@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 I/O helper methods of the pyaerocom package
 """
@@ -72,7 +71,7 @@ def aerocom_savename(data_id, var_name, vert_code, year, ts_type):
 
     ToDo: complete docstring
     """
-    return "aerocom3_{}_{}_{}_{}_{}.nc".format(data_id, var_name, vert_code, year, ts_type)
+    return f"aerocom3_{data_id}_{var_name}_{vert_code}_{year}_{ts_type}.nc"
 
 
 def _print_read_info(i, mod, tot_num, last_t, name, logger):
@@ -120,7 +119,7 @@ def read_ebas_flags_file(ebas_flags_csv):
             try:
                 val_str = spl[-1][1:-1]
             except Exception:
-                raise IOError(
+                raise OSError(
                     "Failed to read flag information in row {} "
                     "(Check if entries in ebas_flags.csv are quoted)".format(line)
                 )
@@ -128,7 +127,7 @@ def read_ebas_flags_file(ebas_flags_csv):
             try:
                 info_str = info_str[1:-1]
             except Exception:
-                raise IOError(
+                raise OSError(
                     "Failed to read flag information in row {} "
                     "(Check if entries in ebas_flags.csv are quoted)".format(line)
                 )
@@ -174,7 +173,7 @@ def add_file_to_log(filepath, err_msg):
     logfile = os.path.join(logdir, f"{model_or_obs_id}.log")
 
     if os.path.exists(logfile):  # check if this file is already flagged
-        with open(logfile, "r") as f:
+        with open(logfile) as f:
             for line in f:
                 if filepath == line.strip():
                     return  # file is already flagged -> ignore
@@ -207,7 +206,7 @@ def get_standard_name(var_name):
         if standarad name is not set for variable in *variables.ini* file
     """
     if not var_name in const.VARS:
-        raise VarNotAvailableError("No such variable {}. Check variables.ini".format(var_name))
+        raise VarNotAvailableError(f"No such variable {var_name}. Check variables.ini")
     name = const.VARS[var_name].standard_name
     if name is None:
         raise VariableDefinitionError("standard_name not defined for variable")

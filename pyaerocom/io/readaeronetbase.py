@@ -65,7 +65,7 @@ class ReadAeronetBase(ReadUngriddedBase):
     IGNORE_META_KEYS = ["date", "time", "day_of_year"]
 
     def __init__(self, data_id=None, data_dir=None):
-        super(ReadAeronetBase, self).__init__(data_id=data_id, data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=data_dir)
 
         # dictionary that contains information about the file columns
         # is written in method _update_col_index
@@ -155,7 +155,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                     "from column name {}".format(nums[0], colname)
                 )
                 return nums[0]
-        raise ValueError("Failed to extract wavelength from colname {}".format(colname))
+        raise ValueError(f"Failed to extract wavelength from colname {colname}")
 
     def _update_col_index(self, col_index_str):
         """Update file column information for fast access during read_file
@@ -485,7 +485,7 @@ if __name__ == "__main__":
         REVISION_FILE = const.REVISION_FILE
 
         def __init__(self, data_id=None, data_dir=None):
-            super(ReadUngriddedImplementationExample, self).__init__(data_id, data_dir)
+            super().__init__(data_id, data_dir)
 
         @property
         def DEFAULT_VARS(self):

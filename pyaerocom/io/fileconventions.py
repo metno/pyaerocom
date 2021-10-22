@@ -7,7 +7,7 @@ from pyaerocom.exceptions import FileConventionError
 from pyaerocom.tstype import TsType
 
 
-class FileConventionRead(object):
+class FileConventionRead:
     """Class that represents a file naming convention for reading Aerocom files
 
     Attributes
@@ -126,7 +126,7 @@ class FileConventionRead(object):
         year = info["year"]
         if not TsType.valid(info["ts_type"]):
             raise FileConventionError(
-                "Invalid ts_type %s in filename %s" % (info["ts_type"], basename(file))
+                "Invalid ts_type {} in filename {}".format(info["ts_type"], basename(file))
             )
         elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
             raise FileConventionError(
@@ -363,7 +363,7 @@ class FileConventionRead(object):
 
         fpath = join(__dir__, "data", "file_conventions.ini")
         if not exists(fpath):
-            raise IOError("File conventions ini file could not be found: %s" % fpath)
+            raise OSError("File conventions ini file could not be found: %s" % fpath)
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
         if not name in conf_reader:
@@ -407,12 +407,12 @@ class FileConventionRead(object):
         )
 
     def __repr__(self):
-        return "%s %s" % (self.name, super(FileConventionRead, self).__repr__())
+        return f"{self.name} {super().__repr__()}"
 
     def __str__(self):
         s = "\npyaeorocom FileConventionRead"
         for k, v in self.to_dict().items():
-            s += "\n%s: %s" % (k, v)
+            s += f"\n{k}: {v}"
         return s
 
 
@@ -435,7 +435,7 @@ if __name__ == "__main__":
 
     fname = "aerocom3_TM5_AP3-INSITU_vmrch4_ModelLevelAtStations_2010_monthly.nc"
 
-    print("\nFrom file: {}".format(conf.from_file(fname)))
+    print(f"\nFrom file: {conf.from_file(fname)}")
     print(conf.get_info_from_file(fname))
 
     ff = FileConventionRead(from_file="aerocom.CALIOP3.monthly.ec5323Ddust.2006.nc")

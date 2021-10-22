@@ -113,7 +113,7 @@ class ExperimentOutput(ProjectOutput):
 
     def __init__(self, cfg):
         self.cfg = cfg
-        super(ExperimentOutput, self).__init__(cfg.proj_id, cfg.path_manager.json_basedir)
+        super().__init__(cfg.proj_id, cfg.path_manager.json_basedir)
 
         # dictionary that will be filled by json cleanup methods to check for
         # invalid or outdated json files across different output directories

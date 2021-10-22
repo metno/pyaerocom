@@ -59,7 +59,7 @@ def plot_coordinates(
         ax = init_map(xlim, ylim, ax=ax, **kwargs)
 
     if label is None:
-        label = "{} stations".format(len(lons))
+        label = f"{len(lons)} stations"
 
     ax.scatter(lons, lats, markersize, marker=marker, color=color, label=label)
 

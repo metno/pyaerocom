@@ -68,7 +68,7 @@ if TESTDATA_AVAIL:
     _ebas_info_file = TESTDATADIR.joinpath("scripts/ebas_files.json")
     assert _ebas_info_file.exists()
     EBAS_FILEDIR = TESTDATADIR.joinpath("obsdata/EBASMultiColumn/data")
-    with open(_ebas_info_file, "r") as f:
+    with open(_ebas_info_file) as f:
         EBAS_FILES = simplejson.load(f)
     for var, sites in EBAS_FILES.items():
         for site, files in sites.items():

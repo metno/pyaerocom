@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Mon Jul  9 14:14:29 2018
 """
@@ -70,7 +69,7 @@ def test_read(reader):
         data = reader.read(vars_to_retrieve=[var_name])
         assert isinstance(data, UngriddedData)
 
-        print("{} data read".format(var_name))
+        print(f"{var_name} data read")
         for stat_idx, statid in enumerate(station_id[var_name]):
             try:
                 stat_data = data[statid]
@@ -80,7 +79,7 @@ def test_read(reader):
 
                 assert stat_data[var_name].mean() == station_means[var_name][stat_idx]
             except:
-                print("failed test var {}".format(var_name))
+                print(f"failed test var {var_name}")
                 pass
 
 

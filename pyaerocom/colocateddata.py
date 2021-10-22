@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import os
 from ast import literal_eval
@@ -30,7 +29,7 @@ from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.time_resampler import TimeResampler
 
 
-class ColocatedData(object):
+class ColocatedData:
     """Class representing colocated and unified data from two sources
 
     Sources may be instances of :class:`UngriddedData` or
@@ -286,7 +285,7 @@ class ColocatedData(object):
         obs = obj.data[0]
         if len(dims) > 3:  # additional dimensions
             default_dims = ("data_source", "time", "station_name")
-            add_dims = tuple([x for x in dims if not x in default_dims])
+            add_dims = tuple(x for x in dims if not x in default_dims)
             raise DataDimensionError(
                 f"Can only unambiguously retrieve no of coords with obs data "
                 f"for colocated data with dims {default_dims}, please reduce "
@@ -692,7 +691,7 @@ class ColocatedData(object):
             if not self.has_latlon_dims:
                 raise DataDimensionError("Invalid dimensions in 4D ColocatedData")
             lats, lons = self.data.latitude.data, self.data.longitude.data
-            coords = np.dstack((np.meshgrid(lats, lons)))
+            coords = np.dstack(np.meshgrid(lats, lons))
             coords = coords.reshape(len(lats) * len(lons), 2)
         else:
             coords = zip(self.latitude.data, self.longitude.data)
@@ -1037,9 +1036,9 @@ class ColocatedData(object):
             if input data_source is not available in this object
         """
         if not data_source in self.metadata["data_source"]:
-            raise DataSourceError("No such data source {} in ColocatedData".format(data_source))
+            raise DataSourceError(f"No such data source {data_source} in ColocatedData")
         if not var_name in self.metadata["var_name"]:
-            raise VarNotAvailableError("No such variable {} in ColocatedData".format(var_name))
+            raise VarNotAvailableError(f"No such variable {var_name} in ColocatedData")
 
         if inplace:
             obj = self
@@ -1195,13 +1194,13 @@ class ColocatedData(object):
             file path of stored object.
         """
         if "path" in kwargs:
-            raise IOError(
+            raise OSError(
                 "Path needs to be specified using input parameters " "out_dir and savename"
             )
         if savename is None:
             savename = self.savename_aerocom
         if not savename.endswith(".nc"):
-            savename = "{}.nc".format(savename)
+            savename = f"{savename}.nc"
         arr = self.data.copy()
         arr.attrs = self._prepare_meta_to_netcdf()
         fp = os.path.join(out_dir, savename)
@@ -1298,7 +1297,7 @@ class ColocatedData(object):
         if savename is None:
             savename = self.savename_aerocom
         if not savename.endswith(".csv"):
-            savename = "{}.csv".format(savename)
+            savename = f"{savename}.csv"
         df = self.to_dataframe()
         file_path = os.path.join(out_dir, savename)
         df.to_csv(file_path)
@@ -1328,7 +1327,7 @@ class ColocatedData(object):
             self.read_netcdf(file_path)
             return
 
-        raise IOError(
+        raise OSError(
             "Failed to import file {}. File type is not supported ".format(
                 os.path.basename(file_path)
             )
@@ -1680,7 +1679,7 @@ class ColocatedData(object):
         except Exception:
             alt_info = "CUSTOM"
 
-        filtered.attrs["filter_name"] = "{}-{}".format(region_id, alt_info)
+        filtered.attrs["filter_name"] = f"{region_id}-{alt_info}"
         filtered.attrs["region"] = region_id
 
         data.data = filtered

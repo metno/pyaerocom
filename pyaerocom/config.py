@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 ########################################################################
 #
 # This python module is part of the pyaerocom software
@@ -33,7 +32,7 @@ from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
 
 
-class Config(object):
+class Config:
     """Class containing relevant paths for read and write routines
 
     A loaded instance of this class is created on import of pyaerocom and
@@ -257,7 +256,7 @@ class Config(object):
             try:
                 self.read_config(config_file, basedir=basedir)
             except Exception as e:
-                self.print_log.warning("Failed to read config. Error: {}".format(repr(e)))
+                self.print_log.warning(f"Failed to read config. Error: {repr(e)}")
         # create MyPyaerocom directory
         chk_make_subdir(self.HOMEDIR, self._outhomename)
 
@@ -285,7 +284,7 @@ class Config(object):
         if timeout is None:
             timeout = self.SERVER_CHECK_TIMEOUT
 
-        self.logger.info("Checking access to: {}".format(loc))
+        self.logger.info(f"Checking access to: {loc}")
         if check_dir_access(loc, timeout=timeout):
             self._confirmed_access.append(loc)
             return True
@@ -399,7 +398,7 @@ class Config(object):
     def LOCAL_TMP_DIR(self):
         """Local TEMP directory"""
         if self._local_tmp_dir is None:
-            self._local_tmp_dir = "{}/tmp".format(self.OUTPUTDIR)
+            self._local_tmp_dir = f"{self.OUTPUTDIR}/tmp"
         if not self._check_access(self._local_tmp_dir):
             os.makedirs(self._local_tmp_dir, exist_ok=True)
         return self._local_tmp_dir
@@ -423,7 +422,7 @@ class Config(object):
             try:
                 os.mkdir(val)
             except Exception:
-                raise IOError(
+                raise OSError(
                     "Input directory {} does not exist and can " "also not be created".format(val)
                 )
         self._downloaddatadir = val
@@ -590,7 +589,7 @@ class Config(object):
         """Add data search directories for database browsing"""
         for loc in dirs:
             if not self._check_access(loc):
-                raise FileNotFoundError("Input location {} could not be accessed".format(loc))
+                raise FileNotFoundError(f"Input location {loc} could not be accessed")
             self._search_dirs.append(loc)
 
     def add_ungridded_obs(self, obs_id, data_dir, reader=None, check_read=False):
@@ -907,7 +906,7 @@ class Config(object):
             for obsname, path in cr["obsfolders"].items():
                 if obsname.lower() == "basedir":
                     continue
-                name_str = "{}_NAME".format(obsname.upper())
+                name_str = f"{obsname.upper()}_NAME"
                 if name_str in names_cfg:
                     ID = self.__dict__[name_str]
                 else:
@@ -952,7 +951,7 @@ class Config(object):
             self._local_tmp_dir = _dir
 
     def _add_obsname(self, name):
-        name_str = "{}_NAME".format(name.upper())
+        name_str = f"{name.upper()}_NAME"
         self[name_str] = name
         return name_str
 
@@ -960,7 +959,7 @@ class Config(object):
         names_cfg = []
         if cr.has_section("obsnames"):
             for obsname, ID in cr["obsnames"].items():
-                name_str = "{}_NAME".format(obsname.upper())
+                name_str = f"{obsname.upper()}_NAME"
                 self[name_str] = ID
                 names_cfg.append(name_str)
         return names_cfg
@@ -973,20 +972,20 @@ class Config(object):
         self.__dict__[key] = val
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = f"Pyaerocom {type(self).__name__}"
         s = "\n{}\n{}\n".format(head, len(head) * "-")
         for k, v in self.__dict__.items():
             if k.startswith("_"):
                 pass
             if k == "VARS":
-                s += "\n{}\n{}".format(k, list_to_shortstr(v.all_vars))
+                s += f"\n{k}\n{list_to_shortstr(v.all_vars)}"
             elif isinstance(v, dict):
                 s += "\n%s (dict)" % k
             elif isinstance(v, list):
                 s += "\n%s (list)" % k
                 s += list_to_shortstr(v)
             else:
-                s += "\n%s: %s" % (k, v)
+                s += f"\n{k}: {v}"
         return s
 
 

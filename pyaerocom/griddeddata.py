@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os
 from collections import OrderedDict as od
 from pathlib import Path
@@ -53,7 +52,7 @@ from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
 
 
-class GriddedData(object):
+class GriddedData:
     """pyaerocom object representing gridded data (e.g. model diagnostics)
 
     Gridded data refers to data that can be represented on a regular,
@@ -170,7 +169,7 @@ class GriddedData(object):
     def var_name(self, val):
         """Name of variable"""
         if not isinstance(val, str):
-            raise ValueError("Invalid input for var_name, need str, got {}".format(val))
+            raise ValueError(f"Invalid input for var_name, need str, got {val}")
         self.grid.var_name = val
         if "var_name" in self.metadata:
             self.metadata["var_name"] = val
@@ -257,7 +256,7 @@ class GriddedData(object):
             data_dir = os.path.dirname(self.from_files[0])
             revision_file = os.path.join(data_dir, const.REVISION_FILE)
             if os.path.isfile(revision_file):
-                with open(revision_file, "rt") as in_file:
+                with open(revision_file) as in_file:
                     revision = in_file.readline().strip()
                     in_file.close()
 
@@ -350,7 +349,7 @@ class GriddedData(object):
         if len(dt) > 1:
             raise AttributeError("Irregular time-frequency")
         freq = TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
-        if not int(dt.astype("timedelta64[{}]".format(freq))) == 1:
+        if not int(dt.astype(f"timedelta64[{freq}]")) == 1:
             raise AttributeError(
                 "Mismatch between sampling freq and "
                 "actual frequency of values in time dimension "
@@ -411,7 +410,7 @@ class GriddedData(object):
         # try:
         # ToDo: check if this is needed
         np_freq = TsType(self.ts_type).to_numpy_freq()  # TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
-        dtype_appr = "datetime64[{}]".format(np_freq)
+        dtype_appr = f"datetime64[{np_freq}]"
         t = t.astype(dtype_appr)
         return t.astype("datetime64[us]")
 
@@ -423,7 +422,7 @@ class GriddedData(object):
         t = cftime_to_datetime64(self.time[-1])[0]
 
         np_freq = TsType(self.ts_type).to_numpy_freq()  # TS_TYPE_TO_NUMPY_FREQ[self.ts_type]
-        dtype_appr = "datetime64[{}]".format(np_freq)
+        dtype_appr = f"datetime64[{np_freq}]"
 
         t = t.astype(dtype_appr) + np.timedelta64(1, np_freq)
         t = t.astype("datetime64[us]") - np.timedelta64(1, "us")
@@ -593,7 +592,7 @@ class GriddedData(object):
             raise ValueError("Could not identify unique frequency")
         dt = dt[0]
         for ts_type, freq in TS_TYPE_TO_NUMPY_FREQ.items():
-            val = dt.astype("timedelta64[{}]".format(freq)).astype(int)
+            val = dt.astype(f"timedelta64[{freq}]").astype(int)
             if val == 1:
                 self.metadata["ts_type"] = ts_type
                 return ts_type
@@ -706,7 +705,7 @@ class GriddedData(object):
         elif isinstance(input, str) and os.path.exists(input):
             self._read_netcdf(input, var_name, perform_fmt_checks)
         else:
-            raise IOError("Failed to load input: {}".format(input))
+            raise OSError(f"Failed to load input: {input}")
 
         if var_name is not None and self.var_name != var_name:
             try:
@@ -742,7 +741,7 @@ class GriddedData(object):
             from_unit = cube.attributes["invalid_units"]
             to_unit = UALIASES[from_unit]
             const.print_log.info(
-                "Updating invalid unit in {} from {} to {}".format(repr(cube), from_unit, to_unit)
+                f"Updating invalid unit in {repr(cube)} from {from_unit} to {to_unit}"
             )
             del cube.attributes["invalid_units"]
             cube.units = to_unit
@@ -1498,7 +1497,7 @@ class GriddedData(object):
         idx = {}
         for dim, val in dimcoord_vals.items():
             if not dim in self.coord_names:
-                raise DataDimensionError("No such dimension {}".format(dim))
+                raise DataDimensionError(f"No such dimension {dim}")
             elif dim == "time":
                 idx[dim] = self._closest_time_idx(val)
             else:
@@ -1608,10 +1607,10 @@ class GriddedData(object):
         """
         if low is None:
             low = self.var_info.minimum
-            logger.info("Setting {} outlier lower lim: {:.2f}".format(self.var_name, low))
+            logger.info(f"Setting {self.var_name} outlier lower lim: {low:.2f}")
         if high is None:
             high = self.var_info.maximum
-            logger.info("Setting {} outlier upper lim: {:.2f}".format(self.var_name, high))
+            logger.info(f"Setting {self.var_name} outlier upper lim: {high:.2f}")
         obj = self if inplace else self.copy()
         obj._ensure_is_masked_array()
 
@@ -1663,7 +1662,7 @@ class GriddedData(object):
         current = TsType(self.ts_type)
 
         if current == to:
-            logger.info("Data is already in {} resolution".format(to_ts_type))
+            logger.info(f"Data is already in {to_ts_type} resolution")
             return self
         if not to_ts_type in IRIS_AGGREGATORS:
             raise TemporalResolutionError("Resolution {} cannot " "converted".format(to_ts_type))
@@ -2229,7 +2228,7 @@ class GriddedData(object):
         if not sample_points:
             sample_points = []
         sample_points.extend(list(coords.items()))
-        print_log.info("Interpolating data of shape {}. This may take a while.".format(self.shape))
+        print_log.info(f"Interpolating data of shape {self.shape}. This may take a while.")
         try:
             itp_cube = self.grid.interpolate(sample_points, scheme, collapse_scalar)
         except MemoryError:
@@ -2465,7 +2464,7 @@ class GriddedData(object):
             **kwargs,
         )
 
-        fig.axes[0].set_title("{} ({}, {})".format(self.data_id, self.var_name, tstr))
+        fig.axes[0].set_title(f"{self.data_id} ({self.var_name}, {tstr})")
         if add_mean:
             from pyaerocom.plot.config import COLOR_THEME
 
@@ -2475,10 +2474,10 @@ class GriddedData(object):
 
                 mean = data.mean()
                 vstr = ("{:.%sf}" % (abs(exponent(mean)) + 1)).format(mean)
-                mustr = "Mean={}".format(vstr)
+                mustr = f"Mean={vstr}"
                 u = str(self.units)
                 if not u == "1":
-                    mustr += " [{}]".format(u)
+                    mustr += f" [{u}]"
                 ax.text(
                     0.02,
                     0.02,

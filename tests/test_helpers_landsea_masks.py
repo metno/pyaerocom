@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Tue Feb  4 12:48:45 2020
 
@@ -104,7 +103,7 @@ def test_check_all_htap_available():
     ]
 
     files = lsm.check_all_htap_available()
-    assert sorted([os.path.basename(x) for x in files]) == should_be
+    assert sorted(os.path.basename(x) for x in files) == should_be
 
 
 if __name__ == "__main__":

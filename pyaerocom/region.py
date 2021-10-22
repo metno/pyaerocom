@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 This module contains functionality related to regions in pyaerocom
 """
@@ -220,7 +219,7 @@ class Region(BrowseDict):
         return self.contains_coordinate(lat=val[0], lon=val[1])
 
     def __repr__(self):
-        return "Region %s %s" % (self.name, super(Region, self).__repr__())
+        return f"Region {self.name} {super().__repr__()}"
 
     def __str__(self):
         s = (

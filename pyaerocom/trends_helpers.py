@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Helper methods for computation of trends
 
@@ -37,9 +36,9 @@ def _init_trends_result_dict(start_yr):
         "slp",
         "slp_err",
         "reg0",  # data specific
-        "slp_{}".format(start_yr),  # period specific
-        "slp_{}_err".format(start_yr),  # period specific
-        "reg0_{}".format(start_yr),  # period specific
+        f"slp_{start_yr}",  # period specific
+        f"slp_{start_yr}_err",  # period specific
+        f"reg0_{start_yr}",  # period specific
         "data",
     ]
     return dict.fromkeys(keys)
@@ -104,43 +103,43 @@ def _get_season_from_months(months: str) -> str:
 
 def _mid_season(seas, yr):
     if seas == "spring":
-        return np.datetime64("{}-04-15".format(yr))
+        return np.datetime64(f"{yr}-04-15")
     if seas == "summer":
-        return np.datetime64("{}-07-15".format(yr))
+        return np.datetime64(f"{yr}-07-15")
     if seas == "autumn":
-        return np.datetime64("{}-10-15".format(yr))
+        return np.datetime64(f"{yr}-10-15")
     if seas == "winter":
-        return np.datetime64("{}-01-15".format(yr))
+        return np.datetime64(f"{yr}-01-15")
     if seas == "all":
-        return np.datetime64("{}-06-15".format(yr))
+        return np.datetime64(f"{yr}-06-15")
     raise ValueError("Invalid input for season (seas):", seas)
 
 
 def _start_season(seas, yr):
     if seas == "spring":
-        return "{}-03-01".format(yr)
+        return f"{yr}-03-01"
     if seas == "summer":
-        return "{}-06-01".format(yr)
+        return f"{yr}-06-01"
     if seas == "autumn":
-        return "{}-09-01".format(yr)
+        return f"{yr}-09-01"
     if seas == "winter":
-        return "{}-12-01".format(yr - 1)
+        return f"{yr - 1}-12-01"
     if seas == "all":
-        return "{}-01-01".format(yr)
+        return f"{yr}-01-01"
     raise ValueError("Invalid input for season (seas):", seas)
 
 
 def _end_season(seas, yr):
     if seas == "spring":
-        return "{}-06-01".format(yr)
+        return f"{yr}-06-01"
     if seas == "summer":
-        return "{}-09-01".format(yr)
+        return f"{yr}-09-01"
     if seas == "autumn":
-        return "{}-12-01".format(yr)
+        return f"{yr}-12-01"
     if seas == "winter":
-        return "{}-03-01".format(yr)
+        return f"{yr}-03-01"
     if seas == "all":
-        return "{}-01-01".format(yr)
+        return f"{yr}-01-01"
     raise ValueError("Invalid input for season (seas):", seas)
 
 

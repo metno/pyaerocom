@@ -90,9 +90,7 @@ def merge_meta_cubes(cube1, cube2):
     try:
         return merge_dicts(cube1.attributes, cube2.attributes)
     except Exception:
-        print_log.warning(
-            "WARNING: Failed to merge Cube metadata. Reason:\n{}".format(format_exc())
-        )
+        print_log.warning(f"WARNING: Failed to merge Cube metadata. Reason:\n{format_exc()}")
         ts_type = None
         try:
             if cube1.attributes["ts_type"] == cube2.attributes["ts_type"]:

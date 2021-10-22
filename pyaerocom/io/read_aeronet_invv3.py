@@ -123,15 +123,15 @@ class ReadAeronetInvV3(ReadAeronetBase):
             data_out[var] = []
 
         # Iterate over the lines of the file
-        self.logger.debug("Reading file {}".format(filename))
+        self.logger.debug(f"Reading file {filename}")
 
-        with open(filename, "rt") as in_file:
+        with open(filename) as in_file:
 
             data_out["dataset_info"] = in_file.readline().strip()
-            self.logger.debug("Skipping line: {}".format(in_file.readline()))
+            self.logger.debug(f"Skipping line: {in_file.readline()}")
             data_out["algorithm_info"] = in_file.readline().strip()
 
-            self.logger.debug("Skipping line: {}".format(in_file.readline()))
+            self.logger.debug(f"Skipping line: {in_file.readline()}")
 
             c_dummy = in_file.readline().strip().split(",")
             data_out["freq_info"] = c_dummy[0].strip()
@@ -144,7 +144,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
             data_out["ts_type"] = self.TS_TYPE
 
             # skip next two lines
-            self.logger.debug("Skipping line:\n{}".format(in_file.readline()))
+            self.logger.debug(f"Skipping line:\n{in_file.readline()}")
             # self.logger.info('Skipping line:\n{}'.format(in_file.readline()))
 
             col_index_str = in_file.readline()

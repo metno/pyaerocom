@@ -293,7 +293,7 @@ class ReadUngriddedBase(abc.ABC):
         try:
             revision_file = os.path.join(self.data_dir, self.REVISION_FILE)
             if os.path.isfile(revision_file):
-                with open(revision_file, "rt") as in_file:
+                with open(revision_file) as in_file:
                     rev = in_file.readline().strip()
         except Exception:
             pass
@@ -462,7 +462,7 @@ class ReadUngriddedBase(abc.ABC):
 
         for var in vars_to_retrieve:
             if not var in self.PROVIDES_VARIABLES:
-                raise ValueError("Invalid variable {}".format(var))
+                raise ValueError(f"Invalid variable {var}")
             elif var in self.AUX_REQUIRES:
                 vars_to_compute.append(var)
             else:
@@ -566,7 +566,7 @@ class ReadUngriddedBase(abc.ABC):
             self.get_file_list()
         files = [f for f in self.files if fnmatch(f, pattern)]
         if not len(files) > 0:
-            raise IOError(f"No files could be detected that match the " f"pattern {pattern}")
+            raise OSError(f"No files could be detected that match the " f"pattern {pattern}")
         return files
 
     def get_file_list(self, pattern=None):
@@ -636,7 +636,7 @@ class ReadUngriddedBase(abc.ABC):
         IOError
             if no files can be found for this station ID
         """
-        files = self.find_in_file_list("*{}*".format(station_id_filename))
+        files = self.find_in_file_list(f"*{station_id_filename}*")
         return self.read(files=files, **kwargs)
 
     def read_first_file(self, **kwargs):
@@ -672,7 +672,7 @@ if __name__ == "__main__":
         REVISION_FILE = const.REVISION_FILE
 
         def __init__(self, data_id=None, data_dir=None):
-            super(ReadUngriddedImplementationExample, self).__init__(data_id, data_dir)
+            super().__init__(data_id, data_dir)
 
         @property
         def DEFAULT_VARS(self):

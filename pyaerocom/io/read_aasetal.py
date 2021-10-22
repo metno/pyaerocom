@@ -100,7 +100,7 @@ class ReadAasEtal(ReadUngriddedBase):
         return self.PROVIDES_VARIABLES
 
     def _get_time_stamps(self, df):
-        tconv = lambda yr, m: np.datetime64("{:04d}-{:02d}-{:02d}".format(yr, m, 1), "s")
+        tconv = lambda yr, m: np.datetime64(f"{yr:04d}-{m:02d}-{1:02d}", "s")
         dates_alt = [tconv(yr, m) for yr, m in zip(df.year.values, df.month.values)]
         return np.asarray(dates_alt)
 
@@ -165,7 +165,7 @@ class ReadAasEtal(ReadUngriddedBase):
                     if len(_var) == 0:
                         continue
                     elif len(_var) > 1:
-                        raise IOError("Found multiple matches...")
+                        raise OSError("Found multiple matches...")
                     var = _var[0]
                     if var in self.UNITCONVERSION.keys():
                         # Convert units
@@ -249,7 +249,7 @@ class ReadAasEtal(ReadUngriddedBase):
         for file in files:
             filename = os.path.basename(file)
             if not filename in self.FILES_CONTAIN:
-                raise IOError("Invalid file name {}, this should not happen.".format(filename))
+                raise OSError(f"Invalid file name {filename}, this should not happen.")
             var_matches = [var for var in vars_to_retrieve if var in self.FILES_CONTAIN[filename]]
             if len(var_matches) == 0:
                 continue
@@ -328,7 +328,7 @@ def _check_line_endings(filename):
     """File that checks all line endings in an ascii file (not in use)"""
     ll = None
     wrong_endings = {}
-    with open(filename, "r") as f:
+    with open(filename) as f:
         prev = None
         for i, line in enumerate(f.readlines()):
             spl = line.split(",")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import pytest
 
 from pyaerocom import const
@@ -15,7 +14,7 @@ class DummyReader(ReadUngriddedBase):
     REVISION_FILE = const.REVISION_FILE
 
     def __init__(self, data_id=None, data_dir=None):
-        super(DummyReader, self).__init__(data_id, data_dir)
+        super().__init__(data_id, data_dir)
 
     @property
     def DEFAULT_VARS(self):

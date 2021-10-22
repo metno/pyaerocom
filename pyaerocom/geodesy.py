@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Module for geographical calculations
 
@@ -162,7 +161,7 @@ def get_topo_data(
         if topo_dataset in const.SUPPLDIRS and os.path.exists(const.SUPPLDIRS[topo_dataset]):
             topodata_loc = const.SUPPLDIRS[topo_dataset]
             print_log.info(
-                "Found default location for {} topodata at\n{}".format(topo_dataset, topodata_loc)
+                f"Found default location for {topo_dataset} topodata at\n{topodata_loc}"
             )
 
     try:

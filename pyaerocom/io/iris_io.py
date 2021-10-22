@@ -323,7 +323,7 @@ def _check_correct_time_dim(cube, file, file_convention=None):
     year = finfo["year"]
 
     if not const.MIN_YEAR <= year <= const.MAX_YEAR:
-        raise FileConventionError("Invalid year in file: {}".format(year))
+        raise FileConventionError(f"Invalid year in file: {year}")
     elif year == 9999:
         const.print_log.info(
             "Cannot compare NetCDF time dimension for climatological data "

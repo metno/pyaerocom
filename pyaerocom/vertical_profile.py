@@ -5,7 +5,7 @@ from pyaerocom._lowlevel_helpers import BrowseDict
 
 
 # ToDo: complete docstring
-class VerticalProfile(object):
+class VerticalProfile:
     """Object representing single variable profile data"""
 
     def __init__(self, data, altitude, dtime, var_name, data_err, var_unit, altitude_unit):

@@ -27,7 +27,7 @@ def read_json(file_path):
     dict
         content as dictionary
     """
-    with open(file_path, "r") as f:
+    with open(file_path) as f:
         data = simplejson.load(f)
     return data
 
@@ -98,7 +98,7 @@ def invalid_input_err_str(argname, argval, argopts):
         formatted string that can be parsed to an Exception
     """
 
-    return "Invalid input for {} ({}), choose from {}".format(argname, argval, argopts)
+    return f"Invalid input for {argname} ({argval}), choose from {argopts}"
 
 
 def check_dir_access(path, timeout=0.1):
@@ -256,7 +256,7 @@ class EitherOf(Validator):
 class ListOfStrings(FlexList):
     def validate(self, val):
         # make sure to have a list
-        val = super(ListOfStrings, self).validate(val)
+        val = super().validate(val)
         # make sure all entries are strings
         if not all([isinstance(x, str) for x in val]):
             raise ValueError(f"not all items are str type in input list {val}")
@@ -349,7 +349,7 @@ class JSONFile(Loc):
         self.logger.info(f"created json file {value}")
 
     def validate(self, value):
-        value = super(JSONFile, self).validate(value)
+        value = super().validate(value)
         if value is not None and not value.endswith("json"):
             raise ValueError("need .json file ending")
 
@@ -522,7 +522,7 @@ class ConstrainedContainer(BrowseDict):
     CRASH_ON_INVALID = True
 
     def __setitem__(self, key, val):
-        super(ConstrainedContainer, self).__setitem__(key, val)
+        super().__setitem__(key, val)
 
     def _invoke_dtype(self, current_tp, val):
         return current_tp(**val)
@@ -642,7 +642,7 @@ def merge_dicts(dict1, dict2, discard_failing=True):
 
             # both values are strings, merge with ';' delim
             if isinstance(this, str) and isinstance(val, str):
-                new[key] = "{};{}".format(this, val)
+                new[key] = f"{this};{val}"
 
             elif isinstance(this, list) and isinstance(val, list):
                 for item in val:
@@ -693,12 +693,12 @@ def chk_make_subdir(base, name):
 def check_dirs_exist(*dirs, **add_dirs):
     for d in dirs:
         if not os.path.exists(d):
-            print("Creating dir: {}".format(d))
+            print(f"Creating dir: {d}")
             os.mkdir(d)
     for k, d in add_dirs.items():
         if not os.path.exists(d):
             os.mkdir(d)
-            print("Creating dir: {} ({})".format(d, k))
+            print(f"Creating dir: {d} ({k})")
 
 
 def list_to_shortstr(lst, indent=0):
@@ -717,10 +717,10 @@ def list_to_shortstr(lst, indent=0):
     name_str = f"{type(lst).__name__} ({len(lst)} items): "
     indentstr = indent * " "
     if len(lst) == 0:
-        return "{}{}[]".format(indentstr, name_str)
+        return f"{indentstr}{name_str}[]"
     elif len(lst) < 6:
         lfmt = _short_lst_fmt(lst)
-        return "{}{}{}".format(indentstr, name_str, lfmt)
+        return f"{indentstr}{name_str}{lfmt}"
     else:  # first 2 and last 2 items
         lfmt = _short_lst_fmt([lst[0], lst[1], lst[-2], lst[-1]])
         s = "{}{}[{}, {}, ..., {}, {}]".format(
@@ -802,7 +802,7 @@ def dict_to_str(dictionary, indent=0, ignore_null=False):
 
 def str_underline(s, indent=0):
     """Create underlined string"""
-    s = indent * " " + "{}\n".format(s)
+    s = indent * " " + f"{s}\n"
     s += indent * " " + "{}".format(len(s) * "-")
     return s
 

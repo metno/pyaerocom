@@ -4,7 +4,7 @@ import re
 from pyaerocom.exceptions import VariableDefinitionError
 
 
-class VarNameInfo(object):
+class VarNameInfo:
     """This class can be used to retrieve information from variable names"""
 
     #: valid number range for retrieval of wavelengths from variable name
@@ -37,7 +37,7 @@ class VarNameInfo(object):
         for pattern, code in self.DEFAULT_VERT_CODE_PATTERNS.items():
             if fnmatch.fnmatch(self.var_name, pattern):
                 return code
-        raise ValueError("No default vertical code could be found for {}".format(self.var_name))
+        raise ValueError(f"No default vertical code could be found for {self.var_name}")
 
     @staticmethod
     def _numbers_in_string(input_str):
@@ -129,7 +129,7 @@ class VarNameInfo(object):
             new variable name
         """
         if not self.contains_wavelength_nm:
-            raise ValueError("Variable {} is not wavelength dependent".format(self.var_name))
+            raise ValueError(f"Variable {self.var_name} is not wavelength dependent")
         name = self.var_name.replace(str(self.wavelength_nm), str(to_wavelength))
         return VarNameInfo(name)
 
@@ -142,5 +142,5 @@ class VarNameInfo(object):
             )
         )
         if self.is_wavelength_dependent:
-            s += "\nwavelength_nm: {}".format(self.wavelength_nm)
+            s += f"\nwavelength_nm: {self.wavelength_nm}"
         return s

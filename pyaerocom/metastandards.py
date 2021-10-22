@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import os
 
 import numpy as np
@@ -89,13 +88,13 @@ class DataSource(BrowseDict):
             s += self.dataset_name
             hasv = False
             if self.data_version is not None:
-                s += "(v{}".format(self.data_version)
+                s += f"(v{self.data_version}"
                 hasv = True
             if self.data_level is not None:
                 if hasv:
-                    s += ", Lev {})".format(self.data_level)
+                    s += f", Lev {self.data_level})"
                 else:
-                    s += "(Lev {})".format(self.data_level)
+                    s += f"(Lev {self.data_level})"
             else:
                 s += ")"
         else:
@@ -116,7 +115,7 @@ class DataSource(BrowseDict):
         cfg = ConfigParser()
         file = os.path.join(const.DIR_INI_FILES, self._ini_file_name)
         if not os.path.exists(file):
-            raise IOError("File {} does not exist".format(self._ini_file_name))
+            raise OSError(f"File {self._ini_file_name} does not exist")
         cfg.read(file)
         if self.data_id in cfg:
             for k, v in cfg[self.data_id].items():
@@ -186,10 +185,10 @@ class StationMetaData(DataSource):
         self.longitude = np.nan
         self.altitude = np.nan
 
-        super(StationMetaData, self).__init__(**info)
+        super().__init__(**info)
 
 
-class AerocomDataID(object):
+class AerocomDataID:
     """
     Class representing a model data ID following AeroCom PhaseIII conventions
 
@@ -245,7 +244,7 @@ class AerocomDataID(object):
     @values.setter
     def values(self, val):
         if not isinstance(val, list) or not len(val) == len(self.KEYS):
-            raise ValueError("Invalid input: need list of length {}".format(len(self.KEYS)))
+            raise ValueError(f"Invalid input: need list of length {len(self.KEYS)}")
         # this will first create a data_id string from input values and
         # then call setter method to make sure the input is correct.
         self.data_id = self.from_values(val)
@@ -266,7 +265,7 @@ class AerocomDataID(object):
         vals = []
         for key in self.KEYS:
             if not key in meta:
-                raise KeyError("Missing specification of {} in input meta dict".format(key))
+                raise KeyError(f"Missing specification of {key} in input meta dict")
             vals.append(meta[key])
         self._data_id = self.from_values(vals)
         self._values = vals
@@ -347,7 +346,7 @@ class AerocomDataID(object):
 
         """
         if not isinstance(val, str):
-            raise ValueError("Invalid input for data_id. Need str. Got {}".format(val))
+            raise ValueError(f"Invalid input for data_id. Need str. Got {val}")
 
         values = [""] * len(self.KEYS)
         spl = val.split(self.DELIM)

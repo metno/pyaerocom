@@ -152,7 +152,7 @@ def plot_scatter_aerocom(
     try:
         title = start_stop_str(start, stop, ts_type)
         if ts_type is not None:
-            title += " ({})".format(ts_type)
+            title += f" ({ts_type})"
     except Exception:
         title = ""
 
@@ -167,11 +167,11 @@ def plot_scatter_aerocom(
         ylim[0] = low
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
-    xlbl = "{}".format(x_name)
+    xlbl = f"{x_name}"
     if var_name_ref is not None:
-        xlbl += " ({})".format(var_name_ref)
+        xlbl += f" ({var_name_ref})"
     ax.set_xlabel(xlbl, fontsize=fontsize_base + 4)
-    ax.set_ylabel("{}".format(y_name), fontsize=fontsize_base + 4)
+    ax.set_ylabel(f"{y_name}", fontsize=fontsize_base + 4)
 
     ax.set_title(title, fontsize=fontsize_base + 4)
 
@@ -198,7 +198,7 @@ def plot_scatter_aerocom(
     if unit is None:
         unit = "N/D"
     if not str(unit) in ["1", "no_unit"]:
-        var_str += " [{}]".format(unit)
+        var_str += f" [{unit}]"
 
     if fontsize_annot is None:
         fontsize_annot = fontsize_base
@@ -279,7 +279,7 @@ def plot_scatter_aerocom(
     )
     # right lower part
     ax.annotate(
-        "{}".format(ts_type),
+        f"{ts_type}",
         xy=xypos["ts_type"],
         xycoords="axes fraction",
         ha="center",
@@ -287,7 +287,7 @@ def plot_scatter_aerocom(
         color="black",
     )
     ax.annotate(
-        "{}".format(filter_name),
+        f"{filter_name}",
         xy=xypos["filter_name"],
         xycoords="axes fraction",
         ha="center",

@@ -83,7 +83,7 @@ class EbasColDef(dict):
     def __getitem__(self, key):  # add support for units attr (CF standard name)
         if key == "units":
             key = "unit"
-        return super(EbasColDef, self).__getitem__(key)
+        return super().__getitem__(key)
 
     def __getattr__(self, key):
         return self[key]
@@ -103,14 +103,12 @@ class EbasColDef(dict):
 
 def _readline_ref_and_revision(line):
     spl = line.strip().split()
-    basedate = np.datetime64(
-        datetime.strptime("{}{}{}".format(spl[0], spl[1], spl[2]), "%Y%m%d"), "s"
-    )
-    rev = np.datetime64(datetime.strptime("{}{}{}".format(spl[3], spl[4], spl[5]), "%Y%m%d"), "s")
+    basedate = np.datetime64(datetime.strptime(f"{spl[0]}{spl[1]}{spl[2]}", "%Y%m%d"), "s")
+    rev = np.datetime64(datetime.strptime(f"{spl[3]}{spl[4]}{spl[5]}", "%Y%m%d"), "s")
     return [basedate, rev]
 
 
-class NasaAmesHeader(object):
+class NasaAmesHeader:
     """Header class for Ebas NASA Ames file
 
     Note
@@ -219,7 +217,7 @@ class NasaAmesHeader(object):
         elif key in self._meta:
             return self._meta[key]
         else:
-            raise AttributeError("Invalid attribute: {}".format(key))
+            raise AttributeError(f"Invalid attribute: {key}")
 
     def __getitem__(self, key):
         return self.__getattr__(key)
@@ -231,19 +229,19 @@ class NasaAmesHeader(object):
             self._meta[key] = val
 
     def __str__(self):
-        head = "{}".format(type(self).__name__)
+        head = f"{type(self).__name__}"
         s = "{}\n{}\n".format(head, len(head) * "-")
         s += dict_to_str(self._head_fix)
         s += "\n\n{}".format(str_underline("Column variable definitions", indent=3))
         for item in self._var_defs:
-            s += "\n   {}".format(repr(item))
+            s += f"\n   {repr(item)}"
         s += "\n\n{}".format(str_underline("EBAS meta data", indent=3))
         s += dict_to_str(self.meta)
 
         return s
 
 
-class EbasFlagCol(object):
+class EbasFlagCol:
     """Simple helper class to decode and interpret EBAS flag columns
 
     Attributes
@@ -293,7 +291,7 @@ class EbasFlagCol(object):
             _decoded = []
             _valid = []
             for flag in not_ok:
-                item = "{:.9f}".format(flag).split(".")[1]
+                item = f"{flag:.9f}".split(".")[1]
                 vals = [int(item[:3]), int(item[3:6]), int(item[6:9])]
                 _invalid = False
                 for val in vals:
@@ -370,7 +368,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         quality_check=True,
         **kwargs,
     ):
-        super(EbasNasaAmesFile, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._data_header = []  # Header line of data block
         self._data = []  # data block
 
@@ -384,7 +382,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
         if file is not None:
             if not os.path.exists(file):
-                raise IOError("File {} does not exists".format(file))
+                raise OSError(f"File {file} does not exists")
             self.read_file(
                 file,
                 only_head,
@@ -514,7 +512,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         offs = self.base_date
         unit = self.time_unit
         if not unit in self.TIMEUNIT2SECFAC:
-            raise ValueError("Invalid unit for temporal resolution: {}".format(unit))
+            raise ValueError(f"Invalid unit for temporal resolution: {unit}")
         mulfac = self.TIMEUNIT2SECFAC[unit]
 
         start = self.numarr_to_datetime64(offs, self.data[:, 0], mulfac)
@@ -584,7 +582,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         if not "timezone" in self.meta:
             msgs += "Timezone not defined in metadata"
         if msgs:
-            raise AttributeError("Quality check failed. Messages: {}".format(msgs))
+            raise AttributeError(f"Quality check failed. Messages: {msgs}")
 
     def read_header(self, nasa_ames_file, quality_check=True):
         self.read_file(nasa_ames_file, only_head=True, quality_check=quality_check)
@@ -623,7 +621,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
             perform quality check after import (for details see
             :func:`_quality_check`)
         """
-        const.logger.info("Reading NASA Ames file:\n{}".format(nasa_ames_file))
+        const.logger.info(f"Reading NASA Ames file:\n{nasa_ames_file}")
         lc = 0  # line counter
         dc = 0  # data block line counter
         mc = 0  # meta block counter
@@ -634,7 +632,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         for line in open(nasa_ames_file):
             if IN_DATA:  # in data block (end of file)
                 try:
-                    data.append(tuple([float(x.strip()) for x in line.strip().split()]))
+                    data.append(tuple(float(x.strip()) for x in line.strip().split()))
                     # data.append([float(x.strip()) for x in line.strip().split()])
                 except Exception as e:
                     const.print_log.warning(
@@ -655,7 +653,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         lc, line, repr(e)
                     )
                     if lc in self._HEAD_ROWS_MANDATORY:
-                        raise NasaAmesReadError("Fatal: {}".format(msg))
+                        raise NasaAmesReadError(f"Fatal: {msg}")
                     else:
                         const.logger.warning(msg)
             else:  # behind header section and before data definition (contains column defs and meta info)
@@ -695,7 +693,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                             "Error msg: {}\n".format(lc, line, repr(e))
                         )
                 else:
-                    const.logger.debug("Ignoring line no. {}: {}".format(lc, line))
+                    const.logger.debug(f"Ignoring line no. {lc}: {line}")
                 mc += 1
             lc += 1
 
@@ -742,7 +740,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     # e.g. wavelength=550nm
                     sub = item.split("=")
                     if len(sub) == 2:
-                        idf, val = [x.strip() for x in sub]
+                        idf, val = (x.strip() for x in sub)
                         data[idf.lower().replace(" ", "_")] = val
                     else:
                         const.logger.warning(
@@ -751,7 +749,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                             "{}".format(item)
                         )
                 else:  # unit
-                    const.logger.warning("Failed to interpret {}".format(item))
+                    const.logger.warning(f"Failed to interpret {item}")
 
         return data
 
@@ -761,17 +759,17 @@ class EbasNasaAmesFile(NasaAmesHeader):
         else:
             s = str(self.data)
             shape = self.data.shape
-            s += "\nColnum: {}".format(shape[1])
-            s += "\nTimestamps: {}".format(shape[0])
+            s += f"\nColnum: {shape[1]}"
+            s += f"\nTimestamps: {shape[0]}"
         return s
 
     def print_col_info(self):
         """Print information about individual columns"""
         for (idx, coldef) in enumerate(self.var_defs):
-            print("Column {}\n{}".format(idx, coldef))
+            print(f"Column {idx}\n{coldef}")
 
     def __str__(self):
-        s = super(EbasNasaAmesFile, self).__str__()
+        s = super().__str__()
         s += "\n\n{}".format(str_underline("Data", indent=3))
-        s += "\n{}".format(self._data_short_str())
+        s += f"\n{self._data_short_str()}"
         return s

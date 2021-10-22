@@ -26,7 +26,7 @@ SCAT_ANNOT_XYPOS = [
 ]
 
 
-class ColorTheme(object):
+class ColorTheme:
     """Pyaerocom class specifiying plotting color theme
 
     Attributes
@@ -130,7 +130,7 @@ class ColorTheme(object):
     def __str__(self):
         s = "pyaerocom ColorTheme"
         for k, v in self.__dict__.items():
-            s += "\n%s : %s" % (k, v)
+            s += f"\n{k} : {v}"
         return s
 
 

@@ -185,7 +185,7 @@ def is_supported(standard_name):
     return True if standard_name in VerticalCoordinate.REGISTERED else False
 
 
-class VerticalCoordinate(object):
+class VerticalCoordinate:
 
     NAMES_SUPPORTED = {
         "altitude": "z",
@@ -235,7 +235,7 @@ class VerticalCoordinate(object):
         elif name in self.NAMES_NOT_SUPPORTED:
             self.standard_name = name
         else:
-            raise ValueError("Invalid name for vertical coordinate: {}".format(name))
+            raise ValueError(f"Invalid name for vertical coordinate: {name}")
 
     @property
     def fun(self):
@@ -322,7 +322,7 @@ class VerticalCoordinate(object):
         return
 
 
-class AltitudeAccess(object):
+class AltitudeAccess:
 
     #: Additional variable names (in AEROCOM convention) that are used
     #: to search for additional files that can be used to access or compute
@@ -467,7 +467,7 @@ class AltitudeAccess(object):
             else:
                 try:
                     self[coord] = d.search_other(coord)
-                    print("Adding coord {}".format(coord))
+                    print(f"Adding coord {coord}")
                 except Exception:
                     all_ok = False
         return all_ok

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Thu Oct 22 10:14:59 2020
 
@@ -97,7 +96,7 @@ def test_combine_vardata_ungridded_single_ungridded(
             npt.assert_allclose(avg, val, rtol=1e-4)
 
 
-FMFFUN = "fmf550aer=({};od550lt1aer/{};od550aer)*100".format(SDA_ID, SUN_ID)
+FMFFUN = f"fmf550aer=({SDA_ID};od550lt1aer/{SUN_ID};od550aer)*100"
 
 
 @pytest.mark.parametrize(
@@ -126,7 +125,7 @@ def test__combine_2_sites_different_vars(
     stat2 = stats_sda_fineaod["stats"][site_idx2]
     var2 = "od550lt1aer"
 
-    prefer = "{};{}".format(SUN_ID, var1)
+    prefer = f"{SUN_ID};{var1}"
     with expectation:
         new = testmod._combine_2_sites(
             stat1,
@@ -155,13 +154,13 @@ def test__combine_2_sites_different_vars(
         npt.assert_allclose(means_after, means_before, rtol=1e-9)
         if merge_how == "eval":
             if data_id_out is None:
-                data_id_out = "{};{}".format(stat1.data_id, stat2.data_id)
+                data_id_out = f"{stat1.data_id};{stat2.data_id}"
             assert new.data_id == data_id_out
 
             if var_name_out is None:
                 var_name_out = merge_eval_fun
-                var_name_out = var_name_out.replace("{};".format(stat1.data_id), "")
-                var_name_out = var_name_out.replace("{};".format(stat2.data_id), "")
+                var_name_out = var_name_out.replace(f"{stat1.data_id};", "")
+                var_name_out = var_name_out.replace(f"{stat2.data_id};", "")
             assert var_name_out in new
 
             assert new["var_info"][var_name_out]["units"] == var_unit_out
@@ -229,7 +228,7 @@ def test__map_same_stations(
     assert _diff_idx == diff_idx
 
 
-aodexpensive = "od550aer=({};od550aer+{};od550aer)/2".format(SUN_ID, SUN_ID)
+aodexpensive = f"od550aer=({SUN_ID};od550aer+{SUN_ID};od550aer)/2"
 
 
 @pytest.mark.parametrize(
@@ -246,7 +245,7 @@ def test__combine_2_sites_same_site(
     site_idx = stats_sun_aod["station_name"].index(TESTSTAT)
     stat1 = stat2 = stats_sun_aod["stats"][site_idx]
     var1 = var2 = "od550aer"
-    prefer = "{};{}".format(SUN_ID, var1)
+    prefer = f"{SUN_ID};{var1}"
     unit = stat1.get_unit(var1)
 
     new = testmod._combine_2_sites(

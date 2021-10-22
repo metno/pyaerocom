@@ -233,8 +233,8 @@ def _combine_2_sites(
 
         if var_name_out is None:
             var_name_out = merge_eval_fun
-            var_name_out = var_name_out.replace("{};".format(stat.data_id), "")
-            var_name_out = var_name_out.replace("{};".format(stat_other.data_id), "")
+            var_name_out = var_name_out.replace(f"{stat.data_id};", "")
+            var_name_out = var_name_out.replace(f"{stat_other.data_id};", "")
 
     if add_ts is not None:
 
@@ -385,12 +385,12 @@ def combine_vardata_ungridded(
         raise ValueError("nothing to combine...")
 
     if not data_id1 in data1.contains_datasets:
-        raise ValueError("No such data ID {} in {}".format(data_id1, data1))
+        raise ValueError(f"No such data ID {data_id1} in {data1}")
     elif len(data1.contains_datasets) > 1:
         data1 = data1.extract_dataset(data_id1)
 
     if not data_id2 in data2.contains_datasets:
-        raise ValueError("No such data ID {} in {}".format(data_id2, data2))
+        raise ValueError(f"No such data ID {data_id2} in {data2}")
     elif len(data2.contains_datasets) > 1:
         data2 = data2.extract_dataset(data_id2)
 
@@ -447,8 +447,8 @@ def combine_vardata_ungridded(
 
         elif var_name_out is None:
             var_name_out = merge_eval_fun
-            var_name_out = var_name_out.replace("{};".format(data_id1), "")
-            var_name_out = var_name_out.replace("{};".format(data_id2), "")
+            var_name_out = var_name_out.replace(f"{data_id1};", "")
+            var_name_out = var_name_out.replace(f"{data_id2};", "")
 
     merge_info_vars = {"merge_how": merge_how}
     if merge_how == "combine" and var1 == var2:

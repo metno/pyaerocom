@@ -202,7 +202,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
     }
 
     def __init__(self, data_id=None, data_dir=None):
-        super(ReadEEAAQEREPBase, self).__init__(data_id=data_id, data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=data_dir)
         self._metadata = None
 
     @property
@@ -237,13 +237,13 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
         """
         if not var_name in self.PROVIDES_VARIABLES:
-            raise ValueError("Invalid input variable {}".format(var_name))
+            raise ValueError(f"Invalid input variable {var_name}")
 
         # there's only one variable in the file
         aerocom_var_name = var_name
 
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
+        self.logger.info(f"Reading file {filename}")
         file_delimiter = self.FILE_COL_DELIM
         # this lists the data to keep from the original read string
         # this becomes a time series
@@ -278,10 +278,10 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         # try both
         # files are max 3MB in size, so no big deal terms of RAM usage
         try:
-            with open(read_filename, "r") as f:
+            with open(read_filename) as f:
                 lines = f.readlines()
         except UnicodeDecodeError:
-            with open(read_filename, "r", encoding="UTF-16") as f:
+            with open(read_filename, encoding="UTF-16") as f:
                 lines = f.readlines()
         except:
             if suffix == ".gz":
@@ -422,7 +422,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             # test also for a gzipped file...
         if not os.path.isfile(filename):
             filename = filename + ".gz"
-        self.logger.warning("Reading file {}".format(filename))
+        self.logger.warning(f"Reading file {filename}")
 
         struct_data = {}
         suffix = pathlib.Path(filename).suffix
@@ -433,7 +433,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             filename = f_out.name
             f_in.close()
 
-        with open(filename, "r") as f:
+        with open(filename) as f:
             # read header...
             # Countrycode Timezone Namespace   AirQualityNetwork AirQualityStation AirQualityStationEoICode   AirQualityStationNatCode   SamplingPoint  SamplingProces Sample   AirPollutantCode  ObservationDateBegin ObservationDateEnd   Projection  Longitude   Latitude Altitude MeasurementType   AirQualityStationType   AirQualityStationArea   EquivalenceDemonstrated MeasurementEquipment InletHeight BuildingDistance  KerbDistance
             header = f.readline().lower().rstrip().split()
@@ -472,7 +472,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                     pass
                 lineidx += 1
 
-        self.logger.info("Reading file {} done".format(filename))
+        self.logger.info(f"Reading file {filename} done")
         # remove the temp file in case the input file was a gz file
         if suffix == ".gz":
             f_out.close()
@@ -614,16 +614,16 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             try:
                 station_data = self.read_file(_file, var_name=var_name)
             except EEAv2FileError:
-                self.logger.warning("file {} is corrupt! consider deleting it".format(_file))
+                self.logger.warning(f"file {_file} is corrupt! consider deleting it")
                 continue
             except TemporalResolutionError as e:
-                self.logger.warning("{} has TemporalResolutionError".format(_file))
+                self.logger.warning(f"{_file} has TemporalResolutionError")
                 const.print_log.warning(f"{repr(e)}. Skipping file...")
                 continue
 
             # readfile might fail outside of the error captured by the try statement above
             if station_data is None:
-                self.logger.warning("file {} did not provide data. skipping...!".format(_file))
+                self.logger.warning(f"file {_file} did not provide data. skipping...!")
                 continue
 
             # to find the metadata quickly, we use a string internally
@@ -635,7 +635,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             # The location in the data set is time step dependant
             if _meta_key not in self._metadata:
                 self.logger.warning(
-                    "metadata for station {} not found! skipping that station!".format(_meta_key)
+                    f"metadata for station {_meta_key} not found! skipping that station!"
                 )
                 continue
             metadata[meta_key] = od()

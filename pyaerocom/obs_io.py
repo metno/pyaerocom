@@ -17,19 +17,19 @@ OBS_WAVELENGTH_TOL_NM = 10.0
 OBS_ALLOW_ALT_WAVELENGTHS = True
 
 
-class ObsVarCombi(object):
+class ObsVarCombi:
     def __init__(self, obs_id, var_name):
         self.obs_id = obs_id
         self.var_name = var_name
 
     def __repr__(self):
-        return "{};{}".format(self.obs_id, self.var_name)
+        return f"{self.obs_id};{self.var_name}"
 
     def __str__(self):
         return repr(self)
 
 
-class AuxInfoUngridded(object):
+class AuxInfoUngridded:
     MAX_VARS_PER_METHOD = 2
 
     def __init__(

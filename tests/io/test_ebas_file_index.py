@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pytest
 
 from pyaerocom.io import ebas_file_index as mod

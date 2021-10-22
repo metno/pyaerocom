@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # this file is part of the pyaerocom package
 # Copyright (C) 2018 met.no
 # Contact information:
@@ -309,7 +308,7 @@ class ReadGhost(ReadUngriddedBase):
                 var = self.VARNAMES_DATA[var]
 
             _dir = os.path.join(self.data_dir, var)
-            _files = glob.glob("{}/{}".format(_dir, pattern))
+            _files = glob.glob(f"{_dir}/{pattern}")
             if len(_files) == 0:
                 raise DataSourceError(f"Could not find any data files for {var}")
             files.extend(_files)

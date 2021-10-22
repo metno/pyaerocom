@@ -54,7 +54,7 @@ def reader():
 
 
 @data_unavail
-class TestReadEbas(object):
+class TestReadEbas:
 
     PROVIDES_VARIABLES = sorted(
         [

@@ -89,9 +89,9 @@ if __name__ == "__main__":
             try:
                 cfg.set(var, k, str(v))
             except ValueError as e:
-                errs[var] = "{}: {}".format(k, repr(e))
+                errs[var] = f"{k}: {repr(e)}"
     with open(config, "w") as f:
         cfg.write(f)
 
     for var, err in errs.items():
-        print("{}: {}".format(var, err))
+        print(f"{var}: {err}")

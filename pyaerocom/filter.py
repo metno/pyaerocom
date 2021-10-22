@@ -3,7 +3,7 @@ import numpy as np
 from pyaerocom import region
 
 
-class Filter(object):
+class Filter:
     """Class that can be used to filter gridded and ungridded data objects
 
     Note
@@ -40,7 +40,7 @@ class Filter(object):
         if name is not None:
             self.name = name
         else:
-            self.name = "{}-{}".format(self.NO_REGION_FILTER_NAME, self.NO_ALTITUDE_FILTER_NAME)
+            self.name = f"{self.NO_REGION_FILTER_NAME}-{self.NO_ALTITUDE_FILTER_NAME}"
 
     @property
     def name(self):
@@ -89,7 +89,7 @@ class Filter(object):
                     raise ValueError("Only one altitude filter can be specified")
                 alt_filter = entry
             else:
-                raise ValueError("Invalid input for filter name {}".format(entry))
+                raise ValueError(f"Invalid input for filter name {entry}")
         if reg is None:
             reg = "WORLD"
         if alt_filter is None:
@@ -98,7 +98,7 @@ class Filter(object):
         lst = [reg, alt_filter]
         if landsea is not None:
             lst.append(landsea)
-        return "{}".format(self._DELIM).join(lst)
+        return f"{self._DELIM}".join(lst)
 
     @property
     def spl(self):

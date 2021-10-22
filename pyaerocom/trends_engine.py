@@ -15,7 +15,7 @@ from pyaerocom.trends_helpers import (
 )
 
 
-class TrendsEngine(object):
+class TrendsEngine:
     """Trend computation engine (does not need to be instantiated)"""
 
     CMAP = get_cmap("bwr")
@@ -191,7 +191,7 @@ class TrendPlotter:  # pragma: no cover
 
     def plot(self, season="all", period=None, ax=None):
         if not season in self.seasons_avail:
-            raise AttributeError("No results available for season {}".format(season))
+            raise AttributeError(f"No results available for season {season}")
         if period is None:
             if len(self.results[season]) > 1:
                 raise ValueError(
@@ -220,7 +220,7 @@ class TrendPlotter:  # pragma: no cover
         if self.var_name is not None and "units" in self.meta:
             u = str(self.meta["units"])
             if not u in ["", "1"]:
-                ylbl += " [{}]".format(u)
+                ylbl += f" [{u}]"
         ax.set_ylabel(ylbl)
         tit = ""
         if self.meta["station_name"] is not None:
@@ -231,7 +231,7 @@ class TrendPlotter:  # pragma: no cover
                 pass
             dsinfo = self.meta.dataset_str()
             if dsinfo is not None:
-                tit += "; {}".format(dsinfo)
+                tit += f"; {dsinfo}"
             tit += " - "
         tit += period
         ax.set_title(tit)

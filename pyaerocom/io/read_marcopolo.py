@@ -141,7 +141,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
     STAT_METADATA_FILENAME = "station_info.xlsx"
 
     def __init__(self, data_id=None, data_dir=None):
-        super(ReadMarcoPolo, self).__init__(data_id=data_id, data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=data_dir)
 
         try:
             import openpyxl

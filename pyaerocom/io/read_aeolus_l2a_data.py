@@ -100,7 +100,7 @@ class ReadL2Data(ReadL2DataBase):
     data_dir = "/lustre/storeB/project/fou/kl/admaeolus/data.rev.TD01/download/"
 
     def __init__(self, data_id=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
-        super(ReadL2Data, self).__init__(data_id)
+        super().__init__(data_id)
         self.verbose = verbose
         self.metadata = {}
         self.data = []
@@ -759,7 +759,7 @@ class ReadL2Data(ReadL2DataBase):
         start = time.perf_counter()
         file_data = {}
 
-        self.logger.info("reading file {}".format(filename))
+        self.logger.info(f"reading file {filename}")
         # read file
         product = coda.open(filename)
         if isinstance(read_retrieval, str):
@@ -806,7 +806,7 @@ class ReadL2Data(ReadL2DataBase):
                 if var in [self._TIME_NAME, "test_sca_pcd_starttime", self._UPPERALTITUDENAME]:
                     continue
 
-                self.logger.info("reading var: {}".format(var))
+                self.logger.info(f"reading var: {var}")
                 try:
                     groups = self.CODA_READ_PARAMETERS[retrieval]["vars"][var].split(
                         self.GROUP_DELIMITER
@@ -819,7 +819,7 @@ class ReadL2Data(ReadL2DataBase):
                 file_data[var] = {}
                 group_depth = len(groups)
 
-                print("group length {}:".format(group_depth))
+                print(f"group length {group_depth}:")
                 if group_depth == 3:
                     for idx, key in enumerate(file_data[self._TIME_NAME]):
                         file_data[var][key] = coda.fetch(
@@ -958,7 +958,7 @@ class ReadL2Data(ReadL2DataBase):
         self._point_no_with_good_quality += index_pointer
         end_time = time.perf_counter()
         elapsed_sec = end_time - start
-        temp = "time for single file read [s]: {:.3f}".format(elapsed_sec)
+        temp = f"time for single file read [s]: {elapsed_sec:.3f}"
         self.logger.info(temp)
         self.logger.info(
             "{} points read; {} were valid".format(
@@ -1001,9 +1001,7 @@ class ReadL2Data(ReadL2DataBase):
         if basedir is None:
             basedir = self.data_dir
 
-        self.logger.info(
-            "searching for data files at {}. This might take a while...".format(basedir)
-        )
+        self.logger.info(f"searching for data files at {basedir}. This might take a while...")
         files = glob.glob(os.path.join(basedir, "**", pattern), recursive=True)
 
         return files
@@ -1090,7 +1088,7 @@ class ReadL2Data(ReadL2DataBase):
 
             end_time = time.perf_counter()
             elapsed_sec = end_time - start
-            temp = "time for single station distance calc [s]: {:.3f}".format(elapsed_sec)
+            temp = f"time for single station distance calc [s]: {elapsed_sec:.3f}"
             self.logger.info(temp)
 
         elif backend == "geopy":
@@ -1199,7 +1197,7 @@ class ReadL2Data(ReadL2DataBase):
                         if end_index > len(ret_data):
                             # append the needed elements
                             logging.info(
-                                "adding {} elements to ret_data".format(end_index - len(ret_data))
+                                f"adding {end_index - len(ret_data)} elements to ret_data"
                             )
                             ret_data = np.append(
                                 ret_data,
@@ -1227,7 +1225,7 @@ class ReadL2Data(ReadL2DataBase):
                 ret_data = ret_data[:index_counter, :]
             end_time = time.perf_counter()
             elapsed_sec = end_time - start
-            temp = "time for single station distance calc [s]: {:.3f}".format(elapsed_sec)
+            temp = f"time for single station distance calc [s]: {elapsed_sec:.3f}"
             self.logger.info(temp)
             # log the found times
             unique_times = np.unique(
@@ -1250,7 +1248,7 @@ class ReadL2Data(ReadL2DataBase):
                 pass
             end_time = time.perf_counter()
             elapsed_sec = end_time - start
-            temp = "time for bbox calc [s]: {:.3f}".format(elapsed_sec)
+            temp = f"time for bbox calc [s]: {elapsed_sec:.3f}"
             self.logger.info(temp)
         elif resample_to_grid:
             # resample to 1x1 degree grid at this point
@@ -1289,11 +1287,11 @@ class ReadL2Data(ReadL2DataBase):
                 ret_data[idx]["data"] = self.select_bbox(_bbox)
                 ret_data[idx]["bbox"] = _bbox
                 if idx > 0 and idx % 1000 == 0:
-                    self.logger.warning("{} boxes co-located".format(idx))
+                    self.logger.warning(f"{idx} boxes co-located")
 
             end_time = time.perf_counter()
             elapsed_sec = end_time - start
-            temp = "time for gridding calc [s]: {:.3f}".format(elapsed_sec)
+            temp = f"time for gridding calc [s]: {elapsed_sec:.3f}"
             self.logger.info(temp)
         else:
             pass
@@ -1561,9 +1559,9 @@ class ReadL2Data(ReadL2DataBase):
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start_time
-        temp = "time for netcdf write [s]: {:.3f}".format(elapsed_sec)
+        temp = f"time for netcdf write [s]: {elapsed_sec:.3f}"
         self.logger.info(temp)
-        temp = "file written: {}".format(netcdf_filename)
+        temp = f"file written: {netcdf_filename}"
         self.logger.info(temp)
 
     ###################################################################################
@@ -1914,7 +1912,7 @@ class ReadL2Data(ReadL2DataBase):
         start = time.perf_counter()
         file_data = {}
 
-        self.logger.info("reading file {}".format(filename))
+        self.logger.info(f"reading file {filename}")
         # read file
         if coda_handle is None:
             coda_handle = coda.open(filename)
@@ -1952,7 +1950,7 @@ class ReadL2Data(ReadL2DataBase):
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start
-        temp = "time for single file read [s]: {:.3f}".format(elapsed_sec)
+        temp = f"time for single file read [s]: {elapsed_sec:.3f}"
         self.logger.info(temp)
 
         return ret_data
@@ -2107,9 +2105,9 @@ class ReadL2Data(ReadL2DataBase):
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start_time
-        temp = "time for netcdf write [s]: {:.3f}".format(elapsed_sec)
+        temp = f"time for netcdf write [s]: {elapsed_sec:.3f}"
         self.logger.info(temp)
-        temp = "file written: {}".format(netcdf_filename)
+        temp = f"file written: {netcdf_filename}"
         self.logger.info(temp)
 
     ###################################################################################
@@ -2532,11 +2530,11 @@ class ReadL2Data(ReadL2DataBase):
             )
             if retrieval_name:
                 clb.ax.set_title(
-                    "{} [{}] {} retrieval".format(var, self.TEX_UNITS[var], retrieval_name),
+                    f"{var} [{self.TEX_UNITS[var]}] {retrieval_name} retrieval",
                     fontsize="xx-small",
                 )
             else:
-                clb.ax.set_title("{} [{}]".format(var, self.TEX_UNITS[var]), fontsize="xx-small")
+                clb.ax.set_title(f"{var} [{self.TEX_UNITS[var]}]", fontsize="xx-small")
 
             fig.tight_layout()
             # put the start and end time as string on the plot
@@ -2556,14 +2554,14 @@ class ReadL2Data(ReadL2DataBase):
                 horizontalalignment="right",
             )
             plt.annotate(
-                "max val={0:.2f}".format(np.nanmax(out_arr)),
+                f"max val={np.nanmax(out_arr):.2f}",
                 (0.98, 0.24),
                 xycoords="figure fraction",
                 fontsize=9,
                 horizontalalignment="right",
             )
             plt.annotate(
-                "median val={0:.2f}".format(np.nanmedian(out_arr)),
+                f"median val={np.nanmedian(out_arr):.2f}",
                 (0.05, 0.24),
                 xycoords="figure fraction",
                 fontsize=9,
@@ -2822,11 +2820,11 @@ class ReadL2Data(ReadL2DataBase):
             # plt.show()
             if retrieval_name:
                 clb.ax.set_title(
-                    "{} [{}] {} retrieval".format(var, self.TEX_UNITS[var], retrieval_name),
+                    f"{var} [{self.TEX_UNITS[var]}] {retrieval_name} retrieval",
                     fontsize="xx-small",
                 )
             else:
-                clb.ax.set_title("{} [{}]".format(var, self.TEX_UNITS[var]), fontsize="xx-small")
+                clb.ax.set_title(f"{var} [{self.TEX_UNITS[var]}]", fontsize="xx-small")
 
             # fig.tight_layout()
             # put the start and end time as string on the plot
@@ -2846,14 +2844,14 @@ class ReadL2Data(ReadL2DataBase):
                 horizontalalignment="right",
             )
             plt.annotate(
-                "max val={0:.2f}".format(np.nanmax(out_arr)),
+                f"max val={np.nanmax(out_arr):.2f}",
                 (0.98, 0.24),
                 xycoords="figure fraction",
                 fontsize=9,
                 horizontalalignment="right",
             )
             plt.annotate(
-                "median val={0:.2f}".format(np.nanmedian(out_arr)),
+                f"median val={np.nanmedian(out_arr):.2f}",
                 (0.05, 0.24),
                 xycoords="figure fraction",
                 fontsize=9,
@@ -2899,7 +2897,7 @@ class ReadL2Data(ReadL2DataBase):
                 grid_heights_high = (np.arange(levelno + 1) + 1) * 1000.0
 
         if gridtype not in self.SUPPORTED_GRIDS:
-            temp = "Error: Unknown grid: {}".format(gridtype)
+            temp = f"Error: Unknown grid: {gridtype}"
             self.logger.error(temp)
             return
         lat_verbose_flag = False
@@ -2956,15 +2954,11 @@ class ReadL2Data(ReadL2DataBase):
                 )
                 # data_temp = _data[height_match_indexes,:]
                 for lat_idx, grid_lat in enumerate(grid_lats):
-                    diff_lat = np.absolute(
-                        (_data[height_match_indexes, self._LATINDEX] - grid_lat)
-                    )
+                    diff_lat = np.absolute(_data[height_match_indexes, self._LATINDEX] - grid_lat)
                     lat_match_indexes = np.where(diff_lat <= (grid_dist_lat / 2.0))[0]
                     matched_latitudes += lat_match_indexes.size
                     if lat_verbose_flag:
-                        print(
-                            "lat: {}, matched indexes: {}".format(grid_lat, lat_match_indexes.size)
-                        )
+                        print(f"lat: {grid_lat}, matched indexes: {lat_match_indexes.size}")
                     if lat_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
                         continue
                     # simplify code for readability
@@ -3068,7 +3062,7 @@ class ReadL2Data(ReadL2DataBase):
                 matching_points, _data.shape[0]
             )
             self.logger.info(temp)
-            temp = "{} points were negative".format(neg_points)
+            temp = f"{neg_points} points were negative"
 
             self.logger.info(temp)
             temp = "matched heights: {}; matched latitudes {}; matched longitude {}".format(
@@ -3139,7 +3133,7 @@ class ReadL2Data(ReadL2DataBase):
 
             # predifined static grid, one time step
             if gridtype in self.SUPPORTED_GRIDS:
-                temp = "starting simple gridding for {} grid...".format(gridtype)
+                temp = f"starting simple gridding for {gridtype} grid..."
                 self.logger.info(temp)
 
                 latitudes = self.SUPPORTED_GRIDS[gridtype]["grid_lats"]
@@ -3240,10 +3234,10 @@ class ReadL2Data(ReadL2DataBase):
             topo_data.close()
 
         if not os.path.exists(file_name):
-            obj.logger.info("file does not exist: {}. skipping colocation ...".format(file_name))
+            obj.logger.info(f"file does not exist: {file_name}. skipping colocation ...")
             return False
         # read netcdf file if it has not yet been loaded
-        obj.logger.info("reading model file {}".format(file_name))
+        obj.logger.info(f"reading model file {file_name}")
         nc_data = xr.open_dataset(file_name)
         nc_data[self._LATITUDENAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._LATITUDENAME]]
         nc_data[self._LONGITUDENAME] = nc_data[self.EMEP_VAR_NAME_DICT[self._LONGITUDENAME]]
@@ -3374,9 +3368,7 @@ class ReadL2Data(ReadL2DataBase):
                     )[0]
                     # diff_lat = None
                     if lat_verbose_flag:
-                        print(
-                            "lat: {}, matched indexes: {}".format(grid_lat, lat_match_indexes.size)
-                        )
+                        print(f"lat: {grid_lat}, matched indexes: {lat_match_indexes.size}")
                     if lat_match_indexes.size < self.MIN_VAL_NO_FOR_GRIDDING:
                         continue
                     matched_latitudes += lat_match_indexes.size
@@ -3523,7 +3515,7 @@ class ReadL2Data(ReadL2DataBase):
                 matching_points, _data.shape[0]
             )
             self.logger.info(temp)
-            temp = "{} points were negative".format(neg_points)
+            temp = f"{neg_points} points were negative"
             self.logger.info(temp)
             # temp = 'matched heights: {}; matched latitudes {}; matched longitude {}'.format(
             #     matched_heights, matched_latitudes, matched_longitudes)
@@ -3646,18 +3638,16 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--topofile",
-        help="topography file; defaults to {}.".format(default_topo_file),
+        help=f"topography file; defaults to {default_topo_file}.",
         default=default_topo_file,
     )
     parser.add_argument(
         "--modelindir",
-        help="model directory for reading; defaults to {}.".format(netcdf_indir),
+        help=f"model directory for reading; defaults to {netcdf_indir}.",
         default=netcdf_indir,
     )
 
-    parser.add_argument(
-        "--aeoluslistfile", help="text file with input files from aeolus.".format(netcdf_indir)
-    )
+    parser.add_argument("--aeoluslistfile", help=f"text file with input files from aeolus.")
 
     args = parser.parse_args()
 
@@ -3822,7 +3812,7 @@ if __name__ == "__main__":
                     temp_file_flag = True
                     break
         elif suffix != ".DBL":
-            print("ignoring file {}".format(filename))
+            print(f"ignoring file {filename}")
             continue
 
         if options["listpaths"]:
@@ -3851,7 +3841,7 @@ if __name__ == "__main__":
 
             ancilliary_data = obj.read_data_fields(filename, fields_to_read=["mph"])
             if temp_file_flag:
-                obj.logger.info("removing temp file {}".format(filename))
+                obj.logger.info(f"removing temp file {filename}")
                 os.remove(filename)
 
     # apply emep options for cal / val
@@ -3860,11 +3850,9 @@ if __name__ == "__main__":
         tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
         if len(tmp_data) > 0:
             data_numpy = tmp_data
-            obj.logger.info(
-                "file {} contains {} points in emep area! ".format(filename, len(tmp_data))
-            )
+            obj.logger.info(f"file {filename} contains {len(tmp_data)} points in emep area! ")
         else:
-            obj.logger.info("file {} contains no data in emep area! ".format(filename))
+            obj.logger.info(f"file {filename} contains no data in emep area! ")
             data_numpy = None
             # continue
 
@@ -3873,11 +3861,9 @@ if __name__ == "__main__":
         tmp_data = obj.select_bbox(data=data_numpy, bbox=bbox)
         if len(tmp_data) > 0:
             data_numpy = tmp_data
-            obj.logger.info(
-                "file {} contains {} points in himalaya area! ".format(filename, len(tmp_data))
-            )
+            obj.logger.info(f"file {filename} contains {len(tmp_data)} points in himalaya area! ")
         else:
-            obj.logger.info("file {} contains no data in himalaya area! ".format(filename))
+            obj.logger.info(f"file {filename} contains no data in himalaya area! ")
             data_numpy = None
             # continue
 
@@ -3965,16 +3951,14 @@ if __name__ == "__main__":
                 aeolus_times[unique_aeolus_time_indexes[time_idx]].astype("str").split("-")
             )
             ae_day, ae_dummy = ae_dummy.split("T")
-            file_name = "CWF_12ST-{}{}{}_hourInst.nc".format(ae_year, ae_month, ae_day)
+            file_name = f"CWF_12ST-{ae_year}{ae_month}{ae_day}_hourInst.nc"
             file_name = os.path.join(netcdf_indir, file_name)
             if not os.path.exists(file_name):
-                obj.logger.info(
-                    "file does not exist: {}. skipping colocation ...".format(file_name)
-                )
+                obj.logger.info(f"file does not exist: {file_name}. skipping colocation ...")
                 continue
             # read netcdf file if it has not yet been loaded
             if file_name != last_netcdf_file:
-                obj.logger.info("reading and co-locating on model file {}".format(file_name))
+                obj.logger.info(f"reading and co-locating on model file {file_name}")
                 last_netcdf_file = file_name
                 nc_data = xr.open_dataset(file_name)
                 nc_times = nc_data.time.data.astype("datetime64[h]")
@@ -4029,7 +4013,7 @@ if __name__ == "__main__":
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start_time
-        temp = "time for colocation all time steps [s]: {:.3f}".format(elapsed_sec)
+        temp = f"time for colocation all time steps [s]: {elapsed_sec:.3f}"
         if "nc_colocated_data" in locals():
             obj.logger.info(temp)
             obj.logger.info(
@@ -4052,9 +4036,9 @@ if __name__ == "__main__":
             options["outdir"],
             os.path.basename(filename) + "." + options["retrieval"] + ".profile.png",
         )
-        obj.logger.info("profile plot file: {}".format(plotfilename))
+        obj.logger.info(f"profile plot file: {plotfilename}")
         # title = '{} {}'.format(options['retrieval'], os.path.basename(filename))
-        title = "{}".format(os.path.basename(filename))
+        title = f"{os.path.basename(filename)}"
         obj.plot_profile_v3(
             plotfilename,
             title=title,
@@ -4070,7 +4054,7 @@ if __name__ == "__main__":
     # plot the map
     if options["plotmap"]:
         plotmapfilename = os.path.join(options["outdir"], os.path.basename(filename) + ".map.png")
-        obj.logger.info("map plot file: {}".format(plotmapfilename))
+        obj.logger.info(f"map plot file: {plotmapfilename}")
         # title = os.path.basename(filename)
         obj.plot_location_map(
             plotmapfilename, data=data_numpy, bbox=bbox, title=os.path.basename(filename)
@@ -4099,18 +4083,14 @@ if __name__ == "__main__":
                 aeolus_times[unique_aeolus_time_indexes[time_idx]].astype("str").split("-")
             )
             ae_day, ae_dummy = ae_dummy.split("T")
-            file_name = "CWF_12ST-{}{}{}_hourInst.nc".format(ae_year, ae_month, ae_day)
+            file_name = f"CWF_12ST-{ae_year}{ae_month}{ae_day}_hourInst.nc"
             file_name = os.path.join(netcdf_indir, file_name)
             if not os.path.exists(file_name):
-                obj.logger.info(
-                    "file does not exist: {}. skipping colocation ...".format(file_name)
-                )
+                obj.logger.info(f"file does not exist: {file_name}. skipping colocation ...")
                 continue
             # read netcdf file if it has not yet been loaded
             if file_name != last_netcdf_file:
-                obj.logger.info(
-                    "reading and preparing model data for gridding file {}".format(file_name)
-                )
+                obj.logger.info(f"reading and preparing model data for gridding file {file_name}")
                 # read model file
                 if len(last_netcdf_file) == 0:
                     model_data_temp = obj.read_model_file(file_name, topofile=options["topofile"])

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from copy import deepcopy
 
 import matplotlib.pyplot as plt
@@ -92,7 +91,7 @@ class StationData(StationMetaData):
         self.numobs = BrowseDict()
         self.data_flagged = BrowseDict()
 
-        super(StationData, self).__init__(**meta_info)
+        super().__init__(**meta_info)
 
     @property
     def default_vert_grid(self):
@@ -428,7 +427,7 @@ class StationData(StationMetaData):
         keys.extend(add_meta_keys)
         for key in keys:
             if not key in self:
-                const.print_log.warning("No such key in StationData: {}".format(key))
+                const.print_log.warning(f"No such key in StationData: {key}")
                 continue
             elif key in self.PROTECTED_KEYS:
                 # this is not metadata...
@@ -437,7 +436,7 @@ class StationData(StationMetaData):
                 # this has been handled above
                 continue
             if self[key] is None and not add_none_vals:
-                logger.info("No metadata available for key {}".format(key))
+                logger.info(f"No metadata available for key {key}")
                 continue
 
             val = self[key]
@@ -513,7 +512,7 @@ class StationData(StationMetaData):
 
                     for item in vals_in:
                         if not item in current_val:
-                            current_val += ";{}".format(item)
+                            current_val += f";{item}"
                     self[key] = current_val
 
             elif isinstance(current_val, list):
@@ -635,7 +634,7 @@ class StationData(StationMetaData):
                     obj._append_meta_item(key, other[key])
                 except MetaDataError as e:
                     obj[key] = "N/A_FAILED_TO_MERGE"
-                    msg = "Failed to merge meta item {}. Reason:{}".format(key, repr(e))
+                    msg = f"Failed to merge meta item {key}. Reason:{repr(e)}"
                     if raise_on_error:
                         raise MetaDataError(msg)
                     else:
@@ -673,7 +672,7 @@ class StationData(StationMetaData):
 
                     for _val in vals_in:
                         if not _val in vals:
-                            info_this[key] = info_this[key] + ";{}".format(_val)
+                            info_this[key] = info_this[key] + f";{_val}"
                 else:
                     if isinstance(val, (list, np.ndarray)):
                         if len(val) == 0:
@@ -735,7 +734,7 @@ class StationData(StationMetaData):
                 try:
                     self[var] = pd.Series(data, self.dtime)
                 except Exception as e:
-                    raise Exception("Unexpected error: {}.\nPlease debug...".format(repr(e)))
+                    raise Exception(f"Unexpected error: {repr(e)}.\nPlease debug...")
             if not "ts_type" in info or info["ts_type"] is None:
                 if not self.ts_type in const.GRID_IO.TS_TYPES:
                     raise ValueError(
@@ -948,7 +947,7 @@ class StationData(StationMetaData):
                 return ts_type
             except Exception:
                 pass  # Raise standard error
-        raise MetaDataError("Could not access ts_type for {}".format(var_name))
+        raise MetaDataError(f"Could not access ts_type for {var_name}")
 
     def remove_outliers(self, var_name, low=None, high=None, check_unit=True):
         """Remove outliers from one of the variable timeseries
@@ -979,10 +978,10 @@ class StationData(StationMetaData):
                     self.convert_unit(var_name, to_unit=info.units)
             if low is None:
                 low = info.minimum
-                logger.info("Setting {} outlier lower lim: {:.2f}".format(var_name, low))
+                logger.info(f"Setting {var_name} outlier lower lim: {low:.2f}")
             if high is None:
                 high = info.maximum
-                logger.info("Setting {} outlier upper lim: {:.2f}".format(var_name, high))
+                logger.info(f"Setting {var_name} outlier upper lim: {high:.2f}")
 
         d = self[var_name]
         invalid_mask = np.logical_or(d < low, d > high)
@@ -1132,7 +1131,7 @@ class StationData(StationMetaData):
         else:
             outdata = self.copy()
         if not var_name in outdata:
-            raise KeyError("Variable {} does not exist".format(var_name))
+            raise KeyError(f"Variable {var_name} does not exist")
 
         to_ts_type = TsType(ts_type)  # make sure to use AeroCom ts_type
 
@@ -1213,7 +1212,7 @@ class StationData(StationMetaData):
             if the input variable is not available in this object
         """
         if not self.has_var(var_name):
-            raise VarNotAvailableError("No such variable in StationData: {}".format(var_name))
+            raise VarNotAvailableError(f"No such variable in StationData: {var_name}")
         self.pop(var_name)
         if var_name in self.var_info:
             self.var_info.pop(var_name)
@@ -1363,7 +1362,7 @@ class StationData(StationMetaData):
             if length of data array does not equal the length of the time array
         """
         if not var_name in self:
-            raise KeyError("Variable {} does not exist".format(var_name))
+            raise KeyError(f"Variable {var_name} does not exist")
 
         data = self[var_name]
 
@@ -1432,7 +1431,7 @@ class StationData(StationMetaData):
             lbl = var_name
             try:
                 ts_type = self.get_var_ts_type(var_name)
-                lbl += " ({})".format(ts_type)
+                lbl += f" ({ts_type})"
             except Exception:
                 pass
         if not "ax" in kwargs:
@@ -1464,9 +1463,9 @@ class StationData(StationMetaData):
             if "units" in self.var_info[var_name]:
                 u = self.var_info[var_name]["units"]
                 if u is not None and not u in [1, "1"]:
-                    ylabel += " [{}]".format(u)
+                    ylabel += f" [{u}]"
         except Exception:
-            logger.warning("Failed to access unit information for variable {}".format(var_name))
+            logger.warning(f"Failed to access unit information for variable {var_name}")
         ax.set_ylabel(ylabel)
         ax.set_title(tit)
         if legend:
@@ -1483,7 +1482,7 @@ class StationData(StationMetaData):
 
     def __str__(self):
         """String representation"""
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = f"Pyaerocom {type(self).__name__}"
         s = "\n{}\n{}".format(head, len(head) * "-")
         arrays = ""
         series = ""
@@ -1492,7 +1491,7 @@ class StationData(StationMetaData):
             if k[0] == "_":
                 continue
             if isinstance(v, dict):
-                s += "\n{} ({}):".format(k, type(v).__name__)
+                s += f"\n{k} ({type(v).__name__}):"
                 if v:
                     s += dict_to_str(v, indent=2)
                 else:
@@ -1503,14 +1502,14 @@ class StationData(StationMetaData):
                 if v.ndim == 1:
                     arrays += f"{k} : {list_to_shortstr(v)}"
                 else:
-                    arrays += "\n{} (ndarray, shape {})".format(k, v.shape)
-                    arrays += "\n{}".format(v)
+                    arrays += f"\n{k} (ndarray, shape {v.shape})"
+                    arrays += f"\n{v}"
             elif isinstance(v, pd.Series):
-                series += "\n{} (Series, {} items)".format(k, len(v))
+                series += f"\n{k} (Series, {len(v)} items)"
             else:
                 if isinstance(v, str) and v == "":
                     v = "<empty_str>"
-                s += "\n{}: {}".format(k, v)
+                s += f"\n{k}: {v}"
         if arrays:
             s += "\n\nData arrays\n................."
             s += arrays

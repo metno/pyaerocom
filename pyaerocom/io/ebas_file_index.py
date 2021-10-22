@@ -90,9 +90,9 @@ class EbasSQLRequest(BrowseDict):
                 var = var[0]
 
         if isinstance(var, tuple):
-            return "{}".format(var)
+            return f"{var}"
         elif isinstance(var, str):
-            return "('{}')".format(var)
+            return f"('{var}')"
         raise ValueError("Invalid value...")
 
     def make_file_query_str(self, distinct=True, **kwargs):
@@ -137,16 +137,16 @@ class EbasSQLRequest(BrowseDict):
             what = ",".join(what)
 
         if distinct:
-            req = "select distinct {} from variable".format(what)
+            req = f"select distinct {what} from variable"
         else:
-            req = "select {} from variable".format(what)
+            req = f"select {what} from variable"
         req += " join station on station.station_code=variable.station_code"
         add_cond = 0
         # add constraints from station table
         conv = self._var2sql
         if self.station_names is not None:
 
-            req += " where station_name in {}".format(conv(self.station_names))
+            req += f" where station_name in {conv(self.station_names)}"
             add_cond += 1
         if self.altitude_range is not None:
             low, high = self.altitude_range
@@ -165,45 +165,45 @@ class EbasSQLRequest(BrowseDict):
             add_cond += 1
         if self.instrument_types is not None:
             req += " and " if add_cond else " where "
-            req += "instr_type in {}".format(conv(self.instrument_types))
+            req += f"instr_type in {conv(self.instrument_types)}"
             add_cond += 1
         # add constraints from variable table
         if self.variables is not None:
             req += " and " if add_cond else " where "
-            req += "comp_name in {}".format(conv(self.variables))
+            req += f"comp_name in {conv(self.variables)}"
             add_cond += 1
         if self.stop_date is not None:
             req += " and " if add_cond else " where "
-            req += "first_end < '{}'".format(self.stop_date)
+            req += f"first_end < '{self.stop_date}'"
             add_cond += 1
         if self.start_date is not None:
             req += " and " if add_cond else " where "
-            req += "last_start > '{}'".format(self.start_date)
+            req += f"last_start > '{self.start_date}'"
             add_cond += 1
         if self.matrices is not None:
             req += " and " if add_cond else " where "
-            req += "matrix in {}".format(conv(self.matrices))
+            req += f"matrix in {conv(self.matrices)}"
             add_cond += 1
         if self.statistics is not None:
             req += " and " if add_cond else " where "
-            req += "statistics in {}".format(conv(self.statistics))
+            req += f"statistics in {conv(self.statistics)}"
             add_cond += 1
         if self.datalevel is not None:
             req += " and " if add_cond else " where "
-            req += "datalevel={}".format(self.datalevel)
+            req += f"datalevel={self.datalevel}"
             add_cond += 1
         return req + ";"
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = f"Pyaerocom {type(self).__name__}"
         s = "\n{}\n{}".format(head, len(head) * "-")
         for k, v in self.items():
-            s += "\n{}: {}".format(k, v)
-        s += "\nFilename request string:\n{}".format(self.make_file_query_str())
+            s += f"\n{k}: {v}"
+        s += f"\nFilename request string:\n{self.make_file_query_str()}"
         return s
 
 
-class EbasFileIndex(object):
+class EbasFileIndex:
     """EBAS SQLite I/O interface
 
     Takes care of connection to database and execution of requests

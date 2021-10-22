@@ -194,9 +194,9 @@ class ReadAeronetInvV2(ReadAeronetBase):
             data_out[var] = []
 
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
+        self.logger.info(f"Reading file {filename}")
 
-        with open(filename, "rt") as in_file:
+        with open(filename) as in_file:
             # get rid of the first com,a seperated string element...
             c_dummy = ",".join(in_file.readline().strip().split(",")[1:])
             # re.split(r'=|\,',c_dummy)
@@ -213,8 +213,8 @@ class ReadAeronetInvV2(ReadAeronetBase):
             data_out["ts_type"] = self.TS_TYPE
 
             # skip next two lines
-            self.logger.info("Skipping line:\n{}".format(in_file.readline()))
-            self.logger.info("Skipping line:\n{}".format(in_file.readline()))
+            self.logger.info(f"Skipping line:\n{in_file.readline()}")
+            self.logger.info(f"Skipping line:\n{in_file.readline()}")
 
             col_index_str = in_file.readline()
             if col_index_str != self._last_col_index_str:

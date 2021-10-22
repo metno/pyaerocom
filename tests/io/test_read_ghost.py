@@ -40,7 +40,7 @@ def ghost_eea_hourly():
     return ReadGhost("G.EEA.hourly.Subset")
 
 
-class TestReadGhost(object):
+class TestReadGhost:
     PROVIDES_VARIABLES = [
         "concpm10",
         "concpm10al",

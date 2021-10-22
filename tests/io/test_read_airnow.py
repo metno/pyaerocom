@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Mon Feb  1 09:31:15 2021
 
@@ -25,7 +24,7 @@ def reader():
     return ReadAirNow("AirNowSubset")
 
 
-class TestReadAirNow(object):
+class TestReadAirNow:
 
     _FILETYPE = ".dat"
 

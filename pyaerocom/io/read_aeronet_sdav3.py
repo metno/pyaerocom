@@ -127,9 +127,9 @@ class ReadAeronetSdaV3(ReadAeronetBase):
             data_out[var] = []
 
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
+        self.logger.info(f"Reading file {filename}")
 
-        with open(filename, "rt") as in_file:
+        with open(filename) as in_file:
             # skip first 4 lines
             in_file.readline()
             in_file.readline()

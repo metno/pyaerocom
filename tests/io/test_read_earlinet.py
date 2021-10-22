@@ -29,7 +29,7 @@ def get_test_paths():
 def test_all_files_exist():
     for file in get_test_paths():
         if not os.path.exists(file):
-            raise AssertionError("File {} does not exist".format(file))
+            raise AssertionError(f"File {file} does not exist")
 
 
 @pytest.mark.parametrize(

@@ -25,7 +25,7 @@ from pyaerocom.units_helpers import UALIASES
 from pyaerocom.variable_helpers import get_emep_variables
 
 
-class ReadMscwCtm(object):
+class ReadMscwCtm:
     """
     Class for reading model output from the EMEP MSC-W chemical transport model.
 

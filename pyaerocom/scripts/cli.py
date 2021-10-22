@@ -35,7 +35,7 @@ def main():
     args = ap.parse_args()
 
     if args.browse:
-        print("Searching database for matches of {}".format(args.browse))
+        print(f"Searching database for matches of {args.browse}")
         print(tools.browse_database(args.browse))
 
     if args.clearcache:

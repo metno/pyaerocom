@@ -116,7 +116,7 @@ if __name__ == "__main__":
             # r.logger.setLevel(logging.INFO)
             data = None
             data = r.read(vars_to_retrieve=[var_name])
-            print("{} data read".format(var_name))
+            print(f"{var_name} data read")
             try:
                 stat_data = data[station_id[var_name]]
                 print(
@@ -130,7 +130,7 @@ if __name__ == "__main__":
                 # print(data[station_id[var_name]])
                 # print(data[station_id[var_name]][var_name])
             except:
-                print("failed test var {}".format(var_name))
+                print(f"failed test var {var_name}")
                 pass
 
     elif username == "jonasg":

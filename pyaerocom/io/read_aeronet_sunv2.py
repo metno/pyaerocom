@@ -165,8 +165,8 @@ class ReadAeronetSunV2(ReadAeronetBase):
             data_out[var] = []
 
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
-        with open(filename, "rt") as in_file:
+        self.logger.info(f"Reading file {filename}")
+        with open(filename) as in_file:
             # added to output
             data_out.head_line = in_file.readline().strip()
             data_out.algorithm = in_file.readline().strip()
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     data = {}
     failed = []
     for name in ReadAeronetSunV2.SUPPORTED_DATASETS:
-        print("reading {}".format(name))
+        print(f"reading {name}")
         reader = ReadAeronetSunV2(name)
         try:
             data[name] = reader.read_first_file()

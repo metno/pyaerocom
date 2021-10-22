@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 General helper methods for the pyaerocom library.
 """
@@ -503,7 +502,7 @@ def seconds_in_periods(timestamps, ts_type):
                 days_in_year.append(365)
         seconds = np.array(days_in_year) * seconds_in_day
         return seconds
-    raise TemporalResolutionError("Unknown TsType: {}".format(ts_type))
+    raise TemporalResolutionError(f"Unknown TsType: {ts_type}")
 
 
 def get_tot_number_of_seconds(ts_type, dtime=None):
@@ -745,7 +744,7 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
     stats = []
     for stat in statlist:
         if not var_name in stat:
-            raise DataCoverageError("All input stations must contain {} data".format(var_name))
+            raise DataCoverageError(f"All input stations must contain {var_name} data")
         elif pref_attr is not None and not pref_attr in stat:
             raise MetaDataError(
                 "Cannot sort station relevance by attribute {}. "
@@ -1048,7 +1047,7 @@ def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how
 
     # clim.columns = clim.columns.droplevel(0)
     clim.columns = ["data", "std", "numobs"]
-    idx = [np.datetime64("{}-{:02d}-15".format(set_year, x)) for x in clim.index.values]
+    idx = [np.datetime64(f"{set_year}-{x:02d}-15") for x in clim.index.values]
     clim.set_index(pd.DatetimeIndex(idx), inplace=True)
     if min_count is not None:
         mask = clim["numobs"] < min_count
@@ -1145,7 +1144,7 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
         )
 
     if not isinstance(arr, xr.DataArray):
-        raise IOError("Invalid input for arr: need DataArray, got {}".format(type(arr)))
+        raise OSError(f"Invalid input for arr: need DataArray, got {type(arr)}")
     elif not "time" in arr.dims:
         raise DataDimensionError("Cannot resample time: input DataArray has " "no time dimension")
 
@@ -1259,7 +1258,7 @@ def to_pandas_timestamp(value):
                 raise ValueError("Could not infer valid year from numerical " "time input")
             return pd.Timestamp(str(numval))
         except Exception as e:
-            raise ValueError("Failed to convert {} to Timestamp: {}".format(value, repr(e)))
+            raise ValueError(f"Failed to convert {value} to Timestamp: {repr(e)}")
 
 
 def to_datetime64(value):
@@ -1320,7 +1319,7 @@ def _check_climatology_timestamp(t):
         return pd.Timestamp(t.replace("9999", "2222"))
     elif isinstance(t, datetime) and t.year == 9999:
         return pd.Timestamp(t.replace(year=2222))
-    raise ValueError("Failed to identify {} as climatological timestamp...".format(t))
+    raise ValueError(f"Failed to identify {t} as climatological timestamp...")
 
 
 def start_stop(start, stop=None, stop_sub_sec=True):
@@ -1368,7 +1367,7 @@ def start_stop(start, stop=None, stop_sub_sec=True):
             yr = 2222
         else:
             yr = start.year
-        stop = to_pandas_timestamp("{}-12-31 23:59:59".format(yr))
+        stop = to_pandas_timestamp(f"{yr}-12-31 23:59:59")
     else:
         try:
             subt_sec = False
@@ -1391,7 +1390,7 @@ def datetime2str(time, ts_type=None):
     try:
         time = to_pandas_timestamp(time).strftime(conv)
     except pd.errors.OutOfBoundsDatetime:
-        const.print_log.warning("Failed to convert time {} to string".format(time))
+        const.print_log.warning(f"Failed to convert time {time} to string")
         pass
     return time
 
@@ -1405,7 +1404,7 @@ def start_stop_str(start, stop=None, ts_type=None):
     start_str = start.strftime(conv)
     stop_str = stop.strftime(conv)
     if stop_str != start_str:
-        return "{}-{}".format(start_str, stop_str)
+        return f"{start_str}-{stop_str}"
     return start_str
 
 
@@ -1547,7 +1546,7 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
             raise ValueError("unsupported time units")
 
         basedate = np.datetime64(basedate)
-        dt = np.asarray(np.asarray(times), dtype="timedelta64[{}]".format(tstr))
+        dt = np.asarray(np.asarray(times), dtype=f"timedelta64[{tstr}]")
         return basedate + dt
     else:
         return np.asarray([np.datetime64(t) for t in cfunit.num2date(times)])

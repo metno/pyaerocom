@@ -106,10 +106,10 @@ class ReadGAW(ReadUngriddedBase):
 
         for var in vars_to_retrieve:
             if not var in self.PROVIDES_VARIABLES:
-                raise ValueError("Invalid input variable {}".format(var))
+                raise ValueError(f"Invalid input variable {var}")
 
         # Iterate over the lines of the file
-        self.logger.info("Reading file {}".format(filename))
+        self.logger.info(f"Reading file {filename}")
 
         # We need to map the variables in the file with the values in VAR_NAME_FILE,
         # and for that we reverse the dictionary.
@@ -121,7 +121,7 @@ class ReadGAW(ReadUngriddedBase):
 
         # Open the file, store the metadata in the first lines of the file,
         # skip empty lines, and store the headers and the data
-        with open(filename, "r") as f:
+        with open(filename) as f:
             # metadata (fixed number of rows in gaw files)
             meta = [next(f).split(":", 1)[1] for data in range(26)]
 
@@ -177,7 +177,7 @@ class ReadGAW(ReadUngriddedBase):
         except Exception as e:
             from pyaerocom.exceptions import MetaDataError
 
-            raise MetaDataError("Failed to read station coordinates. {}".format(repr(e)))
+            raise MetaDataError(f"Failed to read station coordinates. {repr(e)}")
         data_out["filename"] = meta[1].strip()
         try:
             data_out["data_version"] = int(meta[5].strip())

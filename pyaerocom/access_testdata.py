@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Thu Oct 29 17:12:54 2020
 
@@ -121,9 +120,7 @@ class AccessTestData:
                 tar.extractall(const.OUTPUTDIR)
                 tar.close()
         except Exception:
-            const.print_log.warning(
-                "Failed to download testdata. Traceback:\n{}".format(format_exc())
-            )
+            const.print_log.warning(f"Failed to download testdata. Traceback:\n{format_exc()}")
             return False
         finally:
             if download_loc.exists():

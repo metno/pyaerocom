@@ -33,12 +33,12 @@ def get_heatmap_filename(ts_type):
 
 def get_stationfile_name(station_name, obs_name, var_name_web, vert_code):
     """Get name of station timeseries file"""
-    return "{}_{}-{}_{}.json".format(station_name, obs_name, var_name_web, vert_code)
+    return f"{station_name}_{obs_name}-{var_name_web}_{vert_code}.json"
 
 
 def get_json_mapname(obs_name, var_name_web, model_name, model_var, vert_code):
     """Get name base name of json file"""
-    return "{}-{}_{}_{}-{}.json".format(obs_name, var_name_web, vert_code, model_name, model_var)
+    return f"{obs_name}-{var_name_web}_{vert_code}_{model_name}-{model_var}.json"
 
 
 def _write_stationdata_json(ts_data, out_dir):

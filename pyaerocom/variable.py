@@ -20,7 +20,7 @@ from pyaerocom.variable_helpers import (
 from pyaerocom.varnameinfo import VarNameInfo
 
 
-class Variable(object):
+class Variable:
     """Interface that specifies default settings for a variable
 
     See `variables.ini <https://github.com/metno/pyaerocom/blob/master/
@@ -368,7 +368,7 @@ class Variable(object):
         if self.units is None:
             return ""
         else:
-            return "[{}]".format(self.units)
+            return f"[{self.units}]"
 
     @staticmethod
     def read_config():
@@ -506,7 +506,7 @@ class Variable(object):
             try:
                 var_name = self._check_aliases(var_name)
             except VariableDefinitionError:
-                logger.info("Unknown input variable {}".format(var_name))
+                logger.info(f"Unknown input variable {var_name}")
                 return
             self._var_name_aerocom = var_name
 
@@ -558,7 +558,7 @@ class Variable(object):
         return True if other.var_name_aerocom == self.var_name_aerocom else False
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = f"Pyaerocom {type(self).__name__}"
         s = "\n{}\n{}".format(head, len(head) * "-")
 
         plot_s = "\nPlotting settings\n......................"
@@ -568,22 +568,22 @@ class Variable(object):
                 if v is None:
                     continue
                 if isinstance(v, dict):
-                    plot_s += "\n{} (dict)".format(k)
+                    plot_s += f"\n{k} (dict)"
                     plot_s += dict_to_str(v, indent=3, ignore_null=True)
                 elif isinstance(v, list):
-                    plot_s += "\n{} (list, {} items)".format(k, len(v))
+                    plot_s += f"\n{k} (list, {len(v)} items)"
                     plot_s += list_to_shortstr(v)
                 else:
-                    plot_s += "\n%s: %s" % (k, v)
+                    plot_s += f"\n{k}: {v}"
             else:
                 if isinstance(v, dict):
-                    s += "\n{} (dict)".format(k)
+                    s += f"\n{k} (dict)"
                     s += dict_to_str(v, indent=3, ignore_null=True)
                 elif isinstance(v, list):
-                    s += "\n{} (list, {} items)".format(k, len(v))
+                    s += f"\n{k} (list, {len(v)} items)"
                     s += list_to_shortstr(v)
                 else:
-                    s += "\n%s: %s" % (k, v)
+                    s += f"\n{k}: {v}"
 
         s += plot_s
         return s

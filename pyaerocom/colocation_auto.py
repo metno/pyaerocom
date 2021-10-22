@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Classes and methods to perform high-level colocation.
 """
@@ -473,7 +472,7 @@ class ColocationSetup(BrowseDict):
     def __setitem__(self, key, val):
         if key == "basedir_coldata":
             val = self._check_input_basedir_coldata(val)
-        super(ColocationSetup, self).__setitem__(key, val)
+        super().__setitem__(key, val)
 
     def _period_from_start_stop(self) -> str:
         start, stop = start_stop(self.start, self.stop, stop_sub_sec=False)
@@ -505,7 +504,7 @@ class Colocator(ColocationSetup):
     }
 
     def __init__(self, **kwargs):
-        super(Colocator, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self._log = None
         self.logging = True
@@ -794,7 +793,7 @@ class Colocator(ColocationSetup):
                 data_out[mod_var][obs_var] = coldata
                 self._processing_status.append([mod_var, obs_var, 1])
             except Exception:
-                msg = "Failed to perform analysis: {}\n".format(traceback.format_exc())
+                msg = f"Failed to perform analysis: {traceback.format_exc()}\n"
                 const.print_log.warning(msg)
                 self._processing_status.append([mod_var, obs_var, 5])
                 self._write_log(msg)
@@ -1015,7 +1014,7 @@ class Colocator(ColocationSetup):
             reader = self.SUPPORTED_GRIDDED_READERS[self.gridded_reader_id[what]]
         except KeyError as e:
             raise NotImplementedError(
-                "Reader {} is not supported: {}".format(self.gridded_reader_id[what], e)
+                f"Reader {self.gridded_reader_id[what]} is not supported: {e}"
             )
         return reader
 
@@ -1448,7 +1447,7 @@ class Colocator(ColocationSetup):
         )
 
         for key, val in var_matches.items():
-            const.print_log.info("{}\t{}".format(key, val))
+            const.print_log.info(f"{key}\t{val}")
 
     def _init_log(self):
         logdir = chk_make_subdir(self.basedir_logfiles, self.get_model_name())

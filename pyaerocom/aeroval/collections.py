@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Thu May 27 12:27:47 2021
 
@@ -174,7 +173,7 @@ class ObsCollection(BaseCollection):
     @property
     def all_vert_types(self):
         """List of unique vertical types specified in this collection"""
-        return list(set([x["obs_vert_type"] for x in self.values()]))
+        return list({x["obs_vert_type"] for x in self.values()})
 
 
 class ModelCollection(BaseCollection):

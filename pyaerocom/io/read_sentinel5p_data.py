@@ -83,7 +83,7 @@ class ReadL2Data(ReadL2DataBase):
         verbose=False,
         read_averaging_kernel=True,
     ):
-        super(ReadL2Data, self).__init__(data_id)
+        super().__init__(data_id)
         self.verbose = verbose
         self.metadata = {}
         self.data = None
@@ -411,7 +411,7 @@ class ReadL2Data(ReadL2DataBase):
             self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME]["units"] = "1"
             self.NETCDF_VAR_ATTRIBUTES[self._AVERAGINGKERNELNAME][
                 "coordinates"
-            ] = "longitude latitude {}".format(self._LEVELSNAME)
+            ] = f"longitude latitude {self._LEVELSNAME}"
 
             self.CODA_READ_PARAMETERS[self._NO2NAME]["vars"][
                 self._LEVELSNAME
@@ -530,7 +530,7 @@ class ReadL2Data(ReadL2DataBase):
         start = time.perf_counter()
         file_data = {}
 
-        self.logger.info("reading file {}".format(filename))
+        self.logger.info(f"reading file {filename}")
         # read file
         product = coda.open(filename)
 
@@ -587,7 +587,7 @@ class ReadL2Data(ReadL2DataBase):
             # time has been read already
             if var == self._TIME_NAME or var == self._TIME_OFFSET_NAME:
                 continue
-            self.logger.info("reading var: {}".format(var))
+            self.logger.info(f"reading var: {var}")
 
             try:
                 groups = self.CODA_READ_PARAMETERS[vars_to_retrieve[0]]["metadata"][var].split(
@@ -675,7 +675,7 @@ class ReadL2Data(ReadL2DataBase):
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start
-        temp = "time for single file read [s]: {:.3f}".format(elapsed_sec)
+        temp = f"time for single file read [s]: {elapsed_sec:.3f}"
         self.logger.info(temp)
         # self.logger.info('{} points read'.format(index_pointer))
         self.files_read.append(filename)
@@ -716,7 +716,7 @@ class ReadL2Data(ReadL2DataBase):
             except:
                 pass
 
-            obj.logger.info("writing file {}...".format(netcdf_filename))
+            obj.logger.info(f"writing file {netcdf_filename}...")
             # compress the main variables
             encoding = {}
             if self._NO2NAME in ds:
@@ -728,7 +728,7 @@ class ReadL2Data(ReadL2DataBase):
             # encoding[self._O3NAME] = {'zlib': True,'complevel': 5}
             ds.to_netcdf(netcdf_filename, encoding=encoding)
             # ds.to_netcdf(netcdf_filename)
-            obj.logger.info("file {} written".format(netcdf_filename))
+            obj.logger.info(f"file {netcdf_filename} written")
         else:
             # call super class
             super().to_netcdf_simple(
@@ -849,7 +849,7 @@ class ReadL2Data(ReadL2DataBase):
                     shape = _data[var].shape
                 except AttributeError:
                     continue
-                print("variable: {}".format(var))
+                print(f"variable: {var}")
                 if len(_data[var].shape) == 1:
                     # var with dimension time (e.g. 3245)
                     # each time needs to be repeated by the swath width
@@ -904,7 +904,7 @@ class ReadL2Data(ReadL2DataBase):
                                     keep_indexes, :
                                 ]
                             )
-                            print("{}".format(var))
+                            print(f"{var}")
 
                         elif var == "lat_bnds" or var == "lon_bnds":
                             ds[var] = (point_dim_name, bounds_dim_name), np.squeeze(
@@ -919,7 +919,7 @@ class ReadL2Data(ReadL2DataBase):
             # add attributes to variables
             for var in ds:
                 # add predifined attributes
-                print("var {}".format(var))
+                print(f"var {var}")
                 try:
                     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
                         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
@@ -969,7 +969,7 @@ class ReadL2Data(ReadL2DataBase):
             # add attributes to variables
             for var in ds.variables:
                 # add predifined attributes
-                print("var {}".format(var))
+                print(f"var {var}")
                 try:
                     for attrib in self.NETCDF_VAR_ATTRIBUTES[var]:
                         ds[var].attrs[attrib] = self.NETCDF_VAR_ATTRIBUTES[var][attrib]
@@ -1016,7 +1016,7 @@ class ReadL2Data(ReadL2DataBase):
             _data = self.to_xarray(data_to_write=data._data)
 
         if gridtype not in self.SUPPORTED_GRIDS:
-            temp = "Error: Unknown grid: {}".format(gridtype)
+            temp = f"Error: Unknown grid: {gridtype}"
             return
 
         if engine == "python":
@@ -1038,15 +1038,15 @@ class ReadL2Data(ReadL2DataBase):
             # Loop through the output grid and collect data
             # store that in data_for_gridding[var]
             for lat_idx, grid_lat in enumerate(grid_lats):
-                diff_lat = np.absolute((_data[self._LATITUDENAME].data - grid_lat))
+                diff_lat = np.absolute(_data[self._LATITUDENAME].data - grid_lat)
                 lat_match_indexes = np.squeeze(np.where(diff_lat <= (grid_dist_lat / 2.0)))
-                print("lat: {}, matched indexes: {}".format(grid_lat, lat_match_indexes.size))
+                print(f"lat: {grid_lat}, matched indexes: {lat_match_indexes.size}")
                 if lat_match_indexes.size == 0:
                     continue
 
                 for lon_idx, grid_lon in enumerate(grid_lons):
                     diff_lon = np.absolute(
-                        (_data[self._LONGITUDENAME].data[lat_match_indexes] - grid_lon)
+                        _data[self._LONGITUDENAME].data[lat_match_indexes] - grid_lon
                     )
                     lon_match_indexes = np.squeeze(np.where(diff_lon <= (grid_dist_lon / 2.0)))
                     if lon_match_indexes.size == 0:
@@ -1282,7 +1282,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--qflag",
-        help="min quality flag to keep data. Defaults to {}".format(default_min_quality_flag),
+        help=f"min quality flag to keep data. Defaults to {default_min_quality_flag}",
         default=default_min_quality_flag,
     )
 
@@ -1434,7 +1434,7 @@ if __name__ == "__main__":
         tmp_data = obj.select_bbox(data_numpy, bbox=bbox)
         if len(tmp_data) > 0:
             data_numpy = tmp_data
-            obj.logger.info("data object contains {} points in emep area! ".format(len(tmp_data)))
+            obj.logger.info(f"data object contains {len(tmp_data)} points in emep area! ")
         else:
             obj.logger.info("data object contains no data in emep area! ")
             data_numpy = None
@@ -1445,11 +1445,9 @@ if __name__ == "__main__":
         tmp_data = obj.select_bbox(data_numpy, bbox=bbox)
         if len(tmp_data) > 0:
             data_numpy = tmp_data
-            obj.logger.info(
-                "file {} contains {} points in himalaya area! ".format(filename, len(tmp_data))
-            )
+            obj.logger.info(f"file {filename} contains {len(tmp_data)} points in himalaya area! ")
         else:
-            obj.logger.info("file {} contains no data in himalaya area! ".format(filename))
+            obj.logger.info(f"file {filename} contains no data in himalaya area! ")
             data_numpy = None
             # continue
 

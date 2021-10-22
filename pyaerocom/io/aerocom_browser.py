@@ -99,7 +99,7 @@ class AerocomBrowser(BrowseDict):
                         _dir = os.path.normpath(os.path.join(search_dir, subdir))
                         _rnsubdir = os.path.join(_dir, "renamed")
                         if os.path.isdir(_rnsubdir):
-                            logger.info("{} has subdir renamed. Using that one".format(_dir))
+                            logger.info(f"{_dir} has subdir renamed. Using that one")
                             _dir = _rnsubdir
                         if any([_dir in x for x in self.values()]):
                             # directory was already found before
@@ -118,7 +118,7 @@ class AerocomBrowser(BrowseDict):
                             else:
                                 match = name_or_pattern == subdir
                             if match:
-                                logger.info("Found match for ID {}".format(name_or_pattern))
+                                logger.info(f"Found match for ID {name_or_pattern}")
                                 if return_if_match:
                                     return _dir
 
@@ -178,9 +178,9 @@ class AerocomBrowser(BrowseDict):
             if no matches or no unique match can be found
         """
         if name_or_pattern in self:
-            logger.info("{} found in instance of AerocomBrowser".format(name_or_pattern))
+            logger.info(f"{name_or_pattern} found in instance of AerocomBrowser")
             return self[name_or_pattern]
-        logger.info("Searching database for {}".format(name_or_pattern))
+        logger.info(f"Searching database for {name_or_pattern}")
         return self._browse(
             name_or_pattern, ignorecase=ignorecase, return_if_match=True
         )  # returns list

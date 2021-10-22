@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 ########################################################################
 #
 # This python module is part of the pyaerocom software
@@ -40,7 +39,7 @@ from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.variable import get_aliases
 
 
-class ReadUngridded(object):
+class ReadUngridded:
     """Factory class for reading of ungridded data based on obsnetwork ID
 
     This class also features reading functionality that goes beyond reading
@@ -195,7 +194,7 @@ class ReadUngridded(object):
         if isinstance(val, str):
             val = [val]
         elif not isinstance(val, (tuple, list)):
-            raise IOError("Invalid input for parameter data_ids")
+            raise OSError("Invalid input for parameter data_ids")
         self._data_ids = val
 
     @property
@@ -685,7 +684,7 @@ class ReadUngridded(object):
                     )
                 )
 
-            logger.info("Successfully imported {} data".format(ds))
+            logger.info(f"Successfully imported {ds} data")
         return data
 
     def _check_var_alias(self, var, supported):
@@ -750,7 +749,7 @@ class ReadUngridded(object):
     def __str__(self):
         s = ""
         for ds in self.data_ids:
-            s += "\n{}".format(self.get_lowlevel_reader(ds))
+            s += f"\n{self.get_lowlevel_reader(ds)}"
         return s
 
 

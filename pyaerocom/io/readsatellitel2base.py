@@ -70,7 +70,7 @@ class ReadL2DataBase(ReadUngriddedBase):
     __baseversion__ = "0.01_" + ReadUngriddedBase.__baseversion__
 
     def __init__(self, data_id=None, index_pointer=0, loglevel=logging.INFO, verbose=False):
-        super(ReadL2DataBase, self).__init__(data_id)
+        super().__init__(data_id)
         self.verbose = verbose
         self.metadata = {}
         self.data = None
@@ -339,10 +339,10 @@ class ReadL2DataBase(ReadUngriddedBase):
         for idx, _file in enumerate(sorted(files)):
             # temp = 'reading file: {}'.format(_file)
 
-            self.logger.info("file: {}".format(_file))
+            self.logger.info(f"file: {_file}")
             suffix = pathlib.Path(_file).suffix
             if suffix in self.SUPPORTED_ARCHIVE_SUFFIXES:
-                temp = "opening archive file; using {} as temp dir.".format(local_temp_dir)
+                temp = f"opening archive file; using {local_temp_dir} as temp dir."
                 self.logger.info(temp)
                 # untar archive files first
                 tarhandle = tarfile.open(_file)
@@ -351,7 +351,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                     if pathlib.Path(file_in_tar).suffix in self.SUPPORTED_SUFFIXES:
                         # extract file to tmp path
                         member = tarhandle.getmember(file_in_tar)
-                        temp = "extracting file {}...".format(member.name)
+                        temp = f"extracting file {member.name}..."
                         self.logger.info(temp)
                         tarhandle.extract(member, path=local_temp_dir, set_attrs=False)
                         extract_file = os.path.join(local_temp_dir, member.name)
@@ -380,7 +380,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                 return_as=return_as,
             )
             if return_as == "numpy":
-                self.logger.info("{} points read".format(file_data.shape[0]))
+                self.logger.info(f"{file_data.shape[0]} points read")
                 # the metadata dict is left empty for L2 data
                 # the location in the data set is time step dependant!
                 if idx == 0:
@@ -399,7 +399,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                 # tmp_obj._data = file_data
                 # tmp_obj._idx = data_obj._data.shape[0] + 1
                 # data_obj.append(tmp_obj)
-                self.logger.info("size of data object: {}".format(data_obj._idx - 1))
+                self.logger.info(f"size of data object: {data_obj._idx - 1}")
             elif return_as == "dict":
                 if idx == 0:
                     data_obj._data = {}
@@ -447,7 +447,7 @@ class ReadL2DataBase(ReadUngriddedBase):
                     file_start_index_arr.append(file_data[self.TSSIZENAME].shape[0])
                     for _key in file_data:
                         if _key in self.STATICFIELDNAMES:
-                            print("key: {}".format(_key))
+                            print(f"key: {_key}")
                             continue
                         # shape_store[_key] = file_data[_key].shape
                         elements_to_add = file_data[_key].shape[0]
@@ -681,9 +681,9 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start_time
-        temp = "time for netcdf write [s]: {:.3f}".format(elapsed_sec)
+        temp = f"time for netcdf write [s]: {elapsed_sec:.3f}"
         self.logger.info(temp)
-        temp = "file written: {}".format(netcdf_filename)
+        temp = f"file written: {netcdf_filename}"
         self.logger.info(temp)
 
     ###################################################################################
@@ -758,15 +758,13 @@ class ReadL2DataBase(ReadUngriddedBase):
                 # Loop through the output grid and collect data
                 # store that in data_for_gridding[var]
                 for lat_idx, grid_lat in enumerate(grid_lats):
-                    diff_lat = np.absolute((data[:, self._LATINDEX] - grid_lat))
+                    diff_lat = np.absolute(data[:, self._LATINDEX] - grid_lat)
                     lat_match_indexes = np.squeeze(np.where(diff_lat <= max_grid_dist_lat))
                     if lat_match_indexes.size == 0:
                         continue
 
                     for lon_idx, grid_lon in enumerate(grid_lons):
-                        diff_lon = np.absolute(
-                            (data[lat_match_indexes, self._LONINDEX] - grid_lon)
-                        )
+                        diff_lon = np.absolute(data[lat_match_indexes, self._LONINDEX] - grid_lon)
                         lon_match_indexes = np.squeeze(np.where(diff_lon <= max_grid_dist_lon))
                         if lon_match_indexes.size == 0:
                             continue
@@ -822,7 +820,7 @@ class ReadL2DataBase(ReadUngriddedBase):
         data_for_gridding = {}
 
         if gridtype in self.SUPPORTED_GRIDS:
-            temp = "starting simple gridding for {} grid...".format(gridtype)
+            temp = f"starting simple gridding for {gridtype} grid..."
             self.logger.info(temp)
 
             grid_array_prot = np.full(
@@ -840,7 +838,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
             pass
         else:
-            temp = "Error: Unknown grid: {}".format(gridtype)
+            temp = f"Error: Unknown grid: {gridtype}"
             return
 
         end_time = time.perf_counter()

@@ -137,7 +137,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
     def __init__(self, data_id=None, data_dir=None):
         # initiate base class
-        super(ReadEarlinet, self).__init__(data_id=data_id, data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=data_dir)
         # make sure everything is properly set up
         if not all(
             [x in self.VAR_PATTERNS_FILE for x in self.PROVIDES_VARIABLES]
@@ -219,7 +219,7 @@ class ReadEarlinet(ReadUngriddedBase):
         var_info = self._var_info
 
         # Iterate over the lines of the file
-        self.logger.debug("Reading file {}".format(filename))
+        self.logger.debug(f"Reading file {filename}")
 
         data_in = xarray.open_dataset(filename)
 
@@ -233,7 +233,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     _meta = None
             data_out[k] = _meta
 
-        data_out["station_name"] = re.split("\s|,", data_out["location"])[0].strip()
+        data_out["station_name"] = re.split(r"\s|,", data_out["location"])[0].strip()
 
         str_dummy = str(data_in.StartDate)
         year, month, day = str_dummy[0:4], str_dummy[4:6], str_dummy[6:8]
@@ -270,7 +270,7 @@ class ReadEarlinet(ReadUngriddedBase):
             netcdf_var_name = self.VAR_NAMES_FILE[var]
             # check if the desired variable is in the file
             if netcdf_var_name not in data_in.variables:
-                self.logger.warning("Variable {} not found in file {}".format(var, filename))
+                self.logger.warning(f"Variable {var} not found in file {filename}")
                 continue
 
             info = var_info[var]
@@ -361,7 +361,7 @@ class ReadEarlinet(ReadUngriddedBase):
                         alt_vals *= alt_unit_fac
                         alt_unit = to_alt_unit
                     except Exception as e:
-                        self.logger.warning("Failed to convert unit: {}".format(repr(e)))
+                        self.logger.warning(f"Failed to convert unit: {repr(e)}")
 
                 # remove outliers from data, if applicable
                 if remove_outliers and unit_ok:
@@ -473,7 +473,7 @@ class ReadEarlinet(ReadUngriddedBase):
         VAR_IDX = -1
         for i, _file in enumerate(files):
             if i % disp_each == 0:
-                print("Reading file {} of {} ({})".format(i + 1, num_files, type(self).__name__))
+                print(f"Reading file {i + 1} of {num_files} ({type(self).__name__})")
             try:
                 stat = self.read_file(
                     _file,
@@ -571,7 +571,7 @@ class ReadEarlinet(ReadUngriddedBase):
             except Exception as e:
                 self.read_failed.append(_file)
                 self.logger.exception(
-                    "Failed to read file {} (ERR: {})".format(os.path.basename(_file), repr(e))
+                    f"Failed to read file {os.path.basename(_file)} (ERR: {repr(e)})"
                 )
 
         # shorten data_obj._data to the right number of points
@@ -585,7 +585,7 @@ class ReadEarlinet(ReadUngriddedBase):
         exclude = []
         import glob
 
-        files = glob.glob("{}/EXCLUDE/*.txt".format(self.data_dir))
+        files = glob.glob(f"{self.data_dir}/EXCLUDE/*.txt")
         for i, file in enumerate(files):
             if not os.path.basename(file) in self.EXCLUDE_CASES:
                 continue
@@ -638,7 +638,7 @@ class ReadEarlinet(ReadUngriddedBase):
             if not var in self.VAR_PATTERNS_FILE:
                 from pyaerocom.exceptions import VarNotAvailableError
 
-                raise VarNotAvailableError("Input variable {} is not supported".format(var))
+                raise VarNotAvailableError(f"Input variable {var} is not supported")
 
             _pattern = self.VAR_PATTERNS_FILE[var]
             if pattern is not None:
@@ -646,7 +646,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     raise NotImplementedError("filetype delimiter . not " "supported")
                 spl = _pattern.split(".")
                 if not "*" in spl[0]:
-                    raise AttributeError("Invalid file pattern: {}".format(_pattern))
+                    raise AttributeError(f"Invalid file pattern: {_pattern}")
                 spl[0] = spl[0].replace("*", pattern)
                 _pattern = ".".join(spl)
 

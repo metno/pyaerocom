@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 High level I/O utility methods for pyaerocom
 """
@@ -15,7 +14,7 @@ def get_ungridded_reader(obs_id):
     for reader in ReadUngridded.SUPPORTED_READERS:
         if obs_id in reader.SUPPORTED_DATASETS:
             return reader
-    raise ValueError("No ungridded reader found that supports {}".format(obs_id))
+    raise ValueError(f"No ungridded reader found that supports {obs_id}")
 
 
 def browse_database(model_or_obs, verbose=False):
@@ -56,7 +55,7 @@ def browse_database(model_or_obs, verbose=False):
     browser = AerocomBrowser()
     matches = browser.find_matches(model_or_obs)
     if len(matches) == 0:
-        print("No match could be found for {}".format(model_or_obs))
+        print(f"No match could be found for {model_or_obs}")
         return
     elif len(matches) > 20:
         print(
@@ -74,7 +73,7 @@ def browse_database(model_or_obs, verbose=False):
                 reader = ReadGridded(match)
             print(reader)
         except Exception as e:
-            print("Reading failed for {}. Error: {}".format(match, repr(e)))
+            print(f"Reading failed for {match}. Error: {repr(e)}")
     return matches
 
 

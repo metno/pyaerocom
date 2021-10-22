@@ -114,10 +114,10 @@ def compute_model_average_and_diversity(
     elif avg_how == "median":
         avg_fun = np.median
     else:
-        raise ValueError("Invalid input for avg_how {}".format(avg_how))
+        raise ValueError(f"Invalid input for avg_how {avg_how}")
 
     if data_id is None:
-        data_id = "AEROCOM-{}".format(avg_how.upper())
+        data_id = f"AEROCOM-{avg_how.upper()}"
 
     if model_names is None:
         model_names = list(cfg.cfg.model_cfg)
@@ -232,7 +232,7 @@ def compute_model_average_and_diversity(
         numpy_to_cube(
             divarr,
             dims=dims,
-            var_name="{}div".format(var_name),
+            var_name=f"{var_name}div",
             units="%",
             ts_type=ts_type,
             data_id=data_id,
@@ -251,7 +251,7 @@ def compute_model_average_and_diversity(
             numpy_to_cube(
                 stdarr,
                 dims=dims,
-                var_name="{}std".format(var_name),
+                var_name=f"{var_name}std",
                 units=data.units,
                 ts_type=ts_type,
                 data_id=data_id,
@@ -268,7 +268,7 @@ def compute_model_average_and_diversity(
             numpy_to_cube(
                 q1arr,
                 dims=dims,
-                var_name="{}q1".format(var_name),
+                var_name=f"{var_name}q1",
                 units=data.units,
                 ts_type=ts_type,
                 data_id=data_id,
@@ -285,7 +285,7 @@ def compute_model_average_and_diversity(
             numpy_to_cube(
                 q3arr,
                 dims=dims,
-                var_name="{}q3".format(var_name),
+                var_name=f"{var_name}q3",
                 units=data.unit,
                 ts_type=ts_type,
                 data_id=data_id,

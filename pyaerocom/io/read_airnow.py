@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 ########################################################################
 #
 # This python module is part of the pyaerocom software
@@ -141,7 +140,7 @@ class ReadAirNow(ReadUngriddedBase):
     STAT_METADATA_FILENAME = "allStations_20191224.csv"
 
     def __init__(self, data_id=None, data_dir=None):
-        super(ReadAirNow, self).__init__(data_id=data_id, data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=data_dir)
         self.make_datetime64_array = np.vectorize(self._date_time_str_to_datetime64)
         self._station_metadata = None
 

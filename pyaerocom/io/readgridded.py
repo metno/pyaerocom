@@ -39,7 +39,7 @@ from pyaerocom.tstype import TsType
 from pyaerocom.variable import Variable
 
 
-class ReadGridded(object):
+class ReadGridded:
     """Class for reading gridded files using AeroCom file conventions
 
     Attributes
@@ -237,7 +237,7 @@ class ReadGridded(object):
         if isinstance(val, Path):
             val = str(val)
         if not isinstance(val, str) or not os.path.isdir(val):
-            raise FileNotFoundError("Input data directory {} does not exist".format(val))
+            raise FileNotFoundError(f"Input data directory {val} does not exist")
         self._data_dir = val
         self.reinit()
 
@@ -351,7 +351,7 @@ class ReadGridded(object):
             else:
                 year = years[-2]
 
-        return to_pandas_timestamp("{}-12-31 23:59:59".format(year))
+        return to_pandas_timestamp(f"{year}-12-31 23:59:59")
 
     def reinit(self):
         """Reinit everything that is loaded specific to data_dir"""
@@ -503,7 +503,7 @@ class ReadGridded(object):
         """
         if not var_to_compute in self._aux_avail:
             if not self.check_compute_var(var_to_compute):
-                raise VarNotAvailableError("Variable {} cannot be computed".format(var_to_compute))
+                raise VarNotAvailableError(f"Variable {var_to_compute} cannot be computed")
         return self._aux_avail[var_to_compute]
 
     def check_compute_var(self, var_name):
@@ -550,7 +550,7 @@ class ReadGridded(object):
         for alias in v.aliases:
             if alias in self.vars_filename:
                 return alias
-        raise VarNotAvailableError("Var {} is not available in data...".format(var))
+        raise VarNotAvailableError(f"Var {var} is not available in data...")
 
     def has_var(self, var_name):
         """Check if variable is available
@@ -715,7 +715,7 @@ class ReadGridded(object):
         for _file in files:
             # TODO: resolve this in a more general way...
             if "ModelLevelAtStations" in _file:
-                const.logger.info("Ignoring file {}".format(_file))
+                const.logger.info(f"Ignoring file {_file}")
                 continue
             try:
                 info = self.file_convention.get_info_from_file(_file)
@@ -936,7 +936,7 @@ class ReadGridded(object):
             if flex_ts_type or ts_type is None or ts_types[0] == ts_type:
                 # all good
                 return ts_types[0]
-            raise DataCoverageError("No files could be found for ts_type {}".format(ts_type))
+            raise DataCoverageError(f"No files could be found for ts_type {ts_type}")
         highest_avail = get_highest_resolution(*ts_types)
         # there is more than one frequency available -> decision making
         # gets more complicated
@@ -1034,7 +1034,7 @@ class ReadGridded(object):
         verts = subset.vert_code.unique()
 
         if len(exps) > 1:
-            msg += "Found multiple experiments. Choose from: {}".format(exps)
+            msg += f"Found multiple experiments. Choose from: {exps}"
         if len(verts) > 1:
             dvc = const.VARS[var_name].get_default_vert_code()
             if dvc is not None and dvc in verts:
@@ -1052,7 +1052,7 @@ class ReadGridded(object):
 
             if msg:
                 msg += "; "
-            msg += "Found multiple vertical codes. Choose from: {}".format(verts)
+            msg += f"Found multiple vertical codes. Choose from: {verts}"
         raise DataQueryError(
             "Failed to uniquely identify data files for input " "query. Reason: {}".format(msg)
         )
@@ -1087,7 +1087,7 @@ class ReadGridded(object):
     def _generate_file_paths(self, df=None):
         if df is None:
             df = self.file_info
-        return sorted([os.path.join(self.data_dir, x) for x in df.filename.values])
+        return sorted(os.path.join(self.data_dir, x) for x in df.filename.values)
 
     def get_var_info_from_files(self):
         """Creates dicitonary that contains variable specific meta information
@@ -1517,7 +1517,7 @@ class ReadGridded(object):
         if var.is_alias and var.var_name_aerocom in self.vars_filename:
             return var.var_name_aerocom
 
-        raise VarNotAvailableError("Variable {} could not be found".format(var_name))
+        raise VarNotAvailableError(f"Variable {var_name} could not be found")
 
     def _eval_vert_which_and_ts_type(self, var_name, vert_which, ts_type):
         if all(x == "" for x in self.file_info.vert_code.values):
@@ -1723,7 +1723,7 @@ class ReadGridded(object):
             )
         elif not constraint["operator"] in self.CONSTRAINT_OPERATORS:
             raise ValueError(
-                "Invalid constraint operator. Choose from: {}".format(self.CONSTRAINT_OPERATORS)
+                f"Invalid constraint operator. Choose from: {self.CONSTRAINT_OPERATORS}"
             )
         elif not "filter_val" in constraint:
             raise ValueError("constraint needs specification of filter_val")
@@ -1975,7 +1975,7 @@ class ReadGridded(object):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         elif not isinstance(vars_to_retrieve, list):
-            raise IOError(
+            raise OSError(
                 "Invalid input for vars_to_retrieve {}. Need string "
                 "or list of strings specifying var_names to load. "
                 "You may also leave it empty (None) in which case all "
@@ -2040,7 +2040,7 @@ class ReadGridded(object):
         )
 
         if len(loaded_files) == 0:
-            raise IOError("None of the input files could be loaded in {}".format(self.data_id))
+            raise OSError(f"None of the input files could be loaded in {self.data_id}")
 
         # self.loaded_cubes[var_name] = cubes
         return (cubes, loaded_files)
@@ -2223,7 +2223,7 @@ class ReadGridded(object):
         return self.__str__()
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = f"Pyaerocom {type(self).__name__}"
         s = (
             "\n{}\n{}\n"
             "Data ID: {}\n"

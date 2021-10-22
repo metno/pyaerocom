@@ -402,7 +402,7 @@ def plot_griddeddata_on_map(
             var_str = var_name  # + VARS.unit_str
             if unit is not None:
                 if not str(unit) in ["1", "no_unit"]:
-                    var_str += " [{}]".format(unit)
+                    var_str += f" [{unit}]"
 
             cbar.set_label(var_str)
 
@@ -413,7 +413,7 @@ def plot_griddeddata_on_map(
             for lbl in cbar.ax.get_yticklabels():
                 tstr = lbl.get_text()
                 if bool(tstr):
-                    lbls.append("{:.1e}".format(float(tstr)))
+                    lbls.append(f"{float(tstr):.1e}")
                 else:
                     lbls.append("")
             cbar.ax.set_yticklabels(lbls)

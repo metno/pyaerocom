@@ -105,7 +105,7 @@ class ColdataToJsonEngine(ProcessingEngine):
             raise NotImplementedError("Cannot yet handle profile data")
 
         elif not isinstance(coldata, ColocatedData):
-            raise ValueError("Need ColocatedData object, got {}".format(type(coldata)))
+            raise ValueError(f"Need ColocatedData object, got {type(coldata)}")
 
         elif coldata.has_latlon_dims and regions_how == "country":
             raise NotImplementedError(

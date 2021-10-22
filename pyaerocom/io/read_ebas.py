@@ -302,7 +302,7 @@ class ReadEbas(ReadUngriddedBase):
     #: base class ReadUngriddedBase)
     def __init__(self, data_id=None, data_dir=None):
 
-        super(ReadEbas, self).__init__(data_id=data_id, data_dir=data_dir)
+        super().__init__(data_id=data_id, data_dir=data_dir)
 
         self._opts = {"default": ReadEbasOptions()}
 
@@ -442,7 +442,7 @@ class ReadEbas(ReadUngriddedBase):
                             mapping[fpath].append(other_var)
                         except ValueError:
                             pass
-        self.logger.info("Number of files to read reduced to {}".format(len(mapping)))
+        self.logger.info(f"Number of files to read reduced to {len(mapping)}")
         files, files_contain = [], []
         for path, contains_vars in mapping.items():
             files.append(path)
@@ -561,7 +561,7 @@ class ReadEbas(ReadUngriddedBase):
         db = self.file_index
         files_vars = {}
         files_aux_req = {}
-        const.logger.info("Retrieving EBAS files for variables\n{}".format(vars_to_retrieve))
+        const.logger.info(f"Retrieving EBAS files for variables\n{vars_to_retrieve}")
         # directory containing NASA Ames files
         filedir = self.file_dir
         for var in vars_to_retrieve:
@@ -580,7 +580,7 @@ class ReadEbas(ReadUngriddedBase):
                 paths = []
                 for file in filenames:
                     if file in self.IGNORE_FILES:
-                        const.logger.info("Ignoring flagged file {}".format(file))
+                        const.logger.info(f"Ignoring flagged file {file}")
                         continue
                     paths.append(os.path.join(filedir, file))
 
@@ -820,7 +820,7 @@ class ReadEbas(ReadUngriddedBase):
             col_info = file.var_defs[colnum]
             if "matrix" in col_info:
                 if preferred_matrix is None:
-                    raise IOError(
+                    raise OSError(
                         "Data file contains multiple column matches "
                         "for variable {}, some of which specify "
                         "different data type matrices. Aerocom "
@@ -927,7 +927,7 @@ class ReadEbas(ReadUngriddedBase):
         try:
             ts_type = self.TS_TYPE_CODES[tres_code]
         except KeyError:
-            ival = re.findall("\d+", tres_code)[0]
+            ival = re.findall(r"\d+", tres_code)[0]
             code = tres_code.split(ival)[-1]
             if not code in self.TS_TYPE_CODES:
                 raise NotImplementedError(
@@ -1107,7 +1107,7 @@ class ReadEbas(ReadUngriddedBase):
                 instr = meta["instrument_name"]
 
                 if any([x in instr for x in ["MAAP", "Thermo"]]) and wvlcol != 637:
-                    _col["wavelength_WRONG_EBAS"] = "{} nm".format(wvlcol)
+                    _col["wavelength_WRONG_EBAS"] = f"{wvlcol} nm"
                     _col["wavelength_nm_WRONG_EBAS"] = wvlcol
                     _col["wavelength"] = "637 nm"
                     _col["wavelength_WRONG_EBAS_INFO"] = (
@@ -1139,8 +1139,8 @@ class ReadEbas(ReadUngriddedBase):
                         _col["wvl_adj"] = True
                         _col["from_wvl"] = wvlcol
                         _col["wvl_adj_angstrom"] = ae
-                        _col["wvl_adj_diff"] = "{:.2f} %".format(diff)
-                        _col["wavelength"] = "{:.1f} nm".format(towvl)
+                        _col["wvl_adj_diff"] = f"{diff:.2f} %"
+                        _col["wavelength"] = f"{towvl:.1f} nm"
                         _col["wavelength_nm"] = towvl
                     else:
                         raise NotImplementedError(
@@ -1511,7 +1511,7 @@ class ReadEbas(ReadUngriddedBase):
         dict
             updated data object now containing also computed variables
         """
-        data = super(ReadEbas, self).compute_additional_vars(data, vars_to_compute)
+        data = super().compute_additional_vars(data, vars_to_compute)
         for var in vars_to_compute:
             if not var in data:  # variable could not be computed -> ignore
                 continue

@@ -46,7 +46,7 @@ def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):
             if minexp < -3:
                 annot_fmt_rows.append(".1E")
             elif minexp < 0:
-                annot_fmt_rows.append(".{}f".format(-minexp + 1))
+                annot_fmt_rows.append(f".{-minexp + 1}f")
             elif minexp in [0, 1]:
                 annot_fmt_rows.append(".1f")
             else:
@@ -257,7 +257,7 @@ def df_to_heatmap(
                     try:
                         normalise_rows_col = df.columns.to_list().index(normalise_rows_col)
                     except ValueError:
-                        raise ValueError("Failed to localise column {}".format(normalise_rows_col))
+                        raise ValueError(f"Failed to localise column {normalise_rows_col}")
                 norm_ref = df.values[:, normalise_rows_col]
             else:
                 if normalise_rows_how == "mean":
@@ -274,7 +274,7 @@ def df_to_heatmap(
             df_hm = df.subtract(norm_ref, axis=0).div(norm_ref, axis=0)
         else:
             df_hm = df.div(norm_ref, axis=0)
-        cbar_kws["format"] = FuncFormatter(lambda x, pos: "{:.0%}".format(x))
+        cbar_kws["format"] = FuncFormatter(lambda x, pos: f"{x:.0%}")
 
     if color_rowwise:
         df_hm = df_hm.div(abs(df_hm).max(axis=1), axis=0)
@@ -314,7 +314,7 @@ def df_to_heatmap(
         elif num_digits is None or num_digits > 5:
             fmt = ".4g"
         else:
-            fmt = ".{}f".format(num_digits)
+            fmt = f".{num_digits}f"
 
     ax = heatmap(
         df_hm,

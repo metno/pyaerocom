@@ -91,7 +91,7 @@ def create_varinfo_table(
     result = []
     table_cols = ["year", "ts_type", "vert_code", "is_at_stations", "aux_vars"]
     for i, model in enumerate(model_ids):
-        print("At model: {} ({} of {})".format(model, i, len(model_ids)))
+        print(f"At model: {model} ({i} of {len(model_ids)})")
         try:
             reader = ReadGridded(model)
             var_info = reader.get_var_info_from_files()
@@ -116,7 +116,7 @@ def create_varinfo_table(
                                 sub_res.extend([None, None, None, False])
                             result.append(sub_res)
 
-        except IOError as e:
+        except OSError as e:
             dummy = [None] * len(header)
             dummy[1] = model
             result.append(dummy)
@@ -131,7 +131,7 @@ def create_varinfo_table(
 
 def print_file(file_path):
     if not os.path.exists(file_path):
-        raise IOError("File not found...")
+        raise OSError("File not found...")
     with open(file_path) as f:
         for line in f:
             if line.strip():

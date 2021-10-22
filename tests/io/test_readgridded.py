@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Created on Mon Jul  9 14:14:29 2018
 """
@@ -127,7 +126,7 @@ def test_ReadGridded_read_var(reader_tm5):
 )
 def test_ReadGridded_experiments(tmpdir, experiments):
     for exp in experiments:
-        filename = "aerocom3_TM5-met2010_{}-CTRL2019_abs550aer_Column_2010_daily.nc".format(exp)
+        filename = f"aerocom3_TM5-met2010_{exp}-CTRL2019_abs550aer_Column_2010_daily.nc"
         open(os.path.join(tmpdir, filename), "a").close()
     r = ReadGridded(data_dir=str(tmpdir))
     assert r.experiments == experiments
@@ -142,7 +141,7 @@ def test_ReadGridded_experiments(tmpdir, experiments):
 )
 def test_ReadGridded_aux(tmpdir, vars, expected):
     for var in vars:
-        filename = "aerocom3_TM5-met2010_AP3-CTRL2019_{}_Column_2010_daily.nc".format(var)
+        filename = f"aerocom3_TM5-met2010_AP3-CTRL2019_{var}_Column_2010_daily.nc"
         open(os.path.join(tmpdir, filename), "a").close()
     r = ReadGridded(data_dir=str(tmpdir))
     for var in expected:
@@ -180,7 +179,7 @@ def test_filter_query(reader_tm5):
 )
 def test_ReadGridded_years_avail(tmpdir, years, expected):
     for year in years:
-        filename = "aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_{}_daily.nc".format(year)
+        filename = f"aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_{year}_daily.nc"
         open(os.path.join(tmpdir, filename), "a").close()
     r = ReadGridded(data_dir=str(tmpdir))
     assert sorted(r.years_avail) == sorted(years)

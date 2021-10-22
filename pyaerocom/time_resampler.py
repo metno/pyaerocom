@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Module containing time resampling functionality
 """
@@ -13,7 +12,7 @@ from pyaerocom.helpers import isnumeric, resample_time_dataarray, resample_times
 from pyaerocom.tstype import TsType
 
 
-class TimeResampler(object):
+class TimeResampler:
     """Object that can be use to resample timeseries data
 
     It supports hierarchical resampling of :class:`xarray.DataArray` objects

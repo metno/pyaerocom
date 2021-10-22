@@ -2,7 +2,7 @@ from pyaerocom._lowlevel_helpers import dict_to_str
 from pyaerocom.time_config import TS_TYPES
 
 
-class GridIO(object):
+class GridIO:
     """Global I/O settings for gridded data
 
     This class includes options related to the import of gridded data. This
@@ -152,7 +152,7 @@ class GridIO(object):
             if key is not a valid setting
         """
         if not key in self.__dict__.keys():
-            raise IOError("Could not update IO setting: Invalid key")
+            raise OSError("Could not update IO setting: Invalid key")
         self.__dict__[key] = value
 
     def __getitem__(self, key):
@@ -162,9 +162,9 @@ class GridIO(object):
 
         """
         if not key in self.__dict__.keys():
-            raise IOError("Invalid attribute")
+            raise OSError("Invalid attribute")
         return self.__dict__[key]
 
     def __str__(self):
-        head = "Pyaerocom {}".format(type(self).__name__)
+        head = f"Pyaerocom {type(self).__name__}"
         return "\n{}\n{}\n{}".format(head, len(head) * "-", dict_to_str(self.to_dict()))

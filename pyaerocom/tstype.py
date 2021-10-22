@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 General helper methods for the pyaerocom library.
 """
@@ -18,7 +17,7 @@ from pyaerocom.time_config import (
 )
 
 
-class TsType(object):
+class TsType:
     VALID = TS_TYPES
     VALID_ITER = VALID[:-1]
     FROM_PANDAS = PANDAS_FREQ_TO_TS_TYPE
@@ -71,7 +70,7 @@ class TsType(object):
     def val(self):
         """Value of frequency (string type), e.g. 3daily"""
         if self._mulfac != 1:
-            return "{}{}".format(self._mulfac, self._val)
+            return f"{self._mulfac}{self._val}"
         return self._val
 
     @val.setter
@@ -82,7 +81,7 @@ class TsType(object):
             )
         mulfac = 1
         if val[0].isdigit():
-            ivalstr = re.findall("\d+", val)[0]
+            ivalstr = re.findall(r"\d+", val)[0]
             val = val.split(ivalstr)[-1]
             mulfac = int(ivalstr)
         if not val in self.VALID:
@@ -105,18 +104,18 @@ class TsType(object):
     @property
     def datetime64_str(self):
         """Convert ts_type str to datetime64 unit string"""
-        return "datetime64[{}]".format(self.to_numpy_freq())
+        return f"datetime64[{self.to_numpy_freq()}]"
 
     @property
     def timedelta64_str(self):
         """Convert ts_type str to datetime64 unit string"""
-        return "timedelta64[{}]".format(self.to_numpy_freq())
+        return f"timedelta64[{self.to_numpy_freq()}]"
 
     @property
     def cf_base_unit(self):
         """Convert ts_type str to CF convention time unit"""
         if not self.base in self.TSTR_TO_CF:
-            raise NotImplementedError("Cannot convert {} to CF str".format(self.base))
+            raise NotImplementedError(f"Cannot convert {self.base} to CF str")
         return self.TSTR_TO_CF[self.base]
 
     @property
@@ -162,7 +161,7 @@ class TsType(object):
 
         idx = self.VALID_ITER.index(self._val)
         if idx == 0:
-            raise IndexError("No higher resolution available than {}".format(self))
+            raise IndexError(f"No higher resolution available than {self}")
         return TsType(self.VALID_ITER[idx - 1])
 
     @property
@@ -203,20 +202,18 @@ class TsType(object):
 
     def to_numpy_freq(self):
         if not self._val in self.TO_NUMPY:
-            raise TemporalResolutionError("numpy frequency not available for {}".format(self._val))
+            raise TemporalResolutionError(f"numpy frequency not available for {self._val}")
         freq = self.TO_NUMPY[self._val]
-        return "{}{}".format(self.mulfac, freq)
+        return f"{self.mulfac}{freq}"
 
     def to_pandas_freq(self):
         """Convert ts_type to pandas frequency string"""
         if not self._val in self.TO_PANDAS:
-            raise TemporalResolutionError(
-                "pandas frequency not available for {}".format(self._val)
-            )
+            raise TemporalResolutionError(f"pandas frequency not available for {self._val}")
         freq = self.TO_PANDAS[self._val]
         if self._mulfac == 1:
             return freq
-        return "{}{}".format(self._mulfac, freq)
+        return f"{self._mulfac}{freq}"
 
     def to_si(self):
         """Convert to SI conform string (e.g. used for unit conversion)"""
