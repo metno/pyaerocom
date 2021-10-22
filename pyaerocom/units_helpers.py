@@ -1,9 +1,9 @@
 import pandas as pd
-
 from cf_units import Unit
+
+from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.time_config import SI_TO_TS_TYPE
 from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.variable_helpers import get_variable
 
 #: default frequency for rates variables (e.g. deposition, precip)

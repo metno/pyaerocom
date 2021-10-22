@@ -32,26 +32,24 @@ Example
 -------
 look at the end of the file
 """
+import gzip
+import os
 import pathlib
 import shutil
 import tempfile
+from collections import OrderedDict as od
 
 import cf_units
-from collections import OrderedDict as od
 import numpy as np
-import os
 import pandas as pd
 from tqdm import tqdm
 
 from pyaerocom import const
-from pyaerocom.exceptions import TemporalResolutionError, EEAv2FileError
-from pyaerocom.stationdata import StationData
-from pyaerocom.ungriddeddata import UngriddedData
-
+from pyaerocom.exceptions import EEAv2FileError, TemporalResolutionError
 from pyaerocom.io.helpers import get_country_name_from_iso
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-
-import gzip
+from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 
 class ReadEEAAQEREPBase(ReadUngriddedBase):
@@ -503,7 +501,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
         IOError
             if no files can be found
         """
-        import glob, os
+        import glob
+        import os
+
         from pyaerocom._lowlevel_helpers import list_to_shortstr
         from pyaerocom.exceptions import DataSourceError
 
@@ -704,8 +704,9 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
 
 if __name__ == "__main__":
     # Test that the reading routine works
-    from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
     import logging
+
+    from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 
     ddir = "/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download"
     reader = ReadEEAAQEREP(data_dir=ddir)

@@ -118,8 +118,9 @@ if __name__ == "__main__":
 
     elif username == "jonasg":
         # Test that the reading routine works
-        from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
         import logging
+
+        from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 
         ddir = "/home/jonasg/MyPyaerocom/data/obsdata/EEA_AQeRep.NRT/download"
         reader = ReadEEAAQEREP(data_dir=ddir)

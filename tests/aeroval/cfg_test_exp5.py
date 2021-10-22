@@ -2,8 +2,8 @@ import os
 
 import numpy as np
 
-from ._outbase import AEROVAL_OUT as BASEOUT
 from ._outbase import ADD_MODELS_DIR
+from ._outbase import AEROVAL_OUT as BASEOUT
 
 START = 2000
 STOP = 2020

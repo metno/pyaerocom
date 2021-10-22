@@ -1,15 +1,17 @@
 import abc
-import glob, os
+import glob
 import logging
-import numpy as np
+import os
 from fnmatch import fnmatch
 
-from pyaerocom import const
+import numpy as np
+
+from pyaerocom import LOGLEVELS, const
 from pyaerocom._lowlevel_helpers import list_to_shortstr
-from pyaerocom.io.helpers import get_obsnetwork_dir
-from pyaerocom import LOGLEVELS
-from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.exceptions import DataSourceError
+from pyaerocom.helpers import varlist_aerocom
+from pyaerocom.io.helpers import get_obsnetwork_dir
+
 
 # TODO: Proposal: include attribute ts_type that is by default undefined but
 # may be set to either of the defined

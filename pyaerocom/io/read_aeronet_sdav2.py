@@ -31,10 +31,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
+import os
+import re
+from collections import OrderedDict as od
+
 import numpy as np
 import pandas as pd
-import re, os
-from collections import OrderedDict as od
+
 from pyaerocom import const as const
 from pyaerocom.aux_var_helpers import (
     calc_ang4487aer,
@@ -42,8 +45,8 @@ from pyaerocom.aux_var_helpers import (
     calc_od550gt1aer,
     calc_od550lt1aer,
 )
-from pyaerocom.stationdata import StationData
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
+from pyaerocom.stationdata import StationData
 
 
 class ReadAeronetSdaV2(ReadAeronetBase):

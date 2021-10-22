@@ -27,7 +27,7 @@ jobs:
     - name: Check format
       run: |
         black --check --line-length 99 --target-version py38 .
-        isort --check --line-length 99 --python-version 38 --profile black --src-path pyaerocom .
+        isort --check --line-length 99 --python-version 38 --profile black --src-path pyaerocom --src-path tests .
     - name: Lint
       continue-on-error: true
       run: |

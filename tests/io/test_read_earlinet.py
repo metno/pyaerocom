@@ -1,8 +1,8 @@
-import pytest
 import os
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from pyaerocom import VerticalProfile
 from pyaerocom.io.read_earlinet import ReadEarlinet

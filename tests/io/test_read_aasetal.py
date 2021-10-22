@@ -21,7 +21,6 @@ from pyaerocom.units_helpers import convert_unit
 
 from ..conftest import lustre_unavail
 
-
 VARUNITS = {
     "concso2": "ug m-3",
     "concso4": "ug m-3",

@@ -6,22 +6,23 @@ Created on Thu Oct 29 17:12:54 2020
 @author: jonasg
 """
 
-from pathlib import Path
 import os
-import requests
 import tarfile
-
+from pathlib import Path
 from traceback import format_exc
+
+import requests
+
 from pyaerocom import const
 from pyaerocom.io import (
-    ReadAeronetSunV3,
-    ReadAeronetSdaV3,
     ReadAeronetInvV3,
-    ReadEbas,
+    ReadAeronetSdaV3,
+    ReadAeronetSunV3,
     ReadAirNow,
-    ReadGhost,
-    ReadEEAAQEREP_V2,
     ReadEarlinet,
+    ReadEbas,
+    ReadEEAAQEREP_V2,
+    ReadGhost,
 )
 
 

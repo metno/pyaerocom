@@ -31,14 +31,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-import os, re
+import os
+import re
 
 import numpy as np
 import pandas as pd
 
 from pyaerocom import const
+from pyaerocom.aux_var_helpers import calc_abs550aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
-from pyaerocom.aux_var_helpers import calc_od550aer, calc_abs550aer
 from pyaerocom.stationdata import StationData
 
 

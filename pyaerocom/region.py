@@ -7,12 +7,9 @@ import numpy as np
 
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.helpers_landsea_masks import load_region_mask_xr
-from pyaerocom.region_defs import (
-    REGION_DEFS,  # all region definitions
-    HTAP_REGIONS,  # list of HTAP regions
-    OLD_AEROCOM_REGIONS,
-    REGION_NAMES,
-)  # custom names (dict)
+from pyaerocom.region_defs import HTAP_REGIONS  # list of HTAP regions
+from pyaerocom.region_defs import REGION_DEFS  # all region definitions
+from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, REGION_NAMES  # custom names (dict)
 
 
 class Region(BrowseDict):
@@ -194,6 +191,7 @@ class Region(BrowseDict):
 
         """
         from cartopy.mpl.geoaxes import GeoAxes
+
         from pyaerocom.plot.mapping import init_map
 
         if ax is None:

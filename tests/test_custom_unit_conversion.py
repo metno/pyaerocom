@@ -1,6 +1,7 @@
 import numpy.testing as npt
-import pyaerocom as pya
 from cf_units import Unit
+
+import pyaerocom as pya
 
 u = Unit("kg/m2/s")
 test_cases = {"kg h-1": ["kg s-1", 1 / 3600]}

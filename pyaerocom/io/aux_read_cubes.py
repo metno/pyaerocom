@@ -1,13 +1,13 @@
+from traceback import format_exc
+
 import iris
 import numpy as np
-from traceback import format_exc
+
 from pyaerocom import print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
 from pyaerocom.helpers import copy_coords_cube
-from pyaerocom.molmasses import get_molmass
+from pyaerocom.molmasses import get_mmr_to_vmr_fac, get_molmass
 from pyaerocom.units_helpers import get_unit_conversion_fac
-from pyaerocom.molmasses import get_mmr_to_vmr_fac
-
 
 CUBE_MATHS = {
     "add": iris.analysis.maths.add,
@@ -197,8 +197,9 @@ def compute_angstrom_coeff_cubes(cube1, cube2, lambda1=None, lambda2=None):
     Cube
         Cube containing Angstrom exponent(s)
     """
-    from pyaerocom.varnameinfo import VarNameInfo
     from cf_units import Unit
+
+    from pyaerocom.varnameinfo import VarNameInfo
 
     cube1, cube2 = _check_input_iscube(cube1, cube2)
     if lambda1 is None:

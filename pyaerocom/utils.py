@@ -1,7 +1,9 @@
-from pyaerocom.io import ReadGridded
 import fnmatch
 import os
+
 import pandas as pd
+
+from pyaerocom.io import ReadGridded
 
 
 def create_varinfo_table(

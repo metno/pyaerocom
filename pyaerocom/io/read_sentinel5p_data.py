@@ -32,13 +32,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-from pyaerocom.io.readsatellitel2base import ReadL2DataBase
+import logging
 
 # from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 # import geopy
 import numpy as np
-import logging
+
 from pyaerocom import const
+from pyaerocom.io.readsatellitel2base import ReadL2DataBase
 from pyaerocom.ungriddeddata import UngriddedData
 
 
@@ -523,6 +524,7 @@ class ReadL2Data(ReadL2DataBase):
             colno = self._COLNO
 
         import time
+
         import coda
 
         start = time.perf_counter()
@@ -768,8 +770,8 @@ class ReadL2Data(ReadL2DataBase):
         else:
             _data = data_to_write._data
 
-        import xarray as xr
         import numpy as np
+        import xarray as xr
 
         bounds_dim_name = "bounds"
         bounds_dim_size = 4
@@ -1005,8 +1007,8 @@ class ReadL2Data(ReadL2DataBase):
     ):
         """to_grid method that takes a xarray.Dataset object as input"""
 
-        import xarray as xr
         import numpy as np
+        import xarray as xr
 
         if isinstance(data, dict):
             _data = self.to_xarray(data_to_write=data)
@@ -1396,15 +1398,16 @@ if __name__ == "__main__":
     # if args.topofile:
     #     options['topofile'] = args.topofile
 
+    import glob
     import os
+    import pathlib
+    import sys
+    import tarfile
+    import time
 
     # os.environ['CODA_DEFINITION'] = options['codadef']
     import coda
-    import sys
-    import glob
-    import pathlib
-    import tarfile
-    import time
+
     import pyaerocom as pya
 
     bbox = None

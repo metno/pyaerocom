@@ -1,4 +1,5 @@
 import os
+
 from ..conftest import TMPDIR
 
 AEROVAL_OUT = os.path.join(TMPDIR, "aeroval")

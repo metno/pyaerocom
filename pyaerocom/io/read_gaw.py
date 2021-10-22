@@ -7,14 +7,16 @@ Example
 Notebook: '../../notebooks/DMS.ipynb'
 """
 
-import numpy as np
 from collections import OrderedDict as od
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom import const
-from pyaerocom.stationdata import StationData
-import pandas as pd
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+from pyaerocom import const
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.stationdata import StationData
+from pyaerocom.ungriddeddata import UngriddedData
 
 
 class ReadGAW(ReadUngriddedBase):

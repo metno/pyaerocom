@@ -1,6 +1,4 @@
-from pyaerocom.aeroval.glob_defaults import (
-    var_web_info,
-)
+from pyaerocom.aeroval.glob_defaults import var_web_info
 
 
 def test_var_web_info():

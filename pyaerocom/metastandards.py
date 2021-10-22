@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+
 import numpy as np
-from pyaerocom._lowlevel_helpers import BrowseDict
+
 from pyaerocom import const
+from pyaerocom._lowlevel_helpers import BrowseDict
 
 
 class DataSource(BrowseDict):

@@ -21,23 +21,24 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
-import cf_units
 import glob
 import os
+
+import cf_units
 import numpy as np
 import pandas as pd
 import xarray as xr
 
 import pyaerocom as pya
 from pyaerocom import const
-from pyaerocom.exceptions import DataSourceError
 from pyaerocom.aux_var_helpers import vmrx_to_concx
-from pyaerocom.ungriddeddata import UngriddedData
+from pyaerocom.exceptions import DataSourceError
+from pyaerocom.helpers import varlist_aerocom
 from pyaerocom.io.ghost_meta_keys import GHOST_META_KEYS
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.tstype import TsType
 from pyaerocom.molmasses import get_molmass
+from pyaerocom.tstype import TsType
+from pyaerocom.ungriddeddata import UngriddedData
 
 
 def _vmr_to_conc_ghost_stats(data, mconcvar, vmrvar):

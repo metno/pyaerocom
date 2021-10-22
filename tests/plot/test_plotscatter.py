@@ -1,7 +1,9 @@
-import pytest
 import numpy as np
-import pyaerocom.plot.plotscatter as mod
+import pytest
 from matplotlib.axes import Axes
+
+import pyaerocom.plot.plotscatter as mod
+
 from ..conftest import does_not_raise_exception
 
 

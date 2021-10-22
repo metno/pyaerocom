@@ -25,10 +25,10 @@
 import os
 
 import numpy as np
-import pyaerocom.aux_var_helpers
-import pyaerocom.exceptions as err
 import pytest
 
+import pyaerocom.aux_var_helpers
+import pyaerocom.exceptions as err
 from pyaerocom import const
 from pyaerocom.exceptions import DataCoverageError, MetaDataError, TemporalResolutionError
 from pyaerocom.io.ebas_nasa_ames import EbasNasaAmesFile

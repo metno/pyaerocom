@@ -3,10 +3,11 @@ import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
+import pyaerocom.plot.mapping as mod
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import DataDimensionError
-from pyaerocom.plot.config import get_color_theme, ColorTheme
-import pyaerocom.plot.mapping as mod
+from pyaerocom.plot.config import ColorTheme, get_color_theme
+
 from ..conftest import does_not_raise_exception
 
 

@@ -4,10 +4,10 @@ import numpy as np
 import xarray as xr
 
 from pyaerocom import const
-from pyaerocom.helpers import get_lowest_resolution
-from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.aeroval._processing_base import ProcessingEngine, HasColocator
+from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
+from pyaerocom.colocateddata import ColocatedData
+from pyaerocom.helpers import get_lowest_resolution
 
 
 class SuperObsEngine(ProcessingEngine, HasColocator):

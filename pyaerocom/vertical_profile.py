@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from pyaerocom._lowlevel_helpers import BrowseDict
+
 
 # ToDo: complete docstring
 class VerticalProfile(object):

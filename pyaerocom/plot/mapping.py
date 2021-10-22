@@ -1,23 +1,22 @@
-import matplotlib.pyplot as plt
-from pandas import to_datetime
-import numpy as np
-from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
-
 import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-from numpy import meshgrid, linspace, ceil
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
+from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
+from numpy import ceil, linspace, meshgrid
+from pandas import to_datetime
 
-from pyaerocom import logger, const
+from pyaerocom import const, logger
 from pyaerocom.exceptions import DataDimensionError
-from pyaerocom.plot.config import COLOR_THEME, ColorTheme, MAP_AXES_ASPECT
-from pyaerocom.plot.helpers import (
-    custom_mpl,
-    calc_pseudolog_cmaplevels,
-    projection_from_str,
-    calc_figsize,
-)
 from pyaerocom.mathutils import exponent
+from pyaerocom.plot.config import COLOR_THEME, MAP_AXES_ASPECT, ColorTheme
+from pyaerocom.plot.helpers import (
+    calc_figsize,
+    calc_pseudolog_cmaplevels,
+    custom_mpl,
+    projection_from_str,
+)
 from pyaerocom.region import Region
 
 MPL_PARAMS = custom_mpl()

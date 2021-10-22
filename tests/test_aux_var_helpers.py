@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
 import numpy.testing as npt
+import pytest
+
 import pyaerocom.aux_var_helpers as mod
 
 

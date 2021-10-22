@@ -7,7 +7,6 @@ Created on Tue Mar  3 17:10:03 2020
 """
 import numpy as np
 import numpy.testing as npt
-
 import pytest
 
 from .conftest import data_unavail

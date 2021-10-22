@@ -6,8 +6,10 @@ Created on Thu Oct 29 18:28:45 2020
 @author: jonasg
 """
 
-import pytest
 import os
+
+import pytest
+
 from pyaerocom import const
 from pyaerocom.access_testdata import AccessTestData
 

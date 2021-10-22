@@ -1,9 +1,10 @@
 from collections import OrderedDict as od
-from os.path import join, exists, basename, splitext
-from pyaerocom import const
-from pyaerocom.tstype import TsType
-from pyaerocom.exceptions import FileConventionError
 from configparser import ConfigParser
+from os.path import basename, exists, join, splitext
+
+from pyaerocom import const
+from pyaerocom.exceptions import FileConventionError
+from pyaerocom.tstype import TsType
 
 
 class FileConventionRead(object):

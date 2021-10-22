@@ -6,12 +6,13 @@ Created on Tue Feb  4 12:48:45 2020
 @author: jonasg
 """
 import os
+
+import iris
 import pytest
 import xarray as xr
-import iris
 
-from pyaerocom import const
 import pyaerocom.helpers_landsea_masks as lsm
+from pyaerocom import const
 
 TEST_REGIONS = const.HTAP_REGIONS[:2]
 

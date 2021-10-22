@@ -6,18 +6,19 @@ Created on Mon Mar 22 14:53:00 2021
 @author: jonasg
 """
 import iris.cube
+import numpy as np
 import pytest
 from iris import load
 from iris.cube import Cube
 from iris.exceptions import TranslationError
-import numpy as np
-from pyaerocom.io import FileConventionRead
+
 from pyaerocom.exceptions import (
+    FileConventionError,
+    NetcdfError,
     TemporalResolutionError,
     UnresolvableTimeDefinitionError,
-    NetcdfError,
-    FileConventionError,
 )
+from pyaerocom.io import FileConventionRead
 from pyaerocom.io import iris_io as mod
 
 from ..conftest import TESTDATADIR, does_not_raise_exception

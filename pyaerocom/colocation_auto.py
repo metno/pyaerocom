@@ -3,31 +3,31 @@
 """
 Classes and methods to perform high-level colocation.
 """
-from datetime import datetime
 import glob
 import os
-from pathlib import Path
-import pandas as pd
 import traceback
+from datetime import datetime
+from pathlib import Path
 
-from pyaerocom._lowlevel_helpers import BrowseDict, StrWithDefault, ListOfStrings, chk_make_subdir
+import pandas as pd
+
 from pyaerocom import const
-from pyaerocom.helpers import (
-    to_pandas_timestamp,
-    to_datestring_YYYYMMDD,
-    get_lowest_resolution,
-    start_stop,
-)
+from pyaerocom._lowlevel_helpers import BrowseDict, ListOfStrings, StrWithDefault, chk_make_subdir
+from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.colocation import (
     colocate_gridded_gridded,
     colocate_gridded_ungridded,
     correct_model_stp_coldata,
 )
-from pyaerocom.colocateddata import ColocatedData
-
-from pyaerocom.io import ReadUngridded, ReadGridded, ReadMscwCtm
-from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 from pyaerocom.exceptions import ColocationError, ColocationSetupError, DataCoverageError
+from pyaerocom.helpers import (
+    get_lowest_resolution,
+    start_stop,
+    to_datestring_YYYYMMDD,
+    to_pandas_timestamp,
+)
+from pyaerocom.io import ReadGridded, ReadMscwCtm, ReadUngridded
+from pyaerocom.io.helpers import get_all_supported_ids_ungridded
 
 
 class ColocationSetup(BrowseDict):
@@ -1396,8 +1396,8 @@ class Colocator(ColocationSetup):
     def _check_dimensionality(self, args):
         mdata = args["data"]
         odata = args["data_ref"]
-        from pyaerocom.griddeddata import GriddedData
         from pyaerocom.exceptions import DataDimensionError
+        from pyaerocom.griddeddata import GriddedData
 
         if mdata.ndim == 4 and self.obs_vert_type == "Surface":
             mdata = mdata.extract_surface_level()

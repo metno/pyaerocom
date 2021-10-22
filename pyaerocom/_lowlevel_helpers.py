@@ -1,11 +1,16 @@
 """
 Small helper utility functions for pyaerocom
 """
-import numpy as np
-import os, abc, logging, simplejson
-from pathlib import Path
+import abc
+import logging
+import os
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import numpy as np
+import simplejson
+
 from pyaerocom import print_log
 
 

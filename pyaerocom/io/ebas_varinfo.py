@@ -3,8 +3,8 @@ from configparser import ConfigParser
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.io import EbasSQLRequest
 from pyaerocom.exceptions import VarNotAvailableError
+from pyaerocom.io import EbasSQLRequest
 
 
 class EbasVarInfo(BrowseDict):

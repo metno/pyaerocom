@@ -2,8 +2,9 @@
 Definitions and helpers related to time conversion
 """
 
-from iris import coord_categorisation
 from datetime import datetime
+
+from iris import coord_categorisation
 
 TS_TYPES = ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native"]
 

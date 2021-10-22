@@ -5,13 +5,13 @@ Created on Wed Jun 16 19:31:51 2021
 
 @author: jonasg
 """
-import pytest
 import os
-from pyaerocom.exceptions import DataSearchError
-from pyaerocom import tools
 from getpass import getuser
 
-from pyaerocom import const
+import pytest
+
+from pyaerocom import const, tools
+from pyaerocom.exceptions import DataSearchError
 
 
 def test_clear_cache(tmpdir):

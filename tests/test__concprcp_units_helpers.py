@@ -1,8 +1,9 @@
 import pytest
 
 import pyaerocom._concprcp_units_helpers
-from .conftest import does_not_raise_exception
 import pyaerocom._concprcp_units_helpers as mod
+
+from .conftest import does_not_raise_exception
 
 
 @pytest.mark.parametrize(

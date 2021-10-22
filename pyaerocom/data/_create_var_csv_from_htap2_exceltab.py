@@ -1,11 +1,12 @@
 """
 Test script for creating variables.ini from HTAP2 excel table
 """
-import openpyxl
+import os
 import string
 from collections import OrderedDict as od
 from configparser import ConfigParser
-import os
+
+import openpyxl
 
 tab = "HTAP2_variables.xlsx"
 

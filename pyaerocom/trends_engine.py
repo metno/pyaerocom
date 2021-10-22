@@ -1,18 +1,17 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
-
 from scipy.stats import kendalltau
 from scipy.stats.mstats import theilslopes
 
 from pyaerocom.trends_helpers import (
-    _init_trends_result_dict,
     _compute_trend_error,
-    _start_stop_period,
     _get_yearly,
     _init_period_dates,
+    _init_trends_result_dict,
     _start_season,
+    _start_stop_period,
 )
 
 

@@ -1,6 +1,7 @@
-import re
-import os
 import fnmatch
+import os
+import re
+
 from pyaerocom import const, logger
 from pyaerocom._lowlevel_helpers import BrowseDict
 from pyaerocom.exceptions import DataSearchError

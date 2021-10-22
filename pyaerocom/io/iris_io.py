@@ -7,9 +7,12 @@ reading of Cubes, and some methods to perform quality checks of the data, e.g.
 3. Longitude definition from -180 to 180 (corrected if defined on 0 -> 360 intervall)
 """
 
-import cf_units
 from datetime import datetime
-import iris, iris.coords, iris.util
+
+import cf_units
+import iris
+import iris.coords
+import iris.util
 
 try:
     # as of iris version 3
@@ -18,23 +21,23 @@ except ImportError:
     # old iris version installed
     from iris.experimental.equalise_cubes import equalise_attributes
 
-import numpy as np
 from pathlib import Path
 from traceback import format_exc
+
+import numpy as np
 
 from pyaerocom import const, logger
 from pyaerocom._warnings_management import filter_warnings
 from pyaerocom.exceptions import (
-    NetcdfError,
-    VariableDefinitionError,
     FileConventionError,
+    NetcdfError,
     UnresolvableTimeDefinitionError,
+    VariableDefinitionError,
 )
-
 from pyaerocom.helpers import cftime_to_datetime64, make_datetimeindex_from_year
-from pyaerocom.tstype import TsType
-from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.io.fileconventions import FileConventionRead
+from pyaerocom.io.helpers import add_file_to_log
+from pyaerocom.tstype import TsType
 
 
 @filter_warnings(apply=const.FILTER_IRIS_WARNINGS, categories=[UserWarning])

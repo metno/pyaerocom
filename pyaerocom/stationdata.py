@@ -1,30 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from copy import deepcopy
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
-from pyaerocom import logger, const
-from pyaerocom.exceptions import (
-    MetaDataError,
-    VarNotAvailableError,
-    DataExtractionError,
-    DataDimensionError,
-    UnitConversionError,
-    DataUnitError,
-    TemporalResolutionError,
-    CoordinateError,
-    StationCoordinateError,
-)
-from pyaerocom._lowlevel_helpers import dict_to_str, list_to_shortstr, BrowseDict, merge_dicts
-from pyaerocom.metastandards import StationMetaData, STANDARD_META_KEYS
-from pyaerocom.vertical_profile import VerticalProfile
-from pyaerocom.tstype import TsType
-from pyaerocom.time_resampler import TimeResampler
-from pyaerocom.helpers import isnumeric, isrange, calc_climatology, to_datetime64
 
+from pyaerocom import const, logger
+from pyaerocom._lowlevel_helpers import BrowseDict, dict_to_str, list_to_shortstr, merge_dicts
+from pyaerocom.exceptions import (
+    CoordinateError,
+    DataDimensionError,
+    DataExtractionError,
+    DataUnitError,
+    MetaDataError,
+    StationCoordinateError,
+    TemporalResolutionError,
+    UnitConversionError,
+    VarNotAvailableError,
+)
+from pyaerocom.helpers import calc_climatology, isnumeric, isrange, to_datetime64
+from pyaerocom.metastandards import STANDARD_META_KEYS, StationMetaData
+from pyaerocom.time_resampler import TimeResampler
+from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import convert_unit, get_unit_conversion_fac
+from pyaerocom.vertical_profile import VerticalProfile
 
 
 class StationData(StationMetaData):

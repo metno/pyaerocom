@@ -140,8 +140,9 @@ HTAP_REGIONS = list(_HTAP_DEFS)
 OTHER_REGIONS = list(_OTHER_REG_DEFS)
 
 if __name__ == "__main__":
-    import pyaerocom as pya
     import matplotlib.pyplot as plt
+
+    import pyaerocom as pya
 
     plt.close("all")
     for key in REGION_NAMES:

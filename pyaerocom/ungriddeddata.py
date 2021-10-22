@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import fnmatch
+import os
 from collections import OrderedDict as od
 from datetime import datetime
-import fnmatch
+
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pandas as pd
 
 from pyaerocom import const
@@ -13,31 +14,29 @@ from pyaerocom import const
 logger = const.logger
 print_log = const.print_log
 from pyaerocom._lowlevel_helpers import merge_dicts
+from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import (
-    DataExtractionError,
-    VarNotAvailableError,
-    TimeMatchError,
     DataCoverageError,
+    DataExtractionError,
     MetaDataError,
     StationNotFoundError,
+    TimeMatchError,
+    VarNotAvailableError,
 )
-from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
-from pyaerocom.stationdata import StationData
-from pyaerocom.region import Region
 from pyaerocom.geodesy import get_country_info_coords
-from pyaerocom.mathutils import in_range
 from pyaerocom.helpers import (
-    same_meta_dict,
-    start_stop_str,
-    start_stop,
-    merge_station_data,
     isnumeric,
+    merge_station_data,
+    same_meta_dict,
+    start_stop,
+    start_stop_str,
 )
-
+from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
+from pyaerocom.mathutils import in_range
 from pyaerocom.metastandards import STANDARD_META_KEYS
+from pyaerocom.region import Region
+from pyaerocom.stationdata import StationData
 from pyaerocom.units_helpers import get_unit_conversion_fac
-
-from pyaerocom.helpers_landsea_masks import load_region_mask_xr, get_mask_value
 
 
 class UngriddedData(object):

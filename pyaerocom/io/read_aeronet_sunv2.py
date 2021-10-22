@@ -31,10 +31,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
+import re
+from collections import OrderedDict as od
+
 import numpy as np
 import pandas as pd
-from collections import OrderedDict as od
-import re
 
 from pyaerocom import const
 from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer

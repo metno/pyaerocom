@@ -5,8 +5,9 @@ Created on Mon Jul  9 14:14:29 2018
 """
 import pytest
 
-from ..conftest import data_unavail
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
+
+from ..conftest import data_unavail
 
 
 @data_unavail
@@ -38,12 +39,11 @@ def test_get_file_list(reader):
 
 @data_unavail
 def test_read(reader):
-    from pyaerocom.ungriddeddata import UngriddedData
     from pyaerocom.stationdata import StationData
+    from pyaerocom.ungriddeddata import UngriddedData
 
     # special station codes to test
     # not sure if these are really needed
-
     # station ids to test
     station_id = {}
     # respective mean for a station; index has to be the same as station_id

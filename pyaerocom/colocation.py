@@ -3,13 +3,14 @@
 """
 Methods and / or classes to perform colocation
 """
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
 import xarray as xr
-from pyaerocom import logger, const
-from pyaerocom import __version__ as pya_ver
 
+from pyaerocom import __version__ as pya_ver
+from pyaerocom import const, logger
 from pyaerocom.colocateddata import ColocatedData
 from pyaerocom.exceptions import (
     DataUnitError,
@@ -17,15 +18,15 @@ from pyaerocom.exceptions import (
     MetaDataError,
     TemporalResolutionError,
     TimeMatchError,
-    VarNotAvailableError,
     VariableDefinitionError,
+    VarNotAvailableError,
 )
 from pyaerocom.filter import Filter
 from pyaerocom.helpers import (
-    to_pandas_timestamp,
-    make_datetime_index,
-    isnumeric,
     get_lowest_resolution,
+    isnumeric,
+    make_datetime_index,
+    to_pandas_timestamp,
 )
 from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.tstype import TsType
@@ -1047,8 +1048,9 @@ def correct_model_stp_coldata(coldata, p0=None, t0=273.15, inplace=False):
 
 
 if __name__ == "__main__":
-    import pyaerocom as pya
     import matplotlib.pyplot as plt
+
+    import pyaerocom as pya
 
     plt.close("all")
 

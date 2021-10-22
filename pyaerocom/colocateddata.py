@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 from ast import literal_eval
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import os
 import xarray
 
-from pyaerocom import logger, const
+from pyaerocom import const, logger
 from pyaerocom.exceptions import (
     CoordinateError,
-    DataDimensionError,
     DataCoverageError,
+    DataDimensionError,
     DataSourceError,
     MetaDataError,
     NetcdfError,
@@ -21,12 +22,11 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.geodesy import get_country_info_coords
 from pyaerocom.helpers import to_datestring_YYYYMMDD
-from pyaerocom.helpers_landsea_masks import load_region_mask_xr, get_mask_value
+from pyaerocom.helpers_landsea_masks import get_mask_value, load_region_mask_xr
 from pyaerocom.mathutils import calc_statistics
-
 from pyaerocom.plot.plotscatter import plot_scatter
-from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.region import Region
+from pyaerocom.region_defs import REGION_DEFS
 from pyaerocom.time_resampler import TimeResampler
 
 

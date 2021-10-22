@@ -1,10 +1,12 @@
 """
 This module contains scatter plot routines for Aerocom data.
 """
-from matplotlib.ticker import ScalarFormatter
 import os
+
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import ScalarFormatter
+
 from pyaerocom import const
 from pyaerocom.helpers import start_stop_str
 from pyaerocom.mathutils import calc_statistics, exponent

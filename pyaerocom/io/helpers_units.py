@@ -1,5 +1,5 @@
-from scipy.constants import Avogadro
 import numpy as np
+from scipy.constants import Avogadro
 
 
 def mass_to_nr_molecules(mass, mm):

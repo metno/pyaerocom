@@ -1,10 +1,11 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.colors import BoundaryNorm
 
 import pyaerocom.plot.heatmaps as mod
+
 from ..conftest import does_not_raise_exception
 
 

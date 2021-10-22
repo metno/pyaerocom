@@ -4,10 +4,10 @@
 High level I/O utility methods for pyaerocom
 """
 
+from pyaerocom import change_verbosity, const
 from pyaerocom.io.aerocom_browser import AerocomBrowser
 from pyaerocom.io.readgridded import ReadGridded
 from pyaerocom.io.readungridded import ReadUngridded
-from pyaerocom import const, change_verbosity
 
 
 def get_ungridded_reader(obs_id):

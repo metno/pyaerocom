@@ -6,10 +6,11 @@ Module containing time resampling functionality
 import numpy as np
 import pandas as pd
 import xarray as xarr
+
 from pyaerocom import const
 from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.helpers import isnumeric, resample_time_dataarray, resample_timeseries
 from pyaerocom.tstype import TsType
-from pyaerocom.helpers import resample_time_dataarray, resample_timeseries, isnumeric
 
 
 class TimeResampler(object):
@@ -251,6 +252,7 @@ class TimeResampler(object):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+
     import pyaerocom as pya
 
     data = pya.io.ReadGridded("AATSR_SU_v4.3").read_var("od550aer", start=2010)

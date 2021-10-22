@@ -1,8 +1,9 @@
-import numpy as np
-from pyaerocom.mathutils import exponent
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.ticker import FuncFormatter
 from seaborn import heatmap
+
+from pyaerocom.mathutils import exponent
 
 
 def _format_annot_heatmap(annot, annot_fmt_rows, annot_fmt_exceed):

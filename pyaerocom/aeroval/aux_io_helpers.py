@@ -1,5 +1,8 @@
-import importlib, sys, os
-from pyaerocom._lowlevel_helpers import ListOfStrings, AsciiFileLoc
+import importlib
+import os
+import sys
+
+from pyaerocom._lowlevel_helpers import AsciiFileLoc, ListOfStrings
 
 
 def check_aux_info(fun, vars_required, funcs):

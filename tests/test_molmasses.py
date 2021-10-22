@@ -5,8 +5,9 @@ Created on Fri Mar 13 09:56:54 2020
 
 @author: jonasg
 """
-import pytest
 import numpy.testing as npt
+import pytest
+
 from pyaerocom import molmasses as mm
 
 

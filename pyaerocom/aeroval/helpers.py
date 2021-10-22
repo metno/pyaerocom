@@ -1,8 +1,8 @@
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.helpers import start_stop_str
 from pyaerocom.colocation_auto import Colocator
-from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import TemporalResolutionError
+from pyaerocom.helpers import start_stop_str
+from pyaerocom.tstype import TsType
 
 
 def check_var_ranges_avail(model_data, var_name):

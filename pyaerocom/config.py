@@ -12,26 +12,25 @@
 #
 ########################################################################
 
-import numpy as np
-import os
 import getpass
+import os
 from collections import OrderedDict as od
+from configparser import ConfigParser
 from pathlib import Path
 
+import numpy as np
+
 import pyaerocom.obs_io as obs_io
-from pyaerocom.grid_io import GridIO
 from pyaerocom._lowlevel_helpers import (
-    list_to_shortstr,
-    chk_make_subdir,
     check_dir_access,
     check_write_access,
+    chk_make_subdir,
+    list_to_shortstr,
 )
-
-from pyaerocom.exceptions import DataSourceError, DataIdError
-from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS
-
+from pyaerocom.exceptions import DataIdError, DataSourceError
+from pyaerocom.grid_io import GridIO
+from pyaerocom.region_defs import HTAP_REGIONS, OLD_AEROCOM_REGIONS
 from pyaerocom.varcollection import VarCollection
-from configparser import ConfigParser
 
 
 class Config(object):
@@ -205,7 +204,7 @@ class Config(object):
 
     def __init__(self, config_file=None, try_infer_environment=True):
 
-        from pyaerocom import print_log, logger
+        from pyaerocom import logger, print_log
 
         self.print_log = print_log
         self.logger = logger

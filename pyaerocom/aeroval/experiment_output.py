@@ -13,16 +13,15 @@ from pyaerocom._lowlevel_helpers import (
     write_json,
 )
 from pyaerocom.aeroval.glob_defaults import (
+    extended_statistics,
     statistics_defaults,
     statistics_trend,
-    extended_statistics,
     var_ranges_defaults,
     var_web_info,
 )
-
 from pyaerocom.aeroval.setupclasses import EvalSetup
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
-from pyaerocom.exceptions import VariableDefinitionError, EntryNotAvailable
+from pyaerocom.exceptions import EntryNotAvailable, VariableDefinitionError
 from pyaerocom.mathutils import _init_stats_dummy
 from pyaerocom.variable_helpers import get_aliases
 

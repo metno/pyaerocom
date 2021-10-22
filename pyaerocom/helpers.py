@@ -3,37 +3,41 @@
 """
 General helper methods for the pyaerocom library.
 """
-from cf_units import Unit
-from collections import Counter
-from datetime import MINYEAR, datetime, date
-import iris, iris.analysis, iris.cube, iris.coords
 import math as ma
+from collections import Counter
+from datetime import MINYEAR, date, datetime
+
+import iris
+import iris.analysis
+import iris.coords
+import iris.cube
 import numpy as np
 import pandas as pd
 import xarray as xr
+from cf_units import Unit
 
+from pyaerocom import const, logger
 from pyaerocom.exceptions import (
-    LongitudeConstraintError,
     DataCoverageError,
-    MetaDataError,
     DataDimensionError,
-    VariableDefinitionError,
+    LongitudeConstraintError,
+    MetaDataError,
     ResamplingError,
     TemporalResolutionError,
+    VariableDefinitionError,
 )
-from pyaerocom import logger, const
 from pyaerocom.time_config import (
     GREGORIAN_BASE,
-    TS_TYPE_SECS,
-    TS_TYPE_TO_PANDAS_FREQ,
     PANDAS_RESAMPLE_OFFSETS,
     TS_TYPE_DATETIME_CONV,
+    TS_TYPE_SECS,
+    TS_TYPE_TO_PANDAS_FREQ,
+    day_units,
+    hr_units,
     microsec_units,
     millisec_units,
-    sec_units,
     min_units,
-    hr_units,
-    day_units,
+    sec_units,
 )
 from pyaerocom.tstype import TsType
 

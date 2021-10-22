@@ -1,46 +1,42 @@
-from collections import OrderedDict as od
-
 import fnmatch
-from glob import glob
 import os
+from collections import OrderedDict as od
+from glob import glob
 from pathlib import Path
 
+import iris
 import numpy as np
 import pandas as pd
-import iris
 import xarray as xr
 
-from pyaerocom import const, print_log, logger
-from pyaerocom.metastandards import AerocomDataID
-from pyaerocom.variable import Variable
-from pyaerocom.tstype import TsType
-from pyaerocom.io.aux_read_cubes import (
-    compute_angstrom_coeff_cubes,
-    multiply_cubes,
-    divide_cubes,
-    subtract_cubes,
-    add_cubes,
-    mmr_from_vmr,
-)
-
-from pyaerocom.helpers import to_pandas_timestamp, sort_ts_types, get_highest_resolution, isnumeric
-
+from pyaerocom import const, logger, print_log
+from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
 from pyaerocom.exceptions import (
     DataCoverageError,
     DataQueryError,
     DataSourceError,
     FileConventionError,
     TemporalResolutionError,
-    VarNotAvailableError,
     VariableDefinitionError,
+    VarNotAvailableError,
 )
-
-from pyaerocom.io.fileconventions import FileConventionRead
-from pyaerocom.io import AerocomBrowser
-from pyaerocom.io.iris_io import load_cubes_custom, concatenate_iris_cubes
-from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom._concprcp_units_helpers import compute_concprcp_from_pr_and_wetdep
+from pyaerocom.helpers import get_highest_resolution, isnumeric, sort_ts_types, to_pandas_timestamp
+from pyaerocom.io import AerocomBrowser
+from pyaerocom.io.aux_read_cubes import (
+    add_cubes,
+    compute_angstrom_coeff_cubes,
+    divide_cubes,
+    mmr_from_vmr,
+    multiply_cubes,
+    subtract_cubes,
+)
+from pyaerocom.io.fileconventions import FileConventionRead
+from pyaerocom.io.helpers import add_file_to_log
+from pyaerocom.io.iris_io import concatenate_iris_cubes, load_cubes_custom
+from pyaerocom.metastandards import AerocomDataID
+from pyaerocom.tstype import TsType
+from pyaerocom.variable import Variable
 
 
 class ReadGridded(object):

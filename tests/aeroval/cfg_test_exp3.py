@@ -1,6 +1,7 @@
 import os
-from ._outbase import AEROVAL_OUT as BASEOUT
+
 from ._outbase import ADD_MODELS_DIR
+from ._outbase import AEROVAL_OUT as BASEOUT
 
 YEAR = "2007"
 from .._conftest_helpers import add_dummy_model_data
@@ -63,8 +64,8 @@ CFG = dict(
 )
 
 if __name__ == "__main__":
-    from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
     from pyaerocom.access_testdata import initialise
+    from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 
     tda = initialise()
     stp = EvalSetup(**CFG)

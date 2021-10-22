@@ -1,5 +1,6 @@
 import cf_units
 import numpy as np
+
 from pyaerocom import const
 from pyaerocom.variable_helpers import get_variable
 
@@ -459,7 +460,7 @@ def _compute_wdep_from_concprcp_helper(data, wdep_var, concprcp_var, pr_var):
     if not all(x in data.data_flagged for x in vars_needed):
         raise ValueError(f"Need flags for {vars_needed} to compute wet deposition")
     from pyaerocom import TsType
-    from pyaerocom.units_helpers import get_unit_conversion_fac, RATES_FREQ_DEFAULT
+    from pyaerocom.units_helpers import RATES_FREQ_DEFAULT, get_unit_conversion_fac
 
     tst = TsType(data.get_var_ts_type(concprcp_var))
 

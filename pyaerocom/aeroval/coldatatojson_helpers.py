@@ -2,28 +2,29 @@
 Helpers for conversion of ColocatedData to JSON files for web interface.
 """
 import os
-import numpy as np
-import xarray as xr
-import pandas as pd
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import xarray as xr
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json, write_json
-from pyaerocom.helpers import start_stop
-from pyaerocom.trends_helpers import _get_season_from_months
-from pyaerocom.aeroval.helpers import _period_str_to_timeslice, _get_min_max_year_periods
+from pyaerocom.aeroval.helpers import _get_min_max_year_periods, _period_str_to_timeslice
 from pyaerocom.colocateddata import ColocatedData
-from pyaerocom.mathutils import calc_statistics, _init_stats_dummy
-from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (
     AeroValConfigError,
+    AeroValTrendsError,
     DataCoverageError,
     TemporalResolutionError,
-    AeroValTrendsError,
 )
-from pyaerocom.region_defs import OLD_AEROCOM_REGIONS, HTAP_REGIONS_DEFAULT
-from pyaerocom.region import get_all_default_region_ids, find_closest_region_coord, Region
-
+from pyaerocom.helpers import start_stop
+from pyaerocom.mathutils import _init_stats_dummy, calc_statistics
+from pyaerocom.region import Region, find_closest_region_coord, get_all_default_region_ids
+from pyaerocom.region_defs import HTAP_REGIONS_DEFAULT, OLD_AEROCOM_REGIONS
 from pyaerocom.trends_engine import TrendsEngine
+from pyaerocom.trends_helpers import _get_season_from_months
+from pyaerocom.tstype import TsType
 
 
 def get_heatmap_filename(ts_type):

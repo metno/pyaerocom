@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from cf_units import Unit
-from collections import OrderedDict as od
-
 import os
+from collections import OrderedDict as od
+from pathlib import Path
 
 import iris
-from iris.analysis.cartography import area_weights
-from iris.analysis import MEAN
-from iris.exceptions import UnitConversionError
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import xarray as xr
+from cf_units import Unit
+from iris.analysis import MEAN
+from iris.analysis.cartography import area_weights
+from iris.exceptions import UnitConversionError
 
 from pyaerocom import const, logger, print_log
 from pyaerocom._warnings_management import filter_warnings
-from pyaerocom.helpers_landsea_masks import load_region_mask_iris
-from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
@@ -28,29 +25,29 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
-
-from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
-from pyaerocom.time_resampler import TimeResampler
 from pyaerocom.helpers import (
-    get_time_rng_constraint,
-    get_lon_rng_constraint,
-    get_lat_rng_constraint,
     cftime_to_datetime64,
+    check_coord_circular,
+    copy_coords_cube,
+    datetime2str,
+    delete_all_coords_cube,
+    extract_latlon_dataarray,
+    get_lat_rng_constraint,
+    get_lon_rng_constraint,
+    get_time_rng_constraint,
+    isnumeric,
+    isrange,
+    make_dummy_cube_latlon,
     str_to_iris,
     to_pandas_timestamp,
-    datetime2str,
-    isrange,
-    isnumeric,
-    delete_all_coords_cube,
-    copy_coords_cube,
-    make_dummy_cube_latlon,
-    check_coord_circular,
-    extract_latlon_dataarray,
 )
-
-from pyaerocom.mathutils import closest_index, exponent, estimate_value_range
-from pyaerocom.stationdata import StationData
+from pyaerocom.helpers_landsea_masks import load_region_mask_iris
+from pyaerocom.mathutils import closest_index, estimate_value_range, exponent
 from pyaerocom.region import Region
+from pyaerocom.stationdata import StationData
+from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
+from pyaerocom.time_resampler import TimeResampler
+from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import UALIASES, get_unit_conversion_fac
 from pyaerocom.variable import Variable
 from pyaerocom.vert_coords import AltitudeAccess
@@ -2806,6 +2803,7 @@ class GriddedData(object):
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
+
     import pyaerocom as pya
 
     plt.close("all")

@@ -1,17 +1,17 @@
 import os
 
-from pyaerocom import const, GriddedData, TsType
+from pyaerocom import GriddedData, TsType, const
 from pyaerocom._lowlevel_helpers import write_json
-from pyaerocom.aeroval._processing_base import ProcessingEngine, DataImporter
+from pyaerocom.aeroval._processing_base import DataImporter, ProcessingEngine
 from pyaerocom.aeroval.helpers import check_var_ranges_avail
 from pyaerocom.aeroval.modelmaps_helpers import calc_contour_json, griddeddata_to_jsondict
 from pyaerocom.aeroval.varinfo_web import VarinfoWeb
 from pyaerocom.exceptions import (
-    VarNotAvailableError,
-    TemporalResolutionError,
     DataCoverageError,
-    VariableDefinitionError,
     DataDimensionError,
+    TemporalResolutionError,
+    VariableDefinitionError,
+    VarNotAvailableError,
 )
 from pyaerocom.helpers import isnumeric
 

@@ -10,9 +10,9 @@ import pytest
 
 import pyaerocom._concprcp_units_helpers
 import pyaerocom.units_helpers
+from pyaerocom import units_helpers as mod
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.griddeddata import GriddedData
-from pyaerocom import units_helpers as mod
 
 from .conftest import data_unavail, does_not_raise_exception
 

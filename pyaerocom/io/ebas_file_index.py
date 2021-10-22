@@ -1,6 +1,7 @@
-from pyaerocom import const
-import sqlite3
 import os
+import sqlite3
+
+from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict
 
 

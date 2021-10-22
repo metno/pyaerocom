@@ -35,22 +35,20 @@
 """
 read Aeronet direct sun V3 data
 """
-import os
 import glob
-import numpy as np
-
-from pyaerocom import const
-import logging
-import time
-import geopy.distance
-
-from pyaerocom.io.readsatellitel2base import ReadL2DataBase
 
 # from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 # import geopy
 # import numpy as np
 import logging
+import os
+import time
+
+import geopy.distance
+import numpy as np
+
 from pyaerocom import const
+from pyaerocom.io.readsatellitel2base import ReadL2DataBase
 from pyaerocom.ungriddeddata import UngriddedData
 
 
@@ -744,6 +742,7 @@ class ReadL2Data(ReadL2DataBase):
         """
 
         import time
+
         import coda
 
         # coda for Aeolus uses 2000-01-01T00:00:00 as epoch unfortunately.
@@ -1391,9 +1390,9 @@ class ReadL2Data(ReadL2DataBase):
         import time
 
         start_time = time.perf_counter()
-        import xarray as xr
-        import pandas as pd
         import numpy as np
+        import pandas as pd
+        import xarray as xr
 
         vars_to_write_out = vars_to_write.copy()
         if isinstance(vars_to_write_out, str):
@@ -1898,6 +1897,7 @@ class ReadL2Data(ReadL2DataBase):
         """
 
         import time
+
         import coda
 
         # coda uses 2000-01-01T00:00:00 as epoch unfortunately.
@@ -2039,9 +2039,9 @@ class ReadL2Data(ReadL2DataBase):
         import time
 
         start_time = time.perf_counter()
-        import xarray as xr
-        import pandas as pd
         import numpy as np
+        import pandas as pd
+        import xarray as xr
 
         if grouping == "names":
             ds = xr.Dataset()
@@ -2127,8 +2127,8 @@ class ReadL2Data(ReadL2DataBase):
         """small routine to plot the satellite track on a map"""
 
         import matplotlib.pyplot as plt
-        from mpl_toolkits.basemap import Basemap
         import numpy as np
+        from mpl_toolkits.basemap import Basemap
 
         if data is None:
             _data = self.data
@@ -2269,11 +2269,10 @@ class ReadL2Data(ReadL2DataBase):
         linear_time=False,
     ):
         """plot sample profile plot"""
-        import matplotlib.pyplot as plt
         import matplotlib
+        import matplotlib.pyplot as plt
         from matplotlib.colors import BoundaryNorm
         from matplotlib.ticker import MaxNLocator
-
         from scipy import interpolate
 
         if data_to_plot is None:
@@ -2589,11 +2588,10 @@ class ReadL2Data(ReadL2DataBase):
         linear_time=False,
     ):
         """plot sample profile plot"""
-        import matplotlib.pyplot as plt
         import matplotlib
+        import matplotlib.pyplot as plt
         from matplotlib.colors import BoundaryNorm
         from matplotlib.ticker import MaxNLocator
-
         from scipy import interpolate
 
         if data_to_plot is None:
@@ -3544,9 +3542,8 @@ class ReadL2Data(ReadL2DataBase):
 
 
 if __name__ == "__main__":
-    import logging
-
     import argparse
+    import logging
 
     options = {}
     default_topo_file = "/lustre/storeB/project/fou/kl/admaeolus/EMEP.topo/MACC14_topo_v1.nc"
@@ -3787,11 +3784,12 @@ if __name__ == "__main__":
     import os
 
     os.environ["CODA_DEFINITION"] = options["codadef"]
-    import coda
-    import sys
     import glob
     import pathlib
+    import sys
     import tarfile
+
+    import coda
 
     bbox = None
     global_attributes = None

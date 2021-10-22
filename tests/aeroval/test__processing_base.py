@@ -1,7 +1,8 @@
 import pytest
 
 from pyaerocom import Colocator, GriddedData, UngriddedData
-from pyaerocom.aeroval import _processing_base as mod, EvalSetup
+from pyaerocom.aeroval import EvalSetup
+from pyaerocom.aeroval import _processing_base as mod
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.exceptions import EntryNotAvailable
 

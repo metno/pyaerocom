@@ -1,10 +1,10 @@
 import numpy as np
 from cf_units import Unit
 
-from pyaerocom.tstype import TsType
 from pyaerocom.exceptions import UnitConversionError
 from pyaerocom.helpers import isnumeric, resample_time_dataarray
 from pyaerocom.time_config import SI_TO_TS_TYPE
+from pyaerocom.tstype import TsType
 from pyaerocom.units_helpers import get_unit_conversion_fac
 
 # ToDo: check if still needed

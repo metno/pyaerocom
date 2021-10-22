@@ -1,8 +1,8 @@
 from pyaerocom import const
 from pyaerocom.aeroval._processing_base import HasColocator, ProcessingEngine
+from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
-from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 
 
 class ExperimentProcessor(ProcessingEngine, HasColocator):

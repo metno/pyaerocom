@@ -1,15 +1,16 @@
 from collections import OrderedDict as od
 from datetime import datetime
+
 import numpy as np
 from tqdm import tqdm
 
-from pyaerocom.time_config import TS_TYPES
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.mathutils import numbers_in_str
-from pyaerocom.helpers import varlist_aerocom
-from pyaerocom.exceptions import MetaDataError, VariableNotFoundError, StationCoordinateError
 from pyaerocom import const, print_log
+from pyaerocom.exceptions import MetaDataError, StationCoordinateError, VariableNotFoundError
+from pyaerocom.helpers import varlist_aerocom
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+from pyaerocom.mathutils import numbers_in_str
+from pyaerocom.time_config import TS_TYPES
+from pyaerocom.ungriddeddata import UngriddedData
 
 
 class ReadAeronetBase(ReadUngriddedBase):

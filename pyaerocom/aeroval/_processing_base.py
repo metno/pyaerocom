@@ -1,9 +1,9 @@
 import abc
 
-from pyaerocom.colocation_auto import Colocator
 from pyaerocom._lowlevel_helpers import TypeValidator
 from pyaerocom.aeroval import EvalSetup
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
+from pyaerocom.colocation_auto import Colocator
 
 
 class HasConfig:

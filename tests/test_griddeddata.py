@@ -5,9 +5,10 @@ Created on Thu Apr 12 14:45:43 2018
 
 @author: jonasg
 """
-import iris.cube
 import os
 from datetime import datetime
+
+import iris.cube
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -21,7 +22,6 @@ from pyaerocom.exceptions import (
     VariableDefinitionError,
     VariableNotFoundError,
 )
-
 from pyaerocom.io import ReadGridded
 
 from .conftest import TEST_RTOL, data_unavail, does_not_raise_exception

@@ -31,11 +31,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA
 
-from pyaerocom.io.readungriddedbase import ReadUngriddedBase
+import logging
+
 import geopy
 import numpy as np
-import logging
+
 from pyaerocom import const
+from pyaerocom.io.readungriddedbase import ReadUngriddedBase
 from pyaerocom.ungriddeddata import UngriddedData
 
 
@@ -297,9 +299,10 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         """
 
+        import os
         import pathlib
         import tarfile
-        import os
+
         import coda
 
         if local_temp_dir is None:
@@ -537,9 +540,9 @@ class ReadL2DataBase(ReadUngriddedBase):
         import time
 
         start_time = time.perf_counter()
-        import xarray as xr
-        import pandas as pd
         import numpy as np
+        import pandas as pd
+        import xarray as xr
 
         vars_to_write_out = vars_to_write.copy()
         if isinstance(vars_to_write_out, str):
@@ -692,8 +695,9 @@ class ReadL2DataBase(ReadUngriddedBase):
         All the data points in data are considered!
 
         """
-        import numpy as np
         import time
+
+        import numpy as np
 
         _vars = vars.copy()
         if isinstance(_vars, str):
@@ -808,8 +812,9 @@ class ReadL2DataBase(ReadUngriddedBase):
     def _to_grid_grid_init(self, gridtype="1x1", vars=None, init_time=None):
         """small helper routine to init the grid data struct"""
 
-        import numpy as np
         import time
+
+        import numpy as np
 
         start_time = time.perf_counter()
         grid_data_prot = {}
@@ -947,11 +952,10 @@ class ReadL2DataBase(ReadUngriddedBase):
         """
 
         import matplotlib.pyplot as plt
-        from mpl_toolkits.basemap import Basemap
         import numpy as np
+        from mpl_toolkits.basemap import Basemap
 
         # positions of some peaks:
-
         # Everest: 27.988056, 86.925278
         # K2: 35.8825, 76.513333
         # Kangchenjunga: 27.7025, 88.146667

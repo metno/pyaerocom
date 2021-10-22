@@ -1,5 +1,6 @@
-from pyaerocom.plot.mapping import init_map
 import cartopy
+
+from pyaerocom.plot.mapping import init_map
 
 
 def plot_coordinates(

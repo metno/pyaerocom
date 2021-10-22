@@ -18,7 +18,6 @@ from pyaerocom.exceptions import DataCoverageError, DataDimensionError
 
 from .conftest import CHECK_PATHS, TESTDATADIR, does_not_raise_exception
 
-
 EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS["coldata_tm5_aeronet"])
 
 

@@ -3,18 +3,19 @@
 """
 General helper methods for the pyaerocom library.
 """
-import numpy as np
 import re
+
+import numpy as np
+
 from pyaerocom import const
+from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.time_config import (
     PANDAS_FREQ_TO_TS_TYPE,
-    TS_TYPE_TO_PANDAS_FREQ,
     TS_TYPE_TO_NUMPY_FREQ,
+    TS_TYPE_TO_PANDAS_FREQ,
     TS_TYPE_TO_SI,
     TS_TYPES,
 )
-
-from pyaerocom.exceptions import TemporalResolutionError
 
 
 class TsType(object):

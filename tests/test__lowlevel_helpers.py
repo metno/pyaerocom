@@ -1,8 +1,11 @@
-import numpy as np
 import os
+
+import numpy as np
 import pytest
 import simplejson
+
 from pyaerocom import _lowlevel_helpers as mod
+
 from .conftest import does_not_raise_exception
 
 

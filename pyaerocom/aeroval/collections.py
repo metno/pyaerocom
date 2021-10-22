@@ -5,13 +5,13 @@ Created on Thu May 27 12:27:47 2021
 
 @author: jonasg
 """
-from fnmatch import fnmatch
-from pyaerocom._lowlevel_helpers import BrowseDict
-from pyaerocom.exceptions import EntryNotAvailable, EvalEntryNameError
-from pyaerocom.aeroval.obsentry import ObsEntry
-from pyaerocom.aeroval.modelentry import ModelEntry
-
 import abc
+from fnmatch import fnmatch
+
+from pyaerocom._lowlevel_helpers import BrowseDict
+from pyaerocom.aeroval.modelentry import ModelEntry
+from pyaerocom.aeroval.obsentry import ObsEntry
+from pyaerocom.exceptions import EntryNotAvailable, EvalEntryNameError
 
 
 class BaseCollection(BrowseDict, abc.ABC):

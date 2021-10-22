@@ -1,13 +1,15 @@
 import os
+
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pyaerocom import StationData, ColocatedData, Filter
+from pyaerocom import ColocatedData, Filter, StationData
 
 
 def _load_coldata_tm5_aeronet_from_scratch(file_path):
     from xarray import open_dataarray
+
     from pyaerocom import ColocatedData
 
     arr = open_dataarray(file_path)

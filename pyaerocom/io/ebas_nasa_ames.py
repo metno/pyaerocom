@@ -5,13 +5,15 @@ For details on the file format see `here <https://ebas-submit.nilu.no/
 Submit-Data/Getting-started>`__
 """
 import os
-import numpy as np
-import pandas as pd
 from collections import OrderedDict as od
 from datetime import datetime
-from pyaerocom._lowlevel_helpers import str_underline, dict_to_str
-from pyaerocom.exceptions import TimeZoneError, NasaAmesReadError
+
+import numpy as np
+import pandas as pd
+
 from pyaerocom import const
+from pyaerocom._lowlevel_helpers import dict_to_str, str_underline
+from pyaerocom.exceptions import NasaAmesReadError, TimeZoneError
 
 
 class EbasColDef(dict):

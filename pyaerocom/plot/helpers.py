@@ -1,6 +1,7 @@
-from pyaerocom.mathutils import exponent
-import numpy as np
 import cartopy.crs as ccrs
+import numpy as np
+
+from pyaerocom.mathutils import exponent
 
 
 def projection_from_str(projection_str="PlateCarree"):

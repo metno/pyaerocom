@@ -2,8 +2,7 @@
 Mathematical low level utility methods of pyaerocom
 """
 import numpy as np
-
-from scipy.stats import pearsonr, spearmanr, kendalltau
+from scipy.stats import kendalltau, pearsonr, spearmanr
 
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high

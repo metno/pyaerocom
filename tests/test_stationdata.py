@@ -1,19 +1,20 @@
 import numpy as np
-import pytest
 import pandas as pd
-from xarray import DataArray
+import pytest
 from matplotlib.axes import Axes
+from xarray import DataArray
 
+from pyaerocom import stationdata as mod
 from pyaerocom.exceptions import (
+    CoordinateError,
+    DataExtractionError,
+    DataUnitError,
     MetaDataError,
     UnitConversionError,
-    DataUnitError,
-    CoordinateError,
     VarNotAvailableError,
-    DataExtractionError,
 )
-from pyaerocom import stationdata as mod
 from pyaerocom.io import ReadEarlinet
+
 from .conftest import FAKE_STATION_DATA, does_not_raise_exception
 
 

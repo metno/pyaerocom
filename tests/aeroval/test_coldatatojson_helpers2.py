@@ -1,7 +1,6 @@
 # ToDo: merge with test_coldatatojson_helpers.py
 
 import numpy as np
-
 import pytest
 
 import pyaerocom.aeroval.coldatatojson_helpers as mod

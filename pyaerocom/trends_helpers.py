@@ -8,8 +8,8 @@ Note
 Most methods here are private and not to be used directly. Please use
 :class:`TrendsEngine` instead.
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 SEASONS = {"spring": [3, 4, 5], "summer": [6, 7, 8], "autumn": [9, 10, 11], "winter": [12, 1, 2]}

@@ -3,7 +3,7 @@ import pytest
 
 from pyaerocom import geodesy
 
-from .conftest import etopo1_unavail, geonum_unavail, rg_unavail, lustre_avail
+from .conftest import etopo1_unavail, geonum_unavail, lustre_avail, rg_unavail
 
 TEST_LAT = 50.8
 TEST_LON = 9

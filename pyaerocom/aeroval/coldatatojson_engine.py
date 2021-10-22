@@ -5,22 +5,22 @@ from pyaerocom import ColocatedData, const
 from pyaerocom._lowlevel_helpers import write_json
 from pyaerocom.aeroval._processing_base import ProcessingEngine
 from pyaerocom.aeroval.coldatatojson_helpers import (
+    _add_entry_json,
+    _apply_annual_constraint,
+    _init_data_default_frequencies,
     _init_meta_glob,
+    _process_heatmap_data,
+    _process_map_and_scat,
+    _process_regional_timeseries,
+    _process_sites,
+    _process_sites_weekly_ts,
+    _process_statistics_timeseries,
+    _write_site_data,
+    _write_stationdata_json,
+    get_heatmap_filename,
+    get_json_mapname,
     init_regions_web,
     update_regions_json,
-    _init_data_default_frequencies,
-    _apply_annual_constraint,
-    _process_statistics_timeseries,
-    _add_entry_json,
-    _process_heatmap_data,
-    get_heatmap_filename,
-    _process_regional_timeseries,
-    _write_site_data,
-    _process_sites,
-    _process_map_and_scat,
-    get_json_mapname,
-    _process_sites_weekly_ts,
-    _write_stationdata_json,
 )
 from pyaerocom.exceptions import AeroValConfigError, TemporalResolutionError
 

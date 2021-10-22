@@ -3,19 +3,16 @@
 """
 I/O helper methods of the pyaerocom package
 """
+import os
+import shutil
 from collections import OrderedDict as od
 from datetime import datetime
-import os
 from pathlib import Path
-import shutil
 from time import time
 
 from pyaerocom import const
+from pyaerocom.exceptions import VariableDefinitionError, VarNotAvailableError
 from pyaerocom.io import AerocomBrowser
-from pyaerocom.exceptions import (
-    VarNotAvailableError,
-    VariableDefinitionError,
-)
 
 #: country code file name
 #: will be prepended with the path later on

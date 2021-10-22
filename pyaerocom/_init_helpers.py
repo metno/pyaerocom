@@ -79,8 +79,9 @@ def _init_supplemental():
 
 
     """
-    from pkg_resources import get_distribution
     import os
+
+    from pkg_resources import get_distribution
 
     dist = get_distribution("pyaerocom")
     return (dist.version, os.path.join(dist.location, "pyaerocom"))

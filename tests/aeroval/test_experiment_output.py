@@ -1,10 +1,14 @@
-import pytest
 import os
 import shutil
+
+import pytest
+
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json, write_json
-from pyaerocom.aeroval import experiment_output as mod, ExperimentProcessor
+from pyaerocom.aeroval import ExperimentProcessor
+from pyaerocom.aeroval import experiment_output as mod
 from pyaerocom.aeroval.setupclasses import EvalSetup
+
 from ..conftest import does_not_raise_exception, geojson_unavail
 from .cfg_test_exp1 import CFG as cfgexp1
 

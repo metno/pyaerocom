@@ -12,33 +12,31 @@
 #
 ########################################################################
 
-import os
 import logging
+import os
 from pathlib import Path
+
+from pyaerocom import const, logger, print_log
 from pyaerocom.combine_vardata_ungridded import combine_vardata_ungridded
 from pyaerocom.exceptions import DataRetrievalError, NetworkNotImplemented, NetworkNotSupported
-
-from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
-from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
+from pyaerocom.helpers import varlist_aerocom
+from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
+from pyaerocom.io.read_aasetal import ReadAasEtal
 from pyaerocom.io.read_aeronet_invv2 import ReadAeronetInvV2
 from pyaerocom.io.read_aeronet_invv3 import ReadAeronetInvV3
+from pyaerocom.io.read_aeronet_sdav2 import ReadAeronetSdaV2
+from pyaerocom.io.read_aeronet_sdav3 import ReadAeronetSdaV3
 from pyaerocom.io.read_aeronet_sunv2 import ReadAeronetSunV2
 from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
+from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.io.read_earlinet import ReadEarlinet
 from pyaerocom.io.read_ebas import ReadEbas
-from pyaerocom.io.read_aasetal import ReadAasEtal
-from pyaerocom.io.read_gaw import ReadGAW
-from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_eea_aqerep import ReadEEAAQEREP
 from pyaerocom.io.read_eea_aqerep_v2 import ReadEEAAQEREP_V2
-from pyaerocom.io.read_airnow import ReadAirNow
+from pyaerocom.io.read_gaw import ReadGAW
+from pyaerocom.io.read_ghost import ReadGhost
 from pyaerocom.io.read_marcopolo import ReadMarcoPolo
-
-from pyaerocom.io.cachehandler_ungridded import CacheHandlerUngridded
 from pyaerocom.ungriddeddata import UngriddedData
-from pyaerocom.helpers import varlist_aerocom
-
-from pyaerocom import const, print_log, logger
 from pyaerocom.variable import get_aliases
 
 

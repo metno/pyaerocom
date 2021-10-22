@@ -1,18 +1,17 @@
-import os, cf_units
+import os
+
+import cf_units
 import numpy as np
 import pytest
 import xarray as xr
 
 import pyaerocom.exceptions as exc
-from pyaerocom.griddeddata import GriddedData
 from pyaerocom import get_variable
-from pyaerocom.io.read_mscw_ctm import (
-    ReadEMEP,
-    ReadMscwCtm,
-)
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import EMEP_DIR, does_not_raise_exception, data_unavail
+from ..conftest import EMEP_DIR, data_unavail, does_not_raise_exception
 
 VAR_MAP = {
     "abs550aer": "AAOD_550nm",

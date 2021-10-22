@@ -1,27 +1,28 @@
-import xarray as xr
-import numpy as np
-import os
 import glob
+import os
+
+import numpy as np
+import xarray as xr
 
 from pyaerocom import const
 from pyaerocom.exceptions import VarNotAvailableError
+from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io._read_mscw_ctm_helpers import (
     add_dataarrays,
-    subtract_dataarrays,
     calc_concNhno3,
-    calc_concNno3pm10,
-    calc_concNno3pm25,
-    calc_conNtno3,
     calc_concNnh3,
     calc_concNnh4,
+    calc_concNno3pm10,
+    calc_concNno3pm25,
     calc_concNtnh,
-    update_EC_units,
     calc_concsspm25,
+    calc_conNtno3,
     calc_vmrox,
+    subtract_dataarrays,
+    update_EC_units,
 )
-from pyaerocom.variable_helpers import get_emep_variables
-from pyaerocom.griddeddata import GriddedData
 from pyaerocom.units_helpers import UALIASES
+from pyaerocom.variable_helpers import get_emep_variables
 
 
 class ReadMscwCtm(object):

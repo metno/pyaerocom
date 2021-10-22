@@ -1,5 +1,6 @@
 ### Very simple setup to make sure the basic stuff works in AeroVal
 import os
+
 from ._outbase import AEROVAL_OUT as BASEOUT
 
 MODELS = {

@@ -14,9 +14,9 @@ UNDER DEVELOPMENT -> NOT READY YET
 from pyaerocom import const
 from pyaerocom.exceptions import (
     CoordinateNameError,
-    VariableNotFoundError,
-    VariableDefinitionError,
     DataDimensionError,
+    VariableDefinitionError,
+    VariableNotFoundError,
 )
 
 
@@ -686,9 +686,7 @@ if __name__ == "__main__":
     # =============================================================================
     # d0.reorder_dimensions_tseries()
     # d0 = d0[0]
-
     # subset = d0.sel(latitude=30, longitude=15)
-
     # p = d0['air_pressure']
 
     reader1 = pya.io.ReadGridded("ECHAM6-SALSA_CTRL2016-PD")

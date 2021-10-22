@@ -1,8 +1,9 @@
-import pytest
 import cartopy
 import numpy as np
-from pyaerocom.plot.mapping import init_map
+import pytest
+
 import pyaerocom.plot.plotcoordinates as mod
+from pyaerocom.plot.mapping import init_map
 
 
 @pytest.mark.parametrize(

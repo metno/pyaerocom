@@ -1,15 +1,15 @@
+import cartopy.crs as ccrs
 import dask
 import matplotlib
 import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-from matplotlib.axes import Axes
 from cartopy.mpl.geoaxes import GeoAxes
+from matplotlib.axes import Axes
 from matplotlib.colors import ListedColormap, to_hex
 from seaborn import color_palette
 
+from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 from pyaerocom.helpers import make_datetime_index
 from pyaerocom.tstype import TsType
-from pyaerocom.aeroval.coldatatojson_helpers import _get_jsdate
 
 
 def _jsdate_list(data):

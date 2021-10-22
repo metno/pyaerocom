@@ -3,11 +3,14 @@
 """
 Caching class for reading and writing of ungridded data Cache objects
 """
-import glob, os, pickle
+import glob
+import os
+import pickle
 
 from pyaerocom import const
-from pyaerocom.ungriddeddata import UngriddedData
 from pyaerocom.exceptions import CacheReadError, CacheWriteError
+from pyaerocom.ungriddeddata import UngriddedData
+
 
 # TODO: Write data attribute list contains_vars in header of pickled file and
 # check if variables match the request

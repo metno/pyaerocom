@@ -1,8 +1,10 @@
 import pytest
-from pyaerocom import const
+
 import pyaerocom.aeroval.helpers as mod
+from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.varcollection import VarCollection
+
 from ..conftest import does_not_raise_exception
 
 

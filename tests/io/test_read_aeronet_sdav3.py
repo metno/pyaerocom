@@ -7,7 +7,6 @@ import os
 
 import numpy as np
 import numpy.testing as npt
-
 import pytest
 
 from ..conftest import TEST_RTOL, data_unavail

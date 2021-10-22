@@ -1,8 +1,12 @@
+import glob
+import os
+
 import pytest
-import os, glob
-from ..conftest import geojson_unavail
+
 from pyaerocom.aeroval import ExperimentProcessor
 from pyaerocom.aeroval.setupclasses import EvalSetup
+
+from ..conftest import geojson_unavail
 from .cfg_test_exp1 import CFG as cfgexp1
 from .cfg_test_exp2 import CFG as cfgexp2
 from .cfg_test_exp4 import CFG as cfgexp4

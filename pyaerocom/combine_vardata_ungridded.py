@@ -1,12 +1,13 @@
+import os
+
 import numpy as np
 
-from pyaerocom.obs_io import ObsVarCombi
 from pyaerocom._lowlevel_helpers import invalid_input_err_str
-from pyaerocom.geodesy import find_coord_indices_within_distance
-from pyaerocom.stationdata import StationData
-from pyaerocom.helpers import sort_ts_types
 from pyaerocom.colocation import _colocate_site_data_helper
-import os
+from pyaerocom.geodesy import find_coord_indices_within_distance
+from pyaerocom.helpers import sort_ts_types
+from pyaerocom.obs_io import ObsVarCombi
+from pyaerocom.stationdata import StationData
 
 
 def _check_input_data_ids_and_vars(data_ids_and_vars):
