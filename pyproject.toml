@@ -54,4 +54,24 @@ warn_unreachable = true
 show_error_codes = true
 pretty = true
 sqlite_cache = true
+
+[[tool.mypy.overrides]]
+module = [
+    "cartopy.*",
+    "iris.*",
+    "matplotlib.*",
+    "geonum.*",
+    "geopy.*",
+    "scipy.*",
+    "mpl_toolkits.*",
+    "cf_units",
+    "geojsoncontour",
+    "pandas",
+    "dask",
+    "reverse_geocode",
+    "seaborn",
+    "openpyxl",
+    "tqdm",
+    "coda",
+]
 ignore_missing_imports = true
