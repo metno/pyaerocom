@@ -31,7 +31,7 @@ jobs:
     - name: Lint
       continue-on-error: true
       run: |
-        mypy --ignore-missing-imports .
+        mypy --ignore-missing-imports pyaerocom/ tests/
 
   build:
   # needs: lint
