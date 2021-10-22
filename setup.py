@@ -69,9 +69,11 @@ setup(
     extras_require={
         "docs": ["nbsphinx"],
         "test": ["pytest>=6.0", "pytest-dependency", "pytest-cov"],
-        "lint": [
+        "format": [
             "black>=21.9b0",
             "isort>=5.9.3",
+        ],
+        "lint": [
             "mypy>=0.910",
             "types-requests",
             "types-setuptools",
