@@ -12,13 +12,15 @@ from time import time
 
 from pyaerocom import const
 from pyaerocom.io import AerocomBrowser
-from pyaerocom.exceptions import (VarNotAvailableError,
-                                  VariableDefinitionError,
-                                  )
+from pyaerocom.exceptions import (
+    VarNotAvailableError,
+    VariableDefinitionError,
+)
 
 #: country code file name
 #: will be prepended with the path later on
-COUNTRY_CODE_FILE = 'country_codes.json'
+COUNTRY_CODE_FILE = "country_codes.json"
+
 
 def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
     """
@@ -42,7 +44,7 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
         valid location of ebas_file_index.sqlite3 that is supposed to be used
 
     """
-    if os.path.exists(loc_remote): # remote exists
+    if os.path.exists(loc_remote):  # remote exists
         if os.path.exists(loc_local):
             chtremote = os.path.getmtime(loc_remote)
             chtlocal = os.path.getmtime(loc_local)
@@ -54,24 +56,27 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
         try:
             t0 = time()
             shutil.copy2(loc_remote, loc_local)
-            const.print_log.info('Copied EBAS SQL database to {}\n'
-                                'Elapsed time: {:.3f} s'
-                                .format(loc_local, time() - t0))
+            const.print_log.info(
+                "Copied EBAS SQL database to {}\n"
+                "Elapsed time: {:.3f} s".format(loc_local, time() - t0)
+            )
 
             return loc_local
         except Exception as e:
-            const.print_log.warning('Failed to copy EBAS SQL database. '
-                                   'Reason: {}'.format(repr(e)))
+            const.print_log.warning(
+                "Failed to copy EBAS SQL database. " "Reason: {}".format(repr(e))
+            )
             return loc_remote
     return loc_remote
+
 
 def aerocom_savename(data_id, var_name, vert_code, year, ts_type):
     """Generate filename in AeroCom conventions
 
     ToDo: complete docstring
     """
-    return ('aerocom3_{}_{}_{}_{}_{}.nc'
-            .format(data_id, var_name, vert_code, year, ts_type))
+    return "aerocom3_{}_{}_{}_{}_{}.nc".format(data_id, var_name, vert_code, year, ts_type)
+
 
 def _print_read_info(i, mod, tot_num, last_t, name, logger):
     """Helper for displaying standardised output in reading classes
@@ -79,17 +84,21 @@ def _print_read_info(i, mod, tot_num, last_t, name, logger):
     Not to be used directly
     """
     t = datetime.now()
-    logger.info("Reading files {}-{} of {} ({}) | {} (delta = {} s')"
-                .format(i+1,i+1+mod, tot_num, name,
-                        t.strftime('%H:%M:%S'),
-                        (t-last_t).seconds))
+    logger.info(
+        "Reading files {}-{} of {} ({}) | {} (delta = {} s')".format(
+            i + 1, i + 1 + mod, tot_num, name, t.strftime("%H:%M:%S"), (t - last_t).seconds
+        )
+    )
     return t
+
 
 def get_metadata_from_filename(filename):
     """Try access metadata information from filename"""
     from pyaerocom.io.fileconventions import FileConventionRead
+
     fc = FileConventionRead().from_file(filename)
     return fc.get_info_from_file(filename)
+
 
 def read_ebas_flags_file(ebas_flags_csv):
     """Reads file ebas_flags.csv
@@ -109,30 +118,33 @@ def read_ebas_flags_file(ebas_flags_csv):
     info = {}
     with open(ebas_flags_csv) as fio:
         for line in fio:
-            spl = line.strip().split(',')
+            spl = line.strip().split(",")
             num = int(spl[0].strip())
             try:
                 val_str = spl[-1][1:-1]
             except Exception:
-                raise IOError('Failed to read flag information in row {} '
-                              '(Check if entries in ebas_flags.csv are quoted)'
-                              .format(line))
-            info_str = ','.join(spl[1:-1])
+                raise IOError(
+                    "Failed to read flag information in row {} "
+                    "(Check if entries in ebas_flags.csv are quoted)".format(line)
+                )
+            info_str = ",".join(spl[1:-1])
             try:
                 info_str = info_str[1:-1]
             except Exception:
-                raise IOError('Failed to read flag information in row {} '
-                              '(Check if entries in ebas_flags.csv are quoted)'
-                              .format(line))
-            isvalid = True if val_str == 'V' else False
+                raise IOError(
+                    "Failed to read flag information in row {} "
+                    "(Check if entries in ebas_flags.csv are quoted)".format(line)
+                )
+            isvalid = True if val_str == "V" else False
             valid[num] = isvalid
             values[num] = val_str
             info[num] = info_str
     result = {}
-    result['valid'] = valid
-    result['info'] = info
-    result['vals'] = values
+    result["valid"] = valid
+    result["info"] = info
+    result["vals"] = values
     return result
+
 
 def add_file_to_log(filepath, err_msg):
     """
@@ -153,28 +165,29 @@ def add_file_to_log(filepath, err_msg):
     try:
         dirname = os.path.dirname(filepath)
         spl = dirname.split(os.sep)
-        if spl[-1].lower() == 'renamed':
+        if spl[-1].lower() == "renamed":
             model_or_obs_id = spl[-2]
         else:
             model_or_obs_id = spl[-1]
     except Exception:
-        model_or_obs_id = 'others'
+        model_or_obs_id = "others"
 
     logdir = const.LOGFILESDIR
 
-    logfile = os.path.join(logdir, f'{model_or_obs_id}.log')
+    logfile = os.path.join(logdir, f"{model_or_obs_id}.log")
 
-    if os.path.exists(logfile): #check if this file is already flagged
-        with open(logfile, 'r') as f:
+    if os.path.exists(logfile):  # check if this file is already flagged
+        with open(logfile, "r") as f:
             for line in f:
                 if filepath == line.strip():
-                    return #file is already flagged -> ignore
+                    return  # file is already flagged -> ignore
 
-    logfile_err = os.path.join(logdir, f'{model_or_obs_id}_ERR.log')
-    with open(logfile, 'a+') as f:
-        f.write(f'{filepath}\n')
-    with open(logfile_err, 'a+') as ferr:
-        ferr.write(f'{filepath}\n{err_msg}\n\n')
+    logfile_err = os.path.join(logdir, f"{model_or_obs_id}_ERR.log")
+    with open(logfile, "a+") as f:
+        f.write(f"{filepath}\n")
+    with open(logfile_err, "a+") as ferr:
+        ferr.write(f"{filepath}\n{err_msg}\n\n")
+
 
 def get_standard_name(var_name):
     """Get standard name of aerocom variable
@@ -197,17 +210,18 @@ def get_standard_name(var_name):
         if standarad name is not set for variable in *variables.ini* file
     """
     if not var_name in const.VARS:
-        raise VarNotAvailableError('No such variable {}. Check variables.ini'.format(var_name))
+        raise VarNotAvailableError("No such variable {}. Check variables.ini".format(var_name))
     name = const.VARS[var_name].standard_name
     if name is None:
-        raise VariableDefinitionError('standard_name not defined for variable')
+        raise VariableDefinitionError("standard_name not defined for variable")
     return name
 
+
 def search_data_dir_aerocom(name_or_pattern, ignorecase=True):
-    """Search Aerocom data directory based on model / data ID
-    """
+    """Search Aerocom data directory based on model / data ID"""
     browser = AerocomBrowser()
     return browser.find_data_dir(name_or_pattern, ignorecase)
+
 
 def get_all_supported_ids_ungridded():
     """Get list of datasets that are supported by :class:`ReadUngridded`
@@ -218,7 +232,9 @@ def get_all_supported_ids_ungridded():
         list with supported network names
     """
     from pyaerocom.io import ReadUngridded
+
     return ReadUngridded().SUPPORTED_DATASETS
+
 
 def get_obsnetwork_dir(obs_id):
     """Returns data path for obsnetwork ID
@@ -246,9 +262,10 @@ def get_obsnetwork_dir(obs_id):
     data_dir = const.OBSLOCS_UNGRIDDED[obs_id]
     if not os.path.exists(data_dir):
         raise FileNotFoundError(
-            f'Data directory {data_dir} for observation network {obs_id} does '
-            f'not exist')
+            f"Data directory {data_dir} for observation network {obs_id} does " f"not exist"
+        )
     return data_dir
+
 
 def search_names(update_inifile=True, check_nc_file=True):
     """Search model IDs in database
@@ -264,12 +281,12 @@ def search_names(update_inifile=True, check_nc_file=True):
     """
     names = []
     for mdir in const.DATA_SEARCH_DIRS:
-        print("\n%s\n" %mdir)
+        print("\n%s\n" % mdir)
         sub = os.listdir(mdir)
         for item in sub:
             path = os.path.join(mdir, item, "renamed")
             if os.path.isdir(path):
-                print("\n%s\n" %path)
+                print("\n%s\n" % path)
                 add = True
                 if check_nc_file:
                     add = False
@@ -282,16 +299,19 @@ def search_names(update_inifile=True, check_nc_file=True):
     names = sorted(od.fromkeys(names))
     if update_inifile:
         from pyaerocom import __dir__
+
         fpath = os.path.join(__dir__, "data", "names.txt")
         f = open(fpath, "w")
         for name in names:
-            f.write("%s\n" %name)
+            f.write("%s\n" % name)
         f.close()
     return names
+
 
 def get_all_names():
     """Try to import all model IDs from file names.txt in data directory"""
     from pyaerocom import __dir__
+
     try:
         with open(os.path.join(__dir__, "data", "names.txt")) as f:
             names = f.read().splitlines()
@@ -303,9 +323,8 @@ def get_all_names():
             raise Exception("Failed to access model IDs")
     return names
 
-def get_country_name_from_iso(iso_code=None,
-                              filename=None,
-                              return_as_dict=False):
+
+def get_country_name_from_iso(iso_code=None, filename=None, return_as_dict=False):
     """get the country name from the 2 digit iso country code
 
     the underlaying json file was taken from this github repository
@@ -337,17 +356,19 @@ def get_country_name_from_iso(iso_code=None,
         return_as_dict = True
 
     if filename is None:
-        #set default file name
+        # set default file name
         from pyaerocom import __dir__
-        filename = os.path.join(__dir__, 'data', COUNTRY_CODE_FILE)
+
+        filename = os.path.join(__dir__, "data", COUNTRY_CODE_FILE)
 
     import simplejson as json
+
     with open(filename) as fh:
         json_data = json.load(fh)
 
     iso_dict = {}
     for indict in json_data:
-        iso_dict[indict['alpha-2']] = indict['name']
+        iso_dict[indict["alpha-2"]] = indict["name"]
 
     if return_as_dict:
         return iso_dict
@@ -355,12 +376,11 @@ def get_country_name_from_iso(iso_code=None,
         try:
             ret_val = iso_dict[iso_code.upper()]
         except KeyError:
-            ret_val = ''
+            ret_val = ""
             raise ValueError
         return ret_val
 
 
-
-if __name__=="__main__":
-    #names = search_names()
+if __name__ == "__main__":
+    # names = search_names()
     names = get_all_names()

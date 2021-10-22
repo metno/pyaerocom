@@ -1,11 +1,11 @@
-from ._init_helpers import (_init_supplemental, _init_logger,
-                            LOGLEVELS, change_verbosity)
+from ._init_helpers import _init_supplemental, _init_logger, LOGLEVELS, change_verbosity
 
 __version__, __dir__ = _init_supplemental()
 
 logger, print_log = _init_logger()
 
 from .config import Config
+
 # Instantiate default configuration
 const = Config()
 
@@ -24,7 +24,8 @@ from . import mathutils
 from . import geodesy
 from . import region_defs
 from . import region
-#from . import vert_coords
+
+# from . import vert_coords
 from . import stationdata
 from . import griddeddata
 from . import ungriddeddata

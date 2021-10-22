@@ -4,6 +4,7 @@ from pyaerocom.aeroval.modelmaps_engine import ModelMapsEngine
 from pyaerocom.aeroval.superobs_engine import SuperObsEngine
 from pyaerocom.aeroval.coldatatojson_engine import ColdataToJsonEngine
 
+
 class ExperimentProcessor(ProcessingEngine, HasColocator):
     """Processing engine for AeroVal experiment
 
@@ -24,30 +25,32 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
-            msg = ('Cannot run same dataset against each other'
-                   '({} vs. {})'.format(model_name, model_name))
+            msg = "Cannot run same dataset against each other" "({} vs. {})".format(
+                model_name, model_name
+            )
             self._log.info(msg)
             const.print_log.info(msg)
             return
         ocfg = self.cfg.get_obs_entry(obs_name)
-        if ocfg['is_superobs']:
+        if ocfg["is_superobs"]:
             try:
                 engine = SuperObsEngine(self.cfg)
-                engine.run(model_name=model_name,
-                           obs_name=obs_name,
-                           var_list=var_list,
-                           try_colocate_if_missing=True
-                            )
+                engine.run(
+                    model_name=model_name,
+                    obs_name=obs_name,
+                    var_list=var_list,
+                    try_colocate_if_missing=True,
+                )
             except Exception:
                 if self.raise_exceptions:
                     raise
-                const.print_log.warning(
-                    'failed to process superobs...')
-        elif ocfg['only_superobs']:
+                const.print_log.warning("failed to process superobs...")
+        elif ocfg["only_superobs"]:
             const.print_log.info(
-                f'Skipping json processing of {obs_name}, as this is '
-                f'marked to be used only as part of a superobs '
-                f'network')
+                f"Skipping json processing of {obs_name}, as this is "
+                f"marked to be used only as part of a superobs "
+                f"network"
+            )
         else:
             col = self.get_colocator(model_name, obs_name)
             if self.cfg.processing_opts.only_json:
@@ -58,15 +61,15 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
             if self.cfg.processing_opts.only_colocation:
                 self._log.info(
-                    f'FLAG ACTIVE: only_colocation: Skipping '
-                    f'computation of json files for {obs_name} /'
-                    f'{model_name} combination.')
+                    f"FLAG ACTIVE: only_colocation: Skipping "
+                    f"computation of json files for {obs_name} /"
+                    f"{model_name} combination."
+                )
             else:
                 engine = ColdataToJsonEngine(self.cfg)
                 engine.run(files_to_convert)
 
-    def run(self, model_name=None, obs_name=None, var_list=None,
-            update_interface=True):
+    def run(self, model_name=None, obs_name=None, var_list=None, update_interface=True):
         """Create colocated data and json files for model / obs combination
 
         Parameters
@@ -103,7 +106,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
         model_list = self.cfg.model_cfg.keylist(model_name)
         obs_list = self.cfg.obs_cfg.keylist(obs_name)
 
-        const.print_log.info('Start processing')
+        const.print_log.info("Start processing")
 
         # compute model maps (completely independent of obs-eval
         # processing below)
@@ -118,7 +121,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
         if update_interface:
             self.update_interface()
-        const.print_log.info('Finished processing.')
+        const.print_log.info("Finished processing.")
 
     def update_interface(self):
         """Update aeroval interface

@@ -1,4 +1,6 @@
 import warnings
+
+
 def filter_warnings(apply, categories=None, messages=None):
     """
     Decorator that can be used to filter particular warnings
@@ -32,30 +34,34 @@ def filter_warnings(apply, categories=None, messages=None):
     if categories is None:
         categories = []
     elif not isinstance(categories, list):
-        raise ValueError('categories must be list or None')
+        raise ValueError("categories must be list or None")
     if messages is None:
         messages = []
     elif not isinstance(messages, list):
-        raise ValueError('messages must be list or None')
+        raise ValueError("messages must be list or None")
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             with warnings.catch_warnings():
                 if apply:
                     for cat in categories:
-                        warnings.filterwarnings('ignore', category=cat)
+                        warnings.filterwarnings("ignore", category=cat)
                     for msg in messages:
-                        warnings.filterwarnings('ignore', message=msg)
+                        warnings.filterwarnings("ignore", message=msg)
                 return func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
-if __name__ == '__main__':
 
-    @filter_warnings(True,[UserWarning], messages=['Deprecated'])
+if __name__ == "__main__":
+
+    @filter_warnings(True, [UserWarning], messages=["Deprecated"])
     def add_num_with_warnings(num1, num2):
-        warnings.warn(UserWarning('User Warning'))
-        warnings.warn(DeprecationWarning('Deprecated'))
-        warnings.warn(Warning('General warning'))
+        warnings.warn(UserWarning("User Warning"))
+        warnings.warn(DeprecationWarning("Deprecated"))
+        warnings.warn(Warning("General warning"))
         return num1 + num2
 
     print(add_num_with_warnings(1, 2))

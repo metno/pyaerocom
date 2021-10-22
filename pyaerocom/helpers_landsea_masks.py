@@ -23,6 +23,7 @@ from pyaerocom import const
 from pyaerocom.helpers import numpy_to_cube
 from pyaerocom.exceptions import DataRetrievalError
 
+
 def available_htap_masks():
     """
     List of HTAP mask names
@@ -33,6 +34,7 @@ def available_htap_masks():
         Returns a list of available htap region masks.
     """
     return const.HTAP_REGIONS
+
 
 def download_htap_masks(regions_to_download=None):
     """Download HTAP mask
@@ -63,8 +65,7 @@ def download_htap_masks(regions_to_download=None):
     elif isinstance(regions_to_download, str):
         regions_to_download = [regions_to_download]
     elif not isinstance(regions_to_download, list):
-        raise ValueError('Invalid input for regions_to_download, need list or '
-                         'str')
+        raise ValueError("Invalid input for regions_to_download, need list or " "str")
 
     path_out = const.FILTERMASKKDIR
     base_url = const.URL_HTAP_MASKS
@@ -72,25 +73,26 @@ def download_htap_masks(regions_to_download=None):
     paths = []
     for region in regions_to_download:
         if not region in const.HTAP_REGIONS:
-            raise ValueError('No such HTAP region {}'.format(region))
+            raise ValueError("No such HTAP region {}".format(region))
         elif region == "EAS":
-            filename = '{}htap.nc'.format(region)
-            file_out = os.path.join(path_out, '{}htap.0.1x0.1deg.nc'
-                                    .format(region))
+            filename = "{}htap.nc".format(region)
+            file_out = os.path.join(path_out, "{}htap.0.1x0.1deg.nc".format(region))
         else:
-            filename = '{}htap.0.1x0.1deg.nc'.format(region)
+            filename = "{}htap.0.1x0.1deg.nc".format(region)
             file_out = os.path.join(path_out, filename)
 
         url = os.path.join(base_url, filename)
 
         try:
             r = requests.get(url)
-            open(file_out, 'wb').write(r.content)
+            open(file_out, "wb").write(r.content)
             paths.append(file_out)
         except Exception as e:
-            raise DataRetrievalError('Failed to download HTAP mask {}. Reason '
-                                     '{}'.format(region, repr(e)))
+            raise DataRetrievalError(
+                "Failed to download HTAP mask {}. Reason " "{}".format(region, repr(e))
+            )
     return paths
+
 
 def get_htap_mask_files(*region_ids):
     """Get file paths to input HTAP regions
@@ -114,21 +116,21 @@ def get_htap_mask_files(*region_ids):
     """
     mask_dir = const.FILTERMASKKDIR
     if not os.path.exists(mask_dir):
-        raise FileNotFoundError('HTAP mask directory does not exist')
+        raise FileNotFoundError("HTAP mask directory does not exist")
     out = []
     for region in region_ids:
         if not region in const.HTAP_REGIONS:
-            raise ValueError('No such HTAP region {}'.format(region))
-        files =  glob.glob(os.path.join(mask_dir, '{}*.nc'.format(region)))
+            raise ValueError("No such HTAP region {}".format(region))
+        files = glob.glob(os.path.join(mask_dir, "{}*.nc".format(region)))
         if len(files) != 1:
             if len(files) == 0:
-                const.print_log.info('Downloading HTAP mask {}'.format(region))
+                const.print_log.info("Downloading HTAP mask {}".format(region))
                 files = download_htap_masks(region)
             elif len(files) > 1:
-                raise NameError('Found multiple masks for region {}'
-                                .format(region))
+                raise NameError("Found multiple masks for region {}".format(region))
         out.append(files[0])
     return out
+
 
 def load_region_mask_xr(*regions):
     """Load boolean mask for input regions (as xarray.DataArray)
@@ -148,20 +150,21 @@ def load_region_mask_xr(*regions):
     for i, fil in enumerate(get_htap_mask_files(*regions)):
         r = regions[i]
         if i == 0:
-            masks = xr.open_dataset(fil)[r+'htap']
+            masks = xr.open_dataset(fil)[r + "htap"]
             name = r
         else:
-            masks += xr.open_dataset(fil)[r+'htap']
-            name+='-{}'.format(r)
+            masks += xr.open_dataset(fil)[r + "htap"]
+            name += "-{}".format(r)
     if masks is not None:
         mask = masks.where(masks < 1, 1)
-    mask['name'] = name
-    mask.attrs['long_name'] = name
-    mask = mask.rename({'lat':'latitude', 'long':'longitude'})
+    mask["name"] = name
+    mask.attrs["long_name"] = name
+    mask = mask.rename({"lat": "latitude", "long": "longitude"})
     return mask
 
+
 def load_region_mask_iris(*regions):
-    """ Loads regional mask to iris.
+    """Loads regional mask to iris.
 
     Parameters
     -----------
@@ -182,14 +185,13 @@ def load_region_mask_iris(*regions):
         out = cubes[0]
     else:
         merged_np = np.max([x.data for x in cubes], axis=0)
-        out = numpy_to_cube(merged_np,
-                            dims=(cubes[0].coords()[0],
-                                  cubes[0].coords()[1]))
+        out = numpy_to_cube(merged_np, dims=(cubes[0].coords()[0], cubes[0].coords()[1]))
         out.units = cubes[0].units
-    name =  '-'.join(names)
+    name = "-".join(names)
     out.var_name = name
-    #out.attributes['long_name'] = name
+    # out.attributes['long_name'] = name
     return out
+
 
 def get_mask_value(lat, lon, mask):
     """Get value of mask at input lat / lon position
@@ -209,9 +211,9 @@ def get_mask_value(lat, lon, mask):
         neirest neigbhour mask value to input lat lon
     """
     if not isinstance(mask, xr.DataArray):
-        raise ValueError('Invalid input for mask: need DataArray, got {}'
-                         .format(type(mask)))
-    return float(mask.sel(latitude=lat, longitude=lon, method='nearest'))
+        raise ValueError("Invalid input for mask: need DataArray, got {}".format(type(mask)))
+    return float(mask.sel(latitude=lat, longitude=lon, method="nearest"))
+
 
 def check_all_htap_available():
     """
@@ -219,8 +221,8 @@ def check_all_htap_available():
     """
     return get_htap_mask_files(*available_htap_masks())
 
-def get_lat_lon_range_mask_region(mask, latdim_name=None,
-                                  londim_name=None):
+
+def get_lat_lon_range_mask_region(mask, latdim_name=None, londim_name=None):
     """
     Get outer lat/lon rectangle of a binary mask
 
@@ -241,10 +243,10 @@ def get_lat_lon_range_mask_region(mask, latdim_name=None,
         dictionary containing lat and lon ranges of the mask.
 
     """
-    if latdim_name is None: # htap
-        latdim_name = 'lat'
+    if latdim_name is None:  # htap
+        latdim_name = "lat"
     if londim_name is None:
-        londim_name = 'long' #htap
+        londim_name = "long"  # htap
     assert isinstance(mask, xr.DataArray)
     assert mask.dims == (latdim_name, londim_name)
 
@@ -252,24 +254,24 @@ def get_lat_lon_range_mask_region(mask, latdim_name=None,
     lats = mask.latitude.data
     lons = mask.longitude.data
 
-    lonmask = np.where(data.any(axis=0))[0] # flatten latitude dimenstion
+    lonmask = np.where(data.any(axis=0))[0]  # flatten latitude dimenstion
     firstidx, lastidx = lonmask.min(), lonmask.max()
     lonr = sorted([lons[firstidx], lons[lastidx]])
 
-    latmask = np.where(data.any(axis=1))[0] # flatten latitude dimenstion
+    latmask = np.where(data.any(axis=1))[0]  # flatten latitude dimenstion
     firstidx, lastidx = latmask.min(), latmask.max()
     latr = sorted([lats[firstidx], lats[lastidx]])
 
     return dict(lat_range=latr, lon_range=lonr)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     files = check_all_htap_available()
 
     print(sorted([os.path.basename(x) for x in files]))
 
     raise Exception
-    masks  =['NAF', 'MDE', 'PAN', 'EAS']
+    masks = ["NAF", "MDE", "PAN", "EAS"]
     for file in get_htap_mask_files(*masks):
         print(file)
 

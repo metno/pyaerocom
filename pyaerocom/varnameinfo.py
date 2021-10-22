@@ -8,20 +8,21 @@ class VarNameInfo(object):
     """This class can be used to retrieve information from variable names"""
 
     #: valid number range for retrieval of wavelengths from variable name
-    _VALID_WVL_RANGE = [0.1, 10000] #nm
+    _VALID_WVL_RANGE = [0.1, 10000]  # nm
 
     #: valid variable families for wavelength retrievals
-    _VALID_WVL_IDS = ['od', 'abs', 'ec', 'sc', 'ac', 'bsc', 'ssa']
+    _VALID_WVL_IDS = ["od", "abs", "ec", "sc", "ac", "bsc", "ssa"]
 
-    PATTERNS = {'od' : r'od\d+aer'}
+    PATTERNS = {"od": r"od\d+aer"}
     DEFAULT_VERT_CODE_PATTERNS = {
-        'abs*'  :   'Column',
-        'od*'   :   'Column',
-        'ang*'  :   'Column',
-        'load*' :   'Column',
-        'wet*'  :   'Surface',
-        'dry*'  :   'Surface',
-        'emi*'  :   'Surface'}
+        "abs*": "Column",
+        "od*": "Column",
+        "ang*": "Column",
+        "load*": "Column",
+        "wet*": "Surface",
+        "dry*": "Surface",
+        "emi*": "Surface",
+    }
 
     def __init__(self, var_name):
         self.var_name = var_name
@@ -36,8 +37,7 @@ class VarNameInfo(object):
         for pattern, code in self.DEFAULT_VERT_CODE_PATTERNS.items():
             if fnmatch.fnmatch(self.var_name, pattern):
                 return code
-        raise ValueError('No default vertical code could be found for {}'
-                         .format(self.var_name))
+        raise ValueError("No default vertical code could be found for {}".format(self.var_name))
 
     @staticmethod
     def _numbers_in_string(input_str):
@@ -53,7 +53,7 @@ class VarNameInfo(object):
         list
             list of numbers that were found in input string
         """
-        return [int(x) for x in re.findall(r'\d+', input_str)]
+        return [int(x) for x in re.findall(r"\d+", input_str)]
 
     @property
     def contains_numbers(self):
@@ -84,14 +84,16 @@ class VarNameInfo(object):
     def wavelength_nm(self):
         """Wavelength in nm (if appliable)"""
         if not self.is_wavelength_dependent:
-            raise VariableDefinitionError('Variable {} is not wavelength '
-                                          'dependent (does not start with '
-                                          'either of {})'.format(self.var_name,
-                                                     self._VALID_WVL_IDS))
+            raise VariableDefinitionError(
+                "Variable {} is not wavelength "
+                "dependent (does not start with "
+                "either of {})".format(self.var_name, self._VALID_WVL_IDS)
+            )
 
         elif not self.contains_wavelength_nm:
-            raise VariableDefinitionError('Wavelength could not be extracted '
-                                          'from variable name')
+            raise VariableDefinitionError(
+                "Wavelength could not be extracted " "from variable name"
+            )
         return self._nums[0]
 
     def in_wavelength_range(self, low, high):
@@ -127,17 +129,18 @@ class VarNameInfo(object):
             new variable name
         """
         if not self.contains_wavelength_nm:
-            raise ValueError('Variable {} is not wavelength dependent'.format(self.var_name))
-        name = self.var_name.replace(str(self.wavelength_nm),
-                                     str(to_wavelength))
+            raise ValueError("Variable {} is not wavelength dependent".format(self.var_name))
+        name = self.var_name.replace(str(self.wavelength_nm), str(to_wavelength))
         return VarNameInfo(name)
 
     def __str__(self):
-        s = ('\nVariable {}\n'
-             'is_wavelength_dependent: {}\n'
-             'is_optical_density: {}'.format(self.var_name,
-                                                self.is_wavelength_dependent,
-                                                self.is_optical_density))
+        s = (
+            "\nVariable {}\n"
+            "is_wavelength_dependent: {}\n"
+            "is_optical_density: {}".format(
+                self.var_name, self.is_wavelength_dependent, self.is_optical_density
+            )
+        )
         if self.is_wavelength_dependent:
-            s += '\nwavelength_nm: {}'.format(self.wavelength_nm)
+            s += "\nwavelength_nm: {}".format(self.wavelength_nm)
         return s
