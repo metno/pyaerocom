@@ -1,0 +1,6 @@
+# 2021-10-22: format with black
+29b11af2fea6b952571f3daab93ba6bba68bdb85
+# 2021-10-22: format with isort
+d48318c22231d453418e526b91787c43ede54d64
+# 2021-10-22: run pyupgrade --py38-plus and black
+dbac8ab91616a910364c20cb4aa594e80f1300d6
