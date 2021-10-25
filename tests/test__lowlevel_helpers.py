@@ -12,13 +12,11 @@ def test_round_floats():
     assert mod.round_floats(fl, precision=5) == 1.12345
     fl_list = [np.float_(2.3456789), np.float32(3.456789012)]
     tmp = mod.round_floats(fl_list, precision=3)
-    assert tmp[0] == 2.346
-    assert tmp[1] == pytest.approx(3.457, 1e-3)
+    assert tmp == [2.346, pytest.approx(3.457, 1e-3)]
     fl_tuple = (np.float128(4.567890123), np.float_(5.6789012345))
     tmp = mod.round_floats(fl_tuple, precision=5)
     assert isinstance(tmp, list)
-    assert tmp[0] == pytest.approx(4.56789, 1e-5)
-    assert tmp[1] == 5.67890
+    assert tmp == [pytest.approx(4.56789, 1e-5), 5.67890]
     fl_dict = {'bla': np.float128(0.1234455667), 'blubb': int(1), 'ha': 'test'}
     tmp = mod.round_floats(fl_dict, precision=5)
     assert tmp['bla'] == pytest.approx(0.12345, 1e-5)
