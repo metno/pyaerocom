@@ -4,6 +4,27 @@ import pytest
 import simplejson
 from pyaerocom import _lowlevel_helpers as mod
 from .conftest import does_not_raise_exception
+import numpy as np
+
+
+def test_round_floats():
+    fl = float(1.12344567890)
+    assert mod.round_floats(fl, precision=5) == 1.12345
+    fl_list = [np.float_(2.3456789), np.float32(3.456789012)]
+    tmp = mod.round_floats(fl_list, precision=3)
+    assert tmp == [2.346, pytest.approx(3.457, 1e-3)]
+    fl_tuple = (np.float128(4.567890123), np.float_(5.6789012345))
+    tmp = mod.round_floats(fl_tuple, precision=5)
+    assert isinstance(tmp, list)
+    assert tmp == [pytest.approx(4.56789, 1e-5), 5.67890]
+    fl_dict = {'bla': np.float128(0.1234455667), 'blubb': int(1), 'ha': 'test'}
+    tmp = mod.round_floats(fl_dict, precision=5)
+    assert tmp['bla'] == pytest.approx(0.12345, 1e-5)
+    assert tmp['blubb'] == 1
+    assert isinstance(tmp['blubb'], int)
+    assert isinstance(tmp['ha'], str)
+
+
 
 class Constrainer(mod.ConstrainedContainer):
     def __init__(self):
