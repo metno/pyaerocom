@@ -27,25 +27,17 @@ def round_floats(in_data, precision=5):
 
     """
 
-    if isinstance(in_data, float): # this also covers np.float types
-        return round(in_data, precision)
-    elif isinstance(in_data, dict):
-        # no list comprehension here since there might be mixed data structures
-        for key in in_data:
-            in_data[key] = round_floats(in_data[key], precision=precision)
-
+    if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64, )):
+        # np.float64, is an aliase for the Python float, but is mentioned here for completeness
+        # note that round and np.round yield different results with the Python round being mathematically correct
+        # details are here:
+        # https://numpy.org/doc/stable/reference/generated/numpy.around.html#numpy.around
+        # use numpy around for now
+        return np.around(in_data, precision)
     elif isinstance(in_data, (list, tuple)):
-        # if in_data is a tuple, convert that to a list so that it becomes mutable
-        if isinstance(in_data,tuple):
-            in_data = list(in_data)
-        # no list comprehension here since there might be mixed data structures
-        for idx, x in enumerate(in_data):
-            in_data[idx] = round_floats(x, precision=precision)
-
-    else:
-        # leave all types we have not recognised before alone
-        pass
-
+        return [round_floats(v, precision=precision) for v in in_data]
+    elif isinstance(in_data, dict):
+        return {k:round_floats(v, precision=precision) for k, v in in_data.items()}
     return in_data
 
 def read_json(file_path):
