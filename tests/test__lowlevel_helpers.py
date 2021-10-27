@@ -7,7 +7,6 @@ import simplejson
 from pyaerocom import _lowlevel_helpers as mod
 
 from .conftest import does_not_raise_exception
-import numpy as np
 
 
 def test_round_floats():
@@ -20,14 +19,12 @@ def test_round_floats():
     tmp = mod.round_floats(fl_tuple, precision=5)
     assert isinstance(tmp, list)
     assert tmp == [pytest.approx(4.56789, 1e-5), 5.67890]
-    fl_dict = {'bla': np.float128(0.1234455667), 'blubb': int(1), 'ha': 'test'}
+    fl_dict = {"bla": np.float128(0.1234455667), "blubb": int(1), "ha": "test"}
     tmp = mod.round_floats(fl_dict, precision=5)
-    assert tmp['bla'] == pytest.approx(0.12345, 1e-5)
-    assert tmp['blubb'] == 1
-    assert isinstance(tmp['blubb'], int)
-    assert isinstance(tmp['ha'], str)
-
-
+    assert tmp["bla"] == pytest.approx(0.12345, 1e-5)
+    assert tmp["blubb"] == 1
+    assert isinstance(tmp["blubb"], int)
+    assert isinstance(tmp["ha"], str)
 
 
 class Constrainer(mod.ConstrainedContainer):
