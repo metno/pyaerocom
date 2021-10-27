@@ -28,10 +28,15 @@ jobs:
       run: |
         black --check .
         isort --check .
-    - name: Lint
+    - name: MyPy
       continue-on-error: true
       run: |
         mypy pyaerocom/ tests/
+    - name: PyLint
+      continue-on-error: true
+      run: |
+        pylint pyaerocom/ tests/
+
 
   build:
   # needs: lint
