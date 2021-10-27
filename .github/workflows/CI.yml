@@ -36,6 +36,14 @@ jobs:
       continue-on-error: true
       run: |
         pylint pyaerocom/ tests/
+    - name: pycodestyle
+      continue-on-error: true
+      run: |
+        pycodestyle pyaerocom/ tests/
+    - name: pydocstyle
+      continue-on-error: true
+      run: |
+        pydocstyle pyaerocom/ tests/
 
 
   build:
