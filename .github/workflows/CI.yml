@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Set up Python ${{ matrix.python-version }}
@@ -24,7 +24,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('setup.cfg') }}
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Install pyaerocom
