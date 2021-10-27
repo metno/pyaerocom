@@ -78,3 +78,37 @@ disable = "C0330, C0326"
 
 [tool.pylint.format]
 max-line-length = 99
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py38, py39, format, lint
+skip_missing_interpreters = True
+isolated_build = True
+
+[testenv]
+commands_pre =
+    python --version
+commands =
+    pytest -ra -q {posargs:--cov}
+extras = 
+    test
+
+[testenv:format]
+skipsdist=True
+commands =
+    black --check .
+    isort --check .
+extras = 
+    format
+
+[testenv:lint]
+skipsdist=True
+commands =
+    mypy pyaerocom/
+    pylint pyaerocom/
+    pycodestyle pyaerocom/
+    pydocstyle pyaerocom/
+extras = 
+    lint
+"""
