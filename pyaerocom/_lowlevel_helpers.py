@@ -14,6 +14,39 @@ import simplejson
 from pyaerocom import print_log
 
 
+def round_floats(in_data, precision=5):
+    """
+    simple helper method to change all floats of a data structure to a given precision.
+    For nested structures, this method is called recursively to go through
+    all levels
+
+    Parameters
+    ----------
+    in_data : float, dict, tuple, list
+        data structure whose numbers should be limited in precision
+
+    Returns
+    -------
+    in_data
+        all the floats in in_data with limited precision
+        tuples in the structure have been converted to lists to make them mutable
+
+    """
+
+    if isinstance(in_data, (float, np.float32, np.float16, np.float128, np.float64)):
+        # np.float64, is an aliase for the Python float, but is mentioned here for completeness
+        # note that round and np.round yield different results with the Python round being mathematically correct
+        # details are here:
+        # https://numpy.org/doc/stable/reference/generated/numpy.around.html#numpy.around
+        # use numpy around for now
+        return np.around(in_data, precision)
+    elif isinstance(in_data, (list, tuple)):
+        return [round_floats(v, precision=precision) for v in in_data]
+    elif isinstance(in_data, dict):
+        return {k: round_floats(v, precision=precision) for k, v in in_data.items()}
+    return in_data
+
+
 def read_json(file_path):
     """Read json file
 
@@ -46,7 +79,7 @@ def write_json(data_dict, file_path, **kwargs):
         indent, )
     """
     with open(file_path, "w") as f:
-        simplejson.dump(data_dict, f, **kwargs)
+        simplejson.dump(round_floats(data_dict), f, **kwargs)
 
 
 def check_make_json(fp, indent=4):
