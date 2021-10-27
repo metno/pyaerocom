@@ -4,3 +4,5 @@
 d48318c22231d453418e526b91787c43ede54d64
 # 2021-10-22: run pyupgrade --py38-plus and black
 dbac8ab91616a910364c20cb4aa594e80f1300d6
+# 2021-10-27: format with black and isort
+bd256f14e4315e7b9590221cf2576bf5cef45750
