@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import warnings
+from contextlib import contextmanager
 
 
-def filter_warnings(apply, categories=None, messages=None):
+@contextmanager
+def filter_warnings(apply: bool, categories: list | None = None, messages: list | None = None):
     """
     Decorator that can be used to filter particular warnings
 
@@ -40,16 +44,13 @@ def filter_warnings(apply, categories=None, messages=None):
     elif not isinstance(messages, list):
         raise ValueError("messages must be list or None")
 
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            with warnings.catch_warnings():
-                if apply:
-                    for cat in categories:
-                        warnings.filterwarnings("ignore", category=cat)
-                    for msg in messages:
-                        warnings.filterwarnings("ignore", message=msg)
-                return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
+    try:
+        with warnings.catch_warnings():
+            if apply:
+                for cat in categories:
+                    warnings.filterwarnings("ignore", category=cat)
+                for msg in messages:
+                    warnings.filterwarnings("ignore", message=msg)
+            yield
+    finally:
+        pass
