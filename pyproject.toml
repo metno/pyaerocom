@@ -6,6 +6,18 @@ build-backend = "setuptools.build_meta"
 minversion = "6.0"
 addopts = "--failed-first"
 testpaths = ["tests"]
+filterwarnings = [
+    "error:Ignoring netCDF variable '.*' invalid units '.*':UserWarning",
+    "error:Using DEFAULT_SPHERICAL_EARTH_RADIUS.:UserWarning",
+    "error:All-NaN axis encountered:RuntimeWarning",
+    "error:All-NaN slice encountered:RuntimeWarning",
+    "error:An input array is constant:RuntimeWarning",
+    "error:Mean of empty slice:RuntimeWarning",
+    "error:invalid value encountered in double_scalars:RuntimeWarning",
+    "error:invalid value encountered in true_divide:RuntimeWarning",
+    "error:Attempted to set non-positive left xlim on a log-scaled axis:UserWarning",
+    "error:Attempted to set non-positive bottom ylim on a log-scaled axis:UserWarning",
+]
 
 [tool.coverage.run]
 source = ["pyaerocom"]
