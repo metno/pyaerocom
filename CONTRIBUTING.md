@@ -10,6 +10,13 @@ The following are some guidelines for contributing to pyaerocom, a Python packag
 * [Website and documentation](https://pyaerocom.readthedocs.io/en/latest/index.html)
 * [Evaluation portal](aeroval.met.no)
 
+## Setting up a development environment
+If you want to do changes to your pyaerocom code you should follow the [installation guide in the documentation](https://pyaerocom.readthedocs.io/en/latest/install.html) for "Installing from source into a conda environment" after setting up your environment in accordance with the requirements in the [pyaerocom_env.yml](https://github.com/metno/pyaerocom/blob/main-dev/pyaerocom_env.yml) file. Use the following installation command after cloning the repository
+
+    pip install --no-deps -e .
+    
+to make the installation editable.
+
 ## Reporting bugs
 If you find a bug, please report it using the [Issues](https://github.com/metno/pyaerocom/issues) tab in the pyerocom repository. The bug report should include as much information as possible to allow us to recreate the problem. 
 
@@ -21,6 +28,9 @@ If you think of a feature that you want from pyaerocom you can add an issue desc
 
 ## Contributing code
 You are welcome to contribute code to implement new features, fix bugs or contribute documentation. We work with pull requests so we can not allow direct edits to the code or documentation. If you want to contribute code changes you need to make the changes in a new branch (or a fork if you're an external contributor) and make a pull request to have your changes integrated into pyaerocom.
+
+## Coding conventions
+We are in the process of moving to the code style enforced by [black](https://github.com/psf/black). More details to come.
 
 ### Below here is text to help me write this file
     
