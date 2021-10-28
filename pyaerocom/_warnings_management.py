@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ntpath import join
 
 import warnings
 from contextlib import contextmanager
@@ -6,9 +7,7 @@ from typing import Type
 
 
 @contextmanager
-def ignore_warnings(
-    apply: bool, category: Type[Warning] = Warning, *, messages: list[str] | str | None = None
-):
+def ignore_warnings(apply: bool, category: Type[Warning], *messages: str):
     """
     Ignore particular warnings with a decorator or context manager
 
@@ -16,20 +15,21 @@ def ignore_warnings(
     ----------
     apply : bool
         if True warnings will be ignored, else not.
-    category : subclass of Warning (default: Warning)
+    category : subclass of Warning
         warning category to be ignored. E.g. UserWarning, DeprecationWarning.
         The default is Warning.
-    messages : list[str], str, optional
-        list of warning messages to be ignored. E.g.
-        ['Warning that can safely be ignored']. The default is None. For each
-        `<entry>` :func:`warnigns.filterwarnings('ignore', category, message=<entry>)`
+    *messages : str, optional
+        warning messages to be ignored. E.g.
+        ignore_warnings(True, Warning, 'Warning that can safely be ignored', 'Other warning to ignore').
+        For each
+        `<entry>` :func:`warnigns.filterwarnings('ignore', Warning, message=<entry>)`
         is called.
 
     Example
     -------
     @ignore_warnings(True, UserWarning)
     @ignore_warnings(True, DeprecationWarning)
-    @ignore_warnings(True, messages=['I REALLY'])
+    @ignore_warnings(True, Warning, 'I REALLY')
     def warn_randomly_and_add_numbers(num1, num2):
         warnings.warn(UserWarning('Harmless user warning'))
         warnings.warn(DeprecationWarning('This function is deprecated'))
@@ -41,13 +41,10 @@ def ignore_warnings(
         raise ValueError("category must be a Warning subclass")
 
     if not messages:
-        messages = [""]
-    elif type(messages) == str:
-        messages = [messages]
-
-    if not isinstance(messages, list):
-        raise ValueError("messages must be list or None")
-    elif not all(type(msg) == str for msg in messages):
+        message=""
+    elif all(type(msg) == str for msg in messages):
+        message="|".join(messages)
+    else:
         raise ValueError("messages must be list of strings")
 
     try:
@@ -55,8 +52,7 @@ def ignore_warnings(
             yield
             return
         with warnings.catch_warnings():
-            for msg in messages:
-                warnings.filterwarnings("ignore", category=category, message=msg)
+            warnings.filterwarnings("ignore", category=category, message=message)
             yield
     finally:
         pass

@@ -149,9 +149,9 @@ def plot_scatter_aerocom(x_vals, y_vals, var_name=None, var_name_ref=None,
             low = 10**(float(exponent(abs(low)) - 1))
         xlim[0] = low
         ylim[0] = low
-    with ignore_warnings(True, UserWarning, messages="Attempted to set non-positive left xlim on a log-scaled axis"):
+    with ignore_warnings(True, UserWarning, "Attempted to set non-positive left xlim on a log-scaled axis"):
         ax.set_xlim(xlim)
-    with ignore_warnings(True, UserWarning, messages="Attempted to set non-positive bottom ylim on a log-scaled axis"):
+    with ignore_warnings(True, UserWarning, "Attempted to set non-positive bottom ylim on a log-scaled axis"):
         ax.set_ylim(ylim)
     xlbl = '{}'.format(x_name)
     if var_name_ref is not None:

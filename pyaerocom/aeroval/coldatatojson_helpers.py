@@ -1013,7 +1013,7 @@ def _calc_temporal_corr(coldata):
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim='time')
     with ignore_warnings(
-        True, RuntimeWarning, messages=["Mean of empty slice", "All-NaN slice encountered"]
+        True, RuntimeWarning, "Mean of empty slice", "All-NaN slice encountered"
     ):
         return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 

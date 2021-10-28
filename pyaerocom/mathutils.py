@@ -134,11 +134,9 @@ def weighted_corr(ref_data, data, weights):
 
 @ignore_warnings(
     True,
-    RuntimeWarning,
-    messages=[
-        "invalid value encountered in double_scalars",
-        "An input array is constant",
-    ],
+    RuntimeWarning,   
+    "invalid value encountered in double_scalars",
+    "An input array is constant",
 )
 def corr(ref_data, data, weights=None):
     """Compute correlation coefficient
@@ -183,9 +181,7 @@ def _nanmean_and_std(data):
     return (np.nanmean(data), np.nanstd(data))
 
 @ignore_warnings(
-    True, 
-    RuntimeWarning, 
-    messages=["An input array is constant", "invalid value encountered in true_divide"],
+    True, RuntimeWarning, "An input array is constant", "invalid value encountered in true_divide"
 )
 def calc_statistics(data, ref_data, lowlim=None, highlim=None,
                     min_num_valid=1, weights=None):

@@ -7,8 +7,8 @@ from pyaerocom._warnings_management import ignore_warnings
 
 @pytest.mark.filterwarnings("error")
 def test_filter_warnings_decorator():
-    @ignore_warnings(True, UserWarning, messages="User Warning")
-    @ignore_warnings(True, DeprecationWarning, messages="Deprecated")
+    @ignore_warnings(True, UserWarning, "User Warning")
+    @ignore_warnings(True, DeprecationWarning, "Deprecated")
     def add_num_with_warnings(num1, num2):
         warnings.warn(UserWarning("User Warning"))
         warnings.warn(DeprecationWarning("Deprecated"))
@@ -39,15 +39,15 @@ def test_filter_warnings_message():
     """filter one warning based on the warning message"""
 
     # ignore warning
-    with ignore_warnings(True, messages="Deprecated"):
+    with ignore_warnings(True, Warning, "Deprecated"):
         warnings.warn(Warning("Deprecated"))
 
-    with ignore_warnings(True, messages=["A", "B", "C"]):
+    with ignore_warnings(True, Warning, "A", "B", "C"):
         warnings.warn(Warning("A"))
         warnings.warn(Warning("B"))
         warnings.warn(Warning("C"))
 
     # raise warning
     with pytest.warns(Warning, match="Deprecated"):
-        with ignore_warnings(False, messages=["Deprecated"]):
+        with ignore_warnings(False, Warning, "Deprecated"):
             warnings.warn(Warning("Deprecated"))

@@ -678,7 +678,7 @@ class GriddedData(object):
 
 
     @ignore_warnings(
-        True, UserWarning, messages="Ignoring netCDF variable '.*' invalid units '.*'"
+        True, UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'"
     )
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
@@ -1763,8 +1763,7 @@ class GriddedData(object):
             data = self._resample_time_iris(to_ts_type)
         return data
 
-    @ignore_warnings(const.FILTER_IRIS_WARNINGS,
-                     messages="Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+    @ignore_warnings(const.FILTER_IRIS_WARNINGS, Warning, "Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         if not self.has_latlon_dims:
