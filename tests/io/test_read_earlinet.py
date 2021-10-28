@@ -1,13 +1,14 @@
-import pytest
 import os
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from pyaerocom import VerticalProfile
 from pyaerocom.io.read_earlinet import ReadEarlinet
 
-from ..conftest import TEST_RTOL, does_not_raise_exception
+from ..conftest import TEST_RTOL
 
 FILES = ['ev/ev1008192050.e532',
          'ev/ev1009162031.e532',
@@ -126,5 +127,3 @@ def test_ReadEarlinet__get_exclude_filelist():
     reader.EXCLUDE_CASES.append('onefile.txt')
     files = reader.get_file_list(reader.PROVIDES_VARIABLES)
     assert len(files) == 5
-
-

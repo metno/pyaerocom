@@ -1,17 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 12 14:45:43 2018
+from contextlib import nullcontext as does_not_raise_exception
 
-@author: jonasg
-"""
 import numpy as np
 import pytest
 
 from pyaerocom.exceptions import TemporalResolutionError
 from pyaerocom.tstype import TsType
-
-from .conftest import does_not_raise_exception
 
 
 def test_TsType_VALID():
@@ -311,8 +304,3 @@ def test_TsType__str__():
 
 def test_TsType__repr__():
     assert repr(TsType('daily')) == 'daily'
-
-if __name__=="__main__":
-
-    import sys
-    pytest.main(sys.argv)

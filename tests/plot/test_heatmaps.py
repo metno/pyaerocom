@@ -1,11 +1,13 @@
-import pytest
-import pandas as pd
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
+import pandas as pd
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.colors import BoundaryNorm
 
 import pyaerocom.plot.heatmaps as mod
-from ..conftest import does_not_raise_exception
+
 
 def make_dataframe():
     colnames = ['M1', 'M2', 'M3']

@@ -1,13 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 25 15:27:28 2019
-
-@author: jonasg
-"""
 import getpass
 import os
 import tempfile
+from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
@@ -15,7 +9,7 @@ import pyaerocom.config as testmod
 from pyaerocom import const as DEFAULT_CFG
 from pyaerocom.config import Config
 
-from .conftest import PYADIR, does_not_raise_exception, lustre_avail
+from .conftest import PYADIR, lustre_avail
 
 USER = getpass.getuser()
 
@@ -303,8 +297,3 @@ def test_default_config():
 
     from pyaerocom.grid_io import GridIO
     assert isinstance(cfg.GRID_IO, GridIO)
-
-### NEED TO TEST MORE CLASS METHODS...
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)

@@ -1,8 +1,9 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 import pyaerocom._concprcp_units_helpers
-from .conftest import does_not_raise_exception
-import pyaerocom._concprcp_units_helpers as mod
+
 
 @pytest.mark.parametrize('unit,ts_type,result,raises', [
 ('mg m-2/h', 'hourly', 'mg m-2 h-1', does_not_raise_exception()),

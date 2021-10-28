@@ -1,13 +1,15 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import cartopy.mpl.geoaxes
 import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
+import pyaerocom.plot.mapping as mod
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import DataDimensionError
-from pyaerocom.plot.config import get_color_theme, ColorTheme
-import pyaerocom.plot.mapping as mod
-from ..conftest import does_not_raise_exception
+from pyaerocom.plot.config import ColorTheme, get_color_theme
+
 
 @pytest.mark.parametrize('color_theme,vmin,vmax,raises,name', [
     (None,None,None,does_not_raise_exception(), 'Blues'),
@@ -136,5 +138,3 @@ def test_plot_nmb_map_colocateddataFAIL(coldata):
     cd = coldata['fake_nodims']
     with pytest.raises(AssertionError):
         mod.plot_nmb_map_colocateddata(cd)
-
-

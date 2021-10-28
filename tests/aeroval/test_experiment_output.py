@@ -1,14 +1,20 @@
-import pytest
 import os
-import shutil
+from contextlib import nullcontext as does_not_raise_exception
+
+import pytest
+
 from pyaerocom import const
-from pyaerocom._lowlevel_helpers import read_json,write_json
-from pyaerocom.aeroval import experiment_output as mod, ExperimentProcessor
+from pyaerocom._lowlevel_helpers import read_json, write_json
+from pyaerocom.aeroval import ExperimentProcessor
+from pyaerocom.aeroval import experiment_output as mod
 from pyaerocom.aeroval.setupclasses import EvalSetup
-from ..conftest import does_not_raise_exception, geojson_unavail
+
+from ..conftest import geojson_unavail
 from .cfg_test_exp1 import CFG as cfgexp1
+
 BASEDIR_DEFAULT = os.path.join(const.OUTPUTDIR, 'aeroval/data')
 from ._outbase import AEROVAL_OUT as BASEOUT
+
 DUMMY_OUT = os.path.join(BASEOUT, 'dummy')
 
 @pytest.fixture(scope='module')
@@ -257,12 +263,3 @@ def test_ExperimentOutput_reorder_experiments(dummy_expout,add_names,order,
         new = read_json(fp)
         assert list(new) == result
     os.remove(fp)
-
-
-
-
-
-
-
-
-

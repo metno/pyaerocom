@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 from pyaerocom import const
 from pyaerocom.io.readungriddedbase import ReadUngriddedBase
-
-from ..conftest import does_not_raise_exception
 
 
 class DummyReader(ReadUngriddedBase):
@@ -66,8 +65,3 @@ def test___init__dummy():
 def test_DummyReader_attrs(dummy_reader, key, val, raises):
     with raises:
         assert getattr(dummy_reader, key) == val
-
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)
-

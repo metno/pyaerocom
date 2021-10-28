@@ -1,6 +1,9 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
+
 import pyaerocom.vertical_profile as mod
-from .conftest import does_not_raise_exception
+
 
 @pytest.mark.parametrize('args,raises', [
     (dict(), pytest.raises(TypeError)),

@@ -1,13 +1,13 @@
 # ToDo: merge with test_coldatatojson_helpers.py
 
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import pytest
 
 import pyaerocom.aeroval.coldatatojson_helpers as mod
 import pyaerocom.exceptions as exceptions
 from pyaerocom import ColocatedData, TsType
-
-from ..conftest import does_not_raise_exception
 
 
 def test_get_heatmap_filename():

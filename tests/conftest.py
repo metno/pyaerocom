@@ -3,7 +3,6 @@ import os
 import matplotlib
 
 matplotlib.use('Agg')
-from contextlib import contextmanager
 
 import numpy as np
 import pytest
@@ -233,10 +232,6 @@ def coldata():
         'fake_3d_hr'    : cth._create_fake_coldata_3d_hourly(),
         'fake_3d_trends': cth._create_fake_trends_coldata_3d(),
         }
-
-@contextmanager
-def does_not_raise_exception():
-    yield
 
 TMPDIR = os.path.join(os.path.expanduser('~'), 'tmp', 'pyatest')
 os.makedirs(TMPDIR, exist_ok=True)

@@ -1,6 +1,9 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
+
 from pyaerocom.variable import Variable
-from .conftest import does_not_raise_exception
+
 
 @pytest.mark.parametrize('var_name,init,cfg,kwargs,raises', [
     (None, True, None, {}, does_not_raise_exception()),

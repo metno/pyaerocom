@@ -1,24 +1,22 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar 22 14:53:00 2021
+from contextlib import nullcontext as does_not_raise_exception
 
-@author: jonasg
-"""
 import iris.cube
+import numpy as np
 import pytest
 from iris import load
 from iris.cube import Cube
 from iris.exceptions import TranslationError
-import numpy as np
+
+from pyaerocom.exceptions import (
+    FileConventionError,
+    NetcdfError,
+    TemporalResolutionError,
+    UnresolvableTimeDefinitionError,
+)
 from pyaerocom.io import FileConventionRead
-from pyaerocom.exceptions import (TemporalResolutionError,
-                                  UnresolvableTimeDefinitionError,
-                                  NetcdfError,
-                                  FileConventionError)
 from pyaerocom.io import iris_io as mod
 
-from ..conftest import TESTDATADIR, does_not_raise_exception
+from ..conftest import TESTDATADIR
 
 tm5fname1 = 'aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc'
 TM5_DIR = TESTDATADIR.joinpath('modeldata/TM5-met2010_CTRL-TEST/renamed')
@@ -67,6 +65,7 @@ aod_cube_nounit.units = ''
 
 import tempfile
 from pathlib import Path
+
 tmpdirnc = Path(tempfile.gettempdir()).joinpath('test_iris_io')
 if not tmpdirnc.exists():
     tmpdirnc.mkdir()
@@ -172,6 +171,7 @@ def test__check_correct_time_dim(cube, file, raises):
 
 from .._conftest_helpers import make_dummy_cube_3D_daily
 
+
 def make_cubelist(dtype):
     return iris.cube.CubeList([make_dummy_cube_3D_daily(2010,
                                                         dtype=dtype),
@@ -199,8 +199,3 @@ def test_concatenate_iris_cubes(cubes, sh, raises):
 
     assert isinstance(result, iris.cube.Cube)
     assert result.shape == sh
-
-
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)

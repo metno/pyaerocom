@@ -1,15 +1,23 @@
-import numpy as np
-import pytest
-import pandas as pd
-from xarray import DataArray
-from matplotlib.axes import Axes
+from contextlib import nullcontext as does_not_raise_exception
 
-from pyaerocom.exceptions import MetaDataError, UnitConversionError, \
-    DataUnitError, CoordinateError, VarNotAvailableError, \
-    DataExtractionError
+import numpy as np
+import pandas as pd
+import pytest
+from matplotlib.axes import Axes
+from xarray import DataArray
+
 from pyaerocom import stationdata as mod
+from pyaerocom.exceptions import (
+    CoordinateError,
+    DataUnitError,
+    MetaDataError,
+    UnitConversionError,
+    VarNotAvailableError,
+)
 from pyaerocom.io import ReadEarlinet
-from .conftest import FAKE_STATION_DATA, does_not_raise_exception
+
+from .conftest import FAKE_STATION_DATA
+
 
 def get_earlinet_data(var_name):
     data = ReadEarlinet('Earlinet-test').read(vars_to_retrieve=var_name)
