@@ -8,6 +8,7 @@ import pandas as pd
 from datetime import datetime
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import read_json, write_json
+from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.helpers import start_stop
 from pyaerocom.trends_helpers import _get_season_from_months
 from pyaerocom.aeroval.helpers import (_period_str_to_timeslice,
@@ -1011,7 +1012,10 @@ def _calc_temporal_corr(coldata):
     if np.prod(arr.shape) == 0:
         return np.nan, np.nan
     corr_time = xr.corr(arr[1], arr[0], dim='time')
-    return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
+    with ignore_warnings(
+        True, RuntimeWarning, messages=["Mean of empty slice", "All-NaN slice encountered"]
+    ):
+        return (np.nanmean(corr_time.data), np.nanmedian(corr_time.data))
 
 def _select_period_season_coldata(coldata, period, season):
     tslice = _period_str_to_timeslice(period)

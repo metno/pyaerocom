@@ -44,10 +44,6 @@ X, Y = np.arange(100), np.arange(100)*2
           loglog=True), does_not_raise_exception())
 
 ])
-@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
-@pytest.mark.filterwarnings("ignore:Attempted to set non-positive left xlim on a log-scaled axis:UserWarning")
-@pytest.mark.filterwarnings("ignore:Attempted to set non-positive left ylim on a log-scaled axis:UserWarning")
-@pytest.mark.filterwarnings("ignore:Attempted to set non-positive bottom ylim on a log-scaled axis:UserWarning")
 def test_plot_scatter_aerocom(args,raises):
     with raises:
         val = mod.plot_scatter_aerocom(**args)

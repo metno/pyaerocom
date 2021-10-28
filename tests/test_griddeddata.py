@@ -361,13 +361,6 @@ def _make_fake_dataset(var_name, units):
     ('concco', 'ugC/m3', 'ug C m-3'),
 
 ])
-# iris UserWarning
-@pytest.mark.filterwarnings(
-    "ignore:Ignoring netCDF variable 'od550aer' invalid units 'invalid':UserWarning"
-)
-@pytest.mark.filterwarnings(
-    "ignore:Ignoring netCDF variable 'concco' invalid units 'ugC/m3':UserWarning"
-)
 def test_GriddedData__check_invalid_unit_alias(tmpdir, var_name, units, data_unit):
 
     ds = _make_fake_dataset(var_name,units)

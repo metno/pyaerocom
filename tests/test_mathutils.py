@@ -135,8 +135,6 @@ nanmask[100:300] = np.nan
      does_not_raise_exception()),
 
     ])
-@pytest.mark.filterwarnings("ignore:An input array is constant:RuntimeWarning")
-@pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
 def test_calc_statistics(data, ref_data, lowlim, highlim, min_num_valid,
                          weights, expected, raises):
     with raises:

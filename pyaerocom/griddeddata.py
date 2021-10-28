@@ -676,6 +676,10 @@ class GriddedData(object):
             f'to add this variable to pyaerocom/data/variables.ini.')
         return vardef
 
+
+    @ignore_warnings(
+        True, UserWarning, messages="Ignoring netCDF variable '.*' invalid units '.*'"
+    )
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
 
