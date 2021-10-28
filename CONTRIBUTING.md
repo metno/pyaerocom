@@ -21,6 +21,8 @@ If the documentation is unclear or you find and undocumented feature, questions 
 ## Contributing code
 You are welcome to contribute code to implement new features, fix bugs or contribute documentation. We work with pull requests so we can not allow direct edits to the code or documentation. If you wan
 
+### Below here is text to help me write this file
+    
     Welcome contributors to the project: Admit that you are eager for contributions and so happy they found themselves here.
     Table of Contents: If your CONTRIBUTING.md file is long, you might consider including a table of contents with links to different headings in your document. In github, each heading is given a URL by default, so you can link to that URL in the appropriate section of the Table of Contents for each heading. Do this in Markdown by wrapping the heading in [ ] and following with a parenthetical that includes the URL or header after # like [Reporting Bugs](#reporting-bugs).
     Short Links to Important Resources:
