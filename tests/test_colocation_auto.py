@@ -98,7 +98,6 @@ def test_Colocator__add_attr(col):
     ('daily', 'monthly', False, does_not_raise_exception()),
     ('monthly', 'monthly', False, does_not_raise_exception()),
     ])
-@pytest.mark.filterwarnings("ignore:invalid value encountered in reduce:RuntimeWarning")
 def test_Colocator_model_ts_type_read(tm5_aero_stp,ts_type_desired,
                                       ts_type, flex, raises):
     col = Colocator(**tm5_aero_stp)
@@ -194,13 +193,6 @@ def test_Colocator_update(what,raises):
             assert col[key] == val
 
 
-# numpy DeprecationWarning triggered by iris
-@pytest.mark.filterwarnings(
-    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
-)
-# dask RuntimeWarning triggered by iris
-@pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
-@pytest.mark.filterwarnings("ignore:invalid value encountered in reduce:RuntimeWarning")
 def test_Colocator_run_gridded_gridded(tm5_aero_stp):
     col = Colocator(**tm5_aero_stp)
     col.obs_id = col.model_id
@@ -250,10 +242,6 @@ def test_Colocator_run_gridded_gridded(tm5_aero_stp):
          pytest.raises(ColocationSetupError))
 
     ])
-# numpy DeprecationWarning triggered by iris
-@pytest.mark.filterwarnings(
-    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
-)
 def test_Colocator_run_gridded_ungridded(
     tm5_aero_stp, update_col, chk_mvar, chk_ovar, sh, mean_obs, mean_mod, raises
 ):
@@ -417,12 +405,6 @@ def test_colocator_with_model_data_dir_ungridded():
     assert str(cd.stop) == '2010-12-15T00:00:00.000000000'
 
 
-# numpy DeprecationWarning triggered by iris
-@pytest.mark.filterwarnings(
-    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
-)
-# dask RuntimeWarning triggered by iris
-@pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
 def test_colocator_with_obs_data_dir_gridded():
     col = Colocator(save_coldata=False)
     col.model_id='TM5-met2010_CTRL-TEST'

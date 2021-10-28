@@ -1,5 +1,3 @@
-import pytest
-
 from pyaerocom.aeroval import modelmaps_helpers as mod
 
 def test__jsdate_list(data_tm5):
@@ -8,10 +6,6 @@ def test__jsdate_list(data_tm5):
     assert vals[0] == 1263513600000
     assert vals[-1] == 1292371200000
 
-# numpy DeprecationWarning triggered by iris
-@pytest.mark.filterwarnings(
-    "ignore:`np.bool` is a deprecated alias for the builtin `bool`:DeprecationWarning"
-)
 def test_griddeddata_to_jsondict(data_tm5):
     result = mod.griddeddata_to_jsondict(data_tm5)
     assert isinstance(result, dict)
