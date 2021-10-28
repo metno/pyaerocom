@@ -14,12 +14,13 @@ The following are some guidelines for contributing to pyaerocom, a Python packag
 If you find a bug, please report it using the [Issues](https://github.com/metno/pyaerocom/issues) tab in the pyerocom repository. The bug report should include as much information as possible to allow us to recreate the problem. 
 
 ## Questions about features or the API
-If the documentation is unclear or you find and undocumented feature, questions can be submitted to the [Issues](https://github.com/metno/pyaerocom/issues) tab using the "Question" label.
+If the documentation is unclear or you find and undocumented feature, questions can be submitted to the [Issues](https://github.com/metno/pyaerocom/issues) tab using the "question" label.
 
 ## Requesting enhancements
+If you think of a feature that you want from pyaerocom you can add an issue describing it with the label "enhancement". Please describe the feature in some detail. You may also suggest how the API call for it would be. 
 
 ## Contributing code
-You are welcome to contribute code to implement new features, fix bugs or contribute documentation. We work with pull requests so we can not allow direct edits to the code or documentation. If you wan
+You are welcome to contribute code to implement new features, fix bugs or contribute documentation. We work with pull requests so we can not allow direct edits to the code or documentation. If you want to contribute code changes you need to make the changes in a new branch (or a fork if you're an external contributor) and make a pull request to have your changes integrated into pyaerocom.
 
 ### Below here is text to help me write this file
     
