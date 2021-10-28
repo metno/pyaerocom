@@ -1,12 +1,19 @@
 """
 Small helper utility functions for pyaerocom
 """
-import numpy as np
-import os, abc, logging, simplejson
-from pathlib import Path
+import abc
+import logging
+import os
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import numpy as np
+import simplejson
+
 from pyaerocom import print_log
+from pyaerocom._warnings_management import ignore_warnings
+
 
 def round_floats(in_data, precision=5):
     """
@@ -704,7 +711,13 @@ def list_to_shortstr(lst, indent=0):
         lout = []
         for val in lin:
             try:
-                ndigits = -1*np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
+                with ignore_warnings(
+                    True,
+                    RuntimeWarning,
+                    "divide by zero encountered in log10",
+                    "overflow encountered in long_scalars",
+                ):
+                    ndigits = -1*np.floor(np.log10(abs(np.asarray(val)))).astype(int) + 2
                 lout.append('{:.{}f}'.format(val, ndigits))
             except Exception:
                 lout.append(val)

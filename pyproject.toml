@@ -17,6 +17,8 @@ filterwarnings = [
     "error:invalid value encountered in true_divide:RuntimeWarning",
     "error:Attempted to set non-positive left xlim on a log-scaled axis:UserWarning",
     "error:Attempted to set non-positive bottom ylim on a log-scaled axis:UserWarning",
+    "error:divide by zero encountered in log10:RuntimeWarning",
+    "error:overflow encountered in long_scalars:RuntimeWarning",
 ]
 
 [tool.coverage.run]
