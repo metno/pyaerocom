@@ -30,7 +30,7 @@ If you think of a feature that you want from pyaerocom you can add an issue desc
 You are welcome to contribute code to implement new features, fix bugs or contribute documentation. We work with pull requests so we can not allow direct edits to the code or documentation. If you want to contribute code changes you need to make the changes in a new branch (or a fork if you're an external contributor) and make a pull request to have your changes integrated into pyaerocom.
 
 ### Tests
-We would like you to write tests for any new functions/methods you add. Tests are wirtten and run using pytest and are found under pyaerocom/tests. Missing test coverage will trigger a warning in the GitHub CI.
+Any new functions/methods you add must be covered by tests. Tests are wirtten and run using pytest and are found under pyaerocom/tests. Missing test coverage will trigger a warning in the GitHub CI.
 
 ### Documentation
 All new functions/methods/classes must have properly defined and written docstrings. Additional documentation may be provided (how to coming soon)
