@@ -134,7 +134,7 @@ class UngriddedData(object):
         self._index = self._init_index(add_cols)
 
         #keep private, this is not supposed to be used by the user
-        self._data = np.empty([num_points, self._COLNO]) * np.nan
+        self._data = np.full([num_points, self._COLNO], np.nan) 
 
         self.metadata = od()
         # single value data revision is deprecated
@@ -631,7 +631,7 @@ class UngriddedData(object):
         """
         if size is None or size < self._chunksize:
             size = self._chunksize
-        chunk = np.empty([size, self._COLNO])*np.nan
+        chunk = np.full([size, self._COLNO], np.nan)
         self._data = np.append(self._data, chunk, axis=0)
         logger.info("adding chunk, new array size ({})".format(self._data.shape))
 
