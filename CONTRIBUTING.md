@@ -1,4 +1,3 @@
-# DRAFT
 # Contributing to pyaerocom
 
 We're really happy that you want to contribute to pyaerocom!
