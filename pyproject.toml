@@ -7,11 +7,8 @@ minversion = "6.0"
 addopts = "--failed-first"
 testpaths = ["tests"]
 filterwarnings = [
-    "error::UserWarning",
-    "error::RuntimeWarning",
-    "error::DeprecationWarning",
-    "error::FutureWarning",
-    "error::matplotlib.MatplotlibDeprecationWarning",
+  "error",
+  "ignore::pytest.PytestUnraisableExceptionWarning",
 ]
 
 [tool.coverage.run]
