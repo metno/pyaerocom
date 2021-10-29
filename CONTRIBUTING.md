@@ -39,4 +39,8 @@ All new functions/methods/classes must have properly defined and written docstri
 We are in the process of moving to the code style enforced by [black](https://github.com/psf/black). More details to come.
 
 ## Pyaerocom team
-
+* [Jonas Gliß](https://github.com/jgliss)
+* [Jan Griesfeller](https://github.com/jgriesfeller)
+* [Alvaro Valdebenito](https://github.com/avaldebe)
+* [Augustin Mortier](https://github.com/AugustinMortier)
+* [Hans Brenna](https://github.com/hansbrenna)
