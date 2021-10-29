@@ -4,6 +4,7 @@ import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
+from matplotlib import MatplotlibDeprecationWarning
 from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
 
@@ -350,11 +351,13 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
                 norm = Normalize(vmin=vmin, vmax=vmax)
     cbar_extend = "neither"
     if c_under is not None:
+        cmap = cmap.copy()
         cmap.set_under(c_under)
         cbar_extend = "min"
         if bounds is not None:
             bounds.insert(0, bounds[0] - bounds[1])
     if c_over is not None:
+        cmap = cmap.copy()
         cmap.set_over(c_over)
         if bounds is not None:
             bounds.append(bounds[-1] + bounds[-2])
@@ -363,7 +366,7 @@ def plot_griddeddata_on_map(data, lons=None, lats=None, var_name=None,
         else:
             cbar_extend = "max"
     fig.norm = norm
-    disp = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm)
+    disp = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, shading="auto")
 
     if add_cbar:
         cbar = fig.colorbar(disp, extend=cbar_extend, cax=ax_cbar, shrink=0.8)
