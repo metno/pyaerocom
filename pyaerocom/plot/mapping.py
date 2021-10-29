@@ -4,6 +4,7 @@ import numpy as np
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
+from matplotlib import MatplotlibDeprecationWarning
 from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
 
