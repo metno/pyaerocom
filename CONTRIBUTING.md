@@ -41,5 +41,6 @@ We are in the process of moving to the code style enforced by [black](https://gi
 * [Jonas Gliß](https://github.com/jgliss)
 * [Jan Griesfeller](https://github.com/jgriesfeller)
 * [Alvaro Valdebenito](https://github.com/avaldebe)
+* [Daniel Heinesen](https://github.com/dulte)
 * [Augustin Mortier](https://github.com/AugustinMortier)
 * [Hans Brenna](https://github.com/hansbrenna)
