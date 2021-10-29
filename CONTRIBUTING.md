@@ -34,7 +34,7 @@ Any new functions/methods you add must be covered by tests. Tests are wirtten an
 ### Documentation
 All new functions/methods/classes must have properly defined and written docstrings. Additional documentation may be provided (how to coming soon)
 
-## Coding conventions
+## Code conventions
 We are in the process of moving to the code style enforced by [black](https://github.com/psf/black). More details to come.
 
 ## Pyaerocom team
