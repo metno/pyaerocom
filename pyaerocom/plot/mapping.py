@@ -472,7 +472,7 @@ def plot_map_aerocom(data, region, **kwargs):
     var = data.var_name.upper()
     avg = data.mean()
     start = to_datetime(data.start).strftime("%Y%m%d")
-    tit = f'{var} {start} mean {avg:.3f}'
+    tit = f'{var} {start} mean {avg.round(3)}'
     ax.set_title(tit)
     return fig
 
@@ -562,7 +562,7 @@ def plot_nmb_map_colocateddata(coldata, in_percent=True, vmin=-100,
         valid = ~stacked.isnull()
         coords = stacked.latlon[valid].values
         lats, lons = list(zip(*list(coords)))
-        data = stacked.data[valid]
+        data = stacked.data[tuple(valid)]
 
     if ref_label is None:
         ref_label = coldata.metadata['data_source'][0]
