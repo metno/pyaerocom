@@ -2410,8 +2410,8 @@ class GriddedData(object):
 
         lons = self.longitude.contiguous_bounds()
         lats = self.latitude.contiguous_bounds()
-
-        fig = plot_griddeddata_on_map(data=data.grid.data, lons=lons,
+        
+        fig = plot_griddeddata_on_map(data=data, lons=lons,
                                       lats=lats,
                                       var_name=self.var_name,
                                       unit=self.units,
