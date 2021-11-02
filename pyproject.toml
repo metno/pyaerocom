@@ -33,12 +33,14 @@ exclude_lines = [
 
 [tool.black]
 target-version = ['py38']
+extend_skip = ["pyaerocom-tutorials"]
 line-length = 99
 
 [tool.isort]
 py_version = "38"
 profile = "black"
 src_paths = ["pyaerocom", "tests"]
+extend_skip = ["pyaerocom-tutorials"]
 line_length = 99
 
 [tool.mypy]
@@ -51,6 +53,7 @@ warn_unreachable = true
 show_error_codes = true
 pretty = true
 sqlite_cache = true
+exclude = "pyaerocom-tutorials|_build"
 
 [[tool.mypy.overrides]]
 module = [
@@ -115,7 +118,7 @@ extras =
 [testenv:docs]
 skipsdist=True
 commands =
-    sphinx-build  docs/ docs/_build/html
+    sphinx-build {posargs:-T} docs/ docs/_build/html
 extras = 
     docs
 """
