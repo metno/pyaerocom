@@ -82,7 +82,7 @@ max-line-length = 99
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38, py39, py310, format, lint
+envlist = py38, py39, py310, format, lint, docs
 skip_missing_interpreters = True
 isolated_build = True
 
@@ -111,4 +111,11 @@ commands =
     pydocstyle pyaerocom/
 extras = 
     lint
+
+[testenv:docs]
+skipsdist=True
+commands =
+    sphinx-build  docs/ docs/_build/html
+extras = 
+    docs
 """
