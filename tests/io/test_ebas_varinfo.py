@@ -1,17 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 19 15:28:03 2020
+from contextlib import nullcontext as does_not_raise_exception
 
-@author: jonasg
-"""
 import pytest
 
-from pyaerocom import const
 from pyaerocom.io.ebas_file_index import EbasSQLRequest
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
-
-from ..conftest import does_not_raise_exception
 
 TESTDATA = [('DEFAULT', None, None, None, None, None, 1),
             ('sc550aer', ['aerosol_light_scattering_coefficient'],
@@ -162,31 +154,3 @@ def test_make_sql_requests(var,constraints,raises,num):
 def test___str__():
     s = EbasVarInfo('concpm10').__str__()
     assert isinstance(s, str)
-
-if __name__=='__main__':
-
-    #info = EbasVarInfo()
-    def to_tuple(var_name):
-        var = EbasVarInfo(var_name)
-        return (var_name, var.component, var.matrix, var.instrument,
-                var.statistics, var.requires, var.scale_factor)
-    import sys
-    from time import time
-    t0 =time()
-    pytest.main(sys.argv)
-    print(time()-t0)
-
-    ok = []
-    notok = []
-    for var in EbasVarInfo.open_config():
-        if var in const.VARS:
-            ok.append(var)
-        else:
-            notok.append(var)
-
-    print('OK')
-    print(ok)
-
-    print()
-    print('NOT OK')
-    print(notok)

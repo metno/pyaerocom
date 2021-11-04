@@ -5,6 +5,8 @@ import numpy as np
 
 from scipy.stats import pearsonr, spearmanr, kendalltau
 
+from pyaerocom._warnings_management import ignore_warnings
+
 ### LAMBDA FUNCTIONS
 in_range = lambda x, low, high: low <= x <= high
 
@@ -130,6 +132,12 @@ def weighted_corr(ref_data, data, weights):
     wsigmaxy = np.sqrt(wcovxx * wcovyy)
     return wcovxy / wsigmaxy
 
+@ignore_warnings(
+    True,
+    RuntimeWarning,   
+    "invalid value encountered in double_scalars",
+    "An input array is constant",
+)
 def corr(ref_data, data, weights=None):
     """Compute correlation coefficient
 
@@ -172,6 +180,9 @@ def _nanmean_and_std(data):
         return (np.nan,np.nan)
     return (np.nanmean(data), np.nanstd(data))
 
+@ignore_warnings(
+    True, RuntimeWarning, "An input array is constant", "invalid value encountered in true_divide"
+)
 def calc_statistics(data, ref_data, lowlim=None, highlim=None,
                     min_num_valid=1, weights=None):
     """Calc statistical properties from two data arrays

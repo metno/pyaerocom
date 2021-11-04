@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
+from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
 from pyaerocom.io import ebas_file_index as mod
 
-from ..conftest import EBAS_SQLite_DB, does_not_raise_exception
+from ..conftest import EBAS_SQLite_DB
 
 
 @pytest.mark.parametrize('args,kwargs,raises', [
@@ -131,7 +131,3 @@ def test_EbasFileIndex_get_table_names():
 def test_EbasFileIndex_get_column_names(table,names):
     val = mod.EbasFileIndex(EBAS_SQLite_DB).get_table_columns(table)
     assert val == names
-
-if __name__ == '__main__':
-    import sys
-    pytest.main(sys.argv)

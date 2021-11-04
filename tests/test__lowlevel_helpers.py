@@ -1,10 +1,11 @@
-import numpy as np
 import os
+from contextlib import nullcontext as does_not_raise_exception
+
+import numpy as np
 import pytest
 import simplejson
+
 from pyaerocom import _lowlevel_helpers as mod
-from .conftest import does_not_raise_exception
-import numpy as np
 
 
 def test_round_floats():
@@ -149,9 +150,3 @@ def test_sort_dict_by_name(input,pref_list,output_keys,raises):
     with raises:
         sorted = mod.sort_dict_by_name(input,pref_list)
         assert list(sorted.keys()) == output_keys
-
-
-
-
-
-

@@ -1,19 +1,18 @@
-import os, cf_units
+import os
+from contextlib import nullcontext as does_not_raise_exception
+
+import cf_units
 import numpy as np
 import pytest
 import xarray as xr
 
 import pyaerocom.exceptions as exc
-from pyaerocom.griddeddata import GriddedData
 from pyaerocom import get_variable
-from pyaerocom.io.read_mscw_ctm import (
-    ReadEMEP,
-    ReadMscwCtm,
-)
+from pyaerocom.griddeddata import GriddedData
+from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import (EMEP_DIR, does_not_raise_exception,
-                        data_unavail)
+from ..conftest import EMEP_DIR, data_unavail
 
 VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm', 
            'absc550aer': 'AbsCoeff', 'absc550dryaer': 'AbsCoeff', 
@@ -372,5 +371,3 @@ def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
             for var, mean in chk_mean.items():
                 np.testing.assert_allclose(objs[var].cube.data.mean(), mean,
                                            atol=0.1)
-
-

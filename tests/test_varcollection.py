@@ -1,10 +1,12 @@
-import pytest
 import os
+from contextlib import nullcontext as does_not_raise_exception
+
+import pytest
+
+import pyaerocom.varcollection as mod
 from pyaerocom import __dir__ as pyadir
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.variable import Variable
-import pyaerocom.varcollection as mod
-from .conftest import does_not_raise_exception
 
 VAR_INI = os.path.join(pyadir, 'data', 'variables.ini')
 

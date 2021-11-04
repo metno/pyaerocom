@@ -1,26 +1,24 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 12 14:45:43 2018
-
-@author: jonasg
-"""
-import iris.cube
 import os
+from contextlib import nullcontext as does_not_raise_exception
 from datetime import datetime
+
+import iris.cube
 import numpy as np
 import numpy.testing as npt
 import pytest
 import xarray as xr
 
 from pyaerocom import GriddedData, Variable
-from pyaerocom.exceptions import (CoordinateError, DataDimensionError,
-                                  DataSearchError, VariableDefinitionError,
-                                  VariableNotFoundError)
-
+from pyaerocom.exceptions import (
+    CoordinateError,
+    DataDimensionError,
+    DataSearchError,
+    VariableDefinitionError,
+    VariableNotFoundError,
+)
 from pyaerocom.io import ReadGridded
 
-from .conftest import TEST_RTOL, data_unavail, does_not_raise_exception
+from .conftest import TEST_RTOL, data_unavail
 
 TESTLATS =  [-10, 20]
 TESTLONS =  [-120, 69]
@@ -363,14 +361,13 @@ def _make_fake_dataset(var_name, units):
     ('concco', 'ugC/m3', 'ug C m-3'),
 
 ])
-def test_GriddedData__check_invalid_unit_alias(tmpdir,var_name,units,
-                                               data_unit):
+def test_GriddedData__check_invalid_unit_alias(tmpdir, var_name, units, data_unit):
 
     ds = _make_fake_dataset(var_name,units)
     path = os.path.join(tmpdir, 'output.nc')
     ds.to_netcdf(path)
     assert os.path.exists(path)
+
     data = GriddedData(path, var_name=var_name, check_unit=False)
     data._check_invalid_unit_alias()
     assert data.units == data_unit
-

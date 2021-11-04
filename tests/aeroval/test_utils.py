@@ -1,14 +1,15 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
+
 import pyaerocom.aeroval.utils as mod
 from pyaerocom import GriddedData
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 
+from .._conftest_helpers import add_dummy_model_data
+from ._outbase import ADD_MODELS_DIR
 from .cfg_test_exp1 import CFG as cfg1
 from .cfg_test_exp2 import CFG as cfg2
-
-from ._outbase import ADD_MODELS_DIR
-from ..conftest import does_not_raise_exception
-from .._conftest_helpers import add_dummy_model_data
 
 # create some fake AOD model data
 MODEL_DIR = add_dummy_model_data('od550aer', '1', 'daily',
@@ -22,6 +23,7 @@ def test_make_config_template():
     assert isinstance(val, EvalSetup)
 
 from copy import deepcopy
+
 CFG1 = deepcopy(cfg1)
 # need more than one model
 CFG1['model_cfg']['DUMMY-MODEL'] = dict(model_id='DUMMY-MODEL',
@@ -61,4 +63,3 @@ def test_compute_model_average_and_diversity(cfg,addargs,raises):
             assert isinstance(q3_out, GriddedData)
         else:
             assert isinstance(std_out, GriddedData)
-

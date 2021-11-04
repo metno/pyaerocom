@@ -207,7 +207,7 @@ class ReadEarlinet(ReadUngriddedBase):
                     _meta = None
             data_out[k] = _meta
 
-        data_out['station_name'] = re.split('\s|,', data_out['location'])[0].strip()
+        data_out["station_name"] = re.split(r"\s|,", data_out["location"])[0].strip()
 
         str_dummy = str(data_in.StartDate)
         year, month, day = str_dummy[0:4], str_dummy[4:6], str_dummy[6:8]

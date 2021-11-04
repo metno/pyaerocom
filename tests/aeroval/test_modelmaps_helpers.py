@@ -1,5 +1,3 @@
-import pytest
-from ..conftest import data_tm5
 from pyaerocom.aeroval import modelmaps_helpers as mod
 
 def test__jsdate_list(data_tm5):

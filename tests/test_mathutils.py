@@ -1,16 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Tests for _lowlevel_helpers.py module of pyaerocom
-"""
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 import pyaerocom.aux_var_helpers
 import pyaerocom.mathutils as mu
-
-from .conftest import does_not_raise_exception
 
 
 @pytest.mark.parametrize('vmin, vmax, num', [
@@ -144,7 +139,7 @@ def test_calc_statistics(data, ref_data, lowlim, highlim, min_num_valid,
                          weights, expected, raises):
     with raises:
         stats = mu.calc_statistics(data, ref_data, lowlim, highlim, min_num_valid,
-                                   weights)
+                                    weights)
         assert isinstance(stats, dict)
         assert len(stats) == len(expected)
         for key, val in expected.items():

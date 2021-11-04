@@ -125,7 +125,7 @@ def test_colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
                                     obsmean, modmean):
 
     coldata = colocate_gridded_ungridded(data_tm5, aeronetsunv3lev2_subset,
-                                         **addargs)
+                                        **addargs)
 
     assert isinstance(coldata, ColocatedData)
     assert coldata.ts_type == ts_type

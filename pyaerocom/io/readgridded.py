@@ -604,7 +604,7 @@ class ReadGridded(object):
                 return np.array([9999])
         else:
             start_provided = True
-            if start == 9999:
+            if isinstance(start, int) and start == 9999:
                 return np.array([9999])
             start = to_pandas_timestamp(start)
 
@@ -1945,7 +1945,7 @@ class ReadGridded(object):
                            convert_unit_on_init=try_convert_units,
                            **meta)
         # crop cube in time (if applicable)
-        if not start == 9999:
+        if isinstance(start, int) and start != 9999:
             try:
                 data = self._check_crop_time(data, start, stop)
             except Exception:

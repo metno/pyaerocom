@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
@@ -6,8 +8,6 @@ import xarray as xr
 
 from pyaerocom import StationData, helpers
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError, UnitConversionError
-
-from .conftest import does_not_raise_exception
 
 
 def test_get_standarad_name():
@@ -87,6 +87,7 @@ def fake_hourly_ts():
     ('daily', '25percentile', None, 8, -0.64),
     ('daily', '75percentile', None, 8, 0.64),
     ])
+@pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
 
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how,
@@ -191,7 +192,3 @@ def test_seconds_in_periods(date, ts_type, expected):
     ts = np.datetime64(date)
     seconds = helpers.seconds_in_periods(ts, ts_type)
     assert seconds == expected*seconds_in_day
-
-if __name__ == "__main__":
-    import sys
-    pytest.main(sys.argv)

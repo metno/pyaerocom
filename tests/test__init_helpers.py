@@ -1,7 +1,10 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
+
 from pyaerocom import _init_helpers as mod
 from pyaerocom import logger, print_log
-from .conftest import does_not_raise_exception
+
 
 def test_LOGLEVELS():
     assert mod.LOGLEVELS == {'debug': 10,
@@ -54,11 +57,9 @@ def test_change_verbosity(new_level, log, raises):
 ### Functions for package initialisation
 def test__init_supplemental():
     import os
-    from pkg_resources import get_distribution
     from os.path import abspath, dirname
+
+    from pkg_resources import get_distribution
     version, fpath = mod._init_supplemental()
     assert version == get_distribution('pyaerocom').version
     assert os.path.normpath(fpath).endswith('/pyaerocom')
-
-
-

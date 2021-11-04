@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
+from contextlib import nullcontext as does_not_raise_exception
 import os
 
 import pytest
 
 from pyaerocom import utils
 
-from .conftest import data_unavail, does_not_raise_exception
+from .conftest import data_unavail
 
 
 def test_print_file(tmpdir):
@@ -31,10 +31,3 @@ def test_create_varinfo_table(kwargs, raises, tabshape):
     with raises:
         df =  utils.create_varinfo_table(**kwargs)
         assert df.shape == tabshape
-
-
-
-
-if __name__=='__main__':
-    import sys
-    pytest.main(sys.argv)
