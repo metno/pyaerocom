@@ -674,6 +674,9 @@ class ExperimentOutput(ProjectOutput):
             if obs_var in mrv and mrv[obs_var] == mod_var:
                 # obs variable is in model_rename_vars
                 return True
+            elif mod_var in get_aliases(obs_var):
+                # model var is an alias to obs var e.g. sconcpm10 to concpm10
+                return True
             elif mod_var == obs_var:
                 # default setting, includes cases where mcfg.model_use_vars
                 # is set and the value of the model variable in
