@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 import pyaerocom.aeroval.utils as mod
@@ -5,7 +7,6 @@ from pyaerocom import GriddedData
 from pyaerocom.aeroval import EvalSetup, ExperimentProcessor
 
 from .._conftest_helpers import add_dummy_model_data
-from ..conftest import does_not_raise_exception
 from ._outbase import ADD_MODELS_DIR
 from .cfg_test_exp1 import CFG as cfg1
 from .cfg_test_exp2 import CFG as cfg2

@@ -1,10 +1,10 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import pytest
 from matplotlib.axes import Axes
 
 import pyaerocom.plot.plotscatter as mod
-
-from ..conftest import does_not_raise_exception
 
 
 def test_plot_scatter():

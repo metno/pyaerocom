@@ -1,9 +1,5 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Mar 22 14:53:00 2021
+from contextlib import nullcontext as does_not_raise_exception
 
-@author: jonasg
-"""
 import iris.cube
 import numpy as np
 import pytest
@@ -20,7 +16,7 @@ from pyaerocom.exceptions import (
 from pyaerocom.io import FileConventionRead
 from pyaerocom.io import iris_io as mod
 
-from ..conftest import TESTDATADIR, does_not_raise_exception
+from ..conftest import TESTDATADIR
 
 tm5fname1 = "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
 TM5_DIR = TESTDATADIR.joinpath("modeldata/TM5-met2010_CTRL-TEST/renamed")
@@ -272,9 +268,3 @@ def test_concatenate_iris_cubes(cubes, sh, raises):
 
     assert isinstance(result, iris.cube.Cube)
     assert result.shape == sh
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

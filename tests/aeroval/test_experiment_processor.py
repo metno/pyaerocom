@@ -1,10 +1,12 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 import pyaerocom.aeroval.experiment_processor as mod
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.aeroval.setupclasses import EvalSetup
 
-from ..conftest import does_not_raise_exception, geojson_unavail
+from ..conftest import geojson_unavail
 from .cfg_test_exp1 import CFG as cfgexp1
 from .cfg_test_exp2 import CFG as cfgexp2
 from .cfg_test_exp3 import CFG as cfgexp3

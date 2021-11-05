@@ -1,28 +1,5 @@
-#!/usr/bin/env python3
-# this file is part of the pyaerocom package
-# Copyright (C) 2018 met.no
-# Contact information:
-# Norwegian Meteorological Institute
-# Box 43 Blindern
-# 0313 OSLO
-# NORWAY
-# Author: Jonas Gliss
-# E-mail: jonasg@met.no
-# License: https://github.com/metno/pyaerocom/blob/master/LICENSE
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA
-
 import os
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import pytest
@@ -37,13 +14,7 @@ from pyaerocom.io.read_ebas import ReadEbas, ReadEbasOptions
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
 
-from ..conftest import (
-    EBAS_FILEDIR,
-    EBAS_FILES,
-    EBAS_ISSUE_FILES,
-    data_unavail,
-    does_not_raise_exception,
-)
+from ..conftest import EBAS_FILEDIR, EBAS_FILES, EBAS_ISSUE_FILES, data_unavail
 
 
 @pytest.fixture(scope="module")
@@ -679,9 +650,3 @@ class TestReadEbas:
                     if var in meta["var_info"]:
                         unit_desired = const.VARS[var].units
                         assert meta["var_info"][var]["units"] == unit_desired
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

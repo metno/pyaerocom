@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -5,8 +7,6 @@ from matplotlib.axes import Axes
 from matplotlib.colors import BoundaryNorm
 
 import pyaerocom.plot.heatmaps as mod
-
-from ..conftest import does_not_raise_exception
 
 
 def make_dataframe():
@@ -111,6 +111,7 @@ one_nan[0, 0] = np.nan
         ),
     ],
 )
+@pytest.mark.filterwarnings("ignore:More than 20 figures have been opened:RuntimeWarning")
 def test_df_to_heatmap(args, raises):
     with raises:
         val = mod.df_to_heatmap(**args)

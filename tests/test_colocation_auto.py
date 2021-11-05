@@ -1,4 +1,5 @@
 import os
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import numpy.testing as npt
@@ -10,7 +11,7 @@ from pyaerocom.exceptions import ColocationError, ColocationSetupError
 from pyaerocom.io import ReadMscwCtm
 from pyaerocom.io.aux_read_cubes import add_cubes
 
-from .conftest import data_unavail, does_not_raise_exception, tda
+from .conftest import data_unavail, tda
 
 HOME = os.path.expanduser("~")
 COL_OUT_DEFAULT = os.path.join(HOME, "MyPyaerocom/colocated_data")
@@ -473,9 +474,3 @@ def test_colocator_with_obs_data_dir_gridded():
     assert cd.ts_type == "monthly"
     assert str(cd.start) == "2010-01-15T12:00:00.000000000"
     assert str(cd.stop) == "2010-12-15T12:00:00.000000000"
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Nov 25 15:27:28 2019
-
-@author: jonasg
-"""
 import iris
 import numpy as np
 import numpy.testing as npt
@@ -264,9 +258,3 @@ def test_read_emep_colocate_emep_tm5(data_tm5, path_emep):
         data_emep.units = "1"
         col = colocate_gridded_gridded(data_emep, data_tm5)
         assert isinstance(col, ColocatedData)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

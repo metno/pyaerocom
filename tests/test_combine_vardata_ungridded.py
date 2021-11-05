@@ -1,9 +1,4 @@
-#!/usr/bin/env python3
-"""
-Created on Thu Oct 22 10:14:59 2020
-
-@author: jonasg
-"""
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import numpy.testing as npt
@@ -11,7 +6,7 @@ import pytest
 
 import pyaerocom.combine_vardata_ungridded as testmod
 
-from .conftest import aeronetsdav3lev2_subset, aeronetsunv3lev2_subset, does_not_raise_exception
+from .conftest import aeronetsdav3lev2_subset, aeronetsunv3lev2_subset
 
 SUN_DATA = aeronetsunv3lev2_subset
 SDA_DATA = aeronetsdav3lev2_subset
@@ -275,9 +270,3 @@ def test__combine_2_sites_same_site(
     assert new.data_id == dataid
     assert len(stat1[var1].dropna()) == len(new[vno])
     assert new.get_unit(vno) == unitout
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

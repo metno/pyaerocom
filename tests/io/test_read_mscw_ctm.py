@@ -1,4 +1,5 @@
 import os
+from contextlib import nullcontext as does_not_raise_exception
 
 import cf_units
 import numpy as np
@@ -11,7 +12,7 @@ from pyaerocom.griddeddata import GriddedData
 from pyaerocom.io.read_mscw_ctm import ReadEMEP, ReadMscwCtm
 
 from .._conftest_helpers import _create_fake_MSCWCtm_data
-from ..conftest import EMEP_DIR, data_unavail, does_not_raise_exception
+from ..conftest import EMEP_DIR, data_unavail
 
 VAR_MAP = {
     "abs550aer": "AAOD_550nm",

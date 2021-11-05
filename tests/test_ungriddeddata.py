@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Created on Thu Apr 12 14:45:43 2018
-
-@author: jonasg
-"""
 import os
 
 import numpy as np
@@ -238,6 +232,7 @@ def test_check_unit(data_scat_jungfraujoch):
         data_scat_jungfraujoch.check_unit("sc550aer", unit="m-1")
 
 
+@pytest.mark.filterwarnings("ignore:invalid value encountered in true_divide:RuntimeWarning")
 def test_check_convert_var_units(data_scat_jungfraujoch):
 
     out = data_scat_jungfraujoch.check_convert_var_units("sc550aer", "m-1", inplace=False)
@@ -257,9 +252,3 @@ def test_check_convert_var_units(data_scat_jungfraujoch):
             ratio = ratio[~np.isnan(ratio)]
 
             npt.assert_allclose(actual=[ratio.mean(), ratio.std()], desired=[fac, 0], atol=1e-20)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

@@ -1,10 +1,13 @@
 """
 Definitions and helpers related to time conversion
 """
-
 from datetime import datetime
+from warnings import catch_warnings, filterwarnings
 
-from iris import coord_categorisation
+with catch_warnings():
+    filterwarnings("ignore")
+    from iris import coord_categorisation
+
 
 TS_TYPES = ["minutely", "hourly", "daily", "weekly", "monthly", "yearly", "native"]
 
@@ -87,5 +90,5 @@ TS_TYPE_SECS = {
     "daily": 86400,
     "weekly": 604800,
     "monthly": 2592000,  # counting 3 days per month (APPROX)
-    "yearly": 31536000,
-}  # counting 365 days (APPROX)
+    "yearly": 31536000,  # counting 365 days (APPROX)
+}

@@ -11,14 +11,22 @@ def test__COLOR_THEMES():
     assert list(mod._COLOR_THEMES) == ["light", "dark"]
 
 
-@pytest.mark.parametrize("name", [("bla", "light", "dark")])
-def test_ColorTheme___init__(name):
+@pytest.mark.parametrize(
+    "name, theme_name",
+    [
+        pytest.param(
+            "bla",
+            mod.DEFAULT_THEME,
+            id="invalid color theme",
+            marks=pytest.mark.filterwarnings("ignore:Invalid name:UserWarning"),
+        ),
+        pytest.param("light", "light", id="light color theme"),
+        pytest.param("dark", "dark", id="dark color theme"),
+    ],
+)
+def test_ColorTheme___init__(name, theme_name):
 
-    theme = mod.ColorTheme(name)
-    if not name in mod._COLOR_THEMES:
-        assert theme.name == mod.DEFAULT_THEME
-    else:
-        assert theme.name == name
+    assert mod.ColorTheme(name).name == theme_name
 
 
 def test_ColorTheme_to_dict():

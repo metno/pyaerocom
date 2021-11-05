@@ -770,7 +770,7 @@ def colocate_gridded_ungridded(
     time_num = len(time_idx)
     stat_num = len(obs_stat_data)
 
-    arr = np.empty((2, time_num, stat_num)) * np.nan
+    arr = np.full((2, time_num, stat_num), np.nan)
 
     lons = [np.nan] * stat_num
     lats = [np.nan] * stat_num

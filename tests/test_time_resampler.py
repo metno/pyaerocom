@@ -1,9 +1,5 @@
-#!/usr/bin/env python3
-"""
-Created on Tue Nov 24 17:11:58 2020
+from contextlib import nullcontext as does_not_raise_exception
 
-@author: jonasg
-"""
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,8 +9,6 @@ from iris.cube import Cube
 from pyaerocom import GriddedData, TsType
 from pyaerocom.helpers import resample_time_dataarray, resample_timeseries
 from pyaerocom.time_resampler import TimeResampler
-
-from .conftest import does_not_raise_exception
 
 # get default resampling "min_num_obs"
 min_num_obs_default = {
@@ -195,9 +189,3 @@ def test_TimeResampler_resample(fakedata_hourly, args, output_len, output_numnot
     notnan = ~np.isnan(ts)
     assert notnan.sum() == output_numnotnan
     assert tr.last_units_preserved == lup
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 from pyaerocom import Colocator, GriddedData, UngriddedData
@@ -6,7 +8,6 @@ from pyaerocom.aeroval import _processing_base as mod
 from pyaerocom.aeroval.experiment_output import ExperimentOutput
 from pyaerocom.exceptions import EntryNotAvailable
 
-from ..conftest import does_not_raise_exception
 from .cfg_test_exp1 import CFG
 
 obs_cfg = dict(

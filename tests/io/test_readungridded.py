@@ -1,13 +1,9 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Jul  9 14:14:29 2018
-"""
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 from pyaerocom import const
 from pyaerocom.io import ReadUngridded
-
-from ..conftest import does_not_raise_exception
 
 
 def test_invalid_init_data_dirs():
@@ -198,9 +194,3 @@ def test_basic_attributes():
         reader.get_lowlevel_reader()
     with pytest.raises(AttributeError):
         reader.dataset_provides_variables()
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

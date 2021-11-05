@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import cartopy.mpl.geoaxes
 import numpy as np
 import pytest
@@ -7,8 +9,6 @@ import pyaerocom.plot.mapping as mod
 from pyaerocom import GriddedData
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.plot.config import ColorTheme, get_color_theme
-
-from ..conftest import does_not_raise_exception
 
 
 @pytest.mark.parametrize(
@@ -122,19 +122,24 @@ def test_plot_griddeddata_on_map(data_tm5, data, args, raises):
 
 
 @pytest.mark.parametrize(
-    "region,kwargs,raises",
+    "region",
     [
-        ("WORLD", {}, does_not_raise_exception()),
-        ("EUROPE", {}, does_not_raise_exception()),
-        ("EEUROPE", {}, does_not_raise_exception()),
+        ("WORLD"),
+        ("EUROPE"),
+        pytest.param(
+            "EEUROPE",
+            marks=pytest.mark.filterwarnings("ignore:Out of bound index found:DeprecationWarning"),
+        ),
     ],
 )
-def test_plot_map_aerocom(data_tm5, region, kwargs, raises):
+def test_plot_map_aerocom(data_tm5, region):
+    val = mod.plot_map_aerocom(data_tm5, region)
+    assert isinstance(val, Figure)
+
+
+def test_plot_map_aerocom_error(data_tm5):
     with pytest.raises(ValueError):
         mod.plot_map_aerocom(42, "WORLD")
-    with raises:
-        val = mod.plot_map_aerocom(data_tm5, region, **kwargs)
-        assert isinstance(val, Figure)
 
 
 def test_plot_nmb_map_colocateddata(coldata_tm5_aeronet):

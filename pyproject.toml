@@ -6,6 +6,10 @@ build-backend = "setuptools.build_meta"
 minversion = "6.0"
 addopts = "--failed-first"
 testpaths = ["tests"]
+filterwarnings = [
+  "error",
+  "ignore::pytest.PytestUnraisableExceptionWarning",
+]
 
 [tool.coverage.run]
 source = ["pyaerocom"]

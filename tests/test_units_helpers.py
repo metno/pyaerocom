@@ -1,19 +1,10 @@
-#!/usr/bin/env python3
-"""
-Created on Thu Apr 12 14:45:43 2018
+from contextlib import nullcontext as does_not_raise_exception
 
-@author: jonasg
-"""
 import numpy.testing as npt
 import pytest
 
-import pyaerocom._concprcp_units_helpers
-import pyaerocom.units_helpers
 from pyaerocom import units_helpers as mod
 from pyaerocom.exceptions import UnitConversionError
-from pyaerocom.griddeddata import GriddedData
-
-from .conftest import data_unavail, does_not_raise_exception
 
 
 @pytest.mark.parametrize(

@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -7,7 +9,6 @@ from xarray import DataArray
 from pyaerocom import stationdata as mod
 from pyaerocom.exceptions import (
     CoordinateError,
-    DataExtractionError,
     DataUnitError,
     MetaDataError,
     UnitConversionError,
@@ -15,7 +16,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import ReadEarlinet
 
-from .conftest import FAKE_STATION_DATA, does_not_raise_exception
+from .conftest import FAKE_STATION_DATA
 
 
 def get_earlinet_data(var_name):
@@ -277,6 +278,7 @@ def test_StationData__check_ts_types_for_merge(s1, s2, var_name, val):
         (stat1, "od550aer", 10, 20, True, np.nan, does_not_raise_exception()),
     ],
 )
+@pytest.mark.filterwarnings("ignore:Mean of empty slice:RuntimeWarning")
 def test_StationData_remove_outliers(stat, var_name, low, high, check_unit, mean, raises):
     with raises:
         stat = stat.copy()

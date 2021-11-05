@@ -10,10 +10,9 @@ import xarray as xr
 from cf_units import Unit
 from iris.analysis import MEAN
 from iris.analysis.cartography import area_weights
-from iris.exceptions import UnitConversionError
 
 from pyaerocom import const, logger, print_log
-from pyaerocom._warnings_management import filter_warnings
+from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
@@ -41,7 +40,7 @@ from pyaerocom.helpers import (
     to_pandas_timestamp,
 )
 from pyaerocom.helpers_landsea_masks import load_region_mask_iris
-from pyaerocom.mathutils import closest_index, estimate_value_range, exponent
+from pyaerocom.mathutils import estimate_value_range, exponent
 from pyaerocom.region import Region
 from pyaerocom.stationdata import StationData
 from pyaerocom.time_config import IRIS_AGGREGATORS, TS_TYPE_TO_NUMPY_FREQ
@@ -683,6 +682,7 @@ class GriddedData:
         )
         return vardef
 
+    @ignore_warnings(True, UserWarning, "Ignoring netCDF variable '.*' invalid units '.*'")
     def load_input(self, input, var_name=None, perform_fmt_checks=None):
         """Import input as cube
 
@@ -1790,9 +1790,7 @@ class GriddedData:
             data = self._resample_time_iris(to_ts_type)
         return data
 
-    @filter_warnings(
-        const.FILTER_IRIS_WARNINGS, messages=["Using DEFAULT_SPHERICAL_EARTH_RADIUS."]
-    )
+    @ignore_warnings(const.FILTER_IRIS_WARNINGS, Warning, "Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
     def calc_area_weights(self):
         """Calculate area weights for grid"""
         if not self.has_latlon_dims:
@@ -2611,7 +2609,7 @@ class GriddedData:
         elif val in self._coord_long_names:
             return {"long_name": val}
         raise CoordinateError(
-            "Could not associate one of the coordinates with " "input string {}".format(val)
+            f"Could not associate one of the coordinates with input string {val}"
         )
 
     def copy(self):

@@ -1,15 +1,11 @@
-#!/usr/bin/env python3
-"""
-Tests for _lowlevel_helpers.py module of pyaerocom
-"""
+from contextlib import nullcontext as does_not_raise_exception
+
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 import pyaerocom.aux_var_helpers
 import pyaerocom.mathutils as mu
-
-from .conftest import does_not_raise_exception
 
 
 @pytest.mark.parametrize("vmin, vmax, num", [(0, 1, 10), (0.345, 0.346, 100), (-2, -10, 5)])

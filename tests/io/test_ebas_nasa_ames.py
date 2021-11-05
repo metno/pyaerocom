@@ -1,17 +1,11 @@
-#!/usr/bin/env python3
-"""
-Created on Wed Feb 19 15:28:03 2020
-
-@author: jonasg
-"""
 from collections import OrderedDict
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import pytest
 
 from pyaerocom.io import ebas_nasa_ames as ena
 
-from ..conftest import does_not_raise_exception
 from ..conftest import loaded_nasa_ames_example as filedata
 
 
@@ -250,9 +244,3 @@ def test_EbasColDef_get_wavelength_nm(filedata, colnum, raises, value):
     assert isinstance(coldef, ena.EbasColDef)
     with raises:
         assert coldef.get_wavelength_nm() == value
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)

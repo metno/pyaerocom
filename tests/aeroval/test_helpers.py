@@ -1,11 +1,11 @@
+from contextlib import nullcontext as does_not_raise_exception
+
 import pytest
 
 import pyaerocom.aeroval.helpers as mod
 from pyaerocom import const
 from pyaerocom.exceptions import VariableDefinitionError
 from pyaerocom.varcollection import VarCollection
-
-from ..conftest import does_not_raise_exception
 
 
 @pytest.mark.parametrize(

@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
-"""
-Created on Thu Apr 12 14:45:43 2018
-
-@author: jonasg
-"""
 import os
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import numpy.testing as npt
@@ -15,7 +10,7 @@ from matplotlib.axes import Axes
 from pyaerocom import ColocatedData
 from pyaerocom.exceptions import DataCoverageError, DataDimensionError
 
-from .conftest import CHECK_PATHS, TESTDATADIR, does_not_raise_exception
+from .conftest import CHECK_PATHS, TESTDATADIR
 
 EXAMPLE_FILE = TESTDATADIR.joinpath(CHECK_PATHS["coldata_tm5_aeronet"])
 

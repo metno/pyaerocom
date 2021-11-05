@@ -27,7 +27,7 @@ from traceback import format_exc
 import numpy as np
 
 from pyaerocom import const, logger
-from pyaerocom._warnings_management import filter_warnings
+from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import (
     FileConventionError,
     NetcdfError,
@@ -40,7 +40,7 @@ from pyaerocom.io.helpers import add_file_to_log
 from pyaerocom.tstype import TsType
 
 
-@filter_warnings(apply=const.FILTER_IRIS_WARNINGS, categories=[UserWarning])
+@ignore_warnings(const.FILTER_IRIS_WARNINGS, UserWarning)
 def load_cubes_custom(files, var_name=None, file_convention=None, perform_fmt_checks=True):
     """Load multiple NetCDF files into CubeList
 

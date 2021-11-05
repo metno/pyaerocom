@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
-"""
-Created on Mon Feb  1 09:31:15 2021
-
-@author: jonasg
-"""
 import os
+from contextlib import nullcontext as does_not_raise_exception
 
 import numpy as np
 import numpy.testing as npt
@@ -15,8 +10,6 @@ from pyaerocom.exceptions import DataRetrievalError
 from pyaerocom.io.read_airnow import ReadAirNow
 from pyaerocom.stationdata import StationData
 from pyaerocom.ungriddeddata import UngriddedData
-
-from ..conftest import does_not_raise_exception
 
 
 @pytest.fixture(scope="module")
@@ -444,11 +437,3 @@ class TestReadAirNow:
         assert len(data.metadata) == num_meta_blocks
         assert len(data.unique_station_names) == num_stats
         assert sorted(data.contains_vars) == sorted(vars_to_retrieve)
-
-
-if __name__ == "__main__":
-
-    import sys
-
-    print(list(ReadAirNow().VAR_MAP.keys()))
-    pytest.main(sys.argv)

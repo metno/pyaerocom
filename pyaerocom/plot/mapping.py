@@ -7,7 +7,8 @@ from matplotlib.colors import BoundaryNorm, LogNorm, Normalize
 from numpy import ceil, linspace, meshgrid
 from pandas import to_datetime
 
-from pyaerocom import const, logger
+from pyaerocom import const
+from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.exceptions import DataDimensionError
 from pyaerocom.mathutils import exponent
 from pyaerocom.plot.config import COLOR_THEME, MAP_AXES_ASPECT, ColorTheme
@@ -329,8 +330,9 @@ def plot_griddeddata_on_map(
             cmap = plt.get_cmap(cmap)
         norm = BoundaryNorm(boundaries=bounds, ncolors=cmap.N, clip=False)
     else:
-        dmin = np.nanmin(data)
-        dmax = np.nanmax(data)
+        with ignore_warnings(True, RuntimeWarning, "All-NaN axis encountered"):
+            dmin = np.nanmin(data)
+            dmax = np.nanmax(data)
 
         if any([np.isnan(x) for x in [dmin, dmax]]):
             raise ValueError("Cannot plot map of data: all values are NaN")
@@ -379,11 +381,13 @@ def plot_griddeddata_on_map(
                 norm = Normalize(vmin=vmin, vmax=vmax)
     cbar_extend = "neither"
     if c_under is not None:
+        cmap = cmap.copy()
         cmap.set_under(c_under)
         cbar_extend = "min"
         if bounds is not None:
             bounds.insert(0, bounds[0] - bounds[1])
     if c_over is not None:
+        cmap = cmap.copy()
         cmap.set_over(c_over)
         if bounds is not None:
             bounds.append(bounds[-1] + bounds[-2])
@@ -392,7 +396,7 @@ def plot_griddeddata_on_map(
         else:
             cbar_extend = "max"
     fig.norm = norm
-    disp = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm)
+    disp = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, shading="auto")
 
     if add_cbar:
         cbar = fig.colorbar(disp, extend=cbar_extend, cax=ax_cbar, shrink=0.8)
@@ -505,7 +509,7 @@ def plot_map_aerocom(data, region, **kwargs):
     var = data.var_name.upper()
     avg = data.mean()
     start = to_datetime(data.start).strftime("%Y%m%d")
-    tit = f"{var} {start} mean {avg:.3f}"
+    tit = f"{var} {start} mean {avg.round(3)}"
     ax.set_title(tit)
     return fig
 
@@ -601,7 +605,7 @@ def plot_nmb_map_colocateddata(
         valid = ~stacked.isnull()
         coords = stacked.latlon[valid].values
         lats, lons = list(zip(*list(coords)))
-        data = stacked.data[valid]
+        data = stacked.data[tuple(valid)]
 
     if ref_label is None:
         ref_label = coldata.metadata["data_source"][0]

@@ -1,13 +1,11 @@
 """
 This module contains scatter plot routines for Aerocom data.
 """
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ticker import ScalarFormatter
 
 from pyaerocom import const
+from pyaerocom._warnings_management import ignore_warnings
 from pyaerocom.helpers import start_stop_str
 from pyaerocom.mathutils import calc_statistics, exponent
 
@@ -165,8 +163,14 @@ def plot_scatter_aerocom(
             low = 10 ** (float(exponent(abs(low)) - 1))
         xlim[0] = low
         ylim[0] = low
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
+    with ignore_warnings(
+        True, UserWarning, "Attempted to set non-positive left xlim on a log-scaled axis"
+    ):
+        ax.set_xlim(xlim)
+    with ignore_warnings(
+        True, UserWarning, "Attempted to set non-positive bottom ylim on a log-scaled axis"
+    ):
+        ax.set_ylim(ylim)
     xlbl = f"{x_name}"
     if var_name_ref is not None:
         xlbl += f" ({var_name_ref})"

@@ -21,10 +21,14 @@ import fnmatch
 import os
 import re
 from collections import OrderedDict as od
+from warnings import catch_warnings, filterwarnings
 
 import numpy as np
-from geonum.atmosphere import T0_STD, p0
 from tqdm import tqdm
+
+with catch_warnings():
+    filterwarnings("ignore")
+    from geonum.atmosphere import T0_STD, p0
 
 from pyaerocom import const
 from pyaerocom._lowlevel_helpers import BrowseDict

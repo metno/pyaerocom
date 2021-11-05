@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
-"""
-Created on Thu Apr 12 14:45:43 2018
-
-@author: jonasg
-"""
 import os
+from contextlib import nullcontext as does_not_raise_exception
 from datetime import datetime
 
 import iris.cube
@@ -23,7 +18,7 @@ from pyaerocom.exceptions import (
 )
 from pyaerocom.io import ReadGridded
 
-from .conftest import TEST_RTOL, data_unavail, does_not_raise_exception
+from .conftest import TEST_RTOL, data_unavail
 
 TESTLATS = [-10, 20]
 TESTLONS = [-120, 69]
@@ -437,6 +432,7 @@ def test_GriddedData__check_invalid_unit_alias(tmpdir, var_name, units, data_uni
     path = os.path.join(tmpdir, "output.nc")
     ds.to_netcdf(path)
     assert os.path.exists(path)
+
     data = GriddedData(path, var_name=var_name, check_unit=False)
     data._check_invalid_unit_alias()
     assert data.units == data_unit

@@ -1,15 +1,8 @@
-#!/usr/bin/env python3
-"""
-Created on Fri Oct 23 10:13:58 2020
-
-@author: jonasg
-"""
+from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
 from pyaerocom import obs_io as testmod
-
-from .conftest import does_not_raise_exception
 
 AuxInfoUngriddedTypes = dict(
     data_id=str,
@@ -112,9 +105,3 @@ def test_AuxInfoUngridded___init__(argdict, expectation):
         info = testmod.AuxInfoUngridded(**argdict)
         for key, dtype in AuxInfoUngriddedTypes.items():
             assert isinstance(info.__dict__[key], dtype)
-
-
-if __name__ == "__main__":
-    import sys
-
-    pytest.main(sys.argv)
