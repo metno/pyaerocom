@@ -19,15 +19,14 @@ def test__init_logger():
 )
 @pytest.mark.parametrize("log", [logger, print_log])
 def test_change_verbosity(new_level, log):
-    lvl = log.getEffectiveLevel()
+    old_level = log.getEffectiveLevel()
 
     mod.change_verbosity(new_level, log)
-    if isinstance(new_level, str):
-        new_level = mod.LOGLEVELS[new_level]
-    assert log.getEffectiveLevel() == new_level
+    assert log.getEffectiveLevel() == mod.LOGLEVELS.get(new_level, new_level)
+
     # revoke changes
-    log.setLevel(lvl)
-    assert log.getEffectiveLevel() == lvl
+    log.setLevel(old_level)
+    assert log.getEffectiveLevel() == old_level
 
 
 @pytest.mark.parametrize("new_level", [60, "blaaa"])
