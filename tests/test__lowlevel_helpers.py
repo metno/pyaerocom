@@ -60,25 +60,23 @@ def test_write_json(tmpdir, data, kwargs):
     os.remove(path)
 
 
-@pytest.mark.parametrize("data,kwargs", [({"bla": 42}, dict(bla=42))])
-def test_write_json_error(tmpdir, data, kwargs):
+def test_write_json_error(tmpdir):
     path = os.path.join(tmpdir, "file.json")
-    with pytest.raises(TypeError):
-        mod.write_json(data, path, **kwargs)
+    with pytest.raises(TypeError) as e:
+        mod.write_json({"bla": 42}, path, bla=42)
+    assert str(e.value).endswith("unexpected keyword argument 'bla'")
 
 
-@pytest.mark.parametrize("fname", ["bla.json"])
-def test_check_make_json(tmpdir, fname):
-    fp = os.path.join(tmpdir, fname)
+def test_check_make_json(tmpdir):
+    fp = os.path.join(tmpdir, "bla.json")
     val = mod.check_make_json(fp)
     assert os.path.exists(val)
 
 
-@pytest.mark.parametrize("fname", ["bla.txt"])
-def test_check_make_json_error(tmpdir, fname):
-    fp = os.path.join(tmpdir, fname)
+def test_check_make_json_error(tmpdir):
+    fp = os.path.join(tmpdir, "bla.txt")
     with pytest.raises(ValueError):
-        val = mod.check_make_json(fp)
+        mod.check_make_json(fp)
 
 
 def test_invalid_input_err_str():
@@ -125,17 +123,15 @@ def test_NestedData_keys_unnested():
     assert sorted(keys) == ["a", "b", "bla", "blub", "c", "d", "d"]
 
 
-@pytest.mark.parametrize("key,val", [("d", 42)])
-def test_NestedData___getitem__(key, val):
+def test_NestedData___getitem__():
     cont = NestedData()
-    assert cont[key] == val
+    assert cont["d"] == 42
 
 
-@pytest.mark.parametrize("key,val", [("a", 1)])
-def test_NestedData___getitem___error(key, val):
+def test_NestedData___getitem___error():
     cont = NestedData()
     with pytest.raises(KeyError):
-        assert cont[key] == val
+        cont["a"]
 
 
 @pytest.mark.parametrize("kwargs", [dict(bla=42), dict(a=400), dict(d=400)])
@@ -150,20 +146,21 @@ def test_NestedData_update(kwargs):
                 assert val[key] == value
 
 
-@pytest.mark.parametrize("kwargs", [dict(abc=400)])
-def test_NestedData_update_error(kwargs):
+def test_NestedData_update_error():
     cont = NestedData()
-    with pytest.raises(AttributeError):
-        cont.update(**kwargs)
+    with pytest.raises(AttributeError) as e:
+        cont.update(abc=400)
+    assert str(e.value) == "invalid key abc"
 
 
+@pytest.mark.parametrize("input", [{"b": 1, "a": 2, "kl": 42}])
 @pytest.mark.parametrize(
-    "input,pref_list,output_keys",
+    "pref_list,output_keys",
     [
-        ({"b": 1, "a": 2, "kl": 42}, [], ["a", "b", "kl"]),
-        ({"b": 1, "a": 2, "kl": 42}, ["blaaa"], ["a", "b", "kl"]),
-        ({"b": 1, "a": 2, "kl": 42}, ["kl"], ["kl", "a", "b"]),
-        ({"b": 1, "a": 2, "kl": 42}, ["kl", "b"], ["kl", "b", "a"]),
+        ([], ["a", "b", "kl"]),
+        (["blaaa"], ["a", "b", "kl"]),
+        (["kl"], ["kl", "a", "b"]),
+        (["kl", "b"], ["kl", "b", "a"]),
     ],
 )
 def test_sort_dict_by_name(input, pref_list, output_keys):
