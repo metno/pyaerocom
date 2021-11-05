@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import pytest
 
 from pyaerocom import _init_helpers as mod
@@ -17,41 +15,26 @@ def test__init_logger():
 
 
 @pytest.mark.parametrize(
-    "new_level,log,raises",
-    [
-        ("debug", None, does_not_raise_exception()),
-        ("info", logger, does_not_raise_exception()),
-        ("warning", logger, does_not_raise_exception()),
-        ("error", logger, does_not_raise_exception()),
-        ("critical", logger, does_not_raise_exception()),
-        ("debug", print_log, does_not_raise_exception()),
-        ("info", print_log, does_not_raise_exception()),
-        ("warning", print_log, does_not_raise_exception()),
-        ("error", print_log, does_not_raise_exception()),
-        ("critical", print_log, does_not_raise_exception()),
-        (10, print_log, does_not_raise_exception()),
-        (20, print_log, does_not_raise_exception()),
-        (30, print_log, does_not_raise_exception()),
-        (40, print_log, does_not_raise_exception()),
-        (50, print_log, does_not_raise_exception()),
-        (60, print_log, pytest.raises(ValueError)),
-        ("blaaa", print_log, pytest.raises(ValueError)),
-    ],
+    "new_level", ["debug", "info", "warning", "error", "critical", 10, 20, 30, 40, 50]
 )
-def test_change_verbosity(new_level, log, raises):
-    if log is None:
-        _log = logger
-    else:
-        _log = log
-    lvl = _log.getEffectiveLevel()
-    with raises:
+@pytest.mark.parametrize("log", [logger, print_log])
+def test_change_verbosity(new_level, log):
+    lvl = log.getEffectiveLevel()
+
+    mod.change_verbosity(new_level, log)
+    if isinstance(new_level, str):
+        new_level = mod.LOGLEVELS[new_level]
+    assert log.getEffectiveLevel() == new_level
+    # revoke changes
+    log.setLevel(lvl)
+    assert log.getEffectiveLevel() == lvl
+
+
+@pytest.mark.parametrize("new_level", [60, "blaaa"])
+@pytest.mark.parametrize("log", [logger, print_log])
+def test_change_verbosity_error(new_level, log):
+    with pytest.raises(ValueError):
         mod.change_verbosity(new_level, log)
-        if isinstance(new_level, str):
-            new_level = mod.LOGLEVELS[new_level]
-        assert _log.getEffectiveLevel() == new_level
-        # revoke changes
-        _log.setLevel(lvl)
-        assert _log.getEffectiveLevel() == lvl
 
 
 ### Functions for package initialisation
