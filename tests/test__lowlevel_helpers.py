@@ -51,35 +51,34 @@ def test_read_json(tmpdir):
     os.remove(path)
 
 
-@pytest.mark.parametrize(
-    "data,kwargs,raises",
-    [
-        ({"bla": 42}, dict(), does_not_raise_exception()),
-        ({"bla": 42, "blub": np.nan}, dict(), does_not_raise_exception()),
-        ({"bla": 42, "blub": np.nan}, dict(ignore_nan=True, indent=5), does_not_raise_exception()),
-        ({"bla": 42}, dict(bla=42), pytest.raises(TypeError)),
-    ],
-)
-def test_write_json(tmpdir, data, kwargs, raises):
+@pytest.mark.parametrize("data", [{"bla": 42}, {"bla": 42, "blub": np.nan}])
+@pytest.mark.parametrize("kwargs", [dict(), dict(ignore_nan=True, indent=5)])
+def test_write_json(tmpdir, data, kwargs):
     path = os.path.join(tmpdir, "file.json")
-    with raises:
+    mod.write_json(data, path, **kwargs)
+    assert os.path.exists(path)
+    os.remove(path)
+
+
+@pytest.mark.parametrize("data,kwargs", [({"bla": 42}, dict(bla=42))])
+def test_write_json_error(tmpdir, data, kwargs):
+    path = os.path.join(tmpdir, "file.json")
+    with pytest.raises(TypeError):
         mod.write_json(data, path, **kwargs)
-        assert os.path.exists(path)
-        os.remove(path)
 
 
-@pytest.mark.parametrize(
-    "fname,raises",
-    [
-        ("bla.txt", pytest.raises(ValueError)),
-        ("bla.json", does_not_raise_exception()),
-    ],
-)
-def test_check_make_json(tmpdir, fname, raises):
+@pytest.mark.parametrize("fname", ["bla.json"])
+def test_check_make_json(tmpdir, fname):
     fp = os.path.join(tmpdir, fname)
-    with raises:
+    val = mod.check_make_json(fp)
+    assert os.path.exists(val)
+
+
+@pytest.mark.parametrize("fname", ["bla.txt"])
+def test_check_make_json_error(tmpdir, fname):
+    fp = os.path.join(tmpdir, fname)
+    with pytest.raises(ValueError):
         val = mod.check_make_json(fp)
-        assert os.path.exists(val)
 
 
 def test_invalid_input_err_str():
@@ -105,21 +104,19 @@ def test_NestedData():
     assert cont.blub == dict(c=3, d=4)
 
 
-@pytest.mark.parametrize(
-    "kwargs,raises",
-    [
-        (dict(), does_not_raise_exception()),
-        (dict(bla=400), does_not_raise_exception()),
-        (dict(blaaaa=400), pytest.raises(ValueError)),
-        (dict(bla=45, opt={}), does_not_raise_exception()),
-    ],
-)
-def test_ConstrainedContainer_update(kwargs, raises):
+@pytest.mark.parametrize("kwargs", [dict(), dict(bla=400), dict(bla=45, opt={})])
+def test_ConstrainedContainer_update(kwargs):
     cont = Constrainer()
-    with raises:
+    cont.update(**kwargs)
+    for key, val in kwargs.items():
+        assert cont[key] == val
+
+
+@pytest.mark.parametrize("kwargs", [dict(blaaaa=400)])
+def test_ConstrainedContainer_update_error(kwargs):
+    cont = Constrainer()
+    with pytest.raises(ValueError):
         cont.update(**kwargs)
-        for key, val in kwargs.items():
-            assert cont[key] == val
 
 
 def test_NestedData_keys_unnested():
@@ -128,51 +125,47 @@ def test_NestedData_keys_unnested():
     assert sorted(keys) == ["a", "b", "bla", "blub", "c", "d", "d"]
 
 
-@pytest.mark.parametrize(
-    "key,val,raises",
-    [
-        ("a", 1, pytest.raises(KeyError)),
-        ("d", 42, does_not_raise_exception()),
-    ],
-)
-def test_NestedData___getitem__(key, val, raises):
+@pytest.mark.parametrize("key,val", [("d", 42)])
+def test_NestedData___getitem__(key, val):
     cont = NestedData()
-    with raises:
+    assert cont[key] == val
+
+
+@pytest.mark.parametrize("key,val", [("a", 1)])
+def test_NestedData___getitem___error(key, val):
+    cont = NestedData()
+    with pytest.raises(KeyError):
         assert cont[key] == val
 
 
-@pytest.mark.parametrize(
-    "kwargs,raises",
-    [
-        (dict(bla=42), does_not_raise_exception()),
-        (dict(a=400), does_not_raise_exception()),
-        (dict(abc=400), pytest.raises(AttributeError)),
-        (dict(d=400), does_not_raise_exception()),
-    ],
-)
-def test_NestedData_update(kwargs, raises):
+@pytest.mark.parametrize("kwargs", [dict(bla=42), dict(a=400), dict(d=400)])
+def test_NestedData_update(kwargs):
     cont = NestedData()
-    keys = cont.keys_unnested()
-    with raises:
+    cont.update(**kwargs)
+    for key, value in kwargs.items():
+        if key in cont.__dict__:  # toplevel entry
+            assert cont[key] == value
+        for val in cont.values():
+            if isinstance(val, dict) and key in val:
+                assert val[key] == value
+
+
+@pytest.mark.parametrize("kwargs", [dict(abc=400)])
+def test_NestedData_update_error(kwargs):
+    cont = NestedData()
+    with pytest.raises(AttributeError):
         cont.update(**kwargs)
-        for key, value in kwargs.items():
-            if key in cont.__dict__.keys():  # toplevel entry
-                assert cont[key] == value
-            for val in cont.values():
-                if isinstance(val, dict) and key in val:
-                    assert val[key] == value
 
 
 @pytest.mark.parametrize(
-    "input,pref_list,output_keys,raises",
+    "input,pref_list,output_keys",
     [
-        ({"b": 1, "a": 2, "kl": 42}, [], ["a", "b", "kl"], does_not_raise_exception()),
-        ({"b": 1, "a": 2, "kl": 42}, ["blaaa"], ["a", "b", "kl"], does_not_raise_exception()),
-        ({"b": 1, "a": 2, "kl": 42}, ["kl"], ["kl", "a", "b"], does_not_raise_exception()),
-        ({"b": 1, "a": 2, "kl": 42}, ["kl", "b"], ["kl", "b", "a"], does_not_raise_exception()),
+        ({"b": 1, "a": 2, "kl": 42}, [], ["a", "b", "kl"]),
+        ({"b": 1, "a": 2, "kl": 42}, ["blaaa"], ["a", "b", "kl"]),
+        ({"b": 1, "a": 2, "kl": 42}, ["kl"], ["kl", "a", "b"]),
+        ({"b": 1, "a": 2, "kl": 42}, ["kl", "b"], ["kl", "b", "a"]),
     ],
 )
-def test_sort_dict_by_name(input, pref_list, output_keys, raises):
-    with raises:
-        sorted = mod.sort_dict_by_name(input, pref_list)
-        assert list(sorted.keys()) == output_keys
+def test_sort_dict_by_name(input, pref_list, output_keys):
+    sorted = mod.sort_dict_by_name(input, pref_list)
+    assert list(sorted.keys()) == output_keys
