@@ -260,17 +260,16 @@ def test_TsType_get_min_num_obs(ts_type, to_ts_type, min_num_obs, val, raises):
 
 
 @pytest.mark.parametrize(
-    "ts_type, total_seconds, value, raises",
+    "ts_type, total_seconds, value",
     [
-        ("hourly", 3600, True, does_not_raise_exception()),
-        ("hourly", 3605, True, does_not_raise_exception()),
-        ("20minutely", 1200, True, does_not_raise_exception()),
-        ("native", 1200, False, does_not_raise_exception()),
+        ("hourly", 3600, True),
+        ("hourly", 3605, True),
+        ("20minutely", 1200, True),
+        ("native", 1200, False),
     ],
 )
-def test_TsType_check_match_total_seconds(ts_type, total_seconds, value, raises):
-    with raises:
-        assert TsType(ts_type).check_match_total_seconds(total_seconds) == value
+def test_TsType_check_match_total_seconds(ts_type, total_seconds, value):
+    assert TsType(ts_type).check_match_total_seconds(total_seconds) == value
 
 
 @pytest.mark.parametrize(
@@ -308,78 +307,73 @@ def test_TsType_from_total_seconds(total_seconds, value, raises):
 
 
 @pytest.mark.parametrize(
-    "tst1,tst2,value,raises",
+    "tst1,tst2,value",
     [
-        ("daily", "daily", True, does_not_raise_exception()),
-        (TsType("daily"), "daily", True, does_not_raise_exception()),
-        ("daily", TsType("daily"), True, does_not_raise_exception()),
-        (TsType("daily"), TsType("monthly"), False, does_not_raise_exception()),
-        (TsType("3daily"), TsType("2daily"), False, does_not_raise_exception()),
-        (TsType("3daily"), TsType("daily"), False, does_not_raise_exception()),
+        ("daily", "daily", True),
+        (TsType("daily"), "daily", True),
+        ("daily", TsType("daily"), True),
+        (TsType("daily"), TsType("monthly"), False),
+        (TsType("3daily"), TsType("2daily"), False),
+        (TsType("3daily"), TsType("daily"), False),
     ],
 )
-def test_TsType__eq__(tst1, tst2, value, raises):
-    with raises:
-        same = tst1 == tst2
-        assert same == value
+def test_TsType__eq__(tst1, tst2, value):
+    same = tst1 == tst2
+    assert same == value
 
 
 @pytest.mark.parametrize(
-    "tst1,tst2,value,raises",
+    "tst1,tst2,value",
     [
-        (TsType("daily"), "daily", False, does_not_raise_exception()),
-        (TsType("2daily"), TsType("monthly"), False, does_not_raise_exception()),
-        (TsType("2daily"), TsType("1daily"), True, does_not_raise_exception()),
+        (TsType("daily"), "daily", False),
+        (TsType("2daily"), TsType("monthly"), False),
+        (TsType("2daily"), TsType("1daily"), True),
     ],
 )
-def test_TsType__lt__(tst1, tst2, value, raises):
-    with raises:
-        val = tst1 < tst2
-        assert val == value
+def test_TsType__lt__(tst1, tst2, value):
+    val = tst1 < tst2
+    assert val == value
 
 
 @pytest.mark.parametrize(
-    "tst1,tst2,value,raises",
+    "tst1,tst2,value",
     [
-        (TsType("daily"), "daily", True, does_not_raise_exception()),
-        (TsType("2daily"), TsType("monthly"), False, does_not_raise_exception()),
-        (TsType("2daily"), TsType("1daily"), True, does_not_raise_exception()),
+        (TsType("daily"), "daily", True),
+        (TsType("2daily"), TsType("monthly"), False),
+        (TsType("2daily"), TsType("1daily"), True),
     ],
 )
-def test_TsType__le__(tst1, tst2, value, raises):
-    with raises:
-        val = tst1 <= tst2
-        assert val == value
+def test_TsType__le__(tst1, tst2, value):
+    val = tst1 <= tst2
+    assert val == value
 
 
 @pytest.mark.parametrize(
-    "tst1,tst2,value,raises",
+    "tst1,tst2,value",
     [
-        (TsType("daily"), "daily", False, does_not_raise_exception()),
-        (TsType("2daily"), TsType("monthly"), True, does_not_raise_exception()),
-        (TsType("2daily"), TsType("1daily"), False, does_not_raise_exception()),
+        (TsType("daily"), "daily", False),
+        (TsType("2daily"), TsType("monthly"), True),
+        (TsType("2daily"), TsType("1daily"), False),
     ],
 )
-def test_TsType__gt__(tst1, tst2, value, raises):
-    with raises:
-        val = tst1 > tst2
-        assert val == value
+def test_TsType__gt__(tst1, tst2, value):
+    val = tst1 > tst2
+    assert val == value
 
 
 @pytest.mark.parametrize(
-    "tst1,tst2,value,raises",
+    "tst1,tst2,value",
     [
-        (TsType("daily"), "daily", True, does_not_raise_exception()),
-        (TsType("2daily"), TsType("monthly"), True, does_not_raise_exception()),
-        (TsType("2daily"), TsType("1daily"), False, does_not_raise_exception()),
-        (TsType("6daily"), TsType("MS"), True, does_not_raise_exception()),
-        (TsType("50daily"), TsType("MS"), False, does_not_raise_exception()),
+        (TsType("daily"), "daily", True),
+        (TsType("2daily"), TsType("monthly"), True),
+        (TsType("2daily"), TsType("1daily"), False),
+        (TsType("6daily"), TsType("MS"), True),
+        (TsType("50daily"), TsType("MS"), False),
     ],
 )
-def test_TsType__ge__(tst1, tst2, value, raises):
-    with raises:
-        val = tst1 >= tst2
-        assert val == value
+def test_TsType__ge__(tst1, tst2, value):
+    val = tst1 >= tst2
+    assert val == value
 
 
 def test_TsType__call__():

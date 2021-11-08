@@ -207,21 +207,20 @@ def test_Colocator_update_basedir_coldata(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "what,raises",
+    "what",
     [
-        (dict(blaa=42), does_not_raise_exception()),
-        (dict(obs_id="test", model_id="test"), does_not_raise_exception()),
-        (dict(gridded_reader_id="test"), does_not_raise_exception()),
-        (dict(gridded_reader_id={"test": 42}), does_not_raise_exception()),
-        (dict(resample_how={"daily": {"hourly": "max"}}), does_not_raise_exception()),
+        dict(blaa=42),
+        dict(obs_id="test", model_id="test"),
+        dict(gridded_reader_id="test"),
+        dict(gridded_reader_id={"test": 42}),
+        dict(resample_how={"daily": {"hourly": "max"}}),
     ],
 )
-def test_Colocator_update(what, raises):
+def test_Colocator_update(what):
     col = Colocator(raise_exceptions=True)
-    with raises:
-        col.update(**what)
-        for key, val in what.items():
-            assert col[key] == val
+    col.update(**what)
+    for key, val in what.items():
+        assert col[key] == val
 
 
 def test_Colocator_run_gridded_gridded(tm5_aero_stp):

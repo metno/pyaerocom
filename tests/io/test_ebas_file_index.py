@@ -30,29 +30,26 @@ def test_EbasSQLRequest__var2sql(var, output, raises):
 
 
 @pytest.mark.parametrize(
-    "kwargs,output,raises",
+    "kwargs,output",
     [
         (
             {},
             "select distinct filename from variable join station on station.station_code=variable.station_code;",
-            does_not_raise_exception(),
         ),
         (
             {"distinct": False},
             "select filename from variable join station on station.station_code=variable.station_code;",
-            does_not_raise_exception(),
         ),
     ],
 )
-def test_EbasSQLRequest_make_file_query_str(kwargs, output, raises):
-    with raises:
-        req = mod.EbasSQLRequest()
-        _val = req.make_file_query_str(**kwargs)
-        assert _val == output
+def test_EbasSQLRequest_make_file_query_str(kwargs, output):
+    req = mod.EbasSQLRequest()
+    _val = req.make_file_query_str(**kwargs)
+    assert _val == output
 
 
 @pytest.mark.parametrize(
-    "kwargs,output,raises",
+    "kwargs,output",
     [
         (
             {
@@ -73,40 +70,34 @@ def test_EbasSQLRequest_make_file_query_str(kwargs, output, raises):
                 "first_end < '2010-01-24' and last_start > '2010-01-21' and "
                 "statistics in ('arithmetic_mean', 'median') and datalevel=2;"
             ),
-            does_not_raise_exception(),
         ),
         (
             {},
             "select distinct filename from variable join station on station.station_code=variable.station_code;",
-            does_not_raise_exception(),
         ),
         (
             {"distinct": False},
             "select filename from variable join station on station.station_code=variable.station_code;",
-            does_not_raise_exception(),
         ),
         (
             {"what": ("filename", "station_code", "bla")},
             "select distinct filename,station_code,bla from variable join station on station.station_code=variable.station_code;",
-            does_not_raise_exception(),
         ),
     ],
 )
-def test_EbasSQLRequest_make_query_str(kwargs, output, raises):
-    with raises:
-        req = mod.EbasSQLRequest()
-        _val = req.make_query_str(**kwargs)
-        assert _val == output
+def test_EbasSQLRequest_make_query_str(kwargs, output):
+    req = mod.EbasSQLRequest()
+    _val = req.make_query_str(**kwargs)
+    assert _val == output
 
 
 def test_EbasSQLRequest___str__():
     assert isinstance(str(mod.EbasSQLRequest()), str)
 
 
-@pytest.mark.parametrize("args,kwargs,raises", [([], {}, does_not_raise_exception())])
-def test_EbasFileIndex___init__(args, kwargs, raises):
-    with raises:
-        mod.EbasFileIndex(*args, **kwargs)
+@pytest.mark.parametrize("args,kwargs", [([], {})])
+def test_EbasFileIndex___init__(args, kwargs):
+    mod.EbasFileIndex(*args, **kwargs)
 
 
 @pytest.mark.parametrize("dbfile,raises", [(None, pytest.raises(AttributeError))])

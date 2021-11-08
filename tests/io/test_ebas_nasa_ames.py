@@ -15,20 +15,19 @@ def head():
 
 
 @pytest.mark.parametrize(
-    "raw_data,raises,valid",
+    "raw_data,valid",
     [
-        (np.asarray([0]), does_not_raise_exception(), np.asarray([True])),
-        (np.asarray([0.66]), does_not_raise_exception(), np.asarray([True])),
-        (np.asarray([0.456]), does_not_raise_exception(), np.asarray([False])),
-        (np.asarray([0.999]), does_not_raise_exception(), np.asarray([False])),
-        (np.asarray([0.999100]), does_not_raise_exception(), np.asarray([True])),
-        (np.asarray([0.999100456]), does_not_raise_exception(), np.asarray([True])),
+        (np.asarray([0]), np.asarray([True])),
+        (np.asarray([0.66]), np.asarray([True])),
+        (np.asarray([0.456]), np.asarray([False])),
+        (np.asarray([0.999]), np.asarray([False])),
+        (np.asarray([0.999100]), np.asarray([True])),
+        (np.asarray([0.999100456]), np.asarray([True])),
     ],
 )
-def test_EbasFlagCol(raw_data, raises, valid):
-    with raises:
-        fc = ena.EbasFlagCol(raw_data)
-        assert fc.valid == valid
+def test_EbasFlagCol(raw_data, valid):
+    fc = ena.EbasFlagCol(raw_data)
+    assert fc.valid == valid
 
 
 @pytest.mark.parametrize(

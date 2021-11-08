@@ -95,11 +95,11 @@ FMFFUN = f"fmf550aer=({SDA_ID};od550lt1aer/{SUN_ID};od550aer)*100"
 
 
 @pytest.mark.parametrize(
-    "merge_how,merge_eval_fun,var_name_out,data_id_out,var_unit_out,expectation",
+    "merge_how,merge_eval_fun,var_name_out,data_id_out,var_unit_out",
     [
-        ("combine", None, None, None, None, does_not_raise_exception()),
-        ("eval", FMFFUN, "fmf550aer", None, "%", does_not_raise_exception()),
-        ("eval", FMFFUN, None, "Bla", "%", does_not_raise_exception()),
+        ("combine", None, None, None, None),
+        ("eval", FMFFUN, "fmf550aer", None, "%"),
+        ("eval", FMFFUN, None, "Bla", "%"),
     ],
 )
 def test__combine_2_sites_different_vars(
@@ -110,7 +110,6 @@ def test__combine_2_sites_different_vars(
     var_name_out,
     data_id_out,
     var_unit_out,
-    expectation,
 ):
     site_idx1 = stats_sun_aod["station_name"].index(TESTSTAT)
     stat1 = stats_sun_aod["stats"][site_idx1]
@@ -121,44 +120,43 @@ def test__combine_2_sites_different_vars(
     var2 = "od550lt1aer"
 
     prefer = f"{SUN_ID};{var1}"
-    with expectation:
-        new = testmod._combine_2_sites(
-            stat1,
-            var1,
-            stat2,
-            var2,
-            merge_how=merge_how,
-            merge_eval_fun=merge_eval_fun,
-            match_stats_tol_km=1,
-            var_name_out=var_name_out,
-            data_id_out=data_id_out,
-            var_unit_out=var_unit_out,
-            resample_how="mean",
-            min_num_obs=None,
-            prefer=prefer,
-            merge_info_vars={},
-            add_meta_keys=None,
-        )
+    new = testmod._combine_2_sites(
+        stat1,
+        var1,
+        stat2,
+        var2,
+        merge_how=merge_how,
+        merge_eval_fun=merge_eval_fun,
+        match_stats_tol_km=1,
+        var_name_out=var_name_out,
+        data_id_out=data_id_out,
+        var_unit_out=var_unit_out,
+        resample_how="mean",
+        min_num_obs=None,
+        prefer=prefer,
+        merge_info_vars={},
+        add_meta_keys=None,
+    )
 
-        assert var1 in new
-        assert var2 in new
-        assert len(new[var1]) == len(new[var2])
-        means_before = [np.nanmean(stat1[var1]), np.nanmean(stat2[var2])]
-        means_after = [np.nanmean(new[var1]), np.nanmean(new[var2])]
+    assert var1 in new
+    assert var2 in new
+    assert len(new[var1]) == len(new[var2])
+    means_before = [np.nanmean(stat1[var1]), np.nanmean(stat2[var2])]
+    means_after = [np.nanmean(new[var1]), np.nanmean(new[var2])]
 
-        npt.assert_allclose(means_after, means_before, rtol=1e-9)
-        if merge_how == "eval":
-            if data_id_out is None:
-                data_id_out = f"{stat1.data_id};{stat2.data_id}"
-            assert new.data_id == data_id_out
+    npt.assert_allclose(means_after, means_before, rtol=1e-9)
+    if merge_how == "eval":
+        if data_id_out is None:
+            data_id_out = f"{stat1.data_id};{stat2.data_id}"
+        assert new.data_id == data_id_out
 
-            if var_name_out is None:
-                var_name_out = merge_eval_fun
-                var_name_out = var_name_out.replace(f"{stat1.data_id};", "")
-                var_name_out = var_name_out.replace(f"{stat2.data_id};", "")
-            assert var_name_out in new
+        if var_name_out is None:
+            var_name_out = merge_eval_fun
+            var_name_out = var_name_out.replace(f"{stat1.data_id};", "")
+            var_name_out = var_name_out.replace(f"{stat2.data_id};", "")
+        assert var_name_out in new
 
-            assert new["var_info"][var_name_out]["units"] == var_unit_out
+        assert new["var_info"][var_name_out]["units"] == var_unit_out
 
 
 ARGS1 = [(SUN_DATA, SUN_ID, "od550aer"), (SUN_DATA, SUN_ID, "ang4487aer")]
