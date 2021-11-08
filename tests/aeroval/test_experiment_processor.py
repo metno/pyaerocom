@@ -14,13 +14,12 @@ from .cfg_test_exp4 import CFG as cfgexp4
 from .cfg_test_exp5 import CFG as cfgexp5
 
 
-@pytest.mark.parametrize("cfgdict,raises", [(cfgexp1, does_not_raise_exception())])
-def test_ExperimentProcessor___init__(cfgdict, raises):
+@pytest.mark.parametrize("cfgdict", [cfgexp1])
+def test_ExperimentProcessor___init__(cfgdict):
     cfg = EvalSetup(**cfgdict)
-    with raises:
-        proc = mod.ExperimentProcessor(cfg)
-        assert isinstance(proc.cfg, EvalSetup)
-        assert isinstance(proc.exp_output, ExperimentOutput)
+    proc = mod.ExperimentProcessor(cfg)
+    assert isinstance(proc.cfg, EvalSetup)
+    assert isinstance(proc.exp_output, ExperimentOutput)
 
 
 @geojson_unavail

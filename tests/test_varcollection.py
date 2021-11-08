@@ -93,19 +93,18 @@ def test_VarCollection_get_var(var, raises):
 
 
 @pytest.mark.parametrize(
-    "search_pattern,num,raises",
+    "search_pattern,num",
     [
-        ("*blaaaaaaa*", 0, does_not_raise_exception()),
-        ("dep*", 0, does_not_raise_exception()),
-        ("od*", 25, does_not_raise_exception()),
-        ("conc*", 71, does_not_raise_exception()),
+        ("*blaaaaaaa*", 0),
+        ("dep*", 0),
+        ("od*", 25),
+        ("conc*", 71),
     ],
 )
-def test_VarCollection_find(search_pattern, num, raises):
+def test_VarCollection_find(search_pattern, num):
     col = mod.VarCollection(VAR_INI)
-    with raises:
-        result = col.find(search_pattern)
-        assert len(result) == num
+    result = col.find(search_pattern)
+    assert len(result) == num
 
 
 def test_VarCollection_delete_var_MULTIDEF():

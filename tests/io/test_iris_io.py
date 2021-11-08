@@ -256,14 +256,14 @@ def test__check_correct_dtypes_timedim_cube_list(cubes, val):
 
 
 @pytest.mark.parametrize(
-    "cubes,sh,raises",
+    "cubes,sh",
     [
-        (make_cubelist(int), (730, 12, 4), does_not_raise_exception()),  # see
+        (make_cubelist(int), (730, 12, 4)),  # see
         # https://github.com/metno/pyaerocom/issues/432
-        (make_cubelist(float), (730, 12, 4), does_not_raise_exception()),
+        (make_cubelist(float), (730, 12, 4)),
     ],
 )
-def test_concatenate_iris_cubes(cubes, sh, raises):
+def test_concatenate_iris_cubes(cubes, sh):
     result = mod.concatenate_iris_cubes(cubes)
 
     assert isinstance(result, iris.cube.Cube)

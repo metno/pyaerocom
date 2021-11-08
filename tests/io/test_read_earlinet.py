@@ -93,43 +93,42 @@ def test_ReadEarlinet_read_file(fnum, vars_to_retrieve, raises):
 
 
 @pytest.mark.parametrize(
-    "args,raises",
+    "args",
     [
-        (dict(), does_not_raise_exception()),
-        (dict(vars_to_retrieve="ec532aer"), does_not_raise_exception()),
+        dict(),
+        dict(vars_to_retrieve="ec532aer"),
     ],
 )
-def test_ReadEarlinet_read(args, raises):
+def test_ReadEarlinet_read(args):
     read = ReadEarlinet()
     read.files = get_test_paths()
-    with raises:
-        data = read.read(**args)
+    data = read.read(**args)
 
-        if "vars_to_retrieve" in args and args["vars_to_retrieve"] == "ec532aer":
-            npt.assert_equal(len(data.metadata), 5)
-            npt.assert_array_equal(data.shape, (786, 12))
+    if "vars_to_retrieve" in args and args["vars_to_retrieve"] == "ec532aer":
+        npt.assert_equal(len(data.metadata), 5)
+        npt.assert_array_equal(data.shape, (786, 12))
 
-            npt.assert_allclose(
-                [
-                    np.nanmin(data._data[:, data._DATAINDEX]),
-                    np.nanmean(data._data[:, data._DATAINDEX]),
-                    np.nanmax(data._data[:, data._DATAINDEX]),
-                ],
-                [-0.440742, 24.793547, 167.90787],
-                rtol=TEST_RTOL,
-            )
+        npt.assert_allclose(
+            [
+                np.nanmin(data._data[:, data._DATAINDEX]),
+                np.nanmean(data._data[:, data._DATAINDEX]),
+                np.nanmax(data._data[:, data._DATAINDEX]),
+            ],
+            [-0.440742, 24.793547, 167.90787],
+            rtol=TEST_RTOL,
+        )
 
-            merged = data.to_station_data("Evora", freq="monthly")
+        merged = data.to_station_data("Evora", freq="monthly")
 
-            npt.assert_allclose(
-                [
-                    float(np.nanmin(merged.ec532aer)),
-                    float(np.nanmean(merged.ec532aer)),
-                    float(np.nanmax(merged.ec532aer)),
-                ],
-                [0.220322, 23.093238, 111.478665],
-                rtol=TEST_RTOL,
-            )
+        npt.assert_allclose(
+            [
+                float(np.nanmin(merged.ec532aer)),
+                float(np.nanmean(merged.ec532aer)),
+                float(np.nanmax(merged.ec532aer)),
+            ],
+            [0.220322, 23.093238, 111.478665],
+            rtol=TEST_RTOL,
+        )
 
 
 @pytest.mark.parametrize(

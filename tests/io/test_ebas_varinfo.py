@@ -244,22 +244,21 @@ def test_make_sql_request(var, constraints, raises):
 
 
 @pytest.mark.parametrize(
-    "var,constraints,raises,num",
+    "var,constraints,num",
     [
-        ("concpm10", {}, does_not_raise_exception(), 1),
-        ("sc700dryaer", {}, does_not_raise_exception(), 2),
-        ("sc550dryaer", {}, does_not_raise_exception(), 2),
-        ("sc440dryaer", {}, does_not_raise_exception(), 2),
+        ("concpm10", {}, 1),
+        ("sc700dryaer", {}, 2),
+        ("sc550dryaer", {}, 2),
+        ("sc440dryaer", {}, 2),
     ],
 )
-def test_make_sql_requests(var, constraints, raises, num):
+def test_make_sql_requests(var, constraints, num):
     info = EbasVarInfo(var)
-    with raises:
-        reqs = info.make_sql_requests(**constraints)
-        assert isinstance(reqs, dict)
-        assert len(reqs) == num
-        for key, req in reqs.items():
-            assert isinstance(req, EbasSQLRequest)
+    reqs = info.make_sql_requests(**constraints)
+    assert isinstance(reqs, dict)
+    assert len(reqs) == num
+    for key, req in reqs.items():
+        assert isinstance(req, EbasSQLRequest)
 
 
 def test___str__():

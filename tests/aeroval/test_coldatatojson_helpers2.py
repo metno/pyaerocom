@@ -27,24 +27,23 @@ def test_get_json_mapname():
 
 
 @pytest.mark.parametrize(
-    "which,to_ts_types,raises",
+    "which,to_ts_types",
     [
-        ("tm5_aeronet", ["daily", "monthly"], does_not_raise_exception()),
-        ("tm5_aeronet", ["3yearly"], does_not_raise_exception()),
+        ("tm5_aeronet", ["daily", "monthly"]),
+        ("tm5_aeronet", ["3yearly"]),
     ],
 )
-def test__init_data_default_frequencies(coldata, which, to_ts_types, raises):
+def test__init_data_default_frequencies(coldata, which, to_ts_types):
     data = coldata[which]
-    with raises:
-        result = mod._init_data_default_frequencies(data, to_ts_types)
-        tst = TsType(data.ts_type)
-        assert len(result) == len(to_ts_types)
-        for freq, val in result.items():
-            if TsType(freq) > tst:
-                assert val is None
-            else:
-                assert isinstance(val, ColocatedData)
-                assert val.ts_type == freq
+    result = mod._init_data_default_frequencies(data, to_ts_types)
+    tst = TsType(data.ts_type)
+    assert len(result) == len(to_ts_types)
+    for freq, val in result.items():
+        if TsType(freq) > tst:
+            assert val is None
+        else:
+            assert isinstance(val, ColocatedData)
+            assert val.ts_type == freq
 
 
 @pytest.fixture(scope="module")

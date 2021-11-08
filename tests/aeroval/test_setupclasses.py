@@ -8,10 +8,9 @@ from pyaerocom.exceptions import EvalEntryNameError
 from .cfg_test_exp1 import CFG as cfgexp1
 
 
-@pytest.mark.parametrize("kwargs,raises", [(cfgexp1, does_not_raise_exception())])
-def test_EvalSetup___init__(kwargs, raises):
-    with raises:
-        stp = mod.EvalSetup(**kwargs)
+@pytest.mark.parametrize("kwargs", [cfgexp1])
+def test_EvalSetup___init__(kwargs):
+    stp = mod.EvalSetup(**kwargs)
 
 
 @pytest.mark.parametrize(
