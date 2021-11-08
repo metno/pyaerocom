@@ -1,7 +1,9 @@
 import getpass
 import os
+from tarfile import PAX_FIELDS
 import tempfile
 from contextlib import nullcontext as does_not_raise_exception
+from pathlib import Path
 
 import pytest
 
@@ -87,27 +89,25 @@ def test_Config_has_access_users_database():
 
 @lustre_avail
 @pytest.mark.parametrize(
-    "cfg_id, basedir, init_obslocs_ungridded,init_data_search_dirs, num_obs, num_dirs",
+    "cfg_id,basedir,init_obslocs_ungridded,init_data_search_dirs",
     [
-        ("metno", None, False, False,  0, 0),
-        ("metno", None, True, False,  0, 0),
-        ("metno", None, True, True,  0, 0),
-        ("metno", f"/home/{USER}", True, True,  0, 0),
-        ("users-db", None, False, False,  0, 0),
+        ("metno", None, False, False),
+        ("metno", None, True, False),
+        ("metno", None, True, True),
+        ("metno", f"/home/{USER}", True, True),
+        ("users-db", None, False, False),
     ],
 )
-def test_Config_read_config(
-    cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs, num_obs, num_dirs
-):
+def test_Config_read_config(cfg_id, basedir, init_obslocs_ungridded, init_data_search_dirs):
     cfg = testmod.Config(try_infer_environment=False)
     cfg_file = cfg._config_files[cfg_id]
-    assert os.path.exists(cfg_file)
+    assert Path(cfg_file).exists()
     cfg.read_config(cfg_file, basedir, init_obslocs_ungridded, init_data_search_dirs)
-    assert len(cfg.DATA_SEARCH_DIRS) == num_dirs
-    assert len(cfg.OBSLOCS_UNGRIDDED) == num_obs
-    assert os.path.exists(cfg.OUTPUTDIR)
-    assert os.path.exists(cfg.COLOCATEDDATADIR)
-    assert os.path.exists(cfg.CACHEDIR)
+    assert len(cfg.DATA_SEARCH_DIRS) == 0
+    assert len(cfg.OBSLOCS_UNGRIDDED) == 0
+    assert Path(cfg.OUTPUTDIR).exists()
+    assert Path(cfg.COLOCATEDDATADIR).exists()
+    assert Path(cfg.CACHEDIR).exists()
 
 
 def test_empty_class_header(empty_cfg):

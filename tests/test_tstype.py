@@ -318,8 +318,7 @@ def test_TsType_from_total_seconds(total_seconds, value, raises):
     ],
 )
 def test_TsType__eq__(tst1, tst2, value):
-    same = tst1 == tst2
-    assert same == value
+    assert (tst1 == tst2) == value
 
 
 @pytest.mark.parametrize(
@@ -331,8 +330,7 @@ def test_TsType__eq__(tst1, tst2, value):
     ],
 )
 def test_TsType__lt__(tst1, tst2, value):
-    val = tst1 < tst2
-    assert val == value
+    assert (tst1 < tst2) == value
 
 
 @pytest.mark.parametrize(
@@ -344,8 +342,7 @@ def test_TsType__lt__(tst1, tst2, value):
     ],
 )
 def test_TsType__le__(tst1, tst2, value):
-    val = tst1 <= tst2
-    assert val == value
+    assert (tst1 <= tst2) == value
 
 
 @pytest.mark.parametrize(
@@ -357,8 +354,7 @@ def test_TsType__le__(tst1, tst2, value):
     ],
 )
 def test_TsType__gt__(tst1, tst2, value):
-    val = tst1 > tst2
-    assert val == value
+    assert (tst1 > tst2) == value
 
 
 @pytest.mark.parametrize(
@@ -372,8 +368,7 @@ def test_TsType__gt__(tst1, tst2, value):
     ],
 )
 def test_TsType__ge__(tst1, tst2, value):
-    val = tst1 >= tst2
-    assert val == value
+    assert (tst1 >= tst2) == value
 
 
 def test_TsType__call__():
