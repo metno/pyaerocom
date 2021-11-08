@@ -1,36 +1,31 @@
-import os
+from __future__ import annotations
+
 from contextlib import nullcontext as does_not_raise_exception
+from pathlib import Path
 
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose
 
-from pyaerocom import VerticalProfile
+from pyaerocom import VerticalProfile, const
 from pyaerocom.io.read_earlinet import ReadEarlinet
 
 from ..conftest import TEST_RTOL
 
-FILES = [
-    "ev/ev1008192050.e532",
-    "ev/ev1009162031.e532",
-    "ev/ev1012131839.e532",
-    "ev/ev1011221924.e532",
-    "ev/ev1105122027.e532",
-    "ms/ms1005242029.e355",
+ROOT: str = const.OBSLOCS_UNGRIDDED["Earlinet-test"]
+TEST_FILES: list[str] = [
+    f"{ROOT}/ev/ev1008192050.e532",
+    f"{ROOT}/ev/ev1009162031.e532",
+    f"{ROOT}/ev/ev1012131839.e532",
+    f"{ROOT}/ev/ev1011221924.e532",
+    f"{ROOT}/ev/ev1105122027.e532",
+    f"{ROOT}/ms/ms1005242029.e355",
 ]
 
 
-def get_test_paths():
-    from pyaerocom import const
-
-    testdir = os.path.join(const.OBSLOCS_UNGRIDDED["Earlinet-test"])
-    return [os.path.join(testdir, f) for f in FILES]
-
-
 def test_all_files_exist():
-    for file in get_test_paths():
-        if not os.path.exists(file):
-            raise AssertionError(f"File {file} does not exist")
+    for file in TEST_FILES:
+        assert Path(file).exists()
 
 
 @pytest.mark.parametrize(
@@ -50,7 +45,7 @@ def test_all_files_exist():
 )
 def test_ReadEarlinet_read_file(fnum, vars_to_retrieve, raises):
     read = ReadEarlinet()
-    paths = get_test_paths()
+    paths = TEST_FILES
     read.files = paths
     fname = paths[fnum]
     with raises:
@@ -81,54 +76,30 @@ def test_ReadEarlinet_read_file(fnum, vars_to_retrieve, raises):
             vals_dataerr = [np.nanmean(p.data_err), np.nanstd(p.data_err)]
             vals_altitude = [np.min(p.altitude), np.max(p.altitude)]
 
-            npt.assert_allclose(
+            assert_allclose(
                 vals_data, [4.463068618148296, 1.8529271228530515, 216, 253], rtol=TEST_RTOL
             )
-            npt.assert_allclose(
-                vals_dataerr, [4.49097234883772, 0.8332285038985179], rtol=TEST_RTOL
-            )
-            npt.assert_allclose(
-                vals_altitude, [331.29290771484375, 7862.52490234375], rtol=TEST_RTOL
-            )
+            assert_allclose(vals_dataerr, [4.49097234883772, 0.8332285038985179], rtol=TEST_RTOL)
+            assert_allclose(vals_altitude, [331.29290771484375, 7862.52490234375], rtol=TEST_RTOL)
 
 
-@pytest.mark.parametrize(
-    "args",
-    [
-        dict(),
-        dict(vars_to_retrieve="ec532aer"),
-    ],
-)
-def test_ReadEarlinet_read(args):
+def test_ReadEarlinet_read():
     read = ReadEarlinet()
-    read.files = get_test_paths()
-    data = read.read(**args)
+    read.files = TEST_FILES
+    data = read.read(vars_to_retrieve="ec532aer")
 
-    if "vars_to_retrieve" in args and args["vars_to_retrieve"] == "ec532aer":
-        npt.assert_equal(len(data.metadata), 5)
-        npt.assert_array_equal(data.shape, (786, 12))
+    assert len(data.metadata) == 5
+    assert data.shape == (786, 12)
 
-        npt.assert_allclose(
-            [
-                np.nanmin(data._data[:, data._DATAINDEX]),
-                np.nanmean(data._data[:, data._DATAINDEX]),
-                np.nanmax(data._data[:, data._DATAINDEX]),
-            ],
-            [-0.440742, 24.793547, 167.90787],
-            rtol=TEST_RTOL,
-        )
+    assert_allclose(np.nanmin(data._data[:, data._DATAINDEX]), -0.440742, rtol=TEST_RTOL)
+    assert_allclose(np.nanmean(data._data[:, data._DATAINDEX]), 24.793547, rtol=TEST_RTOL)
+    assert_allclose(np.nanmax(data._data[:, data._DATAINDEX]), 167.90787, rtol=TEST_RTOL)
 
-        merged = data.to_station_data("Evora", freq="monthly")
+    merged = data.to_station_data("Evora", freq="monthly")
 
-        npt.assert_allclose(
-            [
-                float(np.nanmin(merged.ec532aer)),
-                float(np.nanmean(merged.ec532aer)),
-                float(np.nanmax(merged.ec532aer)),
-            ],
-            [0.220322, 23.093238, 111.478665],
-            rtol=TEST_RTOL,
-        )
+    assert_allclose(float(np.nanmin(merged.ec532aer)), 0.220322, rtol=TEST_RTOL)
+    assert_allclose(float(np.nanmean(merged.ec532aer)), 23.093238, rtol=TEST_RTOL)
+    assert_allclose(float(np.nanmax(merged.ec532aer)), 111.478665, rtol=TEST_RTOL)
 
 
 @pytest.mark.parametrize(

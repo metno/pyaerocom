@@ -7,10 +7,8 @@ from pyaerocom.io import ebas_file_index as mod
 from ..conftest import EBAS_SQLite_DB
 
 
-@pytest.mark.parametrize("args,kwargs,raises", [([], {}, does_not_raise_exception())])
-def test_EbasSQLRequest___init__(args, kwargs, raises):
-    with raises:
-        mod.EbasSQLRequest(*args, **kwargs)
+def test_EbasSQLRequest___init__():
+    mod.EbasSQLRequest()
 
 
 @pytest.mark.parametrize(
@@ -95,100 +93,92 @@ def test_EbasSQLRequest___str__():
     assert isinstance(str(mod.EbasSQLRequest()), str)
 
 
-@pytest.mark.parametrize("args,kwargs", [([], {})])
-def test_EbasFileIndex___init__(args, kwargs):
-    mod.EbasFileIndex(*args, **kwargs)
+def test_EbasFileIndex___init__():
+    mod.EbasFileIndex()
 
 
-@pytest.mark.parametrize("dbfile,raises", [(None, pytest.raises(AttributeError))])
-def test_EbasFileIndex_database_getter(dbfile, raises):
-    with raises:
-        idx = mod.EbasFileIndex(dbfile)
-        assert idx.database == idx._database
+def test_EbasFileIndex_database_getter():
+    ebas = mod.EbasFileIndex()
+    with pytest.raises(AttributeError):
+        assert ebas.database == ebas._database
 
 
 def test_EbasFileIndex_ALL_STATION_NAMES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_STATION_NAMES
-    assert isinstance(val, list)
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert isinstance(ebas.ALL_STATION_NAMES, list)
 
 
 def test_EbasFileIndex_ALL_STATION_CODES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_STATION_CODES
-    assert isinstance(val, list)
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert isinstance(ebas.ALL_STATION_CODES, list)
 
 
 def test_EbasFileIndex_ALL_STATISTICS_PARAMS():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_STATISTICS_PARAMS
-    assert isinstance(val, list)
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert isinstance(ebas.ALL_STATISTICS_PARAMS, list)
 
 
 def test_EbasFileIndex_ALL_VARIABLES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_VARIABLES
-    assert isinstance(val, list)
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert isinstance(ebas.ALL_VARIABLES, list)
 
 
 def test_EbasFileIndex_ALL_MATRICES():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_MATRICES
-    assert isinstance(val, list)
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert isinstance(ebas.ALL_MATRICES, list)
 
 
 def test_EbasFileIndex_ALL_INSTRUMENTS():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).ALL_INSTRUMENTS
-    assert isinstance(val, list)
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert isinstance(ebas.ALL_INSTRUMENTS, list)
 
 
 def test_EbasFileIndex_get_table_names():
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).get_table_names()
-    assert val == ["station", "variable"]
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert ebas.get_table_names() == ["station", "variable"]
 
 
-@pytest.mark.parametrize(
-    "table,names",
-    [
-        (
-            "station",
-            [
-                "station_code",
-                "platform_code",
-                "station_name",
-                "station_wdca_id",
-                "station_gaw_name",
-                "station_gaw_id",
-                "station_airs_id",
-                "station_other_ids",
-                "station_state_code",
-                "station_landuse",
-                "station_setting",
-                "station_gaw_type",
-                "station_wmo_region",
-                "station_latitude",
-                "station_longitude",
-                "station_altitude",
-            ],
-        ),
-        (
-            "variable",
-            [
-                "station_code",
-                "matrix",
-                "comp_name",
-                "statistics",
-                "instr_type",
-                "instr_ref",
-                "method",
-                "first_start",
-                "first_end",
-                "last_start",
-                "last_end",
-                "revdate",
-                "period",
-                "resolution",
-                "datalevel",
-                "filename",
-            ],
-        ),
+table_comulns = dict(
+    station=[
+        "station_code",
+        "platform_code",
+        "station_name",
+        "station_wdca_id",
+        "station_gaw_name",
+        "station_gaw_id",
+        "station_airs_id",
+        "station_other_ids",
+        "station_state_code",
+        "station_landuse",
+        "station_setting",
+        "station_gaw_type",
+        "station_wmo_region",
+        "station_latitude",
+        "station_longitude",
+        "station_altitude",
+    ],
+    variable=[
+        "station_code",
+        "matrix",
+        "comp_name",
+        "statistics",
+        "instr_type",
+        "instr_ref",
+        "method",
+        "first_start",
+        "first_end",
+        "last_start",
+        "last_end",
+        "revdate",
+        "period",
+        "resolution",
+        "datalevel",
+        "filename",
     ],
 )
-def test_EbasFileIndex_get_column_names(table, names):
-    val = mod.EbasFileIndex(EBAS_SQLite_DB).get_table_columns(table)
-    assert val == names
+
+
+@pytest.mark.parametrize("table,column_names", table_comulns.items())
+def test_EbasFileIndex_get_column_names(table, column_names):
+    ebas = mod.EbasFileIndex(EBAS_SQLite_DB)
+    assert ebas.get_table_columns(table) == column_names

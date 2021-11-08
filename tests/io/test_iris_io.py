@@ -1,10 +1,11 @@
+import tempfile
 from contextlib import nullcontext as does_not_raise_exception
+from pathlib import Path
 
-import iris.cube
 import numpy as np
 import pytest
 from iris import load
-from iris.cube import Cube
+from iris.cube import Cube, CubeList
 from iris.exceptions import TranslationError
 
 from pyaerocom.exceptions import (
@@ -13,17 +14,16 @@ from pyaerocom.exceptions import (
     TemporalResolutionError,
     UnresolvableTimeDefinitionError,
 )
-from pyaerocom.io import FileConventionRead
-from pyaerocom.io import iris_io as mod
+from pyaerocom.io import FileConventionRead, iris_io
 
+from .._conftest_helpers import make_dummy_cube_3D_daily
 from ..conftest import TESTDATADIR
 
-tm5fname1 = "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
-TM5_DIR = TESTDATADIR.joinpath("modeldata/TM5-met2010_CTRL-TEST/renamed")
-TM5_FILE1 = TM5_DIR.joinpath(tm5fname1)
-TM5_FILE2 = TM5_DIR.joinpath("aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_2010_daily.nc")
+TM5_DIR = TESTDATADIR / "modeldata/TM5-met2010_CTRL-TEST/renamed"
+TM5_FILE1 = TM5_DIR / "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
+TM5_FILE2 = TM5_DIR / "aerocom3_TM5-met2010_AP3-CTRL2019_od550aer_Column_2010_daily.nc"
 
-EMEP_FILE = TESTDATADIR.joinpath("modeldata/EMEP_2017/Base_month.nc")
+EMEP_FILE = TESTDATADIR / "modeldata/EMEP_2017/Base_month.nc"
 
 aod_cube = load(str(TM5_FILE1))[0]
 
@@ -63,15 +63,9 @@ aod_cube_only_longname_dims.coord("time").long_name = "time"
 aod_cube_nounit = aod_cube.copy()
 aod_cube_nounit.units = ""
 
-import tempfile
-from pathlib import Path
-
-tmpdirnc = Path(tempfile.gettempdir()).joinpath("test_iris_io")
-if not tmpdirnc.exists():
-    tmpdirnc.mkdir()
-
-FAKE_FILE = str(tmpdirnc.joinpath("invalid.nc"))
-open(FAKE_FILE, "w").close()
+FAKE_FILE = Path(tempfile.gettempdir()) / "test_iris_io/invalid.nc"
+FAKE_FILE.parent.mkdir(exist_ok=True, parents=True)
+FAKE_FILE.write_text("")
 
 
 @pytest.mark.parametrize(
@@ -87,15 +81,15 @@ open(FAKE_FILE, "w").close()
 )
 def test_check_time_coord(cube, ts_type, year, raises):
     with raises:
-        mod.check_time_coord(cube, ts_type, year)
+        iris_io.check_time_coord(cube, ts_type, year)
 
 
 def test_get_dim_names_cube():
-    assert mod.get_dim_names_cube(aod_cube) == ["time", "latitude", "longitude"]
+    assert iris_io.get_dim_names_cube(aod_cube) == ["time", "latitude", "longitude"]
 
 
 def test_get_dimnames_cube():
-    assert mod.get_coord_names_cube(aod_cube) == ["time", "latitude", "longitude"]
+    assert iris_io.get_coord_names_cube(aod_cube) == ["time", "latitude", "longitude"]
 
 
 @pytest.mark.parametrize(
@@ -154,7 +148,7 @@ def test_get_dimnames_cube():
 )
 def test__cube_quality_check(cube, file, file_convention, raises, dimnames):
     with raises:
-        cube = mod._cube_quality_check(cube, file, file_convention)
+        cube = iris_io._cube_quality_check(cube, file, file_convention)
         _dimnames = [c.name() for c in cube.dim_coords]
         assert _dimnames == dimnames
 
@@ -171,26 +165,22 @@ def test__cube_quality_check(cube, file, file_convention, raises, dimnames):
 )
 def test_load_cube_custom(file, var_name, file_convention, perform_fmt_checks, raises):
     with raises:
-        result = mod.load_cube_custom(file, var_name, file_convention, perform_fmt_checks)
+        result = iris_io.load_cube_custom(file, var_name, file_convention, perform_fmt_checks)
         assert isinstance(result, Cube)
 
 
 @pytest.mark.parametrize(
-    "files,var_name,file_convention,perform_fmt_checks,raises,num_loaded",
+    "files,num_loaded",
     [
-        ([TM5_FILE1], None, None, None, does_not_raise_exception(), 1),
-        ([EMEP_FILE], None, None, None, does_not_raise_exception(), 0),
+        ([TM5_FILE1], 1),
+        ([EMEP_FILE], 0),
     ],
 )
-def test_load_cubes_custom(
-    files, var_name, file_convention, perform_fmt_checks, raises, num_loaded
-):
-    with raises:
-        result = mod.load_cubes_custom(files, var_name, file_convention, perform_fmt_checks)
-        assert isinstance(result, tuple) and len(result) == 2
-        assert isinstance(result[0], list)
-        assert isinstance(result[1], list)
-        assert len(result[0]) == len(result[1]) == num_loaded
+def test_load_cubes_custom(files, num_loaded):
+    result = iris_io.load_cubes_custom(files)
+    assert isinstance(result, tuple) and len(result) == 2
+    assert all(isinstance(res, list) for res in result)
+    assert all(len(res) == num_loaded for res in result)
 
 
 @pytest.mark.parametrize(
@@ -198,7 +188,7 @@ def test_load_cubes_custom(
 )
 def test_check_dim_coord_names_cube(cube, raises):
     with raises:
-        mod.check_dim_coord_names_cube(cube)
+        iris_io.check_dim_coord_names_cube(cube)
 
 
 @pytest.mark.parametrize(
@@ -228,43 +218,42 @@ def test_check_dim_coord_names_cube(cube, raises):
 )
 def test__check_correct_time_dim(cube, file, raises):
     with raises:
-        cube = mod._check_correct_time_dim(cube, file)
+        cube = iris_io._check_correct_time_dim(cube, file)
         assert isinstance(cube, Cube)
 
 
-from .._conftest_helpers import make_dummy_cube_3D_daily
-
-
 def make_cubelist(dtype):
-    return iris.cube.CubeList(
-        [make_dummy_cube_3D_daily(2010, dtype=dtype), make_dummy_cube_3D_daily(2011, dtype=dtype)]
+    return CubeList(
+        [
+            make_dummy_cube_3D_daily(2010, dtype=dtype),
+            make_dummy_cube_3D_daily(2011, dtype=dtype),
+        ]
     )
 
 
 @pytest.mark.parametrize(
     "cubes,val",
     [
-        (iris.cube.CubeList([iris.cube.Cube([1]), iris.cube.Cube([1])]), False),
-        (iris.cube.CubeList([make_cubelist(int)[0], make_cubelist(float)[0]]), True),
+        (CubeList([Cube([1]), Cube([1])]), False),
+        (CubeList([make_cubelist(int)[0], make_cubelist(float)[0]]), True),
         (make_cubelist(float), False),
         (make_cubelist(int), False),
     ],
 )
 def test__check_correct_dtypes_timedim_cube_list(cubes, val):
-    result = mod._check_correct_dtypes_timedim_cube_list(cubes)
+    result = iris_io._check_correct_dtypes_timedim_cube_list(cubes)
     assert result == val
 
 
 @pytest.mark.parametrize(
     "cubes,sh",
     [
-        (make_cubelist(int), (730, 12, 4)),  # see
-        # https://github.com/metno/pyaerocom/issues/432
+        (make_cubelist(int), (730, 12, 4)),  # see https://github.com/metno/pyaerocom/issues/432
         (make_cubelist(float), (730, 12, 4)),
     ],
 )
 def test_concatenate_iris_cubes(cubes, sh):
-    result = mod.concatenate_iris_cubes(cubes)
+    result = iris_io.concatenate_iris_cubes(cubes)
 
-    assert isinstance(result, iris.cube.Cube)
+    assert isinstance(result, Cube)
     assert result.shape == sh

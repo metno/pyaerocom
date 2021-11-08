@@ -244,23 +244,24 @@ def test_make_sql_request(var, constraints, raises):
 
 
 @pytest.mark.parametrize(
-    "var,constraints,num",
+    "var,num",
     [
-        ("concpm10", {}, 1),
-        ("sc700dryaer", {}, 2),
-        ("sc550dryaer", {}, 2),
-        ("sc440dryaer", {}, 2),
+        ("concpm10", 1),
+        ("sc700dryaer", 2),
+        ("sc550dryaer", 2),
+        ("sc440dryaer", 2),
     ],
 )
-def test_make_sql_requests(var, constraints, num):
+def test_make_sql_requests(var, num):
     info = EbasVarInfo(var)
-    reqs = info.make_sql_requests(**constraints)
+    reqs = info.make_sql_requests()
     assert isinstance(reqs, dict)
     assert len(reqs) == num
-    for key, req in reqs.items():
+    for req in reqs.values():
         assert isinstance(req, EbasSQLRequest)
 
 
 def test___str__():
-    s = EbasVarInfo("concpm10").__str__()
-    assert isinstance(s, str)
+    var_info_str = str(EbasVarInfo("concpm10"))
+    assert var_info_str.startswith("\nPyaerocom EbasVarInfo")
+    assert "var_name: concpm10" in var_info_str

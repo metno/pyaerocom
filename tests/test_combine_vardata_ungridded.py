@@ -145,18 +145,20 @@ def test__combine_2_sites_different_vars(
     means_after = [np.nanmean(new[var1]), np.nanmean(new[var2])]
 
     npt.assert_allclose(means_after, means_before, rtol=1e-9)
-    if merge_how == "eval":
-        if data_id_out is None:
-            data_id_out = f"{stat1.data_id};{stat2.data_id}"
-        assert new.data_id == data_id_out
+    if merge_how != "eval":
+        return
 
-        if var_name_out is None:
-            var_name_out = merge_eval_fun
-            var_name_out = var_name_out.replace(f"{stat1.data_id};", "")
-            var_name_out = var_name_out.replace(f"{stat2.data_id};", "")
-        assert var_name_out in new
+    if data_id_out is None:
+        data_id_out = f"{stat1.data_id};{stat2.data_id}"
+    assert new.data_id == data_id_out
 
-        assert new["var_info"][var_name_out]["units"] == var_unit_out
+    if var_name_out is None:
+        var_name_out = merge_eval_fun
+        var_name_out = var_name_out.replace(f"{stat1.data_id};", "")
+        var_name_out = var_name_out.replace(f"{stat2.data_id};", "")
+    assert var_name_out in new
+
+    assert new["var_info"][var_name_out]["units"] == var_unit_out
 
 
 ARGS1 = [(SUN_DATA, SUN_ID, "od550aer"), (SUN_DATA, SUN_ID, "ang4487aer")]
