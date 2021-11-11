@@ -337,7 +337,6 @@ class ReadL2DataBase(ReadUngriddedBase):
         # and extract the files with supported suffixes to const.CACHEDIR
         non_archive_files = []
         for idx, _file in enumerate(sorted(files)):
-            # temp = 'reading file: {}'.format(_file)
 
             self.logger.info(f"file: {_file}")
             suffix = pathlib.Path(_file).suffix
@@ -416,7 +415,6 @@ class ReadL2DataBase(ReadUngriddedBase):
                         elements_to_add = file_data[self._QANAME].shape[0]
 
                     for _key in file_data:
-                        # print('key: {}'.format(_key))
                         shape_store[_key] = file_data[_key].shape
                         index_store[_key] = file_data[_key].shape[0]
                         input_shape = list(file_data[_key].shape)
@@ -732,11 +730,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
                 end_time = time.perf_counter()
                 elapsed_sec = end_time - start_time
-                temp = (
-                    "time for global 1x1 gridding with python data types [s] init: {:.3f}".format(
-                        elapsed_sec
-                    )
-                )
+                temp = f"time for global 1x1 gridding with python data types [s] init: {elapsed_sec:.3f}"
                 self.logger.info(temp)
 
                 # predefine the output data dict
@@ -788,8 +782,8 @@ class ReadL2DataBase(ReadUngriddedBase):
                 # self.gridded_data = gridded_var_data
                 end_time = time.perf_counter()
                 elapsed_sec = end_time - start_time
-                temp = "time for global 1x1 gridding with python data types [s]: {:.3f}".format(
-                    elapsed_sec
+                temp = (
+                    f"time for global 1x1 gridding with python data types [s]: {elapsed_sec:.3f}"
                 )
                 self.logger.info(temp)
                 if return_data_for_gridding:
@@ -843,9 +837,7 @@ class ReadL2DataBase(ReadUngriddedBase):
 
         end_time = time.perf_counter()
         elapsed_sec = end_time - start_time
-        temp = "time for global {} gridding with python data types [s] init: {:.3f}".format(
-            gridtype, elapsed_sec
-        )
+        temp = f"time for global {gridtype} gridding with python data types [s] init: {elapsed_sec:.3f}"
         self.logger.info(temp)
 
         # predefine the output data dict

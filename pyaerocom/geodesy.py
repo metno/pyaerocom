@@ -172,8 +172,8 @@ def get_topo_data(
     except Exception as e:
         if try_etopo1 and not topo_dataset == "etopo1":
             print_log.warning(
-                "Failed to access topography data for {}. "
-                "Trying ETOPO1.\nError: {}".format(topo_dataset, repr(e))
+                f"Failed to access topography data for {topo_dataset}. "
+                f"Trying ETOPO1.\nError: {repr(e)}"
             )
             return get_topo_data(
                 lat0,
@@ -266,13 +266,13 @@ def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None, auto_altitude_sr
         if auto_altitude_srtm:
             if p0.altitude_err == p0._ALTERR_DEFAULT:
                 raise ValueError(
-                    "Failed to access topographic height for coord "
-                    "{} using SRTM topographic database".format(p0)
+                    f"Failed to access topographic height for coord "
+                    f"{p0} using SRTM topographic database"
                 )
             elif p1.altitude_err == p1._ALTERR_DEFAULT:
                 raise ValueError(
-                    "Failed to access topographic height for coord "
-                    "{} using SRTM topographic database".format(p1)
+                    f"Failed to access topographic height for coord "
+                    f"{p1} using SRTM topographic database"
                 )
         return (p0 - p1).magnitude
     else:

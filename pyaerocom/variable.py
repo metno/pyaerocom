@@ -414,8 +414,8 @@ class Variable:
             return VarNameInfo(self.var_name_aerocom).get_default_vert_code()
         except ValueError:
             print_log.warning(
-                "default_vert_code not set for {} and "
-                "could also not be inferred".format(self.var_name_aerocom)
+                f"default_vert_code not set for {self.var_name_aerocom} and "
+                f"could also not be inferred"
             )
             return None
 
@@ -516,9 +516,8 @@ class Variable:
             use = var_info["use"]
             if not use in cfg:
                 raise VariableDefinitionError(
-                    "Input variable {} depends on {} "
-                    "which is not available in "
-                    "variables.ini.".format(var_name, use)
+                    f"Input variable {var_name} depends on {use} "
+                    f"which is not available in variables.ini."
                 )
             self.parse_from_ini(use, cfg)
 
@@ -546,9 +545,7 @@ class Variable:
         return self.__dict__[key]
 
     def __repr__(self):
-        return "{}\nstandard_name: {}; Unit: {}".format(
-            self.var_name, self.standard_name, self.units
-        )
+        return "{self.var_name}\nstandard_name: {self.standard_name}; Unit: {self.units}"
 
     def __eq__(self, other):
         if isinstance(other, str):
@@ -559,7 +556,7 @@ class Variable:
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
-        s = "\n{}\n{}".format(head, len(head) * "-")
+        s = f"\n{head}\n{len(head)*'-'}"
 
         plot_s = "\nPlotting settings\n......................"
 

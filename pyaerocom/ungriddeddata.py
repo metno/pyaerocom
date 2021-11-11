@@ -211,8 +211,8 @@ class UngriddedData:
             if not "var_info" in meta:
                 if not "variables" in meta:
                     raise AttributeError(
-                        "Need either variables (list) or "
-                        "var_info (dict) in meta block {}: {}".format(idx, meta)
+                        f"Need either variables (list) or var_info (dict) "
+                        f"in meta block {idx}: {meta}"
                     )
                 meta["var_info"] = {}
                 for v in meta["variables"]:
@@ -225,10 +225,7 @@ class UngriddedData:
 
                 assert (
                     var in meta["var_info"]
-                ), "Var {} is indexed in meta_idx[{}] but not in metadata[{}]".format(
-                    var, idx, idx
-                )
-
+                ), f"Var {var} is indexed in meta_idx[{idx}] but not in metadata[{idx}]"
                 var_idx_data = np.unique(self._data[indices, self._VARINDEX])
                 assert (
                     len(var_idx_data) == 1
@@ -427,9 +424,8 @@ class UngriddedData:
             for name in add_cols:
                 if name in idx:
                     raise ValueError(
-                        "Cannot add new index with name {} since "
-                        "this index already exists at column "
-                        "position {}".format(name, idx[name])
+                        f"Cannot add new index with name {name} since "
+                        f"this index already exists at column position {idx[name]}"
                     )
                 idx[name] = next_idx
                 next_idx += 1
@@ -669,8 +665,7 @@ class UngriddedData:
                 idx.append(i)
         if len(idx) == 0:
             raise StationNotFoundError(
-                "No station available in UngriddedData "
-                "that matches pattern {}".format(station_str)
+                f"No station available in UngriddedData that matches pattern {station_str}"
             )
         return idx
 
@@ -943,8 +938,8 @@ class UngriddedData:
 
         if len(stats_ok) == 0:
             raise DataCoverageError(
-                "{} data could not be retrieved for meta "
-                " index (or station name) {}".format(vars_to_convert, meta_idx)
+                f"{vars_to_convert} data could not be retrieved "
+                f"for meta index (or station name) {meta_idx}"
             )
         elif len(stats_ok) == 1:
             # return StationData object and not list
@@ -1078,9 +1073,8 @@ class UngriddedData:
             # make sure there is some valid data
             if tmask.sum() == 0:
                 logger.info(
-                    "Ignoring station {}, var {} ({}): "
-                    "no data available in specified time interval "
-                    "{} - {}".format(sd["station_name"], var, sd["data_id"], start, stop)
+                    f"Ignoring station {sd['station_name']}, var {var} ({sd['data_id']}): "
+                    f"no data available in specified time interval {start} - {stop}"
                 )
                 continue
 
@@ -1090,8 +1084,8 @@ class UngriddedData:
             vals = subset[:, self._DATAINDEX]
             if np.all(np.isnan(vals)):
                 logger.warning(
-                    "Ignoring station {}, var {} ({}):"
-                    "All values are NaN".format(sd["station_name"], var, sd["data_id"])
+                    f"Ignoring station {sd['station_name']}, var {var} ({sd['data_id']}): "
+                    f"All values are NaN"
                 )
                 continue
             vals_err = subset[:, self._DATAERRINDEX]
@@ -1129,8 +1123,8 @@ class UngriddedData:
                 sd.var_info[var]["overlap"] = True
         if not FOUND_ONE:
             raise DataCoverageError(
-                "Could not retrieve any valid data for "
-                "station {} and input variables {}".format(sd["station_name"], vars_to_convert)
+                f"Could not retrieve any valid data for station {sd['station_name']} "
+                f"and input variables {vars_to_convert}"
             )
         return sd
 
@@ -1395,8 +1389,8 @@ class UngriddedData:
         for key, val in filter_attributes.items():
             if not key in valid_keys:
                 raise OSError(
-                    "Invalid input parameter for filtering: {}. "
-                    "Please choose from {}".format(key, valid_keys)
+                    f"Invalid input parameter for filtering: {key}. "
+                    f"Please choose from {valid_keys}"
                 )
 
             if isinstance(val, str):
@@ -1438,8 +1432,8 @@ class UngriddedData:
                             "check corresponding reading routine. "
                         )
                     raise MetaDataError(
-                        "Failed to access unit information for "
-                        "variable {} in metadata block {}. {}".format(var_name, i, add_str)
+                        f"Failed to access unit information for variable {var_name} "
+                        f"in metadata block {i}. {add_str}"
                     )
                 fac = get_unit_conversion_fac(unit, to_unit, var_name)
                 if fac != 1:
@@ -1485,13 +1479,13 @@ class UngriddedData:
                             "check corresponding reading routine. "
                         )
                     raise MetaDataError(
-                        "Failed to access unit information for "
-                        "variable {} in metadata block {}. {}".format(var_name, i, add_str)
+                        f"Failed to access unit information for variable {var_name} "
+                        f"in metadata block {i}. {add_str}"
                     )
         if len(units) == 0 and str(unit) != "1":
             raise MetaDataError(
-                "Failed to access unit information for "
-                "variable {}. Expected unit {}".format(var_name, unit)
+                f"Failed to access unit information for variable {var_name}. "
+                f"Expected unit {unit}"
             )
         for u in units:
             if not get_unit_conversion_fac(u, unit, var_name) == 1:
@@ -1608,11 +1602,10 @@ class UngriddedData:
                     ":attr:`move_to_trash`"
                 )
 
-        info = "Removed {} outliers from {} data (range: {}-{}, in trash: {})".format(
-            len(invalid_vals), var_name, low, high, move_to_trash
+        new._add_to_filter_history(
+            f"Removed {len(invalid_vals)} outliers from {var_name} data "
+            f"(range: {low}-{high}, in trash: {move_to_trash})"
         )
-
-        new._add_to_filter_history(info)
         return new
 
     def _add_to_filter_history(self, info):
@@ -1651,9 +1644,8 @@ class UngriddedData:
                 continue
             elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
                 print_log.warning(
-                    "Skipping meta-block {} (station {}): "
-                    "one or more of the coordinates is not "
-                    "defined".format(i, meta["station_name"])
+                    f"Skipping meta-block {i} (station {meta['station_name']}): "
+                    f"one or more of the coordinates is not defined"
                 )
                 continue
 
@@ -1702,9 +1694,8 @@ class UngriddedData:
                         totnum += len(self.meta_idx[meta_idx][var])
                     except KeyError:
                         const.print_log.warning(
-                            "Ignoring variable {} in "
-                            "meta block {} since no data "
-                            "could be found".format(var, meta_idx)
+                            f"Ignoring variable {var} in meta block {meta_idx} "
+                            f"since no data could be found"
                         )
 
         return (meta_matches, totnum)
@@ -1771,9 +1762,7 @@ class UngriddedData:
         """
         if not region_id in const.HTAP_REGIONS:
             raise ValueError(
-                "Invalid input for region_id: {}, choose from: {}".format(
-                    region_id, const.HTAP_REGIONS
-                )
+                f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
             )
 
         # 1. find matches -> list of meta indices that are in region
@@ -1842,9 +1831,8 @@ class UngriddedData:
             for var in extract_vars:
                 if not var in data.contains_vars:
                     raise VarNotAvailableError(
-                        "No such variable {} in "
-                        "UngriddedData object. "
-                        "Available vars: {}".format(var, self.contains_vars)
+                        f"No such variable {var} in UngriddedData object. "
+                        f"Available vars: {self.contains_vars}"
                     )
         if "region_id" in filter_attributes:
             region_id = filter_attributes.pop("region_id")
@@ -2556,8 +2544,8 @@ class UngriddedData:
                 check_vars_available = list(check_vars_available)
             if not isinstance(check_vars_available, list):
                 raise ValueError(
-                    "Invalid input for check_vars_available. Need "
-                    "str or list-like, got: {}".format(check_vars_available)
+                    f"Invalid input for check_vars_available. "
+                    f"Need str or list-like, got: {check_vars_available}"
                 )
         lat_len = 111.0  # approximate length of latitude degree in km
         station_map = od()
@@ -2570,10 +2558,7 @@ class UngriddedData:
                 for var in check_vars_available:
                     try:
                         if not var in meta["variables"]:
-                            logger.debug(
-                                "No {} in data of station {}"
-                                "({})".format(var, name, meta["data_id"])
-                            )
+                            logger.debug(f"No {var} in data of station {name} ({meta['data_id']})")
                             ok = False
                     except Exception:  # attribute does not exist or is not iterable
                         ok = False
@@ -2585,8 +2570,7 @@ class UngriddedData:
                                 try:
                                     if not var in meta_other["variables"]:
                                         logger.debug(
-                                            "No {} in data of station"
-                                            " {} ({})".format(var, name, meta_other["data_id"])
+                                            f"No {var} in data of station {name} ({meta_other['data_id']})"
                                         )
                                         ok = False
                                 except Exception:  # attribute does not exist or is not iterable
@@ -2599,16 +2583,10 @@ class UngriddedData:
                             dist = np.linalg.norm((dlat * lat_len, dlon * lat_len * lon_fac))
                             if dist > max_diff_coords_km:
                                 logger.warning(
-                                    "Coordinate of station "
-                                    "{} varies more than {} km "
-                                    "between {} and {} data. "
-                                    "Retrieved distance: {:.2f} km ".format(
-                                        name,
-                                        max_diff_coords_km,
-                                        meta["data_id"],
-                                        meta_other["data_id"],
-                                        dist,
-                                    )
+                                    f"Coordinate of station {name} "
+                                    f"varies more than {max_diff_coords_km} km "
+                                    f"between {meta['data_id']} and {meta_other['data_id']} data. "
+                                    f"Retrieved distance: {dist:.2f} km "
                                 )
                                 ok = False
                         if ok:  # match found
@@ -2948,8 +2926,7 @@ class UngriddedData:
             return self[self._idx]
         except DataCoverageError:
             const.print_log.warning(
-                "No variable data in metadata block {}. "
-                "Returning empty StationData".format(self._idx)
+                f"No variable data in metadata block {self._idx}. " f"Returning empty StationData"
             )
             return StationData()
 
@@ -2987,17 +2964,12 @@ class UngriddedData:
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
-        s = "\n{}\n{}".format(head, len(head) * "-")
-        s += (
-            "\nContains networks: {}"
-            "\nContains variables: {}"
-            "\nContains instruments: {}"
-            "\nTotal no. of meta-blocks: {}".format(
-                self.contains_datasets,
-                self.contains_vars,
-                self.contains_instruments,
-                len(self.metadata),
-            )
+        s = (
+            f"\n{head}\n{len(head)*'-'}"
+            f"\nContains networks: {self.contains_datasets}"
+            f"\nContains variables: {self.contains_vars}"
+            f"\nContains instruments: {self.contains_instruments}"
+            f"\nTotal no. of meta-blocks: {len(self.metadata)}"
         )
         if self.is_filtered:
             s += "\nFilters that were applied:"

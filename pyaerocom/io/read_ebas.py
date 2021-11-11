@@ -823,15 +823,12 @@ class ReadEbas(ReadUngriddedBase):
             if "matrix" in col_info:
                 if preferred_matrix is None:
                     raise OSError(
-                        "Data file contains multiple column matches "
-                        "for variable {}, some of which specify "
-                        "different data type matrices. Aerocom "
-                        "import information for this variable, "
-                        "however, does not contain information "
-                        "about preferred matrix. Please resolve "
-                        "by adding preferred matrix information for "
-                        "{} in corresponding section of "
-                        "ebas_config.ini file".format(var, var)
+                        f"Data file contains multiple column matches for variable {var}, "
+                        f"some of which specify different data type matrices. Aerocom "
+                        f"import information for this variable, however, "
+                        f"does not contain information about preferred matrix. "
+                        f"Please resolve by adding preferred matrix information for "
+                        f"{var} in corresponding section of ebas_config.ini file"
                     )
                 matrix = col_info["matrix"]
                 if matrix in preferred_matrix:
@@ -862,10 +859,9 @@ class ReadEbas(ReadUngriddedBase):
                 stats = file.meta["statistics"]
             else:
                 raise EbasFileError(
-                    "Cannot infer data statistics for data "
-                    "column {}. Neither column nor file meta "
-                    "specifications include information about "
-                    "data statistics".format(col_info)
+                    f"Cannot infer data statistics for data column {col_info}. "
+                    f"Neither column nor file meta specifications include information "
+                    f"about data statistics"
                 )
 
             if stats in preferred_statistics:
@@ -1005,8 +1001,8 @@ class ReadEbas(ReadUngriddedBase):
             colinfo = file.var_defs[colnum]
             if not "wavelength" in colinfo:
                 const.logger.warning(
-                    "Ignoring column {}\n{}\nVar {}: column "
-                    "misses wavelength specification!".format(colnum, colinfo, var_info.var_name)
+                    f"Ignoring column {colnum}\n{colinfo}\nVar {var_info.var_name}: "
+                    f"column misses wavelength specification!"
                 )
                 continue
             wvl_col = colinfo.get_wavelength_nm()
@@ -1039,9 +1035,8 @@ class ReadEbas(ReadUngriddedBase):
             colinfo = file.var_defs[colnum]
             if not "wavelength" in colinfo:
                 const.logger.warning(
-                    "Ignoring column {} ({}) in EBAS file for "
-                    "reading var {}: column misses wavelength "
-                    "specification".format(colnum, colinfo, var_info)
+                    f"Ignoring column {colnum} ({colinfo}) in EBAS file for reading var {var_info}: "
+                    f"column misses wavelength specification"
                 )
                 continue
             wvl_col = colinfo.get_wavelength_nm()
@@ -1198,10 +1193,8 @@ class ReadEbas(ReadUngriddedBase):
                 col_matches = self._get_var_cols(ebas_var_info, file)
             except NotInFileError:
                 const.logger.warning(
-                    "Variable {} (EBAS name(s): {}) is "
-                    "missing in file {} (start: {})".format(
-                        var, ebas_var_info.component, os.path.basename(file.file), file.base_date
-                    )
+                    f"Variable {var} (EBAS name(s): {ebas_var_info.component}) is missing "
+                    f"in file {os.path.basename(file.file)} (start: {file.base_date})"
                 )
                 continue
 
@@ -1224,8 +1217,8 @@ class ReadEbas(ReadUngriddedBase):
 
         if not len(_vc) > 0:
             raise NotInFileError(
-                "None of the specified variables {} could be "
-                "found in file {}".format(vars_to_read, os.path.basename(file.file))
+                f"None of the specified variables {vars_to_read} could be "
+                f"found in file {os.path.basename(file.file)}"
             )
         var_cols = {}
         for var, cols in _vc.items():
@@ -1762,17 +1755,14 @@ class ReadEbas(ReadUngriddedBase):
             ) as e:
                 self.files_failed.append(_file)
                 self.logger.warning(
-                    "Skipping reading of EBAS NASA Ames "
-                    "file: {}. Reason: {}".format(_file, repr(e))
+                    f"Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
                 continue
             except Exception as e:
                 self.files_failed.append(_file)
                 const.print_log.warning(
-                    "Skipping reading of EBAS NASA Ames "
-                    "file: {}. Reason: {}".format(_file, repr(e))
+                    "Skipping reading of EBAS NASA Ames file: {_file}. Reason: {repr(e)}"
                 )
-
                 continue
 
             # Fill the metatdata dict

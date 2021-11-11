@@ -234,24 +234,20 @@ def check_dim_coord_names_cube(cube):
             lng_name = c.long_name
             if not coord.var_name == var_name:
                 const.logger.warning(
-                    "Invalid var_name {} for coord {} "
-                    "in cube. Overwriting with {}".format(
-                        coord.standard_name, coord.var_name, std_name
-                    )
+                    f"Invalid var_name {coord.standard_name} for "
+                    f"coord {coord.var_name} in cube. Overwriting with {std_name}"
                 )
                 coord.var_name = var_name
             if not coord.standard_name == std_name:
                 const.logger.warning(
-                    "Invalid standard_name {} for coord {} "
-                    "in cube. Overwriting with {}".format(
-                        coord.standard_name, coord.var_name, std_name
-                    )
+                    f"Invalid standard_name {coord.standard_name} for "
+                    f"coord {coord.var_name} in cube. Overwriting with {std_name}"
                 )
                 coord.standard_name = std_name
             if not coord.long_name == lng_name:
                 const.logger.warning(
-                    "Invalid long_name {} for coord {} in "
-                    "cube. Overwriting with {}".format(coord.long_name, coord.var_name, lng_name)
+                    f"Invalid long_name {coord.long_name} for "
+                    f"coord {coord.var_name} in cube. Overwriting with {lng_name}"
                 )
                 coord.long_name = lng_name
     return cube
@@ -589,11 +585,9 @@ def concatenate_iris_cubes(cubes, error_on_mismatch=True):
         meta_init = cubes[0].metadata
         if not all([x.metadata == meta_init for x in cubes]):
             logger.warning(
-                "{} cubes to be concatenated have different meta "
-                "data settings. These will be unified using the "
-                "metadata dictionary of the first cube "
-                "(otherwise the method concatenate of the iris "
-                "package won't work)".format(var_name)
+                f"{var_name} cubes to be concatenated have different meta data settings. "
+                f"These will be unified using the metadata dictionary of the first cube "
+                f"(otherwise the method concatenate of the iris package won't work)"
             )
             for cube in cubes:
                 cube.metadata = meta_init

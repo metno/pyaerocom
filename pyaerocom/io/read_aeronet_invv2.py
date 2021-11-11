@@ -236,9 +236,7 @@ class ReadAeronetInvV2(ReadAeronetBase):
                     col_names[var] = self._last_col_order[idx]
                 else:
                     self.logger.warning(
-                        "Variable {} not available in file {}".format(
-                            var, os.path.basename(filename)
-                        )
+                        f"Variable {var} not available in file {os.path.basename(filename)}"
                     )
             data_out["col_names"] = col_names
             for line in in_file:

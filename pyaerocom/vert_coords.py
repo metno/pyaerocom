@@ -262,8 +262,8 @@ class VerticalCoordinate:
             if self.standard_name in self._LEV_INCREASES_WITH_ALT:
                 return self._LEV_INCREASES_WITH_ALT[self.standard_name]
             raise ValueError(
-                "Failed to access information "
-                "lev_increases_with_alt for vertical coordinate {}".format(self.var_name)
+                f"Failed to access information lev_increases_with_alt "
+                f"for vertical coordinate {self.var_name}"
             )
         return self._LEV_INCREASES_WITH_ALT[self.var_name]
 
@@ -288,11 +288,8 @@ class VerticalCoordinate:
         if not self.var_name in self.NAMES_SUPPORTED:
 
             raise CoordinateNameError(
-                "Variable {} cannot be converted to "
-                "pressure levels. Conversion is only "
-                "possible for supported variables:\n{}".format(
-                    self.var_name, self.vars_supported_str
-                )
+                f"Variable {self.var_name} cannot be converted to pressure levels. "
+                f"Conversion is only possible for supported variables:\n{self.vars_supported_str}"
             )
 
         coord_values = kwargs.pop(self.var_name)
@@ -340,9 +337,8 @@ class AltitudeAccess:
             raise ValueError("Invalid input: require instance of GriddedData class")
         if not gridded_data.has_latlon_dims:
             raise NotImplementedError(
-                "Altitude access requires latitude and "
-                "longitude dimensions to be available "
-                "in  input GriddedData: {}".format(gridded_data.short_str())
+                f"Altitude access requires latitude and longitude dimensions to be available "
+                f"in input GriddedData: {gridded_data.short_str()}"
             )
         self.data_obj = gridded_data
         self._subset1d = None
@@ -416,9 +412,8 @@ class AltitudeAccess:
         subset = d.sel(**test_coord)
         if not subset.ndim == 1:
             raise DataDimensionError(
-                "Something went wrong with extraction of "
-                "1D subset at coordinate {}. Resulting "
-                "data object has {} dimensions instead".format(test_coord, subset.ndim)
+                f"Something went wrong with extraction of 1D subset at coordinate {test_coord}. "
+                f"Resulting data object has {subset.ndim} dimensions instead"
             )
         self._subset1d = subset
         return subset
@@ -637,8 +632,7 @@ class AltitudeAccess:
 #             if _var in r.vars:
 #                 return r.read_var(_var, start=d.start, stop=d.stop,
 #                                   ts_type=d.ts_type, flex_ts_type=False)
-#         raise VariableNotFoundError('Auxiliary variable {} could not be found'
-#                                     .format(add_var_name))
+#         raise VariableNotFoundError(f'Auxiliary variable {add_var_name} could not be found')
 #
 #     def _check_coord_conversion(self, add_var_data, add_var_data_req,
 #                                 add_var_data_opt):

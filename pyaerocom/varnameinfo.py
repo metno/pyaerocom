@@ -85,9 +85,8 @@ class VarNameInfo:
         """Wavelength in nm (if appliable)"""
         if not self.is_wavelength_dependent:
             raise VariableDefinitionError(
-                "Variable {} is not wavelength "
-                "dependent (does not start with "
-                "either of {})".format(self.var_name, self._VALID_WVL_IDS)
+                f"Variable {self.var_name} is not wavelength "
+                f"dependent (does not start with either of {self._VALID_WVL_IDS})"
             )
 
         elif not self.contains_wavelength_nm:
@@ -133,11 +132,9 @@ class VarNameInfo:
 
     def __str__(self):
         s = (
-            "\nVariable {}\n"
-            "is_wavelength_dependent: {}\n"
-            "is_optical_density: {}".format(
-                self.var_name, self.is_wavelength_dependent, self.is_optical_density
-            )
+            f"\nVariable {self.var_name}\n"
+            f"is_wavelength_dependent: {self.is_wavelength_dependent}\n"
+            f"is_optical_density: {self.is_optical_density}"
         )
         if self.is_wavelength_dependent:
             s += f"\nwavelength_nm: {self.wavelength_nm}"

@@ -243,7 +243,7 @@ class EbasVarInfo(BrowseDict):
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
-        s = "\n{}\n{}".format(head, len(head) * "-")
+        s = f"\n{head}\n{len(head)*'-'}"
         for k, v in self.items():
             s += f"\n{k}: {v}"
         return s

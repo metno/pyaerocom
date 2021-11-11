@@ -321,8 +321,8 @@ class GriddedData:
             raise ValueError("Cannot set data array: need numpy.ndarray")
         elif not array.shape == self.grid.data.shape:
             raise DataDimensionError(
-                "Cannot assign dataarray: shape mismatch. "
-                "Got: {}, Need: {}".format(array.shape, self.grid.shape)
+                f"Cannot assign dataarray: shape mismatch. "
+                f"Got: {array.shape}, Need: {self.grid.shape}"
             )
         self.grid.data = array
 
@@ -443,7 +443,7 @@ class GriddedData:
     @grid.setter
     def grid(self, value):
         if not isinstance(value, iris.cube.Cube):
-            raise TypeError("Grid data format %s is not supported, need Cube" % type(value))
+            raise TypeError(f"Grid data format {type(value)} is not supported, need Cube")
 
         for key, val in self._META_ADD.items():
             if not key in value.attributes:
@@ -1138,8 +1138,8 @@ class GriddedData:
 
             t0 = time()
             const.print_log.info(
-                "Extracting timeseries data from large array "
-                "(shape: {}). This may take a while...".format(self.shape)
+                f"Extracting timeseries data from large array (shape: {self.shape}). "
+                f"This may take a while..."
             )
         # if the method makes it to this point, it is 3 or 4 dimensional
         # and the first 3 dimensions are time, latitude, longitude.
@@ -1156,8 +1156,7 @@ class GriddedData:
                 result = self._to_time_series_xarray(scheme=scheme, add_meta=add_meta, **coords)
             if pinfo:
                 const.print_log.info(
-                    "Time series extraction successful. "
-                    "Elapsed time: {:.0f} s".format(time() - t0)
+                    f"Time series extraction successful. Elapsed time: {time() - t0:.0f} s"
                 )
             return result
 
@@ -1362,8 +1361,7 @@ class GriddedData:
                 return self.collapsed(cname, aggr)
 
         raise NotImplementedError(
-            "Cannot yet retrieve timeseries "
-            "from 4D data for vert_scheme {} ".format(vert_scheme)
+            f"Cannot yet retrieve timeseries from 4D data for vert_scheme {vert_scheme}."
         )
 
     def check_altitude_access(self):
@@ -1424,20 +1422,18 @@ class GriddedData:
                     "pyaerocom.const.GRID_IO is deactivated"
                 )
             const.print_log.info(
-                "Inferring surface level in GriddedData based on mean value of "
-                "{} data in first and last level since CF coordinate info is "
-                "missing... The level with the largest mean value will be "
-                "assumed to be the surface. If mean values in both levels".format(self.var_name)
+                f"Inferring surface level in GriddedData based on mean value of "
+                f"{self.var_name} data in first and last level since CF coordinate info is "
+                f"missing... The level with the largest mean value will be "
+                f"assumed to be the surface. If mean values in both levels"
             )
             last_lev_idx = self.shape[-1] - 1
             mean_first_idx = np.nanmean(self[0, :, :, 0].data)
             mean_last_idx = np.nanmean(self[0, :, :, last_lev_idx].data)
             if exponent(mean_first_idx) == exponent(mean_last_idx):
                 raise DataExtractionError(
-                    "Could not infer surface level. "
-                    "{} data in first and last level is of similar magnitude...".format(
-                        self.var_name
-                    )
+                    f"Could not infer surface level. "
+                    f"{self.var_name} data in first and last level is of similar magnitude..."
                 )
             elif mean_first_idx > mean_last_idx:
                 return 0
@@ -1543,20 +1539,16 @@ class GriddedData:
                     _cval = self["time"].units.num2date(_tval)
                     if not use_neirest and _cval != val:
                         raise DataExtractionError(
-                            "No such value {} in dim {}. "
-                            "Use option use_neirest to "
-                            "disregard and extract "
-                            "neirest neighbour".format(val, dim)
+                            f"No such value {val} in dim {dim}. "
+                            f"Use option use_neirest to disregard and extract neirest neighbour"
                         )
                 else:
                     _idx = self[dim].nearest_neighbour_index(val)
                     _cval = self[dim][_idx].points[0]
                     if not use_neirest and _cval != val:
                         raise DataExtractionError(
-                            "No such value {} in dim {}"
-                            "Use option use_neirest to "
-                            "disregard and extract "
-                            "neirest neighbour".format(val, dim)
+                            f"No such value {val} in dim {dim}"
+                            f"Use option use_neirest to disregard and extract neirest neighbour"
                         )
                 coord_vals[dim] = _cval
 
@@ -1662,8 +1654,7 @@ class GriddedData:
             raise TemporalResolutionError(f"Resolution {to_ts_type} cannot converted")
         elif current < to:  # current resolution is smaller than desired
             raise TemporalResolutionError(
-                "Cannot increase "
-                "temporal resolution from {} to {}".format(self.ts_type, to_ts_type)
+                f"Cannot increase temporal resolution from {self.ts_type} to {to_ts_type}"
             )
         cube = self.grid
 
@@ -1769,9 +1760,8 @@ class GriddedData:
                 data = self._resample_time_xarray(to_ts_type, how, min_num_obs)
             except NotImplementedError as e:
                 raise ResamplingError(
-                    "Resampling of time in GriddedData failed "
-                    "using xarray. Reason: {}. Please try again "
-                    "with input arg use_iris=True".format(repr(e))
+                    f"Resampling of time in GriddedData failed using xarray. "
+                    f"Reason: {repr(e)}. Please try again with input arg use_iris=True"
                 )
         else:
             if min_num_obs is not None or how != "mean":
@@ -1836,9 +1826,7 @@ class GriddedData:
 
         if not region_id in const.HTAP_REGIONS:
             raise ValueError(
-                "Invalid input for region_id: {}, choose from: {}".format(
-                    region_id, const.HTAP_REGIONS
-                )
+                f"Invalid input for region_id: {region_id}, choose from: {const.HTAP_REGIONS}"
             )
 
         # get Iris mask
@@ -1925,8 +1913,8 @@ class GriddedData:
                     region = Region(region)
                 except Exception as e:
                     logger.warning(
-                        "Failed to access longitude / latitude range "
-                        "using region ID {}. Error msg: {}".format(region, repr(e))
+                        f"Failed to access longitude / latitude range using region ID {region}. "
+                        f"Error msg: {repr(e)}"
                     )
             if not isinstance(region, Region):
                 raise ValueError("Invalid input for region")
@@ -2453,7 +2441,7 @@ class GriddedData:
                 from pyaerocom.mathutils import exponent
 
                 mean = data.mean()
-                vstr = ("{:.%sf}" % (abs(exponent(mean)) + 1)).format(mean)
+                vstr = f"{mean:.{abs(exponent(mean))+1}f}"
                 mustr = f"Mean={vstr}"
                 u = str(self.units)
                 if not u == "1":
@@ -2650,9 +2638,8 @@ class GriddedData:
         for key, val in kwargs.items():
             if key == "var_name" and not isinstance(val, str):
                 const.print_log.warning(
-                    "Skipping assignment of var_name from "
-                    "metadata in GriddedData, since attr. "
-                    "needs to be str and is {}".format(val)
+                    f"Skipping assignment of var_name from metadata in GriddedData, "
+                    f"since attr. needs to be str and is {val}"
                 )
                 continue
             self._grid.attributes[key] = val
@@ -2740,9 +2727,7 @@ class GriddedData:
 
     def __str__(self):
         """For now, use string representation of underlying data"""
-        st = (
-            f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n{self._grid.__str__()}"
-        )
+        st = f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n{self._grid.__str__()}"
         return st
 
     def __repr__(self):

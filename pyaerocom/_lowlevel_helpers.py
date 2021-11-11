@@ -697,9 +697,8 @@ def merge_dicts(dict1, dict2, discard_failing=True):
                 for item in lst:
                     if not type(item) == type(check):
                         raise ValueError(
-                            "Cannot merge key {} since items in {} "
-                            "are of different type, that does not "
-                            "match {}".format(key, lst, check)
+                            f"Cannot merge key {key} since items in {lst} "
+                            f"are of different type, that does not match {check}"
                         )
                 lst.append(check)
                 new[key] = lst
@@ -763,9 +762,7 @@ def list_to_shortstr(lst, indent=0):
         return f"{indentstr}{name_str}{lfmt}"
     else:  # first 2 and last 2 items
         lfmt = _short_lst_fmt([lst[0], lst[1], lst[-2], lst[-1]])
-        s = "{}{}[{}, {}, ..., {}, {}]".format(
-            indentstr, name_str, lfmt[0], lfmt[1], lfmt[2], lfmt[3]
-        )
+        s = f"{indentstr}{name_str}[{lfmt[0]}, {lfmt[1]}, ..., {lfmt[2]}, {lfmt[3]}]"
 
     return s
 
@@ -843,7 +840,7 @@ def dict_to_str(dictionary, indent=0, ignore_null=False):
 def str_underline(s, indent=0):
     """Create underlined string"""
     s = indent * " " + f"{s}\n"
-    s += indent * " " + "{}".format(len(s) * "-")
+    s += indent * " " + f"{len(s) * '-'}"
     return s
 
 

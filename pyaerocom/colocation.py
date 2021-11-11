@@ -240,9 +240,8 @@ def colocate_gridded_gridded(
                 data_ref.convert_unit(data.units)
             except Exception:
                 raise DataUnitError(
-                    "Failed to merge data unit of reference "
-                    "gridded data object ({}) to data unit "
-                    "of gridded data object ({})".format(data.units, data_ref.units)
+                    f"Failed to merge data unit of reference gridded data object ({data.units}) "
+                    f"to data unit of gridded data object ({data_ref.units})"
                 )
 
     if update_baseyear_gridded is not None:
@@ -692,8 +691,8 @@ def colocate_gridded_ungridded(
 
     if not var_ref in data_ref.contains_vars:
         raise VarNotAvailableError(
-            "Variable {} is not available in ungridded "
-            "data (which contains {})".format(var_ref, data_ref.contains_vars)
+            f"Variable {var_ref} is not available in ungridded "
+            f"data (which contains {data_ref.contains_vars})"
         )
     elif len(data_ref.contains_datasets) > 1:
         raise AttributeError(
@@ -758,8 +757,7 @@ def colocate_gridded_ungridded(
 
     if len(obs_stat_data) == 0:
         raise VarNotAvailableError(
-            "Variable {} is not available in specified "
-            "time interval ({}-{})".format(var_ref, start, stop)
+            f"Variable {var_ref} is not available in specified time interval ({start}-{stop})"
         )
 
     grid_stat_data = data.to_time_series(longitude=ungridded_lons, latitude=ungridded_lats)
@@ -814,8 +812,8 @@ def colocate_gridded_ungridded(
             unit = None
         if not unit == data_ref_unit:
             raise ValueError(
-                "Cannot perform colocation. Ungridded data "
-                "object contains different units ({})".format(var_ref)
+                f"Cannot perform colocation. "
+                f"Ungridded data object contains different units ({var_ref})"
             )
         # get observations (Note: the index of the observation time series
         # is already in the specified frequency format, and thus, does not

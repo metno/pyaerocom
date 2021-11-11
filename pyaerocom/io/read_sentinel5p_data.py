@@ -1090,13 +1090,9 @@ class ReadL2Data(ReadL2DataBase):
 
             end_time = time.perf_counter()
             elapsed_sec = end_time - start_time
-            temp = "time for global {} gridding with python data types [s]: {:.3f}".format(
-                gridtype, elapsed_sec
-            )
+            temp = f"time for global {gridtype} gridding with python data types [s]: {elapsed_sec:.3f}"
             self.logger.info(temp)
-            temp = "matched {} points out of {} existing points to grid".format(
-                matching_points, _data["time"].size
-            )
+            temp = f"matched {matching_points} points out of {_data['time'].size} existing points to grid"
             self.logger.info(temp)
 
             if return_data_for_gridding:
@@ -1455,12 +1451,10 @@ if __name__ == "__main__":
         global_attributes = {}
         global_attributes["input files"] = ",".join(obj.files_read)
         global_attributes["info"] = (
-            "file created by pyaerocom.io.read_sentinel5p_data "
-            + obj.__version__
-            + " (https://github.com/metno/pyaerocom) at "
-            + np.datetime64("now").astype("str")
+            f"file created by pyaerocom.io.read_sentinel5p_data {obj.__version__} "
+            f"(https://github.com/metno/pyaerocom) at {np.datetime64('now')}"
         )
-        global_attributes["quality"] = "quality flag of {} applied".format(options["qflag"])
+        global_attributes["quality"] = f"quality flag of {options['qflag']} applied"
 
     # obj.to_netcdf_simple(data_to_write=data_numpy, global_attributes=obj.global_attributes, vars_to_write=obj.DEFAULT_VARS,
     #                      netcdf_filename='/home/jang/tmp/to_netcdf_simple.nc')
@@ -1482,7 +1476,7 @@ if __name__ == "__main__":
                     apply_quality_flag=options["qflag"],
                 )
             else:
-                sys.stderr.write("Error: path {} exists".format(options["outfile"]))
+                sys.stderr.write(f"Error: path {options['outfile']} exists")
         else:
             # obj.to_netcdf_simple(options['outfile'], global_attributes=ancilliary_data['mph'])
             obj.to_netcdf_simple(

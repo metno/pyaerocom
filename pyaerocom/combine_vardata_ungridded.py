@@ -414,9 +414,7 @@ def combine_vardata_ungridded(
 
     if not match_stats_how in match_stats_opts:
         raise ValueError(
-            "Invalid input for match_stats_how {}, choose from {}".format(
-                match_stats_how, match_stats_opts
-            )
+            f"Invalid input for match_stats_how {match_stats_how}, choose from {match_stats_opts}"
         )
 
     merge_how_opts = ["combine", "mean", "eval"]
@@ -433,8 +431,8 @@ def combine_vardata_ungridded(
             raise ValueError("Please specify evaluation function for mode eval")
         elif not all([x in merge_eval_fun for x in [id1, id2]]):
             raise ValueError(
-                "merge_eval_fun needs to include both input "
-                "datasets;variables (e.g. {} + {}".format(id1, id2)
+                f"merge_eval_fun needs to include both input "
+                f"datasets;variables (e.g. {id1} + {id2}"
             )
         if "=" in merge_eval_fun:
             spl = merge_eval_fun.split("=")

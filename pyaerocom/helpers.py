@@ -341,8 +341,8 @@ def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
                 raise ValueError("Need iris.DimCoord...")
             elif not len(dim.points) == sh[i]:
                 raise DataDimensionError(
-                    "Length mismatch between {} dim ({}) and "
-                    "array dimension {} ({})".format(dim.var_name, len(dim.points), i, sh[i])
+                    f"Length mismatch between {dim.var_name} dim ({len(dim.points)}) "
+                    f"and array dimension {i} ({sh[i]})"
                 )
             cube.add_dim_coord(dim, i)
 
@@ -745,9 +745,8 @@ def _check_stats_merge(statlist, var_name, pref_attr, fill_missing_nan):
             raise DataCoverageError(f"All input stations must contain {var_name} data")
         elif pref_attr is not None and not pref_attr in stat:
             raise MetaDataError(
-                "Cannot sort station relevance by attribute {}. "
-                "At least one of the input stations does not "
-                "contain this attribute".format(pref_attr)
+                f"Cannot sort station relevance by attribute {pref_attr}. "
+                f"At least one of the input stations does not contain this attribute"
             )
         elif not isinstance(stat[var_name], pd.Series):
             stat._to_ts_helper(var_name)
@@ -925,9 +924,8 @@ def merge_station_data(
             merged.insert_nans_timeseries(var_name)
         except Exception as e:
             const.print_log.warning(
-                "Could not insert NaNs into timeseries of "
-                "variable {} after merging stations. "
-                "Reason: {}".format(var_name, repr(e))
+                f"Could not insert NaNs into timeseries of variable {var_name} "
+                f"after merging stations. Reason: {repr(e)}"
             )
 
     merged["stat_merge_pref_attr"] = pref_attr
@@ -1451,8 +1449,8 @@ def to_datestring_YYYYMMDD(value):
         return to_pandas_timestamp(value).strftime("%Y%m%d")
     except Exception as e:
         raise ValueError(
-            "Invalid input, need str, datetime, numpy.datetime64 "
-            "or pandas.Timestamp. Error: {}".format(repr(e))
+            f"Invalid input, need str, datetime, numpy.datetime64 or pandas.Timestamp. "
+            f"Error: {repr(e)}"
         )
 
 

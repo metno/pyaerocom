@@ -297,8 +297,8 @@ class ReadEarlinet(ReadUngriddedBase):
                 unit_ok = True
             except Exception as e:
                 const.print_log.warning(
-                    "Failed to convert unit of {} in file "
-                    "{} (Earlinet): Error: {}".format(var, filename, repr(e))
+                    f"Failed to convert unit of {var} in file {filename} (Earlinet): "
+                    f"Error: {repr(e)}"
                 )
 
             # import errors if applicable
@@ -322,8 +322,7 @@ class ReadEarlinet(ReadUngriddedBase):
 
                 if np.isnan(val):
                     self.logger.warning(
-                        "Invalid value of variable zdust "
-                        "in file {}. Skipping...!".format(filename)
+                        f"Invalid value of variable zdust in file {filename}. Skipping...!"
                     )
                     continue
 
@@ -479,8 +478,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 )
                 if not any([var in stat.vars_available for var in vars_to_retrieve]):
                     self.logger.info(
-                        "Station {} contains none of the desired "
-                        "variables. Skipping station...".format(stat.station_name)
+                        f"Station {stat.station_name} contains none of the desired variables. Skipping station..."
                     )
                     continue
                 # if last_station_id != station_id:

@@ -194,10 +194,9 @@ def _unit_conversion_fac_custom(var_name, from_unit):
             )
     except KeyError:
         raise UnitConversionError(
-            "Failed to convert unit {} (variable {}). "
-            "Reason: no custom conversion factor could "
-            "be inferred from table "
-            "pyaerocom.units_helpers.UCONV_MUL_FACS".format(from_unit, var_name)
+            f"Failed to convert unit {from_unit} (variable {var_name}). "
+            f"Reason: no custom conversion factor could be inferred from table "
+            f"pyaerocom.units_helpers.UCONV_MUL_FACS"
         )
     return (info.to, info.fac)
 

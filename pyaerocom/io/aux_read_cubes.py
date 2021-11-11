@@ -25,8 +25,8 @@ def _apply_operator_cubes(cube1, cube2, operator_name, allow_coord_merge=True):
         return fun(cube1, cube2)
     except ValueError as e:
         print_log.warning(
-            "Could not {} cubes straight out of the box. Trying "
-            "to correct for dimension definition errors".format(operator_name)
+            f"Could not {operator_name} cubes straight out of the box. Trying "
+            f"to correct for dimension definition errors"
         )
         if "differing coordinates (time)" in repr(e):
             iris.util.unify_time_units([cube1, cube2])

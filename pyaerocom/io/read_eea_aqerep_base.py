@@ -463,9 +463,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                         # data_dict[header[idx]] = rows[idx].split('/')[-1]
                         temp_dict[header[idx]] = rows[idx].split("/")[-1]
 
-                meta_key = "{}__{}".format(
-                    temp_dict["airqualitystation"], temp_dict["airpollutantcode"]
-                )
+                meta_key = f"{temp_dict['airqualitystation']}__{temp_dict['airpollutantcode']}"
                 if meta_key not in struct_data:
                     struct_data[meta_key] = temp_dict.copy()
                 else:
@@ -627,9 +625,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
                 continue
 
             # to find the metadata quickly, we use a string internally
-            _meta_key = "{}__{}".format(
-                station_data["station_id"], station_data["airpollutantcode"]
-            )
+            _meta_key = f"{station_data['station_id']}__{station_data['airpollutantcode']}"
 
             # Fill the metadata dict.
             # The location in the data set is time step dependant

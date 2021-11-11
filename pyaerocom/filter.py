@@ -134,8 +134,7 @@ class Filter:
             raise TypeError("Invalid input, need list...")
         if len(lst) > 3:
             raise ValueError(
-                "Maximum length 3 of individual filter entries "
-                "exceeded for input {}".format(lst)
+                f"Maximum length 3 of individual filter entries exceeded for input {lst}"
             )
         self.name = "-".join(lst)
 

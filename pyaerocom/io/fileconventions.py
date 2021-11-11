@@ -126,12 +126,10 @@ class FileConventionRead:
         year = info["year"]
         if not TsType.valid(info["ts_type"]):
             raise FileConventionError(
-                "Invalid ts_type {} in filename {}".format(info["ts_type"], basename(file))
+                f"Invalid ts_type {info['ts_type']} in filename {basename(file)}"
             )
         elif not (const.MIN_YEAR <= year <= const.MAX_YEAR):
-            raise FileConventionError(
-                "Invalid year %d in filename %s" % (info["year"], basename(file))
-            )
+            raise FileConventionError(f"Invalid year {info['year']} in filename {basename(file)}")
 
     def _info_from_aerocom3(self, file):
         """Extract info from filename Aerocom 3 convention
@@ -154,11 +152,10 @@ class FileConventionRead:
         try:
             info["year"] = int(spl[self.year_pos])
         except Exception:
-            msg = (
-                "Failed to extract year information from file {} "
-                "using file convention Aerocom 3".format(basename(file), self.name)
+            raise FileConventionError(
+                f"Failed to extract year information from file {basename(file)} "
+                f"using file convention Aerocom 3 {self.name}"
             )
-            raise FileConventionError(msg)
         try:
             # include vars for the surface
             if spl[self.vert_pos].lower() in self.AEROCOM3_VERT_INFO["2d"]:
@@ -173,38 +170,35 @@ class FileConventionRead:
                     info["var_name"] = spl[self.var_pos]
             else:
                 raise FileConventionError(
-                    "Invalid file name (Aerocom 3 "
-                    "naming convention).\n"
-                    "{}\nInvalid string identifier for "
-                    "vertical coordinate: {}".format(file, spl[self.vert_pos])
+                    f"Invalid file name (Aerocom 3 naming convention).\n{file}\n"
+                    f"Invalid string identifier for vertical coordinate: {spl[self.vert_pos]}"
                 )
         except Exception as e:
             raise FileConventionError(
-                "Failed to extract variable name from "
-                "file {} using file convention {}.\n"
-                "Error: {}".format(basename(file), self.name, repr(e))
+                f"Failed to extract variable name from file {basename(file)} "
+                f"using file convention {self.name}.\nError: {repr(e)}"
             )
         try:
             info["ts_type"] = spl[self.ts_pos]
         except Exception:
             raise FileConventionError(
-                "Failed to extract ts_type from "
-                "file {} using file convention {}".format(basename(file), self.name)
+                f"Failed to extract ts_type from file {basename(file)} "
+                f"using file convention {self.name}"
             )
         try:
             info["vert_code"] = spl[self.vert_pos]
         except Exception:
             raise FileConventionError(
-                "Failed to extract vert_code from "
-                "file {} using file convention {}".format(basename(file), self.name)
+                f"Failed to extract vert_code from file {basename(file)} "
+                f"using file convention {self.name}"
             )
 
         try:
             info["data_id"] = self.file_sep.join(spl[self.data_id_pos : self.var_pos])
         except Exception:
             raise FileConventionError(
-                "Failed to extract model name from "
-                "file {} using file convention {}".format(basename(file), self.name)
+                f"Failed to extract model name from file {basename(file)} "
+                f"using file convention {self.name}"
             )
         if "atstations" in file.lower():
             info["is_at_stations"] = True
@@ -232,40 +226,35 @@ class FileConventionRead:
             info["year"] = int(spl[self.year_pos])
         except Exception:
             raise FileConventionError(
-                "Failed to extract year information "
-                "from file {} using file "
-                "convention {}".format(basename(file), self.name)
+                f"Failed to extract year information from file {basename(file)} "
+                f"using file convention {self.name}"
             )
         try:
             info["var_name"] = spl[self.var_pos]
         except Exception:
             raise FileConventionError(
-                "Failed to extract variable information "
-                "from file {} using file "
-                "convention {}".format(basename(file), self.name)
+                f"Failed to extract variable information from file {basename(file)} "
+                f"using file convention {self.name}"
             )
         try:
             info["ts_type"] = spl[self.ts_pos]
         except Exception:
             raise FileConventionError(
-                "Failed to extract ts_type "
-                "from file {} using file "
-                "convention {}".format(basename(file), self.name)
+                f"Failed to extract ts_type from file {basename(file)} "
+                f"using file convention {self.name}"
             )
 
         try:
             info["data_id"] = ".".join(spl[self.data_id_pos : self.ts_pos])
         except Exception:
             raise FileConventionError(
-                "Failed to extract name "
-                "from file {} using file "
-                "convention {}".format(basename(file), self.name)
+                f"Failed to extract name from file {basename(file)} "
+                f"using file convention {self.name}"
             )
         if "atstations" in file.lower():
             raise Exception(
-                "Developers: please debug (file convention "
-                "Aerocom 2 should not have atstations "
-                "encoded in file name)"
+                "Developers: please debug "
+                "(file convention Aerocom 2 should not have atstations encoded in file name)"
             )
         return info
 
@@ -341,9 +330,7 @@ class FileConventionRead:
         if self.name == "aerocom2":
             if vert_which is not None:
                 raise FileConventionError(
-                    "Specification of vert_which ({}) is "
-                    "not supported for "
-                    "aerocom2 naming convention".format(vert_which)
+                    f"Specification of vert_which ({vert_which}) is not supported for "
                 )
 
             return ".".join([".*", data_id, ts_type, var, str(year), "nc"])

@@ -85,8 +85,8 @@ def _read_alias_ini(parser=None):
     for var_fam, alias_fam in parser["alias_families"].items():
         if "," in alias_fam:
             raise Exception(
-                "Found invalid definition of alias family {}: {}. "
-                "Only one family can be mapped to a variable name".format(var_fam, alias_fam)
+                f"Found invalid definition of alias family {var_fam}: {alias_fam}. "
+                f"Only one family can be mapped to a variable name"
             )
     return aliases
 

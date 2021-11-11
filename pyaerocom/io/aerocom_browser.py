@@ -61,10 +61,7 @@ class AerocomBrowser(BrowseDict):
             else:
                 match = name_or_pattern == obs_id
             if match:
-                logger.info(
-                    "Found match for search pattern in obs network "
-                    "directories {}".format(obs_id)
-                )
+                logger.info(f"Found match for search pattern in obs network directories {obs_id}")
                 path = os.path.normpath(obs_path)
                 if os.path.exists(path):
                     self[obs_id] = path
@@ -137,13 +134,13 @@ class AerocomBrowser(BrowseDict):
         if return_if_match:
             if len(_candidates) == 1:
                 logger.info(
-                    "Found exactly one match for search pattern "
-                    "{}: {}".format(name_or_pattern, _candidates[0])
+                    f"Found exactly one match for search pattern "
+                    f"{name_or_pattern}: {_candidates[0]}"
                 )
                 return self[_candidates[0]]
             raise DataSearchError(
-                "Found multiple matches for search pattern {}. "
-                "Please choose from {}".format(name_or_pattern, _candidates)
+                f"Found multiple matches for search pattern {name_or_pattern}. "
+                f"Please choose from {_candidates}"
             )
         return _candidates
 
@@ -230,7 +227,7 @@ if __name__ == "__main__":
 #     matches = browser.find_matches('*Cam5.3-Oslo*')
 #
 #     for match in matches:
-#         print('{}: {}'.format(match, browser[match]))
+#         print(f'{match}: {browser[match]}')
 #
 #     data_dir_earlinet = browser.find_data_dir('EARLIN*')
 #

@@ -207,7 +207,7 @@ def plot_scatter_aerocom(
     if fontsize_annot is None:
         fontsize_annot = fontsize_base
     ax.annotate(
-        "{} #: {} # st: {}".format(var_str, statistics["num_valid"], stations_ok),
+        f"{var_str} #: {statistics['num_valid']} # st: {stations_ok}",
         xy=xypos["var_info"],
         xycoords="axes fraction",
         fontsize=fontsize_annot + 4,
@@ -215,9 +215,8 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "Mean (x-data): {:.{}f}; Rng: [{:.{}f}, {:.{}f}]".format(
-            statistics["refdata_mean"], _ndig, np.nanmin(x_vals), _ndig, np.nanmax(x_vals), _ndig
-        ),
+        f"Mean (x-data): {statistics['refdata_mean']:.{_ndig}f}; "
+        f"Rng: [{np.nanmin(x_vals):.{_ndig}f}, {np.nanmax(x_vals):.{_ndig}f}]",
         xy=xypos["refdata_mean"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -225,9 +224,8 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "Mean (y-data): {:.{}f}; Rng: [{:.{}f}, {:.{}f}]".format(
-            statistics["data_mean"], _ndig, np.nanmin(y_vals), _ndig, np.nanmax(y_vals), _ndig
-        ),
+        f"Mean (y-data): {statistics['data_mean']:.{_ndig}f}; "
+        f"Rng: [{np.nanmin(y_vals):.{_ndig}f}, {np.nanmax(y_vals):.{_ndig}f}]",
         xy=xypos["data_mean"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -235,7 +233,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "NMB: {:.1f}%".format(statistics["nmb"] * 100),
+        f"NMB: {statistics['nmb']*100:.1f}%",
         xy=xypos["nmb"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -243,7 +241,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "MNMB: {:.1f}%".format(statistics["mnmb"] * 100),
+        f"MNMB: {statistics['mnmb']*100:.1f}%",
         xy=xypos["mnmb"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -251,7 +249,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "R (Pearson): {:.3f}".format(statistics["R"]),
+        f"R (Pearson): {statistics['R']:.3f}",
         xy=xypos["R"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -259,7 +257,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "RMS: {:.3f}".format(statistics["rms"]),
+        f"RMS: {statistics['rms']:.3f}",
         xy=xypos["rms"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -267,7 +265,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "R (Kendall): {:.3f}".format(statistics["R_kendall"]),
+        f"R (Kendall): {statistics['R_kendall']:.3f}",
         xy=xypos["R_kendall"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,
@@ -275,7 +273,7 @@ def plot_scatter_aerocom(
     )
 
     ax.annotate(
-        "FGE: {:.1f}".format(statistics["fge"]),
+        f"FGE: {statistics['fge']:.1f}",
         xy=xypos["fge"],
         xycoords="axes fraction",
         fontsize=fontsize_annot,

@@ -195,8 +195,8 @@ class TrendPlotter:  # pragma: no cover
         if period is None:
             if len(self.results[season]) > 1:
                 raise ValueError(
-                    "Found multiple trends for different periods: "
-                    "{}. Please specify period...".format(list(self.results[season].keys()))
+                    f"Found multiple trends for different periods: {list(self.results[season])}. "
+                    f"Please specify period..."
                 )
             period = list(self.results[season].keys())[0]
         if ax is None:

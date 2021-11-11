@@ -80,16 +80,16 @@ class ObsEntry(BrowseDict):
         if len(self.obs_aux_requires) > 0:
             if not self.obs_type == "ungridded":
                 raise NotImplementedError(
-                    "Cannot initialise auxiliary setup for {}. Aux obs reading "
-                    "is so far only possible for ungridded observations.".format(self.obs_id)
+                    f"Cannot initialise auxiliary setup for {self.obs_id}. "
+                    f"Aux obs reading is so far only possible for ungridded observations."
                 )
             if not self.obs_id in const.OBS_IDS_UNGRIDDED:
                 try:
                     const.add_ungridded_post_dataset(**self)
                 except Exception:
                     raise InitialisationError(
-                        "Cannot initialise auxiliary reading setup for {}. "
-                        "Reason:\n{}".format(self.obs_id, format_exc())
+                        f"Cannot initialise auxiliary reading setup for {self.obs_id}. "
+                        f"Reason:\n{format_exc()}"
                     )
 
     def get_all_vars(self) -> list:
@@ -136,9 +136,8 @@ class ObsEntry(BrowseDict):
 
         if not self.is_superobs and not isinstance(self.obs_id, (str, dict)):
             raise ValueError(
-                "Invalid value for obs_id: {}. Need str or dict "
-                "or specification of ids and variables via "
-                "obs_compute_post".format(self.obs_id)
+                f"Invalid value for obs_id: {self.obs_id}. Need str or dict "
+                f"or specification of ids and variables via obs_compute_post"
             )
         if isinstance(self.obs_vars, str):
             self.obs_vars = [self.obs_vars]
@@ -147,10 +146,10 @@ class ObsEntry(BrowseDict):
         ovt = self.obs_vert_type
         if ovt is None:
             raise ValueError(
-                "obs_vert_type is not defined. Please specify "
-                "using either of the available codes: {}. "
-                "It may be specified for all variables (as string) "
-                "or per variable using a dict".format(self.SUPPORTED_VERT_CODES)
+                f"obs_vert_type is not defined. Please specify "
+                f"using either of the available codes: {self.SUPPORTED_VERT_CODES}. "
+                f"It may be specified for all variables (as string) "
+                f"or per variable using a dict"
             )
         elif isinstance(ovt, str) and not ovt in self.SUPPORTED_VERT_CODES:
             self.obs_vert_type = self._check_ovt(ovt)
@@ -158,10 +157,8 @@ class ObsEntry(BrowseDict):
             for var_name, val in self.obs_vert_type.items():
                 if not val in self.SUPPORTED_VERT_CODES:
                     raise ValueError(
-                        "Invalid value for obs_vert_type: {} "
-                        "(variable {}). Supported codes are {}.".format(
-                            self.obs_vert_type, var_name, self.SUPPORTED_VERT_CODES
-                        )
+                        f"Invalid value for obs_vert_type: {self.obs_vert_type} "
+                        f"(variable {var_name}). Supported codes are {self.SUPPORTED_VERT_CODES}."
                     )
         ovl = self.instr_vert_loc
         if isinstance(ovl, str) and not ovl in self.SUPPORTED_VERT_LOCS:
@@ -194,6 +191,6 @@ class ObsEntry(BrowseDict):
             return _ovt
         valid = self.SUPPORTED_VERT_CODES + list(self.ALT_NAMES_VERT_CODES.keys())
         raise ValueError(
-            "Invalid value for obs_vert_type: {}. "
-            "Supported codes are {}.".format(self.obs_vert_type, valid)
+            f"Invalid value for obs_vert_type: {self.obs_vert_type}. "
+            f"Supported codes are {valid}."
         )

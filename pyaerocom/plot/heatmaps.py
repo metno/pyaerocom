@@ -266,8 +266,8 @@ def df_to_heatmap(
                     norm_ref = df.median(axis=1)
                 else:
                     raise ValueError(
-                        "Invalid input for normalise_rows_how ({}). "
-                        "Choose from mean, median or sum".format(normalise_rows_how)
+                        f"Invalid input for normalise_rows_how ({normalise_rows_how}). "
+                        f"Choose from mean, median or sum"
                     )
 
         if sub_norm_before_div:

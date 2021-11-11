@@ -268,9 +268,7 @@ class ReadAeronetSdaV2(ReadAeronetBase):
                     vars_available[var] = col_index[var]
                 else:
                     self.logger.warning(
-                        "Variable {} not available in file {}".format(
-                            var, os.path.basename(filename)
-                        )
+                        f"Variable {var} not available in file {os.path.basename(filename)}"
                     )
 
             for line in in_file:

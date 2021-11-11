@@ -53,8 +53,7 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
             t0 = time()
             shutil.copy2(loc_remote, loc_local)
             const.print_log.info(
-                "Copied EBAS SQL database to {}\n"
-                "Elapsed time: {:.3f} s".format(loc_local, time() - t0)
+                f"Copied EBAS SQL database to {loc_local}\nElapsed time: {time()-t0:.3f} s"
             )
 
             return loc_local
@@ -79,9 +78,8 @@ def _print_read_info(i, mod, tot_num, last_t, name, logger):
     """
     t = datetime.now()
     logger.info(
-        "Reading files {}-{} of {} ({}) | {} (delta = {} s')".format(
-            i + 1, i + 1 + mod, tot_num, name, t.strftime("%H:%M:%S"), (t - last_t).seconds
-        )
+        f"Reading files {i+1}-{i+1+mod} of {tot_num} "
+        f"({name}) | {t:%T} (delta = {(t-last_t).seconds} s')"
     )
     return t
 
@@ -118,16 +116,16 @@ def read_ebas_flags_file(ebas_flags_csv):
                 val_str = spl[-1][1:-1]
             except Exception:
                 raise OSError(
-                    "Failed to read flag information in row {} "
-                    "(Check if entries in ebas_flags.csv are quoted)".format(line)
+                    f"Failed to read flag information in row {line} "
+                    f"(Check if entries in ebas_flags.csv are quoted)"
                 )
             info_str = ",".join(spl[1:-1])
             try:
                 info_str = info_str[1:-1]
             except Exception:
                 raise OSError(
-                    "Failed to read flag information in row {} "
-                    "(Check if entries in ebas_flags.csv are quoted)".format(line)
+                    f"Failed to read flag information in row {line} "
+                    f"(Check if entries in ebas_flags.csv are quoted)"
                 )
             isvalid = True if val_str == "V" else False
             valid[num] = isvalid

@@ -1025,14 +1025,13 @@ class Colocator(ColocationSetup):
         info = self.model_read_aux[model_var]
         if not isinstance(info, dict):
             raise ValueError(
-                "Invalid value for model_read_aux of variable "
-                "{}. Need dictionary, got {}".format(model_var, info)
+                f"Invalid value for model_read_aux of variable {model_var}. "
+                f"Need dictionary, got {info}"
             )
         elif not all([x in info for x in ["vars_required", "fun"]]):
             raise ValueError(
-                "Invalid value for model_read_aux dict of variable "
-                "{}. Require keys vars_required and fun in dict, "
-                "got {}".format(model_var, info)
+                f"Invalid value for model_read_aux dict of variable {model_var}. "
+                f"Require keys vars_required and fun in dict, got {info}"
             )
         try:
             self.model_reader.add_aux_compute(var_name=model_var, **info)
@@ -1241,9 +1240,8 @@ class Colocator(ColocationSetup):
         remaining = {}
         if not isinstance(obs_filters, dict):
             raise AttributeError(
-                "Detected obs_filters attribute in "
-                "Colocator class, which is not a "
-                "dictionary: {}".format(obs_filters)
+                f"Detected obs_filters attribute in Colocator class, "
+                f"which is not a dictionary: {obs_filters}"
             )
         for key, val in obs_filters.items():
             # keep ts_type filter in remaining (added on 17.2.21, 0.10.0 -> 0.10.1)

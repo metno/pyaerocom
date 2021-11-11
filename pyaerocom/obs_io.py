@@ -86,15 +86,13 @@ class AuxInfoUngridded:
 
             elif not var in self.aux_merge_how:
                 raise ValueError(
-                    "Missing information about how {} should "
-                    "be merged (aux_merge_how)".format(var)
+                    f"Missing information about how {var} should be merged (aux_merge_how)"
                 )
             merge_how = self.aux_merge_how[var]
             if merge_how == "eval":
                 if not var in self.aux_funs:
                     raise ValueError(
-                        "Specification of computation function is "
-                        "missing for var {}".format(var)
+                        f"Specification of computation function is missing for var {var}"
                     )
                 fun = self.aux_funs[var]
 
@@ -114,10 +112,8 @@ class AuxInfoUngridded:
                     obsvarstr = str(obsvar)
                     if merge_how == "eval" and not obsvarstr in fun:
                         raise ValueError(
-                            "Mismatch between aux_requires and "
-                            "aux_funs for variable {}. No such "
-                            "obs;var string {} in computation "
-                            "method {}".format(var, obsvarstr, fun)
+                            f"Mismatch between aux_requires and aux_funs for variable {var}. "
+                            f"No such obs;var string {obsvarstr} in computation method {fun}"
                         )
 
                     fc += 1
@@ -125,9 +121,7 @@ class AuxInfoUngridded:
                         raise NotImplementedError("So far only 2 variables can be combined...")
 
     def __repr__(self):
-        return "{}; data_id: {}; vars_supported: {}".format(
-            str(type(self).__name__), self.data_id, self.vars_supported
-        )
+        return f"{type(self).__name__}; data_id: {self.data_id}; vars_supported: {self.vars_supported}"
 
     def __str__(self):
         name = str(type(self).__name__)

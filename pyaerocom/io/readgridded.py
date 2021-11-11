@@ -617,14 +617,14 @@ class ReadGridded:
             )  # subtract one second to end up at the end of previous year
         if const.MIN_YEAR > start.year:
             print_log.warning(
-                "First available year {} of data {} is smaller "
-                "than supported first year {}.".format(start, self.data_id, const.MIN_YEAR)
+                f"First available year {start} of data {self.data_id} is smaller "
+                f"than supported first year {const.MIN_YEAR}."
             )
             start = const.MIN_YEAR
         if const.MAX_YEAR < stop.year:
             raise ValueError(
-                "Last available year {} of data {} is larger "
-                "than supported last year {}.".format(start, self.data_id, const.MAX_YEAR)
+                f"Last available year {stop} of data {self.data_id} is larger "
+                f"than supported last year {const.MAX_YEAR}."
             )
             stop = const.MAX_YEAR
 
@@ -701,8 +701,8 @@ class ReadGridded:
                 pass
 
         raise FileNotFoundError(
-            "None of the available files in {} matches a "
-            "registered pyaerocom file convention".format(self.data_dir)
+            f"None of the available files in {self.data_dir} matches a "
+            f"registered pyaerocom file convention"
         )
 
     def _evaluate_fileinfo(self, files):
@@ -728,7 +728,7 @@ class ReadGridded:
                     _vars_temp.append(var_name)
 
                 if not TsType.valid(info["ts_type"]):  # in self.TS_TYPES:
-                    raise TemporalResolutionError("Invalid frequency {}".format(info["ts_type"]))
+                    raise TemporalResolutionError(f"Invalid frequency {info['ts_type']}")
 
                 (model, meteo, experiment, pert) = self._eval_data_id(info["data_id"])
                 result.append(
@@ -1004,9 +1004,9 @@ class ReadGridded:
             if vert_which in self.VERT_ALT:
                 vc = self.VERT_ALT[vert_which]
                 const.print_log.warning(
-                    "No files could be found for var {} and "
-                    "vert_which {} in {}. Trying to find "
-                    "alternative options".format(var_name, vert_which, self.data_id)
+                    f"No files could be found for var {var_name} and "
+                    f"vert_which {vert_which} in {self.data_id}. "
+                    f"Trying to find alternative options"
                 )
                 return self.filter_query(
                     var_name,
@@ -1374,8 +1374,7 @@ class ReadGridded:
         ).ts_type.unique()
         if len(common) == 0:
             raise DataCoverageError(
-                "Could not find any file matches for query "
-                "and variable {}".format(vars_to_read[0])
+                f"Could not find any file matches for query and variable {vars_to_read[0]}"
             )
         for var in vars_to_read[1:]:
             _tt = self.filter_files(
@@ -1391,8 +1390,7 @@ class ReadGridded:
             elif ts_type == common[0]:
                 return ts_type
             raise DataCoverageError(
-                "Could not find files with ts_type={} for "
-                "all input variables: {}".format(ts_type, vars_to_read)
+                f"Could not find files with ts_type={ts_type} for all input variables: {vars_to_read}"
             )
         if ts_type is not None:
             if ts_type in common:
@@ -1400,8 +1398,8 @@ class ReadGridded:
 
         if not flex_ts_type:
             raise DataCoverageError(
-                "Could not find files with ts_type={} for "
-                "all input variables: {}".format(ts_type, vars_to_read)
+                f"Could not find files with ts_type={ts_type} for "
+                f"all input variables: {vars_to_read}"
             )
 
         # NOTE: Changed by jgliss on 7.11.2019 for more flexibility
@@ -1426,8 +1424,7 @@ class ReadGridded:
             vars_required = [vars_required]
         if not isinstance(vars_required, list):
             raise ValueError(
-                "Invalid input for vars_required. Need str or list. "
-                "Got: {}".format(vars_required)
+                f"Invalid input for vars_required. Need str or list. Got: {vars_required}"
             )
         elif not callable(fun):
             raise ValueError("Invalid input for fun. Input is not a callable object")
@@ -1435,8 +1432,7 @@ class ReadGridded:
         self._aux_funs[var_name] = fun
         if not self._check_aux_compute_access(var_name):
             raise DataCoverageError(
-                "Failed to confirm access to auxiliary "
-                "variable {} from {}".format(var_name, vars_required)
+                f"Failed to confirm access to auxiliary variable {var_name} from {vars_required}"
             )
 
     @property
@@ -1502,8 +1498,7 @@ class ReadGridded:
         for alias in var.aliases:
             if alias in self.vars_filename:
                 const.print_log.info(
-                    "Did not find {} field but {}. "
-                    "Using the latter instead".format(var_name, alias)
+                    f"Did not find {var_name} field but {alias}. Using the latter instead"
                 )
                 return alias
 
@@ -1518,10 +1513,9 @@ class ReadGridded:
     def _eval_vert_which_and_ts_type(self, var_name, vert_which, ts_type):
         if all(x == "" for x in self.file_info.vert_code.values):
             const.print_log.info(
-                "Deactivating file search by vertical "
-                "code for {}, since filenames do not include "
-                "information about vertical code (probably "
-                "AeroCom 2 convention)".format(self.data_id)
+                f"Deactivating file search by vertical code for {self.data_id}, "
+                f"since filenames do not include information about vertical code "
+                f"(probably AeroCom 2 convention)"
             )
             vert_which = None
 
@@ -1530,9 +1524,8 @@ class ReadGridded:
                 vert_which = vert_which[var_name]
             except Exception:
                 const.print_log.info(
-                    "Setting vert_which to None, since input "
-                    "dict {} does not contain input variable "
-                    "{}".format(vert_which, var_name)
+                    f"Setting vert_which to None, since input dict {vert_which} "
+                    f"does not contain input variable {var_name}"
                 )
                 vert_which = None
 
@@ -1541,9 +1534,8 @@ class ReadGridded:
                 ts_type = ts_type[var_name]
             except Exception:
                 const.print_log.info(
-                    "Setting ts_type to None, since input "
-                    "dict {} does not contain specification "
-                    "variable to read {}".format(ts_type, var_name)
+                    f"Setting ts_type to None, since input dict {ts_type} "
+                    f"does not contain specification variable to read {var_name}"
                 )
                 ts_type = None
         return vert_which, ts_type
@@ -1714,8 +1706,8 @@ class ReadGridded:
             raise ValueError("Read constraint needs to be dict")
         elif not "operator" in constraint:
             raise ValueError(
-                "Constraint requires specification of operator. "
-                "Valid operators: {}".format(self.CONSTRAINT_OPERATORS)
+                f"Constraint requires specification of operator. "
+                f"Valid operators: {self.CONSTRAINT_OPERATORS}"
             )
         elif not constraint["operator"] in self.CONSTRAINT_OPERATORS:
             raise ValueError(
@@ -1886,8 +1878,7 @@ class ReadGridded:
         # case reading of that variable is ignored even if a file exists for
         # that
         raise VarNotAvailableError(
-            "Error: variable {} not available in "
-            "files and can also not be computed.".format(var_name)
+            f"Error: variable {var_name} not available in files and can also not be computed."
         )
 
     def read(
@@ -1972,17 +1963,17 @@ class ReadGridded:
             vars_to_retrieve = [vars_to_retrieve]
         elif not isinstance(vars_to_retrieve, list):
             raise OSError(
-                "Invalid input for vars_to_retrieve {}. Need string "
-                "or list of strings specifying var_names to load. "
-                "You may also leave it empty (None) in which case all "
-                "available variables are loaded".format(vars_to_retrieve)
+                f"Invalid input for vars_to_retrieve {vars_to_retrieve}. "
+                f"Need string or list of strings specifying var_names to load. "
+                f"You may also leave it empty (None) in which case all "
+                f"available variables are loaded"
             )
         if require_all_vars_avail:
             if not all([var in self.vars_provided for var in vars_to_retrieve]):
                 raise VarNotAvailableError(
-                    "One or more of the specified vars "
-                    "({}) is not available in {} database. "
-                    "Available vars: {}".format(vars_to_retrieve, self.data_id, self.vars_provided)
+                    f"One or more of the specified vars ({vars_to_retrieve}) "
+                    f"is not available in {self.data_id} database. "
+                    f"Available vars: {self.vars_provided}"
                 )
         var_names = list(np.intersect1d(self.vars_provided, vars_to_retrieve))
         if len(var_names) == 0:
@@ -2146,8 +2137,7 @@ class ReadGridded:
                 data = self._check_crop_time(data, start, stop)
             except Exception:
                 const.print_log.exception(
-                    "Failed to crop time dimension in {}. "
-                    "(start: {}, stop: {})".format(data, start, stop)
+                    f"Failed to crop time dimension in {data} (start: {start}, stop: {stop})"
                 )
         if rename_var is not None:
             data.var_name = rename_var
@@ -2189,8 +2179,8 @@ class ReadGridded:
                 )
 
             ts_type = self.ts_types[0]
-        if not TsType.valid(ts_type):  # in self.TS_TYPES:
-            raise ValueError("Invalid input for ts_type: {} allowed values: {}".format(ts_type))
+        if not TsType.valid(ts_type):
+            raise ValueError(f"Invalid input for ts_type: {ts_type}")
         return ts_type
 
     def __getitem__(self, var_name):
@@ -2221,22 +2211,13 @@ class ReadGridded:
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
         s = (
-            "\n{}\n{}\n"
-            "Data ID: {}\n"
-            "Data directory: {}\n"
-            "Available experiments: {}\n"
-            "Available years: {}\n"
-            "Available frequencies {}\n"
-            "Available variables: {}\n".format(
-                head,
-                len(head) * "-",
-                self.data_id,
-                self.data_dir,
-                self.experiments,
-                self.years_avail,
-                self.ts_types,
-                self.vars_provided,
-            )
+            f"\n{head}\n{len(head)*'-'}\n"
+            f"Data ID: {self.data_id}\n"
+            f"Data directory: {self.data_dir}\n"
+            f"Available experiments: {self.experiments}\n"
+            f"Available years: {self.years_avail}\n"
+            f"Available frequencies {self.ts_types}\n"
+            f"Available variables: {self.vars_provided}\n"
         )
         return s.rstrip()
 

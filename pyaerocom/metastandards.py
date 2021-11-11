@@ -350,8 +350,7 @@ class AerocomDataID:
         spl = val.split(self.DELIM)
         if not len(spl) == 2:
             const.logger.warning(
-                "Invalid data ID {}. Need format "
-                "<model-name>_<meteo-config>_<eperiment-name>".format(val)
+                f"Invalid data ID {val}. Need format <model-name>_<meteo-config>_<eperiment-name>"
             )
             values[0] = val
             return values
@@ -365,8 +364,7 @@ class AerocomDataID:
                 values[1] = meteo  # meteo_config
             else:
                 const.logger.warning(
-                    "Meteorology config substring in "
-                    "data_id {} needs to start with met. ".format(meteo)
+                    f"Meteorology config substring in data_id {meteo} needs to start with met."
                 )
                 values[0] = spl[0]
         else:

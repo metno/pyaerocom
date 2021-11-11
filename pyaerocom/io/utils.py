@@ -59,10 +59,9 @@ def browse_database(model_or_obs, verbose=False):
         return
     elif len(matches) > 20:
         print(
-            "Found more than 20 matches for input pattern {}:\n\n"
-            "Matches: {}\n\n"
-            "To receive more detailed information, please specify search ID "
-            "more accurately".format(model_or_obs, matches)
+            f"Found more than 20 matches for input pattern {model_or_obs}:\n\n"
+            f"Matches: {matches}\n\n"
+            f"To receive more detailed information, please specify search ID more accurately"
         )
         return
     for match in matches:

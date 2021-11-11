@@ -1324,9 +1324,7 @@ class ColocatedData:
             return
 
         raise OSError(
-            "Failed to import file {}. File type is not supported ".format(
-                os.path.basename(file_path)
-            )
+            f"Failed to import file {os.path.basename(file_path)}. File type is not supported "
         )
 
     def filter_altitude(self, alt_range, inplace=False):
@@ -1454,8 +1452,7 @@ class ColocatedData:
         what = "country" if not use_country_code else "country_code"
         if not what in arr.coords:
             raise DataDimensionError(
-                "Cannot filter country {}. No country "
-                "information available in DataArray".format(country)
+                f"Cannot filter country {country}. No country information available in DataArray"
             )
         mask = arr[what] == country
         if mask.sum() == 0:

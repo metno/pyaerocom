@@ -145,7 +145,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
 
             # skip next two lines
             self.logger.debug(f"Skipping line:\n{in_file.readline()}")
-            # self.logger.info('Skipping line:\n{}'.format(in_file.readline()))
+            # self.logger.info(f"Skipping line:\n{in_file.readline()}")
 
             col_index_str = in_file.readline()
             if col_index_str != self._last_col_index_str:
@@ -164,9 +164,7 @@ class ReadAeronetInvV3(ReadAeronetBase):
                     vars_available[var] = col_index[var]
                 else:
                     self.logger.warning(
-                        "Variable {} not available in file {}".format(
-                            var, os.path.basename(filename)
-                        )
+                        f"Variable {var} not available in file {os.path.basename(filename)}"
                     )
 
             for line in in_file:

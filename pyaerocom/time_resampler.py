@@ -101,15 +101,14 @@ class TimeResampler:
         if isnumeric(min_num_obs):
             if not isinstance(how, str):
                 raise ValueError(
-                    "Error initialising resampling constraints. "
-                    "min_num_obs is numeric ({}) and input how "
-                    "is {} (would need to be string, e.g. mean)".format(min_num_obs, how)
+                    f"Error initialising resampling constraints. "
+                    f"min_num_obs is numeric ({min_num_obs}) and input how is {how} "
+                    f"(would need to be string, e.g. mean)"
                 )
             return [(to_ts_type.val, int(min_num_obs), how)]
         if not isinstance(min_num_obs, dict):
             raise ValueError(
-                "Invalid input for min_num_obs, need dictionary "
-                "or integer, got {}".format(min_num_obs)
+                f"Invalid input for min_num_obs, need dictionary or integer, got {min_num_obs}"
             )
 
         base_freqs = TsType.VALID
@@ -213,10 +212,9 @@ class TimeResampler:
             )
         elif to_ts_type == from_ts_type:
             const.logger.info(
-                "Input time frequency {} equals current frequency "
-                "of data. Resampling will be applied anyways "
-                "which will introduce NaN values at missing "
-                "time stamps".format(to_ts_type.val)
+                f"Input time frequency {to_ts_type.val} equals current frequency of data. "
+                f"Resampling will be applied anyways which will introduce NaN values "
+                f"at missing time stamps"
             )
 
             freq = to_ts_type.to_pandas_freq()
@@ -227,9 +225,8 @@ class TimeResampler:
             freq = to_ts_type.to_pandas_freq()
             if not isinstance(how, str):
                 raise ValueError(
-                    "Temporal resampling without constraints can "
-                    "only use string type argument how (e.g. "
-                    "how=mean). Got {}".format(how)
+                    f"Temporal resampling without constraints can only use string type "
+                    f"argument how (e.g. how=mean). Got {how}"
                 )
 
             data_out = self.fun(self.input_data, freq=freq, how=how, **kwargs)

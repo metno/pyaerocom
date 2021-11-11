@@ -151,8 +151,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         if len(nums) == 1:
             if low <= int(nums[0]) <= high:
                 self.logger.debug(
-                    "Succesfully extracted wavelength {} nm "
-                    "from column name {}".format(nums[0], colname)
+                    f"Succesfully extracted wavelength {nums[0]} nm from column name {colname}"
                 )
                 return nums[0]
         raise ValueError(f"Failed to extract wavelength from colname {colname}")
@@ -231,9 +230,8 @@ class ReadAeronetBase(ReadUngriddedBase):
                         col_index[var] = idx
                     except Exception as e:
                         self.logger.info(
-                            "Failed to infer data column of "
-                            "variable {} within wavelength tolerance "
-                            "range.Error:\n{}".format(var, repr(e))
+                            f"Failed to infer data column of variable {var} "
+                            f"within wavelength tolerance range. Error:\n{repr(e)}"
                         )
         return col_index
 
@@ -253,10 +251,8 @@ class ReadAeronetBase(ReadUngriddedBase):
         check_mask = colname.replace(wvl_str, "")
         if not wvl == float(wvl_str):
             raise ValueError(
-                "Wavelength mismatch between "
-                "pyaerocom Variable {} and "
-                "wavelength inferred from "
-                "Aeronet column name {}".format(var, colname)
+                f"Wavelength mismatch between pyaerocom Variable {var} and "
+                f"wavelength inferred from Aeronet column name {colname}"
             )
 
         # it is possible to extract wavelength from column
@@ -285,9 +281,8 @@ class ReadAeronetBase(ReadUngriddedBase):
                                 self._alt_var_cols[var].append(col)
                             return i
         raise VariableNotFoundError(
-            "Did not find an alternative data column "
-            "for variable {} within allowed wavelength "
-            "tolerance range of +/- {} nm.".format(var, tol)
+            f"Did not find an alternative data column for variable {var} "
+            f"within allowed wavelength tolerance range of +/- {tol} nm."
         )
 
     def print_all_columns(self):

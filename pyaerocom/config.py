@@ -463,9 +463,8 @@ class Config:
         """Cache directory"""
         if not check_write_access(val):
             raise ValueError(
-                "Cannot set cache directory. Input directory {} "
-                "does not exist or write "
-                "permission is not granted".format(val)
+                f"Cannot set cache directory. "
+                f"Input directory {val} does not exist or write permission is not granted"
             )
         spl = os.path.split(val)
         if spl[-1] == self.user:
@@ -967,16 +966,16 @@ class Config:
 
     def __str__(self):
         head = f"Pyaerocom {type(self).__name__}"
-        s = "\n{}\n{}\n".format(head, len(head) * "-")
+        s = f"\n{head}\n{len(head) * '-'}\n"
         for k, v in self.__dict__.items():
             if k.startswith("_"):
                 pass
             if k == "VARS":
                 s += f"\n{k}\n{list_to_shortstr(v.all_vars)}"
             elif isinstance(v, dict):
-                s += "\n%s (dict)" % k
+                s += f"\n{k} (dict)"
             elif isinstance(v, list):
-                s += "\n%s (list)" % k
+                s += f"\n{k} (list)"
                 s += list_to_shortstr(v)
             else:
                 s += f"\n{k}: {v}"

@@ -63,9 +63,7 @@ class EbasColDef(dict):
     def get_wavelength_nm(self):
         """Try to access wavelength information in nm (as float)"""
         if not "wavelength" in self:
-            raise KeyError(
-                "Column variable {} does not contain wavelength information".format(self.name)
-            )
+            raise KeyError(f"Column variable {self.name} does not contain wavelength information")
         elif not "nm" in self.wavelength:
             raise NotImplementedError("Wavelength definition is not in nm")
         return float(self.wavelength.split("nm")[0].strip())
@@ -230,12 +228,12 @@ class NasaAmesHeader:
 
     def __str__(self):
         head = f"{type(self).__name__}"
-        s = "{}\n{}\n".format(head, len(head) * "-")
+        s = f"{head}\n{len(head)*'-'}\n"
         s += dict_to_str(self._head_fix)
-        s += "\n\n{}".format(str_underline("Column variable definitions", indent=3))
+        s += f"\n\n{str_underline('Column variable definitions', indent=3)}"
         for item in self._var_defs:
             s += f"\n   {repr(item)}"
-        s += "\n\n{}".format(str_underline("EBAS meta data", indent=3))
+        s += f"\n\n{str_underline('EBAS meta data', indent=3)}"
         s += dict_to_str(self.meta)
 
         return s
@@ -649,9 +647,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     else:
                         self[attr] = val
                 except Exception as e:
-                    msg = "Failed to read header row {}.\n{}\nError msg: {}".format(
-                        lc, line, repr(e)
-                    )
+                    msg = f"Failed to read header row {lc}.\n{line}\nError msg: {repr(e)}"
                     if lc in self._HEAD_ROWS_MANDATORY:
                         raise NasaAmesReadError(f"Fatal: {msg}")
                     else:
@@ -689,8 +685,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         self.meta[key] = val.strip()
                     except Exception as e:
                         const.logger.warning(
-                            "Failed to read line no. {}.\n{}\n"
-                            "Error msg: {}\n".format(lc, line, repr(e))
+                            f"Failed to read line no. {lc}.\n{line}\nError msg: {repr(e)}\n"
                         )
                 else:
                     const.logger.debug(f"Ignoring line no. {lc}: {line}")
@@ -744,9 +739,8 @@ class EbasNasaAmesFile(NasaAmesHeader):
                         data[idf.lower().replace(" ", "_")] = val
                     else:
                         const.logger.warning(
-                            "Could not interpret part of column "
-                            "definition in EBAS NASA Ames file: "
-                            "{}".format(item)
+                            f"Could not interpret part of column "
+                            f"definition in EBAS NASA Ames file: {item}"
                         )
                 else:  # unit
                     const.logger.warning(f"Failed to interpret {item}")
@@ -770,6 +764,6 @@ class EbasNasaAmesFile(NasaAmesHeader):
 
     def __str__(self):
         s = super().__str__()
-        s += "\n\n{}".format(str_underline("Data", indent=3))
+        s += f"\n\n{str_underline('Data', indent=3)}"
         s += f"\n{self._data_short_str()}"
         return s

@@ -52,12 +52,10 @@ class ReadUngriddedBase(abc.ABC):
 
     def __str__(self):
         return (
-            "Dataset name: {}\n"
-            "Data directory: {}\n"
-            "Supported variables: {}\n"
-            "Last revision: {}".format(
-                self.data_id, self.data_dir, self.PROVIDES_VARIABLES, self.data_revision
-            )
+            f"Dataset name: {self.data_id}\n"
+            f"Data directory: {self.data_dir}\n"
+            f"Supported variables: {self.PROVIDES_VARIABLES}\n"
+            f"Last revision: {self.data_revision}"
         )
 
     def __repr__(self):
@@ -316,10 +314,8 @@ class ReadUngriddedBase(abc.ABC):
         for var in self.AUX_REQUIRES.keys():
             if not var in self.AUX_FUNS:
                 raise AttributeError(
-                    "Fatal: no computation method defined for "
-                    "auxiliary variable {}. Please specify "
-                    "method in class header dictionary "
-                    "AUX_FUNS".format(var)
+                    f"Fatal: no computation method defined for auxiliary variable {var}. "
+                    f"Please specify method in class header dictionary AUX_FUNS"
                 )
             if not var in self.PROVIDES_VARIABLES:
                 self.PROVIDES_VARIABLES.append(var)
@@ -602,9 +598,9 @@ class ReadUngriddedBase(abc.ABC):
         if not len(files) > 0:
             all_str = list_to_shortstr(os.listdir(self.data_dir))
             raise DataSourceError(
-                "No files could be detected matching file "
-                "mask {} in dataset {}, files in folder {}:\n"
-                "Files in folder:{}".format(pattern, self.data_id, self.data_dir, all_str)
+                f"No files could be detected matching file "
+                f"mask {pattern} in dataset {self.data_id}, files in folder {self.data_dir}:\n"
+                f"Files in folder: {all_str}"
             )
         self.files = files
         return files

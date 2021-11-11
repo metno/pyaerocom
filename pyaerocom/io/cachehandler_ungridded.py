@@ -243,16 +243,14 @@ class CacheHandlerUngridded:
                 ok = False
                 delete_existing = True
                 const.logger.exception(
-                    "File error in cached data file {}. File will "
-                    "be removed and data reloaded"
-                    "Error: {}".format(fp, repr(e))
+                    f"File error in cached data file {fp}. "
+                    f"File will be removed and data reloaded. Error: {repr(e)}"
                 )
         if not ok:
             # TODO: Should we delete the cache file if it is outdated ???
             const.logger.info(
-                "Aborting reading cache file {}. Aerocom database "
-                "or pyaerocom version has changed compared to "
-                "cached version".format(fp)
+                f"Aborting reading cache file {fp}. Aerocom database "
+                f"or pyaerocom version has changed compared to cached version"
             )
             in_handle.close()
             if delete_existing:  # something was wrong
@@ -264,8 +262,8 @@ class CacheHandlerUngridded:
         data = pickle.load(in_handle)
         if not isinstance(data, UngriddedData):
             raise TypeError(
-                "Unexpected data type stored in cache file, need "
-                "instance of UngriddedData, got {}".format(type(data))
+                f"Unexpected data type stored in cache file, need instance of UngriddedData, "
+                f"got {type(data)}"
             )
 
         self.loaded_data[var_or_file_name] = data
@@ -314,24 +312,22 @@ class CacheHandlerUngridded:
             var_name = var_or_file_name
             if len(data.contains_datasets) > 1:
                 raise CacheWriteError(
-                    "Input UngriddedData object contains "
-                    "datasets: {}. Can only write single "
-                    "dataset objects".format(data.contains_datasets)
+                    f"Input UngriddedData object contains datasets: {data.contains_datasets}. "
+                    f"Can only write single dataset objects"
                 )
             if var_name is None:
                 if len(data.contains_vars) > 1:
                     raise CacheWriteError(
-                        "Input UngriddedData object for {} contains "
-                        "more than one variable: {}. Please "
-                        "specify which variable should be "
-                        "cached".format(self.reader.data_id, data.contains_vars)
+                        f"Input UngriddedData object for {self.reader.data_id} "
+                        f"contains more than one variable: {data.contains_vars}. "
+                        f"Please specify which variable should be cached"
                     )
                 var_name = data.contains_vars[0]
 
             elif not var_name in data.contains_vars:
                 raise CacheWriteError(
-                    "Cannot write cache file: variable {} does "
-                    "not exist in input UngriddedData object".format(var_name)
+                    f"Cannot write cache file: variable {var_name} "
+                    f"does not exist in input UngriddedData object"
                 )
 
             if len(data.contains_vars) > 1:

@@ -422,8 +422,7 @@ class ReadGhost(ReadUngriddedBase):
                 meta_glob[meta_key] = ds[meta_key].values
             except KeyError:
                 const.print_log.warning(
-                    "No such metadata key in GHOST data file: "
-                    "{}".format(os.path.basename(filename))
+                    f"No such metadata key in GHOST data file: {os.path.basename(filename)}"
                 )
 
         for meta_key, to_unit in self.CONVERT_UNITS_META.items():
@@ -614,8 +613,7 @@ class ReadGhost(ReadUngriddedBase):
             stats, added = self.compute_additional_vars(stats, vars_to_compute)
             if len(stats) == 0:
                 const.logger.info(
-                    "File {} does not contain any of the input "
-                    "variables {}".format(_file, vars_to_retrieve)
+                    f"File {_file} does not contain any of the input variables {vars_to_retrieve}"
                 )
             vars_avail = [var_read] + added
             vars_to_add = list(np.intersect1d(vars_to_retrieve, vars_avail))

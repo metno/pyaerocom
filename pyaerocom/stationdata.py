@@ -128,8 +128,8 @@ class StationData(StationMetaData):
             return False
         if not var_name in self.var_info:
             const.print_log.warning(
-                "Variable {} exists in data but has no "
-                "metadata assigned in :attr:`var_info`".format(var_name)
+                f"Variable {var_name} exists in data but has no "
+                f"metadata assigned in :attr:`var_info`"
             )
         return True
 
@@ -258,8 +258,8 @@ class StationData(StationMetaData):
         self[var_name] = data
         self.var_info[var_name]["units"] = to_unit
         const.logger.info(
-            "Successfully converted unit of variable {} in {} "
-            "from {} to {}".format(var_name, self.station_name, unit, to_unit)
+            f"Successfully converted unit of variable {var_name} in {self.station_name} "
+            f"from {unit} to {to_unit}"
         )
 
     def dist_other(self, other):
@@ -371,9 +371,8 @@ class StationData(StationMetaData):
                         val = np.mean(val)
                     else:
                         raise AttributeError(
-                            "Invalid value encountered for coord "
-                            "{}, need float, int, list or ndarray, "
-                            "got {}".format(key, type(val))
+                            f"Invalid value encountered for coord {key}, "
+                            f"need float, int, list or ndarray, got {type(val)}"
                         )
                 output[key] = val
         return output
@@ -456,8 +455,8 @@ class StationData(StationMetaData):
         elif isinstance(val, np.ndarray):
             if val.ndim != 1:
                 raise MetaDataError(
-                    "Invalid metadata entry {} for key {}."
-                    "Only 1d numpy arrays are supported...".format(val, key)
+                    f"Invalid metadata entry {val} for key {key}. "
+                    f"Only 1d numpy arrays are supported..."
                 )
             self[key] = list(val)
         elif not isinstance(val, (dict, list, str)) and not isnumeric(val):
@@ -465,9 +464,9 @@ class StationData(StationMetaData):
                 self[key] = to_datetime64(val)
             except Exception:
                 raise MetaDataError(
-                    "Invalid metadata entry {} for key {}."
-                    "Only dicts, lists, strings, numerical "
-                    "values or datetime objects are supported".format(val, key)
+                    f"Invalid metadata entry {val} for key {key}. "
+                    f"Only dicts, lists, strings, numerical "
+                    f"values or datetime objects are supported."
                 )
 
     def _merge_meta_item(self, key, val):
@@ -532,10 +531,10 @@ class StationData(StationMetaData):
                 assert current_val == val, (current_val, val)
         except Exception as e:
             raise MetaDataError(
-                "Failed to merge metadata entries for key {}.\n"
-                "Value in current StationData: {}\n"
-                "Value to be merged: {}\n"
-                "Error: {}".format(key, current_val, val, repr(e))
+                f"Failed to merge metadata entries for key {key}.\n"
+                f"Value in current StationData: {current_val}\n"
+                f"Value to be merged: {val}\n"
+                f"Error: {repr(e)}"
             )
 
     def _append_meta_item(self, key, val):
@@ -818,18 +817,17 @@ class StationData(StationMetaData):
             )
         elif not var_name in other:
             raise VarNotAvailableError(
-                "Input StationData object does not "
-                "contain data for variable {}".format(var_name)
+                "Input StationData object does not contain data for variable {var_name}"
             )
         elif not var_name in self.var_info:
             raise MetaDataError(
-                "For merging of {} data, variable specific meta "
-                "data needs to be available in var_info dict ".format(var_name)
+                f"For merging of {var_name} data, variable specific meta "
+                f"data needs to be available in var_info dict"
             )
         elif not var_name in other.var_info:
             raise MetaDataError(
-                "For merging of {} data, variable specific meta "
-                "data needs to be available in var_info dict ".format(var_name)
+                f"For merging of {var_name} data, variable specific meta "
+                f"data needs to be available in var_info dict"
             )
 
         if self.get_unit(var_name) != other.get_unit(var_name):
@@ -923,8 +921,8 @@ class StationData(StationMetaData):
 
         if try_infer:
             const.print_log.warning(
-                "Trying to infer ts_type in StationData {} "
-                "for variable {}".format(self.station_name, var_name)
+                f"Trying to infer ts_type in StationData {self.station_name} "
+                f"for variable {var_name}"
             )
             from pyaerocom.helpers import infer_time_resolution
 
@@ -1030,9 +1028,8 @@ class StationData(StationMetaData):
         monthly = TsType("monthly")
         if ts_type < monthly:
             raise TemporalResolutionError(
-                "Cannot compute climatology, {} data "
-                "needs to be in monthly resolution "
-                "or higher (is: {})".format(var_name, ts_type)
+                f"Cannot compute climatology, {var_name} data "
+                f"needs to be in monthly resolution or higher (is: {ts_type})"
             )
         if ts_type < TsType(
             clim_freq
@@ -1128,9 +1125,9 @@ class StationData(StationMetaData):
         except (MetaDataError, TemporalResolutionError):
             from_ts_type = None
             const.print_log.warning(
-                "Failed to access current temporal "
-                "resolution of {} data in StationData {}. "
-                "No resampling constraints will be applied".format(var_name, outdata.station_name)
+                f"Failed to access current temporal resolution of {var_name} data "
+                f"in StationData {outdata.station_name}. "
+                f"No resampling constraints will be applied"
             )
 
         data = outdata[var_name]
@@ -1259,9 +1256,9 @@ class StationData(StationMetaData):
         self.check_dtime()
         if not len(data) == len(self.dtime):
             raise ValueError(
-                "Mismatch between length of data array for "
-                "variable {} (length: {}) and time array  "
-                "(length: {}).".format(var_name, len(data), len(self.dtime))
+                f"Mismatch between length of data array "
+                f"for variable {var_name} (length: {len(data)}) "
+                f"and time array  (length: {len(self.dtime)})."
             )
         self[var_name] = s = pd.Series(data, index=self.dtime)
         return s
@@ -1325,8 +1322,7 @@ class StationData(StationMetaData):
             return data[mask]
 
         raise DataExtractionError(
-            "Cannot extract altitudes: type of "
-            "{} ({}) is not supported".format(var_name, type(data))
+            f"Cannot extract altitudes: type of {var_name} ({type(data)}) is not supported"
         )
 
     def to_timeseries(self, var_name, **kwargs):
@@ -1471,7 +1467,7 @@ class StationData(StationMetaData):
     def __str__(self):
         """String representation"""
         head = f"Pyaerocom {type(self).__name__}"
-        s = "\n{}\n{}".format(head, len(head) * "-")
+        s = f"\n{head}\n{len(head) * '-'}"
         arrays = ""
         series = ""
 
