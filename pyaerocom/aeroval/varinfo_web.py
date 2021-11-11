@@ -47,9 +47,7 @@ class VarinfoWeb:
     ):
         if cmap_bins is not None:
             if vmin is not None or vmax is not None:
-                raise ValueError(
-                    "please provide either vmin and vmax OR " "cmap_bins, not both..."
-                )
+                raise ValueError("please provide either vmin and vmax OR cmap_bins, not both...")
             if not is_strictly_monotonic(cmap_bins):
                 raise ValueError("cmap_bins need to be strictly monotonic")
 

@@ -25,9 +25,7 @@ class ExperimentProcessor(ProcessingEngine, HasColocator):
 
     def _run_single_entry(self, model_name, obs_name, var_list):
         if model_name == obs_name:
-            msg = "Cannot run same dataset against each other" "({} vs. {})".format(
-                model_name, model_name
-            )
+            msg = f"Cannot run same dataset against each other ({model_name} vs. {obs_name})"
             self._log.info(msg)
             const.print_log.info(msg)
             return

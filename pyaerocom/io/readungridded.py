@@ -134,7 +134,7 @@ class ReadUngridded:
         if len(dsr) < 2 and isinstance(val, str):
             val = {dsr[0]: val}
         elif not isinstance(val, dict):
-            raise ValueError("Invalid input for data_dirs ({val}); needs to be a " "dictionary.")
+            raise ValueError("Invalid input for data_dirs ({val}); needs to be a dictionary.")
         for data_dir in val.values():
             assert os.path.exists(data_dir), f"{data_dir} does not exist"
         self._data_dirs = val
@@ -238,7 +238,7 @@ class ReadUngridded:
     def get_reader(self, data_id):
         const.print_log.warning(
             DeprecationWarning(
-                "this method was renamed to get_lowlevel_reader, please use the " "new name"
+                "this method was renamed to get_lowlevel_reader, please use the new name"
             )
         )
         return self.get_lowlevel_reader(data_id)
@@ -303,7 +303,7 @@ class ReadUngridded:
         for _cls in self.SUPPORTED_READERS:
             if data_id in _cls.SUPPORTED_DATASETS:
                 return _cls
-        raise NetworkNotImplemented(f"Could not find reading class for dataset " f"{data_id}")
+        raise NetworkNotImplemented(f"Could not find reading class for dataset {data_id}")
 
     def _init_lowlevel_reader(self, reader, data_id):
         """
@@ -378,7 +378,7 @@ class ReadUngridded:
             _caching = const.CACHING
             const.CACHING = False
 
-            print_log.info("Received additional reading constraints, " "ignoring caching")
+            print_log.info("Received additional reading constraints, ignoring caching")
 
         reader = self.get_lowlevel_reader(data_id)
 
@@ -456,7 +456,7 @@ class ReadUngridded:
     def _eval_filter_post(self, filter_post, data_id, vars_available):
         filters = {}
         if not isinstance(filter_post, dict):
-            raise ValueError(f"input filter_post must be dict, got " f"{type(filter_post)}")
+            raise ValueError(f"input filter_post must be dict, got {type(filter_post)}")
         elif len(filter_post) == 0:
             return filters
 

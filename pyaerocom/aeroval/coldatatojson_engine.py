@@ -109,11 +109,11 @@ class ColdataToJsonEngine(ProcessingEngine):
 
         elif coldata.has_latlon_dims and regions_how == "country":
             raise NotImplementedError(
-                "Cannot yet apply country filtering for " "4D colocated data instances"
+                "Cannot yet apply country filtering for 4D colocated data instances"
             )
         elif not main_freq in freqs:
             raise AeroValConfigError(
-                f"Scatter plot frequency {main_freq} is not in " f"experiment frequencies: {freqs}"
+                f"Scatter plot frequency {main_freq} is not in experiment frequencies: {freqs}"
             )
         if self.cfg.statistics_opts.stats_tseries_base_freq is not None:
             if not self.cfg.statistics_opts.stats_tseries_base_freq in freqs:
@@ -135,7 +135,7 @@ class ColdataToJsonEngine(ProcessingEngine):
         var_name_web = mcfg.get_varname_web(model_var, obs_var)
 
         const.print_log.info(
-            f"Computing json files for {model_name} ({model_var}) vs. " f"{obs_name} ({obs_var})"
+            f"Computing json files for {model_name} ({model_var}) vs. {obs_name} ({obs_var})"
         )
 
         meta_glob = _init_meta_glob(

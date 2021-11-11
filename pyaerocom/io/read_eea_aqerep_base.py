@@ -574,7 +574,7 @@ class ReadEEAAQEREPBase(ReadUngriddedBase):
             vars_to_retrieve = [vars_to_retrieve]
 
         if len(vars_to_retrieve) > 1:
-            raise NotImplementedError("So far, only one variable can be read " "at a time...")
+            raise NotImplementedError("So far, only one variable can be read at a time...")
         var_name = vars_to_retrieve[0]
         const.print_log.info("Reading EEA data")
         if files is None:

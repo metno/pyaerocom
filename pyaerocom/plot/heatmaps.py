@@ -303,7 +303,7 @@ def df_to_heatmap(
     if isinstance(annot, np.ndarray):
         if not annot.shape == df.values.shape:
             raise ValueError(
-                "Invalid input for annot: needs to have same " "shape as input dataframe"
+                "Invalid input for annot: needs to have same shape as input dataframe"
             )
         elif np.any([isinstance(x, str) for x in annot.flatten()]):
             fmt = ""

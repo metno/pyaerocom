@@ -64,7 +64,7 @@ class EbasColDef(dict):
         """Try to access wavelength information in nm (as float)"""
         if not "wavelength" in self:
             raise KeyError(
-                "Column variable {} does not contain wavelength " "information".format(self.name)
+                "Column variable {} does not contain wavelength information".format(self.name)
             )
         elif not "nm" in self.wavelength:
             raise NotImplementedError("Wavelength definition is not in nm")
@@ -432,7 +432,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
         """Base date of data as numpy.datetime64[s]"""
         if not "timezone" in self.meta:
             raise AttributeError(
-                "Fatal: could not infer base date. Timezone " "is not available in file header"
+                "Fatal: could not infer base date. Timezone is not available in file header"
             )
         if not self.timezone.lower() == "utc":
             raise TimeZoneError("Timezones other than UTC are not yet supported")
@@ -636,7 +636,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     # data.append([float(x.strip()) for x in line.strip().split()])
                 except Exception as e:
                     const.print_log.warning(
-                        f"EbasNasaAmesFile: Failed to read data row {dc}. " f"Reason: {e}"
+                        f"EbasNasaAmesFile: Failed to read data row {dc}. Reason: {e}"
                     )
                 dc += 1
             elif lc < self._NUM_FIXLINES:  # in header section (before column definitions)
@@ -649,7 +649,7 @@ class EbasNasaAmesFile(NasaAmesHeader):
                     else:
                         self[attr] = val
                 except Exception as e:
-                    msg = "Failed to read header row {}.\n{}\n" "Error msg: {}".format(
+                    msg = "Failed to read header row {}.\n{}\nError msg: {}".format(
                         lc, line, repr(e)
                     )
                     if lc in self._HEAD_ROWS_MANDATORY:

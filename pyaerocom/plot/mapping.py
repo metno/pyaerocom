@@ -47,7 +47,7 @@ def get_cmap_maps_aerocom(color_theme=None, vmin=None, vmax=None):
         cmap = plt.get_cmap(color_theme.cmap_map_div)
         if color_theme.cmap_map_div_shifted:
             if not const.GEONUM_AVAILABLE:  # pragma: no cover
-                raise ModuleNotFoundError("need geonum to compute shifted " "colormap")
+                raise ModuleNotFoundError("need geonum to compute shifted colormap")
             from geonum.helpers import shifted_color_map
 
             cmap = shifted_color_map(vmin, vmax, cmap)
@@ -164,7 +164,7 @@ def init_map(
     elif isinstance(projection, str):
         projection = projection_from_str(projection)
     elif not isinstance(projection, ccrs.Projection):
-        raise ValueError("Input for projection needs to be instance of " "cartopy.crs.Projection")
+        raise ValueError("Input for projection needs to be instance of cartopy.crs.Projection")
 
     if not isinstance(ax, GeoAxes):
         if fig is None:
@@ -296,7 +296,7 @@ def plot_griddeddata_on_map(
         raise ValueError("need GriddedData")
 
     if not data.has_latlon_dims:
-        raise DataDimensionError("Input data needs to have latitude and " "longitude dimension")
+        raise DataDimensionError("Input data needs to have latitude and longitude dimension")
     if not data.ndim == 2:
         if not data.ndim == 3 or not "time" in data.dimcoord_names:
             raise DataDimensionError(
@@ -593,7 +593,7 @@ def plot_nmb_map_colocateddata(
     except KeyError:
         mew = 1
     if not coldata.ndim in (3, 4):
-        raise DataDimensionError("only 3D or 4D colocated data objects are " "supported")
+        raise DataDimensionError("only 3D or 4D colocated data objects are supported")
     assert "time" in coldata.dims
 
     mean_bias = coldata.calc_nmb_array()

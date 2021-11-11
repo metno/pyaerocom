@@ -82,9 +82,7 @@ class AuxInfoUngridded:
 
         for var in self.vars_supported:
             if not var in self.aux_requires:
-                raise ValueError(
-                    "Variable {} is not defined in attr " "aux_requires...".format(var)
-                )
+                raise ValueError(f"Variable {var} is not defined in attr aux_requires...")
 
             elif not var in self.aux_merge_how:
                 raise ValueError(
@@ -124,7 +122,7 @@ class AuxInfoUngridded:
 
                     fc += 1
                     if fc > self.MAX_VARS_PER_METHOD:
-                        raise NotImplementedError("So far only 2 variables " "can be combined...")
+                        raise NotImplementedError("So far only 2 variables can be combined...")
 
     def __repr__(self):
         return "{}; data_id: {}; vars_supported: {}".format(

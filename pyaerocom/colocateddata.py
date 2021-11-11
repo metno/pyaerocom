@@ -94,7 +94,7 @@ class ColocatedData:
                     raise DataDimensionError("invalid input, need 3D or 4D numpy array")
                 elif not data.shape[0] == 2:
                     raise DataDimensionError(
-                        "first dimension (data_source) must be of length 2" "(obs, model)"
+                        "first dimension (data_source) must be of length 2(obs, model)"
                     )
                 data = xarray.DataArray(data, **kwargs)
                 self.data = data
@@ -124,9 +124,7 @@ class ColocatedData:
     @data.setter
     def data(self, val):
         if not isinstance(val, xarray.DataArray):
-            raise ValueError(
-                "Invalid input for data attribute, need instance " "of xarray.DataArray"
-            )
+            raise ValueError("Invalid input for data attribute, need instance of xarray.DataArray")
         self._data = val
 
     @property
@@ -175,7 +173,7 @@ class ColocatedData:
     def longitude(self):
         """Array of longitude coordinates"""
         if not "longitude" in self.data.coords:
-            raise AttributeError("ColocatedData does not include longitude " "coordinate")
+            raise AttributeError("ColocatedData does not include longitude coordinate")
         return self.data.longitude
 
     @property
@@ -188,7 +186,7 @@ class ColocatedData:
     def latitude(self):
         """Array of latitude coordinates"""
         if not "latitude" in self.data.coords:
-            raise AttributeError("ColocatedData does not include latitude " "coordinate")
+            raise AttributeError("ColocatedData does not include latitude coordinate")
         return self.data.latitude
 
     @property
@@ -201,7 +199,7 @@ class ColocatedData:
     def time(self):
         """Array containing time stamps"""
         if not "time" in self.data.dims:
-            raise AttributeError("ColocatedData does not include time" " coordinate")
+            raise AttributeError("ColocatedData does not include time coordinate")
         return self.data.time
 
     @property
@@ -219,7 +217,7 @@ class ColocatedData:
         """String specifying temporal resolution of data"""
         if not "ts_type" in self.metadata:
             raise ValueError(
-                "Colocated data object does not contain " "information about temporal resolution"
+                "Colocated data object does not contain information about temporal resolution"
             )
         return self.metadata["ts_type"]
 
@@ -432,7 +430,7 @@ class ColocatedData:
         """
         if not self.has_latlon_dims:
             raise DataDimensionError(
-                "Can only compute area weights for data " "with latitude and longitude dimension"
+                "Can only compute area weights for data with latitude and longitude dimension"
             )
         if not "units" in self.data.latitude.attrs:
             self.data.latitude.attrs["units"] = "degrees"
@@ -660,11 +658,11 @@ class ColocatedData:
         """
         if not "station_name" in self.data.dims:
             raise AttributeError(
-                "ColocatedData object has no dimension " "station_name. Consider stacking..."
+                "ColocatedData object has no dimension station_name. Consider stacking..."
             )
         if "latitude" in self.dims and "longitude" in self.dims:
             raise AttributeError(
-                "Cannot init station iter index since " "latitude and longitude are othorgonal"
+                "Cannot init station iter index since latitude and longitude are othorgonal"
             )
         lats = self.data.latitude.values
         lons = self.data.longitude.values
@@ -1194,9 +1192,7 @@ class ColocatedData:
             file path of stored object.
         """
         if "path" in kwargs:
-            raise OSError(
-                "Path needs to be specified using input parameters " "out_dir and savename"
-            )
+            raise OSError("Path needs to be specified using input parameters out_dir and savename")
         if savename is None:
             savename = self.savename_aerocom
         if not savename.endswith(".nc"):
@@ -1248,7 +1244,7 @@ class ColocatedData:
             self.get_meta_from_filename(file_path)
         except Exception as e:
             raise NetcdfError(
-                f"Invalid file name for ColocatedData: {file_path}. " f"Error: {repr(e)}"
+                f"Invalid file name for ColocatedData: {file_path}. Error: {repr(e)}"
             )
 
         arr = xarray.open_dataarray(file_path)
@@ -1358,7 +1354,7 @@ class ColocatedData:
         """
         if not self._check_latlon_coords():
             raise NotImplementedError(
-                "Altitude filtering for data with " "lat and lon dimension is not yet " "supported"
+                "Altitude filtering for data with lat and lon dimension is not yet supported"
             )
         filtered = self._filter_altitude_2d(self.data, alt_range)
         filtered.attrs["alt_range"] = alt_range
@@ -1417,11 +1413,11 @@ class ColocatedData:
         """
         _check = ("latitude", "longitude")
         if not all([x in self.coords for x in _check]):
-            raise CoordinateError("Missing latitude or longitude coordinate " "(or both)")
+            raise CoordinateError("Missing latitude or longitude coordinate (or both)")
         elif any([x in self.dims for x in _check]):
             if not all([x in self.dims for x in _check]):
                 raise CoordinateError(
-                    "Only one of latitude / longitude is " "dimension (require None or both)"
+                    "Only one of latitude / longitude is dimension (require None or both)"
                 )
             return False
         return True
@@ -1655,7 +1651,7 @@ class ColocatedData:
 
         if all([x is None for x in (lat_range, lon_range)]):
             raise ValueError(
-                "Please provide input, either for lat_range or " "lon_range or region_id"
+                "Please provide input, either for lat_range or lon_range or region_id"
             )
         if lon_range is None:
             lon_range = [-180, 180]
@@ -1823,7 +1819,7 @@ class ColocatedData:
             NMBs at each coordinate
         """
         if not len(self.data_source) == 2:
-            raise DataDimensionError("data_source dimension needs exactly 2 " "entries")
+            raise DataDimensionError("data_source dimension needs exactly 2 entries")
         elif not "time" in self.dims:
             raise DataDimensionError("data needs to have time dimension")
         _arr = self.data

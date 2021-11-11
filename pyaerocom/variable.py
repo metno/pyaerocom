@@ -147,7 +147,7 @@ class Variable:
         elif "3D" in var_name:
             var_name = var_name.replace("3D", "")
         elif "_" in var_name:
-            raise ValueError(f"invalid variable name {var_name}. Must " f"not contain underscore")
+            raise ValueError(f"invalid variable name {var_name}. Must not contain underscore")
         return var_name
 
     def __init__(self, var_name=None, init=True, cfg=None, **kwargs):
@@ -155,7 +155,7 @@ class Variable:
             var_name = "od550aer"
         elif not isinstance(var_name, str):
             raise ValueError(
-                f"Invalid input for variable name, need str " f"type, got {type(var_name)}"
+                f"Invalid input for variable name, need str type, got {type(var_name)}"
             )
         # save orig. input for whatever reason
         self._var_name_input = var_name
@@ -328,7 +328,7 @@ class Variable:
 
         warn(
             DeprecationWarning(
-                "Attr. name unit in Variable " "class is deprecated. Please " "use units instead"
+                "Attr. name unit in Variable class is deprecated. Please use units instead"
             )
         )
         return self.units
@@ -476,7 +476,7 @@ class Variable:
                 self._cmap_bins_from_vmin_vmax()
             else:
                 raise AttributeError(
-                    f"map_cbar_levels is not defined for " f"variable {self.var_name}"
+                    f"map_cbar_levels is not defined for variable {self.var_name}"
                 )
         return self.map_cbar_levels
 
@@ -501,7 +501,7 @@ class Variable:
         if cfg is None:
             cfg = self.read_config()
         elif not isinstance(cfg, ConfigParser):
-            raise ValueError(f"invalid input for cfg, need config parser got " f"{type(cfg)}")
+            raise ValueError(f"invalid input for cfg, need config parser got {type(cfg)}")
         if not var_name in cfg:
             try:
                 var_name = self._check_aliases(var_name)

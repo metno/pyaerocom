@@ -282,7 +282,7 @@ class ReadGridded:
         from pyaerocom.exceptions import DeprecationError
 
         raise DeprecationError(
-            "Attribute vars is deprecated in ReadGridded. " "Please use vars_filename instead"
+            "Attribute vars is deprecated in ReadGridded. Please use vars_filename instead"
         )
 
     @property
@@ -344,7 +344,7 @@ class ReadGridded:
 
         if year == 9999:
             self.logger.warning(
-                "Data contains climatology. Will be ignored " "as stop time, using last year"
+                "Data contains climatology. Will be ignored as stop time, using last year"
             )
             if len(years) == 1:
                 year = 2222
@@ -527,9 +527,7 @@ class ReadGridded:
         """
 
         if "*" in var_name:
-            raise VariableDefinitionError(
-                "Invalid variable name {}. Must not " "contain *".format(var_name)
-            )
+            raise VariableDefinitionError(f"Invalid variable name {var_name}. Must not contain *")
         if var_name in self._aux_avail:
             return True
         elif self._check_aux_compute_access(var_name):
@@ -751,7 +749,7 @@ class ReadGridded:
                 )
 
             except (FileConventionError, DataSourceError, TemporalResolutionError) as e:
-                msg = f"Failed to import file\n{_file}\nModel: " f"{self.data_id}\nError: {e}"
+                msg = f"Failed to import file\n{_file}\nModel: {self.data_id}\nError: {e}"
                 logger.warning(msg)
                 if const.WRITE_FILEIO_ERR_LOG:
                     add_file_to_log(_file, msg)
@@ -990,7 +988,7 @@ class ReadGridded:
         """
         if not var_name in self.file_info.var_name.values:
             raise DataCoverageError(
-                "Variable {} is not available in dataset " "{}".format(var_name, self.data_id)
+                f"Variable {var_name} is not available in dataset {self.data_id}"
             )
 
         subset = self.filter_files(
@@ -1054,7 +1052,7 @@ class ReadGridded:
                 msg += "; "
             msg += f"Found multiple vertical codes. Choose from: {verts}"
         raise DataQueryError(
-            "Failed to uniquely identify data files for input " "query. Reason: {}".format(msg)
+            f"Failed to uniquely identify data files for input query. Reason: {msg}"
         )
 
     def get_files(
@@ -1386,9 +1384,7 @@ class ReadGridded:
             common = np.intersect1d(common, _tt.ts_type.unique())
 
         if len(common) == 0:
-            raise DataCoverageError(
-                "Could not find common ts_type for " "variables {}".format(vars_to_read)
-            )
+            raise DataCoverageError(f"Could not find common ts_type for variables {vars_to_read}")
         elif len(common) == 1:
             if ts_type is None or flex_ts_type:
                 return common[0]
@@ -1434,7 +1430,7 @@ class ReadGridded:
                 "Got: {}".format(vars_required)
             )
         elif not callable(fun):
-            raise ValueError("Invalid input for fun. Input is not a callable " "object")
+            raise ValueError("Invalid input for fun. Input is not a callable object")
         self._aux_requires[var_name] = vars_required
         self._aux_funs[var_name] = fun
         if not self._check_aux_compute_access(var_name):
@@ -1991,7 +1987,7 @@ class ReadGridded:
         var_names = list(np.intersect1d(self.vars_provided, vars_to_retrieve))
         if len(var_names) == 0:
             raise VarNotAvailableError(
-                "None of the desired variables is " "available in {}".format(self.data_id)
+                f"None of the desired variables is available in {self.data_id}"
             )
         data = []
         for var in var_names:
@@ -2130,7 +2126,7 @@ class ReadGridded:
                 is_concat = True
             except iris.exceptions.ConcatenateError as e:
                 raise NotImplementedError(
-                    "Failed to concatenate cubes: {}\n" "Error: {}".format(cube_list, repr(e))
+                    f"Failed to concatenate cubes: {cube_list}\nError: {repr(e)}"
                 )
         else:
             cube = cube_list[0]
@@ -2194,7 +2190,7 @@ class ReadGridded:
 
             ts_type = self.ts_types[0]
         if not TsType.valid(ts_type):  # in self.TS_TYPES:
-            raise ValueError("Invalid input for ts_type: {}" "allowed values: {}".format(ts_type))
+            raise ValueError("Invalid input for ts_type: {} allowed values: {}".format(ts_type))
         return ts_type
 
     def __getitem__(self, var_name):

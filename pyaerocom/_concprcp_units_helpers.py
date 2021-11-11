@@ -41,7 +41,7 @@ def translate_rate_units_implicit(unit_implicit, ts_type):
     # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
     if not freq_si_str in str(unit):
         raise NotImplementedError(
-            f"Cannot yet handle wdep in {unit} but " f"{freq} sampling frequency"
+            f"Cannot yet handle wdep in {unit} but {freq} sampling frequency"
         )
     return unit
 
@@ -88,7 +88,7 @@ def check_pr_units(gridded):  # pragma: no cover
     # ts_type is hourly (later, use units_helpers.implicit_to_explicit_rates)
     if not freq_si_str in str(unit):
         raise NotImplementedError(
-            f"Cannot yet handle wdep in {unit} but " f"{freq} sampling frequency"
+            f"Cannot yet handle wdep in {unit} but {freq} sampling frequency"
         )
     return gridded
 
@@ -99,12 +99,12 @@ def _check_prlim_units(prlim, prlim_units):  # pragma: no cover
     # ToDo: cumbersome for now, make it work first, then make it simpler...
     if not prlim_units.endswith("-1"):
         raise ValueError(
-            "Please specify prlim_unit as string ending with " "-1 (e.g. mm h-1) or similar"
+            "Please specify prlim_unit as string ending with -1 (e.g. mm h-1) or similar"
         )
 
     spl = prlim_units.split()
     if not len(spl) == 2:
-        raise ValueError("Invalid input for prlim_units (only one whitespace " "is allowed)")
+        raise ValueError("Invalid input for prlim_units (only one whitespace is allowed)")
     # make sure to be in the correct length unit
     mulfac = get_unit_conversion_fac(spl[0], "m")
     prlim *= mulfac
@@ -190,7 +190,7 @@ def compute_concprcp_from_pr_and_wetdep(
         # for the higher resolution dataset, but for this first draft, this
         # is not allowed.
         raise ValueError(
-            "Input precipitation and wet deposition fields " "need to be in the same frequency..."
+            "Input precipitation and wet deposition fields need to be in the same frequency..."
         )
 
     # assign input frequency (just for making the code better readable)

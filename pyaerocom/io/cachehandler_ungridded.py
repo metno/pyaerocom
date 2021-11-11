@@ -135,9 +135,7 @@ class CacheHandlerUngridded:
         if cache_dir is None:
             cache_dir = self.cache_dir
         elif not os.path.exists(cache_dir):
-            raise FileNotFoundError(
-                "Specified output directory does not exist:" "{}".format(cache_dir)
-            )
+            raise FileNotFoundError(f"Specified output directory does not exist:{cache_dir}")
         return os.path.join(cache_dir, var_or_file_name)
 
     def _check_pkl_head_vs_database(self, in_handle):
@@ -151,9 +149,7 @@ class CacheHandlerUngridded:
             if not k in current:
                 raise CacheReadError(f"Invalid cache header key: {k}")
             elif not v == current[k]:
-                const.print_log.info(
-                    "{} is outdated (value: {}). Current " "value: {}".format(k, v, current[k])
-                )
+                const.print_log.info(f"{k} is outdated (value: {v}). Current value: {current[k]}")
                 return False
         return True
 
@@ -312,9 +308,7 @@ class CacheHandlerUngridded:
         meta = self.cache_meta_info()
 
         if not isinstance(data, UngriddedData):
-            raise TypeError(
-                "Invalid input, need instance of UngriddedData, " "got {}".format(type(data))
-            )
+            raise TypeError(f"Invalid input, need instance of UngriddedData, got {type(data)}")
 
         if not var_or_file_name.endswith(".pkl"):
             var_name = var_or_file_name

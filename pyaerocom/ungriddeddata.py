@@ -179,14 +179,10 @@ class UngriddedData:
                 if rev is None:
                     rev = meta["data_revision"]
                 elif not meta["data_revision"] == rev:
-                    raise MetaDataError(
-                        "Found different data revisions for " "dataset {}".format(data_id)
-                    )
+                    raise MetaDataError(f"Found different data revisions for dataset {data_id}")
         if data_id in self.data_revision:
             if not rev == self.data_revision[data_id]:
-                raise MetaDataError(
-                    "Found different data revisions for " "dataset {}".format(data_id)
-                )
+                raise MetaDataError(f"Found different data revisions for dataset {data_id}")
         self.data_revision[data_id] = rev
         return rev
 
@@ -236,7 +232,7 @@ class UngriddedData:
                 var_idx_data = np.unique(self._data[indices, self._VARINDEX])
                 assert (
                     len(var_idx_data) == 1
-                ), "Found multiple variable indices for " "var {}: {}".format(var, var_idx_data)
+                ), f"Found multiple variable indices for var {var}: {var_idx_data}"
                 assert var_idx_data[0] == vars_avail[var], (
                     f"Mismatch between {var} index assigned in data and "
                     f"var_idx for {idx} in meta-block"
@@ -383,15 +379,13 @@ class UngriddedData:
             meta_idx = self.last_meta_idx + 1
         elif meta_idx in self.meta_idx.keys():
             raise ValueError(
-                "Cannot add data at meta block index {}, index " "already exists".format(meta_idx)
+                f"Cannot add data at meta block index {meta_idx}, index already exists"
             )
 
         if data_idx is None:
             data_idx = self._data.shape[0]
         elif not np.all(np.isnan(self._data[data_idx, :])):
-            raise ValueError(
-                "Cannot add data at data index {}, index " "already exists".format(data_idx)
-            )
+            raise ValueError(f"Cannot add data at data index {data_idx}, index already exists")
 
     @property
     def last_meta_idx(self):
@@ -705,7 +699,7 @@ class UngriddedData:
                 idx.append(i)
         if len(idx) == 0:
             raise StationNotFoundError(
-                "No station available in UngriddedData " "that matches name {}".format(station_str)
+                f"No station available in UngriddedData that matches name {station_str}"
             )
         return idx
 
@@ -716,9 +710,7 @@ class UngriddedData:
             try:
                 lat, lon = meta["latitude"], meta["longitude"]
             except:
-                const.print_log.warning(
-                    "Could not retrieve lat lon coord " "at meta index {}".format(idx)
-                )
+                const.print_log.warning(f"Could not retrieve lat lon coord at meta index {idx}")
                 continue
             meta_idx.append(idx)
             coords.append((lat, lon))
@@ -888,7 +880,7 @@ class UngriddedData:
         elif vars_to_convert is None:
             vars_to_convert = self.contains_vars
             if len(vars_to_convert) == 0:
-                raise DataCoverageError("UngriddedData object does not contain " "any variables")
+                raise DataCoverageError("UngriddedData object does not contain any variables")
         if start is None and stop is None:
             start = pd.Timestamp("1970")
             stop = pd.Timestamp("2200")
@@ -918,7 +910,7 @@ class UngriddedData:
         if merge_if_multi and len(stats) > 1:
             if len(vars_to_convert) > 1:
                 raise NotImplementedError(
-                    "Cannot yet merge multiple stations " "with multiple variables."
+                    "Cannot yet merge multiple stations with multiple variables."
                 )
             if merge_pref_attr is None:
                 merge_pref_attr = self._try_infer_stat_merge_pref_attr(stats)
@@ -1025,7 +1017,7 @@ class UngriddedData:
             vars_avail = list(meta["var_info"].keys())
         except KeyError:
             if not "variables" in meta or meta["variables"] in (None, []):
-                raise VarNotAvailableError("Metablock does not contain variable " "information")
+                raise VarNotAvailableError("Metablock does not contain variable information")
             vars_avail = meta["variables"]
 
         for key in self.STANDARD_META_KEYS + add_meta_keys:
@@ -1058,7 +1050,7 @@ class UngriddedData:
         vars_avail = np.intersect1d(vars_to_convert, vars_avail)
         if not len(vars_avail) >= 1:
             raise VarNotAvailableError(
-                "None of the input variables matches, " "or station does not contain data."
+                "None of the input variables matches, or station does not contain data."
             )
         # init helper boolean that is set to True if valid data can be found
         # for at least one of the input variables
@@ -1155,7 +1147,7 @@ class UngriddedData:
             if isnumeric(ignore_index):
                 ignore_index = [ignore_index]
             if not isinstance(ignore_index, list):
-                raise ValueError("Invalid input for ignore_index, need number " "or list")
+                raise ValueError("Invalid input for ignore_index, need number or list")
             return [i for i in range(len(self.metadata)) if not i in ignore_index]
 
         # by station name and ignore certation stations
@@ -1163,7 +1155,7 @@ class UngriddedData:
         if isinstance(ignore_index, str):
             ignore_index = [ignore_index]
         if not isinstance(ignore_index, list):
-            raise ValueError("Invalid input for ignore_index, need str or " "list")
+            raise ValueError("Invalid input for ignore_index, need str or list")
         for stat_name in self.unique_station_names:
             ok = True
             for name_or_pattern in ignore_index:
@@ -1245,7 +1237,7 @@ class UngriddedData:
 
             # catch the exceptions that are acceptable
             except (VarNotAvailableError, TimeMatchError, DataCoverageError) as e:
-                logger.warning("Failed to convert to StationData " "Error: {}".format(repr(e)))
+                logger.warning(f"Failed to convert to StationData Error: {repr(e)}")
                 out_data["failed"].append([idx, repr(e)])
         return out_data
 
@@ -1418,7 +1410,7 @@ class UngriddedData:
                     try:
                         low, high = float(val[0]), float(val[1])
                         if not low < high:
-                            raise ValueError("First entry needs to be smaller " "than 2nd")
+                            raise ValueError("First entry needs to be smaller than 2nd")
                         range_f[key] = [low, high]
                     except Exception as e:
                         list_f[key] = val
@@ -1526,7 +1518,7 @@ class UngriddedData:
         """
 
         if not self.has_flag_data:
-            raise AttributeError("Ungridded data object does not contain " "flagged data points")
+            raise AttributeError("Ungridded data object does not contain flagged data points")
         if inplace:
             obj = self
         else:
@@ -1655,9 +1647,7 @@ class UngriddedData:
 
         for i, meta in self.metadata.items():
             if not "station_name" in meta:
-                print_log.warning(
-                    "Skipping meta-block {}: station_name is not " "defined".format(i)
-                )
+                print_log.warning(f"Skipping meta-block {i}: station_name is not defined")
                 continue
             elif not all(name in meta for name in const.STANDARD_COORD_NAMES):
                 print_log.warning(
@@ -1701,7 +1691,7 @@ class UngriddedData:
         elif isinstance(negate, str):
             negate = [negate]
         elif not isinstance(negate, list):
-            raise ValueError(f"Invalid input for negate {negate}, " f"need list or str or None")
+            raise ValueError(f"Invalid input for negate {negate}, need list or str or None")
         meta_matches = []
         totnum = 0
         for meta_idx, meta in self.metadata.items():
@@ -1942,9 +1932,7 @@ class UngriddedData:
             *filters,
         )
         if len(meta_matches) == len(self.metadata):
-            const.logger.info(
-                "Input filters {} result in unchanged data " "object".format(filter_attributes)
-            )
+            const.logger.info(f"Input filters {filter_attributes} result in unchanged data object")
             return self
         new = self._new_from_meta_blocks(meta_matches, totnum_new)
         time_str = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -2034,7 +2022,7 @@ class UngriddedData:
             obj.meta_idx = meta_idx_new
 
         obj._add_to_filter_history(
-            "Removed {} metadata blocks that have no " "data assigned".format(num_removed)
+            f"Removed {num_removed} metadata blocks that have no data assigned"
         )
         obj._check_index()
         return obj
@@ -2081,7 +2069,7 @@ class UngriddedData:
             else:
                 raise VarNotAvailableError(f"No such variable {var_name} in data")
         elif len(self.contains_vars) == 1:
-            const.print_log.info("Data object is already single variable. " "Returning copy")
+            const.print_log.info("Data object is already single variable. Returning copy")
             return self.copy()
 
         var_idx = self.var_idx[var_name]
@@ -2134,7 +2122,7 @@ class UngriddedData:
             subset._check_index()
         subset.filter_hist.update(self.filter_hist)
         subset._add_to_filter_history(
-            "Created {} single var object from " "multivar UngriddedData instance".format(var_name)
+            f"Created {var_name} single var object from multivar UngriddedData instance"
         )
         return subset
 
@@ -2321,9 +2309,7 @@ class UngriddedData:
             if input object is not an instance of :class:`UngriddedData`
         """
         if not isinstance(other, UngriddedData):
-            raise ValueError(
-                "Invalid input, need instance of UngriddedData, " "got: {}".format(type(other))
-            )
+            raise ValueError(f"Invalid input, need instance of UngriddedData, got: {type(other)}")
         if new_obj:
             obj = self.copy()
         else:
@@ -2381,7 +2367,7 @@ class UngriddedData:
             contains = self.contains_datasets
             if len(contains) > 1:
                 raise ValueError(
-                    "Please provide data_id1 since data object " "contains more than 1 dataset..."
+                    "Please provide data_id1 since data object contains more than 1 dataset..."
                 )
             data_id1 = contains[0]
 
@@ -2389,7 +2375,7 @@ class UngriddedData:
             contains = other.contains_datasets
             if len(contains) > 1:
                 raise ValueError(
-                    "Please provide data_id2 since data object " "contains more than 1 dataset..."
+                    "Please provide data_id2 since data object contains more than 1 dataset..."
                 )
             data_id2 = contains[0]
         if self is other and data_id1 == data_id2 and var1 == var2:
@@ -2649,7 +2635,7 @@ class UngriddedData:
             other, check_vars_available=var_name, check_coordinates=True
         )
         if len(common) == 0:
-            raise DataExtractionError("None of the stations in the two " "match")
+            raise DataExtractionError("None of the stations in the two match")
         dates = []
         data_this_match = []
         data_other_match = []
@@ -2810,9 +2796,7 @@ class UngriddedData:
             info_str = "AllVars"
         else:
             if not isinstance(var_name, str):
-                raise ValueError(
-                    "Can only handle single variable (or all" "-> input var_name=None)"
-                )
+                raise ValueError("Can only handle single variable (or all -> input var_name=None)")
             elif not var_name in subset.contains_vars:
                 raise ValueError(f"Input variable {var_name} is not available in dataset ")
             info_str = var_name
@@ -2833,7 +2817,7 @@ class UngriddedData:
 
             if len(stat_data["stats"]) == 0:
                 raise DataCoverageError(
-                    "No stations could be found for input " "specs (var, start, stop, freq)"
+                    "No stations could be found for input specs (var, start, stop, freq)"
                 )
             lons = stat_data["longitude"]
             lats = stat_data["latitude"]
@@ -2887,9 +2871,7 @@ class UngriddedData:
         if not os.path.exists(save_dir):
             raise FileNotFoundError(f"Directory does not exist: {save_dir}")
         elif not file_name.endswith(".pkl"):
-            raise ValueError(
-                "Can only store files as pickle, file_name needs " "to have format .pkl"
-            )
+            raise ValueError("Can only store files as pickle, file_name needs to have format .pkl")
         ch = CacheHandlerUngridded()
         return ch.write(self, var_or_file_name=file_name, cache_dir=save_dir)
 
@@ -2942,7 +2924,7 @@ class UngriddedData:
         """
 
         if not isinstance(key, str):
-            raise ValueError("Need string (e.g. variable name, station name, " "instrument name")
+            raise ValueError("Need string (e.g. variable name, station name, instrument name")
         if key in self.contains_datasets:
             return True
         elif key in self.contains_vars:
@@ -2972,7 +2954,7 @@ class UngriddedData:
             return StationData()
 
     def __repr__(self):
-        return "{} <networks: {}; vars: {}; instruments: {};" "No. of metadata units: {}".format(
+        return "{} <networks: {}; vars: {}; instruments: {}; No. of metadata units: {}".format(
             type(self).__name__,
             self.contains_datasets,
             self.contains_vars,

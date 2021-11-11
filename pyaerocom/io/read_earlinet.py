@@ -287,9 +287,7 @@ class ReadEarlinet(ReadUngriddedBase):
                 if u in arr.attrs:
                     unit = arr.attrs[u]
             if unit is None:
-                raise DataUnitError(
-                    "Unit of {} could not be accessed in file " "{}".format(var, filename)
-                )
+                raise DataUnitError(f"Unit of {var} could not be accessed in file {filename}")
             unit_fac = None
             try:
                 to_unit = self._var_info[var].units
@@ -316,12 +314,10 @@ class ReadEarlinet(ReadUngriddedBase):
             # 1D variable
             if var == "zdust":
                 if not val.ndim == 0:
-                    raise ValueError("Fatal: dust layer height data must be " "single value")
+                    raise ValueError("Fatal: dust layer height data must be single value")
 
                 if unit_ok and info.minimum < val < info.maximum:
-                    const.print_log.warning(
-                        "zdust value {} out of range, " "setting to NaN".format(val)
-                    )
+                    const.print_log.warning(f"zdust value {val} out of range, setting to NaN")
                     val = np.nan
 
                 if np.isnan(val):
@@ -632,7 +628,7 @@ class ReadEarlinet(ReadUngriddedBase):
         elif isinstance(vars_to_retrieve, str):
             vars_to_retrieve = [vars_to_retrieve]
         exclude = self._get_exclude_filelist()
-        const.print_log.info("Fetching EARLINET data files. " "This might take a while...")
+        const.print_log.info("Fetching EARLINET data files. This might take a while...")
         patterns = []
         for var in vars_to_retrieve:
             if not var in self.VAR_PATTERNS_FILE:
@@ -643,7 +639,7 @@ class ReadEarlinet(ReadUngriddedBase):
             _pattern = self.VAR_PATTERNS_FILE[var]
             if pattern is not None:
                 if "." in pattern:
-                    raise NotImplementedError("filetype delimiter . not " "supported")
+                    raise NotImplementedError("filetype delimiter . not supported")
                 spl = _pattern.split(".")
                 if not "*" in spl[0]:
                     raise AttributeError(f"Invalid file pattern: {_pattern}")

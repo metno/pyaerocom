@@ -60,9 +60,7 @@ def test_filter_ungriddeddata(aeronetsunv3lev2_subset, filter_name, num_sites):
     assert num == num_sites
 
 
-@pytest.mark.skip(
-    reason=("Need to storee colocateddata object in tmp_dir " "and provide as fixture")
-)
+@pytest.mark.skip(reason=("Need to storee colocateddata object in tmp_dir and provide as fixture"))
 def test_filter_colocateddata():
     pass
 

@@ -28,7 +28,7 @@ def init_tutorials():
         print(command)
         subprocess.call(command, shell=True)
     if not TUTREPO in os.listdir():
-        raise FileNotFoundError("Failed to clone pyaerocom-tutorials repo into " "pyaerocom/docs")
+        raise FileNotFoundError("Failed to clone pyaerocom-tutorials repo into pyaerocom/docs")
 
 
 print("Initiating pyaerocom-tutorials repo under pyaerocom/docs")

@@ -180,7 +180,7 @@ def test_StationData_get_station_coords(stat, force_single_value, dtype, raises)
 
 
 @pytest.mark.parametrize(
-    "stat,force_single_value,quality_check," "add_none_vals,add_meta_keys,numitems,raises",
+    "stat,force_single_value,quality_check,add_none_vals,add_meta_keys,numitems,raises",
     [
         (stat1, True, True, False, None, 14, does_not_raise_exception()),
         (stat1, True, True, False, "blaaa", 14, does_not_raise_exception()),
@@ -215,7 +215,7 @@ def test_StationData__check_meta_item(stat, key, raises):
 
 
 @pytest.mark.parametrize(
-    "stat,other,coord_tol_km,check_coords,inplace," "add_meta_keys,raise_on_error,raises",
+    "stat,other,coord_tol_km,check_coords,inplace,add_meta_keys,raise_on_error,raises",
     [
         (stat1, stat1, 0.1, True, True, None, True, does_not_raise_exception()),
         (stat1, stat2, 0.001, True, True, None, True, pytest.raises(CoordinateError)),

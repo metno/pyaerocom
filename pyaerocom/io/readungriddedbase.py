@@ -226,9 +226,7 @@ class ReadUngriddedBase(abc.ABC):
 
         if data_id is not None:
             if not data_id in self.SUPPORTED_DATASETS:
-                raise AttributeError(
-                    "Dataset {} not supported by this " "interface".format(data_id)
-                )
+                raise AttributeError(f"Dataset {data_id} not supported by this interface")
             self._data_id = data_id
 
     @property
@@ -566,7 +564,7 @@ class ReadUngriddedBase(abc.ABC):
             self.get_file_list()
         files = [f for f in self.files if fnmatch(f, pattern)]
         if not len(files) > 0:
-            raise OSError(f"No files could be detected that match the " f"pattern {pattern}")
+            raise OSError(f"No files could be detected that match the pattern {pattern}")
         return files
 
     def get_file_list(self, pattern=None):
@@ -596,7 +594,7 @@ class ReadUngriddedBase(abc.ABC):
             pattern = self._FILEMASK
         if pattern is None:
             const.print_log.warning(
-                "_FILEMASK attr. must not be None..." "using default pattern *.* for file search"
+                "_FILEMASK attr. must not be None...using default pattern *.* for file search"
             )
             pattern = "*.*"
         self.logger.info("Fetching data files. This might take a while...")

@@ -215,7 +215,7 @@ class Region(BrowseDict):
         if not isinstance(val, tuple):
             raise TypeError("Invalid input, need tuple")
         if not len(val) == 2:
-            raise ValueError("Invalid input: coordinate must contain 2 " "elements (lat, lon)")
+            raise ValueError("Invalid input: coordinate must contain 2 elements (lat, lon)")
         return self.contains_coordinate(lat=val[0], lon=val[1])
 
     def __repr__(self):

@@ -127,7 +127,7 @@ class EbasVarInfo(BrowseDict):
             var_name = const.VARS[var_name].var_name_aerocom
             if not var_name in conf_reader:
                 raise VarNotAvailableError(
-                    "Variable {} is not available in " "EBAS interface".format(var_name)
+                    f"Variable {var_name} is not available in EBAS interface"
                 )
 
         var_info = conf_reader[var_name]

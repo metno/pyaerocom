@@ -49,9 +49,7 @@ def get_species(var_name):
             species = var_name.split(prefix)[-1]
             if species in MOLMASSES:
                 return species
-    raise UnkownSpeciesError(
-        "Could not infer atom / molecule/ species from " "var_name {}".format(var_name)
-    )
+    raise UnkownSpeciesError(f"Could not infer atom / molecule/ species from var_name {var_name}")
 
 
 def get_molmass(var_name):

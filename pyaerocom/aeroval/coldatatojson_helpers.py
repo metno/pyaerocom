@@ -895,9 +895,7 @@ def _process_regional_timeseries(data, region_ids, regions_how, meta_glob):
             try:
                 subset = cd.filter_region(regid, inplace=False, check_country_meta=check_countries)
             except DataCoverageError:
-                const.print_log.info(
-                    f"no data in {regid} ({freq}) to compute regional " f"timeseries"
-                )
+                const.print_log.info(f"no data in {regid} ({freq}) to compute regional timeseries")
                 ts_data[f"{freq}_date"] = jsfreq
                 ts_data[f"{freq}_obs"] = [np.nan] * len(jsfreq)
                 ts_data[f"{freq}_mod"] = [np.nan] * len(jsfreq)
@@ -1074,10 +1072,10 @@ def _select_period_season_coldata(coldata, period, season):
         raise DataCoverageError(f"No data available in period {period}")
     if season != "all":
         if not season in arr.season:
-            raise DataCoverageError(f"No data available in {season} in " f"period {period}")
+            raise DataCoverageError(f"No data available in {season} in period {period}")
         elif TsType(coldata.ts_type) < "monthly":
             raise TemporalResolutionError(
-                "Season selection is only available for monthly or higher  " "resolution data"
+                "Season selection is only available for monthly or higher resolution data"
             )
         mask = arr["season"] == season
         arr = arr.sel(time=arr["time"][mask])

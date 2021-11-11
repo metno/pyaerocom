@@ -178,7 +178,7 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
                 if pl is not None and len(dummy_arr) != len(pl):
                     const.print_log.exception(
-                        "Data line {} in {} is corrupt, " "skipping...".format(i, filename)
+                        f"Data line {i} in {filename} is corrupt, skipping..."
                     )
                     continue
                 # copy the meta data (array of type string)

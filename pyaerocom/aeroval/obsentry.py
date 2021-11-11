@@ -143,9 +143,7 @@ class ObsEntry(BrowseDict):
         if isinstance(self.obs_vars, str):
             self.obs_vars = [self.obs_vars]
         elif not isinstance(self.obs_vars, list):
-            raise ValueError(
-                "Invalid input for obs_vars. Need list or str, " "got: {}".format(self.obs_vars)
-            )
+            raise ValueError(f"Invalid input for obs_vars. Need list or str, got: {self.obs_vars}")
         ovt = self.obs_vert_type
         if ovt is None:
             raise ValueError(

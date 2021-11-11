@@ -319,9 +319,7 @@ class AerocomDataID:
 
         """
         if not len(values) == 4:
-            raise ValueError(
-                "Need 4 entries model_name, meteo_config, " "experiment, perturbation"
-            )
+            raise ValueError("Need 4 entries model_name, meteo_config, experiment, perturbation")
         return "{}-{}_{}-{}".format(*values)
 
     def _eval_data_id(self, val):

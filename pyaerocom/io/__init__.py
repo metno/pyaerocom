@@ -17,7 +17,7 @@ def geopy_available():
         from logging import getLogger
 
         logger = getLogger("pyaerocom")
-        logger.warning("geopy library is not available. Aeolus data read not " "enabled")
+        logger.warning("geopy library is not available. Aeolus data read not enabled")
     return False
 
 

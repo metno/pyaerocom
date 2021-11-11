@@ -183,7 +183,7 @@ class TrendsEngine:
 class TrendPlotter:  # pragma: no cover
     def __init__(self):
         raise NotImplementedError(
-            "consider removing or re-implementing (" "based on code from v0.10.0"
+            "consider removing or re-implementing (based on code from v0.10.0)"
         )
 
     def get_trend_color(self, trend_val):

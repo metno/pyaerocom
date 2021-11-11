@@ -240,7 +240,7 @@ def test_GriddedData_std(data_tm5):
 
 
 def test_GriddedData_short_str(data_tm5):
-    assert data_tm5.short_str() == "od550aer (TM5_AP3-CTRL2016, " "freq=monthly, unit=1)"
+    assert data_tm5.short_str() == "od550aer (TM5_AP3-CTRL2016, freq=monthly, unit=1)"
 
 
 def test_GriddedData_copy(data_tm5):

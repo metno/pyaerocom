@@ -12,9 +12,7 @@ def parse_variables_ini(fpath=None):
         fpath = os.path.join(__dir__, "data", "variables.ini")
 
     if not os.path.exists(fpath):
-        raise FileNotFoundError(
-            "FATAL: variables.ini file could not be found " "at {}".format(fpath)
-        )
+        raise FileNotFoundError(f"FATAL: variables.ini file could not be found at {fpath}")
     parser = ConfigParser()
     parser.read(fpath)
     return parser
@@ -26,9 +24,7 @@ def parse_aliases_ini():
 
     fpath = os.path.join(__dir__, "data", "aliases.ini")
     if not os.path.exists(fpath):
-        raise FileNotFoundError(
-            "FATAL: aliases.ini file could not be found " "at {}".format(fpath)
-        )
+        raise FileNotFoundError(f"FATAL: aliases.ini file could not be found at {fpath}")
     parser = ConfigParser()
     parser.read(fpath)
     return parser
@@ -60,9 +56,7 @@ def parse_emep_variables_ini(fpath=None):
     if fpath is None:
         fpath = os.path.join(__dir__, "data", "emep_variables.ini")
     if not os.path.exists(fpath):
-        raise FileNotFoundError(
-            "FATAL: emep_variables.ini file could not be found " "at {}".format(fpath)
-        )
+        raise FileNotFoundError(f"FATAL: emep_variables.ini file could not be found at {fpath}")
     parser = ConfigParser()
     # added 12.7.21 by jgliss for EMEP trends processing. See here:
     # https://stackoverflow.com/questions/1611799/preserve-case-in-configparser

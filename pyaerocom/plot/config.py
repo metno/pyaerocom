@@ -92,7 +92,7 @@ class ColorTheme:
         """
         if not theme_name in _COLOR_THEMES:
             raise ValueError(
-                "Default theme with name %s is not available. " "Choose from %s" % _COLOR_THEMES
+                "Default theme with name %s is not available. Choose from %s" % _COLOR_THEMES
             )
         self.from_dict(_COLOR_THEMES[theme_name])
 

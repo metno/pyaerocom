@@ -235,9 +235,7 @@ def _calc_od_helper(
     """
     if not od_ref in data:
         if od_ref_alt is None or not od_ref_alt in data:
-            raise AttributeError(
-                "No alternative OD found for computation of " "{}".format(var_name)
-            )
+            raise AttributeError(f"No alternative OD found for computation of {var_name}")
         return compute_od_from_angstromexp(
             to_lambda=to_lambda,
             od_ref=data[od_ref_alt],
@@ -245,9 +243,7 @@ def _calc_od_helper(
             angstrom_coeff=data[use_angstrom_coeff],
         )
     elif not use_angstrom_coeff in data:
-        raise AttributeError(
-            "Angstrom coefficient (440-870 nm) is not " "available in provided data"
-        )
+        raise AttributeError("Angstrom coefficient (440-870 nm) is not available in provided data")
     result = compute_od_from_angstromexp(
         to_lambda=to_lambda,
         od_ref=data[od_ref],

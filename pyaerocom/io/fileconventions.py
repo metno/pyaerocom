@@ -115,7 +115,7 @@ class FileConventionRead:
             self.import_default("aerocom2")
         else:
             raise FileConventionError(
-                "Could not identify convention from " "input file {}".format(basename(file))
+                f"Could not identify convention from input file {basename(file)}"
             )
         self.check_validity(file)
         return self
@@ -353,7 +353,7 @@ class FileConventionRead:
             return "_".join([".*", data_id, var, vert_which, str(year), ts_type]) + ".nc"
         else:
             raise NotImplementedError(
-                "File matching mask for convention %s " "not yet defined..." % self.name
+                f"File matching mask for convention {self.name} not yet defined..."
             )
 
     def import_default(self, name):
@@ -362,7 +362,7 @@ class FileConventionRead:
 
         fpath = join(__dir__, "data", "file_conventions.ini")
         if not exists(fpath):
-            raise OSError("File conventions ini file could not be found: %s" % fpath)
+            raise OSError(f"File conventions ini file could not be found: {fpath}")
         conf_reader = ConfigParser()
         conf_reader.read(fpath)
         if not name in conf_reader:

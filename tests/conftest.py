@@ -79,11 +79,11 @@ if TESTDATA_AVAIL:
 # (some tests are skipped in this case)
 lustre_unavail = pytest.mark.skipif(
     not const.has_access_lustre,
-    reason="Skipping tests that require access " "to AEROCOM database on METNo servers",
+    reason="Skipping tests that require access to AEROCOM database on METNo servers",
 )
 
 lustre_avail = pytest.mark.skipif(
-    const.has_access_lustre, reason="Skipping tests that will crash " "if lustre can be accessed."
+    const.has_access_lustre, reason="Skipping tests that will crash if lustre can be accessed."
 )
 
 # custom skipif marker that is used below for test functions that

@@ -52,9 +52,7 @@ def atmosphere_sigma_coordinate_to_pressure(sigma, ps, ptop):
         try:
             ptop = float(ptop)
         except Exception as e:
-            raise ValueError(
-                "Invalid input for ptop. Need floating point\n" "Error: {}".format(repr(e))
-            )
+            raise ValueError(f"Invalid input for ptop. Need floating point\nError: {repr(e)}")
     return ptop + sigma * (ps - ptop)
 
 
@@ -339,7 +337,7 @@ class AltitudeAccess:
         from pyaerocom.griddeddata import GriddedData
 
         if not isinstance(gridded_data, GriddedData):
-            raise ValueError("Invalid input: require instance of GriddedData " "class")
+            raise ValueError("Invalid input: require instance of GriddedData class")
         if not gridded_data.has_latlon_dims:
             raise NotImplementedError(
                 "Altitude access requires latitude and "
@@ -403,7 +401,7 @@ class AltitudeAccess:
         d = self.data_obj
         if not d.has_latlon_dims:
             raise DataDimensionError(
-                "Gridded data object needs both latitude " "and longitude dimensions"
+                "Gridded data object needs both latitude and longitude dimensions"
             )
         try:
             d.check_dimcoords_tseries()
@@ -457,9 +455,7 @@ class AltitudeAccess:
             try:
                 coord_info = const.COORDINFO[coord]
             except VariableDefinitionError:
-                raise CoordinateNameError(
-                    "Coordinate {} is not supported by " "pyaerocom.".format(coord)
-                )
+                raise CoordinateNameError(f"Coordinate {coord} is not supported by pyaerocom.")
             # 1. check if coordinate is assigned in data object directly
             d._update_coord_info()
             if coord in d._coord_var_names:
@@ -563,7 +559,7 @@ class AltitudeAccess:
         cstd_name = coord.standard_name
         if not subset[cstd_name].ndim == 1:
             raise DataDimensionError(
-                "Unexpected error: dimension of variable " "{} should be 1".format(cstd_name)
+                f"Unexpected error: dimension of variable {cstd_name} should be 1"
             )
         raise NotImplementedError
 

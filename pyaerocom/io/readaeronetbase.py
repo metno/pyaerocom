@@ -205,7 +205,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                     if alt_name in mapping:
                         return alt_name
         raise MetaDataError(
-            "Required meta-information string {} could " "not be found in file header".format(val)
+            f"Required meta-information string {val} could not be found in file header"
         )
 
     def _find_vars_name_based(self, mapping, cols):
@@ -246,9 +246,7 @@ class ReadAeronetBase(ReadUngriddedBase):
         tol = var_info.obs_wavelength_tol_nm
         low, high = wvl - tol, wvl + tol
         if wvl is None:
-            raise AttributeError(
-                "Variable {} does not contain " "wavelength information".format(var)
-            )
+            raise AttributeError(f"Variable {var} does not contain wavelength information")
 
         # variable information exists and contains wavelength info
         wvl_str = self.infer_wavelength_colname(colname)
@@ -446,9 +444,7 @@ class ReadAeronetBase(ReadUngriddedBase):
                     elif "unit" in station_data["var_info"][var]:
                         from pyaerocom.exceptions import MetaDataError
 
-                        raise MetaDataError(
-                            "Metadata attr unit is deprecated, " "please use units"
-                        )
+                        raise MetaDataError("Metadata attr unit is deprecated, please use units")
                     else:
                         u = self.DEFAULT_UNIT
                 elif var in self.UNITS:

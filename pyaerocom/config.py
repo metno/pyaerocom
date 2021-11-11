@@ -303,7 +303,7 @@ class Config:
                 return (self._config_files[env_id], env_id)
 
         raise FileNotFoundError(
-            "Could not infer environment configuration " "for input directory: {}".format(basedir)
+            f"Could not infer environment configuration for input directory: {basedir}"
         )
 
     def infer_basedir_and_config(self):
@@ -315,7 +315,7 @@ class Config:
                     _chk_dir = os.path.join(basedir, self._check_subdirs_cfg[cfg_id])
                     if self._check_access(_chk_dir):
                         return (basedir, self._config_files[cfg_id])
-        raise FileNotFoundError("Could not establish access to any registered " "database")
+        raise FileNotFoundError("Could not establish access to any registered database")
 
     @property
     def has_access_users_database(self):
@@ -422,9 +422,7 @@ class Config:
             try:
                 os.mkdir(val)
             except Exception:
-                raise OSError(
-                    "Input directory {} does not exist and can " "also not be created".format(val)
-                )
+                raise OSError(f"Input directory {val} does not exist and can also not be created")
         self._downloaddatadir = val
 
     @property
@@ -457,9 +455,7 @@ class Config:
         try:
             return chk_make_subdir(self.cache_basedir, self.user)
         except Exception as e:
-            self.print_log.warning(
-                "Failed to access CACHEDIR: {}\n" "Deactivating caching".format(repr(e))
-            )
+            self.print_log.warning(f"Failed to access CACHEDIR: {repr(e)}\nDeactivating caching")
             self._caching_active = False
 
     @CACHEDIR.setter
@@ -488,9 +484,7 @@ class Config:
     @property
     def VAR_PARAM(self):
         """Deprecated name, please use :attr:`VARS` instead"""
-        self.print_log.warning(
-            "Deprecated (but still functional) name " "VAR_PARAM. Please use VARS"
-        )
+        self.print_log.warning("Deprecated (but still functional) name VAR_PARAM. Please use VARS")
         return self.VARS
 
     @property
@@ -572,7 +566,7 @@ class Config:
             if os.path.exists(sdir) and self.ERA5_SURFTEMP_FILENAME in os.listdir(sdir):
                 return os.path.join(sdir, self.ERA5_SURFTEMP_FILENAME)
         raise FileNotFoundError(
-            "ERA Interim surface temperature data cannot " "be accessed (check lustre connection)"
+            "ERA Interim surface temperature data cannot be accessed (check lustre connection)"
         )
 
     def make_default_vert_grid(self):

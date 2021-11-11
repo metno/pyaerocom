@@ -335,9 +335,7 @@ def numpy_to_cube(data, dims=None, var_name=None, units=None, **attrs):
     if dims is not None:
         if not len(dims) == data.ndim:
 
-            raise DataDimensionError(
-                "Input number of dimensios must match array " "dimension number"
-            )
+            raise DataDimensionError("Input number of dimensios must match array dimension number")
         for i, dim in enumerate(dims):
             if not isinstance(dim, iris.coords.DimCoord):
                 raise ValueError("Need iris.DimCoord...")
@@ -1035,7 +1033,7 @@ def calc_climatology(s, start, stop, min_count=None, set_year=None, resample_how
 
     if len(sc) == 0:
         raise ValueError(
-            "Cropping input time series in climatological " "interval resulted in empty series"
+            "Cropping input time series in climatological interval resulted in empty series"
         )
     if set_year is None:
         set_year = int(start.year + (stop.year - start.year) / 2) + 1
@@ -1140,13 +1138,13 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
         how = "mean"
     elif "percentile" in how:
         raise NotImplementedError(
-            "percentile based resampling is not yet " "available for xarray based data"
+            "percentile based resampling is not yet available for xarray based data"
         )
 
     if not isinstance(arr, xr.DataArray):
         raise OSError(f"Invalid input for arr: need DataArray, got {type(arr)}")
     elif not "time" in arr.dims:
-        raise DataDimensionError("Cannot resample time: input DataArray has " "no time dimension")
+        raise DataDimensionError("Cannot resample time: input DataArray has no time dimension")
 
     from pyaerocom.tstype import TsType
 
@@ -1161,9 +1159,7 @@ def resample_time_dataarray(arr, freq, how=None, min_num_obs=None):
     try:
         aggfun = getattr(resampler, how)
     except AttributeError:
-        raise ResamplingError(
-            "Invalid aggregator {} for temporal resampling " "of DataArray...".format(how)
-        )
+        raise ResamplingError(f"Invalid aggregator {how} for temporal resampling of DataArray...")
     arr = aggfun(dim="time")
 
     if invalid is not None:
@@ -1255,7 +1251,7 @@ def to_pandas_timestamp(value):
         try:
             numval = int(value)
             if not 0 <= numval <= 10000:
-                raise ValueError("Could not infer valid year from numerical " "time input")
+                raise ValueError("Could not infer valid year from numerical time input")
             return pd.Timestamp(str(numval))
         except Exception as e:
             raise ValueError(f"Failed to convert {value} to Timestamp: {repr(e)}")
@@ -1282,9 +1278,7 @@ def to_datetime64(value):
         try:
             return to_pandas_timestamp(value).to_datetime64()
         except Exception as e:
-            raise ValueError(
-                "Failed to convert {} to datetime64 object" "Error: {}".format(value, repr(e))
-            )
+            raise ValueError(f"Failed to convert {value} to datetime64 objectError: {repr(e)}")
 
 
 def is_year(val):
@@ -1512,12 +1506,12 @@ def cftime_to_datetime64(times, cfunit=None, calendar=None):
     if isinstance(cfunit, str):
         if calendar is None:
             raise ValueError(
-                "Require specification of calendar for " "conversion into datetime64 objects"
+                "Require specification of calendar for conversion into datetime64 objects"
             )
         cfunit = Unit(cfunit, calendar)  # raises Error if calendar is invalid
     if not isinstance(cfunit, Unit):
         raise ValueError(
-            "Please provide cfunit either as instance of class " "cf_units.Unit or as a string"
+            "Please provide cfunit either as instance of class cf_units.Unit or as a string"
         )
     calendar = cfunit.calendar
     basedate = cfunit.num2date(0)

@@ -58,9 +58,7 @@ class Filter:
     def _check_name_valid(self, val):
         if not isinstance(val, list):
             if not isinstance(val, str):
-                raise ValueError(
-                    "Need list or string as input for name attr " "got {}".format(val)
-                )
+                raise ValueError(f"Need list or string as input for name attr got {val}")
             spl = val.split(self._DELIM)
         else:
             spl = val
@@ -75,9 +73,7 @@ class Filter:
             if entry in self.valid_regions:
                 if entry in self.LAND_OCN_FILTERS:
                     if landsea is not None:
-                        raise ValueError(
-                            "Filter name must only contain one " "landsea specification"
-                        )
+                        raise ValueError("Filter name must only contain one landsea specification")
                     landsea = entry
                 else:
                     if reg is not None:

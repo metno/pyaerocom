@@ -200,7 +200,7 @@ class GriddedData:
         Temporal resolution of data
         """
         if self.metadata["ts_type"] == "undefined":
-            const.print_log.warning("ts_type is not set in GriddedData, trying " "to infer.")
+            const.print_log.warning("ts_type is not set in GriddedData, trying to infer.")
             self.infer_ts_type()
 
         return self.metadata["ts_type"]
@@ -240,7 +240,7 @@ class GriddedData:
 
     @property
     def suppl_info(self):
-        w = DeprecationWarning("Outdated attribute suppl_info. Please use " "metadata instead")
+        w = DeprecationWarning("Outdated attribute suppl_info. Please use metadata instead")
         const.print_log.warning(w)
         return self.metadata
 
@@ -282,7 +282,7 @@ class GriddedData:
 
         if not isinstance(val, ReadGridded):
             raise ValueError(
-                "cannot set reader in GriddedData: need " "instance of class ReadGridded"
+                "cannot set reader in GriddedData: need instance of class ReadGridded"
             )
         self._reader = val
 
@@ -338,7 +338,7 @@ class GriddedData:
         ts = self.time_stamps()
         if len(ts) < 2:
             raise AttributeError(
-                "Need at least 2 timestamps in GriddedData in " "order to compute delta-t"
+                "Need at least 2 timestamps in GriddedData in order to compute delta-t"
             )
         return ts[1:] - ts[0:-1]
 
@@ -374,7 +374,7 @@ class GriddedData:
         """
         if self.grid.has_lazy_data():
             raise AttributeError(
-                "Information cannot be accessed. Data is not " "available in memory (lazy loading)"
+                "Information cannot be accessed. Data is not available in memory (lazy loading)"
             )
         return isinstance(self.grid.data, np.ma.core.MaskedArray)
 
@@ -387,13 +387,11 @@ class GriddedData:
         Changing this attribute will update the time-dimension.
         """
         if not self.has_time_dim:
-            raise DataDimensionError("Could not access base year: data has no " "time dimension")
+            raise DataDimensionError("Could not access base year: data has no time dimension")
         try:
             return self.time.units.utime().origin.year
         except Exception as e:
-            raise DataDimensionError(
-                "Could access base-year. Unexpected error: " "{}".format(repr(e))
-            )
+            raise DataDimensionError(f"Could access base-year. Unexpected error: {repr(e)}")
 
     @base_year.setter
     def base_year(self, val):
@@ -585,7 +583,7 @@ class GriddedData:
             if data object does not contain a time dimension
         """
         if not self.has_time_dim:
-            raise DataDimensionError("Cannot infer frequency. Data has no time " "dimension")
+            raise DataDimensionError("Cannot infer frequency. Data has no time dimension")
         dt = np.unique(self.delta_t)
         if len(dt) > 1:
             raise ValueError("Could not identify unique frequency")
@@ -712,7 +710,7 @@ class GriddedData:
                 self.var_name = var_name
             except ValueError:
                 const.print_log.warning(
-                    "Could not update var_name, invalid input " "{} (need str)".format(var_name)
+                    f"Could not update var_name, invalid input {var_name} (need str)"
                 )
 
     def _check_invalid_unit_alias(self):
@@ -763,7 +761,7 @@ class GriddedData:
             elif Unit(to_unit).convert(1, current_unit) == 1:
                 self.units = to_unit
                 const.print_log.info(
-                    f"Updating unit string from {current_unit} to {to_unit} " f"in GriddedData."
+                    f"Updating unit string from {current_unit} to {to_unit} in GriddedData."
                 )
                 unit_ok = True
         except (VariableDefinitionError, ValueError):
@@ -783,7 +781,7 @@ class GriddedData:
                     unit_ok = True
                 except Exception as e:
                     const.print_log.warning(
-                        f"Failed to convert unit from {self.units} to {to_unit}. " f"Reason: {e}"
+                        f"Failed to convert unit from {self.units} to {to_unit}. Reason: {e}"
                     )
 
         return unit_ok
@@ -816,7 +814,7 @@ class GriddedData:
             from_unit=current, to_unit=new_unit, var_name=self.var_name, ts_type=self.ts_type
         )
         const.print_log.info(
-            f"Succesfully converted unit from {current} to {new_unit} in " f"{self.short_str()}"
+            f"Succesfully converted unit from {current} to {new_unit} in {self.short_str()}"
         )
 
         self._apply_unit_mulfac(new_unit, mulfac)
@@ -900,9 +898,7 @@ class GriddedData:
         if years is None:
             years = self.years_avail()
         if len(years) == 1:
-            const.print_log.info(
-                "Nothing to split... GriddedData contains " "only {}".format(years[0])
-            )
+            const.print_log.info(f"Nothing to split... GriddedData contains only {years[0]}")
             yield self
         for year in years:
             start, stop = start_stop_from_year(year)
@@ -939,7 +935,7 @@ class GriddedData:
             dims = self.cube.coord_dims(coord)
             if len(dims) == 0:
                 raise DataDimensionError(
-                    f"Coord {coord} is not associated " f"with a data dimension in cube"
+                    f"Coord {coord} is not associated with a data dimension in cube"
                 )
             elif len(dims) > 1:
                 raise NotImplementedError(
@@ -970,7 +966,7 @@ class GriddedData:
             dims = self.cube.coord_dims(coord)
             if len(dims) == 0:
                 raise DataDimensionError(
-                    f"Coord {coord} is not associated " f"with a data dimension in cube"
+                    f"Coord {coord} is not associated with a data dimension in cube"
                 )
             elif len(dims) > 1:
                 raise NotImplementedError(
@@ -1186,7 +1182,7 @@ class GriddedData:
 
         if not len(coords) == 2:
             raise NotImplementedError(
-                "Please provide only latitude / longitude " "sampling points as input"
+                "Please provide only latitude / longitude sampling points as input"
             )
         for coord, vals in coords.items():
             if coord in ("lat", "latitude"):
@@ -1269,7 +1265,7 @@ class GriddedData:
             are: ``longitude, latitude, var_name``
         """
         if self.ndim != 3:
-            raise Exception("Developers: Debug! Users: please contact " "developers :)")
+            raise Exception("Developers: Debug! Users: please contact developers :)")
 
         data = self.interpolate(sample_points, scheme, collapse_scalar)
         var = self.var_name
@@ -1346,12 +1342,12 @@ class GriddedData:
         elif vert_scheme == "altitude":
             if not "altitude" in [sp[0] for sp in sample_points]:
                 raise ValueError(
-                    "Require altitude specification in sample " "points for vert_scheme altitude"
+                    "Require altitude specification in sample points for vert_scheme altitude"
                 )
             if not self.check_altitude_access():
-                raise DataDimensionError("Cannot access altitude " "information")
+                raise DataDimensionError("Cannot access altitude information")
             raise NotImplementedError(
-                "Cannot yet retrieve timeseries at " "altitude levels. Coming soon..."
+                "Cannot yet retrieve timeseries at altitude levels. Coming soon..."
             )
         elif vert_scheme == "profile":
             raise NotImplementedError("Cannot yet retrieve profile timeseries")
@@ -1391,15 +1387,13 @@ class GriddedData:
     def extract_surface_level(self):
         """Extract surface level from 4D field"""
         if not self.ndim == 4:
-            raise DataDimensionError(
-                "Can only extract surface level for 4D " "gridded data object"
-            )
+            raise DataDimensionError("Can only extract surface level for 4D gridded data object")
         idx = self._infer_index_surface_level()
         return self[:, :, :, idx]
 
     def _infer_index_surface_level(self):
         if not self.ndim == 4:
-            raise DataDimensionError("Can only infer surface level for 4D " "gridded data object")
+            raise DataDimensionError("Can only infer surface level for 4D gridded data object")
         try:
             self.check_dimcoords_tseries()
         except DimensionOrderError:
@@ -1468,7 +1462,7 @@ class GriddedData:
         dict
             dictionary containing results
         """
-        raise NameError(DeprecationWarning("This method is deprecated since " "version 0.8.0"))
+        raise NameError(DeprecationWarning("This method is deprecated since version 0.8.0"))
 
     # =============================================================================
     #         self.check_dimcoords_tseries()
@@ -1506,7 +1500,7 @@ class GriddedData:
 
     def isel(self, **kwargs):
         raise NotImplementedError(
-            "Please use method sel for data selection " "based on dimension values"
+            "Please use method sel for data selection based on dimension values"
         )
 
     def sel(self, use_neirest=True, **dimcoord_vals):
@@ -1576,7 +1570,7 @@ class GriddedData:
         subset = self.extract(c)
         if subset is None:
             raise DataExtractionError(
-                "Failed to extract subset for input " "coordinates {}".format(dimcoord_vals)
+                f"Failed to extract subset for input coordinates {dimcoord_vals}"
             )
         return subset
 
@@ -1665,7 +1659,7 @@ class GriddedData:
             logger.info(f"Data is already in {to_ts_type} resolution")
             return self
         if not to_ts_type in IRIS_AGGREGATORS:
-            raise TemporalResolutionError("Resolution {} cannot " "converted".format(to_ts_type))
+            raise TemporalResolutionError(f"Resolution {to_ts_type} cannot converted")
         elif current < to:  # current resolution is smaller than desired
             raise TemporalResolutionError(
                 "Cannot increase "
@@ -1769,9 +1763,7 @@ class GriddedData:
         if how is None:
             how = "mean"
         if not self.has_time_dim:
-            raise DataDimensionError(
-                "Require time dimension in GriddedData: " "{}".format(self.short_str())
-            )
+            raise DataDimensionError(f"Require time dimension in GriddedData: {self.short_str()}")
         if not use_iris:
             try:
                 data = self._resample_time_xarray(to_ts_type, how, min_num_obs)
@@ -1811,9 +1803,7 @@ class GriddedData:
         GriddedData
             current instance
         """
-        const.logger.info(
-            "Altitude filtering is not applied in GriddedData " "and will be skipped"
-        )
+        const.logger.info("Altitude filtering is not applied in GriddedData and will be skipped")
         return self
 
     def filter_region(self, region_id, inplace=False, **kwargs):
@@ -2026,7 +2016,7 @@ class GriddedData:
             generated file name based on what is in this object
         """
         const.print_log.warning(
-            DeprecationWarning("This method is deprecated. Please use " "aerocom_savename instead")
+            DeprecationWarning("This method is deprecated. Please use aerocom_savename instead")
         )
         from pyaerocom.io import FileConventionRead
 
@@ -2105,7 +2095,7 @@ class GriddedData:
             stop = pd.Timestamp(self.stop).year
             if stop > start:
                 raise ValueError(
-                    "Cannot create AeroCom savename for multiyear " "data... please split first"
+                    "Cannot create AeroCom savename for multiyear data... please split first"
                 )
             year = str(start)
         else:
@@ -2230,9 +2220,7 @@ class GriddedData:
         try:
             itp_cube = self.grid.interpolate(sample_points, scheme, collapse_scalar)
         except MemoryError:
-            raise MemoryError(
-                "Interpolation failed since grid of interpolated " "Cube is too large"
-            )
+            raise MemoryError("Interpolation failed since grid of interpolated Cube is too large")
         print_log.info("Successfully interpolated cube")
         return GriddedData(itp_cube, **self.metadata)
 
@@ -2291,7 +2279,7 @@ class GriddedData:
 
         if not (self.has_latlon_dims * other.has_latlon_dims):
             raise DataDimensionError(
-                "Can only regrid data objects with " "latitude and longitude dimensions"
+                "Can only regrid data objects with latitude and longitude dimensions"
             )
 
         other._check_lonlat_bounds()
@@ -2418,9 +2406,7 @@ class GriddedData:
         tstr = ""
         if "time" in self.dimcoord_names:
             if not self.ndim == 3:
-                raise DataDimensionError(
-                    "Invalid number of dimensions: {}. " "Expected 3.".format(self.ndim)
-                )
+                raise DataDimensionError(f"Invalid number of dimensions: {self.ndim}. Expected 3.")
             if not isinstance(time_idx, int):
                 try:
                     t = to_pandas_timestamp(time_idx).to_datetime64()
@@ -2436,14 +2422,10 @@ class GriddedData:
                 try:
                     tstr = datetime2str(self.time_stamps()[time_idx], self.ts_type)
                 except Exception:
-                    print_log.warning(
-                        "Failed to retrieve ts_type in " "GriddedData {}".format(repr(self))
-                    )
+                    print_log.warning(f"Failed to retrieve ts_type in GriddedData {repr(self)}")
         else:
             if not self.ndim == 2:
-                raise DataDimensionError(
-                    "Invalid number of dimensions: {}. " "Expected 2.".format(self.ndim)
-                )
+                raise DataDimensionError(f"Invalid number of dimensions: {self.ndim}. Expected 2.")
             data = self
 
         from pyaerocom.plot.mapping import plot_griddeddata_on_map
@@ -2486,9 +2468,7 @@ class GriddedData:
                     bbox=dict(facecolor="#ffffff", edgecolor="none", alpha=0.65),
                 )
             except Exception as e:
-                print_log.warning(
-                    "Failed to compute / add area weighted mean. " "Reason: {}".format(repr(e))
-                )
+                print_log.warning(f"Failed to compute / add area weighted mean. Reason: {repr(e)}")
 
         return fig
 
@@ -2746,9 +2726,7 @@ class GriddedData:
                 which = self._check_coordinate_access(indices_or_attr)
                 return self.grid.coord(**which)
             except Exception:
-                raise AttributeError(
-                    "GriddedData object has no " "attribute {}".format(indices_or_attr)
-                )
+                raise AttributeError(f"GriddedData object has no attribute {indices_or_attr}")
 
         sub = self.grid.__getitem__(indices_or_attr)
         return GriddedData(sub, **self.metadata)
@@ -2763,7 +2741,7 @@ class GriddedData:
     def __str__(self):
         """For now, use string representation of underlying data"""
         st = (
-            f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n" f"{self._grid.__str__()}"
+            f"pyaerocom.GriddedData: ({self.var_name}, {self.data_id})\n{self._grid.__str__()}"
         )
         return st
 
@@ -2779,21 +2757,21 @@ class GriddedData:
 
     def short_str(self):
         """Short string representation"""
-        return f"{self.var_name} ({self.data_id}, freq={self.ts_type}, " f"unit={self.units})"
+        return f"{self.var_name} ({self.data_id}, freq={self.ts_type}, unit={self.units})"
 
     ### Deprecated (but still supported) stuff
     @property
     def unit(self):
         """Unit of data"""
         const.print_log.warning(
-            DeprecationWarning("Attr. unit is deprecated, " "please use units instead")
+            DeprecationWarning("Attr. unit is deprecated, please use units instead")
         )
         return self.grid.units
 
     @unit.setter
     def unit(self, val):
         const.print_log.warning(
-            DeprecationWarning("Attr. unit is deprecated, " "please use units instead")
+            DeprecationWarning("Attr. unit is deprecated, please use units instead")
         )
         self.grid.units = val
 

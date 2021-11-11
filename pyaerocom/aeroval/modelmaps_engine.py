@@ -75,7 +75,7 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
         var_list = self._get_vars_to_process(model_name, var_list)
         files = []
         for var in var_list:
-            const.print_log.info(f"Processing model maps for " f"{model_name} ({var})")
+            const.print_log.info(f"Processing model maps for {model_name} ({var})")
 
             try:
                 _files = self._process_map_var(model_name, var, self.reanalyse_existing)
@@ -85,15 +85,15 @@ class ModelMapsEngine(ProcessingEngine, DataImporter):
                 if self.raise_exceptions:
                     raise
                 const.print_log.warning(
-                    f"Failed to process maps for {model_name} {var} data. " f"Reason: {e}."
+                    f"Failed to process maps for {model_name} {var} data. Reason: {e}."
                 )
         return files
 
     def _check_dimensions(self, data: GriddedData) -> "GriddedData":
         if not data.has_latlon_dims:
-            raise DataDimensionError("data needs to have latitude an longitude " "dimension")
+            raise DataDimensionError("data needs to have latitude an longitude dimension")
         elif not data.has_time_dim:
-            raise DataDimensionError("data needs to have latitude an longitude " "dimension")
+            raise DataDimensionError("data needs to have latitude an longitude dimension")
         if data.ndim == 4:
             data = data.extract_surface_level()
         return data

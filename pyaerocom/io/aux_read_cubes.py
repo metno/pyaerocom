@@ -19,9 +19,7 @@ CUBE_MATHS = {
 
 def _apply_operator_cubes(cube1, cube2, operator_name, allow_coord_merge=True):
     if not operator_name in CUBE_MATHS:
-        raise NotImplementedError(
-            "No such arithmetic cube operator " "implemented: {}".format(operator_name)
-        )
+        raise NotImplementedError(f"No such arithmetic cube operator implemented: {operator_name}")
     fun = CUBE_MATHS[operator_name]
     try:
         return fun(cube1, cube2)
@@ -53,9 +51,7 @@ def _check_input_iscube(*data_objs):
         elif isinstance(obj, iris.cube.Cube):
             checked.append(obj)
         else:
-            raise ValueError(
-                "Invalid input: require GriddedData or Cube, got " "{}".format(type(obj))
-            )
+            raise ValueError(f"Invalid input: require GriddedData or Cube, got {type(obj)}")
     return checked
 
 
@@ -165,7 +161,7 @@ def divide_cubes(cube1, cube2):
 
 def lifetime_from_load_and_dep(load, wetdep, drydep):
     """Compute lifetime from load and wet and dry deposition"""
-    raise NotImplementedError("Lifetime cannot be computed based on " "grid data")
+    raise NotImplementedError("Lifetime cannot be computed based on grid data")
     load, wetdep, drydep = _check_input_iscube(load, wetdep, drydep)
     deptot = _apply_operator_cubes(wetdep, drydep, "add", allow_coord_merge=True)
 

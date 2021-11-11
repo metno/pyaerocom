@@ -185,7 +185,7 @@ def compute_model_average_and_diversity(
         from_vars.append(data.var_name)
 
     if not len(loaded) > 1:
-        raise ValueError("Can only compute average if more than one model is " "available")
+        raise ValueError("Can only compute average if more than one model is available")
 
     from_files = [os.path.basename(f) for f in from_files]
 

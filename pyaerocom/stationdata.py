@@ -152,9 +152,7 @@ class StationData(StationMetaData):
             if unit cannot be accessed for variable
         """
         if not var_name in self.var_info:
-            raise MetaDataError(
-                "Could not access variable metadata dict " "for {}.".format(var_name)
-            )
+            raise MetaDataError(f"Could not access variable metadata dict for {var_name}.")
         try:
             return str(self.var_info[var_name]["units"])
         except KeyError:
@@ -166,7 +164,7 @@ class StationData(StationMetaData):
                     "check corresponding reading routine. "
                 )
             raise MetaDataError(
-                "Failed to access units attribute for variable " "{}. {}".format(var_name, add_str)
+                f"Failed to access units attribute for variable {var_name}. {add_str}"
             )
 
     @property
@@ -348,9 +346,7 @@ class StationData(StationMetaData):
             val = self.station_coords[key]
             if val is not None:
                 if not isnumeric(val):
-                    raise MetaDataError(
-                        "Station coordinate {} must be numeric. " "Got: {}".format(key, val)
-                    )
+                    raise MetaDataError(f"Station coordinate {key} must be numeric. Got: {val}")
                 output[key] = val
             else:
                 val = self[key]
@@ -489,9 +485,7 @@ class StationData(StationMetaData):
         try:
             if isinstance(current_val, dict):
                 if not same_type:
-                    raise ValueError(
-                        "Cannot merge meta item {} due to type " "mismatch".format(key)
-                    )
+                    raise ValueError(f"Cannot merge meta item {key} due to type mismatch")
                 elif not current_val == val:
                     self[key] = merge_dicts(current_val, val)
 
@@ -502,9 +496,7 @@ class StationData(StationMetaData):
                             newval = val.insert(0, current_val)
                         self[key] = newval
                     else:
-                        raise ValueError(
-                            "Cannot merge meta item {} due to type " "mismatch".format(key)
-                        )
+                        raise ValueError(f"Cannot merge meta item {key} due to type mismatch")
                 elif not current_val == val:
                     # both are str that may be already merged with ";" -> only
                     # add new entries
@@ -613,7 +605,7 @@ class StationData(StationMetaData):
             try:
                 if not self.same_coords(other, coord_tol_km):
                     raise CoordinateError(
-                        f"Station coordinates differ by " f"more than {coord_tol_km} km."
+                        f"Station coordinates differ by more than {coord_tol_km} km."
                     )
             except MetaDataError:  #
                 pass
@@ -664,9 +656,7 @@ class StationData(StationMetaData):
             else:
                 if isinstance(info_this[key], str):
                     if not isinstance(val, str):
-                        raise ValueError(
-                            "Cannot merge meta item {} due to type " "mismatch".format(key)
-                        )
+                        raise ValueError(f"Cannot merge meta item {key} due to type mismatch")
                     vals = [x.strip() for x in info_this[key].split(";")]
                     vals_in = [x.strip() for x in val.split(";")]
 
@@ -737,9 +727,7 @@ class StationData(StationMetaData):
                     raise Exception(f"Unexpected error: {repr(e)}.\nPlease debug...")
             if not "ts_type" in info or info["ts_type"] is None:
                 if not self.ts_type in const.GRID_IO.TS_TYPES:
-                    raise ValueError(
-                        "Cannot identify ts_type for var {} " "in {}".format(var, self)
-                    )
+                    raise ValueError(f"Cannot identify ts_type for var {var} in {self}")
                 info["ts_type"] = self.ts_type
         self.ts_type = None
 
@@ -826,7 +814,7 @@ class StationData(StationMetaData):
         """
         if not var_name in self:
             raise VarNotAvailableError(
-                "StationData object does not contain " "data for variable {}".format(var_name)
+                f"StationData object does not contain data for variable {var_name}"
             )
         elif not var_name in other:
             raise VarNotAvailableError(
@@ -1266,7 +1254,7 @@ class StationData(StationMetaData):
 
         elif not data.ndim == 1:
             raise NotImplementedError(
-                "Multi-dimensional data columns " "cannot be converted to time-series"
+                "Multi-dimensional data columns cannot be converted to time-series"
             )
         self.check_dtime()
         if not len(data) == len(self.dtime):
@@ -1301,13 +1289,13 @@ class StationData(StationMetaData):
 
         if not isrange(altitudes):
             raise NotImplementedError(
-                "So far only a range (low, high) is " "supported for altitude extraction."
+                "So far only a range (low, high) is supported for altitude extraction."
             )
 
         if isinstance(data, xr.DataArray):
             if not sorted(data.dims) == ["altitude", "time"]:
                 raise NotImplementedError(
-                    "Can only handle dataarrays that " "contain 2 dimensions altitude and " "time"
+                    "Can only handle dataarrays that contain 2 dimensions altitude and time"
                 )
             if isrange(altitudes):
                 if not isinstance(altitudes, slice):
@@ -1329,7 +1317,7 @@ class StationData(StationMetaData):
                 raise AttributeError("need 1D altitude array")
             elif not len(alt) == len(data):
                 raise DataDimensionError(
-                    "Altitude data and {} data have " "different lengths".format(var_name)
+                    f"Altitude data and {var_name} data have different lengths"
                 )
             mask = np.logical_and(alt >= altitudes[0], alt <= altitudes[1])
             if mask.sum() == 0:

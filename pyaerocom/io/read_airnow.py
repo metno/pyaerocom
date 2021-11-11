@@ -415,7 +415,7 @@ class ReadAirNow(ReadUngriddedBase):
         ------
         NotImplementedError
         """
-        raise NotImplementedError("Not needed for these data since the format " "is unsuitable...")
+        raise NotImplementedError("Not needed for these data since the format is unsuitable...")
 
     def read(self, vars_to_retrieve=None, first_file=None, last_file=None):
         """

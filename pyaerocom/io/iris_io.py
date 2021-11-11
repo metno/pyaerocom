@@ -205,7 +205,7 @@ def check_and_regrid_lons_cube(cube):
     """
     if cube.coord("longitude").points.max() > 180:
         const.print_log.info(
-            "Rearranging longitude dimension from 0 -> 360 " "definition to -180 -> 180 definition"
+            "Rearranging longitude dimension from 0 -> 360 definition to -180 -> 180 definition"
         )
         cube = cube.intersection(longitude=(-180, 180))
     return cube
@@ -335,10 +335,10 @@ def _check_correct_time_dim(cube, file, file_convention=None):
         except UnresolvableTimeDefinitionError as e:
             raise UnresolvableTimeDefinitionError(repr(e))
         except Exception as e:
-            msg = f"Invalid time dimension coordinate in file:\n{file}.\n" f"Error: repr({e})\n"
+            msg = f"Invalid time dimension coordinate in file:\n{file}.\nError: repr({e})\n"
             logger.warning(msg)
             if const.GRID_IO.CORRECT_TIME_FILENAME:
-                add_msg = "Attempting to correct time coordinate using " "information in file name"
+                add_msg = "Attempting to correct time coordinate using information in file name"
                 msg += add_msg
                 logger.info(add_msg)
                 try:
@@ -477,7 +477,7 @@ def _get_time_index_cube(cube):
     if len(idx_miss) == 1:
         return idx_miss[0]
 
-    raise IndexError(f"Failed to identify data index of time dimension in " f"cube {repr(cube)}")
+    raise IndexError(f"Failed to identify data index of time dimension in cube {repr(cube)}")
 
 
 def correct_time_coord(cube, ts_type, year):

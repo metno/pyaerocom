@@ -191,7 +191,7 @@ class TimeResampler:
         if from_ts_type is None:
             if min_num_obs is not None:
                 const.print_log.warning(
-                    "setting min_num_obs to None since " "from_ts_type is not specified"
+                    "setting min_num_obs to None since from_ts_type is not specified"
                 )
                 min_num_obs = None
         elif isinstance(from_ts_type, str):
@@ -209,7 +209,7 @@ class TimeResampler:
             data_out = self.fun(self.input_data, freq=freq, how=how, **kwargs)
         elif to_ts_type > from_ts_type:
             raise TemporalResolutionError(
-                "Cannot resample time-series from {} " "to {}".format(from_ts_type, to_ts_type)
+                f"Cannot resample time-series from {from_ts_type} to {to_ts_type}"
             )
         elif to_ts_type == from_ts_type:
             const.logger.info(

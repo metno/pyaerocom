@@ -44,7 +44,7 @@ def main():
             print("OK then.... here we go!")
             tools.clear_cache()
         else:
-            print("Wise decision, pyaerocom will handle it for you " "automatically anyways ;P")
+            print("Wise decision, pyaerocom will handle it for you automatically anyways ;P")
 
     if args.ppiaccess:
         print("True") if const.has_access_lustre else print("False")

@@ -154,7 +154,7 @@ def get_topo_data(
         if altitude data cannot be accessed
     """
     if not const.GEONUM_AVAILABLE:
-        raise ModuleNotFoundError("Feature disabled: geonum library is not " "installed")
+        raise ModuleNotFoundError("Feature disabled: geonum library is not installed")
     import geonum
 
     if topodata_loc is None:
@@ -256,7 +256,7 @@ def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None, auto_altitude_sr
     """
     if not const.GEONUM_AVAILABLE and auto_altitude_srtm:
         raise ModuleNotFoundError(
-            "Require Geonum library for accessing " "topographic altitude using SRTM database"
+            "Require Geonum library for accessing topographic altitude using SRTM database"
         )
     if const.GEONUM_AVAILABLE:
         import geonum
@@ -277,7 +277,7 @@ def calc_distance(lat0, lon0, lat1, lon1, alt0=None, alt1=None, auto_altitude_sr
         return (p0 - p1).magnitude
     else:
         logger.warning(
-            "geonum is not installed, computing approximate " "distance using haversine formula"
+            "geonum is not installed, computing approximate distance using haversine formula"
         )
         hordist = haversine(lat0, lon0, lat1, lon1)
         if alt0 == None:

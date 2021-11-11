@@ -288,7 +288,7 @@ class ReadMarcoPolo(ReadUngriddedBase):
         ------
         NotImplementedError
         """
-        raise NotImplementedError("Not needed for these data since the format " "is unsuitable...")
+        raise NotImplementedError("Not needed for these data since the format is unsuitable...")
 
     def compute_additional_vars(self, statlist_from_file, vars_to_compute):
 

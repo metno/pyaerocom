@@ -388,7 +388,7 @@ class EvalSetup(NestedContainer, ConstrainedContainer):
             per = self.colocation_opts._period_from_start_stop()
             periods = [per]
             const.print_log.info(
-                f"periods is not set, inferred {per} from start " f"/ stop colocation settings."
+                f"periods is not set, inferred {per} from start / stop colocation settings."
             )
 
         self.time_cfg["periods"] = _check_statistics_periods(periods)

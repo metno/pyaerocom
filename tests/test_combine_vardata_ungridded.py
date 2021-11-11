@@ -95,7 +95,7 @@ FMFFUN = f"fmf550aer=({SDA_ID};od550lt1aer/{SUN_ID};od550aer)*100"
 
 
 @pytest.mark.parametrize(
-    "merge_how,merge_eval_fun,var_name_out,data_id_out," "var_unit_out,expectation",
+    "merge_how,merge_eval_fun,var_name_out,data_id_out,var_unit_out,expectation",
     [
         ("combine", None, None, None, None, does_not_raise_exception()),
         ("eval", FMFFUN, "fmf550aer", None, "%", does_not_raise_exception()),
@@ -227,7 +227,7 @@ aodexpensive = f"od550aer=({SUN_ID};od550aer+{SUN_ID};od550aer)/2"
 
 
 @pytest.mark.parametrize(
-    "merge_how,merge_eval_fun,var_name_out,data_id_out," "var_unit_out",
+    "merge_how,merge_eval_fun,var_name_out,data_id_out,var_unit_out",
     [
         ("combine", None, None, None, None),
         ("mean", None, None, None, None),

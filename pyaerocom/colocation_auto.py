@@ -442,7 +442,7 @@ class ColocationSetup(BrowseDict):
             os.mkdir(basedir_coldata)
         if not os.path.exists(basedir_coldata):
             raise FileNotFoundError(
-                f"Output directory for colocated data files {basedir_coldata} " f"does not exist"
+                f"Output directory for colocated data files {basedir_coldata} does not exist"
             )
         self.basedir_coldata = basedir_coldata
         return basedir_coldata
@@ -958,7 +958,7 @@ class Colocator(ColocationSetup):
                 filtered[mvar] = ovar
                 ts_types[mvar] = mdata.ts_type
             except Exception as e:
-                msg = f"Failed to load model data: {self.model_id} ({mvar}). " f"Reason {e}"
+                msg = f"Failed to load model data: {self.model_id} ({mvar}). Reason {e}"
                 const.print_log.warning(msg)
                 self._write_log(msg + "\n")
                 self._processing_status.append([mvar, ovar, 4])
@@ -1403,7 +1403,7 @@ class Colocator(ColocationSetup):
             args["data"] = mdata
         elif mdata.ndim > 3:
             raise DataDimensionError(
-                f"cannot co-locate model data with more " f"than 3 dimensions: {mdata}"
+                f"cannot co-locate model data with more than 3 dimensions: {mdata}"
             )
 
         if isinstance(odata, GriddedData):
@@ -1412,13 +1412,13 @@ class Colocator(ColocationSetup):
                 args["data_ref"] = odata
             elif odata.ndim > 3:
                 raise DataDimensionError(
-                    f"cannot co-locate model data with more " f"than 3 dimensions: {odata}"
+                    f"cannot co-locate model data with more than 3 dimensions: {odata}"
                 )
         return args
 
     def _run_helper(self, model_var, obs_var):
         const.print_log.info(
-            f"Running {self.model_id} ({model_var}) vs. " f"{self.obs_id} ({obs_var})"
+            f"Running {self.model_id} ({model_var}) vs. {self.obs_id} ({obs_var})"
         )
         args = self._prepare_colocation_args(model_var, obs_var)
         args = self._check_dimensionality(args)
@@ -1443,7 +1443,7 @@ class Colocator(ColocationSetup):
             const.print_log.info("Nothing to colocate")
             return
         const.print_log.info(
-            "The following variable combinations will be colocated\n" "MODEL-VAR\tOBS-VAR"
+            "The following variable combinations will be colocated\nMODEL-VAR\tOBS-VAR"
         )
 
         for key, val in var_matches.items():

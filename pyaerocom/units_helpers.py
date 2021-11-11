@@ -285,7 +285,7 @@ def get_unit_conversion_fac(from_unit, to_unit, var_name=None, ts_type=None):
             from_unit = f"{from_unit} {freq_si}-1"
             return _get_unit_conversion_fac_helper(from_unit, to_unit, var_name)
 
-    raise UnitConversionError(f"failed to convert unit from " f"{from_unit} to {to_unit}")
+    raise UnitConversionError(f"failed to convert unit from {from_unit} to {to_unit}")
 
 
 def convert_unit(data, from_unit, to_unit, var_name=None, ts_type=None):

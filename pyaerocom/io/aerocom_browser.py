@@ -132,7 +132,7 @@ class AerocomBrowser(BrowseDict):
 
         if len(_candidates) == 0:
             raise DataSearchError(
-                "No matches could be found for search pattern " "{}".format(name_or_pattern)
+                f"No matches could be found for search pattern {name_or_pattern}"
             )
         if return_if_match:
             if len(_candidates) == 1:

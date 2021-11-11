@@ -644,7 +644,7 @@ class ReadGhost(ReadUngriddedBase):
                 timenums = np.float64(times)
 
                 if check_time and (begin > times[0] or end < times[-1]):
-                    raise ValueError("Something seems to be off with time " "dimension...")
+                    raise ValueError("Something seems to be off with time dimension...")
 
                 num_vars = len(vars_to_add)
                 num_times = len(times)

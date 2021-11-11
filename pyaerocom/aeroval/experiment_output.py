@@ -219,7 +219,7 @@ class ExperimentOutput(ProjectOutput):
         """
         if not self.results_available:
             const.print_log.warning(
-                f"no output available for experiment {self.exp_id} in " f"{self.proj_id}"
+                f"no output available for experiment {self.exp_id} in {self.proj_id}"
             )
             return
         exp_data = {"public": self.cfg.exp_info.public}
@@ -395,7 +395,7 @@ class ExperimentOutput(ProjectOutput):
         vc, obsinfo = spl[-1], spl[-2]
         if not vc in self.cfg.obs_cfg.all_vert_types:
             const.print_log.warning(
-                f"Invalid or outdated vert code {vc} in ts file {fp}. File " f"will be deleted."
+                f"Invalid or outdated vert code {vc} in ts file {fp}. File will be deleted."
             )
             os.remove(fp)
             return True
@@ -411,9 +411,7 @@ class ExperimentOutput(ProjectOutput):
         try:
             data = read_json(fp)
         except Exception:
-            const.print_log.exception(
-                "FATAL: detected corrupt json file: {}. " "Removing file...".format(fp)
-            )
+            const.print_log.exception(f"FATAL: detected corrupt json file: {fp}. Removing file...")
             os.remove(fp)
             return True
 
@@ -446,11 +444,9 @@ class ExperimentOutput(ProjectOutput):
                 fname = os.path.basename(file)
                 spl = fname.split(".")[0].split("_")
                 if not len(spl) == 2:
-                    msg = f"FATAL: invalid file convention for map json " f"file: {file}. "
+                    msg = f"FATAL: invalid file convention for map json file: {file}."
                     if len(spl) > 2:
-                        msg += (
-                            "Likely due to underscore being present in " "model or variable name."
-                        )
+                        msg += "Likely due to underscore being present in model or variable name."
                     rm.append(file)
                     const.print_log.warning(msg)
                 elif spl[-1] in self._invalid["models"]:
@@ -750,7 +746,7 @@ class ExperimentOutput(ProjectOutput):
                 }
             else:
                 const.print_log.warning(
-                    f"Invalid entry: model {mod_name} ({mod_var}), " f"obs {obs_name} ({obs_var})"
+                    f"Invalid entry: model {mod_name} ({mod_var}), obs {obs_name} ({obs_var})"
                 )
         return new
 

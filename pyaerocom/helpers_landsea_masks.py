@@ -64,7 +64,7 @@ def download_htap_masks(regions_to_download=None):
     elif isinstance(regions_to_download, str):
         regions_to_download = [regions_to_download]
     elif not isinstance(regions_to_download, list):
-        raise ValueError("Invalid input for regions_to_download, need list or " "str")
+        raise ValueError("Invalid input for regions_to_download, need list or str")
 
     path_out = const.FILTERMASKKDIR
     base_url = const.URL_HTAP_MASKS
@@ -87,9 +87,7 @@ def download_htap_masks(regions_to_download=None):
             open(file_out, "wb").write(r.content)
             paths.append(file_out)
         except Exception as e:
-            raise DataRetrievalError(
-                "Failed to download HTAP mask {}. Reason " "{}".format(region, repr(e))
-            )
+            raise DataRetrievalError(f"Failed to download HTAP mask {region}. Reason {repr(e)}")
     return paths
 
 

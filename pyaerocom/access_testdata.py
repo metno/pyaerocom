@@ -107,7 +107,7 @@ class AccessTestData:
         """
         if basedir is not None:
             self.basedir = basedir
-        const.print_log.info(f"Downloading pyaerocom testdata into " f"{self.basedir}")
+        const.print_log.info(f"Downloading pyaerocom testdata into {self.basedir}")
 
         download_loc = self.basedir.joinpath(f"{self.TESTDATADIRNAME}.tar.gz")
 
@@ -209,7 +209,7 @@ class AccessTestData:
                     )
                     return False
                 const.print_log.info(
-                    f"Adding ungridded dataset {name} located at {ddir}." f"Reader: {reader}"
+                    f"Adding ungridded dataset {name} located at {ddir}. Reader: {reader}"
                 )
 
             else:

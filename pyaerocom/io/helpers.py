@@ -59,9 +59,7 @@ def _check_ebas_db_local_vs_remote(loc_remote, loc_local):
 
             return loc_local
         except Exception as e:
-            const.print_log.warning(
-                "Failed to copy EBAS SQL database. " "Reason: {}".format(repr(e))
-            )
+            const.print_log.warning(f"Failed to copy EBAS SQL database. Reason: {repr(e)}")
             return loc_remote
     return loc_remote
 
@@ -258,7 +256,7 @@ def get_obsnetwork_dir(obs_id):
     data_dir = const.OBSLOCS_UNGRIDDED[obs_id]
     if not os.path.exists(data_dir):
         raise FileNotFoundError(
-            f"Data directory {data_dir} for observation network {obs_id} does " f"not exist"
+            f"Data directory {data_dir} for observation network {obs_id} does not exist"
         )
     return data_dir
 

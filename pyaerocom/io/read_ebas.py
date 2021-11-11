@@ -486,12 +486,12 @@ class ReadEbas(ReadUngriddedBase):
                 stats.append(name)
             else:
                 const.print_log.warning(
-                    "Ignoring station_names input {}. " "No match could be found".format(name)
+                    f"Ignoring station_names input {name}. No match could be found"
                 )
 
         if not bool(stats):
             raise FileNotFoundError(
-                "No EBAS data files could be found for " "stations {}".format(stats_or_patterns)
+                f"No EBAS data files could be found for stations {stats_or_patterns}"
             )
         return list(dict.fromkeys(stats).keys())
 
@@ -710,9 +710,7 @@ class ReadEbas(ReadUngriddedBase):
                     if not col_info.name in comps:
                         comps.append(col_info.name)
         if len(col_matches) == 0:
-            raise NotInFileError(
-                "Variable {} could not be found in " "file".format(ebas_var_info.var_name)
-            )
+            raise NotInFileError(f"Variable {ebas_var_info.var_name} could not be found in file")
         elif len(comps) > 1 and len(ebas_var_info.component) > 1:
             for prefcomp in ebas_var_info.component:
                 if not prefcomp in comps:
@@ -934,9 +932,7 @@ class ReadEbas(ReadUngriddedBase):
             ival = re.findall(r"\d+", tres_code)[0]
             code = tres_code.split(ival)[-1]
             if not code in self.TS_TYPE_CODES:
-                raise NotImplementedError(
-                    "Cannot handle EBAS resolution code " "{}".format(tres_code)
-                )
+                raise NotImplementedError(f"Cannot handle EBAS resolution code {tres_code}")
             ts_type = ival + self.TS_TYPE_CODES[code]
             self.TS_TYPE_CODES[tres_code] = ts_type
 
@@ -1103,7 +1099,7 @@ class ReadEbas(ReadUngriddedBase):
         if vi.is_wavelength_dependent:
             if not "wavelength" in _col:
                 raise EbasFileError(
-                    "Cannot access column wavelength " "information for variable {}".format(var)
+                    f"Cannot access column wavelength information for variable {var}"
                 )
             wvlcol = _col.get_wavelength_nm()
             # HARD CODED FIX FOR INVALID WAVELENGTH IN ABSCOEFF EBAS FILES
@@ -1148,7 +1144,7 @@ class ReadEbas(ReadUngriddedBase):
                         _col["wavelength_nm"] = towvl
                     else:
                         raise NotImplementedError(
-                            "Cannot correct for " "wavelength shift, need " "Angstrom Exp."
+                            "Cannot correct for wavelength shift, need Angstrom Exp."
                         )
         return data
 
@@ -1411,7 +1407,7 @@ class ReadEbas(ReadUngriddedBase):
 
         if len(data_out["var_info"]) == 0:
             raise EbasFileError(
-                "All data columns of specified input variables " "are NaN in {}".format(filename)
+                f"All data columns of specified input variables are NaN in {filename}"
             )
 
         data_out["dtime"] = file.time_stamps
@@ -1438,7 +1434,7 @@ class ReadEbas(ReadUngriddedBase):
             return freq_ebas
 
         const.logger.warning(
-            f"Detected wrong frequency {freq_ebas}. Trying to " f"infer the correct frequency..."
+            f"Detected wrong frequency {freq_ebas}. Trying to infer the correct frequency..."
         )
         try:
             freq = TsType.from_total_seconds(most_common_dt)

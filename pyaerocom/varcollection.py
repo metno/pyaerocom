@@ -75,16 +75,14 @@ class VarCollection:
         None
         """
         if not isinstance(var.var_name, str):
-            raise ValueError("Attr. var_name needs to be assigned to input " "variable")
+            raise ValueError("Attr. var_name needs to be assigned to input variable")
         if var.var_name in self.all_vars:
-            raise VariableDefinitionError(
-                f"variable with name {var.var_name} " f"is already defined"
-            )
+            raise VariableDefinitionError(f"variable with name {var.var_name} is already defined")
         if not isinstance(var, Variable):
             raise ValueError("Can only add instances of Variable class...")
         if not isinstance(var.units, str):
             if not isinstance(var.units, Unit):
-                raise ValueError("Please assign a unit to the new input " "variable")
+                raise ValueError("Please assign a unit to the new input variable")
             var.units = str(var.units)
         self._all_vars.append(var.var_name)
         self._vars_added[var.var_name] = var
@@ -147,7 +145,7 @@ class VarCollection:
         var = Variable(var_name, cfg=self._cfg_parser)
         if not var.var_name_aerocom in self:
             raise VariableDefinitionError(
-                "Error (VarCollection): input variable " "{} is not supported".format(var_name)
+                f"Error (VarCollection): input variable {var_name} is not supported"
             )
         return var
 

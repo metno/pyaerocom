@@ -229,7 +229,7 @@ class TsType:
             if to_ts_type == self:
                 return 0
             raise TemporalResolutionError(
-                f"input ts_type {to_ts_type} is lower resolution than current " f"{self}"
+                f"input ts_type {to_ts_type} is lower resolution than current {self}"
             )
 
         elif str(to_ts_type) in min_num_obs:
@@ -378,9 +378,7 @@ class TsType:
 
     def _from_pandas(self, val):
         if not val in self.FROM_PANDAS:
-            raise TemporalResolutionError(
-                "Invalid input: {}, need pandas " "frequency string".format(val)
-            )
+            raise TemporalResolutionError(f"Invalid input: {val}, need pandas frequency string")
         return self.FROM_PANDAS[val]
 
     def __eq__(self, other):

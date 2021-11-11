@@ -91,9 +91,7 @@ class VarNameInfo:
             )
 
         elif not self.contains_wavelength_nm:
-            raise VariableDefinitionError(
-                "Wavelength could not be extracted " "from variable name"
-            )
+            raise VariableDefinitionError("Wavelength could not be extracted from variable name")
         return self._nums[0]
 
     def in_wavelength_range(self, low, high):
