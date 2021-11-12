@@ -1,8 +1,10 @@
+from datetime import timedelta
+
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 import pytest
 import xarray as xr
+from numpy.testing import assert_allclose
 
 from pyaerocom import StationData, helpers
 from pyaerocom.exceptions import DataCoverageError, TemporalResolutionError, UnitConversionError
@@ -71,8 +73,7 @@ def test_merge_station_data(
     vardata = stat[var_name]
     assert len(vardata) == num
     assert stat.get_var_ts_type(var_name) == tst
-    avg = np.mean(vardata)
-    npt.assert_allclose(avg, mean, rtol=1e-2)
+    assert_allclose(np.mean(vardata), mean, rtol=1e-2)
 
 
 @pytest.mark.parametrize(
@@ -127,7 +128,7 @@ def test_resample_timeseries(fake_hourly_ts, freq, how, min_num_obs, num, avg):
 
     s1 = helpers.resample_timeseries(fake_hourly_ts, freq=freq, how=how, min_num_obs=min_num_obs)
     assert len(s1) == num
-    npt.assert_allclose(np.nanmean(s1), avg, atol=1e-2)
+    assert_allclose(np.nanmean(s1), avg, atol=1e-2)
 
 
 def test_same_meta_dict():
@@ -238,17 +239,15 @@ def test_extract_latlon_dataarray_no_matches_error(lat, lon):
 
 
 @pytest.mark.parametrize(
-    "date,ts_type,expected",
+    "date,ts_type,days",
     [
-        ("2000-02-18", "monthly", 29),  # February leap year
-        ("2000-02-18", "yearly", 366),  # Leap year
-        ("2001-02-18", "monthly", 28),  # February non leap year
-        ("2001-02-18", "daily", 1),  # Daily
-        ("2001-02-18", "yearly", 365),
+        pytest.param("2000-02-18", "yearly", 366, id="leap year"),
+        pytest.param("2001-02-18", "yearly", 365, id="lon leap year"),
+        pytest.param("2000-02-18", "monthly", 29, id="February leap year"),
+        pytest.param("2001-02-18", "monthly", 28, id="February non leap year"),
+        pytest.param("2001-02-18", "daily", 1, id="one day"),
     ],
-)  # Non leap year
-def test_seconds_in_periods(date, ts_type, expected):
-    seconds_in_day = 24 * 60 * 60
-    ts = np.datetime64(date)
-    seconds = helpers.seconds_in_periods(ts, ts_type)
-    assert seconds == expected * seconds_in_day
+)
+def test_seconds_in_periods(date, ts_type, days):
+    seconds = timedelta(days=days) / timedelta(seconds=1)
+    assert helpers.seconds_in_periods(np.datetime64(date), ts_type) == seconds
