@@ -2756,7 +2756,7 @@ class UngriddedData(object):
                               color=color, marker=marker,
                               markersize=markersize,
                               legend=legend,
-                              fontsize_base=fontsize_base, **kwargs)
+                              **kwargs)
 
         if 'title' in kwargs:
             title = kwargs['title']
