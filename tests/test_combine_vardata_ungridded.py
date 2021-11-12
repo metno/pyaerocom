@@ -41,25 +41,9 @@ OD450FUN = f"{SUN_ID};od550aer*(450/550)**(-{SUN_ID};ang4487aer)"
 
 
 @pytest.mark.parametrize(
-    "var1,var2,add_args,numst,mean_first,expectation",
+    "var1,var2,add_args,numst,mean_first",
     [
-        ("od550aer", "od550aer", {}, 13, {"od550aer": 0.5}, pytest.raises(ValueError)),
-        (
-            "od550aer",
-            "ang4487aer",
-            {"merge_how": "mean", "var_name_out": "blaaa"},
-            13,
-            {"blaaa": 0.251},
-            pytest.raises(NotImplementedError),
-        ),
-        (
-            "od550aer",
-            "ang4487aer",
-            {},
-            18,
-            {"od550aer": 0.50155, "ang4487aer": 0.25738},
-            does_not_raise_exception(),
-        ),
+        ("od550aer", "ang4487aer", {}, 18, {"od550aer": 0.50155, "ang4487aer": 0.25738}),
         (
             "od550aer",
             "ang4487aer",
@@ -71,24 +55,47 @@ OD450FUN = f"{SUN_ID};od550aer*(450/550)**(-{SUN_ID};ang4487aer)"
             },
             18,
             {"od550aer": 0.50155, "ang4487aer": 0.25738, "od450aer": 0.51902},
-            does_not_raise_exception(),
         ),
     ],
 )
 def test_combine_vardata_ungridded_single_ungridded(
-    aeronetsunv3lev2_subset, var1, var2, add_args, numst, mean_first, expectation
+    aeronetsunv3lev2_subset, var1, var2, add_args, numst, mean_first
 ):
 
     input_data = [(aeronetsunv3lev2_subset, SUN_ID, var1), (aeronetsunv3lev2_subset, SUN_ID, var2)]
-    with expectation:
-        stats = testmod.combine_vardata_ungridded(input_data, **add_args)
+    stats = testmod.combine_vardata_ungridded(input_data, **add_args)
 
-        assert len(stats) == numst
-        first = stats[0]
-        for var, val in mean_first.items():
-            assert var in first
-            avg = np.nanmean(first[var])
-            npt.assert_allclose(avg, val, rtol=1e-4)
+    assert len(stats) == numst
+    first = stats[0]
+    for var, val in mean_first.items():
+        assert var in first
+        avg = np.nanmean(first[var])
+        npt.assert_allclose(avg, val, rtol=1e-4)
+
+
+@pytest.mark.parametrize(
+    "var1,var2,kwargs,exception,error",
+    [
+        ("od550aer", "od550aer", {}, ValueError, "nothing to combine"),
+        (
+            "od550aer",
+            "ang4487aer",
+            dict(merge_how="mean"),
+            NotImplementedError,
+            "Averaging of site data is only supported if input variables are the same",
+        ),
+    ],
+)
+def test_combine_vardata_ungridded_single_ungridded_error(
+    aeronetsunv3lev2_subset, var1, var2, kwargs, exception, error
+):
+    input_data = [
+        (aeronetsunv3lev2_subset, SUN_ID, var1),
+        (aeronetsunv3lev2_subset, SUN_ID, var2),
+    ]
+    with pytest.raises(exception) as e:
+        testmod.combine_vardata_ungridded(input_data, **kwargs)
+    assert str(e.value).startswith(error)
 
 
 FMFFUN = f"fmf550aer=({SDA_ID};od550lt1aer/{SUN_ID};od550aer)*100"
@@ -184,7 +191,6 @@ ARGS_WRONG6 = [ARGS1[0], (SDA_DATA, 42, "Bla")]
     ],
 )
 def test___check_input_data_ids_and_vars(args, expectation):
-
     with expectation:
         testmod._check_input_data_ids_and_vars(args)
 
