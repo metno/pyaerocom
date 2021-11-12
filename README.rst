@@ -8,7 +8,7 @@ pyaerocom
 
 **Installation:** https://pyaerocom.readthedocs.io/en/latest/install.html  
 
-**Tutorials:** https://pyaerocom.readthedocs.io/en/latest/getstarted.html#tutorials-jupyter-notebooks
+**Tutorials:** https://pyaerocom.readthedocs.io/en/latest/pyaerocom-tutorials/index.html
 
 **AeroCom:** https://aerocom.met.no
 
