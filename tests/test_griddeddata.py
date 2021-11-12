@@ -1,14 +1,13 @@
 import os
-from contextlib import nullcontext as does_not_raise_exception
 from datetime import datetime
 
-import iris.cube
 import numpy as np
-import numpy.testing as npt
 import pytest
 import xarray as xr
+from iris.cube import Cube
+from numpy.testing import assert_allclose
 
-from pyaerocom import GriddedData, Variable
+from pyaerocom import GriddedData, Variable, const
 from pyaerocom.exceptions import (
     CoordinateError,
     DataDimensionError,
@@ -79,23 +78,18 @@ def test_GriddedData_suppl_info():
 
 @data_unavail
 def test_basic_properties(data_tm5):
-
-    data = data_tm5
-    from iris.cube import Cube
-
-    assert isinstance(data.cube, Cube)
-    assert data.ts_type == "monthly"
-    assert str(data.start) == "2010-01-01T00:00:00.000000"
-    assert str(data.stop) == "2010-12-31T23:59:59.999999"
-    assert len(data.time.points) == 12
-    assert data.data_id == "TM5_AP3-CTRL2016"
-    ff = ["aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"]
-    files = [os.path.basename(x) for x in data.from_files]
-    print(files)
-    assert files == ff
-    assert data.shape == (12, 90, 120)
-    assert data.lat_res == 2.0
-    assert data.lon_res == 3.0
+    assert isinstance(data_tm5.cube, Cube)
+    assert data_tm5.ts_type == "monthly"
+    assert str(data_tm5.start) == "2010-01-01T00:00:00.000000"
+    assert str(data_tm5.stop) == "2010-12-31T23:59:59.999999"
+    assert len(data_tm5.time.points) == 12
+    assert data_tm5.data_id == "TM5_AP3-CTRL2016"
+    assert list(map(os.path.basename, data_tm5.from_files)) == [
+        "aerocom3_TM5_AP3-CTRL2016_od550aer_Column_2010_monthly.nc"
+    ]
+    assert data_tm5.shape == (12, 90, 120)
+    assert data_tm5.lat_res == 2.0
+    assert data_tm5.lon_res == 3.0
 
 
 @data_unavail
@@ -104,9 +98,8 @@ def test_GriddedData_longitude(data_tm5):
     assert str(data_tm5.longitude.units) == "degrees"
 
     lons = data_tm5.longitude.points
-    nominal = [-181.5, 175.5]
-    vals = [lons.min(), lons.max()]
-    npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
+    assert_allclose(lons.min(), -181.5, rtol=TEST_RTOL)
+    assert_allclose(lons.max(), 175.5, rtol=TEST_RTOL)
 
 
 @data_unavail
@@ -114,9 +107,8 @@ def test_GriddedData_latitude(data_tm5):
     """test latitude array"""
     assert str(data_tm5.latitude.units) == "degrees"
     lats = data_tm5.latitude.points
-    nominal = [-89, 89]
-    vals = [lats.min(), lats.max()]
-    npt.assert_allclose(actual=vals, desired=nominal, rtol=TEST_RTOL)
+    assert_allclose(lats.min(), -89, rtol=TEST_RTOL)
+    assert_allclose(lats.max(), 89, rtol=TEST_RTOL)
 
 
 @data_unavail
@@ -134,12 +126,11 @@ def test_GriddedData_resample_time(data_tm5):
     data = data_tm5
 
     yearly = data.resample_time("yearly")
-
-    npt.assert_array_equal(yearly.shape, (1, 90, 120))
+    assert yearly.shape == (1, 90, 120)
 
     # make sure means are preserved (more or less)
-    mean_vals = [data.mean(), yearly.mean()]
-    npt.assert_allclose(actual=mean_vals, desired=[0.11865, 0.11865], rtol=TEST_RTOL)
+    assert_allclose(data.mean(), 0.11865, rtol=TEST_RTOL)
+    assert_allclose(yearly.mean(), 0.11865, rtol=TEST_RTOL)
 
 
 @data_unavail
@@ -151,29 +142,17 @@ def test_GriddedData_interpolate(data_tm5):
     assert type(itp) == GriddedData
     assert itp.shape == (12, 2, 2)
 
-    desired = [0.13877, 0.13748]
-    actual = [itp.mean(False), itp.mean(True)]
-    npt.assert_allclose(actual=actual, desired=desired, rtol=TEST_RTOL)
+    assert_allclose(itp.mean(False), 0.13877, rtol=TEST_RTOL)
+    assert_allclose(itp.mean(True), 0.13748, rtol=TEST_RTOL)
 
 
 @data_unavail
 def test_GriddedData_to_time_series(data_tm5):
 
-    latsm = [-9, 21]
-    lonsm = [-118.5, 70.5]
     stats = data_tm5.to_time_series(latitude=TESTLATS, longitude=TESTLONS)
-
-    lats_actual = []
-    lons_actual = []
-    means_actual = []
-
-    for stat in stats:
-        lats_actual.append(stat.latitude)
-        lons_actual.append(stat.longitude)
-        means_actual.append(stat.od550aer.mean())
-    npt.assert_array_equal(lats_actual, latsm)
-    npt.assert_array_equal(lons_actual, lonsm)
-    npt.assert_allclose(means_actual, [0.101353, 0.270886], rtol=TEST_RTOL)
+    assert [stat.latitude for stat in stats] == [-9, 21]
+    assert [stat.longitude for stat in stats] == [-118.5, 70.5]
+    assert_allclose([stat.od550aer.mean() for stat in stats], [0.101353, 0.270886], rtol=TEST_RTOL)
 
 
 @data_unavail
@@ -185,19 +164,19 @@ def test_GriddedData_change_baseyear(data_tm5):
 
 
 def test_GriddedData_min(data_tm5):
-    npt.assert_allclose(data_tm5.min(), 0.004629, atol=0.0001)
+    assert_allclose(data_tm5.min(), 0.004629, atol=0.0001)
 
 
 def test_GriddedData_nanmin(data_tm5):
-    npt.assert_allclose(data_tm5.nanmin(), 0.004629, atol=0.0001)
+    assert_allclose(data_tm5.nanmin(), 0.004629, atol=0.0001)
 
 
 def test_GriddedData_max(data_tm5):
-    npt.assert_allclose(data_tm5.max(), 2.495539, atol=0.0001)
+    assert_allclose(data_tm5.max(), 2.495539, atol=0.0001)
 
 
 def test_GriddedData_nanmax(data_tm5):
-    npt.assert_allclose(data_tm5.nanmax(), 2.495539, atol=0.0001)
+    assert_allclose(data_tm5.nanmax(), 2.495539, atol=0.0001)
 
 
 @pytest.mark.parametrize(
@@ -209,13 +188,13 @@ def test_GriddedData_nanmax(data_tm5):
 )
 def test_GriddedData_estimate_value_range_from_data(data_tm5, extend_percent, expected):
     result = data_tm5.estimate_value_range_from_data(extend_percent)
-    npt.assert_allclose(result, expected, rtol=1e-2)
+    assert_allclose(result, expected, rtol=1e-2)
 
 
 def test_GriddedData_area_weighted_mean(data_tm5):
     val = data_tm5.area_weighted_mean()
     assert len(val) == 12
-    npt.assert_allclose(val.mean(), 0.118648, atol=0.001)
+    assert_allclose(val.mean(), 0.118648, atol=0.001)
 
 
 @data_unavail
@@ -227,11 +206,11 @@ def test_GriddedData_area_weighted_mean(data_tm5):
     ],
 )
 def test_GriddedData_mean(data_tm5, kwargs, result):
-    npt.assert_allclose(data_tm5.mean(**kwargs), result)
+    assert_allclose(data_tm5.mean(**kwargs), result)
 
 
 def test_GriddedData_std(data_tm5):
-    npt.assert_allclose(data_tm5.std(), 0.106527, atol=0.0001)
+    assert_allclose(data_tm5.std(), 0.106527, atol=0.0001)
 
 
 def test_GriddedData_short_str(data_tm5):
@@ -383,10 +362,12 @@ def test_GriddedData_copy_coords_error():
         aod.copy_coords(abs, False)
     assert str(e.value) == "Cannot copy coordinates: shape mismatch"
 
+
+def test_GriddedData_register_var_glob():
     arr = np.ones((10, 10, 10))
     arr[2:5] = 4
     var_name = "blablub"
-    cube = iris.cube.Cube(arr, var_name=var_name)
+    cube = Cube(arr, var_name=var_name)
     data = GriddedData(input=cube)
     data.register_var_glob()
     vars = const.VARS
