@@ -2422,7 +2422,7 @@ class GriddedData:
         lats = self.latitude.contiguous_bounds()
 
         fig = plot_griddeddata_on_map(
-            data=data.grid.data,
+            data=data,
             lons=lons,
             lats=lats,
             var_name=self.var_name,

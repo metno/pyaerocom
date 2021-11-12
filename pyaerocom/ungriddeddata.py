@@ -2803,14 +2803,7 @@ class UngriddedData:
             kwargs["label"] = info_str
 
         ax = plot_coordinates(
-            lons,
-            lats,
-            color=color,
-            marker=marker,
-            markersize=markersize,
-            legend=legend,
-            fontsize_base=fontsize_base,
-            **kwargs,
+            lons, lats, color=color, marker=marker, markersize=markersize, legend=legend, **kwargs
         )
 
         if "title" in kwargs:
