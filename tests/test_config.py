@@ -1,9 +1,8 @@
 import getpass
 import os
-from tarfile import PAX_FIELDS
 import tempfile
-from contextlib import nullcontext as does_not_raise_exception
 from pathlib import Path
+from tarfile import PAX_FIELDS
 
 import pytest
 
@@ -49,32 +48,39 @@ def test_Config_ALL_DATABASE_IDS(empty_cfg):
 
 
 @pytest.mark.parametrize(
-    "config_file,try_infer_environment,raises",
+    "config_file,try_infer_environment",
     [
-        (CFG_FILE_WRONG, False, pytest.raises(ValueError)),
-        (f"/home/{USER}/blaaaa.ini", False, pytest.raises(FileNotFoundError)),
-        (None, False, does_not_raise_exception()),
-        (None, True, does_not_raise_exception()),
-        (CFG_FILE, False, does_not_raise_exception()),
+        (None, False),
+        (None, True),
+        (CFG_FILE, False),
     ],
 )
-def test_Config___init__(config_file, try_infer_environment, raises):
-    with raises:
-        cfg = testmod.Config(config_file, try_infer_environment)
+def test_Config___init__(config_file, try_infer_environment):
+    testmod.Config(config_file, try_infer_environment)
 
 
 @pytest.mark.parametrize(
-    "basedir,raises,envid",
+    "config_file,exception",
     [
-        ("/blaaa", pytest.raises(FileNotFoundError), None),
-        (LOCAL_DB_DIR, does_not_raise_exception(), "local-db"),
+        (CFG_FILE_WRONG, ValueError),
+        (f"/home/{USER}/blaaaa.ini", FileNotFoundError),
     ],
 )
-def test_Config__infer_config_from_basedir(basedir, raises, envid):
+def test_Config___init___error(config_file, exception):
+    with pytest.raises(exception):
+        testmod.Config(config_file, False)
+
+
+def test_Config__infer_config_from_basedir():
     cfg = testmod.Config(try_infer_environment=False)
-    with raises:
-        res = cfg._infer_config_from_basedir(basedir)
-        assert res[1] == envid
+    res = cfg._infer_config_from_basedir(LOCAL_DB_DIR)
+    assert res[1] == "local-db"
+
+
+def test_Config__infer_config_from_basedir_error():
+    cfg = testmod.Config(try_infer_environment=False)
+    with pytest.raises(FileNotFoundError):
+        cfg._infer_config_from_basedir("/blaaa")
 
 
 def test_Config_has_access_lustre():
