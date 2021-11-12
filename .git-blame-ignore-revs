@@ -16,3 +16,5 @@ bd256f14e4315e7b9590221cf2576bf5cef45750
 1e85d02bae3ea8f643dd0cdbbd4d494483c8b076
 # 2021-11-11: combine partial strings
 fe1e0e56fcf5c2346236457d90027ce4d8d5cbb2
+# 2021-11-12: Merge branch 'main-dev' into lint-on-ci
+865f874695aec992b987bb4c6869889a9f09cb65
