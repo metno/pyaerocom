@@ -81,38 +81,35 @@ class NestedData(NestedContainer):
         self.d = 42
 
 
-def test_read_json(tmp_path: Path):
-    data = {"bla": 42}
+@pytest.fixture()
+def json_path(tmp_path: Path) -> Path:
     path = tmp_path / "file.json"
     assert not path.exists()
-    path.write_text(json.dumps(data))
-    assert path.exists()
+    return path
 
-    reload = read_json(path)
-    assert reload == data
+
+def test_read_json(json_path: Path):
+    data = {"bla": 42}
+    json_path.write_text(json.dumps(data))
+    assert json_path.exists()
+    assert read_json(json_path) == data
 
 
 @pytest.mark.parametrize("data", [{"bla": 42}, {"bla": 42, "blub": np.nan}])
 @pytest.mark.parametrize("kwargs", [dict(), dict(ignore_nan=True, indent=5)])
-def test_write_json(tmp_path: Path, data: dict, kwargs: dict):
-    path = tmp_path / "file.json"
-    assert not path.exists()
-    write_json(data, path, **kwargs)
-    assert path.exists()
+def test_write_json(json_path: Path, data: dict, kwargs: dict):
+    write_json(data, json_path, **kwargs)
+    assert json_path.exists()
 
 
-def test_write_json_error(tmp_path: Path):
-    path = tmp_path / "file.json"
-    assert not path.exists()
+def test_write_json_error(json_path: Path):
     with pytest.raises(TypeError) as e:
-        write_json({"bla": 42}, path, bla=42)
+        write_json({"bla": 42}, json_path, bla=42)
     assert str(e.value).endswith("unexpected keyword argument 'bla'")
 
 
-def test_check_make_json(tmp_path: Path):
-    path = tmp_path / "bla.json"
-    assert not path.exists()
-    json = check_make_json(path)
+def test_check_make_json(json_path: Path):
+    json = check_make_json(json_path)
     assert Path(json).exists()
 
 
