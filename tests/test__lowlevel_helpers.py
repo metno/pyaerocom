@@ -18,22 +18,42 @@ from pyaerocom._lowlevel_helpers import (
 )
 
 
-def test_round_floats():
-    fl = float(1.12344567890)
-    assert mod.round_floats(fl, precision=5) == 1.12345
-    fl_list = [np.float_(2.3456789), np.float32(3.456789012)]
-    tmp = mod.round_floats(fl_list, precision=3)
-    assert tmp == [2.346, pytest.approx(3.457, 1e-3)]
-    fl_tuple = (np.float128(4.567890123), np.float_(5.6789012345))
-    tmp = mod.round_floats(fl_tuple, precision=5)
-    assert isinstance(tmp, list)
-    assert tmp == [pytest.approx(4.56789, 1e-5), 5.67890]
-    fl_dict = {"bla": np.float128(0.1234455667), "blubb": int(1), "ha": "test"}
-    tmp = mod.round_floats(fl_dict, precision=5)
-    assert tmp["bla"] == pytest.approx(0.12345, 1e-5)
-    assert tmp["blubb"] == 1
-    assert isinstance(tmp["blubb"], int)
-    assert isinstance(tmp["ha"], str)
+@pytest.mark.parametrize(
+    "raw,precision,rounded",
+    [
+        pytest.param(
+            float(1.12344567890),
+            5,
+            1.12345,
+            id="single float",
+        ),
+        pytest.param(
+            [np.float_(2.3456789), np.float32(3.456789012)],
+            3,
+            [2.346, pytest.approx(3.457, 1e-3)],
+            id="np.float list",
+        ),
+        pytest.param(
+            (np.float128(4.567890123), np.float_(5.6789012345)),
+            5,
+            [pytest.approx(4.56789, 1e-5), 5.67890],
+            id="np.float tuple",
+        ),
+        pytest.param(
+            dict(bla=np.float128(0.1234455667), blubb=int(1), ha="test"),
+            5,
+            dict(bla=pytest.approx(0.12345, 1e-5), blubb=1, ha="test"),
+            id="mixed dict",
+        ),
+    ],
+)
+def test_round_floats(raw, precision: int, rounded):
+    _rounded = round_floats(raw, precision=precision)
+    if type(raw) in (list, tuple):
+        assert type(_rounded) == list
+    if type(raw) == dict:
+        assert type(_rounded) == dict
+    assert _rounded == rounded
 
 
 @pytest.mark.parametrize("title", ["", "Bla", "Hello"])
