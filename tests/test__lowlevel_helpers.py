@@ -4,7 +4,18 @@ import numpy as np
 import pytest
 import simplejson
 
-from pyaerocom import _lowlevel_helpers as mod
+from pyaerocom._lowlevel_helpers import (
+    ConstrainedContainer,
+    NestedContainer,
+    check_dir_access,
+    check_make_json,
+    invalid_input_err_str,
+    read_json,
+    round_floats,
+    sort_dict_by_name,
+    str_underline,
+    write_json,
+)
 
 
 def test_round_floats():
@@ -28,7 +39,7 @@ def test_round_floats():
 @pytest.mark.parametrize("title", ["", "Bla", "Hello"])
 @pytest.mark.parametrize("indent", [0, 4, 10])
 def test_str_underline(title: str, indent: int):
-    lines = mod.str_underline(title, indent).split("\n")
+    lines = str_underline(title, indent).split("\n")
     assert len(lines) == 2
     assert len(lines[0]) == len(lines[1]) == len(title) + indent
     assert lines[0].endswith(title)
@@ -36,14 +47,14 @@ def test_str_underline(title: str, indent: int):
     assert lines[0][:indent] == lines[1][:indent] == " " * indent
 
 
-class Constrainer(mod.ConstrainedContainer):
+class Constrainer(ConstrainedContainer):
     def __init__(self):
         self.bla = 42
         self.blub = "str"
         self.opt = None
 
 
-class NestedData(mod.NestedContainer):
+class NestedData(NestedContainer):
     def __init__(self):
         self.bla = dict(a=1, b=2)
         self.blub = dict(c=3, d=4)
@@ -56,7 +67,7 @@ def test_read_json(tmpdir):
     with open(path, "w") as f:
         simplejson.dump(data, f)
     assert os.path.exists(path)
-    reload = mod.read_json(path)
+    reload = read_json(path)
     assert reload == data
     os.remove(path)
 
@@ -65,7 +76,7 @@ def test_read_json(tmpdir):
 @pytest.mark.parametrize("kwargs", [dict(), dict(ignore_nan=True, indent=5)])
 def test_write_json(tmpdir, data, kwargs):
     path = os.path.join(tmpdir, "file.json")
-    mod.write_json(data, path, **kwargs)
+    write_json(data, path, **kwargs)
     assert os.path.exists(path)
     os.remove(path)
 
@@ -73,30 +84,30 @@ def test_write_json(tmpdir, data, kwargs):
 def test_write_json_error(tmpdir):
     path = os.path.join(tmpdir, "file.json")
     with pytest.raises(TypeError) as e:
-        mod.write_json({"bla": 42}, path, bla=42)
+        write_json({"bla": 42}, path, bla=42)
     assert str(e.value).endswith("unexpected keyword argument 'bla'")
 
 
 def test_check_make_json(tmpdir):
     fp = os.path.join(tmpdir, "bla.json")
-    val = mod.check_make_json(fp)
+    val = check_make_json(fp)
     assert os.path.exists(val)
 
 
 def test_check_make_json_error(tmpdir):
     fp = os.path.join(tmpdir, "bla.txt")
     with pytest.raises(ValueError):
-        mod.check_make_json(fp)
+        check_make_json(fp)
 
 
 def test_invalid_input_err_str():
-    st = mod.invalid_input_err_str("bla", "42", (42, 43))
+    st = invalid_input_err_str("bla", "42", (42, 43))
     assert st == "Invalid input for bla (42), choose from (42, 43)"
 
 
 @pytest.mark.parametrize("dir,val", [(".", True), ("/bla/blub", False), (42, False)])
 def test_check_dir_access(dir, val):
-    assert mod.check_dir_access(dir) == val
+    assert check_dir_access(dir) == val
 
 
 def test_Constrainer():
@@ -174,5 +185,5 @@ def test_NestedData_update_error():
     ],
 )
 def test_sort_dict_by_name(input, pref_list, output_keys):
-    sorted = mod.sort_dict_by_name(input, pref_list)
+    sorted = sort_dict_by_name(input, pref_list)
     assert list(sorted.keys()) == output_keys
