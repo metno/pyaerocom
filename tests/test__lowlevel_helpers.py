@@ -25,6 +25,17 @@ def test_round_floats():
     assert isinstance(tmp["ha"], str)
 
 
+@pytest.mark.parametrize("title", ["", "Bla", "Hello"])
+@pytest.mark.parametrize("indent", [0, 4, 10])
+def test_str_underline(title: str, indent: int):
+    lines = mod.str_underline(title, indent).split("\n")
+    assert len(lines) == 2
+    assert len(lines[0]) == len(lines[1]) == len(title) + indent
+    assert lines[0].endswith(title)
+    assert lines[1].endswith("-" * len(title))
+    assert lines[0][:indent] == lines[1][:indent] == " " * indent
+
+
 class Constrainer(mod.ConstrainedContainer):
     def __init__(self):
         self.bla = 42
