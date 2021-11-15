@@ -1,8 +1,8 @@
-import os
+import json
+from pathlib import Path
 
 import numpy as np
 import pytest
-import simplejson
 
 from pyaerocom._lowlevel_helpers import (
     ConstrainedContainer,
@@ -81,43 +81,47 @@ class NestedData(NestedContainer):
         self.d = 42
 
 
-def test_read_json(tmpdir):
+def test_read_json(tmp_path: Path):
     data = {"bla": 42}
-    path = os.path.join(tmpdir, "file.json")
-    with open(path, "w") as f:
-        simplejson.dump(data, f)
-    assert os.path.exists(path)
+    path = tmp_path / "file.json"
+    assert not path.exists()
+    path.write_text(json.dumps(data))
+    assert path.exists()
+
     reload = read_json(path)
     assert reload == data
-    os.remove(path)
 
 
 @pytest.mark.parametrize("data", [{"bla": 42}, {"bla": 42, "blub": np.nan}])
 @pytest.mark.parametrize("kwargs", [dict(), dict(ignore_nan=True, indent=5)])
-def test_write_json(tmpdir, data, kwargs):
-    path = os.path.join(tmpdir, "file.json")
+def test_write_json(tmp_path: Path, data: dict, kwargs: dict):
+    path = tmp_path / "file.json"
+    assert not path.exists()
     write_json(data, path, **kwargs)
-    assert os.path.exists(path)
-    os.remove(path)
+    assert path.exists()
 
 
-def test_write_json_error(tmpdir):
-    path = os.path.join(tmpdir, "file.json")
+def test_write_json_error(tmp_path: Path):
+    path = tmp_path / "file.json"
+    assert not path.exists()
     with pytest.raises(TypeError) as e:
         write_json({"bla": 42}, path, bla=42)
     assert str(e.value).endswith("unexpected keyword argument 'bla'")
 
 
-def test_check_make_json(tmpdir):
-    fp = os.path.join(tmpdir, "bla.json")
-    val = check_make_json(fp)
-    assert os.path.exists(val)
+def test_check_make_json(tmp_path: Path):
+    path = tmp_path / "bla.json"
+    assert not path.exists()
+    json = check_make_json(path)
+    assert Path(json).exists()
 
 
-def test_check_make_json_error(tmpdir):
-    fp = os.path.join(tmpdir, "bla.txt")
-    with pytest.raises(ValueError):
-        check_make_json(fp)
+def test_check_make_json_error(tmp_path: Path):
+    path = tmp_path / "bla.txt"
+    assert not path.exists()
+    with pytest.raises(ValueError) as e:
+        check_make_json(path)
+    assert str(e.value) == "Input filepath must end with .json"
 
 
 def test_invalid_input_err_str():
