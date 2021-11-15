@@ -1,3 +1,14 @@
+<<<<<<< HEAD
+=======
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Feb 10 13:20:04 2020
+
+@author: eirikg
+"""
+
+>>>>>>> f65fa2d3b37d5e5c131b6657d125ece92adb5e05
 from posixpath import join
 import xarray as xr
 import numpy as np
