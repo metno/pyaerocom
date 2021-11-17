@@ -205,7 +205,7 @@ class ReadGAW(ReadUngriddedBase):
             if idx == 4:  # variable
                 if u == "ppt":
                     data_out["var_info"][var]["units"] = "mol mol-1"
-                    data_out[var] = np.asarray(data[:, idx]).astype(np.float64) * 1e12
+                    data_out[var] = np.asarray(data[:, idx], dtype=np.float64) * 1e12
                     # reset nan values
                     data_out[var] = np.where(
                         data_out[var] == self.NAN_VAL["vmrdms"] * 1e12,
@@ -214,7 +214,7 @@ class ReadGAW(ReadUngriddedBase):
                     )
                 elif u == "ng/m3":
                     data_out["var_info"][var]["units"] = "ug/m3"
-                    data_out[var] = np.asarray(data[:, idx]).astype(np.float64) * 1e-3
+                    data_out[var] = np.asarray(data[:, idx], dtype=np.float64) * 1e-3
                     data_out[var] = np.where(
                         data_out[var] == self.NAN_VAL["concmsa"] * 1e-3,
                         self.NAN_VAL["concmsa"],
