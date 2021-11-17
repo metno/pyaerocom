@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-=======
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 10 13:20:04 2020
-
-@author: eirikg
-"""
-
->>>>>>> f65fa2d3b37d5e5c131b6657d125ece92adb5e05
 from posixpath import join
 import xarray as xr
 import numpy as np
@@ -176,16 +165,20 @@ class ReadMscwCtm(object):
 
         dirs = glob.glob(dd+"/*/")
         namelist = []
+        yrs = []
 
         for d in dirs:
             if re.match(".*20\d\d.*", d) is None:
                 continue
-            
+            yrs.append(d.split("/")[-1])
+
             namelist.append(d)
 
         if len(namelist) == 0:
             namelist = [dd]
-        
+        else:
+            namelist = [d for _,d in sorted(zip(yrs, namelist))]
+
         return namelist
 
     def _get_yrs_from_filepaths(self):
@@ -201,7 +194,7 @@ class ReadMscwCtm(object):
             
             yrs.append(yr)
         
-        return yrs
+        return sorted(list(set(yrs)))
             
 
     def _eval_input(self, filepath, data_id, data_dir):
@@ -429,13 +422,13 @@ class ReadMscwCtm(object):
             if not fp.split("/")[-1] == self.filename:   
                 continue
 
-            
+            yr = fp.split("/")[-2]
+
             const.print_log.info(f'Opening {fp}')
             tmp_ds = xr.open_dataset(fp)
             
-            ds[yrs[i]] = tmp_ds
+            ds[yr] = tmp_ds
 
-        
         self._filedata = ds
         
         return ds
