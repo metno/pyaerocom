@@ -108,6 +108,7 @@ class ReadMscwCtm(object):
         self._filename = None
         self._filedata = None
         self._filepaths = None
+        self._filepath = None
 
         self._file_mask = None
         self._files = None
@@ -291,13 +292,35 @@ class ReadMscwCtm(object):
         self._filename = val
         self._filedata = None
 
+
+    @property
+    def filepath(self):
+        """
+        Path to data file
+        """
+        if self.data_dir is None and self._filepaths is None:
+            raise AttributeError('data_dir or filepaths needs to be set before accessing')
+        return self._filepaths
+        #return os.path.join(self.data_dir, self.filename)
+
+    @filepath.setter
+    def filepath(self, value):
+        if not isinstance(value, str):
+            raise ValueError('needs to be a string')
+        if self._filepaths is not None:
+            self.filepaths.append(value)
+        self._filepath = value
+        # ddir, fname = os.path.split(value)
+        # self.data_dir = ddir
+        # self.filename = fname
+
     @property
     def filepaths(self):
         """
         Path to data file
         """
-        if self.data_dir is None:
-            raise AttributeError('need data_dir to be set in data')
+        if self.data_dir is None and self._filepaths is None:
+            raise AttributeError('data_dir or filepaths needs to be set before accessing')
         return self._filepaths
         #return os.path.join(self.data_dir, self.filename)
 
