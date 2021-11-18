@@ -65,51 +65,52 @@ VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm',
 def reader():
     return ReadMscwCtm()
 
-@pytest.mark.parametrize('filepath,data_id,data_dir,check,raises', [
+@pytest.mark.parametrize('data_id,data_dir,check,raises', [
 
-    (EMEP_DIR+'/Base_month.nc',None,None,{
+    ('EMEP_2017',EMEP_DIR,{
         'data_id'  : 'EMEP_2017',
         'data_dir' : EMEP_DIR},
         does_not_raise_exception()),
 
-    (None,None,None, {'_data_dir' : None,'_filename' : 'Base_day.nc',
-                      '_filedata': None, '_file_mask' : None,
-                      '_files'    : None},
-        does_not_raise_exception()),
-    ('blaaa',None,None,{},pytest.raises(FileNotFoundError)),
-    (EMEP_DIR,None,None,{},pytest.raises(ValueError)),
-    (None,None,'blaaaa',{},pytest.raises(FileNotFoundError) ),
-    (None,None,EMEP_DIR+'/Base_month.nc',{},pytest.raises(ValueError)),
+    # (None,None,None, {'_data_dir' : None,'_filename' : 'Base_day.nc',
+    #                   '_filedata': None, '_file_mask' : None,
+    #                   '_files'    : None},
+    #     does_not_raise_exception()),
+    # ('blaaa',None,None,{},pytest.raises(FileNotFoundError)),
+    # (EMEP_DIR,None,None,{},pytest.raises(ValueError)),
+    (None,'blaaaa',{},pytest.raises(FileNotFoundError) ),
+    # (None,None,EMEP_DIR+'/Base_month.nc',{},pytest.raises(ValueError)),
 
 
     ])
-def test_ReadMscwCtm__init__(filepath, data_id, data_dir,check,raises):
+def test_ReadMscwCtm__init__(data_id, data_dir,check,raises):
     with raises:
-        reader = ReadMscwCtm(filepath, data_id, data_dir)
+        reader = ReadMscwCtm(data_id, data_dir)
         for key, val in check.items():
             _val = getattr(reader, key)
             assert val == _val
 
 @pytest.mark.parametrize('value, raises', [
     (EMEP_DIR, does_not_raise_exception()),
-    (None, pytest.raises(TypeError)),
+    (None, pytest.raises(ValueError)),
     ('', pytest.raises(FileNotFoundError))
     ])
 def test_ReadMscwCtm_data_dir(value, raises):
-    reader = ReadMscwCtm()
+    reader = ReadMscwCtm(value)
     with raises:
         reader.data_dir = value
         assert os.path.samefile(reader.data_dir, value)
 
 @pytest.mark.parametrize('value, raises', [
-    ('', does_not_raise_exception()),
+    (EMEP_DIR, does_not_raise_exception()),
+    ('', pytest.raises(FileNotFoundError)),
     (None, pytest.raises(ValueError)),
     ])
-def test_ReadMscwCtm_filename(value, raises):
+def test_ReadMscwCtm_data_dir(value, raises):
     reader = ReadMscwCtm()
     with raises:
-        reader.filename = value
-        assert reader.filename == value
+        reader.data_dir = value
+        assert reader.data_dir == value
 
 @pytest.mark.parametrize('value, raises, fmask, num_matches', [
     (EMEP_DIR, does_not_raise_exception(), 'Base_*.nc', 3),
@@ -140,7 +141,7 @@ def test_ReadMscwCtm_var_map():
     ('concpmgt25', 'daily', does_not_raise_exception())
     ])
 def test_ReadMscwCtm_read_var(path_emep,var_name,ts_type,raises):
-    r = ReadMscwCtm(data_dir=path_emep['data_dir'])
+    r = ReadMscwCtm(data_dir=EMEP_DIR)#path_emep['data_dir'])
     with raises:
         data = r.read_var(var_name, ts_type)
         assert isinstance(data, GriddedData)
@@ -156,15 +157,15 @@ def test_ReadMscwCtm_read_var(path_emep,var_name,ts_type,raises):
     ('concpmgt25', 'monthly', does_not_raise_exception()),
     ])
 def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
-    r = ReadMscwCtm(data_dir=path_emep['data_dir'])
+    r = ReadMscwCtm(data_dir=EMEP_DIR)#path_emep['data_dir'])
     with raises:
         data = r._compute_var(var_name, ts_type)
         assert isinstance(data, xr.DataArray)
 
 @data_unavail
 def test_ReadMscwCtm_data(path_emep):
-    path = path_emep['daily']
-    r = ReadMscwCtm(filepath=path)
+    path = EMEP_DIR#path_emep['daily']
+    r = ReadMscwCtm(data_dir=path)
 
     vars_provided = r.vars_provided
     assert isinstance(vars_provided, list)
@@ -185,29 +186,29 @@ def test_ReadMscwCtm_data(path_emep):
 
 @data_unavail
 def test_ReadMscwCtm_directory(path_emep):
-    data_dir = path_emep['data_dir']
+    data_dir =EMEP_DIR # path_emep['data_dir']
     r = ReadMscwCtm(data_dir=data_dir)
     assert r.data_dir == data_dir
     vars_provided = r.vars_provided
     assert 'vmro3' in vars_provided
     assert 'concpm10' in vars_provided
     assert 'concno2' in vars_provided
-    paths = r._files
+    paths = r.filepaths
     assert len(paths) == 3
 
-@pytest.mark.parametrize('files, ts_types, raises', [
-    ([],[], pytest.raises(AttributeError)),
-    (['Base_hour.nc','test.nc','Base_month.nc', 'Base_day.nc', 'Base_fullrun.nc'],
-     ['hourly','monthly','daily','yearly'], does_not_raise_exception())
-])
-def test_ReadMscwCtm_ts_types(files, ts_types, raises, tmpdir):
-    ddir = None
-    for filename in files:
-        open(os.path.join(tmpdir, filename), 'w').close()
-        ddir = str(tmpdir)
-    with raises:
-        r = ReadMscwCtm(data_dir=ddir)
-        assert sorted(r.ts_types) == sorted(ts_types)
+# @pytest.mark.parametrize('files, ts_types, raises', [
+#     ([],[], pytest.raises(AttributeError)),
+#     (['Base_hour.nc','test.nc','Base_month.nc', 'Base_day.nc', 'Base_fullrun.nc'],
+#      ['hourly','monthly','daily','yearly'], does_not_raise_exception())
+# ])
+# def test_ReadMscwCtm_ts_types(files, ts_types, raises, tmpdir):
+#     ddir = None
+#     for filename in files:
+#         open(os.path.join(tmpdir, filename), 'w').close()
+#         ddir = str(tmpdir)
+#         with raises:
+#             r = ReadMscwCtm(data_dir=ddir)
+#             assert sorted(r.ts_types) == sorted(ts_types)
 
 @pytest.mark.parametrize('filename,ts_type, raises', [
     ('Base_hour.nc', 'hourly', does_not_raise_exception()),
@@ -233,9 +234,9 @@ def test_ReadMscwCtm_filename_from_ts_type(reader, filename, ts_type, raises):
         assert reader.filename_from_ts_type(ts_type) == filename
 
 def test_ReadMscwCtm_years_avail(path_emep):
-    data_dir = path_emep['data_dir']
+    data_dir = EMEP_DIR#path_emep['data_dir']
     r = ReadMscwCtm(data_dir=data_dir)
-    assert r.years_avail == [2017]
+    assert r.years_avail == ["2017"]
 
 def test_ReadMscwCtm_preprocess_units():
     units = ''
@@ -246,9 +247,9 @@ def test_ReadMscwCtm_open_file(path_emep):
     reader = ReadMscwCtm()
     with pytest.raises(AttributeError):
         reader.open_file()
-    reader.data_dir = path_emep['data_dir']
+    reader.data_dir = EMEP_DIR#path_emep['data_dir']
     data = reader.open_file()
-    assert isinstance(data, xr.Dataset)
+    assert isinstance(data["EMEP_2017"], xr.Dataset)
     assert reader._filedata is data
 
 @pytest.mark.parametrize('var_name, value, raises',[
@@ -262,18 +263,18 @@ def test_ReadMscwCtm_has_var(reader, var_name, value, raises):
     with raises:
         assert reader.has_var(var_name) == value
 
-@pytest.mark.parametrize('value, raises',[
-    (None, pytest.raises(TypeError)),
-    ('', pytest.raises(FileNotFoundError)),
-    ('/tmp', pytest.raises(FileNotFoundError)),
-    (EMEP_DIR, pytest.raises(FileNotFoundError)),
-    (EMEP_DIR + '/Base_month.nc', does_not_raise_exception())
+# @pytest.mark.parametrize('value, raises',[
+#     (None, pytest.raises(TypeError)),
+#     ('', pytest.raises(FileNotFoundError)),
+#     ('/tmp', pytest.raises(FileNotFoundError)),
+#     (EMEP_DIR, pytest.raises(FileNotFoundError)),
+#     (EMEP_DIR + '/Base_month.nc', does_not_raise_exception())
 
-    ])
-def test_ReadMscwCtm_filepath(reader, value, raises):
-    with raises:
-        reader.filepath = value
-        assert os.path.samefile(reader.filepath, value)
+#     ])
+# def test_ReadMscwCtm_filepath(reader, value, raises):
+#     with raises:
+#         reader.filepath = value
+#         assert os.path.samefile(reader.filepath, value)
 
 def test_ReadMscwCtm__str__():
     assert str(ReadMscwCtm()) == 'ReadMscwCtm'

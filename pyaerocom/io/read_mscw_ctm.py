@@ -114,17 +114,19 @@ class ReadMscwCtm(object):
 
         self.var_map = get_emep_variables()
 
-        # data_dir, filename, data_id = self._eval_input(filepath, data_id,
-        #                                                data_dir)
-        self.data_id = data_id
+        data_dir, filename, data_id = self._eval_input(data_dir, data_id,
+                                                       data_dir)
+        #self.data_id = data_id
         if data_dir is not None:
             self.data_dir = data_dir
+
+        self.data_id = data_id
 
         # if filename is None:
         #     filename = self.DEFAULT_FILE_NAME
 
         self.filename = self.DEFAULT_FILE_NAME
-        self.search_all_files()
+        #self.search_all_files()
 
 
 
@@ -168,7 +170,7 @@ class ReadMscwCtm(object):
         yrs = []
 
         for d in dirs:
-            if re.match(".*20\d\d.*", d) is None:
+            if re.match(r".*20\d\d.*", d) is None:
                 continue
             yrs.append(d.split("/")[-1])
 
@@ -188,7 +190,7 @@ class ReadMscwCtm(object):
             # if not fp.split("/")[-1] == self.filename:   
             #     continue
             try:
-                yr = re.search(".*(20\d\d).*", fp).group(1)
+                yr = re.search(r".*(20\d\d).*", fp).group(1)
             except:
                 raise ValueError(f"Could not find any year in {fp}")
             
@@ -232,18 +234,19 @@ class ReadMscwCtm(object):
 
         """
         filename = None
-        if filepath is not None:
-            if not isinstance(filepath, str) or not os.path.exists(filepath):
-                raise FileNotFoundError(f'{filepath}')
-            if os.path.isdir(filepath):
-                raise ValueError(f'{filepath} is a directory, please use data_dir')
-            data_dir,filename = os.path.split(filepath)
+        # if filepath is not None:
+        #     if not isinstance(filepath, str) or not os.path.exists(filepath):
+        #         raise FileNotFoundError(f'{filepath}')
+        #     if os.path.isdir(filepath):
+        #         raise ValueError(f'{filepath} is a directory, please use data_dir')
+        #     data_dir,filename = os.path.split(filepath)
+        
 
         if data_dir is not None:
             if not isinstance(data_dir, str) or not os.path.exists(data_dir):
                 raise FileNotFoundError(f'{data_dir}')
-            if not os.path.isdir(data_dir):
-                raise ValueError(f'{data_dir} is not a directory')
+            # if not os.path.isdir(data_dir):
+            #     raise ValueError(f'{data_dir} is not a directory')
         if data_id is None and data_dir is not None:
             data_id = data_dir.split(os.sep)[-1]
         return (data_dir,filename,data_id)
@@ -257,6 +260,8 @@ class ReadMscwCtm(object):
 
     @data_dir.setter
     def data_dir(self, val):
+        if val is None:
+            raise ValueError(f"Data dir {val} needs to be a dictionary or a file")
         if not os.path.isdir(val):
             raise FileNotFoundError(val)
         # mask, filelist = self._check_files_in_data_dir(val)
@@ -392,8 +397,9 @@ class ReadMscwCtm(object):
         """
         Years available in loaded dataset
         """
-        data = self.filedata
-        years = data.time.dt.year.values
+        data = self.filepaths
+        years = self._get_yrs_from_filepaths()
+
         years = list(np.unique(years))
         return sorted(years)
 
@@ -416,7 +422,7 @@ class ReadMscwCtm(object):
         fps = self.filepaths
         ds = {}
 
-        yrs = self._get_yrs_from_filepaths()
+        #yrs = self._get_yrs_from_filepaths()
 
         for i,fp in enumerate(fps):
             if not fp.split("/")[-1] == self.filename:   
