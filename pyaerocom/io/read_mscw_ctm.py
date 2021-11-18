@@ -688,9 +688,13 @@ class ReadMscwCtm(object):
         try:
             filedata = self.filedata
 
-            # data = filedata["2018"][emep_var] 
-            data = xr.concat([filedata[yr][emep_var] for yr in filedata.keys()]
-                                                            , dim="time")
+            if len(filedata.keys()) == 1:
+                data = filedata[list(filedata.keys())[0]][emep_var]
+            else:
+                if ts_type == "hourly":
+                    raise ValueError(f"ts_type {ts_type} can not be hourly when using multiple years")
+                data = xr.concat([filedata[yr][emep_var] for yr in filedata.keys()]
+                                                                , dim="time")
      
 
             
