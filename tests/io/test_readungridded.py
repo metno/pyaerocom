@@ -5,46 +5,45 @@ from pyaerocom.io import ReadUngridded
 
 
 def test_invalid_init_data_dirs():
-    with pytest.raises(ValueError):
-        ReadUngridded(["EBASMC", "GHOST.EEA.daily"], data_dirs="/bla/blub")
+    data_dirs = "/bla/blub"
+    with pytest.raises(ValueError) as e:
+        ReadUngridded(["EBASMC", "GHOST.EEA.daily"], data_dirs=data_dirs)
+    assert str(e.value) == f"Invalid input for data_dirs ({data_dirs}); needs to be a dictionary."
 
 
 def test_supported():
     supported_datasets = ReadUngridded().supported_datasets
-    print(supported_datasets)
     assert len(supported_datasets) >= 17
-    assert all(
-        x in supported_datasets
-        for x in [
-            "AeronetInvV3Lev2.daily",
-            "AeronetInvV3Lev1.5.daily",
-            "AeronetInvV3L2Subset.daily",
-            "AeronetInvV2Lev2.daily",
-            "AeronetInvV2Lev1.5.daily",
-            "AeronetSDAV2Lev2.daily",
-            "AeronetSDAV3Lev1.5.daily",
-            "AeronetSDAV3Lev2.daily",
-            "AeronetSDAV3L2Subset.daily",
-            "AeronetSunV2Lev2.daily",
-            "AeronetSunV2Lev2.AP",
-            "AeronetSunV3Lev1.5.daily",
-            "AeronetSunV3Lev1.5.AP",
-            "AeronetSunV3Lev2.daily",
-            "AeronetSunV3Lev2.AP",
-            "AeronetSunV3L2Subset.daily",
-            "EARLINET",
-            "EBASMC",
-            "EBASSubset",
-            "DMS_AMS_CVO",
-            "GAWTADsubsetAasEtAl",
-            "GHOST.EEA.monthly",
-            "GHOST.EEA.hourly",
-            "GHOST.EEA.daily",
-            "GHOST.EBAS.monthly",
-            "GHOST.EBAS.hourly",
-            "GHOST.EBAS.daily",
-        ]
+    datasets = (
+        "AeronetInvV3Lev2.daily",
+        "AeronetInvV3Lev1.5.daily",
+        "AeronetInvV3L2Subset.daily",
+        "AeronetInvV2Lev2.daily",
+        "AeronetInvV2Lev1.5.daily",
+        "AeronetSDAV2Lev2.daily",
+        "AeronetSDAV3Lev1.5.daily",
+        "AeronetSDAV3Lev2.daily",
+        "AeronetSDAV3L2Subset.daily",
+        "AeronetSunV2Lev2.daily",
+        "AeronetSunV2Lev2.AP",
+        "AeronetSunV3Lev1.5.daily",
+        "AeronetSunV3Lev1.5.AP",
+        "AeronetSunV3Lev2.daily",
+        "AeronetSunV3Lev2.AP",
+        "AeronetSunV3L2Subset.daily",
+        "EARLINET",
+        "EBASMC",
+        "EBASSubset",
+        "DMS_AMS_CVO",
+        "GAWTADsubsetAasEtAl",
+        "GHOST.EEA.monthly",
+        "GHOST.EEA.hourly",
+        "GHOST.EEA.daily",
+        "GHOST.EBAS.monthly",
+        "GHOST.EBAS.hourly",
+        "GHOST.EBAS.daily",
     )
+    assert all(dataset in supported_datasets for dataset in datasets)
 
 
 @pytest.mark.parametrize("data_ids", [None, "Blaaaaaa"])
