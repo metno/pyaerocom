@@ -133,6 +133,6 @@ def print_file(file_path):
     if not os.path.exists(file_path):
         raise OSError("File not found...")
     with open(file_path) as f:
-        for line in f:
+        for line in f.read().splitlines():
             if line.strip():
                 print(line)
