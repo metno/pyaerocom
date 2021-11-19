@@ -9,15 +9,6 @@ from pyaerocom.obs_io import (
     ObsVarCombi,
 )
 
-AUX_EXAMPLE_TYPES = dict(
-    data_id=str,
-    vars_supported=list,
-    aux_merge_how=dict,
-    aux_requires=dict,
-    aux_funs=dict,
-    aux_units=dict,
-)
-
 AUX_EXAMPLE = dict(
     data_id="AERONET",
     vars_supported=["fmf550aer", "od550lt1aer"],
@@ -53,11 +44,6 @@ def test_ObsVarCombi():
 
 def test_AuxInfoUngridded_MAX_VARS_PER_METHOD():
     assert AuxInfoUngridded.MAX_VARS_PER_METHOD == 2
-
-
-def test_AuxInfoUngridded_to_dict():
-    info = AuxInfoUngridded(**AUX_EXAMPLE)
-    assert info.to_dict() == AUX_EXAMPLE
 
 
 EX_WRONG1: dict = deepcopy(AUX_EXAMPLE)
@@ -115,7 +101,6 @@ EX_NOTWRONG2["aux_units"]["blablub"] = "1"
         EX_NOTWRONG2,
     ],
 )
-def test_AuxInfoUngridded(kwargs):
+def test_AuxInfoUngridded_to_dict(kwargs):
     info = AuxInfoUngridded(**kwargs)
-    for key, dtype in AUX_EXAMPLE_TYPES.items():
-        assert isinstance(info.__dict__[key], dtype)
+    assert info.to_dict() == kwargs
