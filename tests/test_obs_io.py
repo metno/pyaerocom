@@ -1,8 +1,15 @@
+from copy import deepcopy
+
 import pytest
 
-from pyaerocom import obs_io as testmod
+from pyaerocom.obs_io import (
+    OBS_ALLOW_ALT_WAVELENGTHS,
+    OBS_WAVELENGTH_TOL_NM,
+    AuxInfoUngridded,
+    ObsVarCombi,
+)
 
-AuxInfoUngriddedTypes = dict(
+AUX_EXAMPLE_TYPES = dict(
     data_id=str,
     vars_supported=list,
     aux_merge_how=dict,
@@ -33,50 +40,67 @@ AUX_EXAMPLE = dict(
 
 
 def test_OBS_WAVELENGTH_TOL_NM():
-    assert testmod.OBS_WAVELENGTH_TOL_NM == 10.0
+    assert OBS_WAVELENGTH_TOL_NM == 10.0
 
 
 def test_OBS_ALLOW_ALT_WAVELENGTHS():
-    assert testmod.OBS_ALLOW_ALT_WAVELENGTHS == True
+    assert OBS_ALLOW_ALT_WAVELENGTHS == True
 
 
 def test_ObsVarCombi():
-    assert str(testmod.ObsVarCombi("bla", "blub")) == "bla;blub"
+    assert str(ObsVarCombi("bla", "blub")) == "bla;blub"
 
 
 def test_AuxInfoUngridded_MAX_VARS_PER_METHOD():
-    assert testmod.AuxInfoUngridded.MAX_VARS_PER_METHOD == 2
+    assert AuxInfoUngridded.MAX_VARS_PER_METHOD == 2
 
 
 def test_AuxInfoUngridded_to_dict():
-    info = testmod.AuxInfoUngridded(**AUX_EXAMPLE)
+    info = AuxInfoUngridded(**AUX_EXAMPLE)
     assert info.to_dict() == AUX_EXAMPLE
 
 
-from copy import deepcopy
-
-EX_WRONG1 = deepcopy(AUX_EXAMPLE)
-EX_WRONG1["aux_funs"] = None
+EX_WRONG1: dict = deepcopy(AUX_EXAMPLE)
+EX_WRONG1.update(aux_funs=None)
 
 EX_WRONG2 = deepcopy(AUX_EXAMPLE)
-EX_WRONG2["vars_supported"] = dict(a=1)
+EX_WRONG2.update(vars_supported={"a": 1})
 
-EX_WRONG3 = deepcopy(AUX_EXAMPLE)
+EX_WRONG3: dict = deepcopy(AUX_EXAMPLE)
 EX_WRONG3["vars_supported"].append("blablub")
 
-EX_WRONG3p5 = deepcopy(EX_WRONG3)
-EX_WRONG3p5["aux_merge_how"]["blablub"] = "eval"
-
-EX_WRONG4 = deepcopy(EX_WRONG3p5)
-EX_WRONG4["aux_requires"]["blablub"] = 42
+EX_WRONG4 = deepcopy(EX_WRONG3)
+EX_WRONG4["aux_merge_how"].update(blablub="eval")
 
 EX_WRONG5 = deepcopy(EX_WRONG4)
-EX_WRONG5["aux_requires"]["blablub"] = {"abc": "42"}
+EX_WRONG5["aux_requires"].update(blablub=42)
 
 EX_WRONG6 = deepcopy(EX_WRONG5)
-EX_WRONG6["aux_requires"]["blablub"]["def"] = "43"
+EX_WRONG6["aux_requires"].update(blablub={"abc": "42"})
 
-EX_NOTWRONG1 = deepcopy(EX_WRONG6)
+EX_WRONG7 = deepcopy(EX_WRONG6)
+EX_WRONG7["aux_requires"]["blablub"].update({"def": "43"})
+
+
+@pytest.mark.parametrize(
+    "kwargs,error",
+    [
+        (EX_WRONG1, "Specification of computation function is missing for var fmf550aer"),
+        (EX_WRONG2, "Variable a is not defined in attr aux_requires..."),
+        (EX_WRONG3, "Variable blablub is not defined in attr aux_requires..."),
+        (EX_WRONG4, "Variable blablub is not defined in attr aux_requires..."),
+        (EX_WRONG5, "Specification of computation function is missing for var blablub"),
+        (EX_WRONG6, "Specification of computation function is missing for var blablub"),
+        (EX_WRONG7, "Specification of computation function is missing for var blablub"),
+    ],
+)
+def test_AuxInfoUngridded_error(kwargs, error: str):
+    with pytest.raises(ValueError) as e:
+        AuxInfoUngridded(**kwargs)
+    assert str(e.value) == error
+
+
+EX_NOTWRONG1 = deepcopy(EX_WRONG7)
 EX_NOTWRONG1["aux_funs"]["blablub"] = "abc;42+def;43"
 
 EX_NOTWRONG2 = deepcopy(EX_NOTWRONG1)
@@ -84,32 +108,14 @@ EX_NOTWRONG2["aux_units"]["blablub"] = "1"
 
 
 @pytest.mark.parametrize(
-    "argdict",
+    "kwargs",
     [
         AUX_EXAMPLE,
         EX_NOTWRONG1,
         EX_NOTWRONG2,
     ],
 )
-def test_AuxInfoUngriddedTypes(argdict):
-    info = testmod.AuxInfoUngridded(**argdict)
-    for key, dtype in AuxInfoUngriddedTypes.items():
+def test_AuxInfoUngridded(kwargs):
+    info = AuxInfoUngridded(**kwargs)
+    for key, dtype in AUX_EXAMPLE_TYPES.items():
         assert isinstance(info.__dict__[key], dtype)
-
-
-@pytest.mark.parametrize(
-    "argdict,error",
-    [
-        (EX_WRONG1, "Specification of computation function is missing for var fmf550aer"),
-        (EX_WRONG2, "Variable a is not defined in attr aux_requires..."),
-        (EX_WRONG3, "Variable blablub is not defined in attr aux_requires..."),
-        (EX_WRONG3p5, "Variable blablub is not defined in attr aux_requires..."),
-        (EX_WRONG4, "Specification of computation function is missing for var blablub"),
-        (EX_WRONG5, "Specification of computation function is missing for var blablub"),
-        (EX_WRONG6, "Specification of computation function is missing for var blablub"),
-    ],
-)
-def test_AuxInfoUngridded___init___error(argdict, error: str):
-    with pytest.raises(ValueError) as e:
-        testmod.AuxInfoUngridded(**argdict)
-    assert str(e.value) == error
