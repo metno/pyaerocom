@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 
@@ -7,13 +7,22 @@ from pyaerocom import utils
 from .conftest import data_unavail
 
 
-def test_print_file(tmpdir):
-    fp = os.path.join(tmpdir, "file.txt")
-    with pytest.raises(IOError):
-        utils.print_file(fp)
-    with open(fp, "w") as f:
-        f.write("Blaaaa\nBlub\n")
-    utils.print_file(fp)
+def test_print_file(tmp_path: Path, capsys):
+    path = tmp_path / "file.txt"
+    text = "Blaaaa\nBlub\n"
+    path.write_text(text)
+
+    utils.print_file(path)
+    captured = capsys.readouterr()
+    assert captured.out == text
+
+
+def test_print_file_error(tmp_path: Path):
+    path = tmp_path / "file.txt"
+    assert not path.exists()
+    with pytest.raises(IOError) as e:
+        utils.print_file(path)
+    assert str(e.value) == "File not found..."
 
 
 @data_unavail
