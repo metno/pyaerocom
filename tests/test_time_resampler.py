@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -38,19 +36,30 @@ def fakedata_hourly():
 
 
 @pytest.mark.parametrize(
-    "data, expectation",
+    "data",
     [
-        (pd.Series(dtype=np.float64), does_not_raise_exception()),
-        (xr.DataArray(), does_not_raise_exception()),
-        (np.asarray([1]), pytest.raises(ValueError)),
-        (GriddedData(), pytest.raises(ValueError)),
-        (Cube([]), pytest.raises(ValueError)),
+        pd.Series(dtype=np.float64),
+        xr.DataArray(),
     ],
 )
-def test_TimeResampler_input_data(data, expectation):
-    with expectation:
-        tr = TimeResampler()
+def test_TimeResampler_input_data(data):
+    tr = TimeResampler()
+    tr.input_data = data
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        pytest.param(np.asarray([1]), id="np.array"),
+        pytest.param(GriddedData(), id="GriddedData"),
+        pytest.param(Cube([]), id="Cube"),
+    ],
+)
+def test_TimeResampler_input_data_error(data):
+    tr = TimeResampler()
+    with pytest.raises(ValueError) as e:
         tr.input_data = data
+    assert str(e.value) == "Invalid input: need Series or DataArray"
 
 
 @pytest.mark.parametrize(
