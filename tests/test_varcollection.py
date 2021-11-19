@@ -1,5 +1,4 @@
 import os
-from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
@@ -31,65 +30,75 @@ def test_VARS_is_VarCollection():
     assert isinstance(const.VARS, mod.VarCollection)
 
 
-@pytest.mark.parametrize(
-    "var_ini,raises",
-    [
-        (None, pytest.raises(ValueError)),
-        ("/bla/blub", pytest.raises(FileNotFoundError)),
-        (VAR_INI, does_not_raise_exception()),
-    ],
-)
-def test_VarCollection___init__(var_ini, raises):
-    with raises:
-        col = mod.VarCollection(var_ini)
+@pytest.mark.parametrize("var_ini", [VAR_INI])
+def test_VarCollection___init__(var_ini):
+    mod.VarCollection(var_ini)
 
 
 @pytest.mark.parametrize(
-    "var_name,raises",
+    "var_ini,exception,error",
     [
-        ("concpm10gt1", does_not_raise_exception()),
-        ("concpm10", pytest.raises(VariableDefinitionError)),
+        pytest.param(None, ValueError, "Invalid input for var_ini, need str", id="ValueError"),
+        pytest.param(
+            "/bla/blub", FileNotFoundError, "File /bla/blub does not exist", id="FileNotFoundError"
+        ),
     ],
 )
-def test_VarCollection_add_var(var_name, raises):
-    var = Variable(var_name=var_name, units="ug m-3")
+def test_VarCollection___init___error(var_ini, exception, error: str):
+    with pytest.raises(exception) as e:
+        mod.VarCollection(var_ini)
+    assert str(e.value) == error
+
+
+def test_VarCollection_add_var():
+    var = Variable(var_name="concpm10gt1", units="ug m-3")
     col = mod.VarCollection(VAR_INI)
-    with raises:
+    col.add_var(var)
+    assert var.var_name in col.all_vars
+
+
+def test_VarCollection_add_var_error():
+    var = Variable(var_name="concpm10", units="ug m-3")
+    col = mod.VarCollection(VAR_INI)
+    with pytest.raises(VariableDefinitionError) as e:
         col.add_var(var)
-        all_vars = col.all_vars
-        assert var.var_name in all_vars
+    assert str(e.value) == f"variable with name {var.var_name} is already defined"
 
 
-@pytest.mark.parametrize(
-    "var_name,raises",
-    [
-        ("concpm10gt1", pytest.raises(VariableDefinitionError)),
-        ("concpm10", does_not_raise_exception()),
-    ],
-)
-def test_VarCollection_delete_var(var_name, raises):
-    var = Variable(var_name=var_name, units="ug m-3")
+def test_VarCollection_delete_var():
+    var = Variable(var_name="concpm10", units="ug m-3")
     col = mod.VarCollection(VAR_INI)
-    with raises:
+    col.delete_variable(var.var_name)
+    assert var.var_name not in col.all_vars
+
+
+def test_VarCollection_delete_var_error():
+    var = Variable(var_name="concpm10gt1", units="ug m-3")
+    col = mod.VarCollection(VAR_INI)
+    with pytest.raises(VariableDefinitionError) as e:
         col.delete_variable(var.var_name)
-        assert var.var_name not in col.all_vars
+    assert str(e.value) == f"No such variable {var.var_name} in VarCollection"
 
 
 @pytest.mark.parametrize(
-    "var,raises",
+    "var_name",
     [
-        ("bla", pytest.raises(VariableDefinitionError)),
-        ("blablub42", does_not_raise_exception()),
-        ("od550aer", does_not_raise_exception()),
+        "blablub42",
+        "od550aer",
     ],
 )
-def test_VarCollection_get_var(var, raises):
+def test_VarCollection_get_var(var_name):
     col = mod.VarCollection(VAR_INI)
-    add = Variable(var_name="blablub42")
-    col.add_var(add)
-    with raises:
-        result = col.get_var(var)
-        assert isinstance(result, Variable)
+    col.add_var(Variable(var_name="blablub42"))
+    assert isinstance(col.get_var(var_name), Variable)
+
+
+def test_VarCollection_get_var_error():
+    col = mod.VarCollection(VAR_INI)
+    var_name = "bla"
+    with pytest.raises(VariableDefinitionError) as e:
+        col.get_var(var_name)
+    assert str(e.value) == f"Error (VarCollection): input variable {var_name} is not supported"
 
 
 @pytest.mark.parametrize(
