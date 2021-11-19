@@ -134,7 +134,7 @@ class ReadUngridded:
         if len(dsr) < 2 and isinstance(val, str):
             val = {dsr[0]: val}
         elif not isinstance(val, dict):
-            raise ValueError("Invalid input for data_dirs ({val}); needs to be a dictionary.")
+            raise ValueError(f"Invalid input for data_dirs ({val}); needs to be a dictionary.")
         for data_dir in val.values():
             assert os.path.exists(data_dir), f"{data_dir} does not exist"
         self._data_dirs = val
