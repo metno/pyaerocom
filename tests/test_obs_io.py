@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import pytest
 
 from pyaerocom import obs_io as testmod
@@ -86,22 +84,32 @@ EX_NOTWRONG2["aux_units"]["blablub"] = "1"
 
 
 @pytest.mark.parametrize(
-    "argdict,expectation",
+    "argdict",
     [
-        (AUX_EXAMPLE, does_not_raise_exception()),
-        (EX_WRONG1, pytest.raises(ValueError)),
-        (EX_WRONG2, pytest.raises(ValueError)),
-        (EX_WRONG3, pytest.raises(ValueError)),
-        (EX_WRONG3p5, pytest.raises(ValueError)),
-        (EX_WRONG4, pytest.raises(ValueError)),
-        (EX_WRONG5, pytest.raises(ValueError)),
-        (EX_WRONG6, pytest.raises(ValueError)),
-        (EX_NOTWRONG1, does_not_raise_exception()),
-        (EX_NOTWRONG2, does_not_raise_exception()),
+        AUX_EXAMPLE,
+        EX_NOTWRONG1,
+        EX_NOTWRONG2,
     ],
 )
-def test_AuxInfoUngridded___init__(argdict, expectation):
-    with expectation:
-        info = testmod.AuxInfoUngridded(**argdict)
-        for key, dtype in AuxInfoUngriddedTypes.items():
-            assert isinstance(info.__dict__[key], dtype)
+def test_AuxInfoUngriddedTypes(argdict):
+    info = testmod.AuxInfoUngridded(**argdict)
+    for key, dtype in AuxInfoUngriddedTypes.items():
+        assert isinstance(info.__dict__[key], dtype)
+
+
+@pytest.mark.parametrize(
+    "argdict,error",
+    [
+        (EX_WRONG1, "Specification of computation function is missing for var fmf550aer"),
+        (EX_WRONG2, "Variable a is not defined in attr aux_requires..."),
+        (EX_WRONG3, "Variable blablub is not defined in attr aux_requires..."),
+        (EX_WRONG3p5, "Variable blablub is not defined in attr aux_requires..."),
+        (EX_WRONG4, "Specification of computation function is missing for var blablub"),
+        (EX_WRONG5, "Specification of computation function is missing for var blablub"),
+        (EX_WRONG6, "Specification of computation function is missing for var blablub"),
+    ],
+)
+def test_AuxInfoUngridded___init___error(argdict, error: str):
+    with pytest.raises(ValueError) as e:
+        testmod.AuxInfoUngridded(**argdict)
+    assert str(e.value) == error
