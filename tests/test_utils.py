@@ -24,6 +24,12 @@ def test_print_file_error(tmp_path: Path):
         utils.print_file(path)
     assert str(e.value) == "File not found..."
 
+    folder = tmp_path / "not_a_file"
+    folder.mkdir()
+    with pytest.raises(ValueError) as e:
+        utils.print_file(folder)
+    assert str(e.value) == f"{folder} is not a file"
+
 
 @data_unavail
 @pytest.mark.parametrize(
