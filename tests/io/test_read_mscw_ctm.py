@@ -288,21 +288,24 @@ def test_ReadEMEP__init__():
 def create_emep_dummy_data(tempdir, freq, vars_and_units):
     assert isinstance(vars_and_units, dict)
     reader = ReadMscwCtm()
-    outdir = os.path.join(tempdir, 'emep')
-    os.makedirs(outdir, exist_ok=True)
-    outfile = os.path.join(outdir, f'Base_{freq}.nc')
-    tst = reader.FREQ_CODES[freq]
-    varmap = reader.var_map
-    ds = xr.Dataset()
-    for var, unit in vars_and_units.items():
-        emep_var = varmap[var]
-        arr = _create_fake_MSCWCtm_data(tst=tst)
-        arr.attrs['units'] = unit
-        arr.attrs['var_name'] = emep_var
-        ds[emep_var] = arr
-    ds.to_netcdf(outfile)
-    assert os.path.exists(outfile)
-    return outdir
+    pre_outdir = os.path.join(tempdir, 'emep')
+    yrs = ["2017", "2018", "2019"]
+    for yr in yrs:
+        outdir = os.path.join(pre_outdir, yr)
+        os.makedirs(outdir, exist_ok=True)
+        outfile = os.path.join(outdir, f'Base_{freq}.nc')
+        tst = reader.FREQ_CODES[freq]
+        varmap = reader.var_map
+        ds = xr.Dataset()
+        for var, unit in vars_and_units.items():
+            emep_var = varmap[var]
+            arr = _create_fake_MSCWCtm_data(tst=tst)
+            arr.attrs['units'] = unit
+            arr.attrs['var_name'] = emep_var
+            ds[emep_var] = arr
+        ds.to_netcdf(outfile)
+        assert os.path.exists(outfile)
+    return pre_outdir
 
 def test_ReadMscwCtm_aux_var_defs():
     req = ReadMscwCtm.AUX_REQUIRES
@@ -354,7 +357,7 @@ def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
     data_dir = create_emep_dummy_data(tmpdir,freq,
                                     vars_and_units=file_vars_and_units)
     with raises:
-        reader = ReadMscwCtm(data_dir=data_dir)
+        reader = ReadMscwCtm(data_dir=os.path.join(data_dir, "2017"))
         tst = reader.FREQ_CODES[freq]
         objs = {}
         for var, unit in file_vars_and_units.items():
@@ -372,3 +375,31 @@ def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
             for var, mean in chk_mean.items():
                 np.testing.assert_allclose(objs[var].cube.data.mean(), mean,
                                            atol=0.1)
+
+
+@pytest.mark.parametrize('yr, freq ,raises', [
+     ("", 'day',does_not_raise_exception()),
+     ("", 'hour',pytest.raises(ValueError)),
+     ("2017", 'day', does_not_raise_exception()),
+     ("2019", 'hour',does_not_raise_exception()),
+])
+def test_read_emep_multiple_dirs(tmpdir, yr, freq,raises):
+    vars_and_units = {'prmm' : 'mm'}
+    data_dir = create_emep_dummy_data(tmpdir,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, yr))
+    tst = reader.FREQ_CODES[freq]
+    with raises:
+        files = [f.split("/")[-1] for f in reader.filepaths]
+        assert len(set(files)) == 1
+        assert freq in files[0] 
+        if yr == "":
+            assert len(reader.filepaths) == 3
+
+        else:
+            assert len(reader.filepaths) == 1
+
+
+        data = reader.read_var("prmm", ts_type=tst)
+        assert data.ts_type == tst
+        
