@@ -66,18 +66,18 @@ def test_df_to_heatmap(kwargs):
         ),
         pytest.param(
             dict(normalise_rows=True, normalise_rows_how="sum"),
-            "Invalid input for normalise_rows_how (sum). Choose from mean, median or sum",
+            "Invalid input for normalise_rows_how (sum). Choose mean or median",
             id="invalid normalise_rows_how",
         ),
         pytest.param(
             dict(normalise_rows=True, normalise_rows_how="BLAA"),
-            "Invalid input for normalise_rows_how (BLAA). Choose from mean, median or sum",
+            "Invalid input for normalise_rows_how (BLAA). Choose mean or median",
             id="invalid normalise_rows_how",
         ),
         pytest.param(
             dict(normalise_rows=True, normalise_rows_col="BLAAA"),
             "Failed to localise column BLAAA",
-            id="invalid normalise_rows_how",
+            id="invalid column",
         ),
     ],
 )
