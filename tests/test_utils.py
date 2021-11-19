@@ -1,5 +1,4 @@
 import os
-from contextlib import nullcontext as does_not_raise_exception
 
 import pytest
 
@@ -19,31 +18,54 @@ def test_print_file(tmpdir):
 
 @data_unavail
 @pytest.mark.parametrize(
-    "kwargs,raises,tabshape",
+    "kwargs,tabshape",
     [
-        ({}, pytest.raises(TypeError), None),
-        (
-            {"model_ids": "TM5-met2010_CTRL-TEST", "vars_or_var_patterns": "abs550*"},
-            does_not_raise_exception(),
+        pytest.param(
+            dict(model_ids="TM5-met2010_CTRL-TEST", vars_or_var_patterns="abs550*"),
             (2, 11),
+            id="varinfo abs550*",
         ),
-        (
-            {"model_ids": "TM5-met2010_CTRL-TEST", "vars_or_var_patterns": "*550*"},
-            does_not_raise_exception(),
+        pytest.param(
+            dict(model_ids="TM5-met2010_CTRL-TEST", vars_or_var_patterns="*550*"),
             (4, 11),
+            id="varinfo *550*",
         ),
-        (
-            {
-                "model_ids": "TM5-met2010_CTRL-TEST",
-                "vars_or_var_patterns": "od550aer",
-                "read_data": True,
-            },
-            does_not_raise_exception(),
+        pytest.param(
+            dict(
+                model_ids="TM5-met2010_CTRL-TEST", vars_or_var_patterns="od550aer", read_data=True
+            ),
             (2, 11),
+            id="read od550aer",
         ),
     ],
 )
-def test_create_varinfo_table(kwargs, raises, tabshape):
-    with raises:
-        df = utils.create_varinfo_table(**kwargs)
-        assert df.shape == tabshape
+def test_create_varinfo_table(kwargs, tabshape):
+    df = utils.create_varinfo_table(**kwargs)
+    assert df.shape == tabshape
+
+
+@data_unavail
+@pytest.mark.parametrize(
+    "kwargs,error",
+    [
+        pytest.param(
+            dict(),
+            "missing 2 required positional arguments: 'model_ids' and 'vars_or_var_patterns'",
+            id="no args",
+        ),
+        pytest.param(
+            dict(model_ids="TM5-met2010_CTRL-TEST"),
+            "missing 1 required positional argument: 'vars_or_var_patterns'",
+            id="no vars_or_var_patterns",
+        ),
+        pytest.param(
+            dict(vars_or_var_patterns="od550aer"),
+            "missing 1 required positional argument: 'model_ids'",
+            id="no model_ids",
+        ),
+    ],
+)
+def test_create_varinfo_table_error(kwargs, error):
+    with pytest.raises(TypeError) as e:
+        utils.create_varinfo_table(**kwargs)
+    assert str(e.value).endswith(error)
