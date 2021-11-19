@@ -38,24 +38,12 @@ def fakedata_hourly():
 @pytest.mark.parametrize(
     "data",
     [
-        pd.Series(dtype=np.float64),
-        xr.DataArray(),
-    ],
-)
-def test_TimeResampler_input_data(data):
-    tr = TimeResampler()
-    tr.input_data = data
-
-
-@pytest.mark.parametrize(
-    "data",
-    [
         pytest.param(np.asarray([1]), id="np.array"),
         pytest.param(GriddedData(), id="GriddedData"),
         pytest.param(Cube([]), id="Cube"),
     ],
 )
-def test_TimeResampler_input_data_error(data):
+def test_TimeResampler_invalid_input_data(data):
     tr = TimeResampler()
     with pytest.raises(ValueError) as e:
         tr.input_data = data
@@ -63,16 +51,16 @@ def test_TimeResampler_input_data_error(data):
 
 
 @pytest.mark.parametrize(
-    "data, expectation",
+    "data,resampler_function",
     [
-        (pd.Series(dtype=np.float64), resample_timeseries),
-        (xr.DataArray(), resample_time_dataarray),
+        pytest.param(pd.Series(dtype=np.float64), resample_timeseries, id="pd.Series"),
+        pytest.param(xr.DataArray(), resample_time_dataarray, id="xr.DataArray"),
     ],
 )
-def test_TimeResampler_fun(data, expectation):
+def test_TimeResampler_fun(data, resampler_function):
     tr = TimeResampler()
     tr.input_data = data
-    assert tr.fun == expectation
+    assert tr.fun == resampler_function
 
 
 @pytest.mark.parametrize(
