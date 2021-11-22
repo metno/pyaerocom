@@ -1,35 +1,20 @@
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose
 
-import pyaerocom.aux_var_helpers
-import pyaerocom.mathutils as mu
-
-
-@pytest.mark.parametrize("vmin, vmax, num", [(0, 1, 10), (0.345, 0.346, 100), (-2, -10, 5)])
-def test_make_binlist(vmin, vmax, num):
-    val = mu.make_binlist(vmin, vmax, num)
-    assert isinstance(val, list)
-    assert val[0] == vmin
-    assert val[-1] == vmax
-    assert len(val) == num + 1
-
-
-@pytest.mark.parametrize(
-    "inputval,result", [([1, 2], True), ([1], True), ([1, 2, 2], False), ([3, 2], False)]
+from pyaerocom.aux_var_helpers import vmrx_to_concx
+from pyaerocom.mathutils import (
+    _nanmean_and_std,
+    calc_statistics,
+    estimate_value_range,
+    exponent,
+    is_strictly_monotonic,
+    make_binlist,
 )
-def test_is_strictly_monotonic(inputval, result):
-    assert mu.is_strictly_monotonic(inputval) == result
-
-
-@pytest.mark.parametrize("inputval, desired", [(0.01, -2), (4, 0), (234, 2)])
-def test_exponent(inputval, desired):
-    """Test method :func:`exponent` of :mod:`pyaerocom.utils`"""
-    assert mu.exponent(inputval) == desired
 
 
 @pytest.mark.parametrize(
-    "inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit, desired",
+    "inputval,p,T,vmr_unit,mmol_var,mmol_air,to_unit,desired",
     [
         (1, 101300, 293, "nmol mol-1", 48, None, "ug m-3", 1.9959),
         (1, 101300, 273, "nmol mol-1", 48, None, "ug m-3", 2.1421),
@@ -39,10 +24,29 @@ def test_exponent(inputval, desired):
     ],
 )
 def test_vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit, desired):
-    val = pyaerocom.aux_var_helpers.vmrx_to_concx(
-        inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit
-    )
-    npt.assert_allclose(val, desired, rtol=1e-4)
+    val = vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit)
+    assert_allclose(val, desired, rtol=1e-4)
+
+
+@pytest.mark.parametrize("vmin, vmax, num", [(0, 1, 10), (0.345, 0.346, 100), (-2, -10, 5)])
+def test_make_binlist(vmin, vmax, num):
+    bins = make_binlist(vmin, vmax, num)
+    assert isinstance(bins, list)
+    assert bins[0] == vmin
+    assert bins[-1] == vmax
+    assert len(bins) == num + 1
+
+
+@pytest.mark.parametrize(
+    "inputval,result", [([1, 2], True), ([1], True), ([1, 2, 2], False), ([3, 2], False)]
+)
+def test_is_strictly_monotonic(inputval, result):
+    assert is_strictly_monotonic(inputval) == result
+
+
+@pytest.mark.parametrize("inputval, desired", [(0.01, -2), (4, 0), (234, 2)])
+def test_exponent(inputval, desired):
+    assert exponent(inputval) == desired
 
 
 @pytest.mark.parametrize(
@@ -57,16 +61,16 @@ def test_vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit, de
     ],
 )
 def test__nanmean_and_std(data, expected):
-    mean, std = mu._nanmean_and_std(data)
+    mean, std = _nanmean_and_std(data)
     mean_, std_ = expected
     if np.isnan(mean_):
         assert np.isnan(mean)
     else:
-        npt.assert_allclose(mean, mean_, atol=0.001, rtol=1e-2)
+        assert_allclose(mean, mean_, atol=0.001, rtol=1e-2)
     if np.isnan(std_):
         assert np.isnan(std)
     else:
-        npt.assert_allclose(std, std_, atol=0.001, rtol=1e-2)
+        assert_allclose(std, std_, atol=0.001, rtol=1e-2)
 
 
 perfect_stats_num1_mean1 = {
@@ -94,7 +98,6 @@ noise = np.random.normal(loc=0, scale=0.01, size=num_fakedata)
 
 idx = np.linspace(0, 2 * np.pi, num_fakedata)
 sin_signal = np.sin(idx)
-cos_signal = np.cos(idx)
 
 
 @pytest.mark.parametrize(
@@ -165,20 +168,17 @@ cos_signal = np.cos(idx)
     ],
 )
 def test_calc_statistics(data, ref_data, expected):
-    stats = mu.calc_statistics(data, ref_data)
+    stats = calc_statistics(data, ref_data)
     assert isinstance(stats, dict)
     assert len(stats) == len(expected)
     for key, val in expected.items():
         assert key in stats
-        if isinstance(val, str):
-            assert stats[key] == val
-        else:
-            npt.assert_allclose(stats[key], val, atol=0.02, rtol=0.01)
+        assert_allclose(stats[key], val, atol=0.02, rtol=0.01)
 
 
 def test_calc_statistics_error():
     with pytest.raises(IndexError) as e:
-        mu.calc_statistics([1], [1, np.nan])
+        calc_statistics([1], [1, np.nan])
     assert str(e.value).startswith("boolean index did not match indexed array")
 
 
@@ -191,11 +191,11 @@ def test_calc_statistics_error():
     ],
 )
 def test_estimate_value_range(vmin, vmax, extend_percent, result):
-    vals = mu.estimate_value_range(vmin, vmax, extend_percent)
-    npt.assert_allclose(vals, result, rtol=1e-3)
+    vals = estimate_value_range(vmin, vmax, extend_percent)
+    assert_allclose(vals, result, rtol=1e-3)
 
 
 def test_estimate_value_range_error():
     with pytest.raises(ValueError) as e:
-        mu.estimate_value_range(0, 0)
+        estimate_value_range(0, 0)
     assert str(e.value) == "vmax needs to exceed vmin"
