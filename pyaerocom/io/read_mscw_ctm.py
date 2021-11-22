@@ -231,59 +231,13 @@ class ReadMscwCtm(object):
 
 
 
-            
-
-    def _eval_input(self, data_id, data_dir):
-        """
-        Evaluate input (helper method for __init__)
-
-        Note, this method does not change the associated class attributes, it
-        just does some sanity checking on what the user inputs.
-
-        Parameters
-        ----------
-        filepath : str, optional
-            path to file to be read
-        data_id : str, optional
-            ID of dataset
-        data_dir : str, optional
-            directory containing EMEP data files
-
-        Raises
-        ------
-        FileNotFoundError
-            if any of input data_dir or filepath are provided but do not exist
-        ValueError
-            if any of input data_dir or filepath are provided but are not
-            a directory or file, respectively.
-
-        Returns
-        -------
-        tuple
-            3-element tuple containing (potentially updated / inferred values of):
-
-                - `data_dir`
-                - `filename`
-                - `data_id`
-
-        """
-
-        
-
-        if data_dir is not None:
-            if not isinstance(data_dir, str) or not os.path.exists(data_dir):
-                raise FileNotFoundError(f'{data_dir}')
-            # if not os.path.isdir(data_dir):
-            #     raise ValueError(f'{data_dir} is not a directory')
-        if data_id is None and data_dir is not None:
-            data_id = data_dir.split(os.sep)[-1]
-        return (data_dir, data_id)
-
     @property
     def data_dir(self):
         """
         Directory containing netcdf files
         """
+        if self._data_dir is None:
+            raise AttributeError(f"data_dir needs to be set before accessing")
         return self._data_dir
 
     @data_dir.setter
@@ -477,8 +431,6 @@ class ReadMscwCtm(object):
         fps = self._clean_filepaths(fps, yrs, ts_type)
 
         for i,fp in enumerate(fps):
-            # if not fp.split("/")[-1] == self.filename:   
-            #     continue
             if not os.path.split(fp)[-1] == self.filename:   
                 continue
 
