@@ -10,6 +10,7 @@ from pyaerocom.aux_var_helpers import (
     calc_od550lt1aer,
     compute_angstrom_coeff,
     compute_od_from_angstromexp,
+    vmrx_to_concx,
 )
 
 
@@ -103,3 +104,18 @@ def test__calc_od_helper():
 
     assert len(result) == 6
     assert result.mean() == 3
+
+
+@pytest.mark.parametrize(
+    "inputval,p,T,vmr_unit,mmol_var,mmol_air,to_unit,desired",
+    [
+        (1, 101300, 293, "nmol mol-1", 48, None, "ug m-3", 1.9959),
+        (1, 101300, 273, "nmol mol-1", 48, None, "ug m-3", 2.1421),
+        (1, 101300, 273, "nmol mol-1", 48, None, "kg m-3", 2.1421e-9),
+        (1, 101300, 273, "mol mol-1", 48, None, "kg m-3", 2.1421),
+        (1, 98000, 273, "mol mol-1", 48, None, "kg m-3", 2.0724),
+    ],
+)
+def test_vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit, desired):
+    val = vmrx_to_concx(inputval, p, T, vmr_unit, mmol_var, mmol_air, to_unit)
+    assert_allclose(val, desired, rtol=1e-4)
