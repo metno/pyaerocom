@@ -14,17 +14,25 @@ from pyaerocom.aux_var_helpers import (
 
 
 def test_calc_ang4487aer():
-    data = {}
-    with pytest.raises(AttributeError):
-        calc_ang4487aer(data)
+    data = dict(od440aer=0.2, od870aer=0.1)
 
-    data["od440aer"] = 0.2
-    with pytest.raises(AttributeError):
-        calc_ang4487aer(data)
-
-    data["od870aer"] = 0.1
     vals = calc_ang4487aer(data)
     assert_allclose(vals, 1, atol=0.05)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        pytest.param(dict(), id="missing both"),
+        pytest.param(dict(od440aer=0.2), id="missing od870aer"),
+        pytest.param(dict(od870aer=0.1), id="missing od440aer"),
+    ],
+)
+def test_calc_ang4487aer_error(data: dict):
+    error = "Either of the two (or both) required variables (od440aer, od870aer) are not available in data"
+    with pytest.raises(AttributeError) as e:
+        calc_ang4487aer(data)
+    assert str(e.value) == error
 
 
 def test_calc_od550aer():
