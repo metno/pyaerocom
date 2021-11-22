@@ -115,19 +115,15 @@ class ReadMscwCtm(object):
 
         self.var_map = get_emep_variables()
 
-        data_dir, filename, data_id = self._eval_input(data_dir, data_id,
-                                                       data_dir)
-        #self.data_id = data_id
         if data_dir is not None:
+            if not isinstance(data_dir, str) or not os.path.exists(data_dir):
+                raise FileNotFoundError(f'{data_dir}')
+
             self.data_dir = data_dir
 
         self.data_id = data_id
 
-        # if filename is None:
-        #     filename = self.DEFAULT_FILE_NAME
-
         self.filename = self.DEFAULT_FILE_NAME
-        #self.search_all_files()
 
 
 
@@ -181,15 +177,13 @@ class ReadMscwCtm(object):
             namelist = [dd]
         else:
             namelist = [d for _,d in sorted(zip(yrs, namelist))]
-
-        return namelist
+        return list(set(namelist))
 
     def _get_yrs_from_filepaths(self):
         fps = self.filepaths
         yrs = []
         for fp in fps:
-            # if not fp.split("/")[-1] == self.filename:   
-            #     continue
+
             try:
                 yr = re.search(r".*(20\d\d).*", fp).group(1)
             except:
@@ -198,9 +192,48 @@ class ReadMscwCtm(object):
             yrs.append(yr)
         
         return sorted(list(set(yrs)))
+
+
+    def _clean_filepaths(self, filepaths, yrs, ts_type):
+        clean_paths = []
+        found_yrs = []
+        yrs = [int(yr) for yr in yrs]
+        for path in filepaths:
+            ddir, file = os.path.split(path)
+            tst = re.search("Base_(.*).nc", file).group(1)
+            
+            if tst not in list(self.FREQ_CODES.keys()):
+                raise ValueError(f"The ts_type {tst} is not supported")
+            
+            if self.FREQ_CODES[tst] != ts_type:
+                continue
+
+            yrs_dir = ddir.split(os.sep)[-1]
+            try:
+                yr = re.search(r".*(20\d\d).*", yrs_dir).group(1)
+            except:
+                raise ValueError(f"Could not find any year in {yrs_dir}")
+            
+            if int(yr) not in yrs:
+                raise ValueError(f"The year {yr} is not in {yrs}")
+
+            found_yrs.append(int(yr))
+
+            clean_paths.append(path)
+
+        
+        if len(found_yrs) != len(yrs):
+            raise ValueError(f"A different amount of years {found_yrs} were found compared tp {yrs}")
+        
+        unique_yrs = found_yrs
+        return [d for _,d in sorted(zip(unique_yrs, clean_paths))]
+        
+
+
+
             
 
-    def _eval_input(self, filepath, data_id, data_dir):
+    def _eval_input(self, data_id, data_dir):
         """
         Evaluate input (helper method for __init__)
 
@@ -234,13 +267,7 @@ class ReadMscwCtm(object):
                 - `data_id`
 
         """
-        filename = None
-        # if filepath is not None:
-        #     if not isinstance(filepath, str) or not os.path.exists(filepath):
-        #         raise FileNotFoundError(f'{filepath}')
-        #     if os.path.isdir(filepath):
-        #         raise ValueError(f'{filepath} is a directory, please use data_dir')
-        #     data_dir,filename = os.path.split(filepath)
+
         
 
         if data_dir is not None:
@@ -250,7 +277,7 @@ class ReadMscwCtm(object):
             #     raise ValueError(f'{data_dir} is not a directory')
         if data_id is None and data_dir is not None:
             data_id = data_dir.split(os.sep)[-1]
-        return (data_dir,filename,data_id)
+        return (data_dir, data_id)
 
     @property
     def data_dir(self):
@@ -265,12 +292,11 @@ class ReadMscwCtm(object):
             raise ValueError(f"Data dir {val} needs to be a dictionary or a file")
         if not os.path.isdir(val):
             raise FileNotFoundError(val)
-        # mask, filelist = self._check_files_in_data_dir(val)
         self._file_mask = self.FILE_MASKS[0]
-        # self._files = filelist
         self._data_dir = val
         self._filedata = None
         self.search_all_files()
+        self._files = self.filepaths
 
 
     @property
@@ -413,7 +439,7 @@ class ReadMscwCtm(object):
         tsts = []
         for file in self._files:
             tsts.append(self.ts_type_from_filename(file))
-        return tsts
+        return list(set(tsts))
 
     @property
     def years_avail(self):
@@ -445,18 +471,22 @@ class ReadMscwCtm(object):
         fps = self.filepaths
         ds = {}
 
-        #yrs = self._get_yrs_from_filepaths()
+        yrs = self._get_yrs_from_filepaths()
+
+        ts_type = self.ts_type_from_filename(self.filename)
+        fps = self._clean_filepaths(fps, yrs, ts_type)
 
         for i,fp in enumerate(fps):
-            if not fp.split("/")[-1] == self.filename:   
+            # if not fp.split("/")[-1] == self.filename:   
+            #     continue
+            if not os.path.split(fp)[-1] == self.filename:   
                 continue
-
-            yr = fp.split("/")[-2]
 
             const.print_log.info(f'Opening {fp}')
             tmp_ds = xr.open_dataset(fp)
             
-            ds[yr] = tmp_ds
+            ds[yrs[i]] = tmp_ds
+
 
         self._filedata = ds
         

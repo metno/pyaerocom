@@ -1,4 +1,5 @@
 import os
+import re
 from contextlib import nullcontext as does_not_raise_exception
 
 import cf_units
@@ -249,7 +250,7 @@ def test_ReadMscwCtm_open_file(path_emep):
         reader.open_file()
     reader.data_dir = EMEP_DIR#path_emep['data_dir']
     data = reader.open_file()
-    assert isinstance(data["EMEP_2017"], xr.Dataset)
+    assert isinstance(data["2017"], xr.Dataset)
     assert reader._filedata is data
 
 @pytest.mark.parametrize('var_name, value, raises',[
@@ -289,7 +290,7 @@ def create_emep_dummy_data(tempdir, freq, vars_and_units):
     assert isinstance(vars_and_units, dict)
     reader = ReadMscwCtm()
     pre_outdir = os.path.join(tempdir, 'emep')
-    yrs = ["2017", "2018", "2019"]
+    yrs = ["2017", "2018", "2019", "2015", "2018", "2013"]
     for yr in yrs:
         outdir = os.path.join(pre_outdir, yr)
         os.makedirs(outdir, exist_ok=True)
@@ -377,10 +378,54 @@ def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
                                            atol=0.1)
 
 
+@pytest.mark.parametrize('yr, test_yrs, freq,raises', [
+     ("", [2013, 2015, 2017, 2018, 2019], 'day',does_not_raise_exception()),
+     ("", [2013, 2015, 2017, 2018, 2019, 2012], 'month',pytest.raises(ValueError)),
+     ("", [2013, 2016, 2017], 'day',pytest.raises(ValueError)),
+     ("2017", [2017], 'month', does_not_raise_exception()),
+     ("2019", [2019], 'hour',does_not_raise_exception()),
+])
+
+def test_read_emep_clean_filepaths(tmpdir, yr, test_yrs, freq, raises):
+    vars_and_units = {'prmm' : 'mm'}
+    data_dir = create_emep_dummy_data(tmpdir,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, yr))
+    tst = reader.FREQ_CODES[freq]
+    with raises:
+        filepaths = reader.filepaths
+    
+        cleaned_paths = reader._clean_filepaths(filepaths, test_yrs, tst)
+        assert len(cleaned_paths) == len(test_yrs)
+
+        found_yrs = []
+        for cp in cleaned_paths:
+            assert cp in filepaths
+
+            found_yr = os.path.split(cp)[0].split(os.sep)[-1]
+            found_yr = re.search(r".*(20\d\d).*", found_yr).group(1)
+            found_yrs.append(int(found_yr))
+
+        assert found_yrs == sorted(test_yrs)
+
+
+   
+
+    wrong_file = os.path.join(os.path.split(filepaths[0])[0], "Base_minutly.nc")
+    filepaths.append(wrong_file)
+    new_yrs = reader._get_yrs_from_filepaths()
+
+    try:
+        cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
+    except ValueError:
+        pass
+
+        
+
 @pytest.mark.parametrize('yr, freq ,raises', [
      ("", 'day',does_not_raise_exception()),
      ("", 'hour',pytest.raises(ValueError)),
-     ("2017", 'day', does_not_raise_exception()),
+     ("2017", 'month', does_not_raise_exception()),
      ("2019", 'hour',does_not_raise_exception()),
 ])
 def test_read_emep_multiple_dirs(tmpdir, yr, freq,raises):
@@ -394,7 +439,7 @@ def test_read_emep_multiple_dirs(tmpdir, yr, freq,raises):
         assert len(set(files)) == 1
         assert freq in files[0] 
         if yr == "":
-            assert len(reader.filepaths) == 3
+            assert len(reader.filepaths) == 5
 
         else:
             assert len(reader.filepaths) == 1
