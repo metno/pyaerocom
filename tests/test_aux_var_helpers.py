@@ -36,25 +36,60 @@ def test_calc_ang4487aer_error(data: dict):
     assert str(e.value) == error
 
 
-def test_calc_od550aer():
-    data = dict(od500aer=0.1, ang4487aer=1)
+@pytest.mark.parametrize(
+    "data,args,kwargs,result",
+    [
+        pytest.param(
+            dict(od500aer=0.1, ang4487aer=1),
+            ("od440aer",),
+            dict(
+                to_lambda=0.44, od_ref="od500aer", lambda_ref=0.5, use_angstrom_coeff="ang4487aer"
+            ),
+            0.11,
+            id="1 data point",
+        ),
+        pytest.param(
+            dict(
+                od500aer=np.asarray([2, 2, np.nan, 2, np.nan, np.nan]),
+                od440aer=np.ones(6) * 4,
+                ang4487aer=np.zeros(6),
+            ),
+            ("od550aer", 0.55, "od500aer", 0.5, "od440aer", 0.44, "ang4487aer"),
+            {},
+            [2, 2, 4, 2, 4, 4],
+            id="6 data points",
+        ),
+    ],
+)
+def test__calc_od_helper(data: dict, args: tuple, kwargs: dict, result):
+    od = _calc_od_helper(data, *args, **kwargs)
+    assert_allclose(od, result, atol=0.05)
 
-    val = calc_od550aer(data)
-    assert_allclose(val, 0.09, atol=0.05)
 
-    od440 = _calc_od_helper(
-        data,
-        "od440aer",
-        to_lambda=0.44,
-        od_ref="od500aer",
-        lambda_ref=0.5,
-        use_angstrom_coeff="ang4487aer",
-    )
-    assert_allclose(od440, 0.11, atol=0.05)
-
-    data = dict(od440aer=od440, ang4487aer=1)
-    val = calc_od550aer(data)
-    assert_allclose(val, 0.09, atol=0.05)
+@pytest.mark.parametrize(
+    "data,result",
+    [
+        pytest.param(dict(od500aer=0.1, ang4487aer=1), 0.09, id="simple"),
+        pytest.param(
+            dict(
+                od440aer=_calc_od_helper(
+                    dict(od500aer=0.1, ang4487aer=1),
+                    "od440aer",
+                    to_lambda=0.44,
+                    od_ref="od500aer",
+                    lambda_ref=0.5,
+                    use_angstrom_coeff="ang4487aer",
+                ),
+                ang4487aer=1,
+            ),
+            0.09,
+            id="complicated",
+        ),
+    ],
+)
+def test_calc_od550aer(data: dict, result: float):
+    aod = calc_od550aer(data)
+    assert_allclose(aod, result, atol=0.05)
 
 
 def test_calc_od550gt1aer():
@@ -90,20 +125,6 @@ def test_compute_od_from_angstromexp():
 
     val = compute_od_from_angstromexp(to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=0)
     assert_allclose(val, 0.1, atol=0.05)
-
-
-def test__calc_od_helper():
-    data = dict(
-        od500aer=np.asarray([2, 2, np.nan, 2, np.nan, np.nan]),
-        od440aer=np.ones(6) * 4,
-        ang4487aer=np.zeros(6),
-    )
-    result = _calc_od_helper(
-        data, "od550aer", 0.55, "od500aer", 0.5, "od440aer", 0.44, "ang4487aer"
-    )
-
-    assert len(result) == 6
-    assert result.mean() == 3
 
 
 @pytest.mark.parametrize(
