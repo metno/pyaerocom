@@ -75,7 +75,7 @@ def test_VarCollection_get_var(var,raises):
     ('*blaaaaaaa*', 0, does_not_raise_exception()),
     ('dep*', 0, does_not_raise_exception()),
     ('od*', 25, does_not_raise_exception()),
-    ('conc*', 70, does_not_raise_exception()),
+    ('conc*', 71, does_not_raise_exception()),
 ])
 def test_VarCollection_find(search_pattern,num,raises):
     col = mod.VarCollection(VAR_INI)
