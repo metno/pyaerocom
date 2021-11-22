@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import numpy as np
 import pytest
 
@@ -34,20 +32,31 @@ def test_TsType_TS_MAX_VALS():
 
 
 @pytest.mark.parametrize(
-    "base,mulfac,raises",
+    "base,mulfac",
     [
-        ("daily", 10, does_not_raise_exception()),
-        ("daily", "10", does_not_raise_exception()),
-        ("daily", "10.1", pytest.raises(ValueError)),
-        ("daily", 10.1, does_not_raise_exception()),
-        ("daily", 200, pytest.raises(ValueError)),
+        ("daily", 10),
+        ("daily", "10"),
+        ("daily", 10.1),
     ],
 )
-def test_TsType_mulfac(base, mulfac, raises):
+def test_TsType_mulfac(base, mulfac):
     tst = TsType(base)
-    with raises:
+    tst.mulfac = mulfac
+    assert int(mulfac) == tst._mulfac == tst.mulfac
+
+
+@pytest.mark.parametrize(
+    "base,mulfac,error",
+    [
+        ("daily", "10.1", "mulfac needs to be int or convertible to int"),
+        ("daily", 200, "Multiplication factor exceeds maximum allowed, which is 180"),
+    ],
+)
+def test_TsType_mulfac_error(base, mulfac, error: str):
+    tst = TsType(base)
+    with pytest.raises(ValueError) as e:
         tst.mulfac = mulfac
-        assert int(mulfac) == tst._mulfac == tst.mulfac
+    assert str(e.value) == error
 
 
 def test_TsType_base():
@@ -55,20 +64,33 @@ def test_TsType_base():
     assert tst.base == tst._val == "daily"
 
 
+def test_TsType_val():
+    tst = TsType("daily")
+    tst.val = value = "3daily"
+    assert isinstance(tst.val, str)
+    assert tst.val == value
+
+
 @pytest.mark.parametrize(
-    "value,raises",
+    "value,error",
     [
-        ("3daily", does_not_raise_exception()),
-        ("blaa", pytest.raises(TemporalResolutionError)),
-        ("5000daily", pytest.raises(TemporalResolutionError)),
+        (
+            "blaa",
+            "Invalid input for ts_type blaa. "
+            "Choose from ['minutely', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'native']",
+        ),
+        (
+            "5000daily",
+            "Invalid input for ts_type daily. "
+            "Multiplication factor 5000 exceeds maximum allowed for daily, which is 180",
+        ),
     ],
 )
-def test_TsType_val(value, raises):
+def test_TsType_val_error(value: str, error: str):
     tst = TsType("daily")
-    with raises:
+    with pytest.raises(TemporalResolutionError) as e:
         tst.val = value
-        assert isinstance(tst.val, str)
-        assert tst.val == value
+    assert str(e.value) == error
 
 
 def test_TsType_datetime64_str():
@@ -80,20 +102,31 @@ def test_TsType_timedelta64_str():
 
 
 @pytest.mark.parametrize(
-    "base, value, raises",
+    "base,value",
     [
-        ("native", None, pytest.raises(NotImplementedError)),
-        ("minutely", "minutes", pytest.raises(NotImplementedError)),
-        ("hourly", "hours", does_not_raise_exception()),
-        ("daily", "days", does_not_raise_exception()),
-        ("monthly", "days", does_not_raise_exception()),
-        ("yearly", "days", pytest.raises(NotImplementedError)),
+        ("hourly", "hours"),
+        ("daily", "days"),
+        ("monthly", "days"),
     ],
 )
-def test_TsType_cf_base_unit(base, value, raises):
+def test_TsType_cf_base_unit(base, value):
     tst = TsType(base)
-    with raises:
-        assert tst.cf_base_unit == value
+    assert tst.cf_base_unit == value
+
+
+@pytest.mark.parametrize(
+    "base,error",
+    [
+        ("native", "Cannot convert native to CF str"),
+        ("minutely", "Cannot convert minutely to CF str"),
+        ("yearly", "Cannot convert yearly to CF str"),
+    ],
+)
+def test_TsType_cf_base_unit_error(base, error: str):
+    tst = TsType(base)
+    with pytest.raises(NotImplementedError) as e:
+        assert tst.cf_base_unit == None
+    assert str(e.value) == error
 
 
 @pytest.mark.parametrize(
@@ -142,38 +175,46 @@ def test_TsType_to_timedelta64(ts_type, ref_time_str, np_dt_str, output_str):
 
 
 @pytest.mark.parametrize(
-    "ts_type, value, raises",
+    "ts_type,value",
     [
-        ("minutely", None, pytest.raises(IndexError)),
-        ("3minutely", "minutely", does_not_raise_exception()),
-        ("hourly", "minutely", does_not_raise_exception()),
-        ("3hourly", "hourly", does_not_raise_exception()),
-        ("weekly", "daily", does_not_raise_exception()),
-        ("monthly", "weekly", does_not_raise_exception()),
-        ("yearly", "monthly", does_not_raise_exception()),
+        ("3minutely", "minutely"),
+        ("hourly", "minutely"),
+        ("3hourly", "hourly"),
+        ("weekly", "daily"),
+        ("monthly", "weekly"),
+        ("yearly", "monthly"),
     ],
 )
-def test_TsType_next_higher(ts_type, value, raises):
-    with raises:
-        assert TsType(ts_type).next_higher.val == value
+def test_TsType_next_higher(ts_type, value):
+    assert TsType(ts_type).next_higher.val == value
+
+
+def test_TsType_next_higher_error():
+    with pytest.raises(IndexError) as e:
+        assert TsType("minutely").next_higher.val == None
+    assert str(e.value) == "No higher resolution available than minutely"
 
 
 @pytest.mark.parametrize(
-    "ts_type, value, raises",
+    "ts_type,value",
     [
-        ("yearly", "2yearly", does_not_raise_exception()),
-        ("monthly", "yearly", does_not_raise_exception()),
-        ("3monthly", "yearly", does_not_raise_exception()),
-        ("8daily", "2weekly", does_not_raise_exception()),
-        ("13monthly", "2yearly", does_not_raise_exception()),
-        ("13monthly", "2yearly", does_not_raise_exception()),
-        ("1000yearly", "1001yearly", does_not_raise_exception()),
-        ("120monthly", None, pytest.raises(TemporalResolutionError)),
+        ("yearly", "2yearly"),
+        ("monthly", "yearly"),
+        ("3monthly", "yearly"),
+        ("8daily", "2weekly"),
+        ("13monthly", "2yearly"),
+        ("13monthly", "2yearly"),
+        ("1000yearly", "1001yearly"),
     ],
 )
-def test_TsType_next_lower(ts_type, value, raises):
-    with raises:
-        assert TsType(ts_type).next_lower.val == value
+def test_TsType_next_lower(ts_type, value):
+    assert TsType(ts_type).next_lower.val == value
+
+
+def test_TsType_next_lower_error():
+    with pytest.raises(TemporalResolutionError) as e:
+        assert TsType("120monthly").next_lower.val == None
+    assert str(e.value) == "Failed to determine next lower resolution for 120monthly"
 
 
 @pytest.mark.parametrize("val,valid", [("bla", False), ("60000daily", False), ("daily", True)])
@@ -182,81 +223,107 @@ def test_TsType_valid(val, valid):
 
 
 @pytest.mark.parametrize(
-    "tst,val,raises",
+    "tst,val",
     [
-        ("3hourly", "3h", does_not_raise_exception()),
-        ("daily", "1D", does_not_raise_exception()),
-        ("native", None, pytest.raises(TemporalResolutionError)),
+        ("3hourly", "3h"),
+        ("daily", "1D"),
     ],
 )
-def test_TsType_to_numpy_freq(tst, val, raises):
-    tst = TsType(tst)
-    with raises:
-        assert tst.to_numpy_freq() == val
+def test_TsType_to_numpy_freq(tst, val):
+    assert TsType(tst).to_numpy_freq() == val
+
+
+def test_TsType_to_numpy_freq_error():
+    with pytest.raises(TemporalResolutionError) as e:
+        TsType("native").to_numpy_freq()
+    assert str(e.value) == "numpy frequency not available for native"
 
 
 @pytest.mark.parametrize(
-    "tst,val,raises",
+    "tst,val",
     [
-        ("3hourly", "3H", does_not_raise_exception()),
-        ("daily", "D", does_not_raise_exception()),
-        ("native", None, pytest.raises(TemporalResolutionError)),
+        ("3hourly", "3H"),
+        ("daily", "D"),
     ],
 )
-def test_TsType_to_pandas_freq(tst, val, raises):
-    tst = TsType(tst)
-    with raises:
-        assert tst.to_pandas_freq() == val
+def test_TsType_to_pandas_freq(tst, val):
+    assert TsType(tst).to_pandas_freq() == val
+
+
+def test_TsType_to_pandas_freq_error():
+    with pytest.raises(TemporalResolutionError) as e:
+        TsType("native").to_pandas_freq()
+    assert str(e.value) == "pandas frequency not available for native"
 
 
 @pytest.mark.parametrize(
-    "ts_type, value, raises",
+    "ts_type,value",
     [
-        ("hourly", "h", does_not_raise_exception()),
-        ("3hourly", "(3h)", does_not_raise_exception()),
-        ("daily", "d", does_not_raise_exception()),
-        ("minutely", "min", does_not_raise_exception()),
-        ("weekly", "week", does_not_raise_exception()),
-        ("monthly", "month", does_not_raise_exception()),
-        ("4weekly", "(4week)", does_not_raise_exception()),
-        ("native", None, pytest.raises(ValueError)),
+        ("hourly", "h"),
+        ("3hourly", "(3h)"),
+        ("daily", "d"),
+        ("minutely", "min"),
+        ("weekly", "week"),
+        ("monthly", "month"),
+        ("4weekly", "(4week)"),
     ],
 )
-def test_TsType_to_si(ts_type, value, raises):
-    with raises:
-        assert TsType(ts_type).to_si() == value
+def test_TsType_to_si(ts_type, value):
+    assert TsType(ts_type).to_si() == value
+
+
+def test_TsType_to_si_error():
+    with pytest.raises(ValueError) as e:
+        TsType("native").to_si()
+    assert str(e.value) == "Cannot convert ts_type=native to SI unit string..."
 
 
 @pytest.mark.parametrize(
-    "ts_type, to_ts_type, min_num_obs, val, raises",
+    "ts_type,to_ts_type,min_num_obs,val",
     [
-        ("12hourly", "6daily", {"daily": {"hourly": 12}}, 6, does_not_raise_exception()),
-        ("84hourly", "6daily", {"daily": {"hourly": 24}}, 2, does_not_raise_exception()),
-        ("84hourly", "6daily", {"daily": {"hourly": 1}}, 0, does_not_raise_exception()),
-        ("84hourly", "6daily", {"daily": {"hourly": 12}}, 1, does_not_raise_exception()),
+        ("hourly", "hourly", {}, 0),
+        ("12hourly", "6daily", {"daily": {"hourly": 12}}, 6),
+        ("84hourly", "6daily", {"daily": {"hourly": 24}}, 2),
+        ("84hourly", "6daily", {"daily": {"hourly": 1}}, 0),
+        ("84hourly", "6daily", {"daily": {"hourly": 12}}, 1),
+        ("84hourly", "4daily", {"daily": {"84hourly": 0.1}}, 0),
+        ("84hourly", "6daily", {"daily": {"84hourly": 0.1}}, 1),
+        ("2hourly", "3daily", {"3daily": {"2hourly": 4}}, 4),
+        ("2hourly", "3daily", {"3daily": {"hourly": 4}}, 2),
+        ("10hourly", "monthly", {"monthly": {"hourly": 100}}, 10),
+    ],
+)
+def test_TsType_get_min_num_obs(ts_type, to_ts_type, min_num_obs, val):
+    assert TsType(ts_type).get_min_num_obs(TsType(to_ts_type), min_num_obs) == val
+
+
+@pytest.mark.parametrize(
+    "ts_type,to_ts_type,exception,error",
+    [
         (
             "84hourly",
             "3daily",
-            {"daily": {"84hourly": 0.1}},
-            0,
-            pytest.raises(TemporalResolutionError),
+            TemporalResolutionError,
+            "input ts_type 3daily is lower resolution than current 84hourly",
         ),
-        ("84hourly", "4daily", {"daily": {"84hourly": 0.1}}, 0, does_not_raise_exception()),
-        ("84hourly", "6daily", {"daily": {"84hourly": 0.1}}, 1, does_not_raise_exception()),
-        ("hourly", "minutely", {}, 0, pytest.raises(TemporalResolutionError)),
-        ("hourly", "hourly", {}, 0, does_not_raise_exception()),
-        ("hourly", "hourly", {}, 0, does_not_raise_exception()),
-        ("2hourly", "3daily", {"3daily": {"2hourly": 4}}, 4, does_not_raise_exception()),
-        ("2hourly", "3daily", {"3daily": {"hourly": 4}}, 2, does_not_raise_exception()),
-        ("10hourly", "monthly", {"monthly": {"hourly": 100}}, 10, does_not_raise_exception()),
-        ("hourly", "daily", {"monthly": {"yearly": 4}}, 2, pytest.raises(ValueError)),
+        (
+            "hourly",
+            "minutely",
+            TemporalResolutionError,
+            "input ts_type minutely is lower resolution than current hourly",
+        ),
+        (
+            "hourly",
+            "daily",
+            ValueError,
+            "could not infer min_num_obs value from input dict {} for conversion from hourly to daily",
+        ),
     ],
 )
-def test_TsType_get_min_num_obs(ts_type, to_ts_type, min_num_obs, val, raises):
-    fr = TsType(ts_type)
-    to = TsType(to_ts_type)
-    with raises:
-        assert fr.get_min_num_obs(to, min_num_obs) == val
+def test_TsType_get_min_num_obs_error(ts_type, to_ts_type, exception, error: str):
+    with pytest.raises(exception) as e:
+        TsType(ts_type).get_min_num_obs(TsType(to_ts_type), {})
+    assert str(e.value) == error
 
 
 @pytest.mark.parametrize(
@@ -273,37 +340,47 @@ def test_TsType_check_match_total_seconds(ts_type, total_seconds, value):
 
 
 @pytest.mark.parametrize(
-    "base,total_seconds,val,raises",
+    "base,total_seconds,val",
     [
-        ("daily", 86400 * 2, "2daily", does_not_raise_exception()),
-        ("daily", 86400, "daily", does_not_raise_exception()),
-        ("daily", 86000, "daily", does_not_raise_exception()),  # 5% tolerance
-        ("yearly", 31556925, "yearly", does_not_raise_exception()),
-        ("yearly", 31556925 * 2, "2yearly", pytest.raises(TemporalResolutionError)),
+        ("daily", 86400 * 2, "2daily"),
+        ("daily", 86400, "daily"),
+        ("daily", 86000, "daily"),  # 5% tolerance
+        ("yearly", 31556925, "yearly"),
     ],
 )
-def test_TsType__try_infer_from_total_seconds(base, total_seconds, val, raises):
-    with raises:
-        tst = TsType._try_infer_from_total_seconds(base, total_seconds)
-        assert isinstance(tst, TsType)
-        assert str(tst) == val
+def test_TsType__try_infer_from_total_seconds(base, total_seconds, val):
+    tst = TsType._try_infer_from_total_seconds(base, total_seconds)
+    assert isinstance(tst, TsType)
+    assert str(tst) == val
+
+
+def test_TsType__try_infer_from_total_seconds_error():
+    base, seconds = "yearly", 31556925 * 2
+    error = f"Period {seconds}s could not be associated with any allowed multiplication factor of base frequency {base}"
+    with pytest.raises(TemporalResolutionError) as e:
+        TsType._try_infer_from_total_seconds(base, seconds)
+    assert str(e.value) == error
 
 
 @pytest.mark.parametrize(
-    "total_seconds, value, raises",
+    "total_seconds,value",
     [
-        (86400 * 2, "2daily", does_not_raise_exception()),
-        (30, "2daily", pytest.raises(TemporalResolutionError)),
-        (3605, "hourly", does_not_raise_exception()),
-        (1200, "20minutely", does_not_raise_exception()),
-        (31556925 * 2, "24monthly", does_not_raise_exception()),
-        (31556925 * 12, "12yearly", pytest.raises(TemporalResolutionError)),
+        (86400 * 2, "2daily"),
+        (3605, "hourly"),
+        (1200, "20minutely"),
+        (31556925 * 2, "24monthly"),
     ],
 )
-def test_TsType_from_total_seconds(total_seconds, value, raises):
-    with raises:
-        tst = TsType.from_total_seconds(total_seconds)
-        assert tst.val == value
+def test_TsType_from_total_seconds(total_seconds, value):
+    tst = TsType.from_total_seconds(total_seconds)
+    assert tst.val == value
+
+
+@pytest.mark.parametrize("total_seconds", [(30), (31556925 * 12)])
+def test_TsType_from_total_seconds_error(total_seconds):
+    with pytest.raises(TemporalResolutionError) as e:
+        TsType.from_total_seconds(total_seconds)
+    assert str(e.value) == f"failed to infer ts_type based on input dt={total_seconds} s"
 
 
 @pytest.mark.parametrize(
