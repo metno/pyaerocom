@@ -280,19 +280,18 @@ class ReadMscwCtm(object):
         """
         if self.data_dir is None and self._filepaths is None:
             raise AttributeError('data_dir or filepaths needs to be set before accessing')
-        return self._filepaths
+        return self._filepath
         #return os.path.join(self.data_dir, self.filename)
 
     @filepath.setter
     def filepath(self, value):
         if not isinstance(value, str):
             raise ValueError('needs to be a string')
-        if self._filepaths is not None:
-            self.filepaths.append(value)
+        
         self._filepath = value
-        # ddir, fname = os.path.split(value)
-        # self.data_dir = ddir
-        # self.filename = fname
+        ddir, fname = os.path.split(value)
+        self.data_dir = ddir
+        self.filename = fname
 
     @property
     def filepaths(self):
