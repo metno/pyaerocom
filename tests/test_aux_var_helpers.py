@@ -62,8 +62,8 @@ def test_calc_ang4487aer_error(data: dict):
     ],
 )
 def test__calc_od_helper(data: dict, args: tuple, kwargs: dict, result):
-    od = _calc_od_helper(data, *args, **kwargs)
-    assert_allclose(od, result, atol=0.05)
+    aod = _calc_od_helper(data, *args, **kwargs)
+    assert_allclose(aod, result, atol=0.05)
 
 
 @pytest.mark.parametrize(
@@ -95,28 +95,28 @@ def test_calc_od550aer(data: dict, result: float):
 def test_calc_od550gt1aer():
     data = dict(od500gt1aer=0.1, ang4487aer=1)
 
-    val = calc_od550gt1aer(data)
-    assert_allclose(val, 0.09, atol=0.05)
+    aod = calc_od550gt1aer(data)
+    assert_allclose(aod, 0.09, atol=0.05)
 
 
 def test_calc_od550lt1aer():
     data = dict(od500lt1aer=0.1, ang4487aer=1)
 
-    val = calc_od550lt1aer(data)
-    assert_allclose(val, 0.09, atol=0.05)
+    aod = calc_od550lt1aer(data)
+    assert_allclose(aod, 0.09, atol=0.05)
 
 
 @pytest.mark.parametrize(
-    "od1,od2,lambda1,lambda2",
+    "od1,od2,lambda1,lambda2,result",
     [
-        (0.1, 0.2, 0.6, 0.3),
-        (0.1, 0.2, 0.3, 0.6),
+        (0.1, 0.2, 0.6, 0.3, 1),
+        (0.1, 0.2, 0.3, 0.6, -1),
     ],
 )
-def test_compute_angstrom_coeff(od1, od2, lambda1, lambda2):
-    ae = compute_angstrom_coeff(od1, od2, lambda1, lambda2)
-    expected = -np.log(od1 / od2) / np.log(lambda1 / lambda2)
-    assert_allclose(ae, expected, atol=1e-5)
+def test_compute_angstrom_coeff(
+    od1: float, od2: float, lambda1: float, lambda2: float, result: float
+):
+    assert compute_angstrom_coeff(od1, od2, lambda1, lambda2) == result
 
 
 @pytest.mark.parametrize("angs,result", [(4, 0.77), (0, 0.1)])
@@ -124,7 +124,7 @@ def test_compute_od_from_angstromexp(angs: float, result: float):
     aod = compute_od_from_angstromexp(
         to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=angs
     )
-    assert_allclose(aod, result, atol=0.05)
+    aod == result
 
 
 @pytest.mark.parametrize(
