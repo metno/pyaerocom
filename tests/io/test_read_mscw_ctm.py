@@ -264,18 +264,18 @@ def test_ReadMscwCtm_has_var(reader, var_name, value, raises):
     with raises:
         assert reader.has_var(var_name) == value
 
-# @pytest.mark.parametrize('value, raises',[
-#     (None, pytest.raises(TypeError)),
-#     ('', pytest.raises(FileNotFoundError)),
-#     ('/tmp', pytest.raises(FileNotFoundError)),
-#     (EMEP_DIR, pytest.raises(FileNotFoundError)),
-#     (EMEP_DIR + '/Base_month.nc', does_not_raise_exception())
+@pytest.mark.parametrize('value, raises',[
+    (None, pytest.raises(TypeError)),
+    ('', pytest.raises(FileNotFoundError)),
+    ('/tmp', pytest.raises(FileNotFoundError)),
+    (EMEP_DIR, pytest.raises(FileNotFoundError)),
+    (EMEP_DIR + '/Base_month.nc', does_not_raise_exception())
 
-#     ])
-# def test_ReadMscwCtm_filepath(reader, value, raises):
-#     with raises:
-#         reader.filepath = value
-#         assert os.path.samefile(reader.filepath, value)
+    ])
+def test_ReadMscwCtm_filepath(reader, value, raises):
+    with raises:
+        reader.filepath = value
+        assert os.path.samefile(reader.filepath, value)
 
 def test_ReadMscwCtm__str__():
     assert str(ReadMscwCtm()) == 'ReadMscwCtm'

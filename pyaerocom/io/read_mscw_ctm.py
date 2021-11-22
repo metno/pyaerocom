@@ -286,7 +286,7 @@ class ReadMscwCtm(object):
     @filepath.setter
     def filepath(self, value):
         if not isinstance(value, str):
-            raise ValueError('needs to be a string')
+            raise TypeError('needs to be a string')
         
         self._filepath = value
         ddir, fname = os.path.split(value)
