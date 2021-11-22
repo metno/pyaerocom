@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -72,45 +70,41 @@ def test__nanmean_and_std(data, expected):
 
 
 perfect_stats_num1_mean1 = {
-    "totnum": 1.0,
-    "num_valid": 1.0,
-    "refdata_mean": 1.0,
-    "refdata_std": 0.0,
-    "data_mean": 1.0,
-    "data_std": 0.0,
+    "totnum": 1,
+    "num_valid": 1,
+    "refdata_mean": 1,
+    "refdata_std": 0,
+    "data_mean": 1,
+    "data_std": 0,
     "weighted": False,
-    "rms": 0.0,
-    "nmb": 0.0,
-    "mnmb": 0.0,
-    "fge": 0.0,
+    "rms": 0,
+    "nmb": 0,
+    "mnmb": 0,
+    "fge": 0,
     "R": np.nan,
     "R_kendall": np.nan,
     "R_spearman": np.nan,
 }
-perfect_stats_num2_mean1 = {}
-perfect_stats_num2_mean1.update(perfect_stats_num1_mean1)
-perfect_stats_num2_mean1["totnum"] = 2
+perfect_stats_num2_mean1 = perfect_stats_num1_mean1.copy()
+perfect_stats_num2_mean1.update(totnum=2)
 
 num_fakedata = 1000
-idx = np.linspace(0, 2 * np.pi, num_fakedata)
 zero_signal = np.zeros(num_fakedata)
+noise = np.random.normal(loc=0, scale=0.01, size=num_fakedata)
+
+idx = np.linspace(0, 2 * np.pi, num_fakedata)
 sin_signal = np.sin(idx)
 cos_signal = np.cos(idx)
-noise = np.random.normal(loc=0, scale=0.01, size=num_fakedata)
-nanmask = np.ones(num_fakedata)
-nanmask[100:300] = np.nan
 
 
 @pytest.mark.parametrize(
-    "data, ref_data, lowlim, highlim, min_num_valid, weights, expected,raises",
+    "data,ref_data,expected",
     [
+        ([1], [1], perfect_stats_num1_mean1),
+        ([1, np.nan], [1, np.nan], perfect_stats_num2_mean1),
         (
             zero_signal,
             zero_signal,
-            None,
-            None,
-            1,
-            None,
             {
                 "totnum": 1000.0,
                 "num_valid": 1000.0,
@@ -127,15 +121,10 @@ nanmask[100:300] = np.nan
                 "mnmb": np.nan,
                 "fge": np.nan,
             },
-            does_not_raise_exception(),
         ),
         (
             zero_signal,
             noise,
-            None,
-            None,
-            1,
-            None,
             {
                 "totnum": 1000.0,
                 "num_valid": 1000.0,
@@ -152,36 +141,10 @@ nanmask[100:300] = np.nan
                 "mnmb": -2,
                 "fge": 2,
             },
-            does_not_raise_exception(),
-        ),
-        ([1], [1], None, None, 1, None, perfect_stats_num1_mean1, does_not_raise_exception()),
-        (
-            [1],
-            [1, np.nan],
-            None,
-            None,
-            1,
-            None,
-            perfect_stats_num1_mean1,
-            pytest.raises(IndexError),
-        ),
-        (
-            [1, np.nan],
-            [1, np.nan],
-            None,
-            None,
-            1,
-            None,
-            perfect_stats_num2_mean1,
-            does_not_raise_exception(),
         ),
         (
             sin_signal,
             sin_signal,
-            None,
-            None,
-            1,
-            None,
             {
                 "totnum": 1000.0,
                 "num_valid": 1000.0,
@@ -198,35 +161,41 @@ nanmask[100:300] = np.nan
                 "mnmb": np.nan,
                 "fge": np.nan,
             },
-            does_not_raise_exception(),
         ),
     ],
 )
-def test_calc_statistics(
-    data, ref_data, lowlim, highlim, min_num_valid, weights, expected, raises
-):
-    with raises:
-        stats = mu.calc_statistics(data, ref_data, lowlim, highlim, min_num_valid, weights)
-        assert isinstance(stats, dict)
-        assert len(stats) == len(expected)
-        for key, val in expected.items():
-            assert key in stats
-            if isinstance(val, str):
-                assert stats[key] == val
-            else:
-                npt.assert_allclose(stats[key], val, atol=0.02, rtol=0.01)
+def test_calc_statistics(data, ref_data, expected):
+    stats = mu.calc_statistics(data, ref_data)
+    assert isinstance(stats, dict)
+    assert len(stats) == len(expected)
+    for key, val in expected.items():
+        assert key in stats
+        if isinstance(val, str):
+            assert stats[key] == val
+        else:
+            npt.assert_allclose(stats[key], val, atol=0.02, rtol=0.01)
+
+
+def test_calc_statistics_error():
+    with pytest.raises(IndexError) as e:
+        mu.calc_statistics([1], [1, np.nan])
+    assert str(e.value).startswith("boolean index did not match indexed array")
 
 
 @pytest.mark.parametrize(
-    "vmin,vmax,extend_percent,result,raises",
+    "vmin,vmax,extend_percent,result",
     [
-        (0, 0, 0, (0, 0), pytest.raises(ValueError)),
-        (0, 1, 0, (0, 1), does_not_raise_exception()),
-        (-0.012, 3.12345666, 0, (-0.02, 3.13), does_not_raise_exception()),
-        (-0.012, 3.12345666, 5, (-0.2, 3.3), does_not_raise_exception()),
+        (0, 1, 0, (0, 1)),
+        (-0.012, 3.12345666, 0, (-0.02, 3.13)),
+        (-0.012, 3.12345666, 5, (-0.2, 3.3)),
     ],
 )
-def test_estimate_value_range(vmin, vmax, extend_percent, result, raises):
-    with raises:
-        vals = mu.estimate_value_range(vmin, vmax, extend_percent)
-        npt.assert_allclose(vals, result, rtol=1e-3)
+def test_estimate_value_range(vmin, vmax, extend_percent, result):
+    vals = mu.estimate_value_range(vmin, vmax, extend_percent)
+    npt.assert_allclose(vals, result, rtol=1e-3)
+
+
+def test_estimate_value_range_error():
+    with pytest.raises(ValueError) as e:
+        mu.estimate_value_range(0, 0)
+    assert str(e.value) == "vmax needs to exceed vmin"
