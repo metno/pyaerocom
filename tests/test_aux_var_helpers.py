@@ -119,12 +119,12 @@ def test_compute_angstrom_coeff(od1, od2, lambda1, lambda2):
     assert_allclose(ae, expected, atol=1e-5)
 
 
-def test_compute_od_from_angstromexp():
-    val = compute_od_from_angstromexp(to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=4)
-    assert_allclose(val, 0.77, atol=0.05)
-
-    val = compute_od_from_angstromexp(to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=0)
-    assert_allclose(val, 0.1, atol=0.05)
+@pytest.mark.parametrize("angs,result", [(4, 0.77), (0, 0.1)])
+def test_compute_od_from_angstromexp(angs: float, result: float):
+    aod = compute_od_from_angstromexp(
+        to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=angs
+    )
+    assert_allclose(aod, result, atol=0.05)
 
 
 @pytest.mark.parametrize(
