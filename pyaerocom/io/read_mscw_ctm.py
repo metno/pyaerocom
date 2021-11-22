@@ -99,6 +99,14 @@ class ReadMscwCtm(object):
 
     }
 
+    REVERSE_FREQ_CODES = {
+        'hourly'    : 'hour',
+        'daily'     : 'day',
+        'monthly'   : 'month',
+        'yearly'    : 'fullrun',
+
+    }
+
     DEFAULT_FILE_NAME = 'Base_day.nc'
 
     def __init__(self, data_id=None, data_dir=None):
@@ -197,16 +205,23 @@ class ReadMscwCtm(object):
     def _clean_filepaths(self, filepaths, yrs, ts_type):
         clean_paths = []
         found_yrs = []
+        
         yrs = [int(yr) for yr in yrs]
         for path in filepaths:
             ddir, file = os.path.split(path)
+
             tst = re.search("Base_(.*).nc", file).group(1)
-            
+
+            if "LF_" in tst:
+                continue
+
+
             if tst not in list(self.FREQ_CODES.keys()):
                 raise ValueError(f"The ts_type {tst} is not supported")
             
             if self.FREQ_CODES[tst] != ts_type:
                 continue
+            
 
             yrs_dir = ddir.split(os.sep)[-1]
             try:
