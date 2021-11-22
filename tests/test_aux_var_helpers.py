@@ -1,30 +1,39 @@
 import numpy as np
-import numpy.testing as npt
 import pytest
+from numpy.testing import assert_allclose
 
-import pyaerocom.aux_var_helpers as mod
+from pyaerocom.aux_var_helpers import (
+    _calc_od_helper,
+    calc_ang4487aer,
+    calc_od550aer,
+    calc_od550gt1aer,
+    calc_od550lt1aer,
+    compute_angstrom_coeff,
+    compute_od_from_angstromexp,
+)
 
 
 def test_calc_ang4487aer():
     data = {}
     with pytest.raises(AttributeError):
-        mod.calc_ang4487aer(data)
+        calc_ang4487aer(data)
+
     data["od440aer"] = 0.2
     with pytest.raises(AttributeError):
-        mod.calc_ang4487aer(data)
+        calc_ang4487aer(data)
+
     data["od870aer"] = 0.1
-    vals = mod.calc_ang4487aer(data)
-    npt.assert_allclose(vals, 1, atol=0.05)
+    vals = calc_ang4487aer(data)
+    assert_allclose(vals, 1, atol=0.05)
 
 
 def test_calc_od550aer():
-    ang = 1
-    data = dict(od500aer=0.1, ang4487aer=ang)
+    data = dict(od500aer=0.1, ang4487aer=1)
 
-    val = mod.calc_od550aer(data)
-    npt.assert_allclose(val, 0.09, atol=0.05)
+    val = calc_od550aer(data)
+    assert_allclose(val, 0.09, atol=0.05)
 
-    od440 = mod._calc_od_helper(
+    od440 = _calc_od_helper(
         data,
         "od440aer",
         to_lambda=0.44,
@@ -32,28 +41,25 @@ def test_calc_od550aer():
         lambda_ref=0.5,
         use_angstrom_coeff="ang4487aer",
     )
+    assert_allclose(od440, 0.11, atol=0.05)
 
-    npt.assert_allclose(od440, 0.11, atol=0.05)
-
-    data = dict(od440aer=od440, ang4487aer=ang)
-    val = mod.calc_od550aer(data)
-    npt.assert_allclose(val, 0.09, atol=0.05)
+    data = dict(od440aer=od440, ang4487aer=1)
+    val = calc_od550aer(data)
+    assert_allclose(val, 0.09, atol=0.05)
 
 
 def test_calc_od550gt1aer():
-    ang = 1
-    data = dict(od500gt1aer=0.1, ang4487aer=ang)
+    data = dict(od500gt1aer=0.1, ang4487aer=1)
 
-    val = mod.calc_od550gt1aer(data)
-    npt.assert_allclose(val, 0.09, atol=0.05)
+    val = calc_od550gt1aer(data)
+    assert_allclose(val, 0.09, atol=0.05)
 
 
 def test_calc_od550lt1aer():
-    ang = 1
-    data = dict(od500lt1aer=0.1, ang4487aer=ang)
+    data = dict(od500lt1aer=0.1, ang4487aer=1)
 
-    val = mod.calc_od550lt1aer(data)
-    npt.assert_allclose(val, 0.09, atol=0.05)
+    val = calc_od550lt1aer(data)
+    assert_allclose(val, 0.09, atol=0.05)
 
 
 @pytest.mark.parametrize(
@@ -64,21 +70,17 @@ def test_calc_od550lt1aer():
     ],
 )
 def test_compute_angstrom_coeff(od1, od2, lambda1, lambda2):
-    ae = mod.compute_angstrom_coeff(od1, od2, lambda1, lambda2)
+    ae = compute_angstrom_coeff(od1, od2, lambda1, lambda2)
     expected = -np.log(od1 / od2) / np.log(lambda1 / lambda2)
-    npt.assert_allclose(ae, expected, atol=1e-5)
+    assert_allclose(ae, expected, atol=1e-5)
 
 
 def test_compute_od_from_angstromexp():
-    val = mod.compute_od_from_angstromexp(
-        to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=4
-    )
-    npt.assert_allclose(val, 0.77, atol=0.05)
+    val = compute_od_from_angstromexp(to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=4)
+    assert_allclose(val, 0.77, atol=0.05)
 
-    val = mod.compute_od_from_angstromexp(
-        to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=0
-    )
-    npt.assert_allclose(val, 0.1, atol=0.05)
+    val = compute_od_from_angstromexp(to_lambda=0.3, od_ref=0.1, lambda_ref=0.5, angstrom_coeff=0)
+    assert_allclose(val, 0.1, atol=0.05)
 
 
 def test__calc_od_helper():
@@ -87,7 +89,7 @@ def test__calc_od_helper():
         od440aer=np.ones(6) * 4,
         ang4487aer=np.zeros(6),
     )
-    result = mod._calc_od_helper(
+    result = _calc_od_helper(
         data, "od550aer", 0.55, "od500aer", 0.5, "od440aer", 0.44, "ang4487aer"
     )
 
