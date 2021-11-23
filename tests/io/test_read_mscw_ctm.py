@@ -414,14 +414,56 @@ def test_read_emep_clean_filepaths(tmpdir, yr, test_yrs, freq, raises):
 
    
 
-    wrong_file = os.path.join(os.path.split(filepaths[0])[0], "Base_minutly.nc")
-    filepaths.append(wrong_file)
-    new_yrs = reader._get_yrs_from_filepaths()
 
-    with pytest.raises(ValueError):
+
+
+
+
+@pytest.mark.parametrize('freq, ts_type, raises', [
+     ('day', 'day',does_not_raise_exception()),
+     ('month','month',does_not_raise_exception()),
+     ('month', 'minute',pytest.raises(ValueError)),
+     ('day', 'daily',pytest.raises(ValueError)),
+     ('month', 'LF_month',pytest.raises(ValueError)),
+])
+
+def test_read_emep_wrong_filenames(tmpdir, freq, ts_type, raises):
+    vars_and_units = {'prmm' : 'mm'}
+    data_dir = create_emep_dummy_data(tmpdir,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
+    tst = reader.FREQ_CODES[freq]
+    with raises:
+        filepaths = reader.filepaths
+        wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_{ts_type}.nc")
+        filepaths[0] = wrong_file
+        new_yrs = reader._get_yrs_from_filepaths()
+
+        
         cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
 
+@pytest.mark.parametrize('extra_year, raises', [
+     (True,pytest.raises(ValueError)),
+     (False,does_not_raise_exception()),
+])
 
+def test_read_emep_year_defined_twice(tmpdir, extra_year, raises):
+    vars_and_units = {'prmm' : 'mm'}
+    freq = 'day'
+    data_dir = create_emep_dummy_data(tmpdir,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
+    tst = reader.FREQ_CODES[freq]
+    with raises:
+        filepaths = reader.filepaths
+        if extra_year:
+            wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_day.nc")
+            filepaths.append(wrong_file)
+            new_yrs = reader._get_yrs_from_filepaths()
+        else:
+            new_yrs = reader._get_yrs_from_filepaths()
+
+        cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
         
 
 @pytest.mark.parametrize('yr, freq ,raises', [

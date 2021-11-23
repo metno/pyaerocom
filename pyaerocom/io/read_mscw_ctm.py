@@ -232,6 +232,9 @@ class ReadMscwCtm(object):
             if int(yr) not in yrs:
                 raise ValueError(f"The year {yr} is not in {yrs}")
 
+            if int(yr) in found_yrs:
+                raise ValueError(f"The year {yr} is already found: {found_yrs}")
+
             found_yrs.append(int(yr))
 
             clean_paths.append(path)
@@ -240,8 +243,7 @@ class ReadMscwCtm(object):
         if len(found_yrs) != len(yrs):
             raise ValueError(f"A different amount of years {found_yrs} were found compared tp {yrs}")
         
-        unique_yrs = found_yrs
-        return [d for _,d in sorted(zip(unique_yrs, clean_paths))]
+        return [d for _,d in sorted(zip(found_yrs, clean_paths))]
         
 
 
