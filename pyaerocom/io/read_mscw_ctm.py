@@ -1,4 +1,3 @@
-from posixpath import join
 import xarray as xr
 import numpy as np
 import os
