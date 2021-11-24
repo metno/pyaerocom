@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import pytest
 
 import pyaerocom.aeroval.experiment_processor as mod
@@ -22,21 +20,26 @@ def test_ExperimentProcessor___init__():
 
 
 @geojson_unavail
+@pytest.mark.parametrize("cfgdict", [cfgexp1, cfgexp2, cfgexp3, cfgexp4, cfgexp5])
+def test_ExperimentProcessor_run(cfgdict):
+    cfg = EvalSetup(**cfgdict)
+    proc = mod.ExperimentProcessor(cfg)
+    proc.exp_output.delete_experiment_data(also_coldata=True)
+    proc.run()
+
+
+@geojson_unavail
 @pytest.mark.parametrize(
-    "cfgdict,runkwargs,raises",
+    "cfg,kwargs,error",
     [
-        (cfgexp5, {}, does_not_raise_exception()),
-        (cfgexp1, {}, does_not_raise_exception()),
-        (cfgexp2, {}, does_not_raise_exception()),
-        (cfgexp2, dict(model_name="BLA"), pytest.raises(KeyError)),
-        (cfgexp2, dict(obs_name="BLUB"), pytest.raises(KeyError)),
-        (cfgexp3, {}, does_not_raise_exception()),
-        (cfgexp4, {}, does_not_raise_exception()),
+        (cfgexp2, dict(model_name="BLA"), "'No matches could be found that match input BLA'"),
+        (cfgexp2, dict(obs_name="BLUB"), "'No matches could be found that match input BLUB'"),
     ],
 )
-def test_ExperimentProcessor_run(cfgdict, runkwargs, raises):
-    cfg = EvalSetup(**cfgdict)
-    with raises:
-        proc = mod.ExperimentProcessor(cfg)
-        proc.exp_output.delete_experiment_data(also_coldata=True)
-        proc.run(**runkwargs)
+def test_ExperimentProcessor_run_error(cfg: dict, kwargs: dict, error: str):
+    cfg = EvalSetup(**cfg)
+    proc = mod.ExperimentProcessor(cfg)
+    proc.exp_output.delete_experiment_data(also_coldata=True)
+    with pytest.raises(KeyError) as e:
+        proc.run(**kwargs)
+    assert str(e.value) == error
