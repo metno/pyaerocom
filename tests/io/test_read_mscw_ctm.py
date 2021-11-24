@@ -488,13 +488,13 @@ def test_search_all_files(tmpdir, yr, freq,raises):
         else:
             assert len(reader.filepaths) == 1
 
-@pytest.mark.parametrize('yr, freq ,raises', [
-     ("", ['day'],does_not_raise_exception()),
-     ("", ['day', 'hour'],does_not_raise_exception()),
-     ("2017", ['month'], does_not_raise_exception()),
-     ("2019", ['hour','day','month'],does_not_raise_exception()),
+@pytest.mark.parametrize('yr,freq,', [
+     ("", ['day']),
+     ("", ['day', 'hour']),
+     ("2017", ['month']),
+     ("2019", ['hour','day','month']),
 ])       
-def test_ts_types(tmpdir, yr, freq,raises):
+def test_ts_types(tmpdir, yr, freq):
     vars_and_units = {'prmm' : 'mm'}
     data_dir = create_emep_dummy_data(tmpdir,freq,
                                     vars_and_units=vars_and_units)
@@ -504,7 +504,5 @@ def test_ts_types(tmpdir, yr, freq,raises):
         reader.ts_types
 
     reader.data_dir=os.path.join(data_dir, yr)
-
-    with raises:
-        ts_types = reader.ts_types
-        assert len(ts_types) == len(freq)
+    ts_types = reader.ts_types
+    assert len(ts_types) == len(freq)
