@@ -1,7 +1,10 @@
-from contextlib import nullcontext as does_not_raise_exception
+from __future__ import annotations
+
+from typing import Type
 
 import pytest
 
+from pyaerocom.io import EbasSQLRequest
 from pyaerocom.io.ebas_file_index import EbasSQLRequest
 from pyaerocom.io.ebas_varinfo import EbasVarInfo
 
@@ -178,10 +181,9 @@ TESTDATA = [
 
 
 def test_init_empty():
-    try:
+    with pytest.raises(TypeError) as e:
         EbasVarInfo()
-    except Exception as e:
-        assert type(e) == TypeError
+    assert "missing 1 required positional argument" in str(e.value)
 
 
 def test_open_config():
@@ -218,29 +220,50 @@ def test_to_dict():
 
 
 @pytest.mark.parametrize(
-    "var,constraints,raises",
+    "var,constraints",
     [
-        (None, {}, pytest.raises(AttributeError)),
-        ("sc700dryaer", {}, pytest.raises(ValueError)),
-        ("sc550dryaer", {}, pytest.raises(ValueError)),
-        ("concpm10", {}, does_not_raise_exception()),
-        ("concpm10", {"bla": 42}, does_not_raise_exception()),
+        ("concpm10", {}),
+        ("concpm10", {"bla": 42}),
         # ToDo: the following example should actually be checked and maybe raise an Exception already here
         # (i.e. start_date is a valid constraint but 42 is not allowed as input)
-        ("concpm10", {"start_date": 42}, does_not_raise_exception()),
+        ("concpm10", {"start_date": 42}),
     ],
 )
-def test_make_sql_request(var, constraints, raises):
+def test_make_sql_request(var: str, constraints: dict):
+    info = EbasVarInfo(var)
+    request = info.make_sql_request(**constraints)
+    assert isinstance(request, EbasSQLRequest)
+
+
+@pytest.mark.parametrize(
+    "var,exception,error",
+    [
+        (
+            None,
+            AttributeError,
+            "At least one component (Ebas variable name) must be specified",
+        ),
+        (
+            "sc700dryaer",
+            ValueError,
+            "This variable sc700dryaer requires other variables for reading",
+        ),
+        (
+            "sc550dryaer",
+            ValueError,
+            "This variable sc550dryaer requires other variables for reading",
+        ),
+    ],
+)
+def test_make_sql_request_error(var: str | None, exception: Type[Exception], error: str):
     if var is None:
         info = EbasVarInfo("concpm10")
         info.component = None
     else:
         info = EbasVarInfo(var)
-    with raises:
-        req = info.make_sql_request(**constraints)
-        from pyaerocom.io import EbasSQLRequest
-
-        assert isinstance(req, EbasSQLRequest)
+    with pytest.raises(exception) as e:
+        info.make_sql_request()
+    assert str(e.value).startswith(error)
 
 
 @pytest.mark.parametrize(
