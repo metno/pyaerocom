@@ -66,42 +66,34 @@ VAR_MAP = {'abs550aer': 'AAOD_550nm', 'abs550bc': 'AAOD_EC_550nm',
 def reader():
     return ReadMscwCtm()
 
-@pytest.mark.parametrize('data_id,data_dir,check,raises', [
+def test_ReadMscwCtm__init__():
+    reader = ReadMscwCtm('EMEP_2017', EMEP_DIR)
+    assert getattr(reader, 'data_id') == 'EMEP_2017'
+    assert getattr(reader, 'data_dir') == EMEP_DIR
 
-    ('EMEP_2017',EMEP_DIR,{
-        'data_id'  : 'EMEP_2017',
-        'data_dir' : EMEP_DIR},
-        does_not_raise_exception()),
-    (None,'blaaaa',{},pytest.raises(FileNotFoundError) ),
-    ])
-def test_ReadMscwCtm__init__(data_id, data_dir,check,raises):
-    with raises:
-        reader = ReadMscwCtm(data_id, data_dir)
-        for key, val in check.items():
-            _val = getattr(reader, key)
-            assert val == _val
 
-@pytest.mark.parametrize('value, raises', [
-    (EMEP_DIR, does_not_raise_exception()),
-    (None, pytest.raises(ValueError)),
-    ('', pytest.raises(FileNotFoundError))
-    ])
-def test_ReadMscwCtm_data_dir(value, raises):
+def test_ReadMscwCtm__init___error():
+    data_dir = "not_a_real_path"
+    with pytest.raises(FileNotFoundError) as e:
+        ReadMscwCtm(None, data_dir)
+    assert str(e.value) == data_dir
+
+def test_ReadMscwCtm_data_dir():
+    reader = ReadMscwCtm(EMEP_DIR)
+    reader.data_dir = EMEP_DIR
+    assert os.path.samefile(reader.data_dir, EMEP_DIR)
+
+
+@pytest.mark.parametrize('value,exception,error', [
+    (None, ValueError,"Data dir None needs to be a dictionary or a file"),
+    ('not_a_real_path', FileNotFoundError,"not_a_real_path")
+])
+def test_ReadMscwCtm_data_dir_error(value, exception, error:str):
     reader = ReadMscwCtm(value)
-    with raises:
+    with pytest.raises(exception) as e:
         reader.data_dir = value
-        assert os.path.samefile(reader.data_dir, value)
+    assert str(e.value) == error
 
-@pytest.mark.parametrize('value, raises', [
-    (EMEP_DIR, does_not_raise_exception()),
-    ('', pytest.raises(FileNotFoundError)),
-    (None, pytest.raises(ValueError)),
-    ])
-def test_ReadMscwCtm_data_dir(value, raises):
-    reader = ReadMscwCtm()
-    with raises:
-        reader.data_dir = value
-        assert reader.data_dir == value
 
 @pytest.mark.parametrize('value, raises, fmask, num_matches', [
     (EMEP_DIR, does_not_raise_exception(), 'Base_*.nc', 3),
