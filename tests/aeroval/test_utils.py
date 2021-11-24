@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import pytest
 
 import pyaerocom.aeroval.utils as mod
@@ -40,35 +38,45 @@ CFG2["model_cfg"]["DUMMY-MODEL"] = dict(model_id="DUMMY-MODEL", model_data_dir=M
 
 
 @pytest.mark.parametrize(
-    "cfg,addargs,raises",
+    "cfg,kwargs",
     [
-        (cfg1, dict(), pytest.raises(ValueError)),
-        (cfg1, dict(avg_how="bla"), pytest.raises(ValueError)),
-        (CFG1, dict(avg_how="bla"), pytest.raises(ValueError)),
-        (CFG2, dict(), does_not_raise_exception()),
-        (CFG2, dict(avg_how="mean"), does_not_raise_exception()),
+        (CFG2, dict()),
+        (CFG2, dict(avg_how="mean")),
     ],
 )
-def test_compute_model_average_and_diversity(cfg, addargs, raises):
-    with pytest.raises(ValueError):
+def test_compute_model_average_and_diversity(cfg, kwargs):
+    stp = EvalSetup(**cfg)
+    proc = ExperimentProcessor(stp)
+    avg_out, div_out, q1_out, q3_out, std_out = mod.compute_model_average_and_diversity(
+        proc, "od550aer", **kwargs
+    )
+
+    assert isinstance(avg_out, GriddedData)
+    assert isinstance(div_out, GriddedData)
+
+    avg_how = kwargs.get("avg_how", "median")
+    if avg_how == "median":
+        assert isinstance(q1_out, GriddedData)
+        assert isinstance(q3_out, GriddedData)
+    else:
+        assert isinstance(std_out, GriddedData)
+
+
+@pytest.mark.parametrize(
+    "cfg,kwargs,error",
+    [
+        (cfg1, dict(), "Need more than one model to compute average..."),
+        (cfg1, dict(avg_how="bla"), "Invalid input for avg_how bla"),
+        (CFG1, dict(avg_how="bla"), "Invalid input for avg_how bla"),
+    ],
+)
+def test_compute_model_average_and_diversity_error(cfg: dict, kwargs: dict, error: str):
+    with pytest.raises(ValueError) as e:
         mod.compute_model_average_and_diversity(42, "od550aer")
+    assert str(e.value) == "invalid input, need ExperimentProcessor"
 
     stp = EvalSetup(**cfg)
     proc = ExperimentProcessor(stp)
-    with raises:
-        (avg_out, div_out, q1_out, q3_out, std_out) = mod.compute_model_average_and_diversity(
-            proc, "od550aer", **addargs
-        )
-
-        try:
-            avghow = addargs["avg_how"]
-        except KeyError:
-            avghow = "median"
-
-        assert isinstance(avg_out, GriddedData)
-        assert isinstance(div_out, GriddedData)
-        if avghow == "median":
-            assert isinstance(q1_out, GriddedData)
-            assert isinstance(q3_out, GriddedData)
-        else:
-            assert isinstance(std_out, GriddedData)
+    with pytest.raises(ValueError) as e:
+        mod.compute_model_average_and_diversity(proc, "od550aer", **kwargs)
+    assert str(e.value) == error
