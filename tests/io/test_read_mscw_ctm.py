@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import os
+from pathlib import Path
 import re
 from contextlib import nullcontext as does_not_raise_exception
 
@@ -494,9 +497,9 @@ def test_search_all_files(tmpdir, yr, freq,raises):
      ("2017", ['month']),
      ("2019", ['hour','day','month']),
 ])       
-def test_ts_types(tmpdir, yr, freq):
+def test_ts_types(tmp_path: Path, yr: str, freq: list[str]):
     vars_and_units = {'prmm' : 'mm'}
-    data_dir = create_emep_dummy_data(tmpdir,freq,
+    data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm()
 
