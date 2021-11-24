@@ -2,11 +2,16 @@ import os
 
 import numpy as np
 import pandas as pd
+import pathlib
+import shutil
+import tempfile
+import gzip
 
 from pyaerocom import const
 from pyaerocom.aux_var_helpers import calc_ang4487aer, calc_od550aer
 from pyaerocom.io.readaeronetbase import ReadAeronetBase
 from pyaerocom.stationdata import StationData
+from pyaerocom.exceptions import AeronetReadError
 
 class ReadAeronetSunV3(ReadAeronetBase):
     """Interface for reading Aeronet direct sun version 3 Level 1.5 and 2.0 data
@@ -124,12 +129,30 @@ class ReadAeronetSunV3(ReadAeronetBase):
 
         # Iterate over the lines of the file
         self.logger.info("Reading file {}".format(filename))
+        # enable alternative reading of .gz files here to save space on the file system
+        suffix = pathlib.Path(filename).suffix
+        tmp_name = filename
+        if suffix == '.gz':
+            f_out = tempfile.NamedTemporaryFile(delete=False)
+            with gzip.open(filename, 'r') as f_in:
+                shutil.copyfileobj(f_in, f_out)
+            tmp_name = filename
+            filename = f_out.name
+            f_out.close()
+
         with open(filename, 'rt') as in_file:
             _lines_ignored = []
-            _lines_ignored.append(in_file.readline())
-            _lines_ignored.append(in_file.readline())
-            _lines_ignored.append(in_file.readline())
-            _lines_ignored.append(in_file.readline())
+            try:
+                _lines_ignored.append(in_file.readline())
+                _lines_ignored.append(in_file.readline())
+                _lines_ignored.append(in_file.readline())
+                _lines_ignored.append(in_file.readline())
+            except UnicodeDecodeError:
+                if suffix == '.gz':
+                    os.remove(f_out.name)
+                raise AeronetReadError(f'UnicodeDecodeError in file {tmp_name}')
+                return None
+
             # PI line
             dummy_arr = in_file.readline().strip().split(';')
             data_out['PI'] = dummy_arr[0].split('=')[1]
@@ -209,6 +232,11 @@ class ReadAeronetSunV3(ReadAeronetBase):
                     data_out[var].append(val)
 
                 pl = dummy_arr
+
+        # remove the temp file in case the input file was a gz file
+        if suffix == '.gz':
+            os.remove(f_out.name)
+
         # convert all lists to numpy arrays
         data_out['dtime'] = np.asarray(data_out['dtime'])
 
@@ -241,7 +269,8 @@ if __name__=="__main__":
     import matplotlib.pyplot as plt
     plt.close('all')
 
-    #file = '/lustre/storeA/project/aerocom/aerocom1/AEROCOM_OBSDATA/AeronetSunV3Lev2.0.AP/renamed/19930101_20190511_CEILAP-BA.lev20'
+    from pyaerocom.io.read_aeronet_sunv3 import ReadAeronetSunV3
+    from pyaerocom import const
 
     reader = ReadAeronetSunV3(const.AERONET_SUN_V3L2_AOD_ALL_POINTS_NAME)
     od = reader.read('od550aer')
