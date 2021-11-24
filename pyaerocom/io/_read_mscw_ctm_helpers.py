@@ -188,11 +188,11 @@ def calc_vmrox(concno2, vmro3):
         volume mixing ratio of OX (O3 + NO2) in units of nmole mole-1
 
     """
-    o3mulfac = get_unit_conversion_fac("1", vmro3.attrs['units'], 'nmole mole-1')
-    if o3mulfac != 1:
-        vmro3 = vmro3.copy(deep=True)
-        vmro3 *= o3mulfac
-        vmro3.attrs['units'] = 'nmole mole-1'
+    # o3mulfac = get_unit_conversion_fac("1", vmro3.attrs['units'], 'nmole mole-1')
+    # if o3mulfac != 1:
+    #     vmro3 = vmro3.copy(deep=True)
+    #     vmro3 *= o3mulfac
+    #     vmro3.attrs['units'] = 'nmole mole-1'
 
     vmrno2 = concx_to_vmrx(
         data=concno2,

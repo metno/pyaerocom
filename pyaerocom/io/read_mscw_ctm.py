@@ -533,7 +533,7 @@ class ReadMscwCtm(object):
             if tst == ts_type:
                 fname = mask.replace('*', substr)
                 return fname
-        raise ValueError('failed to infer filename from input ts_type={ts_type}')
+        raise ValueError(f'failed to infer filename from input ts_type={ts_type}')
 
     def _compute_var(self, var_name_aerocom, ts_type):
         """Compute auxiliary variable
