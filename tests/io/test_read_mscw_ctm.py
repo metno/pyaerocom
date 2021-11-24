@@ -98,16 +98,19 @@ def test_ReadMscwCtm_data_dir_error(value, exception, error:str):
     assert str(e.value) == error
 
 
-@pytest.mark.parametrize('value, raises, fmask, num_matches', [
-    (EMEP_DIR, does_not_raise_exception(), 'Base_*.nc', 3),
-    ('/tmp', pytest.raises(FileNotFoundError), '', 0)
-    ])
-def test__ReadMscwCtm__check_files_in_data_dir(value, raises, fmask, num_matches):
+
+def test__ReadMscwCtm__check_files_in_data_dir():
     reader = ReadMscwCtm()
-    with raises:
-        mask, matches = reader._check_files_in_data_dir(value)
-        assert mask == fmask
-        assert len(matches) == num_matches
+    value = EMEP_DIR
+    mask, matches = reader._check_files_in_data_dir(value)
+    assert mask == 'Base_*.nc'
+    assert len(matches) == 3
+
+
+def test__ReadMscwCtm__check_files_in_data_dir_error():
+    reader = ReadMscwCtm()
+    with pytest.raises(FileNotFoundError):
+        mask, matches = reader._check_files_in_data_dir("/tmp")
 
 def test_ReadMscwCtm_ts_type():
     reader = ReadMscwCtm()
@@ -119,34 +122,47 @@ def test_ReadMscwCtm_var_map():
     assert var_map == VAR_MAP
 
 @data_unavail
-@pytest.mark.parametrize('var_name, ts_type, raises', [
-    ('blaaa', 'daily', pytest.raises(exc.VariableDefinitionError)),
-    ('od550gt1aer', 'daily', pytest.raises(exc.VarNotAvailableError)),
-    ('vmro3', 'daily', does_not_raise_exception()),
-    ('vmro3', None, does_not_raise_exception()),
-    ('concpmgt25', 'daily', does_not_raise_exception())
+@pytest.mark.parametrize('var_name, ts_type', [
+    ('vmro3', 'daily'),
+    ('vmro3', None),
+    ('concpmgt25', 'daily')
     ])
-def test_ReadMscwCtm_read_var(path_emep,var_name,ts_type,raises):
+def test_ReadMscwCtm_read_var(var_name: str,ts_type: str):
     r = ReadMscwCtm(data_dir=EMEP_DIR)
-    with raises:
-        data = r.read_var(var_name, ts_type)
-        assert isinstance(data, GriddedData)
-        if ts_type is not None:
-            assert data.ts_type == ts_type
-        assert data.ts_type is not None
-        assert data.ts_type == r.ts_type
+    data = r.read_var(var_name, ts_type)
+    assert isinstance(data, GriddedData)
+    if ts_type is not None:
+        assert data.ts_type == ts_type
+    assert data.ts_type is not None
+    assert data.ts_type == r.ts_type
 
 @data_unavail
-@pytest.mark.parametrize('var_name, ts_type, raises', [
-    ('blaaa', 'daily', pytest.raises(KeyError)),
-    ('concpmgt25', 'daily', does_not_raise_exception()),
-    ('concpmgt25', 'monthly', does_not_raise_exception()),
+@pytest.mark.parametrize('var_name, ts_type, exception, error', [
+    ('blaaa', 'daily', exc.VariableDefinitionError, "Error (VarCollection): input variable blaaa is not supported"),
+    ('od550gt1aer', 'daily', exc.VarNotAvailableError, "od550gt1aer"),
     ])
-def test_ReadMscwCtm__compute_var(path_emep,var_name,ts_type,raises):
+def test_ReadMscwCtm_read_var_error(var_name: str,ts_type: str,exception: Exception,error: str):
     r = ReadMscwCtm(data_dir=EMEP_DIR)
-    with raises:
-        data = r._compute_var(var_name, ts_type)
-        assert isinstance(data, xr.DataArray)
+    with pytest.raises(exception) as e:
+        data = r.read_var(var_name, ts_type)
+    assert str(e.value) == error
+
+@data_unavail
+@pytest.mark.parametrize('var_name, ts_type', [
+    ('concpmgt25', 'daily'),
+    ('concpmgt25', 'monthly'),
+    ])
+def test_ReadMscwCtm__compute_var(var_name,ts_type):
+    r = ReadMscwCtm(data_dir=EMEP_DIR)
+    data = r._compute_var(var_name, ts_type)
+    assert isinstance(data, xr.DataArray)
+
+@data_unavail
+def test_ReadMscwCtm__compute_var_error():
+    r = ReadMscwCtm(data_dir=EMEP_DIR)
+    with pytest.raises(KeyError):
+        data = r._compute_var('blaaa', 'daily')
+        
 
 @data_unavail
 def test_ReadMscwCtm_data(path_emep):
@@ -182,28 +198,35 @@ def test_ReadMscwCtm_directory(path_emep):
     paths = r.filepaths
     assert len(paths) == 3
 
-@pytest.mark.parametrize('filename,ts_type, raises', [
-    ('Base_hour.nc', 'hourly', does_not_raise_exception()),
-    ('Base_month.nc', 'monthly', does_not_raise_exception()),
-    ('Base_day.nc', 'daily', does_not_raise_exception()),
-    ('Base_fullrun', 'yearly', does_not_raise_exception()),
-    ('blaaa', 'yearly', pytest.raises(ValueError)),
+@pytest.mark.parametrize('filename,ts_type', [
+    ('Base_hour.nc', 'hourly'),
+    ('Base_month.nc', 'monthly'),
+    ('Base_day.nc', 'daily'),
+    ('Base_fullrun', 'yearly'),
     ])
-def test_ReadMscwCtm_ts_type_from_filename(reader, filename, ts_type, raises):
-    with raises:
-        assert reader.ts_type_from_filename(filename) == ts_type
+def test_ReadMscwCtm_ts_type_from_filename(reader, filename, ts_type):
+    assert reader.ts_type_from_filename(filename) == ts_type
 
-@pytest.mark.parametrize('filename,ts_type, raises', [
-    ('Base_hour.nc', 'hourly', does_not_raise_exception()),
-    ('Base_month.nc', 'monthly', does_not_raise_exception()),
-    ('Base_day.nc', 'daily', does_not_raise_exception()),
-    ('Base_fullrun.nc', 'yearly', does_not_raise_exception()),
-    ('', 'blaaa', pytest.raises(ValueError)),
+def test_ReadMscwCtm_ts_type_from_filename_error(reader):
+    with pytest.raises(ValueError) as e:
+        reader.ts_type_from_filename('blaaa')
+    assert str(e.value) == "Failed to retrieve ts_type from filename blaaa"
+
+@pytest.mark.parametrize('filename,ts_type', [
+    ('Base_hour.nc', 'hourly'),
+    ('Base_month.nc', 'monthly'),
+    ('Base_day.nc', 'daily'),
+    ('Base_fullrun.nc', 'yearly'),
     ])
-def test_ReadMscwCtm_filename_from_ts_type(reader, filename, ts_type, raises):
+def test_ReadMscwCtm_filename_from_ts_type(reader, filename, ts_type):
     reader._file_mask = reader.FILE_MASKS[0]
-    with raises:
-        assert reader.filename_from_ts_type(ts_type) == filename
+    assert reader.filename_from_ts_type(ts_type) == filename
+
+def test_ReadMscwCtm_filename_from_ts_type_error(reader):
+    reader._file_mask = reader.FILE_MASKS[0]
+    with pytest.raises(ValueError) as e:
+        reader.filename_from_ts_type("blaaa")
+    assert str(e.value) == "failed to infer filename from input ts_type=blaaa"
 
 def test_ReadMscwCtm_years_avail(path_emep):
     data_dir = EMEP_DIR
@@ -224,29 +247,36 @@ def test_ReadMscwCtm_open_file(path_emep):
     assert isinstance(data["2017"], xr.Dataset)
     assert reader._filedata is data
 
-@pytest.mark.parametrize('var_name, value, raises',[
-    ('blaa', True, pytest.raises(exc.VariableDefinitionError)),
-    ('od550gt1aer', False, does_not_raise_exception()),
-    ('absc550aer', True, does_not_raise_exception()),
-    ('concpm10', True, does_not_raise_exception()),
-    ('sconcpm10', True, does_not_raise_exception()),
+@pytest.mark.parametrize('var_name, value',[
+    ('od550gt1aer', False),
+    ('absc550aer', True),
+    ('concpm10', True),
+    ('sconcpm10', True),
     ])
-def test_ReadMscwCtm_has_var(reader, var_name, value, raises):
-    with raises:
-        assert reader.has_var(var_name) == value
+def test_ReadMscwCtm_has_var(reader, var_name, value):
+    assert reader.has_var(var_name) == value
 
-@pytest.mark.parametrize('value, raises',[
-    (None, pytest.raises(TypeError)),
-    ('', pytest.raises(FileNotFoundError)),
-    ('/tmp', pytest.raises(FileNotFoundError)),
-    (EMEP_DIR, pytest.raises(FileNotFoundError)),
-    (EMEP_DIR + '/Base_month.nc', does_not_raise_exception())
+def test_ReadMscwCtm_has_var_error(reader):
+    with pytest.raises(exc.VariableDefinitionError) as e:
+        reader.has_var('blaa')
+    assert str(e.value) == "Error (VarCollection): input variable blaa is not supported"
 
+
+def test_ReadMscwCtm_filepath(reader):
+    value = EMEP_DIR + '/Base_month.nc'
+    reader.filepath = value
+    assert os.path.samefile(reader.filepath, value)
+
+@pytest.mark.parametrize('value, exception, error',[
+    (None, TypeError, "needs to be a string"),
+    ('', FileNotFoundError, ""),
+    ('/tmp',FileNotFoundError, "No valid model files could be found in / for any of the supported file masks: ['Base_*.nc']"),
     ])
-def test_ReadMscwCtm_filepath(reader, value, raises):
-    with raises:
+def test_ReadMscwCtm_filepath_error(reader, value, exception, error):
+    with pytest.raises(exception) as e:
         reader.filepath = value
-        assert os.path.samefile(reader.filepath, value)
+    assert str(e.value) == error
+
 
 def test_ReadMscwCtm__str__():
     assert str(ReadMscwCtm()) == 'ReadMscwCtm'
@@ -294,93 +324,117 @@ M_H = 1.007
 M_HNO3 = M_H + M_N + M_O*3
 M_NO3 = M_N + M_O*3
 
-@pytest.mark.parametrize('file_vars_and_units,freq,add_read,chk_mean,raises', [
-    ({'wetoxs' : 'mg S m-2'}, 'day', None, {'wetoxs' : 1},
-     does_not_raise_exception()),
+@pytest.mark.parametrize('file_vars_and_units,freq,add_read,chk_mean', [
+    ({'wetoxs' : 'mg S m-2'}, 'day', None, {'wetoxs' : 1}),
 
-    ({'prmm' : 'mm'}, 'hour', None, {'prmm' : 24},
-     does_not_raise_exception()),
-    ({'prmm' : 'mm d-1'}, 'hour', None, {'prmm' : 1},
-     does_not_raise_exception()),
-    ({'concpm10' : 'ug m-3'}, 'day', None, {'concpm10' : 1},
-     does_not_raise_exception()),
+    ({'prmm' : 'mm'}, 'hour', None, {'prmm' : 24}),
+    ({'prmm' : 'mm d-1'}, 'hour', None, {'prmm' : 1}),
+    ({'concpm10' : 'ug m-3'}, 'day', None, {'concpm10' : 1}),
 
-    ({'concpm10' : 'ug m-3'}, 'hour', None, None, does_not_raise_exception()),
-
-    ({'concno3c'  : 'ug m-3'}, 'day', ['concno3'], None, pytest.raises(
-        exc.VarNotAvailableError)),
+    ({'concpm10' : 'ug m-3'}, 'hour', None, None),
 
     ({'concno3c'  : 'ug m-3', 'concno3f'  : 'ug m-3'}, 'day', ['concno3'],
-    {'concno3c' : 1, 'concno3f' : 1, 'concno3' : 2},
-     does_not_raise_exception()),
+    {'concno3c' : 1, 'concno3f' : 1, 'concno3' : 2}),
 
     ({'concno3c'  : 'ug m-3', 'concno3f'  : 'ug m-3', 'conchno3' : 'ug m-3'},
     'day', ['concNtno3'],
     {'concno3c' : 1, 'concno3f' : 1, 'conchno3' : 1,
-     'concNtno3' : 2*M_N/M_NO3 + M_N/M_HNO3},
-     does_not_raise_exception()),
-    ({'wetoxs' : 'mg S m-2 d-1'}, 'day', None, {'wetoxs' : 1},
-     does_not_raise_exception()),
-    ({'wetoxs' : 'Tg S m-2 d-1'}, 'day', None, {'wetoxs' : 1e15},
-     does_not_raise_exception()),
+     'concNtno3' : 2*M_N/M_NO3 + M_N/M_HNO3}),
+    ({'wetoxs' : 'mg S m-2 d-1'}, 'day', None, {'wetoxs' : 1}),
+    ({'wetoxs' : 'Tg S m-2 d-1'}, 'day', None, {'wetoxs' : 1e15}),
 
 ])
-def test_read_emep_dummy_data(tmpdir,file_vars_and_units,freq,add_read,
-                              chk_mean,raises):
+def test_read_emep_dummy_data(tmp_path,file_vars_and_units,freq,add_read,
+                              chk_mean):
 
 
-    data_dir = create_emep_dummy_data(tmpdir,freq,
+    data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=file_vars_and_units)
-    with raises:
+
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, "2017"))
+    tst = reader.FREQ_CODES[freq]
+    objs = {}
+    for var, unit in file_vars_and_units.items():
+        data = reader.read_var(var, ts_type=tst)
+        objs[var] = data
+        assert isinstance(data, GriddedData)
+        aerocom_unit = cf_units.Unit(get_variable(var).units)
+        assert cf_units.Unit(data.units) == aerocom_unit
+        assert data.ts_type == tst
+    if isinstance(add_read, list):
+        for var in add_read:
+            data = reader.read_var(var, ts_type=tst)
+            objs[var] = data
+    if isinstance(chk_mean, dict):
+        for var, mean in chk_mean.items():
+            np.testing.assert_allclose(objs[var].cube.data.mean(), mean,
+                                        atol=0.1)
+
+
+def test_read_emep_dummy_data_error(tmp_path,):
+
+    file_vars_and_units = {'concno3c'  : 'ug m-3'}
+    freq = "day"
+    add_read = 'concno3'
+    chk_mean = None
+    data_dir = create_emep_dummy_data(tmp_path,freq,
+                                    vars_and_units=file_vars_and_units)
+    with pytest.raises(exc.VarNotAvailableError) as e:
         reader = ReadMscwCtm(data_dir=os.path.join(data_dir, "2017"))
         tst = reader.FREQ_CODES[freq]
         objs = {}
         for var, unit in file_vars_and_units.items():
             data = reader.read_var(var, ts_type=tst)
             objs[var] = data
-            assert isinstance(data, GriddedData)
             aerocom_unit = cf_units.Unit(get_variable(var).units)
-            assert cf_units.Unit(data.units) == aerocom_unit
-            assert data.ts_type == tst
-        if isinstance(add_read, list):
-            for var in add_read:
-                data = reader.read_var(var, ts_type=tst)
-                objs[var] = data
-        if isinstance(chk_mean, dict):
-            for var, mean in chk_mean.items():
-                np.testing.assert_allclose(objs[var].cube.data.mean(), mean,
-                                           atol=0.1)
+            data = reader.read_var(add_read, ts_type=tst)
+    assert str(e.value) == "concno3f (SURF_ug_NO3_F) not available in Base_day.nc"
 
-
-@pytest.mark.parametrize('yr, test_yrs, freq,raises', [
-     ("", [2013, 2015, 2017, 2018, 2019], 'day',does_not_raise_exception()),
-     ("", [2013, 2015, 2017, 2018, 2019, 2012], 'month',pytest.raises(ValueError)),
-     ("", [2013, 2016, 2017], 'day',pytest.raises(ValueError)),
-     ("2017", [2017], 'month', does_not_raise_exception()),
-     ("2019", [2019], 'hour',does_not_raise_exception()),
+@pytest.mark.parametrize('yr, test_yrs, freq', [
+     ("", [2013, 2015, 2017, 2018, 2019], 'day'),
+     ("2017", [2017], 'month'),
+     ("2019", [2019], 'hour'),
 ])
 
-def test_read_emep_clean_filepaths(tmpdir, yr, test_yrs, freq, raises):
+def test_read_emep_clean_filepaths(tmp_path, yr, test_yrs, freq):
     vars_and_units = {'prmm' : 'mm'}
-    data_dir = create_emep_dummy_data(tmpdir,freq,
+    data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm(data_dir=os.path.join(data_dir, yr))
     tst = reader.FREQ_CODES[freq]
-    with raises:
-        filepaths = reader.filepaths
-    
+
+    filepaths = reader.filepaths
+
+    cleaned_paths = reader._clean_filepaths(filepaths, test_yrs, tst)
+    assert len(cleaned_paths) == len(test_yrs)
+
+    found_yrs = []
+    for cp in cleaned_paths:
+        assert cp in filepaths
+
+        found_yr = os.path.split(cp)[0].split(os.sep)[-1]
+        found_yr = re.search(r".*(20\d\d).*", found_yr).group(1)
+        found_yrs.append(int(found_yr))
+
+    assert found_yrs == sorted(test_yrs)
+
+@pytest.mark.parametrize('test_yrs, freq,error', [
+     ([2013, 2015, 2017, 2018, 2019, 2012], 'month', "A different amount of years "),
+     ([2013, 2016, 2017], 'day', "The year "),
+])
+
+def test_read_emep_clean_filepaths_error(tmp_path, test_yrs, freq ,error):
+    vars_and_units = {'prmm' : 'mm'}
+    data_dir = create_emep_dummy_data(tmp_path,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
+    tst = reader.FREQ_CODES[freq]
+    with pytest.raises(ValueError) as e:
+        filepaths = reader.filepaths    
         cleaned_paths = reader._clean_filepaths(filepaths, test_yrs, tst)
-        assert len(cleaned_paths) == len(test_yrs)
+    
+    assert error in str(e.value) 
 
-        found_yrs = []
-        for cp in cleaned_paths:
-            assert cp in filepaths
-
-            found_yr = os.path.split(cp)[0].split(os.sep)[-1]
-            found_yr = re.search(r".*(20\d\d).*", found_yr).group(1)
-            found_yrs.append(int(found_yr))
-
-        assert found_yrs == sorted(test_yrs)
 
 
    
@@ -398,9 +452,9 @@ def test_read_emep_clean_filepaths(tmpdir, yr, test_yrs, freq, raises):
      ('month', 'LF_month',pytest.raises(ValueError)),
 ])
 
-def test_read_emep_wrong_filenames(tmpdir, freq, ts_type, raises):
+def test_read_emep_wrong_filenames(tmp_path, freq, ts_type, raises):
     vars_and_units = {'prmm' : 'mm'}
-    data_dir = create_emep_dummy_data(tmpdir,freq,
+    data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
     tst = reader.FREQ_CODES[freq]
@@ -413,65 +467,74 @@ def test_read_emep_wrong_filenames(tmpdir, freq, ts_type, raises):
         
         cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
 
-@pytest.mark.parametrize('extra_year, raises', [
-     (True,pytest.raises(ValueError)),
-     (False,does_not_raise_exception()),
-])
 
-def test_read_emep_year_defined_twice(tmpdir, extra_year, raises):
+
+def test_read_emep_year_defined_twice(tmp_path):
     vars_and_units = {'prmm' : 'mm'}
     freq = 'day'
-    data_dir = create_emep_dummy_data(tmpdir,freq,
+    data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
     tst = reader.FREQ_CODES[freq]
-    with raises:
+    with pytest.raises(ValueError) as e:
         filepaths = reader.filepaths
-        if extra_year:
-            wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_day.nc")
-            filepaths.append(wrong_file)
-            new_yrs = reader._get_yrs_from_filepaths()
-        else:
-            new_yrs = reader._get_yrs_from_filepaths()
-
+        wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_day.nc")
+        filepaths.append(wrong_file)
+        new_yrs = reader._get_yrs_from_filepaths()
         cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
+    assert "is already found:" in str(e.value) 
         
 
-@pytest.mark.parametrize('yr, freq ,raises', [
-     ("", 'day',does_not_raise_exception()),
-     ("", 'hour',pytest.raises(ValueError)),
-     ("2017", 'month', does_not_raise_exception()),
-     ("2019", 'hour',does_not_raise_exception()),
+@pytest.mark.parametrize('yr, freq ', [
+     ("", 'day'),
+     ("2017", 'month'),
+     ("2019", 'hour'),
 ])
-def test_read_emep_multiple_dirs(tmpdir, yr, freq,raises):
+def test_read_emep_multiple_dirs(tmp_path, yr, freq):
     vars_and_units = {'prmm' : 'mm'}
-    data_dir = create_emep_dummy_data(tmpdir,freq,
+    data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm(data_dir=os.path.join(data_dir, yr))
     tst = reader.FREQ_CODES[freq]
-    with raises:
-        files = [os.path.split(f)[-1] for f in reader.filepaths]
-        assert len(set(files)) == 1
-        assert freq in files[0] 
-        if yr == "":
-            assert len(reader.filepaths) == 5
 
-        else:
-            assert len(reader.filepaths) == 1
+    files = [os.path.split(f)[-1] for f in reader.filepaths]
+    assert len(set(files)) == 1
+    assert freq in files[0] 
+    if yr == "":
+        assert len(reader.filepaths) == 5
 
-
-        data = reader.read_var("prmm", ts_type=tst)
-        assert data.ts_type == tst
+    else:
+        assert len(reader.filepaths) == 1
 
 
-@pytest.mark.parametrize('yr, freq ,raises', [
-     ("", 'day',does_not_raise_exception()),
-     ("2017", 'month', does_not_raise_exception()),
-     ("2019", 'hour',does_not_raise_exception()),
-])       
-def test_search_all_files(tmpdir, yr, freq,raises):
+    data = reader.read_var("prmm", ts_type=tst)
+    assert data.ts_type == tst
+
+
+
+def test_read_emep_multiple_dirs_hour_error(tmp_path):
     vars_and_units = {'prmm' : 'mm'}
-    data_dir = create_emep_dummy_data(tmpdir,freq,
+    freq = "hour"
+    data_dir = create_emep_dummy_data(tmp_path,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
+    tst = reader.FREQ_CODES[freq]
+    with pytest.raises(ValueError) as e:
+        files = [os.path.split(f)[-1] for f in reader.filepaths]
+        data = reader.read_var("prmm", ts_type=tst)
+
+    assert str(e.value) == "ts_type hourly can not be hourly when using multiple years"
+
+
+
+@pytest.mark.parametrize('yr, freq', [
+     ("", 'day'),
+     ("2017", 'month'),
+     ("2019", 'hour'),
+])       
+def test_search_all_files(tmp_path, yr, freq):
+    vars_and_units = {'prmm' : 'mm'}
+    data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm()
 
@@ -484,12 +547,11 @@ def test_search_all_files(tmpdir, yr, freq,raises):
 
     reader._data_dir=os.path.join(data_dir, yr)
     
-    with raises:
-        reader.search_all_files()
-        if yr == "":
-            assert len(reader.filepaths) == 5
-        else:
-            assert len(reader.filepaths) == 1
+    reader.search_all_files()
+    if yr == "":
+        assert len(reader.filepaths) == 5
+    else:
+        assert len(reader.filepaths) == 1
 
 @pytest.mark.parametrize('yr,freq,', [
      ("", ['day']),
