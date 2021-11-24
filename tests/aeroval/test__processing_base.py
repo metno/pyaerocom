@@ -1,5 +1,3 @@
-from contextlib import nullcontext as does_not_raise_exception
-
 import pytest
 
 from pyaerocom import Colocator, GriddedData, UngriddedData
@@ -46,18 +44,22 @@ def test_HasColocator_get_diurnal_only(collocator: HasColocator):
 
 
 @pytest.mark.parametrize(
-    "kwargs,raises",
+    "kwargs",
     [
-        (dict(), does_not_raise_exception()),
-        (dict(obs_name="obs1"), does_not_raise_exception()),
-        (dict(obs_name="obs2"), does_not_raise_exception()),
-        (dict(model_name="mod2"), pytest.raises(EntryNotAvailable)),
+        dict(),
+        dict(obs_name="obs1"),
+        dict(obs_name="obs2"),
     ],
 )
-def test_HasColocator_get_colocator(collocator: HasColocator, kwargs, raises):
-    with raises:
-        col = collocator.get_colocator(**kwargs)
-        assert isinstance(col, Colocator)
+def test_HasColocator_get_colocator(collocator: HasColocator, kwargs):
+    col = collocator.get_colocator(**kwargs)
+    assert isinstance(col, Colocator)
+
+
+def test_HasColocator_get_colocator_error(collocator: HasColocator):
+    with pytest.raises(EntryNotAvailable) as e:
+        collocator.get_colocator(model_name="mod2")
+    assert str(e.value) == "'no such entry mod2'"
 
 
 @pytest.fixture(scope="module")
