@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 from pyaerocom import Colocator, GriddedData, UngriddedData
@@ -8,16 +10,19 @@ from pyaerocom.exceptions import EntryNotAvailable
 
 from .cfg_test_exp1 import CFG
 
-obs_cfg = dict(
-    obs1=dict(obs_id="obs1", obs_vars=["od550aer"], obs_vert_type="Column"),
-    obs2=dict(obs_id="obs2", obs_vars=["od550aer"], obs_vert_type="Column", diurnal_only=True),
-)
-dummy_setup = EvalSetup("bla", "blub", obs_cfg=obs_cfg)
+
+@pytest.fixture(scope="module")
+def setup() -> EvalSetup:
+    obs_cfg = dict(
+        obs1=dict(obs_id="obs1", obs_vars=["od550aer"], obs_vert_type="Column"),
+        obs2=dict(obs_id="obs2", obs_vars=["od550aer"], obs_vert_type="Column", diurnal_only=True),
+    )
+    return EvalSetup("bla", "blub", obs_cfg=obs_cfg)
 
 
 @pytest.fixture(scope="module")
-def config() -> HasConfig:
-    return HasConfig(dummy_setup)
+def config(setup: EvalSetup) -> HasConfig:
+    return HasConfig(setup)
 
 
 def test_HasConfig_setup(config: HasConfig):
@@ -34,8 +39,8 @@ def test_HasConfig_reanalyse_existing(config: HasConfig):
 
 
 @pytest.fixture(scope="module")
-def collocator() -> HasColocator:
-    return HasColocator(dummy_setup)
+def collocator(setup: EvalSetup) -> HasColocator:
+    return HasColocator(setup)
 
 
 def test_HasColocator_get_diurnal_only(collocator: HasColocator):
@@ -43,16 +48,9 @@ def test_HasColocator_get_diurnal_only(collocator: HasColocator):
     assert collocator._get_diurnal_only("obs2") == True
 
 
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        dict(),
-        dict(obs_name="obs1"),
-        dict(obs_name="obs2"),
-    ],
-)
-def test_HasColocator_get_colocator(collocator: HasColocator, kwargs):
-    col = collocator.get_colocator(**kwargs)
+@pytest.mark.parametrize("obs_name", [None, "obs1", "obs2"])
+def test_HasColocator_get_colocator(collocator: HasColocator, obs_name: str | None):
+    col = collocator.get_colocator(obs_name=obs_name)
     assert isinstance(col, Colocator)
 
 
