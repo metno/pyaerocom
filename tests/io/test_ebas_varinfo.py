@@ -196,19 +196,27 @@ def test_var_name_aerocom():
     assert EbasVarInfo("sconcno3").var_name_aerocom == "concno3"
 
 
+@pytest.fixture
+def info(var_name: str | None) -> EbasVarInfo:
+    if var_name is None:
+        info = EbasVarInfo("concpm10")
+        info.component = None
+        return info
+    return EbasVarInfo(var_name)
+
+
 @pytest.mark.parametrize(
-    "var_name, component, matrix, instrument, statistics, requires, scale_factor", TESTDATA
+    "var_name,component,matrix,instrument,statistics,requires,scale_factor", TESTDATA
 )
-def test_varinfo(var_name, component, matrix, instrument, statistics, requires, scale_factor):
-
-    var = EbasVarInfo(var_name)
-
-    assert var.component == component
-    assert var.matrix == matrix
-    assert var.instrument == instrument
-    assert var.statistics == statistics
-    assert var.requires == requires
-    assert var.scale_factor == scale_factor
+def test_varinfo(
+    info: EbasVarInfo, component, matrix, instrument, statistics, requires, scale_factor
+):
+    assert info.component == component
+    assert info.matrix == matrix
+    assert info.instrument == instrument
+    assert info.statistics == statistics
+    assert info.requires == requires
+    assert info.scale_factor == scale_factor
 
 
 def test_to_dict():
@@ -220,7 +228,7 @@ def test_to_dict():
 
 
 @pytest.mark.parametrize(
-    "var,constraints",
+    "var_name,constraints",
     [
         ("concpm10", {}),
         ("concpm10", {"bla": 42}),
@@ -229,14 +237,13 @@ def test_to_dict():
         ("concpm10", {"start_date": 42}),
     ],
 )
-def test_make_sql_request(var: str, constraints: dict):
-    info = EbasVarInfo(var)
+def test_make_sql_request(info: EbasVarInfo, constraints: dict):
     request = info.make_sql_request(**constraints)
     assert isinstance(request, EbasSQLRequest)
 
 
 @pytest.mark.parametrize(
-    "var,exception,error",
+    "var_name,exception,error",
     [
         (
             None,
@@ -255,19 +262,14 @@ def test_make_sql_request(var: str, constraints: dict):
         ),
     ],
 )
-def test_make_sql_request_error(var: str | None, exception: Type[Exception], error: str):
-    if var is None:
-        info = EbasVarInfo("concpm10")
-        info.component = None
-    else:
-        info = EbasVarInfo(var)
+def test_make_sql_request_error(info: EbasVarInfo, exception: Type[Exception], error: str):
     with pytest.raises(exception) as e:
         info.make_sql_request()
     assert str(e.value).startswith(error)
 
 
 @pytest.mark.parametrize(
-    "var,num",
+    "var_name,num",
     [
         ("concpm10", 1),
         ("sc700dryaer", 2),
@@ -275,8 +277,7 @@ def test_make_sql_request_error(var: str | None, exception: Type[Exception], err
         ("sc440dryaer", 2),
     ],
 )
-def test_make_sql_requests(var, num):
-    info = EbasVarInfo(var)
+def test_make_sql_requests(info: EbasVarInfo, num: int):
     reqs = info.make_sql_requests()
     assert isinstance(reqs, dict)
     assert len(reqs) == num
