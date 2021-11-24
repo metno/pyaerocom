@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from configparser import ConfigParser
 from typing import Type
 
 import pytest
@@ -187,8 +188,6 @@ def test_init_empty():
 
 
 def test_open_config():
-    from configparser import ConfigParser
-
     assert isinstance(EbasVarInfo.open_config(), ConfigParser)
 
 
@@ -278,11 +277,10 @@ def test_make_sql_request_error(info: EbasVarInfo, exception: Type[Exception], e
     ],
 )
 def test_make_sql_requests(info: EbasVarInfo, num: int):
-    reqs = info.make_sql_requests()
-    assert isinstance(reqs, dict)
-    assert len(reqs) == num
-    for req in reqs.values():
-        assert isinstance(req, EbasSQLRequest)
+    requests = info.make_sql_requests()
+    assert isinstance(requests, dict)
+    assert len(requests) == num
+    assert all(isinstance(req, EbasSQLRequest) for req in requests.values())
 
 
 def test___str__():
