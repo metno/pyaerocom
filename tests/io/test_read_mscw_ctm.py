@@ -444,21 +444,40 @@ def test_read_emep_clean_filepaths_error(tmp_path, test_yrs, freq ,error):
 
 
 
-@pytest.mark.parametrize('freq, ts_type, raises', [
-     ('day', 'day',does_not_raise_exception()),
-     ('month','month',does_not_raise_exception()),
-     ('month', 'minute',pytest.raises(ValueError)),
-     ('day', 'daily',pytest.raises(ValueError)),
-     ('month', 'LF_month',pytest.raises(ValueError)),
-])
+@pytest.mark.parametrize('freq, ts_type', [
+     ('day', 'day'),
+     ('month','month'),
 
-def test_read_emep_wrong_filenames(tmp_path, freq, ts_type, raises):
+])
+def test_read_emep_wrong_filenames(tmp_path, freq, ts_type):
     vars_and_units = {'prmm' : 'mm'}
     data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
     tst = reader.FREQ_CODES[freq]
-    with raises:
+    filepaths = reader.filepaths
+    wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_{ts_type}.nc")
+    filepaths[0] = wrong_file
+    new_yrs = reader._get_yrs_from_filepaths()
+
+    
+    cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
+
+    
+
+@pytest.mark.parametrize('freq, ts_type,error', [
+     ('month', 'minute', "The ts_type "),
+     ('day', 'daily',"The ts_type "),
+     ('month', 'LF_month',"A different amount"),
+])
+
+def test_read_emep_wrong_filenames_error(tmp_path, freq, ts_type, error):
+    vars_and_units = {'prmm' : 'mm'}
+    data_dir = create_emep_dummy_data(tmp_path,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
+    tst = reader.FREQ_CODES[freq]
+    with pytest.raises(ValueError) as e:
         filepaths = reader.filepaths
         wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_{ts_type}.nc")
         filepaths[0] = wrong_file
@@ -467,6 +486,7 @@ def test_read_emep_wrong_filenames(tmp_path, freq, ts_type, raises):
         
         cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
 
+    assert error in str(e.value) 
 
 
 def test_read_emep_year_defined_twice(tmp_path):

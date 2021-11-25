@@ -297,7 +297,6 @@ class ReadMscwCtm(object):
         if self.data_dir is None and self._filepaths is None:
             raise AttributeError('data_dir or filepaths needs to be set before accessing')
         return self._filepath
-        #return os.path.join(self.data_dir, self.filename)
 
     @filepath.setter
     def filepath(self, value):
@@ -648,7 +647,7 @@ class ReadMscwCtm(object):
         # At this point a GriddedData object with name gridded should exist
 
         gridded.metadata['data_id'] = self.data_id
-        gridded.metadata['from_files'] = self.filepaths # [self.filepaths]
+        gridded.metadata['from_files'] = self.filepaths 
 
         # Remove unneccessary metadata. Better way to do this?
         for metadata in ['current_date_first', 'current_date_last']:
