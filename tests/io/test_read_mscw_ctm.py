@@ -388,9 +388,7 @@ def test_ReadEMEP__init__():
     assert isinstance(ReadEMEP(), ReadMscwCtm)
 
 
-def create_emep_dummy_data(
-    tmp_path: Path, freq: str | list[str], vars_and_units: dict[str, str]
-) -> Path:
+def emep_data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[str, str]) -> Path:
 
     reader = ReadMscwCtm()
     varmap = reader.var_map
@@ -411,6 +409,11 @@ def create_emep_dummy_data(
     return root
 
 
+@pytest.fixture
+def data_path(tmp_path: Path, freq: str | list[str], vars_and_units: dict[str, str]) -> Path:
+    return emep_data_path(tmp_path, freq, vars_and_units)
+
+
 def test_ReadMscwCtm_aux_var_defs():
     req = ReadMscwCtm.AUX_REQUIRES
     funs = ReadMscwCtm.AUX_FUNS
@@ -426,7 +429,7 @@ M_NO3 = M_N + M_O * 3
 
 
 @pytest.mark.parametrize(
-    "file_vars_and_units,freq,add_read,chk_mean",
+    "vars_and_units,freq,add_read,chk_mean",
     [
         ({"wetoxs": "mg S m-2"}, "day", None, {"wetoxs": 1}),
         ({"prmm": "mm"}, "hour", None, {"prmm": 24}),
@@ -454,14 +457,17 @@ M_NO3 = M_N + M_O * 3
         ({"wetoxs": "Tg S m-2 d-1"}, "day", None, {"wetoxs": 1e15}),
     ],
 )
-def test_read_emep_dummy_data(tmp_path, file_vars_and_units, freq, add_read, chk_mean):
-
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units=file_vars_and_units)
-
+def test_read_emep_dummy_data(
+    data_path: Path,
+    vars_and_units: dict[str, str],
+    freq: str,
+    add_read: list[str] | None,
+    chk_mean: dict[str, float],
+):
     reader = ReadMscwCtm(data_dir=str(data_path / "2017"))
     tst = reader.FREQ_CODES[freq]
     objs = {}
-    for var in file_vars_and_units:
+    for var in vars_and_units:
         data = reader.read_var(var, ts_type=tst)
         objs[var] = data
         assert isinstance(data, GriddedData)
@@ -477,8 +483,8 @@ def test_read_emep_dummy_data(tmp_path, file_vars_and_units, freq, add_read, chk
             np.testing.assert_allclose(objs[var].cube.data.mean(), mean, atol=0.1)
 
 
-def test_read_emep_dummy_data_error(tmp_path):
-    data_path = create_emep_dummy_data(tmp_path, "day", vars_and_units={"concno3c": "ug m-3"})
+def test_read_emep_dummy_data_error(tmp_path: Path):
+    data_path = emep_data_path(tmp_path, "day", vars_and_units={"concno3c": "ug m-3"})
     reader = ReadMscwCtm(data_dir=str(data_path / "2017"))
     with pytest.raises(exc.VarNotAvailableError) as e:
         reader.read_var("concno3", ts_type="daily")
@@ -486,23 +492,22 @@ def test_read_emep_dummy_data_error(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "yr,test_yrs,freq",
+    "year,years,freq",
     [
         ("", [2013, 2015, 2017, 2018, 2019], "day"),
         ("2017", [2017], "month"),
         ("2019", [2019], "hour"),
     ],
 )
-def test_read_emep_clean_filepaths(tmp_path, yr, test_yrs, freq):
-    vars_and_units = {"prmm": "mm"}
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units=vars_and_units)
-    reader = ReadMscwCtm(data_dir=str(data_path / yr))
+@pytest.mark.parametrize("vars_and_units", [{"prmm": "mm"}])
+def test_read_emep_clean_filepaths(data_path: Path, year, years: list[int], freq: str):
+    reader = ReadMscwCtm(data_dir=str(data_path / year))
     tst = reader.FREQ_CODES[freq]
 
     filepaths = reader.filepaths
 
-    cleaned_paths = reader._clean_filepaths(filepaths, test_yrs, tst)
-    assert len(cleaned_paths) == len(test_yrs)
+    cleaned_paths = reader._clean_filepaths(filepaths, years, tst)
+    assert len(cleaned_paths) == len(years)
 
     found = []
     for path in cleaned_paths:
@@ -511,43 +516,43 @@ def test_read_emep_clean_filepaths(tmp_path, yr, test_yrs, freq):
         year = re.search(r".*(20\d\d).*", Path(path).parent.name).group(1)
         found.append(int(year))
 
-    assert found == sorted(test_yrs)
+    assert found == sorted(years)
 
 
 @pytest.mark.parametrize(
-    "test_yrs,freq,error",
+    "years,freq,error",
     [
         ([2013, 2015, 2017, 2018, 2019, 2012], "month", "A different amount of years "),
         ([2013, 2016, 2017], "day", "The year "),
     ],
 )
-def test_read_emep_clean_filepaths_error(tmp_path, test_yrs, freq, error):
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units={"prmm": "mm"})
+@pytest.mark.parametrize("vars_and_units", [{"prmm": "mm"}])
+def test_read_emep_clean_filepaths_error(data_path: Path, years, freq: str, error: str):
     reader = ReadMscwCtm(data_dir=str(data_path))
     tst = reader.FREQ_CODES[freq]
     filepaths = reader.filepaths
     with pytest.raises(ValueError) as e:
-        reader._clean_filepaths(filepaths, test_yrs, tst)
+        reader._clean_filepaths(filepaths, years, tst)
 
     assert error in str(e.value)
 
 
 @pytest.mark.parametrize(
-    "freq,ts_type",
+    "freq,wrong_name",
     [
-        ("day", "day"),
-        ("month", "month"),
+        ("day", "Base_day.nc"),
+        ("month", "Base_month.nc"),
     ],
 )
-def test_read_emep_wrong_filenames(tmp_path, freq, ts_type):
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units={"prmm": "mm"})
+@pytest.mark.parametrize("vars_and_units", [{"prmm": "mm"}])
+def test_read_emep_wrong_filenames(data_path: Path, freq: str, wrong_name: str):
     reader = ReadMscwCtm(data_dir=str(data_path))
     tst = reader.FREQ_CODES[freq]
     filepaths = reader.filepaths
     years = reader._get_yrs_from_filepaths()
     cleaned_paths = reader._clean_filepaths(filepaths, years, tst)
 
-    wrong_path = Path(filepaths[0]).with_name(f"Base_{ts_type}.nc")
+    wrong_path = Path(filepaths[0]).with_name(wrong_name)
     filepaths[0] = str(wrong_path)
     new_years = reader._get_yrs_from_filepaths()
     new_cleaned_paths = reader._clean_filepaths(filepaths, new_years, tst)
@@ -557,25 +562,25 @@ def test_read_emep_wrong_filenames(tmp_path, freq, ts_type):
 
 
 @pytest.mark.parametrize(
-    "freq,ts_type",
+    "freq,wrong_tst",
     [
         ("month", "minute"),
         ("day", "daily"),
     ],
 )
-def test_read_emep_wrong_tst(tmp_path, freq, ts_type):
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units={"prmm": "mm"})
+@pytest.mark.parametrize("vars_and_units", [{"prmm": "mm"}])
+def test_read_emep_wrong_tst(data_path: Path, wrong_tst: str):
     reader = ReadMscwCtm(data_dir=str(data_path))
     with pytest.raises(ValueError) as e:
         filepaths = reader.filepaths
-        wrong_path = Path(filepaths[0]).with_name(f"Base_{ts_type}.nc")
+        wrong_path = Path(filepaths[0]).with_name(f"Base_{wrong_tst}.nc")
         reader._get_tst_from_file(str(wrong_path))
 
-    assert str(e.value) == f"The ts_type {ts_type} is not supported"
+    assert str(e.value) == f"The ts_type {wrong_tst} is not supported"
 
 
-def test_read_emep_LF_tst(tmp_path):
-    data_path = create_emep_dummy_data(tmp_path, "month", vars_and_units={"prmm": "mm"})
+def test_read_emep_LF_tst(tmp_path: Path):
+    data_path = emep_data_path(tmp_path, "month", vars_and_units={"prmm": "mm"})
     reader = ReadMscwCtm(data_dir=str(data_path))
     filepaths = reader.filepaths
     wrong_path = Path(filepaths[0]).with_name(f"Base_LF_month.nc")
@@ -583,8 +588,8 @@ def test_read_emep_LF_tst(tmp_path):
     assert reader._get_tst_from_file(str(wrong_path)) is None
 
 
-def test_read_emep_year_defined_twice(tmp_path):
-    data_path = create_emep_dummy_data(tmp_path, "day", vars_and_units={"prmm": "mm"})
+def test_read_emep_year_defined_twice(tmp_path: Path):
+    data_path = emep_data_path(tmp_path, "day", vars_and_units={"prmm": "mm"})
     reader = ReadMscwCtm(data_dir=str(data_path))
     filepaths = reader.filepaths
     wrong_path = Path(filepaths[0]).with_name(f"Base_day.nc")
@@ -596,16 +601,16 @@ def test_read_emep_year_defined_twice(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "yr,freq,num",
+    "year,freq,num",
     [
         ("", "day", 5),
         ("2017", "month", 1),
         ("2019", "hour", 1),
     ],
 )
-def test_read_emep_multiple_dirs(tmp_path, yr, freq, num):
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units={"prmm": "mm"})
-    reader = ReadMscwCtm(data_dir=str(data_path / yr))
+@pytest.mark.parametrize("vars_and_units", [{"prmm": "mm"}])
+def test_read_emep_multiple_dirs(data_path: Path, year: str, freq: str, num: int):
+    reader = ReadMscwCtm(data_dir=str(data_path / year))
     assert len(reader.filepaths) == num
     assert all(freq in Path(file).stem for file in reader.filepaths)
 
@@ -614,24 +619,24 @@ def test_read_emep_multiple_dirs(tmp_path, yr, freq, num):
     assert data.ts_type == tst
 
 
-def test_read_emep_multiple_dirs_hour_error(tmp_path):
-    data_path = create_emep_dummy_data(tmp_path, "hour", vars_and_units={"prmm": "mm"})
+def test_read_emep_multiple_dirs_hour_error(tmp_path: Path):
+    data_path = emep_data_path(tmp_path, "hour", vars_and_units={"prmm": "mm"})
     reader = ReadMscwCtm(data_dir=str(data_path))
     with pytest.raises(ValueError) as e:
         reader.read_var("prmm", ts_type="hourly")
-
     assert str(e.value) == "ts_type hourly can not be hourly when using multiple years"
 
 
 @pytest.mark.parametrize(
-    "yr,freq,num",
+    "year,freq,num",
     [
         ("", "day", 5),
         ("2017", "month", 1),
         ("2019", "hour", 1),
     ],
 )
-def test_search_all_files(tmp_path, yr, freq, num):
+@pytest.mark.parametrize("vars_and_units", [{"prmm": "mm"}])
+def test_search_all_files(data_path: Path, year: str, num: int):
     reader = ReadMscwCtm()
     with pytest.raises(AttributeError):
         reader.search_all_files()
@@ -639,15 +644,14 @@ def test_search_all_files(tmp_path, yr, freq, num):
     with pytest.raises(AttributeError):
         reader.filepaths
 
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units={"prmm": "mm"})
-    reader._data_dir = str(data_path / yr)
+    reader._data_dir = str(data_path / year)
 
     reader.search_all_files()
     assert len(reader.filepaths) == num
 
 
 @pytest.mark.parametrize(
-    "yr,freq,",
+    "year,freq,",
     [
         ("", ["day"]),
         ("", ["day", "hour"]),
@@ -655,12 +659,12 @@ def test_search_all_files(tmp_path, yr, freq, num):
         ("2019", ["hour", "day", "month"]),
     ],
 )
-def test_ts_types(tmp_path: Path, yr: str, freq: list[str]):
+@pytest.mark.parametrize("vars_and_units", [{"prmm": "mm"}])
+def test_ts_types(data_path: Path, year: str, freq: list[str]):
     reader = ReadMscwCtm()
     with pytest.raises(AttributeError):
         reader.ts_types
 
-    data_path = create_emep_dummy_data(tmp_path, freq, vars_and_units={"prmm": "mm"})
-    reader.data_dir = str(data_path / yr)
+    reader.data_dir = str(data_path / year)
     ts_types = reader.ts_types
     assert len(ts_types) == len(freq)
