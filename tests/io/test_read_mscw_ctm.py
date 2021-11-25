@@ -418,7 +418,7 @@ def test_read_emep_clean_filepaths(tmp_path, yr, test_yrs, freq):
 
     assert found_yrs == sorted(test_yrs)
 
-@pytest.mark.parametrize('test_yrs, freq,error', [
+@pytest.mark.parametrize('test_yrs, freq, error', [
      ([2013, 2015, 2017, 2018, 2019, 2012], 'month', "A different amount of years "),
      ([2013, 2016, 2017], 'day', "The year "),
 ])
@@ -468,10 +468,9 @@ def test_read_emep_wrong_filenames(tmp_path, freq, ts_type):
 @pytest.mark.parametrize('freq, ts_type,error', [
      ('month', 'minute', "The ts_type "),
      ('day', 'daily',"The ts_type "),
-     ('month', 'LF_month',"A different amount"),
 ])
 
-def test_read_emep_wrong_filenames_error(tmp_path, freq, ts_type, error):
+def test_read_emep_wrong_tst(tmp_path, freq, ts_type, error):
     vars_and_units = {'prmm' : 'mm'}
     data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
@@ -480,13 +479,27 @@ def test_read_emep_wrong_filenames_error(tmp_path, freq, ts_type, error):
     with pytest.raises(ValueError) as e:
         filepaths = reader.filepaths
         wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_{ts_type}.nc")
-        filepaths[0] = wrong_file
-        new_yrs = reader._get_yrs_from_filepaths()
-
-        
-        cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
+        reader._get_tst_from_file(wrong_file)
 
     assert error in str(e.value) 
+
+
+
+
+def test_read_emep_LF_tst(tmp_path):
+    vars_and_units = {'prmm' : 'mm'}
+    freq = "month"
+    data_dir = create_emep_dummy_data(tmp_path,freq,
+                                    vars_and_units=vars_and_units)
+    reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
+    tst = reader.FREQ_CODES[freq]
+    filepaths = reader.filepaths
+    wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_LF_month.nc")
+    tst = reader._get_tst_from_file(wrong_file)
+
+    assert tst is None
+
+
 
 
 def test_read_emep_year_defined_twice(tmp_path):

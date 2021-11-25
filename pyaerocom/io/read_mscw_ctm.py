@@ -117,7 +117,7 @@ class ReadMscwCtm(object):
         self._filepaths = None
         self._filepath = None
 
-        self._file_mask = None
+        self._file_mask = self.FILE_MASKS[0]
         self._files = None
 
         self.var_map = get_emep_variables()
@@ -200,6 +200,20 @@ class ReadMscwCtm(object):
         
         return sorted(list(set(yrs)))
 
+    def _get_tst_from_file(self, file):
+            #tst = re.search("Base_(.*).nc", file).group(1)
+            mask = self._file_mask.replace("*", "(.*)")
+            tst = re.search(mask, file).group(1)
+
+            if "LF_" in tst:
+                return None
+
+
+            if tst not in list(self.FREQ_CODES.keys()):
+                raise ValueError(f"The ts_type {tst} is not supported")
+            
+            return self.FREQ_CODES[tst]
+            
 
     def _clean_filepaths(self, filepaths, yrs, ts_type):
         clean_paths = []
@@ -209,16 +223,7 @@ class ReadMscwCtm(object):
         for path in filepaths:
             ddir, file = os.path.split(path)
 
-            tst = re.search("Base_(.*).nc", file).group(1)
-
-            if "LF_" in tst:
-                continue
-
-
-            if tst not in list(self.FREQ_CODES.keys()):
-                raise ValueError(f"The ts_type {tst} is not supported")
-            
-            if self.FREQ_CODES[tst] != ts_type:
+            if self._get_tst_from_file(file) != ts_type:
                 continue
             
 
@@ -316,16 +321,14 @@ class ReadMscwCtm(object):
         if self.data_dir is None and self._filepaths is None:
             raise AttributeError('data_dir or filepaths needs to be set before accessing')
         return self._filepaths
-        #return os.path.join(self.data_dir, self.filename)
+
 
     @filepaths.setter
     def filepaths(self, value):
         if not isinstance(value, list):
             raise ValueError('needs to be list of strings')
         self._filepaths = value
-        # ddir, fname = os.path.split(value)
-        # self.data_dir = ddir
-        # self.filename = fname
+
 
     @property
     def filedata(self):
