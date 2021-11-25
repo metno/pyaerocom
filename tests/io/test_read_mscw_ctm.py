@@ -447,21 +447,24 @@ def test_read_emep_clean_filepaths_error(tmp_path, test_yrs, freq ,error):
 @pytest.mark.parametrize('freq, ts_type', [
      ('day', 'day'),
      ('month','month'),
-
 ])
-def test_read_emep_wrong_filenames(tmp_path, freq, ts_type):
+def test_read_emep_change_filenames(tmp_path, freq, ts_type):
     vars_and_units = {'prmm' : 'mm'}
     data_dir = create_emep_dummy_data(tmp_path,freq,
                                     vars_and_units=vars_and_units)
     reader = ReadMscwCtm(data_dir=os.path.join(data_dir, ""))
     tst = reader.FREQ_CODES[freq]
     filepaths = reader.filepaths
+    yrs = reader._get_yrs_from_filepaths()
+    cleaned_paths = reader._clean_filepaths(filepaths, yrs, tst)
+
     wrong_file = os.path.join(os.path.split(filepaths[0])[0], f"Base_{ts_type}.nc")
     filepaths[0] = wrong_file
     new_yrs = reader._get_yrs_from_filepaths()
+    new_cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
 
-    
-    cleaned_paths = reader._clean_filepaths(filepaths, new_yrs, tst)
+    assert len(yrs) == len(new_yrs)
+    assert len(cleaned_paths) == len(new_cleaned_paths)
 
     
 
