@@ -39,7 +39,7 @@ def test_Variable(var_name: str | None, init: bool, kwargs: dict):
         ),
     ],
 )
-def test_Variable_error(var_name, cfg, error):
+def test_Variable_error(var_name: str | None, cfg, error: str):
     with pytest.raises(ValueError) as e:
         Variable(var_name, True, cfg)
     assert str(e.value) == error
@@ -57,9 +57,8 @@ def test_Variable_error(var_name, cfg, error):
         ("sconcss", "concss"),
     ],
 )
-def test_Variable_var_name_aerocom(var_name, var_name_aerocom):
-    var = Variable(var_name)
-    assert var.var_name_aerocom == var_name_aerocom
+def test_Variable_var_name_aerocom(var_name: str, var_name_aerocom: str):
+    assert Variable(var_name).var_name_aerocom == var_name_aerocom
 
 
 def test_Variable_alias_var():
@@ -76,7 +75,7 @@ def test_Variable_alias_families():
 
 
 @pytest.mark.parametrize(
-    "var,result",
+    "var_name,result",
     [
         ("od550aer", False),
         ("emiso4", True),
@@ -87,12 +86,12 @@ def test_Variable_alias_families():
         ("wetso4", False),
     ],
 )
-def test_Variable_is_emission(var, result):
-    assert Variable(var).is_emission == result
+def test_Variable_is_emission(var_name: str, result: bool):
+    assert Variable(var_name).is_emission == result
 
 
 @pytest.mark.parametrize(
-    "var,result",
+    "var_name,result",
     [
         ("od550aer", False),
         ("emiso4", False),
@@ -103,12 +102,12 @@ def test_Variable_is_emission(var, result):
         ("wetso4", True),
     ],
 )
-def test_Variable_is_deposition(var, result):
-    assert Variable(var).is_deposition == result
+def test_Variable_is_deposition(var_name: str, result: bool):
+    assert Variable(var_name).is_deposition == result
 
 
 @pytest.mark.parametrize(
-    "var,result",
+    "var_name,result",
     [
         ("od550aer", False),
         ("emiso4", True),
@@ -119,12 +118,12 @@ def test_Variable_is_deposition(var, result):
         ("wetso4", True),
     ],
 )
-def test_Variable_is_rate(var, result):
-    var = Variable(var)
-    assert var.is_rate == result
+def test_Variable_is_rate(var_name: str, result: bool):
+    assert Variable(var_name).is_rate == result
 
 
 def test_Variable___str__():
     var = Variable("od550aer")
     s = str(var)
-    assert isinstance(s, str)
+    assert s.startswith("\nPyaerocom Variable")
+    assert "var_name: od550aer" in s
